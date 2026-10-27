@@ -310,3 +310,7 @@ Other:
 - fix(audio): release output observers and ignore stale callbacks
   - Retain one car LiveData instance for matching registration/removal, unregister old native listeners before replacement and invalidate queued callbacks with registration generations.
   - Keep application context and cancel bridge scope on unregister; cover repeated registration, disposal and late events.
+- fix(downloads): release service references and close cancellation cursors
+  - Build active and paused notifications through an application-context helper, preserving channels, action commands and notification IDs.
+  - Remove the terminal listener's retained service instance and close DownloadCursor on both normal completion and exceptions.
+  - Cover completed notifications, paused resume actions, active actions and the actual cancellation path.

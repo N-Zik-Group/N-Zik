@@ -1,10 +1,6 @@
 package app.n_zik.android.download.services
 
-import app.n_zik.android.download.services.*
-import app.n_zik.android.download.utils.*
-
 import android.app.Notification
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
@@ -13,12 +9,12 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.util.Util
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadManager
-import androidx.media3.exoplayer.offline.DownloadNotificationHelper
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.scheduler.PlatformScheduler
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.core.notifications.channelId
+import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.download.utils.MyDownloadHelper.DOWNLOAD_NOTIFICATION_CHANNEL_ID
 import app.n_zik.android.download.utils.MyDownloadHelper.batchTotal
 import app.n_zik.android.download.utils.MyDownloadHelper.batchCompleted
@@ -52,9 +48,7 @@ class MyDownloadService : DownloadService(
     DEFAULT_FOREGROUND_NOTIFICATION_UPDATE_INTERVAL,
     // The channel this service actually posts on (per-profile — both notification builders
     // below use it): DownloadService.onCreate (re)creates exactly this channel at start, so
-//
     // the base ID here would resurrect the base `download_channel` under every profile.
-//
     // (`this` is not usable in a super-constructor call — appContext() is already set by
     // the time any service can be constructed.)
     channelId(DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(appContext())),
@@ -68,11 +62,12 @@ class MyDownloadService : DownloadService(
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_CANCEL_ONGOING) {
             val downloadManager = MyDownloadHelper.getDownloadManager(this)
-            val cursor = downloadManager.downloadIndex.getDownloads()
-            while (cursor.moveToNext()) {
-                val state = cursor.download.state
-                if (state == Download.STATE_DOWNLOADING || state == Download.STATE_QUEUED || state == Download.STATE_RESTARTING || state == Download.STATE_STOPPED) {
-                    DownloadService.sendRemoveDownload(this, MyDownloadService::class.java, cursor.download.request.id, false)
+            downloadManager.downloadIndex.getDownloads().use { cursor ->
+                while (cursor.moveToNext()) {
+                    val state = cursor.download.state
+                    if (state == Download.STATE_DOWNLOADING || state == Download.STATE_QUEUED || state == Download.STATE_RESTARTING || state == Download.STATE_STOPPED) {
+                        DownloadService.sendRemoveDownload(this, MyDownloadService::class.java, cursor.download.request.id, false)
+                    }
                 }
             }
             return START_STICKY
@@ -89,12 +84,9 @@ class MyDownloadService : DownloadService(
         // This will only happen once, because getDownloadManager is guaranteed to be called only once
         // in the life cycle of the process.
         val downloadManager: DownloadManager = MyDownloadHelper.getDownloadManager(this)
-        val downloadNotificationHelper: DownloadNotificationHelper =
-            MyDownloadHelper.getDownloadNotificationHelper(this)
         downloadManager.addListener(
             TerminalStateNotificationHelper(
-                this,
-                downloadNotificationHelper,
+                applicationContext,
                 FOREGROUND_NOTIFICATION_ID + 1
             )
         )
@@ -109,79 +101,26 @@ class MyDownloadService : DownloadService(
         downloads: MutableList<Download>,
         notMetRequirements: Int
     ): Notification {
-        val total = batchTotal
-        val completed = batchCompleted
-        
-        // Calculate progress for active downloads
-        val activeDownload = downloads.firstOrNull { it.state == Download.STATE_DOWNLOADING } ?: downloads.firstOrNull()
-        val currentDownloadName = activeDownload?.request?.data?.let { Util.fromUtf8Bytes(it) }
-        
-        // Calculate overall progress from all active downloads
-        val totalBytes = downloads.sumOf { it.contentLength }.coerceAtLeast(1)
-        val downloadedBytes = downloads.sumOf { it.bytesDownloaded }
-        val downloadProgress = if (totalBytes > 0) (downloadedBytes * 100 / totalBytes).toInt() else 0
-        
-        val message = if (total > 0) {
-            getString(R.string.download_progress, completed, total)
-        } else if (downloads.isNotEmpty()) {
-            getString(R.string.download_in_progress, downloads.size) + " ($downloadProgress%)"
-        } else {
-            getString(R.string.download_in_progress, downloads.size)
-        }
-
-        val isPaused = MyDownloadHelper.getDownloadManager(this).downloadsPaused
-
-        if (!isPaused) {
-            androidx.core.app.NotificationManagerCompat.from(this).cancel(FOREGROUND_NOTIFICATION_ID + 2)
-        }
-
-        val pauseResumeAction = if (isPaused) {
-            val intent = Intent(this, MyDownloadService::class.java).setAction(DownloadService.ACTION_RESUME_DOWNLOADS)
-            val pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            NotificationCompat.Action(R.drawable.play, getString(R.string.snake_resume), pendingIntent)
-        } else {
-            val intent = Intent(this, MyDownloadService::class.java).setAction(DownloadService.ACTION_PAUSE_DOWNLOADS)
-            val pendingIntent = PendingIntent.getService(this, 3, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            NotificationCompat.Action(R.drawable.pause, getString(R.string.notification_pause), pendingIntent)
-        }
-
-        val cancelOngoingIntent = Intent(this, MyDownloadService::class.java).setAction(ACTION_CANCEL_ONGOING)
-        val cancelOngoingPendingIntent = PendingIntent.getService(this, 1, cancelOngoingIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        val cancelAction = NotificationCompat.Action(R.drawable.close, getString(R.string.cancel), cancelOngoingPendingIntent)
-
-        val deleteAllIntent = Intent(this, MyDownloadService::class.java).setAction(DownloadService.ACTION_REMOVE_ALL_DOWNLOADS)
-        val deleteAllPendingIntent = PendingIntent.getService(this, 2, deleteAllIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        val deleteAllAction = NotificationCompat.Action(R.drawable.trash, getString(R.string.delete), deleteAllPendingIntent)
-
-        // Use batch progress if available, otherwise use download progress
-        val progressMax = if (total > 0) total else 100
-        val progressCurrent = if (total > 0) completed else downloadProgress
-        val indeterminate = downloads.isEmpty()
-
-        return NotificationCompat.Builder(this, channelId(DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(this)))
-            .setSmallIcon(R.drawable.download_progress)
-            .setContentTitle(getString(R.string.download))
-            .setContentText(currentDownloadName ?: message)
-            .setSubText(message)
-            .setProgress(progressMax, progressCurrent, indeterminate)
-            .setOngoing(!isPaused)
-            .setShowWhen(false)
-            .addAction(pauseResumeAction)
-            .addAction(cancelAction)
-            .addAction(deleteAllAction)
-            .build()    }
+        return DownloadProgressNotification(applicationContext).build(
+            downloads,
+            MyDownloadHelper.getDownloadManager(applicationContext).downloadsPaused,
+            batchTotal,
+            batchCompleted
+        )
+    }
 
     /**
      * Creates and displays notifications for downloads when they complete or fail.
      *
-     *     * This helper will outlive the lifespan of a single instance of [MyDownloadService].
+     * This helper will outlive the lifespan of a single instance of [MyDownloadService].
      * It is static to avoid leaking the first [MyDownloadService] instance.
      */
-    private class TerminalStateNotificationHelper(
-        private val context: Context,
-        private val notificationHelper: DownloadNotificationHelper,
+    internal class TerminalStateNotificationHelper(
+        context: Context,
         private val notificationId: Int
     ) : DownloadManager.Listener {
+        private val context = context.applicationContext
+        private val progressNotification = DownloadProgressNotification(this.context)
         private var completedCount = 0
         private var failedCount = 0
         private var lastName = ""
@@ -231,7 +170,7 @@ class MyDownloadService : DownloadService(
                 val title = if (failedCount > 0) {
                     context.getString(R.string.download_completed_with_failed, completedCount, failedCount)
                 } else {
-                    context.getString(R.string.download_completed, completedCount)  
+                    context.getString(R.string.download_completed, completedCount)
                 }
 
                 val notification = NotificationCompat.Builder(context, channelId(DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(context)))
@@ -250,13 +189,13 @@ class MyDownloadService : DownloadService(
                 lastName = ""
             }
 
-            if (hasPaused && context is MyDownloadService && downloads.isNotEmpty()) {
-                val notification = context.getForegroundNotification(downloads.toMutableList(), 0)
+            if (hasPaused && downloads.isNotEmpty()) {
+                val notification = progressNotification.build(downloads, true, batchTotal, batchCompleted)
                 NotificationUtil.setNotification(context, FOREGROUND_NOTIFICATION_ID + 2, notification)
             } else {
                 androidx.core.app.NotificationManagerCompat.from(context).cancel(FOREGROUND_NOTIFICATION_ID + 2)
                 androidx.core.app.NotificationManagerCompat.from(context).cancel(FOREGROUND_NOTIFICATION_ID)
-                
+
                 if (downloads.isEmpty()) {
                     app.n_zik.android.appContext().getSharedPreferences("download_prefs", Context.MODE_PRIVATE).edit().putBoolean("downloads_paused_state", false).apply()
                     resetBatch()
