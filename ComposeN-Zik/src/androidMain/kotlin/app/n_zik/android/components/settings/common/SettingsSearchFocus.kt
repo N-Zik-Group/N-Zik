@@ -20,7 +20,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
-import app.n_zik.android.components.search.SearchNoResults
 
 // Online Search uses 16dp around the bar before its full-width result list.
 internal val SettingsSearchBarPadding = PaddingValues(16.dp)
@@ -95,10 +94,12 @@ fun ColumnScope.settingsSearchTitle(
 fun settingsSearchContent(
     focus: SettingsSearchFocus,
     hasResults: Boolean = true,
+    query: String = "",
     content: @Composable () -> Unit,
 ) {
+    SettingsSearchEmptyFeedback(query, !hasResults)
     Column(modifier = Modifier.graphicsLayer { alpha = focus.contentAlpha }) {
-        if (hasResults) content() else SearchNoResults(fillRemainingViewport = true)
+        if (hasResults) content()
     }
 }
 

@@ -29,7 +29,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -205,12 +204,12 @@ import app.n_zik.android.components.player.TOP_NAV_BAR_HEIGHT
 import app.n_zik.android.components.player.showMiniplayerIfDismissed
 import app.n_zik.android.components.player.PaletteFade
 import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
-import app.n_zik.android.components.player.m3eRecapRestoredDynamicPalette
 import app.n_zik.android.components.player.presentMiniplayerThenExpand
 import app.n_zik.android.components.player.presentMiniplayerCollapsed
 import app.n_zik.android.components.player.MINIPLAYER_APPEAR_FADE_MS
 import app.n_zik.android.components.player.MINIPLAYER_APPEAR_FADE_SKIPPED_FRAMES
 import app.n_zik.android.components.theme.AnimatedAppearance
+import app.n_zik.android.components.theme.startupAppearance
 import app.n_zik.android.components.theme.withColor
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.Dimensions
@@ -1198,51 +1197,31 @@ class MainActivity :
                 ).forPaletteMode(colorPaletteMode)
             }
 
-            // Issue #881 (gh-881): tolerant saver on the PLAIN `saver =` overload (the `stateSaver =`
-            // overload is prohibited — its `mutableStateSaver` wrapper `require`s a
-//
-            // SnapshotMutableState payload and throws IAE on a foreign one, spec M5). The fallback
-//
-            // is the same preference-derived default the init lambda computes, so a corrupted
-            // payload restores to the real current appearance instead of crashing.
-            var appearance by rememberSaveable(saver = TolerantAppearanceStateSaver(::computeAppearance, "main.appearance")) {
+            // The saved palette contains only accent + darkness. Reconcile it with the
+            // current theme before the first frame, including after activity recreation.
+            var appearance by rememberSaveable(
+                saver = TolerantAppearanceStateSaver(
+                    fallback = ::computeAppearance,
+                    slot = "main.appearance",
+                    normalizeRestored = { restored ->
+                        startupAppearance(
+                            restored = restored,
+                            configured = computeAppearance(),
+                            paletteName = preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic),
+                            paletteMode = preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark),
+                            systemIsDark = isSystemInDarkTheme,
+                        )
+                    },
+                ),
+            ) {
                 mutableStateOf(computeAppearance())
             }
 
             var fadeFromAppearance by remember { mutableStateOf<Appearance?>(null) }
 
             fun updateAppearance(newAppearance: Appearance, animateGlobal: Boolean = false) {
-                if (animateGlobal) fadeFromAppearance = appearance
+                fadeFromAppearance = if (animateGlobal) appearance else null
                 appearance = newAppearance.forPaletteMode(preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark))
-            }
-
-            // Re-cap the restored dynamic palette once at startup (spec-achromatic-ramp-luminance-cap,
-            // loopback 2, EC-1): the Saver ColorPalette.Companion persists only accent + isDark and
-//
-            // rebuilds through the legacy non-capped dynamicColorPaletteOf, so a process death can
-            // restore an uncapped achromatic ramp (near-white app in dark mode, or the mirror)
-//
-            // until the next extraction. No-op same-instance for matching/in-range tones, and
-            // skipped entirely for static palettes (saved name != Dynamic).
-            LaunchedEffect(Unit) {
-                val savedColorPaletteName =
-                    preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
-                if (savedColorPaletteName == ColorPaletteName.Dynamic) {
-                    val themeIsDark =
-                        colorPaletteMode == ColorPaletteMode.Dark ||
-                                colorPaletteMode == ColorPaletteMode.PitchBlack ||
-                                (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
-                    val recapped =
-                        appearance.colorPalette.m3eRecapRestoredDynamicPalette(savedColorPaletteName, themeIsDark)
-                    if (recapped !== appearance.colorPalette) {
-                        updateAppearance(
-                            appearance.copy(
-                                colorPalette = recapped,
-                                typography = appearance.typography.withColor(recapped.text)
-                            )
-                        )
-                    }
-                }
             }
 
             fun setDynamicPalette(url: String?, animateTheme: Boolean = false) {
@@ -1392,10 +1371,12 @@ class MainActivity :
                 }
                 val colorPaletteName = preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
                 if (colorPaletteName == ColorPaletteName.Dynamic) {
-                    setDynamicPalette(
-                        binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri?.thumbnail(1000)?.toString(),
-                        animateTheme = true
-                    )
+                    binder?.player?.let { player ->
+                        setDynamicPalette(
+                            player.currentMediaItem?.mediaMetadata?.artworkUri?.thumbnail(1000)?.toString(),
+                            animateTheme = true
+                        )
+                    }
                 } else {
                     val computed = computeAppearance()
                     if (appearance.colorPalette != computed.colorPalette) {
@@ -1660,8 +1641,10 @@ class MainActivity :
                     val colorPaletteName =
                         getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
                     if (colorPaletteName == ColorPaletteName.Dynamic) {
-                        val currentArtworkUri = binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri?.thumbnail(1000)?.toString()
-                        setDynamicPalette(currentArtworkUri)
+                        // A disconnected service has unknown artwork, not an empty queue.
+                        binder?.player?.let { player ->
+                            setDynamicPalette(player.currentMediaItem?.mediaMetadata?.artworkUri?.thumbnail(1000)?.toString())
+                        }
                     }
 
                     onDispose {
@@ -1852,19 +1835,14 @@ class MainActivity :
             val bottomBarOffsetState = scaffoldBars.bottomOffset
 
             AnimatedAppearance(
-                target = appearance,
+                target = finalAppearance,
                 fadeFrom = fadeFromAppearance,
                 onFadeComplete = { fadeFromAppearance = null }
-            ) { _ ->
-                val rootBackgroundColor by animateColorAsState(
-                    targetValue = appearance.colorPalette.background0,
-                    animationSpec = tween(350, easing = FastOutSlowInEasing),
-                    label = "rootBackground"
-                )
+            ) { displayedAppearance ->
                 BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(rootBackgroundColor)
+                        .background(displayedAppearance.colorPalette.background0)
                         .nestedScroll(nestedScrollConnection)
                 ) {
 
@@ -2534,14 +2512,14 @@ class MainActivity :
                             CustomModalBottomSheet(
                                 showSheet = isVideo && isVideoEnabled && showPlayer,
                                 onDismissRequest = { showPlayer = false },
-                                containerColor = finalAppearance.colorPalette.background0,
-                                contentColor = finalAppearance.colorPalette.background0,
+                                containerColor = displayedAppearance.colorPalette.background0,
+                                contentColor = displayedAppearance.colorPalette.background0,
                                 modifier = Modifier.fillMaxWidth(),
                                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                                 dragHandle = {
                                     Surface(
                                         modifier = Modifier.padding(vertical = 0.dp),
-                                        color = finalAppearance.colorPalette.background0,
+                                        color = displayedAppearance.colorPalette.background0,
                                         shape = uiRoundnessShape()
                                     ) {}
                                 },

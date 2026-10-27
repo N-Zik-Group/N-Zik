@@ -154,7 +154,7 @@ fun GeneralSettings(
         GeneralSettingsContent(
             search = search,
             onCardPosition = { _, top -> pipCardTopY = top },
-            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, content = cards) },
+            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, query = search.inputValue, content = cards) },
         )
 
         SettingsGroupSpacer(

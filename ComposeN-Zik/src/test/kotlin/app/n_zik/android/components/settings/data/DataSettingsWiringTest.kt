@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.data
 
+import app.n_zik.android.components.settings.common.LocalSettingsSearchMessage
 import java.time.Duration
 import android.app.Application
 import android.content.Context
@@ -64,6 +65,7 @@ import app.n_zik.android.core.database.EventTable
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class DataSettingsWiringTest {
     @get:Rule val composeRule = createComposeRule()
+    private val searchMessages = mutableListOf<String>()
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val appearance = Appearance(
         colorPalette = DefaultDarkColorPalette,
@@ -75,6 +77,7 @@ class DataSettingsWiringTest {
     private val cardIds = listOf("cache", "backup", "auto-backup", "history", "reset")
 
     @Before fun setUp() {
+        searchMessages.clear()
         setActiveProfile("default", context)
         listOf("preferences", "app_settings").forEach {
             context.getSharedPreferences(it, Context.MODE_PRIVATE).edit().clear().commit()
@@ -102,7 +105,7 @@ class DataSettingsWiringTest {
 
     private fun show(focus: String = "") {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { searchMessages += it }) {
                 DataSettings(navController = mockk(relaxed = true), focus = focus)
             }
         }
@@ -139,7 +142,12 @@ class DataSettingsWiringTest {
         show()
         composeRule.onNode(isEditable()).performTextInput("zzzz-no-such-setting")
         composeRule.waitForIdle()
-        composeRule.onNodeWithTag("search_no_results_text").assertIsDisplayed()
+        repeat(4) {
+            composeRule.mainClock.advanceTimeBy(250)
+            Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(250))
+        }
+        composeRule.onNodeWithTag("search_no_results_text").assertDoesNotExist()
+        assertTrue(searchMessages.contains(context.getString(R.string.no_results_found)))
         composeRule.onNodeWithTag("data.card.cache", useUnmergedTree = true).assertDoesNotExist()
         composeRule.onNode(isEditable()).performTextReplacement("")
         composeRule.waitForIdle()

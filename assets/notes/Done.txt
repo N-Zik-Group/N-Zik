@@ -88,6 +88,11 @@ Improved:
   - `ListenTogetherMenu` create/join failures while offline now surface the dedicated "no connection" toast instead of a generic error (offline audit menu branch)
 
 Fixed:
+- fix(theme): restore startup colors consistently and reduce cover palette work
+  - Reconcile restored appearances synchronously with active-profile theme preferences; retain dynamic playback accents until the service has known artwork state.
+  - Use the displayed AnimatedAppearance palette for root and sheet backgrounds, removing an independently timed background fade.
+  - Quantize cover colors once on the MEDIA dispatcher while preserving reference palette, achromatic rescue, null-cover and contrast behavior.
+  - Keep legacy Settings search empty-result feedback consistent with the global and thematic toast behavior.
 - test(dialogs): align overflow assertions with wrapping footer actions
   - Verify bounds, non-overlap, wrapping, clickability and single-line labels instead of obsolete equal-width cells; all nine overflow tests pass.
 - fix(settings): use full width for Player Appearance

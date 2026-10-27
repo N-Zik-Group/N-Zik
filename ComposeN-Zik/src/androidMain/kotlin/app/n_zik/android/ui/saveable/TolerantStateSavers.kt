@@ -154,6 +154,7 @@ class TolerantStringStateSaver(private val slot: String) : Saver<MutableState<St
 class TolerantAppearanceStateSaver(
     private val fallback: () -> Appearance,
     private val slot: String = "appearance",
+    private val normalizeRestored: (Appearance) -> Appearance = { it },
 ) : Saver<MutableState<Appearance>, Any> {
 
     override fun SaverScope.save(value: MutableState<Appearance>): Any =
@@ -161,5 +162,5 @@ class TolerantAppearanceStateSaver(
 
     // The companion already reports a non-List payload, so no second log here.
     override fun restore(value: Any): MutableState<Appearance> =
-        mutableStateOf(Appearance.Companion.restore(value, fallback))
+        mutableStateOf(normalizeRestored(Appearance.Companion.restore(value, fallback)))
 }

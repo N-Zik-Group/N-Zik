@@ -144,7 +144,7 @@ fun UiSettings(navController: NavController, focus: String = "") {
             search = search,
             navController = navController,
             onCardPosition = { _, top -> burgerCardTopY = top },
-            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, content = cards) },
+            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, query = search.inputValue, content = cards) },
         )
         SettingsGroupSpacer(modifier = Modifier.height(Dimensions.bottomSpacer))
     }

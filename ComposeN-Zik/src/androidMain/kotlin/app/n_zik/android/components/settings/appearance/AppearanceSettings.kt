@@ -120,7 +120,7 @@ fun AppearanceSettings(
         AppearanceSettingsContent(
             search = search,
             navController = navController,
-            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, content = cards) },
+            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, query = search.inputValue, content = cards) },
         )
 
         SettingsGroupSpacer(

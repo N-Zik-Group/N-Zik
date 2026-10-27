@@ -149,7 +149,7 @@ fun AccountsSettings(
                     "listentogether" -> listenTogetherCardTopY = top
                 }
             },
-            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults) { cards() } },
+            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, query = search.inputValue) { cards() } },
         )
 
 

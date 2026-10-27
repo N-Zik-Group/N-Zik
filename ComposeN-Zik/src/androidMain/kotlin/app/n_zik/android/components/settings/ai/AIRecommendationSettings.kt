@@ -135,7 +135,7 @@ fun AIRecommendationSettings(
                     "statistics" -> statisticsCardTopY = top
                 }
             },
-            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults) { cards() } },
+            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, query = search.inputValue) { cards() } },
         )
 
 

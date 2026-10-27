@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.components.settings.common.LocalSettingsSearchMessage
 import app.n_zik.android.components.tab.Search
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.Modifier
@@ -63,6 +64,7 @@ import app.n_zik.android.R
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class UiSettingsWiringTest {
     @get:Rule val composeRule = createComposeRule()
+    private val searchMessages = mutableListOf<String>()
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val appearance = Appearance(
         colorPalette = DefaultDarkColorPalette,
@@ -74,6 +76,7 @@ class UiSettingsWiringTest {
     private val cardIds = listOf("interface", "theme", "font", "swipe", "home-tabs", "burger", "toolbars", "sort-menus", "reset")
 
     @Before fun setUp() {
+        searchMessages.clear()
         setActiveProfile("default", context)
         listOf("preferences", "app_settings").forEach {
             context.getSharedPreferences(it, Context.MODE_PRIVATE).edit().clear().commit()
@@ -92,7 +95,7 @@ class UiSettingsWiringTest {
 
     private fun show(focus: String = "") {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { searchMessages += it }) {
                 UiSettings(navController = mockk(relaxed = true), focus = focus)
             }
         }
@@ -101,7 +104,7 @@ class UiSettingsWiringTest {
 
     @Test fun selectedContentDoesNotNestThePageShell() {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { searchMessages += it }) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     UiSettingsContent(
                         search = Search(initialVisible = true),
@@ -159,7 +162,12 @@ class UiSettingsWiringTest {
         show()
         composeRule.onNode(isEditable()).performTextInput("zzzz-no-such-setting")
         composeRule.waitForIdle()
-        composeRule.onNodeWithTag("search_no_results_text").assertIsDisplayed()
+        repeat(4) {
+            composeRule.mainClock.advanceTimeBy(250)
+            Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(250))
+        }
+        composeRule.onNodeWithTag("search_no_results_text").assertDoesNotExist()
+        assertTrue(searchMessages.contains(context.getString(R.string.no_results_found)))
         composeRule.onNodeWithTag("ui.card.theme", useUnmergedTree = true).assertDoesNotExist()
         composeRule.onNode(isEditable()).performTextReplacement("")
         composeRule.waitForIdle()
@@ -235,7 +243,7 @@ class UiSettingsWiringTest {
     @Test fun statusBarControlBelongsToInterfaceAndKeepsItsPreference() {
         val selected = androidx.compose.runtime.mutableStateOf(setOf(R.string.settings_use_font_type))
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { searchMessages += it }) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     UiSettingsContent(
                         search = Search(initialVisible = false),

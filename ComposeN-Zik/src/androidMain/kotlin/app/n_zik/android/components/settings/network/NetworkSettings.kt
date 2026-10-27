@@ -130,7 +130,7 @@ fun NetworkSettings(
         NetworkSettingsContent(
             search, navController,
             onCardPosition = { id, y -> if (id == "offline") offlineCardTopY = y else pcServerCardTopY = y },
-            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults) { cards() } }
+            cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, query = search.inputValue) { cards() } }
         )
 
         SettingsGroupSpacer(
