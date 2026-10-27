@@ -71,7 +71,7 @@ class UiSettingsWiringTest {
         uiRoundnessShape = CircleShape,
         artistThumbnailShape = CircleShape,
     )
-    private val cardIds = listOf("theme", "interface", "font", "swipe", "home-tabs", "sort-menus", "toolbars", "burger", "reset")
+    private val cardIds = listOf("interface", "theme", "font", "swipe", "home-tabs", "burger", "toolbars", "sort-menus", "reset")
 
     @Before fun setUp() {
         setActiveProfile("default", context)
@@ -232,4 +232,28 @@ class UiSettingsWiringTest {
         composeRule.waitForIdle()
         assertTrue(preferences.getBoolean(hideStatusBarKey, false))
     }
+    @Test fun statusBarControlBelongsToInterfaceAndKeepsItsPreference() {
+        val selected = androidx.compose.runtime.mutableStateOf(setOf(R.string.settings_use_font_type))
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    UiSettingsContent(
+                        search = Search(initialVisible = false),
+                        navController = mockk(relaxed = true),
+                        selectedCards = selected.value,
+                    )
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText(context.getString(R.string.hide_status_bar)).assertDoesNotExist()
+        composeRule.runOnIdle { selected.value = setOf(R.string.user_interface) }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText(context.getString(R.string.hide_status_bar))
+            .performScrollTo().performClick()
+        composeRule.waitForIdle()
+        assertTrue(context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+            .getBoolean(hideStatusBarKey, false))
+    }
+
 }

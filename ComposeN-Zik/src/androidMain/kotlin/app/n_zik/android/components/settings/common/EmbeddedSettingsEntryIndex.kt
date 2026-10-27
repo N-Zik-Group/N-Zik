@@ -5,8 +5,8 @@ import app.n_zik.android.R
 /** Exact destinations for settings cards shared with other screens. */
 val EmbeddedSettingsEntryTargets = listOf(
     SettingsEntryTarget("embedded.youtube.use_account_for_searches", 5, R.string.youtube_music, R.string.use_account_for_searches, listOf(R.string.use_account_for_searches_description, R.string.youtube_connect_first)),
-    SettingsEntryTarget("embedded.network.download_quality_format", 6, R.string.quality, R.string.download_quality_format),
-    SettingsEntryTarget("embedded.network.update_downloads", 6, R.string.quality, R.string.update_downloads, listOf(R.string.update_downloads_description)),
+    SettingsEntryTarget("embedded.network.download_quality_format", 6, R.string.settings_download_quality, R.string.download_quality_format),
+    SettingsEntryTarget("embedded.network.update_downloads", 6, R.string.settings_download_quality, R.string.update_downloads, listOf(R.string.update_downloads_description)),
     SettingsEntryTarget("embedded.profile.face_photo_remove", 5, R.string.profile_face, R.string.face_photo_remove),
     SettingsEntryTarget("embedded.profile.module_open", 5, R.string.profile_face, R.string.module_open, keywordRes = listOf(R.string.profiles_open_desc)),
     SettingsEntryTarget("embedded.profile.face_name_source", 5, R.string.profile_face, R.string.face_name_source),

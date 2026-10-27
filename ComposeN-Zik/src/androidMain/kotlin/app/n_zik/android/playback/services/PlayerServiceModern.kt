@@ -1,5 +1,10 @@
 package app.n_zik.android.playback.services
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import app.n_zik.android.playback.services.automotive.session.AutoSessionCallback
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.listentogether.ListenTogetherClient
@@ -2782,7 +2787,10 @@ class PlayerServiceModern : MediaLibraryService(),
                     .setSmallIcon(R.drawable.ic_launcher_monochrome)
                     .build()
 
-                notificationManager?.notify(SleepTimerNotificationId, notification)
+                notificationManager?.let { manager ->
+                    manager.notify(SleepTimerNotificationId, notification)
+                    PermissionUsageJournal.record(this@PlayerServiceModern, PermissionFeature.PLAYBACK, JournalPermission.NOTIFICATIONS, PermissionEventKind.USED)
+                }
 
                 coroutineScope.launch {
                     delay(1000)

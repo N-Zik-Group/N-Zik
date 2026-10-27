@@ -54,6 +54,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -155,22 +156,35 @@ fun <T> ValueSelectorSettingsEntry(
         )
     }
 
+    val selectedValueLabel = valueText(selectedValue)
     SettingsEntry(
         title = title,
         titleSecondary = titleSecondary,
-        text = valueText(selectedValue),
+        text = selectorDescription(text, selectedValueLabel),
+        selectedValueText = selectedValueLabel,
         modifier = modifier,
         isEnabled = isEnabled,
         onClick = { isShowingDialog = true },
         trailingContent = trailingContent
     )
+}
 
-    text?.let {
+/** Removes only the selected value suffix used by existing description/value callers. */
+@PublishedApi
+internal fun selectorDescription(text: String?, selectedValueText: String): String {
+    val description = text.orEmpty().trimEnd()
+    if (selectedValueText.isEmpty()) return description
+    if (description == selectedValueText) return ""
+    return description.removeSuffix("\n$selectedValueText").trimEnd()
+}
+
+@Composable
+private fun SelectedSettingValue(text: String?) {
+    if (!text.isNullOrEmpty()) {
+        Spacer(modifier = Modifier.height(8.dp))
         BasicText(
-            text = it,
-            style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
-            modifier = Modifier
-                .padding(start = 12.dp)
+            text = stringResource(R.string.settings_current_value, text),
+            style = typography().xs.copy(color = colorPalette().text, fontWeight = FontWeight.Bold)
         )
     }
 }
@@ -289,6 +303,7 @@ fun SettingsEntry(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     isEnabled: Boolean = true,
+    selectedValueText: String? = null,
     trailingContent: (@Composable () -> Unit)? = null
 ) {
     Row(
@@ -315,6 +330,7 @@ fun SettingsEntry(
                     text = text,
                     style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
                 )
+            SelectedSettingValue(selectedValueText)
         }
 
         trailingContent?.invoke()
@@ -533,6 +549,7 @@ fun OtherSettingsEntry(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
+    selectedValueText: String? = null,
     trailingContent: (@Composable () -> Unit)? = null
 ) {
     Surface(
@@ -593,6 +610,7 @@ fun OtherSettingsEntry(
                             )
                         )
                     }
+                    SelectedSettingValue(selectedValueText)
                 }
 
                 if (trailingContent != null) {
@@ -641,9 +659,11 @@ inline fun <reified T : Enum<T>> OtherEnumValueSelectorSettingsEntry(
         )
     }
 
+    val selectedValueLabel = valueText(selectedValue)
     OtherSettingsEntry(
         title = title,
-        text = text ?: valueText(selectedValue),
+        text = selectorDescription(text, selectedValueLabel),
+        selectedValueText = selectedValueLabel,
         icon = icon,
         modifier = modifier,
         trailingContent = trailingContent,
@@ -657,7 +677,8 @@ fun OtherInfoSettingsEntry(
     title: String,
     text: String,
     icon: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selectedValueText: String? = null
 ) {
     Surface(
         modifier = modifier
@@ -714,6 +735,7 @@ fun OtherInfoSettingsEntry(
                             )
                         )
                     }
+                    SelectedSettingValue(selectedValueText)
                 }
             }
         }
@@ -728,7 +750,8 @@ fun CacheSettingsEntry(
     icon: Int,
     onClick: () -> Unit,
     onTrashClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selectedValueText: String? = null
 ) {
     Surface(
         modifier = modifier
@@ -786,6 +809,7 @@ fun CacheSettingsEntry(
                             )
                         )
                     }
+                    SelectedSettingValue(selectedValueText)
                 }
 
                 // Trash button

@@ -31,7 +31,7 @@ internal fun NetworkDownloadCard(query: String) {
 
     SettingsSectionCard(
         title = stringResource(R.string.download),
-        icon = R.drawable.arrow_down,
+        icon = R.drawable.download,
         content = {
             if (query.isBlank() || stringResource(R.string.settings_enable_autodownload_song).contains(query, true) || stringResource(R.string.auto_download_song_description).contains(query, true)) {
                 OtherSwitchSettingEntry(

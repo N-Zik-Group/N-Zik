@@ -35,7 +35,8 @@ fun GeneralLanguageCard(
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.languages.app_language"),
                 title = stringResource(R.string.app_language),
-                text = languageApp.text,
+                text = stringResource(R.string.settings_desc_general_languages_app_language),
+                selectedValueText = languageApp.text,
                 onClick = { showLanguageDialog = true },
                 icon = R.drawable.translate
             )

@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
 import app.it.fast4x.rimusic.enums.PresetsReverb
-import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.it.fast4x.rimusic.utils.audioReverbPresetKey
 import app.it.fast4x.rimusic.utils.bassboostEnabledKey
 import app.it.fast4x.rimusic.utils.bassboostLevelKey
@@ -57,9 +56,7 @@ import app.n_zik.android.uiRoundnessShape
 @Composable
 fun GeneralAudioEffectsCard(
     visible: Boolean,
-    restartService: Boolean,
     onRestartServiceSet: () -> Unit,
-    onRestartServiceClear: () -> Unit,
 ) {
     val binder = LocalPlayerServiceBinder.current
     val launchEqualizer by rememberEqualizerLauncher(audioSessionId = { binder?.player?.audioSessionId })
@@ -116,7 +113,6 @@ fun GeneralAudioEffectsCard(
                         icon = R.drawable.time
                     )
 
-                    RestartPlayerService(restartService, onRestart = { onRestartServiceClear() })
                 }
             }
 
@@ -219,7 +215,7 @@ fun GeneralAudioEffectsCard(
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.audio_effects.settings_audio_bass_boost"),
                 title = stringResource(R.string.settings_audio_bass_boost),
-                text = "",
+                text = stringResource(R.string.settings_desc_general_audio_effects_settings_audio_bass_boost),
                 isChecked = bassboostEnabled,
                 onCheckedChange = { bassboostEnabled = it },
                 icon = R.drawable.equalizer
@@ -234,7 +230,7 @@ fun GeneralAudioEffectsCard(
                     SliderSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("general.audio_effects.settings_bass_boost_level"),
                         title = stringResource(R.string.settings_bass_boost_level),
-                        text = "",
+                        text = stringResource(R.string.settings_desc_general_audio_effects_settings_bass_boost_level),
                         state = newValue,
                         onSlide = { newValue = kotlin.math.round(it * 10000f) / 10000f },
                         onSlideComplete = {
@@ -274,11 +270,11 @@ fun GeneralAudioEffectsCard(
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.audio_effects.settings_audio_reverb"),
                 title = stringResource(R.string.settings_audio_reverb),
-                text = stringResource(audioReverb.textRes),
+                text = stringResource(R.string.settings_desc_general_audio_effects_settings_audio_reverb),
+                selectedValueText = stringResource(audioReverb.textRes),
                 onClick = { showAudioReverbDialog = true },
                 icon = R.drawable.reverb
             )
-            RestartPlayerService(restartService, onRestart = { onRestartServiceClear() })
 
             if (showAudioReverbDialog) {
                 ValueSelectorDialog(

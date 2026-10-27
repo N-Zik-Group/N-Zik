@@ -1,5 +1,10 @@
 package app.n_zik.android.components.ui.screens.bridge
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -85,12 +90,14 @@ fun BridgeServerScreen(
     var permissionDenied by rememberSaveable { mutableStateOf(false) }
     // Local network permission is asked at Start time only, never at app launch
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        PermissionUsageJournal.result(context, PermissionFeature.PC_SERVER, "android.permission.ACCESS_LOCAL_NETWORK", granted)
         permissionDenied = !granted
         if (granted) BridgeServerController.start(context)
     }
     val onStart: () -> Unit = {
         val missing = BridgeServerController.missingPermission(context)
         if (missing != null) {
+            PermissionUsageJournal.request(context, PermissionFeature.PC_SERVER, missing)
             permissionLauncher.launch(missing)
         } else {
             permissionDenied = false

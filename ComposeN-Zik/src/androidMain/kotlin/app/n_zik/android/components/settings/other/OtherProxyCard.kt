@@ -74,7 +74,7 @@ internal fun OtherProxyCard(search: Search) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("other.proxy.enable_proxy"),
                     title = stringResource(R.string.enable_proxy),
-                    text = "",
+                    text = stringResource(R.string.settings_desc_other_proxy_enable_proxy),
                     isChecked = isProxyEnabled,
                     onCheckedChange = {
                         isProxyEnabled = it
@@ -97,7 +97,8 @@ internal fun OtherProxyCard(search: Search) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.proxy_mode"),
                             title = stringResource(R.string.proxy_mode),
-                            text = proxyMode.name,
+                            text = stringResource(R.string.settings_desc_other_proxy_proxy_mode),
+                            selectedValueText = proxyMode.name,
                             icon = R.drawable.server,
                             onClick = { showProxyModeDialog = true }
                         )
@@ -119,7 +120,8 @@ internal fun OtherProxyCard(search: Search) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.proxy_host"),
                             title = stringResource(R.string.proxy_host),
-                            text = proxyHost,
+                            text = stringResource(R.string.settings_desc_other_proxy_proxy_host),
+                            selectedValueText = proxyHost,
                             icon = R.drawable.server,
                             onClick = { showProxyHostDialog = true }
                         )
@@ -143,7 +145,8 @@ internal fun OtherProxyCard(search: Search) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.proxy_port"),
                             title = stringResource(R.string.proxy_port),
-                            text = proxyPort.toString(),
+                            text = stringResource(R.string.settings_desc_other_proxy_proxy_port),
+                            selectedValueText = proxyPort.toString(),
                             icon = R.drawable.server,
                             onClick = { showProxyPortDialog = true }
                         )
@@ -167,7 +170,8 @@ internal fun OtherProxyCard(search: Search) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.settings_proxy_username"),
                             title = stringResource(R.string.settings_proxy_username),
-                            text = if (proxyUsername.isBlank()) "None" else proxyUsername,
+                            text = stringResource(R.string.settings_desc_other_proxy_settings_proxy_username),
+                            selectedValueText = if (proxyUsername.isBlank()) "None" else proxyUsername,
                             icon = R.drawable.server,
                             onClick = { showProxyUsernameDialog = true }
                         )
@@ -191,7 +195,8 @@ internal fun OtherProxyCard(search: Search) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.settings_proxy_password"),
                             title = stringResource(R.string.settings_proxy_password),
-                            text = if (proxyPassword.isBlank()) "None" else "••••••",
+                            text = stringResource(R.string.settings_desc_other_proxy_settings_proxy_password),
+                            selectedValueText = if (proxyPassword.isBlank()) "None" else "••••••",
                             icon = R.drawable.server,
                             onClick = { showProxyPasswordDialog = true }
                         )
@@ -216,7 +221,8 @@ internal fun OtherProxyCard(search: Search) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.settings_region_override"),
                             title = stringResource(R.string.settings_region_override),
-                            text = if (regionOverride.isBlank()) "Auto (from phone)" else regionOverride,
+                            text = stringResource(R.string.settings_desc_other_proxy_settings_region_override),
+                            selectedValueText = if (regionOverride.isBlank()) "Auto (from phone)" else regionOverride,
                             icon = R.drawable.server,
                             onClick = { showRegionOverrideDialog = true }
                         )

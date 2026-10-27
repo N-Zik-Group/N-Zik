@@ -20,6 +20,7 @@ import app.it.fast4x.rimusic.enums.SearchDisplayOrder
 import app.it.fast4x.rimusic.enums.TransitionEffect
 import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.utils.disableNavigationBackStackKey
+import app.it.fast4x.rimusic.utils.hideStatusBarKey
 import app.it.fast4x.rimusic.utils.indexNavigationTabKey
 import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.messageTypeKey
@@ -48,6 +49,7 @@ import app.n_zik.android.R
 /** Owns the interface settings and their local dialogs. */
 @Composable
 internal fun UiInterfaceCard(search: Search) {
+    var hideStatusBar by rememberPreference(hideStatusBarKey, false)
     val uiType by rememberPreference(UiTypeKey, UiType.RiMusic)
     var indexNavigationTab by rememberPreference(
         indexNavigationTabKey,
@@ -66,6 +68,7 @@ internal fun UiInterfaceCard(search: Search) {
     var searchDisplayOrder by rememberPreference(searchDisplayOrderKey, SearchDisplayOrder.SuggestionsFirst)
 
     val navSearchContextMatch = search.inputValue.isBlank() ||
+        stringResource(R.string.hide_status_bar).contains(search.inputValue, true) ||
         stringResource(R.string.search_history_pages).contains(search.inputValue, true) ||
         stringResource(R.string.search_history_pages_description).contains(search.inputValue, true) ||
         stringResource(R.string.search_display_order).contains(search.inputValue, true) ||
@@ -88,12 +91,24 @@ internal fun UiInterfaceCard(search: Search) {
             title = stringResource(R.string.user_interface),
             icon = R.drawable.ui,
             content = {
+                if (search.inputValue.isBlank() || stringResource(R.string.hide_status_bar).contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.hide_status_bar"),
+                        title = stringResource(R.string.hide_status_bar),
+                        text = stringResource(R.string.settings_desc_ui_settings_use_font_type_hide_status_bar),
+                        isChecked = hideStatusBar,
+                        onCheckedChange = { hideStatusBar = it },
+                        icon = R.drawable.eye_off
+                    )
+                }
+
                 var showNavPosDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.navigation_bar_position).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.navigation_bar_position"),
                         title = stringResource(R.string.navigation_bar_position),
-                        text = navigationBarPosition.text,
+                        text = stringResource(R.string.settings_desc_ui_user_interface_navigation_bar_position),
+                        selectedValueText = navigationBarPosition.text,
                         icon = R.drawable.locate,
                         onClick = { if (uiType != UiType.ViMusic) showNavPosDialog = true }
                     )
@@ -114,7 +129,8 @@ internal fun UiInterfaceCard(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.navigation_bar_type"),
                         title = stringResource(R.string.navigation_bar_type),
-                        text = navigationBarType.text,
+                        text = stringResource(R.string.settings_desc_ui_user_interface_navigation_bar_type),
+                        selectedValueText = navigationBarType.text,
                         icon = R.drawable.burger,
                         onClick = { showNavTypeDialog = true }
                     )
@@ -135,7 +151,8 @@ internal fun UiInterfaceCard(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.player_position"),
                         title = stringResource(R.string.player_position),
-                        text = playerPosition.text,
+                        text = stringResource(R.string.settings_desc_ui_user_interface_player_position),
+                        selectedValueText = playerPosition.text,
                         icon = R.drawable.position,
                         onClick = { showPlayerPosDialog = true }
                     )
@@ -156,7 +173,8 @@ internal fun UiInterfaceCard(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.menu_style"),
                         title = stringResource(R.string.menu_style),
-                        text = menuStyle.text,
+                        text = stringResource(R.string.settings_desc_ui_user_interface_menu_style),
+                        selectedValueText = menuStyle.text,
                         icon = R.drawable.reorder,
                         onClick = { showMenuStyleDialog = true }
                     )
@@ -177,7 +195,8 @@ internal fun UiInterfaceCard(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.message_type"),
                         title = stringResource(R.string.message_type),
-                        text = messageType.text,
+                        text = stringResource(R.string.settings_desc_ui_user_interface_message_type),
+                        selectedValueText = messageType.text,
                         icon = R.drawable.information,
                         onClick = { showMessageTypeDialog = true }
                     )
@@ -198,7 +217,8 @@ internal fun UiInterfaceCard(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.default_page"),
                         title = stringResource(R.string.default_page),
-                        text = indexNavigationTab.text,
+                        text = stringResource(R.string.settings_desc_ui_user_interface_default_page),
+                        selectedValueText = indexNavigationTab.text,
                         icon = R.drawable.star_brilliant,
                         onClick = { showDefPageDialog = true }
                     )
@@ -229,7 +249,8 @@ internal fun UiInterfaceCard(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.transition_effect"),
                         title = stringResource(R.string.transition_effect),
-                        text = transitionEffect.text,
+                        text = stringResource(R.string.settings_desc_ui_user_interface_transition_effect),
+                        selectedValueText = transitionEffect.text,
                         icon = R.drawable.images_sharp,
                         onClick = { showTransDialog = true }
                     )
@@ -303,7 +324,7 @@ internal fun UiInterfaceCard(search: Search) {
                         OtherSwitchSettingEntry(
                             modifier = Modifier.settingsSearchTarget("ui.user_interface.show_statistics_in_navigation_bar"),
                             title = stringResource(R.string.show_statistics_in_navigation_bar),
-                            text = "",
+                            text = stringResource(R.string.settings_desc_ui_user_interface_show_statistics_in_navigation_bar),
                             isChecked = showStatsInNavbar,
                             onCheckedChange = { showStatsInNavbar = it },
                             icon = R.drawable.stats_chart
@@ -315,7 +336,7 @@ internal fun UiInterfaceCard(search: Search) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.show_floating_icon"),
                         title = stringResource(R.string.show_floating_icon),
-                        text = "",
+                        text = stringResource(R.string.settings_desc_ui_user_interface_show_floating_icon),
                         isChecked = showFloatingIcon,
                         onCheckedChange = { showFloatingIcon = it },
                         icon = R.drawable.maximize

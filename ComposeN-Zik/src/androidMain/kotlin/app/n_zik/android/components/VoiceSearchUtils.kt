@@ -1,5 +1,10 @@
 package app.n_zik.android.components
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -32,6 +37,7 @@ class VoiceSearchUtils(
     // so every RecognitionListener callback below already runs on Main — no Handler needed.
     private val recognitionListener = object : RecognitionListener {
         override fun onReadyForSpeech(params: Bundle?) {
+            PermissionUsageJournal.record(context, PermissionFeature.VOICE_SEARCH, JournalPermission.MICROPHONE, PermissionEventKind.USED)
             Timber.tag("VoiceSearchUtils").d("Ready")
             hasReceivedResults = false
             isCancelled = false

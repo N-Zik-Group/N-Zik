@@ -155,7 +155,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("accounts.youtube_music.enable_youtube_music_login"),
                         title = stringResource(R.string.enable_youtube_music_login),
-                        text = "",
+                        text = stringResource(R.string.settings_desc_accounts_youtube_music_enable_youtube_music_login),
                         isChecked = isYouTubeLoginEnabled,
                         onCheckedChange = {
                             isYouTubeLoginEnabled = it
@@ -349,7 +349,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                             OtherSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget(if (isLoggedIn) "accounts.youtube_music.account_logoff" else "accounts.youtube_music.account_login"),
                                 title = if (isLoggedIn) stringResource(R.string.account_logoff) else stringResource(R.string.account_login),
-                                text = "",
+                                text = stringResource(R.string.settings_desc_accounts_youtube_music_account_login),
                                 icon = if (isLoggedIn) R.drawable.logout else R.drawable.person,
                                 onClick = {
                                     if (isLoggedIn) {

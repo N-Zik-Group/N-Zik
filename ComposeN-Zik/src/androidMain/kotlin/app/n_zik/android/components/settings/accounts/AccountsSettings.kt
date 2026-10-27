@@ -3,7 +3,6 @@ package app.n_zik.android.components.settings.accounts
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,6 +47,7 @@ import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.LastFmSettingsCard
 import app.n_zik.android.components.settings.ListenTogetherSettingsCard
 import app.n_zik.android.components.settings.ProfileFaceCard
+import app.n_zik.android.components.settings.common.SettingsCardSlot
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsGroupSpacer
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
@@ -173,33 +173,33 @@ internal fun AccountsSettingsContent(
 ) {
     cardsContainer {
         if (selectedCards == null || R.string.profile_face in selectedCards) {
-            Box(modifier = cardModifier(R.string.profile_face).onGloballyPositioned { onCardPosition("profiles", it.positionInRoot().y) }) {
+            SettingsCardSlot(R.string.profile_face, order = 0, modifier = { cardModifier(R.string.profile_face).onGloballyPositioned { onCardPosition("profiles", it.positionInRoot().y) } }) {
                 ProfileFaceCard(onOpenProfiles = { navController.navigate(NavRoutes.profiles.name) })
             }
         }
         if (selectedCards == null || R.string.youtube_music in selectedCards) {
-            Box(modifier = cardModifier(R.string.youtube_music)) {
+            SettingsCardSlot(R.string.youtube_music, order = 1, modifier = { cardModifier(R.string.youtube_music) }) {
                 AccountsYouTubeCard(search)
             }
         }
         AccountsSyncCards(selectedCards, cardModifier)
         if (selectedCards == null || R.string.social_lastfm in selectedCards) {
-            Box(modifier = cardModifier(R.string.social_lastfm)) {
+            SettingsCardSlot(R.string.social_lastfm, order = 6, modifier = { cardModifier(R.string.social_lastfm) }) {
                 LastFmSettingsCard()
             }
         }
-        if (selectedCards == null || R.string.listen_together in selectedCards) {
-            Box(modifier = cardModifier(R.string.listen_together).onGloballyPositioned { onCardPosition("listentogether", it.positionInRoot().y) }) {
-                ListenTogetherSettingsCard(onOpenScreen = { navController.navigate(NavRoutes.listenTogether.name) })
-            }
-        }
         if (selectedCards == null || R.string.social_discord in selectedCards) {
-            Box(modifier = cardModifier(R.string.social_discord)) {
+            SettingsCardSlot(R.string.social_discord, order = 7, modifier = { cardModifier(R.string.social_discord) }) {
                 AccountsDiscordCard(search)
             }
         }
+        if (selectedCards == null || R.string.listen_together in selectedCards) {
+            SettingsCardSlot(R.string.listen_together, order = 8, modifier = { cardModifier(R.string.listen_together).onGloballyPositioned { onCardPosition("listentogether", it.positionInRoot().y) } }) {
+                ListenTogetherSettingsCard(onOpenScreen = { navController.navigate(NavRoutes.listenTogether.name) })
+            }
+        }
         if (selectedCards == null || R.string.settings_reset in selectedCards) {
-            Box(modifier = cardModifier(R.string.settings_reset)) {
+            SettingsCardSlot(R.string.settings_reset, order = 9, modifier = { cardModifier(R.string.settings_reset) }) {
                 AccountsResetCard(search)
             }
         }

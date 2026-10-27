@@ -2,7 +2,6 @@ package app.n_zik.android.components.settings.ai
 
 import kotlin.math.roundToInt
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,6 +38,7 @@ import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.search.filterSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.RewindSettingsCard
+import app.n_zik.android.components.settings.common.SettingsCardSlot
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsGroupSpacer
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
@@ -159,42 +159,42 @@ internal fun AIRecommendationSettingsContent(
     QuickPicksContentSettingsDialog.Render()
     cardsContainer {
         if (selectedCards == null || R.string.tab_general in selectedCards) {
-            Box(modifier = cardModifier(R.string.tab_general)) {
-                AiGeneralCard(search)
+            SettingsCardSlot(R.string.tab_general, modifier = { cardModifier(R.string.tab_general) }) {
+                AiGeneralCard(search, showRewindMaster = selectedCards == null)
             }
         }
         if (selectedCards == null || R.string.quick_picks in selectedCards) {
-            Box(modifier = cardModifier(R.string.quick_picks)) {
+            SettingsCardSlot(R.string.quick_picks, modifier = { cardModifier(R.string.quick_picks) }) {
                 AiQuickPicksCard(search)
             }
         }
         if (selectedCards == null || R.string.rw_settings_title in selectedCards) {
-            Box(modifier = cardModifier(R.string.rw_settings_title).onGloballyPositioned { onCardPosition("rewind", it.positionInRoot().y) }) {
+            SettingsCardSlot(R.string.rw_settings_title, modifier = { cardModifier(R.string.rw_settings_title).onGloballyPositioned { onCardPosition("rewind", it.positionInRoot().y) } }) {
                 RewindSettingsCard(onOpenRewind = { navController.navigate(NavRoutes.rewindHome.name) })
             }
         }
         if (selectedCards == null || R.string.smart_recommendations in selectedCards) {
-            Box(modifier = cardModifier(R.string.smart_recommendations)) {
+            SettingsCardSlot(R.string.smart_recommendations, modifier = { cardModifier(R.string.smart_recommendations) }) {
                 AiRecommendationsCard(search)
             }
         }
         if (selectedCards == null || R.string.statistics in selectedCards) {
-            Box(modifier = cardModifier(R.string.statistics).onGloballyPositioned { onCardPosition("statistics", it.positionInRoot().y) }) {
+            SettingsCardSlot(R.string.statistics, modifier = { cardModifier(R.string.statistics).onGloballyPositioned { onCardPosition("statistics", it.positionInRoot().y) } }) {
                 AiStatisticsCard(search, navController)
             }
         }
         if (selectedCards == null || R.string.playlist_top in selectedCards) {
-            Box(modifier = cardModifier(R.string.playlist_top)) {
+            SettingsCardSlot(R.string.playlist_top, modifier = { cardModifier(R.string.playlist_top) }) {
                 AiTopPlaylistsCard(search)
             }
         }
         if (selectedCards == null || R.string.tab_data in selectedCards) {
-            Box(modifier = cardModifier(R.string.tab_data)) {
+            SettingsCardSlot(R.string.tab_data, modifier = { cardModifier(R.string.tab_data) }) {
                 AiDataCard(search)
             }
         }
         if (selectedCards == null || R.string.settings_reset in selectedCards) {
-            Box(modifier = cardModifier(R.string.settings_reset)) {
+            SettingsCardSlot(R.string.settings_reset, modifier = { cardModifier(R.string.settings_reset) }) {
                 AiResetCard(search)
             }
         }

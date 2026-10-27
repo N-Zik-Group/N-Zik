@@ -54,7 +54,8 @@ internal fun AiStatisticsCard(search: Search, navController: NavController, modi
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("ai.statistics.statistics_max_number_of_items"),
                     title = stringResource(R.string.statistics_max_number_of_items),
-                    text = maxStatisticsItems.displayName(maxStatisticsItemsCustomValue),
+                    text = stringResource(R.string.settings_desc_ai_statistics_statistics_max_number_of_items),
+                    selectedValueText = maxStatisticsItems.displayName(maxStatisticsItemsCustomValue),
                     icon = R.drawable.musical_notes,
                     onClick = { showStatisticsDialog = true }
                 )

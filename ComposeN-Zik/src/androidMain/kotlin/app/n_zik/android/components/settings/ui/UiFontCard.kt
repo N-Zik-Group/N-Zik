@@ -13,7 +13,6 @@ import androidx.compose.ui.res.stringResource
 import app.it.fast4x.rimusic.enums.FontType
 import app.it.fast4x.rimusic.utils.applyFontPaddingKey
 import app.it.fast4x.rimusic.utils.fontTypeKey
-import app.it.fast4x.rimusic.utils.hideStatusBarKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.useSystemFontKey
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
@@ -28,7 +27,6 @@ import app.n_zik.android.R
 /** Owns the font settings and their local dialogs. */
 @Composable
 internal fun UiFontCard(search: Search) {
-    var hideStatusBar by rememberPreference(hideStatusBarKey, false)
     var fontType by rememberPreference(fontTypeKey, FontType.Rubik)
     var useSystemFont by rememberPreference(useSystemFontKey, false)
     var applyFontPadding by rememberPreference(applyFontPaddingKey, false)
@@ -53,7 +51,8 @@ internal fun UiFontCard(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.settings_use_font_type"),
                         title = stringResource(R.string.settings_use_font_type),
-                        text = fontType.name,
+                        text = stringResource(R.string.settings_desc_ui_settings_use_font_type_settings_use_font_type),
+                        selectedValueText = fontType.name,
                         icon = R.drawable.text,
                         onClick = { showFontDialog = true }
                     )
@@ -91,16 +90,7 @@ internal fun UiFontCard(search: Search) {
                     )
                 }
 
-                if (search.inputValue.isBlank() || stringResource(R.string.hide_status_bar).contains(search.inputValue, true)) {
-                    OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.hide_status_bar"),
-                        title = stringResource(R.string.hide_status_bar),
-                        text = "",
-                        isChecked = hideStatusBar,
-                        onCheckedChange = { hideStatusBar = it },
-                        icon = R.drawable.eye_off
-                    )
-                }
+
             }
         )
     }

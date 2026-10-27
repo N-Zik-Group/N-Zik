@@ -2,7 +2,6 @@ package app.n_zik.android.components.settings.appearance
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -36,6 +35,8 @@ import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.filterSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
+import app.n_zik.android.components.settings.common.SettingsCardSlot
+import app.n_zik.android.components.settings.common.SettingsSourceFooter
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
 import app.n_zik.android.components.settings.common.visibleCardTitleRes
 import app.n_zik.android.components.settings.common.settingsSearchContent
@@ -166,55 +167,57 @@ internal fun AppearanceSettingsContent(
     MiniPlayerButtonsSettingsDialog.Render()
     cardsContainer {
         if (selectedCards == null || R.string.player_presets_and_layout in selectedCards) {
-            Box(modifier = cardModifier(R.string.player_presets_and_layout)) {
+            SettingsCardSlot(R.string.player_presets_and_layout, modifier = { cardModifier(R.string.player_presets_and_layout) }) {
                 AppearancePresetsCard(search)
             }
         }
         if (selectedCards == null || R.string.cover_and_thumbnail in selectedCards) {
-            Box(modifier = cardModifier(R.string.cover_and_thumbnail)) {
+            SettingsCardSlot(R.string.cover_and_thumbnail, modifier = { cardModifier(R.string.cover_and_thumbnail) }) {
                 AppearanceCoverCard(search)
             }
         }
-        if (selectedCards == null || R.string.timeline_and_controls in selectedCards) {
-            Box(modifier = cardModifier(R.string.timeline_and_controls)) {
-                AppearanceTimelineCard(search)
-            }
-        }
         if (selectedCards == null || R.string.colors_and_background in selectedCards) {
-            Box(modifier = cardModifier(R.string.colors_and_background)) {
+            SettingsCardSlot(R.string.colors_and_background, modifier = { cardModifier(R.string.colors_and_background) }) {
                 AppearanceColorsCard(search)
             }
         }
+        if (selectedCards == null || R.string.timeline_and_controls in selectedCards) {
+            SettingsCardSlot(R.string.timeline_and_controls, modifier = { cardModifier(R.string.timeline_and_controls) }) {
+                AppearanceTimelineCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.player_action_bar in selectedCards) {
+            SettingsCardSlot(R.string.player_action_bar, modifier = { cardModifier(R.string.player_action_bar) }) {
+                AppearanceActionBarCard(search)
+            }
+        }
         if (selectedCards == null || R.string.player_behavior_and_visuals in selectedCards) {
-            Box(modifier = cardModifier(R.string.player_behavior_and_visuals)) {
+            SettingsCardSlot(R.string.player_behavior_and_visuals, modifier = { cardModifier(R.string.player_behavior_and_visuals) }) {
                 AppearanceBehaviorCard(search)
             }
         }
         if (selectedCards == null || R.string.txt_lyrics in selectedCards) {
-            Box(modifier = cardModifier(R.string.txt_lyrics)) {
+            SettingsCardSlot(R.string.txt_lyrics, modifier = { cardModifier(R.string.txt_lyrics) }) {
                 AppearanceLyricsCard(search)
             }
         }
-        if (selectedCards == null || R.string.player_action_bar in selectedCards) {
-            Box(modifier = cardModifier(R.string.player_action_bar)) {
-                AppearanceActionBarCard(search)
-            }
-        }
         if (selectedCards == null || R.string.full_screen_lyrics_components in selectedCards) {
-            Box(modifier = cardModifier(R.string.full_screen_lyrics_components)) {
+            SettingsCardSlot(R.string.full_screen_lyrics_components, modifier = { cardModifier(R.string.full_screen_lyrics_components) }) {
                 AppearanceFullscreenLyricsCard(search)
             }
         }
         if (selectedCards == null || R.string.notification_player in selectedCards) {
-            Box(modifier = cardModifier(R.string.notification_player)) {
+            SettingsCardSlot(R.string.notification_player, modifier = { cardModifier(R.string.notification_player) }) {
                 AppearanceNotificationCard(search, restartState)
             }
         }
         if (selectedCards == null || R.string.settings_reset in selectedCards) {
-            Box(modifier = cardModifier(R.string.settings_reset)) {
+            SettingsCardSlot(R.string.settings_reset, modifier = { cardModifier(R.string.settings_reset) }) {
                 AppearanceResetCard(search, restartState)
             }
         }
     }
-    RestartPlayerService(restartService, onRestart = { restartService = false })
+    SettingsCardSlot(SettingsSourceFooter) {
+        RestartPlayerService(restartService, onRestart = { restartService = false })
+    }
 }

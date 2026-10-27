@@ -20,7 +20,7 @@ import app.n_zik.android.utils.rememberDataStoreBooleanPreference
 /** Preserves the original General settings and actions. */
 @UnstableApi
 @Composable
-internal fun AiGeneralCard(search: Search) {
+internal fun AiGeneralCard(search: Search, showRewindMaster: Boolean = true) {
     var enableQuickPicksPage by rememberPreference(enableQuickPicksPageKey, true)
     val rewindEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_ENABLED, true)
     val context = LocalContext.current
@@ -34,7 +34,7 @@ internal fun AiGeneralCard(search: Search) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("ai.tab_general.enable_quick_picks_page"),
                     title = stringResource(R.string.enable_quick_picks_page),
-                    text = "",
+                    text = stringResource(R.string.settings_desc_ai_tab_general_enable_quick_picks_page),
                     isChecked = enableQuickPicksPage,
                     onCheckedChange = {
                         enableQuickPicksPage = it
@@ -42,7 +42,7 @@ internal fun AiGeneralCard(search: Search) {
                     icon = R.drawable.sparkles
                 )
             }
-            if (search.inputValue.isBlank() || stringResource(R.string.rw_settings_master).contains(search.inputValue, true)) {
+            if (showRewindMaster && (search.inputValue.isBlank() || stringResource(R.string.rw_settings_master).contains(search.inputValue, true))) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("ai.tab_general.rw_settings_master"),
                     title = stringResource(R.string.rw_settings_master),

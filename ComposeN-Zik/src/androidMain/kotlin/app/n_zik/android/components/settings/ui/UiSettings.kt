@@ -4,7 +4,6 @@ import kotlin.math.roundToInt
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -56,6 +55,7 @@ import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.settings.BurgerMenuSettingsCard
+import app.n_zik.android.components.settings.common.SettingsCardSlot
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
@@ -180,44 +180,33 @@ internal fun UiSettingsContent(
     LocalPlaylistSortSettingsDialog.Render()
     LocalPlaylistToolbarSettingsDialog.Render()
     cardsContainer {
-        if (selectedCards == null || R.string.theme in selectedCards) {
-            Box(modifier = cardModifier(R.string.theme)) {
-                UiThemeCard(search)
-            }
-        }
         if (selectedCards == null || R.string.user_interface in selectedCards) {
-            Box(modifier = cardModifier(R.string.user_interface)) {
+            SettingsCardSlot(R.string.user_interface, modifier = { cardModifier(R.string.user_interface) }) {
                 UiInterfaceCard(search)
             }
         }
+        if (selectedCards == null || R.string.theme in selectedCards) {
+            SettingsCardSlot(R.string.theme, modifier = { cardModifier(R.string.theme) }) {
+                UiThemeCard(search)
+            }
+        }
         if (selectedCards == null || R.string.settings_use_font_type in selectedCards) {
-            Box(modifier = cardModifier(R.string.settings_use_font_type)) {
+            SettingsCardSlot(R.string.settings_use_font_type, modifier = { cardModifier(R.string.settings_use_font_type) }) {
                 UiFontCard(search)
             }
         }
         if (selectedCards == null || R.string.swipe_to_action in selectedCards) {
-            Box(modifier = cardModifier(R.string.swipe_to_action)) {
+            SettingsCardSlot(R.string.swipe_to_action, modifier = { cardModifier(R.string.swipe_to_action) }) {
                 UiSwipeCard(search)
             }
         }
         if (selectedCards == null || R.string.home_tabs_settings in selectedCards) {
-            Box(modifier = cardModifier(R.string.home_tabs_settings)) {
+            SettingsCardSlot(R.string.home_tabs_settings, modifier = { cardModifier(R.string.home_tabs_settings) }) {
                 UiHomeTabsCard(search)
             }
         }
-        if (selectedCards == null || R.string.sort_menu in selectedCards) {
-            Box(modifier = cardModifier(R.string.sort_menu)) {
-                UiSortMenusCard(search)
-            }
-        }
-        if (selectedCards == null || R.string.toolbar in selectedCards) {
-            Box(modifier = cardModifier(R.string.toolbar)) {
-                UiToolbarsCard(search)
-            }
-        }
-
         if (selectedCards == null || R.string.burger_menu in selectedCards) {
-            Box(modifier = cardModifier(R.string.burger_menu)) {
+            SettingsCardSlot(R.string.burger_menu, modifier = { cardModifier(R.string.burger_menu) }) {
                 val burgerSearchContextMatch = search.inputValue.isBlank() ||
                     stringResource(R.string.burger_menu).contains(search.inputValue, true) ||
                     stringResource(R.string.burger_menu_customize).contains(search.inputValue, true)
@@ -233,8 +222,18 @@ internal fun UiSettingsContent(
                 }
             }
         }
+        if (selectedCards == null || R.string.toolbar in selectedCards) {
+            SettingsCardSlot(R.string.toolbar, modifier = { cardModifier(R.string.toolbar) }) {
+                UiToolbarsCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.sort_menu in selectedCards) {
+            SettingsCardSlot(R.string.sort_menu, modifier = { cardModifier(R.string.sort_menu) }) {
+                UiSortMenusCard(search)
+            }
+        }
         if (selectedCards == null || R.string.settings_reset in selectedCards) {
-            Box(modifier = cardModifier(R.string.settings_reset)) {
+            SettingsCardSlot(R.string.settings_reset, modifier = { cardModifier(R.string.settings_reset) }) {
                 UiResetCard(search)
             }
         }

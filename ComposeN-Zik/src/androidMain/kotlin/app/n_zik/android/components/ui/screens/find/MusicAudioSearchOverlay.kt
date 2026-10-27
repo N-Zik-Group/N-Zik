@@ -1,5 +1,10 @@
 package app.n_zik.android.components.ui.screens.find
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -186,6 +191,8 @@ fun MusicAudioSearchOverlay(
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
+        PermissionUsageJournal.record(context, PermissionFeature.MUSIC_RECOGNITION, JournalPermission.MICROPHONE,
+            if (granted) PermissionEventKind.GRANTED else PermissionEventKind.DENIED)
         if (granted) startListening()
         else state = FindUiState.Error(context.getString(R.string.find_error_microphone_permission))
     }
@@ -221,7 +228,10 @@ fun MusicAudioSearchOverlay(
             context, Manifest.permission.RECORD_AUDIO
         ) == PackageManager.PERMISSION_GRANTED
         if (granted) startListening()
-        else permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        else {
+            PermissionUsageJournal.record(context, PermissionFeature.MUSIC_RECOGNITION, JournalPermission.MICROPHONE, PermissionEventKind.REQUESTED)
+            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
     }
 
     DisposableEffect(Unit) { onDispose { recognitionJob?.cancel(); recorder.stop() } }

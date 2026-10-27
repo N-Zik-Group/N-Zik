@@ -33,24 +33,18 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-/**
- * Download quality setting, independent from the streaming audio quality.
- * Renders a settings entry showing the currently selected [DownloadQualityFormat]
- * and a value selector dialog to change it.
- *
- * @param onQualityChanged invoked whenever a value is selected, so the screen can surface
- * the same "restart player service" prompt as the audio quality change
- */
+/** Download quality selector with the optional effective automatic quality supplied by its host. */
 @Composable
-fun DownloadQualityEntry(onQualityChanged: () -> Unit = {}) {
+fun DownloadQualityEntry(automaticQualityText: String? = null, onQualityChanged: () -> Unit = {}) {
     var dialogVisible by rememberSaveable { mutableStateOf(false) }
     var downloadQualityFormat by rememberPreference(downloadQualityFormatKey, DownloadQualityFormat.Auto)
 
     OtherSettingsEntry(
         modifier = Modifier.settingsSearchTarget("embedded.network.download_quality_format"),
         title = stringResource(R.string.download_quality_format),
-        text = when (downloadQualityFormat) {
-            DownloadQualityFormat.Auto -> stringResource(R.string.audio_quality_automatic)
+        text = stringResource(R.string.settings_desc_embedded_network_download_quality_format),
+        selectedValueText = when (downloadQualityFormat) {
+            DownloadQualityFormat.Auto -> automaticQualityText ?: stringResource(R.string.audio_quality_automatic)
             DownloadQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
             DownloadQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
         },
@@ -80,11 +74,7 @@ fun DownloadQualityEntry(onQualityChanged: () -> Unit = {}) {
     }
 }
 
-/**
- * "Update downloads" entry: re-downloads every completed download that does not match the
- * selected [DownloadQualityFormat]. Shows a toast when nothing is non-compliant, otherwise a
- * confirmation dialog with the number of affected downloads.
- */
+/** Confirms re-downloading completed downloads that do not match the selected quality. */
 @UnstableApi
 @Composable
 fun UpdateDownloadsButton() {

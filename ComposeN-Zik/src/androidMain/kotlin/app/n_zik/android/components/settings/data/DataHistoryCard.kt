@@ -90,7 +90,8 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("data.history.clear_search_history"),
                     title = stringResource(R.string.clear_search_history),
-                    text = if (queriesCount > 0) {
+                    text = stringResource(R.string.settings_desc_data_history_clear_search_history),
+                    selectedValueText = if (queriesCount > 0) {
                         "${stringResource(R.string.delete)} " + queriesCount + stringResource(R.string.search_queries)
                     } else {
                         stringResource(R.string.history_is_empty)
@@ -107,7 +108,8 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("data.history.clear_listen_history"),
                     title = stringResource(R.string.clear_listen_history),
-                    text = if (eventsCount > 0) {
+                    text = stringResource(R.string.settings_desc_data_history_clear_listen_history),
+                    selectedValueText = if (eventsCount > 0) {
                         stringResource(R.string.delete_playback_events, eventsCount.toString())
                     } else {
                         stringResource(R.string.history_is_empty)

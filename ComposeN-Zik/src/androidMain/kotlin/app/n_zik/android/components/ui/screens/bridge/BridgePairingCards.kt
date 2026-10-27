@@ -1,5 +1,10 @@
 package app.n_zik.android.components.ui.screens.bridge
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import android.Manifest
 import android.content.pm.PackageManager
 import android.text.format.DateFormat
@@ -89,6 +94,7 @@ internal fun PairPcCard(running: BridgeState.Running, code: PairingCode?) {
 
     val scanLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
         val contents = result.contents ?: return@rememberLauncherForActivityResult
+        PermissionUsageJournal.record(context, PermissionFeature.PC_PAIRING, JournalPermission.CAMERA, PermissionEventKind.USED)
         when (val parsed = PairingQrPayload.parse(contents)) {
             is PairingQrPayload.ParseResult.Valid -> {
                 message = null
@@ -110,12 +116,16 @@ internal fun PairPcCard(running: BridgeState.Running, code: PairingCode?) {
         )
     }
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        PermissionUsageJournal.result(context, PermissionFeature.PC_PAIRING, Manifest.permission.CAMERA, granted)
         if (granted) launchScan() else message = PairingMessage.CameraDenied
     }
     val onScan: () -> Unit = {
         message = null
         val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-        if (granted) launchScan() else cameraLauncher.launch(Manifest.permission.CAMERA)
+        if (granted) launchScan() else {
+            PermissionUsageJournal.request(context, PermissionFeature.PC_PAIRING, Manifest.permission.CAMERA)
+            cameraLauncher.launch(Manifest.permission.CAMERA)
+        }
     }
 
     // Pairing mode closed (e.g. after a successful pairing): the pending result line goes with it

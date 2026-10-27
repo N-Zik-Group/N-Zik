@@ -65,7 +65,7 @@ internal fun AboutContributorsCard() {
                             .settingsSearchTarget("about.contributors.translators")
                             .fillMaxWidth()
                             .clip(uiRoundnessShape())
-                            .clip(uiRoundnessShape()).clickable { translatorsExpanded = !translatorsExpanded }
+                            .clickable { translatorsExpanded = !translatorsExpanded }
                             .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -78,10 +78,12 @@ internal fun AboutContributorsCard() {
                                 .graphicsLayer(rotationZ = translatorsRotation)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        BasicText(
-                            text = "${countTranslators()} " + stringResource(R.string.translators),
-                            style = typography().xs.semiBold.copy(color = colorPalette().textSecondary)
-                        )
+                        Column {
+                            BasicText(
+                                text = "${countTranslators()} " + stringResource(R.string.translators),
+                                style = typography().xs.semiBold.copy(color = colorPalette().textSecondary)
+                            )
+                        }
                     }
 
                     AnimatedVisibility(
@@ -117,7 +119,7 @@ internal fun AboutContributorsCard() {
                             .settingsSearchTarget("about.contributors.about_developers_designers")
                             .fillMaxWidth()
                             .clip(uiRoundnessShape())
-                            .clip(uiRoundnessShape()).clickable { developersExpanded = !developersExpanded }
+                            .clickable { developersExpanded = !developersExpanded }
                             .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -130,10 +132,12 @@ internal fun AboutContributorsCard() {
                                 .graphicsLayer(rotationZ = developersRotation)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        BasicText(
-                            text = "${countDevelopers()} ${stringResource(R.string.about_developers_designers)}",
-                            style = typography().xs.semiBold.copy(color = colorPalette().textSecondary)
-                        )
+                        Column {
+                            BasicText(
+                                text = "${countDevelopers()} ${stringResource(R.string.about_developers_designers)}",
+                                style = typography().xs.semiBold.copy(color = colorPalette().textSecondary)
+                            )
+                        }
                     }
 
                     AnimatedVisibility(

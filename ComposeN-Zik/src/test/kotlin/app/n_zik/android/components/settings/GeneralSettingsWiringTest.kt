@@ -284,4 +284,78 @@ class GeneralSettingsWiringTest {
                 .isNotEmpty()
         )
     }
+    @Test fun autoLoadRemainsFunctionalWhenOnlyQueueManagementIsComposed() {
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    GeneralSettingsContent(
+                        search = Search(initialVisible = false),
+                        selectedCards = setOf(R.string.queue_management),
+                    )
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        assertTrue(!cardTitleIsShown(R.string.player_controls))
+        clickRowByDescription(R.string.player_auto_load_songs_in_queue_description)
+        composeRule.waitForIdle()
+        assertTrue(!context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+            .getBoolean(app.it.fast4x.rimusic.utils.autoLoadSongsInQueueKey, true))
+        assertTrue(composeRule.onAllNodesWithText(context.getString(R.string.restart_service))
+            .fetchSemanticsNodes().isNotEmpty())
+    }
+
+    private fun showSelectedCard(titleRes: Int) {
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    GeneralSettingsContent(
+                        search = Search(initialVisible = false),
+                        selectedCards = setOf(titleRes),
+                    )
+                }
+            }
+        }
+        composeRule.waitForIdle()
+    }
+
+    @Test
+    fun playbackAutomationKeepsDefaultsAndWritesOriginalPreferences() {
+        showSelectedCard(R.string.playback)
+        val preferences = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        assertTrue(!cardTitleIsShown(R.string.app_behavior))
+        assertTrue(!cardTitleIsShown(R.string.player_controls))
+        clickRowByDescription(R.string.when_device_is_connected)
+        clickRowByDescription(R.string.skip_media_on_error_description)
+        clickRowByDescription(R.string.info_pauses_player_when_volume_zero)
+        clickRowByDescription(R.string.pause_on_headphone_disconnect_description)
+        composeRule.waitForIdle()
+        assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.resumePlaybackWhenDeviceConnectedKey, false))
+        assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.skipMediaOnErrorKey, false))
+        assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.isPauseOnVolumeZeroEnabledKey, false))
+        assertTrue(!preferences.getBoolean(app.it.fast4x.rimusic.utils.pauseOnHeadphoneDisconnectKey, true))
+        composeRule.onAllNodesWithText(context.getString(R.string.restart_service)).assertCountEquals(1)
+    }
+
+    @Test
+    fun persistentQueueKeepsResumeOnStartConditionalWithoutResettingItsPreference() {
+        showSelectedCard(R.string.queue_management)
+        val preferences = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val resumeDescription = context.getString(R.string.resume_automatically_when_app_opens)
+        composeRule.onAllNodesWithText(resumeDescription).assertCountEquals(0)
+        clickRowByDescription(R.string.save_and_restore_playing_songs)
+        composeRule.waitForIdle()
+        composeRule.onAllNodesWithText(resumeDescription).assertCountEquals(1)
+        clickRowByDescription(R.string.resume_automatically_when_app_opens)
+        composeRule.waitForIdle()
+        assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.persistentQueueKey, false))
+        assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.resumePlaybackOnStartKey, false))
+        composeRule.onAllNodesWithText(context.getString(R.string.restart_service)).assertCountEquals(1)
+        clickRowByDescription(R.string.save_and_restore_playing_songs)
+        composeRule.waitForIdle()
+        composeRule.onAllNodesWithText(resumeDescription).assertCountEquals(0)
+        assertTrue(!preferences.getBoolean(app.it.fast4x.rimusic.utils.persistentQueueKey, true))
+        assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.resumePlaybackOnStartKey, false))
+    }
+
 }

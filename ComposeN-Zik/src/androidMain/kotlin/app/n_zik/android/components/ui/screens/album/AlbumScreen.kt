@@ -215,7 +215,11 @@ fun AlbumScreen(
     LaunchedEffect(Unit) {
         val cleanedBrowseId = browseId.removePrefix(MODIFIED_PREFIX)
 
-        YtMusic.getAlbum(cleanedBrowseId, true, onProgress = { loadedSongsCount = it })
+        withContext(NzikDispatchers.DATA) {
+            YtMusic.getAlbum(cleanedBrowseId, true, onProgress = { count ->
+                launch(NzikDispatchers.UI) { loadedSongsCount = count }
+            })
+        }
             .onSuccess { online ->
                 val onlineAlbum = online.album
                 val authorsText: String? = onlineAlbum.authors.artistEntryNames().joinToString(", ")

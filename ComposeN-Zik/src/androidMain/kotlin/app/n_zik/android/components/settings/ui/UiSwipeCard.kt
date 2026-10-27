@@ -93,7 +93,8 @@ internal fun UiSwipeCard(search: Search) {
                             OtherSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.queue_and_local_playlists_left_swipe"),
                                 title = stringResource(R.string.queue_and_local_playlists_left_swipe),
-                                text = queueSwipeLeftAction.text,
+                                text = stringResource(R.string.settings_desc_ui_swipe_to_action_queue_and_local_playlists_left_swipe),
+                                selectedValueText = queueSwipeLeftAction.text,
                                 icon = R.drawable.arrow_left,
                                 onClick = { showQSLeftDialog = true }
                             )
@@ -114,7 +115,8 @@ internal fun UiSwipeCard(search: Search) {
                             OtherSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.playlist_left_swipe"),
                                 title = stringResource(R.string.playlist_left_swipe),
-                                text = playlistSwipeLeftAction.text,
+                                text = stringResource(R.string.settings_desc_ui_swipe_to_action_playlist_left_swipe),
+                                selectedValueText = playlistSwipeLeftAction.text,
                                 icon = R.drawable.arrow_left,
                                 onClick = { showPLLeftDialog = true }
                             )
@@ -135,7 +137,8 @@ internal fun UiSwipeCard(search: Search) {
                             OtherSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.playlist_right_swipe"),
                                 title = stringResource(R.string.playlist_right_swipe),
-                                text = playlistSwipeRightAction.text,
+                                text = stringResource(R.string.settings_desc_ui_swipe_to_action_playlist_right_swipe),
+                                selectedValueText = playlistSwipeRightAction.text,
                                 icon = R.drawable.arrow_right,
                                 onClick = { showPLRightDialog = true }
                             )
@@ -156,7 +159,8 @@ internal fun UiSwipeCard(search: Search) {
                             OtherSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.album_left_swipe"),
                                 title = stringResource(R.string.album_left_swipe),
-                                text = albumSwipeLeftAction.text,
+                                text = stringResource(R.string.settings_desc_ui_swipe_to_action_album_left_swipe),
+                                selectedValueText = albumSwipeLeftAction.text,
                                 icon = R.drawable.arrow_left,
                                 onClick = { showALeftDialog = true }
                             )
@@ -177,7 +181,8 @@ internal fun UiSwipeCard(search: Search) {
                             OtherSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.album_right_swipe"),
                                 title = stringResource(R.string.album_right_swipe),
-                                text = albumSwipeRightAction.text,
+                                text = stringResource(R.string.settings_desc_ui_swipe_to_action_album_right_swipe),
+                                selectedValueText = albumSwipeRightAction.text,
                                 icon = R.drawable.arrow_right,
                                 onClick = { showARightDialog = true }
                             )
@@ -198,7 +203,8 @@ internal fun UiSwipeCard(search: Search) {
                             OtherSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.queue_and_local_playlists_right_swipe"),
                                 title = stringResource(R.string.queue_and_local_playlists_right_swipe),
-                                text = queueSwipeRightAction.text,
+                                text = stringResource(R.string.settings_desc_ui_swipe_to_action_queue_and_local_playlists_right_swipe),
+                                selectedValueText = queueSwipeRightAction.text,
                                 icon = R.drawable.arrow_right,
                                 onClick = { showQSRightDialog = true }
                             )

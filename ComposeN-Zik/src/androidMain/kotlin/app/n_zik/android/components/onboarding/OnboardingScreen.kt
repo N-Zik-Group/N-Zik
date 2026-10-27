@@ -1,5 +1,10 @@
 package app.n_zik.android.components.onboarding
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import android.Manifest
 import android.app.Activity
 import android.content.Context
@@ -35,6 +40,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -98,9 +104,12 @@ fun OnboardingScreen(
     }
     val lifecycleOwner = LocalLifecycleOwner.current
 
+    var pendingJournalPermission by rememberSaveable { mutableStateOf<String?>(null) }
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) {
+        pendingJournalPermission?.let { permission -> PermissionUsageJournal.result(context, PermissionFeature.ONBOARDING, permission, it) }
+        pendingJournalPermission = null
         // Granted or denied: the card state changes either way
         refreshTrigger++
     }
@@ -125,6 +134,8 @@ fun OnboardingScreen(
 
     fun launchPermission(permission: String) {
         requestedPermissions = requestedPermissions + permission
+        pendingJournalPermission = permission
+        PermissionUsageJournal.request(context, PermissionFeature.ONBOARDING, permission)
         permissionLauncher.launch(permission)
     }
 

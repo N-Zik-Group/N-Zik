@@ -1,4 +1,14 @@
 Added:
+- feat(settings): add privacy controls and organize detailed preferences
+  - Add active-profile screen capture protection and a bounded local permission usage journal with pause and confirmed clearing through shared dialogs.
+  - Organize settings by usage, consolidate legacy reset scopes, center page descriptions and retain original preference keys, defaults and conditional restrictions.
+  - Keep descriptions separate from labeled selected values, combine effective quality status with quality choices, and preserve exact search targets after moves.
+  - Show filtered saved searches only while focused, match Online Search spacing and render destination pulses on the actual rounded card surface.
+  - Cache localized normalized search indexes and lazily compose settings results and cards while retaining one shared dialog/restart owner per source.
+- improve(navigation): reduce heavy page recomposition on forward and back navigation
+  - Reuse stable scaffold offset states across root recomposition and reveal bars on destination and internal-tab changes after cancelling prior fling.
+  - Preserve Home entrance readiness on return and give generic recommendation carousels their own lazy parent items.
+  - Offload album and artist response mapping through named dispatchers and defer player preset-only preference initialization until the chooser opens.
 - fix(lyrics,updater): one-shot lyrics copy, miniplayer hidden on the OTA updater screen, debug backdoor + no-auto-update settings gate
   - Lyrics copy is now one-shot: the composition-body side effect in `LyricsScreen` (flag set true by "Copy lyrics" and never reset, so the clipboard was rewritten on EVERY recomposition and the "Copied" toast re-fired on Android <= 12) is replaced by `LyricsCopyEffect`, a `LaunchedEffect(copyTrigger)` that copies through the existing legacy `textCopyToClipboard` and resets the trigger via the `onConsumed` callback; the clipboard is written exactly once per tap
   - The Rewind-only miniplayer hide is generalized to the updater route: `MainActivity` extracts `isMiniplayerHiddenRoute(currentRoute)` (rewind plain or with a query prefix, updater plain) as a pure internal function; the sheet keeps the existing jelly-spring `graphicsLayer` translation/alpha (renamed `miniplayerHideProgress`, label `miniplayerHideDismiss`) and no `playerSheetState.dismiss()` (the media-presence effect would re-show the sheet immediately)

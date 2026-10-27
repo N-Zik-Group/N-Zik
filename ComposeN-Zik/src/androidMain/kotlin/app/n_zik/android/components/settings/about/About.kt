@@ -1,7 +1,6 @@
 package app.n_zik.android.components.settings.about
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -20,6 +19,7 @@ import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.settings.common.SettingsCardSlot
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsGroupSpacer
 
@@ -71,12 +71,12 @@ internal fun AboutSettingsContent(
     cardModifier: @Composable (Int) -> Modifier = { Modifier },
 ) {
     if (selectedCards == null || R.string.about in selectedCards) {
-        Box(cardModifier(R.string.about)) { AboutAppCard() }
+        SettingsCardSlot(R.string.about, modifier = { cardModifier(R.string.about) }) { AboutAppCard() }
     }
     if (selectedCards == null || R.string.troubleshooting in selectedCards) {
-        Box(cardModifier(R.string.troubleshooting)) { AboutSupportCard() }
+        SettingsCardSlot(R.string.troubleshooting, modifier = { cardModifier(R.string.troubleshooting) }) { AboutSupportCard() }
     }
     if (selectedCards == null || R.string.contributors in selectedCards) {
-        Box(cardModifier(R.string.contributors)) { AboutContributorsCard() }
+        SettingsCardSlot(R.string.contributors, modifier = { cardModifier(R.string.contributors) }) { AboutContributorsCard() }
     }
 }

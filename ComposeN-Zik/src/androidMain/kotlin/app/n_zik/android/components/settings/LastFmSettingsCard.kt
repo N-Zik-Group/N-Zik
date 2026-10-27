@@ -168,7 +168,8 @@ fun LastFmSettingsCard() {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.lastfm.account_login"),
                         title = if (lastfmSession.isNotEmpty()) stringResource(R.string.account_logoff) else stringResource(R.string.account_login),
-                        text = if (lastfmSession.isNotEmpty()) stringResource(R.string.lastfm_connected) else stringResource(R.string.social_lastfm_info),
+                        text = stringResource(R.string.settings_desc_embedded_lastfm_account_login),
+                        selectedValueText = if (lastfmSession.isNotEmpty()) stringResource(R.string.lastfm_connected) else stringResource(R.string.social_lastfm_info),
                         icon = R.drawable.logout,
                         onClick = {
                             if (lastfmSession.isNotEmpty()) {

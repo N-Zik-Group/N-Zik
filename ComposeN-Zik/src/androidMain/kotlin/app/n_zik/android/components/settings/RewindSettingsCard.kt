@@ -116,7 +116,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_bgmusic_settings"),
                     title = stringResource(R.string.rw_bgmusic_settings),
-                    text = stringResource(R.string.rw_bgmusic_mute_cd),
+                    text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_embedded_rewind_rw_bgmusic_settings), stringResource(R.string.rw_bgmusic_mute_cd)),
                     isChecked = bgmEnabled,
                     onCheckedChange = {
                         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_BGM_ENABLED, it)

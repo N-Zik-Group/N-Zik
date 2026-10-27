@@ -720,8 +720,15 @@ fun HomeQuickPicksContent(
                 }
 
                 if (isOnline && showGenericYtmSections) {
-                    item(key = "generic_ytm_sections") {
-                        GenericYtmSections(stableHomePageInit, displayedSectionTitles, itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, isLoading = showLoader, showTitle = true)
+                    val genericHomePage = stableHomePageInit
+                    if (genericHomePage != null && genericHomePage.sections.isNotEmpty()) {
+                        genericYtmSectionItems(genericHomePage) { sectionPage ->
+                            GenericYtmSections(sectionPage, displayedSectionTitles, itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, isLoading = showLoader, showTitle = true)
+                        }
+                    } else {
+                        item(key = "generic_ytm_sections", contentType = "generic_ytm_placeholder") {
+                            GenericYtmSections(genericHomePage, displayedSectionTitles, itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, isLoading = showLoader, showTitle = true)
+                        }
                     }
                 }
                 

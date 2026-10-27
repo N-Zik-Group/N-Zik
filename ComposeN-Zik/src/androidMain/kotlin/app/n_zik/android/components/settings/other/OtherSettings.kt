@@ -2,7 +2,6 @@ package app.n_zik.android.components.settings.other
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,6 +36,7 @@ import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.ExtensionsSettingsCard
 import app.n_zik.android.components.settings.MaintenanceSettingsCard
 import app.n_zik.android.components.settings.RescueCenterSettingsCard
+import app.n_zik.android.components.settings.common.SettingsCardSlot
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsGroupSpacer
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
@@ -160,49 +160,49 @@ internal fun OtherSettingsContent(
 ) {
     cardsContainer {
         if (selectedCards == null || R.string.on_device in selectedCards) {
-            Box(modifier = cardModifier(R.string.on_device)) {
+            SettingsCardSlot(R.string.on_device, modifier = { cardModifier(R.string.on_device) }) {
                 OtherOnDeviceCard(search)
             }
         }
         if (selectedCards == null || R.string.androidheadunit in selectedCards) {
-            Box(modifier = cardModifier(R.string.androidheadunit)) {
+            SettingsCardSlot(R.string.androidheadunit, modifier = { cardModifier(R.string.androidheadunit) }) {
                 OtherHeadUnitCard(search)
             }
         }
         if (selectedCards == null || R.string.service_lifetime in selectedCards) {
-            Box(modifier = cardModifier(R.string.service_lifetime)) {
+            SettingsCardSlot(R.string.service_lifetime, modifier = { cardModifier(R.string.service_lifetime) }) {
                 OtherServiceLifetimeCard(search)
             }
         }
         if (selectedCards == null || R.string.proxy in selectedCards) {
-            Box(modifier = cardModifier(R.string.proxy)) {
+            SettingsCardSlot(R.string.proxy, modifier = { cardModifier(R.string.proxy) }) {
                 OtherProxyCard(search)
             }
         }
         if (selectedCards == null || R.string.parental_control in selectedCards) {
-            Box(modifier = cardModifier(R.string.parental_control)) {
+            SettingsCardSlot(R.string.parental_control, modifier = { cardModifier(R.string.parental_control) }) {
                 OtherParentalControlCard(search)
             }
         }
-        val searchCtx_Maintenance = search.inputValue.isBlank() || stringResource(R.string.maintenance).contains(search.inputValue, true) || stringResource(R.string.maintenance_open).contains(search.inputValue, true) || stringResource(R.string.enable_log_debug).contains(search.inputValue, true) || stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors).contains(search.inputValue, true) || stringResource(R.string.export_logs).contains(search.inputValue, true) || stringResource(R.string.export_debug_log_description).contains(search.inputValue, true)
-        AnimatedVisibility(
-            visible = (selectedCards == null || R.string.maintenance in selectedCards) && searchCtx_Maintenance,
-            enter = settingsCardEnter,
-            exit = settingsCardExit
-        ) {
-            Box(modifier = cardModifier(R.string.maintenance).onGloballyPositioned { onCardPosition("maintenance", it.positionInRoot().y) }) {
-                MaintenanceSettingsCard()
-            }
-        }
-
         val searchCtx_Extensions = search.inputValue.isBlank() || stringResource(R.string.modules_title).contains(search.inputValue, true) || stringResource(R.string.module_ffmpeg).contains(search.inputValue, true) || stringResource(R.string.module_ffmpeg_description).contains(search.inputValue, true)
         AnimatedVisibility(
             visible = (selectedCards == null || R.string.modules_title in selectedCards) && searchCtx_Extensions,
             enter = settingsCardEnter,
             exit = settingsCardExit
         ) {
-            Box(modifier = cardModifier(R.string.modules_title).onGloballyPositioned { onCardPosition("extensions", it.positionInRoot().y) }) {
+            SettingsCardSlot(R.string.modules_title, modifier = { cardModifier(R.string.modules_title).onGloballyPositioned { onCardPosition("extensions", it.positionInRoot().y) } }) {
                 ExtensionsSettingsCard()
+            }
+        }
+
+        val searchCtx_Maintenance = search.inputValue.isBlank() || stringResource(R.string.maintenance).contains(search.inputValue, true) || stringResource(R.string.maintenance_open).contains(search.inputValue, true) || stringResource(R.string.enable_log_debug).contains(search.inputValue, true) || stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors).contains(search.inputValue, true) || stringResource(R.string.export_logs).contains(search.inputValue, true) || stringResource(R.string.export_debug_log_description).contains(search.inputValue, true)
+        AnimatedVisibility(
+            visible = (selectedCards == null || R.string.maintenance in selectedCards) && searchCtx_Maintenance,
+            enter = settingsCardEnter,
+            exit = settingsCardExit
+        ) {
+            SettingsCardSlot(R.string.maintenance, modifier = { cardModifier(R.string.maintenance).onGloballyPositioned { onCardPosition("maintenance", it.positionInRoot().y) } }) {
+                MaintenanceSettingsCard()
             }
         }
 
@@ -212,13 +212,13 @@ internal fun OtherSettingsContent(
             enter = settingsCardEnter,
             exit = settingsCardExit
         ) {
-            Box(modifier = cardModifier(R.string.rescue_center).onGloballyPositioned { onCardPosition("rescue", it.positionInRoot().y) }) {
+            SettingsCardSlot(R.string.rescue_center, modifier = { cardModifier(R.string.rescue_center).onGloballyPositioned { onCardPosition("rescue", it.positionInRoot().y) } }) {
                 RescueCenterSettingsCard()
             }
         }
 
         if (selectedCards == null || R.string.settings_reset in selectedCards) {
-            Box(modifier = cardModifier(R.string.settings_reset)) {
+            SettingsCardSlot(R.string.settings_reset, modifier = { cardModifier(R.string.settings_reset) }) {
                 OtherResetCard(search)
             }
         }

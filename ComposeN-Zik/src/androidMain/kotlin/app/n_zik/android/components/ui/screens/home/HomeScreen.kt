@@ -247,12 +247,7 @@ fun HomeScreen(
 
     // Check if services are ready
     val binder = LocalPlayerServiceBinder.current
-    var isReady by remember { mutableStateOf(false) }
-
-    LaunchedEffect(binder) {
-        delay(100) // Small delay to ensure services are initialized
-        isReady = true
-    }
+    val isReady by rememberHomeEntranceReady(binder)
 
     // The search shortcut is not a tab: open the search screen on top of the home tab.
     // `searchShortcutConsumed` only guards against the *same* sentinel occurrence re-firing

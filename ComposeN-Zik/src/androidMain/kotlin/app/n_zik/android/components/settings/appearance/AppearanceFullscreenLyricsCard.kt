@@ -100,7 +100,7 @@ AnimatedVisibility(
                         modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.show_total_time_of_queue"),
                         icon = R.drawable.time,
                                 title = stringResource(R.string.show_total_time_of_queue),
-                                text = "",
+                                text = stringResource(R.string.settings_desc_appearance_full_screen_lyrics_components_show_total_time_of_queue),
                                 isChecked = queueDurationExpanded,
                                 onCheckedChange = { queueDurationExpanded = it }
                             )
@@ -117,7 +117,7 @@ AnimatedVisibility(
                         modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.titleartist"),
                         icon = R.drawable.title_edit,
                             title = stringResource(R.string.titleartist),
-                            text = "",
+                            text = stringResource(R.string.settings_desc_appearance_full_screen_lyrics_components_titleartist),
                             isChecked = titleExpanded,
                             onCheckedChange = { titleExpanded = it }
                         )
@@ -133,7 +133,7 @@ AnimatedVisibility(
                         modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.timeline"),
                         icon = R.drawable.ellipsis_horizontal,
                             title = stringResource(R.string.timeline),
-                            text = "",
+                            text = stringResource(R.string.settings_desc_appearance_full_screen_lyrics_components_timeline),
                             isChecked = timelineExpanded,
                             onCheckedChange = { timelineExpanded = it }
                         )
@@ -149,7 +149,7 @@ AnimatedVisibility(
                         modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.controls"),
                         icon = R.drawable.ellipsis_horizontal,
                             title = stringResource(R.string.controls),
-                            text = "",
+                            text = stringResource(R.string.settings_desc_appearance_full_screen_lyrics_components_controls),
                             isChecked = controlsExpanded,
                             onCheckedChange = { controlsExpanded = it }
                         )
@@ -167,7 +167,7 @@ AnimatedVisibility(
                         modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.statsfornerds"),
                         icon = R.drawable.stats_chart,
                                 title = stringResource(R.string.statsfornerds),
-                                text = "",
+                                text = stringResource(R.string.settings_desc_appearance_full_screen_lyrics_components_statsfornerds),
                                 isChecked = statsExpanded,
                                 onCheckedChange = { statsExpanded = it }
                             )
@@ -198,7 +198,7 @@ AnimatedVisibility(
                         modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.actionbar"),
                         icon = R.drawable.menu,
                                 title = stringResource(R.string.actionbar),
-                                text = "",
+                                text = stringResource(R.string.settings_desc_appearance_full_screen_lyrics_components_actionbar),
                                 isChecked = actionExpanded,
                                 onCheckedChange = {
                                     actionExpanded = it
@@ -217,7 +217,7 @@ AnimatedVisibility(
                         modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.miniqueue"),
                         icon = R.drawable.sort_vertical,
                                 title = stringResource(R.string.miniqueue),
-                                text = "",
+                                text = stringResource(R.string.settings_desc_appearance_full_screen_lyrics_components_miniqueue),
                                 isChecked = miniQueueExpanded,
                                 onCheckedChange = { miniQueueExpanded = it }
                             )

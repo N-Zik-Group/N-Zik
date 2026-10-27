@@ -15,6 +15,11 @@
 
 package app.n_zik.android.listentogether
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -902,6 +907,7 @@ class ListenTogetherClient(
 
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
                 NotificationManagerCompat.from(context).notify(notifId, builder.build())
+                PermissionUsageJournal.record(context, PermissionFeature.LISTEN_TOGETHER, JournalPermission.NOTIFICATIONS, PermissionEventKind.USED)
             }
         }
 
@@ -955,6 +961,7 @@ class ListenTogetherClient(
 
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
                 NotificationManagerCompat.from(context).notify(notifId, builder.build())
+                PermissionUsageJournal.record(context, PermissionFeature.LISTEN_TOGETHER, JournalPermission.NOTIFICATIONS, PermissionEventKind.USED)
             }
         }
 

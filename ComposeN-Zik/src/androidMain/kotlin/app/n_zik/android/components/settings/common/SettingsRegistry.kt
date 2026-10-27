@@ -74,7 +74,7 @@ val SettingsAboutItem = SettingsCategories.first { it.tab == 8 }
  * tab order (General..Misc). [SettingsCategories] itself keeps tab order 0..8.
  */
 val SettingsPageItems: List<SettingsPageItem> = OrganizedSettingsCategories.map { category ->
-    SettingsPageItem(category.labelRes, category.iconRes, category.labelRes, category.group, categoryId = category.id)
+    SettingsPageItem(category.labelRes, category.iconRes, category.descriptionRes, category.group, categoryId = category.id)
 }.let { listOf(it.first(), SettingsUpdateItem) + it.drop(1) }
 
 /**
@@ -96,6 +96,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
         keywordRes = listOf(R.string.languages, R.string.app_language)),
     SettingsCardRegistryEntry(0, R.string.playback, R.drawable.play_forward,
         keywordRes = listOf(
+            R.string.resume_playback, R.string.when_device_is_connected, R.string.skip_media_on_error, R.string.skip_media_on_error_description, R.string.player_pause_on_volume_zero, R.string.info_pauses_player_when_volume_zero, R.string.pause_on_headphone_disconnect,
             R.string.playback, R.string.jump_previous, R.string.jump_previous_blank,
             R.string.min_listening_time, R.string.is_min_list_time_for_tips_or_quick_pics,
             R.string.exclude_songs_with_duration_limit, R.string.vt_disabled,
@@ -104,29 +105,23 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
         )),
     SettingsCardRegistryEntry(0, R.string.player_controls, R.drawable.player_control,
         keywordRes = listOf(
-            R.string.player_controls, R.string.player_pause_on_volume_zero,
-            R.string.info_pauses_player_when_volume_zero, R.string.player_keep_minimized,
+            R.string.player_controls, R.string.player_keep_minimized,
             R.string.when_click_on_a_song_player_start_minimized,
             R.string.player_collapsed_disable_swiping_down,
             R.string.avoid_closing_the_player_cleaning_queue_by_swiping_down,
-            R.string.player_auto_load_songs_in_queue,
-            R.string.player_auto_load_songs_in_queue_description,
         )),
     SettingsCardRegistryEntry(0, R.string.queue_management, R.drawable.playlist,
         keywordRes = listOf(
+            R.string.persistent_queue, R.string.save_and_restore_playing_songs, R.string.resume_playback_on_start, R.string.resume_automatically_when_app_opens, R.string.player_auto_load_songs_in_queue, R.string.player_auto_load_songs_in_queue_description,
             R.string.queue_management, R.string.max_songs_in_queue, R.string.unlimited,
             R.string.discover, R.string.discoverinfo, R.string.playlistindicator,
             R.string.playlistindicatorinfo, R.string.now_playing_indicator,
         )),
     SettingsCardRegistryEntry(0, R.string.app_behavior, R.drawable.settings,
         keywordRes = listOf(
-            R.string.app_behavior, R.string.resume_playback, R.string.when_device_is_connected,
-            R.string.persistent_queue, R.string.save_and_restore_playing_songs,
-            R.string.resume_playback_on_start, R.string.resume_automatically_when_app_opens,
-            R.string.close_app_with_back_button,
+            R.string.app_behavior, R.string.close_app_with_back_button,
             R.string.when_you_use_the_back_button_from_the_home_page,
             R.string.close_background_player, R.string.when_app_swipe_out_from_task_manager,
-            R.string.skip_media_on_error, R.string.skip_media_on_error_description,
         )),
     SettingsCardRegistryEntry(0, R.string.audio_effects, R.drawable.sound_effect,
         keywordRes = listOf(
@@ -157,6 +152,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
         keywordRes = listOf(R.string.theme, R.string.interface_in_use, R.string.theme_mode)),
     SettingsCardRegistryEntry(1, R.string.user_interface, R.drawable.ui,
         keywordRes = listOf(
+            R.string.hide_status_bar,
             R.string.search_display_order, R.string.search_history_pages, R.string.search_history_pages_description, R.string.navigation_bar_position,
             R.string.navigation_bar_type, R.string.player_position, R.string.menu_style,
             R.string.message_type, R.string.home_tabs_settings, R.string.default_page,
@@ -188,8 +184,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.player_presets_and_layout, R.string.appearancepresets, R.string.appearancepresetssecondary,
             R.string.playertype, R.string.queuetype, R.string.thumbnailtype, R.string.pinfo_type,
             R.string.pinfo_album_and_artist_name, R.string.pinfo_show_icons, R.string.pcontrols_type,
-            R.string.icon_like_button,
-        )),
+            )),
     SettingsCardRegistryEntry(2, R.string.cover_and_thumbnail, R.drawable.album,
         keywordRes = listOf(
             R.string.cover_and_thumbnail, R.string.show_thumbnail,
@@ -206,13 +201,13 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.timeline_and_controls, R.string.timelinesize, R.string.miniplayertype,
             R.string.player_swap_controls_with_timeline, R.string.timeline, R.string.transparentbar,
             R.string.play_button, R.string.buttonzoomout,
+            R.string.show_total_time_of_queue, R.string.show_remaining_song_time, R.string.skip_time_buttons,
         )),
     SettingsCardRegistryEntry(2, R.string.colors_and_background, R.drawable.color_palette,
         keywordRes = listOf(
             R.string.colors_and_background, R.string.background_colors, R.string.gradienttype,
             R.string.blackgradient, R.string.albumCoverRotation, R.string.bottomgradient,
-            R.string.textoutline, R.string.show_total_time_of_queue,
-            R.string.show_remaining_song_time, R.string.shake_sensitivity_theme,
+            R.string.textoutline, R.string.shake_sensitivity_theme,
         )),
     SettingsCardRegistryEntry(2, R.string.player_behavior_and_visuals, R.drawable.equalizer,
         keywordRes = listOf(
@@ -220,10 +215,8 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.blankspace, R.string.show_next_songs_in_player, R.string.showtwosongs,
             R.string.songs_number_to_show, R.string.showalbumcover, R.string.disable_scrolling_text,
             R.string.scrolling_text_is_used_for_long_texts, R.string.player_rotating_buttons,
-            R.string.player_enable_rotation_buttons, R.string.toggle_lyrics,
-            R.string.by_tapping_on_the_thumbnail, R.string.click_lyrics_text, R.string.save_lyrics_state,
-            R.string.save_lyrics_state_description, R.string.show_background_in_lyrics,
-            R.string.player_enable_lyrics_popup_message, R.string.background_progress_bar,
+            R.string.player_enable_rotation_buttons,
+            R.string.background_progress_bar,
             R.string.visualizer, R.string.save_visualizer_state, R.string.save_visualizer_state_description,
             R.string.require_mic_permission,
         )),
@@ -261,8 +254,8 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     // Tab 3 - AI Recommendations
     SettingsCardRegistryEntry(3, R.string.tab_general, R.drawable.settings,
         keywordRes = listOf(
-            R.string.tab_general, R.string.enable_quick_picks_page, R.string.rw_settings_master,
-            R.string.rw_settings_title, R.string.disable_if_you_do_not_want_to_see,
+            R.string.tab_general, R.string.enable_quick_picks_page,
+            R.string.disable_if_you_do_not_want_to_see,
         )),
     SettingsCardRegistryEntry(3, R.string.quick_picks, R.drawable.star_brilliant,
         keywordRes = listOf(
@@ -379,19 +372,15 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     // Tab 6 - Network
     SettingsCardRegistryEntry(6, R.string.bridge_server, R.drawable.server, focusId = "pcserver",
         keywordRes = listOf(R.string.bridge_server, R.string.bridge_server_description)),
-    SettingsCardRegistryEntry(6, R.string.network_status, R.drawable.network,
-        keywordRes = listOf(
-            R.string.network_status, R.string.image_quality_format, R.string.audio_quality_format,
-            R.string.download_quality_format, R.string.network_quality_low,
-            R.string.network_quality_medium, R.string.network_quality_high,
-        )),
-    SettingsCardRegistryEntry(6, R.string.quality, R.drawable.audio_quality,
+    SettingsCardRegistryEntry(6, R.string.settings_download_quality, R.drawable.network,
+        keywordRes = listOf(R.string.download_quality_format, R.string.update_downloads)),
+    SettingsCardRegistryEntry(6, R.string.quality, R.drawable.network,
         keywordRes = listOf(R.string.quality, R.string.audio_quality_format, R.string.image_quality_format)),
     SettingsCardRegistryEntry(6, R.string.connection_settings, R.drawable.network,
         keywordRes = listOf(R.string.connection_settings, R.string.enable_connection_metered, R.string.info_enable_connection_metered)),
     SettingsCardRegistryEntry(6, R.string.offline_mode, R.drawable.airplane, focusId = "offline",
         keywordRes = listOf(R.string.offline_mode, R.string.offline_mode_description)),
-    SettingsCardRegistryEntry(6, R.string.download, R.drawable.arrow_down,
+    SettingsCardRegistryEntry(6, R.string.download, R.drawable.download,
         keywordRes = listOf(
             R.string.download, R.string.settings_enable_autodownload_song,
             R.string.settings_enable_autodownload_song_when_liked,
@@ -429,6 +418,10 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
         keywordRes = listOf(R.string.rescue_center, R.string.rescue_center_description)),
     SettingsCardRegistryEntry(7, R.string.settings_reset, R.drawable.refresh,
         keywordRes = listOf(R.string.settings_reset, R.string.settings_restore_default_settings)),
+    // Privacy has its own content source; legacy tabs remain unchanged.
+    SettingsCardRegistryEntry(9, R.string.privacy_screen_protection, R.drawable.shield_checkmark),
+    SettingsCardRegistryEntry(9, R.string.permission_usage_journal, R.drawable.history),
+    SettingsCardRegistryEntry(9, R.string.rw_settings_master, R.drawable.sparkles),
     // Tab 8 - About
     SettingsCardRegistryEntry(8, R.string.about, R.drawable.information),
     SettingsCardRegistryEntry(8, R.string.troubleshooting, R.drawable.information,

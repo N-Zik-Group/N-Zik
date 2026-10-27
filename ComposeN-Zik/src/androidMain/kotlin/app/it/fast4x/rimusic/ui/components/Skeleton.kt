@@ -42,6 +42,7 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.n_zik.android.BuildConfig
+import app.n_zik.android.core.navigation.RevealScaffoldOnPageSelection
 import app.n_zik.android.LocalPlayerSheetState
 import app.n_zik.android.colorPalette
 import androidx.compose.animation.core.animateDpAsState
@@ -114,6 +115,7 @@ fun Skeleton(
     val navigationBarPosition = NavigationBarPosition.current()
     val isFloating = navigationBarPosition.isFloating
     val isIconOnly = NavigationBarType.IconOnly.isCurrent()
+    RevealScaffoldOnPageSelection(tabIndex)
     val binder = LocalPlayerServiceBinder.current
     val isMiniPlayerActive = binder?.player?.currentMediaItem != null
     val currentInsets = LocalPlayerAwareWindowInsets.current

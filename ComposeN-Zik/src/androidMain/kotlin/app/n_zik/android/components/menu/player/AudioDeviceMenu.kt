@@ -2,6 +2,11 @@
 
 package app.n_zik.android.components.menu.player
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import app.it.fast4x.rimusic.utils.conditional
 import androidx.compose.foundation.basicMarquee
 
@@ -250,6 +255,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
     val bluetoothLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
+        PermissionUsageJournal.result(context, PermissionFeature.AUDIO_DEVICES, Manifest.permission.BLUETOOTH_CONNECT, isGranted)
         if (isGranted) {
             coroutineScope.launch(NzikDispatchers.DATA) {
                 loadDevices(context, service?.preferredDeviceId, isCarProjectionActive, onSuccess = { devices ->
@@ -321,6 +327,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
 
         if (!checkBluetoothPermission(context)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                PermissionUsageJournal.record(context, PermissionFeature.AUDIO_DEVICES, JournalPermission.BLUETOOTH, PermissionEventKind.REQUESTED)
                 bluetoothLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
             }
         }
@@ -867,6 +874,7 @@ internal fun loadDevices(
                                     ) as BluetoothManager
                                     val bluetoothAdapter = bluetoothManager.adapter
                                     val pairedDevices = bluetoothAdapter?.bondedDevices
+                                    if (pairedDevices != null) PermissionUsageJournal.record(context, PermissionFeature.AUDIO_DEVICES, JournalPermission.BLUETOOTH, PermissionEventKind.USED)
                                     pairedDevices?.find {
                                         it.name == deviceInfo.productName.toString()
                                     }

@@ -1,6 +1,5 @@
 package app.n_zik.android.components.settings.general
 
-import app.n_zik.android.components.settings.common.settingsSearchTarget
 import android.text.TextUtils
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
@@ -25,24 +24,38 @@ import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
 import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
 import app.it.fast4x.rimusic.utils.excludeSongsWithDurationLimitKey
 import app.it.fast4x.rimusic.utils.exoPlayerMinTimeForEventKey
+import app.it.fast4x.rimusic.utils.isAtLeastAndroid6
+import app.it.fast4x.rimusic.utils.isPauseOnVolumeZeroEnabledKey
 import app.it.fast4x.rimusic.utils.jumpPreviousKey
 import app.it.fast4x.rimusic.utils.pauseBetweenSongsKey
+import app.it.fast4x.rimusic.utils.pauseOnHeadphoneDisconnectKey
 import app.it.fast4x.rimusic.utils.rememberPreference
+import app.it.fast4x.rimusic.utils.resumePlaybackWhenDeviceConnectedKey
+import app.it.fast4x.rimusic.utils.skipMediaOnErrorKey
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 
-/** Playback card: jump-previous, min listening time, exclusions, pause, crossfade. */
+/** Playback card: automatic resume/pause, error handling, exclusions and transitions. */
 @Composable
 fun GeneralPlaybackCard(
     visible: Boolean,
+    onRestartServiceSet: () -> Unit,
 ) {
+    var resumePlaybackWhenDeviceConnected by rememberPreference(
+        resumePlaybackWhenDeviceConnectedKey,
+        false
+    )
+    var isPauseOnVolumeZeroEnabled by rememberPreference(isPauseOnVolumeZeroEnabledKey, false)
+    var pauseOnHeadphoneDisconnect by rememberPreference(pauseOnHeadphoneDisconnectKey, true)
+    var skipMediaOnError by rememberPreference(skipMediaOnErrorKey, false)
     var exoPlayerMinTimeForEvent by rememberPreference(
         exoPlayerMinTimeForEventKey,
         ExoPlayerMinTimeForEvent.`20s`
@@ -70,10 +83,55 @@ fun GeneralPlaybackCard(
         icon = R.drawable.play_forward,
         visible = visible,
         content = {
+            if (isAtLeastAndroid6) {
+                OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("general.app_behavior.resume_playback"),
+                    title = stringResource(R.string.resume_playback),
+                    text = stringResource(R.string.when_device_is_connected),
+                    isChecked = resumePlaybackWhenDeviceConnected,
+                    onCheckedChange = {
+                        resumePlaybackWhenDeviceConnected = it
+                        onRestartServiceSet()
+                    },
+                    icon = R.drawable.play
+                )
+            }
+
+            OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("general.player_controls.player_pause_on_volume_zero"),
+                title = stringResource(R.string.player_pause_on_volume_zero),
+                text = stringResource(R.string.info_pauses_player_when_volume_zero),
+                isChecked = isPauseOnVolumeZeroEnabled,
+                onCheckedChange = { isPauseOnVolumeZeroEnabled = it },
+                icon = R.drawable.volume_up
+            )
+
+            OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("general.player_controls.pause_on_headphone_disconnect"),
+                title = stringResource(R.string.pause_on_headphone_disconnect),
+                text = stringResource(R.string.pause_on_headphone_disconnect_description),
+                isChecked = pauseOnHeadphoneDisconnect,
+                onCheckedChange = { pauseOnHeadphoneDisconnect = it },
+                icon = R.drawable.headphones
+            )
+
+            OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("general.app_behavior.skip_media_on_error"),
+                title = stringResource(R.string.skip_media_on_error),
+                text = stringResource(R.string.skip_media_on_error_description),
+                isChecked = skipMediaOnError,
+                onCheckedChange = {
+                    skipMediaOnError = it
+                    onRestartServiceSet()
+                },
+                icon = R.drawable.alert_circle
+            )
+
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.jump_previous"),
                 title = stringResource(R.string.jump_previous),
-                text = jumpPrevious,
+                text = stringResource(R.string.settings_desc_general_playback_jump_previous),
+                selectedValueText = jumpPrevious,
                 onClick = { showJumpPreviousDialog = true },
                 icon = R.drawable.play_skip_back
             )
@@ -97,7 +155,8 @@ fun GeneralPlaybackCard(
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.min_listening_time"),
                 title = stringResource(R.string.min_listening_time),
-                text = when (exoPlayerMinTimeForEvent) {
+                text = stringResource(R.string.settings_desc_general_playback_min_listening_time),
+                selectedValueText = when (exoPlayerMinTimeForEvent) {
                     ExoPlayerMinTimeForEvent.`10s` -> "10s"
                     ExoPlayerMinTimeForEvent.`15s` -> "15s"
                     ExoPlayerMinTimeForEvent.`20s` -> "20s"
@@ -132,7 +191,8 @@ fun GeneralPlaybackCard(
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.exclude_songs_with_duration_limit"),
                 title = stringResource(R.string.exclude_songs_with_duration_limit),
-                text = when (excludeSongWithDurationLimit) {
+                text = stringResource(R.string.settings_desc_general_playback_exclude_songs_with_duration_limit),
+                selectedValueText = when (excludeSongWithDurationLimit) {
                     DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
                     DurationInMinutes.`3` -> "3m"
                     DurationInMinutes.`5` -> "5m"
@@ -174,7 +234,8 @@ fun GeneralPlaybackCard(
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.exclude_disliked_songs"),
                 title = stringResource(R.string.exclude_disliked_songs),
-                text = excludeDislikedSongs.text,
+                text = stringResource(R.string.settings_desc_general_playback_exclude_disliked_songs),
+                selectedValueText = excludeDislikedSongs.text,
                 onClick = { showDislikeSongsDialog = true },
                 icon = R.drawable.heart_dislike
             )
@@ -200,7 +261,8 @@ fun GeneralPlaybackCard(
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.exclude_disliked_artists"),
                 title = stringResource(R.string.exclude_disliked_artists),
-                text = excludeDislikedArtists.text,
+                text = stringResource(R.string.settings_desc_general_playback_exclude_disliked_artists),
+                selectedValueText = excludeDislikedArtists.text,
                 onClick = { showDislikeArtistsDialog = true },
                 icon = R.drawable.person
             )
@@ -226,7 +288,8 @@ fun GeneralPlaybackCard(
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.exclude_disliked_albums"),
                 title = stringResource(R.string.exclude_disliked_albums),
-                text = excludeDislikedAlbums.text,
+                text = stringResource(R.string.settings_desc_general_playback_exclude_disliked_albums),
+                selectedValueText = excludeDislikedAlbums.text,
                 onClick = { showDislikeAlbumsDialog = true },
                 icon = R.drawable.album
             )
@@ -252,7 +315,8 @@ fun GeneralPlaybackCard(
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.pause_between_songs"),
                 title = stringResource(R.string.pause_between_songs),
-                text = when (pauseBetweenSongs) {
+                text = stringResource(R.string.settings_desc_general_playback_pause_between_songs),
+                selectedValueText = when (pauseBetweenSongs) {
                     PauseBetweenSongs.`0` -> "0s"
                     PauseBetweenSongs.`5` -> "5s"
                     PauseBetweenSongs.`10` -> "10s"
@@ -307,7 +371,8 @@ fun GeneralPlaybackCard(
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("general.playback.crossfade_duration"),
                         title = stringResource(R.string.crossfade_duration),
-                        text = "${crossfadeDuration / 1000}s",
+                        text = stringResource(R.string.settings_desc_general_playback_crossfade_duration),
+                        selectedValueText = "${crossfadeDuration / 1000}s",
                         onClick = { showCrossfadeDurationDialog = true },
                         icon = R.drawable.time
                     )

@@ -132,7 +132,8 @@ internal fun UiThemeCard(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.theme.interface_in_use"),
                         title = stringResource(R.string.interface_in_use),
-                        text = uiType.text,
+                        text = stringResource(R.string.settings_desc_ui_theme_interface_in_use),
+                        selectedValueText = uiType.text,
                         icon = R.drawable.ui,
                         onClick = { showUiTypeDialog = true }
                     )
@@ -157,7 +158,8 @@ internal fun UiThemeCard(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.theme.theme"),
                         title = stringResource(R.string.theme),
-                        text = colorPaletteName.text,
+                        text = stringResource(R.string.settings_desc_ui_theme_theme),
+                        selectedValueText = colorPaletteName.text,
                         icon = R.drawable.color_palette,
                         onClick = { showThemeDialog = true }
                     )
@@ -186,7 +188,7 @@ internal fun UiThemeCard(search: Search) {
                         if (search.inputValue.isBlank() || stringResource(R.string.customcolor).contains(search.inputValue, true) || stringResource(R.string.theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
                                 title = stringResource(R.string.customcolor),
-                                text = "",
+                                text = stringResource(R.string.settings_desc_ui_theme_customcolor),
                                 color = Color(customColor),
                                 onColorSelected = { customColor = it.hashCode() },
                                 modifier = (Modifier.padding(start = 25.dp)).settingsSearchTarget("ui.theme.customcolor")
@@ -212,7 +214,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_background_1"),
                                 title = stringResource(R.string.color_background_1),
-                                text = stringResource(R.string._light),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_background_1),
                                 color = Color(customThemeLight_Background0),
                                 onColorSelected = { customThemeLight_Background0 = it.hashCode() }
                             )
@@ -221,7 +223,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_background_2"),
                                 title = stringResource(R.string.color_background_2),
-                                text = stringResource(R.string._light),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_background_2),
                                 color = Color(customThemeLight_Background1),
                                 onColorSelected = { customThemeLight_Background1 = it.hashCode() }
                             )
@@ -230,7 +232,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_background_3"),
                                 title = stringResource(R.string.color_background_3),
-                                text = stringResource(R.string._light),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_background_3),
                                 color = Color(customThemeLight_Background2),
                                 onColorSelected = { customThemeLight_Background2 = it.hashCode() }
                             )
@@ -239,7 +241,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_background_4"),
                                 title = stringResource(R.string.color_background_4),
-                                text = stringResource(R.string._light),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_background_4),
                                 color = Color(customThemeLight_Background3),
                                 onColorSelected = { customThemeLight_Background3 = it.hashCode() }
                             )
@@ -248,7 +250,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_background_5"),
                                 title = stringResource(R.string.color_background_5),
-                                text = stringResource(R.string._light),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_background_5),
                                 color = Color(customThemeLight_Background4),
                                 onColorSelected = { customThemeLight_Background4 = it.hashCode() }
                             )
@@ -257,7 +259,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_text"),
                                 title = stringResource(R.string.color_text),
-                                text = stringResource(R.string._light),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_text),
                                 color = Color(customThemeLight_Text),
                                 onColorSelected = { customThemeLight_Text= it.hashCode() }
                             )
@@ -266,7 +268,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_text_secondary"),
                                 title = stringResource(R.string.color_text_secondary),
-                                text = stringResource(R.string._light),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_text_secondary),
                                 color = Color(customThemeLight_TextSecondary),
                                 onColorSelected = { customThemeLight_TextSecondary = it.hashCode() }
                             )
@@ -275,7 +277,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_text_disabled"),
                                 title = stringResource(R.string.color_text_disabled),
-                                text = stringResource(R.string._light),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_text_disabled),
                                 color = Color(customThemeLight_TextDisabled),
                                 onColorSelected = { customThemeLight_TextDisabled = it.hashCode() }
                             )
@@ -284,7 +286,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_icon_button_player"),
                                 title = stringResource(R.string.color_icon_button_player),
-                                text = stringResource(R.string._light),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_icon_button_player),
                                 color = Color(customThemeLight_IconButtonPlayer),
                                 onColorSelected = { customThemeLight_IconButtonPlayer = it.hashCode() }
                             )
@@ -293,7 +295,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_accent"),
                                 title = stringResource(R.string.color_accent),
-                                text = stringResource(R.string._light),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_accent),
                                 color = Color(customThemeLight_Accent),
                                 onColorSelected = { customThemeLight_Accent = it.hashCode() }
                             )
@@ -314,7 +316,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_background_1.dark"),
                                 title = stringResource(R.string.color_background_1),
-                                text = stringResource(R.string.dark),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_background_1_dark),
                                 color = Color(customThemeDark_Background0),
                                 onColorSelected = { customThemeDark_Background0 = it.hashCode() }
                             )
@@ -323,7 +325,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_background_2.dark"),
                                 title = stringResource(R.string.color_background_2),
-                                text = stringResource(R.string.dark),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_background_2_dark),
                                 color = Color(customThemeDark_Background1),
                                 onColorSelected = { customThemeDark_Background1 = it.hashCode() }
                             )
@@ -332,7 +334,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_background_3.dark"),
                                 title = stringResource(R.string.color_background_3),
-                                text = stringResource(R.string.dark),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_background_3_dark),
                                 color = Color(customThemeDark_Background2),
                                 onColorSelected = { customThemeDark_Background2 = it.hashCode() }
                             )
@@ -341,7 +343,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_background_4.dark"),
                                 title = stringResource(R.string.color_background_4),
-                                text = stringResource(R.string.dark),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_background_4_dark),
                                 color = Color(customThemeDark_Background3),
                                 onColorSelected = { customThemeDark_Background3 = it.hashCode() }
                             )
@@ -350,7 +352,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_background_5.dark"),
                                 title = stringResource(R.string.color_background_5),
-                                text = stringResource(R.string.dark),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_background_5_dark),
                                 color = Color(customThemeDark_Background4),
                                 onColorSelected = { customThemeDark_Background4 = it.hashCode() }
                             )
@@ -359,7 +361,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_text.dark"),
                                 title = stringResource(R.string.color_text),
-                                text = stringResource(R.string.dark),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_text_dark),
                                 color = Color(customThemeDark_Text),
                                 onColorSelected = { customThemeDark_Text= it.hashCode() }
                             )
@@ -368,7 +370,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_text_secondary.dark"),
                                 title = stringResource(R.string.color_text_secondary),
-                                text = stringResource(R.string.dark),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_text_secondary_dark),
                                 color = Color(customThemeDark_TextSecondary),
                                 onColorSelected = { customThemeDark_TextSecondary = it.hashCode() }
                             )
@@ -377,7 +379,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_text_disabled.dark"),
                                 title = stringResource(R.string.color_text_disabled),
-                                text = stringResource(R.string.dark),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_text_disabled_dark),
                                 color = Color(customThemeDark_TextDisabled),
                                 onColorSelected = { customThemeDark_TextDisabled = it.hashCode() }
                             )
@@ -386,7 +388,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_icon_button_player.dark"),
                                 title = stringResource(R.string.color_icon_button_player),
-                                text = stringResource(R.string.dark),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_icon_button_player_dark),
                                 color = Color(customThemeDark_IconButtonPlayer),
                                 onColorSelected = { customThemeDark_IconButtonPlayer = it.hashCode() }
                             )
@@ -395,7 +397,7 @@ internal fun UiThemeCard(search: Search) {
                             ColorSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.theme.color_accent.dark"),
                                 title = stringResource(R.string.color_accent),
-                                text = stringResource(R.string.dark),
+                                text = stringResource(R.string.settings_desc_ui_theme_color_accent_dark),
                                 color = Color(customThemeDark_Accent),
                                 onColorSelected = { customThemeDark_Accent = it.hashCode() }
                             )
@@ -414,7 +416,8 @@ internal fun UiThemeCard(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.theme.theme_mode"),
                         title = stringResource(R.string.theme_mode),
-                        text = colorPaletteMode.text,
+                        text = stringResource(R.string.settings_desc_ui_theme_theme_mode),
+                        selectedValueText = colorPaletteMode.text,
                         icon = R.drawable.sparkles,
                         onClick = { if(themeModeEnabled) showThemeModeDialog = true }
                     )

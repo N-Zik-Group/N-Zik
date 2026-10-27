@@ -1,5 +1,10 @@
 package app.n_zik.android.updater.services
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -91,7 +96,7 @@ object UpdateDownloadManager {
             .setOnlyAlertOnce(true)
 
         try {
-            notificationManager.notify(UPDATE_NOTIFICATION_ID, notificationBuilder.build())
+            notificationManager.notify(UPDATE_NOTIFICATION_ID, notificationBuilder.build()); PermissionUsageJournal.record(context, PermissionFeature.DOWNLOADS, JournalPermission.NOTIFICATIONS, PermissionEventKind.USED)
         } catch (e: SecurityException) {
             Timber.tag("UpdateDownloadManager").w(e, "Missing POST_NOTIFICATIONS permission")
         }
@@ -160,7 +165,7 @@ object UpdateDownloadManager {
                         if (progressPercent != lastProgressPercent && progressPercent % 2 == 0) {
                             lastProgressPercent = progressPercent
                             notificationBuilder.setProgress(100, progressPercent, false)
-                            try { notificationManager.notify(UPDATE_NOTIFICATION_ID, notificationBuilder.build()) } catch (e: Exception) { Timber.tag("UpdateDownloadManager").w(e, "Failed to update progress notification") }
+                            try { notificationManager.notify(UPDATE_NOTIFICATION_ID, notificationBuilder.build()); PermissionUsageJournal.record(context, PermissionFeature.DOWNLOADS, JournalPermission.NOTIFICATIONS, PermissionEventKind.USED) } catch (e: Exception) { Timber.tag("UpdateDownloadManager").w(e, "Failed to update progress notification") }
                         }
                     }
                 }
@@ -187,6 +192,7 @@ object UpdateDownloadManager {
                 try {
                     notificationManager.cancel(UPDATE_NOTIFICATION_ID)
                     notificationManager.notify(UPDATE_NOTIFICATION_ID, completedNotification)
+                    PermissionUsageJournal.record(context, PermissionFeature.DOWNLOADS, JournalPermission.NOTIFICATIONS, PermissionEventKind.USED)
                 } catch (e: Exception) {
                     Timber.tag("UpdateDownloadManager").e(e, "Failed to show completed notification")
                 }

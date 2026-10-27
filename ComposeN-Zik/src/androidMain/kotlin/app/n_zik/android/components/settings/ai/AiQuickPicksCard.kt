@@ -58,7 +58,8 @@ internal fun AiQuickPicksCard(search: Search) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("ai.quick_picks.tips"),
                     title = stringResource(R.string.tips),
-                    text = playEventType.text,
+                    text = stringResource(R.string.settings_desc_ai_quick_picks_tips),
+                    selectedValueText = playEventType.text,
                     icon = R.drawable.sort_vertical,
                     onClick = { showTipsDialog = true }
                 )
@@ -78,7 +79,8 @@ internal fun AiQuickPicksCard(search: Search) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("ai.quick_picks.quick_selection_type"),
                     title = stringResource(R.string.quick_selection_type),
-                    text = stringResource(R.string.quick_selection, localRecommandationsNumber.value),
+                    text = stringResource(R.string.settings_desc_ai_quick_picks_quick_selection_type),
+                    selectedValueText = stringResource(R.string.quick_selection, localRecommandationsNumber.value),
                     icon = R.drawable.sparkles,
                     onClick = { showQuickSelectionDialog = true }
                 )

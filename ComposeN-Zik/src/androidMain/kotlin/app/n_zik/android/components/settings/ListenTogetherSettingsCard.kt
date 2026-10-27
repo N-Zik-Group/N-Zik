@@ -165,9 +165,9 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         OtherSettingsEntry(
             modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_server_url"),
             title = stringResource(R.string.listen_together_server_url),
-            text =
-                selectedServer?.let { server -> "${server.name} — ${server.location}" }
-                    ?: serverUrl,
+            text = stringResource(R.string.settings_desc_embedded_listen_together_listen_together_server_url),
+            selectedValueText = selectedServer?.let { server -> "${server.name} — ${server.location}" }
+                ?: serverUrl,
             icon = R.drawable.server,
             onClick = { showServerChooserSheet = true },
         )
@@ -176,7 +176,8 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         OtherSettingsEntry(
             modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_username"),
             title = stringResource(R.string.listen_together_username),
-            text = username.ifEmpty { stringResource(R.string.listen_together_not_set) },
+            text = stringResource(R.string.settings_desc_embedded_listen_together_listen_together_username),
+            selectedValueText = username.ifEmpty { stringResource(R.string.listen_together_not_set) },
             icon = R.drawable.person,
             onClick = {
                 if (isInRoom) {
@@ -263,15 +264,15 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         OtherSettingsEntry(
             modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_blocked_users"),
             title = stringResource(R.string.listen_together_blocked_users),
-            text =
-                if (blockedUsernames.isNotEmpty()) {
-                    stringResource(
-                        R.string.listen_together_blocked_users_count,
-                        blockedUsernames.size,
-                    )
-                } else {
-                    stringResource(R.string.listen_together_no_blocked_users)
-                },
+            text = stringResource(R.string.settings_desc_embedded_listen_together_listen_together_blocked_users),
+            selectedValueText = if (blockedUsernames.isNotEmpty()) {
+                stringResource(
+                    R.string.listen_together_blocked_users_count,
+                    blockedUsernames.size,
+                )
+            } else {
+                stringResource(R.string.listen_together_no_blocked_users)
+            },
             icon = R.drawable.close,
             onClick = {
                 menuState.display {

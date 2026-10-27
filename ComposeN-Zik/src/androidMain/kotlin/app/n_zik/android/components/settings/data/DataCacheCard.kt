@@ -194,7 +194,8 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
                     CacheSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("data.cache.image_cache_max_size"),
                         title = stringResource(R.string.image_cache_max_size),
-                        text = when (coilDiskCacheMaxSize) {
+                        text = stringResource(R.string.settings_desc_data_cache_image_cache_max_size),
+                        selectedValueText = when (coilDiskCacheMaxSize) {
                             CoilDiskCacheMaxSize.Custom -> "${stringResource(R.string.custom)}: ${coilCustomDiskCache}MB"
                             else -> coilDiskCacheMaxSize.text
                         },
@@ -255,7 +256,8 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
                     CacheSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("data.cache.song_cache_max_size"),
                         title = stringResource(R.string.song_cache_max_size),
-                        text = when (exoPlayerDiskCacheMaxSize) {
+                        text = stringResource(R.string.settings_desc_data_cache_song_cache_max_size),
+                        selectedValueText = when (exoPlayerDiskCacheMaxSize) {
                             ExoPlayerDiskCacheMaxSize.Custom -> "${stringResource(R.string.custom)}: ${exoPlayerCustomCache}MB"
                             ExoPlayerDiskCacheMaxSize.Disabled -> stringResource(R.string.turn_off)
                             else -> exoPlayerDiskCacheMaxSize.text
@@ -316,7 +318,8 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
                     CacheSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("data.cache.song_download_max_size"),
                         title = stringResource(R.string.song_download_max_size),
-                        text = exoPlayerDiskDownloadCacheMaxSize.text,
+                        text = stringResource(R.string.settings_desc_data_cache_song_download_max_size),
+                        selectedValueText = exoPlayerDiskDownloadCacheMaxSize.text,
                         icon = R.drawable.download,
                         onClick = { showDownloadCacheDialog = true },
                         onTrashClick = { cleanDownloadCache = true }
@@ -349,7 +352,8 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("data.cache.set_cache_location"),
                     title = stringResource(R.string.set_cache_location),
-                    text = exoPlayerCacheLocation.text,
+                    text = stringResource(R.string.settings_desc_data_cache_set_cache_location),
+                    selectedValueText = exoPlayerCacheLocation.text,
                     icon = R.drawable.folder,
                     onClick = { showCacheLocationDialog = true }
                 )

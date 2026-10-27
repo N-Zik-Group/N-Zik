@@ -1,5 +1,10 @@
 package app.n_zik.android.components.ui.screens.home.onDevice
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import app.n_zik.android.components.search.SearchNoResults
 
 import android.Manifest
@@ -135,7 +140,11 @@ fun OnDeviceSong(
     /** Opens a prompt saying that a permission (should be either [Manifest.permission.READ_MEDIA_AUDIO] or [Manifest.permission.READ_EXTERNAL_STORAGE]) Then apply result of that prompt. */
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { isPermissionGranted = it }
+    ) {
+        isPermissionGranted = it
+        PermissionUsageJournal.record(context, PermissionFeature.LOCAL_LIBRARY, JournalPermission.MEDIA_AUDIO,
+            if (it) PermissionEventKind.GRANTED else PermissionEventKind.DENIED)
+    }
 
     /**
      * Starts new activity (should be [Settings.ACTION_APPLICATION_DETAILS_SETTINGS]).
@@ -158,6 +167,7 @@ fun OnDeviceSong(
                .distinctUntilChanged()
                .onEach { lazyListState.scrollToItem( 0, 0 ) }
                .collect {
+                   PermissionUsageJournal.record(context, PermissionFeature.LOCAL_LIBRARY, JournalPermission.MEDIA_AUDIO, PermissionEventKind.USED)
                    songsOnDevice = it
                    currentPath = PathUtils.findCommonPath( it.values )
                }
@@ -189,6 +199,7 @@ fun OnDeviceSong(
     LaunchedEffect( Unit ) {
         if( !isPermissionGranted )
             try {
+                PermissionUsageJournal.record(context, PermissionFeature.LOCAL_LIBRARY, JournalPermission.MEDIA_AUDIO, PermissionEventKind.REQUESTED)
                 permissionLauncher.launch( permission )
             } catch ( e: Exception ) {
                 e.message?.let( Toaster::e )

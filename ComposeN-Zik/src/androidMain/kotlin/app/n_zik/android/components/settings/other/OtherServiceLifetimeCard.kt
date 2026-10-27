@@ -75,7 +75,8 @@ internal fun OtherServiceLifetimeCard(search: Search) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("other.service_lifetime.ignore_battery_optimizations"),
                     title = stringResource(R.string.ignore_battery_optimizations),
-                    text = if (isIgnoringBatteryOptimizations) {
+                    text = stringResource(R.string.settings_desc_other_service_lifetime_ignore_battery_optimizations),
+                    selectedValueText = if (isIgnoringBatteryOptimizations) {
                         stringResource(R.string.already_unrestricted)
                     } else {
                         stringResource(R.string.disable_background_restrictions)

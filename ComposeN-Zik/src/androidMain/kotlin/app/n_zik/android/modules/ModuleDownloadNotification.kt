@@ -1,5 +1,10 @@
 package app.n_zik.android.modules
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -170,6 +175,7 @@ object AndroidModuleDownloadListener : ModuleDownloadListener {
     private fun notifyOrWarn(context: Context, def: ModuleDefinition, notification: Notification) {
         try {
             NotificationManagerCompat.from(context).notify(notificationId(def.id), notification)
+            PermissionUsageJournal.record(context, PermissionFeature.DOWNLOADS, JournalPermission.NOTIFICATIONS, PermissionEventKind.USED)
         } catch (e: SecurityException) {
             Timber.tag(TAG).w(e, "Missing POST_NOTIFICATIONS permission")
         }

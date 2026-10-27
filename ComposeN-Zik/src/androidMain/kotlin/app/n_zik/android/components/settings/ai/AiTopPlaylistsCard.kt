@@ -42,7 +42,8 @@ internal fun AiTopPlaylistsCard(search: Search) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("ai.playlist_top.statistics_max_number_of_items"),
                     title = stringResource(R.string.statistics_max_number_of_items),
-                    text = maxTopPlaylistItems.displayName(maxTopPlaylistItemsCustomValue),
+                    text = stringResource(R.string.settings_desc_ai_playlist_top_statistics_max_number_of_items),
+                    selectedValueText = maxTopPlaylistItems.displayName(maxTopPlaylistItemsCustomValue),
                     icon = R.drawable.musical_notes,
                     onClick = { showTopPlaylistsDialog = true }
                 )
@@ -82,7 +83,7 @@ internal fun AiTopPlaylistsCard(search: Search) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("ai.playlist_top.show"),
                     title = "${stringResource(R.string.show)} ${stringResource(R.string.my_playlist_top1)}",
-                    text = "",
+                    text = stringResource(R.string.settings_desc_ai_playlist_top_show),
                     isChecked = showMyTopPlaylist,
                     onCheckedChange = {
                         showMyTopPlaylist = it

@@ -1,5 +1,10 @@
 package app.n_zik.android
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
@@ -666,6 +671,7 @@ class MainActivity :
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
+        PermissionUsageJournal.result(this, PermissionFeature.ONBOARDING, Manifest.permission.POST_NOTIFICATIONS, isGranted)
         if (!isGranted) {
             // If permission is denied, redirect to settings
             val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
@@ -675,8 +681,11 @@ class MainActivity :
         }
     }
 
+    private var screenCapturePolicy: app.n_zik.android.privacy.ScreenCapturePolicy? = null
+
     override fun onStart() {
         super.onStart()
+        if (screenCapturePolicy == null) screenCapturePolicy = app.n_zik.android.privacy.ScreenCapturePolicy.bind(this)
 
         runCatching {
             bindService(intent<PlayerServiceModern>(), serviceConnection, Context.BIND_AUTO_CREATE)
@@ -928,6 +937,7 @@ class MainActivity :
 
         // Ask for notification permission if necessary
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            PermissionUsageJournal.request(this, PermissionFeature.ONBOARDING, Manifest.permission.POST_NOTIFICATIONS)
             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
@@ -1713,10 +1723,12 @@ class MainActivity :
             } else 0
 
             val bottomBarHeightPx = with(LocalDensity.current) { 240.dp.roundToPx().toFloat() } // Enough to hide floating bar + miniplayer
-            var isBarsVisible by remember { mutableStateOf(true) }
-            var topBarOffset by remember { mutableFloatStateOf(0f) }
-            var bottomBarOffset by remember { mutableFloatStateOf(0f) }
-            val offsetAnimationJob = remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
+            val scaffoldBars = remember { app.n_zik.android.core.navigation.ScaffoldBarVisibilityState() }
+            var isBarsVisible by scaffoldBars.visible
+            var topBarOffset by scaffoldBars.topOffset
+            var bottomBarOffset by scaffoldBars.bottomOffset
+            val offsetAnimationJob = scaffoldBars.animationJob
+            app.n_zik.android.core.navigation.RevealScaffoldOnNavigation(navController, scaffoldBars::reveal)
 
             // Scroll-hide guard input: whether the full player sheet is currently on screen.
             // Declared before nestedScrollConnection (which reads it live at event time);
@@ -1761,10 +1773,7 @@ class MainActivity :
                     currentRoute == "listenTogether"
                     
             LaunchedEffect(isLandscape, isLandscapeBarless, isViMusic, isScrollableRoute, density, safeDrawingInsets) {
-                topBarOffset = 0f
-                bottomBarOffset = 0f
-
-                isBarsVisible = true
+                scaffoldBars.reveal()
             }
 
             val nestedScrollConnection = remember(isLandscape, isLandscapeBarless, isViMusic, topNavBarPx, isScrollableRoute, density, safeDrawingInsets, showQueueOverlay) {
@@ -1839,8 +1848,8 @@ class MainActivity :
                 }
             }
 
-            val topBarOffsetState = derivedStateOf { topBarOffset }
-            val bottomBarOffsetState = derivedStateOf { bottomBarOffset }
+            val topBarOffsetState = scaffoldBars.topOffset
+            val bottomBarOffsetState = scaffoldBars.bottomOffset
 
             AnimatedAppearance(
                 target = appearance,
@@ -2199,7 +2208,8 @@ class MainActivity :
                             LocalIsShowingLyrics provides isShowingLyrics,
                             LocalIsShowingVisualizer provides isShowingVisualizer,
                             LocalTopBarOffset provides topBarOffsetState,
-                            LocalBottomBarOffset provides bottomBarOffsetState
+                            LocalBottomBarOffset provides bottomBarOffsetState,
+                            app.n_zik.android.core.navigation.LocalRevealScaffold provides scaffoldBars::reveal
                             //LocalInternetConnected provides internetConnected
                         ) {
                             // First-launch onboarding: rendered instead of the main
@@ -2888,6 +2898,8 @@ class MainActivity :
 
     @UnstableApi
     override fun onDestroy() {
+        screenCapturePolicy?.close()
+        screenCapturePolicy = null
         super.onDestroy()
 
         runCatching {

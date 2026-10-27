@@ -1,5 +1,15 @@
 package app.n_zik.android.components.settings
 
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertHeightIsEqualTo
+import androidx.compose.ui.test.performScrollToKey
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import app.it.fast4x.rimusic.ui.styling.Dimensions
+import app.n_zik.android.components.settings.common.LocalSettingsSearchMessage
+import app.n_zik.android.components.search.SearchHistoryStore
+import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.setActiveProfile
 import android.app.Application
 import android.content.Context
 import android.os.Looper
@@ -40,6 +50,8 @@ import app.n_zik.android.MainApplication
 import app.n_zik.android.R
 import app.n_zik.android.components.settings.common.SettingsGlobalPage
 import app.n_zik.android.components.settings.common.SettingsPageItem
+import app.n_zik.android.components.settings.common.searchSettingsEntries
+import app.n_zik.android.components.settings.common.parentCard
 import app.n_zik.android.components.settings.common.hasAutoUpdate
 import app.n_zik.android.updater.models.GithubRelease
 import app.n_zik.android.updater.services.Updater
@@ -80,11 +92,14 @@ class SettingsGlobalPageWiringTest {
         artistThumbnailShape = CircleShape,
     )
 
+    private val messages = mutableListOf<String>()
     private var selectedItem: SettingsPageItem? = null
     private var selectedCard: Pair<Int, String>? = null
 
     @Before
     fun setUp() {
+        setActiveProfile("default", context)
+        messages.clear()
         context.getSharedPreferences("preferences", Context.MODE_PRIVATE).edit().clear().commit()
         val mainApplication = mockk<MainApplication>()
         every { mainApplication.applicationContext } returns context
@@ -129,7 +144,7 @@ class SettingsGlobalPageWiringTest {
     private fun showGlobalPage(ready: () -> Boolean = { pageIsComposed() }) {
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { messages += it }) {
                 SettingsGlobalPage(
                     onItemSelected = { selectedItem = it },
                     onCardSelected = { tab, focus -> selectedCard = tab to focus },
@@ -144,6 +159,40 @@ class SettingsGlobalPageWiringTest {
         composeRule.onNodeWithTag("settings_global_update").fetchSemanticsNode()
         composeRule.onNodeWithTag("settings_global_category_system").fetchSemanticsNode()
     }.isSuccess
+
+    @Test fun savedSearchesAppearOnlyWhileFocusedAndFilterWhileTyping() {
+        SearchHistoryStore.record(context.preferences, SearchHistoryStore.PAGE_SETTINGS_GLOBAL, "Audio controls")
+        SearchHistoryStore.record(context.preferences, SearchHistoryStore.PAGE_SETTINGS_GLOBAL, "Network controls")
+        showGlobalPage()
+        composeRule.onNodeWithText("Audio controls").assertDoesNotExist()
+        composeRule.onNodeWithText("Network controls").assertDoesNotExist()
+        composeRule.onNodeWithTag("settings_global_search").performClick()
+        settle()
+        composeRule.onNodeWithText("Audio controls").assertExists()
+        composeRule.onNodeWithText("Network controls").assertExists()
+        composeRule.onNodeWithTag("settings_global_search").performTextInput("Audio")
+        settle()
+        composeRule.onNodeWithText("Audio controls").assertExists()
+        composeRule.onNodeWithText("Network controls").assertDoesNotExist()
+        composeRule.onNodeWithText("Audio controls").performClick()
+        settle()
+        composeRule.onAllNodesWithText("Audio controls").assertCountEquals(1)
+        composeRule.onNodeWithTag("settings_global_search").assertTextEquals("Audio controls")
+    }
+
+    @Test fun globalPageReservesTheSharedBottomNavigationSpace() {
+        var expected: Dp = 0.dp
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { messages += it }) {
+                expected = Dimensions.bottomSpacer
+                SettingsGlobalPage(onItemSelected = {}, onCardSelected = { _, _ -> })
+            }
+        }
+        pumpUntil("global page", 30_000) { pageIsComposed() }
+        scrollToGlobalNode("settings_global_bottom_space")
+        composeRule.onNodeWithTag("settings_global_bottom_space").assertHeightIsEqualTo(expected)
+    }
 
     @Test
     fun thePageListsAboutThenUpdateAndEveryThematicDestination() {
@@ -258,7 +307,7 @@ class SettingsGlobalPageWiringTest {
         // clock and pump until it is composed (see the class KDoc).
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { messages += it }) {
                 SettingsGlobalPage(
                     onItemSelected = { selectedItem = it },
                     onCardSelected = { tab, focus -> selectedCard = tab to focus },
@@ -348,6 +397,8 @@ class SettingsGlobalPageWiringTest {
         showGlobalPage()
 
         composeRule.onNodeWithTag("settings_global_search").performTextInput("update")
+        settle()
+        scrollToGlobalNode("settings_global_result_update")
 
         val result = composeRule.onNodeWithTag("settings_global_result_update")
         pumpUntil("the Update item result is composed", 30_000) {
@@ -369,7 +420,7 @@ class SettingsGlobalPageWiringTest {
         lateinit var navigation: NavHostController
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { messages += it }) {
                 navigation = rememberNavController()
                 NavHost(navigation, startDestination = "global") {
                     composable("global") {
@@ -385,6 +436,8 @@ class SettingsGlobalPageWiringTest {
         pumpUntil("global navigation entry", 30_000) { pageIsComposed() }
         val query = context.getString(R.string.audio_effects)
         composeRule.onNodeWithTag("settings_global_search").performTextInput(query)
+        settle()
+        scrollToGlobalNode("settings_global_result_0_${R.string.audio_effects}")
         val result = composeRule.onNodeWithTag("settings_global_result_0_${R.string.audio_effects}")
         pumpUntil("audio result", 30_000) { runCatching { result.fetchSemanticsNode() }.isSuccess }
         result.performSemanticsAction(SemanticsActions.OnClick) { it() }
@@ -393,8 +446,38 @@ class SettingsGlobalPageWiringTest {
         }
         composeRule.runOnIdle { navigation.popBackStack() }
         pumpUntil("restored result", 30_000) { runCatching { result.fetchSemanticsNode() }.isSuccess }
+        scrollToGlobalNode("settings_global_search")
         composeRule.onNodeWithTag("settings_global_search").assertTextEquals(query)
         composeRule.onNodeWithTag("settings_global_category_playback").assertDoesNotExist()
+    }
+
+    private fun scrollToGlobalNode(tag: String) {
+        val key = when {
+            tag == "settings_global_search" -> "search_controls"
+            tag == "settings_global_bottom_space" -> "bottom_space"
+            tag == "settings_global_result_update" -> "item_${R.string.update}"
+            tag.startsWith("settings_global_entry_") -> "entry_${tag.removePrefix("settings_global_entry_")}"
+            tag.startsWith("settings_global_result_") -> "card_${tag.removePrefix("settings_global_result_")}"
+            else -> error("Unknown global item tag: $tag")
+        }
+        composeRule.onNodeWithTag("settings_global_list").performScrollToKey(key)
+        settle()
+    }
+
+    @Test
+    fun broadSearchComposesOnlyVisibleResultsAndCanReachTheLastEntry() {
+        val results = searchSettingsEntries(context, "e")
+        assertTrue("query must exercise a large result list", results.size > 30)
+        val lastTag = "settings_global_entry_${results.last().id}"
+        showGlobalPage()
+        composeRule.onNodeWithTag("settings_global_search").performTextInput("e")
+        settle()
+        composeRule.onNodeWithTag("settings_global_entry_${results.first().id}").assertExists()
+        composeRule.onNodeWithTag(lastTag).assertDoesNotExist()
+        scrollToGlobalNode(lastTag)
+        composeRule.onNodeWithTag(lastTag).assertExists().performClick()
+        settle()
+        assertEquals(results.last().tab to results.last().parentCard().focusId, selectedCard)
     }
 
     @Test
@@ -403,11 +486,10 @@ class SettingsGlobalPageWiringTest {
 
         composeRule.onNodeWithTag("settings_global_search").performTextInput("zzz_no_match")
 
-        val noResults = composeRule
-            .onNodeWithText(context.getString(R.string.no_results_found))
-        pumpUntil("the no-results message is composed", 30_000) {
-            runCatching { noResults.fetchSemanticsNode() }.isSuccess
+        pumpUntil("the no-results toast is emitted", 30_000) {
+            messages.contains(context.getString(R.string.no_results_found))
         }
+        composeRule.onNodeWithText(context.getString(R.string.no_results_found)).assertDoesNotExist()
         assertTrue(
             "the default item list must disappear with a non-blank query",
             composeRule.onAllNodesWithTag("settings_global_category_playback").fetchSemanticsNodes().isEmpty()

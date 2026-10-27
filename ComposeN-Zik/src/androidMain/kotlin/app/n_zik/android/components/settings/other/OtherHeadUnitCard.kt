@@ -27,7 +27,7 @@ internal fun OtherHeadUnitCard(search: Search) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("other.androidheadunit.extra_space"),
                     title = stringResource(R.string.extra_space),
-                    text = "",
+                    text = stringResource(R.string.settings_desc_other_androidheadunit_extra_space),
                     isChecked = extraspace,
                     onCheckedChange = { extraspace = it },
                     icon = R.drawable.space

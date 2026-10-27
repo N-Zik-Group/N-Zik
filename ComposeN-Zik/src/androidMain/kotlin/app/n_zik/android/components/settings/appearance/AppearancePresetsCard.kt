@@ -20,7 +20,6 @@ import app.it.fast4x.rimusic.enums.AnimatedGradient
 import app.it.fast4x.rimusic.enums.CarouselSize
 import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.it.fast4x.rimusic.enums.ColorPaletteName
-import app.it.fast4x.rimusic.enums.IconLikeType
 import app.it.fast4x.rimusic.enums.PlayerBackgroundColors
 import app.it.fast4x.rimusic.enums.PlayerControlsType
 import app.it.fast4x.rimusic.enums.PlayerInfoType
@@ -41,7 +40,6 @@ import app.it.fast4x.rimusic.utils.colorPaletteNameKey
 import app.it.fast4x.rimusic.utils.expandedplayerKey
 import app.it.fast4x.rimusic.utils.expandedplayertoggleKey
 import app.it.fast4x.rimusic.utils.fadingedgeKey
-import app.it.fast4x.rimusic.utils.iconLikeTypeKey
 import app.it.fast4x.rimusic.utils.isLandscape
 import app.it.fast4x.rimusic.utils.noblurKey
 import app.it.fast4x.rimusic.utils.playerBackgroundColorsKey
@@ -95,71 +93,18 @@ import app.n_zik.android.components.settings.common.settingsCardExit
 @UnstableApi
 @Composable
 internal fun AppearancePresetsCard(search: Search) {
-    var showthumbnail by rememberPreference(showthumbnailKey, true)
-    var transparentbar by rememberPreference(transparentbarKey, true)
-    var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, true)
-    var expandedplayer by rememberPreference(expandedplayerKey, false)
-    var playerPlayButtonType by rememberPreference(
-        playerPlayButtonTypeKey,
-        PlayerPlayButtonType.CircularRibbed
-    )
-    var bottomgradient by rememberPreference(bottomgradientKey, false)
-    var visualizerEnabled by rememberPreference(visualizerEnabledKey, false)
-    var playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
-    var thumbnailSizeDp by rememberPreference(thumbnailSizeDpKey, 90f)
-    var playerTimelineSize by rememberPreference(
-        playerTimelineSizeKey,
-        PlayerTimelineSize.Biggest
-    )
-    var showButtonPlayerAddToPlaylist by rememberPreference(showButtonPlayerAddToPlaylistKey, true)
-    var showButtonPlayerArrow by rememberPreference(showButtonPlayerArrowKey, true)
-    var showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey, true)
-    var showButtonPlayerLoop by rememberPreference(showButtonPlayerLoopKey, false)
-    var showButtonPlayerLyrics by rememberPreference(showButtonPlayerLyricsKey, true)
-    var expandedplayertoggle by rememberPreference(expandedplayertoggleKey, false)
-    var showButtonPlayerShuffle by rememberPreference(showButtonPlayerShuffleKey, true)
-    var showButtonPlayerSleepTimer by rememberPreference(showButtonPlayerSleepTimerKey, false)
-    var showButtonPlayerMenu by rememberPreference(showButtonPlayerMenuKey, false)
-    var showButtonPlayerStartradio by rememberPreference(showButtonPlayerStartRadioKey, false)
-    var showButtonPlayerDiscover by rememberPreference(showButtonPlayerDiscoverKey, false)
-    var showButtonPlayerVideo by rememberPreference(showButtonPlayerVideoKey, true)
-    var showTotalTimeQueue by rememberPreference(showTotalTimeQueueKey, true)
-    var showNextSongsInPlayer by rememberPreference(showNextSongsInPlayerKey, false)
-    var showRemainingSongTime by rememberPreference(showRemainingSongTimeKey, true)
-    var thumbnailRoundnessDp by rememberPreference(thumbnailRoundnessDpKey, 12f)
     var playerBackgroundColors by rememberPreference(
         playerBackgroundColorsKey,
         PlayerBackgroundColors.AnimatedGradient
     )
-    var showTopActionsBar by rememberPreference(showTopActionsBarKey, true)
     var playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     var playerInfoType by rememberPreference(playerInfoTypeKey, PlayerInfoType.Modern)
-    var transparentBackgroundActionBarPlayer by rememberPreference(
-        transparentBackgroundPlayerActionBarKey,
-        true
-    )
-    var iconLikeType by rememberPreference(iconLikeTypeKey, IconLikeType.Essential)
-    var actionspacedevenly by rememberPreference(actionspacedevenlyKey, true)
     var thumbnailType by rememberPreference(thumbnailTypeKey, ThumbnailType.Modern)
     var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
     var queueType by rememberPreference(queueTypeKey, QueueType.Modern)
-    var noblur by rememberPreference(noblurKey, true)
-    var fadingedge by rememberPreference(fadingedgeKey, false)
-    var carouselSize by rememberPreference(carouselSizeKey, CarouselSize.Biggest)
     var playerInfoShowIcons by rememberPreference(playerInfoShowIconsKey, true)
-    var topPadding by rememberPreference(topPaddingKey, true)
-    var animatedGradient by rememberPreference(
-        animatedGradientKey,
-        AnimatedGradient.M3EMorphingCover
-    )
-    var blurStrength by rememberPreference(blurStrengthKey, 25f)
-    var thumbnailFadeEx  by rememberPreference(thumbnailFadeExKey, 5f)
-    var thumbnailFade  by rememberPreference(thumbnailFadeKey, 5f)
-    var thumbnailSpacing  by rememberPreference(thumbnailSpacingKey, 0f)
-    var colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
-    var colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     var appearanceChooser by remember { mutableStateOf(false) }
-    val searchCtx_0_1 = search.inputValue.isBlank() || stringResource(R.string.player_presets_and_layout).contains(search.inputValue, true) || stringResource(R.string.appearancepresets).contains(search.inputValue, true) || stringResource(R.string.appearancepresetssecondary).contains(search.inputValue, true) || stringResource(R.string.playertype).contains(search.inputValue, true) || stringResource(R.string.queuetype).contains(search.inputValue, true) || stringResource(R.string.thumbnailtype).contains(search.inputValue, true) || stringResource(R.string.pinfo_type).contains(search.inputValue, true) || stringResource(R.string.pinfo_album_and_artist_name).contains(search.inputValue, true) || stringResource(R.string.pinfo_show_icons).contains(search.inputValue, true) || stringResource(R.string.pcontrols_type).contains(search.inputValue, true) || stringResource(R.string.icon_like_button).contains(search.inputValue, true)
+    val searchCtx_0_1 = search.inputValue.isBlank() || stringResource(R.string.player_presets_and_layout).contains(search.inputValue, true) || stringResource(R.string.appearancepresets).contains(search.inputValue, true) || stringResource(R.string.appearancepresetssecondary).contains(search.inputValue, true) || stringResource(R.string.playertype).contains(search.inputValue, true) || stringResource(R.string.queuetype).contains(search.inputValue, true) || stringResource(R.string.thumbnailtype).contains(search.inputValue, true) || stringResource(R.string.pinfo_type).contains(search.inputValue, true) || stringResource(R.string.pinfo_album_and_artist_name).contains(search.inputValue, true) || stringResource(R.string.pinfo_show_icons).contains(search.inputValue, true) || stringResource(R.string.pcontrols_type).contains(search.inputValue, true)
     AnimatedVisibility(
                 visible = searchCtx_0_1,
                 enter = settingsCardEnter,
@@ -172,6 +117,60 @@ internal fun AppearancePresetsCard(search: Search) {
                     content = {
 
             if (appearanceChooser){
+                // Preset-only preferences are needed only while the chooser is open.
+                var showthumbnail by rememberPreference(showthumbnailKey, true)
+                var transparentbar by rememberPreference(transparentbarKey, true)
+                var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, true)
+                var expandedplayer by rememberPreference(expandedplayerKey, false)
+                var playerPlayButtonType by rememberPreference(
+                    playerPlayButtonTypeKey,
+                    PlayerPlayButtonType.CircularRibbed
+                )
+                var bottomgradient by rememberPreference(bottomgradientKey, false)
+                var visualizerEnabled by rememberPreference(visualizerEnabledKey, false)
+                var playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
+                var thumbnailSizeDp by rememberPreference(thumbnailSizeDpKey, 90f)
+                var playerTimelineSize by rememberPreference(
+                    playerTimelineSizeKey,
+                    PlayerTimelineSize.Biggest
+                )
+                var showButtonPlayerAddToPlaylist by rememberPreference(showButtonPlayerAddToPlaylistKey, true)
+                var showButtonPlayerArrow by rememberPreference(showButtonPlayerArrowKey, true)
+                var showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey, true)
+                var showButtonPlayerLoop by rememberPreference(showButtonPlayerLoopKey, false)
+                var showButtonPlayerLyrics by rememberPreference(showButtonPlayerLyricsKey, true)
+                var expandedplayertoggle by rememberPreference(expandedplayertoggleKey, false)
+                var showButtonPlayerShuffle by rememberPreference(showButtonPlayerShuffleKey, true)
+                var showButtonPlayerSleepTimer by rememberPreference(showButtonPlayerSleepTimerKey, false)
+                var showButtonPlayerMenu by rememberPreference(showButtonPlayerMenuKey, false)
+                var showButtonPlayerStartradio by rememberPreference(showButtonPlayerStartRadioKey, false)
+                var showButtonPlayerDiscover by rememberPreference(showButtonPlayerDiscoverKey, false)
+                var showButtonPlayerVideo by rememberPreference(showButtonPlayerVideoKey, true)
+                var showTotalTimeQueue by rememberPreference(showTotalTimeQueueKey, true)
+                var showNextSongsInPlayer by rememberPreference(showNextSongsInPlayerKey, false)
+                var showRemainingSongTime by rememberPreference(showRemainingSongTimeKey, true)
+                var thumbnailRoundnessDp by rememberPreference(thumbnailRoundnessDpKey, 12f)
+                var showTopActionsBar by rememberPreference(showTopActionsBarKey, true)
+                var transparentBackgroundActionBarPlayer by rememberPreference(
+                    transparentBackgroundPlayerActionBarKey,
+                    true
+                )
+                var actionspacedevenly by rememberPreference(actionspacedevenlyKey, true)
+                var noblur by rememberPreference(noblurKey, true)
+                var fadingedge by rememberPreference(fadingedgeKey, false)
+                var carouselSize by rememberPreference(carouselSizeKey, CarouselSize.Biggest)
+                var topPadding by rememberPreference(topPaddingKey, true)
+                var animatedGradient by rememberPreference(
+                    animatedGradientKey,
+                    AnimatedGradient.M3EMorphingCover
+                )
+                var blurStrength by rememberPreference(blurStrengthKey, 25f)
+                var thumbnailFadeEx  by rememberPreference(thumbnailFadeExKey, 5f)
+                var thumbnailFade  by rememberPreference(thumbnailFadeKey, 5f)
+                var thumbnailSpacing  by rememberPreference(thumbnailSpacingKey, 0f)
+                var colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
+                var colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
+
                 AppearancePresetDialog(
                 onDismiss = {appearanceChooser = false},
                 onClick0 = {
@@ -454,6 +453,7 @@ internal fun AppearancePresetsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.playertype).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_player_presets_and_layout_playertype), playerType.text),
                         modifier = Modifier.settingsSearchTarget("appearance.player_presets_and_layout.playertype"),
                         icon = R.drawable.play,
                         title = stringResource(R.string.playertype),
@@ -472,6 +472,7 @@ internal fun AppearancePresetsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.queuetype).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_player_presets_and_layout_queuetype), queueType.text),
                         modifier = Modifier.settingsSearchTarget("appearance.player_presets_and_layout.queuetype"),
                         icon = R.drawable.sort_grid,
                         title = stringResource(R.string.queuetype),
@@ -490,6 +491,7 @@ internal fun AppearancePresetsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.thumbnailtype).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_player_presets_and_layout_thumbnailtype), thumbnailType.text),
                         icon = R.drawable.cd,
                         title = stringResource(R.string.thumbnailtype),
                         selectedValue = thumbnailType,
@@ -508,6 +510,7 @@ internal fun AppearancePresetsCard(search: Search) {
             ) {
                 if (search.inputValue.isBlank() || stringResource(R.string.pinfo_type).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_player_presets_and_layout_pinfo_type), playerInfoType.text),
                         modifier = Modifier.settingsSearchTarget("appearance.player_presets_and_layout.pinfo_type"),
                         icon = R.drawable.information,
                         title = stringResource(R.string.pinfo_type),
@@ -531,7 +534,7 @@ internal fun AppearancePresetsCard(search: Search) {
                                 OtherSwitchSettingEntry(
                         icon = R.drawable.information,
                                     title = stringResource(R.string.pinfo_show_icons),
-                                    text = "",
+                                    text = stringResource(R.string.settings_desc_appearance_player_presets_and_layout_pinfo_show_icons),
                                     isChecked = playerInfoShowIcons,
                                     onCheckedChange = { playerInfoShowIcons = it },
                                     modifier = (Modifier
@@ -550,6 +553,7 @@ internal fun AppearancePresetsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.pcontrols_type).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_player_presets_and_layout_pcontrols_type), playerControlsType.text),
                         modifier = Modifier.settingsSearchTarget("appearance.player_presets_and_layout.pcontrols_type"),
                         icon = R.drawable.burger,
                         title = stringResource(R.string.pcontrols_type),
@@ -561,23 +565,7 @@ internal fun AppearancePresetsCard(search: Search) {
                     )
                 }
 
-            if (search.inputValue.isBlank() || stringResource(R.string.icon_like_button).contains(
-                    search.inputValue,
-                    true
-                )
-            )
-                if (search.inputValue.isBlank() || stringResource(R.string.icon_like_button).contains(search.inputValue, true)) {
-                    OtherEnumValueSelectorSettingsEntry(
-                        modifier = Modifier.settingsSearchTarget("appearance.player_presets_and_layout.icon_like_button"),
-                        icon = R.drawable.heart,
-                        title = stringResource(R.string.icon_like_button),
-                        selectedValue = iconLikeType,
-                        onValueSelected = {
-                            iconLikeType = it
-                        },
-                        valueText = { it.text },
-                    )
-                }
+
 
 
             }

@@ -220,7 +220,8 @@ fun ProfileFaceCard(
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.profile.face_name_source"),
                 title = stringResource(R.string.face_name_source),
-                text = faceSourceLabel(nameSource),
+                text = stringResource(R.string.settings_desc_embedded_profile_face_name_source),
+                selectedValueText = faceSourceLabel(nameSource),
                 icon = faceSourceIcon(nameSource),
                 onClick = { showNameSourceDialog = true }
             )
@@ -228,7 +229,8 @@ fun ProfileFaceCard(
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.profile.face_avatar_source"),
                 title = stringResource(R.string.face_avatar_source),
-                text = faceSourceLabel(avatarSource),
+                text = stringResource(R.string.settings_desc_embedded_profile_face_avatar_source),
+                selectedValueText = faceSourceLabel(avatarSource),
                 icon = faceSourceIcon(avatarSource),
                 onClick = { showAvatarSourceDialog = true }
             )
@@ -236,7 +238,8 @@ fun ProfileFaceCard(
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.profile.face_profile_name"),
                 title = stringResource(R.string.face_profile_name),
-                text = profileName,
+                text = stringResource(R.string.settings_desc_embedded_profile_face_profile_name),
+                selectedValueText = profileName,
                 icon = R.drawable.pencil,
                 onClick = { showRenameDialog = true }
             )
@@ -244,7 +247,8 @@ fun ProfileFaceCard(
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.profile.face_photo"),
                 title = stringResource(R.string.face_photo),
-                text = stringResource(
+                text = stringResource(R.string.settings_desc_embedded_profile_face_photo),
+                selectedValueText = stringResource(
                     if (hasPhoto) R.string.face_photo_set else R.string.face_photo_not_set
                 ),
                 icon = R.drawable.image,
@@ -274,7 +278,7 @@ fun ProfileFaceCard(
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.trash),
-                                contentDescription = stringResource(R.string.face_photo_remove),
+                                contentDescription = stringResource(R.string.settings_desc_embedded_profile_face_photo_remove),
                                 tint = Color.Red,
                                 modifier = Modifier.size(20.dp)
                             )

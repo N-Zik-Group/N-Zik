@@ -119,7 +119,7 @@ internal fun AppearanceCoverCard(search: Search) {
                         modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.show_thumbnail"),
                         icon = R.drawable.image,
                             title = stringResource(R.string.show_thumbnail),
-                            text = "",
+                            text = stringResource(R.string.settings_desc_appearance_cover_and_thumbnail_show_thumbnail),
                             isChecked = showthumbnail,
                             onCheckedChange = {showthumbnail = it},
                         )
@@ -133,6 +133,13 @@ internal fun AppearanceCoverCard(search: Search) {
                 )
                     if (search.inputValue.isBlank() || stringResource(R.string.swipe_Animation_No_Thumbnail).contains(search.inputValue, true)) {
                         OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_cover_and_thumbnail_swipe_animation_no_thumbnail), when (swipeAnimationNoThumbnail) {
+                                    SwipeAnimationNoThumbnail.Sliding -> stringResource(R.string.te_slide_vertical)
+                                    SwipeAnimationNoThumbnail.Fade -> stringResource(R.string.te_fade)
+                                    SwipeAnimationNoThumbnail.Scale -> stringResource(R.string.te_scale)
+                                    SwipeAnimationNoThumbnail.Carousel -> stringResource(R.string.carousel)
+                                    SwipeAnimationNoThumbnail.Circle -> stringResource(R.string.vt_circular)
+                                }),
                         icon = R.drawable.gesture,
                             title = stringResource(R.string.swipe_Animation_No_Thumbnail),
                             selectedValue = swipeAnimationNoThumbnail,
@@ -162,7 +169,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                 OtherSwitchSettingEntry(
                         icon = R.drawable.drop_blur,
                                     title = stringResource(R.string.fadingedge),
-                                    text = "",
+                                    text = stringResource(R.string.settings_desc_appearance_cover_and_thumbnail_fadingedge),
                                     isChecked = fadingedge,
                                     onCheckedChange = { fadingedge = it },
                                     modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.fadingedge")
@@ -180,7 +187,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                 OtherSwitchSettingEntry(
                         icon = R.drawable.images_sharp,
                                     title = stringResource(R.string.carousel),
-                                    text = "",
+                                    text = stringResource(R.string.settings_desc_appearance_cover_and_thumbnail_carousel),
                                     isChecked = carousel,
                                     onCheckedChange = { carousel = it },
                                     modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.carousel")
@@ -194,6 +201,7 @@ internal fun AppearanceCoverCard(search: Search) {
                         )
                             if (search.inputValue.isBlank() || stringResource(R.string.carouselsize).contains(search.inputValue, true)) {
                                 OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_cover_and_thumbnail_carouselsize), carouselSize.text),
                         icon = R.drawable.resize,
                                     title = stringResource(R.string.carouselsize),
                                     selectedValue = carouselSize,
@@ -214,7 +222,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                 OtherSwitchSettingEntry(
                         icon = R.drawable.pause,
                                     title = stringResource(R.string.thumbnailpause),
-                                    text = "",
+                                    text = stringResource(R.string.settings_desc_appearance_cover_and_thumbnail_thumbnailpause),
                                     isChecked = thumbnailpause,
                                     onCheckedChange = { thumbnailpause = it },
                                     modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.thumbnailpause")
@@ -227,7 +235,7 @@ internal fun AppearanceCoverCard(search: Search) {
                         OtherSwitchSettingEntry(
                             icon = R.drawable.images_sharp,
                             title = stringResource(R.string.crop_video_thumbnails),
-                            text = "",
+                            text = stringResource(R.string.settings_desc_appearance_cover_and_thumbnail_crop_video_thumbnails),
                             isChecked = cropVideoThumbnails,
                             onCheckedChange = { cropVideoThumbnails = it },
                             modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.crop_video_thumbnails")
@@ -243,7 +251,7 @@ internal fun AppearanceCoverCard(search: Search) {
                             OtherSwitchSettingEntry(
                         icon = R.drawable.images_sharp,
                                 title = stringResource(R.string.show_cover_thumbnail_animation),
-                                text = "",
+                                text = stringResource(R.string.settings_desc_appearance_cover_and_thumbnail_show_cover_thumbnail_animation),
                                 isChecked = showCoverThumbnailAnimation,
                                 onCheckedChange = { showCoverThumbnailAnimation = it },
                                 modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.show_cover_thumbnail_animation")
@@ -253,6 +261,7 @@ internal fun AppearanceCoverCard(search: Search) {
                             Column {
                                 if (search.inputValue.isBlank() || stringResource(R.string.cover_thumbnail_animation_type).contains(search.inputValue, true)) {
                                     OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_cover_and_thumbnail_cover_thumbnail_animation_type), coverThumbnailAnimation.text),
                         icon = R.drawable.images_sharp,
                                         title = stringResource(R.string.cover_thumbnail_animation_type),
                                         selectedValue = coverThumbnailAnimation,
@@ -279,7 +288,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                         modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.player_thumbnail_size"),
                                         icon = R.drawable.resize,
                                         title = stringResource(R.string.player_thumbnail_size),
-                                        text = "",
+                                        text = stringResource(R.string.settings_desc_appearance_cover_and_thumbnail_player_thumbnail_size),
                                         state = thumbnailSizeLDp,
                                         range = 0f..100f,
                                         stepSize = 0f,
@@ -322,7 +331,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                         modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.player_thumbnail_size"),
                                         icon = R.drawable.resize,
                                         title = stringResource(R.string.player_thumbnail_size),
-                                        text = "",
+                                        text = stringResource(R.string.settings_desc_appearance_cover_and_thumbnail_player_thumbnail_size),
                                         state = thumbnailSizeDp,
                                         range = 0f..100f,
                                         stepSize = 0f,
@@ -367,7 +376,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                     modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.thumbnail_roundness"),
                                     icon = R.drawable.image,
                                     title = stringResource(R.string.thumbnail_roundness),
-                                    text = "",
+                                    text = stringResource(R.string.settings_desc_appearance_cover_and_thumbnail_thumbnail_roundness),
                                     state = thumbnailRoundnessDp,
                                     range = 0f..48f,
                                     stepSize = 0f,
@@ -410,7 +419,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                     modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.artist_roundness"),
                                     icon = R.drawable.image,
                                     title = stringResource(R.string.artist_roundness),
-                                    text = "",
+                                    text = stringResource(R.string.settings_desc_appearance_cover_and_thumbnail_artist_roundness),
                                     state = artistThumbnailRoundnessDp,
                                     range = 0f..48f,
                                     stepSize = 0f,
@@ -451,7 +460,7 @@ internal fun AppearanceCoverCard(search: Search) {
                             SliderSettingsEntry(
                                 icon = R.drawable.ui,
                                 title = stringResource(R.string.ui_roundness),
-                                text = "",
+                                text = stringResource(R.string.settings_desc_appearance_cover_and_thumbnail_ui_roundness),
                                 state = uiRoundnessDp,
                                 range = 0f..40f,
                                 stepSize = 0f,
@@ -496,7 +505,7 @@ internal fun AppearanceCoverCard(search: Search) {
                         modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.noblur"),
                         icon = R.drawable.eye_off,
                             title = stringResource(R.string.noblur),
-                            text = "",
+                            text = stringResource(R.string.settings_desc_appearance_cover_and_thumbnail_noblur),
                             isChecked = noblur,
                             onCheckedChange = { noblur = it }
                         )
@@ -516,7 +525,7 @@ internal fun AppearanceCoverCard(search: Search) {
                         modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.statsfornerdsplayer"),
                         icon = R.drawable.stats_chart,
                             title = stringResource(R.string.statsfornerdsplayer),
-                            text = "",
+                            text = stringResource(R.string.settings_desc_appearance_cover_and_thumbnail_statsfornerdsplayer),
                             isChecked = statsfornerds,
                             onCheckedChange = { statsfornerds = it }
                         )

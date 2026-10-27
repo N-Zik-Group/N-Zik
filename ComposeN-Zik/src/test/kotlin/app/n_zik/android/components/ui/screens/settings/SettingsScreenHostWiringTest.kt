@@ -197,7 +197,7 @@ class SettingsScreenHostWiringTest {
             .isNotEmpty()
 
     private fun categoryIsComposed(): Boolean = runCatching {
-        composeRule.onNodeWithTag("settings.target.card.0.playback", useUnmergedTree = true).fetchSemanticsNode()
+        composeRule.onNodeWithTag("settings.category.playback", useUnmergedTree = true).fetchSemanticsNode()
     }.isSuccess
 
     @Test

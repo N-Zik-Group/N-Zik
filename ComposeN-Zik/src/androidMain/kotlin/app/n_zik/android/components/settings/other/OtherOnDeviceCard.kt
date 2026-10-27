@@ -111,7 +111,8 @@ internal fun OtherOnDeviceCard(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("other.on_device.folder_that_will_show_when_you_open_on_device_page"),
                         title = stringResource(R.string.folder_that_will_show_when_you_open_on_device_page),
-                        text = defaultFolder,
+                        text = stringResource(R.string.settings_desc_other_on_device_folder_that_will_show_when_you_open_on_device_page),
+                        selectedValueText = defaultFolder,
                         icon = R.drawable.music_file,
                         onClick = { showFolderDialog = true }
                     )

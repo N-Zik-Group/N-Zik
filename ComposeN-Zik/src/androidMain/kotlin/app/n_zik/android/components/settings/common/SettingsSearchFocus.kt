@@ -2,7 +2,6 @@ package app.n_zik.android.components.settings.common
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -19,18 +18,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.components.search.SearchNoResults
+
+// Online Search uses 16dp around the bar before its full-width result list.
+internal val SettingsSearchBarPadding = PaddingValues(16.dp)
 
 /**
  * Search focus behavior, shared by the settings pages (global page and every
  * per-tab page), the local search screen and the history screen: focusing
  * the search bar collapses the page title (the bar rises to the title's
  * level), fades the content out in place (plain alpha, no layout movement),
- * and lifts the shared 16dp bar top padding to 0 so the bar reaches the top.
+ * and keeps the same 16dp search bar margins as Online Search.
  * The content only fades while the query is blank - filtered cards act as
  * search results and stay fully visible.
  */
@@ -38,17 +38,10 @@ import app.n_zik.android.components.search.SearchNoResults
 class SettingsSearchFocus(
     val titleVisible: Boolean,
     private val contentAlphaState: State<Float>,
-    private val barTopPaddingState: State<Dp>,
 ) {
     val contentAlpha: Float get() = contentAlphaState.value
 
-    // PaddingValues is read during measurement, avoiding page-wide recomposition per frame.
-    val barPadding: PaddingValues = object : PaddingValues {
-        override fun calculateLeftPadding(layoutDirection: LayoutDirection): Dp = 16.dp
-        override fun calculateTopPadding(): Dp = barTopPaddingState.value
-        override fun calculateRightPadding(layoutDirection: LayoutDirection): Dp = 16.dp
-        override fun calculateBottomPadding(): Dp = 16.dp
-    }
+    val barPadding: PaddingValues get() = SettingsSearchBarPadding
 }
 
 @Composable
@@ -61,13 +54,8 @@ fun rememberSettingsSearchFocus(
         animationSpec = tween(250),
         label = "settingsSearchFocusContentAlpha"
     )
-    val barTopPadding = animateDpAsState(
-        targetValue = if (isSearchFocused) 0.dp else 16.dp,
-        animationSpec = tween(250),
-        label = "settingsSearchFocusBarTopPadding"
-    )
-    return remember(isSearchFocused, contentAlpha, barTopPadding) {
-        SettingsSearchFocus(!isSearchFocused, contentAlpha, barTopPadding)
+    return remember(isSearchFocused, contentAlpha) {
+        SettingsSearchFocus(!isSearchFocused, contentAlpha)
     }
 }
 

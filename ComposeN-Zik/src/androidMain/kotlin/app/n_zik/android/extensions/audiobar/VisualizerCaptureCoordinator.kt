@@ -1,5 +1,10 @@
 package app.n_zik.android.extensions.audiobar
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -63,9 +68,15 @@ object VisualizerCaptureCoordinator {
         snapshotFlows.computeIfAbsent(sessionId) {
             lateinit var selfFlow: StateFlow<VisualizerSnapshot?>
             selfFlow = flow {
+                var lastJournalAt = 0L
                 while (currentCoroutineContext().isActive) {
                     try {
                         emit(VisualizerHelper.captureNow(sessionId))
+                        val now = System.currentTimeMillis()
+                        if (now - lastJournalAt >= 30_000L && VisualizerHelper.getSharedVisualizer(sessionId)?.enabled == true) {
+                            lastJournalAt = now
+                            PermissionUsageJournal.record(app.n_zik.android.appContext(), PermissionFeature.VISUALIZER, JournalPermission.MICROPHONE, PermissionEventKind.USED)
+                        }
                     } catch (e: Exception) {
                         Timber.tag("VisualizerCaptureCoordinator").e(
                             e,

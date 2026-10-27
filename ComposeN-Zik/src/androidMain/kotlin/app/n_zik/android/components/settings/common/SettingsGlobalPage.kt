@@ -17,9 +17,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
@@ -30,25 +31,26 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.it.fast4x.rimusic.utils.lastUpdateCheckKey
 import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.secondary
-import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.search.SearchHistoryStore
-import app.n_zik.android.components.search.SearchNoResults
 import app.n_zik.android.components.search.SearchResultsViewport
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.UnifiedSearchBar
@@ -85,7 +87,7 @@ fun SettingsGlobalPage(
     onEntrySelected: ((SettingsEntryTarget) -> Unit)? = null,
 ) {
     val context = LocalContext.current
-    val scrollState = rememberScrollState()
+    val scrollState = rememberLazyListState()
 
     var searchInput by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
     var isSearchFocused by remember { mutableStateOf(false) }
@@ -95,16 +97,24 @@ fun SettingsGlobalPage(
         animationSpec = tween(250),
         label = "settingsGlobalPageContentAlpha"
     )
-    val itemResults = if (query.isBlank()) emptyList<SettingsPageItem>() else searchSettingsPageItems(context, query)
-    val cardResults = if (query.isBlank()) emptyList<SettingsCardRegistryEntry>() else
-        SettingsCards.filter { context.getString(it.titleRes).contains(query.trim(), true) }
-    val entryResults = searchSettingsEntries(context, query)
-    val categoryResults = if (query.isBlank()) emptyList() else OrganizedSettingsCategories.filter {
-        context.getString(it.labelRes).contains(query.trim(), true)
+    val configuration = LocalConfiguration.current
+    val itemResults = remember(context, configuration, query) {
+        searchSettingsPageItems(context, query)
+    }
+    val cardResults = remember(context, configuration, query) {
+        if (query.isBlank()) emptyList() else
+            SettingsCards.filter { context.getString(it.titleRes).contains(query.trim(), true) }
+    }
+    val entryResults = remember(context, configuration, query) { searchSettingsEntries(context, query) }
+    val categoryResults = remember(context, configuration, query) {
+        if (query.isBlank()) emptyList() else OrganizedSettingsCategories.filter {
+            context.getString(it.labelRes).contains(query.trim(), true)
+        }
     }
     val noResults = query.isNotBlank() && itemResults.isEmpty() && cardResults.isEmpty() && entryResults.isEmpty() && categoryResults.isEmpty()
+    SettingsSearchEmptyFeedback(query, noResults)
     LaunchedEffect(noResults) {
-        if (noResults) scrollState.scrollTo(0)
+        if (noResults) scrollState.scrollToItem(0)
     }
 
     // This page's own filter history (per-page store), paused by the "pause
@@ -120,126 +130,133 @@ fun SettingsGlobalPage(
     }
 
     SearchResultsViewport {
-    Column(
-        modifier = Modifier
-            .background(colorPalette().background0)
-            .fillMaxWidth()
-            .verticalScroll(scrollState)
-    ) {
-        AnimatedVisibility(
-            visible = !isSearchFocused,
-            enter = expandVertically(tween(250)) + fadeIn(tween(250)),
-            exit = shrinkVertically(tween(250)) + fadeOut(tween(250)),
+        LazyColumn(
+            state = scrollState,
+            modifier = Modifier
+                .background(colorPalette().background0)
+                .fillMaxWidth()
+                .testTag("settings_global_list")
         ) {
-            HeaderWithIcon(
-                title = stringResource(R.string.settings_global_title),
-                iconId = R.drawable.settings,
-                enabled = false,
-                showIcon = true,
-                modifier = Modifier,
-                onClick = {}
-            )
-        }
+            item(key = "search_controls", contentType = "search_controls") {
+                Column {
+                    AnimatedVisibility(
+                        visible = !isSearchFocused,
+                        enter = expandVertically(tween(250)) + fadeIn(tween(250)),
+                        exit = shrinkVertically(tween(250)) + fadeOut(tween(250)),
+                    ) {
+                        HeaderWithIcon(
+                            title = stringResource(R.string.settings_global_title),
+                            iconId = R.drawable.settings,
+                            enabled = false,
+                            showIcon = true,
+                            modifier = Modifier,
+                            onClick = {}
+                        )
+                    }
 
-        SettingsGlobalSearchBar(
-            input = searchInput,
-            onInputChanged = { searchInput = it },
-            onFocused = { isSearchFocused = it },
-            onSearch = { recordSearchQuery() },
-            // 16dp bottom keeps the bar-to-card gap identical to the card-to-
-            // card gap; the 8dp top combines with the header's own 8dp inner
-            // padding into the same 16dp rhythm
-            modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 16.dp)
-        )
+                    SettingsGlobalSearchBar(
+                        input = searchInput,
+                        onInputChanged = { searchInput = it },
+                        onFocused = { isSearchFocused = it },
+                        onSearch = { recordSearchQuery() },
+                        // Match Online Search and the per-page search coordinators.
+                        modifier = Modifier.padding(SettingsSearchBarPadding)
+                    )
 
-        SearchHistorySection(
-            visible = historyVisible,
-            queries = historyMatches,
-            onQueryClick = { searchInput = TextFieldValue(it); recordSearchQuery(it); isSearchFocused = false },
-            onQueryDelete = {
-                history.value = SearchHistoryStore.delete(
-                    context.preferences,
-                    SearchHistoryStore.PAGE_SETTINGS_GLOBAL,
-                    it
-                )
-            },
-            onQueryDeleteAll = {
-                history.value = SearchHistoryStore.deleteAll(
-                    context.preferences,
-                    SearchHistoryStore.PAGE_SETTINGS_GLOBAL
-                )
-            }
-        )
-
-        if (query.isBlank()) {
-            // Plain alpha fade (no layout removal): the page content disappears
-            // without moving or collapsing, the bar rise comes from the title.
-            Column(modifier = Modifier.graphicsLayer { alpha = contentAlpha }) {
-                SettingsPageGroups.forEach { group ->
-                    GlobalPageCard(
-                        testTag = "settings_global_group_${group.group}",
-                        content = {
-                            SettingsPageItems
-                                .filter { it.group == group.group }
-                                .forEach { item ->
-                                    GlobalPageItemRow(item = item, onItemSelected = onItemSelected)
-                                }
+                    SearchHistorySection(
+                        visible = historyVisible,
+                        queries = historyMatches,
+                        onQueryClick = { searchInput = TextFieldValue(it); recordSearchQuery(it); isSearchFocused = false },
+                        onQueryDelete = {
+                            history.value = SearchHistoryStore.delete(
+                                context.preferences,
+                                SearchHistoryStore.PAGE_SETTINGS_GLOBAL,
+                                it
+                            )
+                        },
+                        onQueryDeleteAll = {
+                            history.value = SearchHistoryStore.deleteAll(
+                                context.preferences,
+                                SearchHistoryStore.PAGE_SETTINGS_GLOBAL
+                            )
                         }
                     )
                 }
             }
-        } else if (itemResults.isEmpty() && cardResults.isEmpty() && entryResults.isEmpty() && categoryResults.isEmpty()) {
-            SearchNoResults(fillRemainingViewport = true)
-        } else {
-            entryResults.forEach { result ->
-                val card = result.parentCard()
-                val category = OrganizedSettingsCategories.first { it.id == card.categoryId() }
-                GlobalPageCard(testTag = "settings_result_entry_${result.id}") {
+
+            if (query.isBlank()) {
+                // Plain alpha fade (no layout removal): the page content disappears
+                // without moving or collapsing, the bar rise comes from the title.
+                item(key = "groups", contentType = "groups") {
+                    Column(modifier = Modifier.graphicsLayer { alpha = contentAlpha }) {
+                        SettingsPageGroups.forEach { group ->
+                            GlobalPageCard(
+                                testTag = "settings_global_group_${group.group}",
+                                content = {
+                                    SettingsPageItems
+                                        .filter { it.group == group.group }
+                                        .forEach { item ->
+                                            GlobalPageItemRow(item = item, onItemSelected = onItemSelected)
+                                        }
+                                }
+                            )
+                        }
+                    }
+                }
+            } else if (itemResults.isEmpty() && cardResults.isEmpty() && entryResults.isEmpty() && categoryResults.isEmpty()) {
+                // Empty-result feedback is a debounced toast; keep the page clear.
+            } else {
+                items(entryResults, key = { "entry_${it.id}" }, contentType = { "entry" }) { result ->
+                    val card = result.parentCard()
+                    val category = OrganizedSettingsCategories.first { it.id == card.categoryId() }
+                    GlobalPageCard(testTag = "settings_result_entry_${result.id}") {
+                        OtherSettingsEntry(
+                            title = stringResource(result.labelRes),
+                            text = "${stringResource(category.labelRes)} › ${card.displayTitle(context)}",
+                            icon = card.iconRes,
+                            modifier = Modifier.clip(uiRoundnessShape()).testTag("settings_global_entry_${result.id}"),
+                            onClick = {
+                                recordSearchQuery()
+                                onEntrySelected?.invoke(result) ?: onCardSelected(card.tab, card.focusId)
+                            },
+                        )
+                    }
+                }
+                items(categoryResults, key = { "category_${it.id}" }, contentType = { "category" }) { category ->
+                    val item = SettingsPageItems.first { it.categoryId == category.id }
+                    GlobalPageCard(testTag = "settings_result_category_${category.id}") {
+                        GlobalPageItemRow(item = item, onItemSelected = { recordSearchQuery(); onItemSelected(it) })
+                    }
+                }
+                items(itemResults, key = { "item_${it.labelRes}" }, contentType = { "item" }) { item ->
+                    GlobalPageCard(testTag = "settings_result_card_update") {
                     OtherSettingsEntry(
-                        title = stringResource(result.labelRes),
-                        text = "${stringResource(category.labelRes)} › ${card.displayTitle(context)}",
-                        icon = card.iconRes,
-                        modifier = Modifier.testTag("settings_global_entry_${result.id}"),
-                        onClick = {
-                            recordSearchQuery()
-                            onEntrySelected?.invoke(result) ?: onCardSelected(card.tab, card.focusId)
-                        },
+                        title = stringResource(item.labelRes),
+                        text = "",
+                        icon = item.iconRes,
+                        modifier = Modifier.clip(uiRoundnessShape()).testTag("settings_global_result_update"),
+                        onClick = { recordSearchQuery(); onItemSelected(item) }
                     )
+                    }
+                }
+                items(cardResults, key = { "card_${it.tab}_${it.titleRes}" }, contentType = { "card" }) { card ->
+                    val section = OrganizedSettingsCategories.first { it.id == card.categoryId() }
+                    GlobalPageCard(testTag = "settings_result_card_${card.tab}_${card.titleRes}") {
+                    OtherSettingsEntry(
+                        title = card.displayTitle(context),
+                        text = stringResource(section.labelRes),
+                        icon = card.iconRes,
+                        modifier = Modifier.clip(uiRoundnessShape()).testTag("settings_global_result_${card.tab}_${card.titleRes}"),
+                        onClick = { recordSearchQuery(); onOrganizedCardSelected?.invoke(card) ?: onCardSelected(card.tab, card.focusId) }
+                    )
+                    }
                 }
             }
-            categoryResults.forEach { category ->
-                val item = SettingsPageItems.first { it.categoryId == category.id }
-                GlobalPageCard(testTag = "settings_result_category_${category.id}") {
-                    GlobalPageItemRow(item = item, onItemSelected = { recordSearchQuery(); onItemSelected(it) })
-                }
-            }
-            itemResults.forEach { item ->
-                GlobalPageCard(testTag = "settings_result_card_update") {
-                OtherSettingsEntry(
-                    title = stringResource(item.labelRes),
-                    text = "",
-                    icon = item.iconRes,
-                    modifier = Modifier.testTag("settings_global_result_update"),
-                    onClick = { recordSearchQuery(); onItemSelected(item) }
-                )
-                }
-            }
-            cardResults.forEach { card ->
-                val section = OrganizedSettingsCategories.first { it.id == card.categoryId() }
-                GlobalPageCard(testTag = "settings_result_card_${card.tab}_${card.titleRes}") {
-                OtherSettingsEntry(
-                    title = card.displayTitle(context),
-                    text = stringResource(section.labelRes),
-                    icon = card.iconRes,
-                    modifier = Modifier.testTag("settings_global_result_${card.tab}_${card.titleRes}"),
-                    onClick = { recordSearchQuery(); onOrganizedCardSelected?.invoke(card) ?: onCardSelected(card.tab, card.focusId) }
-                )
-                }
+
+            item(key = "bottom_space", contentType = "bottom_space") {
+                Spacer(modifier = Modifier.height(Dimensions.bottomSpacer).testTag("settings_global_bottom_space"))
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-    }
     }
 }
 
@@ -289,7 +306,7 @@ private fun GlobalPageItemRow(
             title = stringResource(item.labelRes),
             text = "",
             icon = item.iconRes,
-            modifier = Modifier.testTag("settings_global_category_${item.categoryId ?: item.tab}"),
+            modifier = Modifier.clip(uiRoundnessShape()).testTag("settings_global_category_${item.categoryId ?: item.tab}"),
             onClick = { onItemSelected(item) }
         )
     } else {

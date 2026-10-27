@@ -26,6 +26,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import app.n_zik.android.core.navigation.RevealScaffoldOnNavigation
 import androidx.navigation.navArgument
 import app.it.fast4x.rimusic.enums.TransitionEffect
 import app.n_zik.android.components.settings.accounts.AccountsSettings
@@ -88,6 +89,7 @@ fun SettingsScreen(
     val isDeepLink = initialTab != 0 || focus.isNotEmpty()
 
     val innerNavController = rememberNavController()
+    RevealScaffoldOnNavigation(innerNavController)
     val settingsBackNavigation = LocalSettingsBackNavigation.current
     val backOwner = remember { Any() }
     val handleBack by rememberUpdatedState<() -> Unit>({

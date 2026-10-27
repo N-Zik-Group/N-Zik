@@ -45,6 +45,7 @@ object SearchHistoryStore {
         "settings_category_behavior",
         "settings_category_interface",
         "settings_category_player",
+        "settings_category_privacy",
         "settings_category_data",
         "settings_category_downloads",
         "settings_category_network",

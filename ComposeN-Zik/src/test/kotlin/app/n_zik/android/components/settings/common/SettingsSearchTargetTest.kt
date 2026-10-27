@@ -62,9 +62,11 @@ class SettingsSearchTargetTest {
         composeRule.mainClock.autoAdvance = false
     }
 
+    private val messages = mutableListOf<String>()
+
     private fun show(category: String, target: String, parent: String) {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { messages += it }) {
                 SettingsCategoryPage(category, mockk(relaxed = true), target, parent)
             }
         }
@@ -93,10 +95,27 @@ class SettingsSearchTargetTest {
         show("audio", target, parent)
         pumpUntil("hidden target must fall back to its card") { highlighted(parent, true) }
         composeRule.onNodeWithTag("settings.target.$target", useUnmergedTree = true).assertDoesNotExist()
-        composeRule.onNodeWithTag("settings.target.unavailable").assertExists()
+        composeRule.onNodeWithTag("settings.target.unavailable").assertDoesNotExist()
+        assertEquals(listOf(context.getString(app.n_zik.android.R.string.settings_target_unavailable)), messages)
         assertEquals(before, context.preferences.all)
-        pumpUntil("fallback highlight must expire") { highlighted(parent, false) }
+        repeat(4) { pulse ->
+            if (pulse > 0) pumpUntil("next highlight pulse must appear") { highlighted(parent, true) }
+            pumpUntil("highlight pulse must turn off") { highlighted(parent, false) }
+        }
+        composeRule.mainClock.advanceTimeBy(1000)
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(1000))
+        assertTrue("there must be no fifth pulse", highlighted(parent, false))
+        assertEquals("fallback message must be emitted only once", 1, messages.size)
         assertEquals("target focus and highlight must never apply preferences", before, context.preferences.all)
+    }
+
+    @Test fun farOffscreenCardIsComposedBeforeExactTargetAvailabilityIsChecked() {
+        val before = context.preferences.all.toMap()
+        val target = "about.contributors.translators"
+        show("about", target, "card.8.contributors")
+        pumpUntil("the offscreen contributors row must be composed and highlighted") { highlighted(target, true) }
+        assertTrue("an uncomposed lazy card must not be reported unavailable", messages.isEmpty())
+        assertEquals(before, context.preferences.all)
     }
 
     @Test fun playerTargetNavigationDoesNotNormalizeStoredThumbnailPreferences() {
@@ -113,6 +132,7 @@ class SettingsSearchTargetTest {
         show("player", target, target)
         pumpUntil("player target must be measured and highlighted") { highlighted(target, true) }
         composeRule.onNodeWithTag("settings.target.unavailable").assertDoesNotExist()
+        assertTrue(messages.isEmpty())
         assertEquals("opening a search destination must not normalize player settings", before, context.preferences.all)
     }
 }

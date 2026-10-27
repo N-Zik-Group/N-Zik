@@ -1,5 +1,10 @@
 package app.n_zik.android.core.rewind
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import android.Manifest
 import android.app.PendingIntent
 import android.content.Context
@@ -216,6 +221,7 @@ internal class RewindYearlyPlaylistWorker(
                 .setContentIntent(pending)
                 .build()
         )
+        PermissionUsageJournal.record(applicationContext, PermissionFeature.REWIND, JournalPermission.NOTIFICATIONS, PermissionEventKind.USED)
         Timber.tag(TAG).i("Posted the \"$finishedYear\" rewind playlist notification")
     }
 }

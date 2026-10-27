@@ -55,7 +55,7 @@ fun GeneralPipCard(
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.picture_in_picture.settings_enable_pip"),
                 title = stringResource(R.string.settings_enable_pip),
-                text = "",
+                text = stringResource(R.string.settings_desc_general_picture_in_picture_settings_enable_pip),
                 isChecked = enablePictureInPicture,
                 onCheckedChange = {
                     enablePictureInPicture = it
@@ -71,7 +71,8 @@ fun GeneralPipCard(
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("general.picture_in_picture.settings_pip_module"),
                         title = stringResource(R.string.settings_pip_module),
-                        text = when (pipModule) {
+                        text = stringResource(R.string.settings_desc_general_picture_in_picture_settings_pip_module),
+                        selectedValueText = when (pipModule) {
                             PipModule.Cover -> stringResource(R.string.pipmodule_cover)
                         },
                         onClick = { showPipModuleDialog = true },

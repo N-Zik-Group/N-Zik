@@ -54,7 +54,8 @@ internal fun AiDataCard(search: Search) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("ai.tab_data.reset_quick_picks"),
                     title = stringResource(R.string.reset_quick_picks),
-                    text = if (eventsCount > 0) {
+                    text = stringResource(R.string.settings_desc_ai_tab_data_reset_quick_picks),
+                    selectedValueText = if (eventsCount > 0) {
                         stringResource(R.string.delete_playback_events, eventsCount)
                     } else {
                         stringResource(R.string.quick_picks_are_cleared)

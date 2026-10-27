@@ -33,11 +33,11 @@ class SettingsRegistrySearchTest {
 
     @Test
     fun theGlobalPageListsAboutThenUpdateAndThematicDestinations() {
-        assertEquals(17, SettingsPageItems.size)
+        assertEquals(18, SettingsPageItems.size)
         assertEquals("about", SettingsPageItems.first().categoryId)
         assertTrue(SettingsPageItems[1] === SettingsUpdateItem)
         assertEquals(
-            listOf("playback", "audio", "behavior", "interface", "player", "data", "downloads", "network",
+            listOf("playback", "audio", "behavior", "interface", "player", "privacy", "data", "downloads", "network",
                 "youtube", "profiles", "services", "ai", "rewind", "maintenance", "system"),
             SettingsPageItems.drop(2).map { it.categoryId },
         )
@@ -69,6 +69,15 @@ class SettingsRegistrySearchTest {
         assertTrue(cardsForCategory("profiles").all { it.titleRes == R.string.profile_face })
         assertTrue(cardsForCategory("player").any { it.tab == 0 })
         assertTrue(cardsForCategory("player").any { it.tab == 2 })
+    }
+
+    @Test fun privacyContainsHistoryControlsAndCaptureProtection() {
+        val cards = cardsForCategory("privacy")
+        assertTrue(cards.any { it.tab == 4 && it.titleRes == R.string.history })
+        assertTrue(cards.any { it.tab == 3 && it.titleRes == R.string.tab_data })
+        assertTrue(cards.any { it.titleRes == R.string.permission_usage_journal })
+        assertTrue(cards.any { it.titleRes == R.string.privacy_screen_protection })
+        assertTrue(cards.any { it.titleRes == R.string.rw_settings_master })
     }
 
     @Test

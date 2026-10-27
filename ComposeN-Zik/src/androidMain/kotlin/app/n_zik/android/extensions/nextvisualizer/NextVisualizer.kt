@@ -1,5 +1,10 @@
 package app.n_zik.android.extensions.nextvisualizer
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
@@ -127,12 +132,16 @@ fun NextVisualizer() {
 
         val launcher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission(),
-            onResult = { hasPermission = it }
+            onResult = {
+                hasPermission = it
+                PermissionUsageJournal.record(context, PermissionFeature.VISUALIZER, JournalPermission.MICROPHONE,
+                    if (it) PermissionEventKind.GRANTED else PermissionEventKind.DENIED)
+            }
         )
 
         if (!hasPermission) {
 
-            LaunchedEffect(Unit, relaunchPermission) { launcher.launch(permission) }
+            LaunchedEffect(Unit, relaunchPermission) { PermissionUsageJournal.record(context, PermissionFeature.VISUALIZER, JournalPermission.MICROPHONE, PermissionEventKind.REQUESTED); launcher.launch(permission) }
 
             Column(
                 modifier = Modifier.fillMaxSize(),

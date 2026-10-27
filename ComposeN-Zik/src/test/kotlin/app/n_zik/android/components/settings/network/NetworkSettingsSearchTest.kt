@@ -31,9 +31,9 @@ class NetworkSettingsSearchTest {
         assertTrue(visibleCardTitleRes(context, 6, "zzzz-no-network-setting-zzzz").isEmpty())
     }
 
-    @Test fun `registry keeps the seven cards in order and both focus destinations`() {
+    @Test fun `registry keeps the source cards and download quality split in order and both focus destinations`() {
         val cards = SettingsCards.filter { it.tab == 6 }
-        assertEquals(listOf(R.string.bridge_server, R.string.network_status, R.string.quality, R.string.connection_settings, R.string.offline_mode, R.string.download, R.string.settings_reset), cards.map { it.titleRes })
+        assertEquals(listOf(R.string.bridge_server, R.string.settings_download_quality, R.string.quality, R.string.connection_settings, R.string.offline_mode, R.string.download, R.string.settings_reset), cards.map { it.titleRes })
         assertEquals(listOf("pcserver", "offline"), cards.map { it.focusId }.filter { it.isNotBlank() })
     }
 }

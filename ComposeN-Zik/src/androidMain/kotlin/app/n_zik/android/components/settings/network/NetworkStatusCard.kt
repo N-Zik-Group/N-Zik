@@ -18,14 +18,28 @@ import app.n_zik.android.components.settings.common.OtherInfoSettingsEntry
 import androidx.compose.runtime.getValue
 
 @Composable
-internal fun NetworkStatusCard(networkQuality: ImageCacheFactory.NetworkQuality) {
+internal fun automaticQualityStatusText(networkQuality: ImageCacheFactory.NetworkQuality): String {
+    val detectedText = stringResource(when (networkQuality) {
+        ImageCacheFactory.NetworkQuality.LOW -> R.string.network_quality_low
+        ImageCacheFactory.NetworkQuality.MEDIUM -> R.string.network_quality_medium
+        ImageCacheFactory.NetworkQuality.HIGH -> R.string.network_quality_high
+    })
+    return stringResource(R.string.audio_quality_auto_fmt, detectedText)
+}
+
+@Composable
+internal fun NetworkStatusCard(
+    networkQuality: ImageCacheFactory.NetworkQuality,
+    titleRes: Int = R.string.network_status,
+    iconRes: Int = R.drawable.network,
+) {
     val imageQualityFormat by rememberPreference(imageQualityFormatKey, ImageQualityFormat.Auto)
     val audioQualityFormat by rememberPreference(audioQualityFormatKey, AudioQualityFormat.Auto)
     val downloadQualityFormat by rememberPreference(downloadQualityFormatKey, DownloadQualityFormat.Auto)
 
     SettingsSectionCard(
-        title = stringResource(R.string.network_status),
-        icon = R.drawable.network,
+        title = stringResource(titleRes),
+        icon = iconRes,
         content = {
             val detectedText = when(networkQuality) {
                 ImageCacheFactory.NetworkQuality.LOW -> stringResource(R.string.network_quality_low)
@@ -47,7 +61,8 @@ internal fun NetworkStatusCard(networkQuality: ImageCacheFactory.NetworkQuality)
             OtherInfoSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("network.network_status.image_quality_format"),
                 title = stringResource(R.string.image_quality_format),
-                text = imageStatusText,
+                text = stringResource(R.string.settings_desc_network_network_status_image_quality_format),
+                selectedValueText = imageStatusText,
                 icon = R.drawable.image
             )
 
@@ -64,7 +79,8 @@ internal fun NetworkStatusCard(networkQuality: ImageCacheFactory.NetworkQuality)
             OtherInfoSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("network.network_status.audio_quality_format"),
                 title = stringResource(R.string.audio_quality_format),
-                text = audioStatusText,
+                text = stringResource(R.string.settings_desc_network_network_status_audio_quality_format),
+                selectedValueText = audioStatusText,
                 icon = R.drawable.audio_quality
             )
 
@@ -81,7 +97,8 @@ internal fun NetworkStatusCard(networkQuality: ImageCacheFactory.NetworkQuality)
             OtherInfoSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("network.network_status.download_quality_format"),
                 title = stringResource(R.string.download_quality_format),
-                text = downloadStatusText,
+                text = stringResource(R.string.settings_desc_network_network_status_download_quality_format),
+                selectedValueText = downloadStatusText,
                 icon = R.drawable.download
             )
         }

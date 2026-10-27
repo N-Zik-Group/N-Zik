@@ -26,7 +26,7 @@ internal fun AboutSupportCard() {
                     ModernSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("about.troubleshooting.view_the_source_code"),
                         title = stringResource(R.string.view_the_source_code),
-                        text = stringResource(R.string.you_will_be_redirected_to_github),
+                        text = stringResource(R.string.settings_desc_about_troubleshooting_view_the_source_code),
                         icon = R.drawable.github_icon,
                         onClick = { uriHandler.openUri(UpdateEndpoints.REPO_URL) }
                     )
@@ -34,7 +34,7 @@ internal fun AboutSupportCard() {
                     ModernSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("about.troubleshooting.report_an_issue"),
                         title = stringResource(R.string.report_an_issue),
-                        text = stringResource(R.string.you_will_be_redirected_to_github),
+                        text = stringResource(R.string.settings_desc_about_troubleshooting_report_an_issue),
                         icon = R.drawable.trending,
                         onClick = {
                             val issuePath = "/issues/new?assignees=&labels=bug&template=bug_report.yaml"
@@ -45,7 +45,7 @@ internal fun AboutSupportCard() {
                     ModernSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("about.troubleshooting.request_a_feature_or_suggest_an_idea"),
                         title = stringResource(R.string.request_a_feature_or_suggest_an_idea),
-                        text = stringResource(R.string.you_will_be_redirected_to_github),
+                        text = stringResource(R.string.settings_desc_about_troubleshooting_request_a_feature_or_suggest_an_idea),
                         icon = R.drawable.star_brilliant,
                         onClick = {
                             val issuePath = "/issues/new?assignees=&labels=feature_request&template=feature_request.yaml"

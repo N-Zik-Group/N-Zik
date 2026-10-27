@@ -3,7 +3,6 @@ package app.n_zik.android.components.settings.appearance
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -26,6 +25,9 @@ import app.it.fast4x.rimusic.utils.playerSwapControlsWithTimelineKey
 import app.it.fast4x.rimusic.utils.playerTimelineSizeKey
 import app.it.fast4x.rimusic.utils.playerTimelineTypeKey
 import app.it.fast4x.rimusic.utils.rememberPreference
+import app.it.fast4x.rimusic.utils.showSkipTimeButtonsKey
+import app.it.fast4x.rimusic.utils.showRemainingSongTimeKey
+import app.it.fast4x.rimusic.utils.showTotalTimeQueueKey
 import app.it.fast4x.rimusic.utils.transparentbarKey
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.settings.common.SettingsSectionCard
@@ -42,6 +44,9 @@ import app.n_zik.android.components.settings.common.settingsCardExit
 @Composable
 internal fun AppearanceTimelineCard(search: Search) {
     var transparentbar by rememberPreference(transparentbarKey, true)
+    var showSkipTimeButtons by rememberPreference(showSkipTimeButtonsKey, true)
+    var showRemainingSongTime by rememberPreference(showRemainingSongTimeKey, true)
+    var showTotalTimeQueue by rememberPreference(showTotalTimeQueueKey, true)
     var playerPlayButtonType by rememberPreference(
         playerPlayButtonTypeKey,
         PlayerPlayButtonType.CircularRibbed
@@ -62,7 +67,7 @@ internal fun AppearanceTimelineCard(search: Search) {
         false
     )
     var buttonzoomout by rememberPreference(buttonzoomoutKey, true)
-    val searchCtx_0_3 = search.inputValue.isBlank() || stringResource(R.string.timeline_and_controls).contains(search.inputValue, true) || stringResource(R.string.timelinesize).contains(search.inputValue, true) || stringResource(R.string.miniplayertype).contains(search.inputValue, true) || stringResource(R.string.player_swap_controls_with_timeline).contains(search.inputValue, true) || stringResource(R.string.timeline).contains(search.inputValue, true) || stringResource(R.string.transparentbar).contains(search.inputValue, true) || stringResource(R.string.play_button).contains(search.inputValue, true) || stringResource(R.string.buttonzoomout).contains(search.inputValue, true)
+    val searchCtx_0_3 = search.inputValue.isBlank() || stringResource(R.string.icon_like_button).contains(search.inputValue, true) || stringResource(R.string.timeline_and_controls).contains(search.inputValue, true) || stringResource(R.string.timelinesize).contains(search.inputValue, true) || stringResource(R.string.miniplayertype).contains(search.inputValue, true) || stringResource(R.string.player_swap_controls_with_timeline).contains(search.inputValue, true) || stringResource(R.string.timeline).contains(search.inputValue, true) || stringResource(R.string.transparentbar).contains(search.inputValue, true) || stringResource(R.string.play_button).contains(search.inputValue, true) || stringResource(R.string.buttonzoomout).contains(search.inputValue, true) || stringResource(R.string.show_total_time_of_queue).contains(search.inputValue, true) || stringResource(R.string.show_remaining_song_time).contains(search.inputValue, true) || stringResource(R.string.skip_time_buttons).contains(search.inputValue, true)
     AnimatedVisibility(
                 visible = searchCtx_0_3,
                 enter = settingsCardEnter,
@@ -80,6 +85,7 @@ internal fun AppearanceTimelineCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.timelinesize).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_timeline_and_controls_timelinesize), playerTimelineSize.text),
                         modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.timelinesize"),
                         icon = R.drawable.resize,
                         title = stringResource(R.string.timelinesize),
@@ -118,7 +124,7 @@ internal fun AppearanceTimelineCard(search: Search) {
                         modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.player_swap_controls_with_timeline"),
                         icon = R.drawable.sync,
                         title = stringResource(R.string.player_swap_controls_with_timeline),
-                        text = "",
+                        text = stringResource(R.string.settings_desc_appearance_timeline_and_controls_player_swap_controls_with_timeline),
                         isChecked = playerSwapControlsWithTimeline,
                         onCheckedChange = { playerSwapControlsWithTimeline = it }
                     )
@@ -131,6 +137,7 @@ internal fun AppearanceTimelineCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.timeline).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_timeline_and_controls_timeline), stringResource(playerTimelineType.textId)),
                         modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.timeline"),
                         icon = R.drawable.playing_indicator,
                         title = stringResource(R.string.timeline),
@@ -153,7 +160,7 @@ internal fun AppearanceTimelineCard(search: Search) {
                         modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.transparentbar"),
                         icon = R.drawable.eye_off,
                         title = stringResource(R.string.transparentbar),
-                        text = "",
+                        text = stringResource(R.string.settings_desc_appearance_timeline_and_controls_transparentbar),
                         isChecked = transparentbar,
                         onCheckedChange = { transparentbar = it }
                     )
@@ -168,6 +175,7 @@ internal fun AppearanceTimelineCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.player_controls_colors).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_timeline_and_controls_player_controls_colors), playerControlsColors.text),
                         modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.player_controls_colors"),
                         icon = R.drawable.color_palette,
                         title = stringResource(R.string.player_controls_colors),
@@ -187,6 +195,7 @@ internal fun AppearanceTimelineCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.play_button).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_timeline_and_controls_play_button), playerPlayButtonType.text),
                         modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.play_button"),
                         icon = R.drawable.play,
                         title = stringResource(R.string.play_button),
@@ -209,22 +218,18 @@ internal fun AppearanceTimelineCard(search: Search) {
                         modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.buttonzoomout"),
                         icon = R.drawable.resize,
                         title = stringResource(R.string.buttonzoomout),
-                        text = "",
+                        text = stringResource(R.string.settings_desc_appearance_timeline_and_controls_buttonzoomout),
                         isChecked = buttonzoomout,
                         onCheckedChange = { buttonzoomout = it }
                     )
                 }
 
 
-            if (search.inputValue.isBlank() || stringResource(R.string.play_button).contains(
-                    search.inputValue,
-                    true
-                )
-            )
                 if (search.inputValue.isBlank() || stringResource(R.string.icon_like_button).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_timeline_and_controls_icon_like_button), iconLikeType.text),
                         modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.icon_like_button"),
-                        icon = R.drawable.play,
+                        icon = R.drawable.heart,
                         title = stringResource(R.string.icon_like_button),
                         selectedValue = iconLikeType,
                         onValueSelected = {
@@ -233,8 +238,55 @@ internal fun AppearanceTimelineCard(search: Search) {
                         valueText = { it.text },
                     )
                 }
+           if (search.inputValue.isBlank() || stringResource(R.string.show_total_time_of_queue).contains(
+                    search.inputValue,
+                    true
+                )
+            )
+                if (search.inputValue.isBlank() || stringResource(R.string.show_total_time_of_queue).contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.show_total_time_of_queue"),
+                        icon = R.drawable.time,
+                        title = stringResource(R.string.show_total_time_of_queue),
+                        text = stringResource(R.string.settings_desc_appearance_colors_and_background_show_total_time_of_queue),
+                        isChecked = showTotalTimeQueue,
+                        onCheckedChange = { showTotalTimeQueue = it }
+                    )
+                }
+
+            if (search.inputValue.isBlank() || stringResource(R.string.show_remaining_song_time).contains(
+                    search.inputValue,
+                    true
+                )
+            )
+                if (search.inputValue.isBlank() || stringResource(R.string.show_remaining_song_time).contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.show_remaining_song_time"),
+                        icon = R.drawable.time,
+                        title = stringResource(R.string.show_remaining_song_time),
+                        text = stringResource(R.string.settings_desc_appearance_colors_and_background_show_remaining_song_time),
+                        isChecked = showRemainingSongTime,
+                        onCheckedChange = { showRemainingSongTime = it }
+                    )
+                }
+
+            if (search.inputValue.isBlank() || stringResource(R.string.skip_time_buttons).contains(
+                    search.inputValue,
+                    true
+                )
+            )
+                if (search.inputValue.isBlank() || stringResource(R.string.skip_time_buttons).contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.skip_time_buttons"),
+                        title = stringResource(R.string.skip_time_buttons),
+                        text = stringResource(R.string.settings_desc_appearance_colors_and_background_skip_time_buttons),
+                        isChecked = showSkipTimeButtons,
+                        onCheckedChange = { showSkipTimeButtons = it },
+                        icon = R.drawable.play_forward
+                    )
+                }
+
             }
         )
-            /* Removed Spacer */
             }
 }

@@ -135,6 +135,7 @@ internal fun AccountsSyncOverviewCard(isYouTubeSyncEnabled: Boolean, isSyncEnabl
                         }
                     )
                     OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_accounts_sync_data_with_ytm_account_sync_direction), stringResource(syncDirection.stringResource)),
                         modifier = Modifier.settingsSearchTarget("accounts.sync_data_with_ytm_account.sync_direction"),
                         icon = R.drawable.sync,
                         title = stringResource(R.string.sync_direction),

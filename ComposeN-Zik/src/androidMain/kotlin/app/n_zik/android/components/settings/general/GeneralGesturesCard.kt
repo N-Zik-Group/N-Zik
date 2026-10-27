@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
-import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.useVolumeKeysToChangeSongKey
 import app.n_zik.android.R
@@ -17,9 +16,7 @@ import app.n_zik.android.components.settings.common.SettingsSectionCard
 @Composable
 fun GeneralGesturesCard(
     visible: Boolean,
-    restartService: Boolean,
     onRestartServiceSet: () -> Unit,
-    onRestartServiceClear: () -> Unit,
 ) {
     var useVolumeKeysToChangeSong by rememberPreference(useVolumeKeysToChangeSongKey, false)
 
@@ -39,7 +36,6 @@ fun GeneralGesturesCard(
                 },
                 icon = R.drawable.volume_control
             )
-            RestartPlayerService(restartService, onRestart = { onRestartServiceClear() })
         }
     )
 }

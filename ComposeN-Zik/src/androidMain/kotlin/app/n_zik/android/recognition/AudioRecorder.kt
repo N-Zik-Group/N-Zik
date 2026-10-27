@@ -1,5 +1,10 @@
 package app.n_zik.android.recognition
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
@@ -50,6 +55,9 @@ class AudioRecorder(private val scope: CoroutineScope) {
                     }
                     instance?.startRecording()
                     Timber.tag(TAG).d("startRecording() called, recordingState=${instance?.recordingState}")
+                    if (instance?.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
+                        PermissionUsageJournal.record(app.n_zik.android.appContext(), PermissionFeature.MUSIC_RECOGNITION, JournalPermission.MICROPHONE, PermissionEventKind.USED)
+                    }
                     reset(true)
                     job = scope.launch(NzikDispatchers.DATA) { loop() }
                 }.onFailure {

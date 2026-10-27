@@ -221,7 +221,9 @@ fun ArtistScreen(
 
     fun fetchArtistPage() {
         scope.launch {
-            YtMusic.getArtistPage(browseId.removePrefix(MODIFIED_PREFIX))
+            withContext(NzikDispatchers.DATA) {
+                YtMusic.getArtistPage(browseId.removePrefix(MODIFIED_PREFIX))
+            }
                 .onSuccess { online ->
                     artistPage = online
 

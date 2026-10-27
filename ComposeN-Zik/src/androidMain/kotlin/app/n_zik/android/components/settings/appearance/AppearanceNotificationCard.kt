@@ -49,6 +49,7 @@ internal fun AppearanceNotificationCard(search: Search, restartState: MutableSta
             ) {
                 if (search.inputValue.isBlank() || stringResource(R.string.notificationPlayerFirstIcon).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_notification_player_notificationplayerfirsticon), notificationPlayerFirstIcon.text),
                         modifier = Modifier.settingsSearchTarget("appearance.notification_player.notificationPlayerFirstIcon"),
                         icon = R.drawable.notification2,
                         title = stringResource(R.string.notificationPlayerFirstIcon),
@@ -62,6 +63,7 @@ internal fun AppearanceNotificationCard(search: Search, restartState: MutableSta
                 }
                 if (search.inputValue.isBlank() || stringResource(R.string.notificationPlayerSecondIcon).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_notification_player_notificationplayersecondicon), notificationPlayerSecondIcon.text),
                         modifier = Modifier.settingsSearchTarget("appearance.notification_player.notificationPlayerSecondIcon"),
                         icon = R.drawable.notification2,
                         title = stringResource(R.string.notificationPlayerSecondIcon),

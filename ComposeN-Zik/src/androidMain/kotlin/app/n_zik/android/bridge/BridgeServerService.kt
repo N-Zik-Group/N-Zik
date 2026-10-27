@@ -1,5 +1,10 @@
 package app.n_zik.android.bridge
 
+import app.n_zik.android.privacy.PermissionUsageJournal
+import app.n_zik.android.privacy.PermissionFeature
+import app.n_zik.android.privacy.JournalPermission
+import app.n_zik.android.privacy.PermissionEventKind
+
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -200,6 +205,8 @@ class BridgeServerService : Service() {
         BridgeServerController.attachOutputs(audioOutputs)
         BridgeServerController.attachCore(core)
         BridgeServerController.publish(BridgeState.Running(host, port, viaHotspot))
+        if (Build.VERSION.SDK_INT >= 37) PermissionUsageJournal.record(this, PermissionFeature.PC_SERVER,
+            JournalPermission.LOCAL_NETWORK, PermissionEventKind.USED)
         startInForeground(getString(R.string.bridge_server_running_address, host, port))
         // Network lost or address changed: stop without the serverStopped frame (transient for clients)
         wifiWatch = scope.launch {

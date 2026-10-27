@@ -34,7 +34,8 @@ internal fun AiRecommendationsCard(search: Search) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("ai.smart_recommendations.smart_recommendations_number"),
                     title = stringResource(R.string.smart_recommendations_number),
-                    text = if (recommendationsNumber == RecommendationsNumber.Adaptive)
+                    text = stringResource(R.string.settings_desc_ai_smart_recommendations_smart_recommendations_number),
+                    selectedValueText = if (recommendationsNumber == RecommendationsNumber.Adaptive)
                         stringResource(R.string.smart_recommendations_adaptive_description) else recommendationsNumber.text,
                     icon = R.drawable.shuffle,
                     onClick = { showRecommendationsDialog = true }

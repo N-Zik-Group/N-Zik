@@ -77,7 +77,7 @@ internal fun AppearanceLyricsCard(search: Search) {
                         modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.show_lyrics_thumbnail"),
                         icon = R.drawable.image,
                         title = stringResource(R.string.show_lyrics_thumbnail),
-                        text = "",
+                        text = stringResource(R.string.settings_desc_appearance_txt_lyrics_show_lyrics_thumbnail),
                         isChecked = showlyricsthumbnail,
                         onCheckedChange = { showlyricsthumbnail = it }
                     )
@@ -109,7 +109,7 @@ internal fun AppearanceLyricsCard(search: Search) {
                         modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.click_lyrics_text"),
                         icon = R.drawable.arrow_down,
                         title = stringResource(R.string.click_lyrics_text),
-                        text = "",
+                        text = stringResource(R.string.settings_desc_appearance_txt_lyrics_click_lyrics_text),
                         isChecked = clickLyricsText,
                         onCheckedChange = { clickLyricsText = it }
                     )
@@ -117,6 +117,7 @@ internal fun AppearanceLyricsCard(search: Search) {
 
                 if (search.inputValue.isBlank() || stringResource(R.string.lyricscolor).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_txt_lyrics_lyricscolor), stringResource(when(lyricsColor) { LyricsColor.White -> R.string.color_white; LyricsColor.Thememode -> R.string.bg_colors_background_from_theme; LyricsColor.Cover -> R.string.bg_colors_background_from_cover; LyricsColor.Custom -> R.string.color_custom })),
                         modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.lyricscolor"),
                         title = stringResource(R.string.lyricscolor),
                         selectedValue = lyricsColor,
@@ -132,7 +133,7 @@ internal fun AppearanceLyricsCard(search: Search) {
                     if (search.inputValue.isBlank() || true) {
                         OtherSettingsEntry(
                             title = customColorString,
-                            text = "",
+                            text = stringResource(R.string.settings_desc_appearance_txt_lyrics_color_custom),
                             icon = R.drawable.color_palette,
                             onClick = { showColorPicker = true },
                             modifier = (Modifier.padding(start = 25.dp)).settingsSearchTarget("appearance.txt_lyrics.color_custom"),
@@ -182,7 +183,7 @@ internal fun AppearanceLyricsCard(search: Search) {
                         modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.show_background_in_lyrics"),
                         icon = R.drawable.image,
                             title = stringResource(R.string.show_background_in_lyrics),
-                            text = "",
+                            text = stringResource(R.string.settings_desc_appearance_txt_lyrics_show_background_in_lyrics),
                             isChecked = showBackgroundLyrics,
                             onCheckedChange = { showBackgroundLyrics = it }
                         )
@@ -198,7 +199,7 @@ internal fun AppearanceLyricsCard(search: Search) {
                         modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.player_enable_lyrics_popup_message"),
                         icon = R.drawable.alert,
                         title = stringResource(R.string.player_enable_lyrics_popup_message),
-                        text = "",
+                        text = stringResource(R.string.settings_desc_appearance_txt_lyrics_player_enable_lyrics_popup_message),
                         isChecked = playerEnableLyricsPopupMessage,
                         onCheckedChange = { playerEnableLyricsPopupMessage = it }
                     )

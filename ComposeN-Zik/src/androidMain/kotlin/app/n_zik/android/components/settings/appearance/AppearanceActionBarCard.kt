@@ -57,7 +57,7 @@ internal fun AppearanceActionBarCard(search: Search) {
                         modifier = Modifier.settingsSearchTarget("appearance.player_action_bar.action_bar_transparent_background"),
                         icon = R.drawable.eye,
                         title = stringResource(R.string.action_bar_transparent_background),
-                        text = "",
+                        text = stringResource(R.string.settings_desc_appearance_player_action_bar_action_bar_transparent_background),
                         isChecked = transparentBackgroundActionBarPlayer,
                         onCheckedChange = { transparentBackgroundActionBarPlayer = it }
                     )
@@ -73,7 +73,7 @@ internal fun AppearanceActionBarCard(search: Search) {
                         modifier = Modifier.settingsSearchTarget("appearance.player_action_bar.actionspacedevenly"),
                         icon = R.drawable.horizontal_bold_line,
                         title = stringResource(R.string.actionspacedevenly),
-                        text = "",
+                        text = stringResource(R.string.settings_desc_appearance_player_action_bar_actionspacedevenly),
                         isChecked = actionspacedevenly,
                         onCheckedChange = { actionspacedevenly = it }
                     )
@@ -89,7 +89,7 @@ internal fun AppearanceActionBarCard(search: Search) {
                         modifier = Modifier.settingsSearchTarget("appearance.player_action_bar.tapqueue"),
                         icon = R.drawable.gesture,
                         title = stringResource(R.string.tapqueue),
-                        text = "",
+                        text = stringResource(R.string.settings_desc_appearance_player_action_bar_tapqueue),
                         isChecked = tapqueue,
                         onCheckedChange = { tapqueue = it }
                     )
@@ -105,7 +105,7 @@ internal fun AppearanceActionBarCard(search: Search) {
                         modifier = Modifier.settingsSearchTarget("appearance.player_action_bar.swipe_up_to_open_the_queue"),
                         icon = R.drawable.gesture,
                         title = stringResource(R.string.swipe_up_to_open_the_queue),
-                        text = "",
+                        text = stringResource(R.string.settings_desc_appearance_player_action_bar_swipe_up_to_open_the_queue),
                         isChecked = swipeUpQueue,
                         onCheckedChange = { swipeUpQueue = it }
                     )

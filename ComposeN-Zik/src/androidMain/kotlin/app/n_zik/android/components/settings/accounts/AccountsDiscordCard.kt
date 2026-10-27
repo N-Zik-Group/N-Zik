@@ -187,7 +187,7 @@ internal fun AccountsDiscordCard(search: Search) {
                         OtherSwitchSettingEntry(
                             modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_enable_rich_presence"),
                             title = stringResource(R.string.discord_enable_rich_presence),
-                            text = stringResource(R.string.beta_text),
+                            text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_accounts_social_discord_discord_enable_rich_presence), stringResource(R.string.beta_text)),
                             isChecked = isDiscordPresenceEnabled,
                             onCheckedChange = {
                                 isDiscordPresenceEnabled = it
@@ -432,7 +432,8 @@ internal fun AccountsDiscordCard(search: Search) {
                                 OtherSettingsEntry(
                                     modifier = Modifier.settingsSearchTarget(if (discordPersonalAccessToken.isNotEmpty()) "accounts.social_discord.account_logoff" else "accounts.social_discord.account_login"),
                                     title = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.account_logoff) else stringResource(R.string.account_login),
-                                    text = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.discord_connected_to_discord_account) else "",
+                                    text = stringResource(R.string.settings_desc_accounts_social_discord_account_login),
+                                    selectedValueText = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.discord_connected_to_discord_account) else "",
                                     icon = R.drawable.logout,
                                     onClick = {
                                         if (discordPersonalAccessToken.isNotEmpty()) {
@@ -567,7 +568,7 @@ private fun DiscordSettingsGroup(
  * modes). Legacy-approved edit, used only by the Discord section of this file.
  */
 @Composable
-private fun DiscordAdvancedSection(search: Search) {
+internal fun DiscordAdvancedSection(search: Search) {
     var activityType by rememberEncryptedPreference(discordAdvancedActivityTypeKey, 2)
     var pausePresenceEnabled by rememberEncryptedPreference(discordAdvancedPausePresenceEnabledKey, true)
     var activityName by rememberEncryptedPreference(discordAdvancedNameKey, "")
@@ -626,7 +627,8 @@ private fun DiscordAdvancedSection(search: Search) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_activity_type"),
                     title = stringResource(R.string.discord_activity_type),
-                    text = activityTypeLabel,
+                    text = stringResource(R.string.settings_desc_accounts_social_discord_discord_activity_type),
+                    selectedValueText = activityTypeLabel,
                     icon = R.drawable.play,
                     onClick = { showActivityTypeDialog = true }
                 )
@@ -637,7 +639,8 @@ private fun DiscordAdvancedSection(search: Search) {
                     title = stringResource(R.string.discord_advanced_name),
                     // Empty template = the built-in default below (the fixed name), shown
                     // as the current value instead of a "(default)" marker.
-                    text = activityName.ifEmpty { stringResource(R.string.discord_presence_name) },
+                    text = stringResource(R.string.settings_desc_accounts_social_discord_discord_advanced_name),
+                    selectedValueText = activityName.ifEmpty { stringResource(R.string.discord_presence_name) },
                     icon = R.drawable.text,
                     onClick = { showNameDialog = true }
                 )
@@ -668,7 +671,8 @@ private fun DiscordAdvancedSection(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_details"),
                         title = stringResource(R.string.discord_advanced_details),
-                        text = detailsTemplate.ifEmpty { DiscordActivityBuilder.DEFAULT_DETAILS_TEMPLATE },
+                        text = stringResource(R.string.settings_desc_accounts_social_discord_discord_advanced_details),
+                        selectedValueText = detailsTemplate.ifEmpty { DiscordActivityBuilder.DEFAULT_DETAILS_TEMPLATE },
                         icon = R.drawable.text,
                         onClick = { showDetailsDialog = true }
                     )
@@ -691,7 +695,8 @@ private fun DiscordAdvancedSection(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_state"),
                         title = stringResource(R.string.discord_advanced_state),
-                        text = stateTemplate.ifEmpty { DiscordActivityBuilder.DEFAULT_STATE_TEMPLATE },
+                        text = stringResource(R.string.settings_desc_accounts_social_discord_discord_advanced_state),
+                        selectedValueText = stateTemplate.ifEmpty { DiscordActivityBuilder.DEFAULT_STATE_TEMPLATE },
                         icon = R.drawable.text,
                         onClick = { showStateDialog = true }
                     )
@@ -719,7 +724,8 @@ private fun DiscordAdvancedSection(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_pause"),
                         title = stringResource(R.string.discord_advanced_pause),
-                        text = pauseTemplate.ifEmpty { stringResource(R.string.discord_presence_pause_default) },
+                        text = stringResource(R.string.settings_desc_accounts_social_discord_discord_advanced_pause),
+                        selectedValueText = pauseTemplate.ifEmpty { stringResource(R.string.discord_presence_pause_default) },
                         icon = R.drawable.text,
                         onClick = { showPauseDialog = true }
                     )
@@ -763,7 +769,8 @@ private fun DiscordAdvancedSection(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_image_text"),
                         title = stringResource(R.string.discord_advanced_image_text),
-                        text = largeImageText.ifEmpty { DiscordActivityBuilder.DEFAULT_LARGE_IMAGE_TEXT_TEMPLATE },
+                        text = stringResource(R.string.settings_desc_accounts_social_discord_discord_advanced_image_text),
+                        selectedValueText = largeImageText.ifEmpty { DiscordActivityBuilder.DEFAULT_LARGE_IMAGE_TEXT_TEMPLATE },
                         icon = R.drawable.text,
                         onClick = { showLargeImageTextDialog = true }
                     )
@@ -797,7 +804,8 @@ private fun DiscordAdvancedSection(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_logo_text"),
                         title = stringResource(R.string.discord_advanced_logo_text),
-                        text = smallImageText.ifEmpty { DiscordActivityBuilder.DEFAULT_LOGO_TEXT_TEMPLATE },
+                        text = stringResource(R.string.settings_desc_accounts_social_discord_discord_advanced_logo_text),
+                        selectedValueText = smallImageText.ifEmpty { DiscordActivityBuilder.DEFAULT_LOGO_TEXT_TEMPLATE },
                         icon = R.drawable.text,
                         onClick = { showSmallImageTextDialog = true }
                     )
@@ -821,7 +829,7 @@ private fun DiscordAdvancedSection(search: Search) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button1"),
                     title = stringResource(R.string.discord_advanced_button1),
-                    text = "",
+                    text = stringResource(R.string.settings_desc_accounts_social_discord_discord_advanced_button1),
                     isChecked = btn1Enabled,
                     onCheckedChange = { btn1Enabled = it },
                     // Button 1 is the "Get N-Zik" GitHub action by default — give its toggle a
@@ -842,18 +850,20 @@ private fun DiscordAdvancedSection(search: Search) {
                 Column {
                     if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_button_label).contains(search.inputValue, true)) {
                         OtherSettingsEntry(
-                            modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button1"),
+                            modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button1.label"),
                             title = "${stringResource(R.string.discord_advanced_button1)} — ${stringResource(R.string.discord_advanced_button_label)}",
-                            text = btn1Label.ifEmpty { stringResource(R.string.discord_presence_button_get_nzik) },
+                            text = stringResource(R.string.settings_desc_accounts_social_discord_discord_advanced_button1_label),
+                            selectedValueText = btn1Label.ifEmpty { stringResource(R.string.discord_presence_button_get_nzik) },
                             icon = R.drawable.text,
                             onClick = { showBtn1LabelDialog = true }
                         )
                     }
                     if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_button_url).contains(search.inputValue, true)) {
                         OtherSettingsEntry(
-                            modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button1"),
+                            modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button1.url"),
                             title = "${stringResource(R.string.discord_advanced_button1)} — ${stringResource(R.string.discord_advanced_button_url)}",
-                            text = btn1Url.ifEmpty { DiscordActivityBuilder.DEFAULT_BUTTON1_URL },
+                            text = stringResource(R.string.settings_desc_accounts_social_discord_discord_advanced_button1_url),
+                            selectedValueText = btn1Url.ifEmpty { DiscordActivityBuilder.DEFAULT_BUTTON1_URL },
                             icon = R.drawable.open,
                             onClick = { showBtn1UrlDialog = true }
                         )
@@ -864,7 +874,7 @@ private fun DiscordAdvancedSection(search: Search) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button2"),
                     title = stringResource(R.string.discord_advanced_button2),
-                    text = "",
+                    text = stringResource(R.string.settings_desc_accounts_social_discord_discord_advanced_button2),
                     isChecked = btn2Enabled,
                     onCheckedChange = { btn2Enabled = it },
                     icon = R.drawable.ytmusic
@@ -874,18 +884,20 @@ private fun DiscordAdvancedSection(search: Search) {
                 Column {
                     if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_button_label).contains(search.inputValue, true)) {
                         OtherSettingsEntry(
-                            modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button2"),
+                            modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button2.label"),
                             title = "${stringResource(R.string.discord_advanced_button2)} — ${stringResource(R.string.discord_advanced_button_label)}",
-                            text = btn2Label.ifEmpty { stringResource(R.string.discord_presence_button_listen_ytmusic) },
+                            text = stringResource(R.string.settings_desc_accounts_social_discord_discord_advanced_button2_label),
+                            selectedValueText = btn2Label.ifEmpty { stringResource(R.string.discord_presence_button_listen_ytmusic) },
                             icon = R.drawable.text,
                             onClick = { showBtn2LabelDialog = true }
                         )
                     }
                     if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_button_url).contains(search.inputValue, true)) {
                         OtherSettingsEntry(
-                            modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button2"),
+                            modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button2.url"),
                             title = "${stringResource(R.string.discord_advanced_button2)} — ${stringResource(R.string.discord_advanced_button_url)}",
-                            text = btn2Url.ifEmpty { DiscordActivityBuilder.DEFAULT_BUTTON2_URL },
+                            text = stringResource(R.string.settings_desc_accounts_social_discord_discord_advanced_button2_url),
+                            selectedValueText = btn2Url.ifEmpty { DiscordActivityBuilder.DEFAULT_BUTTON2_URL },
                             icon = R.drawable.open,
                             onClick = { showBtn2UrlDialog = true }
                         )
