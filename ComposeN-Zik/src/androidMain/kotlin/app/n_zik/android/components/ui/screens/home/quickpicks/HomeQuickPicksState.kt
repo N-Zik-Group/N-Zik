@@ -1,29 +1,34 @@
 package app.n_zik.android.components.ui.screens.home.quickpicks
 
 import android.annotation.SuppressLint
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.media3.common.util.UnstableApi
 import app.it.fast4x.compose.persist.persist
 import app.it.fast4x.compose.persist.persistList
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
-import app.it.fast4x.rimusic.enums.*
+import app.it.fast4x.rimusic.enums.Countries
+import app.it.fast4x.rimusic.enums.PlayEventsType
 import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.*
+import app.it.fast4x.rimusic.utils.asSong
 import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic
-import it.fast4x.innertube.requests.*
+import it.fast4x.innertube.requests.HomePage
+import it.fast4x.innertube.requests.chartsPageComplete
+import it.fast4x.innertube.requests.discoverPage
+import it.fast4x.innertube.requests.relatedPage
 import kotlinx.coroutines.CancellationException
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
 import timber.log.Timber
 import kotlin.time.Duration.Companion.days
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
@@ -52,44 +57,47 @@ class HomeQuickPicksState(
     var refreshKey: MutableState<Int>
 ) {
     companion object {
-        // Outlives the composable so a Quick Picks load keeps running when the
-        // user switches pages; on return the results are already there instead
-//
-        // of a cancelled load forcing a full reload.
+        // Navigation must not cancel a shared network load.
         private val loadScope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
 
-        @Volatile
-        private var sharedLoadJob: Job? = null
-
-        @Volatile
-        private var sharedRefreshPending = false
+        private val loads = QuickPicksLoadCoordinator(loadScope)
+        private val observations = QuickPicksObservationOwner(loadScope)
     }
 
     private val from = 18250.days.inWholeMilliseconds
-    private var dbJob: Job? = null
+    private val observationToken = Any()
+    private var observationActivated = false
+
+    private data class LoadIdentity(
+        val playEventType: PlayEventsType,
+        val country: Countries,
+        val loggedIn: Boolean,
+        val useLoginForBrowse: Boolean,
+    )
+
+    private fun loadIdentity() = LoadIdentity(
+        playEventType, selectedCountryCode, isYouTubeLoggedIn(), Innertube.useLoginForBrowse,
+    )
 
     @SuppressLint("SuspiciousIndentation")
     suspend fun loadData(force: Boolean = false): Boolean {
+        observeLocalData()
         if (!force && shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null)) {
-            // Consistency repair: local data present but its "loaded" flag was lost
-            // (DB observer cancelled before its first emission) — do not spin forever.
+            // Repair an early-ready cache whose local loaded flag was lost.
             if (trendingList.value.isNotEmpty() && !loadedQuickPicks.value) {
                 loadedQuickPicks.value = true
             }
             return false
         }
 
-        // Offline: the network phases (1 and 3) can never succeed — the global
-        // network gate would fast-fail every request anyway. Load the local data
-        // only (phase 2); the YTM sections render the offline message, and the
-        // offline->online auto-reload (refresh) re-runs the full load.
+        // Offline loads retain local observation and skip network phases.
         val online = NetworkQualityHelper.isNetworkConnected(appContext())
 
         Timber.tag("HomeQuickPicksState").d("Starting loadData... (online=$online)")
 
         runCatching {
             // Phase 1: Parallel network calls for charts, discover, quick picks
-            // (skipped entirely when offline — see the gate above)
+            // (skipped entirely when offline - see the gate above)
             if (online) supervisorScope {
                 val chartsDeferred = async(NzikDispatchers.DATA) {
                     Innertube.chartsPageComplete(countryCode = selectedCountryCode.name)
@@ -135,68 +143,11 @@ class HomeQuickPicksState(
                     }
             }
 
-            // Phase 2: Database observation with related page fetch (coupled as before)
-            dbJob?.cancel()
-            dbJob = loadScope.launch(NzikDispatchers.DATA) {
-                when (playEventType) {
-                    PlayEventsType.MostPlayed ->
-                        Database.eventTable
-                                .findSongsMostPlayedBetween(from = from, limit = localCount)
-                                .distinctUntilChanged()
-                                .collect { songs ->
-                                    trendingList.value = songs.distinctBy { it.id }
-                                                        .filter { !parentalControlEnabled || !it.title.startsWith(EXPLICIT_PREFIX, true) }
-                                                        .take(localCount)
-                                    trending.value = trendingList.value.firstOrNull()
-                                    if (relatedPageResult.value == null || trending.value?.id != trendingList.value.firstOrNull()?.id) {
-                                        relatedPageResult.value = Innertube.relatedPage(videoId = trending.value?.id ?: "4NRXx6U8ABQ", setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)
-                                    }
-                                    loadedQuickPicks.value = true
-                                    Timber.tag("HomeQuickPicksState").d("Local data loaded (Trending: ${songs.size})")
-                                }
-                    PlayEventsType.LastPlayed -> {
-                        Database.eventTable
-                                .findSongsLastPlayed(limit = localCount)
-                                .distinctUntilChanged()
-                                .collect { songs ->
-                                    trendingList.value = songs.distinctBy { it.id }
-                                                        .filter { !parentalControlEnabled || !it.title.startsWith(EXPLICIT_PREFIX, true) }
-                                                        .take(localCount)
-                                    trending.value = trendingList.value.firstOrNull()
-                                    if (relatedPageResult.value == null || trending.value?.id != trendingList.value.firstOrNull()?.id) {
-                                        relatedPageResult.value = Innertube.relatedPage(videoId = trending.value?.id ?: "4NRXx6U8ABQ", setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)
-                                    }
-                                    loadedQuickPicks.value = true
-                                    Timber.tag("HomeQuickPicksState").d("Local data loaded (Trending: ${songs.size})")
-                                }
-                    }
-                    PlayEventsType.CasualPlayed -> {
-                        Database.eventTable
-                                .findSongsMostPlayedBetween(from = 0, limit = 100)
-                                .distinctUntilChanged()
-                                .collect { songs ->
-                                    val originalList = songs.distinctBy { it.id }
-                                                            .filter { !parentalControlEnabled || !it.title.startsWith(EXPLICIT_PREFIX, true) }
-                                    val shuffled = originalList.shuffled().take(localCount)
-                                    trendingList.value = shuffled
-                                    trending.value = shuffled.firstOrNull()
-                                    if (relatedPageResult.value == null || trending.value?.id != shuffled.firstOrNull()?.id) {
-                                        relatedPageResult.value = Innertube.relatedPage(videoId = trending.value?.id ?: "4NRXx6U8ABQ", setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)
-                                    }
-                                    loadedQuickPicks.value = true
-                                }
-                    }
-                }
-            }
-
-            // Phase 3: Home page sections (sequential but with early exit)
-            // Also re-run when no YTM data is available: a stale "loaded" flag
-            // left by a cancelled or failed load must not block the re-fetch.
-            // Skipped entirely when offline (see the gate at the top of the function).
-            if (online && !shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null)) {
+            // Retry incomplete home data, preserving its existing merge order.
+            if (online && (force || !shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null))) {
                 var cumulativeSections = homePageInit.value?.sections.orEmpty()
                 var cumulativeChips = homePageInit.value?.chips.orEmpty()
-                repeat(3) { attempt ->
+                loadQuickPicksHomeAttempts {
                     val result = YtMusic.getHomePage(setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)
                     result.getOrNull()?.let { page ->
                         val newSections = mutableListOf<HomePage.Section>()
@@ -222,7 +173,7 @@ class HomeQuickPicksState(
                         homePageResult.value = Result.success(HomePage(sections = cumulativeSections, chips = cumulativeChips))
                         homePageInit.value = homePageResult.value?.getOrNull()
                     }
-                    if (cumulativeSections.size > 15) return@repeat
+                    if (result.getOrNull() != null) countUsableQuickPicksSections(cumulativeSections) else 0
                 }
 
                 Timber.tag("HomeQuickPicksState").d("YouTube Music sections loaded: ${homePageInit.value?.sections?.size ?: 0}")
@@ -230,8 +181,7 @@ class HomeQuickPicksState(
 
         }.onFailure { e ->
             if (e is CancellationException) {
-                // Load was cancelled (navigation away): reset the flags together
-                // so a stale "loaded" flag can never block a future reload.
+                // Keep the cache flags consistent after cancellation.
                 Timber.tag("HomeQuickPicksState").d("LoadData cancelled, flags reset")
                 loadedData.value = false
                 if (trendingList.value.isEmpty()) loadedQuickPicks.value = false
@@ -240,96 +190,109 @@ class HomeQuickPicksState(
                 loadedData.value = false
             }
         }.onSuccess {
-            // Only mark as loaded when YTM data is actually present; otherwise an
-            // empty/failed phase 3 would block future reloads forever. Offline the
-            // network phases were skipped on purpose, so the load counts as done
-            // (a later entry re-runs the local phase only, silently) instead of
-            // retrying the network on every page visit.
+            // Missing online data must remain retryable; offline local loads count as done.
             loadedData.value = homePageInit.value != null || !online
         }
         return true
     }
 
-    /**
-     * Single-flight entry point for loading: only one load runs at a time, and
-     * the running load survives page switches (it lives in the shared companion
-     * scope, not the composable scope). A call made while a load is in progress
-     * marks a deferred reload instead of starting a concurrent one (concurrent
-     * loads used to interleave the phase 3 merge and corrupt the YTM sections/chips).
-     */
-    fun load() {
-        val job = sharedLoadJob
-        if (job != null && job.isActive) {
-            sharedRefreshPending = true
-            Timber.tag("HomeQuickPicksState").d("Load in progress, refresh deferred")
-            return
+    @Synchronized
+    internal fun observeLocalData(restart: Boolean = false) {
+        if (!observationActivated) {
+            observations.claim(observationToken)
+            observationActivated = true
         }
-        sharedLoadJob = loadScope.launch {
-            // The pull-to-refresh indicator tracks a real network load only: startup,
-            // an explicit refresh, or a deferred reload. A cached page change is a
-            // no-op load and must not flash the indicator. An offline load is
-            // local-only (the network phases are skipped) and must not flash it
-            // either — the YTM sections show the offline message instead.
-            val online = NetworkQualityHelper.isNetworkConnected(appContext())
-            if (online && !shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null)) {
-                refreshing.value = true
+        observations.start(observationToken, restart = restart) { publication ->
+            // Capture this state's parameters, never a later composition's settings.
+            val songsFlow = when (playEventType) {
+                PlayEventsType.MostPlayed -> Database.eventTable
+                    .findSongsMostPlayedBetween(from = from, limit = localCount)
+                PlayEventsType.LastPlayed -> Database.eventTable.findSongsLastPlayed(limit = localCount)
+                PlayEventsType.CasualPlayed -> Database.eventTable
+                    .findSongsMostPlayedBetween(from = 0, limit = 100)
             }
-            try {
-                loadData()
-                delay(500)
-                if (sharedRefreshPending && coroutineContext[Job]?.isActive == true) {
-                    sharedRefreshPending = false
-                    refreshKey.value++
-                    if (NetworkQualityHelper.isNetworkConnected(appContext())) {
-                        refreshing.value = true
-                    }
-                    Timber.tag("HomeQuickPicksState").d("Deferred refresh after load completed")
-                    loadData(force = true)
+            songsFlow.distinctUntilChanged().collect { songs ->
+                val filtered = songs.distinctBy { it.id }
+                    .filter { !parentalControlEnabled || !it.title.startsWith(EXPLICIT_PREFIX, true) }
+                val selected = if (playEventType == PlayEventsType.CasualPlayed) {
+                    filtered.shuffled().take(localCount)
+                } else filtered.take(localCount)
+                var fetchRelated = false
+                observations.publish(publication) {
+                    trendingList.value = selected
+                    trending.value = selected.firstOrNull()
+                    loadedQuickPicks.value = true
+                    fetchRelated = relatedPageResult.value == null
                 }
-            } finally {
-                refreshing.value = false
+                if (fetchRelated) {
+                    val related = Innertube.relatedPage(
+                        videoId = selected.firstOrNull()?.id ?: "4NRXx6U8ABQ",
+                        setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse,
+                    )
+                    observations.publish(publication) { relatedPageResult.value = related }
+                }
             }
+        }
+    }
+
+    fun load(invalidate: Boolean = false) {
+        observeLocalData()
+        loads.request(
+            identity = loadIdentity(),
+            invalidate = invalidate,
+            onStart = { force -> prepareLoad(force) },
+        ) { force -> runLoad(force) }
+    }
+
+    private fun prepareLoad(force: Boolean) {
+        if (force) {
+            refreshKey.value++
+            trendingList.value = emptyList()
+            ytmQuickPicks.value = emptyList()
+            recommendations.value = emptyList()
+            loadedQuickPicks.value = false
+            loadedData.value = false
+            relatedPageResult.value = null
+            trending.value = null
+            homePageResult.value = null
+            homePageInit.value = null
+            discoverPageResult.value = null
+            discoverPageInit.value = null
+            chartsPageResult.value = null
+            chartsPageInit.value = null
+        }
+        observeLocalData(restart = force)
+    }
+
+    private suspend fun runLoad(force: Boolean) {
+        val online = NetworkQualityHelper.isNetworkConnected(appContext())
+        if (online && (force || !shouldSkipQuickPicksLoad(loadedData.value, homePageInit.value != null))) {
+            refreshing.value = true
+        }
+        try {
+            loadData(force = force)
+            delay(500)
+        } finally {
+            refreshing.value = false
         }
     }
 
     fun refresh() {
-        val job = sharedLoadJob
-        if (job != null && job.isActive) {
-            // A load is in progress: tearing its state down mid-flight is what
-            // caused the corrupted data. Defer a full reload instead; the running
-//
-            // load keeps the indicator up until the deferred reload finishes.
-            sharedRefreshPending = true
-            Timber.tag("HomeQuickPicksState").d("Refresh deferred: load already in progress")
-            return
-        }
-        if (refreshing.value) return
-        refreshKey.value++
-        trendingList.value = emptyList()
-        ytmQuickPicks.value = emptyList()
-        recommendations.value = emptyList()
-        loadedQuickPicks.value = false
-        loadedData.value = false
-        relatedPageResult.value = null
-        trending.value = null
-        homePageResult.value = null
-        homePageInit.value = null
-        discoverPageResult.value = null
-        discoverPageInit.value = null
-        chartsPageResult.value = null
-        chartsPageInit.value = null
-        load()
+        observeLocalData()
+        loads.request(
+            identity = loadIdentity(),
+            refresh = true,
+            onStart = { force -> prepareLoad(force) },
+        ) { force -> runLoad(force) }
     }
 }
 
-/**
- * Decides whether Quick Picks can skip a load because the YTM data is already
- * present. A stale "loaded" flag without data must never be trusted: that
- * combination is exactly what used to leave the page stuck with no spinner
- * and no YouTube categories.
- */
+/** A loaded flag is trustworthy only while its home data is present. */
 fun shouldSkipQuickPicksLoad(loadedData: Boolean, homePagePresent: Boolean): Boolean =
     loadedData && homePagePresent
+
+internal fun countUsableQuickPicksSections(sections: List<HomePage.Section>): Int =
+    sections.count { section -> section.items.any { !it?.key.isNullOrBlank() } }
 
 @UnstableApi
 @Composable
@@ -349,8 +312,7 @@ fun rememberHomeQuickPicksState(
     val discoverPageInit = persist<Innertube.DiscoverPage?>("home/quickpicks/discoveryAlbumsInit")
 
     val homePageResult = persist<Result<HomePage?>?>("home/quickpicks/homePageResult")
-    // persist (not rememberPreference) so a load running in the background
-    // writes to the same shared state the next composable instance reads.
+    // Background loads and later page instances must share the same cache.
     val homePageInit = persist<HomePage>(tag = "home/quickpicks/homePageInit")
 
     val ytmQuickPicks = persistList<Song>("home/quickpicks/ytmQuickPicks")
@@ -365,7 +327,7 @@ fun rememberHomeQuickPicksState(
     val refreshing = remember { mutableStateOf(false) }
     val refreshKey = remember { mutableIntStateOf(0) }
 
-    return remember(playEventType, selectedCountryCode, parentalControlEnabled, localCount) {
+    val state = remember(playEventType, selectedCountryCode, parentalControlEnabled, localCount) {
         HomeQuickPicksState(
             trendingList = trendingList,
             trending = trending,
@@ -389,4 +351,5 @@ fun rememberHomeQuickPicksState(
             refreshKey = refreshKey
         )
     }
+    return state
 }

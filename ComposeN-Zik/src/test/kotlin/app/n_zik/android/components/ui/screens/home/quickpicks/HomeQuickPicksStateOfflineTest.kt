@@ -30,7 +30,10 @@ import it.fast4x.innertube.requests.discoverPage
 import it.fast4x.innertube.requests.HomePage
 import it.fast4x.innertube.requests.relatedPage
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -188,6 +191,70 @@ class HomeQuickPicksStateOfflineTest {
     }
 
     @Test
+    fun `invalidation restarts observation after clearing an unchanged database snapshot`() {
+        settleSharedLoad()
+        val songs = MutableStateFlow<List<Song>>(emptyList())
+        every { eventTable.findSongsMostPlayedBetween(any(), any(), any()) } returns songs
+        val state = newState()
+        // runBlocking adapts the suspend loadData entry point to JUnit 4.
+        runBlocking { state.loadData() }
+        awaitLocalPhase(state)
+
+        state.load(invalidate = true)
+
+        awaitLocalPhase(state)
+        assertTrue(state.loadedQuickPicks.value)
+        settleSharedLoad()
+    }
+
+    @Test
+    fun `constructing an unused replacement leaves the committed observer running`() {
+        settleSharedLoad()
+        val songs = MutableStateFlow<List<Song>>(emptyList())
+        every { eventTable.findSongsMostPlayedBetween(any(), any(), any()) } returns songs
+        val state = newState()
+        // runBlocking adapts the suspend loadData entry point to JUnit 4.
+        runBlocking { state.loadData() }
+        awaitLocalPhase(state)
+
+        newState()
+        songs.value = listOf(Song(
+            id = "updated", title = "Updated", durationText = null, thumbnailUrl = null,
+            likedAt = null, totalPlayTimeMs = 1000,
+        ))
+        val deadline = System.currentTimeMillis() + 10_000
+        while (state.trending.value?.id != "updated" && System.currentTimeMillis() < deadline) {
+            Thread.sleep(25)
+        }
+        assertEquals("updated", state.trending.value?.id)
+    }
+
+    @Test
+    fun `local picks are ready while the related request is still suspended`() {
+        settleSharedLoad()
+        val relatedStarted = CompletableDeferred<Unit>()
+        val releaseRelated = CompletableDeferred<Unit>()
+        coEvery { Innertube.relatedPage(any(), any()) } coAnswers {
+            relatedStarted.complete(Unit)
+            releaseRelated.await()
+            offlineFailureStub(Result.failure(offlineError))
+        }
+        val state = newState()
+        try {
+            // runBlocking adapts the suspend test entry points to JUnit 4.
+            runBlocking {
+                state.loadData()
+                withTimeout(10_000) { relatedStarted.await() }
+            }
+            assertTrue(state.loadedQuickPicks.value)
+            assertNull(state.relatedPageResult.value)
+        } finally {
+            releaseRelated.complete(Unit)
+        }
+        settleSharedLoad()
+    }
+
+    @Test
     fun `offline loadData skips the network phases and marks the load done without home data`() {
         settleSharedLoad()
         val state = newState()
@@ -204,7 +271,7 @@ class HomeQuickPicksStateOfflineTest {
         // related page was requested with the fallback seed (the event table
         // is empty, so there is no local trending song to seed from).
         verify(exactly = 1) { eventTable.findSongsMostPlayedBetween(any(), any(), any()) }
-        verify(exactly = 1) {
+        verify(exactly = 1, timeout = 10_000) {
             runBlocking { Innertube.relatedPage(any(), any()) }
         }
     }

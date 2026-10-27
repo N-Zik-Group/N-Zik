@@ -118,18 +118,11 @@ fun HomeQuickPicks(
 
     var lastYouTubeLoggedIn by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(playEventType, selectedCountryCode) {
-        if (playEventType != lastPlayEventType || selectedCountryCode != lastSelectedCountry) {
-            state.loadedQuickPicks.value = false
-            state.loadedData.value = false
-            state.relatedPageResult.value = null
-            state.trending.value = null
-            state.trendingList.value = emptyList()
-            delay(100)
-            lastPlayEventType = playEventType
-            lastSelectedCountry = selectedCountryCode
-        }
-        state.load()
+    LaunchedEffect(state) {
+        val invalidate = playEventType != lastPlayEventType || selectedCountryCode != lastSelectedCountry
+        lastPlayEventType = playEventType
+        lastSelectedCountry = selectedCountryCode
+        state.load(invalidate = invalidate)
     }
 
     LaunchedEffect(Unit) {
@@ -137,17 +130,8 @@ fun HomeQuickPicks(
         if (loggedIn != lastYouTubeLoggedIn) {
             lastYouTubeLoggedIn = loggedIn
             currentYouTubeLoggedIn = loggedIn
-            state.homePageResult.value = null
-            state.homePageInit.value = null
-            state.discoverPageResult.value = null
-            state.discoverPageInit.value = null
-            state.chartsPageResult.value = null
-            state.chartsPageInit.value = null
-            state.ytmQuickPicks.value = emptyList()
-            state.loadedQuickPicks.value = false
-            state.loadedData.value = false
-            state.load()
-            Timber.tag("HomeQuickPicks").d("YouTube login state changed. Data cleared.")
+            state.load(invalidate = true)
+            Timber.tag("HomeQuickPicks").d("YouTube login state changed, reload requested")
         }
     }
 
