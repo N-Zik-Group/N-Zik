@@ -303,3 +303,7 @@ Other:
   - Expose Beginning/End for editable local playlists with End as default and profile-scoped preferences.
   - Insert ordered unique songs atomically, shift only by the actual new count, and keep pending imported-song positions aligned without a database schema change.
   - Apply the same ordering to YouTube, native CSV and service CSV imports while preserving metadata upsert versus insert-ignore behavior and remote sync handling.
+- fix(notifications): keep playback actions tied to the current media identity (issue https://github.com/N-Zik-Group/N-Zik/issues/756)
+  - Clear stale Room-derived state at transitions and reject late results for previous media items.
+  - Resolve download actions independently of Room rows, including removal and rapid track changes, and capture the acted-on media item.
+  - Regression tests exercise actual service notification observers/builders; the reported device-specific symptom was not reproduced on a Samsung handset.

@@ -76,7 +76,6 @@ import app.n_zik.android.bridge.BridgeServerController
 import app.n_zik.android.playback.audio.MuteAudioProcessor
 import app.n_zik.android.playback.audio.MuteAudioProcessorChain
 import androidx.media3.exoplayer.offline.Download
-import androidx.media3.exoplayer.offline.DownloadManager
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy
@@ -210,8 +209,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -395,7 +393,6 @@ class PlayerServiceModern : MediaLibraryService(),
     private var isclosebackgroundPlayerEnabled = false
     private var audioManager: AudioManager? = null
     private var audioDeviceCallback: AudioDeviceCallback? = null
-    private lateinit var downloadListener: DownloadManager.Listener
 
 
     /**
@@ -426,11 +423,9 @@ class PlayerServiceModern : MediaLibraryService(),
 
     val currentMediaItem = MutableStateFlow<MediaItem?>(null)
 
-    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
-    private val currentSong = currentMediaItem.flatMapLatest { mediaItem ->
-        val songId = mediaItem?.mediaId?.split("/")?.lastOrNull() ?: mediaItem?.mediaId ?: ""
-        Database.songTable.findById( songId )
-    }.stateIn(coroutineScope, SharingStarted.Lazily, null)
+    private val currentSong = notificationSongStates(currentMediaItem) { songId ->
+        Database.songTable.findById(songId)
+    }.stateIn(coroutineScope, SharingStarted.Lazily, NotificationSongState(null, null))
 
     var currentSongStateDownload = MutableStateFlow(Download.STATE_STOPPED)
 
@@ -820,19 +815,7 @@ class PlayerServiceModern : MediaLibraryService(),
         audioVolumeObserver = AudioVolumeObserver(this)
         audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
 
-        // Download listener help to notify download change to UI
-        downloadListener = object : DownloadManager.Listener {
-            override fun onDownloadChanged(
-                downloadManager: DownloadManager,
-                download: Download,
-                finalException: Exception?
-            ) = run {
-                if (download.request.id != currentMediaItem.value?.mediaId) return@run
-                Timber.tag("PlayerServiceModern").d("onDownloadChanged current song ${currentMediaItem.value?.mediaId} state ${download.state} key ${download.request.id}")
-                updateDownloadedState()
-            }
-        }
-        MyDownloadHelper.getDownloadManager(this).addListener(downloadListener)
+        MyDownloadHelper.getDownloadManager(this)
 
         notificationActionReceiver = NotificationActionReceiver()
 
@@ -906,17 +889,7 @@ class PlayerServiceModern : MediaLibraryService(),
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
 
-        // Ensure that song is updated
-        coroutineScope.launch {
-            currentSong.debounce(1000).collect { song ->
-                updateDownloadedState()
-
-                updateDefaultNotification()
-                withContext(NzikDispatchers.UI) {
-                    updateWidgets()
-                }
-            }
-        }
+        observeNotificationState()
 
         maybeRestorePlayerQueue()
 
@@ -1178,7 +1151,6 @@ class PlayerServiceModern : MediaLibraryService(),
             sessionController = null
             cache.release()
             //downloadCache.release()
-            MyDownloadHelper.getDownloadManager(this).removeListener(downloadListener)
             loudnessEnhancer?.release()
             audioVolumeObserver.unregister()
             timerJob?.cancel()
@@ -1317,6 +1289,7 @@ class PlayerServiceModern : MediaLibraryService(),
         }
 
         currentMediaItem.update { mediaItem }
+        updateDownloadedState()
 
         // Immediately persist the full MediaItem metadata to the DB.
         // This seeds the Song row with real data (title, artist, thumbnail)
@@ -2195,8 +2168,8 @@ class PlayerServiceModern : MediaLibraryService(),
     private fun commandButtonIconRes(button: NotificationButtons): Int {
         val stateIcon = button.getStateIcon(
             button,
-            currentSong.value?.likedAt,
-            currentSongStateDownload.value,
+            currentSong.value.takeIf { it.mediaId == currentMediaItem.value?.mediaId }?.likedAt,
+            currentDownloadState(currentMediaItem.value),
             player.repeatMode,
             player.shuffleModeEnabled
         )
@@ -2580,20 +2553,29 @@ class PlayerServiceModern : MediaLibraryService(),
 
     }
 
-    fun updateDownloadedState() {
-        val mediaId = currentSong.value?.id ?: return
-        val downloads = MyDownloadHelper.downloads.value
-        currentSongStateDownload.value = downloads[mediaId]?.state ?: Download.STATE_STOPPED
-        /*
-        if (downloads[currentSong.value?.id]?.state == Download.STATE_COMPLETED) {
-            currentSongIsDownloaded.value = true
-        } else {
-            currentSongIsDownloaded.value = false
+    private fun observeNotificationState() {
+        coroutineScope.launch(NzikDispatchers.UI) {
+            currentSong.collect {
+                updateDefaultNotification()
+                updateWidgets()
+            }
         }
-        */
+        coroutineScope.launch(NzikDispatchers.UI) {
+            combine(currentMediaItem, MyDownloadHelper.downloads) { item, downloads ->
+                item?.mediaId to (downloads[item?.mediaId]?.state ?: Download.STATE_STOPPED)
+            }.distinctUntilChanged().collect {
+                updateDownloadedState()
+            }
+        }
+    }
 
+    private fun currentDownloadState(mediaItem: MediaItem?): Int =
+        MyDownloadHelper.downloads.value[mediaItem?.mediaId]?.state ?: Download.STATE_STOPPED
+
+    /** Refreshes download presentation even when the current track has no Room row. */
+    fun updateDownloadedState() {
+        currentSongStateDownload.value = currentDownloadState(currentMediaItem.value)
         updateDefaultNotification()
-
     }
 
     /**
@@ -2919,11 +2901,12 @@ class PlayerServiceModern : MediaLibraryService(),
         }
 
         fun toggleDownload() {
-    
+            val mediaItem = currentMediaItem.value ?: return
+            val downloadState = currentDownloadState(mediaItem)
             manageDownload(
                 context = this@PlayerServiceModern,
-                mediaItem = currentMediaItem.value ?: return,
-                downloadState = currentSongStateDownload.value == Download.STATE_COMPLETED
+                mediaItem = mediaItem,
+                downloadState = downloadState == Download.STATE_COMPLETED
             )
         }
 
