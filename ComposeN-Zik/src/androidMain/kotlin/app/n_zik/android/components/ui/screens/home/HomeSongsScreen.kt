@@ -267,6 +267,8 @@ fun HomeSongsScreen(navController: NavController ) {
 
     if (showConfirmMatchAllDialog) {
         ConfirmationDialog(
+            title = stringResource(R.string.dialog_match_songs),
+            confirmText = stringResource(R.string.dialog_match_songs),
             text = stringResource(R.string.match_all_confirmation, getSongs().count { it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L) }),
             onDismiss = { showConfirmMatchAllDialog = false },
             onConfirm = {
@@ -282,6 +284,8 @@ fun HomeSongsScreen(navController: NavController ) {
 
     if (showDeleteConfirmDialog) {
         ConfirmationDialog(
+            title = stringResource(R.string.dialog_delete_songs),
+            confirmText = stringResource(R.string.delete),
             text = deleteDialogTitle,
             onDismiss = { showDeleteConfirmDialog = false },
             onConfirm = {
@@ -295,7 +299,8 @@ fun HomeSongsScreen(navController: NavController ) {
         InProgressDialog(
             total = totalSongsToMatch,
             done = songsMatched,
-            text = stringResource(R.string.matching_songs),
+            text = stringResource(R.string.dialog_matching_songs),
+            message = stringResource(R.string.matching_songs),
             onDismiss = {
                 cancelMatch = true
                 showMatchingProgressDialog = false
@@ -631,6 +636,8 @@ fun HomeSongsScreen(navController: NavController ) {
                     if (showExportCacheConfirmDialog) {
                         val count = getSongs().size
                         ConfirmationDialog(
+                            title = stringResource(R.string.export_cached),
+                            confirmText = stringResource(R.string.export_cached),
                             text = stringResource(R.string.do_you_really_want_to_export_cached_count, count),
                             onDismiss = { showExportCacheConfirmDialog = false },
                             onConfirm = {
@@ -800,6 +807,7 @@ fun HomeSongsScreen(navController: NavController ) {
                 }
     }
 
+    val headerDensity = androidx.compose.ui.platform.LocalDensity.current
     val headerHeightState = remember { mutableIntStateOf(0) }
     var headerHeight by headerHeightState
     val headerOffsetState = remember { mutableFloatStateOf(0f) }
@@ -823,7 +831,7 @@ fun HomeSongsScreen(navController: NavController ) {
             val headerPadding = with(androidx.compose.ui.platform.LocalDensity.current) { headerHeight.toDp() }
             when( builtInPlaylist ) {
                 BuiltInPlaylist.OnDevice -> OnDeviceSong( navController, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, headerPadding )
-                else                     -> HomeSongs( navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, matchButton = null, onRecommendationCountChange = { count -> recommendationCount = count }, onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading }, isRecommendationEnabled = isRecommendationEnabled, refreshKey = matchRefreshKey, onMatchClick = { showConfirmMatchAllDialog = true }, headerPadding = headerPadding, visibleHeaderPadding = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() } )
+                else                     -> HomeSongs( navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, matchButton = null, onRecommendationCountChange = { count -> recommendationCount = count }, onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading }, isRecommendationEnabled = isRecommendationEnabled, refreshKey = matchRefreshKey, onMatchClick = { showConfirmMatchAllDialog = true }, headerPadding = headerPadding, visibleHeaderPadding = { with(headerDensity) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() } } )
             }
         }
 

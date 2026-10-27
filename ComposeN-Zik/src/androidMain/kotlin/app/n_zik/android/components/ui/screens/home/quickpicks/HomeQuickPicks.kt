@@ -281,19 +281,9 @@ fun HomeQuickPicksContent(
     val scope = rememberCoroutineScope()
     var isQuickPicksLoading by remember { mutableStateOf(false) }
 
-    // Honest loading state: keep the skeleton while data is missing, even if a
-    // stale "loaded" flag survived — flag true + no data used to render a
-//
-    // silent blank wall instead of a spinner.
-    var showLoader by remember { mutableStateOf(!state.loadedData.value || state.homePageInit.value == null) }
-    LaunchedEffect(state.loadedData.value, state.homePageInit.value?.sections?.size) {
-        if (state.loadedData.value && state.homePageInit.value != null) {
-            delay(600)
-            showLoader = false
-        } else {
-            showLoader = true
-        }
-    }
+    // Readiness is independent of section count and entrance animations. Cached content
+    // stays visible on return; arriving sections do not restart a placeholder timer.
+    val showLoader = !state.loadedData.value || state.homePageInit.value == null
 
     // Offline→online transition: trigger the same refresh as the pull-to-refresh.
     var wasOnline by remember { mutableStateOf(true) }

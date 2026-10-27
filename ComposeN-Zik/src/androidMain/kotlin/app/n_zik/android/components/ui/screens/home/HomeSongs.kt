@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.home
 
+import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchNoResults
 
 import android.annotation.SuppressLint
@@ -126,7 +127,7 @@ fun HomeSongs(
     refreshKey: Int = 0,
     onMatchClick: (() -> Unit)? = null,
     headerPadding: androidx.compose.ui.unit.Dp = 0.dp,
-    visibleHeaderPadding: androidx.compose.ui.unit.Dp = headerPadding
+    visibleHeaderPadding: () -> androidx.compose.ui.unit.Dp = { headerPadding }
 ) {
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
@@ -231,7 +232,7 @@ fun HomeSongs(
     var relatedSongsPositions by remember { mutableStateOf(emptyMap<Song, Int>()) }
     var isRecommendationsLoading by remember { mutableStateOf(false) }
 
-    LaunchedEffect( builtInPlaylist, topPlaylists.period, songSort.sortBy, songSort.sortOrder, hiddenSongs.isFirstIcon, refreshKey ) {
+    LaunchedEffect( builtInPlaylist, topPlaylists.period, songSort.sortBy, songSort.sortOrder, hiddenSongs.isFirstIcon, refreshKey, filterBy ) {
         isLoading = true
 
         val retrievedSongs = when( builtInPlaylist ) {
@@ -335,18 +336,23 @@ fun HomeSongs(
             }
         }
 
-        retrievedSongs.flowOn( NzikDispatchers.DATA )
-            .distinctUntilChanged()
-            .collect {
-                items = when(filterBy) {
-                    FilterBy.All -> it
-                    FilterBy.YoutubeLibrary -> it.filter { song -> song.isYoutubeSong }
-                    FilterBy.Local -> it.filterNot { song -> song.isYoutubeSong }
+        val selectedFilter = filterBy
+        val selectedPlaylist = builtInPlaylist
+        retrievedSongs.map { songs ->
+                when(selectedFilter) {
+                    FilterBy.All -> songs
+                    FilterBy.YoutubeLibrary -> songs.filter { song -> song.isYoutubeSong }
+                    FilterBy.Local -> songs.filterNot { song -> song.isYoutubeSong }
                 }.let { list ->
-                    if (builtInPlaylist != BuiltInPlaylist.Disliked) {
+                    if (selectedPlaylist != BuiltInPlaylist.Disliked) {
                         list.filter { song -> song.likedAt != -1L }
                     } else list
                 }
+            }
+            .flowOn(NzikDispatchers.DATA)
+            .distinctUntilChanged()
+            .collect { songs ->
+                items = songs
                 isLoading = false
             }
     }
@@ -459,29 +465,21 @@ fun HomeSongs(
         onDispose { SongRecommendations.clear() }
     }
 
-    LaunchedEffect( items, search.inputValue, isRecommendationEnabled, relatedSongsPositions ) {
-        items.toMutableList()
-            .apply {
-                if (isRecommendationEnabled) {
-                    relatedSongsPositions.forEach { (song, position) ->
-                        val safePosition = position.coerceIn(0, size)
-                        add( safePosition, song )
-                    }
-                }
-            }
-            .distinctBy( Song::id )
-            .filter { !parentalControlEnabled || !it.title.startsWith( EXPLICIT_PREFIX, true ) }
-            .filter { song ->
-                val containsTitle = song.cleanTitle().contains( search.inputValue, true )
-                val containsArtist = song.cleanArtistsText().contains( search.inputValue, true )
-                containsTitle || containsArtist
-            }
-            .let { newItems ->
-                androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
-                    itemsOnDisplay.clear()
-                    itemsOnDisplay.addAll(newItems)
-                }
-            }
+    var completedSearchQuery by remember { mutableStateOf<String?>(null) }
+    val projectionInput = HomeSongsProjectionInput(
+        items = items,
+        query = search.inputValue,
+        recommendationsEnabled = isRecommendationEnabled,
+        recommendations = relatedSongsPositions,
+        parentalControlEnabled = parentalControlEnabled,
+    )
+    LaunchedEffect(projectionInput) {
+        val newItems = projectHomeSongsOnData(projectionInput)
+        androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
+            itemsOnDisplay.clear()
+            itemsOnDisplay.addAll(newItems)
+            completedSearchQuery = projectionInput.query
+        }
     }
 
     LaunchedEffect( relatedSongs.size, isRecommendationEnabled ) {
@@ -529,6 +527,12 @@ fun HomeSongs(
             !isLoading && itemsOnDisplay.isEmpty() && (items.isEmpty() || search.inputValue.isNotEmpty())
         }
     }
+
+    SearchEmptyFeedback(
+        query = search.inputValue,
+        empty = showNoItems,
+        loading = isLoading || completedSearchQuery != search.inputValue
+    )
 
     val songIds = remember(itemsOnDisplay) { itemsOnDisplay.map { it.id } }
     val likeStatesMap by remember(songIds) {
@@ -692,10 +696,10 @@ fun HomeSongs(
 
         if (showNoItems) {
             Box(
-                modifier = Modifier.fillMaxSize().padding(top = visibleHeaderPadding, bottom = Dimensions.bottomSpacer),
+                modifier = Modifier.fillMaxSize().padding(top = visibleHeaderPadding(), bottom = Dimensions.bottomSpacer),
                 contentAlignment = Alignment.Center
             ) {
-                SearchNoResults(text = stringResource(if (search.inputValue.isNotBlank()) R.string.no_results_found else R.string.no_items))
+                if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.no_items))
             }
         }
     }

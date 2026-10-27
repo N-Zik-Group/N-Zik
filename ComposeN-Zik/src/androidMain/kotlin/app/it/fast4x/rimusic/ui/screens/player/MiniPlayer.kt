@@ -172,7 +172,7 @@ import app.n_zik.android.core.coil.thumbnail
 import app.n_zik.android.components.player.MiniPlayerSwipeAction
 import app.n_zik.android.components.player.SwipeActionLatch
 import app.n_zik.android.components.player.WithDoubledTouchSlop
-import app.n_zik.android.components.player.isMiniPlayerSwipeEnabled
+import app.n_zik.android.components.player.rememberMiniPlayerSheetGestureState
 import app.n_zik.android.components.player.miniPlayerSwipeAction
 import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
 import app.n_zik.android.components.player.monochromeControlsColor
@@ -504,8 +504,9 @@ fun MiniPlayer(
     // Issue #881 (gh-881): tolerant saver (spec M5).
     var isRotated by rememberSaveable(saver = TolerantBoolStateSaver("miniPlayer.isRotated")) { mutableStateOf(false) }
 
-    LaunchedEffect(playerSheetState.progress) {
-        if (playerSheetState.progress > 0f && dismissState.targetValue != SwipeToDismissBoxValue.Settled) {
+    val sheetGestureState by rememberMiniPlayerSheetGestureState { playerSheetState.progress }
+    LaunchedEffect(sheetGestureState.isOpening) {
+        if (sheetGestureState.isOpening && dismissState.targetValue != SwipeToDismissBoxValue.Settled) {
             try {
                 dismissState.snapTo(SwipeToDismissBoxValue.Settled)
             } catch (e: Exception) {
@@ -532,13 +533,13 @@ fun MiniPlayer(
             .padding(horizontal = 16.dp)
             .shadow(elevation = if (isFloating) 8.dp else 0.dp, shape = shape)
             .clip(shape),
-        enableDismissFromStartToEnd = playerSheetState.progress == 0f,
-        enableDismissFromEndToStart = playerSheetState.progress == 0f,
+        enableDismissFromStartToEnd = sheetGestureState.isAtRest,
+        enableDismissFromEndToStart = sheetGestureState.isAtRest,
         // Switched off once the action ran: that ends a drag the finger keeps alive, so the box
         // goes back to its position without waiting for the release.
 
         // Also off as soon as the sheet leaves its original position (being opened).
-        gesturesEnabled = isMiniPlayerSwipeEnabled(swipeActionLatch.isFired, playerSheetState.progress),
+        gesturesEnabled = !swipeActionLatch.isFired && sheetGestureState.isAtRest,
         state = dismissState,
         backgroundContent = {
             /*

@@ -314,3 +314,8 @@ Other:
   - Build active and paused notifications through an application-context helper, preserving channels, action commands and notification IDs.
   - Remove the terminal listener's retained service instance and close DownloadCursor on both normal completion and exceptions.
   - Cover completed notifications, paused resume actions, active actions and the actual cancellation path.
+- perf(home): reduce work during player gestures and home loading
+  - Observe mini-player opening/rest boundaries instead of every progress frame while preserving negative-dismiss swipe behavior.
+  - Move captured HomeSongs projections and source filters to cancellable DATA work; preserve ordering, deduplication and parental-control/search updates.
+  - Read collapsing-header offsets only in the empty-content branch and remove the artificial 600 ms Quick Picks loader delay while retaining entrance transitions.
+  - Debug emulator checks are not a release-device performance guarantee.
