@@ -7,6 +7,8 @@ on:
   schedule:
     - cron: '0 4 * * 1'  # Every Monday at 4 AM
   workflow_dispatch:
+  pull_request:
+    types: [closed]
 
 permissions:
   contents: write
@@ -71,4 +73,24 @@ jobs:
             gh pr create --base main --head chore/metroproto-sync \
               --title "chore: sync listentogether.proto from MetrolistGroup/metroproto" \
               --body-file /tmp/pr-body.md
+          fi
+
+  # Delete the sync branch once its PR has been merged (the weekly run recreates it on drift)
+  cleanup-branch:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.merged &&
+      github.event.pull_request.head.ref == 'chore/metroproto-sync'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete merged sync branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if gh api repos/${GITHUB_REPOSITORY}/branches/chore/metroproto-sync >/dev/null 2>&1; then
+            gh api -X DELETE repos/${GITHUB_REPOSITORY}/branches/chore/metroproto-sync
+            echo "Deleted chore/metroproto-sync"
+          else
+            echo "chore/metroproto-sync no longer exists - nothing to do"
           fi
