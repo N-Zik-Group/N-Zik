@@ -1,0 +1,10 @@
+Added:
+- Redesigned Settings with detailed search, privacy controls and permission history.
+- Full offline mode, customizable menus and downloadable media tools.
+Improved:
+- Quick Picks, themes, navigation and animated dialogs.
+Fixed:
+- Download recovery, offline playback, playlist insertion order and notification actions.
+- Audio/download lifecycle handling and updater flavor selection.
+Removed:
+- Obsolete code and unused assets.

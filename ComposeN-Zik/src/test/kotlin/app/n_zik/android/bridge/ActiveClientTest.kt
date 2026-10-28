@@ -99,6 +99,8 @@ class ActiveClientTest {
         pingTimeoutMs = pingTimeoutMs,
         commandExecutor = executor,
         audioLibrary = audio,
+        // Host JVM tests have no Android device ABI for the metadata feature probe.
+        featuresProvider = { BridgeContract.features(ffmpegAvailable = false) },
     )
 
     private fun ApplicationTestBuilder.mount(core: BridgeServerCore = newCore()): BridgeServerCore =

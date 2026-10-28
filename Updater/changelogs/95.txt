@@ -1,0 +1,40 @@
+Added:
+- Redesigned Settings with organized categories, reusable cards, clearer descriptions and visible selected values. Detailed search finds individual settings and their available choices, then scrolls to the matching option. Saved searches are filtered as you type and shown while searching.
+- Privacy settings: screen-capture protection and a local permission activity history for the active profile. Pause recording or clear saved events through the shared dialogs.
+- Search history has per-page controls, a global pause and a clear-all action, with separate history for each profile.
+- A per-profile full offline mode that keeps local music available while limiting online features.
+- Customizable menus and toolbars: reorder entries, choose which actions appear and add burger-menu separators. Long-press menu shortcuts can open the related settings.
+- Downloadable media-tool extensions for exporting cached songs and editing metadata. Required components are downloaded on first use instead of being bundled in every installer.
+- One-time Samsung storage advice after setup. Maintenance shows download re-validation and self-heal results, settings size and the current launch's cleanup status. Its download log shows this session's activity.
+
+Changed:
+- Settings pages share centered headings, consistent spacing and reset controls while retaining existing preference values and restrictions. Network quality and download quality show their current effective selections.
+- Dialogs share centered titles, separate header/content/footer tones, consistent internal scrolling space and readable action buttons. Opening and closing combine a folding center with a smooth TV-style light effect and respect Android animation settings.
+- Rewind's master switch controls the feature and its automatic playlist options together. Existing saved filter choices remain respected.
+- Easter-egg artwork is loaded on demand and reused locally; the obsolete mini-game routes and bundled copies have been retired.
+- Build variants now identify their 32-bit or 64-bit architecture consistently. Development and beta updates select the matching download.
+
+Improved:
+- Reduced unnecessary work during theme fades, artwork-color extraction, Quick Picks loading, player gestures and page navigation. Local Quick Picks can appear before related online sections finish loading.
+- Startup theme restoration keeps the app header, content and player surfaces consistent with the active profile.
+- Navigation bars reappear when changing pages, return transitions are harmonized, and Settings supports Android predictive back. Mini-player movement follows page transitions more consistently.
+- Rounded settings search highlights and feedback toasts align with the navigation area, including floating navigation. Search history, keyboard focus and empty-result feedback behave consistently across pages.
+- Playlist cards, image placeholders, statistics collages and onboarding layouts have more consistent spacing and cover behavior.
+
+Fixed:
+- Editable local playlists now offer Beginning or End insertion, with End as the default. YouTube and CSV imports follow that playlist's choice. (issue https://github.com/N-Zik-Group/N-Zik/issues/901)
+- Playback notification actions remain tied to the playing song during updates and transitions. (issue https://github.com/N-Zik-Group/N-Zik/issues/756)
+- Completed downloads are checked against their files on disk. Missing download data no longer leaves a false downloaded badge, and an actionable message explains when a song needs downloading again.
+- Offline playback and download failures stop unnecessary network retries, handle nested DNS errors and show the appropriate message once the interface is visible.
+- Audio output observers and download-service references are released correctly; stale callbacks and cancellation cursors are handled safely.
+- Shared dialog measurement no longer loops with marquee content. Dialog titles, footer wrapping, input focus and closing actions remain usable on narrow screens.
+- Pitch Black navigation keeps its intended transparency, menus preserve their separate surface tones, and player controls use the intended background styling.
+- Lyrics copying runs once per action. The updater hides the mini-player and applies build-specific update availability correctly.
+- Media-tool installation handles interrupted downloads, damaged cached packages, insufficient free space and first-use failures more reliably.
+- PC bridge metadata, permission-history clearing and focused settings interactions are more reliable. Image placeholders recover when no artwork is available.
+
+Removed:
+- Removed 61 confirmed unused source/resource files and 13 obsolete commented-code ranges. Active widget previews, preference data and database schemas are preserved.
+
+Other:
+- Expanded regression coverage for settings, navigation, dialogs, search, offline playback, downloads and extensions. Final release validation is recorded separately from these user-facing notes.

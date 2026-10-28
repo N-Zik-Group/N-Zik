@@ -6,7 +6,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.yield
 import kotlinx.coroutines.withTimeout
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -293,9 +292,11 @@ class EasterAssetManagerTest {
 
         release.countDown()
         val deadline = System.currentTimeMillis() + 10_000
-        while (!image.exists()) {
-            assertTrue(System.currentTimeMillis() < deadline, "file did not land after the transfer was released")
-            yield()
+        while (!image.exists() ||
+            runCatching { etagSidecar.readText().trim() }.getOrNull() != "etag-A"
+        ) {
+            assertTrue(System.currentTimeMillis() < deadline, "file and ETag did not land after the transfer was released")
+            delay(10)
         }
 
         assertArrayEquals(oldBody, image.readBytes())
