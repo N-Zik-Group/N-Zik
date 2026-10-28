@@ -3,7 +3,6 @@
     <string name="cancel">Cancel·lar</string>
     <string name="reset">Restableix</string>
     <string name="done">Fet</string>
-    <string name="hidesong">Vols amagar aquesta cançó? El seu temps de reproducció i la memòria cau s\'esborrarà. Aquesta acció no es pot desfer.</string>
     <string name="new_playlist">Nova llista de reproducció</string>
     <string name="start_radio">Iniciar una ràdio</string>
     <string name="stop_radio">Stop radio</string>
@@ -14,7 +13,6 @@
     <string name="go_to_album">Ves a l\'àlbum</string>
     <string name="remove_from_queue">Treure de la cua</string>
     <string name="remove_from_playlist">Treure de la llista de reproducció</string>
-    <string name="hide">Amagar</string>
     <string name="related_albums">Àlbums relacionats</string>
     <string name="similar_artists">Artistes similars</string>
     <string name="playlists_you_might_like">Llistes que et podrien agradar</string>
@@ -647,15 +645,11 @@
     <string name="lang_vietnamese">Vietnamita</string>
     <string name="parental_control">Control parental</string>
     <string name="info_prevent_play_songs_with_age_limitation">Eviteu reproduir cançons amb limitació d\'edat</string>
-    <string name="stream_clients">Stream Clients</string>
     <string name="preferred_stream_client">Preferred Stream Client</string>
     <string name="preferred_stream_client_title">Preferred Stream Client</string>
-    <string name="preferred_stream_client_description">Choose which stream client to try first</string>
     <string name="preferred_stream_client_changed">Preferred client changed. Will apply on next track.</string>
     <string name="stream_client_redownload_recommendation">Re-download songs for new quality (especially with Web Remix/ YTB Premium account)</string>
-    <string name="disabled_stream_clients">Disabled stream clients</string>
     <string name="disabled_stream_clients_title">Disabled Stream Clients</string>
-    <string name="configure_which_stream_clients_are_enabled">Configure which stream clients are enabled</string>
     <string name="codec">Codec</string>
     <string name="sample_rate">Sample Rate</string>
     <string name="perceptual_loudness">Perceptual Loudness</string>
@@ -737,7 +731,6 @@
     <string name="crop_video_thumbnails">Crop video thumbnails</string>
     <string name="showtwosongs">Nombre de cançons a la mini cua (1 a 9)</string>
     <string name="showalbumcover">Mostra la portada de l\'àlbum</string>
-    <string name="do_not_translate">No tradueixis</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">El temporitzador de son s\'ha retardat al final de la cançó</string>
     <string name="lyricsbackground">Fons de lletres</string>
     <string name="tapqueue">Toqueu per obrir la cua</string>
@@ -877,7 +870,6 @@
     <string name="loudness_boost_level">Loudness boost level</string>
     <string name="loudness_boost_level_info">Additional loudness level, to be used without overdoing it, may damage the device</string>
     <string name="settings_target_gain_loudness_info">Guany objectiu per a la normalització de la sonoritat</string>
-    <string name="error_media_cannot_be_played">Aquests mitjans no es poden reproduir</string>
     <string name="full_screen_lyrics_components">Components de Lletres a pantalla completa</string>
     <string name="titleartist">Títol i Artistes</string>
     <string name="miniqueue">Mini cua</string>
@@ -887,7 +879,6 @@
     <string name="skip_media_on_error">Salt automàtic en cas d\'error</string>
     <string name="skip_media_on_error_description">Si succeeix un error, els mitjans es canvien</string>
     <string name="skip_media_on_error_message">El multimèdia %1$s ha anat malament</string>
-    <string name="login_required_to_play_this_media">Cal iniciar sessió per reproduir aquests fitxers multimèdia</string>
     <string name="search_results_for">Resultats de la cerca per a:</string>
     <string name="statsfornerds">Estadístiques per als nerds</string>
     <string name="actionbar">Barra d\'acció</string>
@@ -932,7 +923,6 @@
     <string name="dislikes">Dislikes</string>
     <string name="description">Description</string>
     <string name="press_once_again_to_exit">Premeu una altra vegada per sortir</string>
-    <string name="random_sorting">Ordenació aleatòria</string>
     <string name="music_animations_bars">Barres</string>
     <string name="music_animations_crazy_bars">Barres boges</string>
     <string name="music_animations_crazy_points">Punts bojos</string>
@@ -1119,8 +1109,6 @@
     <string name="added_to_dislikes">Disliked %s</string>
     <string name="removed_from_dislikes">Removed %s from dislikes</string>
     <string name="rotating_cover_title">Rotating album cover</string>
-    <string name="title_appearance_changes">Appearance Change</string>
-    <string name="appearance_changes_message">If you change Player or UI settings,\nit is strongly recommended to restart the application.</string>
     <string name="title_import_settings_migration">Import migration file.</string>
     <string name="description_import_settings_migration">For old users before conversion.\nUse old app to make a backup for migration.</string>
     <string name="log_in_to_ytm">Log in to your YTM account for more content</string>
@@ -1134,7 +1122,6 @@
     <string name="beta_title">BETA</string>
     <string name="dev_title">DEV</string>
     <string name="debug_title">DEBUG</string>
-    <string name="stable_title">STABLE</string>
     <string name="minified_title">MINIFIED</string>
     <string name="update_file_size">File size: %s</string>
     <string name="beta_text">This is still in Beta and may contain bugs and crash</string>
@@ -1220,7 +1207,6 @@
     <string name="error_session_expired">YouTube session expired, please sign in again</string>
     <string name="error_cookie_invalid">YouTube cookie is invalid, please log in again</string>
     <string name="stream_error_retrying">Retrying: %1$s</string>
-    <string name="error_playback_failed">Playback failed: %1$s</string>
     <string name="error_playback_failed_with_code">Playback failed: %1$s [%2$s]</string>
     <string name="stream_still_retrying">Still loading… Attempt %1$s</string>
     <string name="stream_unexpected_skip">Unexpected track change detected</string>
@@ -1330,7 +1316,6 @@
     <string name="cd_arrow_up">arrow_up</string>
     <string name="txt_lyricsintervalprogress">lyricsIntervalProgress</string>
     <string name="cd_recenter">Recenter</string>
-    <string name="cd_increase">Increase</string>
     <string name="cd_reset">Restableix</string>
     <string name="cd_import_playlist_name">import playlist name</string>
     <string name="cd_new_playlist_name">new playlist name</string>
@@ -1374,7 +1359,6 @@
     <string name="no_lyrics">No lyrics</string>
     <string name="no_items_found">No items found</string>
     <string name="no_new_releases">There are no new releases for your favorite artists</string>
-    <string name="not_selectable">Not selectable</string>
     <string name="unknown_error">Error desconegut</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">App Updates</string>
@@ -1391,7 +1375,6 @@
     <string name="reverb_medium_hall">Medium Hall</string>
     <string name="reverb_large_hall">Large Hall</string>
     <string name="reverb_plate">Plate</string>
-    <string name="fluid">FLUID</string>
     <string name="lyrics_not_available">No lyrics available. Please try again or enter them manually.</string>
     <string name="source_betterlyrics_synced">BetterLyrics (synced)</string>
     <string name="source_betterlyrics_karaoke">BetterLyrics (karaoke)</string>

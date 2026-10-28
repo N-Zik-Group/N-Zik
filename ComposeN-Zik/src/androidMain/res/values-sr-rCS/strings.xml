@@ -2,7 +2,6 @@
 <resources>
 <string name="cancel">Otkaži</string>
 <string name="done">Gotovo</string>
-<string name="hidesong">Da li zaista želite da sakrijete ovu pesmu? Njegovo vreme reprodukcije i keš memorija će biti obrisani. Ova radnja je nepovratna.</string>
 <string name="new_playlist">Nova plejlista</string>
 <string name="start_radio">Pokreni radio</string>
 <string name="equalizer">Ekvilajzer</string>
@@ -12,7 +11,6 @@
 <string name="go_to_album">Idi na album</string>
 <string name="remove_from_queue">Ukloni iz redosleda</string>
 <string name="remove_from_playlist">Ukloni sa plejliste</string>
-<string name="hide">Sakrij</string>
 <string name="related_albums">Povezani albumi</string>
 <string name="similar_artists">Slični izvođači</string>
 <string name="playlists_you_might_like">Plejliste koje bi vam se mogle svideti</string>
@@ -511,7 +509,6 @@
 <string name="thumbnailpause">Smanji sličicu kada je pauza</string>
 <string name="showtwosongs">Prikaži Sledeće Dve Pesme u Redosledu</string>
 <string name="showalbumcover">Prikaži Omot Albuma</string>
-<string name="do_not_translate">Ne prevodi</string>
 <string name="info_sleep_timer_delayed_at_end_of_song">Tajmer za spavanje je odložen na kraju pesme</string>
 <string name="lyricsbackground">Pozadina Stihova</string>
 <string name="tapqueue">Dodirnite da otvorite Redosled</string>
@@ -588,7 +585,6 @@
 <string name="create_new_playlist">Create new playlist</string>
 <string name="settings_loudness_base_gain">Loudness base gain</string>
 <string name="settings_target_gain_loudness_info">Target gain for the loudness normalization</string>
-<string name="error_media_cannot_be_played">Media cannot be played</string>
 <string name="full_screen_lyrics_components">Full Screen Lyrics Components</string>
 <string name="titleartist">Title and Artists</string>
 <string name="miniqueue">Mini Queue</string>
@@ -598,7 +594,6 @@
 <string name="skip_media_on_error">Autoskip on error</string>
 <string name="skip_media_on_error_description">If an error occurs, the media is changed</string>
 <string name="skip_media_on_error_message">The media %1$s went wrong</string>
-<string name="login_required_to_play_this_media">Login required to play this media</string>
 <string name="search_results_for">Search results for:</string>
 <string name="statsfornerds">Stats for Nerds</string>
 <string name="actionbar">Action Bar</string>
@@ -631,7 +626,6 @@
 <string name="notification_player">NOTIFICATION PLAYER</string>
 <string name="repeat">Repeat</string>
 <string name="press_once_again_to_exit">Press once again to exit</string>
-<string name="random_sorting">Random sorting</string>
 <string name="music_animations_bars">Bars</string>
 <string name="music_animations_crazy_bars">Crazy Bars</string>
 <string name="music_animations_crazy_points">Crazy Points</string>
@@ -752,8 +746,6 @@
 <string name="added_to_dislikes">Disliked %s</string>
 <string name="removed_from_dislikes">Removed %s from dislikes</string>
 <string name="rotating_cover_title">Rotating album cover</string>
-<string name="title_appearance_changes">Appearance Change</string>
-<string name="appearance_changes_message">If you change Player or UI settings,\nit is strongly recommended to restart the application.</string>
 <string name="title_import_settings_migration">Import migration file.</string>
 <string name="description_import_settings_migration">For old users before conversion.\nUse old app to make a backup for migration.</string>
 <string name="log_in_to_ytm">Log in to your YTM account for more content</string>

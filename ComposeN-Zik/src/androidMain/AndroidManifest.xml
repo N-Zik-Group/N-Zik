@@ -78,7 +78,6 @@
             android:configChanges=
                 "screenSize|smallestScreenSize|screenLayout|orientation">
 
-            <!-- NEW PLAYER SERVICE -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />
@@ -149,12 +148,8 @@
 
                 <data android:mimeType="text/plain" />
             </intent-filter>
-            <!-- NEW PLAYER SERVICE -->
 
-            <!-- App shortcuts (search/albums/artists/library/rescue) are registered dynamically
-                 at runtime by app.n_zik.android.shortcuts.registerAppShortcuts from
-                 MainApplication.onCreate. The Rescue shortcut targets RescueActivity which
-                 runs in the :rescue process; the others target MainActivity. -->
+            <!-- Shortcuts are registered dynamically; Rescue uses the separate :rescue process. -->
         </activity>
 
         <!-- Rescue Center: runs in a separate process so it works even when the main

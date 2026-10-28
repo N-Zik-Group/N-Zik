@@ -3,7 +3,6 @@
     <string name="cancel">Annuleer</string>
     <string name="reset">Reset</string>
     <string name="done">Klaar</string>
-    <string name="hidesong">Wil je dit nummer echt verbergen? De afspeeltijd en de cache zullen worden gewist. Deze actie is onomkeerbaar.</string>
     <string name="new_playlist">Nieuwe afspeellijst</string>
     <string name="start_radio">Radio starten</string>
     <string name="stop_radio">Stop radio</string>
@@ -14,7 +13,6 @@
     <string name="go_to_album">Ga naar album</string>
     <string name="remove_from_queue">Verwijderen uit wachtrij</string>
     <string name="remove_from_playlist">Verwijderen uit afspeellijst</string>
-    <string name="hide">Verbergen</string>
     <string name="related_albums">Gerelateerde albums</string>
     <string name="similar_artists">Vergelijkbare artiesten</string>
     <string name="playlists_you_might_like">Afspeellijsten die je misschien leuk vindt</string>
@@ -647,15 +645,11 @@
     <string name="lang_vietnamese">Vietnamese (tiếng Việt)</string>
     <string name="parental_control">Parental control</string>
     <string name="info_prevent_play_songs_with_age_limitation">Prevent play songs with age limitation</string>
-    <string name="stream_clients">Stream Clients</string>
     <string name="preferred_stream_client">Preferred Stream Client</string>
     <string name="preferred_stream_client_title">Preferred Stream Client</string>
-    <string name="preferred_stream_client_description">Choose which stream client to try first</string>
     <string name="preferred_stream_client_changed">Preferred client changed. Will apply on next track.</string>
     <string name="stream_client_redownload_recommendation">Re-download songs for new quality (especially with Web Remix/ YTB Premium account)</string>
-    <string name="disabled_stream_clients">Disabled stream clients</string>
     <string name="disabled_stream_clients_title">Disabled Stream Clients</string>
-    <string name="configure_which_stream_clients_are_enabled">Configure which stream clients are enabled</string>
     <string name="codec">Codec</string>
     <string name="sample_rate">Sample Rate</string>
     <string name="perceptual_loudness">Perceptual Loudness</string>
@@ -737,7 +731,6 @@
     <string name="crop_video_thumbnails">Crop video thumbnails</string>
     <string name="showtwosongs">Toon volgende twee nummers in de wachtrij</string>
     <string name="showalbumcover">Toon albumhoes</string>
-    <string name="do_not_translate">Do not translate</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Slaaptimer ingesteld op het einde van dit nummer</string>
     <string name="lyricsbackground">Songtekst achtergrond</string>
     <string name="tapqueue">Tik om de wachtrij te openen</string>
@@ -877,7 +870,6 @@
     <string name="loudness_boost_level">Luidruchtige boost level</string>
     <string name="loudness_boost_level_info">Extra geluidsniveau, om te gebruiken zonder het te overdrijven, kan het apparaat beschadigen</string>
     <string name="settings_target_gain_loudness_info">Target gain for the loudness normalization</string>
-    <string name="error_media_cannot_be_played">Nummer kan niet worden afgespeeld</string>
     <string name="full_screen_lyrics_components">Volledig scherm songteksten componenten</string>
     <string name="titleartist">Title and Artists</string>
     <string name="miniqueue">Volgende afspeellijst</string>
@@ -887,7 +879,6 @@
     <string name="skip_media_on_error">Nummer bij fout overslaan</string>
     <string name="skip_media_on_error_description">Als er een fout optreedt, ga dan naar het volgende nummer</string>
     <string name="skip_media_on_error_message">Er is een fout opgetreden tijdens het afspelen van het nummer %1$s</string>
-    <string name="login_required_to_play_this_media">Inloggen is vereist om dit nummer af te spelen</string>
     <string name="search_results_for">Search results for:</string>
     <string name="statsfornerds">Stats for Nerds</string>
     <string name="actionbar">Action Bar</string>
@@ -932,7 +923,6 @@
     <string name="dislikes">Dislikes</string>
     <string name="description">Beschrijving</string>
     <string name="press_once_again_to_exit">Press once again to exit</string>
-    <string name="random_sorting">Random sorting</string>
     <string name="music_animations_bars">Bars</string>
     <string name="music_animations_crazy_bars">Gekke rails</string>
     <string name="music_animations_crazy_points">Gekke punten</string>
@@ -1119,8 +1109,6 @@
     <string name="added_to_dislikes">Disliked %s</string>
     <string name="removed_from_dislikes">Removed %s from dislikes</string>
     <string name="rotating_cover_title">Rotating album cover</string>
-    <string name="title_appearance_changes">Uiterlijk wijzigen</string>
-    <string name="appearance_changes_message">Als je de speler- of UI-instellingen wijzigt,\nwordt aangeraden om de applicatie opnieuw te starten.</string>
     <string name="title_import_settings_migration">Migratiebestand importeren.</string>
     <string name="description_import_settings_migration">Voor oude gebruikers vóór conversie.\nGebruik oude app om een back-up te maken voor migratie.</string>
     <string name="log_in_to_ytm">Log in op je YTM account voor meer inhoud</string>
@@ -1134,7 +1122,6 @@
     <string name="beta_title">BETA</string>
     <string name="dev_title">DEV</string>
     <string name="debug_title">DEBUG</string>
-    <string name="stable_title">STABLE</string>
     <string name="minified_title">MINIFIEERD</string>
     <string name="update_file_size">Bestandsgrootte: %s</string>
     <string name="beta_text">Dit is nog steeds in Bèta en kan bugs en crash bevatten</string>
@@ -1220,7 +1207,6 @@
     <string name="error_session_expired">YouTube session expired, please sign in again</string>
     <string name="error_cookie_invalid">YouTube cookie is invalid, please log in again</string>
     <string name="stream_error_retrying">Opnieuw proberen: %1$s</string>
-    <string name="error_playback_failed">Playback failed: %1$s</string>
     <string name="error_playback_failed_with_code">Playback failed: %1$s [%2$s]</string>
     <string name="stream_still_retrying">Nog steeds laden… Poging %1$s</string>
     <string name="stream_unexpected_skip">Onverwachte wijziging van track gedetecteerd</string>
@@ -1330,7 +1316,6 @@
     <string name="cd_arrow_up">pijlomhoog_</string>
     <string name="txt_lyricsintervalprogress">vooruitgang</string>
     <string name="cd_recenter">Hernieuwen</string>
-    <string name="cd_increase">Verhogen</string>
     <string name="cd_reset">Reset</string>
     <string name="cd_import_playlist_name">importeer afspeellijstnaam</string>
     <string name="cd_new_playlist_name">nieuwe naam van de afspeellijst</string>
@@ -1374,7 +1359,6 @@
     <string name="no_lyrics">No lyrics</string>
     <string name="no_items_found">Geen items gevonden</string>
     <string name="no_new_releases">Er zijn geen nieuwe releases voor je favoriete artiesten</string>
-    <string name="not_selectable">Niet selecteerbaar</string>
     <string name="unknown_error">Unknown error</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">App updates</string>
@@ -1391,7 +1375,6 @@
     <string name="reverb_medium_hall">Middelgrote zaal</string>
     <string name="reverb_large_hall">Grote zaal</string>
     <string name="reverb_plate">Plaat</string>
-    <string name="fluid">FLUID</string>
     <string name="lyrics_not_available">Geen songteksten beschikbaar. Probeer het opnieuw of voer ze handmatig in.</string>
     <string name="source_betterlyrics_synced">Betere songteksten (gesynchroniseerd)</string>
     <string name="source_betterlyrics_karaoke">Betere songteksten (karaoke)</string>

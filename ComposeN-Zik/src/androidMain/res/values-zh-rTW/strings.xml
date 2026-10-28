@@ -2,7 +2,6 @@
 <resources>
 <string name="cancel">取消</string>
 <string name="done">完成</string>
-<string name="hidesong">你真的要隱藏這首歌曲嗎? 播放記錄和暫存將被清除. \n此動作不可逆.</string>
 <string name="new_playlist">新增播放清單</string>
 <string name="start_radio">開啟電台</string>
 <string name="equalizer">等化器</string>
@@ -12,7 +11,6 @@
 <string name="go_to_album">前往專輯</string>
 <string name="remove_from_queue">從播放佇列中移除</string>
 <string name="remove_from_playlist">從播放清單中移除</string>
-<string name="hide">隱藏</string>
 <string name="related_albums">相關的專輯</string>
 <string name="similar_artists">類似的藝人</string>
 <string name="playlists_you_might_like">你可能喜歡的播放清單</string>
@@ -511,7 +509,6 @@
 <string name="thumbnailpause">暫停時縮小縮圖</string>
 <string name="showtwosongs">Show Next two Songs in Queue</string>
 <string name="showalbumcover">顯示專輯封面</string>
-<string name="do_not_translate">不要翻譯</string>
 <string name="info_sleep_timer_delayed_at_end_of_song">Sleep timer delayed at end of song</string>
 <string name="lyricsbackground">Lyrics Background</string>
 <string name="tapqueue">點擊打開播放佇列</string>
@@ -588,7 +585,6 @@
 <string name="create_new_playlist">建立新的播放清單</string>
 <string name="settings_loudness_base_gain">Loudness base gain</string>
 <string name="settings_target_gain_loudness_info">Target gain for the loudness normalization</string>
-<string name="error_media_cannot_be_played">無法播放媒體</string>
 <string name="full_screen_lyrics_components">Full Screen Lyrics Components</string>
 <string name="titleartist">Title and Artists</string>
 <string name="miniqueue">Mini Queue</string>
@@ -598,7 +594,6 @@
 <string name="skip_media_on_error">Autoskip on error</string>
 <string name="skip_media_on_error_description">如果發生錯誤，將跳至下一首歌</string>
 <string name="skip_media_on_error_message">%1$s 出了問題</string>
-<string name="login_required_to_play_this_media">Login required to play this media</string>
 <string name="search_results_for">搜尋結果：</string>
 <string name="statsfornerds">Stats for Nerds</string>
 <string name="actionbar">Action Bar</string>
@@ -631,7 +626,6 @@
 <string name="notification_player">NOTIFICATION PLAYER</string>
 <string name="repeat">重複</string>
 <string name="press_once_again_to_exit">再按一次以離開應用程式</string>
-<string name="random_sorting">隨機排序</string>
 <string name="music_animations_bars">Bars</string>
 <string name="music_animations_crazy_bars">Crazy Bars</string>
 <string name="music_animations_crazy_points">Crazy Points</string>
@@ -752,8 +746,6 @@
 <string name="added_to_dislikes">Disliked %s</string>
 <string name="removed_from_dislikes">Removed %s from dislikes</string>
 <string name="rotating_cover_title">Rotating album cover</string>
-<string name="title_appearance_changes">Appearance Change</string>
-<string name="appearance_changes_message">If you change Player or UI settings,\nit is strongly recommended to restart the application.</string>
 <string name="title_import_settings_migration">Import migration file.</string>
 <string name="description_import_settings_migration">For old users before conversion.\nUse old app to make a backup for migration.</string>
 <string name="log_in_to_ytm">Log in to your YTM account for more content</string>

@@ -17,7 +17,6 @@ import app.it.fast4x.rimusic.utils.bassboostEnabledKey
 import app.it.fast4x.rimusic.utils.handleAudioFocusEnabledKey
 import app.it.fast4x.rimusic.utils.isConnectionMeteredEnabledKey
 import app.it.fast4x.rimusic.utils.pauseOnHeadphoneDisconnectKey
-import app.it.fast4x.rimusic.utils.logDebugEnabledKey
 import app.it.fast4x.rimusic.utils.encryptedPreferences
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.rememberPreference
@@ -131,7 +130,6 @@ fun isConnectionMeteredEnabled() = appContext().preferences.getBoolean(isConnect
 fun isHandleAudioFocusEnabled() = appContext().preferences.getBoolean(handleAudioFocusEnabledKey, true)
 fun isPauseOnHeadphoneDisconnectEnabled() = appContext().preferences.getBoolean(pauseOnHeadphoneDisconnectKey, true)
 fun isBassBoostEnabled() = appContext().preferences.getBoolean(bassboostEnabledKey, false)
-fun isDebugModeEnabled() = appContext().preferences.getBoolean(logDebugEnabledKey, false)
 
 /** Surface color for elevated components (cards, sheets, burger menu, navigation bar): [base] normally, dark gray in pitch black (see [isPitchBlackSurface]). */
 @Composable

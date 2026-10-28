@@ -3,7 +3,6 @@
     <string name="cancel">Anulează</string>
     <string name="reset">Resetează</string>
     <string name="done">Finalizat</string>
-    <string name="hidesong">Chiar vrei să ascunzi această melodie? Timpul de redare și memoria cache vor fi șterse. Această acțiune este ireversibilă.</string>
     <string name="new_playlist">Playlist nou</string>
     <string name="start_radio">Începe radio</string>
     <string name="stop_radio">Stop radio</string>
@@ -14,7 +13,6 @@
     <string name="go_to_album">Accesează albumul</string>
     <string name="remove_from_queue">Elimină din coadă</string>
     <string name="remove_from_playlist">Elimină din playlist</string>
-    <string name="hide">Ascunde</string>
     <string name="related_albums">Albume asemănătoare</string>
     <string name="similar_artists">Artiști asemănători</string>
     <string name="playlists_you_might_like">Playlisturi sugerate</string>
@@ -647,15 +645,11 @@
     <string name="lang_vietnamese">Vietnameză (Tiếng Việt)</string>
     <string name="parental_control">Control parental</string>
     <string name="info_prevent_play_songs_with_age_limitation">Previne redarea melodiilor cu limită de vârstă</string>
-    <string name="stream_clients">Stream Clients</string>
     <string name="preferred_stream_client">Preferred Stream Client</string>
     <string name="preferred_stream_client_title">Preferred Stream Client</string>
-    <string name="preferred_stream_client_description">Choose which stream client to try first</string>
     <string name="preferred_stream_client_changed">Preferred client changed. Will apply on next track.</string>
     <string name="stream_client_redownload_recommendation">Re-download songs for new quality (especially with Web Remix/ YTB Premium account)</string>
-    <string name="disabled_stream_clients">Disabled stream clients</string>
     <string name="disabled_stream_clients_title">Disabled Stream Clients</string>
-    <string name="configure_which_stream_clients_are_enabled">Configure which stream clients are enabled</string>
     <string name="codec">Codec</string>
     <string name="sample_rate">Sample Rate</string>
     <string name="perceptual_loudness">Perceptual Loudness</string>
@@ -737,7 +731,6 @@
     <string name="crop_video_thumbnails">Crop video thumbnails</string>
     <string name="showtwosongs">Afișează următoarele două melodii din coadă</string>
     <string name="showalbumcover">Afișează coperta albumului</string>
-    <string name="do_not_translate">Nu traduce</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Temporizatorul de somn setat la sfârșitul acestei melodii</string>
     <string name="lyricsbackground">Fundal versuri</string>
     <string name="tapqueue">Atinge pentru a deschide coada</string>
@@ -877,7 +870,6 @@
     <string name="loudness_boost_level">Nivel de stimulare a puterii</string>
     <string name="loudness_boost_level_info">Nivel suplimentar de lucire, care poate fi utilizat fără depășirea lui, poate deteriora dispozitivul</string>
     <string name="settings_target_gain_loudness_info">Amplificare țintă pentru normalizarea intensității sonore</string>
-    <string name="error_media_cannot_be_played">Melodia nu poate fi redată</string>
     <string name="full_screen_lyrics_components">Componentele versurilor pe tot ecranul</string>
     <string name="titleartist">Titlu și Artiști</string>
     <string name="miniqueue">Coada melodiei următoare</string>
@@ -887,7 +879,6 @@
     <string name="skip_media_on_error">Treci peste melodie la eroare</string>
     <string name="skip_media_on_error_description">Dacă apare o eroare, treci la melodia următoare</string>
     <string name="skip_media_on_error_message">A apărut o eroare la redarea melodiei %1$s</string>
-    <string name="login_required_to_play_this_media">Autentificarea este necesară pentru a reda această melodie</string>
     <string name="search_results_for">Rezultatele căutării pentru:</string>
     <string name="statsfornerds">Statistici pentru nerds</string>
     <string name="actionbar">Bara de acțiuni</string>
@@ -932,7 +923,6 @@
     <string name="dislikes">Dislikes</string>
     <string name="description">Descriere</string>
     <string name="press_once_again_to_exit">Apasă încă o dată pentru a ieși</string>
-    <string name="random_sorting">Sortare aleatorie</string>
     <string name="music_animations_bars">Bare</string>
     <string name="music_animations_crazy_bars">Bare haotice</string>
     <string name="music_animations_crazy_points">Puncte haotice</string>
@@ -1119,8 +1109,6 @@
     <string name="added_to_dislikes">Disliked %s</string>
     <string name="removed_from_dislikes">Removed %s from dislikes</string>
     <string name="rotating_cover_title">Rotating album cover</string>
-    <string name="title_appearance_changes">Schimbare aspect</string>
-    <string name="appearance_changes_message">Dacă schimbi setările Player sau UI,\neste recomandat să repornești aplicația.</string>
     <string name="title_import_settings_migration">Fișier migrare importat.</string>
     <string name="description_import_settings_migration">Pentru utilizatorii în vârstă înainte de conversie.\nUtilizează o aplicație veche pentru a face o copie de rezervă pentru migrare.</string>
     <string name="log_in_to_ytm">Conectează-te la contul tău YTM pentru mai mult conținut</string>
@@ -1134,7 +1122,6 @@
     <string name="beta_title">BETA</string>
     <string name="dev_title">DEV</string>
     <string name="debug_title">DEBUG</string>
-    <string name="stable_title">STABILE</string>
     <string name="minified_title">MINIFAT</string>
     <string name="update_file_size">Dimensiune fişier: %s</string>
     <string name="beta_text">Aceasta este încă în Beta și poate conține erori și crash</string>
@@ -1220,7 +1207,6 @@
     <string name="error_session_expired">YouTube session expired, please sign in again</string>
     <string name="error_cookie_invalid">YouTube cookie is invalid, please log in again</string>
     <string name="stream_error_retrying">Reîncercare: %1$s</string>
-    <string name="error_playback_failed">Playback failed: %1$s</string>
     <string name="error_playback_failed_with_code">Playback failed: %1$s [%2$s]</string>
     <string name="stream_still_retrying">Încă se încarcă… Încercarea %1$s</string>
     <string name="stream_unexpected_skip">Modificare neașteptată a traseului detectată</string>
@@ -1330,7 +1316,6 @@
     <string name="cd_arrow_up">săgeata_sus</string>
     <string name="txt_lyricsintervalprogress">versurProgres</string>
     <string name="cd_recenter">Recenzie</string>
-    <string name="cd_increase">Creștere</string>
     <string name="cd_reset">Resetează</string>
     <string name="cd_import_playlist_name">importă numele listei de redare</string>
     <string name="cd_new_playlist_name">nume nou</string>
@@ -1374,7 +1359,6 @@
     <string name="no_lyrics">No lyrics</string>
     <string name="no_items_found">Niciun element găsit</string>
     <string name="no_new_releases">Nu există noi lansări pentru artiștii tăi preferați</string>
-    <string name="not_selectable">Nu este selectabil</string>
     <string name="unknown_error">Eroare necunoscută</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">Actualizări aplicație</string>
@@ -1391,7 +1375,6 @@
     <string name="reverb_medium_hall">Sală medie</string>
     <string name="reverb_large_hall">Sală mare</string>
     <string name="reverb_plate">Placă</string>
-    <string name="fluid">FLUID</string>
     <string name="lyrics_not_available">Nu sunt disponibile versuri. Vă rugăm să încercaţi din nou sau să le introduceţi manual.</string>
     <string name="source_betterlyrics_synced">BetterLyrics (sincronizat)</string>
     <string name="source_betterlyrics_karaoke">Versuri mai bune (karaoke)</string>

@@ -15,41 +15,4 @@
     <style name="Theme.Widget.NZikWidget" parent="Theme.AppCompat.DayNight.NoActionBar">
     </style>
     
-    <style name="NZikWidgetCard">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_weight">1</item>
-        <item name="android:orientation">vertical</item>
-        <item name="android:gravity">center</item>
-        <item name="android:padding">4dp</item>
-    </style>
-    <style name="NZikWidgetArtworkFrame">
-        <item name="android:layout_width">64dp</item>
-        <item name="android:layout_height">64dp</item>
-    </style>
-    <style name="NZikWidgetArtwork">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">match_parent</item>
-        <item name="android:scaleType">centerCrop</item>
-    </style>
-    <style name="NZikWidgetPlayButton">
-        <item name="android:layout_width">32dp</item>
-        <item name="android:layout_height">32dp</item>
-        <item name="android:layout_gravity">center</item>
-    </style>
-    <style name="NZikWidgetPlayIcon">
-        <item name="android:layout_width">16dp</item>
-        <item name="android:layout_height">16dp</item>
-        <item name="android:layout_gravity">center</item>
-        <item name="android:src">@drawable/ic_widget_play_low</item>
-    </style>
-    <style name="NZikWidgetCardTitle">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">4dp</item>
-        <item name="android:gravity">center</item>
-        <item name="android:textSize">12sp</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:ellipsize">end</item>
-    </style>
 </resources>

@@ -3,7 +3,6 @@
     <string name="cancel">Peruuta</string>
     <string name="reset">Nollaa</string>
     <string name="done">Valmis</string>
-    <string name="hidesong">Haluatko varmasti piilottaa tämän kappaleen? Sen toistoaika ja välimuisti tyhjennetään. Tämä toiminto on peruuttamaton.</string>
     <string name="new_playlist">Uusi soittolista</string>
     <string name="start_radio">Käynnistä radio</string>
     <string name="stop_radio">Stop radio</string>
@@ -14,7 +13,6 @@
     <string name="go_to_album">Siirry albumiin</string>
     <string name="remove_from_queue">Poista jonosta</string>
     <string name="remove_from_playlist">Poista soittolistasta</string>
-    <string name="hide">Piilota</string>
     <string name="related_albums">Samankaltaiset albumit</string>
     <string name="similar_artists">Samankaltaiset artistit</string>
     <string name="playlists_you_might_like">Soittolistat joista saatat pitää</string>
@@ -647,15 +645,11 @@
     <string name="lang_vietnamese">Vietnamese (tiếng Việt)</string>
     <string name="parental_control">Lapsilukko</string>
     <string name="info_prevent_play_songs_with_age_limitation">Estää soittamasta kappaleita, joissa on ikärajoitus</string>
-    <string name="stream_clients">Stream Clients</string>
     <string name="preferred_stream_client">Preferred Stream Client</string>
     <string name="preferred_stream_client_title">Preferred Stream Client</string>
-    <string name="preferred_stream_client_description">Choose which stream client to try first</string>
     <string name="preferred_stream_client_changed">Preferred client changed. Will apply on next track.</string>
     <string name="stream_client_redownload_recommendation">Re-download songs for new quality (especially with Web Remix/ YTB Premium account)</string>
-    <string name="disabled_stream_clients">Disabled stream clients</string>
     <string name="disabled_stream_clients_title">Disabled Stream Clients</string>
-    <string name="configure_which_stream_clients_are_enabled">Configure which stream clients are enabled</string>
     <string name="codec">Codec</string>
     <string name="sample_rate">Sample Rate</string>
     <string name="perceptual_loudness">Perceptual Loudness</string>
@@ -737,7 +731,6 @@
     <string name="crop_video_thumbnails">Crop video thumbnails</string>
     <string name="showtwosongs">Näytä seuraavat kaksi kappaletta jonossa</string>
     <string name="showalbumcover">Näytä albumin kansi</string>
-    <string name="do_not_translate">Älä käännä</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Nukkumisajastin asetettu tämän kappaleen loppuun</string>
     <string name="lyricsbackground">Sanoitusten tausta</string>
     <string name="tapqueue">Avaa jono napauttamalla</string>
@@ -877,7 +870,6 @@
     <string name="loudness_boost_level">Äänenvoimakkuuden korostuksen taso</string>
     <string name="loudness_boost_level_info">Toinen äänenvoimakkuuden taso, jota voidaan käyttää ilman ylitöitä, voi vahingoittaa laitetta</string>
     <string name="settings_target_gain_loudness_info">Tavoitevahvistus äänenvoimakkuuden normalisoimiseksi</string>
-    <string name="error_media_cannot_be_played">Kappaletta ei voi toistaa</string>
     <string name="full_screen_lyrics_components">Kokonäytön sanoitusten komponentit</string>
     <string name="titleartist">Otsikko ja artistit</string>
     <string name="miniqueue">Seuraava kappaleen jono</string>
@@ -887,7 +879,6 @@
     <string name="skip_media_on_error">Ohita kappale virhettä</string>
     <string name="skip_media_on_error_description">Jos virhe ilmenee, ohita seuraavaan kappaleeseen</string>
     <string name="skip_media_on_error_message">Tapahtui virhe soitettaessa kappaletta %1$s</string>
-    <string name="login_required_to_play_this_media">Tämän kappaleen soittaminen vaatii kirjautumisen</string>
     <string name="search_results_for">Hakutulokset haulle:</string>
     <string name="statsfornerds">Tilastoja nörteille</string>
     <string name="actionbar">Toimintopalkki</string>
@@ -932,7 +923,6 @@
     <string name="dislikes">Dislikes</string>
     <string name="description">Kuvaus</string>
     <string name="press_once_again_to_exit">Paina uudelleen poistuaksesi ohjelmasta</string>
-    <string name="random_sorting">Satunnainen lajittelu</string>
     <string name="music_animations_bars">Palkit</string>
     <string name="music_animations_crazy_bars">Hullut tangot</string>
     <string name="music_animations_crazy_points">Hullu pisteet</string>
@@ -1119,8 +1109,6 @@
     <string name="added_to_dislikes">Disliked %s</string>
     <string name="removed_from_dislikes">Removed %s from dislikes</string>
     <string name="rotating_cover_title">Rotating album cover</string>
-    <string name="title_appearance_changes">Ulkoasun Muutos</string>
-    <string name="appearance_changes_message">Jos muutat pelaajan tai käyttöliittymän asetuksia,\non erittäin suositeltavaa käynnistää sovellus uudelleen.</string>
     <string name="title_import_settings_migration">Tuo siirtotiedosto.</string>
     <string name="description_import_settings_migration">Vanhoille käyttäjille ennen muuntamista.\nKäytä vanhaa sovellusta varmuuskopion tekemiseen muuttoa varten.</string>
     <string name="log_in_to_ytm">Kirjaudu sisään YTM-tilillesi saadaksesi lisää sisältöä</string>
@@ -1134,7 +1122,6 @@
     <string name="beta_title">BETA</string>
     <string name="dev_title">DEV</string>
     <string name="debug_title">DEBUG</string>
-    <string name="stable_title">VAKUUTUS</string>
     <string name="minified_title">VÄHENNETTY</string>
     <string name="update_file_size">Tiedoston koko: %s</string>
     <string name="beta_text">Tämä on vielä Betassa ja saattaa sisältää vikoja ja kaatumisia</string>
@@ -1220,7 +1207,6 @@
     <string name="error_session_expired">YouTube session expired, please sign in again</string>
     <string name="error_cookie_invalid">YouTube cookie is invalid, please log in again</string>
     <string name="stream_error_retrying">Toistetaan: %1$s</string>
-    <string name="error_playback_failed">Playback failed: %1$s</string>
     <string name="error_playback_failed_with_code">Playback failed: %1$s [%2$s]</string>
     <string name="stream_still_retrying">Still loading… Attempt %1$s</string>
     <string name="stream_unexpected_skip">Odottamaton reitin muutos havaittu</string>
@@ -1330,7 +1316,6 @@
     <string name="cd_arrow_up">arrow_ylös</string>
     <string name="txt_lyricsintervalprogress">lyricsIntervalProgress</string>
     <string name="cd_recenter">Uudelleensyötä</string>
-    <string name="cd_increase">Lisää</string>
     <string name="cd_reset">Nollaa</string>
     <string name="cd_import_playlist_name">tuo soittolistan nimi</string>
     <string name="cd_new_playlist_name">uusi soittolistan nimi</string>
@@ -1374,7 +1359,6 @@
     <string name="no_lyrics">No lyrics</string>
     <string name="no_items_found">Kohteita ei löytynyt</string>
     <string name="no_new_releases">Suosikkiartisteillesi ei ole uusia julkaisuja</string>
-    <string name="not_selectable">Ei valittavissa</string>
     <string name="unknown_error">Tuntematon virhe</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">Sovelluksen Päivitykset</string>
@@ -1391,7 +1375,6 @@
     <string name="reverb_medium_hall">Keskikokoinen Sali</string>
     <string name="reverb_large_hall">Suuri Sali</string>
     <string name="reverb_plate">Levy</string>
-    <string name="fluid">FLUID</string>
     <string name="lyrics_not_available">Ei sanoituksia saatavilla. Yritä uudelleen tai kirjoita ne manuaalisesti.</string>
     <string name="source_betterlyrics_synced">BetterLyrics (synkronoitu)</string>
     <string name="source_betterlyrics_karaoke">BetterLyrics (karaoke)</string>

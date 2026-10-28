@@ -8,43 +8,6 @@ import kotlinx.serialization.Serializable
  * browseEndpoint: params, browseId
  * searchEndpoint: params, query
  */
-//@Serializable
-//data class NavigationEndpoint(
-//    @JsonNames("watchEndpoint", "watchPlaylistEndpoint", "navigationEndpoint", "browseEndpoint", "searchEndpoint")
-//    val endpoint: Endpoint
-//) {
-//    @Serializable
-//    data class Endpoint(
-//        val params: String?,
-//        val playlistId: String?,
-//        val videoId: String?,
-//        val index: Int?,
-//        val browseId: String?,
-//        val query: String?,
-//        val watchEndpointMusicSupportedConfigs: WatchEndpointMusicSupportedConfigs?,
-//        val browseEndpointContextSupportedConfigs: BrowseEndpointContextSupportedConfigs?,
-//    ) {
-//        @Serializable
-//        data class WatchEndpointMusicSupportedConfigs(
-//            val watchEndpointMusicConfig: WatchEndpointMusicConfig
-//        ) {
-//            @Serializable
-//            data class WatchEndpointMusicConfig(
-//                val musicVideoType: String
-//            )
-//        }
-//
-//        @Serializable
-//        data class BrowseEndpointContextSupportedConfigs(
-//            val browseEndpointContextMusicConfig: BrowseEndpointContextMusicConfig
-//        ) {
-//            @Serializable
-//            data class BrowseEndpointContextMusicConfig(
-//                val pageType: String
-//            )
-//        }
-//    }
-//}
 
 @Serializable
 data class NavigationEndpoint(

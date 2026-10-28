@@ -3,7 +3,6 @@
     <string name="cancel">Abbrechen</string>
     <string name="reset">Zurücksetzen</string>
     <string name="done">Fertig</string>
-    <string name="hidesong">Soll der Song wirklich gelöscht werden? Die Wiedergabezeit und der Cache werden zurückgesetzt. Diese Aktion kann nicht rückgängig gemacht werden.</string>
     <string name="new_playlist">Neue Playlist</string>
     <string name="start_radio">Radio starten</string>
     <string name="stop_radio">Radio stoppen</string>
@@ -14,7 +13,6 @@
     <string name="go_to_album">Album anzeigen</string>
     <string name="remove_from_queue">Aus der Warteschlange entfernen</string>
     <string name="remove_from_playlist">Aus der Playlist entfernen</string>
-    <string name="hide">Ausblenden</string>
     <string name="related_albums">Ähnliche Alben</string>
     <string name="similar_artists">Ähnliche Künstler</string>
     <string name="playlists_you_might_like">Playlisten, die dir gefallen könnten</string>
@@ -647,15 +645,11 @@
     <string name="lang_vietnamese">Vietnamesisch (tiếng Việt)</string>
     <string name="parental_control">Jugendschutz</string>
     <string name="info_prevent_play_songs_with_age_limitation">Verhindere die Wiedergabe von Songs mit Altersbegrenzung</string>
-    <string name="stream_clients">Stream-Clients</string>
     <string name="preferred_stream_client">Bevorzugter Stream Client</string>
     <string name="preferred_stream_client_title">Bevorzugter Stream Client</string>
-    <string name="preferred_stream_client_description">Wählen Sie den Stream-Client aus, der zuerst versucht wird</string>
     <string name="preferred_stream_client_changed">Bevorzugter Client geändert. Wird für den nächsten Track angewendet.</string>
     <string name="stream_client_redownload_recommendation">Songs für neue Qualität erneut herunterladen (insbesondere mit Web Remix/ YTB Premium Account)</string>
-    <string name="disabled_stream_clients">Deaktivierte Stream-Clients</string>
     <string name="disabled_stream_clients_title">Deaktivierte Stream-Clients</string>
-    <string name="configure_which_stream_clients_are_enabled">Konfigurieren Sie, welche Stream-Clients aktiviert sind</string>
     <string name="codec">Codec</string>
     <string name="sample_rate">Abtastrate</string>
     <string name="perceptual_loudness">Wahrgenommene Lautstärke</string>
@@ -737,7 +731,6 @@
     <string name="crop_video_thumbnails">Video-Vorschaubilder zuschneiden</string>
     <string name="showtwosongs">Zeige die nächsten zwei Songs in der Warteschlange an</string>
     <string name="showalbumcover">Albumcover anzeigen</string>
-    <string name="do_not_translate">Nicht übersetzen</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Schlaf-Timer erst am Ende des Songs beenden</string>
     <string name="lyricsbackground">Songtext-Hintergrund</string>
     <string name="tapqueue">Zum Öffnen der Warteschlange tippen</string>
@@ -877,7 +870,6 @@
     <string name="loudness_boost_level">Lautstärke-Bootlevel</string>
     <string name="loudness_boost_level_info">Zusätzlicher Lautstärkepegel, der ohne Übertreibung verwendet werden kann, kann das Gerät beschädigen</string>
     <string name="settings_target_gain_loudness_info">Zielverstärkung für die Lautstärkenormalisierung</string>
-    <string name="error_media_cannot_be_played">Titel kann nicht wiedergegeben werden</string>
     <string name="full_screen_lyrics_components">Vollbild-Songtext-Komponenten</string>
     <string name="titleartist">Titel und Künstler</string>
     <string name="miniqueue">Mini-Warteschlange</string>
@@ -887,7 +879,6 @@
     <string name="skip_media_on_error">Bei Fehler automatisch überspringen</string>
     <string name="skip_media_on_error_description">Wenn ein Fehler auftritt, wird der Titel übersprungen</string>
     <string name="skip_media_on_error_message">Beim Titel %1$s ist etwas schiefgelaufen</string>
-    <string name="login_required_to_play_this_media">Anmeldung erforderlich, um dieses Medium abzuspielen</string>
     <string name="search_results_for">Suchergebnisse für:</string>
     <string name="statsfornerds">Statistiken für Nerds</string>
     <string name="actionbar">Aktionsleiste</string>
@@ -932,7 +923,6 @@
     <string name="dislikes">Dislikes</string>
     <string name="description">Beschreibung</string>
     <string name="press_once_again_to_exit">Zum Beenden erneut drücken</string>
-    <string name="random_sorting">Zufällige Sortierung</string>
     <string name="music_animations_bars">Balken</string>
     <string name="music_animations_crazy_bars">Verrückte Balken</string>
     <string name="music_animations_crazy_points">Verrückte Punkte</string>
@@ -1119,8 +1109,6 @@
     <string name="added_to_dislikes">%s gefällt mir nicht</string>
     <string name="removed_from_dislikes">%s von \"Gefällt mir nicht\" entfernt</string>
     <string name="rotating_cover_title">Albumcover drehen</string>
-    <string name="title_appearance_changes">Aussehen ändern</string>
-    <string name="appearance_changes_message">Wenn Sie die Spieler- oder UI-Einstellungen ändern, wird\ndringend empfohlen, die Anwendung neu zu starten.</string>
     <string name="title_import_settings_migration">Migrationsdatei importieren.</string>
     <string name="description_import_settings_migration">Für alte Benutzer vor der Konvertierung.\nalte App verwenden, um eine Sicherung für die Migration zu erstellen.</string>
     <string name="log_in_to_ytm">Melden Sie sich bei Ihrem YTM-Konto für weitere Inhalte an</string>
@@ -1134,7 +1122,6 @@
     <string name="beta_title">BETA</string>
     <string name="dev_title">Entwickler</string>
     <string name="debug_title">DEBUG</string>
-    <string name="stable_title">STABLE</string>
     <string name="minified_title">MINIFIED</string>
     <string name="update_file_size">Dateigröße: %s</string>
     <string name="beta_text">Dies ist noch in der Beta und kann Fehler und Abstürze enthalten</string>
@@ -1220,7 +1207,6 @@
     <string name="error_session_expired">YouTube-Sitzung abgelaufen, bitte melden Sie sich erneut an</string>
     <string name="error_cookie_invalid">YouTube Cookie ist ungültig, bitte melden Sie sich erneut an</string>
     <string name="stream_error_retrying">Wiederholung: %1$s</string>
-    <string name="error_playback_failed">Wiedergabe fehlgeschlagen: %1$s</string>
     <string name="error_playback_failed_with_code">Wiedergabe fehlgeschlagen: %1$s</string>
     <string name="stream_still_retrying">Lade noch… Versuch %1$s</string>
     <string name="stream_unexpected_skip">Unerwartete Titeländerung erkannt</string>
@@ -1330,7 +1316,6 @@
     <string name="cd_arrow_up">auf_pfeil</string>
     <string name="txt_lyricsintervalprogress">lyricsInterval-Fortschritt</string>
     <string name="cd_recenter">Neu zentrieren</string>
-    <string name="cd_increase">Erhöhen</string>
     <string name="cd_reset">Zurücksetzen</string>
     <string name="cd_import_playlist_name">importiere Playlist-Name</string>
     <string name="cd_new_playlist_name">neuer Playlist-Name</string>
@@ -1374,7 +1359,6 @@
     <string name="no_lyrics">No lyrics</string>
     <string name="no_items_found">Keine Elemente gefunden</string>
     <string name="no_new_releases">Es gibt keine neuen Veröffentlichungen für Ihre Lieblingskünstler</string>
-    <string name="not_selectable">Nicht wählbar</string>
     <string name="unknown_error">Unbekannter Fehler</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">App-Updates</string>
@@ -1391,7 +1375,6 @@
     <string name="reverb_medium_hall">Mittlerer Saal</string>
     <string name="reverb_large_hall">Große Halle</string>
     <string name="reverb_plate">Platte</string>
-    <string name="fluid">FLUID</string>
     <string name="lyrics_not_available">Keine Songtexte verfügbar. Bitte versuchen Sie es erneut oder geben Sie sie manuell ein.</string>
     <string name="source_betterlyrics_synced">BetterLyrics (synchronisiert)</string>
     <string name="source_betterlyrics_karaoke">BetterLyrics (Karaoke)</string>

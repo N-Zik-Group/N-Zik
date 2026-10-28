@@ -3,7 +3,6 @@
     <string name="cancel">Zrušit</string>
     <string name="reset">Obnovit</string>
     <string name="done">Hotovo</string>
-    <string name="hidesong">Opravdu chcete tuto skladbu skrýt? Její čas přehrávání a mezipaměť budou vymazány. Tato akce je nevratná.</string>
     <string name="new_playlist">Nový playlist</string>
     <string name="start_radio">Spustit rádio</string>
     <string name="stop_radio">Stop radio</string>
@@ -14,7 +13,6 @@
     <string name="go_to_album">Přejít do alba</string>
     <string name="remove_from_queue">Odstranit z fronty</string>
     <string name="remove_from_playlist">Odstranit z playlistu</string>
-    <string name="hide">Skrýt</string>
     <string name="related_albums">Příbuzná alba</string>
     <string name="similar_artists">Podobní interpreti</string>
     <string name="playlists_you_might_like">Playlisty, které by se vám mohly líbit</string>
@@ -647,15 +645,11 @@
     <string name="lang_vietnamese">Vietnamština (tiếng Việt)</string>
     <string name="parental_control">Rodičovská kontrola</string>
     <string name="info_prevent_play_songs_with_age_limitation">Zabránit přehrávání skladeb s věkovým omezením</string>
-    <string name="stream_clients">Stream Clients</string>
     <string name="preferred_stream_client">Preferred Stream Client</string>
     <string name="preferred_stream_client_title">Preferred Stream Client</string>
-    <string name="preferred_stream_client_description">Choose which stream client to try first</string>
     <string name="preferred_stream_client_changed">Preferred client changed. Will apply on next track.</string>
     <string name="stream_client_redownload_recommendation">Re-download songs for new quality (especially with Web Remix/ YTB Premium account)</string>
-    <string name="disabled_stream_clients">Disabled stream clients</string>
     <string name="disabled_stream_clients_title">Disabled Stream Clients</string>
-    <string name="configure_which_stream_clients_are_enabled">Configure which stream clients are enabled</string>
     <string name="codec">Codec</string>
     <string name="sample_rate">Sample Rate</string>
     <string name="perceptual_loudness">Perceptual Loudness</string>
@@ -737,7 +731,6 @@
     <string name="crop_video_thumbnails">Crop video thumbnails</string>
     <string name="showtwosongs">Zobrazit další dvě skladby ve frontě</string>
     <string name="showalbumcover">Zobrazit obal alba</string>
-    <string name="do_not_translate">Nepřekládat</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Časovač spánku byl odložen na konec skladby</string>
     <string name="lyricsbackground">Pozadí písňového textu</string>
     <string name="tapqueue">Klepnutím otevřete frontu</string>
@@ -877,7 +870,6 @@
     <string name="loudness_boost_level">Úroveň zvýšení hlasitosti</string>
     <string name="loudness_boost_level_info">Dodatečná úroveň hlasitosti, která se použije, aniž by byla překročena, může poškodit zařízení</string>
     <string name="settings_target_gain_loudness_info">Cílové zesílení pro normalizaci hlasitosti</string>
-    <string name="error_media_cannot_be_played">Média nelze přehrát</string>
     <string name="full_screen_lyrics_components">Komponenty písňových textů na celou obrazovku</string>
     <string name="titleartist">Název a interpreti</string>
     <string name="miniqueue">Mini fronta</string>
@@ -887,7 +879,6 @@
     <string name="skip_media_on_error">Automaticky přeskočit při chybě</string>
     <string name="skip_media_on_error_description">Pokud dojde k chybě, změní se médium</string>
     <string name="skip_media_on_error_message">Média %1$s selhala</string>
-    <string name="login_required_to_play_this_media">Pro přehrání tohoto média je vyžadováno přihlášení</string>
     <string name="search_results_for">Vyhledat výsledky pro:</string>
     <string name="statsfornerds">Statistiky pro nerdy</string>
     <string name="actionbar">Ovládací panel</string>
@@ -932,7 +923,6 @@
     <string name="dislikes">Dislikes</string>
     <string name="description">L 343, 22.12.2009, s. 1).</string>
     <string name="press_once_again_to_exit">Stiskněte znovu pro ukončení</string>
-    <string name="random_sorting">Náhodné řazení</string>
     <string name="music_animations_bars">Lišty</string>
     <string name="music_animations_crazy_bars">Bláznivé lišty</string>
     <string name="music_animations_crazy_points">Bláznivé body</string>
@@ -1119,8 +1109,6 @@
     <string name="added_to_dislikes">Disliked %s</string>
     <string name="removed_from_dislikes">Removed %s from dislikes</string>
     <string name="rotating_cover_title">Rotating album cover</string>
-    <string name="title_appearance_changes">Změna vzhledu</string>
-    <string name="appearance_changes_message">Pokud změníte nastavení přehrávače nebo uživatelského rozhraní,\nje důrazně doporučeno aplikaci restartovat.</string>
     <string name="title_import_settings_migration">Importovat migrační soubor.</string>
     <string name="description_import_settings_migration">Pro staré uživatele před převodem.\nPoužijte starou aplikaci k zálohování pro migraci.</string>
     <string name="log_in_to_ytm">Pro více obsahu se přihlaste ke svému účtu YTM</string>
@@ -1134,7 +1122,6 @@
     <string name="beta_title">BETA</string>
     <string name="dev_title">DEV</string>
     <string name="debug_title">DEBUG</string>
-    <string name="stable_title">STABILNÍ</string>
     <string name="minified_title">MINIFIKOVANÉ</string>
     <string name="update_file_size">Velikost souboru: %s</string>
     <string name="beta_text">Toto je stále v Beta verzi a může obsahovat chyby a pád</string>
@@ -1220,7 +1207,6 @@
     <string name="error_session_expired">YouTube session expired, please sign in again</string>
     <string name="error_cookie_invalid">YouTube cookie is invalid, please log in again</string>
     <string name="stream_error_retrying">Opakování: %1$s</string>
-    <string name="error_playback_failed">Playback failed: %1$s</string>
     <string name="error_playback_failed_with_code">Playback failed: %1$s [%2$s]</string>
     <string name="stream_still_retrying">Stále načítám… Pokus %1$s</string>
     <string name="stream_unexpected_skip">Zjištěna neočekávaná změna trasy</string>
@@ -1330,7 +1316,6 @@
     <string name="cd_arrow_up">šíp_nahoru</string>
     <string name="txt_lyricsintervalprogress">průběh textůIntervalProgress</string>
     <string name="cd_recenter">Znovu zadat</string>
-    <string name="cd_increase">Zvýšit</string>
     <string name="cd_reset">Obnovit</string>
     <string name="cd_import_playlist_name">importovat název playlistu</string>
     <string name="cd_new_playlist_name">nový název playlistu</string>
@@ -1374,7 +1359,6 @@
     <string name="no_lyrics">No lyrics</string>
     <string name="no_items_found">Nebyly nalezeny žádné položky</string>
     <string name="no_new_releases">Neexistují žádné nové verze pro vaše oblíbené umělce</string>
-    <string name="not_selectable">Nevybratelné</string>
     <string name="unknown_error">Neznámá chyba</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">Aktualizace aplikací</string>
@@ -1391,7 +1375,6 @@
     <string name="reverb_medium_hall">Střední sál</string>
     <string name="reverb_large_hall">Velký sál</string>
     <string name="reverb_plate">Deska</string>
-    <string name="fluid">FLUID</string>
     <string name="lyrics_not_available">Žádné texty nejsou k dispozici. Zkuste to prosím znovu nebo je zadejte ručně.</string>
     <string name="source_betterlyrics_synced">BetterLyrics (synchronizováno)</string>
     <string name="source_betterlyrics_karaoke">BetterLyrics (karaoke)</string>

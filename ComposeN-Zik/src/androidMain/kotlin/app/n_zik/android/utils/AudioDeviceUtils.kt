@@ -1,53 +1,10 @@
 package app.n_zik.android.utils
 
-import android.content.Context
 import android.media.AudioDeviceInfo
-import android.media.AudioManager
-import android.os.Build
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import app.n_zik.android.components.menu.player.AudioDeviceType
 import app.n_zik.android.playback.services.AudioOutputManager
-
-/**
- * Checks if Bluetooth headphones (A2DP or SCO) are currently connected.
- */
-fun isBluetoothHeadphoneConnected(context: Context): Boolean {
-    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        val audioDevices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
-        audioDevices.any { device ->
-            device.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
-                    device.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
-        }
-    } else {
-        @Suppress("DEPRECATION")
-        audioManager.isBluetoothA2dpOn || audioManager.isBluetoothScoOn
-    }
-}
-
-/**
- * Returns the name of the currently connected Bluetooth audio device, or null if none.
- * Only returns the name if Bluetooth is the ACTIVE audio output.
- */
-fun getConnectedBluetoothDeviceName(context: Context): String? {
-    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
-    val isBluetoothActive = audioManager.isBluetoothA2dpOn || audioManager.isBluetoothScoOn
-    if (!isBluetoothActive) return null
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        val audioDevices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
-
-        val activeBluetoothDevice = audioDevices.find { it.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP }
-            ?: audioDevices.find { it.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO }
-
-        return activeBluetoothDevice?.productName?.toString()
-    } else {
-        return null
-    }
-}
 
 /**
  * Returns true if the device name suggests it is a pair of earbuds (buds).

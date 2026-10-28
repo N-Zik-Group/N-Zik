@@ -30,7 +30,6 @@ import it.fast4x.innertube.models.Runs
 import it.fast4x.innertube.models.Thumbnail
 import it.fast4x.innertube.utils.InnertubeLogger
 import it.fast4x.innertube.utils.ProxyPreferences
-import it.fast4x.innertube.utils.YoutubePreferences
 import it.fast4x.innertube.utils.getProxy
 import it.fast4x.innertube.utils.parseCookieString
 import kotlin.concurrent.Volatile

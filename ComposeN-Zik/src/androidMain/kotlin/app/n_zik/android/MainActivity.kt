@@ -151,7 +151,6 @@ import app.it.fast4x.rimusic.enums.Languages
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.PipModule
 import app.it.fast4x.rimusic.enums.PlayerBackgroundColors
-import app.it.fast4x.rimusic.extensions.pip.PipEventContainer
 import app.it.fast4x.rimusic.extensions.pip.PipModuleContainer
 import app.it.fast4x.rimusic.extensions.pip.PipModuleCover
 import app.n_zik.android.components.onboarding.OnboardingAccountsScreen

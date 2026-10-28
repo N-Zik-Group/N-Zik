@@ -3,7 +3,6 @@
     <string name="cancel">İptal</string>
     <string name="reset">Sıfırla</string>
     <string name="done">Tamam</string>
-    <string name="hidesong">Bu şarkıyı gerçekten gizlemek istiyor musunuz? Oynatma süresi ve önbelleği silinecektir. Bu işlem geri alınamaz.</string>
     <string name="new_playlist">Yeni çalma listesi</string>
     <string name="start_radio">Radyo başlat</string>
     <string name="stop_radio">Radyoyu durdur</string>
@@ -14,7 +13,6 @@
     <string name="go_to_album">Albüme git</string>
     <string name="remove_from_queue">Sıradan kaldır</string>
     <string name="remove_from_playlist">Çalma listesinden kaldır</string>
-    <string name="hide">Gizle</string>
     <string name="related_albums">İlgili albümler</string>
     <string name="similar_artists">Benzer sanatçılar</string>
     <string name="playlists_you_might_like">Beğenebileceğiniz çalma listeleri</string>
@@ -647,15 +645,11 @@
     <string name="lang_vietnamese">Vietnamca (tiếng Việt)</string>
     <string name="parental_control">Ebeveyn kontrolü</string>
     <string name="info_prevent_play_songs_with_age_limitation">Yaş sınırlamalı şarkıların çalınmasını önle</string>
-    <string name="stream_clients">Akış İstemcileri</string>
     <string name="preferred_stream_client">Tercih Edilen Akış İstemcisi</string>
     <string name="preferred_stream_client_title">Tercih Edilen Akış İstemcisi</string>
-    <string name="preferred_stream_client_description">Önce hangi akış istemcisini deneyeceğinizi seçin</string>
     <string name="preferred_stream_client_changed">Tercih edilen istemci değişti. Bir sonraki parçada uygulanacak.</string>
     <string name="stream_client_redownload_recommendation">Şarkıları yeni kalitede yeniden indirin (özellikle Web Remix/YTB Premium hesabıyla)</string>
-    <string name="disabled_stream_clients">Devre dışı bırakılmış akış istemcileri</string>
     <string name="disabled_stream_clients_title">Devre Dışı Bırakılmış Akış İstemcileri</string>
-    <string name="configure_which_stream_clients_are_enabled">Hangi akış istemcilerinin etkinleştirileceğini yapılandırın</string>
     <string name="codec">Kodek</string>
     <string name="sample_rate">Örnekleme Hızı</string>
     <string name="perceptual_loudness">Algısal Ses Yüksekliği</string>
@@ -737,7 +731,6 @@
     <string name="crop_video_thumbnails">Video küçük resimlerini kırp</string>
     <string name="showtwosongs">Sonraki iki şarkıyı göster</string>
     <string name="showalbumcover">Albüm kapağını göster</string>
-    <string name="do_not_translate">Çevirmeyin</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Uyku zamanlayıcısı bu şarkının sonuna ayarlandı</string>
     <string name="lyricsbackground">Şarkı sözü arka planı</string>
     <string name="tapqueue">Kuyruğu açmak için dokunun</string>
@@ -877,7 +870,6 @@
     <string name="loudness_boost_level">Bas güçlendirme seviyesi</string>
     <string name="loudness_boost_level_info">Ekstra ses seviyesi, aşırıya kaçılmadan kullanılmalıdır aksi takdirde cihaz zarar görebilir</string>
     <string name="settings_target_gain_loudness_info">Ses yüksekliği normalizasyonu için hedef kazanç</string>
-    <string name="error_media_cannot_be_played">Şarkı çalınamıyor</string>
     <string name="full_screen_lyrics_components">Tam ekran şarkı sözleri bileşenleri</string>
     <string name="titleartist">Başlık ve Sanatçılar</string>
     <string name="miniqueue">Sıradaki şarkı kuyruğu</string>
@@ -887,7 +879,6 @@
     <string name="skip_media_on_error">Hata durumunda şarkıyı atla</string>
     <string name="skip_media_on_error_description">Bir hata oluşursa bir sonraki şarkıya geç</string>
     <string name="skip_media_on_error_message">%1$s şarkısı çalınırken bir hata oluştu</string>
-    <string name="login_required_to_play_this_media">Bu şarkıyı çalmak için oturum açmanız gerekiyor</string>
     <string name="search_results_for">Arama sonuçları:</string>
     <string name="statsfornerds">İstatistikler</string>
     <string name="actionbar">Eylem Çubuğu</string>
@@ -932,7 +923,6 @@
     <string name="dislikes">Beğenmemeler</string>
     <string name="description">Açıklama</string>
     <string name="press_once_again_to_exit">Çıkmak için bir kez daha basın</string>
-    <string name="random_sorting">Rastgele sıralama</string>
     <string name="music_animations_bars">Çubuklar</string>
     <string name="music_animations_crazy_bars">Çılgın çubuklar</string>
     <string name="music_animations_crazy_points">Çılgın noktalar</string>
@@ -1119,8 +1109,6 @@
     <string name="added_to_dislikes">%s Beğenilmeyenlere eklendi</string>
     <string name="removed_from_dislikes">%s Beğenilmeyenlerden çıkarıldı</string>
     <string name="rotating_cover_title">Döner albüm kapağı</string>
-    <string name="title_appearance_changes">Görünüm Değiştirme</string>
-    <string name="appearance_changes_message">Oynatıcı veya kullanıcı arayüzü ayarlarını değiştirirseniz,\nuygulamayı yeniden başlatmanız şiddetle tavsiye edilir.</string>
     <string name="title_import_settings_migration">Taşıma dosyasını içe aktar</string>
     <string name="description_import_settings_migration">Dönüşümden önceki eski kullanıcılar için.\nTaşıma için yedekleme yapmak üzere eski uygulamayı kullanın.</string>
     <string name="log_in_to_ytm">Daha fazla içerik için YTM hesabınıza giriş yapın</string>
@@ -1134,7 +1122,6 @@
     <string name="beta_title">BETA</string>
     <string name="dev_title">GELİŞTİRİCİ</string>
     <string name="debug_title">HATA AYIKLAMA</string>
-    <string name="stable_title">STABLE</string>
     <string name="minified_title">MINIFIED</string>
     <string name="update_file_size">Dosya boyutu: %s</string>
     <string name="beta_text">Bu sürüm hala Beta aşamasındadır ve hatalar içerebilir veya çökebilir</string>
@@ -1220,7 +1207,6 @@
     <string name="error_session_expired">YouTube oturumunuzun süresi doldu, lütfen tekrar oturum açın</string>
     <string name="error_cookie_invalid">YouTube çerezi geçersiz, lütfen tekrar oturum açın</string>
     <string name="stream_error_retrying">Tekrar deniyor: %1$s</string>
-    <string name="error_playback_failed">Oynatma başarısız: %1$s</string>
     <string name="error_playback_failed_with_code">Oynatma başarısız: %1$s [%2$s]</string>
     <string name="stream_still_retrying">Hala yükleniyor… Deneme %1$s</string>
     <string name="stream_unexpected_skip">Beklenmedik bir parça değişikliği tespit edildi</string>
@@ -1330,7 +1316,6 @@
     <string name="cd_arrow_up">arrow_up</string>
     <string name="txt_lyricsintervalprogress">lyricsIntervalProgress</string>
     <string name="cd_recenter">Yeniden ortala</string>
-    <string name="cd_increase">Artır</string>
     <string name="cd_reset">Sıfırla</string>
     <string name="cd_import_playlist_name">çalma listesi adını içe aktar</string>
     <string name="cd_new_playlist_name">yeni çalma listesi adı</string>
@@ -1374,7 +1359,6 @@
     <string name="no_lyrics">Şarkı sözü yok</string>
     <string name="no_items_found">Hiçbir öğe bulunamadı</string>
     <string name="no_new_releases">Favori sanatçılarınızın yeni albümleri yok</string>
-    <string name="not_selectable">Seçilemez</string>
     <string name="unknown_error">Bilinmeyen hata</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">Uygulama Güncellemeleri</string>
@@ -1391,7 +1375,6 @@
     <string name="reverb_medium_hall">Orta Salon </string>
     <string name="reverb_large_hall">Büyük Salon</string>
     <string name="reverb_plate">Plaka</string>
-    <string name="fluid">FLUID</string>
     <string name="lyrics_not_available">Şarkı sözleri mevcut değil. Lütfen tekrar deneyin veya şarkı sözlerini elle girin.</string>
     <string name="source_betterlyrics_synced">BetterLyrics (senkronize)</string>
     <string name="source_betterlyrics_karaoke">BetterLyrics (karaoke)</string>

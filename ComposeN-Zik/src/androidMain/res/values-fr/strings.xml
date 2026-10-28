@@ -3,7 +3,6 @@
     <string name="cancel">Annuler</string>
     <string name="reset">Réinitialiser</string>
     <string name="done">Terminé</string>
-    <string name="hidesong">Voulez-vous vraiment masquer ce titre ? Son temps de lecture et son cache seront effacés. Cette action est irréversible.</string>
     <string name="new_playlist">Nouvelle playlist</string>
     <string name="start_radio">Lancer la radio</string>
     <string name="stop_radio">Arrêter la radio</string>
@@ -14,7 +13,6 @@
     <string name="go_to_album">Aller à l\'album</string>
     <string name="remove_from_queue">Supprimer de la file d\'attente</string>
     <string name="remove_from_playlist">Supprimer de la playlist </string>
-    <string name="hide">Masquer</string>
     <string name="related_albums">Albums Associés</string>
     <string name="similar_artists">Artistes Similaires</string>
     <string name="playlists_you_might_like">Playlists que vous pourriez aimer</string>
@@ -647,15 +645,11 @@
     <string name="lang_vietnamese">Vietnamien (Tiếng Việt)</string>
     <string name="parental_control">Contrôle parental</string>
     <string name="info_prevent_play_songs_with_age_limitation">Empêcher la lecture de titres avec une limite d\'âge</string>
-    <string name="stream_clients">Clients de streaming</string>
     <string name="preferred_stream_client">Client de Streaming Préféré</string>
     <string name="preferred_stream_client_title">Client de Streaming Préféré</string>
-    <string name="preferred_stream_client_description">Choisissez le client de streaming que vous souhaitez essayer en premier</string>
     <string name="preferred_stream_client_changed">Le client privilégié a changé. Ce changement s\'appliquera au titre suivant.</string>
     <string name="stream_client_redownload_recommendation">Télécharger à nouveau les morceaux pour bénéficier d\'une meilleure qualité (notamment avec Web Remix ou un compte YTB Premium)</string>
-    <string name="disabled_stream_clients">Clients de streaming désactivés</string>
     <string name="disabled_stream_clients_title">Clients de streaming désactivés</string>
-    <string name="configure_which_stream_clients_are_enabled">Configurer les clients de streaming activés</string>
     <string name="codec">Codec</string>
     <string name="sample_rate">Fréquence d\'échantillonnage</string>
     <string name="perceptual_loudness">Intensité sonore perçue</string>
@@ -737,7 +731,6 @@
     <string name="crop_video_thumbnails">Recadrer les miniatures des vidéos</string>
     <string name="showtwosongs">Nombre de titres dans la mini-file d\'attente (1 à 9)</string>
     <string name="showalbumcover">Afficher la pochette de l\'album</string>
-    <string name="do_not_translate">Ne pas traduire</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Délai de mise en veille reporté à la fin du titre</string>
     <string name="lyricsbackground">Arrière-plan des paroles</string>
     <string name="tapqueue">Appuyer pour ouvrir la file d\'attente</string>
@@ -878,7 +871,6 @@ Volume BAS : titre précédent</string>
     <string name="loudness_boost_level">Niveau d\'amplification de la sonorité</string>
     <string name="loudness_boost_level_info">Niveau de bruit supplémentaire, à utiliser sans exagérer, peut endommager l\'appareil</string>
     <string name="settings_target_gain_loudness_info">Gain cible pour la normalisation du volume sonore</string>
-    <string name="error_media_cannot_be_played">Le média ne peut pas être lu</string>
     <string name="full_screen_lyrics_components">Composants des paroles en plein écran</string>
     <string name="titleartist">Titre et Artistes</string>
     <string name="miniqueue">Petite file d\'attente</string>
@@ -888,7 +880,6 @@ Volume BAS : titre précédent</string>
     <string name="skip_media_on_error">Ignorer automatiquement en cas d\'erreur</string>
     <string name="skip_media_on_error_description">Si une erreur survient, le média est changé</string>
     <string name="skip_media_on_error_message">Le média %1$s a mal fonctionné</string>
-    <string name="login_required_to_play_this_media">Connexion nécessaire pour lire ce média</string>
     <string name="search_results_for">Résultats de la recherche pour :</string>
     <string name="statsfornerds">Statistiques pour les nerds</string>
     <string name="actionbar">Barre d\'action</string>
@@ -933,7 +924,6 @@ Volume BAS : titre précédent</string>
     <string name="dislikes">Dislikes</string>
     <string name="description">Libellé</string>
     <string name="press_once_again_to_exit">Appuyez à nouveau pour quitter</string>
-    <string name="random_sorting">Tri aléatoire</string>
     <string name="music_animations_bars">Barres</string>
     <string name="music_animations_crazy_bars">Barres Folles</string>
     <string name="music_animations_crazy_points">Points Fous</string>
@@ -1120,8 +1110,6 @@ Volume BAS : titre précédent</string>
     <string name="added_to_dislikes">N\'a pas aimé %s</string>
     <string name="removed_from_dislikes">Suppression de %s des « Je n\'aime pas »</string>
     <string name="rotating_cover_title">Pochette d\'album rotative</string>
-    <string name="title_appearance_changes">Changement d\'apparence</string>
-    <string name="appearance_changes_message">Si vous modifiez les paramètres du Lecteur ou de l’UI,\nil est fortement recommandé de redémarrer l’application.</string>
     <string name="title_import_settings_migration">Importer un fichier de migration.</string>
     <string name="description_import_settings_migration">Pour les anciens utilisateurs avant la conversion.\nUtilisez l\'ancienne application pour faire une sauvegarde pour la migration.</string>
     <string name="log_in_to_ytm">Connectez-vous à votre compte YTM pour voir plus de contenu</string>
@@ -1135,7 +1123,6 @@ Volume BAS : titre précédent</string>
     <string name="beta_title">BETA</string>
     <string name="dev_title">DÉVELOPPEMENT</string>
     <string name="debug_title">DÉBOGAGE</string>
-    <string name="stable_title">STABLE</string>
     <string name="minified_title">MINIFIÉ</string>
     <string name="update_file_size">Taille du fichier : %s</string>
     <string name="beta_text">Ceci est toujours en bêta et peut contenir des bugs et des plantages</string>
@@ -1221,7 +1208,6 @@ Volume BAS : titre précédent</string>
     <string name="error_session_expired">La session YouTube a expiré. Veuillez vous reconnecter.</string>
     <string name="error_cookie_invalid">Le cookie YouTube n\'est pas valide. Veuillez vous reconnecter.</string>
     <string name="stream_error_retrying">Réessayer : %1$s</string>
-    <string name="error_playback_failed">Échec de la lecture : %1$s</string>
     <string name="error_playback_failed_with_code">Échec de la lecture : %1$s [%2$s]</string>
     <string name="stream_still_retrying">Chargement en cours… Tentative %1$s</string>
     <string name="stream_unexpected_skip">Changement de piste inattendu détecté</string>
@@ -1331,7 +1317,6 @@ Volume BAS : titre précédent</string>
     <string name="cd_arrow_up">flèche_vers le haut</string>
     <string name="txt_lyricsintervalprogress">Progrès des paroles</string>
     <string name="cd_recenter">Récupération</string>
-    <string name="cd_increase">Agrandir</string>
     <string name="cd_reset">Réinitialiser</string>
     <string name="cd_import_playlist_name">Importer le nom de la liste de lecture</string>
     <string name="cd_new_playlist_name">nouveau nom de la playlist</string>
@@ -1375,7 +1360,6 @@ Volume BAS : titre précédent</string>
     <string name="no_lyrics">Pas de paroles</string>
     <string name="no_items_found">Aucun élément trouvé</string>
     <string name="no_new_releases">Il n\'y a pas de nouvelles versions pour vos artistes préférés</string>
-    <string name="not_selectable">Non sélectionnable</string>
     <string name="unknown_error">Erreur Inconnue</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">Mises à jour de l\'application</string>
@@ -1392,7 +1376,6 @@ Volume BAS : titre précédent</string>
     <string name="reverb_medium_hall">Salle Moyenne</string>
     <string name="reverb_large_hall">Grand Hall</string>
     <string name="reverb_plate">Plaque</string>
-    <string name="fluid">FLUID</string>
     <string name="lyrics_not_available">Aucune parole disponible. Réessayez ou saisissez-les manuellement.</string>
     <string name="source_betterlyrics_synced">Meilleures paroles (synchronisées)</string>
     <string name="source_betterlyrics_karaoke">Meilleures paroles (karaoke)</string>

@@ -2,7 +2,6 @@
 <resources>
 <string name="cancel">取消</string>
 <string name="done">完成</string>
-<string name="hidesong">你真的想要隐藏这首歌吗？它的播放记录和缓存将会被清除。（这个动作是不可逆的）</string>
 <string name="new_playlist">新播放列表</string>
 <string name="start_radio">开始播放电台</string>
 <string name="equalizer">均衡器</string>
@@ -12,7 +11,6 @@
 <string name="go_to_album">转到专辑</string>
 <string name="remove_from_queue">从队列中删除</string>
 <string name="remove_from_playlist">从播放列表中删除</string>
-<string name="hide">隐藏</string>
 <string name="related_albums">相关专辑</string>
 <string name="similar_artists">类似的艺术家</string>
 <string name="playlists_you_might_like">您可能喜欢的播放列表</string>
@@ -511,7 +509,6 @@
 <string name="thumbnailpause">暂停时缩小缩略图</string>
 <string name="showtwosongs">在队列中显示后两首歌曲</string>
 <string name="showalbumcover">显示专辑封面</string>
-<string name="do_not_translate">不要翻译</string>
 <string name="info_sleep_timer_delayed_at_end_of_song">睡眠计时器延迟到歌曲结束时</string>
 <string name="lyricsbackground">歌词背景</string>
 <string name="tapqueue">点击以打开队列</string>
@@ -588,7 +585,6 @@
 <string name="create_new_playlist">创建播放列表</string>
 <string name="settings_loudness_base_gain">低音响度增益</string>
 <string name="settings_target_gain_loudness_info">标准化响度的目标增益</string>
-<string name="error_media_cannot_be_played">媒体无法播放</string>
 <string name="full_screen_lyrics_components">全屏歌词组件</string>
 <string name="titleartist">标题和艺人</string>
 <string name="miniqueue">迷你队列</string>
@@ -598,7 +594,6 @@
 <string name="skip_media_on_error">发生错误时自动跳过</string>
 <string name="skip_media_on_error_description">如果发生错误，媒体会被更改</string>
 <string name="skip_media_on_error_message">媒体%1$s出错了</string>
-<string name="login_required_to_play_this_media">需要登录才能播放此媒体</string>
 <string name="search_results_for">搜索结果：</string>
 <string name="statsfornerds">详细统计信息</string>
 <string name="actionbar">快捷操作栏</string>
@@ -631,7 +626,6 @@
 <string name="notification_player">播放器通知</string>
 <string name="repeat">重复</string>
 <string name="press_once_again_to_exit">再次以退出</string>
-<string name="random_sorting">随机排序</string>
 <string name="music_animations_bars">条状</string>
 <string name="music_animations_crazy_bars">疯狂条状</string>
 <string name="music_animations_crazy_points">疯狂斑点</string>
@@ -752,8 +746,6 @@
 <string name="added_to_dislikes">Disliked %s</string>
 <string name="removed_from_dislikes">Removed %s from dislikes</string>
 <string name="rotating_cover_title">Rotating album cover</string>
-<string name="title_appearance_changes">Appearance Change</string>
-<string name="appearance_changes_message">If you change Player or UI settings,\nit is strongly recommended to restart the application.</string>
 <string name="title_import_settings_migration">Import migration file.</string>
 <string name="description_import_settings_migration">For old users before conversion.\nUse old app to make a backup for migration.</string>
 <string name="log_in_to_ytm">Log in to your YTM account for more content</string>

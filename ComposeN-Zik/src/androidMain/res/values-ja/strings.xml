@@ -3,7 +3,6 @@
     <string name="cancel">キャンセル</string>
     <string name="reset">リセット</string>
     <string name="done">完了</string>
-    <string name="hidesong">この曲を非表示にしますか？再生時間とキャッシュは消去されます。この操作は元に戻せません。</string>
     <string name="new_playlist">新規プレイリスト</string>
     <string name="start_radio">ラジオを開始</string>
     <string name="stop_radio">Stop radio</string>
@@ -14,7 +13,6 @@
     <string name="go_to_album">アルバムを表示</string>
     <string name="remove_from_queue">キューから削除</string>
     <string name="remove_from_playlist">プレイリストから削除</string>
-    <string name="hide">非表示</string>
     <string name="related_albums">関連するアルバム</string>
     <string name="similar_artists">類似のアーティスト</string>
     <string name="playlists_you_might_like">気に入るかもしれないプレイリスト</string>
@@ -647,15 +645,11 @@
     <string name="lang_vietnamese">Vietnamese (tiếng Việt)</string>
     <string name="parental_control">保護者による管理</string>
     <string name="info_prevent_play_songs_with_age_limitation">年齢制限のある曲を再生しない</string>
-    <string name="stream_clients">Stream Clients</string>
     <string name="preferred_stream_client">Preferred Stream Client</string>
     <string name="preferred_stream_client_title">Preferred Stream Client</string>
-    <string name="preferred_stream_client_description">Choose which stream client to try first</string>
     <string name="preferred_stream_client_changed">Preferred client changed. Will apply on next track.</string>
     <string name="stream_client_redownload_recommendation">Re-download songs for new quality (especially with Web Remix/ YTB Premium account)</string>
-    <string name="disabled_stream_clients">Disabled stream clients</string>
     <string name="disabled_stream_clients_title">Disabled Stream Clients</string>
-    <string name="configure_which_stream_clients_are_enabled">Configure which stream clients are enabled</string>
     <string name="codec">Codec</string>
     <string name="sample_rate">Sample Rate</string>
     <string name="perceptual_loudness">Perceptual Loudness</string>
@@ -737,7 +731,6 @@
     <string name="crop_video_thumbnails">Crop video thumbnails</string>
     <string name="showtwosongs">次の2曲をキューに表示</string>
     <string name="showalbumcover">アルバムカバーを表示</string>
-    <string name="do_not_translate">翻訳しない</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">この曲の最後にスリープタイマーを設定しました</string>
     <string name="lyricsbackground">歌詞の背景</string>
     <string name="tapqueue">タップしてキューを開く</string>
@@ -877,7 +870,6 @@
     <string name="loudness_boost_level">ラウドネスブースト</string>
     <string name="loudness_boost_level_info">過度に使用せずにラウドネスを追加すると、デバイスが損傷する可能性があります</string>
     <string name="settings_target_gain_loudness_info">ラウドネスノーマライゼーションの目標ゲイン</string>
-    <string name="error_media_cannot_be_played">曲を再生できません</string>
     <string name="full_screen_lyrics_components">全画面歌詞のコンポーネント</string>
     <string name="titleartist">タイトルとアーティスト</string>
     <string name="miniqueue">次の曲のキュー</string>
@@ -887,7 +879,6 @@
     <string name="skip_media_on_error">エラー時に曲をスキップ</string>
     <string name="skip_media_on_error_description">エラーが発生した場合は、次の曲にスキップ</string>
     <string name="skip_media_on_error_message">曲 %1$sの再生中にエラーが発生しました</string>
-    <string name="login_required_to_play_this_media">この曲を再生するにはログインが必要です</string>
     <string name="search_results_for">検索結果:</string>
     <string name="statsfornerds">詳細統計情報</string>
     <string name="actionbar">アクションバー</string>
@@ -932,7 +923,6 @@
     <string name="dislikes">Dislikes</string>
     <string name="description">説明</string>
     <string name="press_once_again_to_exit">もう一度押して終了</string>
-    <string name="random_sorting">ランダムな並べ替え</string>
     <string name="music_animations_bars">バー</string>
     <string name="music_animations_crazy_bars">クレイジーバー</string>
     <string name="music_animations_crazy_points">クレイジーポイント</string>
@@ -1119,8 +1109,6 @@
     <string name="added_to_dislikes">Disliked %s</string>
     <string name="removed_from_dislikes">Removed %s from dislikes</string>
     <string name="rotating_cover_title">Rotating album cover</string>
-    <string name="title_appearance_changes">外観の変更</string>
-    <string name="appearance_changes_message">プレイヤーやUIの設定を変更した場合、\nアプリケーションを再起動することを強くお勧めします。</string>
     <string name="title_import_settings_migration">移行ファイルをインポート</string>
     <string name="description_import_settings_migration">変換前の古いユーザーの場合。\n古いアプリを使用して移行用のバックアップを作成します。</string>
     <string name="log_in_to_ytm">YTMアカウントにログインしてより多くのコンテンツを見る</string>
@@ -1134,7 +1122,6 @@
     <string name="beta_title">BETA</string>
     <string name="dev_title">DEV</string>
     <string name="debug_title">DEBUG</string>
-    <string name="stable_title">安定版</string>
     <string name="minified_title">分割済み</string>
     <string name="update_file_size">ファイルサイズ: %s</string>
     <string name="beta_text">これはベータ版であり、バグやクラッシュが含まれている可能性があります</string>
@@ -1220,7 +1207,6 @@
     <string name="error_session_expired">YouTube session expired, please sign in again</string>
     <string name="error_cookie_invalid">YouTube cookie is invalid, please log in again</string>
     <string name="stream_error_retrying">再試行: %1$s</string>
-    <string name="error_playback_failed">Playback failed: %1$s</string>
     <string name="error_playback_failed_with_code">Playback failed: %1$s [%2$s]</string>
     <string name="stream_still_retrying">Still loading… Attempt %1$s</string>
     <string name="stream_unexpected_skip">予期しないトラックの変更が検出されました</string>
@@ -1330,7 +1316,6 @@
     <string name="cd_arrow_up">arrow_up</string>
     <string name="txt_lyricsintervalprogress">lyrics IntervalProgress</string>
     <string name="cd_recenter">再入力</string>
-    <string name="cd_increase">増加</string>
     <string name="cd_reset">リセット</string>
     <string name="cd_import_playlist_name">プレイリスト名をインポート</string>
     <string name="cd_new_playlist_name">新しいプレイリスト名</string>
@@ -1374,7 +1359,6 @@
     <string name="no_lyrics">No lyrics</string>
     <string name="no_items_found">アイテムが見つかりません</string>
     <string name="no_new_releases">お気に入りのアーティストの新しいリリースはありません。</string>
-    <string name="not_selectable">選択不可</string>
     <string name="unknown_error">不明なエラー</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">アプリの更新</string>
@@ -1391,7 +1375,6 @@
     <string name="reverb_medium_hall">中型ホール</string>
     <string name="reverb_large_hall">大きなホール</string>
     <string name="reverb_plate">プレート</string>
-    <string name="fluid">FLUID</string>
     <string name="lyrics_not_available">歌詞がありません。もう一度試すか、手動で入力してください。</string>
     <string name="source_betterlyrics_synced">BetterLyrics (同期済み)</string>
     <string name="source_betterlyrics_karaoke">BetterLyrics(カラオケ)</string>

@@ -16,7 +16,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -64,7 +63,6 @@ import app.it.fast4x.rimusic.models.PlaylistPreview
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.items.PlaylistItem
 import app.it.fast4x.rimusic.ui.styling.Dimensions
-import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.ui.styling.px
 import app.it.fast4x.rimusic.utils.isNetworkConnected
 import app.it.fast4x.rimusic.utils.menuStyleKey
@@ -471,40 +469,6 @@ fun PlaylistsItemMenu(
                             )
                         }
 
-                        /*
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        IconButton(
-                            //icon = if (likedAt == null) R.drawable.heart_outline else R.drawable.heart,
-                            icon = R.drawable.heart,
-                            //color = colorPalette.favoritesIcon,
-                            color = if (likedAt == null) colorPalette.textDisabled else colorPalette.text,
-                            onClick = {
-                                query {
-                                    if (Database.like(
-                                            mediaItem.mediaId,
-                                            if (likedAt == null) System.currentTimeMillis() else null
-                                        ) == 0
-                                    ) {
-                                        Database.insert(mediaItem, Song::toggleLike)
-                                    }
-                                }
-                            },
-                            modifier = Modifier
-                                .padding(all = 4.dp)
-                                .size(24.dp)
-                        )
-
-                        if (!isLocal) IconButton(
-                            icon = R.drawable.share_social,
-                            color = colorPalette.text,
-                            onClick = onShare,
-                            modifier = Modifier
-                                .padding(all = 4.dp)
-                                .size(24.dp)
-                        )
-
-                    }
-                    */
                     }
 
                     Spacer(

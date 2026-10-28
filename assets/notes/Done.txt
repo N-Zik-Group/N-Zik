@@ -3,3 +3,8 @@ Removed:
   - Require release64/release32 APK names for stable release selection and extraction, preserving modern ABI and beta routing.
   - Stop publishing full/full32 aliases in the stable workflow while retaining minified compatibility and separate beta/dev workflows.
   - Verify modern, mixed and legacy-only release cases with 84 passing updater tests; assembleDebug, YAML parsing and alias-script syntax checks pass.
+- remove(cleanup): remove confirmed unused code and resource entries
+  - Remove seven uncalled Kotlin files, unused resolver/audio/duration helpers, dead Discovery/FluidGradient UI and obsolete commented implementations; retain active PiP, mood and gradient helpers.
+  - Retire 18 unused string keys across 815 source/locale declarations and six unused widget helper styles; preserve remaining translations byte-for-byte and active widget resources.
+  - Verify original-file backups, XML semantics, retained live functions and post-cleanup imports; keep uncertain assets and runtime contracts.
+  - Assemble Debug and pass 148 focused regression tests; complete three review lenses and an independent final re-review.

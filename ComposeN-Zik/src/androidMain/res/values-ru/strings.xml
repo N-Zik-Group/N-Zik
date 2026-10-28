@@ -3,7 +3,6 @@
     <string name="cancel">Отмена</string>
     <string name="reset">Сбросить</string>
     <string name="done">Готово</string>
-    <string name="hidesong">Вы действительно хотите скрыть эту песню? Его время воспроизведения и кэш будут удалены. Это действие необратимо.</string>
     <string name="new_playlist">Новый плейлист</string>
     <string name="start_radio">Включить радио</string>
     <string name="stop_radio">Stop radio</string>
@@ -14,7 +13,6 @@
     <string name="go_to_album">Перейти в альбом</string>
     <string name="remove_from_queue">Удалить из очереди</string>
     <string name="remove_from_playlist">Удалить из плейлиста</string>
-    <string name="hide">Удалить</string>
     <string name="related_albums">Похожие альбомы</string>
     <string name="similar_artists">Похожие исполнители</string>
     <string name="playlists_you_might_like">Плейлисты, которые вам могут понравиться</string>
@@ -647,15 +645,11 @@
     <string name="lang_vietnamese">Vietnamese (tiếng Việt)</string>
     <string name="parental_control">Родительский контроль</string>
     <string name="info_prevent_play_songs_with_age_limitation">Запретить воспроизведение песен с ограничением возраста</string>
-    <string name="stream_clients">Stream Clients</string>
     <string name="preferred_stream_client">Preferred Stream Client</string>
     <string name="preferred_stream_client_title">Preferred Stream Client</string>
-    <string name="preferred_stream_client_description">Choose which stream client to try first</string>
     <string name="preferred_stream_client_changed">Preferred client changed. Will apply on next track.</string>
     <string name="stream_client_redownload_recommendation">Re-download songs for new quality (especially with Web Remix/ YTB Premium account)</string>
-    <string name="disabled_stream_clients">Disabled stream clients</string>
     <string name="disabled_stream_clients_title">Disabled Stream Clients</string>
-    <string name="configure_which_stream_clients_are_enabled">Configure which stream clients are enabled</string>
     <string name="codec">Codec</string>
     <string name="sample_rate">Sample Rate</string>
     <string name="perceptual_loudness">Perceptual Loudness</string>
@@ -737,7 +731,6 @@
     <string name="crop_video_thumbnails">Crop video thumbnails</string>
     <string name="showtwosongs">Показать следующие две песни в очереди</string>
     <string name="showalbumcover">Показать обложку альбома</string>
-    <string name="do_not_translate">Не переводить</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Таймер сна установлен в конец этой песни</string>
     <string name="lyricsbackground">Фон текста песни</string>
     <string name="tapqueue">Нажмите, чтобы открыть очередь</string>
@@ -877,7 +870,6 @@
     <string name="loudness_boost_level">Уровень громкости</string>
     <string name="loudness_boost_level_info">Дополнительный уровень громкости, который будет использоваться без переполнения, может повредить устройство</string>
     <string name="settings_target_gain_loudness_info">Целевая громкость для нормализации громкости</string>
-    <string name="error_media_cannot_be_played">Песня не может быть воспроизведена</string>
     <string name="full_screen_lyrics_components">Компоненты полноэкранных текстов</string>
     <string name="titleartist">Название и Исполнители</string>
     <string name="miniqueue">Следующая очередь песен</string>
@@ -887,7 +879,6 @@
     <string name="skip_media_on_error">Пропустить песню при ошибке</string>
     <string name="skip_media_on_error_description">При возникновении ошибки перейти к следующей песне</string>
     <string name="skip_media_on_error_message">Произошла ошибка при воспроизведении песни %1$s</string>
-    <string name="login_required_to_play_this_media">Для воспроизведения этой песни необходимо войти в систему</string>
     <string name="search_results_for">Результаты поиска для:</string>
     <string name="statsfornerds">Статистика для ботаников</string>
     <string name="actionbar">Панель действий</string>
@@ -932,7 +923,6 @@
     <string name="dislikes">Dislikes</string>
     <string name="description">Описание</string>
     <string name="press_once_again_to_exit">Нажмите еще раз, чтобы выйти</string>
-    <string name="random_sorting">Случайная сортировка</string>
     <string name="music_animations_bars">Bars</string>
     <string name="music_animations_crazy_bars">Безумные бары</string>
     <string name="music_animations_crazy_points">Сумасшедшие очки</string>
@@ -1119,8 +1109,6 @@
     <string name="added_to_dislikes">Disliked %s</string>
     <string name="removed_from_dislikes">Removed %s from dislikes</string>
     <string name="rotating_cover_title">Rotating album cover</string>
-    <string name="title_appearance_changes">Изменение внешнего вида</string>
-    <string name="appearance_changes_message">If you change Player or UI settings,\nit is strongly recommended to restart the application.</string>
     <string name="title_import_settings_migration">Импортировать файл миграции.</string>
     <string name="description_import_settings_migration">For old users before conversion.\nUse old app to make a backup for migration.</string>
     <string name="log_in_to_ytm">Войдите в свою учетную запись YTM для большего содержания</string>
@@ -1134,7 +1122,6 @@
     <string name="beta_title">БЕТА</string>
     <string name="dev_title">DEV</string>
     <string name="debug_title">DEBUG</string>
-    <string name="stable_title">СТАБИЛЬНЫЙ</string>
     <string name="minified_title">ВНИМАНО</string>
     <string name="update_file_size">Размер файла: %s</string>
     <string name="beta_text">Это все еще находится в бета-версии и может содержать ошибки и ошибки</string>
@@ -1220,7 +1207,6 @@
     <string name="error_session_expired">YouTube session expired, please sign in again</string>
     <string name="error_cookie_invalid">YouTube cookie is invalid, please log in again</string>
     <string name="stream_error_retrying">Повторение: %1$s</string>
-    <string name="error_playback_failed">Playback failed: %1$s</string>
     <string name="error_playback_failed_with_code">Playback failed: %1$s [%2$s]</string>
     <string name="stream_still_retrying">Все еще загружается… Попытка %1$s</string>
     <string name="stream_unexpected_skip">Обнаружено непредвиденное изменение трека</string>
@@ -1330,7 +1316,6 @@
     <string name="cd_arrow_up">стрелка в_вверх</string>
     <string name="txt_lyricsintervalprogress">Интервал текста</string>
     <string name="cd_recenter">Рекорд</string>
-    <string name="cd_increase">Увеличить</string>
     <string name="cd_reset">Сбросить</string>
     <string name="cd_import_playlist_name">Импортировать имя плейлиста</string>
     <string name="cd_new_playlist_name">новое имя плейлиста</string>
@@ -1374,7 +1359,6 @@
     <string name="no_lyrics">No lyrics</string>
     <string name="no_items_found">Элементов не найдено</string>
     <string name="no_new_releases">Нет новых релизов для ваших любимых исполнителей</string>
-    <string name="not_selectable">Не выбрано</string>
     <string name="unknown_error">Неизвестная ошибка</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">Обновления приложений</string>
@@ -1391,7 +1375,6 @@
     <string name="reverb_medium_hall">Средний зал</string>
     <string name="reverb_large_hall">Большой зал</string>
     <string name="reverb_plate">Пластинчатый</string>
-    <string name="fluid">ФЛЮИД</string>
     <string name="lyrics_not_available">Текст песни недоступен. Попробуйте еще раз или введите его вручную.</string>
     <string name="source_betterlyrics_synced">BetterLyrics (синхронизирован)</string>
     <string name="source_betterlyrics_karaoke">BetterLyrics (караоке)</string>

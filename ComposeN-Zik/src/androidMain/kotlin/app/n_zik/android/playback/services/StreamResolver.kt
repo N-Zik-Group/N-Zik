@@ -167,35 +167,6 @@ fun clearAllFailures() {
 }
 
 /**
- * Check if a client failure has expired (older than CLIENT_FAILURE_TTL_MS).
- */
-private fun isClientFailureExpired(clientName: String, videoId: String): Boolean {
-    val failureMap = clientFailedIds[clientName] ?: return true
-    val failureTime = failureMap[videoId] ?: return true
-    return System.currentTimeMillis() - failureTime > CLIENT_FAILURE_TTL_MS
-}
-
-/**
- * Clean up expired failure entries for a client.
- */
-private fun cleanupExpiredFailures(clientName: String) {
-    val failureMap = clientFailedIds[clientName] ?: return
-    val now = System.currentTimeMillis()
-    failureMap.entries.removeIf { (_, timestamp) -> now - timestamp > CLIENT_FAILURE_TTL_MS }
-    if (failureMap.isEmpty()) {
-        clientFailedIds.remove(clientName)
-    }
-}
-
-/**
- * Clear all failure markers for a specific client.
- */
-fun clearClientFailures(clientName: String) {
-    clientFailedIds.remove(clientName)
-    Timber.tag(TAG).d("Cleared failures for $clientName")
-}
-
-/**
  * Get the set of client names that have recently failed for a given videoId.
  * Used by InnerTubeXPlayer to build the excludedClients set.
  */

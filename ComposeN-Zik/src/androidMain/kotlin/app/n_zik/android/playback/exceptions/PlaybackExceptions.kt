@@ -52,12 +52,6 @@ class UnknownException(
 ) : PlaybackException(message, cause, ERROR_CODE_REMOTE_ERROR)
 
 @UnstableApi
-class FakeException(
-    message: String? = null,
-    cause: Throwable? = null
-) : PlaybackException(message, cause, ERROR_CODE_IO_NETWORK_CONNECTION_FAILED)
-
-@UnstableApi
 class ExplicitContentException(
     message: String? = null,
     cause: Throwable? = null

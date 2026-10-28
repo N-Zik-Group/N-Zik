@@ -3,7 +3,6 @@
     <string name="cancel">취소</string>
     <string name="reset">초기화</string>
     <string name="done">완료</string>
-    <string name="hidesong">Do you really want to hide this song? Its playback time and cache will be wiped. This action is irreversible.</string>
     <string name="new_playlist">새 재생목록</string>
     <string name="start_radio">팟캐스트 시작</string>
     <string name="stop_radio">Stop radio</string>
@@ -14,7 +13,6 @@
     <string name="go_to_album">앨범으로 이동</string>
     <string name="remove_from_queue">대기열에서 삭제</string>
     <string name="remove_from_playlist">재생목록에서 삭제</string>
-    <string name="hide">숨기기</string>
     <string name="related_albums">관련 앨범</string>
     <string name="similar_artists">비슷한 아티스트</string>
     <string name="playlists_you_might_like">당신을 위한 재생목록</string>
@@ -647,15 +645,11 @@
     <string name="lang_vietnamese">Vietnamese (tiếng Việt)</string>
     <string name="parental_control">자녀 보호 기능</string>
     <string name="info_prevent_play_songs_with_age_limitation">연령 제한 곡들을 막습니다</string>
-    <string name="stream_clients">Stream Clients</string>
     <string name="preferred_stream_client">Preferred Stream Client</string>
     <string name="preferred_stream_client_title">Preferred Stream Client</string>
-    <string name="preferred_stream_client_description">Choose which stream client to try first</string>
     <string name="preferred_stream_client_changed">Preferred client changed. Will apply on next track.</string>
     <string name="stream_client_redownload_recommendation">Re-download songs for new quality (especially with Web Remix/ YTB Premium account)</string>
-    <string name="disabled_stream_clients">Disabled stream clients</string>
     <string name="disabled_stream_clients_title">Disabled Stream Clients</string>
-    <string name="configure_which_stream_clients_are_enabled">Configure which stream clients are enabled</string>
     <string name="codec">Codec</string>
     <string name="sample_rate">Sample Rate</string>
     <string name="perceptual_loudness">Perceptual Loudness</string>
@@ -737,7 +731,6 @@
     <string name="crop_video_thumbnails">Crop video thumbnails</string>
     <string name="showtwosongs">Show Next two Songs in Queue</string>
     <string name="showalbumcover">Show album cover</string>
-    <string name="do_not_translate">Do not translate</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Sleep timer set to the end of this song</string>
     <string name="lyricsbackground">Lyrics background</string>
     <string name="tapqueue">Tap to open queue</string>
@@ -877,7 +870,6 @@
     <string name="loudness_boost_level">Loudness boost level</string>
     <string name="loudness_boost_level_info">Additional loudness level, to be used without overdoing it, may damage the device</string>
     <string name="settings_target_gain_loudness_info">소리 크기 정규화를 위한 목표 증폭</string>
-    <string name="error_media_cannot_be_played">Song cannot be played</string>
     <string name="full_screen_lyrics_components">Fullscreen lyrics components</string>
     <string name="titleartist">제목과 아티스트</string>
     <string name="miniqueue">Next song queue</string>
@@ -887,7 +879,6 @@
     <string name="skip_media_on_error">Skip song on error</string>
     <string name="skip_media_on_error_description">If an error occurs, skip to the next song</string>
     <string name="skip_media_on_error_message">An error occurred while playing the song %1$s</string>
-    <string name="login_required_to_play_this_media">Logging in is required to play this song</string>
     <string name="search_results_for">다음에 대한 검색 결과:</string>
     <string name="statsfornerds">덕후들을 위한 통계</string>
     <string name="actionbar">액션바</string>
@@ -932,7 +923,6 @@
     <string name="dislikes">Dislikes</string>
     <string name="description">Description</string>
     <string name="press_once_again_to_exit">한 번 더 눌러 종료하기</string>
-    <string name="random_sorting">무작위 정렬</string>
     <string name="music_animations_bars">바</string>
     <string name="music_animations_crazy_bars">Crazy bars</string>
     <string name="music_animations_crazy_points">Crazy points</string>
@@ -1119,8 +1109,6 @@
     <string name="added_to_dislikes">Disliked %s</string>
     <string name="removed_from_dislikes">Removed %s from dislikes</string>
     <string name="rotating_cover_title">Rotating album cover</string>
-    <string name="title_appearance_changes">Appearance Change</string>
-    <string name="appearance_changes_message">If you change Player or UI settings,\nit is strongly recommended to restart the application.</string>
     <string name="title_import_settings_migration">Import migration file.</string>
     <string name="description_import_settings_migration">For old users before conversion.\nUse old app to make a backup for migration.</string>
     <string name="log_in_to_ytm">Log in to your YTM account for more content</string>
@@ -1134,7 +1122,6 @@
     <string name="beta_title">BETA</string>
     <string name="dev_title">DEV</string>
     <string name="debug_title">DEBUG</string>
-    <string name="stable_title">STABLE</string>
     <string name="minified_title">MINIFIED</string>
     <string name="update_file_size">File size: %s</string>
     <string name="beta_text">This is still in Beta and may contain bugs and crash</string>
@@ -1220,7 +1207,6 @@
     <string name="error_session_expired">YouTube session expired, please sign in again</string>
     <string name="error_cookie_invalid">YouTube cookie is invalid, please log in again</string>
     <string name="stream_error_retrying">Retrying: %1$s</string>
-    <string name="error_playback_failed">Playback failed: %1$s</string>
     <string name="error_playback_failed_with_code">Playback failed: %1$s [%2$s]</string>
     <string name="stream_still_retrying">Still loading… Attempt %1$s</string>
     <string name="stream_unexpected_skip">Unexpected track change detected</string>
@@ -1330,7 +1316,6 @@
     <string name="cd_arrow_up">arrow_up</string>
     <string name="txt_lyricsintervalprogress">lyricsIntervalProgress</string>
     <string name="cd_recenter">Recenter</string>
-    <string name="cd_increase">Increase</string>
     <string name="cd_reset">초기화</string>
     <string name="cd_import_playlist_name">import playlist name</string>
     <string name="cd_new_playlist_name">new playlist name</string>
@@ -1374,7 +1359,6 @@
     <string name="no_lyrics">No lyrics</string>
     <string name="no_items_found">No items found</string>
     <string name="no_new_releases">There are no new releases for your favorite artists</string>
-    <string name="not_selectable">Not selectable</string>
     <string name="unknown_error">알 수 없는 오류</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">App Updates</string>
@@ -1391,7 +1375,6 @@
     <string name="reverb_medium_hall">Medium Hall</string>
     <string name="reverb_large_hall">Large Hall</string>
     <string name="reverb_plate">Plate</string>
-    <string name="fluid">FLUID</string>
     <string name="lyrics_not_available">No lyrics available. Please try again or enter them manually.</string>
     <string name="source_betterlyrics_synced">BetterLyrics (synced)</string>
     <string name="source_betterlyrics_karaoke">BetterLyrics (karaoke)</string>

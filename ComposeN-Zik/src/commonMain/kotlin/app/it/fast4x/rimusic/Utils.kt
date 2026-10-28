@@ -47,11 +47,3 @@ fun String.hasExplicitPrefix(): Boolean {
 fun String.stripExplicitEmoji(): String {
     return this.replace("\uD83C\uDD74", "").trimStart()
 }
-
-/**
- * Check if a MediaItem title has the explicit prefix.
- * Use this for queue-level filtering of explicit content.
- */
-fun isMediaItemExplicit(title: CharSequence?): Boolean {
-    return title?.startsWith(EXPLICIT_PREFIX, true) == true
-}

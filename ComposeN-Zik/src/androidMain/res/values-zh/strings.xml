@@ -3,7 +3,6 @@
     <string name="cancel">取消</string>
     <string name="reset">重置</string>
     <string name="done">完成</string>
-    <string name="hidesong">你真的要隱藏這首歌曲嗎? 播放記錄和暫存將被清除. \n此動作不可逆.</string>
     <string name="new_playlist">新增播放清單</string>
     <string name="start_radio">開啟電台</string>
     <string name="stop_radio">Stop radio</string>
@@ -14,7 +13,6 @@
     <string name="go_to_album">前往專輯</string>
     <string name="remove_from_queue">從播放佇列中移除</string>
     <string name="remove_from_playlist">從播放清單中移除</string>
-    <string name="hide">隱藏</string>
     <string name="related_albums">相關的專輯</string>
     <string name="similar_artists">類似的藝人</string>
     <string name="playlists_you_might_like">你可能喜歡的播放清單</string>
@@ -647,15 +645,11 @@
     <string name="lang_vietnamese">越南語</string>
     <string name="parental_control">家長或監護人設定</string>
     <string name="info_prevent_play_songs_with_age_limitation">防止播放有年齡限制的歌曲</string>
-    <string name="stream_clients">Stream Clients</string>
     <string name="preferred_stream_client">Preferred Stream Client</string>
     <string name="preferred_stream_client_title">Preferred Stream Client</string>
-    <string name="preferred_stream_client_description">Choose which stream client to try first</string>
     <string name="preferred_stream_client_changed">Preferred client changed. Will apply on next track.</string>
     <string name="stream_client_redownload_recommendation">Re-download songs for new quality (especially with Web Remix/ YTB Premium account)</string>
-    <string name="disabled_stream_clients">Disabled stream clients</string>
     <string name="disabled_stream_clients_title">Disabled Stream Clients</string>
-    <string name="configure_which_stream_clients_are_enabled">Configure which stream clients are enabled</string>
     <string name="codec">Codec</string>
     <string name="sample_rate">Sample Rate</string>
     <string name="perceptual_loudness">Perceptual Loudness</string>
@@ -737,7 +731,6 @@
     <string name="crop_video_thumbnails">Crop video thumbnails</string>
     <string name="showtwosongs">在队列中显示后两首歌曲</string>
     <string name="showalbumcover">顯示專輯封面</string>
-    <string name="do_not_translate">不要翻譯</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Sleep timer delayed at end of song</string>
     <string name="lyricsbackground">Lyrics Background</string>
     <string name="tapqueue">點擊打開播放佇列</string>
@@ -877,7 +870,6 @@
     <string name="loudness_boost_level">亮度提升水平</string>
     <string name="loudness_boost_level_info">额外的亮度等级，可以在不超负荷的情况下使用，可能损坏设备</string>
     <string name="settings_target_gain_loudness_info">标准化响度的目标增益</string>
-    <string name="error_media_cannot_be_played">無法播放媒體</string>
     <string name="full_screen_lyrics_components">Full Screen Lyrics Components</string>
     <string name="titleartist">标题和艺人</string>
     <string name="miniqueue">Mini Queue</string>
@@ -887,7 +879,6 @@
     <string name="skip_media_on_error">Autoskip on error</string>
     <string name="skip_media_on_error_description">如果發生錯誤，將跳至下一首歌</string>
     <string name="skip_media_on_error_message">%1$s 出了問題</string>
-    <string name="login_required_to_play_this_media">Login required to play this media</string>
     <string name="search_results_for">搜尋結果：</string>
     <string name="statsfornerds">详细统计信息</string>
     <string name="actionbar">快捷操作栏</string>
@@ -932,7 +923,6 @@
     <string name="dislikes">Dislikes</string>
     <string name="description">描述</string>
     <string name="press_once_again_to_exit">再按一次以離開應用程式</string>
-    <string name="random_sorting">隨機排序</string>
     <string name="music_animations_bars">条状</string>
     <string name="music_animations_crazy_bars">Crazy Bars</string>
     <string name="music_animations_crazy_points">Crazy Points</string>
@@ -1119,8 +1109,6 @@
     <string name="added_to_dislikes">Disliked %s</string>
     <string name="removed_from_dislikes">Removed %s from dislikes</string>
     <string name="rotating_cover_title">Rotating album cover</string>
-    <string name="title_appearance_changes">Appearance Change</string>
-    <string name="appearance_changes_message">If you change Player or UI settings,\nit is strongly recommended to restart the application.</string>
     <string name="title_import_settings_migration">Import migration file.</string>
     <string name="description_import_settings_migration">For old users before conversion.\nUse old app to make a backup for migration.</string>
     <string name="log_in_to_ytm">Log in to your YTM account for more content</string>
@@ -1134,7 +1122,6 @@
     <string name="beta_title"> Beta</string>
     <string name="dev_title">DEV</string>
     <string name="debug_title">DEBUG</string>
-    <string name="stable_title">已开始</string>
     <string name="minified_title">迷你的</string>
     <string name="update_file_size">文件大小： %s</string>
     <string name="beta_text">This is still in Beta and may contain bugs and crash</string>
@@ -1220,7 +1207,6 @@
     <string name="error_session_expired">YouTube session expired, please sign in again</string>
     <string name="error_cookie_invalid">YouTube cookie is invalid, please log in again</string>
     <string name="stream_error_retrying">重试: %1$s</string>
-    <string name="error_playback_failed">Playback failed: %1$s</string>
     <string name="error_playback_failed_with_code">Playback failed: %1$s [%2$s]</string>
     <string name="stream_still_retrying">Still loading… Attempt %1$s</string>
     <string name="stream_unexpected_skip">检测到意外的曲目变化</string>
@@ -1330,7 +1316,6 @@
     <string name="cd_arrow_up">向上箭头</string>
     <string name="txt_lyricsintervalprogress">歌词间隔进度</string>
     <string name="cd_recenter">Recenter</string>
-    <string name="cd_increase">增加</string>
     <string name="cd_reset">重置</string>
     <string name="cd_import_playlist_name">导入播放列表名称</string>
     <string name="cd_new_playlist_name">新播放列表名称</string>
@@ -1374,7 +1359,6 @@
     <string name="no_lyrics">No lyrics</string>
     <string name="no_items_found">未找到项目</string>
     <string name="no_new_releases">您最喜欢的艺术家没有新的发布</string>
-    <string name="not_selectable">不可选择</string>
     <string name="unknown_error">未知的錯誤</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">应用程序更新</string>
@@ -1391,7 +1375,6 @@
     <string name="reverb_medium_hall">中型大会堂</string>
     <string name="reverb_large_hall">大厅</string>
     <string name="reverb_plate">板块</string>
-    <string name="fluid">FLUID</string>
     <string name="lyrics_not_available">没有可用的歌词。请重试或手动输入歌词。</string>
     <string name="source_betterlyrics_synced">BetterLyrics (同步)</string>
     <string name="source_betterlyrics_karaoke">BetterLyrics (Karaoke)</string>
