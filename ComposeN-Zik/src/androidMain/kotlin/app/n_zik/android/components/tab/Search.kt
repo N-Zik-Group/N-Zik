@@ -25,7 +25,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -46,7 +45,8 @@ class Search private constructor(
     visibleState: MutableState<Boolean>,
     focusState: MutableState<Boolean>,
     private val lazyListState: LazyListState?,
-    private val lazyGridState: LazyGridState?
+    private val lazyGridState: LazyGridState?,
+    private val persistent: Boolean = false,
 ): MenuIcon, Descriptive{
 
     companion object {
@@ -84,7 +84,8 @@ class Search private constructor(
             remember { mutableStateOf( initialVisible ) },
             remember { mutableStateOf( false ) },
             null,
-            null
+            null,
+            persistent = initialVisible,
         )
 
         /** Variant for hosts that keep the bar visible from the first frame and still scroll the list to the top on input. */
@@ -94,7 +95,8 @@ class Search private constructor(
             remember { mutableStateOf( initialVisible ) },
             remember { mutableStateOf( false ) },
             lazyListState,
-            null
+            null,
+            persistent = initialVisible,
         )
     }
 
@@ -106,12 +108,7 @@ class Search private constructor(
         @Composable
         get() = stringResource( messageId )
 
-    /**
-     * [TextFieldValue] gives control over cursor.
-     *
-     * This prevents the cursor from being placed
-     * at the beginning of search term.
-     */
+    /** Keeps the cursor position when the query changes. */
     var input: TextFieldValue by inputState
     var isVisible: Boolean by visibleState
     var isFocused: Boolean by focusState
@@ -121,9 +118,7 @@ class Search private constructor(
         isFocused = isVisible
     }
 
-    /**
-     * Attempt to hide search bar if it's empty
-     */
+    /** Hides an empty bar or removes focus from a populated one. */
     fun hideIfEmpty() {
         if ( isVisible )
             if ( inputValue.isBlank() )
@@ -177,12 +172,12 @@ class Search private constructor(
                     var fieldFocused by remember { mutableStateOf(false) }
                     // Request only after AnimatedVisibility has attached the field. Its initial
                     // unfocused notification must not cancel a toolbar's pending focus request.
-                    LaunchedEffect(isVisible, isFocused) {
-                        if (isVisible && isFocused) {
+                    LaunchedEffect(isVisible, isFocused, fieldFocused) {
+                        if (isVisible && isFocused && !fieldFocused) {
                             snapshotFlow { visibility.isIdle && visibility.currentState }.first { it }
                             focusRequester.requestFocus()
                             keyboardController?.show()
-                        } else if (fieldFocused) {
+                        } else if ((!isVisible || !isFocused) && fieldFocused) {
                             keyboardController?.hide()
                             focusManager.clearFocus(force = true)
                         }
@@ -199,7 +194,7 @@ class Search private constructor(
                             },
                             onSearch = {
                                 onSearch()
-                                isVisible = inputValue.isNotBlank()
+                                isVisible = persistent || inputValue.isNotBlank()
                                 isFocused = false
                                 keyboardController?.hide()
                             },
@@ -208,6 +203,11 @@ class Search private constructor(
                                 fieldFocused = focused
                             },
                             focusRequester = focusRequester,
+                            backSessionActive = isVisible && (!persistent || isFocused),
+                            onBackDismiss = {
+                                isFocused = false
+                                if (!persistent) isVisible = false
+                            },
                         )
                     }
                 }

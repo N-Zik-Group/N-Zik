@@ -23,6 +23,10 @@ import app.n_zik.android.core.navigation.ScreenTransitions
 import app.it.fast4x.rimusic.enums.TransitionEffect
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsNotFocused
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -329,6 +333,61 @@ class SettingsScreenHostWiringTest {
         repeat(5) { composeRule.mainClock.advanceTimeByFrame(); composeRule.waitForIdle() }
         composeRule.runOnIdle { dispatcher.onBackPressed() }
         pumpUntil("commit returns global", 30_000) { globalPageIsComposed() && !categoryIsComposed() }
+        verify(exactly = 0) { navController.popBackStack(NavRoutes.home.name, false) }
+    }
+
+    @Test
+    fun focusedCategorySearchConsumesPredictiveBackBeforeNestedNavigation() {
+        showHost()
+        composeRule.onNodeWithTag("settings_global_category_playback").performClick()
+        pumpUntil("Playback category settled", 30_000) { categoryIsComposed() && globalPageIsGone() }
+
+        val searchField = composeRule.onNode(hasSetTextAction())
+        searchField.assertIsNotFocused()
+        composeRule.onNodeWithTag("unified_search_bar").performClick()
+        val query = context.getString(R.string.queue_management)
+        searchField.performTextInput(query)
+        pumpUntil("category search focused", 30_000) {
+            runCatching { searchField.assertIsFocused() }.isSuccess
+        }
+        val dispatcher = testActivity.onBackPressedDispatcher
+        fun progressSearchBack() {
+            composeRule.runOnIdle {
+                dispatcher.dispatchOnBackStarted(BackEventCompat(0f, 0f, 0f, BackEventCompat.EDGE_LEFT))
+                dispatcher.dispatchOnBackProgressed(BackEventCompat(100f, 0f, 0.5f, BackEventCompat.EDGE_LEFT))
+            }
+            repeat(5) {
+                composeRule.mainClock.advanceTimeByFrame()
+                composeRule.waitForIdle()
+                assertTrue("Search owns the gesture without previewing Global", globalPageIsGone())
+                assertTrue("Playback remains during search dismissal", categoryIsComposed())
+                searchField.assertIsFocused()
+            }
+        }
+
+        progressSearchBack()
+        composeRule.runOnIdle { dispatcher.dispatchOnBackCancelled() }
+        pumpUntil("cancel keeps focused category search", 30_000) {
+            categoryIsComposed() && globalPageIsGone() &&
+                runCatching { searchField.assertIsFocused() }.isSuccess
+        }
+        searchField.assertTextEquals(query)
+        verify(exactly = 0) { navController.popBackStack(NavRoutes.home.name, false) }
+
+        progressSearchBack()
+        composeRule.runOnIdle { dispatcher.onBackPressed() }
+        pumpUntil("commit only unfocuses category search", 30_000) {
+            categoryIsComposed() && globalPageIsGone() &&
+                runCatching { searchField.assertIsNotFocused() }.isSuccess
+        }
+        composeRule.onNodeWithTag("unified_search_bar").assertIsDisplayed()
+        searchField.assertTextEquals(query)
+        verify(exactly = 0) { navController.popBackStack(NavRoutes.home.name, false) }
+
+        composeRule.runOnIdle { dispatcher.onBackPressed() }
+        pumpUntil("next Back returns to Global", 30_000) {
+            globalPageIsComposed() && !categoryIsComposed()
+        }
         verify(exactly = 0) { navController.popBackStack(NavRoutes.home.name, false) }
     }
 

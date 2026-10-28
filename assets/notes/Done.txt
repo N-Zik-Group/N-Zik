@@ -10,6 +10,11 @@ Fixed:
   - Verify native-rendered None, Fade and horizontal slide during forward and reverse gesture progress, cancellation and exactly-one-pop commitment; preserve nested Settings and toolbar routing.
   - Assemble Debug and pass 29 navigation tests; prove the three new visual tests fail against native defaults, complete review, and install the tested 8.5.0-debug APK on the emulator.
 
+- fix(search): consume Back when dismissing an active search session
+  - Share lifecycle-aware dismissal across expandable and persistent search bars, Android gestures and the app toolbar, without also navigating; retain input and untouched permanent-pill behavior.
+  - Cover playlist/podcast controlled searches, opening and rapid reopening, predictive cancellation, lifecycle resume and empty permanent submissions; preserve existing navigation animation policy.
+  - Assemble Debug and pass 29 focused search/Settings tests; complete independent reviews and keep real IME routing and deeper playlist/podcast host fixtures as separate verification follow-ups.
+
 Removed:
 - remove(updater): retire legacy full and full32 release asset compatibility
   - Require release64/release32 APK names for stable release selection and extraction, preserving modern ABI and beta routing.

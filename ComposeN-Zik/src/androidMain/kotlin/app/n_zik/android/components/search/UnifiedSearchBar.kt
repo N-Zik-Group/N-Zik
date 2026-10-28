@@ -21,6 +21,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -65,16 +66,9 @@ data class SearchBarBubble(
 )
 
 /**
- * Unified app-wide search bar (design reference: Android settings search).
- *
- * Pill bar with a surface background ([surfaceColor], pitch black safe), search
- * icon on the left, placeholder left-aligned right after the icon (same
- * position as the typed text). On focus the bar shrinks and round action
- * bubbles slide in on its right: the clear (X) bubble is always present,
- * [actionBubbles] are optional host extras (only the online search screen
- * passes any). Host-agnostic: the caller owns the text state and the focus
- * policy; [onFocused] reports focus changes, [focusRequester] lets the host
- * request focus.
+ * Pill search with optional action bubbles and consuming Back dismissal.
+ * [backSessionActive] lets expandable hosts include visible or pending-focus sessions;
+ * direct permanent bars default to actual focus. [onBackDismiss] preserves the query.
  */
 @Composable
 fun UnifiedSearchBar(
@@ -89,34 +83,32 @@ fun UnifiedSearchBar(
     focusRequester: FocusRequester = remember { FocusRequester() },
     onFocused: (Boolean) -> Unit = {},
     textFieldTestTag: String? = null,
+    backSessionActive: Boolean? = null,
+    onBackDismiss: () -> Unit = {},
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    key(isFocused) {
+        SearchBackHandler(active = backSessionActive ?: isFocused) {
+            onBackDismiss()
+            keyboardController?.hide()
+            focusManager.clearFocus(force = true)
+        }
+    }
+
     // +1 = the clear (X) bubble; 48dp bubble + 8dp spacing, 12dp bar-to-bubble gap
     val bubbleCount = actionBubbles.size + 1
     val bubbleAreaTarget = 12.dp + bubbleCount * 48.dp + (bubbleCount - 1) * 8.dp
-    // Choreographed resize: the bar opens first, then the bubbles enter on a
-    // diagonal (off-screen right, just below the bar) and travel up to their
-    // slot. Blurring plays the same trip in reverse to the same starting
-    // spot, then the bar reclaims the space. The 48dp circle is fixed
-    // throughout: only its position and its opacity animate, so its size and
-    // shape never change mid-trip.
-    // Two clean, non-overlapping phases in both directions (a concurrent bar
-    // resize reads as the bubble being squashed against the bar's moving
-    // edge): entry = the bar opens first (200ms), then the bubble swoops in
-    // (250ms) fading in as it starts. Exit = the mirror: the bubble swoops
-    // out first (250ms, fading during the last stretch so it disappears at
-    // its starting spot), then the bar reclaims (200ms).
+    // Resize before bubble entry, and after bubble exit, so the fixed-size circles
+    // never appear squashed against the moving bar edge.
     val bubbleAreaWidth by animateDpAsState(
         targetValue = if (isFocused) bubbleAreaTarget else 0.dp,
         animationSpec = if (isFocused) tween(200) else tween(200, delayMillis = 250),
         label = "unifiedSearchBarBubbleArea"
     )
-    // Starting spot (entry AND exit): one bubble area to the right (fully
-    // off-screen) and 64dp below the final slot, just under the bar in the
-    // top area of the screen.
+    // Bubbles travel from below and off-screen right in both directions.
     val bubbleEntryY = 64.dp
     val bubbleSlide by animateDpAsState(
         targetValue = if (isFocused) 0.dp else bubbleAreaTarget,
@@ -153,10 +145,7 @@ fun UnifiedSearchBar(
                     shape = uiRoundnessShape()
                 )
                 .clip(uiRoundnessShape())
-                // The whole pill (icon, spacer and padding included) focuses the
-                // field on tap; without this, taps on the padding fall through
-                // to whatever is behind the bar (e.g. the queue list, which
-                // hides the bar on item click)
+                // Padding taps must focus search instead of reaching the underlying list.
                 .clickable { focusRequester.requestFocus() }
                 .padding(horizontal = 20.dp, vertical = 16.dp)
                 .testTag("unified_search_bar"),
@@ -215,12 +204,7 @@ fun UnifiedSearchBar(
             }
         }
 
-        // The bubble area width is the single animated value driving the whole
-        // resize (bar = weight 1f takes the remainder every frame), which keeps
-        // the shrink fluid - no AnimatedVisibility size snapping, no layout
-        // measurement feedback. The row keeps a fixed size and travels in / out
-        // from the entry spot (off-screen right, just below the bar; no clip on
-        // the box).
+        // Animate the bubble area's width while keeping each travelling bubble fixed-size.
         Box(
             modifier = Modifier
                 .align(Alignment.CenterVertically)

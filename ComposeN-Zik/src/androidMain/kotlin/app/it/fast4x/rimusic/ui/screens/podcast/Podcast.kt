@@ -616,6 +616,8 @@ fun Podcast(
                                     focusManager.clearFocus()
                                 },
                                 focusRequester = focusRequester,
+                                backSessionActive = searching,
+                                onBackDismiss = { searching = false },
                                 onFocused = { focused ->
                                     val lostFocus = fieldFocused && !focused
                                     fieldFocused = focused
