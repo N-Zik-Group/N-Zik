@@ -1,0 +1,26 @@
+name: Label automation tests
+
+on:
+  push:
+    paths:
+      - '.github/workflows/add-labels.yaml'
+      - '.github/tests/add-labels.test.cjs'
+      - '.github/workflows/label-automation-tests.yml'
+  pull_request:
+    paths:
+      - '.github/workflows/add-labels.yaml'
+      - '.github/tests/add-labels.test.cjs'
+      - '.github/workflows/label-automation-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - run: node --test .github/tests/add-labels.test.cjs

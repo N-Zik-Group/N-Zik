@@ -17,27 +17,23 @@ jobs:
         with:
           script: |
             const buildTypeLabels = [
-              "release64", "release32", "minified64", "minified32", 
+              "release64", "release32", "minified64", "minified32",
               "beta64", "beta32", "foss", "dev64", "dev32"
             ];
 
+            const legacyBuildLabels = new Map([
+              ["full", "release64"], ["full32", "release32"],
+              ["minified", "minified64"], ["beta", "beta64"], ["dev", "dev64"]
+            ]);
+            const knownBuildLabels = new Set([...buildTypeLabels, ...legacyBuildLabels.keys()]);
+
             function detectLabel(body) {
-              const match = (body || "").match(/###\s*🏗️\s*Build Type\s*\n+\s*(.+)/);
+              const match = (body || "").match(/^###[ \t]+(?:🏗\uFE0F?[ \t]*)?Build Type[ \t]*\r?\n(?:[ \t]*\r?\n)*([^\r\n]+)/mi);
               if (!match) return null;
-              const value = match[1].trim();
-              
-              // Les versions 32 bits sont vérifiées en premier pour éviter les faux positifs 
-              if (/^Release32/i.test(value)) return "release32";
-              if (/^Release64/i.test(value)) return "release64";
-              if (/^Minified32/i.test(value)) return "minified32";
-              if (/^Minified64/i.test(value)) return "minified64";
-              if (/^Beta32/i.test(value)) return "beta32";
-              if (/^Beta64/i.test(value)) return "beta64";
-              if (/^Foss/i.test(value)) return "foss";
-              if (/^Dev32/i.test(value)) return "dev32";
-              if (/^Dev64/i.test(value)) return "dev64";
-              
-              return null;
+              const value = match[1].trim().match(/^([a-z0-9]+)(?:[ \t]+\([^()\r\n]*\))?$/i);
+              if (!value) return null;
+              const name = value[1].toLowerCase();
+              return legacyBuildLabels.get(name) || (buildTypeLabels.includes(name) ? name : null);
             }
 
             async function applyLabel(issueNumber, body) {
@@ -47,24 +43,14 @@ jobs:
                 return;
               }
 
-              const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+              const currentLabels = await github.paginate(github.rest.issues.listLabelsOnIssue, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issueNumber,
+                per_page: 100,
               });
 
-              const already = currentLabels.some((l) => l.name === label);
-
-              for (const l of currentLabels) {
-                if (buildTypeLabels.includes(l.name) && l.name !== label) {
-                  await github.rest.issues.removeLabel({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: issueNumber,
-                    name: l.name,
-                  });
-                }
-              }
+              const already = currentLabels.some((l) => l.name.toLowerCase() === label);
 
               if (!already) {
                 await github.rest.issues.addLabels({
@@ -75,11 +61,27 @@ jobs:
                 });
               }
 
+              for (const l of currentLabels) {
+                const name = l.name.toLowerCase();
+                if (knownBuildLabels.has(name) && name !== label) {
+                  try {
+                    await github.rest.issues.removeLabel({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: issueNumber,
+                      name: l.name,
+                    });
+                  } catch (error) {
+                    if (error.status !== 404) throw error;
+                  }
+                }
+              }
+
               console.log(`Issue #${issueNumber}: labeled "${label}".`);
             }
 
             if (context.eventName === "workflow_dispatch") {
-              // Parcourt toutes les issues (ouvertes et fermées)
+              // Include closed issues when backfilling historical forms.
               const issues = await github.paginate(github.rest.issues.listForRepo, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -88,9 +90,9 @@ jobs:
               });
 
               for (const issue of issues) {
-                if (issue.pull_request) continue; // ignore les PR
+                if (issue.pull_request) continue;
                 await applyLabel(issue.number, issue.body);
               }
-            } else {
+            } else if (!context.payload.issue.pull_request) {
               await applyLabel(context.issue.number, context.payload.issue.body);
             }

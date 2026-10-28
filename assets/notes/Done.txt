@@ -1,3 +1,9 @@
+Changed:
+- change(github): align build labels and issue automation with current variants
+  - Rename full/full32/minified/beta/dev to release64/release32/minified64/beta64/dev64 in place on GitHub, preserving label IDs, colors and existing issue assignments.
+  - Recognize historical form values, add canonical labels before cleanup, paginate labels and handle mixed-case names and concurrent removal 404 without hiding other errors.
+  - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
+
 Removed:
 - remove(updater): retire legacy full and full32 release asset compatibility
   - Require release64/release32 APK names for stable release selection and extraction, preserving modern ABI and beta routing.
