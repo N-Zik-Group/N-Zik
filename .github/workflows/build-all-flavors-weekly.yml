@@ -30,10 +30,14 @@ jobs:
       downstream: ${{ steps.downstream.outputs.version }}
       code: ${{ steps.downstream.outputs.code }}
       upstream: ${{ steps.upstream.outputs.version }}
+      sha: ${{ steps.source.outputs.sha }}
     steps:
       - uses: actions/checkout@v7
         with:
           submodules: true
+      - name: Capture canonical source revision
+        id: source
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Get downstream (local) version
         id: downstream
         run: |
@@ -52,6 +56,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ needs.versioning.outputs.sha }}
           submodules: true
 
       - name: Check if version changed
@@ -106,6 +111,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ needs.versioning.outputs.sha }}
           submodules: true
 
       - name: Copy changelogs into res/raw
@@ -117,19 +123,22 @@ jobs:
           java-version: "21"
           distribution: "corretto"
 
-      - name: Restore Gradle dependencies & build cache
+      - name: Restore Gradle dependencies
         uses: actions/cache@v6
         with:
           path: |
-            ~/.gradle/caches
+            ~/.gradle/caches/modules-2
             ~/.gradle/wrapper
-            ./build
-            ./ComposeN-Zik/build
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: gradle-${{ runner.os }}-
+          key: gradle-dependencies-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-dependencies-${{ runner.os }}-
 
       - name: Build with Gradle
-        run: ./gradlew assembleRelease64
+        run: ./gradlew assembleRelease64 --no-build-cache
+
+      - name: Verify APK source revision and native ABIs
+        env:
+          SOURCE_SHA: ${{ needs.versioning.outputs.sha }}
+        run: python3 .github/scripts/verify_release.py apk --sha "$SOURCE_SHA" --variant release64 --directory ComposeN-Zik/build/outputs/apk/release64
 
       - name: Upload artifacts for signing
         uses: actions/upload-artifact@v7
@@ -145,6 +154,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ needs.versioning.outputs.sha }}
           submodules: true
 
       - name: Copy changelogs into res/raw
@@ -156,19 +166,22 @@ jobs:
           java-version: "21"
           distribution: "corretto"
 
-      - name: Restore Gradle dependencies & build cache
+      - name: Restore Gradle dependencies
         uses: actions/cache@v6
         with:
           path: |
-            ~/.gradle/caches
+            ~/.gradle/caches/modules-2
             ~/.gradle/wrapper
-            ./build
-            ./ComposeN-Zik/build
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: gradle-${{ runner.os }}-
+          key: gradle-dependencies-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-dependencies-${{ runner.os }}-
 
       - name: Build with Gradle
-        run: ./gradlew assembleRelease32
+        run: ./gradlew assembleRelease32 --no-build-cache
+
+      - name: Verify APK source revision and native ABIs
+        env:
+          SOURCE_SHA: ${{ needs.versioning.outputs.sha }}
+        run: python3 .github/scripts/verify_release.py apk --sha "$SOURCE_SHA" --variant release32 --directory ComposeN-Zik/build/outputs/apk/release32
 
       - name: Upload artifacts for signing
         uses: actions/upload-artifact@v7
@@ -184,6 +197,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ needs.versioning.outputs.sha }}
           submodules: true
 
       - name: Copy changelogs into res/raw
@@ -195,19 +209,22 @@ jobs:
           java-version: "21"
           distribution: "corretto"
 
-      - name: Restore Gradle dependencies & build cache
+      - name: Restore Gradle dependencies
         uses: actions/cache@v6
         with:
           path: |
-            ~/.gradle/caches
+            ~/.gradle/caches/modules-2
             ~/.gradle/wrapper
-            ./build
-            ./ComposeN-Zik/build
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: gradle-${{ runner.os }}-
+          key: gradle-dependencies-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-dependencies-${{ runner.os }}-
 
       - name: Build with Gradle
-        run: ./gradlew assembleMinified64
+        run: ./gradlew assembleMinified64 --no-build-cache
+
+      - name: Verify APK source revision and native ABIs
+        env:
+          SOURCE_SHA: ${{ needs.versioning.outputs.sha }}
+        run: python3 .github/scripts/verify_release.py apk --sha "$SOURCE_SHA" --variant minified64 --directory ComposeN-Zik/build/outputs/apk/minified64
 
       - name: Upload artifacts for signing
         uses: actions/upload-artifact@v7
@@ -223,6 +240,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ needs.versioning.outputs.sha }}
           submodules: true
 
       - name: Copy changelogs into res/raw
@@ -234,19 +252,22 @@ jobs:
           java-version: "21"
           distribution: "corretto"
 
-      - name: Restore Gradle dependencies & build cache
+      - name: Restore Gradle dependencies
         uses: actions/cache@v6
         with:
           path: |
-            ~/.gradle/caches
+            ~/.gradle/caches/modules-2
             ~/.gradle/wrapper
-            ./build
-            ./ComposeN-Zik/build
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: gradle-${{ runner.os }}-
+          key: gradle-dependencies-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-dependencies-${{ runner.os }}-
 
       - name: Build with Gradle
-        run: ./gradlew assembleMinified32
+        run: ./gradlew assembleMinified32 --no-build-cache
+
+      - name: Verify APK source revision and native ABIs
+        env:
+          SOURCE_SHA: ${{ needs.versioning.outputs.sha }}
+        run: python3 .github/scripts/verify_release.py apk --sha "$SOURCE_SHA" --variant minified32 --directory ComposeN-Zik/build/outputs/apk/minified32
 
       - name: Upload artifacts for signing
         uses: actions/upload-artifact@v7
@@ -262,6 +283,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ needs.versioning.outputs.sha }}
           submodules: true
 
       - name: Copy changelogs into res/raw
@@ -273,19 +295,22 @@ jobs:
           java-version: "21"
           distribution: "corretto"
 
-      - name: Restore Gradle dependencies & build cache
+      - name: Restore Gradle dependencies
         uses: actions/cache@v6
         with:
           path: |
-            ~/.gradle/caches
+            ~/.gradle/caches/modules-2
             ~/.gradle/wrapper
-            ./build
-            ./ComposeN-Zik/build
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: gradle-${{ runner.os }}-
+          key: gradle-dependencies-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-dependencies-${{ runner.os }}-
 
       - name: Build with Gradle
-        run: ./gradlew assembleFoss
+        run: ./gradlew assembleFoss --no-build-cache
+
+      - name: Verify APK source revision and native ABIs
+        env:
+          SOURCE_SHA: ${{ needs.versioning.outputs.sha }}
+        run: python3 .github/scripts/verify_release.py apk --sha "$SOURCE_SHA" --variant foss --directory ComposeN-Zik/build/outputs/apk/foss
 
       - name: Upload artifacts for signing
         uses: actions/upload-artifact@v7
@@ -337,6 +362,15 @@ jobs:
     permissions:
       contents: write  
     steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.versioning.outputs.sha }}
+      - name: Reject an existing release tag at a different revision
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: v${{ needs.versioning.outputs.downstream }}
+          SOURCE_SHA: ${{ needs.versioning.outputs.sha }}
+        run: python3 .github/scripts/verify_release.py tag --repository "$GITHUB_REPOSITORY" --tag "$RELEASE_TAG" --sha "$SOURCE_SHA"
       - name: Download signed APKs
         uses: actions/download-artifact@v8.0.2
         with:
@@ -351,6 +385,7 @@ jobs:
           files: '*.apk'
           name: v${{ needs.versioning.outputs.downstream }}-${{ needs.build_time.outputs.date }} | 🛡️ STABLE Build
           tag_name: v${{ needs.versioning.outputs.downstream }}
+          target_commitish: ${{ needs.versioning.outputs.sha }}
           make_latest: true
           body: |
             ## ✨ What's New in v${{ needs.versioning.outputs.downstream }}

@@ -5,6 +5,11 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(build): prepare reproducible F-Droid releases from pinned source (issue https://github.com/N-Zik-Group/N-Zik/issues/937)
+  - Compile module_loader from its existing C source for all four ABIs using the pinned NDK 28.2.13676358 and CMake 3.22.1; preserve the JNI contract, 16KB alignment and normalized native build paths instead of shipping precompiled helper binaries.
+  - Pin every stable build and publication to one captured Git SHA, cache dependencies only, validate embedded APK revisions and native ABI sets before upload, and reject existing tags pointing at another commit without moving them.
+  - Assemble Debug/FOSS and pass 14 release-validation tests plus four-ABI native builds; verify byte-identical helpers across two source/build directories for all ABIs, retain verified backups and prepare the F-Droid recipe toolchain settings.
+
 - fix(playback): keep crossfade notification identity and stop duplicate outgoing playback (issue https://github.com/N-Zik-Group/N-Zik/issues/921#issuecomment-6477252405; issue https://github.com/N-Zik-Group/N-Zik/issues/756)
   - Publish the incoming track when swapping preloaded players so notification like/download icons and actions follow the audible song; preserve repeat-one transition semantics and live playback settings.
   - Stop the outgoing player at item end and detach pair-owned listeners; prevent cancelled fade cleanup from touching a later handoff and recover volume after transition failures.

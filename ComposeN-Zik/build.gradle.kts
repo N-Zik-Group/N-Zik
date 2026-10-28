@@ -129,6 +129,14 @@ android {
     }
 
     compileSdk = libs.versions.androidCompileSdk.get().toInt()
+    ndkVersion = libs.versions.androidNdk.get()
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/androidMain/jni/CMakeLists.txt")
+            version = libs.versions.androidCmake.get()
+        }
+    }
 
     defaultConfig {
         applicationId = libs.versions.nzikApplicationId.get()
@@ -136,6 +144,10 @@ android {
         targetSdk = libs.versions.androidTargetSdk.get().toInt()
         versionCode = libs.versions.nzikVersionCode.get().toInt()
         versionName = libs.versions.nzikVersionName.get()
+
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+        }
 
         /*
                 UNIVERSAL VARIABLES

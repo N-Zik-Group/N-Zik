@@ -24,6 +24,8 @@ nzikVersionName = "8.5.0"
 androidCompileSdk = "37"
 androidMinSdk = "24"
 androidTargetSdk = "37"
+androidNdk = "28.2.13676358"
+androidCmake = "3.22.1"
 
 
 
