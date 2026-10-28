@@ -4,6 +4,12 @@ Changed:
   - Recognize historical form values, add canonical labels before cleanup, paginate labels and handle mixed-case names and concurrent removal 404 without hiding other errors.
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
+Fixed:
+- fix(navigation): honor animation preferences during predictive back
+  - Wire both main and Settings NavHosts to shared predictive callbacks that delegate to the existing ScreenTransitions pop policy, including disabled animations and current timing/directions.
+  - Verify native-rendered None, Fade and horizontal slide during forward and reverse gesture progress, cancellation and exactly-one-pop commitment; preserve nested Settings and toolbar routing.
+  - Assemble Debug and pass 29 navigation tests; prove the three new visual tests fail against native defaults, complete review, and install the tested 8.5.0-debug APK on the emulator.
+
 Removed:
 - remove(updater): retire legacy full and full32 release asset compatibility
   - Require release64/release32 APK names for stable release selection and extraction, preserving modern ABI and beta routing.

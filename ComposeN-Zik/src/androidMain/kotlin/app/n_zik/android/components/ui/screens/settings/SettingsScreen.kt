@@ -143,6 +143,8 @@ fun SettingsScreen(
             exitTransition = transitions.exitTransition,
             popEnterTransition = transitions.popEnterTransition,
             popExitTransition = transitions.popExitTransition,
+            predictivePopEnterTransition = transitions.predictivePopEnterTransition,
+            predictivePopExitTransition = transitions.predictivePopExitTransition,
         ) {
             composable(route = SETTINGS_GLOBAL_ROUTE) {
                 SettingsGlobalPage(

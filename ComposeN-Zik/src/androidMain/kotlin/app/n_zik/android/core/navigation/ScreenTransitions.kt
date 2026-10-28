@@ -54,4 +54,9 @@ class ScreenTransitions(transitionEffect: TransitionEffect) {
         }
     }
 
+    // Navigation has separate predictive callbacks; keep their edge-independent policy identical.
+    val predictivePopEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.(Int) -> EnterTransition =
+        { popEnterTransition() }
+    val predictivePopExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.(Int) -> ExitTransition =
+        { popExitTransition() }
 }

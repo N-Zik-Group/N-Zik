@@ -306,7 +306,9 @@ fun AppNavigation(
         enterTransition = transitions.enterTransition,
         exitTransition = transitions.exitTransition,
         popEnterTransition = transitions.popEnterTransition,
-        popExitTransition = transitions.popExitTransition
+        popExitTransition = transitions.popExitTransition,
+        predictivePopEnterTransition = transitions.predictivePopEnterTransition,
+        predictivePopExitTransition = transitions.predictivePopExitTransition,
     ) {
         val navigateToPlaylist =
             { browseId: String -> navController.navigateClean("${NavRoutes.playlist.name}/$browseId", context) }
