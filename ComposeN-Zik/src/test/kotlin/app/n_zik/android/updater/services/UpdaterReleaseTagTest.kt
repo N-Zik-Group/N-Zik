@@ -13,18 +13,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.NoSuchFileException
 
-/**
- * Pins the version → release mapping (release tag, asset name, build type
- * label, download URL) for every build flavor under the explicit-64/32
- * naming (spec-ffmpeg-extension-module build-matrix rename), plus the
- * dev/dev32 release selection.
- *
- * Release tags are shared per channel and keep the pre-rename form
- * ("v8.4.0", "v8.4.0-beta", "v8.4.0-dev-20261013") — both the 64-bit and
- * the 32-bit APKs ride on the same release. During the migration window CI
- * also ships the pre-rename assets (full/full32/minified), so the
- * migration-window tests pin both naming schemes.
- */
+/** Pins channel and ABI routing, release asset eligibility, and retained minified compatibility. */
 class UpdaterReleaseTagTest {
 
     @BeforeEach
@@ -286,13 +275,7 @@ class UpdaterReleaseTagTest {
     }
 
     @Test
-    fun `getBuildSuffix maps the pre-rename assets to their post-rename suffix during the migration window`() {
-        Updater.build = build("N-Zik-full.apk")
-        assertEquals("-r64", Updater.getBuildSuffix())
-
-        Updater.build = build("N-Zik-full32.apk")
-        assertEquals("-r32", Updater.getBuildSuffix())
-
+    fun `getBuildSuffix keeps the minified compatibility suffix`() {
         Updater.build = build("N-Zik-minified.apk")
         assertEquals("-m64", Updater.getBuildSuffix())
     }
@@ -365,7 +348,7 @@ class UpdaterReleaseTagTest {
         // Dev releases ship both dev assets under the shared dated tag
         val older = release("v8.4.0-dev-20261012", build("N-Zik-dev64.apk"), build("N-Zik-dev32.apk"))
         val newest = release("v8.4.0-dev-20261013", build("N-Zik-dev64.apk"), build("N-Zik-dev32.apk"))
-        val stable = release("v8.4.0")
+        val stable = release("v8.4.0", build("N-Zik-release64.apk"), build("N-Zik-release32.apk"))
 
         val best = Updater.findBestRelease(
             listOf(stable, newest, older),
@@ -380,7 +363,7 @@ class UpdaterReleaseTagTest {
     fun `findBestRelease picks the newest dev release for a dev32 user`() {
         val older = release("v8.4.0-dev-20261012", build("N-Zik-dev64.apk"), build("N-Zik-dev32.apk"))
         val newest = release("v8.4.0-dev-20261013", build("N-Zik-dev64.apk"), build("N-Zik-dev32.apk"))
-        val stable = release("v8.4.0")
+        val stable = release("v8.4.0", build("N-Zik-release64.apk"), build("N-Zik-release32.apk"))
 
         val best = Updater.findBestRelease(
             listOf(stable, older, newest),
@@ -395,7 +378,7 @@ class UpdaterReleaseTagTest {
     fun `findBestRelease keeps the minified64 user on stable releases only`() {
         // Stable releases ship the minified64 asset
         val stable = release("v8.4.0", build("N-Zik-minified64.apk"))
-        val beta = release("v8.4.0-beta")
+        val beta = release("v8.4.0-beta", build("N-Zik-beta64.apk"), build("N-Zik-beta32.apk"))
         val olderStable = release("v8.3.5", build("N-Zik-minified64.apk"))
 
         val best = Updater.findBestRelease(
@@ -495,8 +478,8 @@ class UpdaterReleaseTagTest {
 
     @Test
     fun `findBestRelease ignores stable and beta releases for a dev user`() {
-        val stable = release("v8.4.0")
-        val beta = release("v8.4.0-beta")
+        val stable = release("v8.4.0", build("N-Zik-release64.apk"), build("N-Zik-release32.apk"))
+        val beta = release("v8.4.0-beta", build("N-Zik-beta64.apk"), build("N-Zik-beta32.apk"))
         val dev = release("v8.3.9-dev-20260101", build("N-Zik-dev64.apk"), build("N-Zik-dev32.apk"))
 
         val best = Updater.findBestRelease(
@@ -543,8 +526,8 @@ class UpdaterReleaseTagTest {
 
     @Test
     fun `findBestRelease does not fall back to stable releases for an unknown flavor`() {
-        val beta = release("v8.5.0-beta")
-        val stable = release("v8.5.0")
+        val beta = release("v8.5.0-beta", build("N-Zik-beta64.apk"), build("N-Zik-beta32.apk"))
+        val stable = release("v8.5.0", build("N-Zik-release64.apk"), build("N-Zik-release32.apk"))
 
         assertNull(
             Updater.findBestRelease(
@@ -556,18 +539,77 @@ class UpdaterReleaseTagTest {
     }
 
     @Test
-    fun `findBestRelease accepts a release shipping only the pre-rename assets for a post-rename user`() {
-        // Migration window: CI ships the dual assets, so a release that only
-        // carries the legacy name must still be installable
-        val legacy = release("v8.4.0", build("N-Zik-full.apk"))
+    fun `findBestRelease rejects releases shipping only full and full32 assets for both ABIs`() {
+        val legacy = release("v8.5.0", build("N-Zik-full.apk"), build("N-Zik-full32.apk"))
 
-        val best = Updater.findBestRelease(
-            listOf(legacy),
-            checkBetaUpdates = false,
-            currentVersion = "8.4.0-r64"
-        )
+        for (abi in listOf("64", "32")) {
+            for (checkBeta in listOf(false, true)) {
+                assertNull(Updater.findBestRelease(listOf(legacy), checkBetaUpdates = checkBeta, currentVersion = "8.4.0-r$abi"))
+            }
+        }
+    }
 
-        assertEquals("v8.4.0", best?.tagName)
+    @Test
+    fun `findBestRelease skips newer legacy-only releases for older compatible modern releases`() {
+        val legacy = release("v8.6.0", build("N-Zik-full.apk"), build("N-Zik-full32.apk"))
+        val modern = release("v8.5.0", build("N-Zik-release64.apk"), build("N-Zik-release32.apk"))
+
+        for (abi in listOf("64", "32")) {
+            val best = Updater.findBestRelease(listOf(legacy, modern), checkBetaUpdates = false, currentVersion = "8.4.0-r$abi")
+            assertEquals(modern, best)
+            assertEquals("N-Zik-release$abi.apk", Updater.extractBuild(requireNotNull(best).builds, currentVersion = "8.4.0-r$abi").name)
+        }
+    }
+
+    @Test
+    fun `beta-disabled release and beta users cannot select legacy-only stable assets`() {
+        val legacy = release("v8.6.0", build("N-Zik-full.apk"), build("N-Zik-full32.apk"))
+        val beta = release("v8.7.0-beta", build("N-Zik-beta64.apk"), build("N-Zik-beta32.apk"))
+        val modern = release("v8.5.0", build("N-Zik-release64.apk"), build("N-Zik-release32.apk"))
+
+        for (abi in listOf("64", "32")) {
+            for (flavor in listOf("r$abi", "beta$abi")) {
+                val version = "8.4.0-$flavor"
+                assertNull(Updater.findBestRelease(listOf(legacy, beta), checkBetaUpdates = false, currentVersion = version))
+                assertThrows(NoSuchFileException::class.java) {
+                    Updater.extractBuild(legacy.builds, checkBetaUpdates = false, currentVersion = version)
+                }
+                val best = Updater.findBestRelease(listOf(legacy, beta, modern), checkBetaUpdates = false, currentVersion = version)
+                assertEquals(modern, best)
+                assertEquals("N-Zik-release$abi.apk", Updater.extractBuild(requireNotNull(best).builds, checkBetaUpdates = false, currentVersion = version).name)
+            }
+        }
+    }
+
+    @Test
+    fun `beta-enabled release and beta users select modern beta assets for their ABI`() {
+        val legacy = release("v8.7.0", build("N-Zik-full.apk"), build("N-Zik-full32.apk"))
+        val beta = release("v8.6.0-beta", build("N-Zik-beta64.apk"), build("N-Zik-beta32.apk"))
+        val modern = release("v8.5.0", build("N-Zik-release64.apk"), build("N-Zik-release32.apk"))
+
+        for (abi in listOf("64", "32")) {
+            for (flavor in listOf("r$abi", "beta$abi")) {
+                val version = "8.4.0-$flavor"
+                val best = Updater.findBestRelease(listOf(legacy, modern, beta), checkBetaUpdates = true, currentVersion = version)
+                assertEquals(beta, best)
+                assertEquals("N-Zik-beta$abi.apk", Updater.extractBuild(requireNotNull(best).builds, checkBetaUpdates = true, currentVersion = version).name)
+            }
+        }
+    }
+
+    @Test
+    fun `minified64 users can still select and extract legacy minified assets`() {
+        val legacy = release("v8.5.0", build("N-Zik-minified.apk"))
+
+        for (checkBeta in listOf(false, true)) {
+            val best = Updater.findBestRelease(listOf(legacy), checkBetaUpdates = checkBeta, currentVersion = "8.4.0-m64")
+            assertEquals(legacy, best)
+            assertEquals("N-Zik-minified.apk", Updater.extractBuild(requireNotNull(best).builds, checkBetaUpdates = checkBeta, currentVersion = "8.4.0-m64").name)
+        }
+        assertNull(Updater.findBestRelease(listOf(legacy), checkBetaUpdates = false, currentVersion = "8.4.0-m32"))
+        assertThrows(NoSuchFileException::class.java) {
+            Updater.extractBuild(legacy.builds, currentVersion = "8.4.0-m32")
+        }
     }
 
     // endregion
@@ -709,20 +751,38 @@ class UpdaterReleaseTagTest {
     }
 
     @Test
-    fun `extractBuild prefers the post-rename asset over the pre-rename one when both ship`() {
-        // Migration window: the dual assets — the new name must win
-        val assets = listOf(build("N-Zik-full.apk"), build("N-Zik-release64.apk"))
+    fun `modern assets win over full and full32 assets in mixed releases for both ABIs`() {
+        val mixed = release(
+            "v8.5.0",
+            build("N-Zik-full.apk"), build("N-Zik-full32.apk"),
+            build("N-Zik-release64.apk"), build("N-Zik-release32.apk")
+        )
 
-        assertEquals("N-Zik-release64.apk", Updater.extractBuild(assets, currentVersion = "8.4.0-r64").name)
+        for (abi in listOf("64", "32")) {
+            val version = "8.4.0-r$abi"
+            assertEquals(mixed, Updater.findBestRelease(listOf(mixed), checkBetaUpdates = false, currentVersion = version))
+            assertEquals("N-Zik-release$abi.apk", Updater.extractBuild(mixed.builds, currentVersion = version).name)
+        }
     }
 
     @Test
-    fun `extractBuild gives post-rename users the pre-rename assets when only those ship`() {
-        // Migration window: a release that only carries the legacy names
+    fun `extractBuild prefers modern minified64 assets over the retained alias`() {
+        val assets = listOf(build("N-Zik-minified.apk"), build("N-Zik-minified64.apk"))
+
+        assertEquals("N-Zik-minified64.apk", Updater.extractBuild(assets, currentVersion = "8.4.0-m64").name)
+    }
+
+    @Test
+    fun `extractBuild rejects full and full32 assets for both release ABIs`() {
         val assets = listOf(build("N-Zik-full.apk"), build("N-Zik-full32.apk"))
 
-        assertEquals("N-Zik-full.apk", Updater.extractBuild(assets, currentVersion = "8.4.0-r64").name)
-        assertEquals("N-Zik-full32.apk", Updater.extractBuild(assets, currentVersion = "8.4.0-r32").name)
+        for (abi in listOf("64", "32")) {
+            for (checkBeta in listOf(false, true)) {
+                assertThrows(NoSuchFileException::class.java) {
+                    Updater.extractBuild(assets, checkBetaUpdates = checkBeta, currentVersion = "8.4.0-r$abi")
+                }
+            }
+        }
     }
 
     // endregion

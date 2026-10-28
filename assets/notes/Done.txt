@@ -1,0 +1,5 @@
+Removed:
+- remove(updater): retire legacy full and full32 release asset compatibility
+  - Require release64/release32 APK names for stable release selection and extraction, preserving modern ABI and beta routing.
+  - Stop publishing full/full32 aliases in the stable workflow while retaining minified compatibility and separate beta/dev workflows.
+  - Verify modern, mixed and legacy-only release cases with 84 passing updater tests; assembleDebug, YAML parsing and alias-script syntax checks pass.

@@ -533,7 +533,7 @@ fun UpdateScreen(navController: NavController) {
                                     )
 
                                     // The beta toggle only makes sense for flavors that can receive
-                                    // beta updates (full/full32/beta/beta32); the minified and dev
+                                    // beta updates (release64/release32/beta64/beta32); the minified and dev
 //
                                     // families never receive beta updates
                                     val showBetaToggle = !Updater.isMinifiedFamily(BuildConfig.VERSION_NAME) &&

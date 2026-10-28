@@ -47,10 +47,7 @@ object UpdaterConstants {
     const val TYPE_DEV64 = "dev64"
     const val TYPE_DEV32 = "dev32"
 
-    // Pre-rename asset-name bases — the migration fallback accepts both naming
-    // schemes while CI ships the dual assets (spec-ffmpeg-extension-module)
-    const val LEGACY_TYPE_RELEASE64 = "full"
-    const val LEGACY_TYPE_RELEASE32 = "full32"
+    // Compatibility alias retained for minified64 release assets
     const val LEGACY_TYPE_MINIFIED64 = "minified"
 
     // Channel names (MajorUpdateConfig, stable↔beta transition warnings)

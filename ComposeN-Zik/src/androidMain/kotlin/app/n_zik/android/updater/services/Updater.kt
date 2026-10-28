@@ -252,8 +252,7 @@ object Updater {
     /**
      * Returns the version-name suffix ("-r64"/"-r32", "-m64"/"-m32",
      * "-beta64"/"-beta32", "-dev64"/"-dev32") for the selected build's APK
-     * asset name. Pre-rename asset names (migration window, CI ships the
-     * dual assets) map to their post-rename suffix.
+     * asset name. The legacy minified asset retains the "-m64" suffix.
      */
     fun getBuildSuffix(): String {
         if (!::build.isInitialized) return UpdaterConstants.SUFFIX_RELEASE64
@@ -267,11 +266,7 @@ object Updater {
             name.contains(UpdaterConstants.TYPE_DEV32, ignoreCase = true) -> UpdaterConstants.SUFFIX_DEV32
             name.contains(UpdaterConstants.TYPE_RELEASE64, ignoreCase = true) -> UpdaterConstants.SUFFIX_RELEASE64
             name.contains(UpdaterConstants.TYPE_RELEASE32, ignoreCase = true) -> UpdaterConstants.SUFFIX_RELEASE32
-            // Migration window: pre-rename asset names (full→r64, full32→r32,
-            // minified→m64)
             name.contains(UpdaterConstants.LEGACY_TYPE_MINIFIED64, ignoreCase = true) -> UpdaterConstants.SUFFIX_MINIFIED64
-            name.contains(UpdaterConstants.LEGACY_TYPE_RELEASE32, ignoreCase = true) -> UpdaterConstants.SUFFIX_RELEASE32
-            name.contains(UpdaterConstants.LEGACY_TYPE_RELEASE64, ignoreCase = true) -> UpdaterConstants.SUFFIX_RELEASE64
             else -> UpdaterConstants.SUFFIX_RELEASE64
         }
     }
@@ -303,10 +298,8 @@ object Updater {
 
     /**
      * The APK build types a user on [currentVersion] can install, in
-     * priority order, given their beta preference. Returns the post-rename
-     * build type names (spec-ffmpeg-extension-module) — the pre-rename
-     * equivalents are appended by [extractBuild]/[findBestRelease] via
-     * [legacyBuildType] for the migration window.
+     * priority order, given their beta preference. The minified64 compatibility
+     * alias is appended by [extractBuild]/[findBestRelease] via [legacyBuildType].
      *
      * Shared by [extractBuild] (asset selection) and [findBestRelease]
      * (releases must ship at least one of these assets). Empty for unknown
@@ -344,21 +337,13 @@ object Updater {
         }
     }
 
-    /**
-     * The pre-rename asset-name base for a post-rename build type
-     * (spec-ffmpeg-extension-module): release64→full, release32→full32,
-     * minified64→minified. All other bases (minified32/beta64/beta32/dev64/
-     * dev32) map to themselves. Used to accept both naming schemes while CI
-     * ships the dual assets.
-     */
+    /** Retains the minified64-to-minified asset alias; other build types map to themselves. */
     private fun legacyBuildType(buildType: String): String = when (buildType) {
-        UpdaterConstants.TYPE_RELEASE64 -> UpdaterConstants.LEGACY_TYPE_RELEASE64
-        UpdaterConstants.TYPE_RELEASE32 -> UpdaterConstants.LEGACY_TYPE_RELEASE32
         UpdaterConstants.TYPE_MINIFIED64 -> UpdaterConstants.LEGACY_TYPE_MINIFIED64
         else -> buildType
     }
 
-    /** The asset-name bases to look for a user: post-rename first, then pre-rename (migration window). */
+    /** Tries current asset names first, then the retained minified64 compatibility alias. */
     private fun candidateBuildTypes(
         currentVersion: String,
         checkBetaUpdates: Boolean
@@ -369,8 +354,8 @@ object Updater {
 
     /**
      * Visible for testing: selects the APK build matching the current flavor
-     * from a release's assets (see `UpdaterReleaseTagTest`). Post-rename asset
-     * names are tried first, then their pre-rename equivalents — the list
+     * from a release's assets (see `UpdaterReleaseTagTest`). Current asset
+     * names are tried first, then the minified64 compatibility alias. The list
      * stays 32-aware, so a 32-bit user is never pointed at a 64-bit APK
      * (un-installable on a 32-bit-only device). Unknown flavors have no
      * matching asset and report "no update".
@@ -390,7 +375,7 @@ object Updater {
             throw NoSuchFileException("")
         }
 
-        // Known flavors: post-rename names, then pre-rename (migration window)
+        // Known flavors: current asset names, then the minified64 compatibility alias
         for (buildType in candidateBuildTypes(currentVersion, checkBetaUpdates)) {
             val fileName = "$appName-$buildType.apk"
             val foundBuild = assets.fastFirstOrNull { it.name == fileName }
@@ -401,7 +386,7 @@ object Updater {
 
         // Known flavors whose targeted assets are missing (e.g. a beta user
         // with beta disabled facing a beta-only release): fall back to the
-        // asset of their own build type — new name, then pre-rename
+        // asset of their own build type, including the minified64 alias
         val base = extractBuildType(currentVersion)
         for (fileName in listOf(base, legacyBuildType(base)).distinct().map { "$appName-$it.apk" }) {
             val fallbackBuild = assets.fastFirstOrNull { it.name == fileName }
@@ -610,10 +595,8 @@ object Updater {
         }
 
         // Assets this user can actually install (empty for unknown flavors,
-        // which the "-unknown" tag gate below keeps out anyway). Both the
-        // post-rename and the pre-rename asset names are accepted during the
-        // migration window when CI ships the dual assets
-        // (spec-ffmpeg-extension-module)
+        // which the "-unknown" tag gate below keeps out anyway), including
+        // the retained minified64 compatibility alias
         val installableAssets = candidateBuildTypes(currentVersion, checkBetaUpdates)
             .map { "${BuildConfig.APP_NAME}-$it.apk" }
 

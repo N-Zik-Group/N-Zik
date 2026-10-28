@@ -341,12 +341,9 @@ jobs:
         uses: actions/download-artifact@v8.0.2
         with:
           name: signed-apks
-      - name: Duplicate assets under legacy names (migration window)
-        # TODO: remove legacy asset name after the migration window
+      - name: Duplicate minified64 asset under its compatibility alias
         run: |
           shopt -s nullglob globstar
-          for apk in **/N-Zik-release64.apk; do cp "$apk" "${apk/N-Zik-release64/N-Zik-full}"; done
-          for apk in **/N-Zik-release32.apk; do cp "$apk" "${apk/N-Zik-release32/N-Zik-full32}"; done
           for apk in **/N-Zik-minified64.apk; do cp "$apk" "${apk/N-Zik-minified64/N-Zik-minified}"; done
       - name: Upload built APK to release
         uses: softprops/action-gh-release@v3
