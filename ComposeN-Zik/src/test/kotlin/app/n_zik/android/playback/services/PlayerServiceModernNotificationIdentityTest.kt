@@ -3,6 +3,7 @@ package app.n_zik.android.playback.services
 import android.app.Application
 import android.net.Uri
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.offline.Download
@@ -41,6 +42,8 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -193,6 +196,135 @@ class PlayerServiceModernNotificationIdentityTest {
             published.last().map { it.sessionCommand?.customAction }.toSet())
         assertEquals(R.drawable.repeat, icon(published.last(), NotificationButtons.Repeat))
         assertEquals(R.drawable.shuffle, icon(published.last(), NotificationButtons.Shuffle))
+    }
+
+    @Test
+    fun `real crossfade handoff publishes incoming notification identity and preserves playback settings`() {
+        transition("A")
+        row("A", 42L)
+        download("A", Download.STATE_COMPLETED)
+        val (outgoing, incoming) = prepareHandoff("B")
+
+        invoke("startCrossfade")
+        scheduler.runCurrent()
+
+        assertSame(incoming, service.player)
+        assertEquals("B", service.currentMediaItem.value?.mediaId)
+        assertIcons(R.drawable.heart_outline, R.drawable.download)
+        verify { service.onMediaItemTransition(match { it?.mediaId == "B" }, Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) }
+        verify { outgoing.pauseAtEndOfMediaItems = true }
+        verify { outgoing.repeatMode = Player.REPEAT_MODE_OFF }
+        verify { incoming.playbackParameters = PlaybackParameters(1.5f) }
+        verify { incoming.skipSilenceEnabled = true }
+        // Refresh settings at handoff as well as preload.
+        verify { incoming.repeatMode = Player.REPEAT_MODE_ALL }
+        verify { incoming.shuffleModeEnabled = true }
+        assertTrue(field("isCrossfading").getBoolean(service))
+    }
+
+    @Test
+    fun `incoming resume cannot restart outgoing after end of item`() {
+        val outgoingListeners = mutableListOf<Player.Listener>()
+        val incomingListeners = mutableListOf<Player.Listener>()
+        val (outgoing, _) = prepareHandoff("B", outgoingListeners, incomingListeners)
+        invoke("startCrossfade")
+        outgoingListeners.last().onPlayWhenReadyChanged(false, Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM)
+        // Simulates buffering and a subsequent resume of the incoming track.
+        incomingListeners.first().onIsPlayingChanged(false)
+        incomingListeners.first().onIsPlayingChanged(true)
+        verify(exactly = 0) { outgoing.play() }
+        verify(atLeast = 1) { outgoing.pause() }
+    }
+
+    @Test
+    fun `completed fade explicitly detaches both pair listeners and releases only outgoing`() {
+        val outgoingListeners = mutableListOf<Player.Listener>()
+        val incomingListeners = mutableListOf<Player.Listener>()
+        val (outgoing, incoming) = prepareHandoff("B", outgoingListeners, incomingListeners)
+        invoke("startCrossfade")
+        scheduler.advanceTimeBy(3001)
+        scheduler.runCurrent()
+        verify(exactly = 1) { outgoing.release() }
+        verify(exactly = 0) { incoming.release() }
+        verify { incoming.removeListener(incomingListeners.first()) }
+        verify { outgoing.removeListener(outgoingListeners.last()) }
+        assertFalse(field("isCrossfading").getBoolean(service))
+    }
+
+    @Test
+    fun `cancelled job cannot clean up replacement fade or mutate replacement players`() {
+        val (a, b) = prepareHandoff("B")
+        invoke("startCrossfade")
+        scheduler.runCurrent() // Ensure the first fade entered try-finally before cancellation.
+        invoke("cancelCrossfadeAndReset")
+        val (_, c) = prepareHandoff("C", outgoing = b)
+        invoke("startCrossfade")
+        scheduler.runCurrent() // Runs the cancelled first job's finally after the second swap.
+        assertSame(c, service.player)
+        assertTrue(field("isCrossfading").getBoolean(service))
+        verify(exactly = 1) { a.release() }
+        verify(exactly = 0) { b.release() }
+        verify(exactly = 0) { c.release() }
+        scheduler.advanceTimeBy(3001)
+        scheduler.runCurrent()
+        verify(exactly = 1) { b.release() }
+        verify(exactly = 0) { c.release() }
+    }
+
+    @Test
+    fun `repeat-one handoff publishes repeat reason so radio does not append another track`() {
+        val (outgoing, _) = prepareHandoff("A")
+        every { outgoing.repeatMode } returns Player.REPEAT_MODE_ONE
+        invoke("startCrossfade")
+        verify { service.onMediaItemTransition(match { it?.mediaId == "A" }, Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) }
+        verify(exactly = 0) { service.onMediaItemTransition(any(), Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) }
+    }
+
+    @Test
+    fun `throwing transition restores incoming volume clears guard and cleans up outgoing`() {
+        val (outgoing, incoming) = prepareHandoff("B")
+        every { service.onMediaItemTransition(any(), any()) } throws IllegalStateException("transition side effect failed")
+        invoke("startCrossfade")
+        scheduler.runCurrent()
+        assertSame(incoming, service.player)
+        assertFalse(field("isInternalCrossfadeSeek").getBoolean(service))
+        assertFalse(field("isCrossfading").getBoolean(service))
+        verify { incoming.volume = 0.8f }
+        verify(exactly = 1) { outgoing.release() }
+        verify(exactly = 0) { incoming.release() }
+    }
+
+    private fun prepareHandoff(
+        id: String,
+        outgoingListeners: MutableList<Player.Listener> = mutableListOf(),
+        incomingListeners: MutableList<Player.Listener> = mutableListOf(),
+        outgoing: ExoPlayer = fadePlayer("A", outgoingListeners),
+    ): Pair<ExoPlayer, ExoPlayer> {
+        val incoming = fadePlayer(id, incomingListeners)
+        service.player = outgoing
+        field("secondaryPlayer").set(service, incoming)
+        // Keep the real handoff and shared identity/button publication. The remaining transition
+        // work needs the running service's DB, radio, download cache and artwork infrastructure.
+        every { service.onMediaItemTransition(any(), any()) } answers {
+            PlayerServiceModern::class.java.getDeclaredMethod("publishCurrentMediaItem", MediaItem::class.java)
+                .apply { isAccessible = true }.invoke(service, firstArg<MediaItem?>())
+            Unit
+        }
+        val session = field("mediaSession").get(service) as MediaLibrarySession
+        every { session.player = any() } just Runs
+        return outgoing to incoming
+    }
+
+    private fun fadePlayer(id: String, listeners: MutableList<Player.Listener>) = mockk<ExoPlayer>(relaxed = true) {
+        every { currentMediaItem } returns item(id)
+        every { volume } returns 0.8f
+        every { playWhenReady } returns true
+        every { repeatMode } returns Player.REPEAT_MODE_ALL
+        every { shuffleModeEnabled } returns true
+        every { playbackParameters } returns PlaybackParameters(1.5f)
+        every { skipSilenceEnabled } returns true
+        every { playbackState } returns Player.STATE_READY
+        every { addListener(any()) } answers { listeners += firstArg<Player.Listener>(); Unit }
     }
 
     private fun transition(id: String) {

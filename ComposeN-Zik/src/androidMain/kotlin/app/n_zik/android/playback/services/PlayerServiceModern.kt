@@ -17,6 +17,7 @@ import app.kreate.android.me.knighthat.sync.YouTubeSync
 import app.n_zik.android.MainApplication
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.coroutines.runPeriodically
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.delay
 
@@ -1102,6 +1103,7 @@ class PlayerServiceModern : MediaLibraryService(),
     @UnstableApi
     override fun onDestroy() {
         isRunning = false
+        cancelCrossfadeAndReset()
         runCatching {
             /**
              * Discord presence cleanup
@@ -1243,6 +1245,11 @@ class PlayerServiceModern : MediaLibraryService(),
     override fun onAudioVolumeDirectionChanged(direction: Int) {
     }
 
+    private fun publishCurrentMediaItem(mediaItem: MediaItem?) {
+        currentMediaItem.update { mediaItem }
+        updateDownloadedState()
+    }
+
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         // P16 (2026-10-23): refresh the main-thread locality snapshot read by the load gate.
         currentMediaIsLocal = mediaItem?.isLocal == true
@@ -1280,8 +1287,7 @@ class PlayerServiceModern : MediaLibraryService(),
             Toaster.w(R.string.stream_unexpected_skip)
         }
 
-        currentMediaItem.update { mediaItem }
-        updateDownloadedState()
+        publishCurrentMediaItem(mediaItem)
 
         // Immediately persist the full MediaItem metadata to the DB.
         // This seeds the Song row with real data (title, artist, thumbnail)
@@ -2963,6 +2969,12 @@ class PlayerServiceModern : MediaLibraryService(),
     private var crossfadeJob: Job? = null
     private var crossfadeTriggerJob: Job? = null
     private var fadingPlayer: ExoPlayer? = null
+    private class CrossfadeHandoff(val incoming: ExoPlayer, val outgoing: ExoPlayer) {
+        var outgoingEnded = false
+        lateinit var syncListener: Player.Listener
+        lateinit var endListener: Player.Listener
+    }
+    private var activeCrossfade: CrossfadeHandoff? = null
     private var secondaryPlayer: ExoPlayer? = null
     private var isInternalCrossfadeSeek = false
 
@@ -2982,6 +2994,7 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     private fun scheduleCrossfade() {
+        if (isCrossfading) return
         crossfadeTriggerJob?.cancel()
         crossfadeTriggerJob = null
         
@@ -3167,6 +3180,8 @@ class PlayerServiceModern : MediaLibraryService(),
         secPlayer.volume = 0f
         secPlayer.repeatMode = player.repeatMode
         secPlayer.shuffleModeEnabled = player.shuffleModeEnabled
+        secPlayer.playbackParameters = player.playbackParameters
+        secPlayer.skipSilenceEnabled = player.skipSilenceEnabled
 
         secPlayer.prepare()
         secPlayer.playWhenReady = false
@@ -3185,32 +3200,44 @@ class PlayerServiceModern : MediaLibraryService(),
         
         // Setup the swap
         val currentPlayer = player
+        val handoff = CrossfadeHandoff(nextPlayer, currentPlayer)
+        activeCrossfade = handoff
+        // Read current settings at handoff: they may have changed after preloading.
+        val repeatMode = currentPlayer.repeatMode
+        nextPlayer.repeatMode = repeatMode
+        nextPlayer.shuffleModeEnabled = currentPlayer.shuffleModeEnabled
+        currentPlayer.removeListener(this)
+        currentPlayer.removeListener(playbackDiagnosticsListener)
+        // The outgoing track must never advance into the already-playing incoming track.
+        currentPlayer.pauseAtEndOfMediaItems = true
+        currentPlayer.repeatMode = Player.REPEAT_MODE_OFF
+        nextPlayer.playbackParameters = currentPlayer.playbackParameters
+        nextPlayer.skipSilenceEnabled = currentPlayer.skipSilenceEnabled
         fadingPlayer = currentPlayer
         player = nextPlayer
         playerUpdateTrigger.value++
         secondaryPlayer = null
         
-        // Unregister listeners from the old player
-        fadingPlayer?.removeListener(this)
-        // Issue #881 (gh-881): diagnostics follow the PRIMARY player across the swap
-        fadingPlayer?.removeListener(playbackDiagnosticsListener)
-
-        // Sync play/pause state between new and fading player
-        player.addListener(
-            object : Player.Listener {
-                override fun onIsPlayingChanged(isPlaying: Boolean) {
-                    if (isCrossfading && fadingPlayer != null) {
-                        if (isPlaying) {
-                            fadingPlayer?.play()
-                        } else {
-                            fadingPlayer?.pause()
-                        }
-                    } else {
-                        player.removeListener(this)
-                    }
+        // Keep listeners tied to this pair; later handoffs must never inherit them.
+        handoff.endListener = object : Player.Listener {
+            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                if (reason == Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM) {
+                    handoff.outgoingEnded = true
                 }
             }
-        )
+        }
+        currentPlayer.addListener(handoff.endListener)
+        handoff.syncListener = object : Player.Listener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                if (activeCrossfade !== handoff) return
+                if (isPlaying && !handoff.outgoingEnded && currentPlayer.playbackState != Player.STATE_ENDED) {
+                    currentPlayer.play()
+                } else {
+                    currentPlayer.pause()
+                }
+            }
+        }
+        nextPlayer.addListener(handoff.syncListener)
 
         // Register listeners to the new primary player
         nextPlayer.removeListener(secondaryPlayerListener)
@@ -3245,68 +3272,89 @@ class PlayerServiceModern : MediaLibraryService(),
         )
 
         nextPlayer.volume = 0f
-        nextPlayer.playWhenReady = fadingPlayer?.playWhenReady ?: false
-        
-        // Swap complete, allow listener callbacks again
-        isInternalCrossfadeSeek = false
+        nextPlayer.playWhenReady = currentPlayer.playWhenReady
+        // Preparation happened before the primary listener was attached. Publish the same
+        // transition as normal playback, including repeat-one's radio suppression.
+        try {
+            val reason = if (repeatMode == Player.REPEAT_MODE_ONE) {
+                Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT
+            } else {
+                Player.MEDIA_ITEM_TRANSITION_REASON_AUTO
+            }
+            onMediaItemTransition(nextPlayer.currentMediaItem, reason)
+        } catch (e: Exception) {
+            Timber.tag("PlayerServiceModern").e(e, "Failed to publish crossfade transition")
+            if (activeCrossfade === handoff) {
+                try {
+                    if (player === nextPlayer) nextPlayer.volume = startVolume
+                } finally {
+                    cleanupCrossfade()
+                }
+            }
+            return
+        } finally {
+            isInternalCrossfadeSeek = false
+        }
 
         crossfadeJob = coroutineScope.launch(NzikDispatchers.UI) {
+            var completed = false
             try {
                 val steps = 50
-                val durationMs = crossfadeDuration.toLong()
-                val stepTime = durationMs / steps
-
+                val stepTime = crossfadeDuration.toLong() / steps
                 for (i in 1..steps) {
-                    if (!coroutineScope.isActive) break
-                    while (!player.playWhenReady && coroutineScope.isActive) {
-                        delay(100)
-                    }
-
+                    while (!nextPlayer.playWhenReady) delay(100)
                     val progress = i / steps.toFloat()
-                    val fadeIn = kotlin.math.sqrt(progress)
-                    val fadeOut = kotlin.math.sqrt(1.0f - progress)
-
-                    try {
-                        player.volume = startVolume * fadeIn // Next song fades in
-                        fadingPlayer?.volume = startVolume * fadeOut // Current song fades out
-                    } catch (e: Exception) {
-                        break
-                    }
+                    nextPlayer.volume = startVolume * kotlin.math.sqrt(progress)
+                    currentPlayer.volume = startVolume * kotlin.math.sqrt(1.0f - progress)
                     delay(stepTime)
                 }
-
-                // Crossfade finished!
-                player.volume = startVolume
-                fadingPlayer?.volume = 0f
-                
+                nextPlayer.volume = startVolume
+                currentPlayer.volume = 0f
+                completed = true
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Timber.tag("PlayerServiceModern").e(e, "Error during crossfade")
             } finally {
-                cleanupCrossfade()
+                // Cancellation can finish after a new pair has started. Only its owner cleans up.
+                if (activeCrossfade === handoff) {
+                    try {
+                        if (!completed && player === nextPlayer) nextPlayer.volume = startVolume
+                    } finally {
+                        cleanupCrossfade()
+                        crossfadeJob = null
+                    }
+                    if (completed) scheduleCrossfade()
+                }
             }
         }
     }
 
     private fun cancelCrossfadeAndReset() {
-        if (isCrossfading || crossfadeTriggerJob != null) {
-            crossfadeJob?.cancel()
-            crossfadeJob = null
-            crossfadeTriggerJob?.cancel()
-            crossfadeTriggerJob = null
-            player.volume = preferences.getFloat(playbackVolumeKey, 1f)
-            cleanupCrossfade()
-        }
+        crossfadeJob?.cancel()
+        crossfadeJob = null
+        crossfadeTriggerJob?.cancel()
+        crossfadeTriggerJob = null
+        if (isCrossfading) player.volume = preferences.getFloat(playbackVolumeKey, 1f)
+        cleanupCrossfade()
     }
 
     private fun cleanupCrossfade() {
-        fadingPlayer?.stop()
-        fadingPlayer?.release()
+        val handoff = activeCrossfade
+        activeCrossfade = null
+        if (handoff != null) {
+            handoff.incoming.removeListener(handoff.syncListener)
+            handoff.outgoing.removeListener(handoff.endListener)
+            handoff.outgoing.stop()
+            handoff.outgoing.release()
+        }
         fadingPlayer = null
-        
-        secondaryPlayer?.stop()
-        secondaryPlayer?.release()
+        secondaryPlayer?.let {
+            it.removeListener(secondaryPlayerListener)
+            it.stop()
+            it.release()
+        }
         secondaryPlayer = null
-        
         isCrossfading = false
     }
     // --- End Crossfade Logic ---

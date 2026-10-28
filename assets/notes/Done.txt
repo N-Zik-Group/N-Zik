@@ -5,6 +5,11 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(playback): keep crossfade notification identity and stop duplicate outgoing playback (issue https://github.com/N-Zik-Group/N-Zik/issues/921#issuecomment-6477252405; issue https://github.com/N-Zik-Group/N-Zik/issues/756)
+  - Publish the incoming track when swapping preloaded players so notification like/download icons and actions follow the audible song; preserve repeat-one transition semantics and live playback settings.
+  - Stop the outgoing player at item end and detach pair-owned listeners; prevent cancelled fade cleanup from touching a later handoff and recover volume after transition failures.
+  - Assemble Debug, pass 12 focused notification/crossfade tests and independent review, then install the APK on emulator-5554 for human audio validation; retain shuffle-permutation parity as a separate pre-existing follow-up.
+
 - fix(navigation): honor animation preferences during predictive back
   - Wire both main and Settings NavHosts to shared predictive callbacks that delegate to the existing ScreenTransitions pop policy, including disabled animations and current timing/directions.
   - Verify native-rendered None, Fade and horizontal slide during forward and reverse gesture progress, cancellation and exactly-one-pop commitment; preserve nested Settings and toolbar routing.
