@@ -21,7 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
+import app.n_zik.android.components.glass.PageButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,7 +42,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.navigation.Skeleton
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
@@ -58,12 +59,7 @@ import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
-/**
- * "PC server" page, the "Manage server" screen: the connected PC (Disconnect), status of the
- * local PC bridge with its real address and a start/stop button, the battery optimization
- * warning, the "Pair a PC" card, the auto-stop settings and the paired devices. Same page
- * structure as the Listen Together screen (Skeleton scaffold, page header, settings-style card).
- */
+/** Manages the PC bridge, pairing and connected devices. */
 @Composable
 fun BridgeServerScreen(
     navController: NavController,
@@ -118,6 +114,7 @@ fun BridgeServerScreen(
 
     Skeleton(
         navController = navController,
+        topInsetHandledByContent = true,
         miniPlayer = miniPlayer,
         navBarContent = { item ->
             item(0, stringResource(R.string.bridge_server), R.drawable.devices)
@@ -126,7 +123,7 @@ fun BridgeServerScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = bottomContentSpacer),
+                contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = bottomContentSpacer)),
             ) {
                 item(key = "header", contentType = "header") {
                     HeaderWithIcon(

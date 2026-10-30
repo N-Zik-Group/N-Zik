@@ -1,6 +1,5 @@
 package app.n_zik.android.components.onboarding
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.utils.conditional
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.components.ui.iconBadgeBackground
+import app.n_zik.android.components.settings.common.SettingsCardSurface
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
@@ -89,11 +88,13 @@ fun OnboardingActionCard(
     action: (@Composable () -> Unit)? = null,
     extraContent: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth(),
+    SettingsCardSurface(
+        modifier = modifier.fillMaxWidth(),
         shape = uiRoundnessShape(),
-        colors = CardDefaults.cardColors(containerColor = colorPalette().background1)
+        containerColor = colorPalette().background1,
+        backgroundColor = colorPalette().background0,
+        shadowColor = Color.Transparent,
+        shadowElevation = 0.dp,
     ) {
         Column(
             modifier = Modifier
@@ -126,11 +127,13 @@ fun OnboardingActionCard(
 /** Titled variant for the one-line section headers ("Permissions" card): same overflow treatment as the card title. */
 @Composable
 fun OnboardingSectionCard(title: String, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth(),
+    SettingsCardSurface(
+        modifier = modifier.fillMaxWidth(),
         shape = uiRoundnessShape(),
-        colors = CardDefaults.cardColors(containerColor = colorPalette().background1)
+        containerColor = colorPalette().background1,
+        backgroundColor = colorPalette().background0,
+        shadowColor = Color.Transparent,
+        shadowElevation = 0.dp,
     ) {
         Row(
             modifier = Modifier
@@ -149,7 +152,7 @@ private fun OnboardingCardIcon(icon: Int) {
     Box(
         modifier = Modifier
             .size(44.dp)
-            .background(colorPalette().accent.copy(alpha = 0.1f), shape = uiRoundnessShape()),
+            .iconBadgeBackground(colorPalette().accent.copy(alpha = 0.1f), shape = uiRoundnessShape()),
         contentAlignment = Alignment.Center
     ) {
         Icon(

@@ -13,7 +13,6 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,13 +26,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -59,7 +54,6 @@ import app.it.fast4x.rimusic.utils.isIgnoringBatteryOptimizations
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
-import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.DataStoreUtils
 import timber.log.Timber
 
@@ -67,7 +61,7 @@ import timber.log.Timber
  * First-launch onboarding screen (RiPlay port): app icon, greeting, one card per
  * optional permission and an un-gated start button.
  *
- * Every permission stays optional — the start button only advances the flow, it never
+ * Every permission stays optional â€” the start button only advances the flow, it never
  * checks the statuses (spec: onboarding + username choice). Card states refresh on
  * launcher results and on `ON_RESUME` (system settings are a common detour).
  */
@@ -82,7 +76,7 @@ fun OnboardingScreen(
     // System dialogs the user has already seen, so a denial without a remaining
     // rationale maps to PERMANENTLY_DENIED (feed for [permissionStatus]).
 //
-    // Persisted (comma-joined names) so the mapping survives activity recreation —
+    // Persisted (comma-joined names) so the mapping survives activity recreation â€”
     // a rotation right after a denial must keep the "Settings" path, not degrade
 //
     // to a re-askable "Grant".
@@ -307,7 +301,7 @@ fun OnboardingScreen(
             // the final text never lands on the system nav buttons
             .statusBarsPadding()
             // Small screens / enlarged fonts: the card list and the fixed header can
-            // exceed the viewport — the whole step scrolls instead of clipping
+            // exceed the viewport â€” the whole step scrolls instead of clipping
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -338,7 +332,7 @@ fun OnboardingScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Plain Column: five cards at most, no recycling needed — and the screen
+        // Plain Column: five cards at most, no recycling needed â€” and the screen
         // column scrolls, so a nested lazy list would fight it for the gesture
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             cards.forEach { card ->
@@ -357,13 +351,8 @@ fun OnboardingScreen(
 
         // The CTA is the last child: it re-applies the nav inset the column dropped, so
         // the final text stays clear of the system nav buttons
-        Button(
+        OnboardingPrimaryButton(
             onClick = { onComplete() },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colorPalette().accent,
-                contentColor = colorPalette().textSecondary
-            ),
-            shape = uiRoundnessShape(),
             modifier = Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
@@ -392,24 +381,14 @@ private fun OnboardingActionButton(status: PermissionStatus, onClick: () -> Unit
             modifier = Modifier.size(28.dp)
         )
 
-        PermissionStatus.NOT_REQUESTED, PermissionStatus.DENIED -> OutlinedButton(
+        PermissionStatus.NOT_REQUESTED, PermissionStatus.DENIED -> OnboardingSecondaryButton(
             onClick = onClick,
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = colorPalette().text
-            ),
-            border = BorderStroke(
-                1.dp,
-                colorPalette().textSecondary
-            )
+            outlined = true,
         ) {
-            // Bounded label: never pushes the card off-screen on small screens / large fonts
             OnboardingActionLabel(stringResource(R.string.onboard_permission_grant))
         }
 
-        PermissionStatus.PERMANENTLY_DENIED -> TextButton(
-            onClick = onClick,
-            colors = ButtonDefaults.buttonColors(contentColor = colorPalette().text)
-        ) {
+        PermissionStatus.PERMANENTLY_DENIED -> OnboardingSecondaryButton(onClick = onClick) {
             OnboardingActionLabel(stringResource(R.string.onboard_permission_settings))
         }
     }

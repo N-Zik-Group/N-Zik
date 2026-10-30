@@ -19,10 +19,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
@@ -62,6 +60,8 @@ import app.it.fast4x.rimusic.utils.saveProfileDisplayName
 import app.it.fast4x.rimusic.utils.takenProfileNames
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.ui.screens.profiles.ProfileAvatarFrame
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.components.ui.screens.profiles.AccountLoginState
@@ -88,15 +88,15 @@ import timber.log.Timber
 
 /** First-composition behavior of the profile step, as a pure mapping (unit-tested in [OnboardingProfileStepActionTest]). */
 enum class OnboardingProfileStepAction {
-    /** Show the step as usual — the import restored no profile and the base has no custom name. */
+    /** Show the step as usual â€” the import restored no profile and the base has no custom name. */
     SHOW,
 
-    /** Auto-advance — the import settled the clone's identity (restored profiles and/or base name). */
+    /** Auto-advance â€” the import settled the clone's identity (restored profiles and/or base name). */
     AUTO_ADVANCE
 }
 
 /**
- * Profiles restored by the import step (a non-empty profile list — the state file
+ * Profiles restored by the import step (a non-empty profile list â€” the state file
  * carries it), or a custom base name already stored (restored by the import), mean
  * the clone's identity is settled by the import: the step advances on its own, the
  * restored names and face sources are kept as-is, never silently overwritten (the
@@ -111,7 +111,7 @@ fun profileStepInitialAction(
     else OnboardingProfileStepAction.SHOW
 
 /**
- * Last step of the first-launch onboarding flow: the identity of the base clone —
+ * Last step of the first-launch onboarding flow: the identity of the base clone â€”
  * its name, the source of the face name shown in the app, its photo and the source
  * of the face avatar (a full mirror of the face card of the settings). The accounts
  * step comes before this one, so the account face sources are already unlocked by a
@@ -120,7 +120,7 @@ fun profileStepInitialAction(
  * The step writes only into the profile store: the base display name
  * (`profile_preferences.displayName_default`), the face name source
  * (`preferences.faceNameSource`), the face avatar source
- * (`preferences.faceAvatarSource`, plain prefs — the active profile is the base during
+ * (`preferences.faceAvatarSource`, plain prefs â€” the active profile is the base during
  * onboarding) and the photo file (`profiles/default/avatar.jpg`, the same helpers as
  * the face card). The no-op rule of the rename flows applies: a name identical to the
  * resolved base name stores nothing; a face source is only written when it differs
@@ -128,14 +128,14 @@ fun profileStepInitialAction(
  *
  * The face sources are the same four as the settings face card (same labels and
  * icons); an account source is locked while that account is not logged in (the state
- * is a one-shot read on the DATA dispatcher — the secure prefs are keystore-backed,
+ * is a one-shot read on the DATA dispatcher â€” the secure prefs are keystore-backed,
  * never built in composition). The face preview applies the same pure resolvers as
  * the face chain to the state as typed.
  *
  * Auto-skip: when the import step settled the identity (restored profiles or a custom
  * base name), the step advances on its own ([profileStepInitialAction]).
  *
- * @param onComplete Continue pressed (or the auto-skip fired) — the flow completes
+ * @param onComplete Continue pressed (or the auto-skip fired) â€” the flow completes
  *   (this is the last step).
  */
 @Composable
@@ -147,7 +147,7 @@ fun OnboardingProfileScreen(
     val app = context.applicationContext
     val defaultName = stringResource(R.string.profile_base_name)
 
-    // The resolved base name: the field prefill and the no-op guard — a name
+    // The resolved base name: the field prefill and the no-op guard â€” a name
     // identical to the resolved name is not stored as a custom name (the resolved
 //
     // name of the base comes from profile_base_name, never from the store)
@@ -167,7 +167,7 @@ fun OnboardingProfileScreen(
     var photoVersion by rememberSaveable { mutableStateOf(0) }
 
     // The account login state + the captured account names / avatars drive the
-    // source locks and the face preview (one-shot read — the accounts step comes
+    // source locks and the face preview (one-shot read â€” the accounts step comes
 //
     // before this one, so a login made there is already reflected). Off the main
     // thread: the secure prefs are keystore-backed, never built in composition.
@@ -184,12 +184,12 @@ fun OnboardingProfileScreen(
         }
     }
 
-    // The base clone's photo file — re-read only when a pick/delete happened
+    // The base clone's photo file â€” re-read only when a pick/delete happened
     // (the same guarded remember as the settings face card)
     val profilePhoto = remember(photoVersion) { app.profileAvatarSource(DEFAULT_PROFILE_ID) }
 
     // The face preview: the pure resolvers (the same ones the face chain uses)
-    // applied to the state AS TYPED — the name is not stored until continue, and
+    // applied to the state AS TYPED â€” the name is not stored until continue, and
 //
     // the photo only exists on disk once picked. Until the account state loads,
     // the face renders the deterministic initials of the typed name (the face
@@ -224,7 +224,7 @@ fun OnboardingProfileScreen(
     // The import settling the identity (restored profiles or a custom base name)
     // skips the step; the restored names, sources and photos are kept as-is,
 //
-    // never silently overwritten — the base without a custom name keeps the
+    // never silently overwritten â€” the base without a custom name keeps the
     // default.
     val baseHasCustomName = remember { app.profileDisplayName(DEFAULT_PROFILE_ID)?.isNotBlank() == true }
     val importedProfilesPresent = remember { app.readProfileIds().isNotEmpty() }
@@ -307,7 +307,7 @@ fun OnboardingProfileScreen(
             // Small screens / enlarged fonts: header + the card (preview + name
             // field + the two source selectors + the photo + the button) can
 //
-            // exceed the viewport — the whole step scrolls instead of clipping
+            // exceed the viewport â€” the whole step scrolls instead of clipping
 //
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
@@ -352,7 +352,7 @@ fun OnboardingProfileScreen(
             modifier = Modifier.navigationBarsPadding(),
             extraContent = {
                 // Face preview: the resolved face as it will be saved on
-                // continue — the same treatment as the settings face card
+                // continue â€” the same treatment as the settings face card
 //
                 // (avatar + "Shown as" + name)
                 Row(
@@ -361,11 +361,13 @@ fun OnboardingProfileScreen(
                         .padding(top = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    ProfileFaceAvatar(
-                        avatar = previewFace.avatar,
-                        faceName = previewFace.name,
-                        size = 48.dp
-                    )
+                    ProfileAvatarFrame(size = 48.dp, area = GlassArea.SettingsCards) {
+                        ProfileFaceAvatar(
+                            avatar = previewFace.avatar,
+                            faceName = previewFace.name,
+                            size = 48.dp
+                        )
+                    }
 
                     Spacer(modifier = Modifier.width(12.dp))
 
@@ -475,7 +477,7 @@ fun OnboardingProfileScreen(
                 }
 
                 // The base clone's photo: pick from the gallery (the same helper
-                // as the settings face card) or remove it — the face preview
+                // as the settings face card) or remove it â€” the face preview
 //
                 // follows live
                 Row(
@@ -518,9 +520,9 @@ fun OnboardingProfileScreen(
 
                     if (profilePhoto != null) {
                         Spacer(modifier = Modifier.width(8.dp))
-                        IconButton(
+                        OnboardingPhotoRemoveButton(
                             onClick = {
-                                // File IO off the main thread — the photo file is
+                                // File IO off the main thread â€” the photo file is
                                 // removed alone (never the whole profile files
 //
                                 // dir), then the preview re-resolves
@@ -543,15 +545,10 @@ fun OnboardingProfileScreen(
                     }
                 }
 
-                Button(
+                OnboardingPrimaryButton(
                     onClick = {
                         finishProfile()
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorPalette().accent,
-                        contentColor = colorPalette().textSecondary
-                    ),
-                    shape = uiRoundnessShape(),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
@@ -569,7 +566,7 @@ fun OnboardingProfileScreen(
     }
 }
 
-/** The four face sources, in selector order — the name source and the avatar
+/** The four face sources, in selector order â€” the name source and the avatar
  * source share the same options, labels and icons as the settings face card. */
 private val faceSources = listOf(
     FACE_SOURCE_PROFILE,
@@ -581,7 +578,7 @@ private val faceSources = listOf(
 /**
  * One row of the face-source selectors (the name source and the avatar source
  * render the same rows; an account source is locked while that account is not
- * logged in, faded and unclickable — the same rule as the settings face card).
+ * logged in, faded and unclickable â€” the same rule as the settings face card).
  */
 @Composable
 private fun FaceSourceOptionRow(

@@ -5,11 +5,14 @@ import android.content.Context
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -21,7 +24,13 @@ import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.n_zik.android.R
+import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.components.glass.glassEnabledKey
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.enums.OnboardingStep
+import org.junit.Assert.assertEquals
 import org.junit.After
 import org.junit.Rule
 import org.junit.Test
@@ -96,6 +105,40 @@ class OnboardingScreenComposeTest {
                 block()
             }
         }
+    }
+
+    @Test
+    fun `post-import Glass screen offers persisted choice and advances to accounts`() {
+        app.preferences.edit().putBoolean(glassEnabledKey, true).commit()
+        val step = mutableStateOf(OnboardingStep.IMPORT.advance())
+        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_ONBOARDING_COMPLETE, false)
+        content {
+            if (step.value == OnboardingStep.GLASS) {
+                OnboardingGlassScreen(onComplete = {
+                    val next = requireNotNull(step.value?.advance())
+                    DataStoreUtils.saveString(app, DataStoreUtils.KEY_ONBOARDING_STEP, next.name)
+                    step.value = next
+                })
+            } else {
+                androidx.compose.material3.Text("Accounts step")
+            }
+        }
+        composeRule.onNodeWithTag("settings.glass.preview").assertIsDisplayed()
+        val choice = composeRule.onNodeWithTag("settings.glass.master")
+        choice.assertIsDisplayed().performClick()
+        composeRule.waitForIdle()
+        assertFalse(app.preferences.getBoolean(glassEnabledKey, true))
+        choice.performClick()
+        composeRule.onNodeWithText(app.getString(R.string.glass_enable_warning_title)).assertIsDisplayed()
+        assertFalse("requesting enable must wait for confirmation", app.preferences.getBoolean(glassEnabledKey, true))
+        composeRule.onNodeWithText(app.getString(R.string.glass_enable_confirm)).performClick()
+        composeRule.waitForIdle()
+        assertTrue(app.preferences.getBoolean(glassEnabledKey, false))
+        composeRule.onNodeWithTag("onboarding.glass.continue").assertIsDisplayed().performClick()
+        composeRule.onNodeWithText("Accounts step").assertIsDisplayed()
+        composeRule.onNodeWithTag("onboarding.glass").assertDoesNotExist()
+        assertEquals("ACCOUNTS", DataStoreUtils.getString(app, DataStoreUtils.KEY_ONBOARDING_STEP, ""))
+        assertFalse(DataStoreUtils.getBoolean(app, DataStoreUtils.KEY_ONBOARDING_COMPLETE, false))
     }
 
     @Test

@@ -9,7 +9,9 @@ enum class OnboardingStep {
     PERMISSIONS,
     IMPORT,
     ACCOUNTS,
-    NAME;
+    NAME,
+    // Appended for compatibility; transitions place it after import without changing saved names.
+    GLASS;
 
     /**
      * The step shown after this one, or `null` when the flow is complete.
@@ -24,8 +26,9 @@ enum class OnboardingStep {
      * short and the accounts step is optional.
      */
     fun advance(): OnboardingStep? = when (this) {
+        GLASS -> ACCOUNTS
         PERMISSIONS -> IMPORT
-        IMPORT -> ACCOUNTS
+        IMPORT -> GLASS
         ACCOUNTS -> NAME
         NAME -> null
     }

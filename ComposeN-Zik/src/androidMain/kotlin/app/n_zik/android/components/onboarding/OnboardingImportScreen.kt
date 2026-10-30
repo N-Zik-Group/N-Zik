@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.RadioButton
@@ -356,7 +355,7 @@ fun OnboardingImportScreen(
                     }
                 }
 
-                Button(
+                OnboardingPrimaryButton(
                     onClick = {
                         importMode = when (selectedOption) {
                             2 -> 1
@@ -372,11 +371,6 @@ fun OnboardingImportScreen(
                             4 -> importDatabase.onShortClick()
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorPalette().accent,
-                        contentColor = colorPalette().textSecondary
-                    ),
-                    shape = uiRoundnessShape(),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 12.dp)
@@ -393,16 +387,11 @@ fun OnboardingImportScreen(
             title = stringResource(R.string.onboard_restore_skip),
             description = stringResource(R.string.onboard_restore_skip_desc),
             action = {
-                Button(
+                OnboardingPrimaryButton(
                     onClick = {
                         Timber.tag("Onboarding").i("Restore step skipped, onboarding continues")
                         onComplete()
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorPalette().accent,
-                        contentColor = colorPalette().textSecondary
-                    ),
-                    shape = uiRoundnessShape()
                 ) {
                     // Bounded label: never pushes the card off-screen on small screens / large fonts
                     OnboardingActionLabel(stringResource(R.string.onboard_restore_skip_button))

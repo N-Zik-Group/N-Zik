@@ -17,8 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -42,7 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.navigation.compose.rememberNavController
 import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
-import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
+import app.n_zik.android.components.glass.CustomModalBottomSheet
+import app.n_zik.android.components.glass.SampledMenuSheet
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.it.fast4x.rimusic.utils.discordAvatarKey
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
@@ -328,7 +327,7 @@ fun OnboardingAccountsScreen(
 
         // The skip button is the last child: it re-applies the nav inset the column
         // dropped, so the final text stays clear of the system nav buttons
-        Button(
+        OnboardingPrimaryButton(
             onClick = {
                 // The accounts step no longer ends the flow — the profile step
                 // follows: advance (the step is persisted), and with a Discord
@@ -349,11 +348,6 @@ fun OnboardingAccountsScreen(
                 onComplete()
                 if (discordToken.isNotEmpty()) RestartAppDialog.showDialog()
             },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colorPalette().accent,
-                contentColor = colorPalette().textSecondary
-            ),
-            shape = uiRoundnessShape(),
             modifier = Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
@@ -411,7 +405,7 @@ fun OnboardingAccountsScreen(
 
     // Last.fm login sheet — the same wrapper as the Accounts tab card
     if (lastfmConfigured) {
-        CustomModalBottomSheet(
+        SampledMenuSheet(
             showSheet = loginLastfm,
             onDismissRequest = {
                 loginLastfm = false
@@ -518,13 +512,8 @@ fun OnboardingAccountsScreen(
 /** Action button of an onboarding account card (same look as the other onboarding buttons): the label is bounded by [OnboardingActionLabel] so it can never push the card off-screen on small screens / large fonts. */
 @Composable
 private fun OnboardingAccountActionButton(label: String, onClick: () -> Unit) {
-    Button(
+    OnboardingPrimaryButton(
         onClick = onClick,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = colorPalette().accent,
-            contentColor = colorPalette().textSecondary
-        ),
-        shape = uiRoundnessShape()
     ) {
         OnboardingActionLabel(label)
     }
