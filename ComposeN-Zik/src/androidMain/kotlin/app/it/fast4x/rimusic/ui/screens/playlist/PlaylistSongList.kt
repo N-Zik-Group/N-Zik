@@ -1,5 +1,7 @@
 package app.it.fast4x.rimusic.ui.screens.playlist
 
+import app.n_zik.android.components.ui.screens.CollectionPageStatus
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 
@@ -45,6 +47,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
+import app.n_zik.android.components.glass.GlassDescriptionExpansion
+import app.n_zik.android.components.glass.GlassDescriptionTranslate
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -112,9 +116,13 @@ import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.it.fast4x.rimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import app.it.fast4x.rimusic.ui.components.themed.FontSizeRange
 import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
+import app.n_zik.android.components.glass.GlassToolbarRow
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
-import app.it.fast4x.rimusic.ui.components.themed.LayoutWithAdaptiveThumbnail
+import app.n_zik.android.components.ui.screens.LayoutWithAdaptiveThumbnail
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsItemMenu
 import app.it.fast4x.rimusic.ui.components.themed.adaptiveThumbnailContent
 import app.it.fast4x.rimusic.ui.components.themed.Loader
@@ -317,7 +325,7 @@ fun PlaylistSongList(
 
     var searching by rememberSaveable { mutableStateOf(false) }
 
-    
+
     var showYoutubeLikeConfirmDialog by remember {
         mutableStateOf(false)
     }
@@ -402,7 +410,10 @@ fun PlaylistSongList(
         PlaylistStateManager.getPlaylistStates(playlistSongIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
-    LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
+    LayoutWithAdaptiveThumbnail(
+        thumbnailContent = thumbnailContent,
+        thumbnailContentPadding = rememberPageChromeContentPadding(),
+    ) {
         Box(
             modifier = Modifier
                 .background(colorPalette().background0)
@@ -412,18 +423,18 @@ fun PlaylistSongList(
             contentAlignment = Alignment.Center
         ) {
             if (playlistPage == null && playlistSongs.isEmpty()) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Loader()
-                    if (loadedSongsCount > 0) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        BasicText(
-                            text = stringResource(R.string.loading_songs_count, loadedSongsCount),
-                            style = typography().xxs.copy(
-                                color = colorPalette().textDisabled
+                CollectionPageStatus {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Loader()
+                        if (loadedSongsCount > 0) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            BasicText(
+                                text = stringResource(R.string.loading_songs_count, loadedSongsCount),
+                                style = typography().xxs.copy(
+                                    color = colorPalette().textDisabled
+                                )
                             )
-                        )
+                        }
                     }
                 }
             } else {
@@ -450,7 +461,7 @@ fun PlaylistSongList(
                 CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
                 LazyColumn(
                     state = lazyListState,
-                    contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer),
+                    contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
                     modifier = Modifier.background( colorPalette().background0 )
                                        .fillMaxSize()
                 ) {
@@ -467,6 +478,7 @@ fun PlaylistSongList(
                             if(!isLandscape)
                                 Box {
                                     ImageCacheFactory.AsyncImage(
+                                        shape = null,
                                         thumbnailUrl = playlistPage!!.playlist.thumbnail?.url?.resize(
                                             1000,
                                             1000
@@ -528,25 +540,29 @@ fun PlaylistSongList(
                             )
 
 
-                            HeaderIconButton(
-                                icon = R.drawable.share_social,
-                                color = colorPalette().text,
-                                iconSize = 24.dp,
+                            GlassToolbarRow(
+                                actionCount = 1,
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
                                     .padding(top = 5.dp, end = 5.dp),
-                                onClick = {
-                                    ExternalUris.youtubeMusicPlaylist(browseId.removePrefix(MODIFIED_PREFIX).removePrefix("VL")).let { url ->
-                                        val sendIntent = Intent().apply {
-                                            action = Intent.ACTION_SEND
-                                            type = "text/plain"
-                                            putExtra(Intent.EXTRA_TEXT, url)
-                                        }
+                            ) {
+                                HeaderIconButton(
+                                    icon = R.drawable.share_social,
+                                    color = colorPalette().text,
+                                    iconSize = 24.dp,
+                                    onClick = {
+                                        ExternalUris.youtubeMusicPlaylist(browseId.removePrefix(MODIFIED_PREFIX).removePrefix("VL")).let { url ->
+                                            val sendIntent = Intent().apply {
+                                                action = Intent.ACTION_SEND
+                                                type = "text/plain"
+                                                putExtra(Intent.EXTRA_TEXT, url)
+                                            }
 
-                                        context.startActivity(Intent.createChooser(sendIntent, null))
+                                            context.startActivity(Intent.createChooser(sendIntent, null))
+                                        }
                                     }
-                                }
-                            )
+                                )
+                            }
 
                         }
                     }
@@ -557,8 +573,9 @@ fun PlaylistSongList(
                     key = "actions",
                     contentType = 0
                 ) {
+                    val glassActions = rememberGlassSettings().usesGlassMaterial(GlassArea.ActionButtons)
                     Row(
-                        horizontalArrangement = Arrangement.Center,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .padding(top = 10.dp)
@@ -571,288 +588,299 @@ fun PlaylistSongList(
 
                             //actionsContent()
 
-                            HeaderIconButton(
-                                onClick = { searching = !searching },
-                                icon = R.drawable.search_circle,
-                                color = colorPalette().text,
-                                iconSize = 24.dp,
-                                modifier = Modifier
-                                    .padding(horizontal = 5.dp)
-                            )
-
-                            HeaderIconButton(
-                                icon = R.drawable.download,
-                                color = colorPalette().text,
-                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                        onClick = {
-                                            showConfirmDownloadAllDialog = true
-                                        },
-                                        onLongClick = {
-                                            Toaster.i(R.string.info_download_all_songs)
-                                        }
-                            )
-
-                            DialogPresence(visible = showConfirmDownloadAllDialog) {
-                                ConfirmationDialog(
-                                    title = stringResource(R.string.info_download_all_songs),
-                                    confirmText = stringResource(R.string.download),
-                                    text = stringResource(R.string.do_you_really_want_to_download_all),
-                                    onDismiss = { showConfirmDownloadAllDialog = false },
-                                    onConfirm = {
-                                        showConfirmDownloadAllDialog = false
-                                        if (hasNonDislikedSongs)
-                                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                processPlaylistBatch(
-                                                    songs = filteredPageSongs?.filter { it.asMediaItem.mediaId !in dislikedSongs },
-                                                    binder = binder,
-                                                    context = context,
-                                                    downloadState = false
-                                                )
-                                            }
-                                    }
-                                )
-                            }
-
-                            HeaderIconButton(
-                                icon = R.drawable.downloaded,
-                                color = colorPalette().text,
-                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                        onClick = {
-                                            showConfirmDeleteDownloadDialog = true
-                                        },
-                                        onLongClick = {
-                                            Toaster.n(R.string.info_remove_all_downloaded_songs)
-                                        }
-                            )
-
-                            DialogPresence(visible = showConfirmDeleteDownloadDialog) {
-                                ConfirmationDialog(
-                                    title = stringResource(R.string.dialog_clear_downloads),
-                                    confirmText = stringResource(R.string.delete),
-                                    text = stringResource(R.string.do_you_really_want_to_delete_download),
-                                    onDismiss = { showConfirmDeleteDownloadDialog = false },
-                                    onConfirm = {
-                                        showConfirmDeleteDownloadDialog = false
-                                        if (hasNonDislikedSongs)
-                                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                processPlaylistBatch(
-                                                    songs = filteredPageSongs,
-                                                    binder = binder,
-                                                    context = context,
-                                                    downloadState = true
-                                                )
-                                            }
-                                    }
-                                )
-                            }
-
-
-
-                            HeaderIconButton(
-                                icon = R.drawable.enqueue,
-                                enabled = hasNonDislikedSongs,
-                                color =  if (hasNonDislikedSongs) colorPalette().text else colorPalette().textDisabled,
-                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                        onClick = {
-                                            if (hasNonDislikedSongs) {
-                                                val mediaItems = filteredPageSongs
-                                                    ?.filter { it.asMediaItem.mediaId !in dislikedSongs }
-                                                    ?.map(Innertube.SongItem::asMediaItem)
-                                                    ?: emptyList()
-                                                NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                                                    val filtered = withContext(NzikDispatchers.DATA) {
-                                                        val player = binder?.player ?: return@withContext emptyList()
-                                                        player.excludeMediaItems(mediaItems, context)
-                                                    }
-                                                    val player = binder?.player ?: return@launch
-                                                    player.enqueue(filtered)
+                            val bookmarkAction: @Composable () -> Unit = {
+                                HeaderIconButton(
+                                    icon = if (localPlaylist?.isYoutubePlaylist == true) R.drawable.bookmark else R.drawable.bookmark_outline,
+                                    color = if (localPlaylist?.isYoutubePlaylist == true) colorPalette().favoritesIcon else colorPalette().text,
+                                    modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+                                    onClick = {
+                                        NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                            if (localPlaylist?.isYoutubePlaylist == true) {
+                                                if (isYouTubeSyncEnabled() && isNetworkConnected(context)) {
+                                                    YtMusic.removelikePlaylistOrAlbum(browseId.substringAfter("VL"))
                                                 }
-                                            } else
-                                                Toaster.e(R.string.disliked_this_collection)
-                                        },
-                                        onLongClick = {
-                                            Toaster.i(R.string.info_enqueue_songs)
-                                        }
-                            )
-
-                            HeaderIconButton(
-                                // Issue #866 (gh-866): app-wide shuffle confirmation flash.
-                                icon = shuffleButtonIcon(),
-                                enabled = hasNonDislikedSongs,
-                                color = if (hasNonDislikedSongs) colorPalette().text else colorPalette().textDisabled,
-                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                        onClick = {
-                                            if (hasNonDislikedSongs) {
-                                                val mediaItems = filteredPageSongs
-                                                    ?.filter { it.asMediaItem.mediaId !in dislikedSongs }
-                                                    ?.map(Innertube.SongItem::asMediaItem)
-                                                    ?: emptyList()
-                                                binder?.let {
-                                                    it.triggerShuffleOkFlash()
-                                                    Shuffler.play(it, mediaItems)
-                                                }
-                                            } else
-                                                Toaster.e( R.string.disliked_this_collection )
-                                        },
-                                        onLongClick = {
-                                            Toaster.i( R.string.info_shuffle )
-                                        }
-                            )
-
-                            HeaderIconButton(
-                                // Issue #866 (gh-866): state icon — radio_stop while the radio
-                                // is active (the state change is the press feedback).
-                                icon = radioButtonIcon(),
-                                enabled = hasNonDislikedSongs && !ltGuestLocked,
-                                color = if (ltGuestLocked || !hasNonDislikedSongs) colorPalette().textDisabled
-                                        else if (binder?.isRadioActive == true) colorPalette().accent
-                                        else colorPalette().text,
-                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()).alpha(guestLockAlpha),
-                                        onClick = {
-                                            val songs = filteredPageSongs.orEmpty()
-                                            if( songs.fastAny { it.key in dislikedSongs } ) {
-                                                Toaster.e( R.string.disliked_this_collection )
-                                                return@HeaderIconButton
-                                            }
-
-                                            val mediaItem =
-                                                // [songs.fastFirst] won't throw NoSuchElementException
-                                                // because of the checking above.
-                                                binder?.player?.currentMediaItem ?: songs.fastFirst { it.key !in dislikedSongs }.asMediaItem
-                                            mediaItem.let { binder?.startRadio( it, false, null, true ) }
-                                        },
-                                        onLongClick = {
-                                            Toaster.i( binder?.radioActionTextRes ?: R.string.info_start_radio )
-                                        }
-                            )
-
-
-                            HeaderIconButton(
-                                icon = R.drawable.add_in_playlist,
-                                color = colorPalette().text,
-                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                        onClick = {
-                                            menuState.display {
-                                                PlaylistsItemMenu(
-                                                    navController = navController,
-                                                    modifier = Modifier.fillMaxHeight(0.4f),
-                                                    onDismiss = menuState::hide,
-                                                    onImportOnlinePlaylist = {
-                                                        importPlaylistDialog.onShortClick()
-                                                    },
-
-                                                    onAddToPlaylist = { playlistPreview ->
-                                                        position =
-                                                            playlistPreview.songCount.minus(1) ?: 0
-                                                        if (position > 0) position++ else position =
-                                                            0
-
-                                                        val playlistSize = filteredPageSongs?.size ?: 0
-
-                                                        if ((playlistSize + playlistPreview.songCount) > 5000 && playlistPreview.playlist.isYoutubePlaylist && isYouTubeSyncEnabled()){
-                                                            Toaster.e( R.string.yt_playlist_limited )
-                                                        } else if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
-                                                            Database.asyncTransaction {
-                                                                val songs = filteredPageSongs
-                                                                                                          ?.map( Innertube.SongItem::asMediaItem )
-                                                                                                          .orEmpty()
-                                                                mapIgnore( playlistPreview.playlist, *songs.toTypedArray() )
-                                                            }
-                                                        } else {
-                                                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                                YtMusic.addPlaylistToPlaylist(
-                                                                    cleanPrefix(playlistPreview.playlist.browseId ?: ""),
-                                                                    browseId.substringAfter("VL")
-
-                                                                    )
-                                                                }
-                                                        }
-                                                        Toaster.done()
-                                                    },
-                                                    onGoToPlaylist = {
-                                                        navController.navigate("${NavRoutes.localPlaylist.name}/$it")
-                                                    },
-                                                    disableScrollingText = disableScrollingText
-                                                )
-                                            }
-                                        },
-                                        onLongClick = {
-                                            Toaster.i( R.string.info_add_in_playlist )
-                                        }
-                            )
-                            HeaderIconButton(
-                                icon = R.drawable.heart,
-                                enabled = filteredPageSongs?.isNotEmpty() == true,
-                                color = colorPalette().text,
-                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                        onClick = {
-                                            if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
-                                                Toaster.noInternet()
-                                            } else if (!isYouTubeSyncEnabled()){
-                                                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                    val showDisliked = appContext().preferences.getString(excludeDislikedSongsKey, DislikeMode.Enabled.name)?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() }?.isEnabled ?: true
-                                                    filteredPageSongs
-                                                                  ?.map{ it.asSong.id }
-                                                                  ?.filter {
-                                                                      !Database.songTable.isLiked( it ).first()
-                                                                  }
-                                                                  ?.forEach { id ->
-                                                                      if (showDisliked) {
-                                                                          Database.songTable.rotateLikeState(id)
-                                                                      } else {
-                                                                          Database.songTable.toggleLike(id)
-                                                                      }
-                                                                  }
-
-                                                    Toaster.done()
-                                                }
+                                                Database.playlistTable
+                                                    .findByBrowseId(browseId)
+                                                    .first()
+                                                    ?.let( Database.playlistTable::delete )
                                             } else {
-                                                showYoutubeLikeConfirmDialog = true
+                                                if (isYouTubeSyncEnabled() && isNetworkConnected(context)) {
+                                                    YtMusic.likePlaylistOrAlbum(browseId.substringAfter("VL"))
+                                                }
+                                                Database.asyncTransaction {
+                                                    val normalizedBrowseId = if (browseId.startsWith("VL")) browseId else "VL$browseId"
+                                                    val playlist = Playlist(
+                                                        name = (playlistPage?.playlist?.title ?: ""),
+                                                        browseId = normalizedBrowseId,
+                                                        isYoutubePlaylist = true,
+                                                        isEditable = false
+                                                    )
+                                                    filteredPageSongs
+                                                        ?.map( Innertube.SongItem::asMediaItem )
+                                                        ?.let { mapIgnore( playlist, *it.toTypedArray() ) }
+                                                }
                                             }
-                                        },
-                                        onLongClick = {
-                                            Toaster.i( R.string.add_to_favorites )
+                                            Toaster.done()
+                                            saveCheck = !saveCheck
                                         }
-                            )
-                            HeaderIconButton(
-                                icon = if (localPlaylist?.isYoutubePlaylist == true) R.drawable.bookmark else R.drawable.bookmark_outline,
-                                color = if (localPlaylist?.isYoutubePlaylist == true) colorPalette().favoritesIcon else colorPalette().text,
-                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                onClick = {
-                                    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                        if (localPlaylist?.isYoutubePlaylist == true) {
-                                            if (isYouTubeSyncEnabled() && isNetworkConnected(context)) {
-                                                YtMusic.removelikePlaylistOrAlbum(browseId.substringAfter("VL"))
-                                            }
-                                            Database.playlistTable
-                                                .findByBrowseId(browseId)
-                                                .first()
-                                                ?.let( Database.playlistTable::delete )
-                                        } else {
-                                            if (isYouTubeSyncEnabled() && isNetworkConnected(context)) {
-                                                YtMusic.likePlaylistOrAlbum(browseId.substringAfter("VL"))
-                                            }
-                                            Database.asyncTransaction {
-                                                val normalizedBrowseId = if (browseId.startsWith("VL")) browseId else "VL$browseId"
-                                                val playlist = Playlist(
-                                                    name = (playlistPage?.playlist?.title ?: ""),
-                                                    browseId = normalizedBrowseId,
-                                                    isYoutubePlaylist = true,
-                                                    isEditable = false
-                                                )
-                                                filteredPageSongs
-                                                    ?.map( Innertube.SongItem::asMediaItem )
-                                                    ?.let { mapIgnore( playlist, *it.toTypedArray() ) }
-                                            }
-                                        }
-                                        Toaster.done()
-                                        saveCheck = !saveCheck
+                                    },
+                                    onLongClick = {
+                                        Toaster.i( R.string.save_youtube_library )
                                     }
-                                },
-                                onLongClick = {
-                                    Toaster.i( R.string.save_youtube_library )
+                                )
+                            }
+                            GlassToolbarRow(actionCount = 1) { bookmarkAction() }
+
+                            val toolbarActions: @Composable () -> Unit = {
+                                HeaderIconButton(
+                                    onClick = { searching = !searching },
+                                    icon = R.drawable.search_circle,
+                                    color = colorPalette().text,
+                                    iconSize = 24.dp,
+                                    modifier = Modifier
+                                        .padding(horizontal = 5.dp)
+                                )
+
+                                HeaderIconButton(
+                                    icon = R.drawable.download,
+                                    color = colorPalette().text,
+                                    modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+                                            onClick = {
+                                                showConfirmDownloadAllDialog = true
+                                            },
+                                            onLongClick = {
+                                                Toaster.i(R.string.info_download_all_songs)
+                                            }
+                                )
+
+                                DialogPresence(visible = showConfirmDownloadAllDialog) {
+                                    ConfirmationDialog(
+                                        title = stringResource(R.string.info_download_all_songs),
+                                        confirmText = stringResource(R.string.download),
+                                        text = stringResource(R.string.do_you_really_want_to_download_all),
+                                        onDismiss = { showConfirmDownloadAllDialog = false },
+                                        onConfirm = {
+                                            showConfirmDownloadAllDialog = false
+                                            if (hasNonDislikedSongs)
+                                                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                                    processPlaylistBatch(
+                                                        songs = filteredPageSongs?.filter { it.asMediaItem.mediaId !in dislikedSongs },
+                                                        binder = binder,
+                                                        context = context,
+                                                        downloadState = false
+                                                    )
+                                                }
+                                        }
+                                    )
                                 }
-                            )
+
+                                HeaderIconButton(
+                                    icon = R.drawable.downloaded,
+                                    color = colorPalette().text,
+                                    modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+                                            onClick = {
+                                                showConfirmDeleteDownloadDialog = true
+                                            },
+                                            onLongClick = {
+                                                Toaster.n(R.string.info_remove_all_downloaded_songs)
+                                            }
+                                )
+
+                                DialogPresence(visible = showConfirmDeleteDownloadDialog) {
+                                    ConfirmationDialog(
+                                        title = stringResource(R.string.dialog_clear_downloads),
+                                        confirmText = stringResource(R.string.delete),
+                                        text = stringResource(R.string.do_you_really_want_to_delete_download),
+                                        onDismiss = { showConfirmDeleteDownloadDialog = false },
+                                        onConfirm = {
+                                            showConfirmDeleteDownloadDialog = false
+                                            if (hasNonDislikedSongs)
+                                                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                                    processPlaylistBatch(
+                                                        songs = filteredPageSongs,
+                                                        binder = binder,
+                                                        context = context,
+                                                        downloadState = true
+                                                    )
+                                                }
+                                        }
+                                    )
+                                }
+
+
+
+                                HeaderIconButton(
+                                    icon = R.drawable.enqueue,
+                                    enabled = hasNonDislikedSongs,
+                                    color =  if (hasNonDislikedSongs) colorPalette().text else colorPalette().textDisabled,
+                                    modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+                                            onClick = {
+                                                if (hasNonDislikedSongs) {
+                                                    val mediaItems = filteredPageSongs
+                                                        ?.filter { it.asMediaItem.mediaId !in dislikedSongs }
+                                                        ?.map(Innertube.SongItem::asMediaItem)
+                                                        ?: emptyList()
+                                                    NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+                                                        val filtered = withContext(NzikDispatchers.DATA) {
+                                                            val player = binder?.player ?: return@withContext emptyList()
+                                                            player.excludeMediaItems(mediaItems, context)
+                                                        }
+                                                        val player = binder?.player ?: return@launch
+                                                        player.enqueue(filtered)
+                                                    }
+                                                } else
+                                                    Toaster.e(R.string.disliked_this_collection)
+                                            },
+                                            onLongClick = {
+                                                Toaster.i(R.string.info_enqueue_songs)
+                                            }
+                                )
+
+                                HeaderIconButton(
+                                    // Issue #866 (gh-866): app-wide shuffle confirmation flash.
+                                    icon = shuffleButtonIcon(),
+                                    enabled = hasNonDislikedSongs,
+                                    color = if (hasNonDislikedSongs) colorPalette().text else colorPalette().textDisabled,
+                                    modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+                                            onClick = {
+                                                if (hasNonDislikedSongs) {
+                                                    val mediaItems = filteredPageSongs
+                                                        ?.filter { it.asMediaItem.mediaId !in dislikedSongs }
+                                                        ?.map(Innertube.SongItem::asMediaItem)
+                                                        ?: emptyList()
+                                                    binder?.let {
+                                                        it.triggerShuffleOkFlash()
+                                                        Shuffler.play(it, mediaItems)
+                                                    }
+                                                } else
+                                                    Toaster.e( R.string.disliked_this_collection )
+                                            },
+                                            onLongClick = {
+                                                Toaster.i( R.string.info_shuffle )
+                                            }
+                                )
+
+                                HeaderIconButton(
+                                    // Issue #866 (gh-866): state icon — radio_stop while the radio
+                                    // is active (the state change is the press feedback).
+                                    icon = radioButtonIcon(),
+                                    enabled = hasNonDislikedSongs && !ltGuestLocked,
+                                    color = if (ltGuestLocked || !hasNonDislikedSongs) colorPalette().textDisabled
+                                            else if (binder?.isRadioActive == true) colorPalette().accent
+                                            else colorPalette().text,
+                                    modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()).alpha(guestLockAlpha),
+                                            onClick = {
+                                                val songs = filteredPageSongs.orEmpty()
+                                                if( songs.fastAny { it.key in dislikedSongs } ) {
+                                                    Toaster.e( R.string.disliked_this_collection )
+                                                    return@HeaderIconButton
+                                                }
+
+                                                val mediaItem =
+                                                    // [songs.fastFirst] won't throw NoSuchElementException
+                                                    // because of the checking above.
+                                                    binder?.player?.currentMediaItem ?: songs.fastFirst { it.key !in dislikedSongs }.asMediaItem
+                                                mediaItem.let { binder?.startRadio( it, false, null, true ) }
+                                            },
+                                            onLongClick = {
+                                                Toaster.i( binder?.radioActionTextRes ?: R.string.info_start_radio )
+                                            }
+                                )
+
+
+                                HeaderIconButton(
+                                    icon = R.drawable.add_in_playlist,
+                                    color = colorPalette().text,
+                                    modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+                                            onClick = {
+                                                menuState.display {
+                                                    PlaylistsItemMenu(
+                                                        navController = navController,
+                                                        modifier = Modifier.fillMaxHeight(0.4f),
+                                                        onDismiss = menuState::hide,
+                                                        onImportOnlinePlaylist = {
+                                                            importPlaylistDialog.onShortClick()
+                                                        },
+
+                                                        onAddToPlaylist = { playlistPreview ->
+                                                            position =
+                                                                playlistPreview.songCount.minus(1) ?: 0
+                                                            if (position > 0) position++ else position =
+                                                                0
+
+                                                            val playlistSize = filteredPageSongs?.size ?: 0
+
+                                                            if ((playlistSize + playlistPreview.songCount) > 5000 && playlistPreview.playlist.isYoutubePlaylist && isYouTubeSyncEnabled()){
+                                                                Toaster.e( R.string.yt_playlist_limited )
+                                                            } else if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                                Database.asyncTransaction {
+                                                                    val songs = filteredPageSongs
+                                                                                                              ?.map( Innertube.SongItem::asMediaItem )
+                                                                                                              .orEmpty()
+                                                                    mapIgnore( playlistPreview.playlist, *songs.toTypedArray() )
+                                                                }
+                                                            } else {
+                                                                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                                                    YtMusic.addPlaylistToPlaylist(
+                                                                        cleanPrefix(playlistPreview.playlist.browseId ?: ""),
+                                                                        browseId.substringAfter("VL")
+
+                                                                        )
+                                                                    }
+                                                            }
+                                                            Toaster.done()
+                                                        },
+                                                        onGoToPlaylist = {
+                                                            navController.navigate("${NavRoutes.localPlaylist.name}/$it")
+                                                        },
+                                                        disableScrollingText = disableScrollingText
+                                                    )
+                                                }
+                                            },
+                                            onLongClick = {
+                                                Toaster.i( R.string.info_add_in_playlist )
+                                            }
+                                )
+                                HeaderIconButton(
+                                    icon = R.drawable.heart,
+                                    enabled = filteredPageSongs?.isNotEmpty() == true,
+                                    color = colorPalette().text,
+                                    modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+                                            onClick = {
+                                                if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                                                    Toaster.noInternet()
+                                                } else if (!isYouTubeSyncEnabled()){
+                                                    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                                        val showDisliked = appContext().preferences.getString(excludeDislikedSongsKey, DislikeMode.Enabled.name)?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() }?.isEnabled ?: true
+                                                        filteredPageSongs
+                                                                      ?.map{ it.asSong.id }
+                                                                      ?.filter {
+                                                                          !Database.songTable.isLiked( it ).first()
+                                                                      }
+                                                                      ?.forEach { id ->
+                                                                          if (showDisliked) {
+                                                                              Database.songTable.rotateLikeState(id)
+                                                                          } else {
+                                                                              Database.songTable.toggleLike(id)
+                                                                          }
+                                                                      }
+
+                                                        Toaster.done()
+                                                    }
+                                                } else {
+                                                    showYoutubeLikeConfirmDialog = true
+                                                }
+                                            },
+                                            onLongClick = {
+                                                Toaster.i( R.string.add_to_favorites )
+                                            }
+                                )
+                            }
+                            if (glassActions) {
+                                GlassToolbarRow(actionCount = 8) { toolbarActions() }
+                            } else {
+                                toolbarActions()
+                            }
 
 
 
@@ -969,15 +997,21 @@ fun PlaylistSongList(
                                     .padding(8.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.Top) {
-                                    IconButton(
-                                        icon = R.drawable.translate,
+                                    GlassDescriptionTranslate(
                                         color = if (translateEnabled == true) colorPalette().text else colorPalette().textDisabled,
-                                        enabled = true,
-                                        modifier = Modifier.padding(all = 8.dp).size(18.dp).clip(uiRoundnessShape()),
                                         onClick = { translateEnabled = !translateEnabled },
-                                        onLongClick = { showTranslateLanguageDialog = true }
-                                    )
-                                    
+                                        onLongClick = { showTranslateLanguageDialog = true },
+                                    ) {
+                                        IconButton(
+                                            icon = R.drawable.translate,
+                                            color = if (translateEnabled == true) colorPalette().text else colorPalette().textDisabled,
+                                            enabled = true,
+                                            modifier = Modifier.padding(all = 8.dp).size(18.dp).clip(uiRoundnessShape()),
+                                            onClick = { translateEnabled = !translateEnabled },
+                                            onLongClick = { showTranslateLanguageDialog = true }
+                                        )
+                                    }
+
                                     DialogPresence(visible = showTranslateLanguageDialog) {
                                         ValueSelectorDialog(
                                             title = stringResource(R.string.info_translation),
@@ -992,13 +1026,13 @@ fun PlaylistSongList(
                                             onDismiss = { showTranslateLanguageDialog = false }
                                         )
                                     }
-                                    
+
                                     BasicText(
                                         text = "“",
                                         style = typography().xxl.semiBold,
                                         modifier = Modifier.offset(y = (-8).dp)
                                     )
-                                    
+
                                     BasicText(
                                         text = translatedText,
                                         style = typography().xs.secondary.align(TextAlign.Justify),
@@ -1022,11 +1056,16 @@ fun PlaylistSongList(
                                 }
 
                                 if (showMoreButton || isDescriptionExpanded) {
-                                    BasicText(
-                                        text = if (isDescriptionExpanded) stringResource(R.string.show_less) else stringResource(R.string.show_more),
-                                        style = typography().xs.semiBold.copy(colorPalette().text),
-                                        modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally)
-                                    )
+                                    GlassDescriptionExpansion(
+                                        onClick = { isDescriptionExpanded = !isDescriptionExpanded },
+                                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                                    ) {
+                                        BasicText(
+                                            text = if (isDescriptionExpanded) stringResource(R.string.show_less) else stringResource(R.string.show_more),
+                                            style = typography().xs.semiBold.copy(colorPalette().text),
+                                            modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally)
+                                        )
+                                    }
                                 }
 
                                 if (isDescriptionExpanded && attributionsIndex != -1) {

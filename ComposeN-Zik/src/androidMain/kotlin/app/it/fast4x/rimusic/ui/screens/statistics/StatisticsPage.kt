@@ -1,5 +1,10 @@
 package app.it.fast4x.rimusic.ui.screens.statistics
 
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+import androidx.compose.ui.unit.Dp
+
+import app.n_zik.android.components.glass.glassChipBackground
+
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
@@ -12,32 +17,25 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -56,7 +54,6 @@ import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 
-import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.colorPalette
@@ -79,7 +76,6 @@ import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.settings.common.SettingsEntry
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.px
-import app.it.fast4x.rimusic.ui.styling.shimmer
 import app.it.fast4x.rimusic.ui.styling.overlay
 import app.it.fast4x.rimusic.ui.styling.onOverlay
 import app.it.fast4x.rimusic.utils.UpdateYoutubeAlbum
@@ -90,10 +86,6 @@ import app.it.fast4x.rimusic.utils.color
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.forcePlayAtIndex
 import app.it.fast4x.rimusic.utils.formatAsTime
-import app.it.fast4x.rimusic.utils.getDownloadState
-import app.it.fast4x.rimusic.utils.isDownloadedSong
-import app.it.fast4x.rimusic.utils.isNowPlaying
-import app.it.fast4x.rimusic.utils.manageDownload
 import app.it.fast4x.rimusic.utils.maxStatisticsItemsKey
 import app.it.fast4x.rimusic.utils.maxStatisticsItemsCustomValueKey
 import app.it.fast4x.rimusic.utils.rememberPreference
@@ -133,11 +125,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 @Composable
 fun StatisticsPage(
     navController: NavController,
-    statisticsType: StatisticsType
+    statisticsType: StatisticsType,
+    topContentInsetProvider: () -> Dp,
 ) {
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
-    val windowInsets = LocalPlayerAwareWindowInsets.current
 
     val albumThumbnailSizeDp = 108.dp
     val albumThumbnailSizePx = albumThumbnailSizeDp.px
@@ -146,9 +138,8 @@ fun StatisticsPage(
     val playlistThumbnailSizeDp = 108.dp
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
 
-    val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
 
-    
+
     val showStatsListeningTime by rememberPreference(showStatsListeningTimeKey, true)
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
@@ -297,7 +288,10 @@ fun StatisticsPage(
                 columns = GridCells.Adaptive(
                     if(statisticsCategory == StatisticsCategory.Songs) 200.dp else playlistThumbnailSizeDp
                 ),
-                contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer),
+                contentPadding = rememberPageChromeContentPadding(
+                    base = PaddingValues(bottom = Dimensions.bottomSpacer),
+                    topInsetProvider = topContentInsetProvider,
+                ),
                 modifier = Modifier
                     .background(colorPalette().background0)
                     .fillMaxSize()
@@ -362,7 +356,7 @@ fun StatisticsPage(
                                             )
                                         },
                                         modifier = Modifier
-                                            .background(
+                                            .glassChipBackground(
                                                 color = colorPalette().accent,
                                                 shape = thumbnailShape()
                                             )
@@ -542,6 +536,7 @@ fun StatisticsPage(
                                 // full-size cover, zero nothing.
                                 if (thumbnails.size in 1..3) {
                                     ImageCacheFactory.AsyncImage(
+                                        shape = null,
                                         thumbnailUrl = thumbnails.first(),
                                         contentDescription = null,
                                         contentScale = ContentScale.Crop,
@@ -569,6 +564,7 @@ fun StatisticsPage(
                                             val thumbnail = thumbnails.getOrNull(index)
                                             if (thumbnail != null)
                                                 ImageCacheFactory.AsyncImage(
+                                                    shape = null,
                                                     thumbnailUrl = thumbnail,
                                                     contentDescription = null,
                                                     contentScale = ContentScale.Crop,

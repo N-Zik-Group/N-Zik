@@ -1,5 +1,8 @@
 ﻿package app.it.fast4x.rimusic.ui.screens.newreleases
 
+import app.n_zik.android.components.ui.screens.CollectionPageStatus
+import androidx.compose.foundation.layout.PaddingValues
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
@@ -12,11 +15,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -96,10 +97,12 @@ fun NewAlbumsFromArtists(
 
         val page = discoverPage?.getOrNull()
         if (page == null) {
-            OfflineAwareLoader(
-                isOnline = isOnline,
-                modifier = Modifier.fillMaxSize()
-            )
+            CollectionPageStatus {
+                OfflineAwareLoader(
+                    isOnline = isOnline,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         } else {
             val artists by remember {
                 Database.artistTable
@@ -122,6 +125,7 @@ fun NewAlbumsFromArtists(
             }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
             LazyVerticalGrid(
+                contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
                 state = lazyGridState,
                 columns = GridCells.Adaptive(Dimensions.thumbnails.album + 24.dp),
                 modifier = Modifier
@@ -171,12 +175,6 @@ fun NewAlbumsFromArtists(
                                 .padding(all = 16.dp)
                         )
                     }
-                }
-                item(
-                    key = "footer",
-                    contentType = 0,
-                ) {
-                    Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
                 }
             }
         }

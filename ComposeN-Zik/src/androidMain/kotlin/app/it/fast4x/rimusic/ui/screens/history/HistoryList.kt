@@ -1,5 +1,10 @@
 package app.it.fast4x.rimusic.ui.screens.history
 
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+import app.n_zik.android.components.navigation.TopOverlayContentPadding
+import app.n_zik.android.components.navigation.LocalSideRailContentInsets
+import androidx.compose.ui.unit.Dp
+
 import app.n_zik.android.core.database.*
 
 import androidx.annotation.OptIn
@@ -16,18 +21,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import app.n_zik.android.components.Sort
+import app.n_zik.android.components.glass.GlassToolbarRow
+import app.n_zik.android.components.glass.glassChipBackground
 import app.it.fast4x.rimusic.utils.Preference
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,12 +58,10 @@ import it.fast4x.innertube.YtMusic
 import it.fast4x.innertube.requests.HistoryPage
 import app.n_zik.android.core.database.Database
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
-import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.HistoryType
 import app.n_zik.android.enums.HistorySortOrder
-import app.it.fast4x.rimusic.models.Event
 import app.n_zik.android.thumbnailShape
 import app.it.fast4x.rimusic.ui.components.ButtonsRow
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
@@ -132,7 +134,8 @@ import java.time.LocalDate
 @ExperimentalAnimationApi
 @Composable
 fun HistoryList(
-    navController: NavController
+    navController: NavController,
+    topContentInsetProvider: () -> Dp,
 ) {
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
@@ -286,51 +289,56 @@ fun HistoryList(
             .background(colorPalette().background0)
             .fillMaxHeight()
             .fillMaxWidth()
+            .padding(TopOverlayContentPadding(topContentInsetProvider))
     ) {
-        // Collapses while the bar is focused so the bar rises to the very
-        // top, like the settings pages (settingsSearchTitle behavior)
-        AnimatedVisibility(
-            visible = searchFocus.titleVisible,
-            enter = expandVertically(tween(250)) + fadeIn(tween(250)),
-            exit = shrinkVertically(tween(250)) + fadeOut(tween(250)),
-        ) {
-            HeaderWithIcon(
-                title = stringResource(R.string.history),
-                iconId = R.drawable.history,
-                enabled = false,
-                showIcon = false,
-                modifier = Modifier,
-                onClick = {}
-            )
-        }
-
-        // Collapses while the bar is focused, letting the bar rise to the
-        // title's level (settingsSearchDescription behavior). 16dp keeps the
-        // chip row aligned with the search bar's edges (same on the home tabs)
-        settingsSearchDescription(searchFocus) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+        Column(Modifier.padding(LocalSideRailContentInsets.current.asPaddingValues())) {
+            // Collapses while the bar is focused so the bar rises to the very
+            // top, like the settings pages (settingsSearchTitle behavior)
+            AnimatedVisibility(
+                visible = searchFocus.titleVisible,
+                enter = expandVertically(tween(250)) + fadeIn(tween(250)),
+                exit = shrinkVertically(tween(250)) + fadeOut(tween(250)),
             ) {
-                ButtonsRow(
-                    chips = buttonsList,
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp),
-                    currentValue = historyType,
-                    onValueUpdate = { historyType = it },
-                    modifier = Modifier.weight(1f)
+                HeaderWithIcon(
+                    title = stringResource(R.string.history),
+                    iconId = R.drawable.history,
+                    enabled = false,
+                    showIcon = false,
+                    modifier = Modifier,
+                    onClick = {}
                 )
+            }
+
+            // Collapses while the bar is focused, letting the bar rise to the
+            // title's level (settingsSearchDescription behavior). 16dp keeps the
+            // chip row aligned with the search bar's edges (same on the home tabs)
+            settingsSearchDescription(searchFocus) {
                 Row(
-                    modifier = Modifier.padding(end = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    sort.ToolBarButton()
+                    ButtonsRow(
+                        chips = buttonsList,
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp),
+                        currentValue = historyType,
+                        onValueUpdate = { historyType = it },
+                        modifier = Modifier.weight(1f)
+                    )
+                    Row(
+                        modifier = Modifier.padding(end = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        GlassToolbarRow(actionCount = 1) {
+                            sort.ToolBarButton()
+                        }
+                    }
                 }
             }
-        }
 
-        search.SearchBar(this@Column, onSearch = { recordHistoryQuery() })
+            search.SearchBar(this@Column, onSearch = { recordHistoryQuery() })
+        }
 
         val isLoading = when (historyType) {
             HistoryType.History -> isLocalLoading && events.isEmpty()
@@ -360,6 +368,7 @@ fun HistoryList(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth()
+                        .padding(rememberPageChromeContentPadding(topInsetProvider = { 0.dp }))
                             .graphicsLayer { alpha = searchFocus.contentAlpha }
                     )
                 } else {
@@ -367,6 +376,7 @@ fun HistoryList(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth()
+                        .padding(rememberPageChromeContentPadding(topInsetProvider = { 0.dp }))
                             .graphicsLayer { alpha = searchFocus.contentAlpha },
                         contentAlignment = Alignment.Center
                     ) {
@@ -381,6 +391,7 @@ fun HistoryList(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
+                        .padding(rememberPageChromeContentPadding(topInsetProvider = { 0.dp }))
                         .graphicsLayer { alpha = searchFocus.contentAlpha },
                     contentAlignment = Alignment.Center
                 ) {
@@ -426,8 +437,7 @@ fun HistoryList(
                 CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
                 LazyColumn(
                     state = lazyListState,
-                    contentPadding = LocalPlayerAwareWindowInsets.current
-                        .only(WindowInsetsSides.Bottom + WindowInsetsSides.End).asPaddingValues(),
+                    contentPadding = rememberPageChromeContentPadding(topInsetProvider = { 0.dp }),
                     modifier = Modifier
                         .background(colorPalette().background0)
                         .fillMaxSize()
@@ -472,7 +482,7 @@ fun HistoryList(
                                         // search bar's; Title's own 12dp inner padding
                                         // keeps the text inset
                                         .padding(horizontal = 16.dp, vertical = 4.dp)
-                                        .background(
+                                        .glassChipBackground(
                                             color = colorPalette().accent,
                                             shape = thumbnailShape()
                                         )
@@ -530,7 +540,7 @@ fun HistoryList(
                                         // search bar's; Title's own 12dp inner padding
                                         // keeps the text inset
                                         .padding(horizontal = 16.dp, vertical = 4.dp)
-                                        .background(
+                                        .glassChipBackground(
                                             color = colorPalette().accent,
                                             shape = thumbnailShape()
                                         )

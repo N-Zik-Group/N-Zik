@@ -1,12 +1,14 @@
 package app.it.fast4x.rimusic.ui.screens.podcast
 
+import app.n_zik.android.components.ui.screens.CollectionPageStatus
+import androidx.compose.foundation.layout.PaddingValues
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.it.fast4x.rimusic.utils.asSong
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
-import app.n_zik.android.LocalPlayerAwareWindowInsets
 
 import app.n_zik.android.core.database.*
 
@@ -21,14 +23,12 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -90,9 +90,13 @@ import app.it.fast4x.rimusic.ui.components.themed.AutoResizeText
 import app.it.fast4x.rimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import app.it.fast4x.rimusic.ui.components.themed.FontSizeRange
 import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
+import app.n_zik.android.components.glass.GlassToolbarRow
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
-import app.it.fast4x.rimusic.ui.components.themed.LayoutWithAdaptiveThumbnail
+import app.n_zik.android.components.ui.screens.LayoutWithAdaptiveThumbnail
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsItemMenu
 import app.it.fast4x.rimusic.ui.components.themed.adaptiveThumbnailContent
 import app.n_zik.android.components.OfflineAwareLoader
@@ -187,7 +191,7 @@ fun Podcast(
         mutableStateOf(Download.STATE_STOPPED)
     }
 
-    
+
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
     var totalPlayTimes = 0L
@@ -227,7 +231,10 @@ fun Podcast(
 
     val lazyListState = rememberLazyListState()
 
-    LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
+    LayoutWithAdaptiveThumbnail(
+        thumbnailContent = thumbnailContent,
+        thumbnailContentPadding = rememberPageChromeContentPadding(),
+    ) {
         // Download state cache
         val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
         val downloadedIds by remember {
@@ -258,16 +265,18 @@ fun Podcast(
             contentAlignment = Alignment.Center
         ) {
             if (podcastPage == null) {
-                OfflineAwareLoader(
-                    isOnline = isOnline,
-                    modifier = Modifier.fillMaxSize()
-                )
+                CollectionPageStatus {
+                    OfflineAwareLoader(
+                        isOnline = isOnline,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             } else {
                 CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
                 LazyColumn(
+                contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
                     state = lazyListState,
-                    //contentPadding = LocalPlayerAwareWindowInsets.current
-                    //.only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
+
                     modifier = Modifier
                         .background(colorPalette().background0)
                         .fillMaxSize()
@@ -326,25 +335,29 @@ fun Podcast(
                             )
 
 
-                            HeaderIconButton(
-                                icon = R.drawable.share_social,
-                                color = colorPalette().text,
-                                iconSize = 24.dp,
+                            GlassToolbarRow(
+                                actionCount = 1,
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
                                     .padding(top = 5.dp, end= 5.dp),
-                                onClick = {
-                                    (ExternalUris.youtubeMusicPlaylist(browseId.removePrefix(MODIFIED_PREFIX).removePrefix("VL"))).let { url ->
-                                        val sendIntent = Intent().apply {
-                                            action = Intent.ACTION_SEND
-                                            type = "text/plain"
-                                            putExtra(Intent.EXTRA_TEXT, url)
-                                        }
+                            ) {
+                                HeaderIconButton(
+                                    icon = R.drawable.share_social,
+                                    color = colorPalette().text,
+                                    iconSize = 24.dp,
+                                    onClick = {
+                                        (ExternalUris.youtubeMusicPlaylist(browseId.removePrefix(MODIFIED_PREFIX).removePrefix("VL"))).let { url ->
+                                            val sendIntent = Intent().apply {
+                                                action = Intent.ACTION_SEND
+                                                type = "text/plain"
+                                                putExtra(Intent.EXTRA_TEXT, url)
+                                            }
 
-                                        context.startActivity(Intent.createChooser(sendIntent, null))
+                                            context.startActivity(Intent.createChooser(sendIntent, null))
+                                        }
                                     }
-                                }
-                            )
+                                )
+                            }
 
                         }
                     }
@@ -355,8 +368,9 @@ fun Podcast(
                     key = "actions",
                     contentType = 0
                 ) {
+                    val glassActions = rememberGlassSettings().usesGlassMaterial(GlassArea.ActionButtons)
                     Row(
-                        horizontalArrangement = Arrangement.Center,
+                        horizontalArrangement = if (glassActions) Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally) else Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .padding(top = 10.dp)
@@ -369,213 +383,220 @@ fun Podcast(
 
                             //actionsContent()
 
-                            HeaderIconButton(
-                                onClick = { searching = !searching },
-                                icon = R.drawable.search_circle,
-                                color = colorPalette().text,
-                                iconSize = 24.dp,
-                                modifier = Modifier
-                                    .padding(horizontal = 5.dp)
-                            )
-
-                            HeaderIconButton(
-                                icon = R.drawable.download,
-                                color = colorPalette().text,
-                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                        onClick = {
-                                            showConfirmDownloadAllDialog = true
-                                        },
-                                        onLongClick = {
-                                            Toaster.i( R.string.info_download_all_songs )
-                                        }
-                            )
-
-                            DialogPresence(visible = showConfirmDownloadAllDialog) {
-                                ConfirmationDialog(
-                                    title = stringResource(R.string.info_download_all_songs),
-                                    confirmText = stringResource(R.string.download),
-                                    text = stringResource(R.string.do_you_really_want_to_download_all),
-                                    onDismiss = { showConfirmDownloadAllDialog = false },
-                                    onConfirm = {
-                                        showConfirmDownloadAllDialog = false
-                                        downloadState = Download.STATE_DOWNLOADING
-                                        val episodes = podcastPage?.listEpisode
-                                        if (episodes?.isNotEmpty() == true)
-                                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                episodes.forEach {
-                                                    binder?.cache?.removeResource(it.asMediaItem.mediaId)
-                                                    Database.asyncTransaction {
-                                                        formatTable.findBySongId( it.asMediaItem.mediaId )
-                                                    }
-                                                    manageDownload(
-                                                        context = context,
-                                                        mediaItem = it.asMediaItem,
-                                                        downloadState = false
-                                                    )
-                                                }
-                                            }
-                                    }
+                            val toolbarActions: @Composable () -> Unit = {
+                                HeaderIconButton(
+                                    onClick = { searching = !searching },
+                                    icon = R.drawable.search_circle,
+                                    color = colorPalette().text,
+                                    iconSize = 24.dp,
+                                    modifier = Modifier
+                                        .padding(horizontal = 5.dp)
                                 )
-                            }
 
-                            HeaderIconButton(
-                                icon = R.drawable.downloaded,
-                                color = colorPalette().text,
-                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                        onClick = {
-                                            showConfirmDeleteDownloadDialog = true
-                                        },
-                                        onLongClick = {
-                                            Toaster.i( R.string.info_remove_all_downloaded_songs )
-                                        }
-                            )
-
-                            DialogPresence(visible = showConfirmDeleteDownloadDialog) {
-                                ConfirmationDialog(
-                                    title = stringResource(R.string.dialog_clear_downloads),
-                                    confirmText = stringResource(R.string.delete),
-                                    text = stringResource(R.string.do_you_really_want_to_delete_download),
-                                    onDismiss = { showConfirmDeleteDownloadDialog = false },
-                                    onConfirm = {
-                                        showConfirmDeleteDownloadDialog = false
-                                        downloadState = Download.STATE_DOWNLOADING
-                                        val episodes = podcastPage?.listEpisode
-                                        if (episodes?.isNotEmpty() == true)
-                                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                episodes.forEach {
-                                                    binder?.cache?.removeResource(it.asMediaItem.mediaId)
-                                                    Database.asyncTransaction {
-                                                        formatTable.findBySongId( it.asMediaItem.mediaId )
-                                                    }
-                                                    manageDownload(
-                                                        context = context,
-                                                        mediaItem = it.asMediaItem,
-                                                        downloadState = true
-                                                    )
-                                                }
+                                HeaderIconButton(
+                                    icon = R.drawable.download,
+                                    color = colorPalette().text,
+                                    modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+                                            onClick = {
+                                                showConfirmDownloadAllDialog = true
+                                            },
+                                            onLongClick = {
+                                                Toaster.i( R.string.info_download_all_songs )
                                             }
-                                    }
                                 )
-                            }
 
-
-
-                            HeaderIconButton(
-                                icon = R.drawable.enqueue,
-                                enabled = podcastPage?.listEpisode?.isNotEmpty() == true,
-                                color =  if (podcastPage?.listEpisode?.isNotEmpty() == true) colorPalette().text else colorPalette().textDisabled,
-                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                        onClick = {
-                                            podcastPage?.listEpisode?.map(Innertube.Podcast.EpisodeItem::asMediaItem)?.let { mediaItems ->
-                                NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                                    val filtered = withContext(NzikDispatchers.DATA) {
-                                        val player = binder?.player ?: return@withContext emptyList()
-                                        player.excludeMediaItems(mediaItems, context)
-                                    }
-                                    val player = binder?.player ?: return@launch
-                                    player.enqueue(filtered)
+                                DialogPresence(visible = showConfirmDownloadAllDialog) {
+                                    ConfirmationDialog(
+                                        title = stringResource(R.string.info_download_all_songs),
+                                        confirmText = stringResource(R.string.download),
+                                        text = stringResource(R.string.do_you_really_want_to_download_all),
+                                        onDismiss = { showConfirmDownloadAllDialog = false },
+                                        onConfirm = {
+                                            showConfirmDownloadAllDialog = false
+                                            downloadState = Download.STATE_DOWNLOADING
+                                            val episodes = podcastPage?.listEpisode
+                                            if (episodes?.isNotEmpty() == true)
+                                                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                                    episodes.forEach {
+                                                        binder?.cache?.removeResource(it.asMediaItem.mediaId)
+                                                        Database.asyncTransaction {
+                                                            formatTable.findBySongId( it.asMediaItem.mediaId )
+                                                        }
+                                                        manageDownload(
+                                                            context = context,
+                                                            mediaItem = it.asMediaItem,
+                                                            downloadState = false
+                                                        )
+                                                    }
+                                                }
+                                        }
+                                    )
                                 }
-                                            }
-                                        },
-                                        onLongClick = {
-                                            Toaster.i( R.string.info_enqueue_songs )
-                                        }
-                            )
 
-                            HeaderIconButton(
-                                // Issue #866 (gh-866): app-wide shuffle confirmation flash.
-                                icon = shuffleButtonIcon(),
-                                enabled = podcastPage?.listEpisode?.isNotEmpty() == true,
-                                color = if (podcastPage?.listEpisode?.isNotEmpty() ==true) colorPalette().text else colorPalette().textDisabled,
-                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                        onClick = {
-                                            if (podcastPage?.listEpisode?.isNotEmpty() == true) {
-                                                val mediaItems = podcastPage?.listEpisode
-                                                    ?.map(Innertube.Podcast.EpisodeItem::asMediaItem)
-                                                    ?: emptyList()
-                                                binder?.let {
-                                                    it.triggerShuffleOkFlash()
-                                                    Shuffler.play(it, mediaItems)
+                                HeaderIconButton(
+                                    icon = R.drawable.downloaded,
+                                    color = colorPalette().text,
+                                    modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+                                            onClick = {
+                                                showConfirmDeleteDownloadDialog = true
+                                            },
+                                            onLongClick = {
+                                                Toaster.i( R.string.info_remove_all_downloaded_songs )
+                                            }
+                                )
+
+                                DialogPresence(visible = showConfirmDeleteDownloadDialog) {
+                                    ConfirmationDialog(
+                                        title = stringResource(R.string.dialog_clear_downloads),
+                                        confirmText = stringResource(R.string.delete),
+                                        text = stringResource(R.string.do_you_really_want_to_delete_download),
+                                        onDismiss = { showConfirmDeleteDownloadDialog = false },
+                                        onConfirm = {
+                                            showConfirmDeleteDownloadDialog = false
+                                            downloadState = Download.STATE_DOWNLOADING
+                                            val episodes = podcastPage?.listEpisode
+                                            if (episodes?.isNotEmpty() == true)
+                                                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                                    episodes.forEach {
+                                                        binder?.cache?.removeResource(it.asMediaItem.mediaId)
+                                                        Database.asyncTransaction {
+                                                            formatTable.findBySongId( it.asMediaItem.mediaId )
+                                                        }
+                                                        manageDownload(
+                                                            context = context,
+                                                            mediaItem = it.asMediaItem,
+                                                            downloadState = true
+                                                        )
+                                                    }
                                                 }
+                                        }
+                                    )
+                                }
+
+
+
+                                HeaderIconButton(
+                                    icon = R.drawable.enqueue,
+                                    enabled = podcastPage?.listEpisode?.isNotEmpty() == true,
+                                    color =  if (podcastPage?.listEpisode?.isNotEmpty() == true) colorPalette().text else colorPalette().textDisabled,
+                                    modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+                                            onClick = {
+                                                podcastPage?.listEpisode?.map(Innertube.Podcast.EpisodeItem::asMediaItem)?.let { mediaItems ->
+                                    NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+                                        val filtered = withContext(NzikDispatchers.DATA) {
+                                            val player = binder?.player ?: return@withContext emptyList()
+                                            player.excludeMediaItems(mediaItems, context)
+                                        }
+                                        val player = binder?.player ?: return@launch
+                                        player.enqueue(filtered)
+                                    }
+                                                }
+                                            },
+                                            onLongClick = {
+                                                Toaster.i( R.string.info_enqueue_songs )
                                             }
-                                        },
-                                        onLongClick = {
-                                            Toaster.i( R.string.info_shuffle )
-                                        }
-                            )
+                                )
 
-                            HeaderIconButton(
-                                // Issue #866 (gh-866): state icon — radio_stop while the radio
-                                // is active (the state change is the press feedback).
-                                icon = radioButtonIcon(),
-                                enabled = podcastPage?.listEpisode?.isNotEmpty() == true,
-                                color = if (podcastPage?.listEpisode?.isNotEmpty() != true) colorPalette().textDisabled 
-                                        else if (binder?.isRadioActive == true) colorPalette().accent 
-                                        else colorPalette().text,
-                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                        onClick = {
-                                            val mediaItem = binder?.player?.currentMediaItem ?: podcastPage?.listEpisode?.first()?.asMediaItem
-                                            mediaItem?.let { binder?.startRadio( it, false, null, true ) }
-                                        },
-                                        onLongClick = {
-                                            Toaster.i( binder?.radioActionTextRes ?: R.string.info_start_radio )
-                                        }
-                            )
+                                HeaderIconButton(
+                                    // Issue #866 (gh-866): app-wide shuffle confirmation flash.
+                                    icon = shuffleButtonIcon(),
+                                    enabled = podcastPage?.listEpisode?.isNotEmpty() == true,
+                                    color = if (podcastPage?.listEpisode?.isNotEmpty() ==true) colorPalette().text else colorPalette().textDisabled,
+                                    modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+                                            onClick = {
+                                                if (podcastPage?.listEpisode?.isNotEmpty() == true) {
+                                                    val mediaItems = podcastPage?.listEpisode
+                                                        ?.map(Innertube.Podcast.EpisodeItem::asMediaItem)
+                                                        ?: emptyList()
+                                                    binder?.let {
+                                                        it.triggerShuffleOkFlash()
+                                                        Shuffler.play(it, mediaItems)
+                                                    }
+                                                }
+                                            },
+                                            onLongClick = {
+                                                Toaster.i( R.string.info_shuffle )
+                                            }
+                                )
+
+                                HeaderIconButton(
+                                    // Issue #866 (gh-866): state icon — radio_stop while the radio
+                                    // is active (the state change is the press feedback).
+                                    icon = radioButtonIcon(),
+                                    enabled = podcastPage?.listEpisode?.isNotEmpty() == true,
+                                    color = if (podcastPage?.listEpisode?.isNotEmpty() != true) colorPalette().textDisabled
+                                            else if (binder?.isRadioActive == true) colorPalette().accent
+                                            else colorPalette().text,
+                                    modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+                                            onClick = {
+                                                val mediaItem = binder?.player?.currentMediaItem ?: podcastPage?.listEpisode?.first()?.asMediaItem
+                                                mediaItem?.let { binder?.startRadio( it, false, null, true ) }
+                                            },
+                                            onLongClick = {
+                                                Toaster.i( binder?.radioActionTextRes ?: R.string.info_start_radio )
+                                            }
+                                )
 
 
-                            HeaderIconButton(
-                                icon = R.drawable.add_in_playlist,
-                                color = colorPalette().text,
-                                modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                        onClick = {
-                                            menuState.display {
-                                                PlaylistsItemMenu(
-                                                    navController = navController,
-                                                    modifier = Modifier.fillMaxHeight(0.4f),
-                                                    onDismiss = menuState::hide,
-                                                    onImportOnlinePlaylist = {
-                                                        isImportingPlaylist = true
-                                                    },
+                                HeaderIconButton(
+                                    icon = R.drawable.add_in_playlist,
+                                    color = colorPalette().text,
+                                    modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+                                            onClick = {
+                                                menuState.display {
+                                                    PlaylistsItemMenu(
+                                                        navController = navController,
+                                                        modifier = Modifier.fillMaxHeight(0.4f),
+                                                        onDismiss = menuState::hide,
+                                                        onImportOnlinePlaylist = {
+                                                            isImportingPlaylist = true
+                                                        },
 
-                                                    //NOT NECESSARY IN ONLINE PLAYLIST USE IMPORT
-                                                    onAddToPlaylist = { playlistPreview ->
-                                                        position =
-                                                            playlistPreview.songCount.minus(1) ?: 0
-                                                        if (position > 0) position++ else position = 0
+                                                        //NOT NECESSARY IN ONLINE PLAYLIST USE IMPORT
+                                                        onAddToPlaylist = { playlistPreview ->
+                                                            position =
+                                                                playlistPreview.songCount.minus(1) ?: 0
+                                                            if (position > 0) position++ else position = 0
 
-                                                        if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
-                                                            val songs = podcastPage?.listEpisode
-                                                                                                     ?.map( Innertube.Podcast.EpisodeItem::asMediaItem )
-                                                                                                     .orEmpty()
-                                                            Database.asyncTransaction {
-                                                                mapIgnore( playlistPreview.playlist, *songs.toTypedArray() )
-                                                            }
-                                                        } else {
-                                                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                                playlistPreview.playlist.browseId?.let { id ->
-                                                                    addToYtPlaylist(playlistPreview.playlist.id,
-                                                                        position,
-                                                                        id,
-                                                                        podcastPage?.listEpisode?.map { it.asMediaItem } ?: emptyList())
+                                                            if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                                val songs = podcastPage?.listEpisode
+                                                                                                         ?.map( Innertube.Podcast.EpisodeItem::asMediaItem )
+                                                                                                         .orEmpty()
+                                                                Database.asyncTransaction {
+                                                                    mapIgnore( playlistPreview.playlist, *songs.toTypedArray() )
+                                                                }
+                                                            } else {
+                                                                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                                                    playlistPreview.playlist.browseId?.let { id ->
+                                                                        addToYtPlaylist(playlistPreview.playlist.id,
+                                                                            position,
+                                                                            id,
+                                                                            podcastPage?.listEpisode?.map { it.asMediaItem } ?: emptyList())
+                                                                    }
                                                                 }
                                                             }
-                                                        }
 
-                                                        NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                                                            Toaster.done()
-                                                        }
-                                                    },
-                                                    onGoToPlaylist = {
-                                                        navController.navigate("${NavRoutes.localPlaylist.name}/$it")
-                                                    },
-                                                    disableScrollingText = disableScrollingText
-                                                )
+                                                            NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+                                                                Toaster.done()
+                                                            }
+                                                        },
+                                                        onGoToPlaylist = {
+                                                            navController.navigate("${NavRoutes.localPlaylist.name}/$it")
+                                                        },
+                                                        disableScrollingText = disableScrollingText
+                                                    )
+                                                }
+                                            },
+                                            onLongClick = {
+                                                Toaster.i( R.string.info_add_in_playlist )
                                             }
-                                        },
-                                        onLongClick = {
-                                            Toaster.i( R.string.info_add_in_playlist )
-                                        }
-                            )
+                                )
+                            }
+                            if (glassActions) {
+                                GlassToolbarRow(actionCount = 7) { toolbarActions() }
+                            } else {
+                                toolbarActions()
+                            }
 
                         }
                     }
@@ -701,13 +722,6 @@ fun Podcast(
                             }
                         )
                     }
-                }
-
-                item(
-                    key = "footer",
-                    contentType = 0,
-                ) {
-                    Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
                 }
             }
             } // CompositionLocalProvider

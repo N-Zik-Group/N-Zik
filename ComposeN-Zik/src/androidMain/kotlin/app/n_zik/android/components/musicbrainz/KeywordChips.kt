@@ -5,13 +5,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.GlassSuggestionChip
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.semiBold
 
@@ -32,7 +32,7 @@ fun KeywordChips(
         modifier = Modifier.padding(vertical = 4.dp)
     ) {
         keywords.forEach { keyword ->
-            SuggestionChip(
+            GlassSuggestionChip(
                 onClick = { onKeywordClick(keyword) },
                 label = {
                     Text(

@@ -1,5 +1,7 @@
 package app.it.fast4x.rimusic.ui.screens.localplaylist
 
+import androidx.compose.foundation.layout.PaddingValues
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
@@ -7,7 +9,6 @@ import app.n_zik.android.components.search.SearchEmptySpace
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.LocalPlayerAwareWindowInsets
 
 import app.n_zik.android.core.database.*
 
@@ -97,12 +98,18 @@ import app.n_zik.android.playback.services.isUnmatched
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.SwipeableQueueItem
-import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Dialog
 import app.it.fast4x.rimusic.ui.components.themed.Enqueue
 import app.it.fast4x.rimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassToolbarButtons
+import app.n_zik.android.components.glass.GlassToolbarLoading
+import app.n_zik.android.components.glass.GlassToolbarRow
+import app.n_zik.android.components.glass.GlassToolbarColumn
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.it.fast4x.rimusic.ui.components.themed.IconInfo
@@ -188,6 +195,7 @@ import app.n_zik.android.components.playlist.PinPlaylist
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.components.playlist.PlaylistSongsSort
+import app.n_zik.android.components.playlist.localPlaylistHeaderSurface
 import app.n_zik.android.components.dialog.playlist.PlaylistInsertionDialog
 import app.n_zik.android.utils.playlist.supportsInsertionPosition
 import app.n_zik.android.utils.playlist.importSongsToPlaylist
@@ -225,7 +233,6 @@ import app.n_zik.android.utils.getAlbumVersionFromVideo
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import java.util.concurrent.atomic.AtomicInteger
-import org.json.JSONArray
 
 
 @KotlinCsvExperimental
@@ -243,6 +250,8 @@ fun LocalPlaylistSongs(
 ) {
     // Essentials
     val context = LocalContext.current
+    val glassSettings = rememberGlassSettings()
+    val glassActions = glassSettings.usesGlassMaterial(GlassArea.ActionButtons)
     val binder = LocalPlayerServiceBinder.current
     val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
@@ -1180,6 +1189,7 @@ fun LocalPlaylistSongs(
     ) {
         CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
         LazyColumn(
+                contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
             state = lazyListState,
             modifier = Modifier
                 .background(colorPalette().background0)
@@ -1216,10 +1226,7 @@ fun LocalPlaylistSongs(
                         //.background(colorPalette().background4)
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
-                        .background(
-                            color = colorPalette().background1,
-                            shape = thumbnailShape()
-                        )
+                        .localPlaylistHeaderSurface(glassSettings)
                 ) {
 
                     playlist?.let {
@@ -1244,7 +1251,7 @@ fun LocalPlaylistSongs(
                         modifier = Modifier
                             //.fillMaxHeight()
                             .padding(end = 10.dp)
-                            .fillMaxWidth(if (isLandscape) 0.90f else 0.80f)
+                            .weight(1f)
                     ) {
                         Spacer(modifier = Modifier.height(10.dp))
                         val totalSongs = if (isRecommendationEnabled && !isRecommendationsLoading && relatedSongs.isNotEmpty()) {
@@ -1298,41 +1305,59 @@ fun LocalPlaylistSongs(
                         Spacer(modifier = Modifier.height(30.dp))
                     }
 
+                    val recommendationButton: @Composable () -> Unit = {
+                        if (isRecommendationsLoading) {
+                            if (!GlassToolbarLoading()) CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = colorPalette().text,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            HeaderIconButton(
+                                icon = R.drawable.smart_shuffle,
+                                enabled = true,
+                                color = if (isRecommendationEnabled) colorPalette().text else colorPalette().textDisabled,
+                                modifier = Modifier.clip(uiRoundnessShape()),
+                                        onClick = {
+                                            isRecommendationEnabled = !isRecommendationEnabled
+                                        },
+                                        onLongClick = {
+                                            Toaster.i( R.string.info_smart_recommendation )
+                                        }
+                            )
+                        }
+                    }
+
                     Column(
                         verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(end = 12.dp)
                     ) {
-                        Box(
-                            modifier = Modifier.size(48.dp), // Standard IconButton size
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (isRecommendationsLoading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    color = colorPalette().text,
-                                    strokeWidth = 2.dp
-                                )
-                            } else {
-                                HeaderIconButton(
-                                    icon = R.drawable.smart_shuffle,
-                                    enabled = true,
-                                    color = if (isRecommendationEnabled) colorPalette().text else colorPalette().textDisabled,
-                                    modifier = Modifier.clip(uiRoundnessShape()),
-                                            onClick = {
-                                                isRecommendationEnabled = !isRecommendationEnabled
-                                            },
-                                            onLongClick = {
-                                                Toaster.i( R.string.info_smart_recommendation )
-                                            }
-                                )
+                        if (glassActions) {
+                            GlassToolbarColumn(actionCount = 2, settings = glassSettings) {
+                                recommendationButton()
+                                shuffle.ToolBarButton()
                             }
-                        }
-                        Spacer(modifier = Modifier.height(10.dp))
-                        shuffle.ToolBarButton()
-                        // Bookmarking saves to the YouTube Music library: meaningless for a local playlist
-                        if (playlist?.canBeBookmarked() == true) {
+                            if (playlist?.canBeBookmarked() == true) {
+                                Spacer(modifier = Modifier.height(10.dp))
+                                GlassToolbarRow(actionCount = 1, settings = glassSettings) {
+                                    bookmark.ToolBarButton()
+                                }
+                            }
+                        } else {
+                            Box(
+                                modifier = Modifier.size(48.dp), // Standard IconButton size
+                                contentAlignment = Alignment.Center
+                            ) {
+                                recommendationButton()
+                            }
                             Spacer(modifier = Modifier.height(10.dp))
-                            bookmark.ToolBarButton()
+                            shuffle.ToolBarButton()
+                            // Bookmarking saves to the YouTube Music library: meaningless for a local playlist
+                            if (playlist?.canBeBookmarked() == true) {
+                                Spacer(modifier = Modifier.height(10.dp))
+                                bookmark.ToolBarButton()
+                            }
                         }
                     }
                 }
@@ -1343,20 +1368,9 @@ fun LocalPlaylistSongs(
 
                 val hasUnmatchedSongs = remember(items) { items.any { (it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L)) && !it.id.startsWith(LOCAL_KEY_PREFIX) } }
 
-                val defaultOrder = LocalPlaylistToolbarSettingsDialog.allButtonIds
-                val order = try {
-                    if (toolbarOrderPref.isBlank()) defaultOrder else {
-                        val arr = JSONArray(toolbarOrderPref)
-                        val savedIds = (0 until arr.length()).map { arr.getString(it) }.distinct()
-                        // Filter to valid IDs and append any missing defaults
-                        val filtered = savedIds.filter { it in defaultOrder }
-                        val missing = defaultOrder.filter { it !in filtered }
-                        filtered + missing
-                    }
-                } catch (_: Exception) { defaultOrder }
+                val order = LocalPlaylistToolbarSettingsDialog.parseOrder(toolbarOrderPref)
 
                 val toolbarButtons = buildList {
-                    if (playlist?.supportsInsertionPosition() == true) add(insertionDialog)
                     order.forEach { id ->
                         // Check toggle state - if disabled, skip this button
                         val toggleKey = "pl_ts_$id"
@@ -1364,6 +1378,7 @@ fun LocalPlaylistSongs(
                         if (!isEnabled) return@forEach
 
                         when (id) {
+                            "insertion_position" -> if (playlist?.supportsInsertionPosition() == true) add(insertionDialog)
                             "pin" -> if (playlistNotMonthlyType) add( pin )
                             "search" -> add( search )
                             // Spec 2: renumbering/position-lock rewrites position, destroying the top order
@@ -1391,7 +1406,7 @@ fun LocalPlaylistSongs(
                     }
                 }
 
-                TabToolBar.Buttons( toolbarButtons )
+                GlassToolbarButtons( toolbarButtons )
 
                 LaunchedEffect(autosync, playlist?.browseId) {
                     if ( autosync && isYouTubeSyncEnabled() && !playlist?.browseId.isNullOrBlank() ) {
@@ -1409,13 +1424,29 @@ fun LocalPlaylistSongs(
                         .fillMaxWidth()
                 ) {
 
-                    sort.ToolBarButton()
+                    if (glassActions) {
+                        GlassToolbarRow(actionCount = 1, settings = glassSettings) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                                sort.ToolBarButton()
+                            }
+                        }
+                    } else {
+                        sort.ToolBarButton()
+                    }
 
                     Row(
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
-                    ) { locator.ToolBarButton() }
+                    ) {
+                        if (glassActions) {
+                            GlassToolbarRow(actionCount = 1, settings = glassSettings) {
+                                locator.ToolBarButton()
+                            }
+                        } else {
+                            locator.ToolBarButton()
+                        }
+                    }
 
                 }
 
@@ -1584,13 +1615,6 @@ fun LocalPlaylistSongs(
                 }
             }
         }
-
-            item(
-                key = "footer",
-                contentType = 0,
-            ) {
-                Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
-            }
         }
         } // CompositionLocalProvider
 

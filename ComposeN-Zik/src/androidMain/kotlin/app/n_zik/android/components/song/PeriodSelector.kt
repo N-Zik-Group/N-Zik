@@ -2,7 +2,6 @@ package app.n_zik.android.components.song
 
 import android.content.Context
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
 import app.it.fast4x.rimusic.enums.MaxTopPlaylistItems
@@ -149,7 +149,7 @@ class PeriodSelector private constructor(
         Box(
             modifier = Modifier
                 .size(32.dp)
-                .background(
+                .iconBadgeBackground(
                     color = colorPalette().accent.copy(alpha = 0.1f),
                     shape = uiRoundnessShape()
                 ),

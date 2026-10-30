@@ -1,5 +1,7 @@
 package app.it.fast4x.rimusic.ui.screens.history
 
+import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
+
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
@@ -11,7 +13,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.it.fast4x.compose.persist.PersistMapCleanup
-import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.navigation.Skeleton
 
 @ExperimentalTextApi
 @ExperimentalFoundationApi
@@ -24,12 +26,15 @@ fun HistoryScreen(
     miniPlayer: @Composable () -> Unit = {},
 ) {
     val saveableStateHolder = rememberSaveableStateHolder()
+    val topContentInset = rememberTopContentInsetProvider(hasNavBar = false)
 
     PersistMapCleanup(tagPrefix = "history")
 
             Skeleton(
                 navController,
                 miniPlayer = miniPlayer,
+                topInsetHandledByContent = true,
+                topContentInsetProvider = topContentInset,
                 navBarContent = { item ->
                     item(0, stringResource(R.string.history), R.drawable.history)
                 }
@@ -37,6 +42,7 @@ fun HistoryScreen(
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
                     when (currentTabIndex) {
                         0 -> HistoryList(
+                            topContentInsetProvider = topContentInset,
                             navController = navController,
                         )
                     }

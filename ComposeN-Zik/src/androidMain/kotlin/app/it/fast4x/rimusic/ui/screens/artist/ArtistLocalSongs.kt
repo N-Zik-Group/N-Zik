@@ -1,10 +1,10 @@
 package app.it.fast4x.rimusic.ui.screens.artist
 
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.LocalPlayerAwareWindowInsets
 
 import app.n_zik.android.core.database.*
 
@@ -50,7 +50,7 @@ import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.ShimmerHost
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
-import app.it.fast4x.rimusic.ui.components.themed.LayoutWithAdaptiveThumbnail
+import app.n_zik.android.components.ui.screens.LayoutWithAdaptiveThumbnail
 import app.it.fast4x.rimusic.ui.components.themed.MultiFloatingActionsContainer
 import app.it.fast4x.rimusic.ui.items.SongItemPlaceholder
 import app.it.fast4x.rimusic.ui.styling.Dimensions
@@ -95,6 +95,11 @@ import app.it.fast4x.rimusic.utils.fadingEdge
 import app.it.fast4x.rimusic.utils.isLandscape
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.components.artist.FollowButton
+import app.n_zik.android.components.artist.ArtistToolbarActionCount
+import app.n_zik.android.components.glass.GlassToolbarRow
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.playback.utils.Shuffler
 import app.it.fast4x.rimusic.utils.addNext
 import app.n_zik.android.components.SongItem
@@ -129,7 +134,8 @@ fun ArtistLocalSongs(
     navController: NavController,
     localArtist: Artist?,
     artistPage: ArtistPage?,
-    thumbnailPainter: Painter
+    thumbnailPainter: Painter,
+    contentPadding: PaddingValues = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
 ) {
     localArtist ?: return
     val browseId = localArtist.id
@@ -197,7 +203,7 @@ fun ArtistLocalSongs(
     CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
     LazyColumn(
         state = lazyListState,
-        contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer),
+        contentPadding = contentPadding,
         modifier = Modifier.fillMaxSize()
     ) {
         item {
@@ -208,68 +214,76 @@ fun ArtistLocalSongs(
             )
         }
         item {
+            val glassActions = rememberGlassSettings().usesGlassMaterial(GlassArea.ActionButtons)
             Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 8.dp)
             ) {
                 FollowButton { localArtist }.ToolBarButton()
-                HeaderIconButton(
-                    icon = R.drawable.download,
-                    color = colorPalette().text,
-                    iconSize = 24.dp,
-                    modifier = Modifier.clip(uiRoundnessShape()),
-                    onClick = { showConfirmDownloadAllDialog = true },
-                    onLongClick = { Toaster.i(context.resources.getString(R.string.info_download_all_songs)) }
-                )
-                HeaderIconButton(
-                    icon = R.drawable.downloaded,
-                    color = colorPalette().text,
-                    iconSize = 24.dp,
-                    modifier = Modifier.clip(uiRoundnessShape()),
-                    onClick = { showConfirmDeleteDownloadDialog = true },
-                    onLongClick = { Toaster.i(context.resources.getString(R.string.info_remove_all_downloaded_songs)) }
-                )
-                HeaderIconButton(
-                    icon = R.drawable.enqueue,
-                    enabled = !songs.isNullOrEmpty(),
-                    color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
-                    iconSize = 24.dp,
-                    modifier = Modifier.clip(uiRoundnessShape()),
-                    onClick = {
-                        val snapshot = songs?.toList().orEmpty()
-                        if (snapshot.isNotEmpty()) {
-                NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                    val mediaItems = withContext(NzikDispatchers.DATA) {
-                        val player = binder?.player ?: return@withContext emptyList()
-                        player.excludeMediaItems(snapshot.map(Song::asMediaItem), context)
-                    }
-                    val player = binder?.player ?: return@launch
-                    player.enqueue(mediaItems)
-                }
-                        }
-                    },
-                    onLongClick = { Toaster.i(context.resources.getString(R.string.info_enqueue_songs)) }
-                )
-                HeaderIconButton(
-                    // Issue #866 (gh-866): app-wide shuffle confirmation flash.
-                    icon = shuffleButtonIcon(),
-                    enabled = !songs.isNullOrEmpty(),
-                    color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
-                    iconSize = 24.dp,
-                    modifier = Modifier.clip(uiRoundnessShape()),
-                    onClick = {
-                        songs?.let { songs ->
-                            if (songs.isNotEmpty()) {
-                                binder?.let {
-                                    it.triggerShuffleOkFlash()
-                                    Shuffler.play(it, songs)
+                val toolbarActions: @Composable () -> Unit = {
+                    HeaderIconButton(
+                        icon = R.drawable.download,
+                        color = colorPalette().text,
+                        iconSize = 24.dp,
+                        modifier = Modifier.clip(uiRoundnessShape()),
+                        onClick = { showConfirmDownloadAllDialog = true },
+                        onLongClick = { Toaster.i(context.resources.getString(R.string.info_download_all_songs)) }
+                    )
+                    HeaderIconButton(
+                        icon = R.drawable.downloaded,
+                        color = colorPalette().text,
+                        iconSize = 24.dp,
+                        modifier = Modifier.clip(uiRoundnessShape()),
+                        onClick = { showConfirmDeleteDownloadDialog = true },
+                        onLongClick = { Toaster.i(context.resources.getString(R.string.info_remove_all_downloaded_songs)) }
+                    )
+                    HeaderIconButton(
+                        icon = R.drawable.enqueue,
+                        enabled = !songs.isNullOrEmpty(),
+                        color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
+                        iconSize = 24.dp,
+                        modifier = Modifier.clip(uiRoundnessShape()),
+                        onClick = {
+                            val snapshot = songs?.toList().orEmpty()
+                            if (snapshot.isNotEmpty()) {
+                                NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+                                    val mediaItems = withContext(NzikDispatchers.DATA) {
+                                        val player = binder?.player ?: return@withContext emptyList()
+                                        player.excludeMediaItems(snapshot.map(Song::asMediaItem), context)
+                                    }
+                                    val player = binder?.player ?: return@launch
+                                    player.enqueue(mediaItems)
                                 }
                             }
-                        }
-                    },
-                    onLongClick = { Toaster.i(context.resources.getString(R.string.info_shuffle)) }
-                )
+                        },
+                        onLongClick = { Toaster.i(context.resources.getString(R.string.info_enqueue_songs)) }
+                    )
+                    HeaderIconButton(
+                        // Issue #866 (gh-866): app-wide shuffle confirmation flash.
+                        icon = shuffleButtonIcon(),
+                        enabled = !songs.isNullOrEmpty(),
+                        color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
+                        iconSize = 24.dp,
+                        modifier = Modifier.clip(uiRoundnessShape()),
+                        onClick = {
+                            songs?.let { songs ->
+                                if (songs.isNotEmpty()) {
+                                    binder?.let {
+                                        it.triggerShuffleOkFlash()
+                                        Shuffler.play(it, songs)
+                                    }
+                                }
+                            }
+                        },
+                        onLongClick = { Toaster.i(context.resources.getString(R.string.info_shuffle)) }
+                    )
+                }
+                if (glassActions) {
+                    GlassToolbarRow(actionCount = ArtistToolbarActionCount) { toolbarActions() }
+                } else {
+                    toolbarActions()
+                }
             }
         }
         item {
@@ -477,7 +491,10 @@ fun ArtistLocalSongs(
     val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
     val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
 
-    LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
+    LayoutWithAdaptiveThumbnail(
+        thumbnailContent = thumbnailContent,
+        thumbnailContentPadding = rememberPageChromeContentPadding(),
+    ) {
         Box(
             modifier = Modifier
                 .background(colorPalette().background0)
@@ -487,7 +504,7 @@ fun ArtistLocalSongs(
         ) {
             LazyColumn(
                 state = lazyListState,
-                contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer),
+                contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
                 modifier = Modifier
                     .background(colorPalette().background0)
                     .fillMaxSize()
@@ -757,23 +774,27 @@ fun ArtistHeader(
             )
         }
 
-        HeaderIconButton(
-            icon = R.drawable.share_social,
-            color = colorPalette().text,
-            iconSize = 24.dp,
+        GlassToolbarRow(
+            actionCount = 1,
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(top = 5.dp, end = 5.dp),
-            onClick = {
-                val url = ExternalUris.youtubeMusicChannel(localArtist.id.removePrefix(MODIFIED_PREFIX))
-                val sendIntent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, url)
+                .padding(top = 5.dp, end = 5.dp)
+        ) {
+            HeaderIconButton(
+                icon = R.drawable.share_social,
+                color = colorPalette().text,
+                iconSize = 24.dp,
+                onClick = {
+                    val url = ExternalUris.youtubeMusicChannel(localArtist.id.removePrefix(MODIFIED_PREFIX))
+                    val sendIntent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, url)
+                    }
+                    context.startActivity(Intent.createChooser(sendIntent, null))
                 }
-                context.startActivity(Intent.createChooser(sendIntent, null))
-            }
-        )
+            )
+        }
     }
 }
 

@@ -1,6 +1,8 @@
 // Ported from RiPlay (AGPL-3.0) — base: it.fast4x.riplay.ui.screens.album / it.fast4x.riplay.extensions.musicbrainz
 package app.n_zik.android.components.ui.screens.album
 
+import app.n_zik.android.components.ui.screens.CollectionPageStatus
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import android.content.Intent
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -101,6 +103,8 @@ import app.it.fast4x.rimusic.ui.components.themed.AutoResizeText
 import app.it.fast4x.rimusic.ui.components.themed.Enqueue
 import app.it.fast4x.rimusic.ui.components.themed.FontSizeRange
 import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
+import app.n_zik.android.components.glass.GlassToolbarButtons
+import app.n_zik.android.components.glass.GlassToolbarRow
 import app.it.fast4x.rimusic.ui.components.themed.ItemsList
 import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.components.themed.MultiFloatingActionsContainer
@@ -164,6 +168,9 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.extensions.musicbrainz.MBMetadataHelper
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.GlassFloatingActions
+import app.n_zik.android.components.glass.glassFloatingActionContent
+import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
 import app.n_zik.android.typography
 import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
@@ -561,25 +568,27 @@ fun AlbumDetails(
         )
     }
 
-    DynamicOrientationLayout(thumbnailPainter) {
+    val floatingBackdrop = rememberGlassFloatingActionBackdrop()
+
+    DynamicOrientationLayout(thumbnailPainter, thumbnailContentPadding = rememberPageChromeContentPadding()) {
         Box(
             Modifier.fillMaxSize()
                 .background(colorPalette().background0),
             contentAlignment = Alignment.Center
         ) {
             if (items.isEmpty()) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Loader()
-                    if (loadedSongsCount > 0) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        BasicText(
-                            text = stringResource(R.string.loading_songs_count, loadedSongsCount),
-                            style = typography().xxs.copy(
-                                color = colorPalette().textDisabled
+                CollectionPageStatus {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Loader()
+                        if (loadedSongsCount > 0) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            BasicText(
+                                text = stringResource(R.string.loading_songs_count, loadedSongsCount),
+                                style = typography().xxs.copy(
+                                    color = colorPalette().textDisabled
+                                )
                             )
-                        )
+                        }
                     }
                 }
             } else {
@@ -614,8 +623,9 @@ fun AlbumDetails(
                     LazyColumn(
                         state = lazyListState,
                         userScrollEnabled = items.isNotEmpty(),
-                        contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer),
+                        contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
                         modifier = Modifier.fillMaxSize()
+                            .glassFloatingActionContent(floatingBackdrop)
                             .background(colorPalette().background0)
                     ) {
                         item("header") {
@@ -653,12 +663,14 @@ fun AlbumDetails(
                                         }
                                 )
 
+                                GlassToolbarRow(1,
+                                    modifier = Modifier.align(Alignment.TopEnd)
+                                        .padding(top = 5.dp, end = 5.dp),
+                                ) {
                                 HeaderIconButton(
                                     icon = R.drawable.share_social,
                                     color = colorPalette().text,
                                     iconSize = 24.dp,
-                                    modifier = Modifier.align(Alignment.TopEnd)
-                                        .padding(top = 5.dp, end = 5.dp),
                                     onClick = {
                                         album?.shareUrl?.let { url ->
                                             val sendIntent = Intent().apply {
@@ -673,6 +685,7 @@ fun AlbumDetails(
                                         }
                                     }
                                 )
+                                }
                             }
                         }
 
@@ -701,11 +714,11 @@ fun AlbumDetails(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                bookmark.ToolBarButton()
+                                GlassToolbarRow(1) { bookmark.ToolBarButton() }
 
                                 Spacer(Modifier.width(15.dp))
 
-                                TabToolBar.Buttons(
+                                GlassToolbarButtons(
                                     downloadALlDialog,
                                     deleteAllDownloadsDialog,
                                     shuffle,
@@ -718,7 +731,7 @@ fun AlbumDetails(
                                     playNext,
                                     enqueue,
                                     addToPlaylist,
-                                    modifier = Modifier.fillMaxWidth(.8f)
+                                    modifier = Modifier.fillMaxWidth(.8f),
                                 )
                             }
                         }
@@ -883,16 +896,18 @@ fun AlbumDetails(
                     }
                 }
 
-                val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
-                if (showFloatingIcon)
-                    MultiFloatingActionsContainer(
-                        // Issue #866 (gh-866): app-wide shuffle confirmation flash (the click
-                        // goes through SongShuffler, which triggers the flash).
-                        iconId = shuffleButtonIcon(),
-                        onClick = shuffle::onShortClick,
-                        onClickSettings = onSettingsClick,
-                        onClickSearch = onSearchClick
-                    )
+                GlassFloatingActions(floatingBackdrop) {
+                    val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
+                    if (showFloatingIcon)
+                        MultiFloatingActionsContainer(
+                            // Issue #866 (gh-866): app-wide shuffle confirmation flash (the click
+                            // goes through SongShuffler, which triggers the flash).
+                            iconId = shuffleButtonIcon(),
+                            onClick = shuffle::onShortClick,
+                            onClickSettings = onSettingsClick,
+                            onClickSearch = onSearchClick
+                        )
+                }
             }
         }
     }

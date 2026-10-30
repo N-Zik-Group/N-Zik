@@ -1,6 +1,8 @@
 @file:Suppress("OPT_IN_USAGE", "OPT_IN_USAGE_ERROR")
 package app.kreate.android.themed.rimusic.screen.artist
 
+import app.n_zik.android.components.ui.screens.CollectionPageStatus
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
@@ -32,12 +34,9 @@ import it.fast4x.innertube.models.GridRenderer
 import it.fast4x.innertube.utils.from
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.ui.components.Skeleton
-import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.navigation.Skeleton
+import app.n_zik.android.components.navigation.Skeleton
 import app.it.fast4x.rimusic.ui.components.themed.Loader
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Alignment
 
 import app.it.fast4x.rimusic.ui.items.AlbumItem
 import app.it.fast4x.rimusic.ui.styling.Dimensions
@@ -110,15 +109,11 @@ fun ArtistAlbums(
     Skeleton(
         navController = navController,
         miniPlayer = miniplayer,
+        topInsetHandledByContent = true,
         navBarContent = {}
     ) {
         if (albums.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Loader()
-            }
+            CollectionPageStatus { Loader() }
         } else {
             AppPullToRefreshBox(
                 isRefreshing = isRefreshing,
@@ -133,7 +128,7 @@ fun ArtistAlbums(
                 LazyVerticalGrid(
                     state = lazyGridState,
                     columns = GridCells.Adaptive(Dimensions.thumbnails.album + 24.dp),
-                    contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer),
+                    contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
                     modifier = Modifier.background(colorPalette().background0)
                 ) {
                     items(

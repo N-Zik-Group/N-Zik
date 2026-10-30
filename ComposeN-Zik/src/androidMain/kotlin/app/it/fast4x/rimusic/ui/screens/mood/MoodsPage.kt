@@ -1,18 +1,15 @@
 package app.it.fast4x.rimusic.ui.screens.mood
 
+import app.n_zik.android.components.ui.screens.CollectionPageStatus
+import androidx.compose.foundation.layout.PaddingValues
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -24,26 +21,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.n_zik.android.R
-import com.valentinilk.shimmer.shimmer
 import app.it.fast4x.compose.persist.persist
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.discoverPage
-import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.models.toUiMood
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.ui.components.ShimmerHost
-import app.it.fast4x.rimusic.ui.components.themed.HeaderPlaceholder
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
-import app.it.fast4x.rimusic.ui.components.themed.TextPlaceholder
-import app.it.fast4x.rimusic.ui.items.AlbumItemPlaceholder
 import app.n_zik.android.components.ui.screens.home.MoodGridItemColored
 import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.styling.Dimensions
@@ -58,7 +48,6 @@ import kotlinx.coroutines.withContext
 fun MoodsPage(
     navController: NavController
 ) {
-    val windowInsets = LocalPlayerAwareWindowInsets.current
 
     var discoverPage by persist<Result<Innertube.DiscoverPage>>("moods/discovery/pageResult")
     LaunchedEffect(Unit) {
@@ -68,12 +57,7 @@ fun MoodsPage(
 
     val moodAngGenresLazyGridState = rememberLazyGridState()
 
-    val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
 
-    val sectionTextModifier = Modifier
-        .padding(horizontal = 16.dp)
-        .padding(top = 24.dp, bottom = 8.dp)
-        .padding(endPaddingValues)
 
     Column (
         modifier = Modifier
@@ -84,6 +68,7 @@ fun MoodsPage(
     ) {
         discoverPage?.getOrNull()?.let { moodResult ->
             LazyVerticalGrid(
+                contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
                 state = moodAngGenresLazyGridState,
                 columns = GridCells.Adaptive(Dimensions.thumbnails.album + 24.dp),
                 modifier = Modifier
@@ -128,26 +113,20 @@ fun MoodsPage(
 
                     }
 
-                item(key = "bottom") {
-                    Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
-                }
-
                 }
 
 
-        } ?: discoverPage?.exceptionOrNull()?.let {
-            BasicText(
-                text = stringResource(R.string.page_not_been_loaded),
-                style = typography().s.secondary.center,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(all = 16.dp)
-            )
-        } ?: Loader(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(windowInsets.asPaddingValues())
-        )
+        } ?: CollectionPageStatus {
+            if (discoverPage?.exceptionOrNull() != null) {
+                BasicText(
+                    text = stringResource(R.string.page_not_been_loaded),
+                    style = typography().s.secondary.center,
+                    modifier = Modifier.padding(all = 16.dp)
+                )
+            } else {
+                Loader(modifier = Modifier.fillMaxSize())
+            }
+        }
     }
 }
 

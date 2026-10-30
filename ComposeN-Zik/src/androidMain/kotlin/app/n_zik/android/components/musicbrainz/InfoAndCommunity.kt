@@ -31,6 +31,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassSectionAction
+import app.n_zik.android.components.glass.GlassSectionActions
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.ui.screens.album.Translate
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.typography
@@ -67,6 +72,8 @@ fun InfoAndCommunity(
     onInsightsClick: () -> Unit
 ) {
     var readMore by remember { mutableStateOf(true) }
+    val glass = rememberGlassSettings()
+    val materialActions = glass.usesGlassMaterial(GlassArea.ActionButtons)
 
     val cleanedBio = bio?.cleanWikipediaText()
 
@@ -93,9 +100,7 @@ fun InfoAndCommunity(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(uiRoundnessShape())
-                .clickable {
-                    readMore = !readMore
-                }
+                .then(if (materialActions) Modifier else Modifier.clickable { readMore = !readMore })
                 .padding(horizontal = 16.dp)
                 .padding(top = 24.dp, bottom = 8.dp)
         ) {
@@ -126,30 +131,47 @@ fun InfoAndCommunity(
                         typography().xxs.secondary
                 )
             }
-            if (isSyncing) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .padding(end = 12.dp)
-                        .size(18.dp),
-                    color = colorPalette().textSecondary,
-                    strokeWidth = 2.dp
-                )
-            } else {
-                Icon(
-                    painter = painterResource(R.drawable.refresh),
-                    contentDescription = stringResource(R.string.mb_resync),
-                    tint = colorPalette().textSecondary,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .clickable { onResyncClick() }
-                        .padding(6.dp)
-                        .size(18.dp)
-                )
-            }
-            Icon(
-                painter = painterResource(if (readMore) R.drawable.chevron_up else R.drawable.chevron_down),
-                contentDescription = null,
-                tint = colorPalette().textSecondary
+            val resyncDescription = stringResource(R.string.mb_resync)
+            val expandDescription = stringResource(R.string.title_info_and_community)
+            GlassSectionActions(
+                actions = buildList {
+                    add(GlassSectionAction(R.drawable.refresh, resyncDescription,
+                        loading = isSyncing, onClick = onResyncClick))
+                    add(GlassSectionAction(
+                        if (readMore) R.drawable.chevron_up else R.drawable.chevron_down,
+                        expandDescription,
+                        separateBefore = true,
+                        onClick = { readMore = !readMore },
+                    ))
+                },
+                settings = glass,
+                nativeContent = {
+                    if (isSyncing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .padding(end = 12.dp)
+                                .size(18.dp),
+                            color = colorPalette().textSecondary,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(R.drawable.refresh),
+                            contentDescription = stringResource(R.string.mb_resync),
+                            tint = colorPalette().textSecondary,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .clickable { onResyncClick() }
+                                .padding(6.dp)
+                                .size(18.dp)
+                        )
+                    }
+                    Icon(
+                        painter = painterResource(if (readMore) R.drawable.chevron_up else R.drawable.chevron_down),
+                        contentDescription = null,
+                        tint = colorPalette().textSecondary
+                    )
+                },
             )
         }
         Column(
@@ -254,9 +276,7 @@ fun InfoAndCommunity(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(uiRoundnessShape())
-                .clickable {
-                    onInsightsClick()
-                }
+                .then(if (materialActions) Modifier else Modifier.clickable(onClick = onInsightsClick))
                 .padding(horizontal = 16.dp)
                 .padding(top = 24.dp, bottom = 8.dp)
         ) {
@@ -265,10 +285,18 @@ fun InfoAndCommunity(
                 style = typography().m.semiBold,
                 modifier = Modifier.weight(1f)
             )
-            Icon(
-                painter = painterResource(R.drawable.chevron_forward),
-                contentDescription = null,
-                tint = colorPalette().textSecondary
+            GlassSectionActions(
+                actions = listOf(GlassSectionAction(
+                    R.drawable.chevron_forward, stringResource(R.string.mb_insights), onClick = onInsightsClick,
+                )),
+                settings = glass,
+                nativeContent = {
+                    Icon(
+                        painter = painterResource(R.drawable.chevron_forward),
+                        contentDescription = null,
+                        tint = colorPalette().textSecondary
+                    )
+                },
             )
         }
     }

@@ -37,6 +37,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
+import app.n_zik.android.components.glass.GlassDescriptionExpansion
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -557,11 +558,16 @@ fun AlbumDetails(
                             }
 
                             if (showMoreButton || isDescriptionExpanded) {
-                                BasicText(
-                                    text = if (isDescriptionExpanded) stringResource(R.string.show_less) else stringResource(R.string.show_more),
-                                    style = typography().xs.semiBold.copy(colorPalette().text),
-                                    modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally)
-                                )
+                                GlassDescriptionExpansion(
+                                    onClick = { isDescriptionExpanded = !isDescriptionExpanded },
+                                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                                ) {
+                                    BasicText(
+                                        text = if (isDescriptionExpanded) stringResource(R.string.show_less) else stringResource(R.string.show_more),
+                                        style = typography().xs.semiBold.copy(colorPalette().text),
+                                        modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally)
+                                    )
+                                }
                             }
 
                             if (isDescriptionExpanded && attributionsIndex != -1) {

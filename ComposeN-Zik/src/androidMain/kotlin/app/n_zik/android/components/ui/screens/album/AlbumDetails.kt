@@ -2,6 +2,7 @@ package app.n_zik.android.components.ui.screens.album
 
 import app.n_zik.android.core.database.*
 
+import app.n_zik.android.components.glass.GlassDescriptionTranslate
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -194,6 +195,11 @@ class Translate private constructor(
     override val messageId: Int = R.string.info_translation
 
     override var isFirstColor by activeState
+
+    @Composable
+    override fun ToolBarButton() {
+        GlassDescriptionTranslate(color, ::onShortClick, ::onLongClick) { super<Icon>.ToolBarButton() }
+    }
 
     override fun onShortClick() { isFirstColor = !isFirstColor }
     override fun onLongClick() { onLongClickAction() }

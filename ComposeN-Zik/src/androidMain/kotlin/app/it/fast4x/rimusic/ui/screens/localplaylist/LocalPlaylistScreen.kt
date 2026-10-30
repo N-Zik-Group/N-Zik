@@ -12,7 +12,7 @@ import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.client.KotlinCsvExperimental
 import app.it.fast4x.compose.persist.PersistMapCleanup
 import app.n_zik.android.R
-import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.navigation.Skeleton
 
 @OptIn(KotlinCsvExperimental::class)
 @ExperimentalTextApi
@@ -32,6 +32,7 @@ fun LocalPlaylistScreen(
     Skeleton(
         navController,
         miniPlayer = miniPlayer,
+        topInsetHandledByContent = true,
         navBarContent = { item ->
             item(0, stringResource(R.string.songs), R.drawable.musical_notes)
         }

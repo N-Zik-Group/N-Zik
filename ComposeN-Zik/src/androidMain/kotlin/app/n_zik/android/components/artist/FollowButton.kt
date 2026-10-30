@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
@@ -42,9 +43,21 @@ import app.it.fast4x.rimusic.utils.isNetworkConnected
 import app.it.fast4x.rimusic.enums.SyncDirection
 import app.n_zik.android.appContext
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassActionCellHeight
+import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.LiquidButton
+import app.n_zik.android.components.glass.forArea
+import app.n_zik.android.components.glass.glassAreaContour
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import kotlinx.coroutines.launch
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.uiRoundnessShape
+
+/** Local and online artist action bars share the same visible footprint. */
+const val ArtistToolbarActionCount = 4
 
 class FollowButton private constructor(
     private val getArtist: () -> Artist
@@ -137,13 +150,26 @@ class FollowButton private constructor(
 
     @Composable
     override fun ToolBarButton() {
-        val likeState by remember {
+        val artistId = getArtist().id
+        val likeState by remember(artistId) {
             Database.artistTable
-                    .likeState( getArtist().id )
+                    .likeState(artistId)
         }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
+        ArtistFollowButton(likeState, onClick = ::onShortClick)
+    }
+}
+
+/** Presentation is separate from following/syncing so palette updates stay reactive. */
+@Composable
+internal fun ArtistFollowButton(
+    likeState: Boolean?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    settings: GlassSettings = rememberGlassSettings(),
+) {
         val colorPalette = colorPalette()
 
-        val buttonProps: Triple<Int, Color, Color> = remember( likeState ) {
+        val buttonProps: Triple<Int, Color, Color> = run {
             val text = when(likeState) {
                 true -> R.string.following
                 false -> R.string.disliked
@@ -163,14 +189,34 @@ class FollowButton private constructor(
             Triple(text, background, foreground)
         }
 
+        val shape = uiRoundnessShape()
+        val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
+        val height = if (material) GlassActionCellHeight else TabToolBar.TOOLBAR_ICON_SIZE
+        val bounds = modifier.requiredSize(100.dp, height)
+        if (material) {
+            val background = colorPalette.background0
+            val drawBackground: DrawScope.() -> Unit = remember(background) { { drawRect(background) } }
+            val backdrop = rememberCanvasBackdrop(drawBackground)
+            LiquidButton(
+                onClick = onClick,
+                backdrop = backdrop,
+                modifier = bounds,
+                settings = settings.forArea(GlassArea.ActionButtons),
+                filmColor = buttonProps.second,
+                contentHeight = height,
+                contentPadding = 0.dp,
+                shape = shape,
+            ) {
+                BasicText(stringResource(buttonProps.first), style = typography().s.copy(color = buttonProps.third))
+            }
+            return
+        }
         Box(
-            modifier = Modifier.requiredSize(
-                                   width = 100.dp,
-                                   height = TabToolBar.TOOLBAR_ICON_SIZE
-                               )
-                               .clip( uiRoundnessShape() )
-                               .background( buttonProps.second )
-                               .clip(uiRoundnessShape()).clickable( onClick = ::onShortClick ),
+            modifier = bounds
+                               .clip(shape)
+                               .background(buttonProps.second)
+                               .glassAreaContour(settings, GlassArea.ActionButtons, shape)
+                               .clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
             BasicText(
@@ -178,7 +224,6 @@ class FollowButton private constructor(
                 style = typography().s.copy( color = buttonProps.third ),
             )
         }
-    }
 }
 
 

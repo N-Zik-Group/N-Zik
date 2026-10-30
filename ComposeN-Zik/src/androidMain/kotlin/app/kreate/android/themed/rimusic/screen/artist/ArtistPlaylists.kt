@@ -1,6 +1,8 @@
 @file:Suppress("OPT_IN_USAGE", "OPT_IN_USAGE_ERROR")
 package app.kreate.android.themed.rimusic.screen.artist
 
+import app.n_zik.android.components.ui.screens.CollectionPageStatus
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.annotation.OptIn
 import androidx.compose.ui.draw.clip
 
@@ -32,11 +34,8 @@ import it.fast4x.innertube.models.BrowseResponse
 import it.fast4x.innertube.requests.ArtistItemsPage
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.navigation.Skeleton
 import app.it.fast4x.rimusic.ui.components.themed.Loader
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Alignment
 import androidx.media3.common.util.UnstableApi
 import app.it.fast4x.rimusic.ui.items.PlaylistItem
 import app.it.fast4x.rimusic.ui.styling.Dimensions
@@ -229,15 +228,11 @@ fun ArtistPlaylists(
     Skeleton(
         navController = navController,
         miniPlayer = miniPlayer,
+        topInsetHandledByContent = true,
         navBarContent = {}
     ) {
         if (isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Loader()
-            }
+            CollectionPageStatus { Loader() }
         } else {
             AppPullToRefreshBox(
                 isRefreshing = isRefreshing,
@@ -252,7 +247,7 @@ fun ArtistPlaylists(
                 LazyVerticalGrid(
                     state = lazyGridState,
                     columns = GridCells.Adaptive(thumbnailSizeDp),
-                    contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer),
+                    contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
                     modifier = Modifier.background(colorPalette().background0)
                 ) {
                     items(

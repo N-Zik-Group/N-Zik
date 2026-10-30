@@ -1,6 +1,9 @@
 // Ported from RiPlay (AGPL-3.0) — base: it.fast4x.riplay.ui.screens.artist / it.fast4x.riplay.extensions.musicbrainz
 package app.n_zik.android.components.ui.screens.artist
 
+import app.n_zik.android.components.ui.screens.CollectionPageStatus
+import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -13,7 +16,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
@@ -29,7 +31,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -50,7 +51,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.style.TextAlign
@@ -76,7 +76,7 @@ import app.it.fast4x.rimusic.enums.DownloadedStateMedia
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
-import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.navigation.Skeleton
 import app.it.fast4x.rimusic.ui.components.SwipeablePlaylistItem
 import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
@@ -85,6 +85,8 @@ import app.it.fast4x.rimusic.ui.components.themed.AutoResizeText
 import app.it.fast4x.rimusic.ui.components.themed.Enqueue
 import app.it.fast4x.rimusic.ui.components.themed.FontSizeRange
 import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
+import app.n_zik.android.components.glass.GlassToolbarButtons
+import app.n_zik.android.components.glass.GlassToolbarRow
 import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.components.themed.PlayNext
 import app.n_zik.android.components.dialog.common.DialogPresence
@@ -120,6 +122,8 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.components.glass.GlassSectionAction
+import app.n_zik.android.components.glass.GlassSectionActions
 import app.n_zik.android.components.shuffleButtonIconRes
 import app.n_zik.android.components.artist.FollowButton
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
@@ -310,11 +314,15 @@ fun ArtistScreen(
 
     val thumbnailPainter = ImageCacheFactory.Painter(localArtist?.thumbnailUrl)
 
+    val topContentInset = rememberTopContentInsetProvider(hasNavBar = !offlineMode)
+
     Skeleton(
         navController = navController,
         tabIndex = selectedTabIndex,
         onTabChanged = { index -> selectedTabIndex = index },
         miniPlayer = miniPlayer,
+        topInsetHandledByContent = true,
+        topContentInsetProvider = topContentInset,
         navBarContent = { item ->
             if (offlineMode)
                 item(1, stringResource(R.string.library), R.drawable.library)
@@ -324,34 +332,34 @@ fun ArtistScreen(
             }
         }
     ) { currentTabIndex ->
+        val contentPadding = rememberPageChromeContentPadding(
+            PaddingValues(bottom = Dimensions.bottomSpacer), topContentInset
+        )
         // Full offline mode: the overview (online data) tab is removed, so the
         // content is always the local library tab regardless of the raw index.
         when (artistScreenTabIndex(offlineMode, currentTabIndex)) {
             0 -> {
                 if (artistPage == null) {
-                    OfflineAwareLoader(
-                        isOnline = isOnline,
-                        modifier = Modifier.fillMaxSize(),
-                        onReconnect = ::fetchArtistPage
-                    )
+                    CollectionPageStatus(contentPadding) {
+                        OfflineAwareLoader(
+                            isOnline = isOnline,
+                            modifier = Modifier.fillMaxSize(),
+                            onReconnect = ::fetchArtistPage
+                        )
+                    }
                 } else {
                     ArtistOverview(
                         navController, localArtist, artistPage, thumbnailPainter,
                         mbSyncing, { mbSyncing = it },
-                        mbPausedSeconds, { mbPausedSeconds = it }
+                        mbPausedSeconds, { mbPausedSeconds = it }, contentPadding
                     )
                 }
             }
             1 -> {
                 if (localArtist == null) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Loader()
-                    }
+                    CollectionPageStatus(contentPadding) { Loader() }
                 } else {
-                    ArtistLocalSongs(navController, localArtist, artistPage, thumbnailPainter)
+                    ArtistLocalSongs(navController, localArtist, artistPage, thumbnailPainter, contentPadding)
                 }
             }
         }
@@ -370,7 +378,8 @@ fun ArtistOverview(
     mbSyncing: Boolean = false,
     onMbSyncingChange: (Boolean) -> Unit = {},
     mbPausedSeconds: Long = 0,
-    onMbPausedSecondsChange: (Long) -> Unit = {}
+    onMbPausedSecondsChange: (Long) -> Unit = {},
+    contentPadding: PaddingValues = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
 ) {
     artistPage ?: return
 
@@ -536,12 +545,11 @@ fun ArtistOverview(
         }
     }
 
-    DynamicOrientationLayout(thumbnailPainter, artistThumbnailShape()) {
+    DynamicOrientationLayout(thumbnailPainter, artistThumbnailShape(), thumbnailContentPadding = contentPadding) {
         CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
             LazyColumn(
                 state = lazyListState,
-                userScrollEnabled = artistPage.sections.isNotEmpty(),
-                contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer),
+                contentPadding = contentPadding,
             ) {
                 item("header") {
                     Box(Modifier.fillMaxWidth()) {
@@ -595,12 +603,14 @@ fun ArtistOverview(
                             }
                         }
 
+                        GlassToolbarRow(1,
+                            modifier = Modifier.align(Alignment.TopEnd)
+                                .padding(top = 5.dp, end = 5.dp),
+                        ) {
                         HeaderIconButton(
                             icon = R.drawable.share_social,
                             color = colorPalette().text,
                             iconSize = 24.dp,
-                            modifier = Modifier.align(Alignment.TopEnd)
-                                .padding(top = 5.dp, end = 5.dp),
                             onClick = {
                                 val url = "https://music.youtube.com/channel/${localArtist?.id ?: artistPage.artist.key}"
                                 val sendIntent = Intent().apply {
@@ -614,6 +624,7 @@ fun ArtistOverview(
                                 )
                             }
                         )
+                        }
                     }
                 }
 
@@ -623,13 +634,12 @@ fun ArtistOverview(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
-                            horizontalArrangement = Arrangement.Center,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
+                                .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 8.dp)
                         ) {
                             followButton?.ToolBarButton()
-
-                            Spacer(Modifier.width(5.dp))
 
                             if (isGlobalLoading) {
                                 CircularProgressIndicator(
@@ -638,7 +648,7 @@ fun ArtistOverview(
                                     color = colorPalette().accent
                                 )
                             } else {
-                                TabToolBar.Buttons(
+                                GlassToolbarButtons(
                                     shuffler,
                                     playNext,
                                     enqueue,
@@ -646,7 +656,8 @@ fun ArtistOverview(
                                     itemSelector,
                                     downloadAllDialog,
                                     deleteAllDownloadsDialog,
-                                    modifier = Modifier.fillMaxWidth(.8f)
+                                    modifier = Modifier.fillMaxWidth(.8f),
+                                    showTrailingSeparator = false,
                                 )
                             }
                         }
@@ -710,137 +721,133 @@ fun ArtistOverview(
                             modifier = Modifier.weight(1f)
                         )
 
-                        if (!section.items.fastAll { it is Innertube.ArtistItem }) {
-                            val context = LocalContext.current
-                            val sectionId = section.title
-                            val isSectionLoading = sectionLoadingId == sectionId
-
-                            if (isSectionLoading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.padding(end = 12.dp).size(24.dp),
-                                    strokeWidth = 2.dp,
-                                    color = colorPalette().textSecondary
-                                )
-                            } else {
-                                Icon(
-                                    painter = painterResource(R.drawable.dice),
-                                    contentDescription = null,
-                                    tint = colorPalette().textSecondary,
-                                    modifier = Modifier
-                                        .padding(end = 12.dp)
-                                        .clip(uiRoundnessShape()).clickable {
-                                            scope.launch(NzikDispatchers.DATA) {
-                                                sectionLoadingId = sectionId
-                                                // Shuffler.play() is fire-and-forget (issue #606 M2): when it's actually
-                                                // invoked, sectionLoadingId is cleared from its onComplete once playback
-//
-                                                // dispatch actually finishes. shufflerWillClear guards the `finally`
-                                                // below so an exception before reaching Shuffler.play() still clears it.
-                                                var shufflerWillClear = false
-                                                try {
-                                                    val allMediaItems = mutableListOf<MediaItem>()
-                                                    val moreBrowseId = section.moreEndpoint?.browseId
-                                                    if (section.items.fastAll { it is Innertube.SongItem } && moreBrowseId != null) {
-                                                        YtMusic.getPlaylist(moreBrowseId).getOrNull()?.songs?.map { it.asMediaItem }?.let { allMediaItems.addAll(it) }
-                                                    }
-                                                    if (allMediaItems.isEmpty()) {
-                                                        section.items.forEach { item ->
-                                                            when (item) {
-                                                                is Innertube.SongItem -> item.asSong?.asMediaItem?.let { allMediaItems.add(it) }
-                                                                is Innertube.VideoItem -> allMediaItems.add(item.asMediaItem)
-                                                                is Innertube.AlbumItem -> YtMusic.getAlbum(item.key).getOrNull()?.songs?.map { it.asMediaItem }?.let { allMediaItems.addAll(it) }
-                                                                is Innertube.PlaylistItem -> YtMusic.getPlaylist(item.key).getOrNull()?.songs?.map { it.asMediaItem }?.let { allMediaItems.addAll(it) }
-                                                                else -> {}
-                                                            }
-                                                        }
-                                                    }
-                                                    if (allMediaItems.isNotEmpty()) {
-                                                        val b = binder
-                                                        if (b != null) {
-                                                            shufflerWillClear = true
-                                                            Shuffler.play(b, allMediaItems, onComplete = { sectionLoadingId = null })
-                                                        }
-                                                    } else {
-                                                        withContext(NzikDispatchers.UI) {
-                                                            Toaster.e(R.string.no_song_found)
-                                                        }
-                                                    }
-                                                } finally {
-                                                    if (!shufflerWillClear) sectionLoadingId = null
-                                                }
-                                            }
-                                        }
-                                )
-
-                                Icon(
-                                    painter = painterResource(R.drawable.play),
-                                    contentDescription = null,
-                                    tint = colorPalette().textSecondary,
-                                    modifier = Modifier
-                                        .padding(end = 12.dp)
-                                        .clip(uiRoundnessShape()).clickable {
-                                            scope.launch(NzikDispatchers.DATA) {
-                                                sectionLoadingId = sectionId
-                                                try {
-                                                    val allMediaItems = mutableListOf<MediaItem>()
-                                                    val moreBrowseId = section.moreEndpoint?.browseId
-                                                    if (section.items.fastAll { it is Innertube.SongItem } && moreBrowseId != null) {
-                                                        YtMusic.getPlaylist(moreBrowseId).getOrNull()?.songs?.map { it.asMediaItem }?.let { allMediaItems.addAll(it) }
-                                                    }
-                                                    if (allMediaItems.isEmpty()) {
-                                                        section.items.forEach { item ->
-                                                            when (item) {
-                                                                is Innertube.SongItem -> item.asSong?.asMediaItem?.let { allMediaItems.add(it) }
-                                                                is Innertube.VideoItem -> allMediaItems.add(item.asMediaItem)
-                                                                is Innertube.AlbumItem -> YtMusic.getAlbum(item.key).getOrNull()?.songs?.map { it.asMediaItem }?.let { allMediaItems.addAll(it) }
-                                                                is Innertube.PlaylistItem -> YtMusic.getPlaylist(item.key).getOrNull()?.songs?.map { it.asMediaItem }?.let { allMediaItems.addAll(it) }
-                                                                else -> {}
-                                                            }
-                                                        }
-                                                    }
-                                                    if (allMediaItems.isNotEmpty()) {
-                                                        withContext(NzikDispatchers.UI) {
-                                                            binder?.stopRadio()
-                                                            binder?.player?.forcePlay(allMediaItems.first())
-                                                            binder?.player?.addMediaItems(allMediaItems.drop(1))
-                                                        }
-                                                    } else {
-                                                        withContext(NzikDispatchers.UI) {
-                                                            Toaster.e(R.string.no_song_found)
-                                                        }
-                                                    }
-                                                } finally {
-                                                    sectionLoadingId = null
-                                                }
-                                            }
-                                        }
-                                )
-                            }
-                        }
-
-                        section.moreEndpoint?.browseId?.let { browseId ->
-                            Icon(
-                                painter = painterResource(R.drawable.chevron_forward),
-                                contentDescription = null,
-                                tint = colorPalette().textSecondary,
-                                modifier = Modifier.clip(uiRoundnessShape()).clickable {
-                                    val path = "$browseId?params=${section.moreEndpoint?.params}"
-
-                                    val route: NavRoutes = if (section.items.fastAll { it is Innertube.SongItem })
-                                        NavRoutes.playlist
-                                    else if (section.items.fastAll { it is Innertube.AlbumItem })
-                                        NavRoutes.artistAlbums
-                                    else if (section.items.fastAll { it is Innertube.VideoItem })
-                                        NavRoutes.artistVideos
-                                    else if (section.items.fastAll { it is Innertube.PlaylistItem })
-                                        NavRoutes.artistPlaylists
-                                    else
-                                        return@clickable
-
-                                    route.navigateHere(navController, path)
-                                }
+                        val sectionId = section.title
+                        val canPlaySection = !section.items.fastAll { it is Innertube.ArtistItem }
+                        val isSectionLoading = canPlaySection && sectionLoadingId == sectionId
+                        val shuffleDescription = stringResource(R.string.glass_action_shuffle)
+                        val playDescription = stringResource(R.string.glass_action_play_all)
+                        if (isSectionLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.padding(end = 12.dp).size(24.dp),
+                                strokeWidth = 2.dp,
+                                color = colorPalette().textSecondary,
                             )
                         }
+                        val sectionActions = buildList {
+                            if (canPlaySection && !isSectionLoading) {
+                                add(GlassSectionAction(
+                                    icon = R.drawable.dice,
+                                    contentDescription = shuffleDescription,
+                                    nativeEndPadding = 12.dp,
+                                    onClick = {
+                                        scope.launch(NzikDispatchers.DATA) {
+                                            sectionLoadingId = sectionId
+                                            // Shuffler.play() is fire-and-forget (issue #606 M2): when it's actually
+                                            // invoked, sectionLoadingId is cleared from its onComplete once playback
+                                            // dispatch actually finishes. shufflerWillClear guards the `finally`
+                                            // below so an exception before reaching Shuffler.play() still clears it.
+                                            var shufflerWillClear = false
+                                            try {
+                                                val allMediaItems = mutableListOf<MediaItem>()
+                                                val moreBrowseId = section.moreEndpoint?.browseId
+                                                if (section.items.fastAll { it is Innertube.SongItem } && moreBrowseId != null) {
+                                                    YtMusic.getPlaylist(moreBrowseId).getOrNull()?.songs?.map { it.asMediaItem }?.let { allMediaItems.addAll(it) }
+                                                }
+                                                if (allMediaItems.isEmpty()) {
+                                                    section.items.forEach { item ->
+                                                        when (item) {
+                                                            is Innertube.SongItem -> item.asSong?.asMediaItem?.let { allMediaItems.add(it) }
+                                                            is Innertube.VideoItem -> allMediaItems.add(item.asMediaItem)
+                                                            is Innertube.AlbumItem -> YtMusic.getAlbum(item.key).getOrNull()?.songs?.map { it.asMediaItem }?.let { allMediaItems.addAll(it) }
+                                                            is Innertube.PlaylistItem -> YtMusic.getPlaylist(item.key).getOrNull()?.songs?.map { it.asMediaItem }?.let { allMediaItems.addAll(it) }
+                                                            else -> {}
+                                                        }
+                                                    }
+                                                }
+                                                if (allMediaItems.isNotEmpty()) {
+                                                    val b = binder
+                                                    if (b != null) {
+                                                        shufflerWillClear = true
+                                                        Shuffler.play(b, allMediaItems, onComplete = { sectionLoadingId = null })
+                                                    }
+                                                } else {
+                                                    withContext(NzikDispatchers.UI) {
+                                                        Toaster.e(R.string.no_song_found)
+                                                    }
+                                                }
+                                            } finally {
+                                                if (!shufflerWillClear) sectionLoadingId = null
+                                            }
+                                        }
+                                    },
+                                ))
+                                add(GlassSectionAction(
+                                    icon = R.drawable.play,
+                                    contentDescription = playDescription,
+                                    nativeEndPadding = 12.dp,
+                                    onClick = {
+                                        scope.launch(NzikDispatchers.DATA) {
+                                            sectionLoadingId = sectionId
+                                            try {
+                                                val allMediaItems = mutableListOf<MediaItem>()
+                                                val moreBrowseId = section.moreEndpoint?.browseId
+                                                if (section.items.fastAll { it is Innertube.SongItem } && moreBrowseId != null) {
+                                                    YtMusic.getPlaylist(moreBrowseId).getOrNull()?.songs?.map { it.asMediaItem }?.let { allMediaItems.addAll(it) }
+                                                }
+                                                if (allMediaItems.isEmpty()) {
+                                                    section.items.forEach { item ->
+                                                        when (item) {
+                                                            is Innertube.SongItem -> item.asSong?.asMediaItem?.let { allMediaItems.add(it) }
+                                                            is Innertube.VideoItem -> allMediaItems.add(item.asMediaItem)
+                                                            is Innertube.AlbumItem -> YtMusic.getAlbum(item.key).getOrNull()?.songs?.map { it.asMediaItem }?.let { allMediaItems.addAll(it) }
+                                                            is Innertube.PlaylistItem -> YtMusic.getPlaylist(item.key).getOrNull()?.songs?.map { it.asMediaItem }?.let { allMediaItems.addAll(it) }
+                                                            else -> {}
+                                                        }
+                                                    }
+                                                }
+                                                if (allMediaItems.isNotEmpty()) {
+                                                    withContext(NzikDispatchers.UI) {
+                                                        binder?.stopRadio()
+                                                        binder?.player?.forcePlay(allMediaItems.first())
+                                                        binder?.player?.addMediaItems(allMediaItems.drop(1))
+                                                    }
+                                                } else {
+                                                    withContext(NzikDispatchers.UI) {
+                                                        Toaster.e(R.string.no_song_found)
+                                                    }
+                                                }
+                                            } finally {
+                                                sectionLoadingId = null
+                                            }
+                                        }
+                                    },
+                                ))
+                            }
+                            section.moreEndpoint?.browseId?.let { browseId ->
+                                add(GlassSectionAction(
+                                    icon = R.drawable.chevron_forward,
+                                    separateBefore = true,
+                                    contentDescription = section.title,
+                                    onClick = onMore@ {
+                                        val path = "$browseId?params=${section.moreEndpoint?.params}"
+
+                                        val route: NavRoutes = if (section.items.fastAll { it is Innertube.SongItem })
+                                            NavRoutes.playlist
+                                        else if (section.items.fastAll { it is Innertube.AlbumItem })
+                                            NavRoutes.artistAlbums
+                                        else if (section.items.fastAll { it is Innertube.VideoItem })
+                                            NavRoutes.artistVideos
+                                        else if (section.items.fastAll { it is Innertube.PlaylistItem })
+                                            NavRoutes.artistPlaylists
+                                        else
+                                            return@onMore
+
+                                        route.navigateHere(navController, path)
+                                    },
+                                ))
+                            }
+                        }
+                        GlassSectionActions(sectionActions)
                     }
 
                     if (section.items.fastAll { it is Innertube.SongItem })

@@ -44,7 +44,6 @@ import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
-import app.it.fast4x.rimusic.ui.components.SwipeablePlaylistItem
 import app.it.fast4x.rimusic.ui.components.tab.ItemSize
 import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.items.AlbumItem
@@ -52,6 +51,7 @@ import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.onOverlay
 import app.it.fast4x.rimusic.ui.styling.overlay
 import app.n_zik.android.R
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.SongItem
@@ -128,8 +128,7 @@ fun AlbumInsightsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(colorPalette().background0),
-            contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer))
         ) {
             item(key = "header") {
                 AlbumHeader(
@@ -187,7 +186,7 @@ fun AlbumInsightsScreen(
                         icon = R.drawable.musical_notes
                     ) {
                         state.tracks.forEachIndexed { index, song ->
-                            SwipeablePlaylistItem(
+                            InsightsSwipeableSongItem(
                                 mediaItem = song.asMediaItem,
                                 onPlayNext = {
                                     binder?.player?.addNext(song.asMediaItem)
@@ -199,7 +198,7 @@ fun AlbumInsightsScreen(
                                     inPlaylist = playlistStatesMap[song.id],
                                     navController = navController,
                                     showThumbnail = true,
-                                    backgroundColor = colorPalette().background2,
+                                    backgroundColor = Color.Transparent,
                                     thumbnailOverlay = {
                                         Box(
                                             modifier = Modifier
@@ -234,7 +233,7 @@ fun AlbumInsightsScreen(
                         icon = R.drawable.musical_notes
                     ) {
                         state.topTracks.forEachIndexed { index, song ->
-                            SwipeablePlaylistItem(
+                            InsightsSwipeableSongItem(
                                 mediaItem = song.asMediaItem,
                                 onPlayNext = {
                                     binder?.player?.addNext(song.asMediaItem)
@@ -246,7 +245,7 @@ fun AlbumInsightsScreen(
                                     inPlaylist = playlistStatesMap[song.id],
                                     navController = navController,
                                     showThumbnail = true,
-                                    backgroundColor = colorPalette().background2,
+                                    backgroundColor = Color.Transparent,
                                     thumbnailOverlay = {
                                         Box(
                                             modifier = Modifier

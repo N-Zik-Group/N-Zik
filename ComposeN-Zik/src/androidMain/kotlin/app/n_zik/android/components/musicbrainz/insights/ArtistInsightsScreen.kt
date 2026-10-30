@@ -45,7 +45,6 @@ import androidx.navigation.NavController
 import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
-import app.it.fast4x.rimusic.ui.components.SwipeablePlaylistItem
 import app.it.fast4x.rimusic.ui.components.tab.ItemSize
 import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.items.AlbumItem
@@ -53,6 +52,7 @@ import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.onOverlay
 import app.it.fast4x.rimusic.ui.styling.overlay
 import app.n_zik.android.R
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.colorPalette
@@ -132,8 +132,7 @@ fun ArtistInsightsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(colorPalette().background0),
-            contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer))
         ) {
             item(key = "header") {
                 ArtistHeader(artist = artist)
@@ -206,7 +205,7 @@ fun ArtistInsightsScreen(
                 item(key = "top_songs") {
                     InfoCard(title = stringResource(R.string.mb_insights_top_songs), icon = R.drawable.musical_notes) {
                         state.topTracks.forEachIndexed { index, song ->
-                            SwipeablePlaylistItem(
+                            InsightsSwipeableSongItem(
                                 mediaItem = song.asMediaItem,
                                 onPlayNext = {
                                     binder?.player?.addNext(song.asMediaItem)
@@ -218,7 +217,7 @@ fun ArtistInsightsScreen(
                                     inPlaylist = playlistStatesMap[song.id],
                                     navController = navController,
                                     showThumbnail = true,
-                                    backgroundColor = colorPalette().background2,
+                                    backgroundColor = Color.Transparent,
                                     thumbnailOverlay = {
                                         Box(
                                             modifier = Modifier
@@ -405,6 +404,7 @@ private fun ArtistHeader(artist: Artist) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         ImageCacheFactory.Thumbnail(
+            shape = artistThumbnailShape(),
             thumbnailUrl = artist.thumbnailUrl,
             modifier = Modifier
                 .size(if (isNarrow) 160.dp else 200.dp)

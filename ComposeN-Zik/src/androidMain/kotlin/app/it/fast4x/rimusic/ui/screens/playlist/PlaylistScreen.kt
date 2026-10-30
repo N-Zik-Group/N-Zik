@@ -10,7 +10,7 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
-import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.navigation.Skeleton
 
 @ExperimentalTextApi
 @ExperimentalFoundationApi
@@ -31,6 +31,7 @@ fun PlaylistScreen(
     Skeleton(
         navController,
         miniPlayer = miniPlayer,
+        topInsetHandledByContent = true,
         navBarContent = { item ->
             item(0, stringResource(R.string.songs), R.drawable.musical_notes)
         }

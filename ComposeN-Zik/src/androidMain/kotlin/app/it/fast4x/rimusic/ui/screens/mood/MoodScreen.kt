@@ -12,7 +12,7 @@ import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.it.fast4x.compose.persist.PersistMapCleanup
 import app.it.fast4x.rimusic.models.Mood
-import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.navigation.Skeleton
 
 @ExperimentalTextApi
 @ExperimentalFoundationApi
@@ -31,6 +31,7 @@ fun MoodScreen(
 
             Skeleton(
                 navController,
+                topInsetHandledByContent = true,
                 navBarContent = { item ->
                     item(0, stringResource(R.string.mood), R.drawable.album)
                 },

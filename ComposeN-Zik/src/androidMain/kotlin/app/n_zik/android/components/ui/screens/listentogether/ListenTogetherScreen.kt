@@ -51,7 +51,7 @@ import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
+import app.n_zik.android.components.glass.PageButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -84,7 +84,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
-import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.navigation.Skeleton
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 
 import app.it.fast4x.rimusic.ui.components.themed.IconButton as ThemeIconButton
@@ -95,6 +96,7 @@ import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.semiBold
 import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.R
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
@@ -284,32 +286,22 @@ fun ListenTogetherScreen(
     // the single nav item keeps the screen registered in the bar without drawing a tab row
     Skeleton(
         navController = navController,
+        topInsetHandledByContent = true,
         miniPlayer = miniPlayer,
         navBarContent = { item ->
             item(0, stringResource(R.string.listen_together), R.drawable.people)
         },
     ) { _ ->
         Box(modifier = Modifier.fillMaxSize()) {
-            // App cards (SettingsSectionCard) carry their own 16dp horizontal padding and a
-            // trailing 16dp spacer, so the list adds no extra horizontal padding or spacing;
-//
-            // top is flush under the app header (the page header brings its own padding,
-//
-            // same as the app's settings pages).
-            // No imePadding and no own background here (unlike the Metrolist port): the app's
-//
-            // screens let the keyboard overlay the list — the app's own search/queue screens do
-//
-            // the same — and the Skeleton scaffold paints the screen background. Padding the
-            // list with the IME insets left a stuck dark block behind the keyboard on this
-//
-            // page (user-reported).
+            // Cards provide their own spacing; only app chrome adds scrolling clearance.
+            // Keep the keyboard overlay behavior to avoid the previous stuck IME spacer.
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding =
+                contentPadding = rememberPageChromeContentPadding(
                     PaddingValues(
                         bottom = bottomContentSpacer,
                     ),
+                ),
             ) {
                 // Page header — same as the app's settings pages
                 item {
@@ -1130,7 +1122,7 @@ internal fun SettingIcon(@DrawableRes icon: Int, color: Color) {
         modifier =
             Modifier
                 .size(32.dp)
-                .background(color.copy(alpha = 0.1f), uiRoundnessShape()),
+                .iconBadgeBackground(color.copy(alpha = 0.1f), uiRoundnessShape()),
         contentAlignment = Alignment.Center,
     ) {
         Icon(

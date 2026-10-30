@@ -1,5 +1,7 @@
 package app.it.fast4x.rimusic.ui.screens.statistics
 
+import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
+
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
@@ -14,7 +16,7 @@ import androidx.navigation.NavController
 import app.it.fast4x.compose.persist.PersistMapCleanup
 import app.n_zik.android.R
 import app.it.fast4x.rimusic.enums.StatisticsType
-import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.navigation.Skeleton
 
 @ExperimentalTextApi
 @ExperimentalFoundationApi
@@ -43,11 +45,15 @@ fun StatisticsScreen(
 
     PersistMapCleanup(tagPrefix = "${statisticsType.name}/")
 
+            val topContentInset = rememberTopContentInsetProvider(hasNavBar = !app.it.fast4x.rimusic.utils.hideBarsInLandscapeMobile())
+
             Skeleton(
                 navController,
                 tabIndex,
                 onTabIndexChanged,
                 miniPlayer,
+                topInsetHandledByContent = true,
+                topContentInsetProvider = topContentInset,
                 navBarContent = { item ->
                     item(0, stringResource(R.string.today), R.drawable.stat_today)
                     item(1, stringResource(R.string._1_week), R.drawable.stat_week)
@@ -70,7 +76,7 @@ fun StatisticsScreen(
                             else -> StatisticsType.All
                         }
 
-                    StatisticsPage( navController, type )
+                    StatisticsPage(navController, type, topContentInsetProvider = topContentInset)
                 }
             }
 }

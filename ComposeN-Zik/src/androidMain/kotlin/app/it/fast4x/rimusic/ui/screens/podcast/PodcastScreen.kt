@@ -11,7 +11,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.it.fast4x.compose.persist.PersistMapCleanup
-import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.navigation.Skeleton
 
 @ExperimentalTextApi
 @ExperimentalFoundationApi
@@ -32,7 +32,8 @@ fun PodcastScreen(
             Skeleton(
                 navController,
                 miniPlayer = miniPlayer,
-                navBarContent = { item ->
+                topInsetHandledByContent = true,
+        navBarContent = { item ->
                     item(0, stringResource(R.string.podcast_episodes), R.drawable.podcast)
                 }
             ) { currentTabIndex ->

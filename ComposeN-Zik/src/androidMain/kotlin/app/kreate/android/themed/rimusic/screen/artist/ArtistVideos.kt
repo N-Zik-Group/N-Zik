@@ -1,5 +1,8 @@
 package app.kreate.android.themed.rimusic.screen.artist
 
+import app.it.fast4x.rimusic.ui.styling.Dimensions
+import androidx.compose.foundation.layout.PaddingValues
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
@@ -9,7 +12,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,7 +31,7 @@ import it.fast4x.innertube.models.BrowseEndpoint
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
-import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.navigation.Skeleton
 import app.it.fast4x.rimusic.ui.components.SwipeablePlaylistItem
 import app.it.fast4x.rimusic.ui.components.themed.Title
 import app.it.fast4x.rimusic.ui.items.VideoItem
@@ -78,15 +80,16 @@ fun ArtistVideos(
     Skeleton(
         navController = navController,
         miniPlayer = miniPlayer,
+        topInsetHandledByContent = true,
         navBarContent = {}
     ) {
         ItemsPage(
+            contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
             tag = "artist/$browseId/videos",
             headerContent = {
                 Title(
                     title = itemsPage?.title?.takeIf { it.isNotBlank() } ?: stringResource(R.string.videos),
                     verticalPadding = 4.dp,
-                    modifier = Modifier.statusBarsPadding()
                 )
             },
             itemContent = { item ->

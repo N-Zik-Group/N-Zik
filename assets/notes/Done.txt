@@ -37,6 +37,10 @@ Removed:
   - Assemble Debug and pass 148 focused regression tests; complete three review lenses and an independent final re-review.
 
 Added:
+- feat(library): apply shared Glass presentation to collection pages
+  - Update album, artist, playlist, mood, podcast, history and statistics surfaces.
+  - Share collection status and card presentation across native and legacy screens.
+
 - feat(images): add Glass rims to artwork and contributor images
   - Integrate optional image rim shapes with shared Coil image loading.
   - Apply contour behavior to contributor avatars and reusable media items.

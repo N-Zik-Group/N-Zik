@@ -73,7 +73,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.it.fast4x.rimusic.enums.MenuStyle
-import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
+import app.n_zik.android.components.glass.SampledMenuSheet
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.themed.IconButton as ThemeIconButton
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
@@ -1163,7 +1163,7 @@ private fun CreateRoomSheet(
         if (showSheet) tempUsername = savedUsername
     }
 
-    CustomModalBottomSheet(
+    SampledMenuSheet(
         showSheet = showSheet,
         onDismissRequest = onDismiss,
         containerColor = Color.Transparent,
@@ -1277,7 +1277,7 @@ private fun JoinRoomSheet(
     val hasValidCode = tempCode.length == 8
     val hasValidUsername = tempUsername.trim().isNotBlank()
 
-    CustomModalBottomSheet(
+    SampledMenuSheet(
         showSheet = showSheet,
         onDismissRequest = onDismiss,
         containerColor = Color.Transparent,
