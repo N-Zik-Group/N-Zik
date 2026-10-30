@@ -1,5 +1,7 @@
 package app.n_zik.android.components.ui.screens.home
 
+
+import app.n_zik.android.components.navigation.FloatingActionSiblingSpace
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
@@ -17,13 +19,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.zIndex
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -35,8 +35,7 @@ import androidx.navigation.NavController
 import app.it.fast4x.rimusic.enums.*
 import app.it.fast4x.rimusic.models.Playlist
 import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.ui.components.ButtonsRow
-import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
+import app.n_zik.android.components.glass.GlassToolbarButtons
 import app.it.fast4x.rimusic.ui.components.tab.TabHeader
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
 import app.it.fast4x.rimusic.ui.components.themed.*
@@ -63,6 +62,9 @@ import app.n_zik.android.R
 import app.n_zik.android.LocalTopBarOffset
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.GlassFloatingActions
+import app.n_zik.android.components.glass.glassFloatingActionContent
+import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
 import app.n_zik.android.components.tab.*
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.dialog.export.ExportCacheDialog
@@ -111,9 +113,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.onGloballyPositioned
 import app.n_zik.android.enums.lyrics.LyricsType
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -122,7 +122,7 @@ import app.n_zik.android.enums.lyrics.LyricsType
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
-fun HomeSongsScreen(navController: NavController ) {
+fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () -> androidx.compose.ui.unit.Dp = { 0.dp }, scrollContentInsetProvider: () -> androidx.compose.ui.unit.Dp = topContentInsetProvider) {
     val binder = LocalPlayerServiceBinder.current
     val lazyListState = rememberLazyListState()
 
@@ -681,7 +681,7 @@ fun HomeSongsScreen(navController: NavController ) {
                     updateSongsDialog.Render()
                     smartTrash.Render()
 
-                    TabToolBar.Buttons( buttons, disableAnimation = true )
+                    GlassToolbarButtons( buttons, disableAnimation = true )
 
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -733,7 +733,7 @@ fun HomeSongsScreen(navController: NavController ) {
                                 }
                             }
 
-                            ButtonsRow(
+                            GlassHomeChips(
                                 contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 28.dp),
                                 chips = chips,
                                 currentValue = builtInPlaylist,
@@ -749,7 +749,7 @@ fun HomeSongsScreen(navController: NavController ) {
                             ) {
                                 val menuState = LocalMenuState.current
                                 var filterBy by rememberPreference(filterByKey, FilterBy.All)
-                                FilterChip(
+                                GlassHomeFilterChip(
                                     label = {
                                         Text(
                                             text = when (filterBy) {
@@ -808,19 +808,14 @@ fun HomeSongsScreen(navController: NavController ) {
                 }
     }
 
-    val headerDensity = androidx.compose.ui.platform.LocalDensity.current
     val headerHeightState = remember { mutableIntStateOf(0) }
-    var headerHeight by headerHeightState
+    val headerHeight by headerHeightState
     val headerOffsetState = remember { mutableFloatStateOf(0f) }
-    var headerOffset by headerOffsetState
-    val headerAlpha by remember(headerHeight) {
-        derivedStateOf {
-            if (headerHeight == 0) 1f
-            else (1f + headerOffset / headerHeight).coerceIn(0f, 1f)
-        }
-    }
+    val headerOffset by headerOffsetState
 
-    val nestedScrollConnection = rememberCollapsibleHeaderConnection(headerHeight, headerOffsetState, itemsOnDisplayState.isNotEmpty())
+    val nestedScrollConnection = rememberHomeHeaderConnection(headerHeight, headerOffsetState, itemsOnDisplayState.isNotEmpty())
+
+    val floatingBackdrop = rememberGlassFloatingActionBackdrop()
 
     Box(
         modifier = Modifier.background( colorPalette().background0 )
@@ -828,42 +823,39 @@ fun HomeSongsScreen(navController: NavController ) {
             .fillMaxWidth()
             .nestedScroll(nestedScrollConnection)
     ) {
-        Column( Modifier.fillMaxSize() ) {
+        Column( Modifier.fillMaxSize().sharedHomeGlassContent().glassFloatingActionContent(floatingBackdrop) ) {
             val headerPadding = with(androidx.compose.ui.platform.LocalDensity.current) { headerHeight.toDp() }
             when( builtInPlaylist ) {
-                BuiltInPlaylist.OnDevice -> OnDeviceSong( navController, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, headerPadding )
-                else                     -> HomeSongs( navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, matchButton = null, onRecommendationCountChange = { count -> recommendationCount = count }, onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading }, isRecommendationEnabled = isRecommendationEnabled, refreshKey = matchRefreshKey, onMatchClick = { showConfirmMatchAllDialog = true }, headerPadding = headerPadding, visibleHeaderPadding = { with(headerDensity) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() } } )
+                BuiltInPlaylist.OnDevice -> OnDeviceSong( navController, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, headerPadding, scrollContentInsetProvider )
+                else                     -> HomeSongs( navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, matchButton = null, onRecommendationCountChange = { count -> recommendationCount = count }, onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading }, isRecommendationEnabled = isRecommendationEnabled, refreshKey = matchRefreshKey, onMatchClick = { showConfirmMatchAllDialog = true }, headerPadding = headerPadding, topContentInsetProvider = scrollContentInsetProvider )
             }
         }
 
-        // Background sits after the offset so it slides away with the header; only the
-        // content fades, otherwise the black backdrop stays put and turns transparent.
-        Box(
-            modifier = Modifier
-                .zIndex(1f)
-                .onGloballyPositioned { headerHeight = it.size.height }
-                .offset { androidx.compose.ui.unit.IntOffset(0, kotlin.math.round(headerOffset).toInt()) }
-                .background(colorPalette().background0)
+        HomeCollapsingHeader(
+            headerOffset = headerOffsetState,
+            headerHeight = headerHeightState,
+            topContentInset = topContentInsetProvider,
         ) {
-            Box( Modifier.graphicsLayer { alpha = headerAlpha } ) {
-                header( headerOffsetState, headerHeightState )
-            }
+            header(headerOffsetState, headerHeightState)
         }
-        val barsToggle = app.it.fast4x.rimusic.utils.landscapeBarsToggleButton()
-        FloatingActionsContainerWithScrollToTop(
-            lazyListState = lazyListState,
-            iconId = barsToggle?.iconId,
-            onClick = barsToggle?.onClick
-        )
-
-        val showFloatingIcon by rememberPreference( showFloatingIconKey, false )
-        if( showFloatingIcon )
-            MultiFloatingActionsContainer(
-                iconId = R.drawable.search,
-                onClick = { navController.navigate(NavRoutes.search.name) },
-                onClickSettings = { navController.navigate(NavRoutes.settings.name) },
-                onClickSearch = { navController.navigate(NavRoutes.search.name) }
+        GlassFloatingActions(floatingBackdrop) {
+            val showFloatingIcon by rememberPreference( showFloatingIconKey, false )
+            val barsToggle = app.n_zik.android.components.navigation.sideAwareLandscapeBarsToggleButton()
+            FloatingActionsContainerWithScrollToTop(
+                reservedEndSpace = if (showFloatingIcon) FloatingActionSiblingSpace else 0.dp,
+                lazyListState = lazyListState,
+                iconId = barsToggle?.iconId,
+                onClick = barsToggle?.onClick
             )
+
+            if( showFloatingIcon )
+                MultiFloatingActionsContainer(
+                    iconId = R.drawable.search,
+                    onClick = { navController.navigate(NavRoutes.search.name) },
+                    onClickSettings = { navController.navigate(NavRoutes.settings.name) },
+                    onClickSearch = { navController.navigate(NavRoutes.search.name) }
+                )
+        }
     }
 }
 

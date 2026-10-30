@@ -21,51 +21,6 @@ import org.junit.jupiter.api.Test
 class CollapsibleHeaderTest {
 
     @Test
-    fun `title alpha is fully visible when the header is expanded`() {
-        assertEquals(1f, collapsibleTitleAlpha(offset = 0f, headerHeight = 100))
-    }
-
-    @Test
-    fun `title alpha is halfway faded at the middle of the fade range`() {
-        assertEquals(0.5, collapsibleTitleAlpha(offset = -15f, headerHeight = 100).toDouble(), 1e-4)
-    }
-
-    @Test
-    fun `title alpha reaches 0 at the end of the fade range and stays there`() {
-        assertEquals(0.0, collapsibleTitleAlpha(offset = -30f, headerHeight = 100).toDouble(), 1e-4)
-        assertEquals(0f, collapsibleTitleAlpha(offset = -100f, headerHeight = 100))
-    }
-
-    @Test
-    fun `title alpha is fully visible when the header height is not measured yet`() {
-        assertEquals(1f, collapsibleTitleAlpha(offset = 0f, headerHeight = 0))
-        assertEquals(1f, collapsibleTitleAlpha(offset = -30f, headerHeight = 0))
-    }
-
-    @Test
-    fun `title is fully visible when it sits below the status bar`() {
-        assertEquals(1f, titleStatusBarAlpha(titleTop = 100f, statusBarTop = 50))
-        assertEquals(1f, titleStatusBarAlpha(titleTop = 50f, statusBarTop = 50))
-        assertEquals(1f, titleStatusBarAlpha(titleTop = Float.POSITIVE_INFINITY, statusBarTop = 50))
-    }
-
-    @Test
-    fun `title fades while sliding under the status bar`() {
-        assertEquals(0.5, titleStatusBarAlpha(titleTop = 25f, statusBarTop = 50).toDouble(), 1e-4)
-    }
-
-    @Test
-    fun `title is hidden when the root bar is gone and it fills the status bar area`() {
-        assertEquals(0f, titleStatusBarAlpha(titleTop = 0f, statusBarTop = 50))
-        assertEquals(0f, titleStatusBarAlpha(titleTop = -80f, statusBarTop = 50))
-    }
-
-    @Test
-    fun `title stays visible when there is no status bar inset`() {
-        assertEquals(1f, titleStatusBarAlpha(titleTop = 0f, statusBarTop = 0))
-    }
-
-    @Test
     fun `fling ending above the midpoint snaps to expanded`() {
         assertEquals(0f, collapsibleHeaderSnapTarget(offset = -30f, headerHeight = 100))
     }

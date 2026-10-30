@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -24,6 +26,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.innertube.Innertube
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.glassMoodCardBackground
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.thumbnailShape
@@ -53,19 +56,22 @@ fun MoodGridItemColored(
             modifier = Modifier
                 .fillMaxSize(0.9f)
                 .clip(thumbnailShape())
+                .glassMoodCardBackground(
+                    backgroundColor = colorPalette().background0,
+                    cardColor = colorPalette().background4,
+                    shape = thumbnailShape(),
+                )
 
         ) {
             Row(
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .background(color = moodColor)
-                    .padding(start = 10.dp)
                     .fillMaxSize()
             ) {
+                Box(Modifier.width(10.dp).fillMaxHeight().background(moodColor))
                 Box(
                     modifier = Modifier
-                        .background(color = colorPalette().background4)
                         .fillMaxSize()
                 ) {
 

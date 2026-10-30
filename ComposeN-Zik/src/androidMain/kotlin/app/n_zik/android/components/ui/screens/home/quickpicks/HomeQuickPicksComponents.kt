@@ -38,6 +38,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.glassMoodCardBackground
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
 import app.n_zik.android.components.menu.artist.OnlineArtistItemMenu
 import app.n_zik.android.components.menu.song.SongItemMenu
@@ -437,7 +438,11 @@ private fun BaseChipItemColored(
             .width(160.dp)
             .height(56.dp)
             .clip(thumbnailShape())
-            .background(colorPalette().background4)
+            .glassMoodCardBackground(
+                backgroundColor = colorPalette().background0,
+                cardColor = colorPalette().background4,
+                shape = thumbnailShape(),
+            )
             .clickable(onClick = onClick)
     ) {
         Box(

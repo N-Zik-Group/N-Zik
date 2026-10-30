@@ -1,5 +1,14 @@
 package app.n_zik.android.components.ui.screens.home.quickpicks
 
+import app.n_zik.android.components.glass.GlassActionGroup
+import app.n_zik.android.components.glass.GlassActionGroupItem
+import app.n_zik.android.components.glass.GlassActionCellWidth
+import app.n_zik.android.components.glass.GlassActionCellHeight
+import app.n_zik.android.components.glass.GlassActionIconSize
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.glassAreaContour
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
@@ -11,7 +20,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.ScrollableDefaults
@@ -36,6 +44,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.ListMenu
@@ -93,7 +102,8 @@ fun QuickPicksHeader(
     onPlayEventTypeChange: (PlayEventsType) -> Unit,
     onDiceClick: () -> Unit,
     onPlayAllClick: () -> Unit,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
+    modifier: Modifier = Modifier,
 ) {
     val menuState = LocalMenuState.current
     
@@ -102,7 +112,7 @@ fun QuickPicksHeader(
         Box(
             modifier = Modifier
                 .size(32.dp)
-                .background(
+                .iconBadgeBackground(
                     color = colorPalette().accent.copy(alpha = 0.1f),
                     shape = uiRoundnessShape()
                 ),
@@ -117,7 +127,7 @@ fun QuickPicksHeader(
         }
     }
     
-    Column {
+    Column(modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -135,70 +145,67 @@ fun QuickPicksHeader(
                 modifier = Modifier.weight(1f)
             )
             
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.padding(end = 12.dp).size(24.dp),
-                    strokeWidth = 2.dp,
-                    color = colorPalette().textSecondary
-                )
-            } else {
-                Icon(
-                    painter = painterResource(R.drawable.dice),
-                    contentDescription = null,
-                    tint = colorPalette().text,
-                    modifier = Modifier
-                        .padding(end = 12.dp)
-                        .clip(uiRoundnessShape())
-                        .clickable(onClick = onDiceClick)
-                )
-                Icon(
-                    painter = painterResource(R.drawable.play),
-                    contentDescription = null,
-                    tint = colorPalette().text,
-                    modifier = Modifier
-                        .padding(end = 12.dp)
-                        .clip(uiRoundnessShape())
-                        .clickable(onClick = onPlayAllClick)
-                )
-            }
-            
-            Icon(
-                painter = painterResource(R.drawable.settings),
-                contentDescription = null,
-                tint = colorPalette().text,
-                modifier = Modifier
-                    .clip(uiRoundnessShape())
-                    .clickable {
-                        menuState.display {
-                            ListMenu.Menu(title = stringResource(R.string.sorting_order)) {
-                                ListMenu.Entry(
-                                    icon = { MenuIcon(R.drawable.chevron_up) },
-                                    text = stringResource(R.string.by_most_played_song),
-                                    onClick = {
-                                        onPlayEventTypeChange(PlayEventsType.MostPlayed)
-                                        menuState.hide()
-                                    }
-                                )
-                                ListMenu.Entry(
-                                    icon = { MenuIcon(R.drawable.chevron_down) },
-                                    text = stringResource(R.string.by_last_played_song),
-                                    onClick = {
-                                        onPlayEventTypeChange(PlayEventsType.LastPlayed)
-                                        menuState.hide()
-                                    }
-                                )
-                                ListMenu.Entry(
-                                    icon = { MenuIcon(R.drawable.random) },
-                                    text = stringResource(R.string.by_casual_played_song),
-                                    onClick = {
-                                        onPlayEventTypeChange(PlayEventsType.CasualPlayed)
-                                        menuState.hide()
-                                    }
-                                )
+            val glass = rememberGlassSettings()
+            val onSortClick: () -> Unit = {
+                menuState.display {
+                    ListMenu.Menu(title = stringResource(R.string.sorting_order)) {
+                        ListMenu.Entry(
+                            icon = { MenuIcon(R.drawable.chevron_up) },
+                            text = stringResource(R.string.by_most_played_song),
+                            onClick = {
+                                onPlayEventTypeChange(PlayEventsType.MostPlayed)
+                                menuState.hide()
                             }
+                        )
+                        ListMenu.Entry(
+                            icon = { MenuIcon(R.drawable.chevron_down) },
+                            text = stringResource(R.string.by_last_played_song),
+                            onClick = {
+                                onPlayEventTypeChange(PlayEventsType.LastPlayed)
+                                menuState.hide()
+                            }
+                        )
+                        ListMenu.Entry(
+                            icon = { MenuIcon(R.drawable.random) },
+                            text = stringResource(R.string.by_casual_played_song),
+                            onClick = {
+                                onPlayEventTypeChange(PlayEventsType.CasualPlayed)
+                                menuState.hide()
+                            }
+                        )
+                    }
+                }
+            }
+            if (glass.usesGlassMaterial(GlassArea.ActionButtons)) {
+                GlassActionGroup(glass, GlassArea.ActionButtons, separatorBefore = setOf(2)) {
+                    if (isLoading) {
+                        Box(Modifier.size(GlassActionCellWidth * 2, GlassActionCellHeight), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(Modifier.size(GlassActionIconSize), strokeWidth = 2.dp, color = colorPalette().textSecondary)
+                        }
+                    } else {
+                        GlassActionGroupItem(onClick = onDiceClick) {
+                            Icon(painterResource(R.drawable.dice), stringResource(R.string.glass_action_shuffle), tint = colorPalette().text, modifier = Modifier.size(GlassActionIconSize))
+                        }
+                        GlassActionGroupItem(onClick = onPlayAllClick) {
+                            Icon(painterResource(R.drawable.play), stringResource(R.string.glass_action_play_all), tint = colorPalette().text, modifier = Modifier.size(GlassActionIconSize))
                         }
                     }
-            )
+                    GlassActionGroupItem(onClick = onSortClick) {
+                        Icon(painterResource(R.drawable.settings), stringResource(R.string.sorting_order), tint = colorPalette().text, modifier = Modifier.size(GlassActionIconSize))
+                    }
+                }
+            } else {
+                if (isLoading) {
+                    CircularProgressIndicator(Modifier.padding(end = 12.dp).size(24.dp), strokeWidth = 2.dp, color = colorPalette().textSecondary)
+                } else {
+                    Icon(painterResource(R.drawable.dice), stringResource(R.string.glass_action_shuffle), tint = colorPalette().text,
+                        modifier = Modifier.padding(end = 12.dp).clip(uiRoundnessShape()).glassAreaContour(glass, GlassArea.ActionButtons, uiRoundnessShape()).clickable(onClick = onDiceClick))
+                    Icon(painterResource(R.drawable.play), stringResource(R.string.glass_action_play_all), tint = colorPalette().text,
+                        modifier = Modifier.padding(end = 12.dp).clip(uiRoundnessShape()).glassAreaContour(glass, GlassArea.ActionButtons, uiRoundnessShape()).clickable(onClick = onPlayAllClick))
+                }
+                Icon(painterResource(R.drawable.settings), stringResource(R.string.sorting_order), tint = colorPalette().text,
+                    modifier = Modifier.clip(uiRoundnessShape()).glassAreaContour(glass, GlassArea.ActionButtons, uiRoundnessShape()).clickable(onClick = onSortClick))
+            }
         }
 
         BasicText(
@@ -487,7 +494,7 @@ fun NewAlbumsSection(
                 displayedSectionTitles.add("New albums")
                 Column {
                     if (showTitle) {
-                        Title(
+                        HomeSectionTitle(
                             title = stringResource(R.string.new_albums),
                             onClick = { navController.navigate(NavRoutes.newAlbums.name) },
                             verticalPadding = 16.dp,
@@ -814,7 +821,7 @@ fun MoodsAndGenresSection(
             displayedSectionTitles.add("Moods and genres")
             displayedSectionTitles.add("Moods & genres")
             Column {
-                Title(
+                HomeSectionTitle(
                     title = stringResource(R.string.moods_and_genres),
                     onClick = { navController.navigate(NavRoutes.moodsPage.name) },
                     verticalPadding = 16.dp,
@@ -879,7 +886,7 @@ fun ChartsSection(
             if (hasPlaylists || hasSongs || hasArtists) {
                 displayedSectionTitles.add("Charts")
                 Column {
-                    Title(
+                    HomeSectionTitle(
                         title = "${stringResource(R.string.charts)} (${selectedCountryCode.countryName})",
                         onClick = {
                             menuState.display {
@@ -890,7 +897,7 @@ fun ChartsSection(
                                                 Box(
                                                     modifier = Modifier
                                                         .size(32.dp)
-                                                        .background(
+                                                        .iconBadgeBackground(
                                                             color = colorPalette().accent.copy(alpha = 0.1f),
                                                             shape = uiRoundnessShape()
                                                         ),

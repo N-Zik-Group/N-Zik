@@ -37,6 +37,10 @@ Removed:
   - Assemble Debug and pass 148 focused regression tests; complete three review lenses and an independent final re-review.
 
 Added:
+- feat(home): coordinate headers and mini player insets
+  - Synchronize collapsing headers, scroll gestures and top content padding.
+  - Apply shared header controls and verify side, landscape and top layouts.
+
 - feat(navigation): add configurable floating dock and tabs
   - Implement dock geometry, state, mini player integration and toolbar ordering.
   - Cover navigation tabs, transitions, dock layout and dialog preferences.

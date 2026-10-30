@@ -31,7 +31,8 @@ import app.it.fast4x.rimusic.enums.HomeScreenTabs
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.TransitionEffect
 import app.it.fast4x.rimusic.models.toUiMood
-import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
+import app.n_zik.android.components.navigation.Skeleton
 import app.it.fast4x.rimusic.utils.enableQuickPicksPageKey
 import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.homeScreenTabIndexKey
@@ -53,6 +54,7 @@ import app.it.fast4x.rimusic.utils.homeTabsOrderKey
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import androidx.compose.ui.unit.dp
 
 // Shared scope for fire-and-forget background work started from this screen (issue #606):
 // SupervisorJob (via NzikDispatchers.fireAndForget) so one failure doesn't cancel
@@ -302,6 +304,14 @@ fun HomeScreen(
 
     if (tabIndex >= activeTabs.size) tabIndex = 0
 
+    val topContentInset = rememberTopContentInsetProvider(
+        hasNavBar = activeTabs.size >= 2,
+    )
+
+    val homeScrollInset = rememberTopContentInsetProvider(
+        hasNavBar = activeTabs.size >= 2, stableHomeScroll = true,
+    )
+
     val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Fade)
     val contentAlpha = rememberHomeEntranceAlpha(isReady, transitionEffect != TransitionEffect.None)
 
@@ -316,6 +326,7 @@ fun HomeScreen(
         return
     }
 
+    val shareHomeGlass = LocalSharedHomeHeaderGlass.current != null
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -326,6 +337,13 @@ fun HomeScreen(
             tabIndex,
             onTabChanged,
             miniPlayer,
+            topInsetHandledByContent = true,
+            topContentInsetProvider = topContentInset,
+            suppressTabTransition = { from, to ->
+                shareHomeGlass &&
+                    activeTabs.getOrNull(from) in listOf("songs", "artists", "albums", "playlists") &&
+                    activeTabs.getOrNull(to) in listOf("songs", "artists", "albums", "playlists")
+            },
             navBarContent = { Item ->
                 activeTabs.forEachIndexed { index, id ->
                     when (id) {
@@ -347,6 +365,7 @@ fun HomeScreen(
 
                 when (currentTabId) {
                     "quickpicks" -> HomeQuickPicks(
+                        topContentInsetProvider = topContentInset,
                         onAlbumClick = {
                             navController.navigate(route = "${NavRoutes.album.name}/$it")
                         },
@@ -380,10 +399,12 @@ fun HomeScreen(
 
                     )
 
-                    "songs" -> HomeSongsScreen( navController )
+                    "songs" -> HomeSongsScreen(navController, topContentInsetProvider = topContentInset, scrollContentInsetProvider = homeScrollInset)
 
                     "artists" -> HomeArtists(
                         navController = navController,
+                        topContentInsetProvider = topContentInset,
+                        scrollContentInsetProvider = homeScrollInset,
                         onArtistClick = {
                             navController.navigate(route = "${NavRoutes.artist.name}/${it.id}")
                         },
@@ -399,6 +420,8 @@ fun HomeScreen(
 
                     "albums" -> HomeAlbums(
                         navController = navController,
+                        topContentInsetProvider = topContentInset,
+                        scrollContentInsetProvider = homeScrollInset,
                         onAlbumClick = {
                             //albumRoute(it.id)
                             navController.navigate(route = "${NavRoutes.album.name}/${it.id}")
@@ -415,6 +438,8 @@ fun HomeScreen(
 
                     "playlists" -> HomeLibrary(
                         navController = navController,
+                        topContentInsetProvider = topContentInset,
+                        scrollContentInsetProvider = homeScrollInset,
                         onPlaylistClick = {
                             //localPlaylistRoute(it.id)
                             navController.navigate(route = "${NavRoutes.localPlaylist.name}/${it.id}")

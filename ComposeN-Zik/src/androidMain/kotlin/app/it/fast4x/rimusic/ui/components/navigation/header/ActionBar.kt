@@ -45,7 +45,7 @@ import app.n_zik.android.utils.ProfileFace
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.extensions.pip.isPipSupported
 import app.it.fast4x.rimusic.extensions.pip.rememberPipHandler
-import app.it.fast4x.rimusic.ui.components.themed.DropdownMenu
+import app.n_zik.android.components.menu.DropdownMenu
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.enablePictureInPictureKey
 import app.it.fast4x.rimusic.utils.preferences

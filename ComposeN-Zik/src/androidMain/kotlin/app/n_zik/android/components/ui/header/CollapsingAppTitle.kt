@@ -1,5 +1,7 @@
 package app.n_zik.android.components.ui.header
 
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.usesGlassMaterial
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
@@ -10,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,6 +36,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
@@ -47,11 +51,60 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.core.navigation.navigationChromeTween
 import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 
 /** Boundary jitter tolerated before the header title collapses: without it, subpixel differences between the available and ideal widths could flip the collapsed state on and off between frames. */
 private val APP_TITLE_COLLAPSE_TOLERANCE = 2.dp
+
+/** Rail branding with the same home shortcut, logo easter eggs and status badges as the top header. */
+@Composable
+fun VerticalAppBrand(
+    navController: NavController,
+    context: Context,
+    modifier: Modifier = Modifier,
+) {
+    val glass = rememberGlassSettings()
+    val offlineMode by OfflineMode.rememberEnabled()
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+    ) {
+        Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+            AppLogo(navController, context, Modifier.testTag("sideAppBrandLogo"))
+        }
+        Box(Modifier.testTag("sideAppBrandText")) {
+            AppLogoText(navController, Modifier.layout { measurable, constraints ->
+                // The unrotated title's width becomes the rail's height. Give it
+                // that axis before measuring so the narrow rail cannot wrap it.
+                val title = measurable.measure(
+                    Constraints(
+                        minWidth = constraints.minHeight,
+                        maxWidth = constraints.maxHeight,
+                        minHeight = constraints.minWidth,
+                        maxHeight = constraints.maxWidth,
+                    )
+                )
+                layout(title.height, title.width) {
+                    title.placeWithLayer(
+                        x = (title.height - title.width) / 2,
+                        y = (title.width - title.height) / 2,
+                    ) { rotationZ = -90f }
+                }
+            })
+        }
+        if (parentalControlEnabled()) Button(
+            iconId = R.drawable.shield_checkmark,
+            color = colorPalette().text,
+            padding = 0.dp,
+            size = 20.dp,
+        ).Draw()
+        if (!glass.usesGlassMaterial(GlassArea.Header)) DebugLogsBadge()
+        OfflineModeBadge(offlineMode = offlineMode, enterTravelPx = with(LocalDensity.current) { 48.dp.roundToPx() })
+    }
+}
 
 /**
  * Collapse decision for the header title row: the sliding extras (title text + badges)
@@ -70,7 +123,7 @@ internal fun shouldCollapseTitle(availablePx: Int, idealPx: Int, tolerancePx: In
 
 /**
  * The app header's title row — the always-visible app logo plus the sliding extras
- * ("N-ZIK" text, version badge, parental-control shield, debug badge) that collapse
+ * ("N-ZIK" text, parental-control shield, debug badge) that collapse
  * behind the logo when the header runs out of horizontal space, and the full-offline
  * airplane badge ([OfflineModeBadge]), which rides outside the clipped box as a
  * sibling of the logo so it stays visible through its whole travel.
@@ -199,7 +252,7 @@ fun CollapsingAppTitle(
 
 /**
  * The sliding part of the header title row — everything after the logo: the "N-ZIK"
- * text, the version badge, the parental-control shield (when active) and the debug
+ * text, the parental-control shield (when active) and the debug
  * badge. Composed at its ideal (natural) width at all times; the parent [Box] clips
  * and slides it.
  */
@@ -208,15 +261,14 @@ private fun AppTitleExtras(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
+    val glass = rememberGlassSettings()
+    val glassEnabled = glass.usesGlassMaterial(GlassArea.Header)
     Row(
         horizontalArrangement = Arrangement.spacedBy(5.dp),
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
     ) {
         AppLogoText(navController)
-
-        // Version badge: width capped at the "DEBUG" badge width, marquee on overflow
-        HeaderVersionBadge()
 
         // Parental-control shield (same conditional as the legacy AppTitle)
         if (parentalControlEnabled())
@@ -228,7 +280,7 @@ private fun AppTitleExtras(
             ).Draw()
 
         // Reactive debug badge: live preference state, tap toggles the debug logs
-        DebugLogsBadge()
+        if (!glassEnabled) DebugLogsBadge()
     }
 }
 
@@ -259,7 +311,7 @@ private fun AppLogo(
 }
 
 @Composable
-private fun AppLogoText(navController: NavController) {
+private fun AppLogoText(navController: NavController, modifier: Modifier = Modifier) {
     val iconTextClick: () -> Unit = {
         if (NavRoutes.home.isNotHere(navController))
             navController.navigate(NavRoutes.home.name)
@@ -273,7 +325,7 @@ private fun AppLogoText(navController: NavController) {
             fontFamily = typography().xl.semiBold.fontFamily,
             color = colorPalette().text
         ),
-        modifier = Modifier
+        modifier = modifier
             .clip(uiRoundnessShape())
             .clickable { iconTextClick() }
             .padding(horizontal = 8.dp)

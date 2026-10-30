@@ -27,6 +27,7 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.EllipsisMenuComponent
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
 import androidx.compose.animation.AnimatedContent
+import app.n_zik.android.components.glass.GlassToolbarIcon
 
 object TabToolBar {
 
@@ -90,6 +91,7 @@ object TabToolBar {
         } else {
             AnimatedContent(
                 targetState = buttons,
+                contentKey = { target -> target.map { it.javaClass.name } },
                 label = "ToolbarButtonsAnimation",
                 modifier = baseModifier
             ) { targetButtons ->
@@ -116,6 +118,7 @@ object TabToolBar {
         modifier: Modifier = Modifier,
         onClick: () -> Unit = {}
     ) {
+        if (GlassToolbarIcon(icon, tint, size, enabled, modifier, onClick)) return
         IconButton(
             onClick = onClick,
             enabled = enabled
@@ -141,6 +144,7 @@ object TabToolBar {
         onClick: () -> Unit = {},
         onLongClick: () -> Unit = {}
     ) {
+        if (GlassToolbarIcon(icon, tint, size, enabled, modifier, onClick, onLongClick, modifierOnContainer = true)) return
         val interactionSource = remember { MutableInteractionSource() }
         Box(
             modifier = modifier
@@ -178,6 +182,7 @@ object TabToolBar {
         modifier: Modifier = Modifier,
         onClick: () -> Unit
     ) {
+        if (GlassToolbarIcon(painterResource(iconId), tint, size, enabled, modifier, onClick)) return
         IconButton(
             onClick = onClick,
             enabled = enabled
@@ -204,6 +209,7 @@ object TabToolBar {
         onShortClick: () -> Unit,
         onLongClick: () -> Unit
     ) {
+        if (GlassToolbarIcon(painterResource(iconId), tint, size, enabled, modifier, onShortClick, onLongClick, modifierOnContainer = true)) return
         val interactionSource = remember { MutableInteractionSource() }
         Box(
             modifier = modifier

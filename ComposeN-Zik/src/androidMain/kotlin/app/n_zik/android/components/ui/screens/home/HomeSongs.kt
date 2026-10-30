@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.home
 
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchNoResults
 
@@ -127,7 +128,8 @@ fun HomeSongs(
     refreshKey: Int = 0,
     onMatchClick: (() -> Unit)? = null,
     headerPadding: androidx.compose.ui.unit.Dp = 0.dp,
-    visibleHeaderPadding: () -> androidx.compose.ui.unit.Dp = { headerPadding }
+    visibleHeaderPadding: () -> androidx.compose.ui.unit.Dp = { headerPadding },
+    topContentInsetProvider: () -> androidx.compose.ui.unit.Dp = { 0.dp },
 ) {
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
@@ -551,7 +553,11 @@ fun HomeSongs(
             LazyColumn(
                 state = lazyListState,
                 userScrollEnabled = !isLoading,
-                contentPadding = PaddingValues( top = headerPadding, bottom = Dimensions.bottomSpacer ),
+                contentPadding = rememberPageChromeContentPadding(
+                    topInsetProvider = topContentInsetProvider,
+                    base = PaddingValues(bottom = Dimensions.bottomSpacer),
+                    extraTopProvider = visibleHeaderPadding,
+                ),
                 modifier = Modifier
                     .background(colorPalette().background0)
                     .fillMaxSize()
@@ -696,7 +702,7 @@ fun HomeSongs(
 
         if (showNoItems) {
             Box(
-                modifier = Modifier.fillMaxSize().padding(top = visibleHeaderPadding(), bottom = Dimensions.bottomSpacer),
+                modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding(topInsetProvider = topContentInsetProvider, base = PaddingValues(top = visibleHeaderPadding(), bottom = Dimensions.bottomSpacer))),
                 contentAlignment = Alignment.Center
             ) {
                 if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.no_items))

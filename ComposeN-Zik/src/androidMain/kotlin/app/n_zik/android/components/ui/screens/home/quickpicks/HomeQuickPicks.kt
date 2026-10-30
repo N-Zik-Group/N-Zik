@@ -32,6 +32,7 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import app.n_zik.android.components.navigation.LocalSideRailContentInsets
 import app.it.fast4x.compose.persist.persistList
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.it.fast4x.rimusic.PINNED_PREFIX
@@ -50,6 +51,11 @@ import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.GlassFloatingActions
+import app.n_zik.android.components.glass.glassFloatingActionContent
+import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
+import app.n_zik.android.components.navigation.TopOverlayContentPadding
+import androidx.compose.ui.unit.Dp
 import app.n_zik.android.components.OfflineContent
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
@@ -86,7 +92,8 @@ fun HomeQuickPicks(
     onSearchClick: () -> Unit,
     onMoodClick: (mood: Innertube.Mood.Item) -> Unit,
     onChipClick: (chip: Innertube.Chip) -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    topContentInsetProvider: () -> Dp = { 0.dp },
 ) {
     val windowInsets = LocalPlayerAwareWindowInsets.current
     val context = LocalContext.current
@@ -112,28 +119,17 @@ fun HomeQuickPicks(
     var lastSelectedCountry by rememberSaveable { mutableStateOf(selectedCountryCode) }
     var currentYouTubeLoggedIn by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        currentYouTubeLoggedIn = withContext(NzikDispatchers.DATA) { isYouTubeLoggedIn() }
-    }
-
-    var lastYouTubeLoggedIn by rememberSaveable { mutableStateOf(false) }
-
-    LaunchedEffect(state) {
-        val invalidate = playEventType != lastPlayEventType || selectedCountryCode != lastSelectedCountry
-        lastPlayEventType = playEventType
-        lastSelectedCountry = selectedCountryCode
-        state.load(invalidate = invalidate)
-    }
-
-    LaunchedEffect(Unit) {
-        val loggedIn = withContext(NzikDispatchers.DATA) { isYouTubeLoggedIn() }
-        if (loggedIn != lastYouTubeLoggedIn) {
-            lastYouTubeLoggedIn = loggedIn
-            currentYouTubeLoggedIn = loggedIn
-            state.load(invalidate = true)
-            Timber.tag("HomeQuickPicks").d("YouTube login state changed, reload requested")
-        }
-    }
+    QuickPicksInitialLoadEffect(
+        stateKey = state,
+        resolveLoggedIn = { withContext(NzikDispatchers.DATA) { isYouTubeLoggedIn() } },
+        onLoggedInResolved = { currentYouTubeLoggedIn = it },
+        load = {
+            val invalidate = playEventType != lastPlayEventType || selectedCountryCode != lastSelectedCountry
+            lastPlayEventType = playEventType
+            lastSelectedCountry = selectedCountryCode
+            state.load(invalidate = invalidate)
+        },
+    )
 
     LaunchedEffect(state.loadedData.value) {
         if (state.loadedData.value) {
@@ -243,7 +239,8 @@ fun HomeQuickPicks(
             playEventType = playEventType,
             selectedCountryCode = selectedCountryCode,
             parentalControlEnabled = parentalControlEnabled,
-            windowInsets = windowInsets
+            windowInsets = windowInsets,
+            topContentInsetProvider = topContentInsetProvider,
         )
     }
 }
@@ -275,7 +272,8 @@ fun HomeQuickPicksContent(
     playEventType: PlayEventsType,
     selectedCountryCode: Countries,
     parentalControlEnabled: Boolean,
-    windowInsets: WindowInsets
+    windowInsets: WindowInsets,
+    topContentInsetProvider: () -> Dp = { 0.dp },
 ) {
     val binder = LocalPlayerServiceBinder.current
     val scope = rememberCoroutineScope()
@@ -295,8 +293,10 @@ fun HomeQuickPicksContent(
         wasOnline = isOnline
     }
 
-    val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
-    val gridsContentPadding = PaddingValues(start = 12.dp, end = endPaddingValues.calculateEndPadding(LocalLayoutDirection.current))
+    val railPadding = LocalSideRailContentInsets.current.asPaddingValues()
+    val endPaddingValues = windowInsets.only(WindowInsetsSides.End)
+        .add(LocalSideRailContentInsets.current.only(WindowInsetsSides.Start)).asPaddingValues()
+    val gridsContentPadding = PaddingValues(start = 12.dp + endPaddingValues.calculateStartPadding(LocalLayoutDirection.current), end = endPaddingValues.calculateEndPadding(LocalLayoutDirection.current))
     val sectionTextModifier = Modifier.padding(horizontal = 12.dp).padding(top = 16.dp, bottom = 8.dp).padding(endPaddingValues)
     val showSearchTab by rememberPreference(showSearchTabKey, false)
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
@@ -392,14 +392,18 @@ fun HomeQuickPicksContent(
                 }
             }
 
+            val floatingBackdrop = rememberGlassFloatingActionBackdrop()
+
             LazyColumn(
                 state = scrollState,
+                contentPadding = remember(topContentInsetProvider) { TopOverlayContentPadding(topContentInsetProvider) },
                 modifier = Modifier
+                    .glassFloatingActionContent(floatingBackdrop)
                     .background(colorPalette().background0)
                     .fillMaxHeight()
             ) {
                 item(key = "welcome") {
-                    WelcomeMessage()
+                    Box(Modifier.padding(railPadding)) { WelcomeMessage() }
                 }
 
                 if (isViMusicUi) {
@@ -409,7 +413,7 @@ fun HomeQuickPicksContent(
                             iconId = R.drawable.search,
                             enabled = true,
                             showIcon = !showSearchTab,
-                            modifier = Modifier,
+                            modifier = Modifier.padding(railPadding),
                             onClick = onSearchClick
                         )
                     }
@@ -418,6 +422,7 @@ fun HomeQuickPicksContent(
                 if (showTips) {
                     item(key = "quick_picks_header") {
                         QuickPicksHeader(
+                            modifier = Modifier.padding(railPadding),
                             playEventType = playEventType,
                             onPlayEventTypeChange = onPlayEventTypeChange,
                             onDiceClick = {
@@ -736,11 +741,13 @@ fun HomeQuickPicksContent(
                 }
             }
 
-            val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
-            if (showFloatingIcon)
-                Box(modifier = Modifier.fillMaxSize()) {
-                    MultiFloatingActionsContainer(iconId = R.drawable.search, onClick = onSearchClick, onClickSettings = onSettingsClick, onClickSearch = onSearchClick)
-                }
+            GlassFloatingActions(floatingBackdrop) {
+                val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
+                if (showFloatingIcon)
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        MultiFloatingActionsContainer(iconId = R.drawable.search, onClick = onSearchClick, onClickSettings = onSettingsClick, onClickSearch = onSearchClick)
+                    }
+            }
         }
     }
 

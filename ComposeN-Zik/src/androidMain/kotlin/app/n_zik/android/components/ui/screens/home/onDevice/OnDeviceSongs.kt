@@ -34,6 +34,7 @@ import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -111,7 +112,9 @@ fun OnDeviceSong(
     buttons: MutableList<Button>,
     itemsOnDisplay: MutableList<Song>,
     getSongs: () -> List<Song>,
-    headerPadding: androidx.compose.ui.unit.Dp = 0.dp
+    headerPadding: androidx.compose.ui.unit.Dp = 0.dp,
+    topContentInsetProvider: () -> androidx.compose.ui.unit.Dp = { 0.dp },
+    visibleHeaderPadding: () -> androidx.compose.ui.unit.Dp = { headerPadding },
 ) {
     // Essentials
     val context = LocalContext.current
@@ -264,7 +267,11 @@ fun OnDeviceSong(
     LazyColumn(
         state = lazyListState,
         userScrollEnabled = songsOnDevice.isNotEmpty(),
-        contentPadding = PaddingValues(top = headerPadding, bottom = Dimensions.bottomSpacer),
+        contentPadding = rememberPageChromeContentPadding(
+            topInsetProvider = topContentInsetProvider,
+            base = PaddingValues(bottom = Dimensions.bottomSpacer),
+            extraTopProvider = visibleHeaderPadding,
+        ),
         modifier = Modifier.fillMaxSize()
     ) {
         if( !isPermissionGranted ) {

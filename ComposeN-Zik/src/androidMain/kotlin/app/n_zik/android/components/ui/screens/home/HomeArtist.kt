@@ -1,11 +1,12 @@
 @file:Suppress("OPT_IN_USAGE", "OPT_IN_USAGE_ERROR")
 package app.n_zik.android.components.ui.screens.home
 
+
+import app.n_zik.android.components.navigation.FloatingActionSiblingSpace
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchNoResults
 
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 
 import app.n_zik.android.uiRoundnessShape
 
@@ -32,9 +33,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -55,12 +54,13 @@ import sh.calvin.reorderable.ReorderableItem
 import app.kreate.android.themed.rimusic.component.playlist.PositionLock
 import app.it.fast4x.rimusic.enums.ArtistSortBy
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+import androidx.compose.ui.unit.Dp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -94,6 +94,9 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.GlassFloatingActions
+import app.n_zik.android.components.glass.glassFloatingActionContent
+import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
 import app.n_zik.android.appContext
 import app.n_zik.android.LocalPlayerServiceBinder
 import kotlinx.coroutines.flow.first
@@ -109,9 +112,8 @@ import app.it.fast4x.rimusic.enums.FilterBy
 import app.it.fast4x.rimusic.enums.SortOrder
 import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.ui.components.ButtonsRow
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
-import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
+import app.n_zik.android.components.glass.GlassToolbarButtons
 import app.it.fast4x.rimusic.ui.components.tab.ItemSize
 import app.it.fast4x.rimusic.ui.components.tab.TabHeader
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
@@ -119,7 +121,6 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Randomizer
 import app.n_zik.android.components.menu.FilterMenu
 import app.n_zik.android.components.tab.ItemSelector
 import app.it.fast4x.rimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
-import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
 import app.it.fast4x.rimusic.ui.components.themed.HeaderInfo
 import app.it.fast4x.rimusic.ui.components.themed.MultiFloatingActionsContainer
 import app.it.fast4x.rimusic.ui.items.ArtistItem
@@ -195,7 +196,9 @@ fun HomeArtists(
     navController: NavController,
     onArtistClick: (Artist) -> Unit,
     onSearchClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    topContentInsetProvider: () -> Dp = { 0.dp },
+    scrollContentInsetProvider: () -> Dp = topContentInsetProvider,
 ) {
     // Essentials
     val lazyGridState = rememberLazyGridState()
@@ -427,6 +430,7 @@ fun HomeArtists(
 
     val context = LocalContext.current
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
+    val floatingBackdrop = rememberGlassFloatingActionBackdrop()
 
     @OptIn(ExperimentalMaterial3Api::class)
     OfflineGatedPullRefresh(
@@ -509,7 +513,7 @@ fun HomeArtists(
                                 }
                             }
                     exportDialog.Render()
-                        TabToolBar.Buttons( toolbarButtons, disableAnimation = true )
+                        GlassToolbarButtons( toolbarButtons, disableAnimation = true )
                     search.SearchBar( this@Column )
                 }
 
@@ -521,7 +525,7 @@ fun HomeArtists(
                             .padding(bottom = 8.dp)
                             .fillMaxWidth()
                     ) {
-                        ButtonsRow(
+                        GlassHomeChips(
                             contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp),
                             chips = buttonsList,
                             currentValue = artistType,
@@ -542,7 +546,7 @@ fun HomeArtists(
                                 .padding(bottom = 8.dp)
                                 .fillMaxWidth()
                         ) {
-                            FilterChip(
+                            GlassHomeFilterChip(
                                 label = {
                                     Text(
                                         text = when (filterBy) {
@@ -608,32 +612,30 @@ fun HomeArtists(
             }
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().glassFloatingActionContent(floatingBackdrop)) {
                     val artistIds = remember(itemsOnDisplay) { itemsOnDisplay.map { it.id } }
                     val bookmarkStatesMap by remember(artistIds) {
                         BookmarkStateManager.getArtistBookmarkStates(artistIds)
                     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
                     val headerHeightState = remember { androidx.compose.runtime.mutableIntStateOf(0) }
-                    var headerHeight by headerHeightState
+                    val headerHeight by headerHeightState
                     val headerOffsetState = remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
-                    var headerOffset by headerOffsetState
-                    val headerAlpha by remember(headerHeight) {
-                        androidx.compose.runtime.derivedStateOf {
-                            if (headerHeight == 0) 1f
-                            else (1f + headerOffset / headerHeight).coerceIn(0f, 1f)
-                        }
-                    }
+                    val headerOffset by headerOffsetState
 
-                    val nestedScrollConnection = rememberCollapsibleHeaderConnection(headerHeight, headerOffsetState, itemsOnDisplay.isNotEmpty())
+                    val nestedScrollConnection = rememberHomeHeaderConnection(headerHeight, headerOffsetState, itemsOnDisplay.isNotEmpty())
 
                     Box(modifier = Modifier.fillMaxSize().nestedScroll(nestedScrollConnection)) {
-                        val headerPadding = with(androidx.compose.ui.platform.LocalDensity.current) { headerHeight.toDp() }
+                        val headerDensity = androidx.compose.ui.platform.LocalDensity.current
                         LazyVerticalGrid(
                             state = lazyGridState,
                             columns = GridCells.Adaptive( itemSize.size.dp ),
-                            modifier = Modifier.background( colorPalette().background0 ).fillMaxSize(),
-                            contentPadding = PaddingValues( top = headerPadding, bottom = Dimensions.bottomSpacer )
+                            modifier = Modifier.sharedHomeGlassContent().background( colorPalette().background0 ).fillMaxSize(),
+                            contentPadding = rememberPageChromeContentPadding(
+                                topInsetProvider = scrollContentInsetProvider,
+                                base = PaddingValues(bottom = Dimensions.bottomSpacer),
+                                extraTopProvider = { with(headerDensity) { headerHeight.toDp() } },
+                            )
                         ) {
                     items(items = itemsOnDisplay.distinctBy { it.id }, key = { it.id }) { artist ->
                         ReorderableItem(
@@ -750,7 +752,7 @@ fun HomeArtists(
 
                 if (itemsOnDisplay.isEmpty()) {
                     Box(
-                        modifier = Modifier.fillMaxSize().padding(top = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() }, bottom = Dimensions.bottomSpacer),
+                        modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding(topInsetProvider = scrollContentInsetProvider, base = PaddingValues(top = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() }, bottom = Dimensions.bottomSpacer))),
                         contentAlignment = Alignment.Center
                     ) {
                         if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.no_items))
@@ -758,35 +760,34 @@ fun HomeArtists(
                 }
                     }
 
-                        Box(
-                            modifier = Modifier
-                                .zIndex(1f)
-                .onGloballyPositioned { headerHeight = it.size.height }
-                                .offset { androidx.compose.ui.unit.IntOffset(0, kotlin.math.round(headerOffset).toInt()) }
-                                .background(colorPalette().background0)
+                        HomeCollapsingHeader(
+                            headerOffset = headerOffsetState,
+                            headerHeight = headerHeightState,
+                            topContentInset = topContentInsetProvider,
                         ) {
-                            Box( Modifier.graphicsLayer { alpha = headerAlpha } ) {
-                                header( headerOffsetState, headerHeightState )
-                            }
+                            header(headerOffsetState, headerHeightState)
                         }
             }
             }
 
-            val barsToggle = app.it.fast4x.rimusic.utils.landscapeBarsToggleButton()
-            FloatingActionsContainerWithScrollToTop(
-                lazyGridState = lazyGridState,
-                iconId = barsToggle?.iconId,
-                onClick = barsToggle?.onClick
-            )
-
-            val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
-            if( showFloatingIcon )
-                MultiFloatingActionsContainer(
-                    iconId = R.drawable.search,
-                    onClick = onSearchClick,
-                    onClickSettings = onSettingsClick,
-                    onClickSearch = onSearchClick
+            GlassFloatingActions(floatingBackdrop) {
+                val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
+                val barsToggle = app.n_zik.android.components.navigation.sideAwareLandscapeBarsToggleButton()
+                FloatingActionsContainerWithScrollToTop(
+                    reservedEndSpace = if (showFloatingIcon) FloatingActionSiblingSpace else 0.dp,
+                    lazyGridState = lazyGridState,
+                    iconId = barsToggle?.iconId,
+                    onClick = barsToggle?.onClick
                 )
+
+                if( showFloatingIcon )
+                    MultiFloatingActionsContainer(
+                        iconId = R.drawable.search,
+                        onClick = onSearchClick,
+                        onClickSettings = onSettingsClick,
+                        onClickSearch = onSearchClick
+                    )
+            }
         }
     }
 }
