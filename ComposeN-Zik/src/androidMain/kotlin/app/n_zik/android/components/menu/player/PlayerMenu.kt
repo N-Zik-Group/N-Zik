@@ -13,7 +13,6 @@ import androidx.annotation.DrawableRes
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -66,6 +65,7 @@ import androidx.compose.foundation.text.BasicText
 import app.it.fast4x.rimusic.models.Playlist
 import app.it.fast4x.rimusic.models.PlaylistPreview
 import app.it.fast4x.rimusic.enums.NavRoutes
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.typography
@@ -98,7 +98,7 @@ fun SettingIcon(@DrawableRes icon: Int) {
     Box(
         modifier = Modifier
             .size(32.dp)
-            .background(
+            .iconBadgeBackground(
                 color = colorPalette().accent.copy(alpha = 0.1f),
                 shape = uiRoundnessShape()
             ),

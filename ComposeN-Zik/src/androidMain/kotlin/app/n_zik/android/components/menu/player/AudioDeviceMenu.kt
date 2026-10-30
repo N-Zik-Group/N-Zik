@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
@@ -421,7 +422,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                             Box(
                                                 modifier = Modifier
                                                     .size(32.dp)
-                                                    .background(
+                                                    .iconBadgeBackground(
                                                         color = if (dev.isActive) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
                                                         shape = uiRoundnessShape()
                                                     ),
@@ -524,7 +525,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                         Box(
                                             modifier = Modifier
                                                 .size(32.dp)
-                                                .background(
+                                                .iconBadgeBackground(
                                                     color = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
                                                     shape = uiRoundnessShape()
                                                 ),
@@ -576,7 +577,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                         Box(
                                             modifier = Modifier
                                                 .size(32.dp)
-                                                .background(
+                                                .iconBadgeBackground(
                                                     color = if (dev.isActive) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
                                                     shape = uiRoundnessShape()
                                                 ),
@@ -688,7 +689,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                         Box(
                                             modifier = Modifier
                                                 .size(32.dp)
-                                                .background(
+                                                .iconBadgeBackground(
                                                     color = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
                                                     shape = uiRoundnessShape()
                                                 ),
@@ -751,7 +752,7 @@ private fun VolumeRow(
         Box(
             modifier = Modifier
                 .size(32.dp)
-                .background(
+                .iconBadgeBackground(
                     color = colorPalette().accent.copy(alpha = 0.1f),
                     shape = uiRoundnessShape()
                 ),
@@ -1062,7 +1063,7 @@ private fun VolumeGridEntry(
             Box(
                 modifier = Modifier
                     .size(32.dp)
-                    .background(
+                    .iconBadgeBackground(
                         color = colorPalette().accent.copy(alpha = 0.1f),
                         shape = uiRoundnessShape()
                     ),
@@ -1123,7 +1124,7 @@ private fun VolumeDialog(
             Box(
                 modifier = Modifier
                     .size(32.dp)
-                    .background(
+                    .iconBadgeBackground(
                         color = colorPalette().accent.copy(alpha = 0.1f),
                         shape = uiRoundnessShape()
                     ),

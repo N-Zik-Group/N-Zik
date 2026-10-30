@@ -1,5 +1,7 @@
 package app.n_zik.android.components.menu.playlist
 
+import app.n_zik.android.components.menu.MenuSheetSurface
+import app.n_zik.android.components.menu.menuSheetSectionColor
 import app.n_zik.android.components.dialog.playlist.PlaylistInsertionDialog
 import app.n_zik.android.utils.playlist.supportsInsertionPosition
 import android.content.Intent
@@ -11,7 +13,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.HorizontalDivider
+import app.n_zik.android.components.glass.GlassHorizontalSeparator
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -58,11 +60,11 @@ import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import app.n_zik.android.recessedSurfaceColor
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.components.dialog.playlist.RenamePlaylistDialog
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.rewind.RewindPlaylists
+import app.n_zik.android.components.glass.glassImageRim
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
@@ -185,7 +187,7 @@ class LocalPlaylistItemMenu private constructor(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
                 .fillMaxWidth()
-                .background(surfaceColor(colorPalette().background1))
+                .background(menuSheetSectionColor(surfaceColor(colorPalette().background1)))
         ) {
             Box(
                 modifier = Modifier
@@ -228,6 +230,7 @@ class LocalPlaylistItemMenu private constructor(
                         modifier = Modifier
                             .size(Dimensions.thumbnails.album / 2)
                             .clip(thumbnailShape())
+                            .glassImageRim(thumbnailShape())
                     ) {
                         if (thumbnails.isEmpty()) {
                             Image(
@@ -240,6 +243,7 @@ class LocalPlaylistItemMenu private constructor(
                             )
                         } else if (thumbnails.size == 1) {
                             ImageCacheFactory.Thumbnail(
+                                shape = null,
                                 thumbnailUrl = thumbnails[0],
                                 modifier = Modifier.size(Dimensions.thumbnails.album / 2)
                             )
@@ -247,17 +251,17 @@ class LocalPlaylistItemMenu private constructor(
                             // 4 grid
                             Row(modifier = Modifier.size(Dimensions.thumbnails.album / 2)) {
                                 Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                                    ImageCacheFactory.Thumbnail(thumbnailUrl = thumbnails[0], modifier = Modifier.weight(1f).fillMaxWidth())
+                                    ImageCacheFactory.Thumbnail(shape = null, thumbnailUrl = thumbnails[0], modifier = Modifier.weight(1f).fillMaxWidth())
                                     if (thumbnails.size > 2) {
-                                        ImageCacheFactory.Thumbnail(thumbnailUrl = thumbnails[2], modifier = Modifier.weight(1f).fillMaxWidth())
+                                        ImageCacheFactory.Thumbnail(shape = null, thumbnailUrl = thumbnails[2], modifier = Modifier.weight(1f).fillMaxWidth())
                                     }
                                 }
                                 Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
                                     if (thumbnails.size > 1) {
-                                        ImageCacheFactory.Thumbnail(thumbnailUrl = thumbnails[1], modifier = Modifier.weight(1f).fillMaxWidth())
+                                        ImageCacheFactory.Thumbnail(shape = null, thumbnailUrl = thumbnails[1], modifier = Modifier.weight(1f).fillMaxWidth())
                                     }
                                     if (thumbnails.size > 3) {
-                                        ImageCacheFactory.Thumbnail(thumbnailUrl = thumbnails[3], modifier = Modifier.weight(1f).fillMaxWidth())
+                                        ImageCacheFactory.Thumbnail(shape = null, thumbnailUrl = thumbnails[3], modifier = Modifier.weight(1f).fillMaxWidth())
                                     }
                                 }
                             }
@@ -332,7 +336,7 @@ class LocalPlaylistItemMenu private constructor(
                 }
             }
 
-            HorizontalDivider(Modifier.height(1.dp))
+            GlassHorizontalSeparator(Modifier.height(1.dp))
         }
     }
 
@@ -563,11 +567,7 @@ class LocalPlaylistItemMenu private constructor(
             list
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(recessedSurfaceColor(colorPalette().background0))
-        ) {
+        MenuSheetSurface {
             insertionDialog.Render()
             downloadAllDialog.Render()
             deleteAllDialog.Render()

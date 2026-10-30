@@ -15,7 +15,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -51,6 +50,7 @@ import app.it.fast4x.rimusic.PINNED_PREFIX
 import app.n_zik.android.core.rewind.RewindPlaylists
 
 import app.it.fast4x.rimusic.cleanPrefix
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
 import app.it.fast4x.rimusic.enums.MenuStyle
@@ -83,7 +83,7 @@ private fun SettingIcon(@DrawableRes icon: Int) {
     Box(
         modifier = Modifier
             .size(32.dp)
-            .background(
+            .iconBadgeBackground(
                 color = colorPalette().accent.copy(alpha = 0.1f),
                 shape = uiRoundnessShape()
             ),

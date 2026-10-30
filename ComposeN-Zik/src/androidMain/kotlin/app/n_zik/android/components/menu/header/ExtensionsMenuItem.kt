@@ -25,25 +25,11 @@ import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.LeadingIconBadge
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.header.clampedLabelMaxWidth
 
-/**
- * Extensions entry for the hamburger menu, visually identical to the standard menu
- * items (same 1:1 layout contract as [MaintenanceMenuItem]). The label is one
- * line, clamped to the rendered width of the "Rescue Center" menu label - a
- * longer label scrolls in a marquee instead of widening the menu (honoring the
- * global "disable scrolling text" setting, which falls back to ellipsis).
- *
- * A short tap opens the Extensions sheet (the FFmpeg module state + actions,
- * spec-ffmpeg-extension-module) and closes the menu; a long press deep-links to
- * the Misc settings screen directly on the Extensions card (same pattern as
- * Maintenance / Listen Together).
- *
- * @param onOpen called on short tap (opens the Extensions sheet)
- * @param onLongClick called on long press (deep link to the Extensions card in Misc settings)
- * @param onConsume called after a short tap so the caller can close the menu
- */
+/** Opens Extensions on tap and its settings on long press. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ExtensionsMenuItem(
@@ -72,11 +58,10 @@ fun ExtensionsMenuItem(
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            painter = painterResource(R.drawable.extension),
+        LeadingIconBadge(
+            iconRes = R.drawable.extension,
             contentDescription = null,
-            tint = colorPalette().favoritesIcon,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(24.dp),
         )
         Text(
             text = stringResource(R.string.modules_title),

@@ -6,7 +6,6 @@ import app.n_zik.android.core.database.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.it.fast4x.rimusic.enums.MenuStyle
@@ -568,7 +568,7 @@ class PlaybackSettingsMenu private constructor(
         Box(
             modifier = Modifier
                 .size(32.dp)
-                .background(
+                .iconBadgeBackground(
                     color = colorPalette().accent.copy(alpha = 0.1f),
                     shape = uiRoundnessShape()
                 ),
@@ -610,7 +610,7 @@ class PlaybackSettingsMenu private constructor(
             Box(
                 modifier = Modifier
                     .size(32.dp)
-                    .background(
+                    .iconBadgeBackground(
                         color = colorPalette().accent.copy(alpha = 0.1f),
                         shape = uiRoundnessShape()
                     )

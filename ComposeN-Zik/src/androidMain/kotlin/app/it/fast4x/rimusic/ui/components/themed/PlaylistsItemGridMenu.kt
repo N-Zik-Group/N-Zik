@@ -15,7 +15,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -52,6 +51,7 @@ import app.it.fast4x.rimusic.PINNED_PREFIX
 import app.n_zik.android.core.rewind.RewindPlaylists
 
 import app.it.fast4x.rimusic.cleanPrefix
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.dialog.playlist.NewPlaylistDialog
@@ -86,7 +86,7 @@ private fun SettingIcon(@DrawableRes icon: Int) {
     Box(
         modifier = Modifier
             .size(32.dp)
-            .background(
+            .iconBadgeBackground(
                 color = colorPalette().accent.copy(alpha = 0.1f),
                 shape = uiRoundnessShape()
             ),
@@ -445,6 +445,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = selectText,
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.checked_filled) },
                             onClick = {
                                 onDismiss()
@@ -458,6 +459,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = stringResource(R.string.play_next),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.play_skip_forward) },
                             onClick = {
                                 onDismiss()
@@ -471,6 +473,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = stringResource(R.string.delete_songs_not_in_library),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.trash) },
                             onClick = {
                                 onDismiss()
@@ -484,6 +487,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = stringResource(R.string.enqueue),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.enqueue) },
                             onClick = {
                                 onDismiss()
@@ -497,6 +501,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = stringResource(R.string.sync),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.sync) },
                             onClick = {
                                 onDismiss()
@@ -510,6 +515,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = if (playlist?.playlist?.isYoutubePlaylist == true) stringResource(R.string.unlink_from_ytm) else stringResource(R.string.unlink_from_yt),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.link) },
                             onClick = {
                                 onDismiss()
@@ -523,6 +529,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = stringResource(R.string.import_playlist),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.add_in_playlist) },
                             onClick = {
                                 onDismiss()
@@ -536,6 +543,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = stringResource(R.string.add_to_favorites),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.heart) },
                             onClick = {
                                 onDismiss()
@@ -549,6 +557,7 @@ fun PlaylistsItemGridMenu(
                         item {
                             GridMenu.Entry(
                                 text = stringResource(R.string.add_rimusic_to_ytm_favorites),
+                                iconHasOwnBackground = true,
                                 icon = { SettingIcon(R.drawable.ytmusic) },
                                 onClick = {
                                     onDismiss()
@@ -562,6 +571,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = stringResource(R.string.add_to_playlist),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.add_in_playlist) },
                             onClick = {
                                 isViewingPlaylists = true
@@ -574,6 +584,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = stringResource(R.string.rename),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.title_edit) },
                             onClick = {
                                 onDismiss()
@@ -587,6 +598,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = stringResource(R.string.delete),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.trash) },
                             onClick = {
                                 onDismiss()
@@ -600,6 +612,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = stringResource(R.string.renumber_songs_positions),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.position) },
                             onClick = {
                                 onDismiss()
@@ -613,6 +626,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = stringResource(R.string.listen_on_youtube),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.play) },
                             onClick = {
                                 onDismiss()
@@ -626,6 +640,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = stringResource(R.string.export_playlist),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.export_outline) },
                             onClick = {
                                 onDismiss()
@@ -639,6 +654,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = stringResource(R.string.import_playlist),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.import_outline) },
                             onClick = {
                                 onDismiss()
@@ -652,6 +668,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = stringResource(R.string.import_favorites),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.import_outline) },
                             onClick = {
                                 onDismiss()
@@ -665,6 +682,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = stringResource(R.string.edit_thumbnail),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.image) },
                             onClick = {
                                 onDismiss()
@@ -678,6 +696,7 @@ fun PlaylistsItemGridMenu(
                     item {
                         GridMenu.Entry(
                             text = stringResource(R.string.reset_thumbnail),
+                            iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.image) },
                             onClick = {
                                 onDismiss()

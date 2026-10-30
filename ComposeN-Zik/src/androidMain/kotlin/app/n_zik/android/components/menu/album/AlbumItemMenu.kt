@@ -1,5 +1,7 @@
 package app.n_zik.android.components.menu.album
 
+import app.n_zik.android.components.menu.MenuSheetSurface
+import app.n_zik.android.components.menu.menuSheetSectionColor
 import app.n_zik.android.core.database.*
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -18,7 +20,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.HorizontalDivider
+import app.n_zik.android.components.glass.GlassHorizontalSeparator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -45,7 +47,6 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
-import app.n_zik.android.recessedSurfaceColor
 import app.n_zik.android.surfaceColor
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.utils.preferences
@@ -221,7 +222,7 @@ class AlbumItemMenu private constructor(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
                 .fillMaxWidth()
-                .background(surfaceColor(colorPalette().background1))
+                .background(menuSheetSectionColor(surfaceColor(colorPalette().background1)))
         ) {
             Box(
                 modifier = Modifier
@@ -423,7 +424,7 @@ class AlbumItemMenu private constructor(
                 }
             }
 
-            HorizontalDivider(Modifier.height(1.dp))
+            GlassHorizontalSeparator(Modifier.height(1.dp))
         }
     }
 
@@ -557,11 +558,7 @@ class AlbumItemMenu private constructor(
             add(changeArtistId)
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(recessedSurfaceColor(colorPalette().background0))
-        ) {
+        MenuSheetSurface {
             downloadAll.Render()
             deleteAll.Render()
             changeTitle.Render()

@@ -1,5 +1,7 @@
 package app.n_zik.android.components.menu.video
 
+import app.n_zik.android.components.menu.MenuSheetSurface
+import app.n_zik.android.components.menu.menuSheetSectionColor
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.core.database.*
 
@@ -16,7 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
+import app.n_zik.android.components.glass.GlassHorizontalSeparator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -43,7 +45,6 @@ import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
-import app.n_zik.android.recessedSurfaceColor
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
@@ -592,14 +593,10 @@ class VideoItemMenu private constructor(
         }
         //endregion
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(recessedSurfaceColor(colorPalette().background0))
-        ) {
+        MenuSheetSurface {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.background( surfaceColor(colorPalette().background1) )
+                modifier = Modifier.background( menuSheetSectionColor(surfaceColor(colorPalette().background1)) )
             ) {
                 Box(
                     modifier = Modifier
@@ -664,7 +661,7 @@ class VideoItemMenu private constructor(
                     }
                 )
 
-                HorizontalDivider( Modifier.height(1.dp) )
+                GlassHorizontalSeparator( Modifier.height(1.dp) )
             }
 
             if( menuStyle == MenuStyle.List )

@@ -1,5 +1,7 @@
 package app.n_zik.android.components.menu.artist
 
+import app.n_zik.android.components.menu.MenuSheetSurface
+import app.n_zik.android.components.menu.menuSheetSectionColor
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -9,7 +11,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.HorizontalDivider
+import app.n_zik.android.components.glass.GlassHorizontalSeparator
 import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
@@ -51,7 +53,6 @@ import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import app.n_zik.android.recessedSurfaceColor
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.components.dialog.artist.ChangeArtistTitleDialog
 import app.n_zik.android.components.dialog.artist.ChangeArtistCoverDialog
@@ -150,7 +151,7 @@ class OnlineArtistItemMenu private constructor(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
                 .fillMaxWidth()
-                .background(surfaceColor(colorPalette().background1))
+                .background(menuSheetSectionColor(surfaceColor(colorPalette().background1)))
         ) {
             Box(
                 modifier = Modifier
@@ -180,6 +181,7 @@ class OnlineArtistItemMenu private constructor(
                             .clip(artistThumbnailShape())
                     ) {
                         ImageCacheFactory.Thumbnail(
+                            shape = artistThumbnailShape(),
                             thumbnailUrl = thumbnailUrl,
                             modifier = Modifier.size(Dimensions.thumbnails.album / 2)
                         )
@@ -337,7 +339,7 @@ class OnlineArtistItemMenu private constructor(
                 }
             }
 
-            HorizontalDivider(Modifier.height(1.dp))
+            GlassHorizontalSeparator(Modifier.height(1.dp))
         }
     }
 
@@ -465,11 +467,7 @@ class OnlineArtistItemMenu private constructor(
         changeCover.Render()
         changeId.Render()
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(recessedSurfaceColor(colorPalette().background0))
-        ) {
+        MenuSheetSurface {
             ArtistItemDisplay(
                 title = displayTitle,
                 thumbnailUrl = displayThumbnailUrl,

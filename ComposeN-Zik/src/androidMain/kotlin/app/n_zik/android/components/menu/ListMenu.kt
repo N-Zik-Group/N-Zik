@@ -1,5 +1,9 @@
 package app.n_zik.android.components.menu
 
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.glass.usesGlassContour
+import app.n_zik.android.components.glass.glassAreaContour
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 
@@ -15,22 +19,24 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
+import app.n_zik.android.components.glass.GlassHorizontalSeparator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import app.n_zik.android.components.glass.GlassMaterialContainerColumn
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.glassNativeSurfaceTint
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
@@ -50,31 +56,51 @@ import app.n_zik.android.components.menu.MenuConstants.DRAG_HANDLE_CORNER_RADIUS
 import app.n_zik.android.components.menu.MenuConstants.DRAG_HANDLE_HEIGHT
 import app.n_zik.android.components.menu.MenuConstants.DRAG_HANDLE_TOP_PADDING
 import app.n_zik.android.components.menu.MenuConstants.DRAG_HANDLE_WIDTH
-import androidx.compose.foundation.shape.CornerSize
 import app.n_zik.android.topUiRoundnessShape
 
 object ListMenu {
 
     @Composable
-    fun Menu( showDragHandle: Boolean = true, title: String? = null, headerTrailing: (@Composable RowScope.() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit ) {
+    fun Menu( showDragHandle: Boolean = true, title: String? = null, headerTrailing: (@Composable RowScope.() -> Unit)? = null, drawSurface: Boolean = true, content: @Composable ColumnScope.() -> Unit ) {
         val screenHeight = LocalConfiguration.current.screenHeightDp
         val hasHeader = showDragHandle || title != null || headerTrailing != null
+        val glass = rememberGlassSettings()
+        val useGlass = glass.usesGlassMaterial(GlassArea.Menus)
+        val ownsSurface = drawSurface && !LocalMenuSheetSurface.current
+        val menuShape = topUiRoundnessShape()
+        val filmOpacity = if (useGlass) menuSheetFilmOpacity(glass) else 1f
+        val nativeHeaderColor = surfaceColor(colorPalette().background1)
+        val nativeBodyColor = recessedSurfaceColor(colorPalette().background0)
+        val headerColor = if (useGlass) glassNativeSurfaceTint(glass, nativeHeaderColor) else nativeHeaderColor
+        val bodyColor = if (useGlass) glassNativeSurfaceTint(glass, nativeBodyColor) else nativeBodyColor
+        val headerFilm = if (useGlass && !drawSurface) Color.Transparent
+            else headerColor.copy(alpha = headerColor.alpha * filmOpacity)
+        val bodyFilm = if (useGlass && !drawSurface) Color.Transparent
+            else bodyColor.copy(alpha = bodyColor.alpha * filmOpacity)
 
-        Column(
+        GlassMaterialContainerColumn(
             Modifier.heightIn( max = (screenHeight * CONTENT_HEIGHT_FRACTION).dp )
                     .fillMaxWidth()
-                    .clip(topUiRoundnessShape())
-                    .background(recessedSurfaceColor(colorPalette().background0)),
+                    .conditional(ownsSurface || !useGlass) { clip(menuShape) }
+                    .then(if (useGlass) Modifier else Modifier.background(recessedSurfaceColor(colorPalette().background0))
+                        .then(if (ownsSurface) Modifier.glassAreaContour(glass, GlassArea.Menus, menuShape) else Modifier)),
             horizontalAlignment = Alignment.CenterHorizontally,
+            includeParent = useGlass && !ownsSurface,
+            sectionFilm = if (useGlass) null else nativeBodyColor,
+            material = if (useGlass && ownsSurface) ({ exported -> Modifier.menuSheetMaterial(
+                glass, menuShape, drawFilm = false, exportedBackdrop = exported,
+            ) }) else null,
             content = {
                 if (hasHeader) {
                     // Header with handle bar
-                    Column(
+                    GlassMaterialContainerColumn(
+                        includeParent = true,
+                        sectionFilm = headerFilm,
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(topUiRoundnessShape())
-                            .background(surfaceColor(colorPalette().background1))
+                            .conditional(!useGlass) { clip(menuShape) }
+                            .background(headerFilm)
                     ) {
                         if (showDragHandle) {
                             Box(
@@ -87,16 +113,7 @@ object ListMenu {
                         }
 
                         if (headerTrailing != null) {
-                            // Trailing action next to the title (e.g. refresh): an invisible
-                            // (alpha(0f), semantics-cleared) mirror of the action on the left
-//
-                            // balances its exact width, so the title is truly centered on the
-//
-                            // screen (equal spacers alone would center it in the space left of
-                            // the action). The trailing composable is composed twice — safe: it
-//
-                            // is side-effect free (an IconButton). Without a trailing, the else
-                            // branch renders the original block — pixel-identical for every menu.
+                            // Mirror the action width to keep the title centered.
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
@@ -129,18 +146,20 @@ object ListMenu {
                             }
                         }
 
-                        HorizontalDivider(Modifier.height(1.dp))
+                        GlassHorizontalSeparator(Modifier.height(1.dp))
                     }
                 }
 
                 val topShape = topUiRoundnessShape()
                 // Content
-                Column(
+                GlassMaterialContainerColumn(
+                    includeParent = true,
+                    sectionFilm = bodyFilm,
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .background(recessedSurfaceColor(colorPalette().background0))
-                        .conditional(!hasHeader) {
+                        .background(bodyFilm)
+                        .conditional(!hasHeader && (!useGlass || ownsSurface)) {
                             clip(topShape)
                         }
                         .verticalScroll(rememberScrollState())

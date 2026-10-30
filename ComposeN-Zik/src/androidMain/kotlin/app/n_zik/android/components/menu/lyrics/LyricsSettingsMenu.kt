@@ -69,6 +69,7 @@ import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
@@ -271,7 +272,7 @@ class LyricsSettingsMenu private constructor(
                             modifier = Modifier
                                 .size(32.dp)
                                 .clip(uiRoundnessShape())
-                                .background(colorPalette().accent.copy(alpha = 0.1f))
+                                .iconBadgeBackground(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape())
                                 .clickable { onShowLyricsSizeDialog() },
                             contentAlignment = Alignment.Center
                         ) {
@@ -703,7 +704,7 @@ class LyricsSettingsMenu private constructor(
                                 modifier = Modifier
                                     .size(32.dp)
                                     .clip(uiRoundnessShape())
-                                    .background(colorPalette().accent.copy(alpha = 0.1f))
+                                    .iconBadgeBackground(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape())
                                     .clickable { onShowLyricsSizeDialog() },
                                 contentAlignment = Alignment.Center
                             ) {
@@ -1097,7 +1098,7 @@ class LyricsSettingsMenu private constructor(
         Box(
             modifier = Modifier
                 .size(32.dp)
-                .background(
+                .iconBadgeBackground(
                     color = colorPalette().accent.copy(alpha = 0.1f),
                     shape = uiRoundnessShape()
                 ),

@@ -1,5 +1,9 @@
 package app.n_zik.android.components.menu
 
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.glass.usesGlassContour
+import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.gridMenuShape
 
 import androidx.compose.foundation.background
@@ -22,21 +26,25 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
+import app.n_zik.android.components.glass.GlassHorizontalSeparator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import app.n_zik.android.components.glass.GlassMaterialContainerColumn
+import app.n_zik.android.components.glass.GlassMaterialContainerScope
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.glassNativeSurfaceTint
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.recessedSurfaceColor
 import app.n_zik.android.surfaceColor
@@ -59,25 +67,46 @@ import app.n_zik.android.topUiRoundnessShape
 object GridMenu {
 
     @Composable
-    fun Menu( showDragHandle: Boolean = true, title: String? = null, headerTrailing: (@Composable RowScope.() -> Unit)? = null, content: LazyGridScope.() -> Unit ) {
+    fun Menu( showDragHandle: Boolean = true, title: String? = null, headerTrailing: (@Composable RowScope.() -> Unit)? = null, drawSurface: Boolean = true, content: LazyGridScope.() -> Unit ) {
         val screenHeight = LocalConfiguration.current.screenHeightDp
         val hasHeader = showDragHandle || title != null || headerTrailing != null
+        val glass = rememberGlassSettings()
+        val useGlass = glass.usesGlassMaterial(GlassArea.Menus)
+        val ownsSurface = drawSurface && !LocalMenuSheetSurface.current
+        val menuShape = topUiRoundnessShape()
+        val filmOpacity = if (useGlass) menuSheetFilmOpacity(glass) else 1f
+        val nativeHeaderColor = surfaceColor(colorPalette().background1)
+        val nativeBodyColor = recessedSurfaceColor(colorPalette().background0)
+        val headerColor = if (useGlass) glassNativeSurfaceTint(glass, nativeHeaderColor) else nativeHeaderColor
+        val bodyColor = if (useGlass) glassNativeSurfaceTint(glass, nativeBodyColor) else nativeBodyColor
+        val headerFilm = if (useGlass && !drawSurface) Color.Transparent
+            else headerColor.copy(alpha = headerColor.alpha * filmOpacity)
+        val bodyFilm = if (useGlass && !drawSurface) Color.Transparent
+            else bodyColor.copy(alpha = bodyColor.alpha * filmOpacity)
 
-        Column(
+        GlassMaterialContainerColumn(
             Modifier.heightIn( max = (screenHeight * CONTENT_HEIGHT_FRACTION).dp )
                        .fillMaxWidth()
-                       .clip(topUiRoundnessShape())
-                       .background(recessedSurfaceColor(colorPalette().background0)),
-            horizontalAlignment = Alignment.CenterHorizontally
+                       .conditional(ownsSurface || !useGlass) { clip(menuShape) }
+                       .then(if (useGlass) Modifier else Modifier.background(recessedSurfaceColor(colorPalette().background0))
+                        .then(if (ownsSurface) Modifier.glassAreaContour(glass, GlassArea.Menus, menuShape) else Modifier)),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            includeParent = useGlass && !ownsSurface,
+            sectionFilm = if (useGlass) null else nativeBodyColor,
+            material = if (useGlass && ownsSurface) ({ exported -> Modifier.menuSheetMaterial(
+                glass, menuShape, drawFilm = false, exportedBackdrop = exported,
+            ) }) else null,
         ) {
             if (hasHeader) {
                 // Header with handle bar
-                Column(
+                GlassMaterialContainerColumn(
+                    includeParent = true,
+                    sectionFilm = headerFilm,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(topUiRoundnessShape())
-                        .background(surfaceColor(colorPalette().background1))
+                        .conditional(!useGlass) { clip(menuShape) }
+                        .background(headerFilm)
                 ) {
                     if (showDragHandle) {
                         Box(
@@ -90,16 +119,7 @@ object GridMenu {
                     }
 
                     if (headerTrailing != null) {
-                        // Trailing action next to the title (e.g. refresh): an invisible
-                        // (alpha(0f), semantics-cleared) mirror of the action on the left
-//
-                        // balances its exact width, so the title is truly centered on the
-//
-                        // screen (equal spacers alone would center it in the space left of
-                        // the action). The trailing composable is composed twice — safe: it
-//
-                        // is side-effect free (an IconButton). Without a trailing, the else
-                        // branch renders the original block — pixel-identical for every menu.
+                        // Mirror the action width to keep the title centered.
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
@@ -132,26 +152,30 @@ object GridMenu {
                         }
                     }
 
-                    HorizontalDivider(Modifier.height(1.dp))
+                    GlassHorizontalSeparator(Modifier.height(1.dp))
                 }
             }
 
             // Grid content
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive( minSize = 120.dp ),
-                contentPadding = PaddingValues(
-                    start = CONTENT_HORIZONTAL_PADDING.dp,
-                    end = CONTENT_HORIZONTAL_PADDING.dp,
-                    top = CONTENT_TOP_PADDING.dp,
-                    bottom = 100.dp
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .clip(if (!hasHeader) topUiRoundnessShape() else RoundedCornerShape(0.dp))
-                    .background(recessedSurfaceColor(colorPalette().background0)),
-                content = content
-            )
+            GlassMaterialContainerScope(
+                Modifier.fillMaxWidth().weight(1f)
+                    .conditional(!hasHeader && (!useGlass || ownsSurface)) { clip(menuShape) }
+                    .background(bodyFilm),
+                includeParent = true,
+                sectionFilm = bodyFilm,
+            ) { bodyModifier ->
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive( minSize = 120.dp ),
+                    contentPadding = PaddingValues(
+                        start = CONTENT_HORIZONTAL_PADDING.dp,
+                        end = CONTENT_HORIZONTAL_PADDING.dp,
+                        top = CONTENT_TOP_PADDING.dp,
+                        bottom = 100.dp
+                    ),
+                    modifier = bodyModifier,
+                    content = content
+                )
+            }
         }
     }
 
@@ -164,10 +188,14 @@ object GridMenu {
         subtitle: String? = null,
         onClick: () -> Unit = {},
         onLongClick: () -> Unit = {},
+        iconHasOwnBackground: Boolean = false,
         trailingContent: @Composable () -> Unit = {}
     ) {
         val alpha = if (enabled) 1f else 0.5f
         val isScrollingTextDisabled by rememberPreference( disableScrollingTextKey, false )
+        val glass = rememberGlassSettings()
+        val innerDrawsMaterial = iconHasOwnBackground &&
+            (glass.usesGlassMaterial(GlassArea.ActionButtons) || glass.usesGlassContour(GlassArea.ActionButtons))
 
         Column(
             modifier = modifier
@@ -190,10 +218,11 @@ object GridMenu {
                 Box(
                     modifier = Modifier
                         .size(32.dp)
-                        .background(
+                        .then(if (innerDrawsMaterial) Modifier else Modifier.iconBadgeBackground(
                             color = colorPalette().accent.copy(alpha = 0.1f),
-                            shape = uiRoundnessShape()
-                        ),
+                            shape = uiRoundnessShape(),
+                            settings = glass,
+                        )),
                     contentAlignment = Alignment.Center,
                     content = icon
                 )

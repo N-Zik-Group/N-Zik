@@ -1,7 +1,6 @@
 package app.n_zik.android.components.menu.song
 
 import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.core.database.*
 
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -9,21 +8,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -41,8 +37,6 @@ import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
-import app.n_zik.android.recessedSurfaceColor
-import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
 import app.n_zik.android.extensions.audiobar.utils.WaveformResult
@@ -86,7 +80,6 @@ import app.n_zik.android.utils.player.enqueueOffMain
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
 import app.it.fast4x.rimusic.utils.menuStyleKey
-import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.rememberEncryptedPreference
 import app.n_zik.android.extensions.lastfm.isLastfmScrobblingEnabledKey
@@ -94,8 +87,6 @@ import app.n_zik.android.extensions.lastfm.lastfmSessionKey
 import app.n_zik.android.extensions.lastfm.LastFmActions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
@@ -163,7 +154,7 @@ class SongItemMenu private constructor(
     override var menuStyle: MenuStyle by styleState
 
     @Composable
-    override fun ListMenu() = ListMenu.Menu(title = null, showDragHandle = false) {
+    override fun ListMenu() = ListMenu.Menu(title = null, showDragHandle = false, drawSurface = false) {
         val lastFmSectionSize = if (showLastFmSection) 2 else 0
         // Section: Info
         SectionTitle(stringResource(R.string.information))
@@ -241,7 +232,7 @@ class SongItemMenu private constructor(
     }
 
     @Composable
-    override fun GridMenu() = GridMenu.Menu(title = null, showDragHandle = false) {
+    override fun GridMenu() = GridMenu.Menu(title = null, showDragHandle = false, drawSurface = false) {
         val lastFmSectionSize = if (showLastFmSection) 2 else 0
         // Section: Info
         item(span = { GridItemSpan(maxLineSpan) }) {
@@ -698,16 +689,8 @@ class SongItemMenu private constructor(
         }
         //</editor-fold>
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(recessedSurfaceColor(colorPalette().background0))
-        ) {
-            // Song info header
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.background( surfaceColor(colorPalette().background1) )
-            ) {
+        SongMenuSurface(
+            header = {
                 Box(
                     modifier = Modifier
                         .padding(top = 18.dp, bottom = 6.dp)
@@ -718,7 +701,7 @@ class SongItemMenu private constructor(
 
                 SongItem(
                     song = song,
-                    backgroundColor = androidx.compose.ui.graphics.Color.Transparent,
+                    backgroundColor = Color.Transparent,
                     modifier = Modifier.padding(
                         top = 5.dp,
                         bottom = 10.dp
@@ -776,9 +759,8 @@ class SongItemMenu private constructor(
                     }
                 )
 
-                HorizontalDivider( Modifier.height(1.dp) )
-            }
-
+            },
+        ) {
             if( menuStyle == MenuStyle.List )
                 ListMenu()
             else

@@ -9,40 +9,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.utils.conditional
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.LeadingIconBadge
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.header.clampedLabelMaxWidth
 
-/**
- * Generic item for the hamburger menu (spec-customizable-burger-menu), visually identical to
- * the standard [androidx.compose.material3.DropdownMenuItem] rows and the existing `*MenuItem`
- * composables (same 1:1 layout contract). The label is one line, clamped to the rendered
- * width of the "Rescue Center" menu label - a longer label scrolls in a marquee instead of
- * widening the menu (honoring the global "disable scrolling text" setting, which falls back
- * to ellipsis).
- *
- * A short tap opens the feature (existing item behavior); a long press deep-links to the
- * item's settings card (same pattern as the Extensions / Debug / Maintenance entries).
- *
- * @param onShortTap called on short tap (opens the feature)
- * @param onLongTap called on long press (deep link to the settings card)
- * @param onConsume called after a short tap so the caller can close the menu
- */
+/** Hamburger entry with short-tap action and long-press settings navigation. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BurgerMenuItem(
@@ -73,11 +57,10 @@ fun BurgerMenuItem(
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            painter = painterResource(iconRes),
+        LeadingIconBadge(
+            iconRes = iconRes,
             contentDescription = null,
-            tint = colorPalette().favoritesIcon,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(24.dp),
         )
         Text(
             text = label,

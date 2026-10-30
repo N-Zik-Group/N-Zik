@@ -1,5 +1,7 @@
 package app.n_zik.android.components.menu.playlist
 
+import app.n_zik.android.components.menu.MenuSheetSurface
+import app.n_zik.android.components.menu.menuSheetSectionColor
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -9,7 +11,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.HorizontalDivider
+import app.n_zik.android.components.glass.GlassHorizontalSeparator
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -46,7 +48,6 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
-import app.n_zik.android.recessedSurfaceColor
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
@@ -168,7 +169,7 @@ class OnlinePlaylistItemMenu private constructor(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
                 .fillMaxWidth()
-                .background(surfaceColor(colorPalette().background1))
+                .background(menuSheetSectionColor(surfaceColor(colorPalette().background1)))
         ) {
             Box(
                 modifier = Modifier
@@ -308,7 +309,7 @@ class OnlinePlaylistItemMenu private constructor(
                 }
             }
 
-            HorizontalDivider(Modifier.height(1.dp))
+            GlassHorizontalSeparator(Modifier.height(1.dp))
         }
     }
 
@@ -512,11 +513,7 @@ class OnlinePlaylistItemMenu private constructor(
             list
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(recessedSurfaceColor(colorPalette().background0))
-        ) {
+        MenuSheetSurface {
             downloadAllDialog.Render()
             deleteAllDialog.Render()
             changePlaylistId?.Render()

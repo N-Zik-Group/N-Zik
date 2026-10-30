@@ -37,6 +37,10 @@ Removed:
   - Assemble Debug and pass 148 focused regression tests; complete three review lenses and an independent final re-review.
 
 Added:
+- feat(menu): unify Glass menus and dropdown surfaces
+  - Add shared menu surfaces, anchors, shape policy and overlay handling.
+  - Apply the menu surface contract to playlist, song and information menus.
+
 - feat(player): apply Glass playback and queue surfaces
   - Add player backgrounds, controls, queue surfaces and deployment overlays.
   - Coordinate placement motion, covered pages and mini player reserve behavior.

@@ -64,6 +64,7 @@ import app.it.fast4x.rimusic.utils.showVisualizerStateKey
 import app.it.fast4x.rimusic.utils.showvisthumbnailKey
 import app.it.fast4x.rimusic.utils.visualizerLineThicknessKey
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.settings.common.SliderSettingsEntry
 import app.n_zik.android.typography
@@ -337,7 +338,7 @@ class VisualizerSettingsMenu private constructor(
         Box(
             modifier = Modifier
                 .size(32.dp)
-                .background(
+                .iconBadgeBackground(
                     color = colorPalette().accent.copy(alpha = 0.1f),
                     shape = uiRoundnessShape()
                 ),

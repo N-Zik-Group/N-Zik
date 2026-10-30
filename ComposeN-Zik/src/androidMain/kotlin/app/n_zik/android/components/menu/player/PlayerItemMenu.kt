@@ -1,5 +1,7 @@
 package app.n_zik.android.components.menu.player
 
+import app.n_zik.android.components.menu.MenuSheetSurface
+import app.n_zik.android.components.menu.menuSheetSectionColor
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.core.database.*
 
@@ -19,7 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
+import app.n_zik.android.components.glass.GlassHorizontalSeparator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import kotlinx.coroutines.flow.map
@@ -53,7 +55,6 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
-import app.n_zik.android.recessedSurfaceColor
 import app.n_zik.android.surfaceColor
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.enums.NavRoutes
@@ -826,14 +827,10 @@ class PlayerItemMenu private constructor(
         //</editor-fold>
         
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(recessedSurfaceColor(colorPalette().background0))
-        ) {
+        MenuSheetSurface {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.background(surfaceColor(colorPalette().background1))
+                modifier = Modifier.background(menuSheetSectionColor(surfaceColor(colorPalette().background1)))
             ) {
                 Box(
                     modifier = Modifier
@@ -900,7 +897,7 @@ class PlayerItemMenu private constructor(
                     }
                 )
 
-                HorizontalDivider(Modifier.height(1.dp))
+                GlassHorizontalSeparator(Modifier.height(1.dp))
             }
 
             if (menuStyle == MenuStyle.List)
