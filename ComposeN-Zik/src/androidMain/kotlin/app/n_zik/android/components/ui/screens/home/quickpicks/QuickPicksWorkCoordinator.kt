@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.home.quickpicks
 
+import it.fast4x.innertube.utils.parseCookieString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -9,6 +10,17 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+/** Session identity stays in memory and never appears in diagnostics. */
+internal data class QuickPicksAccountIdentity(
+    private val session: String?,
+    val useLoginForBrowse: Boolean,
+) {
+    override fun toString(): String = "QuickPicksAccountIdentity(redacted)"
+}
+
+internal fun quickPicksAccountIdentity(cookie: String, useLoginForBrowse: Boolean) =
+    QuickPicksAccountIdentity(parseCookieString(cookie)["SAPISID"], useLoginForBrowse)
 
 /** Reentry shares work; refresh and changed request parameters queue the latest load. */
 internal class QuickPicksLoadCoordinator(private val scope: CoroutineScope) {

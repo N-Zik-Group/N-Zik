@@ -18,6 +18,44 @@ import org.junit.jupiter.api.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class QuickPicksWorkCoordinatorTest {
     @Test
+    fun `authenticated startup shares one fetch and manual refresh and account switch still fetch`() = runTest {
+        val coordinator = QuickPicksLoadCoordinator(backgroundScope)
+        val firstAccount = quickPicksAccountIdentity("SAPISID=test-account-a; VISITOR_INFO1_LIVE=first", true)
+        val firstFinished = CompletableDeferred<Unit>()
+        var cached = false
+        var fetches = 0
+        val starts = mutableListOf<Boolean>()
+        suspend fun fetch(force: Boolean) {
+            if (force || !cached) {
+                fetches++
+                firstFinished.await()
+                cached = true
+            }
+        }
+        coordinator.request(firstAccount, onStart = { starts += it }) { fetch(it) }
+        runCurrent()
+        repeat(3) {
+            // Visitor metadata and repeated authenticated emissions do not change the account.
+            val sameAccount = quickPicksAccountIdentity("VISITOR_INFO1_LIVE=$it; SAPISID=test-account-a", true)
+            coordinator.request(sameAccount) { fetch(it) }
+        }
+        firstFinished.complete(Unit)
+        runCurrent()
+        coordinator.request(firstAccount) { fetch(it) }
+        runCurrent()
+        assertEquals(1, fetches)
+        assertEquals(listOf(false), starts)
+
+        coordinator.request(firstAccount, refresh = true) { fetch(it) }
+        runCurrent()
+        assertEquals(2, fetches)
+        val secondAccount = quickPicksAccountIdentity("SAPISID=test-account-b", true)
+        coordinator.request(secondAccount) { force -> assertTrue(force); fetch(force) }
+        runCurrent()
+        assertEquals(3, fetches)
+    }
+
+    @Test
     fun `empty null and blank key sections do not prematurely end home attempts`() = runTest {
         val blank = Innertube.SongItem(null, null, null, null, null)
         val usable = blank.copy(info = Innertube.Info(

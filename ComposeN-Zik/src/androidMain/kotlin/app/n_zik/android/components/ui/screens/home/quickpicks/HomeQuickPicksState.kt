@@ -14,6 +14,8 @@ import app.it.fast4x.rimusic.enums.Countries
 import app.it.fast4x.rimusic.enums.PlayEventsType
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.asSong
+import app.it.fast4x.rimusic.utils.encryptedPreferences
+import app.it.fast4x.rimusic.utils.ytCookieKey
 import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
@@ -71,12 +73,15 @@ class HomeQuickPicksState(
     private data class LoadIdentity(
         val playEventType: PlayEventsType,
         val country: Countries,
-        val loggedIn: Boolean,
-        val useLoginForBrowse: Boolean,
+        val account: QuickPicksAccountIdentity,
     )
 
     private fun loadIdentity() = LoadIdentity(
-        playEventType, selectedCountryCode, isYouTubeLoggedIn(), Innertube.useLoginForBrowse,
+        playEventType, selectedCountryCode,
+        quickPicksAccountIdentity(
+            appContext().encryptedPreferences.getString(ytCookieKey, "").orEmpty(),
+            Innertube.useLoginForBrowse,
+        ),
     )
 
     @SuppressLint("SuspiciousIndentation")

@@ -11,6 +11,7 @@ import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.Countries
 import app.it.fast4x.rimusic.enums.PlayEventsType
 import app.it.fast4x.rimusic.models.Song
+import app.it.fast4x.rimusic.utils.encryptedPreferences
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
@@ -123,6 +124,11 @@ class HomeQuickPicksStateOfflineTest {
         // logged-in session.
         mockkStatic("app.n_zik.android.components.settings.accounts.AccountsSettingsKt")
         every { isYouTubeLoggedIn() } returns false
+        // Account identity also reads the encrypted cookie; JVM tests substitute
+        // isolated preferences because AndroidKeyStore is unavailable here.
+        mockkStatic("app.it.fast4x.rimusic.utils.EncryptedPreferencesKt")
+        every { any<Context>().encryptedPreferences } returns
+            app.getSharedPreferences("quick_picks_offline_auth", Context.MODE_PRIVATE)
     }
 
     @After

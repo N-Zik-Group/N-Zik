@@ -5,6 +5,10 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(quick-picks): coordinate loading with account identity
+  - Include the active session and browse login preference in in-memory load identity.
+  - Keep session diagnostics redacted and test initial-load and offline coordination.
+
 - fix(build): prepare reproducible F-Droid releases from pinned source (issue https://github.com/N-Zik-Group/N-Zik/issues/937)
   - Compile module_loader from its existing C source for all four ABIs using the pinned NDK 28.2.13676358 and CMake 3.22.1; preserve the JNI contract, 16KB alignment and normalized native build paths instead of shipping precompiled helper binaries.
   - Pin every stable build and publication to one captured Git SHA, cache dependencies only, validate embedded APK revisions and native ABI sets before upload, and reject existing tags pointing at another commit without moving them.
