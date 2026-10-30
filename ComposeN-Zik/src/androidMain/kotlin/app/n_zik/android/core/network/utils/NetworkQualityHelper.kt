@@ -59,6 +59,10 @@ object NetworkQualityHelper {
     fun isNetworkConnected(context: Context): Boolean {
         // Full offline mode overrides real connectivity: every existing gate sees "offline"
         if (OfflineMode.enabled(context)) return false
+        return physicalNetworkConnected(context)
+    }
+
+    private fun physicalNetworkConnected(context: Context): Boolean {
         return try {
             val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -176,7 +180,7 @@ object NetworkQualityHelper {
                     // NET_CAPABILITY_VALIDATED is set, and a raw true desyncs this flow
                     // from isNetworkConnected (the initial value and onCapabilitiesChanged
                     // are both validated-based).
-                    trySend(isNetworkConnected(context))
+                    trySend(physicalNetworkConnected(context))
                 }
             }
 
@@ -184,10 +188,10 @@ object NetworkQualityHelper {
                 connectivityManager.registerDefaultNetworkCallback(callback)
             } else {
                 // Deprecated way could be added here if needed for API < 24
-                trySend(isNetworkConnected(context))
+                trySend(physicalNetworkConnected(context))
             }
 
-            trySend(isNetworkConnected(context))
+            trySend(physicalNetworkConnected(context))
 
             awaitClose {
                 connectivityManager.unregisterNetworkCallback(callback)

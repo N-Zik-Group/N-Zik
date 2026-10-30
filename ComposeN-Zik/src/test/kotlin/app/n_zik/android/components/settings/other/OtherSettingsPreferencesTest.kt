@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.utils.defaultFolderKey
-import app.it.fast4x.rimusic.utils.extraspaceKey
 import app.it.fast4x.rimusic.utils.isKeepScreenOnEnabledKey
 import app.it.fast4x.rimusic.utils.isProxyEnabledKey
 import app.it.fast4x.rimusic.utils.logDebugEnabledKey
@@ -41,7 +40,6 @@ class OtherSettingsPreferencesTest {
         showFoldersOnDeviceKey to true,
         parentalControlEnabledKey to false,
         logDebugEnabledKey to false,
-        extraspaceKey to false,
     )
 
     @Before fun setUp() {
@@ -54,19 +52,20 @@ class OtherSettingsPreferencesTest {
         setActiveProfile("default", context)
     }
 
-    @Test fun `reset writes only the ten original defaults and preserves non-reset proxy fields`() {
+    @Test fun `reset writes only the nine active defaults and preserves retired preferences and non-reset proxy fields`() {
         val retained = mapOf(proxyUsernameKey to "retained-user", regionOverrideKey to "FR", "unrelated" to "keep")
         context.preferences.edit().apply {
             retained.forEach { (key, value) -> putString(key, value) }
+            putBoolean("extraspace", true)
             putBoolean(isProxyEnabledKey, true)
             putInt(proxyPortKey, 9999)
             putBoolean(showFoldersOnDeviceKey, false)
         }.commit()
         applyOtherDefaults(context)
-        assertEquals(expected + retained, context.preferences.all)
+        assertEquals(expected + retained + ("extraspace" to true), context.preferences.all)
         context.preferences.edit().putInt(proxyPortKey, 42).commit()
         applyOtherDefaults(context)
-        assertEquals(expected + retained, context.preferences.all)
+        assertEquals(expected + retained + ("extraspace" to true), context.preferences.all)
     }
 
     @Test fun `reset is scoped to the active profile`() {
@@ -82,7 +81,7 @@ class OtherSettingsPreferencesTest {
     }
 
     @Test fun `inventory keeps existing order and all focus aliases without accepting unknown focus`() {
-        assertEquals(listOf("other.on-device", "other.head-unit", "other.service-lifetime", "other.proxy", "other.parental-control", "other.maintenance", "other.extensions", "other.rescue", "other.reset"), OtherSettingTargets.cards)
+        assertEquals(listOf("other.on-device", "other.service-lifetime", "other.proxy", "other.parental-control", "other.maintenance", "other.extensions", "other.rescue", "other.reset"), OtherSettingTargets.cards)
         assertEquals(OtherSettingTargets.preferenceKeys.size, OtherSettingTargets.preferenceKeys.toSet().size)
         assertEquals(OtherSettingTargets.actions.size, OtherSettingTargets.actions.toSet().size)
         assertEquals(mapOf("debug" to "other.maintenance", "maintenance" to "other.maintenance", "extensions" to "other.extensions", "rescue" to "other.rescue"), OtherSettingTargets.focusAliases)

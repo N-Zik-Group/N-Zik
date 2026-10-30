@@ -1,5 +1,6 @@
 package app.n_zik.android.playback.services.automotive.session
 
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import android.app.Application
 import android.content.Context
 import android.net.Uri
@@ -78,7 +79,9 @@ class AutoSessionCallbackSelectionTest {
     private lateinit var callback: AutoSessionCallback
 
     @Before
-    fun setUp() {
+    fun setUp() {
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         val app = ApplicationProvider.getApplicationContext<TestApplication>()
         val mainApplication = mockk<MainApplication>()
         every { mainApplication.applicationContext } returns app

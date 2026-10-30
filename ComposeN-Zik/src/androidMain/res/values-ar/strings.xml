@@ -720,8 +720,6 @@
     <string name="showvisthumbnail">Show Thumbnail for visualizer</string>
     <string name="black_background_for_visualizer">خلفية داكنة للمتصور</string>
     <string name="show_visualizer_buttons">إخفاء أزرار المرئيات تلقائياً</string>
-    <string name="androidheadunit">Android Head unit</string>
-    <string name="extra_space">Extra space at top</string>
     <string name="white">White</string>
     <string name="black">Black</string>
     <string name="highlight">Highlight</string>

@@ -3,6 +3,9 @@ package app.n_zik.android.playback.services.automotive.session
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import android.app.Application
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import io.mockk.mockkObject
+import io.mockk.every
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.media3.common.MediaItem
@@ -22,15 +25,14 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.QueuedMediaItemTable
 import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.playback.services.automotive.DislikedExclusion
 import app.n_zik.android.playback.services.automotive.browse.AutoBrowseTree
 import coil3.ImageLoader
 import coil3.asImage
 import coil3.decode.DataSource
 import coil3.request.SuccessResult
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import kotlinx.coroutines.CompletableDeferred
@@ -39,6 +41,8 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertThrows
+import java.util.concurrent.CancellationException
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -63,11 +67,14 @@ class AutoCallbackPublicationProfileTest {
 
     @Before
     fun setUp() {
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         context = RuntimeEnvironment.getApplication()
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { appContext() } returns context
         switchProfile("A")
-        mockkObject(Database)
+        mockkObject(Database, DislikedExclusion)
+        coEvery { DislikedExclusion.excludedSongIds(any(), any()) } returns emptySet()
         every { Database.songTable } returns songs
         every { Database.queueTable } returns queue
         callback = AutoSessionCallback(context, Database, mockk<MyDownloadHelper>(relaxed = true))
@@ -153,7 +160,8 @@ class AutoCallbackPublicationProfileTest {
         switchProfile("B")
         releaseRead.complete(Unit)
 
-        assertTrue(pending.get(15, TimeUnit.SECONDS).mediaItems.isEmpty())
+        assertThrows(CancellationException::class.java) { pending.get(15, TimeUnit.SECONDS) }
+        assertTrue(pending.isCancelled)
 
         check(context.preferences.edit().putBoolean(persistentQueueKey, true).commit())
         every { queue.all(any()) } returns flow {

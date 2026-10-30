@@ -3,7 +3,6 @@ package app.n_zik.android.components.settings.other
 import android.content.Context
 import androidx.core.content.edit
 import app.it.fast4x.rimusic.utils.defaultFolderKey
-import app.it.fast4x.rimusic.utils.extraspaceKey
 import app.it.fast4x.rimusic.utils.isKeepScreenOnEnabledKey
 import app.it.fast4x.rimusic.utils.isProxyEnabledKey
 import app.it.fast4x.rimusic.utils.logDebugEnabledKey
@@ -27,6 +26,5 @@ internal fun applyOtherDefaults(context: Context) {
         putBoolean(showFoldersOnDeviceKey, true)
         putBoolean(parentalControlEnabledKey, false)
         putBoolean(logDebugEnabledKey, false)
-        putBoolean(extraspaceKey, false)
     }
 }

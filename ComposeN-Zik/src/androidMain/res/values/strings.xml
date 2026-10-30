@@ -724,8 +724,6 @@
 <string name="showvisthumbnail">Show thumbnail for visualizer</string>
 <string name="black_background_for_visualizer">Dark background for visualizer</string>
 <string name="show_visualizer_buttons">Auto-hide visualizer buttons</string>
-<string name="androidheadunit">Android head unit</string>
-<string name="extra_space">Extra space at the top</string>
 <string name="white">White</string>
 <string name="black">Black</string>
 <string name="highlight">Highlight</string>
@@ -2487,7 +2485,6 @@
 <string name="settings_desc_network_network_status_image_quality_format">Shows the artwork quality currently selected for this connection.</string>
 <string name="settings_desc_network_network_status_audio_quality_format">Shows the streaming audio quality currently selected for this connection.</string>
 <string name="settings_desc_network_network_status_download_quality_format">Shows the download audio quality currently selected for this connection.</string>
-<string name="settings_desc_other_androidheadunit_extra_space">Add extra space above the player content for Android head-unit displays.</string>
 <string name="settings_desc_other_on_device_folder_that_will_show_when_you_open_on_device_page">Choose the starting folder for the on-device music browser.</string>
 <string name="settings_desc_other_proxy_enable_proxy">Route supported network requests through your configured proxy. Disabling this also clears the region override.</string>
 <string name="settings_desc_other_proxy_proxy_mode">Choose the connection protocol used by the proxy server.</string>

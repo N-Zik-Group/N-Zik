@@ -720,8 +720,6 @@
     <string name="showvisthumbnail">Prikaži Sličicu za vizuelizator</string>
     <string name="black_background_for_visualizer">Dark background for visualizer</string>
     <string name="show_visualizer_buttons">Auto-hide visualizer buttons</string>
-    <string name="androidheadunit">Android Glavna jedinica</string>
-    <string name="extra_space">Dodatni prostor na vrhu</string>
     <string name="white">Bela</string>
     <string name="black">Crna</string>
     <string name="highlight">Istaknite</string>

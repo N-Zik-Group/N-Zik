@@ -720,8 +720,6 @@
     <string name="showvisthumbnail">ビジュアライザーのサムネイルを表示</string>
     <string name="black_background_for_visualizer">ビジュアライザーの背景を暗くする</string>
     <string name="show_visualizer_buttons">ビジュアライザーボタンを自動的に隠す</string>
-    <string name="androidheadunit">アンドロイドヘッドユニット</string>
-    <string name="extra_space">上部に余分なスペース</string>
     <string name="white">白</string>
     <string name="black">黒</string>
     <string name="highlight">強調表示</string>

@@ -1,12 +1,16 @@
 package app.n_zik.android.playback.services.automotive.browse
 
 import android.app.Application
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import io.mockk.mockkObject
+import io.mockk.every
 import android.content.Context
+import android.net.Uri
+import app.n_zik.android.playback.services.ArtworkContentProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
@@ -34,6 +38,10 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.browse.handlers.BrowseHandler
 import app.n_zik.android.playback.services.automotive.session.AutoMediaIdContract
+import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
+import it.fast4x.innertube.Innertube
+import it.fast4x.innertube.models.NavigationEndpoint
+import it.fast4x.innertube.requests.searchPage
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
@@ -45,6 +53,8 @@ class AutoBrowseProfilePublicationTest {
 
     @Before
     fun setUp() {
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         context = RuntimeEnvironment.getApplication()
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { appContext() } returns context
@@ -149,6 +159,84 @@ class AutoBrowseProfilePublicationTest {
             }
         }
     }
+    @Test
+    fun `new search reset rejects late same query without replacing fresh capture or cache`() {
+        tree = AutoBrowseTree(context, Database, mockk<MyDownloadHelper>(relaxed = true))
+        mockkStatic("it.fast4x.innertube.requests.SearchPageKt")
+        val searchParent = "${AutoSessionConstants.ID_SEARCH_SONGS}/same/query"
+        val started = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        var requests = 0
+        fun response(id: String): Result<Innertube.ItemsPage<Innertube.Item>?>? {
+            val song = Innertube.SongItem(
+                info = Innertube.Info(name = id, endpoint = NavigationEndpoint.Endpoint.Watch(videoId = id)),
+                authors = emptyList(), album = null, durationText = "3:00", thumbnail = null,
+            )
+            // Nullable inline Result suspend APIs use the same boxing fixture as the handler tests.
+            @Suppress("UNCHECKED_CAST")
+            return Result.success(Result.success(Innertube.ItemsPage<Innertube.Item>(listOf(song), null)))
+                as Result<Innertube.ItemsPage<Innertube.Item>?>?
+        }
+        coEvery { Innertube.searchPage<Innertube.Item>("same/query", Innertube.SearchFilter.Song.value, any()) } coAnswers {
+            if (requests++ == 0) {
+                started.complete(Unit)
+                release.await()
+                response("stale-song")
+            } else response("fresh-song")
+        }
+        // JUnit is synchronous; suspend the real provider boundary while a second search publishes.
+        runBlocking {
+            val old = async(start = CoroutineStart.UNDISPATCHED) { tree.getChildren(searchParent, 0, null) }
+            try {
+                started.await()
+                val retained = tree.selectionStore.capture(parent, rows("retained")).first().mediaId
+                tree.clearCache()
+                assertNotNull(tree.selectionStore.resolve(retained))
+                val current = tree.getChildren(searchParent, 0, null)
+                val token = current.single().mediaId
+                assertEquals("fresh-song", tree.selectionStore.itemsForParent(searchParent)?.single()?.mediaId)
+                release.complete(Unit)
+                assertTrue(old.await().isEmpty())
+                assertEquals("fresh-song", tree.selectionStore.itemsForParent(searchParent)?.single()?.mediaId)
+                assertNotNull(tree.selectionStore.resolve(token))
+                assertNotNull(tree.selectionStore.resolve(retained))
+                val cached = tree.getChildren(AutoMediaIdContract.page(searchParent, 0), -1, null)
+                assertEquals(listOf(token), cached.map { it.mediaId })
+                assertEquals("fresh-song", cached.single().mediaMetadata.title.toString())
+            } finally {
+                release.complete(Unit)
+                old.cancel()
+            }
+        }
+        coVerify(exactly = 2) {
+            Innertube.searchPage<Innertube.Item>("same/query", Innertube.SearchFilter.Song.value, any())
+        }
+    }
+
+    @Test
+    fun `offline browsable artist album and playlist art never exposes a direct network URI`() {
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns false
+        tree = AutoBrowseTree(context, Database, MyDownloadHelper)
+        AutoBrowseTree::class.java.getDeclaredField("handlers").apply { isAccessible = true }.set(tree, listOf(handler))
+        val sources = listOf("https://images.example.test/artist=w1200-h1200", "https://images.example.test/album=w1200-h1200",
+            "https://i.ytimg.com/pl_c/example/cover.jpg")
+        coEvery { handler.getChildren(parent, context, Database, any(), null) } returns sources.mapIndexed { index, source ->
+            MediaItem.Builder().setMediaId("container-$index").setMediaMetadata(MediaMetadata.Builder()
+                .setIsBrowsable(true).setIsPlayable(false).setArtworkUri(Uri.parse(source)).build()).build()
+        }
+        // JUnit is synchronous; exercise the real suspend tree publication boundary.
+        runBlocking {
+            val published = tree.getChildren(parent, -1, null)
+            assertEquals(sources.size, published.size)
+            published.forEachIndexed { index, item ->
+                val uri = requireNotNull(item.mediaMetadata.artworkUri)
+                assertEquals("content", uri.scheme)
+                assertEquals(ArtworkContentProvider.AUTHORITY, uri.authority)
+                assertEquals(sources[index], ArtworkContentProvider.remoteSource(uri, "A")?.first)
+            }
+        }
+    }
+
     private fun switchProfile(profile: String) {
         check(context.profilePreferences.edit().putString(activeProfileKey, profile).commit())
     }

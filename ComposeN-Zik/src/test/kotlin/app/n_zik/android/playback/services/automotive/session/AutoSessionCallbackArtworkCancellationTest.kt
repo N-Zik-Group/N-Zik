@@ -1,5 +1,8 @@
 package app.n_zik.android.playback.services.automotive.session
 
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import io.mockk.mockkObject
+import io.mockk.every
 import android.app.Application
 import android.graphics.Bitmap
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
@@ -21,9 +24,7 @@ import coil3.asImage
 import coil3.decode.DataSource
 import coil3.request.SuccessResult
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import java.util.concurrent.CancellationException
@@ -71,6 +72,8 @@ class AutoSessionCallbackArtworkCancellationTest {
     @Test
     fun `cancelling playback resumption future cancels its suspended queue reader`() {
         val context = ApplicationProvider.getApplicationContext<Application>()
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { appContext() } returns context
         mockkObject(Database)
@@ -97,6 +100,8 @@ class AutoSessionCallbackArtworkCancellationTest {
     }
     private fun verifyCancellation(release: Boolean) {
         val context = ApplicationProvider.getApplicationContext<Application>()
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { appContext() } returns context
         val song = Song(

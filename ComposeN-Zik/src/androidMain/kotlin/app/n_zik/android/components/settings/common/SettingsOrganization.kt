@@ -46,7 +46,6 @@ fun SettingsCardRegistryEntry.categoryId(): String = when {
     }
     tab == 6 -> if (titleRes == R.string.download || titleRes == R.string.settings_download_quality) "downloads" else "network"
     tab == 7 -> when (titleRes) {
-        R.string.androidheadunit -> "interface"
         R.string.parental_control -> "playback"
         R.string.on_device -> "data"
         R.string.proxy -> "network"

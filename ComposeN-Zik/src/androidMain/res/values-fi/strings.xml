@@ -720,8 +720,6 @@
     <string name="showvisthumbnail">Näytä pienoiskuva visualisoijalle</string>
     <string name="black_background_for_visualizer">Tumma tausta visualisoijalle</string>
     <string name="show_visualizer_buttons">Piilota visualisoijan painikkeet automaattisesti</string>
-    <string name="androidheadunit">Android pääyksikkö</string>
-    <string name="extra_space">Ylimääräinen tila yläreunassa</string>
     <string name="white">Valkoinen</string>
     <string name="black">Musta</string>
     <string name="highlight">Korosta</string>

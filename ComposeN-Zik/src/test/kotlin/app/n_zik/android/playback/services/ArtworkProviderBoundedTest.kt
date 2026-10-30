@@ -243,7 +243,7 @@ class ArtworkProviderBoundedTest {
         }
         val provider = ArtworkContentProvider().also { it.attachInfo(context, null) }
         // Robolectric's caller is null, which the trust rules reject.
-        val pfd = provider.openFile(Uri.parse("content://artwork/local:9987"), "r")
+        val pfd = provider.openFile(ArtworkContentProvider.uriFor("local:9987"), "r")
         assertNotNull(pfd)
         requireNotNull(pfd).close()
         verify(exactly = 0) { resolver.query(any(), any(), any(), any(), any()) }
@@ -261,7 +261,7 @@ class ArtworkProviderBoundedTest {
         source.recycle()
         try {
             val provider = ArtworkContentProvider().also { it.attachInfo(app, null) }
-            val descriptor = requireNotNull(provider.openFile(Uri.parse("content://artwork/9988"), "r"))
+            val descriptor = requireNotNull(provider.openFile(ArtworkContentProvider.uriFor("9988"), "r"))
             assertRed(descriptor)
         } finally {
             file.delete()

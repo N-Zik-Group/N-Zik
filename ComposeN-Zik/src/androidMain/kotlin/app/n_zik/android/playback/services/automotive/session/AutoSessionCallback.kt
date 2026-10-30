@@ -30,6 +30,8 @@ import it.fast4x.innertube.utils.from
 import it.fast4x.innertube.YtMusic
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.CancellationException
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import androidx.media3.session.SessionCommands
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -63,6 +65,7 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.browse.AutoBrowseTree
 import app.n_zik.android.playback.services.automotive.DislikedExclusion
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper
+import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
 import app.n_zik.android.playback.services.automotive.models.AutoSearchState
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
 import app.n_zik.android.playback.services.automotive.models.CancellableAutoMediaItemMapper
@@ -84,6 +87,14 @@ class AutoSessionCallback(
 ) : MediaLibrarySession.Callback {
     private val scope = NzikDispatchers.fireAndForget(NzikDispatchers.UI)
     private var observationJob: Job? = null
+    private val selectionRequestLock = Any()
+    private val queueApplicationOwner = AutoQueueApplicationOwner()
+    private var pendingRequest: AutoQueueApplicationOwner.Request? = null
+
+    internal fun wrapPlayer(player: Player): Player = queueApplicationOwner.wrap(player)
+    private var pendingSelection: ListenableFuture<MediaSession.MediaItemsWithStartPosition>? = null
+    private val accessEpoch = java.util.concurrent.atomic.AtomicLong()
+    private val browsedParents = linkedMapOf<String, Int>()
     lateinit var binder: PlayerServiceModern.Binder
     var toggleLike: () -> Unit = {}
     var toggleDownload: () -> Unit = {}
@@ -94,7 +105,7 @@ class AutoSessionCallback(
     var actionSearch: () -> Unit = {}
     // Issue #866 (gh-866): discover command button (notification + AA overflow).
     var toggleDiscover: () -> Unit = {}
-    
+
     private val autoBrowseTree = AutoBrowseTree(context, database, downloadHelper)
 
     /** Last browsed album or artist targeted by the dislike action. */
@@ -103,13 +114,92 @@ class AutoSessionCallback(
 
     private data class CurrentContainer(val type: String, val id: String)
 
+    private fun accessPolicy() = AutoAccessPolicy(context, database, downloadHelper, if (::binder.isInitialized) binder else null)
+
+    private val connectionCommands = mutableMapOf<MediaSession.ControllerInfo, Pair<SessionCommands, Player.Commands>>()
+
     fun observeRepository(session: MediaLibrarySession) {
         observationJob?.cancel()
+        observationJob = scope.launch {
+            NetworkQualityHelper.observeConnection(context).collect {
+                invalidateAccess(session)
+            }
+        }
+    }
+
+    /** Synchronous ownership invalidation also catches rapid profile or offline round trips. */
+    fun invalidatePublication() {
+        synchronized(selectionRequestLock) {
+            accessEpoch.incrementAndGet()
+            queueApplicationOwner.invalidate()
+            pendingSelection?.cancel(true)
+            pendingSelection = null
+            autoBrowseTree.invalidateAccess()
+            // Provider/policy invalidation makes previously browsed counts unknown too.
+            synchronized(browsedParents) { browsedParents.replaceAll { _, _ -> Int.MAX_VALUE } }
+        }
+    }
+
+    /** Invalidates pending publications and updates visible commands after policy changes. */
+    fun invalidateAccess(session: MediaLibrarySession) {
+        invalidatePublication()
+        connectionCommands.forEach { (controller, commands) ->
+            session.setAvailableCommands(controller, commandsForAccess(commands.first), commands.second)
+        }
+        notifyKnownChildren(session, accessChanged = true)
+    }
+
+    private fun commandsForAccess(commands: SessionCommands): SessionCommands {
+        if (accessPolicy().online) return commands
+        return commands.buildUpon().apply {
+            NETWORK_COMMANDS.forEach { remove(it) }
+            remove(SessionCommand.COMMAND_CODE_LIBRARY_SEARCH)
+            remove(SessionCommand.COMMAND_CODE_LIBRARY_GET_SEARCH_RESULT)
+        }.build()
+    }
+
+    fun refreshArtwork(session: MediaLibrarySession) {
+        autoBrowseTree.refreshArtwork()
+        notifyKnownChildren(session)
+    }
+
+    private fun notifyKnownChildren(session: MediaLibrarySession, accessChanged: Boolean = false) {
+        val parents = synchronized(browsedParents) { browsedParents.toMutableMap() }
+        val online = accessPolicy().online
+        if (accessChanged || PlayerServiceModern.ROOT in parents) {
+            parents[PlayerServiceModern.ROOT] = if (online) 5 else 4
+        }
+        // Offline direct requests may have recorded zero. Discovery is invalidated on
+        // reconnect/art refresh; never advertise that stale zero as the online item count.
+        parents.replaceAll { parent, count ->
+            val actualParent = AutoMediaIdContract.parsePage(parent)?.parentId ?: parent
+            if (actualParent == ID_QUICK_PICKS) {
+                if (online) Int.MAX_VALUE else 0
+            } else count
+        }
+        parents.forEach { (parent, count) -> session.notifyChildrenChanged(parent, count, null) }
+    }
+
+    override fun onDisconnected(session: MediaSession, controller: MediaSession.ControllerInfo) {
+        connectionCommands.remove(controller)
+        super.onDisconnected(session, controller)
+    }
+
+    private companion object {
+        val NETWORK_COMMANDS = listOf(AutoSessionConstants.CommandToggleDownload, AutoSessionConstants.CommandStartRadio,
+            AutoSessionConstants.CommandSearch, AutoSessionConstants.CommandToggleDiscover)
     }
 
     fun release() {
+        synchronized(selectionRequestLock) {
+            queueApplicationOwner.invalidate()
+            pendingSelection?.cancel(true)
+            pendingSelection = null
+        }
+        queueApplicationOwner.release()
         observationJob?.cancel()
         autoBrowseTree.selectionStore.clear()
+        connectionCommands.clear()
         scope.cancel()
     }
 
@@ -120,7 +210,7 @@ class AutoSessionCallback(
         val connectionResult = super.onConnect(session, controller)
         // Connecting a notification controller must not invalidate rows already displayed by AA.
         if (session.isAutoCompanionController(controller)) currentContainer = null
-        return MediaSession.ConnectionResult.accept(
+        val result = MediaSession.ConnectionResult.accept(
             connectionResult.availableSessionCommands.buildUpon()
                 .add(AutoSessionConstants.CommandToggleDownload)
                 .add(AutoSessionConstants.CommandToggleLike)
@@ -137,6 +227,10 @@ class AutoSessionCallback(
                 .add(Player.COMMAND_PREPARE)
                 .add(Player.COMMAND_STOP)
                 .build()
+        )
+        connectionCommands[controller] = result.availableSessionCommands to result.availablePlayerCommands
+        return MediaSession.ConnectionResult.accept(
+            commandsForAccess(result.availableSessionCommands), result.availablePlayerCommands
         )
     }
 
@@ -178,6 +272,7 @@ class AutoSessionCallback(
         query: String,
         params: MediaLibraryService.LibraryParams?
     ): ListenableFuture<LibraryResult<Void>> {
+        if (!accessPolicy().online) return Futures.immediateFuture(LibraryResult.ofError(SessionError.ERROR_NOT_SUPPORTED))
         Timber.tag("AutoSessionCallback").d("onSearch: $query")
         autoBrowseTree.clearCache()
         session.notifySearchResultChanged(browser, query, 0, params)
@@ -192,6 +287,7 @@ class AutoSessionCallback(
         pageSize: Int,
         params: MediaLibraryService.LibraryParams?
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
+        if (!accessPolicy().online) return Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.of(), params))
         val results = listOf(            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_SONGS}/$query", context.getString(R.string.songs), null, AutoMediaItemMapper.drawableUri(context, R.drawable.musical_notes), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
             AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_ALBUMS}/$query", context.getString(R.string.albums), null, AutoMediaItemMapper.drawableUri(context, R.drawable.album), MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS),
             AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_ARTISTS}/$query", context.getString(R.string.artists), null, AutoMediaItemMapper.drawableUri(context, R.drawable.people), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
@@ -209,6 +305,9 @@ class AutoSessionCallback(
         customCommand: SessionCommand,
         args: Bundle,
     ): ListenableFuture<SessionResult> {
+        if (!accessPolicy().allowsCommand(customCommand.customAction)) {
+            return Futures.immediateFuture(SessionResult(SessionError.ERROR_NOT_SUPPORTED))
+        }
         when (customCommand.customAction) {
             AutoSessionConstants.ACTION_TOGGLE_LIKE -> toggleLike()
             AutoSessionConstants.ACTION_TOGGLE_DOWNLOAD -> toggleDownload()
@@ -256,13 +355,33 @@ class AutoSessionCallback(
         page: Int,
         pageSize: Int,
         params: MediaLibraryService.LibraryParams?,
-    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = scope.future(NzikDispatchers.DATA) {
-        val pageId = AutoMediaIdContract.parsePage(parentId)
-        val pageIndex = pageId?.index ?: -1
-        val actualParentId = pageId?.parentId ?: parentId
-        noteCurrentContainer(actualParentId)
-        val list = autoBrowseTree.getChildren(parentId, pageIndex, if (::binder.isInitialized) binder else null)
-        LibraryResult.ofItemList(ImmutableList.copyOf(list), params)
+    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
+        val epoch = synchronized(selectionRequestLock) {
+            synchronized(browsedParents) {
+                // Remember first requests before scheduling their load so access changes
+                // can notify even a parent whose first result is still in flight.
+                browsedParents.putIfAbsent(parentId, Int.MAX_VALUE)
+                while (browsedParents.size > 32) browsedParents.remove(browsedParents.keys.first())
+                accessEpoch.get()
+            }
+        }
+        return scope.future(NzikDispatchers.DATA) {
+            val pageId = AutoMediaIdContract.parsePage(parentId)
+            val pageIndex = pageId?.index ?: -1
+            val actualParentId = pageId?.parentId ?: parentId
+            noteCurrentContainer(actualParentId)
+            val list = autoBrowseTree.getChildren(parentId, pageIndex, if (::binder.isInitialized) binder else null)
+            synchronized(browsedParents) {
+                // Publish known counts and rows together only for the current access epoch.
+                if (epoch != accessEpoch.get()) {
+                    LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
+                } else {
+                    browsedParents[parentId] = list.size
+                    while (browsedParents.size > 32) browsedParents.remove(browsedParents.keys.first())
+                    LibraryResult.ofItemList(ImmutableList.copyOf(list), params)
+                }
+            }
+        }
     }
 
     /** Associates container dislike commands with the last browsed detail. */
@@ -292,14 +411,17 @@ class AutoSessionCallback(
         mediaId: String,
     ): ListenableFuture<LibraryResult<MediaItem>> = scope.future(NzikDispatchers.DATA) {
         val requestProfile = getActiveProfile(context)
+        val epoch = accessEpoch.get()
         if (AutoMediaIdContract.isScopedSelection(mediaId)) {
             val selection = autoBrowseTree.selectionStore.resolve(mediaId)
                 ?: return@future LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
             val item = selection.items[selection.startIndex].buildUpon().setMediaId(mediaId).build()
-            if (getActiveProfile(context) != requestProfile ||
+            val eligible = accessPolicy().eligible(listOf(item), selection.parentId)
+            if (getActiveProfile(context) != requestProfile || epoch != accessEpoch.get() ||
                 autoBrowseTree.selectionStore.resolve(mediaId)?.items !== selection.items) {
                 return@future LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
             }
+            if (eligible.isEmpty()) return@future LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
             return@future LibraryResult.ofItem(item, null)
         }
         val songId = mediaId.split('/').lastOrNull() ?: mediaId
@@ -308,10 +430,12 @@ class AutoSessionCallback(
                 CancellableAutoMediaItemMapper.mapSongToMediaItem(song, mediaId.substringBeforeLast('/'), loadArtwork = true)
             } else CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = true)
         }
-        if (getActiveProfile(context) != requestProfile) {
+        val eligible = item?.let { accessPolicy().eligible(listOf(it)).isNotEmpty() } ?: false
+        if (getActiveProfile(context) != requestProfile || epoch != accessEpoch.get()) {
             return@future LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
         }
-        item?.let { LibraryResult.ofItem(it, null) } ?: LibraryResult.ofError(SessionError.ERROR_UNKNOWN)
+        if (item != null && eligible) LibraryResult.ofItem(item, null)
+            else LibraryResult.ofError(SessionError.ERROR_UNKNOWN)
     }
     // Mapping and queue resolution perform disk work; Media3 receives the result on its own thread.
     override fun onSetMediaItems(
@@ -320,26 +444,49 @@ class AutoSessionCallback(
         mediaItems: MutableList<MediaItem>,
         startIndex: Int,
         startPositionMs: Long,
-    ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> = scope.future(NzikDispatchers.DATA) {
-        val requestProfile = getActiveProfile(context)
-        val result = onSetMediaItemsInternal(mediaSession, controller, mediaItems, startIndex, startPositionMs)
-        if (getActiveProfile(context) != requestProfile) {
-            Timber.tag("AutoSessionCallback").w("Profile changed before automotive queue publication")
-            return@future MediaSession.MediaItemsWithStartPosition(emptyList(), 0, startPositionMs)
-        }
-        val maxSongs = context.preferences.getEnum(maxSongsInQueueAndroidAutoKey, MaxSongs.Unlimited).toInt()
-        
-        if (result.mediaItems.size <= maxSongs) return@future result
-        
-        val start = maxOf(0, result.startIndex - maxSongs / 2)
-        val end = minOf(result.mediaItems.size, start + maxSongs)
-        val adjustedStart = maxOf(0, end - maxSongs)
-        
-        MediaSession.MediaItemsWithStartPosition(
-            result.mediaItems.subList(adjustedStart, end),
-            result.startIndex - adjustedStart,
-            result.startPositionMs
-        )
+    ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> = synchronized(selectionRequestLock) {
+        val request = queueApplicationOwner.begin()
+        pendingRequest = request
+        pendingSelection?.cancel(true)
+        scope.future(NzikDispatchers.DATA) {
+            val requestProfile = getActiveProfile(context)
+            val epoch = accessEpoch.get()
+            val selectedId = mediaItems.getOrNull(if (startIndex == -1) 0 else startIndex)?.mediaId
+            val scopedAction = selectedId?.let(AutoMediaIdContract::isScopedAction) == true
+            val capture = selectedId?.let {
+                if (scopedAction) autoBrowseTree.selectionStore.resolveAction(it)
+                else autoBrowseTree.selectionStore.resolve(it)
+            }
+            val resolved = onSetMediaItemsInternal(mediaSession, controller, mediaItems, startIndex, startPositionMs)
+            val eligible = accessPolicy().eligible(resolved.mediaItems)
+            val retainedIndex = eligible.indexOfFirst { it.index == resolved.startIndex }
+            val result = if (retainedIndex < 0) {
+                MediaSession.MediaItemsWithStartPosition(emptyList(), 0, startPositionMs)
+            } else MediaSession.MediaItemsWithStartPosition(eligible.map { it.value }, retainedIndex, resolved.startPositionMs)
+            val currentCapture = selectedId?.let {
+                if (scopedAction) autoBrowseTree.selectionStore.resolveAction(it)
+                else autoBrowseTree.selectionStore.resolve(it)
+            }
+            if (getActiveProfile(context) != requestProfile || epoch != accessEpoch.get() ||
+                (capture != null && currentCapture?.items !== capture.items)) {
+                Timber.tag("AutoSessionCallback").w("Access or capture changed before automotive queue publication")
+                throw CancellationException("Automotive queue publication invalidated")
+            }
+            val maxSongs = context.preferences.getEnum(maxSongsInQueueAndroidAutoKey, MaxSongs.Unlimited).toInt()
+
+            if (result.mediaItems.size <= maxSongs) return@future result
+
+            val start = maxOf(0, result.startIndex - maxSongs / 2)
+            val end = minOf(result.mediaItems.size, start + maxSongs)
+            val adjustedStart = maxOf(0, end - maxSongs)
+
+            MediaSession.MediaItemsWithStartPosition(
+                result.mediaItems.subList(adjustedStart, end),
+                result.startIndex - adjustedStart,
+                result.startPositionMs
+            )
+        }.let { queueApplicationOwner.future(it, request, queueApplicationOwner.applicationLooper) }
+            .also { pendingSelection = it }
     }
 
     private suspend fun onSetMediaItemsInternal(
@@ -360,25 +507,13 @@ class AutoSessionCallback(
                 Timber.tag("AutoSessionCallback").w("Expired or invalid automotive selection: %s", selectedId)
                 return MediaSession.MediaItemsWithStartPosition(emptyList(), 0, startPositionMs)
             }
-            val excludesDisliked = when (selection.parentId) {
-                AutoSessionConstants.ID_SONGS_ALL,
-                AutoSessionConstants.ID_SONGS_FAVORITES,
-                AutoSessionConstants.ID_SONGS_DOWNLOADED,
-                AutoSessionConstants.ID_SONGS_CACHED,
-                AutoSessionConstants.ID_SONGS_TOP,
-                AutoSessionConstants.ID_SONGS_ONDEVICE -> true
-                else -> selection.parentId.substringBefore('/') == AutoSessionConstants.ID_SEARCH_SONGS
-            }
-            val excluded = if (excludesDisliked) {
-                DislikedExclusion.excludedSongIds(context, database)
-            } else emptySet()
+            val allowed = accessPolicy().eligible(selection.items, selection.parentId)
             val currentSelection = if (scopedAction) autoBrowseTree.selectionStore.resolveAction(selectedId)
                 else autoBrowseTree.selectionStore.resolve(selectedId)
             if (currentSelection == null || currentSelection.items !== selection.items || currentSelection.startIndex != selection.startIndex) {
                 Timber.tag("AutoSessionCallback").w("Automotive selection invalidated during queue resolution")
                 return MediaSession.MediaItemsWithStartPosition(emptyList(), 0, startPositionMs)
             }
-            val allowed = selection.items.withIndex().filter { it.value.mediaId !in excluded }
             val selectedIndex = if (scopedAction && allowed.isNotEmpty()) 0
                 else allowed.indexOfFirst { it.index == selection.startIndex }
             if (selectedIndex < 0) {
@@ -403,7 +538,8 @@ class AutoSessionCallback(
         if (actionParent != null) {
             val displayed = autoBrowseTree.selectionStore.itemsForParent(actionParent)
             if (!displayed.isNullOrEmpty()) {
-                val queue = if (AutoMediaIdContract.isShuffle(selectedId)) displayed.shuffled() else displayed
+                val allowed = accessPolicy().eligible(displayed, actionParent).map { it.value }
+                val queue = if (AutoMediaIdContract.isShuffle(selectedId)) allowed.shuffled() else allowed
                 return MediaSession.MediaItemsWithStartPosition(queue, 0, 0)
             }
         }
@@ -532,17 +668,17 @@ class AutoSessionCallback(
             val mediaId = mediaItems.first().mediaId
             val paths = mediaId.split("/")
             when (paths.first()) {
-                AutoSessionConstants.ID_QUICK_PICKS -> { 
+                AutoSessionConstants.ID_QUICK_PICKS -> {
                     songId = paths[1]
                     val trending = database.eventTable.findSongsMostPlayedBetween(from = 0, limit = 500).first()
-                    val relatedSongs = if (trending.isNotEmpty()) {
+                    val relatedSongs = if (accessPolicy().online && trending.isNotEmpty()) {
                         Innertube.relatedPage(videoId = trending.first().id, setLogin = isYouTubeLoggedIn() && Innertube.useLoginForBrowse)?.getOrNull()?.songs?.map { it.asSong } ?: emptyList()
                     } else emptyList()
-                    val ytmQuickPicks = if (isYouTubeLoggedIn()) {
+                    val ytmQuickPicks = if (accessPolicy().online && isYouTubeLoggedIn()) {
                         YtMusic.getQuickPicks(setLogin = true).getOrNull()?.map { it.asSong } ?: emptyList()
                     } else emptyList()
                     Timber.tag("AutoSessionCallback").d("Quick picks play list loaded -> trending: ${trending.size}, related: ${relatedSongs.size}, ytb: ${ytmQuickPicks.size}")
-                    queryList = (ytmQuickPicks + trending + relatedSongs).distinctBy { it.id } 
+                    queryList = (ytmQuickPicks + trending + relatedSongs).distinctBy { it.id }
                 }
                 // Triple dislike exclusion (parity): search results accumulated from
                 // detail pages can include songs by disliked artists/albums.
@@ -552,7 +688,7 @@ class AutoSessionCallback(
                 PlayerServiceModern.SONG -> { songId = paths[1]; queryList = database.songTable.all().first().filter { it.id !in excludedIds } }
                 AutoSessionConstants.ID_SONGS_ALL -> { songId = paths[1]; queryList = database.songTable.sortAll(SongSortBy.DateAdded, SortOrder.Descending, excludeHidden = true).first().filter { it.id !in excludedIds } }
                 AutoSessionConstants.ID_SONGS_FAVORITES -> { songId = paths[1]; queryList = database.songTable.allFavorites().first().filter { it.id !in excludedIds }.reversed() }
-                AutoSessionConstants.ID_SONGS_DOWNLOADED -> { 
+                AutoSessionConstants.ID_SONGS_DOWNLOADED -> {
                     val downloads = downloadHelper.downloads.value
                     queryList = database.songTable.all(excludeHidden = false).first().fastFilter { song -> downloads[song.id]?.state == Download.STATE_COMPLETED && song.id !in excludedIds }.sortedByDescending { song -> downloads[song.id]?.updateTimeMs ?: 0L }
                     songId = paths[1]
@@ -648,36 +784,76 @@ class AutoSessionCallback(
         mediaItems: MutableList<MediaItem>
     ): ListenableFuture<MutableList<MediaItem>> = scope.future(NzikDispatchers.DATA) {
         val requestProfile = getActiveProfile(context)
+        val epoch = accessEpoch.get()
         val retained = mutableListOf<Pair<String, List<MediaItem>>>()
         val parentalControlEnabled = try { context.preferences.getBoolean(parentalControlEnabledKey, false) } catch (e: Exception) { false }
         val mappedItems = mediaItems.fastMap { item ->
             val songId = item.mediaId.split('/').lastOrNull() ?: item.mediaId
             if (AutoMediaIdContract.isScopedSelection(item.mediaId)) {
                 val selection = autoBrowseTree.selectionStore.resolve(item.mediaId)
-                if (selection != null) retained += item.mediaId to selection.items
-                selection?.items?.get(selection.startIndex)
+                if (selection == null) null else {
+                    retained += item.mediaId to selection.items
+                    val selected = selection.items[selection.startIndex]
+                    selected to selection.parentId
+                }
             } else {
-                database.songTable.findById(songId).first()?.let(SessionMediaItemMapper::baseMediaItem)
-                    ?: item.buildUpon().setMediaId(songId).build()
+                (database.songTable.findById(songId).first()?.let(SessionMediaItemMapper::baseMediaItem)
+                    ?: item.buildUpon().setMediaId(songId).build()) to null
             }
-        }.filterNotNull().filter { !parentalControlEnabled || it.mediaMetadata.extras?.getBoolean(MediaConstants.EXTRAS_KEY_IS_EXPLICIT) != true }.toMutableList()
-        if (getActiveProfile(context) != requestProfile || retained.any { (id, items) ->
+        }.filterNotNull().filter { (item, _) ->
+            !parentalControlEnabled || item.mediaMetadata.extras?.getBoolean(MediaConstants.EXTRAS_KEY_IS_EXPLICIT) != true
+        }
+        // Parent policies have two eligibility classes. Filter each class once, then restore
+        // request indices rather than regrouping output (which would reorder duplicates).
+        val accepted = BooleanArray(mappedItems.size)
+        val policy = accessPolicy()
+        mappedItems.withIndex().groupBy { (_, entry) ->
+            entry.second?.let(AutoAccessPolicy::reappliesExclusions) == true
+        }.values.forEach { group ->
+            policy.eligible(group.map { it.value.first }, group.first().value.second).forEach {
+                accepted[group[it.index].index] = true
+            }
+        }
+        if (getActiveProfile(context) != requestProfile || epoch != accessEpoch.get() || retained.any { (id, items) ->
                 autoBrowseTree.selectionStore.resolve(id)?.items !== items
             }) {
             Timber.tag("AutoSessionCallback").w("Profile or capture changed before automotive append publication")
             return@future mutableListOf()
         }
-        mappedItems
+        mappedItems.filterIndexed { index, _ -> accepted[index] }.map { it.first }.toMutableList()
     }
     @Deprecated("Deprecated in Java")
     override fun onPlaybackResumption(
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo
-    ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
+    ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> =
+        onPlaybackResumption(mediaSession, controller, true)
+
+    override fun onPlaybackResumption(
+        mediaSession: MediaSession,
+        controller: MediaSession.ControllerInfo,
+        isForPlayback: Boolean,
+    ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> = synchronized(selectionRequestLock) {
+        // Metadata-only recent-item requests must not supersede a pending explicit selection.
+        // Play may arrive while an explicit selection still resolves and the player is empty.
+        // Reuse that replacement even when saved-queue resumption is disabled.
+        if (!isForPlayback) return@synchronized loadPlaybackResumption()
+        if (pendingSelection?.isCancelled == false && pendingRequest?.let(queueApplicationOwner::pending) == true) {
+            pendingRequest?.let(queueApplicationOwner::requestPlayback)
+            pendingSelection?.let { return@synchronized it }
+        }
+        val request = queueApplicationOwner.begin()
+        pendingRequest = request
+        queueApplicationOwner.future(loadPlaybackResumption(), request, queueApplicationOwner.applicationLooper)
+            .also { pendingSelection = it }
+    }
+
+    private fun loadPlaybackResumption(): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
         val defaultResult = MediaSession.MediaItemsWithStartPosition(emptyList(), 0, 0)
         if (!context.preferences.getBoolean(persistentQueueKey, false)) return Futures.immediateFuture(defaultResult)
         return scope.future(NzikDispatchers.DATA) {
             val requestProfile = getActiveProfile(context)
+            val epoch = accessEpoch.get()
             try {
                 val queued = database.queueTable.all().first()
                 val idx = queued.indexOfFirst { it.position != null }.coerceAtLeast(0)
@@ -693,10 +869,15 @@ class AutoSessionCallback(
                     val song = if (source != null) restored.copy(thumbnailUrl = source) else restored
                     CancellableAutoMediaItemMapper.mapSongToMediaItem(song, true, song.isLocal)
                 }
-                if (getActiveProfile(context) != requestProfile) {
-                    Timber.tag("AutoSessionCallback").w("Profile changed before automotive resumption publication")
-                    defaultResult
-                } else MediaSession.MediaItemsWithStartPosition(mediaItems, idx, startPos)
+                val available = accessPolicy().eligible(mediaItems)
+                if (getActiveProfile(context) != requestProfile || epoch != accessEpoch.get()) {
+                    Timber.tag("AutoSessionCallback").w("Access changed before automotive resumption publication")
+                    throw CancellationException("Automotive resumption publication invalidated")
+                } else {
+                    val retainedIndex = available.indexOfFirst { it.index == idx }
+                    if (retainedIndex < 0) defaultResult
+                    else MediaSession.MediaItemsWithStartPosition(available.map { it.value }, retainedIndex, startPos)
+                }
             } catch (exception: CancellationException) {
                 throw exception
             } catch (exception: Exception) {
@@ -710,7 +891,7 @@ class AutoSessionCallback(
         if (source.isNullOrBlank()) return false
         val uri = Uri.parse(cleanPrefix(source))
         return uri.scheme == "content" && uri.authority == ArtworkContentProvider.AUTHORITY &&
-            uri.pathSegments.firstOrNull() == "source"
+            uri.pathSegments.firstOrNull() in setOf("source", "remote")
     }
     private fun getCountCachedSongs(): Flow<Int> = database.formatTable.allWithSongs().map { flist ->
         if (!::binder.isInitialized) return@map 0

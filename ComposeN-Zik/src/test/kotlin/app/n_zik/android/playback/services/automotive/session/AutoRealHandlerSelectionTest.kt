@@ -1,5 +1,8 @@
 package app.n_zik.android.playback.services.automotive.session
 
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import io.mockk.mockkObject
+import io.mockk.every
 import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.session.MediaSession
@@ -28,9 +31,7 @@ import app.n_zik.android.playback.services.automotive.models.AutoSearchState
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import it.fast4x.innertube.Innertube
@@ -62,6 +63,8 @@ class AutoRealHandlerSelectionTest {
 
     @Before
     fun setUp() {
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         val app = ApplicationProvider.getApplicationContext<TestApplication>()
         val application = mockk<MainApplication>()
         every { application.applicationContext } returns app

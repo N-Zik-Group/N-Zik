@@ -720,8 +720,6 @@
     <string name="showvisthumbnail">Görselleştirici için küçük resmi göster</string>
     <string name="black_background_for_visualizer">Görselleştirici için koyu arka plan</string>
     <string name="show_visualizer_buttons">Görselleştirici düğmelerini otomatik olarak gizle</string>
-    <string name="androidheadunit">Android ana ünite</string>
-    <string name="extra_space">Üstte ekstra boşluk</string>
     <string name="white">Beyaz</string>
     <string name="black">Siyah</string>
     <string name="highlight">Vurgu</string>

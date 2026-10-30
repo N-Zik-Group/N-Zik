@@ -1,7 +1,6 @@
 package app.n_zik.android.playback.services.automotive.models
 
 import android.content.ContentUris
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -17,11 +16,12 @@ import app.it.fast4x.rimusic.hasExplicitPrefix
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.EXPLICIT_BUNDLE_TAG
 import app.it.fast4x.rimusic.utils.durationTextToMillis
+import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
 import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.persistentQueueKey
 import app.n_zik.android.R
 import app.n_zik.android.appContext
-import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.thumbnail
 import app.n_zik.android.playback.services.ArtworkContentProvider
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
@@ -33,19 +33,15 @@ import app.n_zik.android.playback.services.automotive.session.AutoSessionConstan
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import java.io.File
-import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.runInterruptible
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 @UnstableApi
 object SessionMediaItemMapper {
 
     const val ORIGINAL_ARTWORK_SOURCE_EXTRA = "app.n_zik.android.automotive.ORIGINAL_ARTWORK_SOURCE"
-
-    private val artworkBytesCache = ArtworkBytesCache()
 
     @Volatile
     private var serializedFallbackBytes: ByteArray? = null
@@ -122,75 +118,7 @@ object SessionMediaItemMapper {
             File(barePath)
         }
 
-    private suspend fun loadArtworkBytes(url: String?): ByteArray? = withContext(NzikDispatchers.DATA) {
-        if (url.isNullOrBlank()) return@withContext null
-        val file = if (url.startsWith("file:") || url.startsWith("/")) {
-            resolveArtworkFile(url, url.removePrefix("file://"))
-        } else null
-        val context = appContext()
-        val profile = getActiveProfile(context)
-        val revision = ArtworkRevisions.current()
-        val key = "$profile|$revision|${file?.absolutePath ?: url}|${file?.lastModified()}|${file?.length()}"
-        if (file != null && !file.exists()) return@withContext null
-        artworkBytesCache.getOrLoad(key) {
-            try {
-                val bytes = when {
-                    file != null -> runInterruptible(NzikDispatchers.DATA) {
-                        encodeOwnedArtwork(square = true) { ArtworkBitmapDecoder.file(file) }
-                    }
-                    url.startsWith("content://") -> runInterruptible(NzikDispatchers.DATA) {
-                        encodeOwnedArtwork {
-                            ArtworkBitmapDecoder.decode { context.contentResolver.openInputStream(Uri.parse(url)) }
-                        }
-                    }
-                    else -> {
-                        ImageCacheFactory.loadBitmap(
-                            url, requestSize = 512, qualityOverride = ImageCacheFactory.NetworkQuality.HIGH,
-                        )?.let { bitmap ->
-                            runInterruptible(NzikDispatchers.DATA) {
-                                encodeOwnedArtwork {
-                                    boundedOwnedCopy(bitmap)
-                                }
-                            }
-                        }
-                    }
-                } ?: return@getOrLoad null
-                if (profile != getActiveProfile(context) || revision != ArtworkRevisions.current()) return@getOrLoad null
-                bytes
-            } catch (exception: CancellationException) {
-                throw exception
-            } catch (exception: Exception) {
-                Timber.tag("AutoArtwork").w(exception, "Could not decode session artwork")
-                null
-            }
-        }.takeIf { profile == getActiveProfile(context) && revision == ArtworkRevisions.current() }
-    }
-
-    private fun boundedOwnedCopy(source: Bitmap): Bitmap? {
-        val longest = maxOf(source.width, source.height)
-        if (longest <= ArtworkBitmapDecoder.MAX_SIDE) {
-            return source.copy(Bitmap.Config.ARGB_8888, false)
-        }
-        val scale = ArtworkBitmapDecoder.MAX_SIDE.toDouble() / longest
-        // Changed dimensions guarantee a new bitmap; never recycle Coil's borrowed source.
-        return Bitmap.createScaledBitmap(
-            source,
-            (source.width * scale).roundToInt().coerceAtLeast(1),
-            (source.height * scale).roundToInt().coerceAtLeast(1),
-            true,
-        )
-    }
-
-    // Ownership stays inside one interruptible block: prompt cancellation may discard its
-    // return value, so only encoded bytes may cross that suspension boundary.
-    private fun encodeOwnedArtwork(square: Boolean = false, decode: () -> Bitmap?): ByteArray? {
-        val bitmap = decode() ?: return null
-        return try {
-            ArtworkBitmapDecoder.jpeg(bitmap, square)
-        } finally {
-            if (!bitmap.isRecycled) bitmap.recycle()
-        }
-    }
+    private suspend fun loadArtworkBytes(url: String?): ByteArray? = SessionArtworkLoader.load(url)
 
     // Resize only remote provider URLs; local artwork sources must retain their identity.
     private fun bestArtworkSource(source: String?): String? = source?.let(::cleanPrefix)?.let { clean ->
@@ -206,6 +134,10 @@ object SessionMediaItemMapper {
             LocalArtworkRules.needsProviderArtwork(song.id, source, ArtworkContentProvider.AUTHORITY) ->
                 ArtworkContentProvider.uriFor(song.id)
             candidate == null || file != null -> drawableUri(appContext(), R.drawable.ic_launcher_box)
+            candidate.scheme in setOf("http", "https") -> ArtworkContentProvider.uriForRemote(
+                candidate.toString(), getActiveProfile(appContext()),
+                appContext().preferences.getBoolean(cropVideoThumbnailsKey, true), ArtworkRevisions.current(),
+            )
             else -> candidate
         })
     }

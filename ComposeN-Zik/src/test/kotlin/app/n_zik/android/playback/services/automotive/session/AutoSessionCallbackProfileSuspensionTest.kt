@@ -3,6 +3,9 @@ package app.n_zik.android.playback.services.automotive.session
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import android.app.Application
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import io.mockk.mockkObject
+import io.mockk.every
 import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -15,9 +18,7 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.DislikedExclusion
 import app.n_zik.android.playback.services.automotive.browse.AutoBrowseTree
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkObject
 import io.mockk.unmockkStatic
@@ -25,6 +26,8 @@ import kotlinx.coroutines.CompletableDeferred
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertThrows
+import java.util.concurrent.CancellationException
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -44,6 +47,8 @@ class AutoSessionCallbackProfileSuspensionTest {
 
     @Before
     fun setUp() {
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         context = RuntimeEnvironment.getApplication()
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { appContext() } returns context
@@ -103,7 +108,8 @@ class AutoSessionCallbackProfileSuspensionTest {
         // No store operation observes B before the suspended callback resumes.
         switchProfile("B")
         releaseExclusions.complete(Unit)
-        assertTrue(pending.get(15, TimeUnit.SECONDS).mediaItems.isEmpty())
+        assertThrows(CancellationException::class.java) { pending.get(15, TimeUnit.SECONDS) }
+        assertTrue(pending.isCancelled)
 
         coEvery { DislikedExclusion.excludedSongIds(context, Database) } returns emptySet()
         val fresh = tree.selectionStore.capture(parent, rows(listOf("public-B-before", "public-B-selected")))

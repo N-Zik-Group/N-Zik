@@ -1,5 +1,6 @@
 package app.n_zik.android.playback.services.automotive.browse.handlers
 
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import android.content.Context
 import androidx.core.content.edit
 import androidx.test.core.app.ApplicationProvider
@@ -62,7 +63,9 @@ class QuickPicksBrowseHandlerTest {
     private val eventTable = mockk<EventTable>(relaxed = true)
 
     @Before
-    fun setUp() {
+    fun setUp() {
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         val app = ApplicationProvider.getApplicationContext<TestApplication>()
         val mainApplication = mockk<MainApplication>()
         every { mainApplication.applicationContext } returns app

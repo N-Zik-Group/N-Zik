@@ -720,8 +720,6 @@
     <string name="showvisthumbnail">Показать эскиз визуализатора</string>
     <string name="black_background_for_visualizer">Темный фон для визуализации</string>
     <string name="show_visualizer_buttons">Автоскрытие кнопок визуализации</string>
-    <string name="androidheadunit">Единица головы Android</string>
-    <string name="extra_space">Дополнительное место вверху</string>
     <string name="white">Белый</string>
     <string name="black">Чёрный</string>
     <string name="highlight">Выделить</string>

@@ -20,6 +20,15 @@ object AutoMediaIdContract {
 
     data class ScopedAction(val token: String, val shuffle: Boolean)
 
+    /** Browsable continuation; it is never a playable song or queue action. */
+    fun searchContinuation(token: String): String {
+        require(token.isNotEmpty() && !token.contains('/'))
+        return "AA_SEARCH_NEXT/$token"
+    }
+
+    fun parseSearchContinuation(mediaId: String): String? =
+        parseAction(mediaId, "AA_SEARCH_NEXT")
+
     fun playlistShuffle(playlistId: String): String = "${AutoSessionConstants.ID_PLAYLIST_SHUFFLE}/$playlistId"
 
     fun parsePlaylistShuffle(mediaId: String?): String? = parseAction(mediaId, AutoSessionConstants.ID_PLAYLIST_SHUFFLE)

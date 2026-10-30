@@ -164,11 +164,6 @@ internal fun OtherSettingsContent(
                 OtherOnDeviceCard(search)
             }
         }
-        if (selectedCards == null || R.string.androidheadunit in selectedCards) {
-            SettingsCardSlot(R.string.androidheadunit, modifier = { cardModifier(R.string.androidheadunit) }) {
-                OtherHeadUnitCard(search)
-            }
-        }
         if (selectedCards == null || R.string.service_lifetime in selectedCards) {
             SettingsCardSlot(R.string.service_lifetime, modifier = { cardModifier(R.string.service_lifetime) }) {
                 OtherServiceLifetimeCard(search)

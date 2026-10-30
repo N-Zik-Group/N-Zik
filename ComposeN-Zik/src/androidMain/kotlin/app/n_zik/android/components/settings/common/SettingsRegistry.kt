@@ -395,8 +395,6 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.edit_blacklist_for_on_device_songs, R.string.folders,
             R.string.folder_that_will_show_when_you_open_on_device_page,
         )),
-    SettingsCardRegistryEntry(7, R.string.androidheadunit, R.drawable.car,
-        keywordRes = listOf(R.string.androidheadunit, R.string.extra_space)),
     SettingsCardRegistryEntry(7, R.string.service_lifetime, R.drawable.battery,
         keywordRes = listOf(R.string.service_lifetime, R.string.keep_screen_on, R.string.prevents_screen_timeout, R.string.ignore_battery_optimizations)),
     SettingsCardRegistryEntry(7, R.string.proxy, R.drawable.network,

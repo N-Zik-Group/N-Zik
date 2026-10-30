@@ -162,7 +162,6 @@ internal val SettingsEntryDescriptions = mapOf(
     "network.network_status.image_quality_format" to R.string.settings_desc_network_network_status_image_quality_format,
     "network.quality.audio_quality_format" to R.string.settings_desc_network_quality_audio_quality_format,
     "network.quality.image_quality_format" to R.string.settings_desc_network_quality_image_quality_format,
-    "other.androidheadunit.extra_space" to R.string.settings_desc_other_androidheadunit_extra_space,
     "other.on_device.folder_that_will_show_when_you_open_on_device_page" to R.string.settings_desc_other_on_device_folder_that_will_show_when_you_open_on_device_page,
     "other.proxy.enable_proxy" to R.string.settings_desc_other_proxy_enable_proxy,
     "other.proxy.proxy_host" to R.string.settings_desc_other_proxy_proxy_host,

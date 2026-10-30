@@ -51,7 +51,6 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
-import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.modules.FfmpegModule
@@ -344,7 +343,7 @@ class EditMetadataDialog private constructor(
     }
 
     @Composable
-    private fun CoverArtField(coverBytes: ByteArray?, onPickImage: () -> Unit) {
+    internal fun CoverArtField(coverBytes: ByteArray?, onPickImage: () -> Unit) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -379,15 +378,9 @@ class EditMetadataDialog private constructor(
                 ) {}
             }
 
-            Text(
-                text = stringResource(R.string.pick_from_gallery),
-                style = typography().xs,
-                color = colorPalette().text,
-                modifier = Modifier.weight(1f)
-            )
-
             OutlinedButton(
                 onClick = onPickImage,
+                modifier = Modifier.weight(1f),
                 shape = uiRoundnessShape(),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = colorPalette().accent
