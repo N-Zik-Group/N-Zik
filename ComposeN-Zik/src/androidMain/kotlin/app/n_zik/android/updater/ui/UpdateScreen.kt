@@ -1,6 +1,8 @@
 @file:kotlin.OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.n_zik.android.updater.ui
 
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+
 import android.content.Context
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.uiRoundnessShape
@@ -8,9 +10,6 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.updater.services.Updater
 import app.n_zik.android.updater.services.UpdateDownloadManager
 import app.n_zik.android.updater.models.UpdaterConstants
-import app.n_zik.android.updater.models.GithubRelease
-import app.n_zik.android.updater.models.MajorUpdateConfig
-import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 
 import androidx.activity.compose.BackHandler
@@ -27,7 +26,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,14 +34,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 
 import androidx.compose.runtime.Composable
@@ -83,10 +78,8 @@ import app.it.fast4x.rimusic.utils.bold
 import app.it.fast4x.rimusic.utils.checkBetaUpdatesKey
 import app.it.fast4x.rimusic.utils.checkUpdateStateKey
 import app.it.fast4x.rimusic.utils.colorPaletteModeKey
-import app.it.fast4x.rimusic.utils.rememberPreference
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
-import app.n_zik.android.components.settings.common.SettingsDescription
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.BuildConfig
@@ -94,10 +87,11 @@ import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.R
 import app.kreate.android.me.knighthat.utils.Toaster
 import timber.log.Timber
-import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import androidx.compose.material3.LinearWavyProgressIndicator
-import app.it.fast4x.rimusic.ui.components.themed.DropdownMenu
+import app.n_zik.android.components.menu.DropdownMenu
+import app.n_zik.android.components.glass.GlassMenuTrigger
+import app.n_zik.android.components.glass.GlassMenuTriggerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.ui.text.style.TextAlign
@@ -186,7 +180,7 @@ fun UpdateScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(colorPalette().background0.copy(alpha = 0.95f))
-                    .navigationBarsPadding()
+                    .padding(rememberPageChromeContentPadding(topInsetProvider = { 0.dp }))
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
                 when (val state = downloadState) {
@@ -450,7 +444,7 @@ fun UpdateScreen(navController: NavController) {
                                     border = BorderStroke(1.dp, colorPalette().textSecondary.copy(alpha = 0.5f))
                                 ) {
                                     Box(
-                                        modifier = Modifier 
+                                        modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(16.dp),
                                         contentAlignment = Alignment.Center
@@ -479,12 +473,13 @@ fun UpdateScreen(navController: NavController) {
             }
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+        Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
                     .fillMaxHeight()
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
+                    .padding(rememberPageChromeContentPadding(base = paddingValues))
             ) {
 
                 // Top Card (Up to date or Update available)
@@ -512,22 +507,26 @@ fun UpdateScreen(navController: NavController) {
                                 // Settings Menu positioned at TopEnd
                                 Box(modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) {
                                     var showMenu by remember { mutableStateOf(false) }
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(uiRoundnessShape())
-                                            .clickable { showMenu = true }
-                                            .padding(12.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.ellipsis_vertical),
-                                            contentDescription = stringResource(R.string.menu),
-                                            tint = colorPalette().text,
-                                            modifier = Modifier.size(24.dp)
-                                        )
+                                    val menuTrigger = remember { GlassMenuTriggerState() }
+                                    GlassMenuTrigger(menuTrigger, uiRoundnessShape()) {
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(uiRoundnessShape())
+                                                .clickable { showMenu = true }
+                                                .padding(12.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.ellipsis_vertical),
+                                                contentDescription = stringResource(R.string.menu),
+                                                tint = colorPalette().text,
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                        }
                                     }
                                     val menu = DropdownMenu(
                                         expanded = showMenu,
+                                        trigger = menuTrigger,
                                         containerColor = surfaceColor(colorPalette().background0).copy(0.90f),
                                         onDismissRequest = { showMenu = false }
                                     )
@@ -571,7 +570,7 @@ fun UpdateScreen(navController: NavController) {
                                     )
                                     val currentVersionStr = BuildConfig.VERSION_NAME
                                     val currentDownloadUrl = Updater.redownloadUrl(BuildConfig.APP_NAME, currentVersionStr)
-                                    
+
                                     menu.add(
                                         DropdownMenu.Item(
                                             iconId = R.drawable.translate,
@@ -805,7 +804,7 @@ fun UpdateScreen(navController: NavController) {
                         }
                     }
                 }
-                
+
                 // We don't replace the display text here. We pass both to ChangelogCard.
                 if (changelogTextToDisplay.isNotBlank() || Updater.isFetchingChangelog) {
                     AnimatedVisibility(
@@ -880,11 +879,11 @@ fun UpdateScreen(navController: NavController) {
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
-        
+
         DialogPresence(target = apkPathToInstall.takeIf { showInstallWarningDialog }) { installationPath ->
             ConfirmationDialog(
                 title = stringResource(R.string.dialog_install_update),
@@ -997,10 +996,10 @@ fun parseChangelogText(text: String): List<Pair<String, List<String>>> {
 @Composable
 fun ChangelogCard(rawText: String, translatedText: String?, colorPaletteMode: ColorPaletteMode) {
     val rawSections = remember(rawText) { parseChangelogText(rawText) }
-    
+
     val displaySections = remember(rawText, translatedText) {
         val parsedTranslated = translatedText?.let { parseChangelogText(it) }
-        
+
         if (parsedTranslated != null && parsedTranslated.size == rawSections.size) {
             // Zip them: Triple(Raw Title, Display Title, Display Changes)
             rawSections.mapIndexed { index, rawSection ->
@@ -1012,7 +1011,7 @@ fun ChangelogCard(rawText: String, translatedText: String?, colorPaletteMode: Co
             fallbackSections.map { Triple(it.first, it.first, it.second) }
         }
     }
-    
+
     if (displaySections.isEmpty()) return
 
     Column(
@@ -1021,7 +1020,7 @@ fun ChangelogCard(rawText: String, translatedText: String?, colorPaletteMode: Co
     ) {
         displaySections.forEach { section ->
             var expanded by remember { mutableStateOf(true) }
-            
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1065,7 +1064,7 @@ fun ChangelogCard(rawText: String, translatedText: String?, colorPaletteMode: Co
                             modifier = Modifier.size(16.dp)
                         )
                     }
-                    
+
                     AnimatedVisibility(visible = expanded) {
                         Column(
                             modifier = Modifier

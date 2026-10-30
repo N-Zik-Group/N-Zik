@@ -41,6 +41,10 @@ Removed:
   - Assemble Debug and pass 148 focused regression tests; complete three review lenses and an independent final re-review.
 
 Added:
+- feat(updater): allow debug layout preview access
+  - Add a debug-only setting gate for opening the updater screen.
+  - Cover the debug access policy and apply the shared updater layout presentation.
+
 - feat(onboarding): add Glass onboarding and native auxiliary screens
   - Provide onboarding primary, secondary and photo removal actions.
   - Update onboarding steps, Easter content and bridge screen presentation.
