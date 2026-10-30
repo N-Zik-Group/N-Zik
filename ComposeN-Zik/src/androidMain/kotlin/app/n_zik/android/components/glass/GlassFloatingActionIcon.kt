@@ -1,0 +1,69 @@
+package app.n_zik.android.components.glass
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.searchBubbleShape
+
+/**
+ * Rendering hook: false preserves the caller's native floating action unchanged.
+ * [movable] leaves movement consumption to the caller's long-press reposition gesture.
+ */
+@Composable
+fun GlassFloatingActionIcon(
+    icon: Painter,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    movable: Boolean = false,
+    size: Dp = 62.dp,
+    iconSize: Dp = 20.dp,
+    iconModifier: Modifier = Modifier,
+    tint: Color = colorPalette().text,
+    contentDescription: String? = null,
+    settings: GlassSettings = rememberGlassSettings(),
+): Boolean {
+    if (!settings.usesGlassMaterial(GlassArea.ActionButtons)) return false
+    val background = colorPalette().background0
+    val drawBackground: DrawScope.() -> Unit = remember(background) { { drawRect(background) } }
+    // Pages export a live content sibling here; never sample a page containing this action.
+    val backdrop = LocalGlassContainerBackdrop.current ?: rememberCanvasBackdrop(drawBackground)
+    val shape = searchBubbleShape()
+    val glyph: @Composable () -> Unit = {
+        Icon(icon, contentDescription, Modifier.size(iconSize).then(iconModifier),
+            tint = if (enabled) tint else tint.copy(alpha = tint.alpha * .5f))
+    }
+    if (enabled) {
+        LiquidButton(
+            onClick = onClick,
+            backdrop = backdrop,
+            modifier = modifier.size(size),
+            settings = settings.forArea(GlassArea.ActionButtons),
+            contentHeight = size,
+            contentPadding = 0.dp,
+            retainGesture = !movable,
+            shape = shape,
+        ) { glyph() }
+    } else {
+        Box(
+            modifier.size(size)
+                .glassMaterial(settings.forArea(GlassArea.ActionButtons), shape, ownBackdrop = backdrop)
+                .clickable(enabled = false, role = Role.Button, onClick = onClick),
+            contentAlignment = Alignment.Center,
+        ) { glyph() }
+    }
+    return true
+}

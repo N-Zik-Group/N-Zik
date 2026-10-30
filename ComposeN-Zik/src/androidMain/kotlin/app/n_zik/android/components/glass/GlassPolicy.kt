@@ -1,0 +1,313 @@
+package app.n_zik.android.components.glass
+
+// Adapted from Square GlassStore (Convx Project, GPL-3.0); see NOTICE-square.txt.
+import android.app.ActivityManager
+import android.content.Context
+import android.content.SharedPreferences
+import android.os.Build
+import android.provider.Settings
+import android.view.accessibility.AccessibilityManager
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalContext
+import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.colorPalette
+
+val LocalGlassArtworkColor = staticCompositionLocalOf<Color?> { null }
+const val glassEnabledKey = "liquidGlassEnabled"
+
+// This store is separate from the interrupted prototype's percentage preferences.
+const val glassTintSourceKey = "source"
+const val glassQualityKey = "profile"
+const val glassCustomColorKey = "custom_color"
+const val glassTintStrengthKey = "tint_strength"
+const val glassVibrancyKey = "vibrancy"
+const val glassBlurKey = "blur"
+const val glassFilmKey = "film"
+const val glassIndicatorOpacityKey = "puck"
+const val glassDialogDimmingKey = "dialog_dimming"
+const val glassMenuDimmingKey = "menu_dimming"
+const val glassRimKey = "rim"
+const val glassDepthKey = "lens_height"
+const val glassAmountKey = "lens_amount"
+const val glassDispersionKey = "dispersion"
+const val glassDepthEffectKey = "depth_effect"
+const val glassHeaderKey = "header"
+const val glassNavKey = "nav_bar"
+const val glassMenusKey = "menus"
+const val glassMiniPlayerKey = "mini_player"
+const val glassDropdownsKey = "dropdowns"
+const val glassDialogsKey = "dialogs"
+const val glassDialogButtonsKey = "dialog_buttons"
+const val glassNowPlayingKey = "now_playing"
+const val glassImageRimsKey = "image_rims"
+const val glassSettingsCardRimsKey = "settings_card_rims"
+const val glassSettingsCardsKey = "settings_cards"
+const val glassSearchBarsKey = "search_bars"
+const val glassActionButtonsKey = "action_buttons"
+private const val glassIndependentAreasKey = "independent_areas"
+
+/** Tint colours the material without changing the app palette. */
+enum class GlassTintSource { None, ThemeAccent, Artwork, SystemAccent, Custom }
+enum class GlassQuality { Performance, Balanced, Quality }
+enum class GlassRenderer { Refraction, Blur, Tint }
+
+enum class GlassAreaMode(val hasMaterial: Boolean, val hasContour: Boolean) {
+    Disabled(false, false), ContourOnly(false, true), GlassOnly(true, false), GlassAndContour(true, true),
+}
+
+/** Images retain their sharp content and expose only their supported edge treatment. */
+enum class GlassImageMode { Disabled, ContourOnly }
+
+enum class GlassArea(val legacyKey: String) {
+    Nav(glassNavKey), MiniPlayer(glassMiniPlayerKey), Header(glassHeaderKey), Menus(glassMenusKey),
+    Dropdowns(glassDropdownsKey), Dialogs(glassDialogsKey), DialogButtons(glassDialogButtonsKey),
+    NowPlaying(glassNowPlayingKey), Images(glassImageRimsKey), SettingsCards(glassSettingsCardsKey),
+    SearchBars(glassSearchBarsKey), ActionButtons(glassActionButtonsKey), MoodCards("mood_cards");
+
+    val preferenceKey: String get() = "${legacyKey}_mode"
+}
+
+@Immutable
+data class GlassSettings(
+    val enabled: Boolean = true,
+    val source: GlassTintSource = GlassTintSource.None,
+    val quality: GlassQuality = GlassQuality.Balanced,
+    val customColor: Int = 0xFF8B5CF6.toInt(),
+    val tintStrength: Float = .6f,
+    val vibrancy: Float = 1.2f,
+    val blur: Float = 2f,
+    val film: Float = .5f,
+    val indicatorOpacity: Float = .26f,
+    val dialogDimming: Float = .75f,
+    val menuDimming: Float = .75f,
+    val rim: Float = .55f,
+    val depth: Float = .4f,
+    val amount: Float = .6f,
+    val dispersion: Boolean = false,
+    val depthEffect: Boolean = false,
+    val header: Boolean = true,
+    val nav: Boolean = true,
+    val menus: Boolean = true,
+    val miniPlayer: Boolean = true,
+    val dropdowns: Boolean = true,
+    val dialogs: Boolean = true,
+    val dialogButtons: Boolean = true,
+    val nowPlaying: Boolean = true,
+    val imageRims: Boolean = true,
+    val settingsCardRims: Boolean = true,
+    val settingsCards: Boolean = true,
+    val searchBars: Boolean = true,
+    val actionButtons: Boolean = true,
+    val areaModes: Map<GlassArea, GlassAreaMode> = emptyMap(),
+)
+
+/** Lazily migrate older switches without changing their saved values or appearance. */
+fun GlassSettings.mode(area: GlassArea): GlassAreaMode {
+    areaModes[area]?.let { return if (area == GlassArea.Images && it != GlassAreaMode.Disabled) GlassAreaMode.ContourOnly else it }
+    val material = when (area) {
+        GlassArea.Nav -> nav
+        GlassArea.MiniPlayer -> miniPlayer
+        GlassArea.Header -> header
+        GlassArea.Menus -> menus
+        GlassArea.Dropdowns -> dropdowns
+        GlassArea.Dialogs -> dialogs
+        GlassArea.DialogButtons -> dialogs && dialogButtons
+        GlassArea.NowPlaying -> nowPlaying
+        GlassArea.SettingsCards -> settingsCards
+        GlassArea.SearchBars -> searchBars
+        GlassArea.ActionButtons -> actionButtons
+        GlassArea.MoodCards -> true
+        GlassArea.Images -> false
+    }
+    val contour = when (area) {
+        GlassArea.Images -> imageRims
+        GlassArea.SettingsCards -> settingsCardRims
+        else -> material
+    }
+    return when {
+        material && contour -> GlassAreaMode.GlassAndContour
+        material -> GlassAreaMode.GlassOnly
+        contour -> GlassAreaMode.ContourOnly
+        else -> GlassAreaMode.Disabled
+    }
+}
+
+fun GlassSettings.usesGlassMaterial(area: GlassArea): Boolean = enabled && mode(area).hasMaterial
+fun GlassSettings.usesGlassContour(area: GlassArea): Boolean = enabled && mode(area).hasContour && rim > 0f
+
+/** Zero rim removes the visible highlight while retaining the complete glass optics. */
+fun GlassSettings.forArea(area: GlassArea): GlassSettings = copy(rim = if (mode(area).hasContour) rim else 0f)
+
+/** Square's profile defaults including the store's puck and tint overrides. */
+fun glassProfileDefaults(quality: GlassQuality): GlassSettings = when (quality) {
+    GlassQuality.Performance -> GlassSettings(quality = quality, film = .55f)
+    GlassQuality.Balanced -> GlassSettings(quality = quality)
+    GlassQuality.Quality -> GlassSettings(quality = quality, vibrancy = 1.4f, blur = 4f,
+        depth = .5f, amount = .8f, dispersion = true)
+}
+
+fun defaultGlassQuality(sdk: Int, lowRam: Boolean): GlassQuality =
+    if (sdk < 31 || lowRam) GlassQuality.Performance else GlassQuality.Balanced
+
+fun clampGlassValue(key: String, value: Float): Float {
+    val range = when (key) {
+        glassVibrancyKey -> 0f..2f
+        glassBlurKey -> 0f..24f
+        else -> 0f..1f
+    }
+    return if (value.isFinite()) value.coerceIn(range) else range.start
+}
+
+/** One versioned preference file; profile changes/reset remove all overrides. */
+class GlassStore(context: Context) {
+    private val preferences = context.applicationContext.getSharedPreferences("nzik_square_glass_v2", Context.MODE_PRIVATE)
+    private val defaultQuality = defaultGlassQuality(Build.VERSION.SDK_INT,
+        (context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager)?.isLowRamDevice == true)
+
+    init {
+        // Split the former shared menu switch once, then keep each area independent.
+        val legacyMenus = preferences.getBoolean(glassMenusKey, true)
+        if (!preferences.getBoolean(glassIndependentAreasKey, false)) {
+            val missingKeys = listOf(glassDropdownsKey, glassDialogsKey).filterNot(preferences::contains)
+            preferences.edit().apply {
+                missingKeys.forEach { putBoolean(it, legacyMenus) }
+                putBoolean(glassIndependentAreasKey, true)
+            }.apply()
+        }
+    }
+
+    fun read(): GlassSettings {
+        val quality = GlassQuality.entries.firstOrNull { it.name == preferences.getString(glassQualityKey, null) } ?: defaultQuality
+        val base = glassProfileDefaults(quality)
+        fun value(key: String, fallback: Float) = clampGlassValue(key, preferences.getFloat(key, fallback))
+        return base.copy(
+            source = GlassTintSource.entries.firstOrNull { it.name == preferences.getString(glassTintSourceKey, null) } ?: GlassTintSource.None,
+            customColor = preferences.getInt(glassCustomColorKey, base.customColor),
+            tintStrength = value(glassTintStrengthKey, base.tintStrength),
+            vibrancy = value(glassVibrancyKey, base.vibrancy),
+            blur = value(glassBlurKey, base.blur),
+            film = value(glassFilmKey, base.film),
+            indicatorOpacity = value(glassIndicatorOpacityKey, base.indicatorOpacity),
+            dialogDimming = value(glassDialogDimmingKey, base.dialogDimming),
+            menuDimming = value(glassMenuDimmingKey, base.menuDimming),
+            rim = value(glassRimKey, base.rim),
+            depth = value(glassDepthKey, base.depth),
+            amount = value(glassAmountKey, base.amount),
+            dispersion = preferences.getBoolean(glassDispersionKey, base.dispersion),
+            depthEffect = preferences.getBoolean(glassDepthEffectKey, base.depthEffect),
+            header = preferences.getBoolean(glassHeaderKey, true),
+            nav = preferences.getBoolean(glassNavKey, true),
+            menus = preferences.getBoolean(glassMenusKey, true),
+            miniPlayer = preferences.getBoolean(glassMiniPlayerKey, true),
+            dropdowns = preferences.getBoolean(glassDropdownsKey, true),
+            dialogs = preferences.getBoolean(glassDialogsKey, true),
+            dialogButtons = preferences.getBoolean(glassDialogButtonsKey, true),
+            nowPlaying = preferences.getBoolean(glassNowPlayingKey, true),
+            imageRims = preferences.getBoolean(glassImageRimsKey, true),
+            settingsCardRims = preferences.getBoolean(glassSettingsCardRimsKey, true),
+            settingsCards = preferences.getBoolean(glassSettingsCardsKey, true),
+            searchBars = preferences.getBoolean(glassSearchBarsKey, true),
+            actionButtons = preferences.getBoolean(glassActionButtonsKey, true),
+            areaModes = GlassArea.entries.mapNotNull { area ->
+                val saved = preferences.getString(area.preferenceKey, null)
+                GlassAreaMode.entries.firstOrNull { it.name == saved }?.let { area to it }
+            }.toMap(),
+        )
+    }
+
+    fun setProfile(profile: GlassQuality) {
+        if (read().quality == profile) return
+        preferences.edit().clear().putString(glassQualityKey, profile.name)
+            .putBoolean(glassIndependentAreasKey, true).apply()
+    }
+    fun reset() {
+        preferences.edit().clear().putString(glassQualityKey, read().quality.name)
+            .putBoolean(glassIndependentAreasKey, true).apply()
+    }
+    fun setFloat(key: String, value: Float) { preferences.edit().putFloat(key, clampGlassValue(key, value)).apply() }
+    fun setBoolean(key: String, value: Boolean) {
+        preferences.edit().apply {
+            putBoolean(key, value)
+            GlassArea.entries.filter { it.legacyKey == key || key == glassSettingsCardRimsKey && it == GlassArea.SettingsCards }
+                .forEach { remove(it.preferenceKey) }
+        }.apply()
+    }
+    fun setAreaMode(area: GlassArea, mode: GlassAreaMode) {
+        val supported = if (area == GlassArea.Images && mode != GlassAreaMode.Disabled) GlassAreaMode.ContourOnly else mode
+        preferences.edit().putString(area.preferenceKey, supported.name).apply()
+    }
+    fun setTint(source: GlassTintSource) { preferences.edit().putString(glassTintSourceKey, source.name).apply() }
+    fun setColor(color: Int) { preferences.edit().putInt(glassCustomColorKey, color).putString(glassTintSourceKey, GlassTintSource.Custom.name).apply() }
+    fun register(listener: SharedPreferences.OnSharedPreferenceChangeListener) = preferences.registerOnSharedPreferenceChangeListener(listener)
+    fun unregister(listener: SharedPreferences.OnSharedPreferenceChangeListener) = preferences.unregisterOnSharedPreferenceChangeListener(listener)
+}
+
+@Composable
+fun rememberGlassStore(): GlassStore {
+    val context = LocalContext.current.applicationContext
+    return remember(context) { GlassStore(context) }
+}
+
+/** Isolates a preview's descendants from the persisted application configuration. */
+internal val LocalGlassPreviewSettings = staticCompositionLocalOf<GlassSettings?> { null }
+
+@Composable
+fun rememberGlassSettings(): GlassSettings {
+    LocalGlassPreviewSettings.current?.let { return it }
+    val store = rememberGlassStore()
+    var settings by remember(store) { mutableStateOf(store.read()) }
+    val enabled by rememberPreference(glassEnabledKey, true)
+    DisposableEffect(store) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> settings = store.read() }
+        store.register(listener)
+        settings = store.read()
+        onDispose { store.unregister(listener) }
+    }
+    return settings.copy(enabled = enabled)
+}
+
+fun selectGlassRenderer(settings: GlassSettings, sdk: Int, lowRam: Boolean): GlassRenderer = when {
+    !settings.enabled || lowRam || settings.quality == GlassQuality.Performance || sdk < 31 -> GlassRenderer.Tint
+    sdk < 33 -> GlassRenderer.Blur
+    else -> GlassRenderer.Refraction
+}
+
+fun glassMotionAllowed(animationScale: Float, touchExploration: Boolean): Boolean =
+    animationScale > 0f && !touchExploration
+
+fun glassForeground(tint: Color): Color = if (tint.luminance() > .45f) Color(0xFF17171B) else Color.White
+
+/** Resolves the selected enum source without replacing its saturation or tone. */
+@Composable
+fun glassTint(settings: GlassSettings): Color = when (settings.source) {
+    GlassTintSource.None -> Color.Unspecified
+    GlassTintSource.ThemeAccent -> colorPalette().accent
+    GlassTintSource.Artwork -> LocalGlassArtworkColor.current ?: LocalGlassMenuHost.current?.artworkColor ?: colorPalette().accent
+    GlassTintSource.SystemAccent -> if (Build.VERSION.SDK_INT >= 31) Color(LocalContext.current.getColor(android.R.color.system_accent1_400)) else Color.Unspecified
+    GlassTintSource.Custom -> Color(settings.customColor)
+}
+
+@Composable
+fun glassRenderer(settings: GlassSettings): GlassRenderer {
+    val context = LocalContext.current
+    val lowRam = (context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager)?.isLowRamDevice == true
+    return selectGlassRenderer(settings, Build.VERSION.SDK_INT, lowRam)
+}
+
+@Composable
+fun isGlassMotionAllowed(): Boolean = isGlassMotionAllowed(LocalContext.current)
+
+internal fun isGlassMotionAllowed(context: Context): Boolean {
+    val scale = Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
+    val manager = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
+    return glassMotionAllowed(scale, manager?.isTouchExplorationEnabled == true)
+}

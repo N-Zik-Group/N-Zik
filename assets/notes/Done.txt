@@ -37,6 +37,10 @@ Removed:
   - Assemble Debug and pass 148 focused regression tests; complete three review lenses and an independent final re-review.
 
 Added:
+- feat(glass): add reusable material surfaces and interaction
+  - Provide material, image rims, action groups, overlays and pointer highlights.
+  - Cover optical policy, geometry, tint and material behavior with focused tests.
+
 - feat(glass): add backdrop engine and shared resources
   - Adapt backdrop sampling, shaders and continuous shapes for Glass surfaces.
   - Keep upstream Apache and GPL attribution with the adapted sources and shared strings.
