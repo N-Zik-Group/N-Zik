@@ -35,3 +35,9 @@ Removed:
   - Retire 18 unused string keys across 815 source/locale declarations and six unused widget helper styles; preserve remaining translations byte-for-byte and active widget resources.
   - Verify original-file backups, XML semantics, retained live functions and post-cleanup imports; keep uncertain assets and runtime contracts.
   - Assemble Debug and pass 148 focused regression tests; complete three review lenses and an independent final re-review.
+
+Added:
+- feat(glass): add backdrop engine and shared resources
+  - Adapt backdrop sampling, shaders and continuous shapes for Glass surfaces.
+  - Keep upstream Apache and GPL attribution with the adapted sources and shared strings.
+
