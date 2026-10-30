@@ -1,6 +1,7 @@
 package app.n_zik.android.core.rescue
 
 import android.app.ActivityManager
+import app.n_zik.android.core.backup.SettingsPreferencesBridge
 import android.content.Context
 import android.content.SharedPreferences
 import android.database.DatabaseErrorHandler
@@ -420,15 +421,7 @@ object RescueFiles {
         includeProxy: Boolean = false
     ): Result<SettingsOutcome> = runCatching {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val entries = mutableListOf<Triple<String, String, Any>>()
-
-        // Normal preferences
-        prefs.all.forEach { (key, value) ->
-            if (value != null) {
-                val type = value::class.simpleName ?: "null"
-                if (type != "null") entries.add(Triple(type, key, value))
-            }
-        }
+        val entries = SettingsPreferencesBridge.export(context, prefs)
 
         // Encrypted credentials (optional, may fail)
         var encryptedSkipped = false
@@ -490,17 +483,19 @@ object RescueFiles {
         val editor = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
         val encEditor = encryptedPrefsResult?.getOrNull()?.edit()
 
+        val glassEditor = SettingsPreferencesBridge.stageGlass(context, rows)
         val stats = applySettingRows(rows, editor, encEditor)
         // A file holding only credentials, with the keystore unavailable: nothing to write, but
         // the user must be told the credentials were skipped (a warning, not a generic error).
-        if (stats.imported == 0 && stats.encryptedSkipped > 0) {
+        if (stats.imported == 0 && stats.encryptedSkipped > 0 && glassEditor == null) {
             return@runCatching SettingsOutcome(encryptedSkipped = true)
         }
         // Nothing is written until commit(), so failing here leaves the settings untouched.
-        check(stats.imported > 0) { "No setting could be imported" }
+        check(stats.imported > 0 || glassEditor != null) { "No setting could be imported" }
 
         check(editor.commit()) { "Could not save the settings" }
         check(encEditor?.commit() ?: true) { "Could not save the credentials" }
+        check(glassEditor?.commit() ?: true) { "Could not save the Glass settings" }
         Timber.tag(TAG).i(
             "Settings imported: %d entries (%d encrypted keys skipped)",
             stats.imported, stats.encryptedSkipped
@@ -525,6 +520,7 @@ object RescueFiles {
         var encryptedSkipped = 0
 
         rows.forEach { (type, key, value) ->
+            if (SettingsPreferencesBridge.isGlassRecord(type)) return@forEach
             val targetEditor = if (key in ALL_ENCRYPTED_KEYS) {
                 if (encryptedEditor == null) {
                     encryptedSkipped++

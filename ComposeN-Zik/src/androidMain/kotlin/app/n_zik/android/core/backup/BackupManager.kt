@@ -308,15 +308,7 @@ object BackupManager {
     }
 
     private suspend fun exportSettings(context: Context, uri: Uri, includeYtb: Boolean, includeDiscord: Boolean, includeLastfm: Boolean, includeProxy: Boolean) {
-        val entries: MutableList<Triple<String, String, Any>> = context.preferences
-            .all
-            .map {
-                val value = it.value ?: Unit
-                val type = value::class.simpleName ?: "null"
-                Triple(type, it.key, value)
-            }
-            .filter { it.first != "null" && it.third !== Unit }
-            .toMutableList()
+        val entries = SettingsPreferencesBridge.export(context, context.preferences)
 
         Timber.tag("AutoBackup").d("exportSettings: Base settings count: ${entries.size}")
 

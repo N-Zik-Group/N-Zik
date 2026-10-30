@@ -37,6 +37,10 @@ Removed:
   - Assemble Debug and pass 148 focused regression tests; complete three review lenses and an independent final re-review.
 
 Added:
+- feat(backup): preserve Glass settings in export and rescue
+  - Bridge the separate Glass preference store into settings export and restore.
+  - Test Glass records alongside existing settings and credential handling.
+
 - feat(settings): expose Glass and dock customization
   - Add Glass settings, previews, settings cards and searchable entries.
   - Preserve existing category and setting wiring with updated tests.
