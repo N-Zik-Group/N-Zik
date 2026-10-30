@@ -96,6 +96,7 @@ fun VideoItem(
     ) {
         Box {
             ImageCacheFactory.AsyncImage(
+                shape = thumbnailShape(),
                 thumbnailUrl = thumbnailUrl,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,

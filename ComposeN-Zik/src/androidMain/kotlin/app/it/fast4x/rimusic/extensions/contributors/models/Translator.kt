@@ -1,8 +1,8 @@
-﻿package app.it.fast4x.rimusic.extensions.contributors.models
+package app.it.fast4x.rimusic.extensions.contributors.models
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,6 +34,7 @@ import app.n_zik.android.uiRoundnessShape
 
 import com.google.gson.annotations.SerializedName
 import app.n_zik.android.R
+import app.n_zik.android.components.glass.glassImageBorder
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.n_zik.android.colorPalette
@@ -80,7 +81,7 @@ data class Translator(
                     modifier = Modifier
                         .size(40.dp)
                         .clip( uiRoundnessShape() )
-                        .border( 1.dp, Color.White, uiRoundnessShape() ),
+                        .glassImageBorder(uiRoundnessShape(), BorderStroke(1.dp, Color.White)),
                     contentScale = ContentScale.Fit
                 )
 

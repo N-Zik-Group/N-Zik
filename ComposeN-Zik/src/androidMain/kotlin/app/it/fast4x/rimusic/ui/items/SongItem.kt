@@ -30,6 +30,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import app.n_zik.android.components.glass.explicitBadgeIconId
+import app.n_zik.android.components.glass.glassExplicitBadgeBackground
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
@@ -482,12 +484,13 @@ fun SongItem(
 
                     if ( mediaItem.isExplicit )
                         IconButton(
-                            icon = R.drawable.explicit,
+                            icon = explicitBadgeIconId(),
                             color = colorPalette().text,
                             enabled = true,
                             onClick = {},
                             modifier = Modifier
                                 .size(18.dp)
+                                .glassExplicitBadgeBackground()
                         )
 
                     BasicText(
@@ -543,12 +546,13 @@ fun SongItem(
 
                     if ( mediaItem.isExplicit )
                         IconButton(
-                            icon = R.drawable.explicit,
+                            icon = explicitBadgeIconId(),
                             color = colorPalette().text,
                             enabled = true,
                             onClick = {},
                             modifier = Modifier
                                 .size(18.dp)
+                                .glassExplicitBadgeBackground()
                         )
                     BasicText(
                         text = cleanPrefix(title),

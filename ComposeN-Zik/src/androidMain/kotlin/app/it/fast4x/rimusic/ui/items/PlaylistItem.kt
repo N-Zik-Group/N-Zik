@@ -68,6 +68,7 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import app.n_zik.android.components.glass.glassImageRim
 import app.n_zik.android.core.coil.ImageCacheFactory
 import androidx.compose.ui.res.stringResource
 import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
@@ -84,9 +85,10 @@ fun RenderThumbnail(
     modifier: Modifier = Modifier
 ) {
     if( thumbnailUrl.matches( HTTP_REGEX ) )
-        ImageCacheFactory.Thumbnail( thumbnailUrl, contentDescription, contentScale, modifier )
+        ImageCacheFactory.Thumbnail( thumbnailUrl, contentDescription, contentScale, modifier, shape = null )
     else
         ImageCacheFactory.AsyncImage(
+            shape = null,
             thumbnailUrl = thumbnailUrl,
             contentDescription = contentDescription,
             contentScale = contentScale,
@@ -287,6 +289,7 @@ fun PlaylistItem(
                     .conditional(alternative) { fillMaxWidth().aspectRatio(1f) }
                     .conditional(!alternative) { size(thumbnailSizeDp) }
                     .clip(thumbnailShape())
+                    .glassImageRim(thumbnailShape())
                     .background(colorPalette().background4)
             ) {
                 // Clipped thumbnail area with overlay, icon and song count

@@ -37,6 +37,10 @@ Removed:
   - Assemble Debug and pass 148 focused regression tests; complete three review lenses and an independent final re-review.
 
 Added:
+- feat(images): add Glass rims to artwork and contributor images
+  - Integrate optional image rim shapes with shared Coil image loading.
+  - Apply contour behavior to contributor avatars and reusable media items.
+
 - feat(ui): add shared Glass actions and icon badges
   - Unify buttons, floating actions, toolbar controls, swipe actions and icon support.
   - Cover action grouping, badge backgrounds and shared interaction surfaces.

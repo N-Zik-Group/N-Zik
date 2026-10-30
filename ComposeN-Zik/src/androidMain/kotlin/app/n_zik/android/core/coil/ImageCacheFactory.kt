@@ -9,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -18,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import app.n_zik.android.R
+import app.n_zik.android.components.glass.glassImageRim
 import coil3.ImageLoader
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
@@ -317,8 +320,10 @@ object ImageCacheFactory {
         thumbnailUrl: String?,
         contentDescription: String? = null,
         contentScale: ContentScale = ContentScale.Crop,
-        modifier: Modifier = Modifier.clip(thumbnailShape()).fillMaxSize()
+        modifier: Modifier = Modifier.clip(thumbnailShape()).fillMaxSize(),
+        shape: Shape? = thumbnailShape(),
     ) {
+        val imageModifier = if (shape == null) modifier else modifier.glassImageRim(shape)
         val cleanedUrl = thumbnailUrl?.let { cleanPrefix(it) }
         val validUrl = if (cleanedUrl.isNullOrBlank() || cleanedUrl == "null") null else cleanedUrl
         val decision = getDownloadDecision(validUrl)
@@ -338,7 +343,7 @@ object ImageCacheFactory {
             Image(
                 painter = painterResource(if (showFallback) R.drawable.ic_launcher_box else R.drawable.loader),
                 contentDescription = null,
-                modifier = modifier.fillMaxSize(),
+                modifier = imageModifier.fillMaxSize(),
                 contentScale = contentScale
             )
             return
@@ -393,7 +398,7 @@ object ImageCacheFactory {
             imageLoader = LOADER,
             contentDescription = contentDescription,
             contentScale = contentScale,
-            modifier = modifier,
+            modifier = imageModifier,
             placeholder = painterResource(R.drawable.loader),
             error = painterResource(R.drawable.ic_launcher_box),
             fallback = painterResource(R.drawable.ic_launcher_box)
@@ -500,8 +505,10 @@ object ImageCacheFactory {
         contentDescription: String? = null,
         contentScale: ContentScale = ContentScale.Crop,
         modifier: Modifier = Modifier,
-        @DrawableRes error: Int = R.drawable.ic_launcher_box
+        @DrawableRes error: Int = R.drawable.ic_launcher_box,
+        shape: Shape = RectangleShape,
     ) {
+        val imageModifier = modifier.glassImageRim(shape)
         val cleanedUrl = thumbnailUrl?.let { cleanPrefix(it) }
         val validUrl = if (cleanedUrl.isNullOrBlank() || cleanedUrl == "null") null else cleanedUrl
         val decision = getDownloadDecision(validUrl)
@@ -519,7 +526,7 @@ object ImageCacheFactory {
             Image(
                 painter = painterResource(if (showFallback) R.drawable.ic_launcher_box else R.drawable.loader),
                 contentDescription = null,
-                modifier = modifier.fillMaxSize(),
+                modifier = imageModifier.fillMaxSize(),
                 contentScale = contentScale
             )
             return
@@ -560,7 +567,7 @@ object ImageCacheFactory {
             imageLoader = LOADER,
             contentDescription = contentDescription,
             contentScale = contentScale,
-            modifier = modifier,
+            modifier = imageModifier,
             loading = {
                 Image(
                     painter = painterResource(R.drawable.loader),
@@ -588,8 +595,10 @@ object ImageCacheFactory {
         modifier: Modifier = Modifier,
         onLoading: ((State.Loading) -> Unit)? = null,
         onSuccess: ((State.Success) -> Unit)? = null,
-        onError: ((State.Error) -> Unit)? = null
+        onError: ((State.Error) -> Unit)? = null,
+        shape: Shape? = RectangleShape,
     ) {
+        val imageModifier = if (shape == null) modifier else modifier.glassImageRim(shape)
         val cleanedUrl = thumbnailUrl?.let { cleanPrefix(it) }
         val validUrl = if (cleanedUrl.isNullOrBlank() || cleanedUrl == "null") null else cleanedUrl
         val decision = getDownloadDecision(validUrl)
@@ -609,7 +618,7 @@ object ImageCacheFactory {
             Image(
                 painter = painterResource(if (showFallback) R.drawable.ic_launcher_box else R.drawable.loader),
                 contentDescription = null,
-                modifier = modifier.fillMaxSize(),
+                modifier = imageModifier.fillMaxSize(),
                 contentScale = contentScale
             )
             return
@@ -662,7 +671,7 @@ object ImageCacheFactory {
             imageLoader = LOADER,
             contentDescription = contentDescription,
             contentScale = contentScale,
-            modifier = modifier,
+            modifier = imageModifier,
             placeholder = painterResource(R.drawable.loader),
             error = painterResource(R.drawable.ic_launcher_box),
             fallback = painterResource(R.drawable.ic_launcher_box),
@@ -702,8 +711,10 @@ object ImageCacheFactory {
         cacheKey: String? = null,
         @DrawableRes placeholder: Int = R.drawable.loader,
         @DrawableRes fallback: Int = R.drawable.ic_launcher_box,
-        fallbackDelayMs: Long = 4_000L
+        fallbackDelayMs: Long = 4_000L,
+        shape: Shape = RectangleShape,
     ) {
+        val imageModifier = modifier.glassImageRim(shape)
         if (model == null) {
             var showFallback by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) {
@@ -713,7 +724,7 @@ object ImageCacheFactory {
             Image(
                 painter = painterResource(if (showFallback) fallback else placeholder),
                 contentDescription = contentDescription,
-                modifier = modifier.fillMaxSize(),
+                modifier = imageModifier.fillMaxSize(),
                 contentScale = contentScale
             )
             return
@@ -729,7 +740,7 @@ object ImageCacheFactory {
             imageLoader = LOADER,
             contentDescription = contentDescription,
             contentScale = contentScale,
-            modifier = modifier,
+            modifier = imageModifier,
             placeholder = painterResource(placeholder),
             error = painterResource(fallback)
         )

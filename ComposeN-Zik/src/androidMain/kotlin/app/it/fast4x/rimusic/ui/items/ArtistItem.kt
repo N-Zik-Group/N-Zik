@@ -174,6 +174,7 @@ fun ArtistItem(
 
                 // so the artist roundness setting is masked above the song value.
                 ImageCacheFactory.Thumbnail(
+                    shape = artistThumbnailShape(),
                     thumbnailUrl = thumbnailUrl,
                     contentScale = if (alternative) ContentScale.FillWidth else ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
