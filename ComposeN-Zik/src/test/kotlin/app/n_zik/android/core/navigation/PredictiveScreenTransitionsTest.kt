@@ -104,6 +104,7 @@ class PredictiveScreenTransitionsTest {
         listOf(
             "app/n_zik/android/components/ui/screens/settings/SettingsScreen.kt",
             "app/it/fast4x/rimusic/ui/screens/AppNavigation.kt",
+            "app/n_zik/android/components/navigation/AppNavigation.kt",
         ).forEach { path ->
             val source = File(root, path).readText()
             listOf("predictivePopEnterTransition", "predictivePopExitTransition").forEach { callback ->

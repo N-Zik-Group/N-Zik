@@ -37,6 +37,10 @@ Removed:
   - Assemble Debug and pass 148 focused regression tests; complete three review lenses and an independent final re-review.
 
 Added:
+- feat(navigation): integrate persistent chrome and destination state
+  - Coordinate page chrome, navigation lifecycle, fullscreen state and side rail.
+  - Connect the main activity and existing scaffold with navigation policy tests.
+
 - feat(backup): preserve Glass settings in export and rescue
   - Bridge the separate Glass preference store into settings export and restore.
   - Test Glass records alongside existing settings and credential handling.

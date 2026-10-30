@@ -45,6 +45,7 @@ import org.robolectric.annotation.Config
 class ScaffoldNavigationVisibilityTest {
     @get:Rule val compose = createComposeRule()
 
+
     private fun advanceUiFrames(durationMillis: Long) {
         // Production dispatches on Android Main; pump its resumptions between test-clock frames.
         repeat(((durationMillis + 15) / 16).toInt()) {

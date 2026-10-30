@@ -1,5 +1,7 @@
 package app.n_zik.android
 
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.JournalPermission
@@ -31,6 +33,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
@@ -38,7 +41,6 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -62,6 +64,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -82,6 +85,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.rememberUpdatedState
+import app.n_zik.android.components.ui.screens.home.HomeTopMiniPlayerAnchorState
+import app.n_zik.android.components.ui.screens.home.LocalHomeTopMiniPlayerAnchor
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -89,6 +95,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import app.n_zik.android.components.glass.GlassMenuHostState
+import app.n_zik.android.components.glass.excludingGlassOverlays
+import app.n_zik.android.components.glass.GlassOverlayHost
+import app.n_zik.android.components.glass.GlassRippleProvider
+import app.n_zik.android.components.glass.GlassDialogOverlayHost
+import app.n_zik.android.components.glass.GlassModalContent
+import app.n_zik.android.components.glass.GlassSceneContent
+import app.n_zik.android.utils.toast.trackToastObstruction
+import app.n_zik.android.components.glass.GlassRenderer
+import app.n_zik.android.components.glass.glassRenderer
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.navigation.nav.GlassNavigationBarHeight
+import app.n_zik.android.components.navigation.nav.GlassNavigationPlayerGap
+import app.n_zik.android.components.glass.LocalGlassMenuHost
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
@@ -174,12 +194,15 @@ import app.n_zik.android.ui.saveable.TolerantAppearanceStateSaver
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.PlayerAwareInsetsTracker
+import app.n_zik.android.components.navigation.pageSupportsChromeScroll
+import app.n_zik.android.components.navigation.chromeScrollDelta
+import app.n_zik.android.components.navigation.sideNavigationOwnsHeader
 import app.n_zik.android.utils.appNavBarPresentForRoute
 import app.n_zik.android.utils.localeListForAppLanguage
 import app.n_zik.android.utils.shouldRecreateActivity
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.themed.CrossfadeContainer
-import app.it.fast4x.rimusic.ui.screens.AppNavigation
+import app.n_zik.android.components.navigation.AppNavigation
 import app.it.fast4x.rimusic.ui.screens.player.MiniPlayer
 import app.it.fast4x.rimusic.ui.screens.player.Player
 import app.it.fast4x.rimusic.ui.screens.player.components.YoutubePlayer
@@ -188,6 +211,18 @@ import app.it.fast4x.rimusic.ui.screens.player.rememberPlayerSheetState
 import app.n_zik.android.components.CustomBottomSheet
 import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
 import app.n_zik.android.listentogether.shouldDisablePlayerSheetDismiss
+import app.n_zik.android.components.navigation.dock.FloatingDockDimensions
+import app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgressProvider
+import app.n_zik.android.components.navigation.dock.floatingMiniStandaloneInset
+import app.n_zik.android.components.navigation.dock.dockHasAttachedMini
+import app.n_zik.android.components.player.miniPlayerTopDockPaddingPx
+import app.n_zik.android.components.player.MINI_PLAYER_TOP_GAP
+import app.n_zik.android.components.navigation.dock.miniPlayerFoldEligible
+import app.n_zik.android.components.navigation.dock.FloatingDockState
+import app.n_zik.android.components.navigation.dock.FloatingDockEnvironment
+import app.n_zik.android.components.navigation.dock.LocalFloatingDock
+import app.n_zik.android.components.navigation.dock.floatingDockGeometry
+import app.n_zik.android.components.navigation.dock.classicDockGeometry
 import app.n_zik.android.components.player.MiniPlayerQueueOverlay
 import app.n_zik.android.components.player.APP_HEADER_HEIGHT
 import app.n_zik.android.components.player.miniPlayerDismissAlpha
@@ -206,6 +241,7 @@ import app.n_zik.android.components.player.MINIPLAYER_APPEAR_FADE_SKIPPED_FRAMES
 import app.n_zik.android.components.theme.AppearanceMenuSheet
 import app.n_zik.android.components.theme.AppearanceVideoSheet
 import app.n_zik.android.components.theme.ProvideAnimatedAppearance
+import app.n_zik.android.components.theme.DynamicPaletteArtworkListener
 import app.n_zik.android.components.theme.appearanceBackground
 import app.n_zik.android.components.theme.startupAppearance
 import app.n_zik.android.components.theme.withColor
@@ -1303,6 +1339,7 @@ class MainActivity :
                                 }
                                 withContext(NzikDispatchers.UI) {
                                     setSystemBarAppearance(finalPalette.isDark)
+                                    Timber.tag("GlassTintFlow").d("Theme cover palette ready: accent=%08x", finalPalette.accent.toArgb())
                                     updateAppearance(
                                         appearance.copy(
                                             colorPalette = finalPalette,
@@ -1649,8 +1686,10 @@ class MainActivity :
             val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
             // Phone in landscape on the Songs/Album/Artist/Library tabs: app header and nav bar
             // are hidden until the toggle button reveals them, so scroll-hide does not apply there
-            val isLandscapeBarless = app.it.fast4x.rimusic.utils.isLandscapeBarlessScreen()
-            val areBarsHidden = app.it.fast4x.rimusic.utils.hideBarsInLandscapeMobile()
+            val dockNavigationPosition = NavigationBarPosition.current()
+            val hasSideNavigation = sideNavigationOwnsHeader(dockNavigationPosition)
+            val isLandscapeBarless = app.it.fast4x.rimusic.utils.isLandscapeBarlessScreen() && !hasSideNavigation
+            val areBarsHidden = app.it.fast4x.rimusic.utils.hideBarsInLandscapeMobile() && !hasSideNavigation
 
             // Every time such a screen is entered (or left) the bars start put away again
             LaunchedEffect(isLandscapeBarless) {
@@ -1658,15 +1697,22 @@ class MainActivity :
             }
             val uiType by rememberPreference(UiTypeKey, UiType.RiMusic)
             val isViMusic = uiType == UiType.ViMusic
-            // A top nav bar leaves with the header, so the scroll-hide travels that much further
+            // Top navigation remains pinned while the header scrolls out.
+            val topNavHeight = if (rememberGlassSettings().usesGlassMaterial(GlassArea.Nav))
+                GlassNavigationBarHeight else TOP_NAV_BAR_HEIGHT
             val topNavBarPx = if (NavigationBarPosition.Top.isCurrent()) {
-                with(LocalDensity.current) { TOP_NAV_BAR_HEIGHT.roundToPx() }
+                with(LocalDensity.current) { topNavHeight.roundToPx() }
             } else 0
 
-            val bottomBarHeightPx = with(LocalDensity.current) { 240.dp.roundToPx().toFloat() } // Enough to hide floating bar + miniplayer
             val scaffoldBars = remember { app.n_zik.android.core.navigation.ScaffoldBarVisibilityState() }
             var isBarsVisible by scaffoldBars.visible
             var topBarOffset by scaffoldBars.topOffset
+            LaunchedEffect(isLandscapeBarless) {
+                if (isLandscapeBarless) topBarOffset = 0f
+            }
+            val homeHeaderMotionRegistry = remember(scaffoldBars) {
+                app.n_zik.android.components.ui.screens.home.HomeHeaderMotionRegistry(scaffoldBars.topOffset)
+            }
             var bottomBarOffset by scaffoldBars.bottomOffset
             val offsetAnimationJob = scaffoldBars.animationJob
             val revealScaffoldOnNavigation = remember(scaffoldBars, coroutineScope) {
@@ -1703,94 +1749,94 @@ class MainActivity :
             val density = LocalDensity.current
             val safeDrawingInsets = WindowInsets.safeDrawing
 
-            val currentRoute by app.n_zik.android.extensions.discord.DiscordUiState.currentRoute.collectAsStateWithLifecycle()
-            
-            // Listen Together scrolls its cards list, so it joins the scroll-hide routes:
-            // the header and the floating bar / mini-player slide on scroll there too.
-            val isScrollableRoute = currentRoute == "home" ||
-                    currentRoute?.startsWith("artist") == true ||
-                    currentRoute?.startsWith("album") == true ||
-                    currentRoute?.startsWith("playlist") == true ||
-                    currentRoute?.startsWith("localPlaylist") == true ||
-                    currentRoute?.startsWith("searchResults") == true ||
-                    currentRoute?.startsWith("settings") == true ||
-                    currentRoute == "listenTogether"
-                    
+            val chromeEntry by navController.currentBackStackEntryAsState()
+            val isScrollableRoute = pageSupportsChromeScroll(chromeEntry?.destination?.route)
+
             // Route changes use the animated navigation callback; geometry changes reset immediately.
             LaunchedEffect(isLandscape, isViMusic, density, safeDrawingInsets) {
                 scaffoldBars.reveal()
             }
 
-            val nestedScrollConnection = remember(isLandscape, isLandscapeBarless, isViMusic, topNavBarPx, isScrollableRoute, density, safeDrawingInsets, showQueueOverlay) {
+            val glassMenuHost = remember { GlassMenuHostState() }
+            val floatingDockState = remember { FloatingDockState() }
+            val classicDock = dockNavigationPosition == NavigationBarPosition.Bottom
+            val topDock = dockNavigationPosition == NavigationBarPosition.Top
+            val floatingDockEnabled = (NavigationBarPosition.BottomFloating.isCurrent() || classicDock || topDock) && !areBarsHidden
+            val floatingDockEntry = navController.currentBackStackEntryAsState().value
+            val floatingDockPageKey = floatingDockEntry?.id
+            val dockMediaId by (binder?.player?.currentMediaItemIdAsState()
+                ?: remember { mutableStateOf<String?>(null) })
+            val dockPlayerPosition by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
+            LaunchedEffect(scaffoldBars) {
+                offsetAnimationJob.value?.cancel()
+                offsetAnimationJob.value = null
+                topBarOffset = 0f
+                bottomBarOffset = 0f
+                isBarsVisible = true
+            }
+            // Every visible mini shares this clock, including barless and side-navigation pages.
+            val floatingDockClock = remember { Animatable(0f) }
+            val floatingDockProgress = floatingDockClock.asState()
+            val dockMotionBlocked = !miniPlayerFoldEligible(isPlayerSheetExpanded.value, showQueueOverlay, glassMenuHost.hasOverlays)
+            LaunchedEffect(floatingDockState.foldTarget, dockMotionBlocked) {
+                if (!dockMotionBlocked) floatingDockClock.animateTo(
+                    floatingDockState.foldTarget,
+                    tween(320, easing = CubicBezierEasing(0.2f, 0f, 0f, 1f)),
+                )
+            }
+            val floatingDock = remember(floatingDockState, floatingDockPageKey, floatingDockEnabled, classicDock, topDock, dockNavigationPosition,
+                floatingDockProgress, dockMediaId, dockPlayerPosition) {
+                FloatingDockEnvironment(floatingDockState, floatingDockPageKey, floatingDockEnabled,
+                    floatingDockProgress, dockMediaId != null && dockPlayerPosition == PlayerPosition.Bottom,
+                    classic = classicDock || topDock,
+                    floating = dockNavigationPosition == NavigationBarPosition.BottomFloating,
+                    attachedMini = dockHasAttachedMini(dockMediaId != null,
+                        dockNavigationPosition, dockPlayerPosition))
+            }
+            LaunchedEffect(floatingDockPageKey, floatingDockEnabled, classicDock, topDock) {
+                floatingDockState.expand()
+                bottomBarOffset = 0f
+            }
+            val sideNavigationHeaderActive = remember { mutableStateOf(false) }
+            val sideRailScrollOrigin = remember { app.n_zik.android.components.navigation.SideRailScrollOrigin() }
+            val nestedScrollConnection = remember(isLandscapeBarless, isLandscape, isScrollableRoute, density, showQueueOverlay, glassMenuHost) {
                 object : NestedScrollConnection {
-                    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                        // Disable scroll-hide while the full player sheet is on screen or the queue is open
-                        if (isPlayerSheetExpanded.value || showQueueOverlay) return Offset.Zero
-                        // Bars here are driven by the toggle button, not by scrolling: a slide only
-                        // puts them away (nothing scroll-related brings them back) and the scroll
-//
-                        // itself must stay whole for the list
-                        if (isLandscapeBarless) {
-                            if (available.y != 0f && source == NestedScrollSource.UserInput) {
-                                app.it.fast4x.rimusic.utils.LandscapeBars.hide()
-                            }
-                            return Offset.Zero
-                        }
-
-                        val shouldHideOnScroll = isLandscape || isScrollableRoute
-
-                        if (!shouldHideOnScroll || isViMusic) return Offset.Zero
-
-                        val statusBarsTopPx = safeDrawingInsets.getTop(density)
-                        val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx + topNavBarPx
-
-                        val delta = available.y
-                        if (delta == 0f) return Offset.Zero
-
-                        // Cancel ongoing fling animation when user touches again
-                        offsetAnimationJob.value?.cancel()
-                        offsetAnimationJob.value = null
-
-                        // Move bars with finger in both directions synchronously
-                        val previousTopOffset = topBarOffset
-                        topBarOffset = (topBarOffset + delta).coerceIn(-topBarHeightPx.toFloat(), 0f)
-                        val consumedY = topBarOffset - previousTopOffset
-
-                        bottomBarOffset = (bottomBarOffset - delta).coerceIn(0f, bottomBarHeightPx)
-
-                        return Offset(0f, consumedY)
-                    }
-
                     override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                        if (sideRailScrollOrigin.take()) return Offset.Zero
+                        if (isPlayerSheetExpanded.value || showQueueOverlay || glassMenuHost.hasOverlays) return Offset.Zero
+                        val deltaY = chromeScrollDelta(
+                            consumed.y, available.y,
+                            topBarOffset < 0f || floatingDockState.foldTarget > 0f,
+                        )
+                        if (deltaY == 0f) return Offset.Zero
+                        floatingDockState.onScroll(deltaY, with(density) { 50.dp.toPx() })
+                        // Only the overlay moves: the page keeps its full viewport and every
+                        // pixel of the finger's drag, avoiding moving-owner gesture jumps.
+                        if (!sideNavigationHeaderActive.value && (isScrollableRoute || isLandscape)) {
+                            offsetAnimationJob.value?.cancel()
+                            offsetAnimationJob.value = null
+                            homeHeaderMotionRegistry.scrollBy(deltaY, with(density) { APP_HEADER_HEIGHT.toPx() })
+                        }
+                        if (isLandscapeBarless && source == NestedScrollSource.UserInput) {
+                            app.it.fast4x.rimusic.utils.LandscapeBars.hide()
+                        }
                         return Offset.Zero
                     }
 
                     override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                        // Disable scroll-hide while the full player sheet is on screen or the queue is open
-                        if (isPlayerSheetExpanded.value || showQueueOverlay || isLandscapeBarless) return super.onPostFling(consumed, available)
-
-                        val statusBarsTopPx = safeDrawingInsets.getTop(density)
-                        val topBarHeightPx = with(density) { 64.dp.roundToPx() } + statusBarsTopPx + topNavBarPx
-
-                        val currentTopOffset = topBarOffset
-                        val threshold = -topBarHeightPx / 2f
-
+                        if (sideNavigationHeaderActive.value || isPlayerSheetExpanded.value || showQueueOverlay || glassMenuHost.hasOverlays) return Velocity.Zero
+                        val height = with(density) { APP_HEADER_HEIGHT.toPx() }
+                        val target = if (topBarOffset < -height / 2f) -height else 0f
                         offsetAnimationJob.value?.cancel()
                         offsetAnimationJob.value = coroutineScope.launch {
-                            if (currentTopOffset < threshold) {
-                                launch { androidx.compose.animation.core.Animatable(topBarOffset).animateTo(-topBarHeightPx.toFloat(),androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing)) { topBarOffset = value } }
-                                launch { androidx.compose.animation.core.Animatable(bottomBarOffset).animateTo(bottomBarHeightPx, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing)) { bottomBarOffset = value } }
-                                isBarsVisible = false
-                            } else {
-                                launch { androidx.compose.animation.core.Animatable(topBarOffset).animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing)) { topBarOffset = value } }
-                                launch { androidx.compose.animation.core.Animatable(bottomBarOffset).animateTo(0f, androidx.compose.animation.core.tween(150, easing = androidx.compose.animation.core.LinearEasing)) { bottomBarOffset = value } }
-                                isBarsVisible = true
+                            Animatable(topBarOffset).animateTo(target, tween(200, easing = androidx.compose.animation.core.FastOutSlowInEasing)) {
+                                topBarOffset = value
+                                homeHeaderMotionRegistry.sync()
                             }
                         }
-
-                        return super.onPostFling(consumed, available)
+                        return Velocity.Zero
                     }
-                }
+                }.excludingGlassOverlays(glassMenuHost)
             }
 
             val topBarOffsetState = scaffoldBars.topOffset
@@ -1843,48 +1889,83 @@ class MainActivity :
                         playlistsTabEnabled,
                     ).size
                 }
-                val hasNavBar = !areBarsHidden && appNavBarPresentForRoute(playerRoute, activeHomeTabCount)
+                val hasNavBar = !areBarsHidden &&
+                    (floatingDockState.registeredPresence(floatingDockPageKey)
+                        ?: appNavBarPresentForRoute(playerRoute, activeHomeTabCount))
+                val pageDock = floatingDock.copy(pagePresence = hasNavBar)
+                val dockPresence = androidx.compose.animation.core.animateFloatAsState(
+                    targetValue = if (hasNavBar) 1f else 0f,
+                    animationSpec = tween(320, easing = CubicBezierEasing(.2f, 0f, 0f, 1f)),
+                    label = "miniDockPresence",
+                )
 
+                val playerGlassSettings = rememberGlassSettings()
+                val glassNavigation = playerGlassSettings.usesGlassMaterial(GlassArea.Nav)
+                val hasSideNavBarVisible = sideNavigationOwnsHeader(dockNavigationPosition)
+                SideEffect { sideNavigationHeaderActive.value = hasSideNavBarVisible }
+                LaunchedEffect(hasSideNavBarVisible) {
+                    if (hasSideNavBarVisible) {
+                        offsetAnimationJob.value?.cancel()
+                        offsetAnimationJob.value = null
+                        topBarOffset = 0f
+                    }
+                }
+                val appHeaderHeight = if (hasSideNavBarVisible) 0.dp else APP_HEADER_HEIGHT
                 val playerPos by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
                 val targetPlayerPadBottom = if (playerPos == PlayerPosition.Bottom) {
                     if (isFloatingNavBar) {
                         if (hasNavBar) {
-                            val barHeight = if (isIconOnlyNav) Dimensions.floatingNavBarIconOnlyHeight else Dimensions.floatingNavBarHeight
-                            barHeight + navBarBottomPad + 4.dp
+                            val barHeight = if (glassNavigation) GlassNavigationBarHeight
+                                else if (isIconOnlyNav) Dimensions.floatingNavBarIconOnlyHeight else Dimensions.floatingNavBarHeight
+                            barHeight + navBarBottomPad + if (glassNavigation) GlassNavigationPlayerGap else 4.dp
                         } else {
                             navBarBottomPad
                         }
                     } else {
                         if (hasNavBar && NavigationBarPosition.Bottom.isCurrent()) {
-                            Dimensions.standardNavBarHeight + navBarBottomPad + 4.dp
+                            if (glassNavigation) GlassNavigationBarHeight + navBarBottomPad + GlassNavigationPlayerGap
+                            else Dimensions.standardNavBarHeight + navBarBottomPad + 4.dp
                         } else {
-                            navBarBottomPad + 5.dp
+                            navBarBottomPad + if (isLandscape) 16.dp else 5.dp
                         }
                     }
                 } else 5.dp
-                // Follows the nav bar sliding in/out so the mini player glides with it instead of
-                // jumping. Kept as a State and only read at draw time (see CustomBottomSheet): reading
-//
-                // it here would recompose this whole screen on every frame of the slide.
-                val playerPadBottom = androidx.compose.animation.core.animateDpAsState(
-                    targetValue = targetPlayerPadBottom,
-                    animationSpec = app.n_zik.android.core.navigation.navigationChromeTween(),
-                    label = "playerPadBottom"
-                )
+                // CustomBottomSheet animates the complete anchor, including top/bottom switches.
+                val playerPadBottom = rememberUpdatedState(targetPlayerPadBottom)
 
                 // Top anchor: the mini-player sits under the app header (and the top nav bar).
                 // The provider is read at draw time so the scroll-hide offset moves it without
 //
                 // recomposing this screen on every frame.
                 val isTopPlayer = playerPos == PlayerPosition.Top
+                val dockExpandedNavHeight = FloatingDockDimensions.expandedHeight.dp
+                val dockSafeWidth = maxWidth - with(density) {
+                    (safeDrawingInsets.getLeft(density, LayoutDirection.Ltr) +
+                        safeDrawingInsets.getRight(density, LayoutDirection.Ltr)).toDp()
+                }
+                val dockExpandedMiniHeight = FloatingDockDimensions.expandedMiniHeight.dp
+                val classicNavHeight = if (glassNavigation) GlassNavigationBarHeight else Dimensions.navigationBarHeight - 10.dp
+                val dockGeometry = {
+                    if (classicDock || topDock) classicDockGeometry(dockSafeWidth.value,
+                        if (topDock) with(density) { topNavBarPx.toDp().value } else classicNavHeight.value,
+                        dockExpandedMiniHeight.value, floatingDock.hasAttachedMini, floatingDockProgress.value,
+                        expandedGap = if (glassNavigation) GlassNavigationPlayerGap.value else FloatingDockDimensions.componentGap)
+                    else floatingDockGeometry(dockSafeWidth.value, dockExpandedNavHeight.value,
+                        dockExpandedMiniHeight.value, floatingDock.hasBottomMini, floatingDockProgress.value,
+                        hasSearch = false)
+                }
                 val statusBarTopPx = safeDrawingInsets.getTop(density)
-                val playerTopInsetPx = with(density) {
+                val targetPlayerTopInsetPx = with(density) {
                     miniPlayerTopInset(
                         statusBarTop = statusBarTopPx.toDp(),
                         barsHidden = areBarsHidden,
-                        hasTopNavBar = NavigationBarPosition.Top.isCurrent(),
+                        hasTopNavBar = NavigationBarPosition.Top.isCurrent() && hasNavBar,
+                        headerHeight = appHeaderHeight,
+                        topNavBarHeight = topNavBarPx.toDp(),
+                        gap = if (hasSideNavBarVisible) 0.dp else app.n_zik.android.components.player.MINI_PLAYER_TOP_GAP,
                     ).toPx()
                 }
+                val playerTopInsetPx = rememberUpdatedState(targetPlayerTopInsetPx)
                 val collapsedPlayerHeight = Dimensions.collapsedPlayer
                 // Side system bars (status bar at the left, nav bar at the right in landscape,
                 // cutout) and a navigation rail on a side: the collapsed mini-player narrows to
@@ -1893,6 +1974,8 @@ class MainActivity :
 //
                 // landscape screens.
                 val railWidth = if (areBarsHidden) 0.dp else Dimensions.navigationRailWidth
+                val playerSafeStartInset = with(density) { safeDrawingInsets.getLeft(density, LayoutDirection.Ltr).toDp() }
+                val playerSafeEndInset = with(density) { safeDrawingInsets.getRight(density, LayoutDirection.Ltr).toDp() }
                 val playerStartInset = miniPlayerSideInset(
                     railWidth = if (NavigationBarPosition.Left.isCurrent()) railWidth else 0.dp,
                     safeInset = with(density) { safeDrawingInsets.getLeft(density, LayoutDirection.Ltr).toDp() },
@@ -1901,20 +1984,75 @@ class MainActivity :
                     railWidth = if (NavigationBarPosition.Right.isCurrent()) railWidth else 0.dp,
                     safeInset = with(density) { safeDrawingInsets.getRight(density, LayoutDirection.Ltr).toDp() },
                 )
-                // Same travel as the header's scroll-hide (64dp bar + status bar + top nav bar)
-                val headerHideRangePx = with(density) { APP_HEADER_HEIGHT.toPx() } + statusBarTopPx + topNavBarPx
-                val playerTopPadding: (() -> Dp)? = if (isTopPlayer) {
+                // Only the header leaves; the top navigation row remains below the status bar.
+                val headerHideRangePx = with(density) { appHeaderHeight.toPx() }
+                val retainTopMiniBelowNavigation = !areBarsHidden && NavigationBarPosition.Top.isCurrent() && hasNavBar
+                val basePlayerTopPadding: (() -> Dp)? = if (isTopPlayer) {
                     {
                         with(density) {
-                            miniPlayerTopPaddingPx(
-                                insetPx = playerTopInsetPx,
+                            if (retainTopMiniBelowNavigation && floatingDock.hasAttachedMini) {
+                                miniPlayerTopDockPaddingPx(
+                                    insetPx = playerTopInsetPx.value,
+                                    scrollOffsetPx = topBarOffsetState.value,
+                                    headerHeightPx = headerHideRangePx,
+                                    navHeightPx = topNavBarPx.toFloat(),
+                                    miniHeightPx = dockGeometry().miniHeight.dp.toPx(),
+                                    gapPx = MINI_PLAYER_TOP_GAP.toPx(),
+                                    fold = floatingDockProgress.value * dockPresence.value,
+                                ).toDp()
+                            } else miniPlayerTopPaddingPx(
+                                insetPx = playerTopInsetPx.value,
                                 scrollOffsetPx = topBarOffsetState.value,
                                 hideRangePx = headerHideRangePx,
                                 collapsedHeightPx = collapsedPlayerHeight.toPx(),
+                                retainedTopInsetPx = (playerTopInsetPx.value - headerHideRangePx)
+                                    .coerceAtLeast(statusBarTopPx.toFloat()),
+                                barsHidden = areBarsHidden,
                             ).toDp()
                         }
                     }
                 } else null
+
+                val homeTopMiniBase = rememberUpdatedState(
+                    if (dockMediaId != null) basePlayerTopPadding else null
+                )
+                val homeTopMiniGap = rememberUpdatedState(
+                    if (areBarsHidden || hasSideNavBarVisible) 0.dp else MINI_PLAYER_TOP_GAP
+                )
+                val miniBeforeHomeHeader = rememberUpdatedState(
+                    dockGeometry().miniHeight.dp.takeIf {
+                        dockMediaId != null && app.n_zik.android.components.ui.screens.home.miniPrecedesHomeHeader(
+                            retainTopMiniBelowNavigation, areBarsHidden
+                        )
+                    }
+                )
+                val homeTopMiniAnchor = remember {
+                    HomeTopMiniPlayerAnchorState(homeTopMiniBase, homeTopMiniGap, miniBeforeHomeHeader)
+                }
+                val isHomeDestination = chromeEntry?.destination?.route?.startsWith(NavRoutes.home.name) == true
+                val homeMiniPlacementKey by remember(homeTopMiniAnchor) {
+                    derivedStateOf { homeTopMiniAnchor.placementKey() }
+                }
+                val sideHomeMiniGap = if (hasSideNavBarVisible) MINI_PLAYER_TOP_GAP else 0.dp
+                val homeMiniTopInset = remember(homeTopMiniAnchor, homeMiniPlacementKey, sideHomeMiniGap) {
+                    homeTopMiniAnchor.miniTopInsetProvider(panelGap = sideHomeMiniGap)
+                }
+                val playerTopPadding: (() -> Dp)? = basePlayerTopPadding?.let { base ->
+                    {
+                        if (isHomeDestination && !retainTopMiniBelowNavigation && !areBarsHidden)
+                            homeMiniTopInset() ?: base()
+                        else base()
+                    }
+                }
+                val playerPlacementKey = listOf(
+                    chromeEntry?.id, playerPos, dockNavigationPosition, isLandscape,
+                    areBarsHidden, hasNavBar, glassNavigation, isViMusic,
+                    playerGlassSettings.usesGlassMaterial(GlassArea.MiniPlayer), maxWidth, maxHeight,
+                    targetPlayerPadBottom, targetPlayerTopInsetPx,
+                    homeMiniPlacementKey.takeIf {
+                        isHomeDestination && isTopPlayer && !retainTopMiniBelowNavigation && !areBarsHidden
+                    },
+                )
 
                 val playerSheetState = rememberPlayerSheetState(
                     dismissedBound = 0.dp,
@@ -1927,7 +2065,7 @@ class MainActivity :
 //
                 // player, which would permanently block re-hiding the bars while music plays.
                 LaunchedEffect(playerSheetState) {
-                    snapshotFlow { playerSheetState.progress > 0.5f }
+                    snapshotFlow { playerSheetState.progress > 0.01f }
                         .distinctUntilChanged()
                         .collect { isPlayerSheetExpanded.value = it }
                 }
@@ -2132,9 +2270,16 @@ class MainActivity :
                     } else
                              CompositionLocalProvider(
                              LocalIndication provides ripple(bounded = true),
+                            LocalGlassMenuHost provides glassMenuHost,
+                            app.n_zik.android.components.glass.LocalGlassPlayerOverlayActive provides
+                                (!playerSheetState.isDismissed && !playerSheetState.isCollapsed),
                             LocalRippleConfiguration provides rippleConfiguration,
                             LocalShimmerTheme provides shimmerTheme,
                             LocalPlayerServiceBinder provides binder,
+                            LocalFloatingDock provides pageDock,
+                            app.n_zik.android.components.navigation.LocalSideRailScrollOrigin provides sideRailScrollOrigin,
+                            LocalHomeTopMiniPlayerAnchor provides homeTopMiniAnchor,
+                            app.n_zik.android.components.ui.screens.home.LocalHomeHeaderMotionRegistry provides homeHeaderMotionRegistry,
                             LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
                             LocalLayoutDirection provides LayoutDirection.Ltr,
                             LocalDownloadHelper provides downloadHelper,
@@ -2142,6 +2287,8 @@ class MainActivity :
                             LocalMonetCompat provides monet,
                             LocalPersistMap provides persistMap,
                             LocalPendingMiniPlayerAction provides pendingMiniPlayerAction,
+                            app.n_zik.android.core.navigation.LocalMiniPlayerQueueRequest provides
+                                { showQueueOverlay = true },
                             LocalIsShowingLyrics provides isShowingLyrics,
                             LocalIsShowingVisualizer provides isShowingVisualizer,
                             LocalTopBarOffset provides topBarOffsetState,
@@ -2149,6 +2296,24 @@ class MainActivity :
                             app.n_zik.android.core.navigation.LocalRevealScaffold provides revealScaffoldOnNavigation
                             //LocalInternetConnected provides internetConnected
                         ) {
+                            GlassRippleProvider {
+                            val sceneGlassSettings = rememberGlassSettings()
+                            var toastNeedsLiveBackdrop by remember { mutableStateOf(false) }
+                            // Shared by overlay freshness and the debounced media-presence gate below.
+                            val currentMediaId by (binder?.player?.currentMediaItemIdAsState() ?: remember { mutableStateOf<String?>(null) })
+                            GlassSceneContent(glassMenuHost,
+                                enabled = sceneGlassSettings.enabled && glassRenderer(sceneGlassSettings) != GlassRenderer.Tint,
+                                needsLiveBackdrop = toastNeedsLiveBackdrop,
+                                refreshKey = listOf(
+                                    currentMediaId, finalAppearance.colorPalette,
+                                    navController.currentBackStackEntryAsState().value?.id,
+                                    playerSheetState.isDismissed, playerSheetState.isCollapsed,
+                                    playerSheetState.isExpanded,
+                                    isShowingLyrics.value, isShowingVisualizer.value,
+                                ),
+                                modifier = Modifier.appearanceBackground()) {
+                            GlassModalContent(glassMenuHost,
+                                focusSessionKey = navController.currentBackStackEntryAsState().value?.id) {
                             // First-launch onboarding: rendered instead of the main
                             // navigation while the flag is false. Page changes (permissions ->
 //
@@ -2186,14 +2351,25 @@ class MainActivity :
                                 label = "onboardingPhase"
                             ) { phase ->
                                 when (phase) {
-                                    null -> AppNavigation(
-                                        navController = navController,
-                                        miniPlayer = {},
-                                        openTabFromShortcut = openTabFromShortcut
-                                    )
+                                    null -> app.n_zik.android.components.player.PlayerCoveredPage(
+                                        covered = playerSheetState.isExpanded,
+                                    ) {
+                                        AppNavigation(
+                                            navController = navController,
+                                            miniPlayer = {},
+                                            hasTopNavBarVisible = NavigationBarPosition.Top.isCurrent() && hasNavBar,
+                                            hasSideNavBarVisible = hasSideNavBarVisible,
+                                            hasPageNavBar = hasNavBar,
+                                            openTabFromShortcut = openTabFromShortcut
+                                        )
+                                    }
 
                                     // Step transitions, the step persistence and the flag timing
                                     // are all handled by advanceOnboarding() + OnboardingStep.advance()
+                                    OnboardingStep.GLASS -> app.n_zik.android.components.onboarding.OnboardingGlassScreen(
+                                        onComplete = { advanceOnboarding() }
+                                    )
+
                                     OnboardingStep.PERMISSIONS -> OnboardingScreen(
                                         onComplete = { advanceOnboarding() }
                                     )
@@ -2264,13 +2440,6 @@ class MainActivity :
                             // a guest device.
                             val ltGuestLocked by app.n_zik.android.listentogether.listenTogetherGuestLock
         checkIfAppIsRunningInBackground()
-
-                            // Reactive media-item presence: the sheet (including its
-                            // collapsed hit target) must not be composed when the
-//
-                            // player has nothing to play, otherwise an invisible
-                            // tappable strip stays at the bottom of the screen.
-                            val currentMediaId by (binder?.player?.currentMediaItemIdAsState() ?: remember { mutableStateOf<String?>(null) })
 
                             // Debounced media presence: Listen Together replaces the whole queue on
                             // every track change (setMediaItems), which briefly clears the current
@@ -2382,7 +2551,6 @@ class MainActivity :
                                             // unit — imperceptible on a fast dismiss fade.
                                             compositingStrategy = CompositingStrategy.ModulateAlpha
                                         }
-                                        .offset { IntOffset(0, if (isTopPlayer) 0 else bottomBarOffsetState.value.roundToInt()) }
                                 ) {
                                     // Palette fade scope: the global palette switches in one
                                     // step, only this subtree (mini-player + full player)
@@ -2401,11 +2569,39 @@ class MainActivity :
                                                     this@MainActivity.stopService(this@MainActivity.intent<app.n_zik.android.playback.services.PlayerServiceModern>())
                                                 }
                                             },
-                                            bottomPadding = { playerPadBottom.value },
+                                            bottomPadding = {
+                                                if (floatingDockEnabled && !topDock && !isTopPlayer)
+                                                    navBarBottomPad + dockGeometry().miniBottomOffset.dp * dockPresence.value
+                                                else playerPadBottom.value
+                                            },
                                             topPadding = playerTopPadding,
+                                            placementKey = playerPlacementKey,
+                                            verticalOffset = {
+                                                with(density) {
+                                                    if (isTopPlayer) 0.dp else bottomBarOffsetState.value.roundToInt().toDp()
+                                                }
+                                            },
                                             collapsedStartInset = playerStartInset,
                                             collapsedEndInset = playerEndInset,
                                             collapsedContentHeight = Dimensions.collapsedPlayer,
+                                            collapsedHeightProvider = { dockGeometry().miniHeight.dp },
+                                            collapsedStartInsetProvider = {
+                                                maxOf(playerStartInset, playerSafeStartInset -
+                                                    16.dp * (1f - floatingDockProgress.value)) +
+                                                    floatingMiniStandaloneInset(dockSafeWidth.value, floatingDockProgress.value, isLandscape).dp.let { standalone ->
+                                                        if (!floatingDockEnabled || !floatingDock.hasAttachedMini) standalone else standalone +
+                                                            (dockGeometry().miniSideInset.dp - standalone) * dockPresence.value
+                                                    }
+                                            },
+                                            collapsedEndInsetProvider = {
+                                                maxOf(playerEndInset, playerSafeEndInset -
+                                                    16.dp * (1f - floatingDockProgress.value)) +
+                                                    floatingMiniStandaloneInset(dockSafeWidth.value, floatingDockProgress.value, isLandscape).dp.let { standalone ->
+                                                        if (!floatingDockEnabled || !floatingDock.hasAttachedMini) standalone else standalone +
+                                                            (dockGeometry().miniEndInset.dp - standalone) * dockPresence.value
+                                                    }
+                                            },
+                                            collapsedHorizontalPaddingProvider = { 16.dp * (1f - floatingDockProgress.value) },
                                             disableDismiss = shouldDisablePlayerSheetDismiss(disableClosingPlayerSwipingDown, ltGuestLocked),
                                             // Guest lock: a blocked "clean the player" attempt is explained by the
                                             // shared throttled toast (the destructive onDismiss is unreachable
@@ -2416,6 +2612,17 @@ class MainActivity :
                                                 if (ltGuestLocked) ListenTogetherGuestGuardPlayer.reportUiBlockedOp(this@MainActivity)
                                             },
                                             collapsedContent = {
+                                                val toastObstructionVisible by remember(playerSheetState, isTopPlayer) {
+                                                    derivedStateOf {
+                                                        !isTopPlayer && playerSheetState.isCollapsed && miniplayerHideProgress.value < .99f
+                                                    }
+                                                }
+                                                CompositionLocalProvider(LocalCompactMiniPlayerProgressProvider provides
+                                                    { floatingDockProgress.value }) {
+                                                Box(Modifier.fillMaxWidth()
+                                                    .trackToastObstruction(
+                                                        enabled = toastObstructionVisible,
+                                                    )) {
                                                 MiniPlayer(
                                                     showPlayer = {
                                                         showPlayer = true
@@ -2429,6 +2636,8 @@ class MainActivity :
                                                     },
                                                     navController = navController
                                                 )
+                                                }
+                                                }
                                             }
                                         ) {
                                             Player(navController) {
@@ -2499,6 +2708,20 @@ class MainActivity :
                                 }
                             }
 
+                            }
+                            }
+                            GlassDialogOverlayHost(glassMenuHost)
+                            // Draw anchored glass menus above both navigation and the player.
+                            GlassOverlayHost(glassMenuHost)
+                            app.n_zik.android.components.glass.GlassToastHost(
+                                backdrop = glassMenuHost.modalBackdrop,
+                                onPresenceChanged = { toastNeedsLiveBackdrop = it },
+                                bottomInset = with(LocalDensity.current) {
+                                    windowsInsets.getBottom(this).toDp()
+                                },
+                            )
+                            }
+
                         }
 
                 }
@@ -2510,7 +2733,11 @@ class MainActivity :
                     val currentBinder = binder ?: return@DisposableEffect onDispose { }
                     val player = currentBinder.player
 
-                    setDynamicPalette(player.currentMediaItem?.mediaMetadata?.artworkUri?.thumbnail(1000)?.toString())
+                    val paletteArtworkListener = DynamicPaletteArtworkListener(player) { artworkUri ->
+                        setDynamicPalette(artworkUri?.thumbnail(1000)?.toString())
+                    }
+                    player.addListener(paletteArtworkListener)
+                    paletteArtworkListener.publishCurrentArtwork()
 
                     // "Now playing" notification tap — COLD start (spec-notification-click-opens-player):
                     // the held tap token is validated against the CURRENT service's token (via
@@ -2596,16 +2823,15 @@ class MainActivity :
                                     }
                                 }
                             }
-
-                                                         setDynamicPalette(mediaItem?.mediaMetadata?.artworkUri?.thumbnail(1000)?.toString())
                         }
-
-
                     }
 
                     player.addListener(listener)
 
-                    onDispose { player.removeListener(listener) }
+                    onDispose {
+                        player.removeListener(listener)
+                        player.removeListener(paletteArtworkListener)
+                    }
                 }
 
                 InitDownloader()
