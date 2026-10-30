@@ -16,8 +16,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
+import app.n_zik.android.components.glass.CustomModalBottomSheet
+import app.n_zik.android.components.glass.GlassMenuSheet
+import app.n_zik.android.components.glass.LocalGlassMenuHost
+import app.n_zik.android.components.glass.canHostGlassMenuSheet
+import app.n_zik.android.components.glass.glassRenderer
+import app.n_zik.android.components.glass.rememberGlassSettings
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 
 /** Reads the animated background in the modifier's composition scope. */
@@ -64,6 +70,13 @@ fun AppearanceMenuSheet(
     sheetState: SheetState,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val glass = rememberGlassSettings()
+    val host = LocalGlassMenuHost.current
+    val sameWindow = host?.dialogs?.windowRoot === LocalView.current.rootView
+    if (canHostGlassMenuSheet(glass, glassRenderer(glass), sameWindow && host?.backdrop != null)) {
+        GlassMenuSheet(showSheet, onDismissRequest, sheetState, content)
+        return
+    }
     CustomModalBottomSheet(
         showSheet = showSheet,
         onDismissRequest = onDismissRequest,

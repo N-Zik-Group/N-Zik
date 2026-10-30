@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -24,6 +26,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.addPointerInputChange
@@ -34,6 +37,13 @@ import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMenuHost
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.player.rememberMiniPlayerPlacementMotion
 
 /**
  * Géométrie de la carte "deploy" à un instant t (progress p).
@@ -71,6 +81,24 @@ internal fun computeCardGeometry(
         corner28Px * (1f - (p - 0.5f) / 0.5f)
     }
     return CardGeometry(cardLeft, cardWidth, cardHeight, cornerPx)
+}
+
+/** Resolve bounded user roundness against the actual mini, never the fullscreen sheet. */
+internal fun collapsedCardCornerPx(
+    shape: Shape,
+    size: Size,
+    collapsedHeightPx: Float,
+    horizontalPaddingPx: Float,
+    startInsetPx: Float = 0f,
+    endInsetPx: Float = 0f,
+    density: Density,
+): Float {
+    val collapsedSize = Size(
+        (size.width - 2f * horizontalPaddingPx - startInsetPx - endInsetPx).coerceAtLeast(0f),
+        collapsedHeightPx.coerceAtLeast(0f),
+    )
+    return (shape as? RoundedCornerShape)?.topStart?.toPx(collapsedSize, density)
+        ?: with(density) { 16.dp.toPx() }
 }
 
 /**
@@ -145,6 +173,12 @@ fun playerContentFade(progress: Float): Float =
 fun miniPlayerFade(progress: Float): Float =
     1f - (progress / PLAYER_SHEET_HANDOVER_PROGRESS).coerceIn(0f, 1f)
 
+/** Glass fades its body first, retaining the cover and controls until the full player takes over. */
+internal fun miniPlayerContentFade(progress: Float, glassMaterial: Boolean): Float {
+    val position = if (progress.isFinite()) progress.coerceIn(0f, 1f) else 0f
+    return if (glassMaterial) 1f - playerContentFade(position) else miniPlayerFade(position)
+}
+
 /** Progress at or below which the deploy card background is skipped: the mini-player still renders its own surface there, so drawing the card would only paint a sliver behind it. */
 internal const val CARD_BG_COLLAPSED_EPSILON = 0.01f
 
@@ -190,6 +224,10 @@ private class CardClipShape(private val geometry: CardGeometry) : Shape {
  * @param topPadding When non-null, anchors the mini-player at the top edge (draw-time provider).
  * @param collapsedContentHeight Visual height of the mini-player content; the collapsed hit
  *        target. Defaults to [PlayerSheetState.collapsedBound].
+ * @param collapsedHeightProvider Optional animated height, read in layout and drawing only.
+ * @param collapsedStartInsetProvider Optional animated start inset shared by clipping and hit bounds.
+ * @param collapsedEndInsetProvider Optional animated end inset shared by clipping and hit bounds.
+ * @param collapsedHorizontalPaddingProvider Mini-player internal horizontal margin, shared with its clip.
  */
 @Composable
 fun CustomBottomSheet(
@@ -198,9 +236,15 @@ fun CustomBottomSheet(
     onDismiss: (() -> Unit)? = null,
     bottomPadding: () -> Dp = { 0.dp },
     topPadding: (() -> Dp)? = null,
+    placementKey: Any? = null,
+    verticalOffset: () -> Dp = { 0.dp },
     collapsedStartInset: Dp = 0.dp,
     collapsedEndInset: Dp = 0.dp,
     collapsedContentHeight: Dp = state.collapsedBound,
+    collapsedHeightProvider: (() -> Dp)? = null,
+    collapsedStartInsetProvider: (() -> Dp)? = null,
+    collapsedEndInsetProvider: (() -> Dp)? = null,
+    collapsedHorizontalPaddingProvider: (() -> Dp)? = null,
     disableDismiss: Boolean = false,
     /** Called when a dismiss gesture is attempted while [disableDismiss] is on (blocked attempt). */
     onDismissBlocked: (() -> Unit)? = null,
@@ -208,27 +252,43 @@ fun CustomBottomSheet(
     isExpandable: Boolean = true,
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val collapsedHeight = { (collapsedHeightProvider?.invoke() ?: collapsedContentHeight).coerceAtLeast(0.dp) }
+    val startInset = { (collapsedStartInsetProvider?.invoke() ?: collapsedStartInset).coerceAtLeast(0.dp) }
+    val endInset = { (collapsedEndInsetProvider?.invoke() ?: collapsedEndInset).coerceAtLeast(0.dp) }
+    val horizontalPadding = { (collapsedHorizontalPaddingProvider?.invoke() ?: 16.dp).coerceAtLeast(0.dp) }
     val baseShape = app.n_zik.android.uiRoundnessShape()
     val scope = rememberCoroutineScope()
+    val glass = rememberGlassSettings()
+    val miniPlayerGlass = glass.usesGlassMaterial(GlassArea.MiniPlayer)
+    val deployGlassActive by remember(state, miniPlayerGlass) {
+        derivedStateOf { miniPlayerGlass && isPlayerDeployGlassActive(state.progress) }
+    }
+    val deployBackdrop = if (deployGlassActive) rememberLayerBackdrop() else null
+    val pageBackdrop = LocalGlassMenuHost.current?.backdrop
 
     // Elevated surface: the deployed card stays on the mini-player's surface
     // color (dark gray in pitch black) instead of pure black
     val miniPlayerColor = surfaceColor(colorPalette().background2)
     val anchoredAtTop = topPadding != null
+    val animatedPlacement = rememberMiniPlayerPlacementMotion(placementKey)
 
+    CompositionLocalProvider(LocalGlassContainerBackdrop provides
+        if (deployGlassActive) deployBackdrop else LocalGlassContainerBackdrop.current) {
     Box(
         modifier = modifier
             .fillMaxSize()
             .graphicsLayer {
-                // Single smooth formula — no branching on isCollapsedOrDismissed.
-                // progress: 0 = collapsed, 1 = expanded.
-                translationY = sheetTranslationY(
-                    progress = state.progress,
+                val offset = verticalOffset().toPx()
+                val collapsedY = sheetTranslationY(
+                    progress = 0f,
                     parentHeightPx = size.height,
-                    collapsedHeightPx = collapsedContentHeight.toPx(),
+                    collapsedHeightPx = collapsedHeight().toPx(),
                     bottomPaddingPx = bottomPadding().toPx(),
                     topPaddingPx = topPadding?.invoke()?.toPx(),
                 )
+                // Deployment stays finger-driven; only the collapsed anchor changes with navigation.
+                translationY = (animatedPlacement(collapsedY + offset) - offset) *
+                    (1f - state.progress.coerceIn(0f, 1f)) + offset
             }
             // ── Clip to the exact animated card rect (same geometry as drawBehind) ──
             // MUST precede the pointerInput below: the hit-test walks this chain
@@ -243,16 +303,17 @@ fun CustomBottomSheet(
             // full screen when expanded).
             .graphicsLayer {
                 val p = state.progress.coerceIn(0f, 1f)
-                val baseCornerPx = (baseShape as? RoundedCornerShape)?.topStart?.toPx(size, this) ?: 16.dp.toPx()
+                val baseCornerPx = collapsedCardCornerPx(baseShape, size, collapsedHeight().toPx(),
+                    horizontalPadding().toPx(), startInset().toPx(), endInset().toPx(), this)
                 val geometry = computeCardGeometry(
                     p = p,
                     size = size,
-                    collapsedHeightPx = collapsedContentHeight.toPx(),
-                    horizontalPaddingPx = 16.dp.toPx(),
+                    collapsedHeightPx = collapsedHeight().toPx(),
+                    horizontalPaddingPx = horizontalPadding().toPx(),
                     baseCornerPx = baseCornerPx,
                     corner28Px = 28.dp.toPx(),
-                    startInsetPx = collapsedStartInset.toPx(),
-                    endInsetPx = collapsedEndInset.toPx(),
+                    startInsetPx = startInset().toPx(),
+                    endInsetPx = endInset().toPx(),
                 )
                 shape = CardClipShape(geometry)
                 clip = true
@@ -290,17 +351,18 @@ fun CustomBottomSheet(
             // ── Card background: expands during the deploy, then stays as the sheet's opaque base (#855) ──
             .drawBehind {
                 val p = state.progress.coerceIn(0f, 1f)
-                if (shouldDrawCardBackground(p)) {
-                    val baseCornerPx = (baseShape as? RoundedCornerShape)?.topStart?.toPx(size, this) ?: 16.dp.toPx()
+                if (!miniPlayerGlass && shouldDrawCardBackground(p)) {
+                    val baseCornerPx = collapsedCardCornerPx(baseShape, size, collapsedHeight().toPx(),
+                    horizontalPadding().toPx(), startInset().toPx(), endInset().toPx(), this)
                     val geometry = computeCardGeometry(
                         p = p,
                         size = size,
-                        collapsedHeightPx = collapsedContentHeight.toPx(),
-                        horizontalPaddingPx = 16.dp.toPx(),
+                        collapsedHeightPx = collapsedHeight().toPx(),
+                        horizontalPaddingPx = horizontalPadding().toPx(),
                         baseCornerPx = baseCornerPx,
                         corner28Px = 28.dp.toPx(),
-                        startInsetPx = collapsedStartInset.toPx(),
-                        endInsetPx = collapsedEndInset.toPx(),
+                        startInsetPx = startInset().toPx(),
+                        endInsetPx = endInset().toPx(),
                     )
                     // The card keeps the mini-player background color throughout
                     // the deploy animation instead of lerping toward the player color.
@@ -314,6 +376,13 @@ fun CustomBottomSheet(
                 }
             }
     ) {
+        if (deployBackdrop != null) PlayerDeployGlassSurface(
+            progress = { state.progress }, collapsedHeight = collapsedHeight(),
+            startInset = startInset(), endInset = endInset(),
+            horizontalPadding = horizontalPadding(),
+            baseShape = baseShape, settings = glass, backdrop = pageBackdrop,
+            filmColor = miniPlayerColor, exportedBackdrop = deployBackdrop,
+        )
         if (!state.isCollapsed && !state.isDismissed) {
             BackHandler(onBack = state::collapseSoft)
         }
@@ -376,24 +445,33 @@ fun CustomBottomSheet(
                 modifier =
                 Modifier
                     // Before the click target, so a navigation rail beside the mini-player keeps its taps
-                    .padding(start = collapsedStartInset, end = collapsedEndInset)
+                    .layout { measurable, constraints ->
+                        val left = startInset().roundToPx().coerceIn(0, constraints.maxWidth)
+                        val right = endInset().roundToPx().coerceIn(0, constraints.maxWidth - left)
+                        val height = collapsedHeight().roundToPx().coerceIn(0, constraints.maxHeight)
+                        val width = (constraints.maxWidth - left - right).coerceAtLeast(0)
+                        val placeable = measurable.measure(
+                            constraints.copy(minWidth = width, maxWidth = width, minHeight = height, maxHeight = height)
+                        )
+                        layout(constraints.maxWidth, height) { placeable.placeRelative(left, 0) }
+                    }
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
                         onClick = { if (isExpandable) state.expandSoft() },
                     )
                     .fillMaxWidth()
-                    .height(collapsedContentHeight)
                     .graphicsLayer {
-                        alpha = miniPlayerFade(state.progress)
+                        alpha = miniPlayerContentFade(state.progress, miniPlayerGlass)
                         if (state.progress > 0.01f) {
-                            val baseCornerPx = (baseShape as? RoundedCornerShape)?.topStart?.toPx(size, this) ?: 16.dp.toPx()
+                            val baseCornerPx = collapsedCardCornerPx(baseShape, size, collapsedHeight().toPx(),
+                                horizontalPadding().toPx(), density = this)
                             shape = CardClipShape(
                                 computeCardGeometry(
                                     p = 0f,
                                     size = size,
-                                    collapsedHeightPx = collapsedContentHeight.toPx(),
-                                    horizontalPaddingPx = 16.dp.toPx(),
+                                    collapsedHeightPx = collapsedHeight().toPx(),
+                                    horizontalPaddingPx = horizontalPadding().toPx(),
                                     baseCornerPx = baseCornerPx,
                                     corner28Px = 28.dp.toPx(),
                                 )
@@ -405,4 +483,5 @@ fun CustomBottomSheet(
             )
         }
     }
+}
 }

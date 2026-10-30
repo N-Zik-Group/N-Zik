@@ -29,6 +29,7 @@ import app.it.fast4x.rimusic.ui.styling.shimmer
 import app.it.fast4x.rimusic.utils.isLandscape
 import app.it.fast4x.rimusic.utils.thumbnailSizeDpKey
 import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.components.glass.glassImageShapeIntersection
 import app.n_zik.android.core.coil.ImageCacheFactory
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.Image
@@ -87,6 +88,7 @@ fun adaptiveThumbnailContent(
             )
         } else {
             ImageCacheFactory.AsyncImage(
+                shape = glassImageShapeIntersection(shape ?: thumbnailShape(), uiRoundnessShape()),
                 thumbnailUrl = url,
                 modifier = modifier
             )

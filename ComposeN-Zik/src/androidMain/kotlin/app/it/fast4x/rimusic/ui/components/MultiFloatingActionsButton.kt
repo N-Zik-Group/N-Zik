@@ -14,7 +14,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,12 +23,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
@@ -49,16 +45,21 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.R
-import app.n_zik.android.colorPalette
+
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.multiFloatActionIconOffsetXkey
 import app.it.fast4x.rimusic.utils.multiFloatActionIconOffsetYkey
 import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.R
+import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassFloatingActionIcon
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.navigation.FloatingMultiActionSize
+import app.n_zik.android.components.navigation.movableFloatingAction
 import app.n_zik.android.uiRoundnessShape
 
 enum class MultiFabState {
@@ -80,6 +81,8 @@ fun MultiFloatingActionsButton (
     onStateChanged: ((state: MultiFabState) -> Unit)? = null,
     onClick: () -> Unit
 ) {
+    val glassSettings = rememberGlassSettings()
+    val glassFloating = glassSettings.usesGlassMaterial(GlassArea.ActionButtons)
     var currentState by remember { mutableStateOf(MultiFabState.Collapsed) }
     val stateTransition: Transition<MultiFabState> =
         updateTransition(targetState = currentState, label = "")
@@ -102,6 +105,11 @@ fun MultiFloatingActionsButton (
         if (state == MultiFabState.Expanded) 45f else 0f
     }
     val isEnable = currentState == MultiFabState.Expanded
+    val mainClick: () -> Unit = {
+        if (!useAsActionsMenu) {
+            if (currentState == MultiFabState.Collapsed) onClick() else stateChange()
+        } else stateChange()
+    }
 
     BackHandler(isEnable) {
         currentState = MultiFabState.Collapsed
@@ -115,11 +123,9 @@ fun MultiFloatingActionsButton (
                 currentState = MultiFabState.Collapsed
             } else Modifier.fillMaxSize()
 
-    //var offsetX by remember { mutableStateOf(0f) }
-    //var offsetY by remember { mutableStateOf(0f) }
 
-    var offsetX = rememberPreference(multiFloatActionIconOffsetXkey, 0F )
-    var offsetY = rememberPreference(multiFloatActionIconOffsetYkey, 0F )
+    val offsetX = rememberPreference(multiFloatActionIconOffsetXkey, 0F )
+    val offsetY = rememberPreference(multiFloatActionIconOffsetYkey, 0F )
 
     Box(
         modifier = modifier,
@@ -134,7 +140,6 @@ fun MultiFloatingActionsButton (
             if (currentState == MultiFabState.Expanded) {
                 val color = colorPalette().favoritesIcon.copy(0.85f)
                 Canvas(modifier = Modifier
-                    //.border(BorderStroke(1.dp, Color.Green))
                     .fillMaxSize()
                     .graphicsLayer {
                         scaleX = 2.2f
@@ -161,64 +166,26 @@ fun MultiFloatingActionsButton (
 
                 Box(
                     modifier = Modifier
-                        .offset {
-                            //IntOffset(offsetX.roundToInt(), offsetY.roundToInt())
-                            IntOffset(offsetX.value.toInt(), offsetY.value.toInt())
-                        }
-                        .pointerInput(Unit) {
-                            /*
-                            detectDragGestures { change, dragAmount ->
-                                change.consume()
-                                offsetX += dragAmount.x
-                                offsetY += dragAmount.y
-                            }
-                             */
-                            detectDragGesturesAfterLongPress { change, dragAmount ->
-                                change.consume()
-                                offsetX.value += dragAmount.x
-                                offsetY.value += dragAmount.y
-
-                            }
-                        }
-                        .clip(uiRoundnessShape())
-                        //.background(colorPalette().favoritesIcon)
+                        .movableFloatingAction(offsetX, offsetY)
+                        .then(if (glassFloating) Modifier.size(FloatingMultiActionSize) else Modifier.clip(uiRoundnessShape())
                         .background(colorPalette().background2)
-                        //.padding(all = 20.dp)
-                        //.padding(horizontal = 20.dp)
-                        .height(64.dp)
-                        .width(64.dp)
+                        .height(FloatingMultiActionSize)
+                        .width(FloatingMultiActionSize)
                         .clip(uiRoundnessShape()).combinedClickable(
-                            onClick = {
-                                if (!useAsActionsMenu)
-                                    if (currentState == MultiFabState.Collapsed) onClick() else stateChange()
-                                else stateChange()
-                            },
-                            //onDoubleClick = { stateChange() },
-                            //onLongClick = { stateChange() }
-                        )
+                            onClick = mainClick,
+                        ))
 
 
                 ) {
-                    /*
-                    Box (
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.TopEnd)
-                            //.border(BorderStroke(1.dp, Color.Green))
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.settings),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette().text),
-                            modifier = Modifier
-                                .padding(top = 5.dp, end = 5.dp)
-                                .rotate(rotation)
-                                .align(Alignment.TopEnd)
-                                .size(16.dp)
-                        )
-                    }
-                    */
-                    Image(
+                    if (!GlassFloatingActionIcon(
+                            icon = if (!useAsActionsMenu) fabIcon else painterResource(R.drawable.menu),
+                            onClick = mainClick,
+                            movable = true,
+                            size = FloatingMultiActionSize,
+                            iconSize = 24.dp,
+                            iconModifier = Modifier.rotate(rotation),
+                            settings = glassSettings,
+                        )) Image(
                         painter = if (!useAsActionsMenu) fabIcon else painterResource(R.drawable.menu),
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(colorPalette().text),
@@ -268,7 +235,15 @@ fun SmallFloatingActionButtonRow(
                     .clip(uiRoundnessShape()).clickable(onClick = { item.onFabItemClicked() })
             )
         }
-        SmallFloatingActionButton(
+        if (!GlassFloatingActionIcon(
+                icon = item.icon,
+                onClick = item.onFabItemClicked,
+                modifier = Modifier.padding(4.dp),
+                size = 40.dp,
+                iconSize = 24.dp,
+                tint = colorPalette().favoritesIcon,
+                contentDescription = item.label,
+            )) SmallFloatingActionButton(
             shape = uiRoundnessShape(),
             modifier = Modifier
                 .padding(4.dp),
@@ -284,10 +259,3 @@ fun SmallFloatingActionButtonRow(
         }
     }
 }
-
-
-
-
-
-
-

@@ -3,7 +3,6 @@ package app.n_zik.android.components.extensions
 import android.content.Context
 import android.os.Build
 import android.text.format.Formatter
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,13 +46,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
+import app.n_zik.android.components.glass.SampledMenuSheet
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.it.fast4x.rimusic.utils.DOWNLOAD_INDICATOR_SIZE_NORMAL
 import app.it.fast4x.rimusic.utils.DOWNLOAD_INDICATOR_STROKE_WIDTH
 import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
@@ -163,12 +163,13 @@ fun ExtensionsSheet(
 
     // Opens exactly like the Maintenance sheet: transparent container, top-only
     // shape, statusBarsPadding, skipPartiallyExpanded = false
-    CustomModalBottomSheet(
+    SampledMenuSheet(
         showSheet = showSheet,
         onDismissRequest = onDismissRequest,
         modifier = modifier.statusBarsPadding(),
         containerColor = Color.Transparent,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false),
+        partiallyExpanded = true,
         shape = (uiRoundnessShape() as? RoundedCornerShape)?.let {
             RoundedCornerShape(
                 topStart = it.topStart,
@@ -461,7 +462,7 @@ private fun DownloadingSettingsEntry(
             Box(
                 modifier = Modifier
                     .size(32.dp)
-                    .background(
+                    .iconBadgeBackground(
                         color = palette.accent.copy(alpha = 0.1f),
                         shape = uiRoundnessShape(),
                     ),
@@ -529,7 +530,7 @@ private fun DisabledSettingsEntry(
             Box(
                 modifier = Modifier
                     .size(32.dp)
-                    .background(
+                    .iconBadgeBackground(
                         color = palette.accent.copy(alpha = 0.1f),
                         shape = uiRoundnessShape(),
                     ),

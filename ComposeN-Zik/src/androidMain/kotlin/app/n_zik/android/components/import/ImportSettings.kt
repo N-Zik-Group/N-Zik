@@ -7,8 +7,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.util.fastForEach
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import kotlinx.coroutines.CoroutineScope
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.n_zik.android.components.ui.screens.profiles.plainProfilePrefs
@@ -22,6 +20,7 @@ import java.io.InputStream
 import app.n_zik.android.components.ImportFromFile
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.core.rescue.RescueFiles
+import app.n_zik.android.core.backup.SettingsPreferencesBridge
 import app.kreate.android.me.knighthat.utils.Toaster
 
 class ImportSettings private constructor(
@@ -38,42 +37,14 @@ class ImportSettings private constructor(
          */
         fun onImport( context: Context, inStream: InputStream, profile: String = getActiveProfile(context) ) {
             Timber.tag("ImportSettings").d("Starting settings import into profile '$profile'...")
-            val rows = csvReader().readAllWithHeader( inStream )
-            Timber.tag("ImportSettings").d("Read ${rows.size} rows from CSV")
-            // Single source of truth (RescueFiles): every key that lives in the encrypted
-            // prefs — YouTube / Discord (incl. advanced) / Last.fm groups plus the proxy
-//
-            // password — must be routed to the encrypted editor, never to plain prefs.
-            val encryptedKeys = RescueFiles.ALL_ENCRYPTED_KEYS
-
-            val editor = plainProfilePrefs( context, profile ).edit()
-            val encryptedEditor = profileSecurePrefs( context, profile ).edit()
-
-            rows.fastForEach { row ->
-                val type = row["Type"] ?: ""
-                val key = row["Key"] ?: ""
-                val value = row["Value"] ?: ""
-                Timber.tag("ImportSettings").d("Processing row: type=$type, key=$key")
-
-                val isEncrypted = key in encryptedKeys
-                val targetEditor = if (isEncrypted) encryptedEditor else editor
-                if (isEncrypted) Timber.tag("ImportSettings").d("  → routing to encryptedPreferences")
-
-                runCatching {
-                    when( type.lowercase() ) {
-                        "string" -> targetEditor.putString( key, value )
-                        "int", "integer" -> targetEditor.putInt( key, value.toInt() )
-                        "long" -> targetEditor.putLong( key, value.toLong() )
-                        "float" -> targetEditor.putFloat( key, value.toFloat() )
-                        "boolean" -> targetEditor.putBoolean( key, value.toBoolean() )
-                        else -> Timber.tag("ImportSettings").w("Unknown type '$type' for key '$key', skipping")
-                    }
-                }.onFailure { e ->
-                    Timber.tag("ImportSettings").e(e, "Failed to import key '$key' (type=$type, value=$value)")
-                }
-            }
-            editor.commit()
-            encryptedEditor.commit()
+            val rows = RescueFiles.readSettingsCsv(inStream)
+            val editor = plainProfilePrefs(context, profile).edit()
+            val encryptedEditor = profileSecurePrefs(context, profile).edit()
+            val glassEditor = SettingsPreferencesBridge.stageGlass(context, rows)
+            RescueFiles.applySettingRows(rows, editor, encryptedEditor)
+            check(editor.commit()) { "Could not save the settings" }
+            check(encryptedEditor.commit()) { "Could not save the credentials" }
+            check(glassEditor?.commit() ?: true) { "Could not save the Glass settings" }
             Timber.tag("ImportSettings").d("Settings import complete")
         }
 

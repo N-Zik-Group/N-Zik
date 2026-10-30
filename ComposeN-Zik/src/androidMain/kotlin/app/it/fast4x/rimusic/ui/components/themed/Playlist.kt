@@ -65,6 +65,7 @@ fun Playlist(
         thumbnailContent = {
             if (thumbnailUrl != null) {
                 ImageCacheFactory.AsyncImage(
+                    shape = null,
                     thumbnailUrl = thumbnailUrl.thumbnail(thumbnailSizePx),
                     contentDescription = null,
                     modifier = Modifier
@@ -75,6 +76,7 @@ fun Playlist(
                 // Base ThumbnailRenderer contract: fewer than four covers render a
                 // single full-size cover instead of a partial two-by-two collage.
                 ImageCacheFactory.AsyncImage(
+                    shape = null,
                     thumbnailUrl = thumbnails.first().thumbnail(thumbnailSizePx),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
@@ -92,6 +94,7 @@ fun Playlist(
                         Alignment.BottomEnd
                     ).forEachIndexed { index, alignment ->
                         ImageCacheFactory.AsyncImage(
+                            shape = null,
                             thumbnailUrl = thumbnails.getOrNull(index),
                             contentDescription = null,
                             contentScale = ContentScale.Crop,

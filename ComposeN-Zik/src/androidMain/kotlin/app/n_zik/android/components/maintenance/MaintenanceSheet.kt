@@ -53,7 +53,7 @@ import androidx.work.WorkManager
 import app.it.fast4x.rimusic.enums.CoilDiskCacheMaxSize
 import app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize
 import app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize
-import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
+import app.n_zik.android.components.glass.SampledMenuSheet
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.it.fast4x.rimusic.utils.coilCustomDiskCacheKey
 import app.it.fast4x.rimusic.utils.coilDiskCacheMaxSizeKey
@@ -76,6 +76,7 @@ import app.it.fast4x.rimusic.utils.syncStatus
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.MainApplication
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.logs.CopyLogsDialog
@@ -1409,12 +1410,13 @@ fun MaintenanceSheet(
     // screen) — the menu draws its own background (background0), its own top clip and
 //
     // its own drag handle
-    CustomModalBottomSheet(
+    SampledMenuSheet(
         showSheet = showSheet,
         onDismissRequest = onDismissRequest,
         modifier = modifier.statusBarsPadding(),
         containerColor = Color.Transparent,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false),
+        partiallyExpanded = true,
         shape = (uiRoundnessShape() as? RoundedCornerShape)?.let {
             RoundedCornerShape(
                 topStart = it.topStart,
@@ -2275,7 +2277,7 @@ private fun SettingIcon(@DrawableRes icon: Int, color: Color) {
         modifier =
             Modifier
                 .size(32.dp)
-                .background(color.copy(alpha = 0.1f), uiRoundnessShape()),
+                .iconBadgeBackground(color.copy(alpha = 0.1f), uiRoundnessShape()),
         contentAlignment = Alignment.Center,
     ) {
         Icon(

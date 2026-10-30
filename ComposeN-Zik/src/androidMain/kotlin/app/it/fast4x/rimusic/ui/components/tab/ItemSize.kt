@@ -1,7 +1,6 @@
 package app.it.fast4x.rimusic.ui.components.tab
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -12,6 +11,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
 import app.it.fast4x.rimusic.enums.HomeItemSize
@@ -21,7 +21,6 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.components.menu.ListMenu
 import androidx.compose.material3.Icon
-import androidx.compose.ui.res.painterResource
 import app.it.fast4x.rimusic.utils.Preference
 
 class ItemSize private constructor(
@@ -53,7 +52,7 @@ class ItemSize private constructor(
         Box(
             modifier = Modifier
                 .size(32.dp)
-                .background(
+                .iconBadgeBackground(
                     color = colorPalette().accent.copy(alpha = 0.1f),
                     shape = uiRoundnessShape()
                 ),

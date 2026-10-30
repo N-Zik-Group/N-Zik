@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.GlassFloatingActionIcon
 import app.n_zik.android.uiRoundnessShape
 
 @Composable
@@ -24,6 +25,11 @@ fun PrimaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
+    if (GlassFloatingActionIcon(
+            icon = painterResource(iconId), onClick = onClick,
+            modifier = modifier, enabled = enabled,
+            movable = true,
+        )) return
     Box(
         modifier = modifier
             .clip(uiRoundnessShape())

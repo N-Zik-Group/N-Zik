@@ -22,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.ImageVector
+import app.n_zik.android.components.glass.GlassToolbarIcon
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -35,6 +36,8 @@ fun HeaderIconButton(
     iconSize: Dp? = 20.dp,
     onLongClick: (() -> Unit)? = null
 ) {
+    if (GlassToolbarIcon(painterResource(icon), color, iconSize ?: 18.dp, enabled,
+            onClick = onClick, onLongClick = onLongClick)) return
     IconButton(
         icon = icon,
         color = color,

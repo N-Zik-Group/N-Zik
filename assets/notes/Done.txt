@@ -37,6 +37,10 @@ Removed:
   - Assemble Debug and pass 148 focused regression tests; complete three review lenses and an independent final re-review.
 
 Added:
+- feat(ui): add shared Glass actions and icon badges
+  - Unify buttons, floating actions, toolbar controls, swipe actions and icon support.
+  - Cover action grouping, badge backgrounds and shared interaction surfaces.
+
 - feat(dialog): apply Glass modal and button presentation
   - Coordinate dialog dimming, input, presence transitions and buttons.
   - Update domain dialogs and regression tests for the shared modal contract.

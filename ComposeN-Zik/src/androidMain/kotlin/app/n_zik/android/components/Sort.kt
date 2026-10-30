@@ -22,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
 import app.it.fast4x.rimusic.enums.Drawable
@@ -165,7 +166,7 @@ open class Sort<T: Enum<T>> (
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
-                                .background(
+                                .iconBadgeBackground(
                                     color = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
                                     shape = uiRoundnessShape()
                                 ),
@@ -224,7 +225,7 @@ open class Sort<T: Enum<T>> (
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
-                                .background(
+                                .iconBadgeBackground(
                                     color = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
                                     shape = uiRoundnessShape()
                                 ),

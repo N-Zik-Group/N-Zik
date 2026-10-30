@@ -1,6 +1,5 @@
 package app.it.fast4x.rimusic.ui.components.tab.toolbar
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -13,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.uiRoundnessShape
 
 interface MenuIcon: Icon {
@@ -35,7 +35,7 @@ interface MenuIcon: Icon {
                 .size(32.dp)
                 .then(
                     if (!useOriginalColors) {
-                        Modifier.background(
+                        Modifier.iconBadgeBackground(
                             color = iconColor.copy(alpha = 0.1f),
                             shape = uiRoundnessShape()
                         )
@@ -57,6 +57,7 @@ interface MenuIcon: Icon {
         text = menuIconTitle,
         icon = { SettingIcon() },
         modifier = modifier,
+        iconHasOwnBackground = color != Color.Unspecified,
         enabled = isEnabled,
         onClick = ::onShortClick,
         onLongClick = if (this is Clickable) ::onLongClick else { {} }

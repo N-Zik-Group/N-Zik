@@ -3,9 +3,9 @@ package app.it.fast4x.rimusic.ui.components
 
 import app.n_zik.android.core.database.*
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.components.glass.glassSwipeActionBackground
 
 import androidx.annotation.OptIn
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -117,7 +117,10 @@ fun SwipeableContent(
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(backgroundColor)
+                        .glassSwipeActionBackground(
+                            backgroundColor, uiRoundnessShape(),
+                            isRevealed = offset.isFinite() && offset != 0f,
+                        )
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = when {
                         offset > 0 -> Arrangement.Start

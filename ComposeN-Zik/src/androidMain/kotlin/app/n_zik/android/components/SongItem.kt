@@ -7,6 +7,8 @@ import androidx.compose.ui.res.stringResource
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.LocalIndication
+import app.n_zik.android.components.glass.LocalGlassRippleActive
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -34,6 +36,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import app.n_zik.android.components.glass.explicitBadgeIconId
+import app.n_zik.android.components.glass.glassExplicitBadgeBackground
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -95,6 +99,7 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.components.tab.ItemSelector
+import app.n_zik.android.components.glass.glassNowPlayingRow
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -121,6 +126,7 @@ private interface SongIndicator: Icon {
         Box(
             modifier = this.modifier
                 .size(sizeDp)
+                .then(if (iconId == R.drawable.explicit) Modifier.glassExplicitBadgeBackground() else Modifier)
                 .clip(uiRoundnessShape())
                 .combinedClickable(
                     interactionSource = interactionSource,
@@ -138,7 +144,7 @@ private interface SongIndicator: Icon {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = painterResource(iconId),
+                painter = painterResource(if (iconId == R.drawable.explicit) explicitBadgeIconId() else iconId),
                 contentDescription = null,
                 modifier = Modifier.size(sizeDp),
                 tint = if (isEnabled) color else color.copy(alpha = 0.5f)
@@ -197,8 +203,18 @@ fun SongItem(
     val hapticFeedback = LocalHapticFeedback.current
 
     val colorPalette = colorPalette()
-    val currentMediaId by (binder?.player?.currentMediaItemIdAsState() ?: remember { mutableStateOf<String?>(null) })
+    val playerGeneration by binder?.playerUpdateTrigger?.collectAsStateWithLifecycle(0)
+        ?: remember { mutableStateOf(0) }
+    // Crossfade swaps the player without replacing the binder. Reset the remembered ID too.
+    val player = remember(binder, playerGeneration) { binder?.player }
+    val currentMediaId by (player?.currentMediaItemIdAsState(player) ?: remember { mutableStateOf<String?>(null) })
     val isPlaying = currentMediaId == song.id
+    val rowShape = uiRoundnessShape()
+    val rowBackground = if (isPlaying) {
+        Modifier.glassNowPlayingRow(backgroundColor, colorPalette.favoritesOverlay, rowShape)
+    } else {
+        Modifier.background(backgroundColor)
+    }
 
     val displaySong = song
 
@@ -207,11 +223,8 @@ fun SongItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy( 12.dp ),
         modifier = modifier.fillMaxWidth()
-                           .clip( uiRoundnessShape() )
-                           .background( backgroundColor )
-                           .conditional( isPlaying ) {
-                               background( colorPalette.favoritesOverlay )
-                           }
+                           .clip( rowShape )
+                           .then( rowBackground )
                            // This component must be placed before padding to prevent
                            // ripple effect to only highlight padded area
                            .clip(uiRoundnessShape()).combinedClickable(
@@ -253,7 +266,7 @@ fun SongItem(
             if( isPlaying )
                 NowPlayingSongIndicator(
                     mediaId = displaySong.id,
-                    player = binder?.player
+                    player = player
                 )
 
             thumbnailOverlay()
@@ -442,7 +455,7 @@ fun SongItem(
                     modifier = Modifier
                         .scale( 0.8f )
                         .clickable(
-                            indication = null,
+                            indication = if (LocalGlassRippleActive.current) LocalIndication.current else null,
                             interactionSource = remember { MutableInteractionSource() }
                         ) {
                             val newValue = !checkedState.value

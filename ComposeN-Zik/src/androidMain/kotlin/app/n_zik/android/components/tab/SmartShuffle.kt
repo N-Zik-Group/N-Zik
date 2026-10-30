@@ -15,6 +15,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.GlassToolbarIcon
+import app.n_zik.android.components.glass.GlassToolbarLoading
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.utils.isRecommendationEnabledKey
@@ -56,6 +58,13 @@ class SmartShuffle private constructor(
 
     @Composable
     override fun ToolBarButton() {
+        if (isRecommendationsLoading()) {
+            if (GlassToolbarLoading()) return
+        } else if (GlassToolbarIcon(
+            painterResource(iconId),
+            if (isRecommendationEnabled()) colorPalette().text else colorPalette().textDisabled,
+            32.dp, true, onClick = ::onShortClick, contentDescription = menuIconTitle,
+        )) return
         Box(
             modifier = Modifier.size(48.dp), // Standard IconButton size
             contentAlignment = Alignment.Center
