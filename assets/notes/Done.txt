@@ -1,4 +1,8 @@
 Changed:
+- chore(build): update Android Gradle Plugin to 9.5.0
+  - Update the existing agp catalog entry from 9.4.1 to 9.5.0 without changing Kotlin or application versions.
+  - Keep the toolchain used by the successful Debug builds and focused rendering/placement tests recorded during Glass validation.
+
 - change(github): align build labels and issue automation with current variants
   - Rename full/full32/minified/beta/dev to release64/release32/minified64/beta64/dev64 in place on GitHub, preserving label IDs, colors and existing issue assignments.
   - Recognize historical form values, add canonical labels before cleanup, paginate labels and handle mixed-case names and concurrent removal 404 without hiding other errors.

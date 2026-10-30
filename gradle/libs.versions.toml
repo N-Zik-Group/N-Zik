@@ -31,7 +31,7 @@ androidCmake = "3.22.1"
 
 
 compose-plugin = "1.12.2"
-agp = "9.4.1"
+agp = "9.5.0"
 hilt = "2.60.1"
 composeMarkdownVersion = "0.7.2"
 kotlin = "2.4.21"
