@@ -11,6 +11,7 @@ class AutoBrowseCache {
         val timestamp: Long
     )
 
+    @Synchronized
     fun get(key: String): List<MediaItem>? {
         val entry = cache[key] ?: return null
         if (System.currentTimeMillis() - entry.timestamp > ttlMillis) {
@@ -20,10 +21,12 @@ class AutoBrowseCache {
         return entry.items
     }
 
+    @Synchronized
     fun put(key: String, items: List<MediaItem>) {
         cache[key] = CacheEntry(items, System.currentTimeMillis())
     }
 
+    @Synchronized
     fun clear() {
         cache.clear()
     }

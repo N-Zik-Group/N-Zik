@@ -9,6 +9,12 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(android-auto): keep search playback tied to the selected displayed song (issue https://github.com/N-Zik-Group/N-Zik/issues/938)
+  - Use scoped, occurrence-aware media identifiers and retained browse snapshots so Songs/Videos searches, complete slash-containing queries and playlist actions resolve the intended title and queue order.
+  - Preserve sorting, duplicates, selected indices and category exclusion policies across browse, item lookup, queue append and persistent resumption; reject expired or cross-profile selections instead of choosing another song.
+  - Bound artwork decoding, cache retention and concurrent source bookkeeping; serve local/custom covers through the trusted seekable JPEG provider and preserve high-resolution remote artwork URLs.
+  - Retain database artist fallback offline, profile/revision checks, cancellable artwork work and source rehydration after process restart.
+  - Assemble Debug and pass 221 targeted AA/artwork tests plus the final slash-query exclusion rerun; complete independent reviews and Android Auto desktop-head-unit playback checks, with online search confirmed on Xperia.
 - fix(quick-picks): coordinate loading with account identity
   - Include the active session and browse login preference in in-memory load identity.
   - Keep session diagnostics redacted and test initial-load and offline coordination.

@@ -1,8 +1,10 @@
 package app.n_zik.android.playback.services.automotive.session
 
 import android.content.Context
+import android.os.Bundle
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
+import androidx.media3.session.SessionResult
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.Artist
@@ -19,7 +21,9 @@ import io.mockk.mockk
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -49,6 +53,7 @@ class AutoSessionCallbackContainerDislikeTest {
 
     @After
     fun tearDown() {
+        callback.release()
         runBlocking { onDatabase { DatabaseInitializer.Instance.clearAllTables() } }
     }
 
@@ -100,6 +105,57 @@ class AutoSessionCallbackContainerDislikeTest {
         }
     }
 
+    @Test
+    fun nonAutoConnectionKeepsBrowsedAlbumDislikeTarget() {
+        // JUnit is synchronous; runBlocking waits for the Room-backed browse and command effects.
+        runBlocking {
+            onDatabase {
+                Database.albumTable.upsert(Album(id = "LOCAL_ALBUM_BROWSED", title = "Browsed"))
+                Database.albumTable.upsert(Album(id = "LOCAL_ALBUM_OTHER", title = "Other"))
+            }
+            browse("album/LOCAL_ALBUM_BROWSED")
+            val session = mockk<MediaSession>()
+            val controller = mockk<MediaSession.ControllerInfo>()
+            every { session.isAutoCompanionController(controller) } returns false
+
+            val connection = callback.onConnect(session, controller)
+
+            assertTrue(connection.isAccepted)
+            assertTrue(connection.availableSessionCommands.contains(AutoSessionConstants.CommandDislikeAlbum))
+            assertEquals(
+                SessionResult.RESULT_SUCCESS,
+                callback.onCustomCommand(
+                    session,
+                    controller,
+                    AutoSessionConstants.CommandDislikeAlbum,
+                    Bundle.EMPTY
+                ).get().resultCode
+            )
+            withTimeout(5_000) {
+                onDatabase { Database.albumTable.isDisliked("LOCAL_ALBUM_BROWSED").first { it } }
+            }
+            onDatabase { assertFalse(Database.albumTable.isDisliked("LOCAL_ALBUM_OTHER").first()) }
+        }
+    }
+
+    @Test
+    fun autoConnectionClearsPreviouslyBrowsedAlbumDislikeTarget() {
+        // JUnit is synchronous; runBlocking waits for the Room-backed browse and toggle.
+        runBlocking {
+            onDatabase { Database.albumTable.upsert(Album(id = "LOCAL_ALBUM_PREVIOUS", title = "Previous")) }
+            browse("album/LOCAL_ALBUM_PREVIOUS")
+            val session = mockk<MediaSession>()
+            val controller = mockk<MediaSession.ControllerInfo>()
+            every { session.isAutoCompanionController(controller) } returns true
+
+            assertTrue(callback.onConnect(session, controller).isAccepted)
+            onDatabase {
+                callback.toggleContainerDislike(PlayerServiceModern.ALBUM)
+                assertFalse(Database.albumTable.isDisliked("LOCAL_ALBUM_PREVIOUS").first())
+            }
+        }
+    }
+
     @Test
     fun artistDislikeTogglesFlag() {
         runBlocking {

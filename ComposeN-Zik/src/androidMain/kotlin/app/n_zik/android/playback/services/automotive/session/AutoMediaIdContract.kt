@@ -1,65 +1,100 @@
 package app.n_zik.android.playback.services.automotive.session
 
-import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.ID_PLAYLIST_SHUFFLE
+import android.net.Uri
 
-/**
- * Contract for the Android Auto SELECTION mediaIds of the browse detail containers
- * (artist / album / playlist detail pages) and the playlist shuffle item, emitted by the
- * browse detail handlers and consumed by [AutoSessionCallback] queue resolution.
- *
- * Detail-page songs carry the full navigation context:
- *   "{prefix}/{containerId}/{songId}"            (artist/album/playlist detail pages)
- *   "{prefix}/{containerId}/{section}/{songId}"  (artist section pages only — the resolver
- *                                                 ignores `section` for album/playlist)
- *
- * The segment depth is part of the contract: handlers must never emit the bare prefix
- * (e.g. "artist/{songId}") as a song path — that used to produce unresolvable empty queues
- * reported as "Unable to perform the selection" (issue #777).
- *
- * Scope note: the other resolver inputs (QUICK_PICKS, SONGS_*, SEARCH_*, SONG, SEARCHED) have
- * their own ad-hoc segment depths and are deliberately NOT part of this contract. Song
- * mediaId emission itself is the plain "{path}/{songId}" concatenation in
- * [SessionMediaItemMapper]; the emitted shapes are pinned by `AutoBrowseDetailHandlersMediaIdTest`.
- */
+/** Navigation and playback IDs shared by the automotive browser and session. */
 object AutoMediaIdContract {
+    private const val PAGE = "AA_PAGE"
+    private const val SELECT = "AA_SELECT"
+    private const val ACTION = "AA_ACTION"
+    private const val PLAY_ALL = "PLAYLIST_PLAY_ALL"
 
-    /** A song selection parsed from a detail-page mediaId. */
-    data class ParsedSongSelection(
-        val containerId: String,
-        val section: String?,
-        val songId: String,
-    )
+    /** A song selection within a detail container. */
+    data class ParsedSongSelection(val containerId: String, val section: String?, val songId: String)
 
-    /**
-     * MediaId of the "Shuffle" item shown on a playlist detail page.
-     *
-     * @param playlistId The playlist id (local numeric id or YTM browse id).
-     */
-    fun playlistShuffle(playlistId: String): String = "$ID_PLAYLIST_SHUFFLE/$playlistId"
+    /** A page of an encoded browse parent. */
+    data class Page(val parentId: String, val index: Int)
 
-    /**
-     * Parses a playlist-shuffle mediaId and returns its playlist id.
-     *
-     * @return null when [mediaId] is not a well-formed playlist-shuffle id.
-     */
-    fun parsePlaylistShuffle(mediaId: String?): String? {
-        if (mediaId == null) return null
-        val parts = mediaId.split("/")
-        if (parts.size != 2 || parts[0] != ID_PLAYLIST_SHUFFLE || parts[1].isEmpty()) return null
-        return parts[1]
+    /** A selection bound to one displayed list. */
+    data class SelectionId(val token: String, val songId: String, val index: Int = 0)
+
+    data class ScopedAction(val token: String, val shuffle: Boolean)
+
+    fun playlistShuffle(playlistId: String): String = "${AutoSessionConstants.ID_PLAYLIST_SHUFFLE}/$playlistId"
+
+    fun parsePlaylistShuffle(mediaId: String?): String? = parseAction(mediaId, AutoSessionConstants.ID_PLAYLIST_SHUFFLE)
+
+    fun playlistPlayAll(playlistId: String): String = "$PLAY_ALL/$playlistId"
+
+    fun parsePlaylistPlayAll(mediaId: String?): String? = parseAction(mediaId, PLAY_ALL)
+
+    private fun parseAction(mediaId: String?, prefix: String): String? {
+        val parts = mediaId?.split('/') ?: return null
+        return parts.getOrNull(1)?.takeIf { parts.size == 2 && parts[0] == prefix && it.isNotEmpty() }
     }
 
-    /**
-     * Parses a detail-page song mediaId of the form
-     * "{prefix}/{containerId}/{songId}" or "{prefix}/{containerId}/{section}/{songId}".
-     *
-     * @param mediaId The mediaId of the selected song.
-     * @param prefix Expected container prefix (e.g. "artist", "album", "playlist").
-     * @return null when [mediaId] is malformed for the given prefix (wrong depth,
-     *          wrong prefix, or an empty container/section/song segment).
-     */
+    fun isShuffle(mediaId: String): Boolean = parseScopedAction(mediaId)?.shuffle == true ||
+        (!mediaId.contains('/') && mediaId.endsWith("_SHUFFLE")) || parsePlaylistShuffle(mediaId) != null
+
+    fun isQueueAction(mediaId: String): Boolean = parseScopedAction(mediaId) != null || isShuffle(mediaId) ||
+        (!mediaId.contains('/') && mediaId.endsWith("_PLAY_ALL")) || parsePlaylistPlayAll(mediaId) != null
+
+    fun playAllFor(shuffleId: String): String = parseScopedAction(shuffleId)?.let { scopedAction(it.token, false) }
+        ?: parsePlaylistShuffle(shuffleId)?.let(::playlistPlayAll)
+        ?: (shuffleId.removeSuffix("_SHUFFLE") + "_PLAY_ALL")
+
+    fun page(parentId: String, index: Int): String {
+        require(parentId.isNotEmpty() && index >= 0)
+        return "$PAGE/${Uri.encode(parentId)}/$index"
+    }
+
+    fun parsePage(mediaId: String): Page? {
+        val parts = mediaId.split('/')
+        if (parts.size != 3 || parts[0] != PAGE || parts[1].isEmpty()) return null
+        val index = parts[2].toIntOrNull()?.takeIf { it >= 0 } ?: return null
+        return Page(Uri.decode(parts[1]), index)
+    }
+
+    fun selection(token: String, songId: String, index: Int = 0): String {
+        require(token.isNotEmpty() && !token.contains('/') && songId.isNotEmpty() && index >= 0)
+        return "$SELECT/$token/$index/${Uri.encode(songId)}"
+    }
+
+    fun parseSelection(mediaId: String): SelectionId? {
+        val parts = mediaId.split('/')
+        if (parts.size != 4 || parts[0] != SELECT || parts[1].isEmpty() || parts[3].isEmpty()) return null
+        val index = parts[2].toIntOrNull()?.takeIf { it >= 0 } ?: return null
+        return SelectionId(parts[1], Uri.decode(parts[3]), index)
+    }
+
+    fun scopedAction(token: String, shuffle: Boolean): String {
+        require(token.isNotEmpty() && !token.contains('/'))
+        return "$ACTION/$token/${if (shuffle) "SHUFFLE" else "PLAY_ALL"}"
+    }
+
+    fun parseScopedAction(mediaId: String): ScopedAction? {
+        val parts = mediaId.split('/')
+        if (parts.size != 3 || parts[0] != ACTION || parts[1].isEmpty()) return null
+        return when (parts[2]) {
+            "SHUFFLE" -> ScopedAction(parts[1], true)
+            "PLAY_ALL" -> ScopedAction(parts[1], false)
+            else -> null
+        }
+    }
+
+    fun isScopedAction(mediaId: String): Boolean = mediaId.startsWith("$ACTION/")
+
+    fun isScopedSelection(mediaId: String): Boolean = mediaId.startsWith("$SELECT/")
+
+    fun parseSearchSelection(mediaId: String): String? {
+        val parts = mediaId.split('/')
+        return parts.getOrNull(1)?.takeIf {
+            parts.size == 2 && it.isNotEmpty() && parts[0] in setOf(AutoSessionConstants.ID_SEARCH_SONGS, AutoSessionConstants.ID_SEARCH_VIDEOS)
+        }
+    }
+
     fun parseSongSelection(mediaId: String, prefix: String): ParsedSongSelection? {
-        val parts = mediaId.split("/")
+        val parts = mediaId.split('/')
         if (parts.firstOrNull() != prefix) return null
         return when (parts.size) {
             3 -> ParsedSongSelection(parts[1], null, parts[2])

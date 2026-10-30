@@ -1,147 +1,120 @@
 package app.n_zik.android.playback.services.automotive.models
 
+import android.content.ContentUris
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Matrix
-import android.media.ExifInterface
+import android.net.Uri
+import android.os.Bundle
+import android.provider.MediaStore
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaConstants.EXTRAS_KEY_IS_EXPLICIT
+import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.it.fast4x.rimusic.cleanPrefix
+import app.it.fast4x.rimusic.hasExplicitPrefix
 import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.utils.asMediaItem
+import app.it.fast4x.rimusic.utils.EXPLICIT_BUNDLE_TAG
+import app.it.fast4x.rimusic.utils.durationTextToMillis
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.persistentQueueKey
+import app.n_zik.android.R
+import app.n_zik.android.appContext
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.thumbnail
+import app.n_zik.android.playback.services.ArtworkContentProvider
+import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
+import app.n_zik.android.playback.services.LocalArtworkRules
 import app.n_zik.android.playback.services.SessionMetadataFallbacks
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import app.n_zik.android.playback.services.isLocal
-import app.n_zik.android.R
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.runBlocking
-import java.io.ByteArrayOutputStream
 import java.io.File
-import app.it.fast4x.rimusic.utils.durationTextToMillis
-import app.n_zik.android.appContext
-import android.net.Uri
-import android.os.Bundle
+import kotlin.math.roundToInt
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 @UnstableApi
 object SessionMediaItemMapper {
 
-    /** Longest side (px) of artwork embedded into Android Auto items: the head unit renders queue and browse artwork at list size, so full-resolution covers only bloat the IPC parcel and the service RAM. */
-    private const val EMBEDDED_ARTWORK_MAX_SIDE = 512
+    const val ORIGINAL_ARTWORK_SOURCE_EXTRA = "app.n_zik.android.automotive.ORIGINAL_ARTWORK_SOURCE"
 
     private val artworkBytesCache = ArtworkBytesCache()
 
     @Volatile
     private var serializedFallbackBytes: ByteArray? = null
 
-    /**
-     * Largest power-of-two inSampleSize keeping the decoded bitmap at or below
-     * [targetMaxSide] on its longest side. Pure int math so it stays
-     * unit-testable off device; the decode helpers feed it the bounds of an
-     * inJustDecodeBounds pass.
-     */
+    // Sample toward the target before allocation; the final resize enforces the strict bound.
     internal fun computeInSampleSize(reqWidth: Int, reqHeight: Int, targetMaxSide: Int): Int {
         if (reqWidth <= 0 || reqHeight <= 0 || targetMaxSide <= 0) return 1
         val maxSide = maxOf(reqWidth, reqHeight)
         if (maxSide <= targetMaxSide) return 1
         var sampleSize = 1
-        while (maxSide / (sampleSize * 2) >= targetMaxSide) sampleSize *= 2
+        while (maxSide.toLong() / (sampleSize.toLong() * 2) >= targetMaxSide) sampleSize *= 2
         return sampleSize
     }
 
-    /** Decodes [path] downscaled toward [EMBEDDED_ARTWORK_MAX_SIDE]: two passes, bounds first, then the sampled decode, so the RAM peak never exceeds the target size. */
-    private fun decodeFileDownsampled(path: String): Bitmap? {
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeFile(path, bounds)
-        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
-        return BitmapFactory.decodeFile(
-            path,
-            BitmapFactory.Options().apply {
-                inSampleSize = computeInSampleSize(bounds.outWidth, bounds.outHeight, EMBEDDED_ARTWORK_MAX_SIDE)
-            }
-        )
-    }
-
-    /** Same downsample contract as [decodeFileDownsampled] for stream-sourced bytes. */
-    private fun decodeBytesDownsampled(data: ByteArray): Bitmap? {
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeByteArray(data, 0, data.size, bounds)
-        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
-        return BitmapFactory.decodeByteArray(
-            data,
-            0,
-            data.size,
-            BitmapFactory.Options().apply {
-                inSampleSize = computeInSampleSize(bounds.outWidth, bounds.outHeight, EMBEDDED_ARTWORK_MAX_SIDE)
-            }
-        )
-    }
-
-    /**
-     * Serialized fallback artwork for art-less local tracks: an
-     * android.resource:// URI is unresolvable from the Android Auto head unit
-     * (separate device), so the placeholder is embedded as bytes instead of a
-     * URI. Decoded once — downscaled toward [EMBEDDED_ARTWORK_MAX_SIDE] like
-     * every other embedded cover (the source drawable is 1200px) — then
-     * shared for the process lifetime.
-     */
     @Synchronized
     private fun fallbackArtworkBytes(): ByteArray? {
         serializedFallbackBytes?.let { return it }
         return try {
-            val full = BitmapFactory.decodeResource(appContext().resources, R.drawable.ic_launcher_box)
-                ?: return null
-            // The source placeholder is 1200px — downscale toward the 512px
-            // embed target like every other embedded cover (one-time decode,
-//
-            // the bytes are shared for the process lifetime).
-            val bitmap = if (minOf(full.width, full.height) > EMBEDDED_ARTWORK_MAX_SIDE) {
-                Bitmap.createScaledBitmap(
-                    full,
-                    EMBEDDED_ARTWORK_MAX_SIDE,
-                    EMBEDDED_ARTWORK_MAX_SIDE,
-                    true
-                )
-            } else full
-            val stream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
-            bitmap.recycle()
-            if (bitmap !== full) full.recycle()
-            val bytes = stream.toByteArray()
-            serializedFallbackBytes = bytes
-            bytes
-        } catch (_: Exception) {
+            ArtworkBitmapDecoder.decode {
+                appContext().resources.openRawResource(R.drawable.ic_launcher_box)
+            }?.let { ArtworkBitmapDecoder.jpeg(it, square = true) }
+                ?.also { serializedFallbackBytes = it }
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            Timber.tag("AutoArtwork").w(exception, "Could not decode fallback artwork")
             null
         }
     }
 
+    /** AA metadata parity without the legacy converter's eager full-resolution decode. */
+    fun baseMediaItem(song: Song): MediaItem {
+        val explicit = song.title.hasExplicitPrefix()
+        val title = (if (explicit) "\uD83C\uDD74 " else "") + cleanPrefix(song.title)
+        val artist = cleanPrefix(song.artistsText.orEmpty())
+        val artwork = bestArtworkSource(song.thumbnailUrl)?.toUri()
+        val metadata = MediaMetadata.Builder()
+            .setTitle(title.takeUnless { it == "null" }.orEmpty())
+            .setArtist(artist.takeUnless { it == "null" }.orEmpty())
+            .setExtras(bundleOf(
+                "durationText" to song.durationText,
+                EXPLICIT_BUNDLE_TAG to explicit,
+                EXTRAS_KEY_IS_EXPLICIT to explicit,
+                "isCoverModified" to (song.thumbnailUrl?.startsWith(MODIFIED_PREFIX, true) == true),
+                "isTitleModified" to song.title.startsWith(MODIFIED_PREFIX, true),
+                "isArtistModified" to (song.artistsText?.startsWith(MODIFIED_PREFIX, true) == true)
+            ).apply {
+                song.thumbnailUrl?.let { putString(ORIGINAL_ARTWORK_SOURCE_EXTRA, it) }
+            })
+            .setIsPlayable(true).setIsBrowsable(false).setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
+        setArtworkUri(metadata, song, artwork?.toString())
+        val built = metadata.build()
+        applyMetadataFallbacks(metadata, built)
+        return MediaItem.Builder().setMediaId(song.id)
+            .setUri(if (song.isLocal) ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                song.id.substringAfter(LOCAL_KEY_PREFIX).toLong()) else song.id.toUri())
+            .setCustomCacheKey(song.id).setMediaMetadata(metadata.build()).build()
+    }
 
-    /**
-     * Artwork-less items must still render on the head unit: embed the
-     * serialized placeholder. Falls back to the URI only when the placeholder
-     * cannot be decoded (keeps phone-side rendering alive).
-     */
-    private fun setSerializedFallback(metadataBuilder: MediaMetadata.Builder) {
-        val fallback = fallbackArtworkBytes()
+    /** Embeds the placeholder so the head unit can render tracks without artwork. */
+    private suspend fun setSerializedFallback(metadataBuilder: MediaMetadata.Builder, song: Song) {
+        metadataBuilder.setArtworkUri(ArtworkContentProvider.uriFor(song.id))
+        val fallback = runInterruptible(NzikDispatchers.DATA) { fallbackArtworkBytes() }
         if (fallback != null) {
             metadataBuilder.setArtworkData(fallback, MediaMetadata.PICTURE_TYPE_ILLUSTRATION)
-        } else {
-            metadataBuilder.setArtworkUri(drawableUri(appContext(), R.drawable.ic_launcher_box))
         }
     }
 
-    /**
-     * Resolves the artwork file for a `file://` URL or a bare absolute path.
-     * `java.nio.file.Paths.get(URI)` understands Windows drive URIs
-     * (`file:///C:/...`), which `File("/C:/...")` silently misresolves
-     * against the current drive root.
-     */
+    // Java URI resolution also preserves Windows drive paths in host-side tests.
     private fun resolveArtworkFile(url: String, barePath: String): File =
         try {
             java.nio.file.Paths.get(java.net.URI(url)).toFile()
@@ -149,100 +122,95 @@ object SessionMediaItemMapper {
             File(barePath)
         }
 
-    private fun loadArtworkBytes(url: String?): ByteArray? {
-        if (url.isNullOrBlank()) return null
-        // Embedded artwork is paid once per source per process lifetime: queue
-        // rebuilds (shuffle, next, playback resumption) share the bytes instead
-//
-        // of re-decoding and re-compressing every cover.
-        artworkBytesCache.get(url)?.let { return it }
-        return try {
-            val bytes: ByteArray? = when {
-                url.startsWith("file://") || url.startsWith("/") -> {
-                    val path = url.removePrefix("file://")
-                    val file = resolveArtworkFile(url, path)
-                    if (!file.exists()) null
-                    else {
-                        val bitmap = decodeFileDownsampled(path) ?: return null
-                        val rotated = applyExifRotation(path, bitmap)
-                        val cropped = centerCrop(rotated)
-                        val stream = ByteArrayOutputStream()
-                        cropped.compress(Bitmap.CompressFormat.JPEG, 85, stream)
-                        if (cropped !== rotated) cropped.recycle()
-                        if (rotated !== bitmap) rotated.recycle()
-                        bitmap.recycle()
-                        stream.toByteArray()
+    private suspend fun loadArtworkBytes(url: String?): ByteArray? = withContext(NzikDispatchers.DATA) {
+        if (url.isNullOrBlank()) return@withContext null
+        val file = if (url.startsWith("file:") || url.startsWith("/")) {
+            resolveArtworkFile(url, url.removePrefix("file://"))
+        } else null
+        val context = appContext()
+        val profile = getActiveProfile(context)
+        val revision = ArtworkRevisions.current()
+        val key = "$profile|$revision|${file?.absolutePath ?: url}|${file?.lastModified()}|${file?.length()}"
+        if (file != null && !file.exists()) return@withContext null
+        artworkBytesCache.getOrLoad(key) {
+            try {
+                val bytes = when {
+                    file != null -> runInterruptible(NzikDispatchers.DATA) {
+                        encodeOwnedArtwork(square = true) { ArtworkBitmapDecoder.file(file) }
                     }
-                }
-
-                url.startsWith("content://") -> {
-                    val uri = Uri.parse(url)
-                    val data = appContext().contentResolver.openInputStream(uri)?.use { it.readBytes() }
-                        ?: return null
-                    val bitmap = decodeBytesDownsampled(data) ?: return null
-                    val stream = ByteArrayOutputStream()
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
-                    bitmap.recycle()
-                    stream.toByteArray()
-                }
-
-                // runBlocking justified: loadArtworkBytes is private non-suspend called from 5 non-suspend public mappers
-                else -> runBlocking(NzikDispatchers.DATA) {
-                    ImageCacheFactory.loadBitmap(url, allowHardware = false)
-                }?.let { bitmap ->
-                    val stream = ByteArrayOutputStream()
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
-                    stream.toByteArray()
-                }
+                    url.startsWith("content://") -> runInterruptible(NzikDispatchers.DATA) {
+                        encodeOwnedArtwork {
+                            ArtworkBitmapDecoder.decode { context.contentResolver.openInputStream(Uri.parse(url)) }
+                        }
+                    }
+                    else -> {
+                        ImageCacheFactory.loadBitmap(
+                            url, requestSize = 512, qualityOverride = ImageCacheFactory.NetworkQuality.HIGH,
+                        )?.let { bitmap ->
+                            runInterruptible(NzikDispatchers.DATA) {
+                                encodeOwnedArtwork {
+                                    boundedOwnedCopy(bitmap)
+                                }
+                            }
+                        }
+                    }
+                } ?: return@getOrLoad null
+                if (profile != getActiveProfile(context) || revision != ArtworkRevisions.current()) return@getOrLoad null
+                bytes
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Exception) {
+                Timber.tag("AutoArtwork").w(exception, "Could not decode session artwork")
+                null
             }
-            bytes?.let {
-                artworkBytesCache.put(url, it)
-                it
-            }
-        } catch (_: Exception) {
-            null
-        }
+        }.takeIf { profile == getActiveProfile(context) && revision == ArtworkRevisions.current() }
     }
 
-    private fun isArtworkAvailable(url: String?): Boolean {
-        if (url.isNullOrBlank()) return false
-        if (url.startsWith("content://")) {
-            return try {
-                appContext().contentResolver.openInputStream(Uri.parse(url))?.close()
-                true
-            } catch (e: Exception) {
-                false
-            }
+    private fun boundedOwnedCopy(source: Bitmap): Bitmap? {
+        val longest = maxOf(source.width, source.height)
+        if (longest <= ArtworkBitmapDecoder.MAX_SIDE) {
+            return source.copy(Bitmap.Config.ARGB_8888, false)
         }
-        if (url.startsWith("file://") || url.startsWith("/")) {
-            return File(url.removePrefix("file://")).exists()
-        }
-        return true
+        val scale = ArtworkBitmapDecoder.MAX_SIDE.toDouble() / longest
+        // Changed dimensions guarantee a new bitmap; never recycle Coil's borrowed source.
+        return Bitmap.createScaledBitmap(
+            source,
+            (source.width * scale).roundToInt().coerceAtLeast(1),
+            (source.height * scale).roundToInt().coerceAtLeast(1),
+            true,
+        )
     }
 
-    private fun applyExifRotation(path: String, bitmap: Bitmap): Bitmap {
+    // Ownership stays inside one interruptible block: prompt cancellation may discard its
+    // return value, so only encoded bytes may cross that suspension boundary.
+    private fun encodeOwnedArtwork(square: Boolean = false, decode: () -> Bitmap?): ByteArray? {
+        val bitmap = decode() ?: return null
         return try {
-            val exif = ExifInterface(path)
-            val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
-            val rotation = when (orientation) {
-                ExifInterface.ORIENTATION_ROTATE_90 -> 90f
-                ExifInterface.ORIENTATION_ROTATE_180 -> 180f
-                ExifInterface.ORIENTATION_ROTATE_270 -> 270f
-                else -> return bitmap
-            }
-            val matrix = Matrix().apply { postRotate(rotation) }
-            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-        } catch (e: Exception) { bitmap }
+            ArtworkBitmapDecoder.jpeg(bitmap, square)
+        } finally {
+            if (!bitmap.isRecycled) bitmap.recycle()
+        }
     }
 
-    private fun centerCrop(bitmap: Bitmap): Bitmap {
-        val size = minOf(bitmap.width, bitmap.height)
-        val x = (bitmap.width - size) / 2
-        val y = (bitmap.height - size) / 2
-        return Bitmap.createBitmap(bitmap, x, y, size, size)
+    // Resize only remote provider URLs; local artwork sources must retain their identity.
+    private fun bestArtworkSource(source: String?): String? = source?.let(::cleanPrefix)?.let { clean ->
+        if (clean.toUri().scheme in setOf("http", "https")) clean.thumbnail(1200) else clean
     }
 
-    /** Tracks without title/artist tags must still render on the head unit: the raw empty (or literal "null") metadata strings are replaced with the localized placeholders — the same labels the phone lists already show. */
+    private fun setArtworkUri(metadata: MediaMetadata.Builder, song: Song, source: String?) {
+        val candidate = source?.takeUnless { it.isBlank() }?.toUri()
+        val file = candidate?.takeIf { it.scheme == "file" || source?.startsWith("/") == true }
+            ?.let { resolveArtworkFile(it.toString(), it.path.orEmpty()) }
+        metadata.setArtworkUri(when {
+            file?.exists() == true -> ArtworkContentProvider.uriForSource(appContext(), song.id, file)
+            LocalArtworkRules.needsProviderArtwork(song.id, source, ArtworkContentProvider.AUTHORITY) ->
+                ArtworkContentProvider.uriFor(song.id)
+            candidate == null || file != null -> drawableUri(appContext(), R.drawable.ic_launcher_box)
+            else -> candidate
+        })
+    }
+
+    /** Uses localized labels for missing title and artist tags. */
     private fun applyMetadataFallbacks(metadataBuilder: MediaMetadata.Builder, metadata: MediaMetadata) {
         val needsTitle = SessionMetadataFallbacks.needsFallback(metadata.title)
         val needsArtist = SessionMetadataFallbacks.needsFallback(metadata.artist)
@@ -261,22 +229,19 @@ object SessionMediaItemMapper {
         searchPath: String = "",
         loadArtwork: Boolean = false
     ): MediaItem {
-        val cleanUrl = thumbnailUrl?.let { cleanPrefix(it) }
-        val iconUri = cleanUrl?.thumbnail(250)?.toUri()
-        val artworkBytes = if (loadArtwork) loadArtworkBytes(cleanUrl) else null
+        if (loadArtwork) return blockingArtworkBridge {
+            mapArtistWithArtwork(parentId, id, name, thumbnailUrl, subtext, searchPath)
+        }
+        val iconUri = bestArtworkSource(thumbnailUrl)?.toUri()
         val item = browsableMediaItem(
             id = "$parentId/$id",
             title = name,
             subtitle = subtext,
-            iconUri = if (artworkBytes == null) iconUri else null,
+            iconUri = iconUri,
             mediaType = MediaMetadata.MEDIA_TYPE_ARTIST,
             path = searchPath.ifEmpty { parentId }
         )
-        return if (artworkBytes != null) {
-            item.buildUpon().setMediaMetadata(
-                item.mediaMetadata.buildUpon().setArtworkData(artworkBytes, MediaMetadata.PICTURE_TYPE_ILLUSTRATION).build()
-            ).build()
-        } else item
+        return item
     }
 
     fun mapAlbumToMediaItem(
@@ -288,64 +253,27 @@ object SessionMediaItemMapper {
         searchPath: String = "",
         loadArtwork: Boolean = false
     ): MediaItem {
-        val cleanUrl = thumbnailUrl?.let { cleanPrefix(it) }
-        val iconUri = cleanUrl?.thumbnail(250)?.toUri()
-        val artworkBytes = if (loadArtwork) loadArtworkBytes(cleanUrl) else null
+        if (loadArtwork) return blockingArtworkBridge {
+            mapAlbumWithArtwork(parentId, id, title, authorsText, thumbnailUrl, searchPath)
+        }
+        val iconUri = bestArtworkSource(thumbnailUrl)?.toUri()
         val item = browsableMediaItem(
             id = "$parentId/$id",
             title = title,
             subtitle = authorsText,
-            iconUri = if (artworkBytes == null) iconUri else null,
+            iconUri = iconUri,
             mediaType = MediaMetadata.MEDIA_TYPE_ALBUM,
             path = searchPath.ifEmpty { parentId }
         )
-        return if (artworkBytes != null) {
-            item.buildUpon().setMediaMetadata(
-                item.mediaMetadata.buildUpon().setArtworkData(artworkBytes, MediaMetadata.PICTURE_TYPE_ILLUSTRATION).build()
-            ).build()
-        } else item
+        return item
     }
 
-
     fun mapSongToMediaItem(song: Song, path: String, loadArtwork: Boolean = false): MediaItem {
-        val baseItem = song.asMediaItem
-        var metadataBuilder = baseItem.mediaMetadata.buildUpon()
+        if (loadArtwork) return blockingArtworkBridge { mapSongWithArtwork(song, path) }
+        val baseItem = baseMediaItem(song)
+        val metadataBuilder = baseItem.mediaMetadata.buildUpon()
         applyMetadataFallbacks(metadataBuilder, baseItem.mediaMetadata)
-
-        if (loadArtwork) {
-            if (song.isLocal) {
-                // Load artwork from media store for on-device songs
-                val artworkUrl = song.thumbnailUrl?.let { cleanPrefix(it) }
-                val artworkBytes = loadArtworkBytes(artworkUrl)
-                if (artworkBytes != null) {
-                    metadataBuilder.setArtworkData(artworkBytes, MediaMetadata.PICTURE_TYPE_ILLUSTRATION)
-                } else {
-                    setSerializedFallback(metadataBuilder)
-                }
-            } else {
-                // Load artwork via Coil (handles EXIF rotation) for Android Auto
-                val artworkUrl = song.thumbnailUrl?.let { cleanPrefix(it) }
-                val artworkBytes = loadArtworkBytes(artworkUrl)
-                if (artworkBytes != null) {
-                    metadataBuilder.setArtworkData(artworkBytes, MediaMetadata.PICTURE_TYPE_ILLUSTRATION)
-                } else {
-                    setSerializedFallback(metadataBuilder)
-                }
-            }
-        } else {
-            val artworkUrl = song.thumbnailUrl?.let { cleanPrefix(it) }
-            if (artworkUrl != null) {
-                if (!isArtworkAvailable(artworkUrl)) {
-                    metadataBuilder.setArtworkUri(drawableUri(appContext(), R.drawable.ic_launcher_box))
-                } else {
-                    metadataBuilder.setArtworkUri(Uri.parse(artworkUrl))
-                }
-            } else {
-                metadataBuilder.setArtworkUri(drawableUri(appContext(), R.drawable.ic_launcher_box))
-            }
-        }
-
-
+        setArtworkUri(metadataBuilder, song, bestArtworkSource(song.thumbnailUrl))
 
         val extras = Bundle(metadataBuilder.build().extras ?: Bundle()).apply {
             if (!song.isLocal) {
@@ -368,43 +296,72 @@ object SessionMediaItemMapper {
     }
 
     fun mapSongToMediaItem(song: Song, isFromPersistentQueue: Boolean = false, loadArtwork: Boolean = false): MediaItem {
-        val mediaItem = song.asMediaItem
+        if (loadArtwork) return blockingArtworkBridge { mapSongWithArtwork(song, isFromPersistentQueue) }
+        val mediaItem = baseMediaItem(song)
         val existingExtras = mediaItem.mediaMetadata.extras ?: Bundle()
         val bundle = Bundle(existingExtras).apply {
             putBoolean(persistentQueueKey, isFromPersistentQueue)
         }
 
-        var metadataBuilder = mediaItem.mediaMetadata
+        val metadataBuilder = mediaItem.mediaMetadata
             .buildUpon()
             .setExtras(bundle)
         applyMetadataFallbacks(metadataBuilder, mediaItem.mediaMetadata)
-
-        if (loadArtwork) {
-            // Load artwork for queue display (needed for on-device in AA)
-            if (song.isLocal) {
-                val artworkUrl = song.thumbnailUrl?.let { cleanPrefix(it) }
-                val artworkBytes = loadArtworkBytes(artworkUrl)
-                if (artworkBytes != null) {
-                    metadataBuilder.setArtworkData(artworkBytes, MediaMetadata.PICTURE_TYPE_ILLUSTRATION)
-                } else {
-                    setSerializedFallback(metadataBuilder)
-                }
-            }
-        } else {
-            val artworkUrl = song.thumbnailUrl?.let { cleanPrefix(it) }
-            if (artworkUrl != null) {
-                if (!isArtworkAvailable(artworkUrl)) {
-                    metadataBuilder.setArtworkUri(drawableUri(appContext(), R.drawable.ic_launcher_box))
-                } else {
-                    metadataBuilder.setArtworkUri(Uri.parse(artworkUrl))
-                }
-            } else {
-                metadataBuilder.setArtworkUri(drawableUri(appContext(), R.drawable.ic_launcher_box))
-            }
-        }
+        setArtworkUri(metadataBuilder, song, bestArtworkSource(song.thumbnailUrl))
 
         return mediaItem.buildUpon().setMediaMetadata(metadataBuilder.build()).build()
     }
 
+    // Non-AA callers expose synchronous APIs. Keep their compatibility bridge here only;
+    // automobile callers use the suspend variants below and never block a DATA worker.
+    private fun blockingArtworkBridge(load: suspend () -> MediaItem): MediaItem = runBlocking { load() }
+
+    internal suspend fun mapArtistWithArtwork(
+        parentId: String, id: String, name: String, thumbnailUrl: String?,
+        subtext: String? = null, searchPath: String = "",
+    ): MediaItem = attachBrowsableArtwork(
+        mapArtistToMediaItem(parentId, id, name, thumbnailUrl, subtext, searchPath), thumbnailUrl,
+    )
+
+    internal suspend fun mapAlbumWithArtwork(
+        parentId: String, id: String, title: String, authorsText: String?, thumbnailUrl: String?,
+        searchPath: String = "",
+    ): MediaItem = attachBrowsableArtwork(
+        mapAlbumToMediaItem(parentId, id, title, authorsText, thumbnailUrl, searchPath), thumbnailUrl,
+    )
+
+    private suspend fun attachBrowsableArtwork(item: MediaItem, thumbnailUrl: String?): MediaItem {
+        val bytes = loadArtworkBytes(thumbnailUrl?.let(::cleanPrefix)) ?: return item
+        return item.buildUpon().setMediaMetadata(item.mediaMetadata.buildUpon()
+            .setArtworkUri(null)
+            .setArtworkData(bytes, MediaMetadata.PICTURE_TYPE_ILLUSTRATION).build()).build()
+    }
+
+    internal suspend fun mapSongWithArtwork(song: Song, path: String): MediaItem =
+        attachSongArtwork(mapSongToMediaItem(song, path), song)
+
+    internal suspend fun mapSongWithArtwork(song: Song, isFromPersistentQueue: Boolean = false): MediaItem {
+        val item = mapSongToMediaItem(song, isFromPersistentQueue)
+        val source = song.thumbnailUrl?.let(::cleanPrefix)
+        // Queue mapping historically embeds only local or file art; browse mapping loads remote art too.
+        return if (song.isLocal || source?.startsWith("file:") == true || source?.startsWith("/") == true) {
+            attachSongArtwork(item, song)
+        } else restoreLoadedArtworkUri(item, song)
+    }
+
+    // The artwork-loading overloads historically retained the base item's 1200px remote URI.
+    private fun restoreLoadedArtworkUri(item: MediaItem, song: Song): MediaItem {
+        val metadata = item.mediaMetadata.buildUpon()
+        setArtworkUri(metadata, song, bestArtworkSource(song.thumbnailUrl))
+        return item.buildUpon().setMediaMetadata(metadata.build()).build()
+    }
+
+    private suspend fun attachSongArtwork(item: MediaItem, song: Song): MediaItem {
+        val metadata = restoreLoadedArtworkUri(item, song).mediaMetadata.buildUpon()
+        val bytes = loadArtworkBytes(song.thumbnailUrl?.let(::cleanPrefix))
+        if (bytes != null) metadata.setArtworkData(bytes, MediaMetadata.PICTURE_TYPE_ILLUSTRATION)
+        else setSerializedFallback(metadata, song)
+        return item.buildUpon().setMediaMetadata(metadata.build()).build()
+    }
 
 }

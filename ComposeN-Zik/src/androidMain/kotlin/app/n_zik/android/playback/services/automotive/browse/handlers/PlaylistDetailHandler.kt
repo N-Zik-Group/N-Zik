@@ -14,7 +14,7 @@ import app.it.fast4x.rimusic.utils.*
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.download.utils.MyDownloadHelper
-import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
+import app.n_zik.android.playback.services.automotive.models.CancellableAutoMediaItemMapper
 import app.n_zik.android.playback.services.automotive.session.AutoMediaIdContract
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import app.n_zik.android.playback.services.PlayerServiceModern
@@ -102,6 +102,6 @@ class PlaylistDetailHandler : BrowseHandler {
                 }
             }
         }
-        return listOf(shuffleItem) + listFlow.first().map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
+        return listOf(shuffleItem) + listFlow.first().map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
     }
 }
