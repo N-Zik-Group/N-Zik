@@ -1,5 +1,9 @@
 package app.it.fast4x.rimusic.ui.screens.player
 
+import app.n_zik.android.components.glass.glassQueueListBackdrop
+import app.n_zik.android.components.glass.LocalQueueRowBackdrop
+import app.n_zik.android.components.glass.rememberQueueRowGlassBackdrop
+
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
 
@@ -366,6 +370,7 @@ fun Queue(
             val queueType by rememberPreference( queueTypeKey, QueueType.Modern )
             val backgroundAlpha = if( queueType == QueueType.Modern ) .5f else 1f
             val itemBackground = if ( queueType == QueueType.Modern ) androidx.compose.ui.graphics.Color.Transparent else colorPalette().background0
+            val queueBackground = colorPalette().background0.copy(alpha = backgroundAlpha)
 
             val queueSongIds = remember(windowsOnDisplay) { windowsOnDisplay.map { it.mediaItem.asSong.id } }
             val likeStatesMap by remember(queueSongIds) {
@@ -398,14 +403,18 @@ fun Queue(
             }
 
             SearchEmptyFeedback(search.inputValue, windowsOnDisplay.isEmpty())
-            CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
+            CompositionLocalProvider(
+                LocalDownloadStatesMap provides downloadStatesMap,
+                LocalQueueRowBackdrop provides rememberQueueRowGlassBackdrop(queueBackground),
+            ) {
             LazyColumn(
                 state = lazyListState,
                 horizontalAlignment = Alignment.CenterHorizontally,
                 contentPadding = WindowInsets(bottom = Dimensions.bottomSpacer).asPaddingValues(),
                 modifier = Modifier.fillMaxSize()
+                                   .glassQueueListBackdrop(lazyListState)
                                    .background(
-                                       colorPalette().background0.copy( alpha = backgroundAlpha )
+                                       queueBackground
                                    )
 
             ) {

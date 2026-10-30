@@ -22,6 +22,7 @@ import androidx.compose.ui.util.lerp
 import androidx.media3.common.util.UnstableApi
 import app.it.fast4x.rimusic.enums.ThumbnailType
 import app.it.fast4x.rimusic.utils.doubleShadowDrop
+import app.n_zik.android.components.glass.glassImageRim
 import app.n_zik.android.thumbnailShape
 import kotlin.math.absoluteValue
 import kotlinx.coroutines.delay
@@ -152,6 +153,7 @@ fun Modifier.playerThumbnailCover(
         )
     }
     .clip(thumbnailShape())
+    .glassImageRim(if (showCoverThumbnailAnimation) CircleShape else thumbnailShape())
     .combinedClickable(
         interactionSource = remember { MutableInteractionSource() },
         indication = null,

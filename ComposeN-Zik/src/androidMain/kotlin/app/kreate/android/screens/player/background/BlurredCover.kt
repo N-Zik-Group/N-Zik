@@ -73,6 +73,7 @@ private fun BlurFilter(
         )
 
         ImageCacheFactory.Thumbnail(
+            shape = null,
             thumbnailUrl = thumbnailUrl,
             contentDescription = stringResource(R.string.cd_blurred_background),
             contentScale = ContentScale.Fit,

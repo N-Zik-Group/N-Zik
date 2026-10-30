@@ -372,6 +372,7 @@ fun BoxScope.ActionBar(
                             if ( showAlbumCover )
                                 Box( Modifier.align(Alignment.CenterVertically) ) {
                                     ImageCacheFactory.Thumbnail(
+                                        shape = uiRoundnessShape(),
                                         thumbnailUrl = mediaItemAtIndex.mediaMetadata
                                                                        .artworkUri
                                                                        .toString(),

@@ -45,6 +45,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
+import app.n_zik.android.components.glass.glassImageRim
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
@@ -275,6 +276,7 @@ fun Thumbnail(
                                 painter = coverPainter,
                                 isSongPlaying = player.isPlaying,
                                 modifier = Modifier
+                                    .glassImageRim(CircleShape)
                                     .pointerInput(Unit) {
                                         detectTapGestures(
                                             onLongPress = { onShowStatsForNerds(true) },
@@ -311,6 +313,7 @@ fun Thumbnail(
                                     }
                                     .fillMaxSize()
                                     .clip(thumbnailShape())
+                                    .glassImageRim(thumbnailShape())
                             )
 
                     } else {
@@ -331,7 +334,8 @@ fun Thumbnail(
 
                                 }
                                 .fillMaxSize()
-                                .clip(thumbnailShape()),
+                                .clip(thumbnailShape())
+                                .glassImageRim(if (showCoverThumbnailAnimation) CircleShape else thumbnailShape()),
                             contentDescription = stringResource(R.string.cd_background_image),
                             contentScale = if (cropVideoThumbnails) ContentScale.Crop else ContentScale.Fit
                         )

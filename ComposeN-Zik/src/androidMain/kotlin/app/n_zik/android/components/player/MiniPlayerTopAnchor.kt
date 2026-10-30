@@ -42,9 +42,8 @@ internal fun miniPlayerTopInset(
  * Extra room the collapsed mini-player leaves at one side so it stays clear of whatever sits
  * there: the system bar or cutout itself (status bar at the left in landscape, side navigation
  * bar, display cutout) and, after it, a navigation rail. The card already keeps
- * [standardPadding] from the screen edge, which counts, so the returned inset only tops it up
- * up to the bar's edge — the card ends flush with the bar, the same way the queue overlay and
- * the app header stay clear of them.
+ * [standardPadding] from the safe content edge. System clearance is additional;
+ * a rail also keeps at least this same margin from the capsule.
  *
  * @param safeInset Cutout or system inset on that side, which the rail is placed after.
  * @param railWidth Width of the rail; 0 when there is no rail on that side.
@@ -55,8 +54,9 @@ internal fun miniPlayerSideInset(
     standardPadding: Dp = 16.dp,
     gap: Dp = MINI_PLAYER_TOP_GAP,
 ): Dp {
-    if (railWidth <= 0.dp) return (safeInset - standardPadding).coerceAtLeast(0.dp)
-    return (safeInset + railWidth + gap - standardPadding).coerceAtLeast(0.dp)
+    // System clearance is additional to the capsule's usual margin, at either vertical anchor.
+    if (railWidth <= 0.dp) return safeInset.coerceAtLeast(0.dp)
+    return (safeInset + railWidth + maxOf(gap, standardPadding) - standardPadding).coerceAtLeast(0.dp)
 }
 
 /**
@@ -80,20 +80,41 @@ internal fun miniPlayerContentReservePx(
 
 /**
  * Distance from the top of the screen to the mini-player while the header scrolls out.
- * It leaves with the header: the further the header slid out, the closer the mini-player gets
- * to being fully above the screen, which it is once the header is entirely gone.
+ * With a retained top navigation row it settles immediately below that row. Otherwise it
+ * leaves with the header and ends fully above the screen.
  *
  * @param scrollOffsetPx Header scroll-hide offset: 0 when shown, [hideRangePx] below 0 when
  *        entirely slid out.
  * @param hideRangePx How far the header travels to be entirely hidden.
+ * @param retainedTopInsetPx Visible anchor below a pinned top navigation row, when present.
+ * @param barsHidden The inset already excludes the hidden landscape header and navbar.
  */
 internal fun miniPlayerTopPaddingPx(
     insetPx: Float,
     scrollOffsetPx: Float,
     hideRangePx: Float,
     collapsedHeightPx: Float,
+    retainedTopInsetPx: Float? = null,
+    barsHidden: Boolean = false,
 ): Float {
-    if (hideRangePx <= 0f) return insetPx
+    if (barsHidden || hideRangePx <= 0f) return insetPx
     val hidden = (-scrollOffsetPx / hideRangePx).coerceIn(0f, 1f)
-    return insetPx + (-collapsedHeightPx - insetPx) * hidden
+    val hiddenInsetPx = retainedTopInsetPx ?: -collapsedHeightPx
+    return insetPx + (hiddenInsetPx - insetPx) * hidden
+}
+
+/** The mini joins the pinned top row while its header scrolls away independently. */
+internal fun miniPlayerTopDockPaddingPx(
+    insetPx: Float,
+    scrollOffsetPx: Float,
+    headerHeightPx: Float,
+    navHeightPx: Float,
+    miniHeightPx: Float,
+    gapPx: Float,
+    fold: Float,
+): Float {
+    val p = fold.coerceIn(0f, 1f)
+    val headerOffset = scrollOffsetPx.coerceIn(-headerHeightPx.coerceAtLeast(0f), 0f)
+    val rowShift = navHeightPx + gapPx - (navHeightPx - miniHeightPx) / 2f
+    return insetPx + headerOffset - rowShift * p
 }

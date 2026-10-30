@@ -1,6 +1,5 @@
 package app.it.fast4x.rimusic.ui.screens.player
 
-import app.n_zik.android.core.database.*
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.utils.artistTextWithFallback
 import app.n_zik.android.utils.titleWithFallback

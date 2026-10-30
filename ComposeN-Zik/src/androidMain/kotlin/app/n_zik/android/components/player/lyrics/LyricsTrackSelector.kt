@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.models.Lyrics
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.core.database.Database
@@ -54,7 +55,7 @@ fun SettingIcon(@DrawableRes icon: Int) {
     Box(
         modifier = Modifier
             .size(32.dp)
-            .background(
+            .iconBadgeBackground(
                 color = colorPalette().accent.copy(alpha = 0.1f),
                 shape = uiRoundnessShape()
             ),

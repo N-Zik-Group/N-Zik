@@ -1,5 +1,21 @@
 package app.it.fast4x.rimusic.ui.screens.player
 
+import app.n_zik.android.components.glass.LocalGlassBackdrop
+import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.NativeQueueRows
+import app.n_zik.android.components.glass.GlassQueuePanel
+import app.n_zik.android.components.glass.glassQueuePanelBackground
+import app.n_zik.android.components.glass.LocalGlassOverlayBackdrop
+import app.n_zik.android.components.glass.glassPlayerSceneSource
+import app.n_zik.android.components.glass.glassSceneOverlayBackdrop
+import app.n_zik.android.components.glass.GlassRenderer
+import app.n_zik.android.components.glass.glassRenderer
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCombinedBackdrop
+import app.n_zik.android.components.player.rememberGlassPlayerBackground
+
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.appRunningInBackground
@@ -475,6 +491,9 @@ fun Player(
     var shouldBePlaying by remember(playerUpdateTrigger) {
         mutableStateOf(binder.player.shouldBePlaying)
     }
+    var isActuallyPlaying by remember(playerUpdateTrigger) {
+        mutableStateOf(binder.player.isPlaying)
+    }
 
     // Issue #881 (gh-881): tolerant saver — this was the exact 15:23:55 CCE crash slot
     // (Player.kt:478, spec M5): a foreign payload now restores to the default, never throws.
@@ -668,6 +687,10 @@ fun Player(
 
     binder.player.DisposableListener(playerUpdateTrigger) {
         object : Player.Listener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                isActuallyPlaying = isPlaying
+            }
+
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 nullableMediaItem = mediaItem
             }
@@ -878,8 +901,40 @@ fun Player(
     }
 
 
+    val glassSettings = rememberGlassSettings()
+    val capturePlayerBackground = glassSettings.enabled && glassRenderer(glassSettings) != GlassRenderer.Tint
+    val playerBackground = rememberGlassPlayerBackground()
+    val playerCoverBackground = rememberLayerBackdrop()
+    val playerControlsBackdrop = rememberCombinedBackdrop(playerCoverBackground, playerBackground.backdrop)
+    val playerVisibleBackdrop = rememberLayerBackdrop()
+    val capturePlayerScene = glassSettings.enabled && glassRenderer(glassSettings) != GlassRenderer.Tint &&
+        playerSheetState.isExpanded
+
+    @Composable
+    fun PlayerBlurredCover(
+        thumbnailUrl: String,
+        blurAdjuster: BlurAdjuster,
+        showThumbnail: Boolean,
+        noBlur: Boolean,
+        isShowingLyrics: Boolean,
+        isShowingVisualizer: Boolean,
+        contentScale: ContentScale,
+        modifier: Modifier = Modifier,
+    ) {
+        if (capturePlayerBackground) {
+            Box(Modifier.fillMaxSize().layerBackdrop(playerCoverBackground)) {
+                BlurredCover(thumbnailUrl, blurAdjuster, showThumbnail, noBlur,
+                    isShowingLyrics, isShowingVisualizer, contentScale, modifier)
+            }
+        } else {
+            BlurredCover(thumbnailUrl, blurAdjuster, showThumbnail, noBlur,
+                isShowingLyrics, isShowingVisualizer, contentScale, modifier)
+        }
+    }
+
     var containerModifier = Modifier
         .padding(bottom = 0.dp)
+    var playerForegroundClip: Modifier = Modifier
     var deltaX by remember { mutableStateOf(0f) }
 
 
@@ -908,6 +963,8 @@ fun Player(
 
     if (!isGradientBackgroundEnabled) {
         if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor && (playerType == PlayerType.Essential || (showthumbnail && (!albumCoverRotation)))) {
+            // A cached clip layer inside the capture span would retain the suppressed foreground.
+            if (capturePlayerBackground) playerForegroundClip = Modifier.clip(uiRoundnessShape())
             containerModifier = containerModifier
                 .background(
                     Brush.verticalGradient(
@@ -924,7 +981,7 @@ fun Player(
                         0.25f
                     ) else Color.Black.copy(0.25f) else Color.Transparent else Color.Transparent
                 )
-                .clip(uiRoundnessShape()).combinedClickable(
+                .then(if (capturePlayerBackground) Modifier else Modifier.clip(uiRoundnessShape())).combinedClickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
                     onClick = {
@@ -1072,7 +1129,7 @@ fun Player(
                         if (type == AnimatedGradient.M3EMorphingTheme || type == AnimatedGradient.M3EMorphingCover) {
                             val isTheme = type == AnimatedGradient.M3EMorphingTheme
                             containerModifier = containerModifier.animatedM3EBackground(
-                                animating = binder.player.isPlaying,
+                                animating = isActuallyPlaying,
                                 D = if (isTheme) colorPalette().background1 else saturate(dominant).darkenBy(),
                                 V = if (isTheme) colorPalette().background2 else saturate(vibrant).darkenBy(),
                                 LV = if (isTheme) dynamicColorPalette.background2 else saturate(lightVibrant).darkenBy(),
@@ -1086,7 +1143,7 @@ fun Player(
                     }
                     AnimatedGradient.Linear -> {
                         containerModifier = containerModifier.animatedGradient(
-                            binder.player.isPlaying,
+                            isActuallyPlaying,
                             saturate(dominant).darkenBy(),
                             saturate(vibrant).darkenBy(),
                             saturate(lightVibrant).darkenBy(),
@@ -1285,9 +1342,16 @@ fun Player(
 
     blurAdjuster.Render()
 
+    CompositionLocalProvider(
+        LocalGlassBackdrop provides if (capturePlayerBackground) playerControlsBackdrop else LocalGlassBackdrop.current,
+        LocalGlassContainerBackdrop provides if (capturePlayerBackground) playerControlsBackdrop else LocalGlassContainerBackdrop.current,
+        LocalGlassOverlayBackdrop provides if (capturePlayerScene) playerVisibleBackdrop
+            else if (capturePlayerBackground) glassSceneOverlayBackdrop(playerVisibleBackdrop) else LocalGlassOverlayBackdrop.current,
+    ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .glassPlayerSceneSource(playerVisibleBackdrop, active = capturePlayerScene)
     ) {
         @Composable
         fun ActionsBar() = ActionBar(
@@ -1370,7 +1434,7 @@ fun Player(
                          }
                      }
 
-                     BlurredCover(
+                     PlayerBlurredCover(
                          thumbnailUrl = mediaItems.getOrNull(it)?.mediaMetadata?.artworkUri?.toString() ?: "",
                          blurAdjuster = blurAdjuster,
                          showThumbnail = showthumbnail,
@@ -1425,7 +1489,7 @@ fun Player(
                      )){}
              }
 
-             BlurredCover(
+             PlayerBlurredCover(
                  thumbnailUrl = mediaItems.getOrNull(if (!showthumbnail || albumCoverRotation) pagerStateFS.currentPage else if (playerType == PlayerType.Modern) pagerState.currentPage else binder.player.currentMediaItemIndex)?.mediaMetadata?.artworkUri?.toString() ?: "",
                  blurAdjuster = blurAdjuster,
                  showThumbnail = showthumbnail,
@@ -1437,7 +1501,7 @@ fun Player(
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = containerModifier
+                modifier = (if (capturePlayerBackground) playerBackground.background else Modifier).then(containerModifier)
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                     .padding(top = if (extraspace) 10.dp else 0.dp)
                     .drawBehind {
@@ -1453,6 +1517,8 @@ fun Player(
                             )
                         }
                     }
+                    .then(if (capturePlayerBackground) playerBackground.content else Modifier)
+                    .then(playerForegroundClip)
             ) {
                 Column (
                     verticalArrangement = Arrangement.Center,
@@ -1829,7 +1895,7 @@ fun Player(
                                     }
                                 }
                         ) {
-                            BlurredCover(
+                            PlayerBlurredCover(
                                 thumbnailUrl = mediaItems.getOrNull(it)?.mediaMetadata?.artworkUri?.toString() ?: "",
                                 blurAdjuster = blurAdjuster,
                                 showThumbnail = showthumbnail,
@@ -1975,7 +2041,7 @@ fun Player(
                         )){}
                 }
 
-               BlurredCover(
+               PlayerBlurredCover(
                    thumbnailUrl = mediaItems.getOrNull(if (!showthumbnail || albumCoverRotation) pagerStateFS.currentPage else if (playerType == PlayerType.Modern) pagerState.currentPage else binder.player.currentMediaItemIndex)?.mediaMetadata?.artworkUri?.toString() ?: "",
                    blurAdjuster = blurAdjuster,
                    showThumbnail = showthumbnail,
@@ -1987,7 +2053,7 @@ fun Player(
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = containerModifier
+                modifier = (if (capturePlayerBackground) playerBackground.background else Modifier).then(containerModifier)
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                     //.padding(top = 10.dp)
                     .drawBehind {
@@ -2003,6 +2069,8 @@ fun Player(
                             )
                         }
                     }
+                    .then(if (capturePlayerBackground) playerBackground.content else Modifier)
+                    .then(playerForegroundClip)
             ) {
 
 
@@ -2438,7 +2506,7 @@ fun Player(
 
             // Queue panel — height controlled via Modifier.layout to avoid recomposition
             val queuePanelBackground = if (queueType == QueueType.Modern) Color.Transparent else colorPalette().background2
-            Box(
+            GlassQueuePanel(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
@@ -2454,7 +2522,7 @@ fun Player(
                         }
                     }
                     .clip(topUiRoundnessShape())
-                    .background(queuePanelBackground)
+                    .glassQueuePanelBackground(queuePanelBackground, topUiRoundnessShape())
                     .windowInsetsPadding(WindowInsets.navigationBars.union(
                             WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)
                         ))
@@ -2464,24 +2532,26 @@ fun Player(
                     modifier = Modifier
                         .padding(top = 48.dp)
                 ) {
-                    Queue(
-                        navController = navController,
-                    onSearchOpened = {
-                        queuePanelCoroutineScope.launch {
-                            queuePanelHeightFraction.animateTo(
-                                maxFraction,
-                                spring(dampingRatio = 0.8f, stiffness = 300f),
-                            )
-                        }
-                    },
-                        onDismiss = {
-                            queueLoopState.value = it
-                            showQueue = false
-                        },
-                        onDiscoverClick = {
-                            binder.service.nzikRadio.toggleDiscover()
-                        }
-                    )
+                    NativeQueueRows {
+                        Queue(
+                            navController = navController,
+                            onSearchOpened = {
+                                queuePanelCoroutineScope.launch {
+                                    queuePanelHeightFraction.animateTo(
+                                        maxFraction,
+                                        spring(dampingRatio = 0.8f, stiffness = 300f),
+                                    )
+                                }
+                            },
+                            onDismiss = {
+                                queueLoopState.value = it
+                                showQueue = false
+                            },
+                            onDiscoverClick = {
+                                binder.service.nzikRadio.toggleDiscover()
+                            }
+                        )
+                    }
                 }
 
                 // Drag handle - overlays at top
@@ -2588,7 +2658,7 @@ fun Player(
         }
 
     }
-
+    }
 }
 
 @Composable

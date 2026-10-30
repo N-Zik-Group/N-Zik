@@ -30,6 +30,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
+import app.n_zik.android.components.glass.explicitBadgeIconId
+import app.n_zik.android.components.glass.glassExplicitBadgeBackground
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -197,12 +199,13 @@ fun InfoAlbumAndArtistModern(
             ) {
                 if ( isExplicit )
                     IconButton(
-                        icon = R.drawable.explicit,
+                        icon = explicitBadgeIconId(),
                         color = colorPalette().text,
                         enabled = true,
                         onClick = {},
                         modifier = Modifier
                             .size(18.dp)
+                            .glassExplicitBadgeBackground()
                     )
              Box(
 

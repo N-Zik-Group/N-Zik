@@ -16,15 +16,35 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.runtime.CompositionLocalProvider
+import app.n_zik.android.components.glass.LocalGlassBackdrop
+import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassOverlayBackdrop
+import app.n_zik.android.components.glass.glassSceneOverlayBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMenuHost
+import app.n_zik.android.components.glass.glassMiniPlayerBackground
+import app.n_zik.android.components.glass.glassMiniPlayerBodyVisibility
+import app.n_zik.android.components.glass.miniPlayerSwipeBackgroundColor
+import app.n_zik.android.core.navigation.LocalMiniPlayerQueueRequest
+import app.n_zik.android.components.glass.LocalEmbeddedQueueMini
+import app.n_zik.android.components.glass.rememberMiniPlayerControlBackdrop
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.glassSwipeActionBackground
+import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.glass.rememberGlassSettings
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgress
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.absoluteOffset
@@ -40,6 +60,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
+import app.n_zik.android.components.glass.explicitBadgeIconId
+import app.n_zik.android.components.glass.glassExplicitBadgeBackground
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
@@ -55,10 +77,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -170,6 +189,8 @@ import androidx.compose.runtime.LaunchedEffect
 import app.it.fast4x.rimusic.utils.getBitmapFromUrl
 import app.n_zik.android.core.coil.thumbnail
 import app.n_zik.android.components.player.MiniPlayerSwipeAction
+import app.n_zik.android.components.player.GlassMiniPlayerIconButton
+import app.n_zik.android.components.player.GlassMiniPlayerPlayPauseButton
 import app.n_zik.android.components.player.SwipeActionLatch
 import app.n_zik.android.components.player.WithDoubledTouchSlop
 import app.n_zik.android.components.player.rememberMiniPlayerSheetGestureState
@@ -213,6 +234,27 @@ fun MiniPlayer(
     hidePlayer: () -> Unit,
     navController: NavController? = null,
 ) {
+    val progress = app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgressProvider.current
+    androidx.compose.runtime.CompositionLocalProvider(
+        LocalCompactMiniPlayerProgress provides (progress?.invoke() ?: LocalCompactMiniPlayerProgress.current),
+    ) {
+        MiniPlayerContent(showPlayer, hidePlayer, navController)
+    }
+}
+
+@androidx.annotation.OptIn(UnstableApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@Composable
+private fun MiniPlayerContent(
+    showPlayer: () -> Unit,
+    hidePlayer: () -> Unit,
+    navController: NavController?,
+) {
+    val compactProgress = LocalCompactMiniPlayerProgress.current.coerceIn(0f, 1f)
+    val dockPresentation = app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgressProvider.current != null
+    val isCompact = compactProgress > 0.01f
+    val expandedMiniHeight = if (dockPresentation) app.n_zik.android.components.navigation.dock.FloatingDockDimensions.expandedMiniHeight.dp else Dimensions.miniPlayerHeight
+    val miniContentHeight = expandedMiniHeight * (1f - compactProgress) + app.n_zik.android.components.navigation.dock.FloatingDockDimensions.compactHeight.dp * compactProgress
     val binder = LocalPlayerServiceBinder.current
     binder?.player ?: return
 
@@ -220,6 +262,7 @@ fun MiniPlayer(
     val menuState = LocalMenuState.current
 
     val pendingMiniPlayerAction = LocalPendingMiniPlayerAction.current
+    val requestQueue = LocalMiniPlayerQueueRequest.current
     
     val playerUpdateTrigger by binder.playerUpdateTrigger.collectAsStateWithLifecycle(0, context = NzikDispatchers.DATA)
 
@@ -369,11 +412,13 @@ fun MiniPlayer(
         )
     }
 
-    val activeButtons = remember(toggleMap, orderedIds) {
+    val expandedButtons = remember(toggleMap, orderedIds) {
         orderedIds.filter { id -> toggleMap[id] == true }
             .mapNotNull { id -> miniPlayerButtonIdToButton[id] }
     }
 
+    // Folding changes presentation only; every configured action keeps its node and handler.
+    val activeButtons = expandedButtons
 
     val color = colorPalette()
     var dynamicColorPalette by remember { mutableStateOf( color ) }
@@ -524,14 +569,25 @@ fun MiniPlayer(
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
     val isFloating = NavigationBarPosition.BottomFloating.isCurrent()
-    val shape = if (isFloating) uiRoundnessShape() else uiRoundnessShape()
+    val glass = rememberGlassSettings()
+    val useGlass = glass.usesGlassMaterial(GlassArea.MiniPlayer)
+    val inQueue = LocalEmbeddedQueueMini.current
+    val parentMaterial = LocalGlassContainerBackdrop.current
+    val glassBackdrop = if (inQueue) parentMaterial else LocalGlassMenuHost.current?.backdrop
+    val controlsBackdrop = rememberLayerBackdrop()
+    val miniBodyProgress = { if (inQueue) 0f else playerSheetState.progress }
+    val controlMaterial = rememberMiniPlayerControlBackdrop(
+        if (useGlass) parentMaterial else null, controlsBackdrop, miniBodyProgress,
+    )
+    val visibleMiniPlayerBackdrop = rememberLayerBackdrop()
+    val shape = uiRoundnessShape()
 
     // The swipe waits for twice the usual movement, so the vertical open gesture wins on a slow diagonal drag
     WithDoubledTouchSlop {
     SwipeToDismissBox(
         modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .shadow(elevation = if (isFloating) 8.dp else 0.dp, shape = shape)
+            .padding(horizontal = 16.dp * (1f - compactProgress))
+            .shadow(elevation = if (isFloating && !useGlass) 8.dp else 0.dp, shape = shape)
             .clip(shape),
         enableDismissFromStartToEnd = sheetGestureState.isAtRest,
         enableDismissFromEndToStart = sheetGestureState.isAtRest,
@@ -554,10 +610,19 @@ fun MiniPlayer(
              */
 
             val offset = try { dismissState.requireOffset() } catch (e: Exception) { 0f }
+            val isSwipeRevealed = offset.isFinite() && offset != 0f
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(surfaceColor(colorPalette().background1))
+                    .glassSwipeActionBackground(
+                        originalColor = miniPlayerSwipeBackgroundColor(glass, isSwipeRevealed,
+                            surfaceColor(colorPalette().background1)),
+                        shape = shape,
+                        isRevealed = isSwipeRevealed,
+                        settings = glass,
+                        area = GlassArea.MiniPlayer,
+                        backdrop = glassBackdrop,
+                    )
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = when {
                     offset > 0 -> Arrangement.Start
@@ -590,13 +655,12 @@ fun MiniPlayer(
         }
     ) {
         val colorPalette = colorPalette()
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.Top,
+        BoxWithConstraints(
             modifier = Modifier
-                .clip(uiRoundnessShape()).combinedClickable(
+                .layerBackdrop(visibleMiniPlayerBackdrop)
+                .clip(shape).combinedClickable(
                     onLongClick = {
-                        navController?.navigate(NavRoutes.queue.name);
+                        requestQueue?.invoke() ?: navController?.navigate(NavRoutes.queue.name)
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     },
                     onClick = {
@@ -606,32 +670,43 @@ fun MiniPlayer(
                         //    navController?.navigate("player")
                     }
                 )
-                //.clip(uiRoundnessShape()).clickable(onClick = showPlayer)
-                .background(surfaceColor(colorPalette().background2))
                 .fillMaxWidth()
-                .drawBehind {
-                    if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.MiniPlayer) {
-                        drawRect(
-                            color = colorPalette.favoritesOverlay,
-                            topLeft = Offset.Zero,
-                            size = Size(
-                                width = positionAndDurationState.value.first.toFloat() /
-                                        (durationState.value.absoluteValue.takeIf { it > 0 } ?: 1L) * size.width,
-                                height = size.maxDimension
-                            )
-                        )
-                    }
-                }
         ) {
-
+            val availableMiniWidth = maxWidth
+            Box(Modifier.matchParentSize()
+                .glassMiniPlayerBodyVisibility(glass, miniBodyProgress)
+                .glassMiniPlayerBackground(
+                    glass, shape, glassBackdrop, surfaceColor(colorPalette.background2),
+                    exportedBackdrop = controlsBackdrop,
+                    progressColor = colorPalette.favoritesOverlay,
+                    progressFraction = {
+                        if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.MiniPlayer)
+                            positionAndDurationState.value.first.toFloat() /
+                                (durationState.value.absoluteValue.takeIf { it > 0 } ?: 1L)
+                        else 0f
+                    },
+                )
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp * (1f - compactProgress)),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+                    .padding(horizontal = if (dockPresentation) 10.dp * compactProgress else 0.dp),
+            ) {
+            // Export only the rendered body, never the cover or these controls themselves.
+            CompositionLocalProvider(
+                LocalGlassBackdrop provides controlMaterial,
+                LocalGlassContainerBackdrop provides controlMaterial,
+                LocalGlassOverlayBackdrop provides glassSceneOverlayBackdrop(visibleMiniPlayerBackdrop),
+            ) {
             Spacer(
-                modifier = Modifier
-                    .width(2.dp)
+                modifier = Modifier.width(2.dp * (1f - compactProgress))
             )
 
-            Box(
+            if (!isCompact || availableMiniWidth >= 156.dp) Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.height( Dimensions.miniPlayerHeight )
+                modifier = Modifier.height(miniContentHeight)
+                    .padding(end = if (dockPresentation) 8.dp * compactProgress else 0.dp)
             ) {
                 val artworkUrl = mediaItem.mediaMetadata.artworkUri?.toString()
                 val isCustomImage = artworkUrl?.let {
@@ -639,16 +714,27 @@ fun MiniPlayer(
                 } == true
 
                 Box(
-                    modifier = Modifier.size( 48.dp )
+                    modifier = Modifier.size(48.dp - 12.dp * compactProgress)
                 ) {
                     ImageCacheFactory.Thumbnail(
+                        shape = thumbnailShape(),
                         thumbnailUrl = artworkUrl,
                         contentScale = if (isCustomImage) ContentScale.Crop else ContentScale.FillHeight,
                         modifier = Modifier.clip( thumbnailShape() )
                                            .fillMaxSize()
                     )
 
-                    NowPlayingSongIndicator(mediaItem.mediaId, binder.player)
+                    // Preserve the original animation geometry, then scale its dots and gaps
+                    // together with the artwork instead of squeezing a fixed-width row.
+                    Box(Modifier.matchParentSize(), contentAlignment = Alignment.Center) {
+                        Box(Modifier.requiredSize(48.dp).graphicsLayer {
+                            val scale = 1f - .25f * compactProgress
+                            scaleX = scale
+                            scaleY = scale
+                        }) {
+                            NowPlayingSongIndicator(mediaItem.mediaId, binder.player, containerSize = 48.dp)
+                        }
+                    }
 
                     if (likeState != null)
                         app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton(
@@ -663,10 +749,10 @@ fun MiniPlayer(
             }
 
 
-            Column(
+            if (!isCompact || availableMiniWidth > 96.dp) Column(
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier
-                    .height(Dimensions.miniPlayerHeight)
+                    .height(miniContentHeight)
                     .weight(1f)
             ) {
                 Row(
@@ -675,12 +761,13 @@ fun MiniPlayer(
                 ) {
                     if ( mediaItem.isExplicit )
                         IconButton(
-                            icon = R.drawable.explicit,
+                            icon = explicitBadgeIconId(),
                             color = colorPalette().text,
                             enabled = true,
                             onClick = {},
                             modifier = Modifier
                                 .size(14.dp)
+                                .glassExplicitBadgeBackground()
                         )
                     BasicText(
                         text = cleanPrefix( mediaItem.titleWithFallback() ),
@@ -703,33 +790,31 @@ fun MiniPlayer(
             }
 
             Spacer(
-                modifier = Modifier
-                    .width(2.dp)
+                modifier = Modifier.width(2.dp * (1f - compactProgress))
             )
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp * (1f - compactProgress)),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .height(Dimensions.miniPlayerHeight)
+                    .height(miniContentHeight)
             ) {
                 activeButtons.forEach { button ->
                     if (button == MiniPlayerButton.PlayPause) {
-                        // Play/Pause (distinct styling)
-                        Box(
-                            modifier = Modifier
-                                .clip(uiRoundnessShape()).clickable {
-                                    if (shouldBePlaying) {
-                                        binder.gracefulPause()
-                                    } else {
-                                        binder.gracefulPlay()
-                                    }
-                                    if (effectRotationEnabled) isRotated = !isRotated
+                        GlassMiniPlayerPlayPauseButton(
+                            onClick = {
+                                if (shouldBePlaying) {
+                                    binder.gracefulPause()
+                                } else {
+                                    binder.gracefulPlay()
                                 }
-                                // Deliberately raw background2: in pitch black the play/pause
-                                // circle stays pure black as a visible accent on the gray pill
-                                .background(colorPalette().background2)
-                                .size(42.dp)
+                                if (effectRotationEnabled) isRotated = !isRotated
+                            },
+                            backgroundColor = colorPalette().background2,
+                            contentDescription = stringResource(
+                                if (shouldBePlaying) R.string.notification_pause else R.string.play,
+                            ),
+                            settings = glass,
                         ) {
                             if (isBuffering && shouldBePlaying) {
                                 CircularWavyProgressIndicator(
@@ -812,11 +897,11 @@ fun MiniPlayer(
             }
 
             Spacer(
-                modifier = Modifier
-                    .width(2.dp)
+                modifier = Modifier.width(2.dp * (1f - compactProgress))
             )
+            }
         }
-
+        }
     }
     }
 }
@@ -844,6 +929,7 @@ private fun MiniPlayerSlotButton(
     onClosePlayer: () -> Unit
 ) {
     if (button == null) return
+    val requestQueue = LocalMiniPlayerQueueRequest.current
 
     // Listen Together guest lock (spec-listen-together): guests in a room cannot
     // skip tracks or shuffle; play/pause stays available
@@ -851,16 +937,21 @@ private fun MiniPlayerSlotButton(
     // Locked controls are also visibly disabled (spec-listen-together-guest-lock-hardening)
     val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
 
+    val fold = LocalCompactMiniPlayerProgress.current
+    val compact = fold > 0.5f
+    val dockPresentation = app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgressProvider.current != null
     val modifier = Modifier
         .rotate(rotationAngle)
-        .padding(horizontal = 2.dp, vertical = 8.dp)
+        .then(if (dockPresentation) Modifier.padding(horizontal = 2.dp + 4.dp * fold, vertical = 8.dp - 2.dp * fold)
+            else Modifier.padding(horizontal = if (compact) 12.dp else 2.dp, vertical = if (compact) 12.dp else 8.dp))
         .size(24.dp)
 
     when (button) {
         MiniPlayerButton.SkipBack -> {
-            IconButton(
+            GlassMiniPlayerIconButton(
                 icon = R.drawable.play_skip_back,
                 color = controlsColorText,
+                contentDescription = stringResource(button.labelRes),
                 enabled = !listenTogetherGuestLock,
                 onClick = {
                     if (!listenTogetherGuestLock) {
@@ -868,13 +959,15 @@ private fun MiniPlayerSlotButton(
                         if (effectRotationEnabled) onRotatedChange(!isRotated)
                     }
                 },
-                modifier = modifier.alpha(guestLockAlpha)
+                rotationAngle = rotationAngle,
+                alpha = guestLockAlpha,
             )
         }
         MiniPlayerButton.SkipForward -> {
-            IconButton(
+            GlassMiniPlayerIconButton(
                 icon = R.drawable.play_skip_forward,
                 color = controlsColorText,
+                contentDescription = stringResource(button.labelRes),
                 enabled = !listenTogetherGuestLock,
                 onClick = {
                     if (!listenTogetherGuestLock) {
@@ -882,7 +975,8 @@ private fun MiniPlayerSlotButton(
                         if (effectRotationEnabled) onRotatedChange(!isRotated)
                     }
                 },
-                modifier = modifier.alpha(guestLockAlpha)
+                rotationAngle = rotationAngle,
+                alpha = guestLockAlpha,
             )
         }
         MiniPlayerButton.Shuffle -> {
@@ -1029,20 +1123,22 @@ private fun MiniPlayerSlotButton(
 
             val finalIcon = if (isExternal) iconVal else R.drawable.devices
             if (finalIcon is ImageVector) {
-                IconButton(
+                GlassMiniPlayerIconButton(
                     icon = finalIcon,
                     color = finalColor,
+                    contentDescription = stringResource(button.labelRes),
                     enabled = true,
                     onClick = onAudioOutputClick,
-                    modifier = modifier
+                    rotationAngle = rotationAngle,
                 )
             } else {
-                IconButton(
+                GlassMiniPlayerIconButton(
                     icon = finalIcon as Int,
                     color = finalColor,
+                    contentDescription = stringResource(button.labelRes),
                     enabled = true,
                     onClick = onAudioOutputClick,
-                    modifier = modifier
+                    rotationAngle = rotationAngle,
                 )
             }
         }
@@ -1109,8 +1205,7 @@ private fun MiniPlayerSlotButton(
                 icon = R.drawable.reorder,
                 color = controlsColorText,
                 onClick = {
-                    pendingAction?.value = PendingMiniPlayerAction.Queue
-                    onShowPlayer()
+                    requestQueue?.invoke() ?: navController?.navigate(NavRoutes.queue.name)
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
                 modifier = modifier

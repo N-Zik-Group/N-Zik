@@ -44,6 +44,8 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Icon as ToolbarIcon
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.isLandscape
 import app.n_zik.android.topUiRoundnessShape
+import app.n_zik.android.components.glass.GlassQueueToolbar
+import app.n_zik.android.components.glass.QueueEmbeddedMini
 
 object QueueToolBarState {
     var mediaItemCount by mutableIntStateOf(0)
@@ -68,11 +70,10 @@ fun QueueToolBar(
 ) {
     val binder = LocalPlayerServiceBinder.current
 
-    Box(
+    GlassQueueToolbar(
         modifier = modifier
             .fillMaxWidth()
             .clickable { QueueToolBarState.onBarClick() }
-            .background(colorPalette().background1, topUiRoundnessShape())
             .height(60.dp)
     ) {
         if (!isLandscape) {
@@ -89,7 +90,7 @@ fun QueueToolBar(
             Box(
                 Modifier.offset(0.dp, yOffset)
                     .align(Alignment.TopCenter)
-            ) { MiniPlayer({}, {}) }
+            ) { QueueEmbeddedMini { MiniPlayer({}, {}) } }
         }
 
         val queueArrow = QueueToolBarState.queueArrow

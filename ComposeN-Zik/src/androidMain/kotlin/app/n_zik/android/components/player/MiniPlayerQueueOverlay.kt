@@ -57,6 +57,9 @@ import app.it.fast4x.rimusic.utils.queueTypeKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.NativeQueueRows
+import app.n_zik.android.components.glass.GlassQueuePanel
+import app.n_zik.android.components.glass.glassQueuePanelBackground
 import app.n_zik.android.topUiRoundnessShape
 import kotlinx.coroutines.launch
 
@@ -133,7 +136,7 @@ fun MiniPlayerQueueOverlay(
 
         // Queue panel — height controlled via Modifier.layout to avoid recomposition
         val queuePanelBackground = if (queueType == QueueType.Modern) Color.Transparent else colorPalette().background2
-        Box(
+        GlassQueuePanel(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
@@ -149,7 +152,7 @@ fun MiniPlayerQueueOverlay(
                     }
                 }
                 .clip(topUiRoundnessShape())
-                .background(queuePanelBackground)
+                .glassQueuePanelBackground(queuePanelBackground, topUiRoundnessShape())
                 .windowInsetsPadding(WindowInsets.navigationBars.union(
                         WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)
                     ))
@@ -159,24 +162,26 @@ fun MiniPlayerQueueOverlay(
                 modifier = Modifier
                     .padding(top = 48.dp)
             ) {
-                Queue(
-                    navController = navController,
-                    onSearchOpened = {
-                        queuePanelCoroutineScope.launch {
-                            queuePanelHeightFraction.animateTo(
-                                maxFraction,
-                                spring(dampingRatio = 0.8f, stiffness = 300f),
-                            )
+                NativeQueueRows {
+                    Queue(
+                        navController = navController,
+                        onSearchOpened = {
+                            queuePanelCoroutineScope.launch {
+                                queuePanelHeightFraction.animateTo(
+                                    maxFraction,
+                                    spring(dampingRatio = 0.8f, stiffness = 300f),
+                                )
+                            }
+                        },
+                        onDismiss = {
+                            queueLoopState.value = it
+                            onDismiss()
+                        },
+                        onDiscoverClick = {
+                            binder?.service?.nzikRadio?.toggleDiscover()
                         }
-                    },
-                    onDismiss = {
-                        queueLoopState.value = it
-                        onDismiss()
-                    },
-                    onDiscoverClick = {
-                        binder?.service?.nzikRadio?.toggleDiscover()
-                    }
-                )
+                    )
+                }
             }
 
             // Drag handle - overlays at top
