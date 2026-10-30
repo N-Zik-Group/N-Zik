@@ -4,13 +4,7 @@ import android.content.Context
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.n_zik.android.R
 
-/**
- * One item on the global settings page (empty query): a settings category
- * targeting a tab ([tab]) or the Update item targeting an existing navigation
- * route ([route]). [descriptionRes] is NOT rendered (rows are single line); it
- * stays as a search keyword for the global search index. [group] selects the
- * group card the row renders in; [keywordRes] feeds the global search index.
- */
+/** Global row for a category, compatibility tab or dedicated route; descriptions feed search. */
 data class SettingsPageItem(
     val labelRes: Int,
     val iconRes: Int,
@@ -28,11 +22,7 @@ const val SETTINGS_GROUP_ABOUT_UPDATE = 1
 /** Group card holding the 8 remaining categories (spec layout, card 2). */
 const val SETTINGS_GROUP_CATEGORIES = 2
 
-/**
- * The Update item: second on the global page (right after About), navigates
- * to the existing UpdateScreen (route [NavRoutes.updater]) instead of a
- * settings tab.
- */
+/** Updater destination, kept next to About on Global. */
 val SettingsUpdateItem = SettingsPageItem(
     labelRes = R.string.update,
     iconRes = R.drawable.update,
@@ -40,6 +30,28 @@ val SettingsUpdateItem = SettingsPageItem(
     group = SETTINGS_GROUP_ABOUT_UPDATE,
     route = NavRoutes.updater.name,
     keywordRes = listOf(R.string.update, R.string.check_update, R.string.update_available),
+)
+
+/** Dedicated Glass destination in the same Global group as Theme and Interface. */
+val SettingsGlassItem = SettingsPageItem(
+    labelRes = R.string.liquid_glass,
+    iconRes = R.drawable.color_palette,
+    descriptionRes = R.string.page_glass_summary,
+    group = 3,
+    route = SETTINGS_GLASS_ROUTE,
+    keywordRes = listOf(
+        R.string.liquid_glass, R.string.page_glass_summary, R.string.liquid_glass_enable,
+        R.string.liquid_glass_tint_source, R.string.liquid_glass_material,
+        R.string.liquid_glass_color, R.string.liquid_glass_frost,
+        R.string.glass_group_material, R.string.glass_group_colour, R.string.glass_group_edges,
+        R.string.glass_group_readability, R.string.glass_dialog_dimming, R.string.glass_menu_dimming,
+        R.string.glass_group_where, R.string.glass_performance, R.string.glass_balanced,
+        R.string.glass_quality, R.string.glass_vibrancy, R.string.glass_blur, R.string.glass_tint,
+        R.string.glass_tint_strength, R.string.glass_film, R.string.glass_indicator,
+        R.string.glass_rim, R.string.glass_refraction_depth, R.string.glass_refraction_amount,
+        R.string.glass_dispersion, R.string.glass_depth, R.string.glass_where_bar,
+        R.string.glass_where_mini_player, R.string.glass_where_header, R.string.glass_where_menus,
+    ),
 )
 
 val SettingsCategories: List<SettingsPageItem> = listOf(
@@ -54,11 +66,7 @@ val SettingsCategories: List<SettingsPageItem> = listOf(
     SettingsPageItem(R.string.about, R.drawable.information, R.string.about_description, SETTINGS_GROUP_ABOUT_UPDATE, tab = 8),
 )
 
-/**
- * One group card of the global page (empty query) - a titleless block of rows.
- * Grouping is registry data: a later re-grouping only edits these entries and
- * the items' [SettingsPageItem.group], never the page code.
- */
+/** Titleless Global card; grouping remains registry data. */
 data class SettingsPageGroup(
     val group: Int,
 )
@@ -68,20 +76,18 @@ val SettingsPageGroups: List<SettingsPageGroup> = (1..7).map(::SettingsPageGroup
 /** The About category, hoisted to the first position of the global page. */
 val SettingsAboutItem = SettingsCategories.first { it.tab == 8 }
 
-/**
- * Items shown on the global page for an empty query (spec order): the About
- * category first, the Update item second, then the remaining categories in
- * tab order (General..Misc). [SettingsCategories] itself keeps tab order 0..8.
- */
+/** Global order includes Update after About and Glass after Theme and Interface. */
 val SettingsPageItems: List<SettingsPageItem> = OrganizedSettingsCategories.map { category ->
     SettingsPageItem(category.labelRes, category.iconRes, category.descriptionRes, category.group, categoryId = category.id)
-}.let { listOf(it.first(), SettingsUpdateItem) + it.drop(1) }
+}.flatMap { item ->
+    when (item.categoryId) {
+        "about" -> listOf(item, SettingsUpdateItem)
+        "interface" -> listOf(item, SettingsGlassItem)
+        else -> listOf(item)
+    }
+}
 
-/**
- * One settings card in the global search registry. [focusId] is the deep-link
- * focus value the tab supports for this card ("" when the tab has none);
- * [keywordRes] = card title + inner entry names/descriptions (string resources).
- */
+/** Searchable card with its legacy tab, focus target and keyword resources. */
 data class SettingsCardRegistryEntry(
     val tab: Int,
     val titleRes: Int,
@@ -172,6 +178,9 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.sort_menu, R.string.songs, R.string.artists, R.string.albums,
             R.string.playlists, R.string.history,
         )),
+    SettingsCardRegistryEntry(1, R.string.floating_dock_settings, R.drawable.ellipsis_horizontal,
+        keywordRes = listOf(R.string.floating_dock_settings, R.string.floating_dock_toolbar_order,
+            R.string.compact_miniplayer_slot_1, R.string.compact_miniplayer_slot_2, R.string.toolbar)),
     SettingsCardRegistryEntry(1, R.string.toolbar, R.drawable.ellipsis_horizontal,
         keywordRes = listOf(R.string.toolbar, R.string.songs, R.string.artists, R.string.albums, R.string.playlists)),
     SettingsCardRegistryEntry(1, R.string.burger_menu, R.drawable.burger, focusId = "burger",
@@ -460,11 +469,7 @@ fun visibleCardTitleRes(context: Context, tab: Int, query: String): Set<Int> {
     return searchSettingsCards(context, query).filter { it.tab == tab }.mapTo(HashSet()) { it.titleRes }
 }
 
-/**
- * Global search at the item level: case-insensitive `contains` on the Update
- * item's label and keywords (the 9 categories are not part of the search
- * results). Blank query returns no item results.
- */
+/** Searches dedicated Global destinations; categories have their own search results. */
 fun searchSettingsPageItems(context: Context, query: String): List<SettingsPageItem> {
     if (query.isBlank()) return emptyList()
     val queryLower = query.lowercase()

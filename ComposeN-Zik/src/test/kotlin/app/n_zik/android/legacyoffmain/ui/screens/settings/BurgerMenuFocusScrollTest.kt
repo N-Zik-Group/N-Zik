@@ -1,5 +1,9 @@
 package app.n_zik.android.legacyoffmain.ui.screens.settings
 
+import androidx.compose.foundation.layout.WindowInsets
+
+import app.n_zik.android.LocalPlayerAwareWindowInsets
+
 import android.app.Application
 import android.content.Context
 import android.os.Looper
@@ -105,7 +109,7 @@ class BurgerMenuFocusScrollTest {
     @OptIn(ExperimentalAnimationApi::class, UnstableApi::class)
     private fun showDataSettings(focus: String = "") {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 DataSettings(navController = navController, focus = focus)
             }
         }

@@ -1,12 +1,13 @@
 package app.n_zik.android.components.settings.network
 
+import app.n_zik.android.components.settings.common.settingsTopContentPadding
+
 import app.n_zik.android.components.tab.Search
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.produceState
@@ -39,7 +40,6 @@ import app.n_zik.android.components.settings.common.visibleCardTitleRes
 import app.n_zik.android.components.settings.common.settingsSearchContent
 import app.n_zik.android.components.settings.common.settingsSearchDescription
 import app.n_zik.android.components.settings.common.settingsSearchTitle
-import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.preferences
@@ -49,7 +49,6 @@ import androidx.compose.runtime.LaunchedEffect
 import app.n_zik.android.components.settings.OfflineModeSettingsCard
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.first
-import app.n_zik.android.components.settings.common.SettingsGroupSpacer
 import app.n_zik.android.components.settings.common.SettingsDescription
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -98,6 +97,7 @@ fun NetworkSettings(
             .fillMaxWidth()
             .verticalScroll(scrollState)
             .onGloballyPositioned { containerTopY = it.positionInRoot().y }
+            .settingsTopContentPadding()
     ) {
         settingsSearchTitle(searchFocus, R.string.tab_network, R.drawable.network)
 
@@ -133,9 +133,6 @@ fun NetworkSettings(
             cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, query = search.inputValue) { cards() } }
         )
 
-        SettingsGroupSpacer(
-            modifier = Modifier.height(Dimensions.bottomSpacer)
-        )
 
     }
 }

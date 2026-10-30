@@ -12,6 +12,7 @@ import app.it.fast4x.rimusic.enums.NavRoutes
 import app.n_zik.android.core.navigation.ScreenTransitions
 import app.n_zik.android.core.navigation.LocalSettingsBackNavigation
 import app.n_zik.android.components.search.SearchResultsViewport
+import androidx.compose.ui.Modifier
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
@@ -37,6 +38,9 @@ import app.n_zik.android.components.settings.data.DataSettings
 import app.n_zik.android.components.settings.network.NetworkSettings
 import app.n_zik.android.components.settings.other.OtherSettings
 import app.n_zik.android.components.settings.ui.UiSettings
+import app.n_zik.android.components.settings.ui.GlassSettingsPage
+import app.n_zik.android.components.settings.common.SETTINGS_GLASS_ROUTE
+import app.n_zik.android.components.settings.common.isGlassSettingsLink
 import app.n_zik.android.components.settings.accounts.isYouTubeLoginEnabled
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger
@@ -58,24 +62,7 @@ private const val SETTINGS_TAB_ROUTE = "settingsTab"
 private fun settingsTabRoute(tab: Int, focus: String): String =
     "$SETTINGS_TAB_ROUTE?tab=$tab" + if (focus.isEmpty()) "" else "&focus=$focus"
 
-/**
- * Settings host: the global page is the main destination, each settings tab is
- * its own internal navigation destination (one route, tab + focus as params)
- * in a nested [NavHost]. Back from a tab returns to the global page, back from
- * the global page exits Settings to home; the standard app screen transition
- * plays on every switch (same [transitionEffectKey] config as the app-level
- * NavHost). Tab state is preserved on return by the NavHost's per-entry
- * saveable state (the same mechanism the legacy host used via
- * SaveableStateProvider).
- *
- * External deep-link contract unchanged: `settings?tab=X&focus=Y` opens the
- * tab directly (pushed on top of the global page, so back still returns to
- * the global page first); `settings` alone opens the global page.
- *
- * [miniPlayer] is kept for signature parity: the real mini player is rendered
- * by MainActivity as an activity-level overlay (visible on every settings
- * screen), the per-screen param was already dead in the legacy host.
- */
+/** Nested settings destinations retain their category back stack. */
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun SettingsScreen(
@@ -94,7 +81,9 @@ fun SettingsScreen(
     val backOwner = remember { Any() }
     val innerEntry by innerNavController.currentBackStackEntryAsState()
     val handleBack by rememberUpdatedState<() -> Unit>({
-        if (!innerNavController.popBackStack(SETTINGS_GLOBAL_ROUTE, inclusive = false)) {
+        if (innerEntry?.destination?.route == SETTINGS_GLASS_ROUTE) {
+            innerNavController.popBackStack()
+        } else if (!innerNavController.popBackStack(SETTINGS_GLOBAL_ROUTE, inclusive = false)) {
             if (!navController.popBackStack(NavRoutes.home.name, inclusive = false)) {
                 navController.navigate(NavRoutes.home.name) {
                     popUpTo(NavRoutes.home.name) { inclusive = true }
@@ -125,7 +114,7 @@ fun SettingsScreen(
     // the global page first (never straight to home).
     LaunchedEffect(Unit) {
         if (isDeepLink) {
-            innerNavController.navigate(settingsTabRoute(initialTab, focus))
+            innerNavController.navigate(if (isGlassSettingsLink(initialTab, focus)) SETTINGS_GLASS_ROUTE else settingsTabRoute(initialTab, focus))
         }
     }
 
@@ -146,6 +135,11 @@ fun SettingsScreen(
             predictivePopEnterTransition = transitions.predictivePopEnterTransition,
             predictivePopExitTransition = transitions.predictivePopExitTransition,
         ) {
+            composable(
+                route = SETTINGS_GLASS_ROUTE,
+            ) {
+                GlassSettingsPage()
+            }
             composable(route = SETTINGS_GLOBAL_ROUTE) {
                 SettingsGlobalPage(
                     onItemSelected = { item: SettingsPageItem ->
@@ -154,7 +148,8 @@ fun SettingsScreen(
                         } ?: item.tab?.let { tab ->
                             innerNavController.navigate(settingsTabRoute(tab, ""))
                         } ?: item.route?.let { route ->
-                            navController.navigate(route)
+                            if (route == SETTINGS_GLASS_ROUTE) innerNavController.navigate(route)
+                            else navController.navigate(route)
                         }
                     },
                     onCardSelected = { tab, cardFocus ->

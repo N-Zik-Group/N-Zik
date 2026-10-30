@@ -1,5 +1,9 @@
 package app.n_zik.android.legacyoffmain.ui.screens.settings
 
+import androidx.compose.foundation.layout.WindowInsets
+
+import app.n_zik.android.LocalPlayerAwareWindowInsets
+
 import android.app.Application
 import android.content.Context
 import androidx.compose.foundation.shape.CircleShape
@@ -78,7 +82,7 @@ class RewindMasterToggleSettingsTest {
     @OptIn(UnstableApi::class)
     private fun showScreen(focus: String = "") {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 AIRecommendationSettings(navController = navController, focus = focus)
             }
         }

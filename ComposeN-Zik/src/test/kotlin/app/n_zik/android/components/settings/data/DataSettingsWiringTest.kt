@@ -1,5 +1,9 @@
 package app.n_zik.android.components.settings.data
 
+import androidx.compose.foundation.layout.WindowInsets
+
+import app.n_zik.android.LocalPlayerAwareWindowInsets
+
 import app.n_zik.android.components.settings.common.LocalSettingsSearchMessage
 import java.time.Duration
 import android.app.Application
@@ -105,7 +109,7 @@ class DataSettingsWiringTest {
 
     private fun show(focus: String = "") {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { searchMessages += it }) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance, LocalSettingsSearchMessage provides { searchMessages += it }) {
                 DataSettings(navController = mockk(relaxed = true), focus = focus)
             }
         }

@@ -1,11 +1,12 @@
 package app.n_zik.android.components.settings.ai
 
+import app.n_zik.android.components.settings.common.settingsTopContentPadding
+
 import kotlin.math.roundToInt
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -26,7 +27,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import kotlinx.coroutines.flow.first
 import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.rememberPreference
@@ -40,7 +40,6 @@ import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.RewindSettingsCard
 import app.n_zik.android.components.settings.common.SettingsCardSlot
 import app.n_zik.android.components.settings.common.SettingsDescription
-import app.n_zik.android.components.settings.common.SettingsGroupSpacer
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
 import app.n_zik.android.components.settings.common.settingsSearchContent
 import app.n_zik.android.components.settings.common.settingsSearchDescription
@@ -95,6 +94,7 @@ fun AIRecommendationSettings(
             .fillMaxWidth()
             .verticalScroll(scrollState)
             .onGloballyPositioned { containerTopY = it.positionInRoot().y }
+            .settingsTopContentPadding()
     ) {
 
 
@@ -139,9 +139,6 @@ fun AIRecommendationSettings(
         )
 
 
-        SettingsGroupSpacer(
-            modifier = Modifier.height(Dimensions.bottomSpacer)
-        )
 
     }
 }

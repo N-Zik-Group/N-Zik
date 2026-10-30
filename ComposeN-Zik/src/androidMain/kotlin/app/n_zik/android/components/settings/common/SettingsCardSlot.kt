@@ -3,8 +3,8 @@ package app.n_zik.android.components.settings.common
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.State
@@ -19,6 +19,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 internal const val SettingsSourceFooter = -1
 
@@ -32,11 +33,21 @@ internal val LocalSettingsCardSlots = staticCompositionLocalOf<SettingsCardSlots
 
 /** Keeps restart actions composed outside the lazy viewport and above the player inset. */
 @Composable
-internal fun SettingsPinnedFooter(bottomSpacer: Dp, content: @Composable () -> Unit) {
+internal fun SettingsPinnedFooter(
+    bottomSpacer: Dp,
+    contentPadding: PaddingValues = PaddingValues(bottom = bottomSpacer),
+    onVisibilityChanged: (Boolean) -> Unit = {},
+    content: @Composable () -> Unit,
+) {
     var visible by remember { mutableStateOf(false) }
-    Column {
-        Column(Modifier.onSizeChanged { visible = it.height > 0 }) { content() }
-        if (visible) Spacer(Modifier.height(bottomSpacer))
+    Column(Modifier.padding(if (visible) contentPadding else PaddingValues(0.dp))) {
+        Column(Modifier.onSizeChanged {
+            val hasContent = it.height > 0
+            if (visible != hasContent) {
+                visible = hasContent
+                onVisibilityChanged(hasContent)
+            }
+        }) { content() }
     }
 }
 

@@ -11,7 +11,9 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,8 +23,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,7 +32,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -49,6 +48,7 @@ import app.it.fast4x.rimusic.utils.secondary
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.ui.header.HeaderBadgeBox
 import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.search.SearchResultsViewport
 import app.n_zik.android.components.search.SearchHistorySection
@@ -63,20 +63,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/**
- * Global settings entry page: always-visible search bar plus, for an empty
- * query, the items grouped into the registry's titleless group cards (card 1 =
- * About + Update, card 2 = the 8 categories - the grouping is registry data
- * only, the page never reorders rows; every row is a single line: icon +
- * label + chevron, no displayed description); a non-empty query shows the
- * card-level results instead, with the Update item indexed too. Host-agnostic:
- * no dependency on the 9-tab bottom bar nor on [Skeleton].
- *
- * Settings-only focus behavior: focusing the search bar fades out and
- * collapses the title (layout removal, so the bar rises to the title's
- * level); the group cards do a plain alpha fade in place (no layout
- * movement); search results stay fully visible.
- */
+/** Searchable settings hub; an empty query displays the registry groups. */
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun SettingsGlobalPage(
@@ -87,6 +74,7 @@ fun SettingsGlobalPage(
 ) {
     val context = LocalContext.current
     val scrollState = rememberLazyListState()
+    val overscroll = rememberOverscrollEffect()
 
     var searchInput by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
     var isSearchFocused by remember { mutableStateOf(false) }
@@ -128,9 +116,12 @@ fun SettingsGlobalPage(
         history.value = SearchHistoryStore.record(context.preferences, SearchHistoryStore.PAGE_SETTINGS_GLOBAL, query)
     }
 
+    // Keep drawing behind navigation/player overlays; only the final content gets clearance.
     SearchResultsViewport {
         LazyColumn(
             state = scrollState,
+            contentPadding = rememberSettingsContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
+            overscrollEffect = if (scrollState.canScrollForward || scrollState.canScrollBackward) overscroll else null,
             modifier = Modifier
                 .background(colorPalette().background0)
                 .fillMaxWidth()
@@ -184,8 +175,7 @@ fun SettingsGlobalPage(
             }
 
             if (query.isBlank()) {
-                // Plain alpha fade (no layout removal): the page content disappears
-                // without moving or collapsing, the bar rise comes from the title.
+                // Keep group state composed while releasing its height after the focus fade.
                 item(key = "groups", contentType = "groups") {
                     Column(modifier = Modifier.settingsSearchContentVisibility(contentAlpha)) {
                         SettingsPageGroups.forEach { group ->
@@ -228,11 +218,11 @@ fun SettingsGlobalPage(
                     }
                 }
                 items(itemResults, key = { "item_${it.labelRes}" }, contentType = { "item" }) { item ->
-                    GlobalPageCard(testTag = "settings_result_card_update") {
-                        UpdateRow(
+                    GlobalPageCard(testTag = "settings_result_item_${item.route}") {
+                        GlobalPageItemRow(
                             item = item,
                             onItemSelected = { recordSearchQuery(); onItemSelected(it) },
-                            testTag = "settings_global_result_update",
+                            testTag = if (item == SettingsUpdateItem) "settings_global_result_update" else "settings_global_result_${item.route}",
                         )
                     }
                 }
@@ -250,39 +240,28 @@ fun SettingsGlobalPage(
                 }
             }
 
-            item(key = "bottom_space", contentType = "bottom_space") {
-                Spacer(modifier = Modifier.height(Dimensions.bottomSpacer).testTag("settings_global_bottom_space"))
-            }
         }
     }
 }
 
-/**
- * Titleless group card of the global page: a plain rounded block holding the
- * group's rows (spec: cards without title/header). Same container look as
- * [SettingsSectionCard].
- */
+/** Native titleless container for Global rows. */
 @Composable
 private fun GlobalPageCard(
     testTag: String,
     content: @Composable () -> Unit,
 ) {
+    val containerColor = surfaceColor(colorPalette().background1)
     Column(modifier = Modifier.fillMaxWidth()) {
-        Card(
+        SettingsCardSurface(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .testTag(testTag)
-                .shadow(
-                    elevation = 4.dp,
-                    shape = uiRoundnessShape(),
-                    spotColor = colorPalette().accent.copy(alpha = 0.2f)
-                ),
+                .testTag(testTag),
             shape = uiRoundnessShape(),
-            colors = CardDefaults.cardColors(
-                containerColor = surfaceColor(colorPalette().background1)
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            containerColor = containerColor,
+            backgroundColor = colorPalette().background0,
+            shadowColor = colorPalette().accent.copy(alpha = 0.2f),
+            shadowElevation = 4.dp
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 content()
@@ -294,29 +273,29 @@ private fun GlobalPageCard(
 
 /** One row of a group card (single line, no displayed description): a category row, or the Update row with its trailing state. */
 @Composable
-private fun GlobalPageItemRow(
+internal fun GlobalPageItemRow(
     item: SettingsPageItem,
     onItemSelected: (SettingsPageItem) -> Unit,
+    testTag: String = if (item == SettingsUpdateItem) "settings_global_update" else "settings_global_category_${item.categoryId ?: item.route ?: item.tab}",
 ) {
-    if (item.route == null) {
+    if (item != SettingsUpdateItem) {
         OtherSettingsEntry(
             title = stringResource(item.labelRes),
             text = "",
             icon = item.iconRes,
-            modifier = Modifier.clip(uiRoundnessShape()).testTag("settings_global_category_${item.categoryId ?: item.tab}"),
-            onClick = { onItemSelected(item) }
+            modifier = Modifier.clip(uiRoundnessShape()).testTag(testTag),
+            onClick = { onItemSelected(item) },
+            titlePrefix = if (item == SettingsGlassItem) ({
+                HeaderBadgeBox(stringResource(R.string.beta_title), colorPalette().accent,
+                    modifier = Modifier.testTag("settings.glass.beta"))
+            }) else null,
         )
     } else {
-        UpdateRow(item = item, onItemSelected = onItemSelected)
+        UpdateRow(item = item, onItemSelected = onItemSelected, testTag = testTag)
     }
 }
 
-/**
- * Update row: trailing status on the right on auto-update builds; on builds
- * without auto-update the row is greyed, non-clickable and carries the
- * explanation on the right, marqueeing instead of wrapping when it overflows
- * the row (same condition and message as the About tab's greyed card).
- */
+/** Updater row with an opt-in debug layout entry independent of auto-update. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun UpdateRow(
@@ -325,16 +304,24 @@ private fun UpdateRow(
     testTag: String = "settings_global_update",
 ) {
     val autoUpdate = hasAutoUpdate()
+    val debugAccess by rememberPreference(DEBUG_UPDATER_ACCESS_KEY, false)
+    val canOpen = canOpenUpdater(autoUpdate, BuildConfig.DEBUG, debugAccess)
     OtherSettingsEntry(
         title = stringResource(item.labelRes),
         text = "",
         icon = item.iconRes,
         modifier = Modifier.testTag(testTag),
-        isEnabled = autoUpdate,
+        isEnabled = canOpen,
         onClick = { onItemSelected(item) },
         trailingContent = {
             if (autoUpdate) {
                 UpdateRowTrailingStatus()
+            } else if (canOpen) {
+                BasicText(
+                    text = stringResource(R.string.debug),
+                    style = typography().xxs.secondary,
+                    modifier = Modifier.testTag("settings_global_update_debug_preview"),
+                )
             } else {
                 BasicText(
                     text = stringResource(R.string.description_app_not_installed_by_apk),
@@ -349,12 +336,7 @@ private fun UpdateRow(
     )
 }
 
-/**
- * Trailing status of the Update row (auto-update builds): the same info the
- * About tab's removed update block showed - the release status plus the last
- * check - joined on one compact line, separated by a middle dot. Marquees
- * instead of wrapping when it overflows the row.
- */
+/** Release status and last-check date, constrained to the trailing column. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun UpdateRowTrailingStatus() {
@@ -386,12 +368,7 @@ private fun UpdateRowTrailingStatus() {
     )
 }
 
-/**
- * Always-visible search bar of the global settings page, rendered by the
- * unified app-wide [UnifiedSearchBar] (design reference: Android settings
- * search); the page owns the input state, no coupling with the per-tab
- * [Search] class.
- */
+/** Global search uses the same focus and Back behavior as other settings searches. */
 @Composable
 internal fun SettingsGlobalSearchBar(
     input: TextFieldValue,

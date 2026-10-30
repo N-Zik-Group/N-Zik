@@ -1,7 +1,6 @@
 package app.n_zik.android.components.settings.common
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -13,8 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +20,7 @@ import androidx.compose.runtime.remember
 import app.it.fast4x.rimusic.utils.color
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
@@ -31,7 +29,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
@@ -60,6 +57,7 @@ fun SettingsSectionCard(
     }
     val isHighlighted = highlightedCard != null && title == stringResource(highlightedCard.titleRes)
     val cardColor = surfaceColor(colorPalette().background1)
+    val containerColor = if (isHighlighted) lerp(cardColor, colorPalette().accent, 0.22f) else cardColor
     val resetScope = LocalSettingsResetScope.current
     val displayTitle = if (resetScope != null && title == stringResource(R.string.settings_reset))
         stringResource(R.string.settings_reset_scope, stringResource(resetScope)) else title
@@ -73,20 +71,15 @@ fun SettingsSectionCard(
         exit = settingsCardExit
     ) {
         Column(modifier = modifier.fillMaxWidth()) {
-            Card(
+            SettingsCardSurface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .shadow(
-                        elevation = 4.dp,
-                        shape = uiRoundnessShape(),
-                        spotColor = colorPalette().accent.copy(alpha = 0.2f)
-                    ),
+                    .padding(horizontal = 16.dp),
                 shape = uiRoundnessShape(),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isHighlighted) lerp(cardColor, colorPalette().accent, 0.22f) else cardColor
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                containerColor = containerColor,
+                backgroundColor = colorPalette().background0,
+                shadowColor = colorPalette().accent.copy(alpha = 0.2f),
+                shadowElevation = 4.dp
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp)
@@ -99,7 +92,7 @@ fun SettingsSectionCard(
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
-                                .background(
+                                .iconBadgeBackground(
                                     color = colorPalette().accent.copy(alpha = 0.1f),
                                     shape = uiRoundnessShape()
                                 ),

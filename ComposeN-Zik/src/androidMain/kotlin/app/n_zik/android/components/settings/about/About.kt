@@ -1,11 +1,11 @@
 package app.n_zik.android.components.settings.about
 
+import app.n_zik.android.components.settings.common.settingsTopContentPadding
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -13,15 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
-import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
-import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.settings.common.SettingsCardSlot
 import app.n_zik.android.components.settings.common.SettingsDescription
-import app.n_zik.android.components.settings.common.SettingsGroupSpacer
 
 /** About page with autonomous information, support and contributor cards. */
 @Suppress("UNUSED_PARAMETER") // Retained navigation signature for existing callers.
@@ -34,14 +30,9 @@ fun About(navController: NavController) {
             .fillMaxHeight()
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
+            .settingsTopContentPadding()
     ) {
-
-
-        if (UiType.ViMusic.isCurrent())
-            if (NavigationBarPosition.Right.isCurrent() || NavigationBarPosition.Left.isCurrent())
-                Spacer(Modifier.height(Dimensions.halfheaderHeight))
-
-         HeaderWithIcon(
+        HeaderWithIcon(
              title = stringResource(R.string.about),
              iconId = R.drawable.information,
              enabled = false,
@@ -56,11 +47,6 @@ fun About(navController: NavController) {
         )
 
         AboutSettingsContent()
-
-        SettingsGroupSpacer(
-            modifier = Modifier.height(Dimensions.bottomSpacer)
-        )
-
     }
 }
 

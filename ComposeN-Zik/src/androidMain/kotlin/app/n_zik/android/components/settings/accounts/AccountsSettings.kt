@@ -1,12 +1,13 @@
 package app.n_zik.android.components.settings.accounts
 
+import app.n_zik.android.components.settings.common.settingsTopContentPadding
+
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,7 +28,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.enableYouTubeLoginKey
 import app.it.fast4x.rimusic.utils.enableYouTubeSyncKey
 import app.it.fast4x.rimusic.utils.encryptedPreferences
@@ -49,7 +49,6 @@ import app.n_zik.android.components.settings.ListenTogetherSettingsCard
 import app.n_zik.android.components.settings.ProfileFaceCard
 import app.n_zik.android.components.settings.common.SettingsCardSlot
 import app.n_zik.android.components.settings.common.SettingsDescription
-import app.n_zik.android.components.settings.common.SettingsGroupSpacer
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
 import app.n_zik.android.components.settings.common.settingsSearchContent
 import app.n_zik.android.components.settings.common.settingsSearchDescription
@@ -110,6 +109,7 @@ fun AccountsSettings(
             .fillMaxWidth()
             .verticalScroll(scrollState)
             .onGloballyPositioned { containerTopY = it.positionInRoot().y }
+            .settingsTopContentPadding()
     ) {
 
         settingsSearchTitle(searchFocus, R.string.tab_accounts, R.drawable.person)
@@ -153,9 +153,6 @@ fun AccountsSettings(
         )
 
 
-        SettingsGroupSpacer(
-            modifier = Modifier.height(Dimensions.bottomSpacer)
-        )
 
     }
 }

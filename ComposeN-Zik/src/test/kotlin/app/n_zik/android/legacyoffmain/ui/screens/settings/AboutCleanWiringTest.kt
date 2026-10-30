@@ -1,5 +1,9 @@
 package app.n_zik.android.legacyoffmain.ui.screens.settings
 
+import androidx.compose.foundation.layout.WindowInsets
+
+import app.n_zik.android.LocalPlayerAwareWindowInsets
+
 import android.app.Application
 import android.content.Context
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -78,7 +82,7 @@ class AboutCleanWiringTest {
     @Test
     fun theUpdateBlockIsRemovedFromTheAboutTab() {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 About(navController = navController)
             }
         }
@@ -101,7 +105,7 @@ class AboutCleanWiringTest {
     @Test
     fun theAppInfoTroubleshootingAndContributorsStay() {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 About(navController = navController)
             }
         }

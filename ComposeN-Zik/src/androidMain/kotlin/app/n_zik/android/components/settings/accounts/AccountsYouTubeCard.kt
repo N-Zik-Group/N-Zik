@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.media3.common.util.UnstableApi
 import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
-import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
+import app.n_zik.android.components.glass.CustomModalBottomSheet
 import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.it.fast4x.rimusic.utils.autosyncAlbumsKey
 import app.it.fast4x.rimusic.utils.autosyncArtistsKey
@@ -270,6 +270,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                                     ) {
                                         if (accountThumbnail.isNotEmpty()) {
                                             ImageCacheFactory.AsyncImage(
+                                                shape = thumbnailShape(),
                                                 thumbnailUrl = accountThumbnail,
                                                 contentDescription = null,
                                                 modifier = Modifier

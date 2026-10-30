@@ -1,5 +1,9 @@
 package app.n_zik.android.components.settings
 
+import androidx.compose.foundation.layout.WindowInsets
+
+import app.n_zik.android.LocalPlayerAwareWindowInsets
+
 import app.n_zik.android.components.settings.general.GeneralSettingsContent
 import app.n_zik.android.components.tab.Search
 import androidx.compose.ui.test.onNodeWithTag
@@ -90,7 +94,7 @@ class GeneralSettingsWiringTest {
 
     private fun showGeneralTab(focus: String = "") {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 GeneralSettings(focus = focus)
             }
         }
@@ -150,7 +154,7 @@ class GeneralSettingsWiringTest {
 
     @Test fun selectedContentDoesNotNestThePageShell() {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     GeneralSettingsContent(
                         search = Search(initialVisible = true),
@@ -217,7 +221,7 @@ class GeneralSettingsWiringTest {
         // scroll animation by hand (see the class KDoc).
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 GeneralSettings(focus = "pip")
             }
         }
@@ -286,7 +290,7 @@ class GeneralSettingsWiringTest {
     }
     @Test fun autoLoadRemainsFunctionalWhenOnlyQueueManagementIsComposed() {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     GeneralSettingsContent(
                         search = Search(initialVisible = false),
@@ -307,7 +311,7 @@ class GeneralSettingsWiringTest {
 
     private fun showSelectedCard(titleRes: Int) {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     GeneralSettingsContent(
                         search = Search(initialVisible = false),

@@ -34,6 +34,7 @@ import app.it.fast4x.rimusic.utils.semiBold
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.DialogColorPicker
 import app.n_zik.android.components.dialog.common.StringListDialog
@@ -225,7 +226,7 @@ fun OtherSwitchSettingEntry(
                 Box(
                     modifier = Modifier
                         .size(32.dp)
-                        .background(
+                        .iconBadgeBackground(
                             color = colorPalette().accent.copy(alpha = 0.1f),
                             shape = uiRoundnessShape()
                         ),
@@ -305,7 +306,7 @@ fun SettingsEntry(
     onClick: () -> Unit,
     isEnabled: Boolean = true,
     selectedValueText: String? = null,
-    trailingContent: (@Composable () -> Unit)? = null
+    trailingContent: (@Composable () -> Unit)? = null,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -474,7 +475,8 @@ fun SliderSettingsEntry(
     usePadding: Boolean = true,
     icon: Int? = null,
     isIntegerOnly: Boolean = false,
-    trailingContent: (@Composable () -> Unit)? = null
+    inputValueText: ((Float) -> String)? = null,
+    trailingContent: (@Composable () -> Unit)? = null,
 ) = Column(modifier = modifier) {
 
     val manualEnterDialog = object: IDialog {
@@ -488,7 +490,9 @@ fun SliderSettingsEntry(
         override var isActive: Boolean by rememberSaveable { mutableStateOf(false) }
         override var value: String by remember( valueFloat ) {
             val isInteger = isIntegerOnly || kotlin.math.abs(valueFloat - kotlin.math.round(valueFloat)) < 0.001f
-            val formatted = if (isInteger) kotlin.math.round(valueFloat).toInt().toString() else "%.1f".format( valueFloat ).replace(",", ".")
+            val formatted = inputValueText?.invoke(valueFloat)
+                ?: if (isInteger) kotlin.math.round(valueFloat).toInt().toString()
+                else "%.1f".format(valueFloat).replace(",", ".")
             mutableStateOf( formatted )
         }
 
@@ -552,7 +556,8 @@ fun OtherSettingsEntry(
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
     selectedValueText: String? = null,
-    trailingContent: (@Composable () -> Unit)? = null
+    trailingContent: (@Composable () -> Unit)? = null,
+    titlePrefix: (@Composable () -> Unit)? = null,
 ) {
     Surface(
         modifier = modifier
@@ -579,7 +584,7 @@ fun OtherSettingsEntry(
                 Box(
                     modifier = Modifier
                         .size(32.dp)
-                        .background(
+                        .iconBadgeBackground(
                             color = colorPalette().accent.copy(alpha = 0.1f),
                             shape = uiRoundnessShape()
                         ),
@@ -597,12 +602,15 @@ fun OtherSettingsEntry(
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
-                    BasicText(
-                        text = title,
-                        style = typography().s.semiBold.copy(
-                            color = colorPalette().text
-                        )
-                    )
+                    if (titlePrefix == null) {
+                        BasicText(text = title, style = typography().s.semiBold.copy(color = colorPalette().text))
+                    } else {
+                        Row(verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            titlePrefix()
+                            BasicText(text = title, style = typography().s.semiBold.copy(color = colorPalette().text))
+                        }
+                    }
                     if (text.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(2.dp))
                         BasicText(
@@ -704,7 +712,7 @@ fun OtherInfoSettingsEntry(
                 Box(
                     modifier = Modifier
                         .size(32.dp)
-                        .background(
+                        .iconBadgeBackground(
                             color = colorPalette().accent.copy(alpha = 0.1f),
                             shape = uiRoundnessShape()
                         ),
@@ -778,7 +786,7 @@ fun CacheSettingsEntry(
                 Box(
                     modifier = Modifier
                         .size(32.dp)
-                        .background(
+                        .iconBadgeBackground(
                             color = colorPalette().accent.copy(alpha = 0.1f),
                             shape = uiRoundnessShape()
                         ),
@@ -858,7 +866,7 @@ fun ModernSettingsEntry(
                 Box(
                     modifier = Modifier
                         .size(32.dp)
-                        .background(
+                        .iconBadgeBackground(
                             color = colorPalette().accent.copy(alpha = 0.1f),
                             shape = uiRoundnessShape()
                         ),

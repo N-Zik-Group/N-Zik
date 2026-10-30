@@ -1,5 +1,27 @@
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.components.settings.common.rememberSettingsContentPadding
+
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+
+import app.n_zik.android.components.navigation.LocalSideRailContentInsets
+
+import app.n_zik.android.LocalPlayerAwareWindowInsets
+
+import androidx.compose.ui.unit.Density
+
+import androidx.compose.ui.platform.LocalDensity
+
+import androidx.compose.foundation.layout.size
+
+import androidx.compose.foundation.layout.fillMaxWidth
+
+import androidx.compose.foundation.layout.WindowInsets
+
+import androidx.compose.foundation.layout.PaddingValues
+
+import androidx.compose.foundation.layout.Box
+
 import android.app.Application
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -112,6 +134,61 @@ class SettingsCardSlotTest {
             enabled.value = false
         }
         composeRule.runOnIdle { assertEquals(listOf(1, 3), slots.titles.toList()) }
+    }
+
+    @Test fun `pinned restart footer owns bottom clearance once and releases it back to the list`() {
+        val warning = mutableStateOf(false)
+        val hasFooter = mutableStateOf(false)
+        composeRule.setContent {
+            CompositionLocalProvider(
+                LocalDensity provides Density(1f),
+                LocalPlayerAwareWindowInsets provides WindowInsets(bottom = 140.dp),
+                LocalSideRailContentInsets provides WindowInsets(left = 50.dp),
+            ) {
+                Column(Modifier.size(300.dp, 400.dp).testTag("footer-root")) {
+                    LazyColumn(
+                        modifier = Modifier.weight(1f).testTag("footer-list"),
+                        contentPadding = rememberSettingsContentPadding(
+                            base = PaddingValues(bottom = 100.dp),
+                            bottomInsetHandledByFooter = hasFooter.value,
+                        ),
+                    ) {
+                        items(20) { index ->
+                            Box(Modifier.fillMaxWidth().height(30.dp).testTag("footer-row-$index"))
+                        }
+                    }
+                    SettingsPinnedFooter(
+                        bottomSpacer = 100.dp,
+                        contentPadding = rememberPageChromeContentPadding(
+                            base = PaddingValues(bottom = 100.dp),
+                            topInsetProvider = { 0.dp },
+                        ),
+                        onVisibilityChanged = { hasFooter.value = it },
+                    ) {
+                        if (warning.value) Box(Modifier.fillMaxWidth().height(24.dp).testTag("restart-action"))
+                    }
+                }
+            }
+        }
+        fun scrollToEnd() {
+            composeRule.onNodeWithTag("footer-list").performScrollToIndex(19)
+            composeRule.waitForIdle()
+        }
+        fun bounds(tag: String) = composeRule.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot
+        scrollToEnd()
+        val root = bounds("footer-root")
+        assertEquals(root.bottom - 140f, bounds("footer-row-19").bottom, 0f)
+        composeRule.runOnIdle { warning.value = true }
+        scrollToEnd()
+        val action = bounds("restart-action")
+        assertEquals(root.bottom - 140f, action.bottom, 0f)
+        assertEquals(root.left + 50f, action.left, 0f)
+        assertEquals(action.top, bounds("footer-list").bottom, 0f)
+        assertEquals(action.top, bounds("footer-row-19").bottom, 0f)
+        composeRule.runOnIdle { warning.value = false }
+        scrollToEnd()
+        assertEquals(root.bottom, bounds("footer-list").bottom, 0f)
+        assertEquals(root.bottom - 140f, bounds("footer-row-19").bottom, 0f)
     }
 
     @Test fun `restart prompt stays accessible after scrolling and releases its inset when dismissed`() {

@@ -1,19 +1,12 @@
 package app.n_zik.android.components.settings.general
 
-import androidx.compose.animation.AnimatedVisibility
+import app.n_zik.android.components.settings.common.settingsTopContentPadding
+
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -26,16 +19,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
-import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -43,7 +31,6 @@ import app.n_zik.android.components.dialog.settings.AppShortcutsSettingsDialog
 import app.n_zik.android.components.settings.common.SettingsCardSlot
 import app.n_zik.android.components.settings.common.SettingsSourceFooter
 import app.n_zik.android.components.settings.common.SettingsDescription
-import app.n_zik.android.components.settings.common.SettingsGroupSpacer
 import androidx.compose.ui.text.input.TextFieldValue
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
@@ -117,6 +104,7 @@ fun GeneralSettings(
             .fillMaxWidth()
             .verticalScroll(scrollState)
             .onGloballyPositioned { containerTopY = it.positionInRoot().y }
+            .settingsTopContentPadding()
     ) {
         settingsSearchTitle(searchFocus, R.string.tab_general, R.drawable.ic_launcher_monochrome)
 
@@ -157,9 +145,6 @@ fun GeneralSettings(
             cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, query = search.inputValue, content = cards) },
         )
 
-        SettingsGroupSpacer(
-            modifier = Modifier.height(Dimensions.bottomSpacer)
-        )
     }
 }
 

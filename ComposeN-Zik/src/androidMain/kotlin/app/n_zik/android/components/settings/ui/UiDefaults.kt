@@ -163,6 +163,7 @@ import app.n_zik.android.components.dialog.settings.QuickPicksContentSettingsDia
 
 /** Applies the legacy Interface reset once to the active profile and dialog stores. */
 internal fun applyUiDefaults(context: Context) {
+    context.preferences.edit().remove(app.n_zik.android.components.navigation.dock.DockToolbarPreferences.orderKey).apply()
     context.preferences.edit {
         putBoolean(hideStatusBarKey, false)
         putBoolean(keepPlayerMinimizedKey, true)

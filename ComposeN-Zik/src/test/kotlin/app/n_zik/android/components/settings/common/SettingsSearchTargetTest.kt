@@ -1,5 +1,9 @@
 package app.n_zik.android.components.settings.common
 
+import androidx.compose.foundation.layout.WindowInsets
+
+import app.n_zik.android.LocalPlayerAwareWindowInsets
+
 import android.app.Application
 import android.content.Context
 import android.os.Looper
@@ -66,7 +70,7 @@ class SettingsSearchTargetTest {
 
     private fun show(category: String, target: String, parent: String) {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { messages += it }) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance, LocalSettingsSearchMessage provides { messages += it }) {
                 SettingsCategoryPage(category, mockk(relaxed = true), target, parent)
             }
         }

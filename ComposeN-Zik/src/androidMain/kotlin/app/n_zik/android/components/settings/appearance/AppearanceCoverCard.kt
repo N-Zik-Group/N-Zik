@@ -50,7 +50,7 @@ import app.n_zik.android.components.tab.Search
 import app.it.fast4x.rimusic.ui.styling.BoundedCornerSize
 import app.it.fast4x.rimusic.utils.uiRoundnessDpKey
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.TextButton
+import app.n_zik.android.components.glass.PageTextButton as TextButton
 import app.it.fast4x.rimusic.utils.thumbnailSizeLDpKey
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.foundation.layout.Row

@@ -2,6 +2,12 @@ package app.n_zik.android.components.settings.common
 
 import app.n_zik.android.R
 
+const val SETTINGS_GLASS_ROUTE = "settingsGlass"
+
+/** Legacy settings links still open the dedicated Glass destination. */
+fun isGlassSettingsLink(tab: Int, focus: String): Boolean =
+    tab == 1 && focus in setOf("glass", "liquid_glass", "card.1.liquid_glass")
+
 /** Stable category routes; legacy tab numbers remain compatibility routes. */
 data class SettingsCategory(val id: String, val labelRes: Int, val iconRes: Int, val group: Int, val descriptionRes: Int)
 

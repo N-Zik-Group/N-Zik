@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.settings.common.settingsTopContentPadding
+
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -42,7 +44,6 @@ import app.n_zik.android.components.settings.common.visibleCardTitleRes
 import app.n_zik.android.components.settings.common.settingsSearchContent
 import app.n_zik.android.components.settings.common.settingsSearchDescription
 import app.n_zik.android.components.settings.common.settingsSearchTitle
-import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.it.fast4x.rimusic.utils.playerBackgroundColorsKey
 import app.it.fast4x.rimusic.utils.playerTypeKey
@@ -53,7 +54,6 @@ import app.it.fast4x.rimusic.utils.showvisthumbnailKey
 import app.it.fast4x.rimusic.utils.thumbnailpauseKey
 import app.n_zik.android.components.tab.Search
 import androidx.compose.runtime.LaunchedEffect
-import app.n_zik.android.components.settings.common.SettingsGroupSpacer
 import app.n_zik.android.components.settings.common.SettingsDescription
 
 @ExperimentalAnimationApi
@@ -85,6 +85,7 @@ fun AppearanceSettings(
             .fillMaxHeight()
             .fillMaxWidth()
             .verticalScroll(scrollState)
+            .settingsTopContentPadding()
 
     ) {
         settingsSearchTitle(searchFocus, R.string.player_appearance, R.drawable.color_palette)
@@ -123,9 +124,6 @@ fun AppearanceSettings(
             cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, query = search.inputValue, content = cards) },
         )
 
-        SettingsGroupSpacer(
-            modifier = Modifier.height(Dimensions.bottomSpacer)
-        )
     }
 }
 

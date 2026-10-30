@@ -18,14 +18,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
@@ -40,6 +37,7 @@ import app.kreate.android.drawable.APP_ICON_IMAGE_BITMAP
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.settings.common.SettingsCardSurface
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
 import app.n_zik.android.surfaceColor
@@ -51,6 +49,7 @@ import app.n_zik.android.updater.models.UpdateEndpoints
 @Composable
 internal fun AboutAppCard() {
     val uriHandler = LocalUriHandler.current
+    val containerColor = surfaceColor(colorPalette().background1)
     AnimatedVisibility(visible = true, enter = settingsCardEnter, exit = settingsCardExit) {
                          Box(
                 modifier = Modifier
@@ -64,20 +63,15 @@ internal fun AboutAppCard() {
                      horizontalArrangement = Arrangement.spacedBy(12.dp)
                  ) {
 
-                     Card(
+                     SettingsCardSurface(
                          modifier = Modifier
                              .weight(1f)
-                             .fillMaxHeight()
-                    .shadow(
-                        elevation = 8.dp,
-                        shape = uiRoundnessShape(),
-                        spotColor = colorPalette().accent.copy(alpha = 0.3f)
-                    ),
+                             .fillMaxHeight(),
                 shape = uiRoundnessShape(),
-                colors = CardDefaults.cardColors(
-                    containerColor = surfaceColor(colorPalette().background1)
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                containerColor = containerColor,
+                backgroundColor = colorPalette().background0,
+                shadowColor = colorPalette().accent.copy(alpha = 0.3f),
+                shadowElevation = 8.dp
             ) {
                 Column(
                          modifier = Modifier

@@ -1,5 +1,9 @@
 package app.n_zik.android.components.settings.appearance
 
+import androidx.compose.foundation.layout.WindowInsets
+
+import app.n_zik.android.LocalPlayerAwareWindowInsets
+
 import app.n_zik.android.R
 import app.n_zik.android.components.tab.Search
 import androidx.compose.ui.test.isEditable
@@ -76,7 +80,7 @@ class AppearanceSettingsWiringTest {
 
     private fun show() {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 AppearanceSettings(navController = mockk(relaxed = true))
             }
         }
@@ -85,7 +89,7 @@ class AppearanceSettingsWiringTest {
 
     @Test fun selectedContentDoesNotNestThePageShell() {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     AppearanceSettingsContent(
                         search = Search(initialVisible = true),
@@ -114,6 +118,7 @@ class AppearanceSettingsWiringTest {
         )
         composeRule.setContent {
             CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
                 LocalAppearance provides appearance,
                 LocalSettingsTargets provides registry,
             ) {
@@ -186,7 +191,7 @@ class AppearanceSettingsWiringTest {
     @Test fun likeIconHasOneControlAndRemainsSearchableInTimeline() {
         val query = mutableStateOf("")
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     val search = Search(initialVisible = false)
                     search.input = androidx.compose.ui.text.input.TextFieldValue(query.value)

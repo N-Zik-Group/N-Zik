@@ -1,6 +1,8 @@
 package app.n_zik.android.components.settings
 
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.ui.screens.profiles.ProfileAvatarFrame
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -183,11 +185,9 @@ fun ProfileFaceCard(
                     .padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ProfileFaceAvatar(
-                    avatar = shownFace.avatar,
-                    faceName = shownFace.name,
-                    size = 40.dp
-                )
+                ProfileAvatarFrame(size = 40.dp, area = GlassArea.SettingsCards) {
+                    ProfileFaceAvatar(avatar = shownFace.avatar, faceName = shownFace.name, size = 40.dp)
+                }
 
                 Spacer(modifier = Modifier.width(12.dp))
 

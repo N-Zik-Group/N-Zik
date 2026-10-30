@@ -2,11 +2,11 @@ package app.n_zik.android.components.settings.common
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -15,9 +15,13 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -63,6 +67,8 @@ fun SettingsCategoryPage(categoryId: String, navController: NavController, targe
     val searchFocus = rememberSettingsSearchFocus(search.isFocused, search.inputValue.isBlank())
     val registry = remember(categoryId) { SettingsTargetRegistry() }
     val scroll = rememberLazyListState()
+    var hasPinnedFooter by remember(categoryId) { mutableStateOf(false) }
+    val overscroll = rememberOverscrollEffect()
     val showMessage = LocalSettingsSearchMessage.current
     val unavailableMessage = stringResource(R.string.settings_target_unavailable)
     val historyPage = "settings_category_$categoryId"
@@ -153,7 +159,15 @@ fun SettingsCategoryPage(categoryId: String, navController: NavController, targe
                     )
                 }
             }
-            LazyColumn(state = scroll, modifier = Modifier.weight(1f).fillMaxWidth().testTag("settings.category.list.$categoryId")) {
+            LazyColumn(
+                state = scroll,
+                contentPadding = rememberSettingsContentPadding(
+                    base = PaddingValues(bottom = Dimensions.bottomSpacer),
+                    bottomInsetHandledByFooter = hasPinnedFooter,
+                ),
+                overscrollEffect = if (scroll.canScrollForward || scroll.canScrollBackward) overscroll else null,
+                modifier = Modifier.weight(1f).fillMaxWidth().testTag("settings.category.list.$categoryId"),
+            ) {
                 item(key = "header", contentType = "header") {
                     Column {
                         settingsSearchTitle(searchFocus, category.labelRes, category.iconRes)
@@ -203,9 +217,15 @@ fun SettingsCategoryPage(categoryId: String, navController: NavController, targe
                         }
                     }
                 }
-                item(key = "bottom", contentType = "bottom") { Spacer(Modifier.height(Dimensions.bottomSpacer)) }
             }
-            SettingsPinnedFooter(Dimensions.bottomSpacer) {
+            SettingsPinnedFooter(
+                bottomSpacer = Dimensions.bottomSpacer,
+                contentPadding = rememberPageChromeContentPadding(
+                    base = PaddingValues(bottom = Dimensions.bottomSpacer),
+                    topInsetProvider = { 0.dp },
+                ),
+                onVisibilityChanged = { hasPinnedFooter = it },
+            ) {
                 sourceTabs.forEach { tab ->
                     CompositionLocalProvider(
                         LocalSettingsResetScope provides (SettingsCategories.firstOrNull { it.tab == tab }?.labelRes ?: R.string.settings_category_privacy),

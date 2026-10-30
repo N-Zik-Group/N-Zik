@@ -1,5 +1,9 @@
 package app.n_zik.android.components.settings
 
+import androidx.compose.foundation.layout.WindowInsets
+
+import app.n_zik.android.LocalPlayerAwareWindowInsets
+
 import android.app.Application
 import android.content.Context
 import android.os.Looper
@@ -18,6 +22,9 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.FontType
 import app.it.fast4x.rimusic.ui.styling.Appearance
@@ -32,6 +39,11 @@ import app.n_zik.android.MainApplication
 import app.n_zik.android.components.settings.common.SettingsCategoryPage
 import app.n_zik.android.components.settings.common.SettingsResetCard
 import app.n_zik.android.components.settings.common.resetScopeForTarget
+import app.n_zik.android.components.glass.GlassStore
+import app.n_zik.android.components.glass.GlassQuality
+import app.n_zik.android.components.glass.glassEnabledKey
+import app.n_zik.android.components.glass.glassFilmKey
+import app.n_zik.android.components.glass.glassProfileDefaults
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -80,7 +92,7 @@ class SettingsCategoryPageTest {
     @Test fun aboutHasNoSearchInput() {
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 SettingsCategoryPage(categoryId = "about", navController = mockk(relaxed = true))
             }
         }
@@ -93,7 +105,7 @@ class SettingsCategoryPageTest {
     @Test fun emptyFocusedSearchFadesLazyCardsAndTypingRestoresMatchingCards() {
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 SettingsCategoryPage(categoryId = "behavior", navController = mockk(relaxed = true))
             }
         }
@@ -111,12 +123,50 @@ class SettingsCategoryPageTest {
         }
     }
 
+    @Test fun focusedBlankAndUnmatchedAndShortCategoryResultsCannotScroll() {
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
+                SettingsCategoryPage(categoryId = "privacy", navController = mockk(relaxed = true))
+            }
+        }
+        pumpUntil("category search composed") {
+            runCatching { composeRule.onNode(hasSetTextAction()).fetchSemanticsNode() }.isSuccess
+        }
+        val pageBounds = composeRule.onNodeWithTag("settings.category.privacy").fetchSemanticsNode().boundsInRoot
+        val listBounds = composeRule.onNodeWithTag("settings.category.list.privacy").fetchSemanticsNode().boundsInRoot
+        assertEquals("the list must draw behind bottom overlays without a fixed empty band", pageBounds.bottom, listBounds.bottom, 1f)
+        val input = composeRule.onNode(hasSetTextAction())
+        input.performClick()
+        pumpUntil("blank focused content releases its scroll range") { categoryCannotScroll("privacy") }
+        input.performTextInput("zzz_no_match")
+        pumpUntil("unmatched content has no scroll range") { categoryCannotScroll("privacy") }
+        input.performSemanticsAction(SemanticsActions.SetText) {
+            it(androidx.compose.ui.text.AnnotatedString(context.getString(R.string.privacy_screen_protection)))
+        }
+        pumpUntil("short matching card fits the viewport") {
+            runCatching {
+                composeRule.onNodeWithTag("settings.target.card.9.privacy_screen_protection", useUnmergedTree = true).assertIsDisplayed()
+                categoryCannotScroll("privacy")
+            }.getOrDefault(false)
+        }
+        composeRule.onNodeWithTag("settings.category.list.privacy")
+            .performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 1000f) }
+        pumpUntil("short matching content cannot move") { categoryCannotScroll("privacy") }
+    }
+
+    private fun categoryCannotScroll(category: String): Boolean {
+        val range = composeRule.onNodeWithTag("settings.category.list.$category")
+            .fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange]
+        return range.value() == 0f && range.maxValue() == 0f
+    }
+
     @Test fun mixedSourceCategoryHasOneScrollContainerAndTargetsTheActualSetting() {
         val before = context.preferences.all.toMap()
         val target = "ui.swipe_to_action.queue_and_local_playlists_right_swipe"
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 SettingsCategoryPage(
                     categoryId = "behavior",
                     navController = mockk(relaxed = true),
@@ -146,7 +196,7 @@ class SettingsCategoryPageTest {
     @Test fun `reset picker exposes scopes without composing an action until explicitly selected`() {
         val before = context.preferences.all.toMap()
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 SettingsResetCard((0..7).toList(), "") { scope ->
                     Text("Reset action", Modifier.testTag("reset.action.$scope"))
                 }
@@ -167,7 +217,7 @@ class SettingsCategoryPageTest {
     @Test fun `reset search targets open only their original scope without changing preferences`() {
         val before = context.preferences.all.toMap()
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 SettingsResetCard((0..7).toList(), "appearance.settings_reset.settings_reset") { scope ->
                     Text("Reset action", Modifier.testTag("reset.action.$scope"))
                 }
@@ -185,11 +235,32 @@ class SettingsCategoryPageTest {
         assertEquals(null, resetScopeForTarget("general.playback.audio_quality"))
     }
 
+    @Test fun `Glass reset scope restores current quality defaults without changing master or other settings`() {
+        val store = GlassStore(context)
+        store.setProfile(GlassQuality.Quality)
+        store.setFloat(glassFilmKey, .263f)
+        context.preferences.edit().putBoolean(glassEnabledKey, true).commit()
+        val before = context.preferences.all.toMap()
+        composeRule.setContent {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
+                SettingsResetCard((0..7).toList(), "") { scope ->
+                    Text("Other reset $scope")
+                }
+            }
+        }
+        composeRule.onNodeWithTag("settings.reset.open").performClick()
+        composeRule.onNodeWithTag("settings.reset.scope.-1").performScrollTo().performClick()
+        assertEquals(.263f, store.read().film)
+        composeRule.onNodeWithTag("settings.reset.glass.action").performClick()
+        assertEquals(glassProfileDefaults(GlassQuality.Quality), store.read())
+        assertEquals(before, context.preferences.all)
+    }
+
     @Test fun `system reset search opens the existing action without applying its defaults`() {
         val before = context.preferences.all.toMap()
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
                 SettingsCategoryPage(
                     categoryId = "system",
                     navController = mockk(relaxed = true),

@@ -2,7 +2,6 @@ package app.n_zik.android.components.settings
 
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,6 +42,9 @@ import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.BuildConfig
+import app.n_zik.android.components.settings.common.DEBUG_UPDATER_ACCESS_KEY
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.logs.CopyLogsDialog
 import app.n_zik.android.components.maintenance.MaintenanceHealth
@@ -203,6 +205,16 @@ fun MaintenanceSettingsCard(
 //
             // the debug-dependent options while the switch is off)
             CardCategoryLabel(stringResource(R.string.debug))
+            if (BuildConfig.DEBUG) {
+                var updaterLayoutAccess by rememberPreference(DEBUG_UPDATER_ACCESS_KEY, false)
+                OtherSwitchSettingEntry(
+                    title = stringResource(R.string.debug_updater_layout_access),
+                    text = stringResource(R.string.debug_updater_layout_access_description),
+                    isChecked = updaterLayoutAccess,
+                    onCheckedChange = { updaterLayoutAccess = it },
+                    icon = R.drawable.refresh,
+                )
+            }
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.maintenance.enable_log_debug"),
                 title = stringResource(R.string.enable_log_debug),
@@ -284,7 +296,7 @@ private fun MaintenancePassRow(
             Box(
                 modifier = Modifier
                     .size(32.dp)
-                    .background(
+                    .iconBadgeBackground(
                         color = palette.accent.copy(alpha = 0.1f),
                         shape = uiRoundnessShape(),
                     ),

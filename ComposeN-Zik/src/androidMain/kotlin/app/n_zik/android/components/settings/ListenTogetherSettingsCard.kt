@@ -12,7 +12,6 @@ package app.n_zik.android.components.settings
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,7 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
+import app.n_zik.android.components.glass.PageButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -48,7 +47,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
+import app.n_zik.android.components.glass.SampledMenuSheet
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
@@ -56,6 +55,7 @@ import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.it.fast4x.rimusic.utils.semiBold
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.components.menu.ListMenu
@@ -328,7 +328,7 @@ internal fun ServerChooserSheet(
         if (showSheet) customUrl = currentUrl
     }
 
-    CustomModalBottomSheet(
+    SampledMenuSheet(
         showSheet = showSheet,
         onDismissRequest = onDismiss,
         containerColor = Color.Transparent,
@@ -471,7 +471,7 @@ internal fun UsernameSheet(
         if (showSheet) tempUsername = savedUsername
     }
 
-    CustomModalBottomSheet(
+    SampledMenuSheet(
         showSheet = showSheet,
         onDismissRequest = onDismiss,
         containerColor = Color.Transparent,
@@ -564,7 +564,7 @@ private fun SettingIcon(@DrawableRes icon: Int, color: Color) {
         modifier =
             Modifier
                 .size(32.dp)
-                .background(color.copy(alpha = 0.1f), uiRoundnessShape()),
+                .iconBadgeBackground(color.copy(alpha = 0.1f), uiRoundnessShape()),
         contentAlignment = Alignment.Center,
     ) {
         Icon(

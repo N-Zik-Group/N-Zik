@@ -29,7 +29,7 @@ import org.robolectric.annotation.Config
 class SettingsSearchVisibilityTest {
     @get:Rule val composeRule = createComposeRule()
 
-    @Test fun fullyFadedContentKeepsSpaceButCannotBeClickedOrFoundInSemantics() {
+    @Test fun fullyFadedContentReleasesSpaceAndCannotBeClickedOrFoundInSemantics() {
         val focused = mutableStateOf(false)
         val query = mutableStateOf("")
         var clicks = 0
@@ -46,7 +46,7 @@ class SettingsSearchVisibilityTest {
         assertEquals(1, clicks)
         composeRule.runOnIdle { focused.value = true }
         composeRule.mainClock.advanceTimeBy(500)
-        composeRule.onNodeWithTag("space").assertHeightIsEqualTo(80.dp)
+        composeRule.onNodeWithTag("space").assertHeightIsEqualTo(0.dp)
         composeRule.onNodeWithTag("action").assertDoesNotExist()
         composeRule.onNodeWithTag("action", useUnmergedTree = true).assertIsNotDisplayed()
         composeRule.onRoot().performTouchInput { click(Offset(bounds.center.x, bounds.center.y)) }

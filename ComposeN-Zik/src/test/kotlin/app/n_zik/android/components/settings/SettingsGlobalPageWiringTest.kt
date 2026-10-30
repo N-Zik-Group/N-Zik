@@ -1,7 +1,11 @@
 package app.n_zik.android.components.settings
 
+import androidx.compose.foundation.layout.WindowInsets
+
+import app.n_zik.android.LocalPlayerAwareWindowInsets
+
 import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.assertHeightIsEqualTo
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.unit.Dp
@@ -34,11 +38,13 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.FontType
@@ -56,6 +62,7 @@ import app.n_zik.android.components.settings.common.SettingsPageItem
 import app.n_zik.android.components.settings.common.searchSettingsEntries
 import app.n_zik.android.components.settings.common.parentCard
 import app.n_zik.android.components.settings.common.hasAutoUpdate
+import app.n_zik.android.components.settings.common.DEBUG_UPDATER_ACCESS_KEY
 import app.n_zik.android.updater.models.GithubRelease
 import app.n_zik.android.updater.services.Updater
 import io.mockk.every
@@ -147,7 +154,7 @@ class SettingsGlobalPageWiringTest {
     private fun showGlobalPage(ready: () -> Boolean = { pageIsComposed() }) {
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { messages += it }) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance, LocalSettingsSearchMessage provides { messages += it }) {
                 SettingsGlobalPage(
                     onItemSelected = { selectedItem = it },
                     onCardSelected = { tab, focus -> selectedCard = tab to focus },
@@ -185,18 +192,54 @@ class SettingsGlobalPageWiringTest {
         composeRule.onNodeWithTag("settings_global_search").assertTextEquals("Audio controls")
     }
 
-    @Test fun globalPageReservesTheSharedBottomNavigationSpace() {
+    @Test fun globalListDrawsThroughTheBottomInsetAndKeepsLastContentAboveIt() {
         var expected: Dp = 0.dp
+        var expectedPixels = 0f
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { messages += it }) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance, LocalSettingsSearchMessage provides { messages += it }) {
                 expected = Dimensions.bottomSpacer
+                expectedPixels = with(androidx.compose.ui.platform.LocalDensity.current) { expected.toPx() }
                 SettingsGlobalPage(onItemSelected = {}, onCardSelected = { _, _ -> })
             }
         }
         pumpUntil("global page", 30_000) { pageIsComposed() }
-        scrollToGlobalNode("settings_global_bottom_space")
-        composeRule.onNodeWithTag("settings_global_bottom_space").assertHeightIsEqualTo(expected)
+        val list = composeRule.onNodeWithTag("settings_global_list").fetchSemanticsNode()
+        val root = composeRule.onRoot().fetchSemanticsNode()
+        assertEquals("navigation/player overlays must not clip the viewport", root.boundsInRoot.bottom, list.boundsInRoot.bottom, 1f)
+        assertTrue(expected > 0.dp)
+        composeRule.onNodeWithTag("settings_global_bottom_space").assertDoesNotExist()
+        composeRule.onNodeWithTag("settings_global_list").performSemanticsAction(SemanticsActions.ScrollBy) {
+            it(0f, 100000f)
+        }
+        settle()
+        val last = composeRule.onNodeWithTag("settings_global_category_system").fetchSemanticsNode()
+        assertTrue("the final row must clear navigation/player overlays", last.boundsInRoot.bottom <= list.boundsInRoot.bottom - expectedPixels + 1f)
+    }
+
+    private fun assertGlobalCannotScroll() {
+        val list = composeRule.onNodeWithTag("settings_global_list")
+        list.performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 1000f) }
+        settle()
+        val range = list.fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange]
+        assertEquals("no forward or backward scroll range", 0f, range.maxValue(), 0f)
+        assertEquals(0f, range.value(), 0f)
+    }
+
+    @Test fun focusedBlankAndUnmatchedAndSingleResultSearchesCannotScroll() {
+        showGlobalPage()
+        composeRule.onNodeWithTag("settings_global_search").performClick()
+        settle()
+        assertGlobalCannotScroll()
+        composeRule.onNodeWithTag("settings_global_search").performTextInput("zzz_no_match")
+        settle()
+        assertGlobalCannotScroll()
+        composeRule.onNodeWithTag("settings_global_search").performSemanticsAction(SemanticsActions.SetText) {
+            it(androidx.compose.ui.text.AnnotatedString(context.getString(R.string.skip_silence)))
+        }
+        settle()
+        composeRule.onNodeWithTag("settings_global_entry_general.audio_effects.skip_silence").assertIsDisplayed()
+        assertGlobalCannotScroll()
     }
 
     @Test
@@ -312,7 +355,7 @@ class SettingsGlobalPageWiringTest {
         // clock and pump until it is composed (see the class KDoc).
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { messages += it }) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance, LocalSettingsSearchMessage provides { messages += it }) {
                 SettingsGlobalPage(
                     onItemSelected = { selectedItem = it },
                     onCardSelected = { tab, focus -> selectedCard = tab to focus },
@@ -352,6 +395,21 @@ class SettingsGlobalPageWiringTest {
         assertEquals(NavRoutes.updater.name, item?.route)
         assertEquals(null, item?.tab)
         assertEquals(R.string.update, item?.labelRes)
+    }
+
+    @Test
+    fun debugOptInOpensUpdaterWithoutEnablingAutoUpdate() {
+        every { hasAutoUpdate() } returns false
+        context.preferences.edit().putBoolean(DEBUG_UPDATER_ACCESS_KEY, true).commit()
+        showGlobalPage()
+
+        composeRule.onNodeWithTag("settings_global_update").assertIsEnabled().performClick()
+        settle()
+
+        assertEquals(NavRoutes.updater.name, selectedItem?.route)
+        composeRule.onNodeWithTag("settings_global_update_debug_preview", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("settings_global_update_status", useUnmergedTree = true).assertDoesNotExist()
+        assertEquals(false, hasAutoUpdate())
     }
 
     @Test
@@ -441,7 +499,7 @@ class SettingsGlobalPageWiringTest {
         lateinit var navigation: NavHostController
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { messages += it }) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance, LocalSettingsSearchMessage provides { messages += it }) {
                 navigation = rememberNavController()
                 NavHost(navigation, startDestination = "global") {
                     composable("global") {
@@ -475,7 +533,6 @@ class SettingsGlobalPageWiringTest {
     private fun scrollToGlobalNode(tag: String) {
         val key = when {
             tag == "settings_global_search" -> "search_controls"
-            tag == "settings_global_bottom_space" -> "bottom_space"
             tag == "settings_global_result_update" -> "item_${R.string.update}"
             tag.startsWith("settings_global_entry_") -> "entry_${tag.removePrefix("settings_global_entry_")}"
             tag.startsWith("settings_global_result_") -> "card_${tag.removePrefix("settings_global_result_")}"
@@ -495,8 +552,10 @@ class SettingsGlobalPageWiringTest {
         settle()
         composeRule.onNodeWithTag("settings_global_entry_${results.first().id}").assertExists()
         composeRule.onNodeWithTag(lastTag).assertDoesNotExist()
+        val range = composeRule.onNodeWithTag("settings_global_list").fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange]
+        assertTrue("many results must retain genuine scrolling", range.maxValue() > 0f)
         scrollToGlobalNode(lastTag)
-        composeRule.onNodeWithTag(lastTag).assertExists().performClick()
+        composeRule.onNodeWithTag(lastTag).assertIsDisplayed().performClick()
         settle()
         assertEquals(results.last().tab to results.last().parentCard().focusId, selectedCard)
     }

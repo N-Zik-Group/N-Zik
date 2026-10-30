@@ -61,7 +61,8 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
 import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
+import app.n_zik.android.components.glass.CustomModalBottomSheet
+import app.n_zik.android.components.glass.glassChipBackground
 import app.it.fast4x.rimusic.utils.discordAvatarKey
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
 import app.it.fast4x.rimusic.utils.discordUsernameKey
@@ -75,6 +76,7 @@ import app.it.fast4x.rimusic.utils.semiBold
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DefaultDialog
@@ -335,7 +337,7 @@ internal fun AccountsDiscordCard(search: Search) {
                                         overflow = TextOverflow.Ellipsis,
                                         modifier = Modifier
                                             .clip(uiRoundnessShape())
-                                            .background(
+                                            .glassChipBackground(
                                                 if (selected) chipPalette.accent
                                                 else chipPalette.accent.copy(alpha = 0.15f),
                                                 uiRoundnessShape()
@@ -391,6 +393,7 @@ internal fun AccountsDiscordCard(search: Search) {
                                         ) {
                                             if (discordAvatar.isNotEmpty()) {
                                                 ImageCacheFactory.AsyncImage(
+                                                    shape = thumbnailShape(),
                                                     thumbnailUrl = discordAvatar,
                                                     contentDescription = null,
                                                     modifier = Modifier
@@ -1122,7 +1125,7 @@ private fun DiscordTemplateFieldDialog(
                     modifier = Modifier
                         .clip(uiRoundnessShape())
                         .clickable { text += placeholder }
-                        .background(palette.accent.copy(alpha = 0.15f), uiRoundnessShape())
+                        .glassChipBackground(palette.accent.copy(alpha = 0.15f), uiRoundnessShape())
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 )
             }
@@ -1206,7 +1209,7 @@ private fun DiscordLogoSettingsEntry(
                 Box(
                     modifier = Modifier
                         .size(32.dp)
-                        .background(
+                        .iconBadgeBackground(
                             color = colorPalette().accent.copy(alpha = 0.1f),
                             shape = uiRoundnessShape()
                         ),
@@ -1454,6 +1457,7 @@ private fun DiscordRpcPreviewCard(
                     ) {
                         if (artworkUrl != null) {
                             ImageCacheFactory.AsyncImage(
+                                shape = RoundedCornerShape(12.dp),
                                 thumbnailUrl = artworkUrl,
                                 contentDescription = null,
                                 modifier = Modifier
@@ -1590,7 +1594,7 @@ private fun DiscordRpcPreviewCard(
                                     style = typography().s.copy(color = Color.White),
                                     modifier = Modifier
                                         .clip(uiRoundnessShape())
-                                        .background(palette.accent.copy(alpha = 0.15f), uiRoundnessShape())
+                                        .glassChipBackground(palette.accent.copy(alpha = 0.15f), uiRoundnessShape())
                                         .padding(horizontal = 10.dp, vertical = 4.dp)
                                         .clickable { cardContext.openDiscordButtonUrl(button.url) },
                                     maxLines = 1,

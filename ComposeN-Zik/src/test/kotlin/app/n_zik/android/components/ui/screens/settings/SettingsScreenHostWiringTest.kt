@@ -1,5 +1,9 @@
 package app.n_zik.android.components.ui.screens.settings
 
+import androidx.compose.foundation.layout.WindowInsets
+
+import app.n_zik.android.LocalPlayerAwareWindowInsets
+
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
@@ -34,6 +38,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.performTextInput
@@ -51,6 +56,9 @@ import app.n_zik.android.R
 import app.n_zik.android.core.navigation.LocalSettingsBackNavigation
 import app.n_zik.android.core.navigation.SettingsBackNavigation
 import app.n_zik.android.components.settings.common.hasAutoUpdate
+import app.n_zik.android.components.settings.common.isGlassSettingsLink
+import app.n_zik.android.components.glass.GlassStore
+import app.n_zik.android.components.glass.GlassQuality
 import app.it.fast4x.rimusic.utils.encryptedPreferences
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
@@ -127,6 +135,8 @@ class SettingsScreenHostWiringTest {
     fun setUp() {
         setActiveProfile("default", context)
         context.preferences.edit().clear().commit()
+        context.getSharedPreferences("nzik_square_glass_v2", Context.MODE_PRIVATE).edit().clear().commit()
+        GlassStore(context).setProfile(GlassQuality.Performance)
         val mainApplication = mockk<MainApplication>()
         every { mainApplication.applicationContext } returns context
         Dependencies.init(mainApplication)
@@ -180,6 +190,7 @@ class SettingsScreenHostWiringTest {
         })
         composeRule.setContent {
             CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
                 LocalAppearance provides appearance,
                 LocalSettingsBackNavigation provides backNavigation,
             ) {
@@ -195,17 +206,16 @@ class SettingsScreenHostWiringTest {
         // alone is not enough to declare the transition settled)
         pumpUntil("the host is composed", 30_000) {
             runCatching {
-                if (initialTab != 0 || focus.isNotEmpty()) tabIsComposed() && globalPageIsGone()
+                if (isGlassSettingsLink(initialTab, focus)) glassPageIsComposed() && globalPageIsGone()
+                else if (initialTab != 0 || focus.isNotEmpty()) tabIsComposed() && globalPageIsGone()
                 else globalPageIsComposed()
             }.getOrDefault(false)
         }
     }
 
     private fun globalPageIsComposed(): Boolean =
-        runCatching {
-            composeRule.onNodeWithTag("settings_global_update").fetchSemanticsNode()
-            composeRule.onNodeWithTag("settings_global_category_about").fetchSemanticsNode()
-        }.isSuccess
+        composeRule.onAllNodesWithTag("settings_global_update").fetchSemanticsNodes().size == 1 &&
+            composeRule.onAllNodesWithTag("settings_global_category_about").fetchSemanticsNodes().size == 1
 
     private fun globalPageIsGone(): Boolean =
         composeRule.onAllNodesWithTag("settings_global_update").fetchSemanticsNodes().isEmpty()
@@ -223,6 +233,68 @@ class SettingsScreenHostWiringTest {
     private fun categoryIsComposed(): Boolean = runCatching {
         composeRule.onNodeWithTag("settings.category.playback", useUnmergedTree = true).fetchSemanticsNode()
     }.isSuccess
+
+    private fun glassPageIsComposed(): Boolean =
+        composeRule.onAllNodesWithTag("settings.glass").fetchSemanticsNodes().size == 1
+
+    private fun scrollGlobalToGlassEntry() {
+        val list = composeRule.onNodeWithTag("settings_global_list")
+        list.performScrollToKey("groups")
+        repeat(12) {
+            composeRule.mainClock.advanceTimeBy(500)
+            Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(500))
+            val viewport = list.fetchSemanticsNode()
+            val row = composeRule.onAllNodesWithTag("settings_global_category_settingsGlass", useUnmergedTree = true)
+                .fetchSemanticsNodes().singleOrNull()
+            val relativeTop = row?.let { it.positionInRoot.y - viewport.positionInRoot.y }
+            if (row != null && relativeTop != null && relativeTop >= 0f && relativeTop + row.size.height <= viewport.size.height) return
+            val distance = relativeTop?.minus(64f) ?: (viewport.size.height * .5f)
+            list.performSemanticsAction(SemanticsActions.ScrollBy) { scroll -> scroll(0f, distance) }
+        }
+        assertTrue("Glass Global entry should become visible after bounded list scrolling", false)
+    }
+
+    @Test
+    fun glassGlobalEntryUsesInnerNavigationAndToolbarBackReturnsToGlobal() {
+        showHost()
+        scrollGlobalToGlassEntry()
+        composeRule.onNodeWithTag("settings_global_category_settingsGlass", useUnmergedTree = true).performClick()
+        pumpUntil("Glass page opened", 30_000) { glassPageIsComposed() && globalPageIsGone() }
+        composeRule.onNodeWithTag("settings.glass.master").assertExists()
+        composeRule.runOnIdle { assertTrue(backNavigation.handleBack()) }
+        pumpUntil("Global restored", 30_000) { globalPageIsComposed() && !glassPageIsComposed() }
+        verify(exactly = 0) { navController.navigate("settingsGlass") }
+    }
+
+    @Test
+    fun glassSearchOpensDedicatedPageAndSystemBackRestoresQuery() {
+        showHost()
+        val query = context.getString(R.string.liquid_glass)
+        composeRule.onNodeWithTag("settings_global_search").performTextInput(query)
+        composeRule.mainClock.advanceTimeBy(500)
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(500))
+        composeRule.onNodeWithTag("settings_global_list").performScrollToKey("item_${R.string.liquid_glass}")
+        pumpUntil("Glass search result", 30_000) {
+            composeRule.onAllNodesWithTag("settings_global_result_settingsGlass").fetchSemanticsNodes().size == 1
+        }
+        composeRule.onNodeWithTag("settings_global_result_settingsGlass").performClick()
+        pumpUntil("Glass page opened", 30_000) { glassPageIsComposed() && globalPageIsGone() }
+        testActivity.onBackPressedDispatcher.onBackPressed()
+        pumpUntil("search restored", 30_000) {
+            composeRule.onAllNodesWithTag("settings_global_search").fetchSemanticsNodes().size == 1 && !glassPageIsComposed()
+        }
+        composeRule.onNodeWithTag("settings_global_search").assertTextEquals(query)
+        verify(exactly = 0) { navController.navigate("settingsGlass") }
+        verify(exactly = 0) { navController.popBackStack(NavRoutes.home.name, false) }
+    }
+
+    @Test
+    fun legacyGlassDeepLinkReturnsToGlobal() {
+        showHost(initialTab = 1, focus = "glass")
+        composeRule.onNodeWithTag("settings.glass.preview").assertIsDisplayed()
+        composeRule.runOnIdle { assertTrue(backNavigation.handleBack()) }
+        pumpUntil("Global restored from Glass deep link", 30_000) { globalPageIsComposed() && !glassPageIsComposed() }
+    }
 
     @Test
     fun enteringWithoutADeepLinkShowsTheGlobalPage() {
@@ -406,6 +478,7 @@ class SettingsScreenHostWiringTest {
             nestedObservedInParent = router.hasNestedBackStack
             val transitions = remember { ScreenTransitions(TransitionEffect.Fade) }
             CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
                 LocalAppearance provides appearance,
                 LocalSettingsBackNavigation provides router,
             ) {

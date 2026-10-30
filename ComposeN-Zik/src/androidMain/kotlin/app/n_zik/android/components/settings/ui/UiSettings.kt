@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.components.settings.common.settingsTopContentPadding
+
 import kotlin.math.roundToInt
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -7,7 +9,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -28,7 +29,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import kotlinx.coroutines.flow.first
-import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.rememberPreference
@@ -60,7 +60,6 @@ import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
 import app.n_zik.android.components.settings.common.SettingsDescription
-import app.n_zik.android.components.settings.common.SettingsGroupSpacer
 import app.n_zik.android.components.settings.common.settingsSearchContent
 import app.n_zik.android.components.settings.common.settingsSearchDescription
 import app.n_zik.android.components.settings.common.settingsSearchTitle
@@ -110,6 +109,7 @@ fun UiSettings(navController: NavController, focus: String = "") {
             .fillMaxWidth()
             .verticalScroll(scrollState)
             .onGloballyPositioned { containerTopY = it.positionInRoot().y }
+            .settingsTopContentPadding()
     ) {
 
         settingsSearchTitle(searchFocus, R.string.user_interface, R.drawable.ic_launcher_monochrome)
@@ -146,7 +146,6 @@ fun UiSettings(navController: NavController, focus: String = "") {
             onCardPosition = { _, top -> burgerCardTopY = top },
             cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, query = search.inputValue, content = cards) },
         )
-        SettingsGroupSpacer(modifier = Modifier.height(Dimensions.bottomSpacer))
     }
 }
 
@@ -162,6 +161,7 @@ internal fun UiSettingsContent(
     onCardPosition: (String, Float) -> Unit = { _, _ -> },
     cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
 ) {
+    app.n_zik.android.components.dialog.settings.DockToolbarSettingsDialog.Render()
     HomeTabsSettingsDialog.Render()
     HomePlaylistsSettingsDialog.Render()
     HomeSongsSettingsDialog.Render()
@@ -183,6 +183,11 @@ internal fun UiSettingsContent(
         if (selectedCards == null || R.string.user_interface in selectedCards) {
             SettingsCardSlot(R.string.user_interface, modifier = { cardModifier(R.string.user_interface) }) {
                 UiInterfaceCard(search)
+            }
+        }
+        if (selectedCards == null || R.string.floating_dock_settings in selectedCards) {
+            SettingsCardSlot(R.string.floating_dock_settings, modifier = { cardModifier(R.string.floating_dock_settings) }) {
+                UiFloatingDockCard(search)
             }
         }
         if (selectedCards == null || R.string.theme in selectedCards) {

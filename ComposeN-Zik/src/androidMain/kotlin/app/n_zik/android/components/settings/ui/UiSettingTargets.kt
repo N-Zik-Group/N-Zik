@@ -143,6 +143,12 @@ internal object UiSettingTargets {
                 "HistorySortSettingsDialog",
             ),
         ),
+        UiCardTargets("ui.card.floating-dock",
+            preferenceKeys = listOf(
+                app.n_zik.android.components.navigation.dock.DockToolbarPreferences.orderKey,
+            ),
+            actions = listOf("DockToolbarSettingsDialog"),
+        ),
         UiCardTargets("ui.card.toolbars",
             actions = listOf(
                 "HomeSongsToolbarSettingsDialog",

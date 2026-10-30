@@ -14,6 +14,9 @@ import app.n_zik.android.components.settings.common.SettingsCards
 import app.n_zik.android.components.settings.common.SettingsPageGroups
 import app.n_zik.android.components.settings.common.SettingsPageItems
 import app.n_zik.android.components.settings.common.SettingsUpdateItem
+import app.n_zik.android.components.settings.common.SettingsGlassItem
+import app.n_zik.android.components.settings.common.SETTINGS_GLASS_ROUTE
+import app.n_zik.android.components.settings.common.isGlassSettingsLink
 import app.n_zik.android.components.settings.common.searchSettingsCards
 import app.n_zik.android.components.settings.common.searchSettingsPageItems
 import app.n_zik.android.components.settings.common.visibleCardTitleRes
@@ -33,19 +36,36 @@ class SettingsRegistrySearchTest {
 
     @Test
     fun theGlobalPageListsAboutThenUpdateAndThematicDestinations() {
-        assertEquals(18, SettingsPageItems.size)
+        assertEquals(19, SettingsPageItems.size)
         assertEquals("about", SettingsPageItems.first().categoryId)
         assertTrue(SettingsPageItems[1] === SettingsUpdateItem)
         assertEquals(
             listOf("playback", "audio", "behavior", "interface", "player", "privacy", "data", "downloads", "network",
                 "youtube", "profiles", "services", "ai", "rewind", "maintenance", "system"),
-            SettingsPageItems.drop(2).map { it.categoryId },
+            SettingsPageItems.drop(2).filter { it != SettingsGlassItem }.map { it.categoryId },
         )
         assertEquals(NavRoutes.updater.name, SettingsUpdateItem.route)
         assertEquals(null, SettingsUpdateItem.tab)
-        assertTrue(SettingsPageItems.filter { it !== SettingsUpdateItem }.all { it.tab == null && it.route == null })
+        assertTrue(SettingsPageItems.filter { it !== SettingsUpdateItem && it !== SettingsGlassItem }.all { it.tab == null && it.route == null })
         // Legacy deep links retain their original tab numbers independently of hub order.
         assertEquals((0..8).toList(), SettingsCategories.map { it.tab })
+    }
+
+    @Test
+    fun glassHasItsOwnDestinationBesideInterfaceAndSearchFindsItsControls() {
+        val interfaceIndex = SettingsPageItems.indexOfFirst { it.categoryId == "interface" }
+        assertEquals(SettingsGlassItem, SettingsPageItems[interfaceIndex + 1])
+        assertEquals(SettingsPageItems[interfaceIndex].group, SettingsGlassItem.group)
+        assertEquals(SETTINGS_GLASS_ROUTE, SettingsGlassItem.route)
+        assertTrue(cardsForCategory("interface").none { it.titleRes == R.string.liquid_glass })
+        listOf(R.string.liquid_glass, R.string.liquid_glass_enable, R.string.glass_refraction_depth, R.string.glass_indicator).forEach { label ->
+            assertTrue(searchSettingsPageItems(context, context.getString(label)).contains(SettingsGlassItem))
+        }
+        listOf("glass", "liquid_glass", "card.1.liquid_glass").forEach { focus ->
+            assertTrue(isGlassSettingsLink(1, focus))
+        }
+        assertTrue(!isGlassSettingsLink(1, "burger"))
+        assertTrue(!isGlassSettingsLink(0, "glass"))
     }
 
     @Test

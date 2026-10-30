@@ -30,7 +30,7 @@ internal val SettingsSearchBarPadding = PaddingValues(16.dp)
  * Search focus behavior, shared by the settings pages (global page and every
  * per-tab page), the local search screen and the history screen: focusing
  * the search bar collapses the page title (the bar rises to the title's
- * level), fades the content out in place (plain alpha, no layout movement),
+ * level), fades the content out in place, then releases its measured space,
  * and keeps the same 16dp search bar margins as Online Search.
  * The content only fades while the query is blank - filtered cards act as
  * search results and stay fully visible.
@@ -88,20 +88,20 @@ fun ColumnScope.settingsSearchTitle(
     }
 }
 
-/** Keeps the measured space while removing fully faded children from input and accessibility. */
+/** Keeps state composed, but fully faded children occupy no scroll range or input space. */
 internal fun Modifier.settingsSearchContentVisibility(alpha: Float): Modifier =
     graphicsLayer { this.alpha = alpha }
         .then(if (alpha <= 0f) Modifier.clearAndSetSemantics { } else Modifier)
         .layout { measurable, constraints ->
             val placeable = measurable.measure(constraints)
-            layout(placeable.width, placeable.height) {
+            layout(placeable.width, if (alpha > 0f) placeable.height else 0) {
                 if (alpha > 0f) placeable.placeRelative(0, 0)
             }
         }
 
 /**
  * Content wrapper of a settings page: a plain alpha fade while the search bar
- * is focused (no layout removal, so nothing moves or collapses).
+ * is focused, releasing its height after the fade finishes.
  */
 @Composable
 fun settingsSearchContent(

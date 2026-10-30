@@ -108,6 +108,7 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget("ui.theme.color_accent", 1, R.string.theme, R.string.color_accent, listOf(R.string._light)),
     SettingsEntryTarget("ui.theme.title_reset_customized_dark_colors", 1, R.string.theme, R.string.title_reset_customized_dark_colors, listOf(R.string.click_to_reset_default_dark_colors)),
     SettingsEntryTarget("ui.theme.theme_mode", 1, R.string.theme, R.string.theme_mode),
+    SettingsEntryTarget("ui.floating_dock.toolbar_order", 1, R.string.floating_dock_settings, R.string.floating_dock_toolbar_order, listOf(R.string.toolbar)),
     SettingsEntryTarget("ui.toolbar.songs", 1, R.string.toolbar, R.string.songs, listOf(R.string.customize_toolbar)),
     SettingsEntryTarget("ui.toolbar.artists", 1, R.string.toolbar, R.string.artists, listOf(R.string.customize_toolbar)),
     SettingsEntryTarget("ui.toolbar.albums", 1, R.string.toolbar, R.string.albums, listOf(R.string.customize_toolbar)),

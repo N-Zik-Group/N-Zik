@@ -283,10 +283,10 @@ class UiSettingsPreferencesTest {
         }
     }
 
-    @Test fun `target inventory covers nine cards and stable unique setting and action identities`() {
-        assertEquals(listOf("theme", "interface", "font", "swipe", "home-tabs", "sort-menus", "toolbars", "burger", "reset"), UiSettingTargets.cards.map { it.id.removePrefix("ui.card.") })
-        assertEquals(listOf(24, 13, 4, 7, 0, 0, 0, 0, 0), UiSettingTargets.cards.map { it.preferenceKeys.size })
-        assertEquals(listOf(2, 2, 0, 0, 5, 6, 5, 1, 1), UiSettingTargets.cards.map { it.actions.size })
+    @Test fun `target inventory covers ten cards and stable unique setting and action identities`() {
+        assertEquals(listOf("theme", "interface", "font", "swipe", "home-tabs", "sort-menus", "floating-dock", "toolbars", "burger", "reset"), UiSettingTargets.cards.map { it.id.removePrefix("ui.card.") })
+        assertEquals(listOf(24, 13, 4, 7, 0, 0, 3, 0, 0, 0), UiSettingTargets.cards.map { it.preferenceKeys.size })
+        assertEquals(listOf(2, 2, 0, 0, 5, 6, 1, 5, 1, 1), UiSettingTargets.cards.map { it.actions.size })
         assertEquals(UiSettingTargets.ids.size, UiSettingTargets.ids.toSet().size)
         assertTrue(UiSettingTargets.ids.none { it.contains(' ') })
         assertEquals(UiSettingTargets.ids.toSet(), UiSettingTargets.cards.reversed().flatMap { card ->

@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
+import app.n_zik.android.components.glass.PageButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -48,7 +48,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
+import app.n_zik.android.components.glass.SampledMenuSheet
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
@@ -129,6 +129,7 @@ fun LastFmSettingsCard() {
                         ) {
                             if (lastfmAvatarUrl.isNotEmpty()) {
                                 ImageCacheFactory.AsyncImage(
+                                    shape = thumbnailShape(),
                                     thumbnailUrl = lastfmAvatarUrl,
                                     contentDescription = stringResource(R.string.lastfm_username),
                                     modifier = Modifier
@@ -247,7 +248,7 @@ fun LastFmSettingsCard() {
                         }
                     }
 
-                    CustomModalBottomSheet(
+                    SampledMenuSheet(
                         showSheet = loginLastfm,
                         onDismissRequest = {
                             loginLastfm = false

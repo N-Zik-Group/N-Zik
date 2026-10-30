@@ -1,5 +1,9 @@
 package app.n_zik.android.components.settings.ui
 
+import androidx.compose.foundation.layout.WindowInsets
+
+import app.n_zik.android.LocalPlayerAwareWindowInsets
+
 import app.n_zik.android.components.settings.common.LocalSettingsSearchMessage
 import app.n_zik.android.components.tab.Search
 import androidx.compose.ui.platform.testTag
@@ -95,7 +99,7 @@ class UiSettingsWiringTest {
 
     private fun show(focus: String = "") {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { searchMessages += it }) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance, LocalSettingsSearchMessage provides { searchMessages += it }) {
                 UiSettings(navController = mockk(relaxed = true), focus = focus)
             }
         }
@@ -104,7 +108,7 @@ class UiSettingsWiringTest {
 
     @Test fun selectedContentDoesNotNestThePageShell() {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { searchMessages += it }) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance, LocalSettingsSearchMessage provides { searchMessages += it }) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     UiSettingsContent(
                         search = Search(initialVisible = true),
@@ -243,7 +247,7 @@ class UiSettingsWiringTest {
     @Test fun statusBarControlBelongsToInterfaceAndKeepsItsPreference() {
         val selected = androidx.compose.runtime.mutableStateOf(setOf(R.string.settings_use_font_type))
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsSearchMessage provides { searchMessages += it }) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance, LocalSettingsSearchMessage provides { searchMessages += it }) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     UiSettingsContent(
                         search = Search(initialVisible = false),
