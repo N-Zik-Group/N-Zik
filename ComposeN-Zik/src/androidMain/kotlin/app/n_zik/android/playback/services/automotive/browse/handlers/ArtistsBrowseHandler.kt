@@ -12,7 +12,7 @@ import app.it.fast4x.rimusic.utils.showFavoritesArtistKey
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
-import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
+import app.n_zik.android.playback.services.automotive.models.CancellableAutoMediaItemMapper
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
@@ -56,20 +56,20 @@ class ArtistsBrowseHandler : BrowseHandler {
                 val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_ARTISTS_LIBRARY_SHUFFLE)
                 val sortBy = context.preferences.getEnum(Preference.HOME_ARTISTS_LIBRARY_SORT_BY.key, ArtistSortBy.Name)
                 val sortOrder = context.preferences.getEnum(Preference.HOME_ARTISTS_LIBRARY_SORT_ORDER.key, SortOrder.Ascending)
-                val artists = database.artistTable.sortInLibrary(sortBy, sortOrder).first().filter { it.dislikedAt == null }.map { artist -> SessionMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, artist.id, artist.name ?: "", artist.thumbnailUrl) }
+                val artists = database.artistTable.sortInLibrary(sortBy, sortOrder).first().filter { it.dislikedAt == null }.map { artist -> CancellableAutoMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, artist.id, artist.name ?: "", artist.thumbnailUrl) }
                 listOf(shuffleItem) + artists
             }
             AutoSessionConstants.ID_ARTISTS_FAVORITES -> {
                 val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_ARTISTS_FAVORITES_SHUFFLE)
                 val sortBy = context.preferences.getEnum(Preference.HOME_ARTISTS_FAVORITES_SORT_BY.key, ArtistSortBy.Name)
                 val sortOrder = context.preferences.getEnum(Preference.HOME_ARTISTS_FAVORITES_SORT_ORDER.key, SortOrder.Ascending)
-                val artists = database.artistTable.sortFollowing(sortBy, sortOrder).first().filter { it.dislikedAt == null }.map { artist -> SessionMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, artist.id, artist.name ?: "", artist.thumbnailUrl) }
+                val artists = database.artistTable.sortFollowing(sortBy, sortOrder).first().filter { it.dislikedAt == null }.map { artist -> CancellableAutoMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, artist.id, artist.name ?: "", artist.thumbnailUrl) }
                 listOf(shuffleItem) + artists
             }
             AutoSessionConstants.ID_ARTISTS_DISLIKED -> {
                 val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_ARTISTS_DISLIKED_SHUFFLE)
                 val artists = database.artistTable.allDisliked().first()
-                listOf(shuffleItem) + artists.map { artist -> SessionMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, artist.id, artist.name ?: "", artist.thumbnailUrl) }
+                listOf(shuffleItem) + artists.map { artist -> CancellableAutoMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, artist.id, artist.name ?: "", artist.thumbnailUrl) }
             }
             else -> emptyList()
         }

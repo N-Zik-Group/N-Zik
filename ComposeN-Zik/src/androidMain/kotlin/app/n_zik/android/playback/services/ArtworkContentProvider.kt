@@ -5,9 +5,6 @@ import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
-import android.graphics.BitmapFactory
-import android.graphics.Matrix
-import android.media.ExifInterface
 import android.net.Uri
 import android.os.Build
 import android.os.ParcelFileDescriptor
@@ -19,6 +16,9 @@ import app.n_zik.android.core.profiles.coversDir
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
+import java.util.UUID
+import app.n_zik.android.playback.services.automotive.models.ArtworkBitmapDecoder
 import android.graphics.Bitmap
 
 /**
@@ -41,6 +41,31 @@ class ArtworkContentProvider : ContentProvider() {
         /** Longest side served for MediaStore art (AA renders it at card size). */
         private const val MEDIA_STORE_ART_MAX_SIDE = 512
 
+        private data class Source(val profile: String, val file: File)
+        private const val MAX_SOURCES = 1024
+        private val sources = LinkedHashMap<String, Source>(MAX_SOURCES, 0.75f, true)
+
+        /** Only in-process mapping can register files; exported requests accept opaque tokens. */
+        internal fun uriForSource(ctx: Context, songId: String, file: File): Uri {
+            val profile = getActiveProfile(ctx)
+            val canonical = file.canonicalFile
+            val expected = File(coversDir(ctx, profile), "cover_${songId}.jpg").canonicalFile
+            if (canonical == expected) return uriFor(songId)
+            val source = Source(profile, canonical)
+            val token = synchronized(sources) {
+                val existing = sources.entries.firstOrNull { it.value == source }?.key
+                if (existing != null) {
+                    sources[existing] // Refresh the source registry's LRU order.
+                    existing
+                } else UUID.randomUUID().toString().also {
+                    sources[it] = source
+                    while (sources.size > MAX_SOURCES) sources.remove(sources.keys.first())
+                }
+            }
+            return Uri.Builder().scheme("content").authority(AUTHORITY)
+                .appendPath("source").appendPath(token).build()
+        }
+
         fun uriFor(songId: String): Uri = Uri.Builder()
             .scheme("content")
             .authority(AUTHORITY)
@@ -54,15 +79,37 @@ class ArtworkContentProvider : ContentProvider() {
         val songId = uri.lastPathSegment ?: return null
         val ctx = context ?: return null
         return try {
-            val bitmap = customCover(ctx, songId)
-                ?: mediaStoreArtIfTrusted(ctx, songId)
-                ?: placeholder(ctx)
-                ?: return null
+            val profile = getActiveProfile(ctx)
+            val sourceRequest = uri.pathSegments.firstOrNull() == "source"
+            val bitmap = (if (sourceRequest) registeredSource(ctx, uri) else
+                customCover(ctx, songId) ?: mediaStoreArtIfTrusted(ctx, songId))
+                ?: placeholder(ctx) ?: return null
+            if (profile != getActiveProfile(ctx)) {
+                bitmap.recycle()
+                return null
+            }
             writeSeekableJpeg(ctx, bitmap)
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Failed to open artwork for song %s", songId)
             null
         }
+    }
+
+    private fun registeredSource(ctx: Context, uri: Uri): Bitmap? {
+        if (uri.pathSegments.size != 2 ||
+            !LocalArtworkRules.isTrustedCaller(runCatching { callingPackage }.getOrNull(), ctx.packageName)) return null
+        val source = synchronized(sources) { sources[uri.lastPathSegment] } ?: return null
+        if (source.profile != getActiveProfile(ctx)) return null
+        val bitmap = try {
+            ArtworkBitmapDecoder.file(source.file)
+        } catch (e: IOException) {
+            Timber.tag(TAG).w(e, "Registered artwork source could not be read")
+            null
+        } catch (e: SecurityException) {
+            Timber.tag(TAG).w(e, "Registered artwork source is no longer accessible")
+            null
+        }
+        return bitmap?.let { ArtworkBitmapDecoder.finish(it, square = true) }
     }
 
     /** Custom cover with EXIF rotation applied, center-cropped (pre-existing behavior). */
@@ -71,23 +118,7 @@ class ArtworkContentProvider : ContentProvider() {
         // covers folder, so a profile set by a launcher shortcut before init still reads its own.
         val file = File(coversDir(ctx, getActiveProfile(ctx)), "cover_${songId}.jpg")
         if (!file.exists()) return null
-        var bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return null
-        try {
-            val exif = ExifInterface(file.absolutePath)
-            val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
-            val rotation = when (orientation) {
-                ExifInterface.ORIENTATION_ROTATE_90 -> 90f
-                ExifInterface.ORIENTATION_ROTATE_180 -> 180f
-                ExifInterface.ORIENTATION_ROTATE_270 -> 270f
-                else -> 0f
-            }
-            if (rotation != 0f) {
-                val matrix = Matrix().apply { postRotate(rotation) }
-                val rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-                if (rotated !== bitmap) { bitmap.recycle(); bitmap = rotated }
-            }
-        } catch (_: Exception) {}
-        return centerCrop(bitmap)
+        return ArtworkBitmapDecoder.file(file)?.let { ArtworkBitmapDecoder.finish(it, square = true) }
     }
 
     /**
@@ -108,8 +139,7 @@ class ArtworkContentProvider : ContentProvider() {
                     Uri.parse("content://media/external/audio/albumart"),
                     albumId
                 )
-                ctx.contentResolver.openInputStream(albumArtUri)?.use { it.readBytes() }
-                    ?.let(::decodeDownsampled)
+                ArtworkBitmapDecoder.decode { ctx.contentResolver.openInputStream(albumArtUri) }
             }.getOrNull()
         }
         val art = albumArt ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -121,7 +151,7 @@ class ArtworkContentProvider : ContentProvider() {
                 )
             }.getOrNull()
         } else null
-        return art?.let(::centerCrop)
+        return art?.let { ArtworkBitmapDecoder.finish(it, square = true) }
     }
 
     private fun albumIdOf(ctx: Context, audioId: Long): Long? =
@@ -133,38 +163,9 @@ class ArtworkContentProvider : ContentProvider() {
             null
         )?.use { cursor -> if (cursor.moveToFirst()) cursor.getLong(0) else null }
 
-    private fun decodeDownsampled(data: ByteArray): Bitmap? {
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeByteArray(data, 0, data.size, bounds)
-        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
-        return BitmapFactory.decodeByteArray(
-            data,
-            0,
-            data.size,
-            BitmapFactory.Options().apply {
-                inSampleSize = app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
-                    .computeInSampleSize(bounds.outWidth, bounds.outHeight, MEDIA_STORE_ART_MAX_SIDE)
-            }
-        )
-    }
-
-    /** App placeholder, downscaled (the source drawable is 1200px). */
-    private fun placeholder(ctx: Context): Bitmap? {
-        val full = BitmapFactory.decodeResource(ctx.resources, R.drawable.ic_launcher_box) ?: return null
-        if (minOf(full.width, full.height) <= MEDIA_STORE_ART_MAX_SIDE) return full
-        val scaled = Bitmap.createScaledBitmap(full, MEDIA_STORE_ART_MAX_SIDE, MEDIA_STORE_ART_MAX_SIDE, true)
-        if (scaled !== full) full.recycle()
-        return scaled
-    }
-
-    private fun centerCrop(bitmap: Bitmap): Bitmap {
-        val size = minOf(bitmap.width, bitmap.height)
-        val x = (bitmap.width - size) / 2
-        val y = (bitmap.height - size) / 2
-        val cropped = Bitmap.createBitmap(bitmap, x, y, size, size)
-        if (cropped !== bitmap) bitmap.recycle()
-        return cropped
-    }
+    private fun placeholder(ctx: Context): Bitmap? = ArtworkBitmapDecoder.decode {
+        ctx.resources.openRawResource(R.drawable.ic_launcher_box)
+    }?.let { ArtworkBitmapDecoder.finish(it, square = true) }
 
     /**
      * Writes [bitmap] to a regular temp file and returns a read-only descriptor on it: a
@@ -178,9 +179,9 @@ class ArtworkContentProvider : ContentProvider() {
             FileOutputStream(tempFile).use { out ->
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
             }
-            bitmap.recycle()
             return ParcelFileDescriptor.open(tempFile, ParcelFileDescriptor.MODE_READ_ONLY)
         } finally {
+            bitmap.recycle()
             tempFile.delete()
         }
     }

@@ -735,12 +735,28 @@ object ImageCacheFactory {
         )
     }
 
-    suspend fun loadBitmap(url: String?, allowHardware: Boolean = false): Bitmap? {
+    /** Loads a borrowed Coil bitmap with the shared cache and URL fallback policy.
+     * [requestSize] bounds decoding for consumers that serialize small artwork.
+     * [qualityOverride] selects source quality for this request without changing phone preferences.
+     */
+    suspend fun loadBitmap(
+        url: String?,
+        allowHardware: Boolean = false,
+        requestSize: Int? = null,
+        qualityOverride: NetworkQuality? = null,
+    ): Bitmap? {
+        require(requestSize == null || requestSize > 0)
         if (url.isNullOrBlank() || url == "null") {
             return null
         }
         
-        val decision = getDownloadDecision(url)
+        val defaultDecision = getDownloadDecision(url)
+        val decision = qualityOverride?.let { quality ->
+            defaultDecision.copy(
+                quality = quality,
+                useNetwork = defaultDecision.useNetwork || quality.ordinal > defaultDecision.quality.ordinal,
+            )
+        } ?: defaultDecision
         var currentUrl = url.thumbnail(decision.quality.size)
         // Timber.tag("ImageCache").d("URL (loadBitmap): original=%s, modified=%s", url, currentUrl)
         var lastError: String? = null
@@ -755,8 +771,9 @@ object ImageCacheFactory {
                 .memoryCacheKey(generateCacheKeySync(currentUrl, decision.quality))
                 .allowHardware(allowHardware)
             
-            if (isLocalFile) {
-                requestBuilder.size(maxSize, maxSize)
+            val boundedSize = requestSize ?: maxSize.takeIf { isLocalFile }
+            if (boundedSize != null) {
+                requestBuilder.size(boundedSize, boundedSize)
             }
             
             val request = requestBuilder.build()

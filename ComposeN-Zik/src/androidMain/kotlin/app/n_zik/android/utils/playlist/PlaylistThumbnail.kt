@@ -3,6 +3,7 @@ package app.n_zik.android.utils.playlist
 import android.content.Context
 import android.net.Uri
 import app.it.fast4x.rimusic.utils.saveImageToInternalStorage
+import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
 
@@ -22,5 +23,9 @@ internal suspend fun savePlaylistThumbnail(
     thumbnailName: String,
     save: (Context, Uri, String, String) -> Uri? = ::saveImageToInternalStorage,
 ): Uri? = withContext(NzikDispatchers.DATA) {
-    save(context, uri, "thumbnail", thumbnailName)
+    try {
+        save(context, uri, "thumbnail", thumbnailName)
+    } finally {
+        ArtworkRevisions.invalidate()
+    }
 }

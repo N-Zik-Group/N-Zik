@@ -46,6 +46,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 
 class ChangeCoverDialog private constructor(
     activeState: MutableState<Boolean>,
@@ -74,7 +75,11 @@ class ChangeCoverDialog private constructor(
          */
         internal fun saveCoverArt(context: Context, uri: Uri, oldFile: File, dirPath: String, fileName: String): Uri? {
             if (oldFile.exists()) oldFile.delete()
-            return saveImageToInternalStorage(context, uri, dirPath, fileName)
+            return try {
+                saveImageToInternalStorage(context, uri, dirPath, fileName)
+            } finally {
+                ArtworkRevisions.invalidate()
+            }
         }
     }
 

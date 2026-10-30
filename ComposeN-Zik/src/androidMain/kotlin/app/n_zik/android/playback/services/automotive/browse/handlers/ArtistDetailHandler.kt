@@ -1,32 +1,34 @@
 package app.n_zik.android.playback.services.automotive.browse.handlers
 
-import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
-import app.n_zik.android.playback.services.isLocal
 import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import app.it.fast4x.rimusic.utils.asSong
-import app.n_zik.android.core.database.artistEntryNames
-import app.n_zik.android.R
-import app.n_zik.android.core.database.Database
-import app.n_zik.android.download.utils.MyDownloadHelper
-import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
-import app.n_zik.android.playback.services.PlayerServiceModern
-import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
-import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
-import app.n_zik.android.playback.services.automotive.models.AutoSearchState
+import io.ktor.client.call.body
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic
 import it.fast4x.innertube.models.BrowseResponse
 import it.fast4x.innertube.models.GridRenderer
 import it.fast4x.innertube.requests.ArtistItemsPage
 import it.fast4x.innertube.utils.from
-import io.ktor.client.call.body
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
+
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
+import app.it.fast4x.rimusic.utils.asSong
+import app.n_zik.android.R
+import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.artistEntryNames
+import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
+import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
+import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
+import app.n_zik.android.playback.services.automotive.models.AutoSearchState
+import app.n_zik.android.playback.services.automotive.models.CancellableAutoMediaItemMapper
+import app.n_zik.android.playback.services.isLocal
 
 class ArtistDetailHandler : BrowseHandler {
     override fun handles(parentId: String): Boolean {
@@ -42,24 +44,37 @@ class ArtistDetailHandler : BrowseHandler {
         downloadHelper: MyDownloadHelper,
         binder: PlayerServiceModern.Binder?
     ): List<MediaItem> {
-        val parts = parentId.split("/")
+        if (!handles(parentId)) return emptyList()
+        val parts = parentId.split("/", limit = 3)
         val artistId = parts[1]
-        // The detail list mirrors the phone's artist detail, which shows every track —
-        // no triple dislike filter (the phone filters only the playback queue via
-//
-        // Shuffler.play, never the detail list; re-negotiation 2026-10-01 « suit l'app »).
+        if (artistId.isBlank()) return emptyList()
 
         if (artistId.startsWith(LOCAL_KEY_PREFIX) || artistId.startsWith("LOCAL_ARTIST_")) {
-            // Keep the full container context in the mediaId so queue resolution
-            // can rebuild the artist list (issue #777).
-            return database.songArtistMapTable.allSongsBy(artistId).first().map { song -> SessionMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
+            return database.songArtistMapTable.allSongsBy(artistId).first().map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
         } else {
             val cleanArtistId = artistId.removePrefix(MODIFIED_PREFIX)
+            val artistPage = try {
+                YtMusic.getArtistPage(cleanArtistId).getOrElse { error ->
+                    if (error is CancellationException) throw error
+                    Timber.tag("ArtistDetailHandler").w(error, "AA artist page unavailable")
+                    null
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                Timber.tag("ArtistDetailHandler").w(error, "AA artist page failed")
+                null
+            }
+            if (artistPage == null) {
+                if (parts.size != 2) return emptyList()
+                return database.songArtistMapTable.allSongsBy(artistId).first().map { song ->
+                    CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal)
+                }
+            }
             val sectionItems = mutableListOf<MediaItem>()
             if (parts.size == 2) {
-                val artistPage = YtMusic.getArtistPage(cleanArtistId).getOrNull()
-                Timber.tag("ArtistDetailHandler").i("AA artist sections: page=${artistPage != null}")
-                artistPage?.sections?.forEach { section ->
+                Timber.tag("ArtistDetailHandler").i("AA artist sections: count=${artistPage.sections.size}")
+                artistPage.sections.forEach { section ->
                     val type = when {
                         section.items.all { it is Innertube.SongItem } -> { sectionItems.add(browsableMediaItem("$parentId/${Uri.encode(section.title)}", section.title, null, drawableUri(context, R.drawable.musical_notes), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)); "Songs" }
                         section.items.all { it is Innertube.AlbumItem } -> { sectionItems.add(browsableMediaItem("$parentId/${Uri.encode(section.title)}", section.title, null, drawableUri(context, R.drawable.album), MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS)); "Albums" }
@@ -73,8 +88,7 @@ class ArtistDetailHandler : BrowseHandler {
             } else {
                 val sectionTitle = Uri.decode(parts[2])
                 Timber.tag("ArtistDetailHandler").i("AA browsing section: title=\"$sectionTitle\"")
-                val artistPage = YtMusic.getArtistPage(cleanArtistId).getOrNull()
-                val section = artistPage?.sections?.firstOrNull { it.title == sectionTitle }
+                val section = artistPage.sections.firstOrNull { it.title == sectionTitle }
                 if (section != null) {
                     Timber.tag("ArtistDetailHandler").i("AA section found: items=${section.items.size} more=${section.moreEndpoint?.browseId}")
                     val moreBrowseId = section.moreEndpoint?.browseId
@@ -101,14 +115,16 @@ class ArtistDetailHandler : BrowseHandler {
                                 Timber.tag("ArtistDetailHandler").i("AA browse section: fetched=${fetched.size} grid=${sectionContent.gridRenderer != null} carousel=${sectionContent.musicCarouselShelfRenderer != null} shelf=${sectionContent.musicShelfRenderer != null} playlistShelf=${sectionContent.musicPlaylistShelfRenderer != null}")
                                 fetched.distinctBy { it.key }.forEach { item ->
                                     when (item) {
-                                        is Innertube.SongItem -> { val song = item.asSong; AutoSearchState.searchedSongs = (AutoSearchState.searchedSongs + song).distinctBy { s -> s.id }; sectionItems.add(SessionMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal)) }
-                                        is Innertube.AlbumItem -> sectionItems.add(SessionMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, item.key ?: "", item.info?.name ?: "", item.authors.artistEntryNames().joinToString(", "), item.thumbnail?.url))
-                                        is Innertube.VideoItem -> { val s = item.asSong; AutoSearchState.searchedVideos = (AutoSearchState.searchedVideos + item).distinctBy { it.key }; sectionItems.add(SessionMediaItemMapper.mapSongToMediaItem(s, parentId, loadArtwork = s.isLocal)) }
+                                        is Innertube.SongItem -> { val song = item.asSong; AutoSearchState.searchedSongs = (AutoSearchState.searchedSongs + song).distinctBy { s -> s.id }; sectionItems.add(CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal)) }
+                                        is Innertube.AlbumItem -> sectionItems.add(CancellableAutoMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, item.key ?: "", item.info?.name ?: "", item.authors.artistEntryNames().joinToString(", "), item.thumbnail?.url))
+                                        is Innertube.VideoItem -> { val s = item.asSong; AutoSearchState.searchedVideos = (AutoSearchState.searchedVideos + item).distinctBy { it.key }; sectionItems.add(CancellableAutoMediaItemMapper.mapSongToMediaItem(s, parentId, loadArtwork = s.isLocal)) }
                                         is Innertube.PlaylistItem -> sectionItems.add(browsableMediaItem("${PlayerServiceModern.PLAYLIST}/${item.key}", item.info?.name ?: "", null, item.thumbnail?.url?.toUri(), MediaMetadata.MEDIA_TYPE_PLAYLIST, parentId))
-                                        is Innertube.ArtistItem -> sectionItems.add(SessionMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, item.key ?: "", item.info?.name ?: "", item.thumbnail?.url, item.subscribersCountText, parentId))
+                                        is Innertube.ArtistItem -> sectionItems.add(CancellableAutoMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, item.key ?: "", item.info?.name ?: "", item.thumbnail?.url, item.subscribersCountText, parentId))
                                     }
                                 }
                             }
+                        } catch (error: CancellationException) {
+                            throw error
                         } catch (e: Exception) {
                             Timber.tag("ArtistDetailHandler").w(e, "AA browse section failed")
                         }
@@ -117,11 +133,11 @@ class ArtistDetailHandler : BrowseHandler {
                         Timber.tag("ArtistDetailHandler").i("AA fallback to section items: ${section.items.size} items")
                         section.items.forEach { item ->
                             when (item) {
-                                is Innertube.SongItem -> { val song = item.asSong; AutoSearchState.searchedSongs = (AutoSearchState.searchedSongs + song).distinctBy { s -> s.id }; sectionItems.add(SessionMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal)) }
-                                is Innertube.AlbumItem -> sectionItems.add(SessionMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, item.key ?: "", item.info?.name ?: "", item.authors.artistEntryNames().joinToString(", "), item.thumbnail?.url))
-                                is Innertube.VideoItem -> { val s = item.asSong; AutoSearchState.searchedVideos = (AutoSearchState.searchedVideos + item).distinctBy { it.key }; sectionItems.add(SessionMediaItemMapper.mapSongToMediaItem(s, parentId, loadArtwork = s.isLocal)) }
+                                is Innertube.SongItem -> { val song = item.asSong; AutoSearchState.searchedSongs = (AutoSearchState.searchedSongs + song).distinctBy { s -> s.id }; sectionItems.add(CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal)) }
+                                is Innertube.AlbumItem -> sectionItems.add(CancellableAutoMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, item.key ?: "", item.info?.name ?: "", item.authors.artistEntryNames().joinToString(", "), item.thumbnail?.url))
+                                is Innertube.VideoItem -> { val s = item.asSong; AutoSearchState.searchedVideos = (AutoSearchState.searchedVideos + item).distinctBy { it.key }; sectionItems.add(CancellableAutoMediaItemMapper.mapSongToMediaItem(s, parentId, loadArtwork = s.isLocal)) }
                                 is Innertube.PlaylistItem -> sectionItems.add(browsableMediaItem("${PlayerServiceModern.PLAYLIST}/${item.key}", item.info?.name ?: "", null, item.thumbnail?.url?.toUri(), MediaMetadata.MEDIA_TYPE_PLAYLIST, parentId))
-                                is Innertube.ArtistItem -> sectionItems.add(SessionMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, item.key ?: "", item.info?.name ?: "", item.thumbnail?.url, item.subscribersCountText, parentId))
+                                is Innertube.ArtistItem -> sectionItems.add(CancellableAutoMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, item.key ?: "", item.info?.name ?: "", item.thumbnail?.url, item.subscribersCountText, parentId))
                             }
                         }
                     }

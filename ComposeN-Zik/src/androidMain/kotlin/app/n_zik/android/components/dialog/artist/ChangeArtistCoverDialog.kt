@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import app.n_zik.android.appContext
 import app.n_zik.android.core.profiles.activeCoversDirName
 import app.it.fast4x.rimusic.utils.saveImageToInternalStorage
+import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -69,7 +70,11 @@ class ChangeArtistCoverDialog private constructor(
          * so it is unit-testable without instantiating the dialog.
          */
         internal fun saveCoverArt(context: Context, uri: Uri, dirPath: String, fileName: String): Uri? =
-            saveImageToInternalStorage(context, uri, dirPath, fileName)
+            try {
+                saveImageToInternalStorage(context, uri, dirPath, fileName)
+            } finally {
+                ArtworkRevisions.invalidate()
+            }
     }
 
     override val keyboardOption: KeyboardOptions = KeyboardOptions.Default
