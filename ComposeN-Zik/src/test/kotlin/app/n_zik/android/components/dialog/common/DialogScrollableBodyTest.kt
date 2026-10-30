@@ -43,17 +43,17 @@ class DialogScrollableBodyTest {
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) { dialog.Render() }
         }
-        repeat(5) { composeRule.mainClock.advanceTimeByFrame() }
+        composeRule.mainClock.advanceTimeBy(300)
         val footerBefore = composeRule.onNodeWithTag("dialogFrameFooter").getBoundsInRoot()
         composeRule.onNodeWithText("✓ Result 49").performScrollTo().assertIsDisplayed()
         val footerAfter = composeRule.onNodeWithTag("dialogFrameFooter").assertIsDisplayed().getBoundsInRoot()
         assertEquals(footerBefore.top.value, footerAfter.top.value, 1f)
         val body = composeRule.onNodeWithTag("dialogFrameBody").getBoundsInRoot()
-        val divider = composeRule.onNodeWithTag("dialogFrameFooterDivider").getBoundsInRoot()
-        assertEquals(body.bottom.value, divider.top.value, 1f)
+        val footer = composeRule.onNodeWithTag("dialogFrameFooter").getBoundsInRoot()
+        assertEquals(body.bottom.value, footer.top.value, 1f)
     }
 
-    @Test fun `default dialog scroll viewport meets both dividers and retains fixed footer`() {
+    @Test fun `default dialog scroll viewport meets both neighboring sections and retains fixed footer`() {
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
                 DefaultDialog(onDismiss = {}, title = "Details", footer = {
@@ -63,17 +63,17 @@ class DialogScrollableBodyTest {
                 }
             }
         }
-        repeat(5) { composeRule.mainClock.advanceTimeByFrame() }
+        composeRule.mainClock.advanceTimeBy(300)
         val viewport = composeRule.onNode(hasScrollAction()).getBoundsInRoot()
-        val headerDivider = composeRule.onNodeWithTag("dialogFrameHeaderDivider").getBoundsInRoot()
-        val footerDivider = composeRule.onNodeWithTag("dialogFrameFooterDivider").getBoundsInRoot()
-        assertEquals(headerDivider.bottom.value, viewport.top.value, 1f)
-        assertEquals(footerDivider.top.value, viewport.bottom.value, 1f)
+        val header = composeRule.onNodeWithTag("dialogFrameHeader").getBoundsInRoot()
+        val footer = composeRule.onNodeWithTag("dialogFrameFooter").getBoundsInRoot()
+        assertEquals(header.bottom.value, viewport.top.value, 1f)
+        assertEquals(footer.top.value, viewport.bottom.value, 1f)
         val first = composeRule.onNodeWithText("Detail 0").getBoundsInRoot()
         assertEquals(24f, first.top.value - viewport.top.value, 1f)
         composeRule.onNodeWithText("Detail 49").performScrollTo().assertIsDisplayed()
-        assertEquals(footerDivider.top.value,
-            composeRule.onNodeWithTag("dialogFrameFooterDivider").getBoundsInRoot().top.value, 1f)
+        assertEquals(footer.top.value,
+            composeRule.onNodeWithTag("dialogFrameFooter").getBoundsInRoot().top.value, 1f)
         composeRule.onNodeWithText("Close").assertIsDisplayed()
     }
 
@@ -84,7 +84,7 @@ class DialogScrollableBodyTest {
                 InProgressDialog(total = 10, done = 2, text = "Matching songs", message = "Keep the app open while songs are matched.")
             }
         }
-        repeat(5) { composeRule.mainClock.advanceTimeByFrame() }
+        composeRule.mainClock.advanceTimeBy(300)
         val header = composeRule.onNodeWithTag("dialogFrameHeader").getBoundsInRoot()
         val heading = composeRule.onNodeWithText("Matching songs").assertIsDisplayed().getBoundsInRoot()
         val message = composeRule.onNodeWithText("Keep the app open while songs are matched.").getBoundsInRoot()

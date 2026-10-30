@@ -14,7 +14,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.layout.layout
@@ -46,7 +45,6 @@ import app.it.fast4x.rimusic.utils.profilePreferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -93,7 +91,7 @@ class DialogFrameBandsTest {
         composeRule.waitForIdle()
     }
 
-    @Test fun `closing folds painted body before TV contraction with stable measurement`() {
+    @Test fun `closing fades the whole surface without folding or remeasuring children`() {
         val visible = mutableStateOf(true)
         var measurements = 0
         var presentation: DialogPresentation? = null
@@ -110,12 +108,6 @@ class DialogFrameBandsTest {
             }
         }
         val bounds = composeRule.onNodeWithTag("dialogFrameCard").getBoundsInRoot()
-        fun bodyPixels(): Int {
-            val pixels = composeRule.onNodeWithTag("dialogFrameCard").captureToImage().toPixelMap()
-            return (0 until pixels.height).count { pixels[pixels.width / 2, it].toArgb() == palette.background0.toArgb() }
-        }
-        val fullPixels = bodyPixels()
-        assertTrue(fullPixels > 100)
         composeRule.runOnIdle {
             visible.value = false
             Snapshot.sendApplyNotifications()
@@ -123,31 +115,20 @@ class DialogFrameBandsTest {
         composeRule.mainClock.advanceTimeByFrame()
         composeRule.waitForIdle()
         val closingMeasurements = measurements
-        composeRule.mainClock.advanceTimeBy(64)
+        composeRule.mainClock.advanceTimeBy(96)
         composeRule.waitForIdle()
-        val foldingPixels = bodyPixels()
-        assertTrue("central body visibly folds", foldingPixels in 1 until fullPixels)
-        assertEquals(bounds, composeRule.onNodeWithTag("dialogFrameCard").getBoundsInRoot())
-        composeRule.mainClock.advanceTimeBy(80)
-        composeRule.waitForIdle()
-        // Target the folded endpoint explicitly: the paused recomposer starts motion on a frame.
-        repeat(3) {
-            if (dialogBodyFraction(requireNotNull(presentation).motion.value) > 0f) {
-                composeRule.mainClock.advanceTimeByFrame()
-                composeRule.waitForIdle()
-            }
-        }
-        assertEquals(0f, dialogBodyFraction(requireNotNull(presentation).motion.value), 0f)
-        assertEquals(0, bodyPixels())
-        assertTrue(dialogTvFraction(requireNotNull(presentation).motion.value, true) > 0f)
+        val motion = requireNotNull(presentation).motion.value
+        assertTrue(dialogFadeAlpha(motion) > 0f && dialogFadeAlpha(motion) < 1f)
+        assertTrue(dialogScale(motion) in .96f..1f)
         assertEquals("animation does not remeasure children", closingMeasurements, measurements)
         assertEquals(bounds, composeRule.onNodeWithTag("dialogFrameCard").getBoundsInRoot())
-        composeRule.mainClock.advanceTimeBy(100)
+        assertNoCenterFlash()
+        composeRule.mainClock.advanceTimeBy(240)
         composeRule.waitForIdle()
         composeRule.onNodeWithTag("dialogFrameCard").assertDoesNotExist()
     }
 
-    @Test fun `opening paints centered TV before expanding the measured body`() {
+    @Test fun `opening fades a full height surface without a luminous line`() {
         var presentation: DialogPresentation? = null
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
@@ -159,66 +140,28 @@ class DialogFrameBandsTest {
                 }
             }
         }
-        composeRule.mainClock.advanceTimeBy(64)
+        composeRule.mainClock.advanceTimeBy(96)
         composeRule.waitForIdle()
         val earlyMotion = requireNotNull(presentation).motion.value
-        assertEquals(0f, dialogBodyFraction(earlyMotion), 0f)
-        assertTrue(dialogLineFraction(earlyMotion, true) > 0f)
-        val pixels = composeRule.onNodeWithTag("dialogFrameCard").captureToImage().toPixelMap()
-        assertFalse((0 until pixels.height).any { pixels[pixels.width / 2, it].toArgb() == palette.background0.toArgb() })
-        assertTrue("opening has a luminous center line", pixels[pixels.width / 2, pixels.height / 2].luminance() > palette.background1.luminance() + .2f)
-        assertFlashOutsideCard()
+        assertTrue(dialogFadeAlpha(earlyMotion) > 0f && dialogFadeAlpha(earlyMotion) < 1f)
+        assertTrue(dialogScale(earlyMotion) in .96f..1f)
+        assertNoCenterFlash()
         val earlyBounds = composeRule.onNodeWithTag("dialogFrameCard").getBoundsInRoot()
         composeRule.mainClock.advanceTimeBy(240)
         composeRule.waitForIdle()
-        assertEquals(1f, dialogBodyFraction(requireNotNull(presentation).motion.value), 0f)
+        assertEquals(1f, dialogFadeAlpha(requireNotNull(presentation).motion.value), 0f)
         assertEquals(earlyBounds, composeRule.onNodeWithTag("dialogFrameCard").getBoundsInRoot())
     }
 
-    @Test fun `closing paints a luminous center line in the TV phase`() {
-        val visible = mutableStateOf(true)
-        var presentation: DialogPresentation? = null
-        content {
-            DialogPresence(visible = visible.value) {
-                presentation = LocalDialogPresentation.current
-                DialogFrame(onDismiss = {}, title = "Title", footer = { BasicText("Action") }) {
-                    Box(Modifier.fillMaxWidth().height(120.dp))
-                }
-            }
-        }
-        composeRule.runOnIdle {
-            visible.value = false
-            Snapshot.sendApplyNotifications()
-        }
-        repeat(14) {
-            if (requireNotNull(presentation).motion.value * DIALOG_HYBRID_DURATION_MS > 64f) {
-                composeRule.mainClock.advanceTimeByFrame()
-                composeRule.waitForIdle()
-            }
-        }
-        val motion = requireNotNull(presentation).motion.value
-        assertEquals(0f, dialogBodyFraction(motion), 0f)
-        assertTrue(dialogFlashAlpha(motion, true) > .3f)
+    private fun assertNoCenterFlash() {
         val pixels = composeRule.onNodeWithTag("dialogFrameCard").captureToImage().toPixelMap()
-        assertTrue("closing has a luminous center line", pixels[pixels.width / 2, pixels.height / 2].luminance() > palette.background1.luminance() + .2f)
-        assertFlashOutsideCard()
+        val center = pixels[pixels.width / 2, pixels.height / 2]
+        val below = pixels[pixels.width / 2, pixels.height / 2 + 12]
+        assertEquals("the body has no center scan line", center.toArgb(), below.toArgb())
+        assertTrue("the continuous surface is visible during motion", center.alpha > 0f)
     }
 
-    private fun assertFlashOutsideCard() {
-        val viewport = composeRule.onNodeWithTag("dialogFrameViewport")
-        val pixels = viewport.captureToImage().toPixelMap()
-        val bounds = viewport.getBoundsInRoot()
-        val card = composeRule.onNodeWithTag("dialogFrameCard").getBoundsInRoot()
-        val density = pixels.width / (bounds.right - bounds.left).value
-        val x = ((card.right - bounds.left - 12.dp).value * density).toInt()
-        val y = pixels.height / 2
-        // Card has a 16dp outer inset; this sample is 4dp beyond the painted card edge.
-        assertTrue("the core extends beyond the card", pixels[x, y].luminance() > .1f)
-        assertTrue("the diffuse halo paints light well beyond the 6dp core",
-            pixels[x, y + (30 * density).toInt()].red > .01f)
-    }
-
-    @Test fun `wider decorative viewport preserves side outside dismissal and body input`() {
+    @Test fun `full width viewport preserves side outside dismissal and body input`() {
         var dismissals = 0
         content {
             DialogFrame(onDismiss = { dismissals++ }, title = "Title", footer = { BasicText("Action") }) {
@@ -231,11 +174,11 @@ class DialogFrameBandsTest {
         assertEquals(1, dismissals)
     }
 
-    @Test fun `normal frame paints alternate header footer and principal body with boundary lines`() {
+    @Test fun `normal frame paints one accented surface without internal lines`() {
         verifyColors(pitchBlack = false)
     }
 
-    @Test fun `pitch black frame keeps gray bands around a darker body`() {
+    @Test fun `pitch black frame keeps one elevated gray surface`() {
         context.preferences.edit().putString(colorPaletteModeKey, ColorPaletteMode.PitchBlack.name).commit()
         verifyColors(pitchBlack = true)
     }
@@ -247,8 +190,7 @@ class DialogFrameBandsTest {
             }
         }
         val alternate = if (pitchBlack) Color(0xFF1A1A1A) else palette.background1
-        val principal = if (pitchBlack) Color(0xFF101010) else palette.background0
-        listOf("dialogFrameHeader" to alternate, "dialogFrameBody" to principal,
+        listOf("dialogFrameHeader" to alternate, "dialogFrameBody" to alternate,
             "dialogFrameFooter" to alternate).forEach { (tag, expected) ->
             val pixels = composeRule.onNodeWithTag(tag).captureToImage().toPixelMap()
             // Rounded card corners contain the elevated shadow; sample the center of
@@ -256,15 +198,13 @@ class DialogFrameBandsTest {
             val y = if (tag == "dialogFrameFooter") pixels.height - 4 else 4
             assertEquals(tag, expected.toArgb(), pixels[pixels.width / 2, y].toArgb())
         }
-        val dividerColors = listOf("dialogFrameHeaderDivider", "dialogFrameFooterDivider").map { tag ->
-            val bounds = composeRule.onNodeWithTag(tag).getBoundsInRoot()
-            assertTrue("thin visible divider: $bounds", bounds.bottom > bounds.top && bounds.bottom - bounds.top <= 1.dp)
-            val pixels = composeRule.onNodeWithTag(tag).captureToImage().toPixelMap()
-            val color = pixels[pixels.width / 2, 0].toArgb()
-            assertTrue("divider differs from its background", color != alternate.toArgb())
-            color
-        }
-        assertEquals("both boundary lines use the same menu divider color", dividerColors.first(), dividerColors.last())
+        composeRule.onNodeWithTag("dialogFrameHeaderDivider").assertDoesNotExist()
+        composeRule.onNodeWithTag("dialogFrameFooterDivider").assertDoesNotExist()
+        val header = composeRule.onNodeWithTag("dialogFrameHeader").getBoundsInRoot()
+        val body = composeRule.onNodeWithTag("dialogFrameBody").getBoundsInRoot()
+        val footer = composeRule.onNodeWithTag("dialogFrameFooter").getBoundsInRoot()
+        assertEquals(header.bottom.value, body.top.value, .5f)
+        assertEquals(body.bottom.value, footer.top.value, .5f)
     }
 
     @Test fun `multiline title centers every line independently of start aligned body`() {
@@ -291,13 +231,15 @@ class DialogFrameBandsTest {
             DialogFrame(onDismiss = {}, title = if (title) "Title" else null,
                 footer = if (footer) ({ BasicText("Action") }) else null) { BasicText("Body") }
         }
-        listOf(false to false, true to false, false to true).forEach { (title, footer) ->
+        listOf(false to false, true to false, false to true, true to true).forEach { (title, footer) ->
             composeRule.runOnIdle { bands.value = title to footer }
             composeRule.mainClock.advanceTimeByFrame()
-            listOf("dialogFrameHeader", "dialogFrameHeaderDivider").forEach {
+            listOf("dialogFrameHeader").forEach {
                 if (title) composeRule.onNodeWithTag(it).assertExists() else composeRule.onNodeWithTag(it).assertDoesNotExist()
             }
-            listOf("dialogFrameFooter", "dialogFrameFooterDivider").forEach {
+            composeRule.onNodeWithTag("dialogFrameHeaderDivider").assertDoesNotExist()
+            composeRule.onNodeWithTag("dialogFrameFooterDivider").assertDoesNotExist()
+            listOf("dialogFrameFooter").forEach {
                 if (footer) composeRule.onNodeWithTag(it).assertExists() else composeRule.onNodeWithTag(it).assertDoesNotExist()
             }
         }

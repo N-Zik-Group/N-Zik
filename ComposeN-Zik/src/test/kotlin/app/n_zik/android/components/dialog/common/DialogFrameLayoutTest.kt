@@ -78,7 +78,7 @@ class DialogFrameLayoutTest {
                 )
             }
         }
-        repeat(5) { composeRule.mainClock.advanceTimeByFrame() }
+        composeRule.mainClock.advanceTimeBy(300)
         composeRule.waitForIdle()
         val body = composeRule.onNodeWithTag("dialogFrameBody").getBoundsInRoot()
         val list = composeRule.onNodeWithTag("valueSelectorList").getBoundsInRoot()

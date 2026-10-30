@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.settings
 
+import android.content.Context
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -12,15 +13,15 @@ import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
-import app.it.fast4x.rimusic.utils.*
+import app.it.fast4x.rimusic.utils.localPlaylistToolbarOrderKey
 import app.kreate.android.me.knighthat.utils.Toaster
 import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
-import android.content.Context
 
 object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
 
     val allButtonIds = listOf(
+        "insertion_position",
         "pin", "search", "position_lock", "match", "renumber",
         "download_all", "delete_downloads",
         "item_selector",
@@ -30,10 +31,12 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
         "thumbnail_picker", "reset_thumbnail", "update"
     )
 
-    override val dialogTitle: String @Composable get() = stringResource(R.string.playlists) + " - Toolbar"
+    override val dialogTitle: String @Composable get() =
+        stringResource(R.string.local_playlist_sort) + " - " + stringResource(R.string.toolbar)
     override var isActive: Boolean by mutableStateOf(false)
 
-    private fun parseOrder(s: String): List<String> {
+    /** Restores saved ordering while retaining the insertion action's original leading position. */
+    fun parseOrder(s: String): List<String> {
         if (s.isBlank()) return allButtonIds
         return try {
             val a = JSONArray(s)
@@ -43,8 +46,9 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
                 val id = a.getString(i)
                 if (id in allButtonIds && seen.add(id)) savedIds.add(id)
             }
-            val missingIds = allButtonIds.filter { it !in savedIds }
-            savedIds + missingIds
+            val missingIds = allButtonIds.filter { it !in savedIds && it != "insertion_position" }
+            val leadingIds = if ("insertion_position" in savedIds) emptyList() else listOf("insertion_position")
+            leadingIds + savedIds + missingIds
         } catch (_: Exception) { allButtonIds }
     }
 
@@ -80,7 +84,6 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
         val enqueueLabel = stringResource(R.string.enqueue)
         val addToFavoriteLabel = stringResource(R.string.add_to_favorites)
         val addToPlaylistLabel = stringResource(R.string.add_to_playlist)
-        val removeFromPlaylistLabel = stringResource(R.string.remove_from_playlist)
         val importMenuLabel = stringResource(R.string.import_playlist)
         val exportDialogLabel = stringResource(R.string.export_playlist)
         val matchLabel = stringResource(R.string.match_album_audio_version)
@@ -94,6 +97,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
         val pinLabel = stringResource(R.string.info_pin_unpin_playlist)
         val searchLabel = stringResource(R.string.search)
         val renumberLabel = stringResource(R.string.renumber_songs_positions)
+        val insertionPositionLabel = stringResource(R.string.playlist_insertion_position)
 
         val lockedIds = setOf("pl_pin", "pl_position_lock", "pl_match")
 
@@ -101,6 +105,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
             val pk = "pl_ts_$id"
             val uid = "pl_$id"
             when (id) {
+                "insertion_position" -> ToggleItem(uid, R.drawable.sort_vertical, insertionPositionLabel, pk, true)
                 "pin" -> ToggleItem(uid, R.drawable.pin_filled, pinLabel, pk, true)
                 "search" -> ToggleItem(uid, R.drawable.search_circle, searchLabel, pk, true)
                 "position_lock" -> ToggleItem(uid, R.drawable.locked, positionLockLabel, pk, true)

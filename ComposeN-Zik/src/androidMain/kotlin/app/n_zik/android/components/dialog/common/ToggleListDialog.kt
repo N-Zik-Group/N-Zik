@@ -43,6 +43,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.glassDialogButtonBackground
+import app.n_zik.android.surfaceColor
+import androidx.compose.foundation.shape.CircleShape
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.it.fast4x.rimusic.utils.preferences
@@ -324,6 +327,11 @@ private fun ToggleRow(
                 modifier = Modifier
                     .size(24.dp)
                     .padding(4.dp)
+                    .glassDialogButtonBackground(
+                        backgroundColor = Color.Transparent,
+                        shape = CircleShape,
+                        filmColor = surfaceColor(colorPalette().background2)
+                    )
             ) {
                 Icon(
                     painter = painterResource(R.drawable.close),

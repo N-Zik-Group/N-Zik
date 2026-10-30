@@ -36,12 +36,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.glass.glassImageRim
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
@@ -69,6 +71,8 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 import androidx.compose.material3.OutlinedButton
+import app.n_zik.android.components.glass.glassDialogButtonBackground
+import app.n_zik.android.components.glass.glassDialogButtonBorder
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
@@ -368,6 +372,7 @@ class EditMetadataDialog private constructor(
                         modifier = Modifier
                             .size(56.dp)
                             .clip(RoundedCornerShape(8.dp))
+                            .glassImageRim(RoundedCornerShape(8.dp))
                     )
                 }
             } else {
@@ -388,11 +393,16 @@ class EditMetadataDialog private constructor(
 
             OutlinedButton(
                 onClick = onPickImage,
+                modifier = Modifier.glassDialogButtonBackground(
+                    backgroundColor = Color.Transparent,
+                    shape = uiRoundnessShape(),
+                    filmColor = surfaceColor(colorPalette().background2)
+                ),
                 shape = uiRoundnessShape(),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = colorPalette().accent
                 ),
-                border = BorderStroke(1.dp, colorPalette().accent),
+                border = glassDialogButtonBorder(BorderStroke(1.dp, colorPalette().accent)),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
             ) {
                 Text(stringResource(R.string.pick_from_gallery))

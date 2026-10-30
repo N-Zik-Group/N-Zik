@@ -66,12 +66,11 @@ class RawUrlImportDialogTest {
         val field = composeRule.onNode(hasSetTextAction())
         field.assertTextEquals(initial)
         val footer = composeRule.onNodeWithTag("dialogFrameFooter").getBoundsInRoot()
-        val divider = composeRule.onNodeWithTag("dialogFrameFooterDivider").getBoundsInRoot()
         val body = composeRule.onNodeWithTag("dialogFrameBody").getBoundsInRoot()
         assertTrue(field.getBoundsInRoot().bottom <= body.bottom)
         listOf(R.string.paste, R.string.clear, R.string.cancel, R.string.import_button).forEach {
             val bounds = composeRule.onNodeWithText(context.getString(it)).assertIsDisplayed().getBoundsInRoot()
-            assertTrue(bounds.top >= divider.bottom && bounds.top >= footer.top)
+            assertTrue(bounds.top >= body.bottom && bounds.top >= footer.top)
             assertTrue(bounds.bottom <= footer.bottom)
         }
         composeRule.onNodeWithText(context.getString(R.string.import_button)).performClick()

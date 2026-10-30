@@ -27,6 +27,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.glassDialogButtonBackground
+import app.n_zik.android.surfaceColor
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.shape.CircleShape
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
@@ -102,6 +106,11 @@ inline fun StringListDialog(
                                     showStringRemoveDialog = true
                                 },
                                 modifier = Modifier.size(32.dp)
+                                    .glassDialogButtonBackground(
+                                        backgroundColor = Color.Transparent,
+                                        shape = CircleShape,
+                                        filmColor = surfaceColor(colorPalette().background2)
+                                    )
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.trash),

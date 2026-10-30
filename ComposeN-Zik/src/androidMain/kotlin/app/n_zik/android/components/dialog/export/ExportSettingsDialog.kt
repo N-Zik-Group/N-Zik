@@ -17,6 +17,7 @@ import java.time.format.DateTimeFormatter
 
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.core.rescue.RescueFiles
+import app.n_zik.android.core.backup.SettingsPreferencesBridge
 import app.it.fast4x.rimusic.utils.encryptedPreferences
 import app.it.fast4x.rimusic.utils.preferences
 import androidx.compose.runtime.MutableState
@@ -40,15 +41,7 @@ class ExportSettingsDialog private constructor(
         ) = NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
             runCatching {
                 Timber.tag("ExportSettingsDialog").d("Starting settings export...")
-                val entries: MutableList<Triple<String, String, Any>> = context.preferences
-                    .all
-                    .map {
-                        val value = it.value ?: Unit
-                        val type = value::class.simpleName ?: "null"
-                        Triple( type, it.key, value )
-                    }
-                    .filter { it.first != "null" && it.third !== Unit }
-                    .toMutableList()
+                val entries = SettingsPreferencesBridge.export(context, context.preferences)
 
                 // Single source of truth (RescueFiles): the selected credential groups plus,
                 // when checked, the proxy key — exactly as the auto backup and the rescue build them.

@@ -38,6 +38,10 @@ import app.n_zik.android.uiRoundnessShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.glassDialogButtonBackground
+import app.n_zik.android.components.glass.glassDialogButtonBorder
+import app.n_zik.android.surfaceColor
+import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -135,14 +139,18 @@ class ChangeAlbumCoverDialog private constructor(
             
             OutlinedButton(
                 onClick = { launcher.launch("image/*") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
+                    .glassDialogButtonBackground(
+                        backgroundColor = Color.Transparent,
+                        shape = uiRoundnessShape(),
+                        filmColor = surfaceColor(colorPalette().background2)
+                    ),
                 shape = uiRoundnessShape(),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = colorPalette().text
                 ),
-                border = BorderStroke(
-                    1.dp,
-                    colorPalette().textSecondary
+                border = glassDialogButtonBorder(
+                    BorderStroke(1.dp, colorPalette().textSecondary)
                 )
             ) {
                 Icon(

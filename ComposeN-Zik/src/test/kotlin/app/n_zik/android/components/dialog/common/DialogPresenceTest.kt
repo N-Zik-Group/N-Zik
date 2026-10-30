@@ -14,6 +14,8 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasSetTextAction
@@ -85,7 +87,7 @@ class DialogPresenceTest {
         compose.waitForIdle()
     }
 
-    @Test fun `surface appears before body and closing folds before disposal`() {
+    @Test fun `whole surface animates and closing retains it until the fade ends`() {
         val visible = mutableStateOf(true)
         var presentation: DialogPresentation? = null
         var disposed = false
@@ -98,7 +100,7 @@ class DialogPresenceTest {
                 }
             }
         }
-        assertEquals(0f, dialogBodyFraction(requireNotNull(presentation).motion.value), 0f)
+        assertTrue(dialogFadeAlpha(requireNotNull(presentation).motion.value) < 1f)
         advance()
         val fullBounds = compose.onNodeWithTag("dialogFrameBody").getBoundsInRoot()
         val fullHeight = fullBounds.bottom - fullBounds.top
@@ -107,11 +109,9 @@ class DialogPresenceTest {
         advance(160)
         assertFalse(disposed)
         assertFalse(requireNotNull(presentation).interactive)
-        assertTrue(dialogBodyFraction(requireNotNull(presentation).motion.value) in 0f..1f)
-        advance(32)
-        assertEquals(0f, dialogBodyFraction(requireNotNull(presentation).motion.value), 0f)
-        assertFalse(disposed)
-        advance(80)
+        val closingAlpha = dialogFadeAlpha(requireNotNull(presentation).motion.value)
+        assertTrue(closingAlpha > 0f && closingAlpha < 1f)
+        advance(120)
         assertTrue(disposed)
     }
 
@@ -264,7 +264,7 @@ class DialogPresenceTest {
         compose.onNodeWithText("Owned").assertDoesNotExist()
     }
 
-    @Test fun `missing bands use only the short TV lifetime`() {
+    @Test fun `missing bands use the same whole surface animation lifetime`() {
         val visible = mutableStateOf(true)
         var disposed = false
         var presentation: DialogPresentation? = null
@@ -276,45 +276,83 @@ class DialogPresenceTest {
             }
         }
         advance()
-        assertEquals(80, requireNotNull(presentation).durationMillis)
+        assertEquals(DIALOG_MOTION_DURATION_MS, requireNotNull(presentation).durationMillis)
         compose.runOnIdle { visible.value = false }
         advance(32)
         assertFalse(disposed)
-        advance(96)
+        advance(240)
         assertTrue(disposed)
     }
 
-    @Test fun `motion staging has a single meeting seam and unscaled body allocation`() {
-        assertEquals(0f, dialogLineFraction(0f, true), 0f)
-        assertTrue(dialogLineFraction(30f / 220f, true) in 0f..1f)
-        assertEquals(0f, dialogTvFraction(30f / 220f, true), .00001f)
-        assertEquals(1f, dialogTvFraction(80f / 220f, true), .00001f)
-        assertEquals(0f, dialogBodyFraction(80f / 220f), .00001f)
-        assertTrue(dialogBodyFraction(150f / 220f) in .5f..1f)
-        assertEquals(1f, dialogBodyFraction(1f), 0f)
-        assertEquals(0f, dialogFlashAlpha(0f, true), .00001f)
-        assertEquals(0f, dialogFlashAlpha(1f, true), .00001f)
-        assertTrue(dialogFlashAlpha(40f / 220f, true) > .5f)
-        assertTrue(dialogLineFraction(48f / 220f, true) < 1f)
-        assertTrue(dialogTvFraction(48f / 220f, true) > 0f)
-        assertEquals(80, dialogDuration(false))
-        assertEquals(220, dialogDuration(true))
+    @Test fun `fade and subtle uniform scale share a bounded reversible path`() {
+        assertEquals(0f, dialogFadeAlpha(0f), 0f)
+        assertEquals(1f, dialogFadeAlpha(1f), 0f)
+        assertEquals(.96f, dialogScale(0f), 0f)
+        assertEquals(1f, dialogScale(1f), 0f)
+        val opening = (0..20).map { dialogFadeAlpha(it / 20f) }
+        assertTrue(opening.zipWithNext().all { (previous, next) -> next >= previous })
+        val closing = (20 downTo 0).map { dialogFadeAlpha(it / 20f) }
+        assertEquals(opening, closing.reversed())
+        assertEquals(0f, dialogFadeAlpha(-1f), 0f)
+        assertEquals(1f, dialogFadeAlpha(2f), 0f)
+        assertTrue(dialogScale(.5f) > .96f && dialogScale(.5f) < 1f)
     }
 
-    @Test fun `reset scroll viewport touches separators and retains its scrollable top inset`() {
+    @Test fun `reset scroll viewport touches neighboring sections and retains its scrollable top inset`() {
         content {
             SettingsResetCard(scopes = (0..7).toList(), target = "", resetContent = {})
         }
         compose.onNodeWithTag("settings.reset.open").performClick()
         advance()
         val viewport = compose.onNodeWithTag("settings.reset.dialog").getBoundsInRoot()
-        val top = compose.onNodeWithTag("dialogFrameHeaderDivider").getBoundsInRoot()
-        val bottom = compose.onNodeWithTag("dialogFrameFooterDivider").getBoundsInRoot()
+        val top = compose.onNodeWithTag("dialogFrameHeader").getBoundsInRoot()
+        val bottom = compose.onNodeWithTag("dialogFrameFooter").getBoundsInRoot()
         val first = compose.onNodeWithTag("settings.reset.scope.0").getBoundsInRoot()
         assertEquals(top.bottom.value, viewport.top.value, .5f)
         assertEquals(bottom.top.value, viewport.bottom.value, .5f)
         assertTrue(first.top - viewport.top >= 24.dp)
     }
+    @Test fun `reset chooser and scoped reset fade through one retained window`() {
+        var shownScope: Int? = null
+        var presentation: DialogPresentation? = null
+        content {
+            SettingsResetCard(scopes = listOf(0, 1), target = "", resetContent = { scope ->
+                shownScope = scope
+                presentation = LocalDialogInput.current
+                BasicText("Reset scope $scope")
+            })
+        }
+        compose.onNodeWithTag("settings.reset.open").performClick()
+        advance()
+        val retiredScopeClick = requireNotNull(compose.onNodeWithTag("settings.reset.scope.1")
+            .fetchSemanticsNode().config[SemanticsActions.OnClick].action)
+        compose.onNodeWithTag("settings.reset.scope.0").performClick()
+        advance(100)
+        // A content swap must not remove the modal or expose the Settings page mid-handoff.
+        compose.onAllNodes(isDialog()).assertCountEquals(1)
+        compose.onNodeWithTag("dialogFrameViewport").assertExists()
+        assertEquals(null, shownScope)
+        compose.runOnIdle { retiredScopeClick() }
+        advance(180)
+        assertEquals(0, shownScope)
+        val retainedPresentation = requireNotNull(presentation)
+        assertTrue(retainedPresentation.motion.value > 0f && retainedPresentation.motion.value < 1f)
+        advance()
+        compose.onNodeWithText("Reset scope 0").assertExists()
+        compose.onNodeWithText(context.getString(R.string.settings_reset_scope_back)).performClick()
+        advance(100)
+        compose.onAllNodes(isDialog()).assertCountEquals(1)
+        assertFalse(retainedPresentation.interactive)
+        assertTrue(retainedPresentation.motion.value > 0f && retainedPresentation.motion.value < 1f)
+        advance()
+        compose.onNodeWithTag("settings.reset.scope.1").performClick()
+        advance()
+        assertEquals(1, shownScope)
+        assertTrue(retainedPresentation === presentation)
+        compose.onNodeWithText("Reset scope 1").assertExists()
+        compose.onAllNodes(isDialog()).assertCountEquals(1)
+    }
+
     @Test fun `retiring content hides accessibility actions immediately`() {
         val visible = mutableStateOf(true)
         content {
@@ -452,6 +490,71 @@ class DialogPresenceTest {
         compose.onNodeWithText("Confirm").performClick()
         assertEquals(listOf("replacement"), calls)
         assertEquals(1, mounts)
+    }
+
+    @Test fun `consecutive payloads fade through the same window with only the current action enabled`() {
+        val target = mutableStateOf<String?>("First")
+        var shown = ""
+        var presentation: DialogPresentation? = null
+        var mounts = 0
+        val calls = mutableListOf<String>()
+        content {
+            DialogPresence(target = target.value) { payload ->
+                shown = payload
+                presentation = LocalDialogPresentation.current
+                DisposableEffect(Unit) { mounts++; onDispose { } }
+                ConfirmationDialog(title = payload, text = "Body", confirmText = "Confirm",
+                    onConfirm = { calls += payload }, onDismiss = {})
+            }
+        }
+        advance()
+        val oldClick = requireNotNull(compose.onNodeWithText("Confirm")
+            .fetchSemanticsNode().config[SemanticsActions.OnClick].action)
+        compose.runOnIdle { target.value = "Second" }
+        advance(100)
+        assertEquals("First", shown)
+        assertFalse(requireNotNull(presentation).interactive)
+        assertTrue(requireNotNull(presentation).motion.value > 0f)
+        assertTrue(requireNotNull(presentation).motion.value < 1f)
+        compose.runOnIdle { oldClick() }
+        assertTrue(calls.isEmpty())
+        advance(180)
+        assertEquals("Second", shown)
+        assertTrue(requireNotNull(presentation).interactive)
+        assertTrue(requireNotNull(presentation).motion.value > 0f)
+        assertTrue(requireNotNull(presentation).motion.value < 1f)
+        advance()
+        compose.onNodeWithText("Confirm").performClick()
+        assertEquals(listOf("Second"), calls)
+        assertEquals(1, mounts)
+    }
+
+    @Test fun `replacing again or returning during handoff cancels stale payloads`() {
+        val target = mutableStateOf<String?>("First")
+        var shown = ""
+        var presentation: DialogPresentation? = null
+        content {
+            DialogPresence(target = target.value) { payload ->
+                shown = payload
+                presentation = LocalDialogPresentation.current
+                DialogFrame(onDismiss = {}, title = payload) { BasicText("Body") }
+            }
+        }
+        advance()
+        compose.runOnIdle { target.value = "Second" }
+        advance(64)
+        compose.runOnIdle { target.value = "Third" }
+        advance(32)
+        compose.runOnIdle { target.value = "First" }
+        advance()
+        assertEquals("First", shown)
+        assertEquals(1f, requireNotNull(presentation).motion.value, 0f)
+        assertTrue(requireNotNull(presentation).interactive)
+        compose.onNodeWithText("Second").assertDoesNotExist()
+        compose.onNodeWithText("Third").assertDoesNotExist()
+        compose.runOnIdle { target.value = null }
+        advance()
+        compose.onNodeWithTag("dialogFrameCard").assertDoesNotExist()
     }
 
     @Test fun `initially inactive owners do not schedule a no op animation`() {

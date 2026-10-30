@@ -1,6 +1,7 @@
 package app.n_zik.android.components.dialog.common
 
 import android.app.Application
+import android.content.Context
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -19,11 +20,17 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.FontType
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
+import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.components.glass.GlassQuality
+import app.n_zik.android.components.glass.GlassStore
+import app.n_zik.android.components.glass.glassEnabledKey
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -209,6 +216,43 @@ class ButtonRowTest {
         composeRule.runOnIdle {
             assertEquals(1, clearClicks)
             assertEquals(1, confirmClicks)
+        }
+    }
+
+    @Test
+    fun glassActionsKeepDisabledAndRetainedPresentationInputGuards() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        setActiveProfile("default", context)
+        context.preferences.edit().putBoolean(glassEnabledKey, true).commit()
+        val store = GlassStore(context)
+        store.reset()
+        store.setProfile(GlassQuality.Performance)
+        val interactive = mutableStateOf(true)
+        val enabled = mutableStateOf(true)
+        val presentation = DialogPresentation(interactive)
+        var clicks = 0
+        composeRule.setContent {
+            CompositionLocalProvider(
+                LocalAppearance provides appearance,
+                LocalDialogInput provides presentation,
+            ) {
+                Box(Modifier.width(220.dp)) {
+                    ButtonRow(listOf(DialogButton("Apply", { clicks++ }, primary = true, enabled = enabled.value)))
+                }
+            }
+        }
+        try {
+            composeRule.onNodeWithText("Apply").performTouchInput { click() }
+            composeRule.runOnIdle { assertEquals(1, clicks); enabled.value = false }
+            composeRule.onNodeWithText("Apply").assertIsNotEnabled().performTouchInput { click() }
+            composeRule.runOnIdle { assertEquals(1, clicks); enabled.value = true; interactive.value = false }
+            composeRule.onNodeWithText("Apply").assertIsNotEnabled().performTouchInput { click() }
+            composeRule.runOnIdle { assertEquals(1, clicks); interactive.value = true }
+            composeRule.onNodeWithText("Apply").performTouchInput { click() }
+            composeRule.runOnIdle { assertEquals(2, clicks) }
+        } finally {
+            context.preferences.edit().putBoolean(glassEnabledKey, false).commit()
+            store.reset()
         }
     }
 

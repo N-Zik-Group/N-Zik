@@ -32,6 +32,10 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.glassDialogButtonBackground
+import app.n_zik.android.surfaceColor
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Color
 import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
@@ -138,7 +142,14 @@ class ChangePlaylistBrowseIdDialog private constructor(
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                IconButton(onClick = { performSearch() }) {
+                IconButton(
+                    onClick = { performSearch() },
+                    modifier = Modifier.glassDialogButtonBackground(
+                        backgroundColor = Color.Transparent,
+                        shape = CircleShape,
+                        filmColor = surfaceColor(colorPalette().background2)
+                    )
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.search),
                         contentDescription = stringResource(R.string.search),
@@ -174,6 +185,7 @@ class ChangePlaylistBrowseIdDialog private constructor(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             ImageCacheFactory.Thumbnail(
+                                shape = uiRoundnessShape(),
                                 thumbnailUrl = item.thumbnail?.url,
                                 modifier = Modifier.size(40.dp).clip(uiRoundnessShape())
                             )

@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.settings
 
+import android.content.Context
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -12,11 +13,10 @@ import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
-import app.it.fast4x.rimusic.utils.*
+import app.it.fast4x.rimusic.utils.localPlaylistSortMenuOrderKey
 import app.kreate.android.me.knighthat.utils.Toaster
 import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
-import android.content.Context
 
 object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
 
@@ -26,7 +26,7 @@ object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
         "DatePlayed", "DateLiked", "AlbumYear", "Downloaded", "Custom"
     )
 
-    override val dialogTitle: String @Composable get() = stringResource(R.string.playlists) + " - Sort"
+    override val dialogTitle: String @Composable get() = stringResource(R.string.local_playlist_sort) + " - Sort"
     override var isActive: Boolean by mutableStateOf(false)
 
     private fun parseOrder(s: String): List<String> {

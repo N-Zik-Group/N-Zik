@@ -6,7 +6,6 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -23,7 +22,7 @@ import kotlin.math.roundToInt
 /** Local lifetime and motion for one window; a frame consumes it before composing children. */
 internal class DialogPresentation(val requested: State<Boolean>) {
     val motion = Animatable(0f)
-    var durationMillis = DIALOG_HYBRID_DURATION_MS
+    val durationMillis = DIALOG_MOTION_DURATION_MS
     val interactive: Boolean get() = requested.value
 }
 
@@ -48,15 +47,7 @@ fun DialogPresence(visible: Boolean, inherit: Boolean = false, content: @Composa
     LaunchedEffect(visible) {
         if (visible) retained = true
         val target = if (visible) 1f else 0f
-        if (presentation.motion.value != target) {
-            if (coroutineContext[MotionDurationScale]?.scaleFactor == 0f) {
-                presentation.motion.snapTo(target)
-            } else {
-                // Keep interruption speed proportional to the remaining path.
-                val duration = (presentation.durationMillis * abs(target - presentation.motion.value)).roundToInt()
-                presentation.motion.animateTo(target, tween(duration, easing = LinearEasing))
-            }
-        }
+        animateDialogMotion(presentation.motion, target)
         if (!visible) retained = false
     }
     if (visible || retained) {
@@ -64,56 +55,39 @@ fun DialogPresence(visible: Boolean, inherit: Boolean = false, content: @Composa
     }
 }
 
-/** Keeps the last non-null presentation payload valid throughout exit, scoped to its owner. */
+/** Replaces a payload at the invisible midpoint, keeping the same modal window throughout. */
 @Composable
 fun <T : Any> DialogPresence(target: T?, content: @Composable (T) -> Unit) {
     var retained by remember { mutableStateOf(target) }
-    if (target != null) retained = target
-    val latestTarget = rememberUpdatedState(target)
-    DialogPresence(visible = target != null) {
-        DisposableEffect(Unit) {
-            onDispose { if (latestTarget.value == null) retained = null }
+    val requested = rememberUpdatedState(target != null && target == retained)
+    val presentation = remember { DialogPresentation(requested) }
+    LaunchedEffect(target) {
+        if (retained != null && retained != target) {
+            animateDialogMotion(presentation.motion, 0f)
         }
-        retained?.let { content(it) }
+        retained = target
+        if (target != null) animateDialogMotion(presentation.motion, 1f)
+    }
+    retained?.let { payload ->
+        CompositionLocalProvider(LocalDialogPresentation provides presentation) { content(payload) }
     }
 }
 
-internal const val DIALOG_HYBRID_DURATION_MS = 220
-internal const val DIALOG_TV_DURATION_MS = 80
+internal const val DIALOG_MOTION_DURATION_MS = 220
 
-/** Opening runs line, TV, body; closing follows the exact reverse path. */
-internal fun dialogBodyFraction(motion: Float): Float = dialogPhase(motion * DIALOG_HYBRID_DURATION_MS, 80f, 140f)
-
-internal fun dialogTvFraction(motion: Float, folding: Boolean): Float =
-    1f - dialogSmoothStep(dialogTvProgress(motion, folding) / .7f)
-
-internal fun dialogLineFraction(motion: Float, folding: Boolean): Float =
-    1f - dialogSmoothStep((dialogTvProgress(motion, folding) - .6f) / .4f)
-
-internal fun dialogFlashAlpha(motion: Float, folding: Boolean): Float {
-    val progress = dialogTvProgress(motion, folding)
-    return dialogSmoothStep(progress) * (1f - dialogSmoothStep((progress - .9f) / .1f))
+internal suspend fun animateDialogMotion(motion: Animatable<Float, *>, target: Float) {
+    if (motion.value == target) return
+    if (coroutineContext[MotionDurationScale]?.scaleFactor == 0f) {
+        motion.snapTo(target)
+    } else {
+        // Keep interruption speed proportional to the remaining path.
+        val duration = (DIALOG_MOTION_DURATION_MS * abs(target - motion.value)).roundToInt()
+        motion.animateTo(target, tween(duration, easing = LinearEasing))
+    }
 }
 
-internal fun dialogTvAlpha(motion: Float, folding: Boolean): Float =
-    1f - dialogSmoothStep((dialogTvProgress(motion, folding) - .9f) / .1f)
+/** One reversible fade and uniform scale keep every section visible throughout the transition. */
+internal fun dialogFadeAlpha(motion: Float): Float =
+    FastOutSlowInEasing.transform(motion.coerceIn(0f, 1f))
 
-// TV mask progression adapted from Burn-My-Windows resources/shaders/tv.frag.
-// SPDX-FileCopyrightText: Simon Schneegans <code@simonschneegans.de>
-// SPDX-License-Identifier: GPL-3.0-or-later
-// https://github.com/Schneegans/Burn-My-Windows/blob/main/resources/shaders/tv.frag
-private fun dialogTvProgress(motion: Float, folding: Boolean): Float {
-    val remaining = (motion * dialogDuration(folding) / DIALOG_TV_DURATION_MS).coerceIn(0f, 1f)
-    return 1f - remaining * remaining
-}
-
-private fun dialogSmoothStep(value: Float): Float {
-    val clamped = value.coerceIn(0f, 1f)
-    return clamped * clamped * (3f - 2f * clamped)
-}
-
-internal fun dialogDuration(folding: Boolean): Int =
-    if (folding) DIALOG_HYBRID_DURATION_MS else DIALOG_TV_DURATION_MS
-
-private fun dialogPhase(time: Float, start: Float, duration: Float): Float =
-    FastOutSlowInEasing.transform(((time - start) / duration).coerceIn(0f, 1f))
+internal fun dialogScale(motion: Float): Float = .96f + .04f * dialogFadeAlpha(motion)

@@ -100,6 +100,7 @@ inline fun SelectorArtistsDialog(
 
                         Box {
                             ImageCacheFactory.SubcomposeImage(
+                                shape = artistThumbnailShape(),
                                 thumbnailUrl = artist?.thumbnailUrl?.resize(1000, 1000),
                                 contentDescription = "",
                                 contentScale = ContentScale.Fit,

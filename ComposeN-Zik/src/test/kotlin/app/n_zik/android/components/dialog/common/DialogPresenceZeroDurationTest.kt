@@ -88,4 +88,33 @@ class DialogPresenceZeroDurationTest {
         assertTrue(disposed)
         compose.onNodeWithText("Disabled motion").assertDoesNotExist()
     }
+
+    @Test fun `disabled system motion replaces payload without retaining a stale action`() {
+        val target = mutableStateOf<String?>("First")
+        var presentation: DialogPresentation? = null
+        var shown: String? = null
+        compose.setContent {
+            DialogPresence(target = target.value) { payload ->
+                shown = payload
+                presentation = LocalDialogPresentation.current
+                BasicText(payload)
+            }
+        }
+        fun nextFrames() {
+            compose.runOnIdle { Snapshot.sendApplyNotifications() }
+            repeat(3) { compose.mainClock.advanceTimeByFrame() }
+            compose.waitForIdle()
+        }
+        nextFrames()
+        compose.runOnIdle { target.value = "Second" }
+        nextFrames()
+        assertEquals("Second", shown)
+        assertEquals(1f, requireNotNull(presentation).motion.value, 0f)
+        assertTrue(requireNotNull(presentation).interactive)
+        compose.onNodeWithText("First").assertDoesNotExist()
+        compose.onNodeWithText("Second").assertExists()
+        compose.runOnIdle { target.value = null }
+        nextFrames()
+        compose.onNodeWithText("Second").assertDoesNotExist()
+    }
 }

@@ -2,7 +2,6 @@ package app.n_zik.android.components.dialog.common
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -25,6 +24,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
+import app.n_zik.android.components.glass.glassDialogButtonBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.medium
@@ -134,13 +134,15 @@ private fun DialogPill(button: DialogButton, modifier: Modifier) {
 @Composable
 private fun pillModifier(button: DialogButton, palette: ColorPalette, modifier: Modifier): Modifier {
     val presentation = LocalDialogInput.current ?: LocalDialogPresentation.current
+    val shape = uiRoundnessShape()
     return modifier
         .fillMaxWidth()
-        .clip(uiRoundnessShape())
-        .background(
+        .clip(shape)
+        .glassDialogButtonBackground(
             if (button.primary) palette.accent
             else if (button.danger) palette.red
-            else palette.background2
+            else palette.background2,
+            shape = shape,
         )
         .clickable(enabled = button.enabled && dialogInputEnabled) {
             if (presentation?.interactive != false) button.onClick()

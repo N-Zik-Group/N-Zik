@@ -96,7 +96,8 @@ class SettingsDialogFooterBandsTest {
         val content = composeRule.onNodeWithTag("toggleListDialogContent").getBoundsInRoot()
         val footer = composeRule.onNodeWithTag("dialogFrameFooter").getBoundsInRoot()
         val card = composeRule.onNodeWithTag("dialogFrameCard").getBoundsInRoot()
-        composeRule.onNodeWithTag("dialogFrameFooterDivider").assertExists()
+        composeRule.onNodeWithTag("dialogFrameFooterDivider").assertDoesNotExist()
+        assertEquals("body meets footer without a separator", body.bottom.value, footer.top.value, 1f)
         assertTrue("body must remain positive", content.bottom > content.top)
         assertEquals("content touches body top", 0f, (content.top - body.top).value, 1f)
         assertEquals("content touches body bottom", 0f, (body.bottom - content.bottom).value, 1f)
@@ -125,8 +126,7 @@ class SettingsDialogFooterBandsTest {
         pills.forEach { assertTrue("action lies in footer: $it", it.top >= footer.top && it.bottom <= footer.bottom) }
         val allFooterPills = if (hasExtraFooterAction) {
             val extra = composeRule.onNodeWithText(context.getString(R.string.add_separator)).getBoundsInRoot()
-            val divider = composeRule.onNodeWithTag("dialogFrameFooterDivider").getBoundsInRoot()
-            assertTrue("add separator stays inside footer below divider", extra.top >= footer.top && extra.top >= divider.bottom && extra.bottom <= footer.bottom)
+            assertTrue("add separator stays inside footer after body", extra.top >= footer.top && extra.top >= body.bottom && extra.bottom <= footer.bottom)
             assertTrue("add separator sits above standard row", extra.bottom < pills.minOf { it.top })
             assertEquals("add separator is centered", (footer.left.value + footer.right.value) / 2, (extra.left.value + extra.right.value) / 2, 1f)
             pills + extra
