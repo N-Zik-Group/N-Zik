@@ -2,7 +2,6 @@ package app.n_zik.android.components.ui.screens.rewind.slides
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -43,7 +42,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.it.fast4x.rimusic.enums.MenuStyle
-import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
+import app.n_zik.android.components.glass.SampledMenuSheet
 import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.R
@@ -189,7 +188,7 @@ fun RewindTopArtistSpotlightCard(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier
-                                    .background(rewindColors.value.lime, RoundedCornerShape(2.dp))
+                                    .rewindCardBackground(rewindColors.value.lime, RoundedCornerShape(2.dp))
                                     .padding(horizontal = 12.dp, vertical = 7.dp)
                             )
                         }
@@ -376,12 +375,13 @@ fun RewindTopArtistSpotlightCard(
                     // is a popup, not part of the deck, so the scroll never leaks into a
 //
                     // swipe. Capture-safe: stays closed while a share capture is in flight.
-                    CustomModalBottomSheet(
+                    SampledMenuSheet(
                         showSheet = showBioSheet && !rewindShareCaptureActive.value,
                         onDismissRequest = { showBioSheet = false },
                         modifier = Modifier.statusBarsPadding(),
                         containerColor = Color.Transparent,
                         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false),
+                        partiallyExpanded = true,
                         shape = (uiRoundnessShape() as? RoundedCornerShape)?.let {
                             RoundedCornerShape(
                                 topStart = it.topStart,
@@ -458,7 +458,7 @@ private fun SpotlightMetric(
     val textScale = LocalRewindTextScale.current
     Column(
         modifier = modifier
-            .background(rewindColors.value.cream, RoundedCornerShape(6.dp))
+            .rewindCardBackground(rewindColors.value.cream, RoundedCornerShape(6.dp))
             .padding(horizontal = 12.dp, vertical = 10.dp)
     ) {
         Text(
@@ -514,12 +514,8 @@ private fun RewindSeeMorePill(
 ) {
     Row(
         modifier = modifier
-            .background(
+            .rewindOutlinedActionBackground(
                 rewindColors.value.cream.copy(alpha = 0.10f),
-                RoundedCornerShape(100.dp)
-            )
-            .border(
-                1.dp,
                 rewindColors.value.cream.copy(alpha = 0.45f),
                 RoundedCornerShape(100.dp)
             )

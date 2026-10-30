@@ -134,7 +134,7 @@ internal fun RewindTopAlbumShow(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
-                                .background(rewindColors.value.pink, RoundedCornerShape(100.dp))
+                                .rewindCardBackground(rewindColors.value.pink, RoundedCornerShape(100.dp))
                                 .padding(horizontal = 13.dp, vertical = 10.dp)
                                 .graphicsLayer { rotationZ = -7f }
                         )
@@ -328,7 +328,7 @@ private fun AlbumMetric(
     val textScale = LocalRewindTextScale.current
     Column(
         modifier = modifier
-            .background(rewindColors.value.ink, RoundedCornerShape(9.dp))
+            .rewindCardBackground(rewindColors.value.ink, RoundedCornerShape(9.dp))
             .padding(horizontal = 12.dp, vertical = 9.dp)
     ) {
         Text(

@@ -1,7 +1,6 @@
 package app.n_zik.android.components.ui.screens.rewind.slides
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -130,11 +129,13 @@ fun RewindIntroCard(
                 // deterministic initials of the (fallback) name, so the slide always
                 // renders something.
                 RewindReveal(active, 140, direction = RewindRevealDirection.Left, distance = 24.dp) {
-                    ProfileFaceAvatar(
-                        avatar = faceAvatar ?: FaceAvatar.Initials(displayName),
-                        faceName = displayName,
-                        size = 72.dp
-                    )
+                    RewindProfileAvatarFrame(72.dp) {
+                        ProfileFaceAvatar(
+                            avatar = faceAvatar ?: FaceAvatar.Initials(displayName),
+                            faceName = displayName,
+                            size = 72.dp
+                        )
+                    }
                 }
                 Spacer(Modifier.height(if (compact) 12.dp else 16.dp))
                 RewindReveal(active, 220, direction = RewindRevealDirection.Left, distance = 30.dp) {
@@ -239,7 +240,7 @@ fun RewindIntroCard(
                     ) {
                         Row(
                             modifier = Modifier
-                                .background(rewindColors.value.lime, RoundedCornerShape(100.dp))
+                                .rewindActionBackground(rewindColors.value.lime, RoundedCornerShape(100.dp))
                                 .padding(horizontal = 20.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {

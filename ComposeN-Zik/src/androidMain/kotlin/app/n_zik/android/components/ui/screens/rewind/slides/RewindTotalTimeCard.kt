@@ -1,7 +1,6 @@
 package app.n_zik.android.components.ui.screens.rewind.slides
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -95,7 +94,7 @@ fun RewindTotalTimeCard(
                         Box(
                             modifier = Modifier
                                 .size(discSize)
-                                .background(rewindColors.value.ink, CircleShape),
+                                .rewindCardBackground(rewindColors.value.ink, CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -174,7 +173,7 @@ private fun TotalMetric(
     val textScale = LocalRewindTextScale.current
     Column(
         modifier = modifier
-            .background(background, RoundedCornerShape(8.dp))
+            .rewindCardBackground(background, RoundedCornerShape(8.dp))
             .padding(horizontal = 10.dp, vertical = 10.dp)
     ) {
         Text(

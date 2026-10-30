@@ -101,7 +101,7 @@ fun RewindListenerBadgeCard(
                         Box(
                             modifier = Modifier
                                 .size(badgeSize)
-                                .background(rewindColors.value.lime, CircleShape)
+                                .rewindCardBackground(rewindColors.value.lime, CircleShape)
                                 .padding(15.dp)
                                 .background(rewindColors.value.ink, CircleShape),
                             contentAlignment = Alignment.Center

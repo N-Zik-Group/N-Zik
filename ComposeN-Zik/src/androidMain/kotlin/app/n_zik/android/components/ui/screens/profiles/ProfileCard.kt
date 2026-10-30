@@ -19,8 +19,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -33,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -65,10 +62,14 @@ import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.ytAccountNameKey
 import app.it.fast4x.rimusic.utils.ytAccountThumbnailKey
 import app.it.fast4x.rimusic.utils.ytCookieKey
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import app.n_zik.android.surfaceColor
 import app.n_zik.android.components.maintenance.formatBytes
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.glassChipBackground
+import app.n_zik.android.components.glass.GlassSectionAction
+import app.n_zik.android.components.glass.GlassSectionActions
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.profiles.ProfileDataItem
@@ -419,31 +420,23 @@ fun ProfileCard(
 ) {
     val context = LocalContext.current
     val palette = colorPalette()
-    Card(
+    ProfileCardSurface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .shadow(
-                elevation = 4.dp,
-                shape = uiRoundnessShape(),
-                spotColor = palette.accent.copy(alpha = 0.2f),
-            )
-            // The clip sits BEFORE the clickable so the click ripple follows the card
-            // roundness (a square outline would otherwise flash at its corners).
+            .padding(horizontal = 16.dp),
+        // Keep the native ripple clipped before the card's click target.
+        interactionModifier = Modifier
             .clip(uiRoundnessShape())
             .clickable(enabled = onSwitch != null) { onSwitch?.invoke() },
-        shape = uiRoundnessShape(),
-        colors = CardDefaults.cardColors(
-            containerColor = surfaceColor(colorPalette().background1)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                ProfileFaceAvatar(avatar = face.avatar, faceName = face.name, size = 48.dp)
+                ProfileAvatarFrame(size = 48.dp, area = GlassArea.SettingsCards) {
+                    ProfileFaceAvatar(avatar = face.avatar, faceName = face.name, size = 48.dp)
+                }
                 Column(modifier = Modifier.weight(1f)) {
                     BasicText(
                         text = face.name,
@@ -496,7 +489,7 @@ fun ProfileCard(
                         style = typography().xxs.semiBold.copy(color = palette.accent),
                         modifier = Modifier
                             .clip(uiRoundnessShape())
-                            .background(palette.accent.copy(alpha = 0.12f), uiRoundnessShape())
+                            .glassChipBackground(palette.accent.copy(alpha = 0.12f), uiRoundnessShape())
                             .padding(horizontal = 8.dp, vertical = 4.dp),
                     )
                 }
@@ -582,13 +575,22 @@ fun ProfileCard(
                     horizontalArrangement = Arrangement.End,
                 ) {
                     if (onRename != null) {
-                        IconButton(onClick = onRename) {
-                            Icon(
-                                painter = painterResource(R.drawable.pencil),
+                        GlassSectionActions(
+                            actions = listOf(GlassSectionAction(
+                                icon = R.drawable.pencil,
                                 contentDescription = stringResource(R.string.profile_rename),
-                                tint = palette.textSecondary,
-                            )
-                        }
+                                onClick = onRename,
+                            )),
+                            nativeContent = {
+                                IconButton(onClick = onRename) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.pencil),
+                                        contentDescription = stringResource(R.string.profile_rename),
+                                        tint = palette.textSecondary,
+                                    )
+                                }
+                            },
+                        )
                     }
                     if (onDelete != null) {
                         IconButton(onClick = onDelete) {
@@ -619,7 +621,7 @@ private fun ProfileCardInfoRow(icon: Int, label: String, value: String) {
         Box(
             modifier = Modifier
                 .size(32.dp)
-                .background(palette.accent.copy(alpha = 0.1f), uiRoundnessShape()),
+                .iconBadgeBackground(palette.accent.copy(alpha = 0.1f), uiRoundnessShape()),
             contentAlignment = Alignment.Center,
         ) {
             Icon(

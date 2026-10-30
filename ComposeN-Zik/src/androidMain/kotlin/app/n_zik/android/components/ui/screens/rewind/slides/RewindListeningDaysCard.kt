@@ -111,7 +111,7 @@ fun RewindListeningDaysCard(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(rewindColors.value.ink, RoundedCornerShape(12.dp))
+                            .rewindCardBackground(rewindColors.value.ink, RoundedCornerShape(12.dp))
                             .padding(14.dp)
                     ) {
                         Row(

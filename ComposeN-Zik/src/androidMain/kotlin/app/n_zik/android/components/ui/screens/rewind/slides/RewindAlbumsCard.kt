@@ -155,7 +155,7 @@ fun RewindAlbumsCard(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(rewindColors.value.ink, RoundedCornerShape(8.dp))
+                            .rewindCardBackground(rewindColors.value.ink, RoundedCornerShape(8.dp))
                             .padding(horizontal = 10.dp, vertical = if (compact) 8.dp else 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -218,7 +218,7 @@ fun RewindAlbumsCard(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(
+                                    .rewindCardBackground(
                                         if (isPurple) rewindColors.value.purple else rewindColors.value.ink,
                                         RoundedCornerShape(11.dp)
                                     )

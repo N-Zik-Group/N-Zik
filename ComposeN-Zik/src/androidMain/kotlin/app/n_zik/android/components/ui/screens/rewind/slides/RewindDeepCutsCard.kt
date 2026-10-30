@@ -1,7 +1,6 @@
 package app.n_zik.android.components.ui.screens.rewind.slides
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -96,7 +95,7 @@ fun RewindDeepCutsCard(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(
+                                .rewindCardBackground(
                                     if (index % 2 == 0) rewindColors.value.ink else rewindColors.value.purple,
                                     RoundedCornerShape(11.dp)
                                 )

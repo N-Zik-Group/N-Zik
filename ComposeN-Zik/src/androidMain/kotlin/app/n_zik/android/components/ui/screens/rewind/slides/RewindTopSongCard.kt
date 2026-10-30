@@ -156,7 +156,7 @@ internal fun RewindTopSongShow(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(if (compact) 128.dp else 150.dp)
-                                        .background(rewindColors.value.ink, RoundedCornerShape(8.dp))
+                                        .rewindCardBackground(rewindColors.value.ink, RoundedCornerShape(8.dp))
                                         .padding(horizontal = 18.dp, vertical = 16.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -200,7 +200,7 @@ internal fun RewindTopSongShow(
                                     letterSpacing = textScale.letterSpacing((-7).sp),
                                     fontWeight = FontWeight.Black,
                                     modifier = Modifier
-                                        .background(rewindColors.value.ink, RoundedCornerShape(8.dp))
+                                        .rewindCardBackground(rewindColors.value.ink, RoundedCornerShape(8.dp))
                                         .padding(horizontal = 30.dp, vertical = 18.dp)
                                 )
                             }
@@ -251,7 +251,7 @@ internal fun RewindTopSongShow(
                             letterSpacing = textScale.letterSpacing((-2.0).sp),
                             fontWeight = FontWeight.Black,
                             modifier = Modifier
-                                .background(rewindColors.value.lime, RoundedCornerShape(4.dp))
+                                .rewindCardBackground(rewindColors.value.lime, RoundedCornerShape(4.dp))
                                 .padding(horizontal = 14.dp, vertical = 9.dp)
                                 .graphicsLayer { rotationZ = 5f }
                         )
@@ -409,7 +409,7 @@ private fun TopSongStat(
     val textScale = LocalRewindTextScale.current
     Column(
         modifier = modifier
-            .background(rewindColors.value.ink, RoundedCornerShape(9.dp))
+            .rewindCardBackground(rewindColors.value.ink, RoundedCornerShape(9.dp))
             .padding(horizontal = 13.dp, vertical = 10.dp)
     ) {
         Text(

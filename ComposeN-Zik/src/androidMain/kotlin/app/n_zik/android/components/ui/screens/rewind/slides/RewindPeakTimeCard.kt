@@ -4,7 +4,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -98,7 +97,7 @@ fun RewindPeakTimeCard(
                         Box(
                             modifier = Modifier
                                 .size(clockSize)
-                                .background(rewindColors.value.ink, CircleShape),
+                                .rewindCardBackground(rewindColors.value.ink, CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             Canvas(Modifier.fillMaxSize().padding(12.dp)) {
@@ -172,7 +171,7 @@ fun RewindPeakTimeCard(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(rewindColors.value.ink.copy(alpha = 0.88f), RoundedCornerShape(12.dp))
+                            .rewindCardBackground(rewindColors.value.ink.copy(alpha = 0.88f), RoundedCornerShape(12.dp))
                             .padding(horizontal = 12.dp, vertical = 12.dp)
                     ) {
                         Text(

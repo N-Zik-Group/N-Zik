@@ -1,5 +1,7 @@
 package app.n_zik.android.components.ui.screens.rewind
 
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+
 import androidx.compose.animation.Crossfade
 import app.n_zik.android.components.ui.chipsViewport
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -30,7 +32,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -54,7 +55,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
@@ -69,6 +69,10 @@ import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.ui.screens.rewind.slides.rewindCollageFrame
+import app.n_zik.android.components.glass.GlassFilterChip
+import app.n_zik.android.components.glass.GlassSectionAction
+import app.n_zik.android.components.glass.GlassSectionActions
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindArtwork
 import app.n_zik.android.components.ui.screens.rewind.slides.RewindPlaylistArtwork
 import app.n_zik.android.components.ui.screens.rewind.slides.formatRewindNumber
@@ -154,9 +158,17 @@ fun RewindHomeScreen(
     ) {
         if (uiState.isLoading) {
             // Theme-aware loader while the year summaries are built
-            Loader(modifier = Modifier.align(Alignment.Center))
+            Box(
+                modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding()),
+                contentAlignment = Alignment.Center,
+            ) {
+                Loader()
+            }
         } else if (uiState.years.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding()),
+                contentAlignment = Alignment.Center,
+            ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -245,9 +257,9 @@ private fun RewindHomeContent(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        // No top padding — the page header sits flush under the app header, the same
-        // as the settings / Listen Together pages (the header brings its own 8dp).
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 10.dp)
+        contentPadding = rememberPageChromeContentPadding(
+            PaddingValues(start = 20.dp, end = 20.dp, bottom = Dimensions.bottomSpacer + 10.dp)
+        )
     ) {
         // Brand hero — same recipe as the Listen Together page: the app logo and the
         // title centered as a group (HeaderWithIcon pattern, xxl bold), the tagline
@@ -368,7 +380,7 @@ private fun RewindHomeContent(
                     // Chips keep the stable data order (newest first) — the year sort above only
                     // reorders the year rows, never the chips.
                     years.forEach { year ->
-                        FilterChip(
+                        GlassFilterChip(
                             label = { Text(year.year.toString()) },
                             selected = year.year == selectedYear,
                             shape = uiRoundnessShape(),
@@ -444,7 +456,6 @@ private fun RewindHomeContent(
                 }
             }
         }
-        item(key = "bottom_spacer") { Spacer(modifier = Modifier.height(Dimensions.bottomSpacer)) }
     }
 }
 
@@ -471,20 +482,32 @@ private fun RewindHomeSectionHeader(
     }
 }
 
-/** Sort direction toggle, reusing the app's shared TabToolBar.Icon component (same visual contract as Sort.ToolBarButton): arrow_up at toolbar size, rotated 180deg with 400ms linear animation, clip(uiRoundnessShape()) + ripple. */
+/** Section-heading sort toggle; native mode keeps the shared toolbar icon and rotation. */
 @Composable
 private fun RewindHomeSortArrow(
     order: SortOrder,
     onToggle: () -> Unit
 ) {
-    TabToolBar.Icon(
-        iconId = R.drawable.arrow_up,
-        tint = colorPalette().text,
-        size = 32.dp,
-        enabled = true,
-        modifier = Modifier.graphicsLayer { rotationZ = order.rotationZ },
-        onShortClick = onToggle,
-        onLongClick = {}
+    GlassSectionActions(
+        actions = listOf(
+            GlassSectionAction(
+                icon = R.drawable.arrow_up,
+                contentDescription = stringResource(R.string.sorting_order),
+                iconModifier = Modifier.graphicsLayer { rotationZ = order.rotationZ },
+                onClick = onToggle,
+            )
+        ),
+        nativeContent = {
+            TabToolBar.Icon(
+                iconId = R.drawable.arrow_up,
+                tint = colorPalette().text,
+                size = 32.dp,
+                enabled = true,
+                modifier = Modifier.graphicsLayer { rotationZ = order.rotationZ },
+                onShortClick = onToggle,
+                onLongClick = {}
+            )
+        },
     )
 }
 
@@ -514,6 +537,7 @@ private fun RewindHomeYearRow(
         modifier = Modifier
             .fillMaxWidth()
             .height(rowHeight)
+            .rewindCollageFrame(palette.background1, uiRoundnessShape())
             .clip(uiRoundnessShape())
             // Theme background (not raw black): while the network artworks are loading,
             // the row blends into the page instead of flashing black (same user decision
@@ -705,6 +729,7 @@ private fun RewindHomeMonthCell(
     Box(
         modifier = modifier
             .aspectRatio(0.92f)
+            .rewindCollageFrame(palette.background1, uiRoundnessShape())
             .clip(uiRoundnessShape())
             // Theme background (not raw black): while the network artworks are loading,
             // the cell blends into the page instead of flashing black (user decision,

@@ -1,6 +1,5 @@
 package app.n_zik.android.components.ui.screens.rewind.slides
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -87,7 +86,7 @@ fun RewindTopArtistsCard(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(rewindColors.value.ink, RoundedCornerShape(11.dp))
+                            .rewindCardBackground(rewindColors.value.ink, RoundedCornerShape(11.dp))
                             .padding(horizontal = 12.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -153,7 +152,7 @@ fun RewindTopArtistsCard(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(
+                                    .rewindCardBackground(
                                         if (isPurple) rewindColors.value.purple else rewindColors.value.ink,
                                         RoundedCornerShape(11.dp)
                                     )

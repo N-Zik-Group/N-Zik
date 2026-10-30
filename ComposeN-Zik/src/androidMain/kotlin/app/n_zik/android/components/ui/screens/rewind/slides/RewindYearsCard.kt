@@ -4,7 +4,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -115,7 +114,7 @@ fun RewindYearsCard(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(rewindColors.value.ink, RoundedCornerShape(14.dp))
+                            .rewindCardBackground(rewindColors.value.ink, RoundedCornerShape(14.dp))
                             .padding(horizontal = 12.dp, vertical = 14.dp)
                     ) {
                         Canvas(
@@ -203,7 +202,7 @@ private fun YearsMetric(
     val textScale = LocalRewindTextScale.current
     Column(
         modifier = modifier
-            .background(background, RoundedCornerShape(9.dp))
+            .rewindCardBackground(background, RoundedCornerShape(9.dp))
             .padding(horizontal = 12.dp, vertical = 10.dp)
     ) {
         Text(

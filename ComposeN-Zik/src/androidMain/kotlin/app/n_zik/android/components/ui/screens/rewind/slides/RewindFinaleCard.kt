@@ -1,7 +1,6 @@
 package app.n_zik.android.components.ui.screens.rewind.slides
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
@@ -48,11 +46,12 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.it.fast4x.rimusic.enums.MenuStyle
-import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
+import app.n_zik.android.components.glass.SampledMenuSheet
 import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.ui.screens.rewind.RewindData
@@ -304,7 +303,7 @@ fun RewindFinaleCard(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(rewindColors.value.cream, RoundedCornerShape(10.dp))
+                                .rewindCardBackground(rewindColors.value.cream, RoundedCornerShape(10.dp))
                                 .padding(horizontal = 12.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -335,7 +334,7 @@ fun RewindFinaleCard(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier
-                                    .background(rewindColors.value.lime, CircleShape)
+                                    .rewindCardBackground(rewindColors.value.lime, CircleShape)
                                     .padding(horizontal = 10.dp, vertical = 7.dp)
                             )
                         }
@@ -453,7 +452,7 @@ fun RewindFinaleCard(
                             // where a bare text line would vanish.
                             Row(
                                 modifier = Modifier
-                                    .background(rewindColors.value.cream, RoundedCornerShape(100.dp))
+                                    .rewindCardBackground(rewindColors.value.cream, RoundedCornerShape(100.dp))
                                     .padding(horizontal = 12.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -473,7 +472,7 @@ fun RewindFinaleCard(
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier
-                                        .background(rewindColors.value.lime, CircleShape)
+                                        .rewindCardBackground(rewindColors.value.lime, CircleShape)
                                         .padding(horizontal = 8.dp, vertical = 5.dp)
                                 )
                             }
@@ -491,7 +490,7 @@ fun RewindFinaleCard(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(rewindColors.value.lime, RoundedCornerShape(100.dp))
+                                .iconBadgeBackground(rewindColors.value.lime, RoundedCornerShape(100.dp))
                                 .clickable(
                                     onClick = { showExportMenu = true },
                                     indication = null,
@@ -524,19 +523,13 @@ fun RewindFinaleCard(
         }
     }
 
-    // The export menu reuses the app-standard sheet recipe (same as the song item menu):
-    // transparent container, top-only roundness, statusBarsPadding,
-//
-    // skipPartiallyExpanded = false (opens at its content height, draggable to full
-    // screen). ListMenu.Menu draws its own background, its own top clip and its own
-//
-    // drag handle. Capture-safe: it stays closed while a share capture is in flight.
-    CustomModalBottomSheet(
+    // The measured surface is capped in both hosts; List/Grid retain their own scrolling.
+    SampledMenuSheet(
         showSheet = showExportMenu && !rewindShareCaptureActive.value,
         onDismissRequest = { showExportMenu = false },
-        modifier = Modifier.statusBarsPadding(),
+        maxHeightFraction = 0.5f,
         containerColor = Color.Transparent,
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false),
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         shape = (uiRoundnessShape() as? RoundedCornerShape)?.let {
             RoundedCornerShape(
                 topStart = it.topStart,
@@ -612,6 +605,7 @@ fun RewindFinaleCard(
                 if (onExportPage != null) {
                     item {
                         GridMenu.Entry(
+                            iconHasOwnBackground = true,
                             text = stringResource(R.string.rw_finale_export_page),
                             icon = { ExportMenuIcon(R.drawable.share_social) },
                             onClick = onExportPage
@@ -621,6 +615,7 @@ fun RewindFinaleCard(
                 if (onRegenerateAction != null) {
                     item {
                         GridMenu.Entry(
+                            iconHasOwnBackground = true,
                             text = regenLabel,
                             icon = { ExportMenuIcon(R.drawable.refresh) },
                             onClick = onRegenerateAction
@@ -629,6 +624,7 @@ fun RewindFinaleCard(
                 }
                 item {
                     GridMenu.Entry(
+                        iconHasOwnBackground = true,
                         text = stringResource(R.string.rw_finale_share),
                         icon = { ExportMenuIcon(R.drawable.share_social) },
                         onClick = {
@@ -639,6 +635,7 @@ fun RewindFinaleCard(
                 }
                 item {
                     GridMenu.Entry(
+                        iconHasOwnBackground = true,
                         text = stringResource(R.string.rw_finale_play_again),
                         icon = { ExportMenuIcon(R.drawable.refresh) },
                         onClick = {
@@ -663,7 +660,7 @@ private fun ExportMenuIcon(iconRes: Int) {
     Box(
         modifier = Modifier
             .size(32.dp)
-            .background(
+            .iconBadgeBackground(
                 colorPalette().accent.copy(alpha = 0.1f),
                 uiRoundnessShape()
             ),
@@ -719,7 +716,7 @@ internal fun FinaleStatTile(
                     // fillMaxHeight + clip: when the row above is capped by the tight-screen
                     // weight, the tile is capped with it instead of spilling over the next row.
                     .fillMaxHeight()
-                    .background(background, RoundedCornerShape(10.dp))
+                    .rewindCardBackground(background, RoundedCornerShape(10.dp))
                     .clip(RoundedCornerShape(10.dp))
                     .padding(horizontal = 12.dp, vertical = 9.dp)
             ) {
@@ -767,7 +764,7 @@ private fun FinaleFeature(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(background, RoundedCornerShape(10.dp))
+            .rewindCardBackground(background, RoundedCornerShape(10.dp))
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)

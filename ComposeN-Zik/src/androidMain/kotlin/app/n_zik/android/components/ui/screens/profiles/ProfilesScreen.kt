@@ -2,7 +2,6 @@ package app.n_zik.android.components.ui.screens.profiles
 
 import android.app.Activity
 import android.content.Context
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,8 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,7 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -40,7 +36,8 @@ import androidx.core.content.edit
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.navigation.Skeleton
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
@@ -70,9 +67,9 @@ import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.it.fast4x.rimusic.utils.takenProfileNames
 import app.it.fast4x.rimusic.utils.writeProfileEntries
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import app.n_zik.android.surfaceColor
 import app.n_zik.android.components.dialog.export.ExportProfileStateDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.import.ImportProfileState
@@ -205,6 +202,7 @@ fun ProfileScreen(
 
     Skeleton(
         navController,
+        topInsetHandledByContent = true,
         miniPlayer = miniPlayer,
         navBarContent = { item ->
             item(0, stringResource(R.string.profiles), R.drawable.person)
@@ -214,7 +212,7 @@ fun ProfileScreen(
         val page = state
         LazyColumn(
             state = scrollState,
-            contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer)
+            contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer))
         ) {
             item(key = "header", contentType = 0) {
                 // Listen-Together-style header: the icon is shown and a centered
@@ -631,21 +629,11 @@ private fun ProfileStateActionCard(
     modifier: Modifier = Modifier,
 ) {
     val palette = colorPalette()
-    Card(
+    ProfileCardSurface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .shadow(
-                elevation = 4.dp,
-                shape = uiRoundnessShape(),
-                spotColor = palette.accent.copy(alpha = 0.2f),
-            )
-            .clickable(enabled = enabled) { onClick() },
-        shape = uiRoundnessShape(),
-        colors = CardDefaults.cardColors(
-            containerColor = surfaceColor(colorPalette().background1)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        interactionModifier = Modifier.clickable(enabled = enabled) { onClick() },
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -655,7 +643,7 @@ private fun ProfileStateActionCard(
             Box(
                 modifier = Modifier
                     .size(32.dp)
-                    .background(palette.accent.copy(alpha = 0.1f), uiRoundnessShape()),
+                    .iconBadgeBackground(palette.accent.copy(alpha = 0.1f), uiRoundnessShape()),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(

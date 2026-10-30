@@ -59,6 +59,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
@@ -88,11 +89,13 @@ import app.it.fast4x.rimusic.utils.conditional
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.components.ui.screens.rewind.RewindData
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.thumbnail
+import app.n_zik.android.components.glass.glassImageRim
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
@@ -392,7 +395,7 @@ private fun RewindShareSlideButton(
             .size(40.dp)
             // Same rounded chrome as the deck's volume toggle (spec 3)
             .clip(RoundedCornerShape(14.dp))
-            .background(rewindColors.value.cream.copy(alpha = 0.12f))
+            .iconBadgeBackground(rewindColors.value.cream.copy(alpha = 0.12f), RoundedCornerShape(14.dp))
             .clickable(onClick = onClick)
     ) {
         Icon(
@@ -593,10 +596,12 @@ internal fun RewindArtwork(
     contentDescription: String?,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Crop,
-    onError: (() -> Unit)? = null
+    onError: (() -> Unit)? = null,
+    shape: Shape = RectangleShape,
 ) {
     ImageCacheFactory.AsyncImage(
         thumbnailUrl = imageUrl,
+        shape = shape,
         contentDescription = contentDescription,
         contentScale = contentScale,
         modifier = modifier,
@@ -631,6 +636,7 @@ internal fun RewindArtworkWithFallback(
         )
         RewindArtwork(
             imageUrl = imageUrl,
+            shape = if (circular) CircleShape else RoundedCornerShape(8.dp),
             contentDescription = title,
             modifier = Modifier.fillMaxSize(),
             onError = onError
@@ -742,6 +748,7 @@ internal fun RewindPlaylistArtwork(
     Box(
         modifier = modifier
             .clip(shape)
+            .glassImageRim(shape)
             .background(rewindColors.value.ink),
         contentAlignment = Alignment.Center
     ) {
@@ -762,6 +769,7 @@ internal fun RewindPlaylistArtwork(
                 )
             thumbnails.toSet().size == 1 ->
                 ImageCacheFactory.Thumbnail(
+                    shape = null,
                     thumbnailUrl = thumbnails.first(),
                     contentDescription = title,
                     contentScale = ContentScale.Crop,
@@ -777,6 +785,7 @@ internal fun RewindPlaylistArtwork(
                     val thumbnail = thumbnails.getOrNull(index)
                     if (thumbnail != null) {
                         ImageCacheFactory.Thumbnail(
+                            shape = null,
                             thumbnailUrl = thumbnail,
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
@@ -1162,7 +1171,7 @@ internal fun RewindKicker(
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         modifier = modifier
-            .background(background, RoundedCornerShape(2.dp))
+            .rewindCardBackground(background, RoundedCornerShape(2.dp))
             .padding(horizontal = 9.dp, vertical = 6.dp)
             .rewindMarqueeOnly()
     )
@@ -1196,7 +1205,7 @@ internal fun RewindRankRow(
                 .then(
                     if (rowBackground != null) {
                         Modifier
-                            .background(rowBackground, RoundedCornerShape(11.dp))
+                            .rewindCardBackground(rowBackground, RoundedCornerShape(11.dp))
                             .padding(horizontal = 12.dp, vertical = 8.dp)
                     } else {
                         Modifier
@@ -1295,7 +1304,7 @@ internal fun RewindLevelBadge(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
-                .background(pillBackground, RoundedCornerShape(100.dp))
+                .rewindCardBackground(pillBackground, RoundedCornerShape(100.dp))
                 .padding(horizontal = 11.dp, vertical = 6.dp)
                 .rewindMarqueeOnly()
         )

@@ -4,7 +4,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -192,7 +191,7 @@ private fun DiscoveryMetric(
     val foreground = if (color == rewindColors.value.pink || color == rewindColors.value.orange) rewindColors.value.ink else rewindColors.value.cream
     Column(
         modifier = modifier
-            .background(color, RoundedCornerShape(9.dp))
+            .rewindCardBackground(color, RoundedCornerShape(9.dp))
             .padding(horizontal = 9.dp, vertical = 10.dp)
     ) {
         Text(

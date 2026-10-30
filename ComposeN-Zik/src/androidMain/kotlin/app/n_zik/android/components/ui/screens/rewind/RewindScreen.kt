@@ -85,6 +85,7 @@ import com.mikepenz.hypnoticcanvas.shaderBackground
 import com.mikepenz.hypnoticcanvas.shaders.GradientFlow
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
@@ -597,7 +598,7 @@ fun RewindScreen(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(rewindColors.value.cream.copy(alpha = 0.12f))
+                        .iconBadgeBackground(rewindColors.value.cream.copy(alpha = 0.12f), RoundedCornerShape(14.dp))
                         .combinedClickable(
                             onClick = {
                                 DataStoreUtils.saveBoolean(
@@ -989,7 +990,7 @@ private fun RewindBgmVolumeSlider(
         modifier = Modifier
             .size(width = 48.dp, height = 80.dp)
             .clip(RoundedCornerShape(14.dp))
-            .background(colors.cream.copy(alpha = 0.12f))
+            .iconBadgeBackground(colors.cream.copy(alpha = 0.12f), RoundedCornerShape(14.dp))
             .semantics {
                 contentDescription = volumeCd
             }
