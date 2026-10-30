@@ -2094,6 +2094,7 @@
 <string name="listen_together_invalid_room_code">Invalid room code</string>
 <string name="listen_together_join_request_denied">Join request denied</string>
 <string name="listen_together_leave_room">Leave room</string>
+<string name="listen_together_switch_room_confirmation">Leave your current room and open invitation %1$s?</string>
 <string name="listen_together_joining_room">Joining room %s…</string>
 <string name="listen_together_creating_room">Creating room…</string>
 <string name="listen_together_connect">Connect</string>

@@ -187,6 +187,12 @@ import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
 import app.it.fast4x.rimusic.ui.screens.player.rememberPlayerSheetState
 import app.n_zik.android.components.CustomBottomSheet
 import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
+import app.n_zik.android.listentogether.listenTogetherInviteUri
+import app.n_zik.android.listentogether.inviteAwareShortcutAction
+import app.n_zik.android.listentogether.openListenTogetherInvite
+import app.n_zik.android.listentogether.parseListenTogetherInvite
+import app.n_zik.android.listentogether.restoreListenTogetherInvite
+import app.n_zik.android.listentogether.saveListenTogetherInvite
 import app.n_zik.android.listentogether.shouldDisablePlayerSheetDismiss
 import app.n_zik.android.components.player.MiniPlayerQueueOverlay
 import app.n_zik.android.components.player.APP_HEADER_HEIGHT
@@ -847,6 +853,9 @@ class MainActivity :
     @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        intentUriData = restoreListenTogetherInvite(intent, savedInstanceState)
+            ?: (intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri())
+                ?.takeUnless { parseListenTogetherInvite(it) != null }
         MonetCompat.enablePaletteCompat()
 
         enableEdgeToEdge(
@@ -1055,14 +1064,14 @@ class MainActivity :
 
         Timber.tag("MainActivity").d("onCreate launchedFromNotification: $launchedFromNotification intent ${intent.action}")
 
-        intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
         // The self-consumed shortcut actions (profile shortcuts, spec-profile-shortcuts,
         // and the debug updater backdoor) have their own consumption (done in
         // onCreate / onNewIntent) and must not ride the home-tab shortcut state,
 //
         // which would pop the back stack to home.
         shortcutIntentAction =
-            initialShortcutAction(intent.action, isRestoredInstance)?.takeUnless { isSelfConsumedShortcutAction(it) }
+            initialShortcutAction(inviteAwareShortcutAction(intent), isRestoredInstance)
+                ?.takeUnless { isSelfConsumedShortcutAction(it) }
         // Rewind deep links are consumed synchronously in onCreate / onNewIntent
         // (consumeRewindDeepLinks), before startApp runs — see those call sites.
         onboardingStep = OnboardingStep.resolveStartupStep(
@@ -2621,6 +2630,12 @@ class MainActivity :
                 if (onboardingStep != null) return@LaunchedEffect
                 val uri = intentUriData ?: return@LaunchedEffect
 
+                parseListenTogetherInvite(uri)?.let { roomCode ->
+                    intentUriData = null
+                    openListenTogetherInvite(navController, roomCode)
+                    return@LaunchedEffect
+                }
+
                 Toaster.n(
                     "${BuildConfig.APP_NAME} ${this@MainActivity.resources.getString( R.string.opening_url )}",
                     duration = Toast.LENGTH_LONG
@@ -2718,13 +2733,20 @@ class MainActivity :
         appRunningInBackground = true
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        saveListenTogetherInvite(outState, intentUriData)
+        super.onSaveInstanceState(outState)
+    }
+
     @UnstableApi
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
+        intentUriData = listenTogetherInviteUri(intent)
+            ?: (intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri())
+                ?.takeUnless { parseListenTogetherInvite(it) != null }
         // The profile-shortcut actions have their own consumption (spec-profile-shortcuts) and
         // must not ride the home-tab shortcut state (which would pop the back stack to home).
-        shortcutIntentAction = intent.action?.takeUnless { isSelfConsumedShortcutAction(it) }
+        shortcutIntentAction = inviteAwareShortcutAction(intent)?.takeUnless { isSelfConsumedShortcutAction(it) }
         // Generic « Profiles » shortcut (warm): record the navigation target without
         // clobbering a pending one (the navigation effect consumes it, gated on onboarding).
         openProfilesShortcut = openProfilesShortcut || (intent.action == action_profiles)

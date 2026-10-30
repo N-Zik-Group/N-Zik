@@ -1,3 +1,12 @@
+Added:
+- feat(listen-together): open room invitation links (issue https://github.com/N-Zik-Group/N-Zik/issues/923)
+  - Register the HTTPS metrolist.cc/listen invitation handler and accept VIEW/shared-text links; validate the host, path and eight-character room code before navigating.
+  - Deliver invitations to the existing Listen Together screen through SavedStateHandle, prefill the code without a saved username, or join with the username saved in this app installation.
+  - Preserve pending invitations across onboarding/recreation, consume delivered links once, retain the topmost room entry and require confirmation before leaving another active room.
+  - Exclude invitation actions from MainActivity's cold/warm launcher-shortcut return-to-home effect, which could undo room navigation; cancel replaced requests without letting a queued disconnect erase the new waiting state.
+  - Pass 32 targeted parser, navigation, screen and competing-effect regression tests; assemble Debug and Release64, install the local test release and observe the invitation join request on the emulator.
+  - Keep the separately observed connection-abort/stale-approval problem outside this change; a complete live host approval was not validated. Android web-link defaults still require domain approval.
+
 Changed:
 - change(github): align build labels and issue automation with current variants
   - Rename full/full32/minified/beta/dev to release64/release32/minified64/beta64/dev64 in place on GitHub, preserving label IDs, colors and existing issue assignments.
