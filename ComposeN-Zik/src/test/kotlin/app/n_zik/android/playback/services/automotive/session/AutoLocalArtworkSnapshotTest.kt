@@ -2,6 +2,9 @@ package app.n_zik.android.playback.services.automotive.session
 
 import android.content.ContentResolver
 import android.content.ContentUris
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import io.mockk.mockkObject
+import io.mockk.every
 import android.content.Context
 import android.content.ContextWrapper
 import android.database.MatrixCursor
@@ -29,7 +32,6 @@ import app.n_zik.android.playback.services.LocalArtworkRules
 import app.n_zik.android.playback.services.automotive.browse.AutoBrowseTree
 import app.n_zik.android.playback.services.automotive.models.ArtworkBitmapDecoder
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.spyk
@@ -60,6 +62,8 @@ class AutoLocalArtworkSnapshotTest {
 
     @Before
     fun setUp() {
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         context = ApplicationProvider.getApplicationContext<TestApplication>()
         val application = mockk<MainApplication>()
         every { application.applicationContext } returns context

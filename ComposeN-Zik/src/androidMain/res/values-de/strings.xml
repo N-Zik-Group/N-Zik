@@ -720,8 +720,6 @@
     <string name="showvisthumbnail">Visualizer im Thumbnail anzeigen</string>
     <string name="black_background_for_visualizer">Dunkler Hintergrund für Visualizer</string>
     <string name="show_visualizer_buttons">Visualisierungstasten automatisch ausblenden</string>
-    <string name="androidheadunit">Android Head-Unit</string>
-    <string name="extra_space">Zusätzlicher Platz oben</string>
     <string name="white">Weiß</string>
     <string name="black">Schwarz</string>
     <string name="highlight">Hervorheben</string>

@@ -720,8 +720,6 @@
     <string name="showvisthumbnail">Показати мініатюру для візуалізації</string>
     <string name="black_background_for_visualizer">Темне тло для візуалізатора</string>
     <string name="show_visualizer_buttons">Автоматично приховувати кнопки візуалізації</string>
-    <string name="androidheadunit">Android головні одиниці</string>
-    <string name="extra_space">Додатковий простір вгорі</string>
     <string name="white">Білий</string>
     <string name="black">Чорний</string>
     <string name="highlight">Виділити</string>

@@ -20,17 +20,15 @@ import java.io.IOException
 import java.util.UUID
 import app.n_zik.android.playback.services.automotive.models.ArtworkBitmapDecoder
 import android.graphics.Bitmap
+import android.util.Base64
+import app.n_zik.android.playback.services.automotive.models.SessionArtworkLoader
+import java.security.MessageDigest
+import java.security.SecureRandom
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
+import kotlinx.coroutines.runBlocking
 
-/**
- * Signed artwork channel for local tracks: `content://{appId}.artwork/{songId}`.
- *
- * Exported because the Android Auto process must open it (see [LocalArtworkRules]).
- * Always answers with a seekable square JPEG, resolved in order:
- *  1. the song's custom cover (active profile covers folder) — any caller, as before;
- *  2. the MediaStore album art, read in-process with the app's media permission —
- *     trusted callers only ([LocalArtworkRules.isTrustedCaller]);
- *  3. the app placeholder, so an art-less track still renders on the head unit.
- */
+/** Serves bounded seekable JPEGs with signed profile-owned remote sources. */
 class ArtworkContentProvider : ContentProvider() {
 
     companion object {
@@ -66,6 +64,43 @@ class ArtworkContentProvider : ContentProvider() {
                 .appendPath("source").appendPath(token).build()
         }
 
+        private val remoteSigningKey = ByteArray(32).also { SecureRandom().nextBytes(it) }
+        private const val REMOTE_LIFETIME_MS = 24 * 60 * 60 * 1000L
+
+        private fun remoteSignature(payload: String): String = Base64.encodeToString(
+            Mac.getInstance("HmacSHA256").apply { init(SecretKeySpec(remoteSigningKey, "HmacSHA256")) }
+                .doFinal(payload.toByteArray(Charsets.UTF_8)), Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING,
+        )
+
+        /** Self-contained signed identity has no queue-size-dependent registration limit. */
+        internal fun uriForRemote(originalSource: String, profile: String, square: Boolean, revision: Long,
+            expires: Long = System.currentTimeMillis() + REMOTE_LIFETIME_MS): Uri? {
+            val source = originalSource
+            val parsed = Uri.parse(source)
+            if (parsed.scheme !in setOf("http", "https") || parsed.host.isNullOrBlank()) return null
+            val payload = "$profile\n$square\n$revision\n$expires\n$source"
+            return Uri.Builder().scheme("content").authority(AUTHORITY).appendPath("remote")
+                .appendQueryParameter("p", profile).appendQueryParameter("c", square.toString())
+                .appendQueryParameter("r", revision.toString()).appendQueryParameter("e", expires.toString())
+                .appendQueryParameter("u", source).appendQueryParameter("s", remoteSignature(payload)).build()
+        }
+
+        internal fun remoteSource(uri: Uri, profile: String, now: Long = System.currentTimeMillis()): Pair<String, Boolean>? {
+            if (uri.authority != AUTHORITY || uri.pathSegments != listOf("remote")) return null
+            val owner = uri.getQueryParameter("p") ?: return null
+            val crop = uri.getQueryParameter("c")?.toBooleanStrictOrNull() ?: return null
+            val revision = uri.getQueryParameter("r")?.toLongOrNull() ?: return null
+            val expires = uri.getQueryParameter("e")?.toLongOrNull() ?: return null
+            val source = uri.getQueryParameter("u") ?: return null
+            val signature = uri.getQueryParameter("s") ?: return null
+            if (owner != profile || expires <= now || expires - now > REMOTE_LIFETIME_MS || source.length > 16384) return null
+            val parsed = Uri.parse(source)
+            if (parsed.scheme !in setOf("http", "https") || parsed.host.isNullOrBlank()) return null
+            val expected = remoteSignature("$owner\n$crop\n$revision\n$expires\n$source")
+            if (!MessageDigest.isEqual(expected.toByteArray(Charsets.UTF_8), signature.toByteArray(Charsets.UTF_8))) return null
+            return source to crop
+        }
+
         fun uriFor(songId: String): Uri = Uri.Builder()
             .scheme("content")
             .authority(AUTHORITY)
@@ -76,9 +111,19 @@ class ArtworkContentProvider : ContentProvider() {
     override fun onCreate(): Boolean = true
 
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
+        if (mode != "r" || uri.authority != AUTHORITY) return null
         val songId = uri.lastPathSegment ?: return null
         val ctx = context ?: return null
         return try {
+            if (uri.pathSegments.firstOrNull() == "remote") {
+                if (!LocalArtworkRules.isTrustedCaller(runCatching { callingPackage }.getOrNull(), ctx.packageName)) return null
+                val profile = getActiveProfile(ctx)
+                val (source, crop) = remoteSource(uri, profile) ?: return null
+                // ContentProvider's synchronous descriptor API runs on its Binder worker, never the metadata getter.
+                val bytes = runBlocking { SessionArtworkLoader.load(source, crop) } ?: return null
+                if (profile != getActiveProfile(ctx)) return null
+                return writeSeekableBytes(ctx, bytes)
+            }
             val profile = getActiveProfile(ctx)
             val sourceRequest = uri.pathSegments.firstOrNull() == "source"
             val bitmap = (if (sourceRequest) registeredSource(ctx, uri) else
@@ -121,11 +166,7 @@ class ArtworkContentProvider : ContentProvider() {
         return ArtworkBitmapDecoder.file(file)?.let { ArtworkBitmapDecoder.finish(it, square = true) }
     }
 
-    /**
-     * MediaStore album art of a local song, decoded in-process (the app holds the media
-     * permission, the Android Auto process does not). Album art entry first, then the
-     * platform audio thumbnail (embedded art) on Q+; null when the track has no art.
-     */
+    /** Reads permission-protected album art in-process for trusted media surfaces. */
     private fun mediaStoreArtIfTrusted(ctx: Context, songId: String): Bitmap? {
         val audioId = LocalArtworkRules.mediaStoreAudioIdOf(songId) ?: return null
         val caller = runCatching { callingPackage }.getOrNull()
@@ -167,12 +208,7 @@ class ArtworkContentProvider : ContentProvider() {
         ctx.resources.openRawResource(R.drawable.ic_launcher_box)
     }?.let { ArtworkBitmapDecoder.finish(it, square = true) }
 
-    /**
-     * Writes [bitmap] to a regular temp file and returns a read-only descriptor on it: a
-     * file descriptor is seekable, unlike the pipe MediaStore hands out for embedded art
-     * (which Android Auto's decoder rejects with ESPIPE). The file is unlinked right
-     * after opening — the descriptor stays valid and the cache dir does not grow.
-     */
+    // A regular file avoids ESPIPE in AA; unlinking leaves its open descriptor valid.
     private fun writeSeekableJpeg(ctx: Context, bitmap: Bitmap): ParcelFileDescriptor {
         val tempFile = File.createTempFile("artwork_", ".jpg", ctx.cacheDir)
         try {
@@ -184,6 +220,14 @@ class ArtworkContentProvider : ContentProvider() {
             bitmap.recycle()
             tempFile.delete()
         }
+    }
+
+    private fun writeSeekableBytes(ctx: Context, bytes: ByteArray): ParcelFileDescriptor {
+        val file = File.createTempFile("artwork_", ".jpg", ctx.cacheDir)
+        try {
+            file.writeBytes(bytes)
+            return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
+        } finally { file.delete() }
     }
 
     override fun query(uri: Uri, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor? = null

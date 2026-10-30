@@ -720,8 +720,6 @@
     <string name="showvisthumbnail">Pokaż miniaturkę dla wizualizatora</string>
     <string name="black_background_for_visualizer">Ciemne tło dla wizualizatora</string>
     <string name="show_visualizer_buttons">Automatycznie ukryj przyciski wizualizatora</string>
-    <string name="androidheadunit">Jednostka główna Androida</string>
-    <string name="extra_space">Dodatkowa przestrzeń na górze</string>
     <string name="white">Biały</string>
     <string name="black">Czarny</string>
     <string name="highlight">Wyróżnienie</string>

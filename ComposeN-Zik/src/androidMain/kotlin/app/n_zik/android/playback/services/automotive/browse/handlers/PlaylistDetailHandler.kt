@@ -3,6 +3,7 @@ package app.n_zik.android.playback.services.automotive.browse.handlers
 import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastMap
 
+import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
 import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.offline.Download
@@ -93,7 +94,7 @@ class PlaylistDetailHandler : BrowseHandler {
                     val sortOrder = context.preferences.getEnum("PlaylistSongsSortOrder_$playlistId", SortOrder.Ascending)
                     database.songPlaylistMapTable.sortSongs(localPlaylistId, sortBy, sortOrder)
                 } else {
-                    val playlistPage = Innertube.playlistPage(browseId = playlistId.removePrefix(MODIFIED_PREFIX))?.getOrNull()
+                    val playlistPage = if (AutoAccessPolicy(context, database, downloadHelper, binder).online) Innertube.playlistPage(browseId = playlistId.removePrefix(MODIFIED_PREFIX))?.getOrNull() else null
                     val songs = playlistPage?.songsPage?.items?.map { item -> item.asSong } ?: emptyList()
                     // Scope the songs to their own playlist id so playback queues
                     // never mix songs from previously opened playlists (issue #777).

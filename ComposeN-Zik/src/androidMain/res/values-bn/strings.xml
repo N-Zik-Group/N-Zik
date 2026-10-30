@@ -720,8 +720,6 @@
     <string name="showvisthumbnail">ভিজ্যুয়ালাইজারের জন্য থাম্বনেইল দেখান</string>
     <string name="black_background_for_visualizer">Dark background for visualizer</string>
     <string name="show_visualizer_buttons">Auto-hide visualizer buttons</string>
-    <string name="androidheadunit">Android Head unit</string>
-    <string name="extra_space">Extra space at top</string>
     <string name="white">White</string>
     <string name="black">Black</string>
     <string name="highlight">Highlight</string>

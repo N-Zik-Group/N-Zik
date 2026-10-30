@@ -1,13 +1,14 @@
 package app.n_zik.android.playback.services.automotive.browse.handlers
 
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import io.mockk.mockkObject
+import io.mockk.unmockkAll
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.unmockkAll
 import io.mockk.verify
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic
@@ -47,6 +48,8 @@ class ArtistDetailOfflineTest {
 
     @Before
     fun setUp() {
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         val app = ApplicationProvider.getApplicationContext<TestApplication>()
         val mainApplication = mockk<MainApplication>()
         every { mainApplication.applicationContext } returns app
@@ -124,6 +127,19 @@ class ArtistDetailOfflineTest {
         }
 
         verify(exactly = 0) { songs.allSongsBy(any()) }
+    }
+
+    @Test
+    fun `effective offline remote sections never substitute artist root songs or fetch`() = runTest {
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns false
+        every { songs.allSongsBy("UC_saved") } returns flowOf(listOf(Song.makePlaceholder("saved")))
+        for (section in listOf("Songs", "Videos", "Albums", "Singles", "Playlists", "More")) {
+            assertTrue(handler.getChildren("artist/UC_saved/$section", context, Database, downloadHelper, null).isEmpty())
+        }
+        verify(exactly = 0) { songs.allSongsBy(any()) }
+        coVerify(exactly = 0) { YtMusic.getArtistPage(any(), any()) }
+        assertEquals(listOf("artist/UC_saved/saved"),
+            handler.getChildren("artist/UC_saved", context, Database, downloadHelper, null).map { it.mediaId })
     }
 
     @Test

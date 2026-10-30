@@ -1,5 +1,11 @@
 package app.n_zik.android.playback.services
 
+import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import app.it.fast4x.rimusic.utils.activeProfileKey
+import app.it.fast4x.rimusic.utils.profilePreferences
+import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
+import app.n_zik.android.core.network.fullOfflineModeKey
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.JournalPermission
@@ -114,7 +120,6 @@ import app.it.fast4x.rimusic.extensions.audiovolume.AudioVolumeObserver
 import app.it.fast4x.rimusic.extensions.audiovolume.OnAudioVolumeChangedListener
 import app.n_zik.android.core.maintenance.MaintenanceDownloadSelfHealState
 import app.n_zik.android.core.maintenance.MaintenanceStateStore
-import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.core.profiles.ProfileDataDirNames
 import app.n_zik.android.core.profiles.cacheDatabaseProvider
@@ -158,7 +163,6 @@ import app.it.fast4x.rimusic.utils.exoPlayerCustomCacheKey
 import app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey
 import app.it.fast4x.rimusic.utils.exoPlayerMinTimeForEventKey
 import app.it.fast4x.rimusic.utils.fadeInEffect
-import app.it.fast4x.rimusic.utils.fadeOutEffect
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.intent
@@ -642,7 +646,9 @@ class PlayerServiceModern : MediaLibraryService(),
             Timber.tag("PlayerServiceModern").e("Failed init bitmap provider ${it.stackTraceToString()}")
         }
 
-        preferences.registerOnSharedPreferenceChangeListener(this)
+        boundSessionPreferences = preferences
+        boundSessionPreferences?.registerOnSharedPreferenceChangeListener(this)
+        profilePreferences.registerOnSharedPreferenceChangeListener(sessionProfileListener)
 
         isPersistentQueueEnabled = preferences.getBoolean(persistentQueueKey, false)
 
@@ -777,7 +783,7 @@ class PlayerServiceModern : MediaLibraryService(),
         )
         mediaSession =
             // Local artwork goes out as the signed provider URI (Android Auto home card)
-            MediaLibrarySession.Builder(this, SessionArtworkPlayer(guestGuardPlayer), mediaLibrarySessionCallback)
+            MediaLibrarySession.Builder(this, SessionArtworkPlayer(mediaLibrarySessionCallback.wrapPlayer(guestGuardPlayer)), mediaLibrarySessionCallback)
                 .setBitmapLoader(
                     SessionBitmapLoader(
                         this,
@@ -790,6 +796,9 @@ class PlayerServiceModern : MediaLibraryService(),
                 .build()
         
         mediaLibrarySessionCallback.observeRepository(mediaSession)
+        sessionPolicyJob = coroutineScope.launch(NzikDispatchers.UI) {
+            NetworkQualityHelper.observeConnection(this@PlayerServiceModern).collect { refreshSessionAccess() }
+        }
 
         player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
         player.addListener(this@PlayerServiceModern)
@@ -1118,7 +1127,9 @@ class PlayerServiceModern : MediaLibraryService(),
             lastFmScrobbleManager?.destroy()
             lastFmScrobbleManager = null
             maybeSavePlayerQueue()
-            preferences.unregisterOnSharedPreferenceChangeListener(this)
+            sessionPolicyJob?.cancel()
+            profilePreferences.unregisterOnSharedPreferenceChangeListener(sessionProfileListener)
+            boundSessionPreferences?.unregisterOnSharedPreferenceChangeListener(this)
             encryptedPreferences.unregisterOnSharedPreferenceChangeListener(encryptedPrefsListener)
             stopService(intent<MyDownloadService>())
             stopService(intent<PlayerServiceModern>())
@@ -1177,8 +1188,34 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
 
+    private var sessionPolicyJob: Job? = null
+    private var boundSessionPreferences: SharedPreferences? = null
+    private val sessionProfileListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == activeProfileKey) {
+            boundSessionPreferences?.unregisterOnSharedPreferenceChangeListener(this)
+            boundSessionPreferences = preferences
+            boundSessionPreferences?.registerOnSharedPreferenceChangeListener(this)
+            refreshSessionAccess()
+        }
+    }
+
+    private fun refreshSessionAccess() {
+        if (!::mediaSession.isInitialized) return
+        mediaLibrarySessionCallback.invalidatePublication()
+        coroutineScope.launch(NzikDispatchers.UI) {
+            (mediaSession.player as? SessionArtworkPlayer)?.refreshArtwork()
+            mediaLibrarySessionCallback.invalidateAccess(mediaSession)
+            updateDefaultNotification()
+        }
+    }
+
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         when (key) {
+            cropVideoThumbnailsKey -> coroutineScope.launch(NzikDispatchers.UI) {
+                (mediaSession.player as? SessionArtworkPlayer)?.refreshArtwork()
+                mediaLibrarySessionCallback.refreshArtwork(mediaSession)
+            }
+            fullOfflineModeKey -> refreshSessionAccess()
             // Issue #866 (gh-866): the discover state lives in this preference — NZikRadio
             // .toggleDiscover (in-app buttons, AA, notification), the settings toggle, and the
 //
@@ -2247,7 +2284,8 @@ class PlayerServiceModern : MediaLibraryService(),
 
         commandButtonsList += firstCommandButton + secondCommandButton + otherCommandButtons
 
-        return commandButtonsList
+        val access = AutoAccessPolicy(this, Database, MyDownloadHelper, binder)
+        return commandButtonsList.filter { button -> button.sessionCommand?.let { access.allowsCommand(it.customAction) } != false }.toMutableList()
     }
 
     private fun updateDefaultNotification() {
@@ -2269,6 +2307,7 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     fun toggleDownload() {
+        if (!NetworkQualityHelper.isNetworkConnected(this)) return
         binder.toggleDownload()
     }
 
@@ -2281,6 +2320,7 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     fun startRadio() {
+        if (!NetworkQualityHelper.isNetworkConnected(this)) return
         player.currentMediaItem?.let { binder.startRadio(it, false, null, true) }
     }
 
@@ -2289,6 +2329,7 @@ class PlayerServiceModern : MediaLibraryService(),
 //
     // (error toast) apply exactly as in-app.
     fun toggleDiscover() {
+        if (!NetworkQualityHelper.isNetworkConnected(this)) return
         if (::nzikRadio.isInitialized) nzikRadio.toggleDiscover()
     }
 
@@ -2860,7 +2901,7 @@ class PlayerServiceModern : MediaLibraryService(),
 //
             // flag was never set and the host's next PLAY resumed an in-app-paused guest
             // (spec-listen-together-guest-lock-hardening).
-            this@PlayerServiceModern.guestGuardPlayer.fadeOutEffect( duration.asMillis )
+            this@PlayerServiceModern.guestGuardPlayer.pauseWithFade( duration.asMillis )
         }
 
         /**
@@ -2893,6 +2934,7 @@ class PlayerServiceModern : MediaLibraryService(),
         }
 
         fun toggleDownload() {
+            if (!NetworkQualityHelper.isNetworkConnected(this@PlayerServiceModern)) return
             val mediaItem = currentMediaItem.value ?: return
             val downloadState = currentDownloadState(mediaItem)
             manageDownload(
@@ -3254,7 +3296,7 @@ class PlayerServiceModern : MediaLibraryService(),
             // fading player, which cleanupCrossfade() releases later bypassing the wrapper chain.
             currentSeekCoalescer?.detach()
             guestGuardPlayer = createGuestGuardPlayer(player)
-            mediaSession.player = SessionArtworkPlayer(guestGuardPlayer)
+            mediaSession.player = SessionArtworkPlayer(mediaLibrarySessionCallback.wrapPlayer(guestGuardPlayer))
         } catch (e: Exception) {
             Timber.tag("PlayerServiceModern").e(e, "Failed to swap player in MediaSession")
         }

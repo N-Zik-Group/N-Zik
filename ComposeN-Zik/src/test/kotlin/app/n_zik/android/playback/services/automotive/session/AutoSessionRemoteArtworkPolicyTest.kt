@@ -1,5 +1,8 @@
 package app.n_zik.android.playback.services.automotive.session
 
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import io.mockk.mockkObject
+import io.mockk.every
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -24,9 +27,7 @@ import coil3.request.SuccessResult
 import coil3.size.Dimension
 import coil3.size.Size
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
@@ -140,6 +141,8 @@ class AutoSessionRemoteArtworkPolicyTest {
     ): List<ImageRequest> = runBlocking {
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { appContext() } returns context
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         mockkObject(Database)
         val songs = mockk<SongTable>()
         every { Database.songTable } returns songs

@@ -720,8 +720,6 @@
     <string name="showvisthumbnail">Afișează miniatura pentru vizualizator</string>
     <string name="black_background_for_visualizer">Fundal întunecat pentru vizualizator</string>
     <string name="show_visualizer_buttons">Ascunde automat butoanele vizualizatorului</string>
-    <string name="androidheadunit">Unitate principală Android</string>
-    <string name="extra_space">Spațiu suplimentar în partea de sus</string>
     <string name="white">Alb</string>
     <string name="black">Negru</string>
     <string name="highlight">Evidențiere</string>

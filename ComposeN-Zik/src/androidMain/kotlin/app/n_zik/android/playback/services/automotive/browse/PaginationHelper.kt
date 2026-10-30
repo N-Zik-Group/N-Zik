@@ -15,7 +15,8 @@ object PaginationHelper {
 
     fun paginate(context: Context, filteredList: List<MediaItem>, actualParentId: String, pageIndex: Int): List<MediaItem> {
         val shuffle = filteredList.firstOrNull { AutoMediaIdContract.isShuffle(it.mediaId) }
-        val content = filteredList.filterNot { AutoMediaIdContract.isQueueAction(it.mediaId) }
+        val navigation = filteredList.filter { AutoMediaIdContract.parseSearchContinuation(it.mediaId) != null }
+        val content = filteredList.filterNot { AutoMediaIdContract.isQueueAction(it.mediaId) || AutoMediaIdContract.parseSearchContinuation(it.mediaId) != null }
         val playAll = shuffle?.takeUnless {
             it.mediaId == AutoSessionConstants.ID_LUCKY_SHUFFLE || actualParentId == AutoSessionConstants.ID_QUICK_PICKS
         }
@@ -24,9 +25,9 @@ object PaginationHelper {
         if (pageIndex >= 0) {
             val offset = pageIndex.toLong() * ITEMS_PER_PAGE
             if (offset >= content.size) return emptyList()
-            return actions + content.drop(offset.toInt()).take(ITEMS_PER_PAGE)
+            return actions + content.drop(offset.toInt()).take(ITEMS_PER_PAGE) + navigation
         }
-        if (content.size <= ITEMS_PER_PAGE) return actions + content
+        if (content.size <= ITEMS_PER_PAGE) return actions + content + navigation
         val folders = content.chunked(ITEMS_PER_PAGE).mapIndexed { index, chunk ->
             val start = index * ITEMS_PER_PAGE + 1
             val end = start + chunk.size - 1
@@ -38,6 +39,6 @@ object PaginationHelper {
                 MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS,
             )
         }
-        return actions + folders
+        return actions + folders + navigation
     }
 }

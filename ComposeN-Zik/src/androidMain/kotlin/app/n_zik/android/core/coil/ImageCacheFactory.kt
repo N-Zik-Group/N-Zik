@@ -33,6 +33,8 @@ import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.ErrorResult
+import coil3.request.CachePolicy
+import coil3.size.Scale
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.request.crossfade
@@ -755,6 +757,8 @@ object ImageCacheFactory {
         allowHardware: Boolean = false,
         requestSize: Int? = null,
         qualityOverride: NetworkQuality? = null,
+        cacheOnly: Boolean = false,
+        cropToSquare: Boolean = false,
     ): Bitmap? {
         require(requestSize == null || requestSize > 0)
         if (url.isNullOrBlank() || url == "null") {
@@ -781,6 +785,8 @@ object ImageCacheFactory {
                 .diskCacheKey(generateCacheKeySync(currentUrl, decision.quality))
                 .memoryCacheKey(generateCacheKeySync(currentUrl, decision.quality))
                 .allowHardware(allowHardware)
+                .networkCachePolicy(if (cacheOnly) CachePolicy.DISABLED else CachePolicy.ENABLED)
+                .scale(if (cropToSquare) Scale.FILL else Scale.FIT)
             
             val boundedSize = requestSize ?: maxSize.takeIf { isLocalFile }
             if (boundedSize != null) {
@@ -793,13 +799,13 @@ object ImageCacheFactory {
             if (result.image != null) {
                 val dataSource = (result as? SuccessResult)?.dataSource
                 
-                if (dataSource != null && dataSource != DataSource.MEMORY_CACHE) {
+                if (!cacheOnly && dataSource != null && dataSource != DataSource.MEMORY_CACHE) {
                     val id = currentUrl.getYouTubeId()
                     if (id != null) {
                         PlaylistThumbnailStore.save(id, currentUrl, currentUrl.isYouTubeHighRes())
                     }
                 }
-                if (decision.useNetwork) {
+                if (!cacheOnly && decision.useNetwork) {
                     CacheMetadataStore.save(url, decision.quality)
                 }
                 return result.image?.toBitmap() ?: run {
@@ -815,8 +821,10 @@ object ImageCacheFactory {
             val id = currentUrl.getYouTubeId()
             if (currentUrl != url && id != null && (currentUrl.contains("pl_c") || currentUrl.contains("podcasts"))) {
                 
-                clearCacheForKey(currentUrl, decision.quality)
-                PlaylistThumbnailStore.clear(id)
+                if (!cacheOnly) {
+                    clearCacheForKey(currentUrl, decision.quality)
+                    PlaylistThumbnailStore.clear(id)
+                }
                 currentUrl = url
                 continue
             }

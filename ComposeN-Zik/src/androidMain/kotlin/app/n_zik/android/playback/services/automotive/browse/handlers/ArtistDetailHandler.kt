@@ -1,5 +1,6 @@
 package app.n_zik.android.playback.services.automotive.browse.handlers
 
+import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
 import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
@@ -49,7 +50,11 @@ class ArtistDetailHandler : BrowseHandler {
         val artistId = parts[1]
         if (artistId.isBlank()) return emptyList()
 
-        if (artistId.startsWith(LOCAL_KEY_PREFIX) || artistId.startsWith("LOCAL_ARTIST_")) {
+        val online = AutoAccessPolicy(context, database, downloadHelper, binder).online
+        val localArtist = artistId.startsWith(LOCAL_KEY_PREFIX) || artistId.startsWith("LOCAL_ARTIST_")
+        // A remote section cannot be represented by the artist's complete local song list.
+        if (!online && !localArtist && parts.size != 2) return emptyList()
+        if (!online || localArtist) {
             return database.songArtistMapTable.allSongsBy(artistId).first().map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
         } else {
             val cleanArtistId = artistId.removePrefix(MODIFIED_PREFIX)

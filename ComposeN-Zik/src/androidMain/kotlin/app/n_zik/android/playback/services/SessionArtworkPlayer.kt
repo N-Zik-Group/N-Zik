@@ -1,63 +1,77 @@
 package app.n_zik.android.playback.services
 
+import androidx.media3.common.FlagSet
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import app.it.fast4x.rimusic.cleanPrefix
+import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
+import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.R
 import app.n_zik.android.appContext
+import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
+import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
 
-/**
- * Session-only facade: publishes the signed provider URI
- * ([ArtworkContentProvider.uriFor]) as the artwork URI of local tracks and of
- * custom covers (streams included), whatever path built the queue (Android Auto
- * callbacks or the phone's legacy `asMediaItem`).
- *
- * The legacy (MediaSessionCompat) metadata read by Android Auto is built from
- * [getMediaMetadata]; its home media card loads that URI in the Android Auto
- * process, where MediaStore / resource / file URIs cannot be decoded (see
- * [LocalArtworkRules]). Only the session sees this facade — the phone UI keeps
- * reading the original metadata. Embedded artwork bytes are left untouched.
- *
- * The facade also applies the unknown-metadata placeholders
- * ([SessionMetadataFallbacks]) while a track is LOADED and the player is not
- * IDLE (code review D1, 2026-10-05): an empty player, or a restored queue
- * nothing is playing, publishes its metadata untouched, so no "unknown title /
- * unknown artist" surfaces for a player without music on the session surfaces
- * (Android Auto home card, media notification).
- */
+/** Publishes lightweight session metadata with profile-owned artwork identity. */
 @UnstableApi
-class SessionArtworkPlayer(upstream: Player) : ForwardingPlayer(upstream) {
+class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { System.currentTimeMillis() }) : ForwardingPlayer(upstream) {
+    private val listeners = linkedMapOf<Player.Listener, Player.Listener>()
+    private var profile = getActiveProfile(appContext())
+    private var square = appContext().preferences.getBoolean(cropVideoThumbnailsKey, true)
+    private var revision = ArtworkRevisions.current()
+    private var expires = now() + 24 * 60 * 60 * 1000L
+
+    override fun addListener(listener: Player.Listener) {
+        if (listener in listeners) return
+        val translated = object : Player.Listener by listener {
+            override fun onMediaMetadataChanged(metadata: MediaMetadata) = listener.onMediaMetadataChanged(mediaMetadata)
+            override fun onEvents(player: Player, events: Player.Events) = listener.onEvents(this@SessionArtworkPlayer, events)
+        }
+        listeners[listener] = translated
+        super.addListener(translated)
+    }
+
+    override fun removeListener(listener: Player.Listener) {
+        listeners.remove(listener)?.let { super.removeListener(it) }
+    }
+
+    /** Called on the player thread after profile, crop or connectivity policy changes. */
+    fun refreshArtwork() {
+        profile = getActiveProfile(appContext())
+        square = appContext().preferences.getBoolean(cropVideoThumbnailsKey, true)
+        revision = ArtworkRevisions.current()
+        expires = now() + 24 * 60 * 60 * 1000L
+        val metadata = mediaMetadata
+        val events = Player.Events(FlagSet.Builder().add(Player.EVENT_MEDIA_METADATA_CHANGED).build())
+        listeners.keys.toList().forEach {
+            it.onMediaMetadataChanged(metadata)
+            it.onEvents(this, events)
+        }
+    }
 
     override fun getMediaMetadata(): MediaMetadata {
         val metadata = super.getMediaMetadata()
-        // The placeholders are for LOADED, NON-IDLE tracks without tags (KDoc):
-        // with no current media item, or while the player is IDLE (nothing
-//
-        // playing — e.g. a persistent queue restored without auto-resume), the
-        // metadata must be published as-is, otherwise "unknown title / unknown
-//
-        // artist" would surface for a player without music.
         val currentItem = currentMediaItem
         val hasLoadedTrack = currentItem != null && playbackState != Player.STATE_IDLE
         val mediaId = currentItem?.mediaId
-        val providerArtworkUri = mediaId?.takeIf {
-            LocalArtworkRules.needsProviderArtwork(
-                it,
-                metadata.artworkUri?.toString(),
-                ArtworkContentProvider.AUTHORITY
-            )
+        val source = metadata.extras?.getString(SessionMediaItemMapper.ORIGINAL_ARTWORK_SOURCE_EXTRA)
+            ?.let(::cleanPrefix) ?: metadata.artworkUri?.toString()
+        if (now() >= expires) expires = now() + 24 * 60 * 60 * 1000L
+        val providerArtworkUri = source?.takeIf { currentItem != null }?.let {
+            ArtworkContentProvider.uriForRemote(it, profile, square, revision, expires)
+        } ?: metadata.artworkUri?.takeIf { it.authority == ArtworkContentProvider.AUTHORITY }
+        ?: mediaId?.takeIf {
+            LocalArtworkRules.needsProviderArtwork(it, source, ArtworkContentProvider.AUTHORITY)
         }?.let { ArtworkContentProvider.uriFor(LocalArtworkRules.songIdOf(it)) }
         val needsTitleFallback = hasLoadedTrack && SessionMetadataFallbacks.needsFallback(metadata.title)
         val needsArtistFallback = hasLoadedTrack && SessionMetadataFallbacks.needsFallback(metadata.artist)
         if (providerArtworkUri == null && !needsTitleFallback && !needsArtistFallback) return metadata
-        val context = appContext()
-        return metadata.buildUpon()
-            .apply {
-                providerArtworkUri?.let { setArtworkUri(it) }
-                if (needsTitleFallback) setTitle(context.getString(R.string.unknown_title))
-                if (needsArtistFallback) setArtist(context.getString(R.string.unknown_artist))
-            }
-            .build()
+        return metadata.buildUpon().apply {
+            providerArtworkUri?.let { setArtworkUri(it); setArtworkData(null, null) }
+            if (needsTitleFallback) setTitle(appContext().getString(R.string.unknown_title))
+            if (needsArtistFallback) setArtist(appContext().getString(R.string.unknown_artist))
+        }.build()
     }
 }

@@ -720,8 +720,6 @@
     <string name="showvisthumbnail">Mostra miniatura per visualizzatore</string>
     <string name="black_background_for_visualizer">Sfondo scuro per visualizzatore</string>
     <string name="show_visualizer_buttons">Nascondi automaticamente i pulsanti visualizzatore</string>
-    <string name="androidheadunit">Unità testa Android</string>
-    <string name="extra_space">Spazio aggiuntivo in alto</string>
     <string name="white">Bianco</string>
     <string name="black">Nero</string>
     <string name="highlight">Evidenziazione</string>

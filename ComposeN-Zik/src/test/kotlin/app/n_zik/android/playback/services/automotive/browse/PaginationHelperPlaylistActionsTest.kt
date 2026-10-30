@@ -110,4 +110,19 @@ class PaginationHelperPlaylistActionsTest {
         )
         assertEquals(200, secondPage.drop(2).size)
     }
+    @Test
+    fun `Suite navigation never counts as a song and stays outside page folders`() {
+        val next = MediaItem.Builder().setMediaId(AutoMediaIdContract.searchContinuation("token"))
+            .setMediaMetadata(MediaMetadata.Builder().setIsBrowsable(true).setIsPlayable(false).build()).build()
+        val twoHundred = songs(200)
+        val direct = PaginationHelper.paginate(context, twoHundred + next, "SEARCH_SONGS/query", -1)
+        assertEquals(twoHundred + next, direct)
+        assertTrue(direct.none { AutoMediaIdContract.parsePage(it.mediaId) != null })
+        val paged = PaginationHelper.paginate(context, songs(201) + next, "SEARCH_SONGS/query", -1)
+        assertEquals(2, paged.count { AutoMediaIdContract.parsePage(it.mediaId) != null })
+        assertEquals(next, paged.last())
+        val second = PaginationHelper.paginate(context, songs(201) + next, "SEARCH_SONGS/query", 1)
+        assertEquals(listOf(songs(201).last(), next), second)
+    }
+
 }

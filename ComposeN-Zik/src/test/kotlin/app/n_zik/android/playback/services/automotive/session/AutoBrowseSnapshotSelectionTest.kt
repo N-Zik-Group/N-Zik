@@ -1,5 +1,8 @@
 package app.n_zik.android.playback.services.automotive.session
 
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import io.mockk.mockkObject
+import io.mockk.unmockkAll
 import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -54,6 +57,8 @@ class AutoBrowseSnapshotSelectionTest {
 
     @Before
     fun setUp() {
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         val app = ApplicationProvider.getApplicationContext<TestApplication>()
         val application = mockk<MainApplication>()
         every { application.applicationContext } returns app
@@ -70,6 +75,7 @@ class AutoBrowseSnapshotSelectionTest {
 
     @After
     fun tearDown() {
+        unmockkAll()
         context.preferences.edit().remove(maxSongsInQueueAndroidAutoKey).commit()
         tree.clearCache()
         clearDatabase()
@@ -372,6 +378,36 @@ class AutoBrowseSnapshotSelectionTest {
             val selected = select(shown[3].mediaId)
             assertEquals(parent, ids, selected.mediaItems.map { it.mediaId })
             assertEquals(parent, 1, selected.startIndex)
+        }
+    }
+
+    @Test
+    fun `append reapplies captured category exclusions and preserves negative policies and occurrences`() {
+        val filtered = listOf(AutoSessionConstants.ID_SONGS_ALL, AutoSessionConstants.ID_SONGS_FAVORITES,
+            AutoSessionConstants.ID_SONGS_DOWNLOADED, AutoSessionConstants.ID_SONGS_CACHED,
+            AutoSessionConstants.ID_SONGS_TOP, AutoSessionConstants.ID_SONGS_ONDEVICE,
+            "${AutoSessionConstants.ID_SEARCH_SONGS}/AC/DC")
+        val unfiltered = listOf("album/A", "playlist/42", "artist/A/videos",
+            AutoSessionConstants.ID_QUICK_PICKS, AutoSessionConstants.ID_SONGS_DISLIKED,
+            AutoSessionConstants.ID_SEARCH_VIDEOS)
+        val captures = (filtered + unfiltered).associateWith { parent ->
+            val items = mapped(parent, listOf("first", "blocked", "repeat", "repeat")).mapIndexed { index, item ->
+                item.buildUpon().setMediaMetadata(item.mediaMetadata.buildUpon().setTrackNumber(index + 1).build()).build()
+            }
+            tree.selectionStore.capture(parent, items)
+        }
+        // Synchronous JUnit setup dispatches the click-time dislike change off Room's main thread.
+        runBlocking { withContext(NzikDispatchers.DATA) {
+            Database.songTable.upsert(Song.makePlaceholder("blocked").copy(likedAt = -1L))
+        } }
+        captures.forEach { (parent, shown) ->
+            val appended = callback.onAddMediaItems(mockk<MediaSession>(), mockk<MediaSession.ControllerInfo>(),
+                mutableListOf(shown[3], shown[1], shown[0], shown[2])).get(15, TimeUnit.SECONDS)
+            val excluded = parent in filtered
+            assertEquals(parent, if (excluded) listOf("repeat", "first", "repeat") else listOf("repeat", "blocked", "first", "repeat"),
+                appended.map { it.mediaId })
+            assertEquals(parent, if (excluded) listOf(4, 1, 3) else listOf(4, 2, 1, 3),
+                appended.map { it.mediaMetadata.trackNumber })
         }
     }
 

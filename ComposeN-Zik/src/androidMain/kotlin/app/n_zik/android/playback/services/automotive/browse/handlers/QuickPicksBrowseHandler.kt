@@ -1,5 +1,6 @@
 package app.n_zik.android.playback.services.automotive.browse.handlers
 
+import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
 import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -33,14 +34,7 @@ import timber.log.Timber
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.days
 
-/**
- * AA QuickPicks page — a 1:1 mirror of the in-app home QuickPicks row
- * (HomeQuickPicks / HomeQuickPicksState, the row at the top of the home page):
- * local trending per the play-events setting + YouTube quick picks + related
- * page, with the same settings, the same filters, the same fallback seed for
- * an empty history, and the same final assembly (first local song pinned, the
- * rest deterministically shuffled). AA shows exactly what the app shows.
- */
+/** Mirrors the phone Quick Picks assembly while discovery is available online. */
 class QuickPicksBrowseHandler : BrowseHandler {
     override fun handles(parentId: String): Boolean = parentId == AutoSessionConstants.ID_QUICK_PICKS
 
@@ -52,14 +46,7 @@ class QuickPicksBrowseHandler : BrowseHandler {
         const val DEFAULT_RELATED_SEED = "4NRXx6U8ABQ"
     }
 
-    /**
-     * Car networks can block domains or drop the connection right after the
-     * service cold-starts, and a network call with no timeout used to hang the
-     * whole QuickPicks page (AA cannot push a refresh later —
-     * notifyChildrenChanged is disabled because it made AA rebuild its queue
-     * and crash). Every attempt therefore has a hard timeout, with one retry:
-     * the page always returns, with whatever content is available.
-     */
+    // Bound each provider attempt so a slow car network cannot stall discovery.
     private suspend fun <T> fetchSection( label: String, attemptTimeout: Long = 5_000, block: suspend () -> T ): T? {
         val first = withTimeoutOrNull(attemptTimeout) { runCatching { block() }.getOrNull() }
         if (first != null) return first
@@ -75,6 +62,8 @@ class QuickPicksBrowseHandler : BrowseHandler {
         downloadHelper: MyDownloadHelper,
         binder: PlayerServiceModern.Binder?
     ): List<MediaItem> {
+        val access = AutoAccessPolicy(context, database, downloadHelper, binder)
+        if (!access.online) return emptyList()
         val luckyItem = MediaItem.Builder()
             .setMediaId(AutoSessionConstants.ID_LUCKY_SHUFFLE)
             .setMediaMetadata(
@@ -110,24 +99,18 @@ class QuickPicksBrowseHandler : BrowseHandler {
             else distinct.take(localCount)
         }
 
-        // 2. Network sections in parallel inside a coroutineScope: the page
-        // waits for the slowest one (bounded by the fetchSection timeout),
-//
-        // never the sum. The related page is ALWAYS fetched — with the app's
-        // default seed when there is no local history — so the row fills even
-//
-        // with an empty DB, exactly like in the app.
+        // Run bounded provider sections in parallel, using the phone's fallback seed.
         val (ytmQuickPicks, relatedRaw) = coroutineScope {
-            val ytmDeferred = if (isYouTubeLoggedIn() && Innertube.useLoginForBrowse) {
+            val ytmDeferred = if (access.online && isYouTubeLoggedIn() && Innertube.useLoginForBrowse) {
                 async {
                     fetchSection("ytm quick picks") {
-                        YtMusic.getQuickPicks(setLogin = true).getOrNull()?.map { it.asSong } ?: emptyList()
+                        if (!access.online) emptyList() else YtMusic.getQuickPicks(setLogin = true).getOrNull()?.map { it.asSong } ?: emptyList()
                     } ?: emptyList()
                 }
             } else null
             val relatedDeferred = async {
                 fetchSection("related page") {
-                    Innertube.relatedPage(
+                    if (!access.online) emptyList() else Innertube.relatedPage(
                         videoId = trendingList.firstOrNull()?.id ?: DEFAULT_RELATED_SEED,
                         setLogin = useLogin
                     )?.getOrNull()?.songs ?: emptyList()
@@ -160,7 +143,9 @@ class QuickPicksBrowseHandler : BrowseHandler {
                 "related: ${relatedSongsSource.size}, total: ${candidateList.size}, ytLogin: ${isYouTubeLoggedIn()}"
         )
 
+        if (!access.online) return emptyList()
         val items = candidateList.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
+        if (!access.online) return emptyList()
         return (listOf(luckyItem) + items).distinctBy { it.mediaId }
     }
 }

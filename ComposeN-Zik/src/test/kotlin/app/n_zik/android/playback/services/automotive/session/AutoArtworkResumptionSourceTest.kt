@@ -1,6 +1,9 @@
 package app.n_zik.android.playback.services.automotive.session
 
 import android.app.Application
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import io.mockk.mockkObject
+import io.mockk.every
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -23,9 +26,7 @@ import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.ArtworkContentProvider
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.unmockkAll
@@ -61,6 +62,8 @@ class AutoArtworkResumptionSourceTest {
 
     @Before
     fun setUp() {
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         context = ApplicationProvider.getApplicationContext<Application>()
         previousPersistentQueue = if (context.preferences.contains(persistentQueueKey)) {
             context.preferences.getBoolean(persistentQueueKey, false)

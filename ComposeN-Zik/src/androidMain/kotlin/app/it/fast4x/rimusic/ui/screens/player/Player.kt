@@ -246,7 +246,6 @@ import app.it.fast4x.rimusic.utils.durationTextToMillis
 import app.it.fast4x.rimusic.utils.effectRotationKey
 import app.it.fast4x.rimusic.utils.expandedplayertoggleKey
 import app.it.fast4x.rimusic.utils.expandedplayerKey
-import app.it.fast4x.rimusic.utils.extraspaceKey
 import app.it.fast4x.rimusic.utils.fadingedgeKey
 import app.it.fast4x.rimusic.utils.formatAsTime
 import app.it.fast4x.rimusic.utils.getBitmapFromUrl
@@ -469,7 +468,6 @@ fun Player(
     val carousel by rememberPreference( carouselKey, true )
     val carouselSize by rememberPreference( carouselSizeKey, CarouselSize.Biggest )
     val clickLyricsText by rememberPreference( clickOnLyricsTextKey, true )
-    var extraspace by rememberPreference( extraspaceKey, false )
         val thumbnailType by rememberPreference( thumbnailTypeKey, ThumbnailType.Modern )
     val statsfornerds by rememberPreference( statsfornerdsKey, false )
     val topPadding by rememberPreference( topPaddingKey, true )
@@ -1503,7 +1501,6 @@ fun Player(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = (if (capturePlayerBackground) playerBackground.background else Modifier).then(containerModifier)
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
-                    .padding(top = if (extraspace) 10.dp else 0.dp)
                     .drawBehind {
                         if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.Player) {
                             drawRect(

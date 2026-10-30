@@ -234,6 +234,7 @@ class ListenTogetherGuestGuardPlayer(
             Timber.tag(TAG).d("suppressed tail: play (blocked-op window)")
             return
         }
+        onTransportIntent?.invoke(true)
         super.play()
         registerGuestPlayPause(true)
     }
@@ -243,6 +244,7 @@ class ListenTogetherGuestGuardPlayer(
             Timber.tag(TAG).d("suppressed tail: pause (blocked-op window)")
             return
         }
+        onTransportIntent?.invoke(false)
         super.pause()
         registerGuestPlayPause(false)
     }
@@ -252,6 +254,7 @@ class ListenTogetherGuestGuardPlayer(
             Timber.tag(TAG).d("suppressed tail: setPlayWhenReady (blocked-op window)")
             return
         }
+        onTransportIntent?.invoke(playWhenReady)
         super.setPlayWhenReady(playWhenReady)
         registerGuestPlayPause(playWhenReady)
     }
@@ -280,6 +283,9 @@ class ListenTogetherGuestGuardPlayer(
      * and (2) resyncs the guest to the host position on play (spec-listen-together-guest-lock-hardening).
      */
     var onGuestPlayPause: ((Boolean) -> Unit)? = null
+
+    /** Accepted external transport intent, including no-op pauses; blocked guest tails never report. */
+    internal var onTransportIntent: ((Boolean) -> Unit)? = null
 
     /** Registers [playWhenReady] as the guest's own play/pause intent — only while locked and outside the tail window (a suppressed tail call is not an intent). */
     private fun registerGuestPlayPause(playWhenReady: Boolean) {
@@ -378,7 +384,7 @@ class ListenTogetherGuestGuardPlayer(
         guard("setPlaybackSpeed") { super.setPlaybackSpeed(speed) }
 
     // State
-    override fun stop() = guard("stop") { super.stop() }
+    override fun stop() = guard("stop") { onTransportIntent?.invoke(false); super.stop() }
 
     // Fail-closed: every other mutation is blocked while the lock is on as well.
     override fun setPlaylistMetadata(mediaMetadata: MediaMetadata) =

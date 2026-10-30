@@ -3,6 +3,7 @@ package app.n_zik.android.playback.services.automotive.browse.handlers
 import it.fast4x.innertube.requests.albumPage
 import app.it.fast4x.rimusic.utils.asSong
 
+import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
 import android.content.Context
 import androidx.media3.common.MediaItem
 import app.it.fast4x.rimusic.models.Song
@@ -48,7 +49,7 @@ class AlbumDetailHandler : BrowseHandler {
         // the playback queue via Shuffler.play, never the detail list; re-negotiation
         // 2026-10-01 « suit l'app »).
 
-        if (albumId.startsWith("LOCAL_ALBUM_")) {
+        if (!AutoAccessPolicy(context, database, downloadHelper, binder).online || albumId.startsWith("LOCAL_ALBUM_")) {
             val localSongs = database.songAlbumMapTable.allSongsOf(albumId).first()
             return localSongs.mapIndexed { index, song ->
                 CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal).let { item ->

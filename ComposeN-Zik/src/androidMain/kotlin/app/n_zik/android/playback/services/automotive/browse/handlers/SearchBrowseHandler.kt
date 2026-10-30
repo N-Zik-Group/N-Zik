@@ -15,141 +15,127 @@ import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
-import app.n_zik.android.playback.services.automotive.models.AutoSearchState
+import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
 import app.n_zik.android.playback.services.automotive.models.CancellableAutoMediaItemMapper
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import app.n_zik.android.playback.services.isLocal
 
-class SearchBrowseHandler : BrowseHandler {
+import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.R
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import app.n_zik.android.playback.services.automotive.browse.AutoSearchWindowStore
+import app.n_zik.android.playback.services.automotive.session.AutoMediaIdContract
+
+class SearchBrowseHandler(
+    internal val windows: AutoSearchWindowStore = AutoSearchWindowStore(),
+    private val online: (Context) -> Boolean = NetworkQualityHelper::isNetworkConnected,
+    private val profile: (Context) -> String = ::getActiveProfile,
+) : BrowseHandler {
     override fun handles(parentId: String): Boolean = parentId.startsWith("SEARCH_") ||
-            parentId.startsWith("ID_SEARCH_")
+        parentId.startsWith("ID_SEARCH_") || AutoMediaIdContract.parseSearchContinuation(parentId) != null
+
+    fun canonicalParent(parentId: String, context: Context): String? =
+        AutoMediaIdContract.parseSearchContinuation(parentId)?.let { windows.parentFor(it, profile(context)) } ?: parentId
 
     override suspend fun getChildren(
         parentId: String,
         context: Context,
         database: Database,
         downloadHelper: MyDownloadHelper,
-        binder: PlayerServiceModern.Binder?
+        binder: PlayerServiceModern.Binder?,
     ): List<MediaItem> {
-        val separator = parentId.indexOf('/')
+        if (!online(context)) { windows.clear(); return emptyList() }
+        val requestProfile = profile(context)
+        val token = AutoMediaIdContract.parseSearchContinuation(parentId)
+        val parent = if (token != null) windows.parentFor(token, requestProfile) ?: return emptyList() else parentId
+        val separator = parent.indexOf('/')
         if (separator < 0) return emptyList()
-        val actualParentId = parentId.substring(0, separator)
-        val query = parentId.substring(separator + 1)
+        val category = parent.substring(0, separator)
+        val query = parent.substring(separator + 1)
         if (query.isBlank()) return emptyList()
+        val window = windows.load(parent, requestProfile,
+            currentOwner = { profile(context).takeIf { online(context) } }, token = token,
+        ) { continuation -> loadBatch(category, query, continuation) } ?: return emptyList()
+        return window.items + listOfNotNull(window.nextToken?.let {
+            browsableMediaItem(
+                AutoMediaIdContract.searchContinuation(it), "${context.getString(R.string.next)} (${window.pageNumber + 1})", null,
+                drawableUri(context, R.drawable.library),
+                MediaMetadata.MEDIA_TYPE_FOLDER_MIXED, parent,
+            )
+        })
+    }
 
-        return when (actualParentId) {
-            AutoSessionConstants.ID_SEARCH_SONGS -> {
-                val allMapped = mutableListOf<MediaItem>()
-                var cont: String? = null
-                do {
-                    val resultPage = if (cont == null) {
-                        Innertube.searchPage<Innertube.SongItem>(query = query, params = Innertube.SearchFilter.Song.value, fromMusicShelfRendererContent = { content -> Innertube.SongItem.from(content) })?.getOrNull()
-                    } else {
-                        Innertube.searchPageContinuation<Innertube.SongItem>(continuation = cont, fromMusicShelfRendererContent = { content -> Innertube.SongItem.from(content) })?.getOrNull()
-                    }
-                    val songs = resultPage?.items?.map { s -> s.asSong } ?: emptyList()
-                    AutoSearchState.searchedSongs = (AutoSearchState.searchedSongs + songs).distinctBy { s -> s.id }
-                    allMapped.addAll(songs.map { s -> CancellableAutoMediaItemMapper.mapSongToMediaItem(s, actualParentId, loadArtwork = s.isLocal) })
-                    cont = resultPage?.continuation
-                } while (cont != null && allMapped.size < 150)
-                allMapped
+    private suspend fun loadBatch(category: String, query: String, continuation: String?): AutoSearchWindowStore.Batch = when (category) {
+        AutoSessionConstants.ID_SEARCH_SONGS -> {
+            val page = if (continuation == null) {
+                Innertube.searchPage<Innertube.SongItem>(query, Innertube.SearchFilter.Song.value) { Innertube.SongItem.from(it) }
+            } else {
+                Innertube.searchPageContinuation<Innertube.SongItem>(continuation) { Innertube.SongItem.from(it) }
             }
-            AutoSessionConstants.ID_SEARCH_ARTISTS -> {
-                val allMapped = mutableListOf<MediaItem>()
-                var cont: String? = null
-                do {
-                    val resultPage = if (cont == null) {
-                        Innertube.searchPage<Innertube.ArtistItem>(query = query, params = Innertube.SearchFilter.Artist.value, fromMusicShelfRendererContent = { content -> Innertube.ArtistItem.from(content) })?.getOrNull()
-                    } else {
-                        Innertube.searchPageContinuation<Innertube.ArtistItem>(continuation = cont, fromMusicShelfRendererContent = { content -> Innertube.ArtistItem.from(content) })?.getOrNull()
-                    }
-                    val items = resultPage?.items ?: emptyList()
-                    AutoSearchState.searchedArtists = (AutoSearchState.searchedArtists + items).distinctBy { it.key }
-                    allMapped.addAll(items.map { ai -> CancellableAutoMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, ai.key ?: "", ai.info?.name ?: "", ai.thumbnail?.url, ai.subscribersCountText, actualParentId) })
-                    cont = resultPage?.continuation
-                } while (cont != null && allMapped.size < 150)
-                allMapped
-            }
-            AutoSessionConstants.ID_SEARCH_ALBUMS -> {
-                val allMapped = mutableListOf<MediaItem>()
-                var cont: String? = null
-                do {
-                    val resultPage = if (cont == null) {
-                        Innertube.searchPage<Innertube.AlbumItem>(query = query, params = Innertube.SearchFilter.Album.value, fromMusicShelfRendererContent = { content -> Innertube.AlbumItem.from(content) })?.getOrNull()
-                    } else {
-                        Innertube.searchPageContinuation<Innertube.AlbumItem>(continuation = cont, fromMusicShelfRendererContent = { content -> Innertube.AlbumItem.from(content) })?.getOrNull()
-                    }
-                    val items = resultPage?.items ?: emptyList()
-                    AutoSearchState.searchedAlbums = (AutoSearchState.searchedAlbums + items).distinctBy { it.key }
-                    allMapped.addAll(items.map { ali -> CancellableAutoMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, ali.key ?: "", ali.info?.name ?: "", ali.authors.artistEntryNames().joinToString(", "), ali.thumbnail?.url, actualParentId) })
-                    cont = resultPage?.continuation
-                } while (cont != null && allMapped.size < 150)
-                allMapped
-            }
-            AutoSessionConstants.ID_SEARCH_VIDEOS -> {
-                val allMapped = mutableListOf<MediaItem>()
-                var cont: String? = null
-                do {
-                    val resultPage = if (cont == null) {
-                        Innertube.searchPage<Innertube.VideoItem>(query = query, params = Innertube.SearchFilter.Video.value, fromMusicShelfRendererContent = { content -> Innertube.VideoItem.from(content) })?.getOrNull()
-                    } else {
-                        Innertube.searchPageContinuation<Innertube.VideoItem>(continuation = cont, fromMusicShelfRendererContent = { content -> Innertube.VideoItem.from(content) })?.getOrNull()
-                    }
-                    val items = resultPage?.items ?: emptyList()
-                    val songs = items.map { it.asSong }
-                    AutoSearchState.searchedVideos = (AutoSearchState.searchedVideos + items).distinctBy { it.key }
-                    allMapped.addAll(songs.map { s -> CancellableAutoMediaItemMapper.mapSongToMediaItem(s, actualParentId, loadArtwork = s.isLocal) })
-                    cont = resultPage?.continuation
-                } while (cont != null && allMapped.size < 150)
-                allMapped
-            }
-            AutoSessionConstants.ID_SEARCH_PLAYLISTS -> {
-                val allMapped = mutableListOf<MediaItem>()
-                var cont: String? = null
-                do {
-                    val resultPage = if (cont == null) {
-                        Innertube.searchPage<Innertube.PlaylistItem>(query = query, params = Innertube.SearchFilter.CommunityPlaylist.value, fromMusicShelfRendererContent = { content -> Innertube.PlaylistItem.from(content) })?.getOrNull()
-                    } else {
-                        Innertube.searchPageContinuation<Innertube.PlaylistItem>(continuation = cont, fromMusicShelfRendererContent = { content -> Innertube.PlaylistItem.from(content) })?.getOrNull()
-                    }
-                    val items = resultPage?.items ?: emptyList()
-                    allMapped.addAll(items.map { pi -> browsableMediaItem("${PlayerServiceModern.PLAYLIST}/${pi.key}", pi.info?.name ?: "", null, pi.thumbnail?.url?.toUri(), MediaMetadata.MEDIA_TYPE_PLAYLIST, actualParentId) })
-                    cont = resultPage?.continuation
-                } while (cont != null && allMapped.size < 150)
-                allMapped
-            }
-            AutoSessionConstants.ID_SEARCH_FEATURED -> {
-                val allMapped = mutableListOf<MediaItem>()
-                var cont: String? = null
-                do {
-                    val resultPage = if (cont == null) {
-                        Innertube.searchPage<Innertube.PlaylistItem>(query = query, params = Innertube.SearchFilter.FeaturedPlaylist.value, fromMusicShelfRendererContent = { content -> Innertube.PlaylistItem.from(content) })?.getOrNull()
-                    } else {
-                        Innertube.searchPageContinuation<Innertube.PlaylistItem>(continuation = cont, fromMusicShelfRendererContent = { content -> Innertube.PlaylistItem.from(content) })?.getOrNull()
-                    }
-                    val items = resultPage?.items ?: emptyList()
-                    allMapped.addAll(items.map { pi -> browsableMediaItem("${PlayerServiceModern.PLAYLIST}/${pi.key}", pi.info?.name ?: "", null, pi.thumbnail?.url?.toUri(), MediaMetadata.MEDIA_TYPE_PLAYLIST, actualParentId) })
-                    cont = resultPage?.continuation
-                } while (cont != null && allMapped.size < 150)
-                allMapped
-            }
-            AutoSessionConstants.ID_SEARCH_PODCASTS -> {
-                val allMapped = mutableListOf<MediaItem>()
-                var cont: String? = null
-                do {
-                    val resultPage = if (cont == null) {
-                        Innertube.searchPage<Innertube.AlbumItem>(query = query, params = Innertube.SearchFilter.Podcast.value, fromMusicShelfRendererContent = { content -> Innertube.AlbumItem.from(content) })?.getOrNull()
-                    } else {
-                        Innertube.searchPageContinuation<Innertube.AlbumItem>(continuation = cont, fromMusicShelfRendererContent = { content -> Innertube.AlbumItem.from(content) })?.getOrNull()
-                    }
-                    val items = resultPage?.items ?: emptyList()
-                    AutoSearchState.searchedAlbums = (AutoSearchState.searchedAlbums + items).distinctBy { it.key }
-                    allMapped.addAll(items.map { ali -> CancellableAutoMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, ali.key ?: "", ali.info?.name ?: "", ali.authors.artistEntryNames().joinToString(", "), ali.thumbnail?.url, actualParentId) })
-                    cont = resultPage?.continuation
-                } while (cont != null && allMapped.size < 150)
-                allMapped
-            }
-            else -> emptyList()
+            val result = page?.getOrThrow() ?: error("Search batch unavailable")
+            val items = result.items.orEmpty()
+            AutoSearchWindowStore.Batch(items.map { it.asSong }.map { CancellableAutoMediaItemMapper.mapSongToMediaItem(it, category, loadArtwork = it.isLocal) }, result.continuation)
         }
+        AutoSessionConstants.ID_SEARCH_VIDEOS -> {
+            val page = if (continuation == null) {
+                Innertube.searchPage<Innertube.VideoItem>(query, Innertube.SearchFilter.Video.value) { Innertube.VideoItem.from(it) }
+            } else {
+                Innertube.searchPageContinuation<Innertube.VideoItem>(continuation) { Innertube.VideoItem.from(it) }
+            }
+            val result = page?.getOrThrow() ?: error("Search batch unavailable")
+            val items = result.items.orEmpty()
+            AutoSearchWindowStore.Batch(items.map { it.asSong }.map { CancellableAutoMediaItemMapper.mapSongToMediaItem(it, category, loadArtwork = it.isLocal) }, result.continuation)
+        }
+        AutoSessionConstants.ID_SEARCH_ARTISTS -> {
+            val page = if (continuation == null) {
+                Innertube.searchPage<Innertube.ArtistItem>(query, Innertube.SearchFilter.Artist.value) { Innertube.ArtistItem.from(it) }
+            } else {
+                Innertube.searchPageContinuation<Innertube.ArtistItem>(continuation) { Innertube.ArtistItem.from(it) }
+            }
+            val result = page?.getOrThrow() ?: error("Search batch unavailable")
+            val items = result.items.orEmpty()
+            AutoSearchWindowStore.Batch(items.map { CancellableAutoMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, it.key ?: "", it.info?.name ?: "", it.thumbnail?.url, it.subscribersCountText, category) }, result.continuation)
+        }
+        AutoSessionConstants.ID_SEARCH_ALBUMS -> {
+            val page = if (continuation == null) {
+                Innertube.searchPage<Innertube.AlbumItem>(query, Innertube.SearchFilter.Album.value) { Innertube.AlbumItem.from(it) }
+            } else {
+                Innertube.searchPageContinuation<Innertube.AlbumItem>(continuation) { Innertube.AlbumItem.from(it) }
+            }
+            val result = page?.getOrThrow() ?: error("Search batch unavailable")
+            val items = result.items.orEmpty()
+            AutoSearchWindowStore.Batch(items.map { CancellableAutoMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, it.key ?: "", it.info?.name ?: "", it.authors.artistEntryNames().joinToString(", "), it.thumbnail?.url, category) }, result.continuation)
+        }
+        AutoSessionConstants.ID_SEARCH_PLAYLISTS -> {
+            val page = if (continuation == null) {
+                Innertube.searchPage<Innertube.PlaylistItem>(query, Innertube.SearchFilter.CommunityPlaylist.value) { Innertube.PlaylistItem.from(it) }
+            } else {
+                Innertube.searchPageContinuation<Innertube.PlaylistItem>(continuation) { Innertube.PlaylistItem.from(it) }
+            }
+            val result = page?.getOrThrow() ?: error("Search batch unavailable")
+            val items = result.items.orEmpty()
+            AutoSearchWindowStore.Batch(items.map { browsableMediaItem("${PlayerServiceModern.PLAYLIST}/${it.key}", it.info?.name ?: "", null, it.thumbnail?.url?.toUri(), MediaMetadata.MEDIA_TYPE_PLAYLIST, category) }, result.continuation)
+        }
+        AutoSessionConstants.ID_SEARCH_FEATURED -> {
+            val page = if (continuation == null) {
+                Innertube.searchPage<Innertube.PlaylistItem>(query, Innertube.SearchFilter.FeaturedPlaylist.value) { Innertube.PlaylistItem.from(it) }
+            } else {
+                Innertube.searchPageContinuation<Innertube.PlaylistItem>(continuation) { Innertube.PlaylistItem.from(it) }
+            }
+            val result = page?.getOrThrow() ?: error("Search batch unavailable")
+            val items = result.items.orEmpty()
+            AutoSearchWindowStore.Batch(items.map { browsableMediaItem("${PlayerServiceModern.PLAYLIST}/${it.key}", it.info?.name ?: "", null, it.thumbnail?.url?.toUri(), MediaMetadata.MEDIA_TYPE_PLAYLIST, category) }, result.continuation)
+        }
+        AutoSessionConstants.ID_SEARCH_PODCASTS -> {
+            val page = if (continuation == null) {
+                Innertube.searchPage<Innertube.AlbumItem>(query, Innertube.SearchFilter.Podcast.value) { Innertube.AlbumItem.from(it) }
+            } else {
+                Innertube.searchPageContinuation<Innertube.AlbumItem>(continuation) { Innertube.AlbumItem.from(it) }
+            }
+            val result = page?.getOrThrow() ?: error("Search batch unavailable")
+            val items = result.items.orEmpty()
+            AutoSearchWindowStore.Batch(items.map { CancellableAutoMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, it.key ?: "", it.info?.name ?: "", it.authors.artistEntryNames().joinToString(", "), it.thumbnail?.url, category) }, result.continuation)
+        }
+        else -> AutoSearchWindowStore.Batch(emptyList(), null)
     }
 }

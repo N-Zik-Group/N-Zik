@@ -258,7 +258,6 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget("network.quality.image_quality_format", 6, R.string.quality, R.string.image_quality_format, listOf(R.string.audio_quality_automatic, R.string.audio_quality_format_high, R.string.audio_quality_format_medium, R.string.audio_quality_format_low)),
     SettingsEntryTarget("network.settings_reset.settings_reset", 6, R.string.settings_reset, R.string.settings_reset, listOf(R.string.settings_restore_default_settings)),
     SettingsEntryTarget("network.bridge_server.bridge_server", 6, R.string.bridge_server, R.string.bridge_server, listOf(R.string.bridge_server_description)),
-    SettingsEntryTarget("other.androidheadunit.extra_space", 7, R.string.androidheadunit, R.string.extra_space),
     SettingsEntryTarget("other.on_device.blacklisted_folders", 7, R.string.on_device, R.string.blacklisted_folders, listOf(R.string.edit_blacklist_for_on_device_songs)),
     SettingsEntryTarget("other.on_device.folders", 7, R.string.on_device, R.string.folders, listOf(R.string.show_folders_in_on_device_page)),
     SettingsEntryTarget("other.on_device.folder_that_will_show_when_you_open_on_device_page", 7, R.string.on_device, R.string.folder_that_will_show_when_you_open_on_device_page),

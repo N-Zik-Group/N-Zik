@@ -720,8 +720,6 @@
     <string name="showvisthumbnail">Toon miniatuur voor visualizer</string>
     <string name="black_background_for_visualizer">Donkere achtergrond voor visualizer</string>
     <string name="show_visualizer_buttons">Weergaveknoppen automatisch verbergen</string>
-    <string name="androidheadunit">Android hoofdeenheid</string>
-    <string name="extra_space">Extra ruimte bovenaan</string>
     <string name="white">White</string>
     <string name="black">Black</string>
     <string name="highlight">Highlight</string>

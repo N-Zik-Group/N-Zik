@@ -499,8 +499,6 @@
 <string name="charts">图表</string>
 <string name="thumbnailtype">缩略图类型</string>
 <string name="showvisthumbnail">显示可视化视图的缩略图</string>
-<string name="androidheadunit">安卓主单元</string>
-<string name="extra_space">顶部额外空间</string>
 <string name="white">白色</string>
 <string name="black">黑色</string>
 <string name="highlight">高亮色</string>

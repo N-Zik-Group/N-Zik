@@ -9,6 +9,14 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(android-auto): complete search paging, offline browsing and artwork (issue https://github.com/N-Zik-Group/N-Zik/issues/938)
+  - Add numbered next-result batches across online search categories in AutoSearchWindowStore; retain complete queries, displayed ordering, duplicate occurrences and bounded continuation state.
+  - Apply physical and forced offline policy to browsing, playback and artwork; hide Search and Quick Picks on fresh offline connections and reject stale count publications after policy/profile changes.
+  - Restore video and custom covers through SessionArtworkLoader and ArtworkContentProvider; prefer high-resolution sources, bound decoding/cache output and honor the video crop preference across session artwork refreshes.
+  - Keep asynchronous selection/resumption ownership through Media3 queue application; honor newer selections and phone/AA Pause or Stop, including the modern fade transport fallback, and batch exclusion reads.
+  - Make EditMetadataDialog gallery text readable; remove the unused head-unit extra-space setting, its search/reset entries and all three dead translation keys across source/locales.
+  - Assemble Debug and pass 581 tests with no failures; complete consolidated independent review and install the verified APK on Xperia. Retain the pre-existing active legacy fade Pause/Play race as a separate follow-up.
+
 - fix(android-auto): keep search playback tied to the selected displayed song (issue https://github.com/N-Zik-Group/N-Zik/issues/938)
   - Use scoped, occurrence-aware media identifiers and retained browse snapshots so Songs/Videos searches, complete slash-containing queries and playlist actions resolve the intended title and queue order.
   - Preserve sorting, duplicates, selected indices and category exclusion policies across browse, item lookup, queue append and persistent resumption; reject expired or cross-profile selections instead of choosing another song.
