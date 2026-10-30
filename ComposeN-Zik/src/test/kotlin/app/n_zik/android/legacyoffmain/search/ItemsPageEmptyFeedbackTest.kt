@@ -1,5 +1,15 @@
 package app.n_zik.android.legacyoffmain.search
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.Density
+
 import android.app.Application
 import android.content.Context
 import android.content.ContextWrapper
@@ -71,6 +81,8 @@ class ItemsPageEmptyFeedbackTest {
     @Composable
     private fun content(
         grid: Boolean,
+        contentPadding: PaddingValues = PaddingValues(0.dp),
+        header: @Composable () -> Unit = {},
         query: String? = "missing",
         provider: (suspend (String?) -> Result<Innertube.ItemsPage<Innertube.VideoItem>?>?)? = null,
     ) {
@@ -86,7 +98,8 @@ class ItemsPageEmptyFeedbackTest {
                 ItemsGridPage<Innertube.VideoItem>(
                     tag = "test-page",
                     searchQuery = query,
-                    headerContent = {},
+                    headerContent = { header() },
+                    contentPadding = contentPadding,
                     itemContent = {},
                     itemPlaceholderContent = {},
                     emptyItemsText = "Collection is empty",
@@ -98,7 +111,8 @@ class ItemsPageEmptyFeedbackTest {
                 ItemsPage<Innertube.VideoItem>(
                     tag = "test-page",
                     searchQuery = query,
-                    headerContent = {},
+                    headerContent = { header() },
+                    contentPadding = contentPadding,
                     itemContent = {},
                     itemPlaceholderContent = {},
                     emptyItemsText = "Collection is empty",
@@ -107,6 +121,37 @@ class ItemsPageEmptyFeedbackTest {
                 )
             }
         }
+    }
+
+    @Test
+    fun loadingAndTerminalPagesKeepTheSameHeaderClearanceInListAndGrid() {
+        val grid = mutableStateOf(false)
+        page.value = null
+        composeRule.setContent {
+            CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                Box(Modifier.size(300.dp, 400.dp).testTag("viewport")) {
+                    content(
+                        grid = grid.value,
+                        contentPadding = PaddingValues(start = 40.dp, top = 100.dp, end = 20.dp, bottom = 120.dp),
+                        header = { Box(Modifier.fillMaxWidth().height(24.dp).testTag("page-header")) },
+                    )
+                }
+            }
+        }
+        fun assertHeaderClearance() {
+            val viewport = composeRule.onNodeWithTag("viewport").fetchSemanticsNode().boundsInRoot
+            val header = composeRule.onNodeWithTag("page-header").fetchSemanticsNode().boundsInRoot
+            assertEquals(viewport.top + 100f, header.top, 0f)
+            assertEquals(viewport.left + 40f, header.left, 0f)
+            assertEquals(viewport.right - 20f, header.right, 0f)
+        }
+        assertHeaderClearance()
+        composeRule.runOnIdle { page.value = Innertube.ItemsPage(emptyList(), null) }
+        assertHeaderClearance()
+        composeRule.runOnIdle { grid.value = true; page.value = null }
+        assertHeaderClearance()
+        composeRule.runOnIdle { page.value = Innertube.ItemsPage(emptyList(), null) }
+        assertHeaderClearance()
     }
 
     private fun advance(milliseconds: Long) {

@@ -1,5 +1,10 @@
 package app.it.fast4x.rimusic.ui.screens.search
 
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+import app.n_zik.android.components.navigation.TopOverlayContentPadding
+import app.n_zik.android.components.navigation.LocalSideRailContentInsets
+import androidx.compose.ui.unit.Dp
+
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
@@ -11,15 +16,12 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -42,7 +44,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.models.Song
@@ -92,6 +93,7 @@ import timber.log.Timber
 @UnstableApi
 @Composable
 fun LocalSongSearch(
+    topContentInsetProvider: () -> Dp,
     navController: NavController,
     textFieldValue: TextFieldValue,
     onTextFieldValueChanged: (TextFieldValue) -> Unit,
@@ -202,12 +204,14 @@ fun LocalSongSearch(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(TopOverlayContentPadding(topContentInsetProvider))
             ) {
                 // 16dp horizontal on the bar only: the list below stays
                 // full-width so the rows touch the screen edges
                 Header(
                     modifier = Modifier
                         .zIndex(1f)
+                        .padding(LocalSideRailContentInsets.current.asPaddingValues())
                         .padding(top = 16.dp, start = 16.dp, end = 16.dp)
                         .fillMaxWidth(),
                     titleContent = {
@@ -235,10 +239,7 @@ fun LocalSongSearch(
 
                 LazyColumn(
                     state = lazyListState,
-                    // Bottom inset only: the top inset is already applied by the
-                    // Skeleton scaffold
-                    contentPadding = LocalPlayerAwareWindowInsets.current
-                        .only(WindowInsetsSides.Bottom).asPaddingValues(),
+                    contentPadding = rememberPageChromeContentPadding(topInsetProvider = { 0.dp }),
                     // The wipe (below) is applied per song item so the search
                     // history section stays visible while the results fade
                     modifier = Modifier

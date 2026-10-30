@@ -430,6 +430,7 @@ private fun RecognizedTrackCard(
                 .clip(RoundedCornerShape(14.dp))
         ) {
             ImageCacheFactory.Thumbnail(
+                shape = RoundedCornerShape(14.dp),
                 thumbnailUrl = track.coverUrl ?: track.backgroundUrl,
                 contentDescription = track.title,
                 modifier = Modifier.matchParentSize()

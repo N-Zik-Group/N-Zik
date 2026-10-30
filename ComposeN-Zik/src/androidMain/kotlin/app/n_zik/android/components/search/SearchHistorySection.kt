@@ -34,6 +34,11 @@ import app.it.fast4x.rimusic.ui.components.themed.TitleMiniSection
 import app.it.fast4x.rimusic.utils.secondary
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassSectionAction
+import app.n_zik.android.components.glass.GlassSectionActions
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 
@@ -53,6 +58,7 @@ fun SearchHistorySection(
     val searchHistoryIconPainter = painterResource(R.drawable.search_circle)
     val clearHistoryIconPainter = painterResource(R.drawable.trash)
     val displayedQueries = rememberSearchHistoryRows(queries)
+    val glassSettings = rememberGlassSettings()
     AnimatedVisibility(
         visibleState = rememberSearchHistoryVisibility(visible),
         enter = slideInVertically(tween(200), initialOffsetY = { -it / 4 }) +
@@ -81,7 +87,17 @@ fun SearchHistorySection(
                         .padding(horizontal = 24.dp)
                         .padding(all = 16.dp)
                 ) {
-                    Spacer(
+                    if (glassSettings.usesGlassMaterial(GlassArea.ActionButtons)) {
+                        GlassSectionActions(listOf(GlassSectionAction(
+                            icon = R.drawable.search_circle,
+                            contentDescription = query,
+                            onClick = {
+                                onQueryClick(query)
+                                keyboardController?.hide()
+                                focusManager.clearFocus(force = true)
+                            },
+                        )), settings = glassSettings)
+                    } else Spacer(
                         modifier = Modifier
                             .padding(horizontal = 8.dp)
                             .size(20.dp)
@@ -99,27 +115,48 @@ fun SearchHistorySection(
                             .weight(1f)
                     )
 
-                    Image(
-                        painter = clearHistoryIconPainter,
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette().textDisabled),
-                        modifier = Modifier
-                            .clip(uiRoundnessShape()).combinedClickable(
-                                onClick = { onQueryDelete(query) },
-                                onLongClick = onQueryDeleteAll
-                            )
-                            .padding(horizontal = 8.dp)
-                            .size(20.dp)
-                    )
-                    if (onQueryEdit != null) {
-                        Image(
-                            painter = painterResource(R.drawable.pencil),
-                            contentDescription = stringResource(R.string.search),
-                            colorFilter = ColorFilter.tint(colorPalette().textDisabled),
-                            modifier = Modifier.clip(uiRoundnessShape())
-                                .clickable { onQueryEdit(query) }
-                                .padding(horizontal = 8.dp).size(22.dp),
+                    if (glassSettings.usesGlassMaterial(GlassArea.ActionButtons)) {
+                        GlassSectionActions(
+                            actions = buildList {
+                                add(GlassSectionAction(
+                                    icon = R.drawable.trash,
+                                    contentDescription = stringResource(R.string.delete),
+                                    onLongClick = onQueryDeleteAll,
+                                    onClick = { onQueryDelete(query) },
+                                ))
+                                if (onQueryEdit != null) {
+                                    add(GlassSectionAction(
+                                        icon = R.drawable.pencil,
+                                        contentDescription = stringResource(R.string.search),
+                                        onClick = { onQueryEdit(query) },
+                                    ))
+                                }
+                            },
+                            settings = glassSettings,
                         )
+                    } else {
+                        Image(
+                            painter = clearHistoryIconPainter,
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette().textDisabled),
+                            modifier = Modifier
+                                .clip(uiRoundnessShape()).combinedClickable(
+                                    onClick = { onQueryDelete(query) },
+                                    onLongClick = onQueryDeleteAll
+                                )
+                                .padding(horizontal = 8.dp)
+                                .size(20.dp)
+                        )
+                        if (onQueryEdit != null) {
+                            Image(
+                                painter = painterResource(R.drawable.pencil),
+                                contentDescription = stringResource(R.string.search),
+                                colorFilter = ColorFilter.tint(colorPalette().textDisabled),
+                                modifier = Modifier.clip(uiRoundnessShape())
+                                    .clickable { onQueryEdit(query) }
+                                    .padding(horizontal = 8.dp).size(22.dp),
+                            )
+                        }
                     }
                 }
             }

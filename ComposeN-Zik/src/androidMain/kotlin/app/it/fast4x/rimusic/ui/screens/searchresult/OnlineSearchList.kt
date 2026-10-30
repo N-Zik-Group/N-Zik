@@ -1,5 +1,9 @@
 package app.it.fast4x.rimusic.ui.screens.searchresult
 
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.unit.Dp
+
 import app.n_zik.android.uiRoundnessShape
 
 import app.n_zik.android.core.database.*
@@ -8,7 +12,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,8 +24,6 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,7 +58,6 @@ import app.it.fast4x.rimusic.utils.addNext
 import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.asSong
 import app.it.fast4x.rimusic.utils.enqueue
-import app.it.fast4x.rimusic.utils.downloadedStateMedia
 import app.it.fast4x.rimusic.utils.forcePlay
 import app.it.fast4x.rimusic.utils.isDownloadedSong
 import app.it.fast4x.rimusic.utils.manageDownload
@@ -95,13 +95,11 @@ import it.fast4x.innertube.models.MusicShelfRenderer
 import androidx.compose.foundation.layout.absoluteOffset
 import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
-import app.it.fast4x.rimusic.utils.getLikedIcon
-import app.it.fast4x.rimusic.utils.getDislikedIcon
-import kotlinx.coroutines.flow.distinctUntilChanged
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun OnlineSearchList(
+    topContentInsetProvider: () -> Dp,
     query: String,
     tabIndex: Int,
     filterContentType: ContentType,
@@ -292,6 +290,7 @@ fun OnlineSearchList(
                 ) {
                     Box {
                         ImageCacheFactory.Thumbnail(
+                            shape = if (item is Innertube.ArtistItem) artistThumbnailShape() else thumbnailShape(),
                             thumbnailUrl = when (item) {
                                 is Innertube.AlbumItem -> item.thumbnail?.url
                                 is Innertube.PlaylistItem -> item.thumbnail?.url
@@ -443,6 +442,10 @@ fun OnlineSearchList(
 
     CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
     ItemsPage(
+        contentPadding = rememberPageChromeContentPadding(
+            base = PaddingValues(bottom = Dimensions.bottomSpacer),
+            topInsetProvider = topContentInsetProvider,
+        ),
         searchQuery = query,
         filterContentType = filterContentType,
         tag = "searchResults/$query/${getTabName(tabIndex)}",

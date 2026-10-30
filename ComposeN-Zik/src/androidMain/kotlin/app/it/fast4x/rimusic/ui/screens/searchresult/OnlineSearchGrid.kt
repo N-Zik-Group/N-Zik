@@ -1,5 +1,9 @@
 package app.it.fast4x.rimusic.ui.screens.searchresult
 
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.unit.Dp
+
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
@@ -11,7 +15,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -20,7 +23,6 @@ import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +45,6 @@ import app.n_zik.android.core.database.artistEntryNames
 import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.asSong
 import app.it.fast4x.rimusic.utils.enqueue
-import app.it.fast4x.rimusic.utils.downloadedStateMedia
 import app.it.fast4x.rimusic.utils.forcePlay
 import app.it.fast4x.rimusic.utils.isDownloadedSong
 import app.it.fast4x.rimusic.utils.manageDownload
@@ -84,6 +85,7 @@ import it.fast4x.innertube.models.MusicShelfRenderer
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun OnlineSearchGrid(
+    topContentInsetProvider: () -> Dp,
     query: String,
     tabIndex: Int,
     filterContentType: ContentType,
@@ -350,6 +352,10 @@ fun OnlineSearchGrid(
 
     CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
     ItemsGridPage(
+        contentPadding = rememberPageChromeContentPadding(
+            base = PaddingValues(bottom = Dimensions.bottomSpacer),
+            topInsetProvider = topContentInsetProvider,
+        ),
         searchQuery = query,
         filterContentType = filterContentType,
         tag = "searchResults/$query/${getTabName(tabIndex)}",

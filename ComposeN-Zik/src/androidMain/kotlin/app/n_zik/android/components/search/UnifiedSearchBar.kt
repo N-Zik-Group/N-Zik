@@ -3,7 +3,6 @@ package app.n_zik.android.components.search
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -51,7 +49,17 @@ import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.R
+import app.n_zik.android.components.ui.LeadingIconBadge
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.LiquidButton
+import app.n_zik.android.components.glass.forArea
+import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import app.n_zik.android.components.glass.glassSearchBarBackground
+import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.searchBubbleShape
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
@@ -89,6 +97,8 @@ fun UnifiedSearchBar(
     var isFocused by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
+    val glassSettings = rememberGlassSettings()
+    val barShape = uiRoundnessShape()
 
     key(isFocused) {
         SearchBackHandler(active = backSessionActive ?: isFocused) {
@@ -135,26 +145,24 @@ fun UnifiedSearchBar(
         Box(
             modifier = Modifier
                 .weight(1f)
-                .shadow(
-                    elevation = 8.dp,
-                    shape = uiRoundnessShape(),
-                    spotColor = colorPalette().accent.copy(alpha = 0.3f)
+                .glassSearchBarBackground(
+                    backgroundColor = colorPalette().background0,
+                    containerColor = surfaceColor(baseSurface ?: colorPalette().background1),
+                    shape = barShape,
+                    shadowColor = colorPalette().accent.copy(alpha = 0.3f),
+                    shadowElevation = 8.dp,
+                    settings = glassSettings,
                 )
-                .background(
-                    color = surfaceColor(baseSurface ?: colorPalette().background1),
-                    shape = uiRoundnessShape()
-                )
-                .clip(uiRoundnessShape())
+                .clip(barShape)
                 // Padding taps must focus search instead of reaching the underlying list.
                 .clickable { focusRequester.requestFocus() }
                 .padding(horizontal = 20.dp, vertical = 16.dp)
                 .testTag("unified_search_bar"),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = painterResource(R.drawable.search),
+                LeadingIconBadge(
+                    iconRes = R.drawable.search,
                     contentDescription = stringResource(R.string.search),
-                    tint = colorPalette().favoritesIcon,
                     modifier = Modifier.size(20.dp),
                 )
 
@@ -219,7 +227,7 @@ fun UnifiedSearchBar(
                     .padding(start = 12.dp),
             ) {
                 actionBubbles.forEach { bubble ->
-                    SearchBarBubbleButton(bubble)
+                    SearchBarBubbleButton(bubble, glassSettings)
                 }
 
                 // X clears the query and closes the search: hides the keyboard and
@@ -233,7 +241,8 @@ fun UnifiedSearchBar(
                             keyboardController?.hide()
                             focusManager.clearFocus(force = true)
                         },
-                    )
+                    ),
+                    glassSettings,
                 )
             }
         }
@@ -241,16 +250,42 @@ fun UnifiedSearchBar(
 }
 
 @Composable
-private fun SearchBarBubbleButton(bubble: SearchBarBubble) {
+private fun SearchBarBubbleButton(bubble: SearchBarBubble, glassSettings: GlassSettings) {
+    if (glassSettings.usesGlassMaterial(GlassArea.SearchBars)) {
+        val background = colorPalette().background0
+        val drawBackground: DrawScope.() -> Unit = remember(background) { { drawRect(background) } }
+        val backdrop = rememberCanvasBackdrop(drawBackground)
+        LiquidButton(
+            onClick = bubble.onClick,
+            backdrop = backdrop,
+            modifier = Modifier.size(48.dp).testTag("unified_search_bubble_${bubble.iconRes}"),
+            settings = glassSettings.forArea(GlassArea.SearchBars),
+            filmColor = surfaceColor(colorPalette().background2),
+            contentHeight = 48.dp,
+            contentPadding = 0.dp,
+            shape = searchBubbleShape(),
+        ) {
+            Icon(
+                painter = painterResource(bubble.iconRes),
+                contentDescription = stringResource(bubble.contentDescriptionRes),
+                tint = if (bubble.active) colorPalette().text else colorPalette().favoritesIcon,
+                modifier = Modifier.size(20.dp),
+            )
+        }
+        return
+    }
     // clip before clickable so the ripple indication follows the shape instead
     // of staying a square; background2 surface keeps the pitch-black fallback.
     val shape = searchBubbleShape()
     Box(
         modifier = Modifier
             .size(48.dp)
-            .background(
-                color = surfaceColor(colorPalette().background2),
-                shape = shape
+            .glassSearchBarBackground(
+                backgroundColor = colorPalette().background0,
+                containerColor = surfaceColor(colorPalette().background2),
+                shape = shape,
+                shadowColor = Color.Transparent,
+                settings = glassSettings,
             )
             .clip(shape)
             .clickable(onClick = bubble.onClick)

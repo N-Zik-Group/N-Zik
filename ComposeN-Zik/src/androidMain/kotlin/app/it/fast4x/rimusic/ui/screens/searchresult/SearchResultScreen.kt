@@ -1,9 +1,12 @@
 package app.it.fast4x.rimusic.ui.screens.searchresult
+import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
+
+import app.n_zik.android.components.search.SearchResultHeaderActions
+import app.n_zik.android.components.search.SearchResultHeaderIcon
 import android.annotation.SuppressLint
 import android.net.Uri
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -28,7 +31,7 @@ import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.navigation.Skeleton
 import app.it.fast4x.rimusic.ui.components.themed.Title
 
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
@@ -42,7 +45,7 @@ import app.n_zik.android.typography
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import app.n_zik.android.colorPalette
-import androidx.compose.material3.DropdownMenu
+import app.n_zik.android.components.menu.GlassDropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import app.it.fast4x.rimusic.enums.ContentType
@@ -93,6 +96,11 @@ fun SearchResultScreen(
         onGridStatesPrefChanged(arr.toPrefString())
     }
 
+    val editQuery: () -> Unit = {
+        navController.navigate("${NavRoutes.search.name}?text=${Uri.encode(query)}")
+    }
+    val showLayoutToggle = tabIndex in listOf(1, 4, 5, 6)
+
     val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = {
         Title(
             title = stringResource(R.string.search_results_for),
@@ -101,23 +109,29 @@ fun SearchResultScreen(
         Title(
             title = query,
             icon = R.drawable.pencil,
-            onClick = {
-                navController.navigate("${NavRoutes.search.name}?text=${Uri.encode(query)}")
-            },
+            onClick = editQuery,
+            enableClick = false,
             verticalPadding = 4.dp,
             trailingIcon = {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+                SearchResultHeaderActions(
+                    showLayoutToggle = showLayoutToggle,
+                    onEditQuery = editQuery,
                 ) {
                     Box {
-                        IconButton(onClick = { showFilterMenu.value = true }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.discover),
-                                contentDescription = stringResource(R.string.cd_filter),
-                                tint = colorPalette().text
-                            )
+                        SearchResultHeaderIcon(
+                            icon = R.drawable.discover,
+                            contentDescription = stringResource(R.string.cd_filter),
+                            onClick = { showFilterMenu.value = true },
+                        ) {
+                            IconButton(onClick = { showFilterMenu.value = true }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.discover),
+                                    contentDescription = stringResource(R.string.cd_filter),
+                                    tint = colorPalette().text
+                                )
+                            }
                         }
-                        DropdownMenu(
+                        GlassDropdownMenu(
                             expanded = showFilterMenu.value,
                             containerColor = colorPalette().background0,
                             onDismissRequest = { showFilterMenu.value = false },
@@ -141,13 +155,19 @@ fun SearchResultScreen(
                             }
                         }
                     }
-                    if (tabIndex in listOf(1, 4, 5, 6)) {
-                        IconButton(onClick = { setUseGrid(!useGrid) }) {
-                            Icon(
-                                painter = painterResource(id = if (useGrid) R.drawable.sort_vertical else R.drawable.sort_grid),
-                                contentDescription = stringResource(R.string.cd_switch_mode),
-                                tint = colorPalette().text
-                            )
+                    if (showLayoutToggle) {
+                        SearchResultHeaderIcon(
+                            icon = if (useGrid) R.drawable.sort_vertical else R.drawable.sort_grid,
+                            contentDescription = stringResource(R.string.cd_switch_mode),
+                            onClick = { setUseGrid(!useGrid) },
+                        ) {
+                            IconButton(onClick = { setUseGrid(!useGrid) }) {
+                                Icon(
+                                    painter = painterResource(id = if (useGrid) R.drawable.sort_vertical else R.drawable.sort_grid),
+                                    contentDescription = stringResource(R.string.cd_switch_mode),
+                                    tint = colorPalette().text
+                                )
+                            }
                         }
                     }
                 }
@@ -174,11 +194,15 @@ fun SearchResultScreen(
 
     val emptyItemsText = stringResource(R.string.no_results_found)
 
+    val topContentInset = rememberTopContentInsetProvider(hasNavBar = !app.it.fast4x.rimusic.utils.hideBarsInLandscapeMobile())
+
     Skeleton(
         navController,
         tabIndex,
         onTabIndexChanges,
         miniPlayer,
+        topInsetHandledByContent = true,
+        topContentInsetProvider = topContentInset,
         navBarContent = { item ->
             item(0, stringResource(R.string.songs), R.drawable.musical_notes)
             item(1, stringResource(R.string.albums), R.drawable.album)
@@ -193,6 +217,7 @@ fun SearchResultScreen(
             when (currentTabIndex) {
                 0, 2, 3 -> {
                     OnlineSearchList(
+                        topContentInsetProvider = topContentInset,
                         query = query,
                         tabIndex = currentTabIndex,
                         filterContentType = filterContentType,
@@ -206,6 +231,7 @@ fun SearchResultScreen(
                 1, 4, 5, 6 -> {
                     if (useGrid) {
                         OnlineSearchGrid(
+                            topContentInsetProvider = topContentInset,
                             query = query,
                             tabIndex = currentTabIndex,
                             filterContentType = filterContentType,
@@ -216,6 +242,7 @@ fun SearchResultScreen(
                         )
                     } else {
                         OnlineSearchList(
+                            topContentInsetProvider = topContentInset,
                             query = query,
                             tabIndex = currentTabIndex,
                             filterContentType = filterContentType,

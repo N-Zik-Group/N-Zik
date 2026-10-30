@@ -1,5 +1,12 @@
 package app.it.fast4x.rimusic.ui.screens.search
 
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+import app.n_zik.android.components.navigation.TopOverlayContentPadding
+import app.n_zik.android.components.navigation.LocalSideRailContentInsets
+import androidx.compose.ui.unit.Dp
+
+import app.n_zik.android.components.search.SearchSuggestionEditAction
+
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
@@ -17,13 +24,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -58,7 +63,6 @@ import androidx.navigation.NavController
 import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.searchSuggestionsWithItems
-import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.search.SearchBarBubble
@@ -110,6 +114,7 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 @ExperimentalTextApi
 @Composable
 fun OnlineSearch(
+    topContentInsetProvider: () -> Dp,
     navController: NavController,
     textFieldValue: TextFieldValue,
     onTextFieldValueChanged: (TextFieldValue) -> Unit,
@@ -201,12 +206,14 @@ fun OnlineSearch(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(TopOverlayContentPadding(topContentInsetProvider))
         ) {
             // 16dp horizontal on the bar only: the list below stays
             // full-width so the rows touch the screen edges
             Header(
                 modifier = Modifier
-                .zIndex(1f)
+                    .zIndex(1f)
+                    .padding(LocalSideRailContentInsets.current.asPaddingValues())
                     .padding(top = 16.dp, start = 16.dp, end = 16.dp)
                     .fillMaxWidth(),
                 titleContent = {
@@ -236,10 +243,7 @@ fun OnlineSearch(
 
             LazyColumn(
                 state = lazyListState,
-                // Bottom inset only: the top inset is already applied by the
-                // Skeleton scaffold
-                contentPadding = LocalPlayerAwareWindowInsets.current
-                    .only(WindowInsetsSides.Bottom).asPaddingValues(),
+                contentPadding = rememberPageChromeContentPadding(topInsetProvider = { 0.dp }),
                 modifier = Modifier
                     .fillMaxSize()
             ) {
@@ -382,6 +386,17 @@ fun OnlineSearch(
                             }
 
                             items(items = suggestions.queries) { query ->
+                                val editQuery: () -> Unit = {
+                                    onTextFieldValueChanged(
+                                        TextFieldValue(
+                                            text = query,
+                                            selection = TextRange(query.length)
+                                        )
+                                    )
+                                    coroutineScope.launch {
+                                        lazyListState.animateScrollToItem(0)
+                                    }
+                                }
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
@@ -416,30 +431,22 @@ fun OnlineSearch(
                                             .weight(1f)
                                     )
 
-                                    Image(
-                                        painter = painterResource(R.drawable.pencil),
-                                        contentDescription = null,
-                                        colorFilter = ColorFilter.tint(colorPalette().textDisabled),
-                                        modifier = Modifier
-                                            .clip(uiRoundnessShape()).clickable(
-                                                indication = rippleIndication,
-                                                interactionSource = remember { MutableInteractionSource() },
-                                                onClick = {
-                                                    onTextFieldValueChanged(
-                                                        TextFieldValue(
-                                                            text = query,
-                                                            selection = TextRange(query.length)
-                                                        )
-                                                    )
-                                                    coroutineScope.launch {
-                                                        lazyListState.animateScrollToItem(0)
-                                                    }
-                                                }
-                                            )
-                                            //.rotate(225f)
-                                            .padding(horizontal = 8.dp)
-                                            .size(22.dp)
-                                    )
+                                    SearchSuggestionEditAction(onClick = editQuery) {
+                                        Image(
+                                            painter = painterResource(R.drawable.pencil),
+                                            contentDescription = null,
+                                            colorFilter = ColorFilter.tint(colorPalette().textDisabled),
+                                            modifier = Modifier
+                                                .clip(uiRoundnessShape()).clickable(
+                                                    indication = rippleIndication,
+                                                    interactionSource = remember { MutableInteractionSource() },
+                                                    onClick = editQuery
+                                                )
+                                                //.rotate(225f)
+                                                .padding(horizontal = 8.dp)
+                                                .size(22.dp)
+                                        )
+                                    }
                                 }
                             }
                         } ?: suggestionsResult?.exceptionOrNull()?.let {
@@ -642,6 +649,17 @@ fun OnlineSearch(
                             }
 
                             items(items = suggestions.queries) { query ->
+                                val editQuery: () -> Unit = {
+                                    onTextFieldValueChanged(
+                                        TextFieldValue(
+                                            text = query,
+                                            selection = TextRange(query.length)
+                                        )
+                                    )
+                                    coroutineScope.launch {
+                                        lazyListState.animateScrollToItem(0)
+                                    }
+                                }
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
@@ -676,30 +694,22 @@ fun OnlineSearch(
                                             .weight(1f)
                                     )
 
-                                    Image(
-                                        painter = painterResource(R.drawable.pencil),
-                                        contentDescription = null,
-                                        colorFilter = ColorFilter.tint(colorPalette().textDisabled),
-                                        modifier = Modifier
-                                            .clip(uiRoundnessShape()).clickable(
-                                                indication = rippleIndication,
-                                                interactionSource = remember { MutableInteractionSource() },
-                                                onClick = {
-                                                    onTextFieldValueChanged(
-                                                        TextFieldValue(
-                                                            text = query,
-                                                            selection = TextRange(query.length)
-                                                        )
-                                                    )
-                                                    coroutineScope.launch {
-                                                        lazyListState.animateScrollToItem(0)
-                                                    }
-                                                }
-                                            )
-                                            //.rotate(225f)
-                                            .padding(horizontal = 8.dp)
-                                            .size(22.dp)
-                                    )
+                                    SearchSuggestionEditAction(onClick = editQuery) {
+                                        Image(
+                                            painter = painterResource(R.drawable.pencil),
+                                            contentDescription = null,
+                                            colorFilter = ColorFilter.tint(colorPalette().textDisabled),
+                                            modifier = Modifier
+                                                .clip(uiRoundnessShape()).clickable(
+                                                    indication = rippleIndication,
+                                                    interactionSource = remember { MutableInteractionSource() },
+                                                    onClick = editQuery
+                                                )
+                                                //.rotate(225f)
+                                                .padding(horizontal = 8.dp)
+                                                .size(22.dp)
+                                        )
+                                    }
                                 }
                             }
                         } ?: suggestionsResult?.exceptionOrNull()?.let {

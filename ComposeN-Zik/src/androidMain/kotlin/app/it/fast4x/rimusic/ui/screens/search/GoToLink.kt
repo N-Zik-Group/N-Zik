@@ -1,5 +1,9 @@
 package app.it.fast4x.rimusic.ui.screens.search
 
+import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.unit.Dp
+
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -7,12 +11,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -37,14 +38,12 @@ import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.playlistPage
 import it.fast4x.innertube.requests.song
-import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.components.dialog.common.InputTextField
-import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.forcePlay
 import app.it.fast4x.rimusic.utils.semiBold
@@ -128,6 +127,7 @@ internal suspend fun resolveGoToLink(
 @UnstableApi
 @Composable
 fun GoToLink(
+    topContentInsetProvider: () -> Dp,
     navController: NavController,
     textFieldValue: TextFieldValue,
     onTextFieldValueChanged: (TextFieldValue) -> Unit,
@@ -157,15 +157,12 @@ fun GoToLink(
 
         LazyColumn(
             state = lazyListState,
-            // Bottom inset only: the top inset is already applied by the
-            // Skeleton scaffold, so Vertical would pad the header twice.
-            // The static 16dp top margin gives the header the same rhythm as
-            // the other search screens
-            contentPadding = LocalPlayerAwareWindowInsets.current
-                .only(WindowInsetsSides.Bottom + WindowInsetsSides.End).asPaddingValues(),
+            contentPadding = rememberPageChromeContentPadding(
+                base = PaddingValues(top = 16.dp),
+                topInsetProvider = topContentInsetProvider,
+            ),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 16.dp)
         ) {
             item(
                 key = "header",

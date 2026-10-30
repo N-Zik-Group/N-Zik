@@ -84,6 +84,10 @@ object Toaster {
         // Spec pc-ui-parity-audit-fixes, decision 7 (2026-10-10): explicit exception to the legacy rule — every phone toast reaches the PC bridge
         app.n_zik.android.utils.ToastRelay.onLegacyToast( message, type.name )
         NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+            // Explicitly approved legacy hook: the modern host accepts only visible Glass toasts.
+            if (app.n_zik.android.utils.toast.GlassToastDispatcher.tryShow(
+                    message, duration, icon.takeUnless { it === Type.NORMAL.icon }, background, foreground
+                )) return@launch
             val toast = Toasty.custom(
                 appContext(), message, icon, background, foreground, duration, icon != Type.NORMAL.icon, true
             )

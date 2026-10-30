@@ -1,5 +1,7 @@
 package app.it.fast4x.rimusic.ui.screens.search
 
+import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
+
 import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.PermissionUsageJournal
 
@@ -41,7 +43,7 @@ import app.n_zik.android.components.VoiceSearchUtils
 import app.n_zik.android.components.search.SearchBarBubble
 import app.n_zik.android.core.network.OfflineMode
 import app.it.fast4x.rimusic.utils.VoiceSearchState
-import app.it.fast4x.rimusic.ui.components.Skeleton
+import app.n_zik.android.components.navigation.Skeleton
 import app.n_zik.android.components.VoiceSearchOverlay
 import app.n_zik.android.components.ui.screens.find.MusicAudioSearchOverlay
 import app.kreate.android.me.knighthat.utils.Toaster
@@ -196,11 +198,15 @@ fun SearchScreen(
             val onlineActionBubbles = if (offlineMode) emptyList() else listOf(micBubble, musicSearchBubble)
             val localActionBubbles = if (offlineMode) emptyList() else listOf(micBubble)
 
+            val topContentInset = rememberTopContentInsetProvider(hasNavBar = !offlineMode && !app.it.fast4x.rimusic.utils.hideBarsInLandscapeMobile())
+
             Skeleton(
                 navController,
                 tabIndex,
                 onTabChanged,
                 miniPlayer,
+                topInsetHandledByContent = true,
+                topContentInsetProvider = topContentInset,
                 navBarContent = { item ->
                     if (offlineMode)
                         item(1, stringResource(R.string.library), R.drawable.library)
@@ -216,6 +222,7 @@ fun SearchScreen(
                     // regardless of the raw index (the removed tabs must never render).
                     when (if (offlineMode) 1 else currentTabIndex) {
                         0 -> OnlineSearch(
+                            topContentInsetProvider = topContentInset,
                             navController = navController,
                             textFieldValue = textFieldValue,
                             onTextFieldValueChanged = onTextFieldValueChanged,
@@ -224,6 +231,7 @@ fun SearchScreen(
                         )
 
                         1 -> LocalSongSearch(
+                            topContentInsetProvider = topContentInset,
                             navController = navController,
                             textFieldValue = textFieldValue,
                             onTextFieldValueChanged = onTextFieldValueChanged,
@@ -238,6 +246,7 @@ fun SearchScreen(
                         )
 
                         2 -> GoToLink(
+                            topContentInsetProvider = topContentInset,
                             navController = navController,
                             textFieldValue = textFieldValue,
                             onTextFieldValueChanged = onTextFieldValueChanged,

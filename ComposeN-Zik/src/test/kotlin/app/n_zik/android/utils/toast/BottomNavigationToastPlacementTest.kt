@@ -78,7 +78,7 @@ class BottomNavigationToastPlacementTest {
                 WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
             ).bottom
             val expected = (windowBottom - bottomInset - barTop).roundToInt() +
-                (default - (54 * density).roundToInt()).coerceAtLeast((8 * density).roundToInt())
+                (8 * density).roundToInt()
             assertEquals("attached=${view.isAttachedToWindow} shown=${view.isShown} visibility=${view.windowVisibility} lifecycle=${lifecycle.currentState} top=$barTop", expected, toast.yOffset)
             assertEquals(Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL, toast.gravity)
         }
@@ -116,7 +116,7 @@ class BottomNavigationToastPlacementTest {
                 view.getLocationOnScreen(screenOrigin)
                 view.getLocationInWindow(windowOrigin)
                 val targetBottom = (barTop + screenOrigin[1] - windowOrigin[1]).roundToInt() -
-                    (defaultOffset - (54 * density).roundToInt()).coerceAtLeast((8 * density).roundToInt())
+                    (8 * density).roundToInt()
                 val expected = attachedParams.y + toastLocation[1] + toastContent.height - targetBottom
                 toastContent.viewTreeObserver.dispatchOnPreDraw()
                 assertEquals("toastAttached=${toastContent.isAttachedToWindow} hostVisible=${view.windowVisibility} listeners=${org.robolectric.Shadows.shadowOf(toastContent).onAttachStateChangeListeners.size}", expected, attachedParams.y)

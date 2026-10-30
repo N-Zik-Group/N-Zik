@@ -10,6 +10,10 @@ import androidx.annotation.MainThread
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -30,13 +34,22 @@ import timber.log.Timber
 private class NavigationMeasurement(view: View, lifecycle: Lifecycle) {
     val view = WeakReference(view)
     val lifecycle = WeakReference(lifecycle)
-    var top: Float? = null
-    var standardHeight = 0
+    var top: Float? by mutableStateOf(null)
+    var standardHeight = Int.MAX_VALUE
     var minimumGap = 0
 }
 
 object BottomNavigationToastPlacement {
-    private val measurements = mutableSetOf<NavigationMeasurement>()
+    private val measurements = mutableStateListOf<NavigationMeasurement>()
+
+    /** Compose observes the same measured chrome top that positions native Toast windows. */
+    internal fun topInWindow(): Float? = measurements.mapNotNull { measurement ->
+        val view = measurement.view.get() ?: return@mapNotNull null
+        if (!view.isAttachedToWindow || !view.isShown || view.windowVisibility != View.VISIBLE ||
+            measurement.lifecycle.get()?.currentState?.isAtLeast(Lifecycle.State.RESUMED) != true
+        ) return@mapNotNull null
+        measurement.top
+    }.minOrNull()
 
     @MainThread
     fun applyTo(toast: Toast) {
@@ -90,7 +103,8 @@ object BottomNavigationToastPlacement {
         view.getLocationOnScreen(screenPosition)
         view.getLocationInWindow(windowPosition)
         val normalGap = (defaultOffset - measurement.standardHeight).coerceAtLeast(measurement.minimumGap)
-        (top + screenPosition[1] - windowPosition[1]).roundToInt() - normalGap
+        val targetBottom = (top + screenPosition[1] - windowPosition[1]).roundToInt() - normalGap
+        targetBottom
     }.minOrNull()
 
     private fun correctAttachedWindowBeforeDraw(view: View, defaultOffset: Int) {
@@ -131,12 +145,12 @@ object BottomNavigationToastPlacement {
     }
 
     @Composable
+    @Suppress("UNUSED_PARAMETER") // Existing navigation callers keep their API; every obstacle now shares an 8dp gap.
     internal fun measurementModifier(isBottom: Boolean, standardContentHeight: Dp): Modifier {
-        if (!isBottom) return Modifier
+        if (!isBottom || app.n_zik.android.components.player.LocalPlayerCoveredPage.current) return Modifier
         val view = LocalView.current
         val lifecycle = LocalLifecycleOwner.current.lifecycle
         val measurement = remember(view, lifecycle) { NavigationMeasurement(view, lifecycle) }
-        val standardHeight = with(LocalDensity.current) { standardContentHeight.roundToPx() }
         val minimumGap = with(LocalDensity.current) { 8.dp.roundToPx() }
         DisposableEffect(measurement) {
             measurements.add(measurement)
@@ -145,12 +159,19 @@ object BottomNavigationToastPlacement {
         return Modifier.onGloballyPositioned { coordinates ->
             val bounds = coordinates.boundsInWindow()
             measurement.top = bounds.top.takeIf { bounds.width > 0 && bounds.height > 0 }
-            measurement.standardHeight = standardHeight
             measurement.minimumGap = minimumGap
         }
     }
+
+    /** Attach only to the rendered mini-player body, never a full-screen sheet wrapper. */
+    @Composable
+    internal fun obstructionModifier(enabled: Boolean): Modifier = measurementModifier(enabled, 0.dp)
 }
 
 @Composable
 fun Modifier.trackBottomNavigationForToasts(isBottom: Boolean, standardContentHeight: Dp): Modifier =
     then(BottomNavigationToastPlacement.measurementModifier(isBottom, standardContentHeight))
+
+@Composable
+fun Modifier.trackToastObstruction(enabled: Boolean = true): Modifier =
+    then(BottomNavigationToastPlacement.obstructionModifier(enabled))

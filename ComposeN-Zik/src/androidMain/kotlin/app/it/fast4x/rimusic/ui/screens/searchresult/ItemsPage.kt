@@ -1,5 +1,7 @@
 package app.it.fast4x.rimusic.ui.screens.searchresult
 
+import androidx.compose.foundation.layout.padding
+
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
@@ -10,11 +12,9 @@ import kotlinx.coroutines.flow.first
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
@@ -58,6 +58,7 @@ import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.ui.unit.Dp
 
 
+/** Chrome clearance is supplied by the page host and shared by loading and loaded content. */
 @ExperimentalAnimationApi
 @Composable
 inline fun <T : Innertube.Item> ItemsPage(
@@ -66,6 +67,7 @@ inline fun <T : Innertube.Item> ItemsPage(
     crossinline itemContent: @Composable LazyItemScope.(T) -> Unit,
     noinline itemPlaceholderContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(bottom = Dimensions.bottomSpacer),
     initialPlaceholderCount: Int = 8,
     continuationPlaceholderCount: Int = 3,
     emptyItemsText: String = "",
@@ -189,7 +191,7 @@ inline fun <T : Innertube.Item> ItemsPage(
     ) {
         if (itemsPage == null) {
             Column(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize().padding(contentPadding)
             ) {
                 headerContent(null)
                 OfflineAwareLoader(
@@ -200,6 +202,7 @@ inline fun <T : Innertube.Item> ItemsPage(
         } else {
             LazyColumn(
                 state = lazyListState,
+                contentPadding = contentPadding,
                 modifier = modifier
                     .fillMaxSize()
             ) {
@@ -242,11 +245,6 @@ inline fun <T : Innertube.Item> ItemsPage(
                     }
                 }
 
-                item(
-                    contentType = 0,
-                ) {
-                    Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
-                }
             }
         }
 
@@ -255,6 +253,7 @@ inline fun <T : Innertube.Item> ItemsPage(
 }
 
 
+/** Chrome clearance is supplied by the page host and shared by loading and loaded content. */
 @ExperimentalAnimationApi
 @Composable
 inline fun <T : Innertube.Item> ItemsGridPage(
@@ -263,6 +262,7 @@ inline fun <T : Innertube.Item> ItemsGridPage(
     noinline itemContent: @Composable LazyGridItemScope.(T) -> Unit,
     noinline itemPlaceholderContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(bottom = Dimensions.bottomSpacer),
     initialPlaceholderCount: Int = 8,
     continuationPlaceholderCount: Int = 6,
     emptyItemsText: String = "",
@@ -385,7 +385,7 @@ inline fun <T : Innertube.Item> ItemsGridPage(
     ) {
         if (itemsPage == null) {
             Column(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize().padding(contentPadding)
             ) {
                 headerContent(null)
                 OfflineAwareLoader(
@@ -397,7 +397,7 @@ inline fun <T : Innertube.Item> ItemsGridPage(
             LazyVerticalGrid(
                 state = lazyGridState,
                 columns = GridCells.Adaptive(thumbnailSizeDp),
-                contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer),
+                contentPadding = contentPadding,
                 modifier = modifier
                     .background(colorPalette().background0)
                     .fillMaxSize()

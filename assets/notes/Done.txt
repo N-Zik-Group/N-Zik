@@ -37,6 +37,10 @@ Removed:
   - Assemble Debug and pass 148 focused regression tests; complete three review lenses and an independent final re-review.
 
 Added:
+- feat(search): apply Glass search and toast presentation
+  - Update search history actions, results headers and search page surfaces.
+  - Route toasts through the Glass host while preserving navigation placement.
+
 - feat(library): apply shared Glass presentation to collection pages
   - Update album, artist, playlist, mood, podcast, history and statistics surfaces.
   - Share collection status and card presentation across native and legacy screens.
