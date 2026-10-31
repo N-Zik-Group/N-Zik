@@ -1,4 +1,10 @@
 Added:
+- feat(library): filter saved YouTube playlists and podcasts separately
+  - Include podcast snapshots by source rather than account-sync flags and add independent All, Playlists and Podcasts subfilters.
+  - Keep bulk playback, export, deletion and refresh scoped to visible results; retained toolbar callbacks read current targets and cached songs.
+  - Refresh podcast targets through the complete source loader without allowing empty target lists to request a global sync.
+  - Share one animated subsection between YouTube and Rewind, using identical geometry and avoiding simultaneous expanding rows.
+
 - feat(playlist): refresh linked snapshots on opening and protect locked membership
   - Add a per-playlist Refresh on opening action in the saved-playlist menu and configurable toolbar, independent of account synchronization.
   - Default to enabled for locked YouTube sources and disabled for editable sources; preserve explicit profile-scoped overrides.
