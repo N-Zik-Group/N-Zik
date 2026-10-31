@@ -1,0 +1,12 @@
+N-Zik — done
+============
+
+2026-11-01
+- Suppression des 5 rangées de boutons de valeurs présélection dans les réglages
+  Cover Card (AppearanceCoverCard.kt) :
+  - Taille de pochette (portrait) : Min/25/50/75/Max
+  - Taille de pochette (paysage) : Min/25/50/75/Max
+  - Roundness miniature : 0/12/24/36/Max
+  - Roundness artiste : 0/12/24/36/Max
+  - Roundness UI : 0/10/20/30/Max
+  Les sliders conservent leurs points sur la piste (drawValuePoints = true).

@@ -300,23 +300,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                         trailingContent = @Composable { Row(verticalAlignment = Alignment.CenterVertically) { Box(modifier = Modifier.size(36.dp).border(width = 1.dp, color = colorPalette().accent, shape = if (thumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(thumbnailRoundnessDp.dp, 0.25f))), contentAlignment = Alignment.Center) { Box(modifier = Modifier.padding(((100f - thumbnailSizeLDp) * 0.15f).dp).fillMaxSize().background(color = colorPalette().accent.copy(alpha = 0.5f), shape = if (thumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(thumbnailRoundnessDp.dp, 0.25f)))) } } }
                                     )
 
-                                    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 4.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
-                                    listOf(0f to "Min", 25f to "25%", 50f to "50%", 75f to "75%", 100f to "Max").forEach { (v, label) ->
-                                        val isSelected = thumbnailSizeLDp.toInt() == v.toInt()
-                                        TextButton(
-                                            onClick = { thumbnailSizeLDp = v },
-                                            shape = uiRoundnessShape(),
-                                            colors = ButtonDefaults.textButtonColors(containerColor = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else androidx.compose.ui.graphics.Color.Transparent)
-                                        ) {
-                                            Text(
-                                                text = label,
-                                                fontSize = 12.sp,
-                                                color = if (isSelected) colorPalette().accent else colorPalette().text,
-                                                fontWeight = if (isSelected) FontWeight.Bold else null
-                                            )
-                                        }
-                                    }
-                                }
+
                                 }
                             }
                     } else {
@@ -343,23 +327,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                         trailingContent = @Composable { Row(verticalAlignment = Alignment.CenterVertically) { Box(modifier = Modifier.size(36.dp).border(width = 1.dp, color = colorPalette().accent, shape = if (thumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(thumbnailRoundnessDp.dp, 0.25f))), contentAlignment = Alignment.Center) { Box(modifier = Modifier.padding(((100f - thumbnailSizeDp) * 0.15f).dp).fillMaxSize().background(color = colorPalette().accent.copy(alpha = 0.5f), shape = if (thumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(thumbnailRoundnessDp.dp, 0.25f)))) } } }
                                     )
 
-                                    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 4.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
-                                    listOf(0f to "Min", 25f to "25%", 50f to "50%", 75f to "75%", 100f to "Max").forEach { (v, label) ->
-                                        val isSelected = thumbnailSizeDp.toInt() == v.toInt()
-                                        TextButton(
-                                            onClick = { thumbnailSizeDp = v },
-                                            shape = uiRoundnessShape(),
-                                            colors = ButtonDefaults.textButtonColors(containerColor = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else androidx.compose.ui.graphics.Color.Transparent)
-                                        ) {
-                                            Text(
-                                                text = label,
-                                                fontSize = 12.sp,
-                                                color = if (isSelected) colorPalette().accent else colorPalette().text,
-                                                fontWeight = if (isSelected) FontWeight.Bold else null
-                                            )
-                                        }
-                                    }
-                                }
+
 
                             }
                             }
@@ -388,23 +356,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                     trailingContent = @Composable { Row(verticalAlignment = Alignment.CenterVertically) { Spacer(modifier = Modifier.size(36.dp).background(color = colorPalette().accent.copy(alpha = 0.5f), shape = if (thumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(thumbnailRoundnessDp.dp, 0.25f))).border(width = 1.dp, color = colorPalette().accent, shape = if (thumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(thumbnailRoundnessDp.dp, 0.25f)))) } }
                                 )
 
-                                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 4.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
-                                listOf(0f to "0", 12f to "12", 24f to "24", 36f to "36", 48f to "Max").forEach { (v, label) ->
-                                    val isSelected = thumbnailRoundnessDp.toInt() == v.toInt()
-                                    TextButton(
-                                        onClick = { thumbnailRoundnessDp = v },
-                                        shape = uiRoundnessShape(),
-                                        colors = ButtonDefaults.textButtonColors(containerColor = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else androidx.compose.ui.graphics.Color.Transparent)
-                                    ) {
-                                        Text(
-                                            text = label,
-                                            fontSize = 12.sp,
-                                            color = if (isSelected) colorPalette().accent else colorPalette().text,
-                                            fontWeight = if (isSelected) FontWeight.Bold else null
-                                        )
-                                    }
-                                }
-                            }
+
                             }
                         }
 
@@ -431,23 +383,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                     trailingContent = @Composable { Row(verticalAlignment = Alignment.CenterVertically) { Spacer(modifier = Modifier.size(36.dp).background(color = colorPalette().accent.copy(alpha = 0.5f), shape = if (artistThumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistThumbnailRoundnessDp.dp, 0.25f))).border(width = 1.dp, color = colorPalette().accent, shape = if (artistThumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistThumbnailRoundnessDp.dp, 0.25f)))) } }
                                 )
 
-                                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 4.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
-                                listOf(0f to "0", 12f to "12", 24f to "24", 36f to "36", 48f to "Max").forEach { (v, label) ->
-                                    val isSelected = artistThumbnailRoundnessDp.toInt() == v.toInt()
-                                    TextButton(
-                                        onClick = { artistThumbnailRoundnessDp = v },
-                                        shape = uiRoundnessShape(),
-                                        colors = ButtonDefaults.textButtonColors(containerColor = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else androidx.compose.ui.graphics.Color.Transparent)
-                                    ) {
-                                        Text(
-                                            text = label,
-                                            fontSize = 12.sp,
-                                            color = if (isSelected) colorPalette().accent else colorPalette().text,
-                                            fontWeight = if (isSelected) FontWeight.Bold else null
-                                        )
-                                    }
-                                }
-                            }
+
                             }
                         }
 
@@ -473,23 +409,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                 modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.ui_roundness")
                             )
 
-                            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
-                                listOf(0f to "0", 10f to "10", 20f to "20", 30f to "30", 40f to "Max").forEach { (v, label) ->
-                                    val isSelected = uiRoundnessDp.toInt() == v.toInt()
-                                    TextButton(
-                                        onClick = { uiRoundnessDp = v },
-                                        shape = uiRoundnessShape(),
-                                        colors = ButtonDefaults.textButtonColors(containerColor = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else androidx.compose.ui.graphics.Color.Transparent)
-                                    ) {
-                                        Text(
-                                            text = label,
-                                            fontSize = 12.sp,
-                                            color = if (isSelected) colorPalette().accent else colorPalette().text,
-                                            fontWeight = if (isSelected) FontWeight.Bold else null
-                                        )
-                                    }
-                                }
-                            }
+
                         }
                 }
             }
