@@ -85,7 +85,7 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.ui.components.themed.AutoResizeText
 import app.it.fast4x.rimusic.ui.components.themed.Enqueue
 import app.it.fast4x.rimusic.ui.components.themed.FontSizeRange
-import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
+import app.n_zik.android.components.ui.HeaderIconAction
 import app.n_zik.android.components.glass.GlassToolbarButtons
 import app.n_zik.android.components.glass.GlassToolbarRow
 import app.it.fast4x.rimusic.ui.components.themed.Loader
@@ -125,6 +125,10 @@ import app.n_zik.android.appContext
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.glass.GlassSectionAction
 import app.n_zik.android.components.glass.GlassSectionActions
+import app.n_zik.android.components.glass.NativeIconActionSize
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.shuffleButtonIconRes
 import app.n_zik.android.components.artist.FollowButton
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
@@ -609,7 +613,7 @@ fun ArtistOverview(
                             modifier = Modifier.align(Alignment.TopEnd)
                                 .padding(top = 5.dp, end = 5.dp),
                         ) {
-                        HeaderIconButton(
+                        HeaderIconAction(
                             icon = R.drawable.share_social,
                             color = colorPalette().text,
                             iconSize = 24.dp,
@@ -730,11 +734,16 @@ fun ArtistOverview(
                         val shuffleDescription = stringResource(R.string.glass_action_shuffle)
                         val playDescription = stringResource(R.string.glass_action_play_all)
                         if (isSectionLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.padding(end = 12.dp).size(24.dp),
-                                strokeWidth = 2.dp,
-                                color = colorPalette().textSecondary,
-                            )
+                            val loadingModifier = if (rememberGlassSettings().usesGlassMaterial(GlassArea.ActionButtons))
+                                Modifier.padding(end = 12.dp).size(24.dp)
+                            else Modifier.size(NativeIconActionSize * 2, NativeIconActionSize)
+                            Box(loadingModifier, contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp,
+                                    color = colorPalette().textSecondary,
+                                )
+                            }
                         }
                         val sectionActions = buildList {
                             if (canPlaySection && !isSectionLoading) {

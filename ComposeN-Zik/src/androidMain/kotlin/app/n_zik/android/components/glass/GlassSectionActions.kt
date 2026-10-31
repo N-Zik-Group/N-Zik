@@ -27,6 +27,10 @@ import app.n_zik.android.components.ui.reservedIconActionCanvas
 /** Shared native action seat; the glyph remains independently sized. */
 internal val NativeIconActionSize = 42.dp
 
+/** Legacy glyph spacing is already partly supplied by the larger native action seat. */
+private fun nativeSectionEndPadding(iconSize: Dp, endSpacing: Dp): Dp =
+    (endSpacing - (NativeIconActionSize - iconSize).coerceAtLeast(0.dp)).coerceAtLeast(0.dp)
+
 /** A section-heading action with its original native spacing. */
 @Stable
 internal data class GlassSectionAction(
@@ -114,7 +118,8 @@ internal fun GlassSectionActions(
             } else {
                 actions.forEach { action ->
                     if (action.loading) {
-                        Box(Modifier.padding(end = action.nativeEndPadding).size(NativeIconActionSize), contentAlignment = Alignment.Center) {
+                        Box(Modifier.padding(end = nativeSectionEndPadding(action.nativeIconSize, action.nativeEndPadding))
+                            .size(NativeIconActionSize), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator(Modifier.size(18.dp),
                                 color = colorPalette().textSecondary, strokeWidth = 2.dp)
                         }
@@ -122,7 +127,7 @@ internal fun GlassSectionActions(
                         NativeSectionIconAction(
                             icon = action.icon,
                             contentDescription = action.contentDescription,
-                            modifier = Modifier.padding(end = action.nativeEndPadding),
+                            endSpacing = action.nativeEndPadding,
                             iconModifier = action.iconModifier,
                             iconSize = action.nativeIconSize,
                             settings = settings,
@@ -146,11 +151,12 @@ internal fun NativeSectionIconAction(
     iconSize: Dp = 24.dp,
     color: Color = colorPalette().textSecondary,
     settings: GlassSettings = rememberGlassSettings(),
+    endSpacing: Dp = 0.dp,
     onLongClick: (() -> Unit)? = null,
     onClick: () -> Unit,
 ) {
     val shape = uiRoundnessShape()
-    Box(modifier, contentAlignment = Alignment.Center) {
+    Box(modifier.padding(end = nativeSectionEndPadding(iconSize, endSpacing)), contentAlignment = Alignment.Center) {
         Box(Modifier.size(NativeIconActionSize)
             .glassAreaContour(settings, GlassArea.ActionButtons, shape)
             .reservedIconActionCanvas(shape, remember { MutableInteractionSource() },

@@ -77,6 +77,10 @@ class NativeIconFeedbackFamiliesTest {
             node.fetchSemanticsNode().boundsInRoot
         }
         bounds.zipWithNext().forEach { (left, right) -> assertTrue(left.right <= right.left) }
+        bounds.take(3).zipWithNext().forEach { (left, right) ->
+            assertEquals("The seat already supplies the old glyph spacing", left.width,
+                right.center.x - left.center.x, .01f)
+        }
     }
 
     @Test fun `both legacy title families retain independent forty two dp child action owners`() {
@@ -98,6 +102,13 @@ class NativeIconFeedbackFamiliesTest {
                 .performTouchInput { click(Offset(1f, center.y)) }
         }
         compose.runOnIdle { assertEquals(listOf(1, 1, 1, 1, 1), clicks.toList()) }
+        val bounds = owners.fetchSemanticsNodes().map { it.boundsInRoot }
+        listOf(bounds.take(2), bounds.drop(2)).forEach { row ->
+            row.zipWithNext().forEach { (left, right) ->
+                assertEquals("Legacy heading actions use adjacent native seats", left.width,
+                    right.center.x - left.center.x, .01f)
+            }
+        }
     }
 
     @androidx.annotation.OptIn(UnstableApi::class)

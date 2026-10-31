@@ -102,6 +102,35 @@ class GlassSectionActionsTest {
         }
     }
 
+    @Test fun `native section spacing is absorbed by action seats and loading retains the row width`() {
+        val mode = mutableStateOf(GlassAreaMode.Disabled)
+        val loading = mutableStateOf(false)
+        compose.setContent {
+            AppearanceProvider {
+                GlassSectionActions(List(3) { index ->
+                    GlassSectionAction(R.drawable.play, "native.$index",
+                        nativeEndPadding = if (index < 2) 12.dp else 0.dp,
+                        loading = index == 0 && loading.value) {}
+                }, Modifier.testTag("native.actions"), GlassSettings(
+                    areaModes = mapOf(GlassArea.ActionButtons to mode.value)))
+            }
+        }
+        for (nativeMode in listOf(GlassAreaMode.Disabled, GlassAreaMode.ContourOnly)) {
+            compose.runOnIdle { mode.value = nativeMode; loading.value = false }
+            compose.onNodeWithTag("native.actions").assertWidthIsEqualTo(126.dp)
+                .assertHeightIsEqualTo(42.dp)
+            val bounds = (0..2).map { compose.onNodeWithContentDescription("native.$it")
+                .fetchSemanticsNode().boundsInRoot }
+            bounds.zipWithNext().forEach { (left, right) ->
+                assertEquals(left.width, right.center.x - left.center.x, .01f)
+            }
+            compose.runOnIdle { loading.value = true }
+            compose.onNodeWithTag("native.actions").assertWidthIsEqualTo(126.dp)
+                .assertHeightIsEqualTo(42.dp)
+            compose.onNodeWithContentDescription("native.0").assertDoesNotExist()
+        }
+    }
+
     @Test fun `single action expands beyond its resting contour and follows drag in both renderers`() {
         var clicks = 0
         val quality = mutableStateOf(GlassQuality.Balanced)

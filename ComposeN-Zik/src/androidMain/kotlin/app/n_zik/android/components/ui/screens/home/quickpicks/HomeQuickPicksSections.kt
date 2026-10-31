@@ -1,6 +1,7 @@
 package app.n_zik.android.components.ui.screens.home.quickpicks
 
 import app.n_zik.android.components.glass.GlassActionGroup
+import app.n_zik.android.components.glass.NativeIconActionSize
 import app.n_zik.android.components.glass.NativeSectionIconAction
 import app.n_zik.android.components.glass.GlassActionGroupItem
 import app.n_zik.android.components.glass.GlassActionCellWidth
@@ -195,13 +196,15 @@ fun QuickPicksHeader(
                 }
             } else {
                 if (isLoading) {
-                    CircularProgressIndicator(Modifier.padding(end = 12.dp).size(24.dp), strokeWidth = 2.dp, color = colorPalette().textSecondary)
+                    Box(Modifier.size(NativeIconActionSize * 2, NativeIconActionSize), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp, color = colorPalette().textSecondary)
+                    }
                 } else {
                     NativeSectionIconAction(R.drawable.dice, stringResource(R.string.glass_action_shuffle),
-                        modifier = Modifier.padding(end = 12.dp), color = colorPalette().text,
+                        endSpacing = 12.dp, color = colorPalette().text,
                         settings = glass, onClick = onDiceClick)
                     NativeSectionIconAction(R.drawable.play, stringResource(R.string.glass_action_play_all),
-                        modifier = Modifier.padding(end = 12.dp), color = colorPalette().text,
+                        endSpacing = 12.dp, color = colorPalette().text,
                         settings = glass, onClick = onPlayAllClick)
                 }
                 NativeSectionIconAction(R.drawable.settings, stringResource(R.string.sorting_order),

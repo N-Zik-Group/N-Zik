@@ -113,7 +113,7 @@ fun Title2Actions(
             NativeSectionIconAction(
                 icon = icon2 ?: R.drawable.arrow_forward,
                 contentDescription = null,
-                modifier = Modifier.padding(end = 12.dp),
+                endSpacing = 12.dp,
                 color = colorPalette().text,
                 onClick = onClick2,
             )
@@ -167,7 +167,7 @@ fun Title3Actions(
             NativeSectionIconAction(
                 icon = icon3 ?: R.drawable.arrow_forward,
                 contentDescription = null,
-                modifier = Modifier.padding(end = 12.dp),
+                endSpacing = 12.dp,
                 color = colorPalette().text,
                 onClick = onClick3,
             )
@@ -177,7 +177,7 @@ fun Title3Actions(
             NativeSectionIconAction(
                 icon = icon2 ?: R.drawable.arrow_forward,
                 contentDescription = null,
-                modifier = Modifier.padding(end = 12.dp),
+                endSpacing = 12.dp,
                 color = colorPalette().text,
                 onClick = onClick2,
             )

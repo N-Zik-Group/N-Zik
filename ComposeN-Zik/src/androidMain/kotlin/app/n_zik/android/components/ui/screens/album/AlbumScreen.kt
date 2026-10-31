@@ -102,7 +102,7 @@ import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
 import app.it.fast4x.rimusic.ui.components.themed.AutoResizeText
 import app.it.fast4x.rimusic.ui.components.themed.Enqueue
 import app.it.fast4x.rimusic.ui.components.themed.FontSizeRange
-import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
+import app.n_zik.android.components.ui.HeaderIconAction
 import app.n_zik.android.components.glass.GlassToolbarButtons
 import app.n_zik.android.components.glass.GlassToolbarRow
 import app.it.fast4x.rimusic.ui.components.themed.ItemsList
@@ -668,7 +668,7 @@ fun AlbumDetails(
                                     modifier = Modifier.align(Alignment.TopEnd)
                                         .padding(top = 5.dp, end = 5.dp),
                                 ) {
-                                HeaderIconButton(
+                                HeaderIconAction(
                                     icon = R.drawable.share_social,
                                     color = colorPalette().text,
                                     iconSize = 24.dp,

@@ -25,6 +25,10 @@ Fixed:
   - Separate menu bottom-edge exclusion from overlay film policy so dialogs and their buttons keep their full contour without changing geometry.
   - Preserve actual menu exclusions; verify rounded and square outlines, low/full rim intensity and existing optical regressions.
 
+- fix(ui): align section action spacing and Material share feedback
+  - Absorb obsolete glyph spacing into common 42 dp action seats across sections and Quick Picks; preserve glyph sizes and actions.
+  - Give Artist and Album sharing a complete native feedback canvas while retaining existing Glass geometry.
+
 - fix(glass): preserve exported fallback edges and completed scene ownership
   - Remove the duplicate tint-fallback shape mask and use native Auto compositing only for effect-free exports; keep ordinary fallback controls lightweight and normal optical layers unchanged.
   - Capture same-window modal siblings for above-modal toasts only while an optical toast needs them, excluding the toast itself and preserving raw sources for the modals.
