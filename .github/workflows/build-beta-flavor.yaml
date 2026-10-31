@@ -198,11 +198,6 @@ jobs:
         uses: actions/download-artifact@v8.0.2
         with:
           name: signed-apk
-      - name: Duplicate assets under legacy names (migration window)
-        # TODO: remove legacy asset name after the migration window
-        run: |
-          shopt -s nullglob globstar
-          for apk in **/N-Zik-beta64.apk; do cp "$apk" "${apk/N-Zik-beta64/N-Zik-beta}"; done
       - name: Upload built APK to pre-release
         uses: softprops/action-gh-release@v3
         with:

@@ -21,11 +21,7 @@ jobs:
               "beta64", "beta32", "foss", "dev64", "dev32"
             ];
 
-            const legacyBuildLabels = new Map([
-              ["full", "release64"], ["full32", "release32"],
-              ["minified", "minified64"], ["beta", "beta64"], ["dev", "dev64"]
-            ]);
-            const knownBuildLabels = new Set([...buildTypeLabels, ...legacyBuildLabels.keys()]);
+            const knownBuildLabels = new Set(buildTypeLabels);
 
             function detectLabel(body) {
               const match = (body || "").match(/^###[ \t]+(?:🏗\uFE0F?[ \t]*)?Build Type[ \t]*\r?\n(?:[ \t]*\r?\n)*([^\r\n]+)/mi);
@@ -33,7 +29,7 @@ jobs:
               const value = match[1].trim().match(/^([a-z0-9]+)(?:[ \t]+\([^()\r\n]*\))?$/i);
               if (!value) return null;
               const name = value[1].toLowerCase();
-              return legacyBuildLabels.get(name) || (buildTypeLabels.includes(name) ? name : null);
+              return buildTypeLabels.includes(name) ? name : null;
             }
 
             async function applyLabel(issueNumber, body) {

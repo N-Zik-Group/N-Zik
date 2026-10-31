@@ -47,9 +47,6 @@ object UpdaterConstants {
     const val TYPE_DEV64 = "dev64"
     const val TYPE_DEV32 = "dev32"
 
-    // Compatibility alias retained for minified64 release assets
-    const val LEGACY_TYPE_MINIFIED64 = "minified"
-
     // Channel names (MajorUpdateConfig, stable↔beta transition warnings)
     const val TYPE_BETA = "beta"
     const val TYPE_STABLE = "stable"

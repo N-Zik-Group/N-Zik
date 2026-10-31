@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.NoSuchFileException
 
-/** Pins channel and ABI routing, release asset eligibility, and retained minified compatibility. */
+/** Pins channel and ABI routing and release asset eligibility. */
 class UpdaterReleaseTagTest {
 
     @BeforeEach
@@ -272,12 +272,6 @@ class UpdaterReleaseTagTest {
 
         Updater.build = build("N-Zik-dev32.apk")
         assertEquals("-dev32", Updater.getBuildSuffix())
-    }
-
-    @Test
-    fun `getBuildSuffix keeps the minified compatibility suffix`() {
-        Updater.build = build("N-Zik-minified.apk")
-        assertEquals("-m64", Updater.getBuildSuffix())
     }
 
     // endregion
@@ -598,15 +592,16 @@ class UpdaterReleaseTagTest {
     }
 
     @Test
-    fun `minified64 users can still select and extract legacy minified assets`() {
+    fun `minified users ignore releases that ship only legacy minified assets`() {
         val legacy = release("v8.5.0", build("N-Zik-minified.apk"))
 
         for (checkBeta in listOf(false, true)) {
-            val best = Updater.findBestRelease(listOf(legacy), checkBetaUpdates = checkBeta, currentVersion = "8.4.0-m64")
-            assertEquals(legacy, best)
-            assertEquals("N-Zik-minified.apk", Updater.extractBuild(requireNotNull(best).builds, checkBetaUpdates = checkBeta, currentVersion = "8.4.0-m64").name)
+            assertNull(Updater.findBestRelease(listOf(legacy), checkBetaUpdates = checkBeta, currentVersion = "8.4.0-m64"))
         }
         assertNull(Updater.findBestRelease(listOf(legacy), checkBetaUpdates = false, currentVersion = "8.4.0-m32"))
+        assertThrows(NoSuchFileException::class.java) {
+            Updater.extractBuild(legacy.builds, currentVersion = "8.4.0-m64")
+        }
         assertThrows(NoSuchFileException::class.java) {
             Updater.extractBuild(legacy.builds, currentVersion = "8.4.0-m32")
         }
@@ -763,13 +758,6 @@ class UpdaterReleaseTagTest {
             assertEquals(mixed, Updater.findBestRelease(listOf(mixed), checkBetaUpdates = false, currentVersion = version))
             assertEquals("N-Zik-release$abi.apk", Updater.extractBuild(mixed.builds, currentVersion = version).name)
         }
-    }
-
-    @Test
-    fun `extractBuild prefers modern minified64 assets over the retained alias`() {
-        val assets = listOf(build("N-Zik-minified.apk"), build("N-Zik-minified64.apk"))
-
-        assertEquals("N-Zik-minified64.apk", Updater.extractBuild(assets, currentVersion = "8.4.0-m64").name)
     }
 
     @Test

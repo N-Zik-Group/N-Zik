@@ -252,7 +252,7 @@ object Updater {
     /**
      * Returns the version-name suffix ("-r64"/"-r32", "-m64"/"-m32",
      * "-beta64"/"-beta32", "-dev64"/"-dev32") for the selected build's APK
-     * asset name. The legacy minified asset retains the "-m64" suffix.
+     * asset name.
      */
     fun getBuildSuffix(): String {
         if (!::build.isInitialized) return UpdaterConstants.SUFFIX_RELEASE64
@@ -266,7 +266,6 @@ object Updater {
             name.contains(UpdaterConstants.TYPE_DEV32, ignoreCase = true) -> UpdaterConstants.SUFFIX_DEV32
             name.contains(UpdaterConstants.TYPE_RELEASE64, ignoreCase = true) -> UpdaterConstants.SUFFIX_RELEASE64
             name.contains(UpdaterConstants.TYPE_RELEASE32, ignoreCase = true) -> UpdaterConstants.SUFFIX_RELEASE32
-            name.contains(UpdaterConstants.LEGACY_TYPE_MINIFIED64, ignoreCase = true) -> UpdaterConstants.SUFFIX_MINIFIED64
             else -> UpdaterConstants.SUFFIX_RELEASE64
         }
     }
@@ -298,8 +297,7 @@ object Updater {
 
     /**
      * The APK build types a user on [currentVersion] can install, in
-     * priority order, given their beta preference. The minified64 compatibility
-     * alias is appended by [extractBuild]/[findBestRelease] via [legacyBuildType].
+     * priority order, given their beta preference.
      *
      * Shared by [extractBuild] (asset selection) and [findBestRelease]
      * (releases must ship at least one of these assets). Empty for unknown
@@ -337,26 +335,10 @@ object Updater {
         }
     }
 
-    /** Retains the minified64-to-minified asset alias; other build types map to themselves. */
-    private fun legacyBuildType(buildType: String): String = when (buildType) {
-        UpdaterConstants.TYPE_MINIFIED64 -> UpdaterConstants.LEGACY_TYPE_MINIFIED64
-        else -> buildType
-    }
-
-    /** Tries current asset names first, then the retained minified64 compatibility alias. */
-    private fun candidateBuildTypes(
-        currentVersion: String,
-        checkBetaUpdates: Boolean
-    ): List<String> {
-        val targets = targetBuildTypes(currentVersion, checkBetaUpdates)
-        return (targets + targets.map(::legacyBuildType)).distinct()
-    }
-
     /**
      * Visible for testing: selects the APK build matching the current flavor
-     * from a release's assets (see `UpdaterReleaseTagTest`). Current asset
-     * names are tried first, then the minified64 compatibility alias. The list
-     * stays 32-aware, so a 32-bit user is never pointed at a 64-bit APK
+     * from a release's assets (see `UpdaterReleaseTagTest`). The list stays
+     * 32-aware, so a 32-bit user is never pointed at a 64-bit APK
      * (un-installable on a 32-bit-only device). Unknown flavors have no
      * matching asset and report "no update".
      */
@@ -375,8 +357,8 @@ object Updater {
             throw NoSuchFileException("")
         }
 
-        // Known flavors: current asset names, then the minified64 compatibility alias
-        for (buildType in candidateBuildTypes(currentVersion, checkBetaUpdates)) {
+        // Known flavors: their targeted asset names in priority order
+        for (buildType in targetBuildTypes(currentVersion, checkBetaUpdates)) {
             val fileName = "$appName-$buildType.apk"
             val foundBuild = assets.fastFirstOrNull { it.name == fileName }
             if (foundBuild != null) {
@@ -386,9 +368,9 @@ object Updater {
 
         // Known flavors whose targeted assets are missing (e.g. a beta user
         // with beta disabled facing a beta-only release): fall back to the
-        // asset of their own build type, including the minified64 alias
+        // asset of their own build type
         val base = extractBuildType(currentVersion)
-        for (fileName in listOf(base, legacyBuildType(base)).distinct().map { "$appName-$it.apk" }) {
+        for (fileName in listOf("$appName-$base.apk")) {
             val fallbackBuild = assets.fastFirstOrNull { it.name == fileName }
             if (fallbackBuild != null) {
                 Timber.tag("Updater").w("No targeted build found, falling back to $fileName")
@@ -595,9 +577,8 @@ object Updater {
         }
 
         // Assets this user can actually install (empty for unknown flavors,
-        // which the "-unknown" tag gate below keeps out anyway), including
-        // the retained minified64 compatibility alias
-        val installableAssets = candidateBuildTypes(currentVersion, checkBetaUpdates)
+        // which the "-unknown" tag gate below keeps out anyway)
+        val installableAssets = targetBuildTypes(currentVersion, checkBetaUpdates)
             .map { "${BuildConfig.APP_NAME}-$it.apk" }
 
         // Filter releases based on current build type and beta preferences
