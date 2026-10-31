@@ -21,3 +21,9 @@ internal val settingsCardEnter: EnterTransition =
     expandVertically(animationSpec = tween(400)) + fadeIn(animationSpec = tween(400))
 internal val settingsCardExit: ExitTransition =
     shrinkVertically(animationSpec = tween(200)) + fadeOut(animationSpec = tween(200))
+
+/** Card controls keep their spring envelope while their owning card enters or exits. */
+internal val settingsCardOverflowEnter: EnterTransition =
+    expandVertically(animationSpec = tween(400), clip = false)
+internal val settingsCardOverflowExit: ExitTransition =
+    shrinkVertically(animationSpec = tween(200), clip = false)

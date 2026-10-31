@@ -21,7 +21,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-/** Golden expectations transcribed from UiSettings at baseline 89c9a371. */
+/** Reset expectations include audited first-run defaults and the original UI-type presets. */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
 class UiSettingsPreferencesTest {
@@ -61,7 +61,7 @@ class UiSettingsPreferencesTest {
         "disablePlayerHorizontalSwipe" to false,
         "lastPlayerPlayButtonType" to "Rectangular",
         "colorPaletteName" to "Dynamic",
-        "colorPaletteMode" to "Dark",
+        "colorPaletteMode" to "System",
         "indexNavigationTab" to "Default",
         "fontType" to "Rubik",
         "useSystemFont" to false,
@@ -101,7 +101,7 @@ class UiSettingsPreferencesTest {
         "playerPosition" to "Bottom",
         "messageType" to "Modern",
         "showTopActionsBar" to true,
-        "playerControlsType" to "Modern",
+        "playerControlsType" to "Essential",
         "playerInfoType" to "Modern",
         "playerType" to "Essential",
         "queueType" to "Modern",
@@ -110,7 +110,7 @@ class UiSettingsPreferencesTest {
         "carouselSize" to "Biggest",
         "thumbnailType" to "Modern",
         "playerTimelineType" to "Wavy",
-        "thumbnailSizeDpKey" to 0f,
+        "thumbnailSizeDpKey" to 90f,
         "playerTimelineSize" to "Biggest",
         "playerInfoShowIcons" to true,
         "miniPlayerType" to "Essential",
@@ -285,7 +285,7 @@ class UiSettingsPreferencesTest {
 
     @Test fun `target inventory covers ten cards and stable unique setting and action identities`() {
         assertEquals(listOf("theme", "interface", "font", "swipe", "home-tabs", "sort-menus", "floating-dock", "toolbars", "burger", "reset"), UiSettingTargets.cards.map { it.id.removePrefix("ui.card.") })
-        assertEquals(listOf(24, 13, 4, 7, 0, 0, 3, 0, 0, 0), UiSettingTargets.cards.map { it.preferenceKeys.size })
+        assertEquals(listOf(24, 13, 4, 7, 0, 0, 1, 0, 0, 0), UiSettingTargets.cards.map { it.preferenceKeys.size })
         assertEquals(listOf(2, 2, 0, 0, 5, 6, 1, 5, 1, 1), UiSettingTargets.cards.map { it.actions.size })
         assertEquals(UiSettingTargets.ids.size, UiSettingTargets.ids.toSet().size)
         assertTrue(UiSettingTargets.ids.none { it.contains(' ') })

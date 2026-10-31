@@ -14,7 +14,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-/** Literal reset fixture from AppearanceSettings at baseline 89c9a371. */
+/** Reset fixture includes audited artwork spacing and vinyl first-run defaults. */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
 class AppearanceSettingsPreferencesTest {
@@ -134,6 +134,8 @@ class AppearanceSettingsPreferencesTest {
         "thumbnailFadeEx" to 5f,
         "thumbnailFade" to 5f,
         "thumbnailSpacing" to 0f,
+        "thumbnailSpacingL" to 0f,
+        "VinylSize" to 50f,
         "colorPaletteName" to "Dynamic",
         "colorPaletteMode" to "System",
         "swipeAnimationsNoThumbnail" to "Sliding",
@@ -155,7 +157,7 @@ class AppearanceSettingsPreferencesTest {
         val globalBefore = store("app_settings").all.toMap()
         applyAppearanceDefaults(context)
         baselineDefaults.forEach { (key, expected) -> assertEquals(key, expected, context.preferences.all[key]) }
-        assertEquals(108, baselineDefaults.size)
+        assertEquals(110, baselineDefaults.size)
         assertEquals("keep", context.preferences.getString("unrelated", null))
         assertEquals("Light", store("preferences_untouched").getString("colorPaletteMode", null))
         assertEquals(globalBefore, store("app_settings").all)

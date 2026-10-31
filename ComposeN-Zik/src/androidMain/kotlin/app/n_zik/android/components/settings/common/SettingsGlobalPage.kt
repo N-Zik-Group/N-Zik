@@ -197,11 +197,10 @@ fun SettingsGlobalPage(
             } else {
                 items(entryResults, key = { "entry_${it.id}" }, contentType = { "entry" }) { result ->
                     val card = result.parentCard()
-                    val category = OrganizedSettingsCategories.first { it.id == card.categoryId() }
                     GlobalPageCard(testTag = "settings_result_entry_${result.id}") {
                         OtherSettingsEntry(
-                            title = stringResource(result.labelRes),
-                            text = "${stringResource(category.labelRes)} › ${card.displayTitle(context)}",
+                            title = result.searchResultTitle(context),
+                            text = result.locationDescription(context),
                             icon = card.iconRes,
                             modifier = Modifier.clip(uiRoundnessShape()).testTag("settings_global_entry_${result.id}"),
                             onClick = {
@@ -287,7 +286,8 @@ internal fun GlobalPageItemRow(
             onClick = { onItemSelected(item) },
             titlePrefix = if (item == SettingsGlassItem) ({
                 HeaderBadgeBox(stringResource(R.string.beta_title), colorPalette().accent,
-                    modifier = Modifier.testTag("settings.glass.beta"))
+                    modifier = Modifier.testTag("settings.glass.beta"),
+                    glassSettings = app.n_zik.android.components.glass.rememberGlassSettings())
             }) else null,
         )
     } else {

@@ -62,7 +62,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
 import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.components.glass.CustomModalBottomSheet
-import app.n_zik.android.components.glass.glassChipBackground
+import app.n_zik.android.components.glass.GlassCustomChip
 import app.it.fast4x.rimusic.utils.discordAvatarKey
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
 import app.it.fast4x.rimusic.utils.discordUsernameKey
@@ -328,29 +328,26 @@ internal fun AccountsDiscordCard(search: Search) {
                                         1 -> previewMode == 0
                                         else -> previewMode == 1
                                     }
-                                    Text(
-                                        text = stringResource(labelRes),
-                                        style = typography().s.copy(
-                                            color = if (selected) chipPalette.onAccent else chipPalette.accent
-                                        ),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier
-                                            .clip(uiRoundnessShape())
-                                            .glassChipBackground(
-                                                if (selected) chipPalette.accent
-                                                else chipPalette.accent.copy(alpha = 0.15f),
-                                                uiRoundnessShape()
-                                            )
-                                            .clickable {
-                                                when (index) {
-                                                    0 -> previewMode = -1
-                                                    1 -> previewMode = if (previewMode == 0) -1 else 0
-                                                    else -> previewMode = if (previewMode == 1) -1 else 1
-                                                }
+                                    GlassCustomChip(
+                                        color = if (selected) chipPalette.accent else chipPalette.accent.copy(alpha = 0.15f),
+                                        onClick = {
+                                            when (index) {
+                                                0 -> previewMode = -1
+                                                1 -> previewMode = if (previewMode == 0) -1 else 0
+                                                else -> previewMode = if (previewMode == 1) -1 else 1
                                             }
-                                            .padding(horizontal = 10.dp, vertical = 4.dp)
-                                    )
+                                        },
+                                    ) { chipModifier ->
+                                        Text(
+                                            text = stringResource(labelRes),
+                                            style = typography().s.copy(
+                                                color = if (selected) chipPalette.onAccent else chipPalette.accent
+                                            ),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = chipModifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                        )
+                                    }
                                 }
                             }
 
@@ -1119,15 +1116,13 @@ private fun DiscordTemplateFieldDialog(
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             DiscordTemplateRenderer.PLACEHOLDERS.forEach { placeholder ->
-                Text(
-                    text = placeholder,
-                    style = typography().s.copy(color = palette.accent),
-                    modifier = Modifier
-                        .clip(uiRoundnessShape())
-                        .clickable { text += placeholder }
-                        .glassChipBackground(palette.accent.copy(alpha = 0.15f), uiRoundnessShape())
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
-                )
+                GlassCustomChip(palette.accent.copy(alpha = 0.15f), onClick = { text += placeholder }) { chipModifier ->
+                    Text(
+                        text = placeholder,
+                        style = typography().s.copy(color = palette.accent),
+                        modifier = chipModifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                    )
+                }
             }
         }
 
@@ -1589,17 +1584,16 @@ private fun DiscordRpcPreviewCard(
                             content.buttons.forEach { button ->
                                 // Tap = open the button link in the external browser (the
                                 // real Discord buttons open the same URL).
-                                Text(
-                                    text = button.label,
-                                    style = typography().s.copy(color = Color.White),
-                                    modifier = Modifier
-                                        .clip(uiRoundnessShape())
-                                        .glassChipBackground(palette.accent.copy(alpha = 0.15f), uiRoundnessShape())
-                                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                                        .clickable { cardContext.openDiscordButtonUrl(button.url) },
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+                                GlassCustomChip(palette.accent.copy(alpha = 0.15f),
+                                    onClick = { cardContext.openDiscordButtonUrl(button.url) }) { chipModifier ->
+                                    Text(
+                                        text = button.label,
+                                        style = typography().s.copy(color = Color.White),
+                                        modifier = chipModifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
                             }
                         }
                     }

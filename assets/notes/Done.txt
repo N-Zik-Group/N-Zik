@@ -174,3 +174,6 @@ Added:
 
 - feat(ui): complete profile rewind and onboarding Glass surfaces
   - Share avatar contours, Rewind actions and onboarding presentation while preserving scrolling.
+
+- feat(settings): organize Glass customization and pinned previews
+  - Group destination choices and global Ripple/Jelly controls, animate dependent options and retain ON/OFF previews.

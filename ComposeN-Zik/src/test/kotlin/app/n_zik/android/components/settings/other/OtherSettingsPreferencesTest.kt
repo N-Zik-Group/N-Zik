@@ -16,8 +16,10 @@ import app.it.fast4x.rimusic.utils.proxyUsernameKey
 import app.it.fast4x.rimusic.utils.regionOverrideKey
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.it.fast4x.rimusic.utils.showFoldersOnDeviceKey
+import it.fast4x.innertube.Innertube
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
@@ -30,11 +32,14 @@ import java.net.Proxy
 @Config(sdk = [33], application = Application::class)
 class OtherSettingsPreferencesTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
+    private var originalRegion = ""
+    private var originalRegionActive = false
     private val expected = mapOf<String, Any>(
         isProxyEnabledKey to false,
         proxyHostnameKey to "",
         proxyPortKey to 1080,
         proxyModeKey to Proxy.Type.HTTP.name,
+        regionOverrideKey to "",
         defaultFolderKey to "/",
         isKeepScreenOnEnabledKey to false,
         showFoldersOnDeviceKey to true,
@@ -43,28 +48,42 @@ class OtherSettingsPreferencesTest {
     )
 
     @Before fun setUp() {
+        originalRegion = Innertube.regionOverride
+        originalRegionActive = Innertube.regionOverrideActive
         setActiveProfile("other-settings-test", context)
         context.preferences.edit().clear().commit()
     }
 
     @After fun tearDown() {
+        Innertube.regionOverrideActive = false
+        Innertube.regionOverride = originalRegion
+        Innertube.regionOverrideActive = originalRegionActive
         context.preferences.edit().clear().commit()
         setActiveProfile("default", context)
     }
 
-    @Test fun `reset writes only the nine active defaults and preserves retired preferences and non-reset proxy fields`() {
-        val retained = mapOf(proxyUsernameKey to "retained-user", regionOverrideKey to "FR", "unrelated" to "keep")
+    @Test fun `reset restores region and preserves retired preferences and proxy credentials`() {
+        val retained = mapOf(proxyUsernameKey to "retained-user", "proxyPasswordEncrypted" to "retained-encrypted", "unrelated" to "keep")
         context.preferences.edit().apply {
             retained.forEach { (key, value) -> putString(key, value) }
+            putString(regionOverrideKey, "FR")
             putBoolean("extraspace", true)
             putBoolean(isProxyEnabledKey, true)
             putInt(proxyPortKey, 9999)
             putBoolean(showFoldersOnDeviceKey, false)
         }.commit()
+        Innertube.regionOverride = "FR"
+        Innertube.regionOverrideActive = true
         applyOtherDefaults(context)
+        assertEquals("", Innertube.regionOverride)
+        assertFalse(Innertube.regionOverrideActive)
         assertEquals(expected + retained + ("extraspace" to true), context.preferences.all)
         context.preferences.edit().putInt(proxyPortKey, 42).commit()
+        Innertube.regionOverride = "FR"
+        Innertube.regionOverrideActive = true
         applyOtherDefaults(context)
+        assertEquals("", Innertube.regionOverride)
+        assertFalse(Innertube.regionOverrideActive)
         assertEquals(expected + retained + ("extraspace" to true), context.preferences.all)
     }
 

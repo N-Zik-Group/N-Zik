@@ -3,6 +3,7 @@ package app.n_zik.android.components.settings.common
 import android.content.Context
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.ui.glassDestinationKeywordResources
 
 /** Global row for a category, compatibility tab or dedicated route; descriptions feed search. */
 data class SettingsPageItem(
@@ -51,7 +52,7 @@ val SettingsGlassItem = SettingsPageItem(
         R.string.glass_rim, R.string.glass_refraction_depth, R.string.glass_refraction_amount,
         R.string.glass_dispersion, R.string.glass_depth, R.string.glass_where_bar,
         R.string.glass_where_mini_player, R.string.glass_where_header, R.string.glass_where_menus,
-    ),
+    ) + glassDestinationKeywordResources(),
 )
 
 val SettingsCategories: List<SettingsPageItem> = listOf(

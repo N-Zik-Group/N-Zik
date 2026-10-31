@@ -1,6 +1,15 @@
 package app.n_zik.android.components.settings.common
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.onClick as semanticsOnClick
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -21,6 +30,11 @@ import app.it.fast4x.rimusic.utils.color
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.components.ui.iconBadgeBackground
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassControlOverflowColumn
+import app.n_zik.android.components.glass.glassOverflowFade
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
@@ -40,7 +54,7 @@ import androidx.compose.ui.unit.dp
  * Animated settings card with an icon header and a content block.
  * Hidden cards collapse to zero height so sibling cards slide instead of jumping.
  */
-@Suppress("UNUSED_PARAMETER") // Kept for source compatibility; cards display titles only.
+// Descriptions remain opt-in for collapsible headers; normal section cards retain their layout.
 @Composable
 fun SettingsSectionCard(
     title: String,
@@ -48,7 +62,10 @@ fun SettingsSectionCard(
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     description: String? = null,
-    visible: Boolean = true
+    visible: Boolean = true,
+    expanded: Boolean? = null,
+    onHeaderClick: (() -> Unit)? = null,
+    headerModifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val highlighted = LocalSettingsTargets.current?.highlighted
@@ -65,64 +82,105 @@ fun SettingsSectionCard(
         if (visible) Column(modifier = modifier.fillMaxWidth()) { content() }
         return
     }
-    AnimatedVisibility(
-        visible = visible,
-        enter = settingsCardEnter,
-        exit = settingsCardExit
-    ) {
-        Column(modifier = modifier.fillMaxWidth()) {
-            SettingsCardSurface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                shape = uiRoundnessShape(),
-                containerColor = containerColor,
-                backgroundColor = colorPalette().background0,
-                shadowColor = colorPalette().accent.copy(alpha = 0.2f),
-                shadowElevation = 4.dp
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
+    val overflow = rememberGlassSettings().usesGlassMaterial(GlassArea.ActionButtons)
+    val chevronRotation by animateFloatAsState(
+        targetValue = if (expanded == true) 90f else 0f,
+        animationSpec = tween(300), label = "settingsSectionExpansion",
+    )
+    GlassControlOverflowColumn {
+        AnimatedVisibility(
+            visible = visible,
+            enter = if (overflow) settingsCardOverflowEnter else settingsCardEnter,
+            exit = if (overflow) settingsCardOverflowExit else settingsCardExit
+        ) {
+            Column(modifier = modifier.fillMaxWidth().then(if (overflow) glassOverflowFade(400, 200) else Modifier)) {
+                SettingsCardSurface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    shape = uiRoundnessShape(),
+                    containerColor = containerColor,
+                    backgroundColor = colorPalette().background0,
+                    shadowColor = colorPalette().accent.copy(alpha = 0.2f),
+                    shadowElevation = 4.dp
                 ) {
-                    // Section Header
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(bottom = 12.dp)
+                    Column(
+                        modifier = Modifier.padding(16.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .iconBadgeBackground(
-                                    color = colorPalette().accent.copy(alpha = 0.1f),
-                                    shape = uiRoundnessShape()
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                painter = painterResource(icon),
-                                tint = colorPalette().accent,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
+                        // Clip only the empty click/ripple skin. A header's 32dp icon
+                        // sits at x=0; clipping its Row to the taller expanded header's
+                        // corner would cut the icon even though its own badge is round.
+                        Box(Modifier.fillMaxWidth().then(headerModifier).semantics(mergeDescendants = true) {
+                            if (onHeaderClick != null) semanticsOnClick { onHeaderClick(); true }
+                        }) {
+                            if (onHeaderClick != null) Box(Modifier.matchParentSize()
+                                .clearAndSetSemantics { }.clip(uiRoundnessShape())
+                                .clickable(onClick = onHeaderClick))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                                    .padding(bottom = if (expanded == false) 0.dp else 12.dp),
+                            ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp).testTag("settings.section.header.icon")
+                                    .iconBadgeBackground(
+                                        color = colorPalette().accent.copy(alpha = 0.1f),
+                                        shape = uiRoundnessShape()
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(icon),
+                                    tint = colorPalette().accent,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Column(Modifier.weight(1f)) {
+                                BasicText(
+                                    text = displayTitle,
+                                    style = typography().xs.semiBold.copy(color = colorPalette().accent),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                if (expanded != null && !description.isNullOrEmpty()) {
+                                    Spacer(Modifier.height(2.dp))
+                                    BasicText(
+                                        text = description,
+                                        style = typography().xxs.secondary.copy(color = colorPalette().textSecondary),
+                                        maxLines = 2, overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                            }
+                            if (expanded != null) {
+                                Spacer(Modifier.width(8.dp))
+                                Icon(
+                                    painter = painterResource(R.drawable.chevron_forward),
+                                    tint = colorPalette().textSecondary, contentDescription = null,
+                                    modifier = Modifier.size(16.dp).graphicsLayer(rotationZ = chevronRotation),
+                                )
+                            }
+                            }
                         }
 
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        BasicText(
-                            text = displayTitle,
-                            style = typography().xs.semiBold.copy(
-                                color = colorPalette().accent
-                            ),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        // Reuse the same native/Glass expansion policy as the settings cards.
+                        if (expanded == null) content() else AnimatedVisibility(
+                            visible = expanded,
+                            enter = if (overflow) settingsCardOverflowEnter else settingsCardEnter,
+                            exit = if (overflow) settingsCardOverflowExit else settingsCardExit,
+                        ) {
+                            Column(Modifier.then(if (overflow) glassOverflowFade(400, 200) else Modifier)) {
+                                content()
+                            }
+                        }
                     }
-
-                    // Content
-                    content()
                 }
+                Spacer(modifier = Modifier.height(16.dp))
             }
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

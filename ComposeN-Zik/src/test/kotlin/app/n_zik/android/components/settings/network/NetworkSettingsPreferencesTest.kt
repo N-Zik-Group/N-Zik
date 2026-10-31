@@ -37,7 +37,7 @@ class NetworkSettingsPreferencesTest {
         "audioQualityFormat" to "Auto",
         "downloadQualityFormat" to "Auto",
         "imageQualityFormat" to "Auto",
-        "navigationBarPosition" to "BottomFloating",
+        "fullOfflineModeEnabled" to false,
         "stream_client_restart_needed" to false,
         "stream_client_web_remix" to true,
         "stream_client_android_vr" to true,
@@ -51,7 +51,7 @@ class NetworkSettingsPreferencesTest {
                 is String -> editor.putString(key, "changed")
             }
         }
-        editor.putBoolean("fullOfflineModeEnabled", true).putString("unrelated", "keep").commit()
+        editor.putString("navigationBarPosition", "Left").putString("unrelated", "keep").commit()
         store("preferences_untouched").edit().putString("audioQualityFormat", "High").commit()
         val legacyEditor = store("preferences").edit()
         clients.forEach { legacyEditor.putBoolean("stream_client_$it", false) }
@@ -63,7 +63,8 @@ class NetworkSettingsPreferencesTest {
         defaults.forEach { (key, expected) -> assertEquals(key, expected, context.preferences.all[key]) }
         clients.forEach { assertEquals(it, true, store("preferences").all["stream_client_$it"]) }
         assertEquals(clients.joinToString(prefix = "[", postfix = "]", separator = ",") { "\"$it\"" }, store("preferences").getString("streamClientsOrder", null))
-        assertTrue(context.preferences.getBoolean("fullOfflineModeEnabled", false))
+        assertEquals(false, context.preferences.getBoolean("fullOfflineModeEnabled", true))
+        assertEquals("Left", context.preferences.getString("navigationBarPosition", null))
         assertEquals("keep", context.preferences.getString("unrelated", null))
         assertEquals("High", store("preferences_untouched").getString("audioQualityFormat", null))
         assertEquals(globalBefore, store("app_settings").all)

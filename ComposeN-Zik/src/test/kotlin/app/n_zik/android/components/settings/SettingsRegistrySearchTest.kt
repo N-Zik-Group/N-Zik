@@ -2,6 +2,7 @@ package app.n_zik.android.components.settings
 
 import android.app.Application
 import android.content.Context
+import android.content.res.Configuration
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.n_zik.android.R
@@ -20,6 +21,8 @@ import app.n_zik.android.components.settings.common.isGlassSettingsLink
 import app.n_zik.android.components.settings.common.searchSettingsCards
 import app.n_zik.android.components.settings.common.searchSettingsPageItems
 import app.n_zik.android.components.settings.common.visibleCardTitleRes
+import app.n_zik.android.components.settings.ui.glassDestinationKeywordResources
+import java.util.Locale
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -66,6 +69,32 @@ class SettingsRegistrySearchTest {
         }
         assertTrue(!isGlassSettingsLink(1, "burger"))
         assertTrue(!isGlassSettingsLink(0, "glass"))
+    }
+
+    @Test
+    fun everyVisibleGlassDestinationAndRoleFindsTheDedicatedPage() {
+        listOf(Locale.ENGLISH, Locale.FRENCH).forEach { locale ->
+            val localized = context.createConfigurationContext(
+                Configuration(context.resources.configuration).apply { setLocale(locale) },
+            )
+            glassDestinationKeywordResources().forEach { label ->
+                val query = localized.getString(label)
+                assertTrue("$locale: $query must find the Glass page",
+                    searchSettingsPageItems(localized, query).contains(SettingsGlassItem))
+            }
+        }
+    }
+
+    @Test
+    fun contextualGlassQueriesFindThePageWithoutRequiringTheWordGlass() {
+        val english = context.createConfigurationContext(
+            Configuration(context.resources.configuration).apply { setLocale(Locale.ENGLISH) },
+        )
+        listOf("Temporary messages", "information panel", "Visualizer", "First launch").forEach { query ->
+            val results = searchSettingsPageItems(english, query)
+            assertEquals(query, listOf(SettingsGlassItem), results)
+            assertEquals(SETTINGS_GLASS_ROUTE, results.single().route)
+        }
     }
 
     @Test
