@@ -250,7 +250,6 @@
     <string name="disable_vertical_swipe">Deaktivér sangskift via lodret stryg</string>
     <string name="disable_vertical_swipe_secondary">Virker kun, når Udvidet Afspiller er slået fra</string>
     <string name="disable_song_switching_via_swipe">Deaktivér sangskift via stryg</string>
-    <string name="interface_in_use">Grænseflade i brug</string>
     <string name="user_interface">Brugergrænseflade</string>
     <string name="ui_tab">UI</string>
     <string name="system_language">Systemsprog</string>
@@ -532,7 +531,6 @@
     <string name="last_week">Sidste uge</string>
     <string name="by_casual_played_song">Efter Tilfældigt afspillet sang</string>
     <string name="theme_material_you">Material You</string>
-    <string name="show_statistics_in_navigation_bar">Vis statistikker i navigationslinjen</string>
     <string name="settings">Indstillinger</string>
     <string name="page_not_been_loaded">Siden blev ikke indlæst korrekt. Prøv at opdatere siden.</string>
     <string name="info_show_hide_hidden_songs">Vis/skjul skjulte sange</string>
@@ -587,8 +585,6 @@
     <string name="bg_colors_background_from_theme">Baggrund fra tema</string>
     <string name="bg_colors_gradient_background_from_cover">Gradientbaggrund fra cover</string>
     <string name="bg_colors_gradient_background_from_theme">Gradientbaggrund fra tema</string>
-    <string name="vimusic_show_search_button_in_navigation_bar">Vis søgeknap i navigationslinje</string>
-    <string name="vismusic_only_in_left_right_navigation_bar">Kun for ViMusic UI-tilstand i venstre/højre navigationslinje</string>
     <string name="info_no_songs_yet">Ingen sange endnu</string>
     <string name="theme_customized">Tilpasset</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">Vil du virkelig nulstille de tilpassede farver for lyst tema?</string>
@@ -764,9 +760,6 @@
     <string name="carouselsize">Miniaturestørrelse i udvidet tilstand</string>
     <string name="addednext">Afspilles som næste</string>
     <string name="autosync">Auto-synkroniser importerede playlister</string>
-    <string name="message_type">Beskedtype</string>
-    <string name="message_type_modern">Moderne</string>
-    <string name="message_type_essential">Grundlæggende</string>
     <string name="songs_number_to_show">Sangnumre at vise</string>
     <string name="player_pause_on_volume_zero">Pause ved nul lydstyrke</string>
     <string name="info_pauses_player_when_volume_zero">Pauser afspilleren, når lydstyrken er på 0, og genoptager, når den er højere end 0</string>

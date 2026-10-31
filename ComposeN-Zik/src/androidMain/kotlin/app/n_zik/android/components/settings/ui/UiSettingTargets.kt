@@ -32,7 +32,6 @@ import app.it.fast4x.rimusic.utils.hideStatusBarKey
 import app.it.fast4x.rimusic.utils.indexNavigationTabKey
 import app.it.fast4x.rimusic.utils.isSwipeToActionEnabledKey
 import app.it.fast4x.rimusic.utils.menuStyleKey
-import app.it.fast4x.rimusic.utils.messageTypeKey
 import app.it.fast4x.rimusic.utils.navigationBarPositionKey
 import app.it.fast4x.rimusic.utils.navigationBarTypeKey
 import app.it.fast4x.rimusic.utils.playerPositionKey
@@ -43,10 +42,7 @@ import app.it.fast4x.rimusic.utils.queueSwipeRightActionKey
 import app.it.fast4x.rimusic.utils.rememberQueueScrollPositionKey
 import app.it.fast4x.rimusic.utils.searchDisplayOrderKey
 import app.it.fast4x.rimusic.utils.showFloatingIconKey
-import app.it.fast4x.rimusic.utils.showSearchTabKey
-import app.it.fast4x.rimusic.utils.showStatsInNavbarKey
 import app.it.fast4x.rimusic.utils.transitionEffectKey
-import app.it.fast4x.rimusic.utils.UiTypeKey
 import app.it.fast4x.rimusic.utils.useSystemFontKey
 
 /** Local inventory only; it does not activate global search or change navigation. */
@@ -54,7 +50,6 @@ internal object UiSettingTargets {
     val cards: List<UiCardTargets> = listOf(
         UiCardTargets("ui.card.theme",
             preferenceKeys = listOf(
-                UiTypeKey,
                 colorPaletteNameKey,
                 customColorKey,
                 customThemeLight_Background0Key,
@@ -90,13 +85,10 @@ internal object UiSettingTargets {
                 navigationBarTypeKey,
                 playerPositionKey,
                 menuStyleKey,
-                messageTypeKey,
                 indexNavigationTabKey,
                 transitionEffectKey,
                 disableNavigationBackStackKey,
                 searchDisplayOrderKey,
-                showSearchTabKey,
-                showStatsInNavbarKey,
                 showFloatingIconKey,
                 rememberQueueScrollPositionKey,
             ),

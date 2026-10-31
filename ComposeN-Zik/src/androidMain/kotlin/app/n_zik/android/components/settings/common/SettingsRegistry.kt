@@ -156,13 +156,13 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
         keywordRes = listOf(R.string.settings_reset, R.string.settings_restore_default_settings)),
     // Tab 1 - UI
     SettingsCardRegistryEntry(1, R.string.theme, R.drawable.color_palette,
-        keywordRes = listOf(R.string.theme, R.string.interface_in_use, R.string.theme_mode)),
+        keywordRes = listOf(R.string.theme, R.string.theme_mode)),
     SettingsCardRegistryEntry(1, R.string.user_interface, R.drawable.ui,
         keywordRes = listOf(
             R.string.hide_status_bar,
             R.string.search_display_order, R.string.search_history_pages, R.string.search_history_pages_description, R.string.navigation_bar_position,
             R.string.navigation_bar_type, R.string.player_position, R.string.menu_style,
-            R.string.message_type, R.string.home_tabs_settings, R.string.default_page,
+            R.string.home_tabs_settings, R.string.default_page,
             R.string.transition_effect,
         )),
     SettingsCardRegistryEntry(1, R.string.settings_use_font_type, R.drawable.text,

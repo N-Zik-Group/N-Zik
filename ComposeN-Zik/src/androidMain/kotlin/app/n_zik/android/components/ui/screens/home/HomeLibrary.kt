@@ -106,7 +106,6 @@ import app.n_zik.android.components.glass.GlassFloatingActions
 import app.n_zik.android.components.glass.glassFloatingActionContent
 import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
 import app.it.fast4x.rimusic.enums.PlaylistsType
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.models.Playlist
 import app.it.fast4x.rimusic.models.PlaylistPreview
 import app.n_zik.android.components.glass.GlassToolbarButtons

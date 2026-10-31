@@ -22,7 +22,6 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.isEditable
@@ -56,6 +55,7 @@ import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.it.fast4x.rimusic.utils.hideStatusBarKey
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.n_zik.android.components.dialog.common.RestartAppDialog
+import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
 import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.Dependencies
@@ -77,7 +77,7 @@ class UiSettingsWiringTest {
         uiRoundnessShape = CircleShape,
         artistThumbnailShape = CircleShape,
     )
-    private val cardIds = listOf("interface", "theme", "font", "swipe", "home-tabs", "burger", "toolbars", "sort-menus", "reset")
+    private val cardIds = listOf("interface", "floating-dock", "theme", "font", "swipe", "home-tabs", "burger", "toolbars", "sort-menus", "reset")
 
     @Before fun setUp() {
         searchMessages.clear()
@@ -217,21 +217,24 @@ class UiSettingsWiringTest {
         assertTrue("Burger customization control must be visible after the measured focus scroll", visible)
     }
 
-    @Test fun `selecting interface mode requests the existing restart dialog`() {
-        composeRule.mainClock.autoAdvance = false
+    @Test fun `retired presentation selectors are absent and player preferences remain unchanged`() {
+        val preferences = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val stored = mapOf(
+            "playerType" to "Modern",
+            "playerTimelineType" to "AudioWaves",
+            "playerPlayButtonType" to "Disabled",
+        )
+        preferences.edit().apply {
+            stored.forEach { (key, value) -> putString(key, value) }
+            putBoolean(glassEnabledKey, true)
+        }.commit()
+
         show()
-        settleDialogFrames()
-        composeRule.onNode(isEditable()).performTextInput(context.getString(R.string.interface_in_use))
-        settleDialogFrames()
-        composeRule.onNode(isEditable()).performImeAction()
-        settleDialogFrames()
-        composeRule.onNode(isEditable()).assertIsNotFocused()
-        composeRule.onNode(hasText(context.getString(R.string.interface_in_use)) and !isEditable()).performScrollTo().performClick()
-        settleDialogFrames()
-        composeRule.onNodeWithText("ViMusic").performClick()
-        settleDialogFrames()
-        assertTrue(RestartAppDialog.isActive)
-        assertEquals("ViMusic", context.getSharedPreferences("preferences", Context.MODE_PRIVATE).getString("UiType", null))
+
+        composeRule.onNodeWithText("ViMusic").assertDoesNotExist()
+        composeRule.onNodeWithTag("settings.target.ui.theme.interface_in_use", useUnmergedTree = true).assertDoesNotExist()
+        composeRule.onNodeWithTag("settings.target.ui.user_interface.message_type", useUnmergedTree = true).assertDoesNotExist()
+        assertEquals(stored + mapOf(glassEnabledKey to true), preferences.all)
     }
 
     @Test fun `reset action is not repeated by recomposition`() {

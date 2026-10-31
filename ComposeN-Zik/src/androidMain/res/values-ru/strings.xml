@@ -250,7 +250,6 @@
     <string name="disable_vertical_swipe">Отключить переключение песен с помощью вертикального свайпа</string>
     <string name="disable_vertical_swipe_secondary">Действует только тогда, когда расширенный плеер выключен.</string>
     <string name="disable_song_switching_via_swipe">Отключить переключение треков свайпом</string>
-    <string name="interface_in_use">Используемый интерфейс</string>
     <string name="user_interface">Пользовательский интерфейс</string>
     <string name="ui_tab">Интерфейс</string>
     <string name="system_language">Системный язык</string>
@@ -532,7 +531,6 @@
     <string name="last_week">Прошлая неделя</string>
     <string name="by_casual_played_song">Случайный</string>
     <string name="theme_material_you">Material You</string>
-    <string name="show_statistics_in_navigation_bar">Показывать статистику в панели навигации</string>
     <string name="settings">Настройки</string>
     <string name="page_not_been_loaded">Не удается загрузить страницу, проведите вниз для обновления.</string>
     <string name="info_show_hide_hidden_songs">Показать/скрыть скрытые песни</string>
@@ -587,8 +585,6 @@
     <string name="bg_colors_background_from_theme">Совпадение темы</string>
     <string name="bg_colors_gradient_background_from_cover">Градиент из обложки песен</string>
     <string name="bg_colors_gradient_background_from_theme">Градиент из темы</string>
-    <string name="vimusic_show_search_button_in_navigation_bar">Показывать кнопку поиска на панели навигации</string>
-    <string name="vismusic_only_in_left_right_navigation_bar">Только для левой или правой панели навигации в ViMusic UI</string>
     <string name="info_no_songs_yet">Нет доступных песен</string>
     <string name="theme_customized">Пользовательская</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">Вы действительно хотите сбросить пользовательские цвета светлой темы?</string>
@@ -764,9 +760,6 @@
     <string name="carouselsize">Размер миниатюры в расширенном режиме</string>
     <string name="addednext">Добавлено в очередь</string>
     <string name="autosync">Автоматически импортировать синхронизированные плейлисты</string>
-    <string name="message_type">Popup message style</string>
-    <string name="message_type_modern">Современное</string>
-    <string name="message_type_essential">Основное</string>
     <string name="songs_number_to_show">Треки отображаются</string>
     <string name="player_pause_on_volume_zero">Пауза при нулевой громкости</string>
     <string name="info_pauses_player_when_volume_zero">Приостановить песню, когда громкость достигнет 0 и возобновить ее, когда громкость больше 0</string>

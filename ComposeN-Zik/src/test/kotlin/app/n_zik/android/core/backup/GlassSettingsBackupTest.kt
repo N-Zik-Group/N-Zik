@@ -97,4 +97,68 @@ class GlassSettingsBackupTest {
         assertEquals("kept", plain.getString("before", null))
         assertEquals(9f, glass.getFloat(glassBlurKey, 0f), 0f)
     }
+
+    @Test fun `shared export excludes retired selectors while preserving player and Glass choices`() {
+        plain.edit().putString("UiType", "ViMusic").putString("messageType", "Essential")
+            .putString("playerType", "Essential").putBoolean("showSearchTab", false).commit()
+        glass.edit().putFloat(glassBlurKey, 12f).commit()
+
+        val entries = SettingsPreferencesBridge.export(context, plain)
+
+        assertFalse(entries.any { it.second == "UiType" || it.second == "messageType" })
+        assertTrue(entries.contains(Triple("String", "playerType", "Essential")))
+        assertTrue(entries.contains(Triple("Boolean", "showSearchTab", false)))
+        assertTrue(entries.any { SettingsPreferencesBridge.isGlassRecord(it.first) })
+        assertEquals(12f, glass.getFloat(glassBlurKey, 0f), 0f)
+        // Export is a snapshot; cleaning the source store belongs to profile access/import.
+        assertEquals("ViMusic", plain.getString("UiType", null))
+    }
+
+    @Test fun `old profile CSV cannot restore selectors and preserves unrelated values and credentials`() {
+        RescueFiles.setRescueProfile("retired_profile")
+        val profile = context.getSharedPreferences("preferences_retired_profile", Context.MODE_PRIVATE)
+        profile.edit().clear().putString("UiType", "ViMusic").putString("messageType", "Essential")
+            .putString("untouched", "kept").commit()
+        glass.edit().putFloat(glassBlurKey, 12f).commit()
+        val file = uri("retired-profile.csv")
+        File(requireNotNull(file.path)).writeText(
+            "Type,Key,Value\nString,UiType,ViMusic\nString,messageType,invalid\n" +
+                "String,playerType,Essential\nBoolean,showSearchTab,false\nString,ytCookie,credential\n"
+        )
+
+        assertTrue(RescueFiles.importSettings(context, file, Result.success(credentials)).isSuccess)
+
+        assertFalse(profile.contains("UiType"))
+        assertFalse(profile.contains("messageType"))
+        assertEquals("Essential", profile.getString("playerType", null))
+        assertFalse(profile.getBoolean("showSearchTab", true))
+        assertEquals("kept", profile.getString("untouched", null))
+        assertEquals("credential", credentials.getString(ytCookieKey, null))
+        assertFalse(profile.contains(ytCookieKey))
+        assertEquals(12f, glass.getFloat(glassBlurKey, 0f), 0f)
+        assertFalse(SettingsPreferencesBridge.export(context, profile).any {
+            it.second == "UiType" || it.second == "messageType"
+        })
+    }
+
+    @Test fun `CSV containing only retired selectors succeeds as cleanup without resetting settings`() {
+        plain.edit().putString("UiType", "ViMusic").putString("messageType", "Modern")
+            .putBoolean("persistentQueue", true).commit()
+        val file = uri("retired-only.csv")
+        File(requireNotNull(file.path)).writeText("Type,Key,Value\nString,UiType,invalid\nString,messageType,Essential\n")
+
+        assertTrue(RescueFiles.importSettings(context, file).isSuccess)
+        assertEquals(mapOf("persistentQueue" to true), plain.all)
+    }
+
+    @Test fun `retired selectors are cleaned when remaining credentials cannot be restored`() {
+        plain.edit().putString("UiType", "ViMusic").putBoolean("persistentQueue", true).commit()
+        val file = uri("retired-with-unavailable-credentials.csv")
+        File(requireNotNull(file.path)).writeText("Type,Key,Value\nString,UiType,invalid\nString,ytCookie,credential\n")
+
+        val outcome = RescueFiles.importSettings(context, file).getOrThrow()
+
+        assertTrue(outcome.encryptedSkipped)
+        assertEquals(mapOf("persistentQueue" to true), plain.all)
+    }
 }

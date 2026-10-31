@@ -35,12 +35,10 @@ import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.NavigationBarType
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.Typography
-import app.it.fast4x.rimusic.utils.UiTypeKey
 import app.it.fast4x.rimusic.utils.navigationBarPositionKey
 import app.it.fast4x.rimusic.utils.navigationBarTypeKey
 import app.it.fast4x.rimusic.utils.preferences
@@ -73,7 +71,7 @@ class NavigationTabPresenceTest {
     @Before fun setUp() {
         context = ApplicationProvider.getApplicationContext()
         setActiveProfile("default", context)
-        context.preferences.edit().clear().putString(UiTypeKey, UiType.RiMusic.name)
+        context.preferences.edit().clear()
             .putString(navigationBarTypeKey, NavigationBarType.IconAndText.name).commit()
         // Isolate glyph opacity from the selector wash, which moves when its tab is removed.
         context.getSharedPreferences("nzik_square_glass_v2", Context.MODE_PRIVATE).edit().clear()

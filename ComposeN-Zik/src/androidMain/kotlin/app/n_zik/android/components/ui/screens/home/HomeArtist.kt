@@ -110,7 +110,6 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.it.fast4x.rimusic.enums.ArtistsType
 import app.it.fast4x.rimusic.enums.FilterBy
 import app.it.fast4x.rimusic.enums.SortOrder
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.n_zik.android.components.glass.GlassToolbarButtons

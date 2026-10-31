@@ -15,7 +15,6 @@ import app.n_zik.android.components.player.TOP_NAV_BAR_HEIGHT
 import androidx.compose.runtime.CompositionLocalProvider
 import app.it.fast4x.rimusic.ui.components.navigation.nav.LocalIsManyButtons
 import app.n_zik.android.uiRoundnessShape
-
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
@@ -66,7 +65,6 @@ import app.n_zik.android.surfaceColor
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.NavigationBarType
-import app.it.fast4x.rimusic.enums.UiType
 import app.n_zik.android.showSearchIconInNav
 import app.n_zik.android.showStatsIconInNav
 import app.it.fast4x.rimusic.ui.components.themed.Button
@@ -241,7 +239,6 @@ class HorizontalNavigationBar(
         val unifiedTopSurface = (LocalSharedHomeHeaderGlass.current
             ?.takeIf { it.topNavigation && it.owner != null }?.surface
             ?: LocalUnifiedTopGlassSurface.current).takeIf { NavigationBarPosition.Top.isCurrent() }
-        val showSearch = shouldShowSearchShortcut(currentSearchShortcutRoute(navController))
 
         val isFloating = NavigationBarPosition.BottomFloating.isCurrent()
         val isIconOnly = NavigationBarType.IconOnly.isCurrent()
@@ -293,7 +290,6 @@ class HorizontalNavigationBar(
                 top = isTop,
             ) { tabsModifier, backdrop ->
                 Row(tabsModifier, verticalAlignment = Alignment.CenterVertically) {
-                    if (UiType.ViMusic.isCurrent() && NavRoutes.home.isNotHere(navController)) BackButton().Draw()
                     Box(Modifier.weight(1f).fillMaxSize()) {
                         if (useGlass) GlassNavigationTabs(
                             selectedIndex = tabIndex, indices = indices, onTabChanged = onTabChanged,
@@ -316,7 +312,6 @@ class HorizontalNavigationBar(
                             }
                         }
                     }
-                    if (UiType.ViMusic.isCurrent()) SettingsButton().Draw()
                 }
             }
             return
@@ -354,10 +349,6 @@ class HorizontalNavigationBar(
                     else -> bottomNavigationBarShape(uiRoundnessShape())
                 }
 
-                // Settings button only visible when
-                // UI is not RiMusic and current location isn't home screen
-                if( UiType.ViMusic.isCurrent() && NavRoutes.home.isNotHere( navController ) )
-                    BackButton().Draw()
 
                 val backgroundColor = surfaceColor(colorPalette().background1)
 
@@ -412,31 +403,10 @@ class HorizontalNavigationBar(
                     )
                 }
 
-                // Search button only visible when
-                // UI is not RiMusic and must be explicitly turned on
-                if( UiType.ViMusic.isCurrent() && showSearchIconInNav() && showSearch )
-                    SearchButton()
 
-                // Settings button only visible when
-                // UI is not RiMusic
-                if( UiType.ViMusic.isCurrent() )
-                    SettingsButton().Draw()
-
-                // Statistics button only visible when
-                // UI is not RiMusic and must be explicitly turned on
-                if( UiType.ViMusic.isCurrent() && showStatsIconInNav() )
-                    StatsButton()
             }
         }
     }
 }
-
-
-
-
-
-
-
-
 
 

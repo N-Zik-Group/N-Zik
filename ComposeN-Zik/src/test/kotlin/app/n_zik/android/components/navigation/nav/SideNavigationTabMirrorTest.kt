@@ -32,7 +32,6 @@ import androidx.navigation.NavController
 import app.it.fast4x.rimusic.enums.FontType
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.NavigationBarType
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
@@ -40,7 +39,6 @@ import app.it.fast4x.rimusic.ui.styling.Typography
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.it.fast4x.rimusic.utils.navigationBarPositionKey
 import app.it.fast4x.rimusic.utils.navigationBarTypeKey
-import app.it.fast4x.rimusic.utils.UiTypeKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.n_zik.android.Dependencies
@@ -155,7 +153,7 @@ class SideNavigationTabMirrorTest {
         context.preferences.edit()
             .putString(navigationBarPositionKey, NavigationBarPosition.Top.name)
             .putString(navigationBarTypeKey, NavigationBarType.IconAndText.name)
-            .putString(UiTypeKey, UiType.RiMusic.name)
+
             .putBoolean(glassEnabledKey, false).commit()
         val controller = mockk<NavController>(relaxed = true)
         compose.setContent {
@@ -194,7 +192,7 @@ class SideNavigationTabMirrorTest {
         context.preferences.edit()
             .putString(navigationBarPositionKey, NavigationBarPosition.BottomFloating.name)
             .putString(navigationBarTypeKey, NavigationBarType.IconAndText.name)
-            .putString(UiTypeKey, UiType.RiMusic.name)
+
             .putBoolean(glassEnabledKey, false).commit()
         val controller = mockk<NavController>(relaxed = true)
         val dock = FloatingDockEnvironment(FloatingDockState(), "home", true, mutableStateOf(0f), false)

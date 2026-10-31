@@ -1,7 +1,6 @@
 package app.it.fast4x.rimusic.ui.screens.album
 
 import app.n_zik.android.core.database.*
-
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -58,7 +57,6 @@ import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.PlayerPosition
 import app.it.fast4x.rimusic.enums.TransitionEffect
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.SongAlbumMap
 import app.it.fast4x.rimusic.utils.asMediaItem
@@ -69,7 +67,6 @@ import app.it.fast4x.rimusic.utils.transitionEffectKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
-
 import app.kreate.android.me.knighthat.utils.PropUtils
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import timber.log.Timber
@@ -194,7 +191,7 @@ fun AlbumScreen(
             modifier = Modifier.fillMaxSize()
                 //.background( colorPalette().background0 )
         ) {
-            val topPadding = if ( UiType.ViMusic.isCurrent() ) 30.dp else 0.dp
+            val topPadding = 0.dp
 
             AnimatedContent(
                     targetState = 0,
@@ -288,6 +285,5 @@ fun AlbumScreen(
         }
     }
 }
-
 
 

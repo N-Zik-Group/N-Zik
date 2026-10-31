@@ -250,7 +250,6 @@
     <string name="disable_vertical_swipe">Dezactivează trecerea melodiilor prin glisare verticală</string>
     <string name="disable_vertical_swipe_secondary">Afectează doar când \"Player-ul extins\" este oprit</string>
     <string name="disable_song_switching_via_swipe">Dezactivează schimbarea melodiei prin glisare</string>
-    <string name="interface_in_use">Interfața utilizată</string>
     <string name="user_interface">Interfața utilizatorului</string>
     <string name="ui_tab">Interfață</string>
     <string name="system_language">Limba sistemului</string>
@@ -532,7 +531,6 @@
     <string name="last_week">Săptămâna trecută</string>
     <string name="by_casual_played_song">Aleatoriu</string>
     <string name="theme_material_you">Material You</string>
-    <string name="show_statistics_in_navigation_bar">Afișează statisticile în bara de navigare</string>
     <string name="settings">Setări</string>
     <string name="page_not_been_loaded">Nu s-a putut încărca pagina, trage în jos pentru a reîmprospăta.</string>
     <string name="info_show_hide_hidden_songs">Afișează/ascunde melodiile ascunse</string>
@@ -587,8 +585,6 @@
     <string name="bg_colors_background_from_theme">Potrivește cu tema</string>
     <string name="bg_colors_gradient_background_from_cover">Gradient din coperta melodiei</string>
     <string name="bg_colors_gradient_background_from_theme">Gradient din tema</string>
-    <string name="vimusic_show_search_button_in_navigation_bar">Afișează butonul de căutare în bara de navigare</string>
-    <string name="vismusic_only_in_left_right_navigation_bar">Doar pentru bara de navigare din stânga sau dreapta în interfața ViMusic</string>
     <string name="info_no_songs_yet">Nu sunt melodii disponibile</string>
     <string name="theme_customized">Personalizat</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">Ești sigur că vrei să resetezi culorile personalizate ale temei luminoase?</string>
@@ -764,9 +760,6 @@
     <string name="carouselsize">Dimensiunea miniaturii în modul extins</string>
     <string name="addednext">Adăugat pentru redare următoare</string>
     <string name="autosync">Sincronizare automată a listelor de redare importate</string>
-    <string name="message_type">Stilul mesajului popup</string>
-    <string name="message_type_modern">Modern</string>
-    <string name="message_type_essential">Simplu</string>
     <string name="songs_number_to_show">Melodii afișate</string>
     <string name="player_pause_on_volume_zero">Pauză la volum zero</string>
     <string name="info_pauses_player_when_volume_zero">Pune melodia pe pauză când volumul ajunge la 0 și reia redarea când volumul este mai mare de 0</string>

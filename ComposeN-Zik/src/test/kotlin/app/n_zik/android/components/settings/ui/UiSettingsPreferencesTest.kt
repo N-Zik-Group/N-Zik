@@ -5,12 +5,12 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.compose.ui.graphics.Color
 import androidx.test.core.app.ApplicationProvider
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.DefaultLightColorPalette
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
-import app.it.fast4x.rimusic.utils.thumbnailSizeDpKey
+import app.n_zik.android.components.glass.glassEnabledKey
+import app.n_zik.android.components.settings.common.SettingsEntryTargets
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -21,7 +21,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-/** Reset expectations include audited first-run defaults and the original UI-type presets. */
+/** Reset expectations include audited defaults and supported presentation preferences. */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
 class UiSettingsPreferencesTest {
@@ -57,7 +57,6 @@ class UiSettingsPreferencesTest {
         "disableIconButtonOnTop" to false,
         "lastPlayerTimelineType" to "Default",
         "lastThumbnailSizeDp" to 30f,
-        "UiType" to "RiMusic",
         "disablePlayerHorizontalSwipe" to false,
         "lastPlayerPlayButtonType" to "Rectangular",
         "colorPaletteName" to "Dynamic",
@@ -99,7 +98,6 @@ class UiSettingsPreferencesTest {
         "customThemeDark_iconButtonPlayer" to DefaultDarkColorPalette.iconButtonPlayer.hashCode(),
         "customThemeDark_accent" to DefaultDarkColorPalette.accent.hashCode(),
         "playerPosition" to "Bottom",
-        "messageType" to "Modern",
         "showTopActionsBar" to true,
         "playerControlsType" to "Essential",
         "playerInfoType" to "Modern",
@@ -159,61 +157,6 @@ class UiSettingsPreferencesTest {
         "rememberQueueScrollPosition" to true,
     )
 
-    private val viMusic: Map<String, Any> = mapOf(
-        "UiType" to "ViMusic",
-        "disablePlayerHorizontalSwipe" to true,
-        "disableIconButtonOnTop" to true,
-        "playerTimelineType" to "AudioWaves",
-        "visualizerEnabled" to false,
-        "thumbnailSizeDpKey" to 30f,
-        "thumbnailTapEnabled" to true,
-        "showSearchTab" to true,
-        "showStatsInNavbar" to true,
-        "navigationBarPosition" to "Left",
-        "showTopActionsBar" to false,
-        "playerType" to "Modern",
-        "queueType" to "Modern",
-        "fadingedge" to false,
-        "carousel" to true,
-        "carouselSize" to "Medium",
-        "thumbnailType" to "Essential",
-        "playerTimelineSize" to "Medium",
-        "playerInfoShowIcons" to true,
-        "miniPlayerType" to "Modern",
-        "playerSwapControlsWithTimeline" to false,
-        "transparentBackgroundPlayerActionBar" to true,
-        "playerControlsType" to "Essential",
-        "playerPlayButtonType" to "Disabled",
-        "buttonzoomout" to true,
-        "iconLikeType" to "Essential",
-        "playerBackgroundColors" to "CoverColorGradient",
-        "blackgradient" to true,
-        "showTotalTimeQueue" to false,
-        "showRemainingSongTime" to false,
-        "showNextSongsInPlayer" to false,
-        "disableScrollingText" to false,
-        "effectRotation" to true,
-        "clickOnLyricsText" to true,
-        "playerEnableLyricsPopupMessage" to true,
-        "backgroundProgress" to "MiniPlayer",
-        "actionspacedevenly" to false,
-        "tapqueue" to false,
-        "swipeUpQueue" to true,
-        "showButtonPlayerDiscover" to false,
-        "showButtonPlayerDownload" to false,
-        "showButtonPlayerAddToPlaylist" to false,
-        "showButtonPlayerLoop" to false,
-        "showButtonPlayerShuffle" to false,
-        "showButtonPlayerLyrics" to false,
-        "expandedplayertoggle" to false,
-        "showButtonPlayerSleepTimer" to false,
-        "showButtonPlayerSystemEqualizer" to false,
-        "showButtonPlayerArrow" to true,
-        "showButtonPlayerMenu" to true,
-        "showthumbnail" to true,
-        "keepPlayerMinimized" to false,
-    )
-
     @Test fun `full reset restores baseline profile values and store boundaries`() {
         seedOpposite(context.preferences, fullReset)
         context.preferences.edit().putString("unrelated", "keep").putString("playerSwipeSensitivity", "High").commit()
@@ -238,32 +181,14 @@ class UiSettingsPreferencesTest {
         assertFalse(context.preferences.contains("burger_menu_order"))
     }
 
-    @Test fun `ViMusic applies exactly its baseline rewrite set in active profile`() {
-        seedOpposite(context.preferences, viMusic)
-        context.preferences.edit().putString("unrelated", "keep").commit()
-        applyUiType(context, UiType.ViMusic)
-        assertEquals(viMusic + mapOf("unrelated" to "keep"), context.preferences.all)
-        assertTrue(store("preferences").all.isEmpty())
-        assertTrue(store("app_settings").all.isEmpty())
-    }
+    @Test fun `reset does not recreate retired selectors or change Glass selection`() {
+        context.preferences.edit().putBoolean(glassEnabledKey, true).commit()
 
-    @Test fun `RiMusic restores only six values and preserves ViMusic side effects`() {
-        applyUiType(context, UiType.ViMusic)
-        val remembered = mapOf("lastPlayerTimelineType" to "Wavy", "lastThumbnailSizeDp" to 42f, "lastPlayerPlayButtonType" to "CircularRibbed")
-        context.preferences.edit().putString("lastPlayerTimelineType", "Wavy").putFloat("lastThumbnailSizeDp", 42f)
-            .putString("lastPlayerPlayButtonType", "CircularRibbed").commit()
-        applyUiType(context, UiType.RiMusic)
-        val riMusic = mapOf("UiType" to "RiMusic", "disablePlayerHorizontalSwipe" to false, "disableIconButtonOnTop" to false,
-            "playerTimelineType" to "Wavy", thumbnailSizeDpKey to 42f, "playerPlayButtonType" to "CircularRibbed", "navigationBarPosition" to "Bottom")
-        assertEquals(viMusic + remembered + riMusic, context.preferences.all)
-        assertTrue(store("preferences").all.isEmpty())
-        assertTrue(store("app_settings").all.isEmpty())
-    }
+        applyUiDefaults(context)
 
-    @Test fun `RiMusic uses baseline remembered-value defaults when absent`() {
-        applyUiType(context, UiType.RiMusic)
-        assertEquals(mapOf("UiType" to "RiMusic", "disablePlayerHorizontalSwipe" to false, "disableIconButtonOnTop" to false,
-            "playerTimelineType" to "Default", thumbnailSizeDpKey to 30f, "playerPlayButtonType" to "Rectangular", "navigationBarPosition" to "Bottom"), context.preferences.all)
+        assertFalse(context.preferences.contains("UiType"))
+        assertFalse(context.preferences.contains("messageType"))
+        assertTrue(context.preferences.getBoolean(glassEnabledKey, false))
     }
 
     @Test fun `palette reset changes exactly ten colors in selected palette and active profile`() {
@@ -283,9 +208,19 @@ class UiSettingsPreferencesTest {
         }
     }
 
+    @Test fun `global search has no retired presentation destinations`() {
+        val retiredIds = setOf(
+            "ui.theme.interface_in_use",
+            "ui.user_interface.message_type",
+            "ui.user_interface.vimusic_show_search_button_in_navigation_bar",
+            "ui.user_interface.show_statistics_in_navigation_bar",
+        )
+        assertTrue(SettingsEntryTargets.none { it.id in retiredIds })
+    }
+
     @Test fun `target inventory covers ten cards and stable unique setting and action identities`() {
         assertEquals(listOf("theme", "interface", "font", "swipe", "home-tabs", "sort-menus", "floating-dock", "toolbars", "burger", "reset"), UiSettingTargets.cards.map { it.id.removePrefix("ui.card.") })
-        assertEquals(listOf(24, 13, 4, 7, 0, 0, 1, 0, 0, 0), UiSettingTargets.cards.map { it.preferenceKeys.size })
+        assertEquals(listOf(23, 10, 4, 7, 0, 0, 1, 0, 0, 0), UiSettingTargets.cards.map { it.preferenceKeys.size })
         assertEquals(listOf(2, 2, 0, 0, 5, 6, 1, 5, 1, 1), UiSettingTargets.cards.map { it.actions.size })
         assertEquals(UiSettingTargets.ids.size, UiSettingTargets.ids.toSet().size)
         assertTrue(UiSettingTargets.ids.none { it.contains(' ') })

@@ -384,7 +384,6 @@ fun HomeQuickPicksContent(
             val showLivePerformances by rememberPreference(showLivePerformancesKey, true)
             val showMoods by rememberPreference(showMoodsKey, true)
             val showGenericYtmSections by rememberPreference(showGenericYtmSectionsKey, true)
-            val isViMusicUi = UiType.ViMusic.isCurrent()
 
             val hasYtmSection: (String) -> Boolean = { predicate ->
                 ytmSections.any { section ->
@@ -406,18 +405,6 @@ fun HomeQuickPicksContent(
                     Box(Modifier.padding(railPadding)) { WelcomeMessage() }
                 }
 
-                if (isViMusicUi) {
-                    item(key = "header") {
-                        HeaderWithIcon(
-                            title = if (!currentYouTubeLoggedIn) stringResource(R.string.quick_picks) else stringResource(R.string.home),
-                            iconId = R.drawable.search,
-                            enabled = true,
-                            showIcon = !showSearchTab,
-                            modifier = Modifier.padding(railPadding),
-                            onClick = onSearchClick
-                        )
-                    }
-                }
 
                 if (showTips) {
                     item(key = "quick_picks_header") {

@@ -92,7 +92,6 @@ import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.PlaylistSongSortBy
 import app.it.fast4x.rimusic.enums.RecommendationsNumber
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.models.SongPlaylistMap
 import app.n_zik.android.playback.services.isLocal

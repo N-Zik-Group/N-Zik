@@ -16,6 +16,7 @@ import app.n_zik.android.utils.FACE_SOURCE_PROFILE
 import kotlinx.serialization.json.Json
 import timber.log.Timber
 import androidx.compose.runtime.DisposableEffect
+import app.n_zik.android.core.migration.RemovedSettingsMigration
 
 const val mbCircuitOpenUntilKey = "mbCircuitOpenUntil"
 const val mbCircuitFailuresKey = "mbCircuitFailures"
@@ -91,7 +92,6 @@ const val searchResultScreenTabIndexKey = "searchResultScreenTabIndex"
 const val artistScreenTabIndexKey = "artistScreenTabIndex"
 const val pauseSearchHistoryKey = "pauseSearchHistory"
 const val searchDisplayOrderKey = "searchDisplayOrder"
-const val UiTypeKey = "UiType"
 const val disablePlayerHorizontalSwipeKey = "disablePlayerHorizontalSwipe"
 const val playerSwipeSensitivityKey = "playerSwipeSensitivity"
 const val disableIconButtonOnTopKey = "disableIconButtonOnTop"
@@ -449,7 +449,6 @@ const val excludeDislikedAlbumsKey = "excludeDislikedAlbums"
 const val logDebugEnabledKey = "logDebugEnabled"
 
 
-const val messageTypeKey = "messageType"
 const val isPauseOnVolumeZeroEnabledKey = "isPauseOnVolumeZeroEnabled"
 const val pauseOnHeadphoneDisconnectKey = "pauseOnHeadphoneDisconnect"
 const val playerInfoShowIconsKey = "playerInfoShowIcons"
@@ -561,7 +560,7 @@ inline fun <reified T : Enum<T>> SharedPreferences.Editor.putEnum(
 val Context.preferences: SharedPreferences
     get() = getSharedPreferences(getActiveProfile(applicationContext).let { profile ->
         "preferences${if (profile != "default") "_$profile" else ""}"
-    }, Context.MODE_PRIVATE)
+    }, Context.MODE_PRIVATE).also { RemovedSettingsMigration.run(it) }
 
 
 @Composable
@@ -783,7 +782,6 @@ fun rememberPreference(key: String, defaultValue: Int): MutableState<Int> {
 }
 
 
-
 @Composable
 fun rememberPreference(key: String, defaultValue: Float): MutableState<Float> {
     val context = LocalContext.current
@@ -951,6 +949,5 @@ inline fun <T> mutableStatePreferenceOf(
                 return areEquals
             }
         })
-
 
 

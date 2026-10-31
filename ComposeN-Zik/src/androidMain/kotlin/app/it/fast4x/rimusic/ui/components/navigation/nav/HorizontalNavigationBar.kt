@@ -2,7 +2,6 @@ package app.it.fast4x.rimusic.ui.components.navigation.nav
 
 import androidx.compose.runtime.CompositionLocalProvider
 import app.n_zik.android.uiRoundnessShape
-
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
@@ -39,7 +38,6 @@ import app.n_zik.android.surfaceColor
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.NavigationBarType
-import app.it.fast4x.rimusic.enums.UiType
 import app.n_zik.android.showSearchIconInNav
 import app.n_zik.android.showStatsIconInNav
 import app.it.fast4x.rimusic.ui.components.themed.Button
@@ -165,10 +163,6 @@ class HorizontalNavigationBar(
                     else -> topUiRoundnessShape()
                 }
 
-                // Settings button only visible when
-                // UI is not RiMusic and current location isn't home screen
-                if( UiType.ViMusic.isCurrent() && NavRoutes.home.isNotHere( navController ) )
-                    BackButton().Draw()
 
                 val backgroundColor = surfaceColor(colorPalette().background1)
 
@@ -203,31 +197,10 @@ class HorizontalNavigationBar(
                     )
                 }
 
-                // Search button only visible when
-                // UI is not RiMusic and must be explicitly turned on
-                if( UiType.ViMusic.isCurrent() && showSearchIconInNav() )
-                    SearchButton()
 
-                // Settings button only visible when
-                // UI is not RiMusic
-                if( UiType.ViMusic.isCurrent() )
-                    SettingsButton().Draw()
-
-                // Statistics button only visible when
-                // UI is not RiMusic and must be explicitly turned on
-                if( UiType.ViMusic.isCurrent() && showStatsIconInNav() )
-                    StatsButton()
             }
         }
     }
 }
-
-
-
-
-
-
-
-
 
 

@@ -24,7 +24,6 @@ import app.it.fast4x.rimusic.enums.MaxSongs
 import app.it.fast4x.rimusic.enums.MaxStatisticsItems
 import app.it.fast4x.rimusic.enums.MaxTopPlaylistItems
 import app.it.fast4x.rimusic.enums.MenuStyle
-import app.it.fast4x.rimusic.enums.MessageType
 import app.it.fast4x.rimusic.enums.MusicAnimationType
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.NavigationBarType
@@ -81,7 +80,6 @@ internal fun settingsEntryChoiceLabels(
         "ui.user_interface.navigation_bar_type" to NavigationBarType.entries.map { resolveString(it.textId) },
         "ui.user_interface.player_position" to PlayerPosition.entries.map { resolveString(it.textId) },
         "ui.user_interface.menu_style" to MenuStyle.entries.map { resolveString(it.textId) },
-        "ui.user_interface.message_type" to MessageType.entries.map { resolveString(it.textId) },
         "ui.user_interface.default_page" to HomeScreenTabs.entries.map { resolveString(it.textId) },
         "ui.user_interface.transition_effect" to TransitionEffect.entries.map { resolveString(it.textId) },
         "ui.swipe_to_action.queue_and_local_playlists_left_swipe" to QueueSwipeAction.entries.map { resolveString(it.textId) },
@@ -119,7 +117,6 @@ internal fun settingsEntryChoiceLabels(
         "appearance.player_behavior_and_visuals.songs_number_to_show" to SongsNumber.entries.map { it.name },
         "general.playback.min_listening_time" to ExoPlayerMinTimeForEvent.entries.map { it.name },
         "other.proxy.proxy_mode" to Proxy.Type.values().map { it.name },
-        "ui.theme.interface_in_use" to listOf("N-Zik", "ViMusic"),
         "accounts.sync_data_with_ytm_account.sync_direction" to SyncDirection.entries.map { resolveString(it.stringResource) },
         "network.quality.audio_quality_format" to
             resources(R.string.audio_quality_automatic, R.string.audio_quality_format_high, R.string.audio_quality_format_low),

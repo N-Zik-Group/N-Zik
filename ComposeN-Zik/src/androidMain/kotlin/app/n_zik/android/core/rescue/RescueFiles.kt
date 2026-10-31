@@ -2,6 +2,7 @@ package app.n_zik.android.core.rescue
 
 import android.app.ActivityManager
 import app.n_zik.android.core.backup.SettingsPreferencesBridge
+import app.n_zik.android.core.migration.RemovedSettingsMigration
 import android.content.Context
 import android.content.SharedPreferences
 import android.database.DatabaseErrorHandler
@@ -485,13 +486,16 @@ object RescueFiles {
 
         val glassEditor = SettingsPreferencesBridge.stageGlass(context, rows)
         val stats = applySettingRows(rows, editor, encEditor)
+        val hasRemovedRows = rows.any { RemovedSettingsMigration.isRemovedKey(it.second) }
         // A file holding only credentials, with the keystore unavailable: nothing to write, but
         // the user must be told the credentials were skipped (a warning, not a generic error).
-        if (stats.imported == 0 && stats.encryptedSkipped > 0 && glassEditor == null) {
+        if (stats.imported == 0 && stats.encryptedSkipped > 0 && glassEditor == null && !hasRemovedRows) {
             return@runCatching SettingsOutcome(encryptedSkipped = true)
         }
         // Nothing is written until commit(), so failing here leaves the settings untouched.
-        check(stats.imported > 0 || glassEditor != null) { "No setting could be imported" }
+        check(stats.imported > 0 || glassEditor != null || hasRemovedRows) {
+            "No setting could be imported"
+        }
 
         check(editor.commit()) { "Could not save the settings" }
         check(encEditor?.commit() ?: true) { "Could not save the credentials" }
@@ -518,9 +522,11 @@ object RescueFiles {
     ): SettingsImportStats {
         var imported = 0
         var encryptedSkipped = 0
+        RemovedSettingsMigration.stageRemoval(plainEditor)
 
         rows.forEach { (type, key, value) ->
             if (SettingsPreferencesBridge.isGlassRecord(type)) return@forEach
+            if (RemovedSettingsMigration.isRemovedKey(key)) return@forEach
             val targetEditor = if (key in ALL_ENCRYPTED_KEYS) {
                 if (encryptedEditor == null) {
                     encryptedSkipped++

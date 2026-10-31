@@ -29,7 +29,6 @@ import androidx.navigation.NavController
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.NavigationBarType
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.glass.rememberGlassSettings
@@ -135,7 +134,6 @@ class VerticalNavigationBar(
         val glassSettings = rememberGlassSettings()
 
 
-
         Box(modifier.width(Dimensions.navigationRailWidth).sideRailScrollOrigin()) {
 
             val railSurfaceBackdrop = rememberLayerBackdrop()
@@ -170,22 +168,5 @@ class VerticalNavigationBar(
             externalSurfaceBackdrop = railSurfaceBackdrop,
             modifier = Modifier.fillMaxWidth().height((buttonList.size * 64 + 8).dp),
         ) { DrawButtons() }
-        if( UiType.ViMusic.isCurrent() ) {
-            val iconSize: Dp = Dimensions.navigationRailWidth
-            Box(
-                contentAlignment = Alignment.TopCenter,
-                modifier = Modifier.size(iconSize),
-                content = {
-                    StatsButton().Draw()
-                }
-            )
-            Box(
-                contentAlignment = Alignment.TopCenter,
-                modifier = Modifier.size(iconSize),
-                content = {
-                    SettingsButton().Draw()
-                }
-            )
-        }
     }
 }

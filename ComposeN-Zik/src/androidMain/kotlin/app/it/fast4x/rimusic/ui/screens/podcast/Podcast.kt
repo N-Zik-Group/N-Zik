@@ -83,7 +83,6 @@ import it.fast4x.innertube.requests.podcastPage
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.models.Playlist
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.typography

@@ -250,7 +250,6 @@
     <string name="disable_vertical_swipe">Deaktiviere  „Songwechsel via vertikalem Wischen“</string>
     <string name="disable_vertical_swipe_secondary">Dies wirkt sich nur aus, wenn der erweiterte Player ausgeschaltet ist</string>
     <string name="disable_song_switching_via_swipe">Songwechsel per Wischen deaktivieren</string>
-    <string name="interface_in_use">Schnittstelle in Verwendung</string>
     <string name="user_interface">Benutzeroberfläche</string>
     <string name="ui_tab">UI</string>
     <string name="system_language">Systemsprache</string>
@@ -532,7 +531,6 @@
     <string name="last_week">Letzte Woche</string>
     <string name="by_casual_played_song">Nach zufällig gespieltem Lied</string>
     <string name="theme_material_you">Material You</string>
-    <string name="show_statistics_in_navigation_bar">Statistiken in der Navigationsleiste anzeigen</string>
     <string name="settings">Einstellungen</string>
     <string name="page_not_been_loaded">Die Seite wurde nicht korrekt geladen, versuche die Seite zu aktualisieren.</string>
     <string name="info_show_hide_hidden_songs">Versteckte Songs anzeigen/ausblenden</string>
@@ -587,8 +585,6 @@
     <string name="bg_colors_background_from_theme">Hintergrundfarbe vom Design</string>
     <string name="bg_colors_gradient_background_from_cover">Farbverlauf aus Cover</string>
     <string name="bg_colors_gradient_background_from_theme">Farbverlauf vom Design</string>
-    <string name="vimusic_show_search_button_in_navigation_bar">Suchbutton in der Navigationsleiste anzeigen</string>
-    <string name="vismusic_only_in_left_right_navigation_bar">Nur im ViMusic UI Modus bei Navigationsleiste links oder rechts</string>
     <string name="info_no_songs_yet">Bisher keine Titel</string>
     <string name="theme_customized">Benutzerdefiniert</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">Sollen die Farben des hellen Designs zurückgesetzt werden?</string>
@@ -764,9 +760,6 @@
     <string name="carouselsize">Größe der Miniaturansicht im erweiterten Modus</string>
     <string name="addednext">Hinzugefügt, um als nächstes abzuspielen</string>
     <string name="autosync">Importierte Wiedergabelisten automatisch synchronisieren</string>
-    <string name="message_type">Nachrichtentyp</string>
-    <string name="message_type_modern">Modern</string>
-    <string name="message_type_essential">Essenziell</string>
     <string name="songs_number_to_show">Anzahl der anzuzeigenden Titel</string>
     <string name="player_pause_on_volume_zero">Pausieren bei Lautstärke Null</string>
     <string name="info_pauses_player_when_volume_zero">Die Wiedergabe wird angehalten, wenn die Lautstärke 0 erreicht und bei einem Wert über 0 wieder gestartet</string>

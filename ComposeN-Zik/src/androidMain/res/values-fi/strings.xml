@@ -250,7 +250,6 @@
     <string name="disable_vertical_swipe">Poista kappaleiden vaihtaminen pystypyyhkäisyllä käytöstä</string>
     <string name="disable_vertical_swipe_secondary">Se vaikuttaa vain kun laajennettu soitin on pois päältä</string>
     <string name="disable_song_switching_via_swipe">Poista kappaleen vaihtaminen pyyhkäisemällä</string>
-    <string name="interface_in_use">Käyttöliittymä käytössä</string>
     <string name="user_interface">Käyttöliittymä</string>
     <string name="ui_tab">Käyttöliittymä</string>
     <string name="system_language">Järjestelmän kieli</string>
@@ -532,7 +531,6 @@
     <string name="last_week">Viime viikolla</string>
     <string name="by_casual_played_song">Satunnainen</string>
     <string name="theme_material_you">Material You</string>
-    <string name="show_statistics_in_navigation_bar">Näytä tilastoja navigointipalkissa</string>
     <string name="settings">Asetukset</string>
     <string name="page_not_been_loaded">Sivua ei voitu ladata, pyyhkäisy alas päivittääksesi.</string>
     <string name="info_show_hide_hidden_songs">Näytä/piilota piilotetut kappaleet</string>
@@ -587,8 +585,6 @@
     <string name="bg_colors_background_from_theme">Täsmää teema</string>
     <string name="bg_colors_gradient_background_from_cover">Gradientti kappaleen kannesta</string>
     <string name="bg_colors_gradient_background_from_theme">Gradientti teemasta</string>
-    <string name="vimusic_show_search_button_in_navigation_bar">Näytä hakupainike navigointipalkissa (englanniksi)</string>
-    <string name="vismusic_only_in_left_right_navigation_bar">Vain vasemmalle tai oikealle navigointipalkille ViMusic UI:ssa</string>
     <string name="info_no_songs_yet">Kappaleita ei ole saatavilla</string>
     <string name="theme_customized">Mukautettu</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">Haluatko todella nollata mukautetun vaalean teeman värit?</string>
@@ -764,9 +760,6 @@
     <string name="carouselsize">Pienoiskuvan koko laajennetussa tilassa</string>
     <string name="addednext">Lisätty toistettavaksi seuraavaksi</string>
     <string name="autosync">Synkronoi tuodut soittolistat automaattisesti</string>
-    <string name="message_type">Popup message style</string>
-    <string name="message_type_modern">Moderni</string>
-    <string name="message_type_essential">Perus</string>
     <string name="songs_number_to_show">Näytetyt kappaleet</string>
     <string name="player_pause_on_volume_zero">Äänenvoimakkuuden ollessa nolla, laita soitto tauolle</string>
     <string name="info_pauses_player_when_volume_zero">Keskeytä kappale, kun äänenvoimakkuus saavuttaa 0 ja jatka sitä kun äänenvoimakkuus on suurempi kuin 0</string>

@@ -94,7 +94,6 @@ import app.it.fast4x.rimusic.enums.DownloadedStateMedia
 import app.it.fast4x.rimusic.enums.PlaylistSwipeAction
 import app.it.fast4x.rimusic.enums.PlayerPosition
 import app.it.fast4x.rimusic.enums.TransitionEffect
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.models.SongAlbumMap
@@ -317,7 +316,7 @@ fun AlbumScreen(
             .background(colorPalette().background0)
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
-            val topPadding = if (UiType.ViMusic.isCurrent()) 30.dp else 0.dp
+            val topPadding = 0.dp
 
             AnimatedContent(
                 targetState = 0,

@@ -6,7 +6,6 @@ import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.JournalPermission
 import app.n_zik.android.privacy.PermissionEventKind
-
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
@@ -260,7 +259,6 @@ import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.it.fast4x.rimusic.utils.InitDownloader
 import app.it.fast4x.rimusic.utils.LocalMonetCompat
-import app.it.fast4x.rimusic.utils.UiTypeKey
 import app.it.fast4x.rimusic.utils.animatedGradientKey
 import app.it.fast4x.rimusic.utils.applyFontPaddingKey
 import app.it.fast4x.rimusic.utils.asMediaItem
@@ -355,7 +353,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.knighthat.invidious.Invidious
-
 import app.kreate.android.me.knighthat.utils.Toaster
 import it.fast4x.innertube.Innertube.proxy
 import okhttp3.OkHttpClient
@@ -364,9 +361,7 @@ import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
 import app.n_zik.android.playback.services.diagnostics.UiFrameClockDiagnostics
 import java.net.Proxy
 import java.util.Locale
-
 import androidx.compose.foundation.shape.RoundedCornerShape
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.ui.styling.BoundedCornerSize
 import app.n_zik.android.core.navigation.MiniPlayerQueueInterceptor
 import app.n_zik.android.core.network.client.NetworkClientFactory
@@ -1451,7 +1446,6 @@ class MainActivity :
 
                             effectRotationKey, playerThumbnailSizeKey,
                             playerVisualizerTypeKey,
-                            UiTypeKey,
                             disablePlayerHorizontalSwipeKey,
                             disableClosingPlayerSwipingDownKey,
                             showSearchTabKey,
@@ -1705,8 +1699,6 @@ class MainActivity :
             LaunchedEffect(isLandscapeBarless) {
                 app.it.fast4x.rimusic.utils.LandscapeBars.hide()
             }
-            val uiType by rememberPreference(UiTypeKey, UiType.RiMusic)
-            val isViMusic = uiType == UiType.ViMusic
             // Top navigation remains pinned while the header scrolls out.
             val topNavHeight = if (rememberGlassSettings().usesGlassMaterial(GlassArea.Nav))
                 GlassNavigationBarHeight else TOP_NAV_BAR_HEIGHT
@@ -1763,7 +1755,7 @@ class MainActivity :
             val isScrollableRoute = pageSupportsChromeScroll(chromeEntry?.destination?.route)
 
             // Route changes use the animated navigation callback; geometry changes reset immediately.
-            LaunchedEffect(isLandscape, isViMusic, density, safeDrawingInsets) {
+            LaunchedEffect(isLandscape, density, safeDrawingInsets) {
                 scaffoldBars.reveal()
             }
 
@@ -2057,7 +2049,7 @@ class MainActivity :
                 }
                 val playerPlacementKey = listOf(
                     chromeEntry?.id, playerPos, dockNavigationPosition, isLandscape,
-                    areBarsHidden, hasNavBar, glassNavigation, isViMusic,
+                    areBarsHidden, hasNavBar, glassNavigation,
                     playerGlassSettings.usesGlassMaterial(GlassArea.MiniPlayer), maxWidth, maxHeight,
                     targetPlayerPadBottom, targetPlayerTopInsetPx,
                     homeMiniPlacementKey.takeIf {

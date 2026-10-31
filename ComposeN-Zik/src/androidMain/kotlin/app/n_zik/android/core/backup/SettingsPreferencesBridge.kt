@@ -2,6 +2,7 @@ package app.n_zik.android.core.backup
 
 import android.content.Context
 import android.content.SharedPreferences
+import app.n_zik.android.core.migration.RemovedSettingsMigration
 import org.json.JSONArray
 
 /** Separate typed CSV record: its key can also exist in normal settings without collision. */
@@ -11,6 +12,7 @@ internal object SettingsPreferencesBridge {
 
     fun export(context: Context, plain: SharedPreferences): MutableList<Triple<String, String, Any>> {
         val entries = plain.all.mapNotNull { (key, value) ->
+            if (RemovedSettingsMigration.isRemovedKey(key)) return@mapNotNull null
             value?.let { Triple(it::class.simpleName ?: "null", key, it) }
         }.toMutableList()
         val snapshot = JSONArray()

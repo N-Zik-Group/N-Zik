@@ -22,6 +22,8 @@ class RemovedSettingsGuardTest {
     private val removedSymbols = listOf(
         "app.it.fast4x.rimusic.enums.NotificationType",
         "app.it.fast4x.rimusic.enums.WallpaperType",
+        "app.it.fast4x.rimusic.enums.UiType",
+        "app.it.fast4x.rimusic.enums.MessageType",
     )
 
     @Test

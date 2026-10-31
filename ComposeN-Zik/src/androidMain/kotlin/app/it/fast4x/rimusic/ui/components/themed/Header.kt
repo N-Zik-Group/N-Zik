@@ -31,7 +31,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.shimmer
 import app.it.fast4x.rimusic.utils.bold
@@ -145,7 +144,6 @@ fun HeaderWithIcon (
             )
 
 
-
     }
 }
  */
@@ -162,7 +160,7 @@ fun HeaderWithIcon (
 ){
     //val disableIconButtonOnTop by rememberPreference(disableIconButtonOnTopKey, false)
     Row (
-        horizontalArrangement = if (UiType.ViMusic.isCurrent()) Arrangement.End else Arrangement.Start,
+        horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             //.requiredHeight(Dimensions.halfheaderHeight)
@@ -170,57 +168,31 @@ fun HeaderWithIcon (
 
     ){
 
-        if (UiType.ViMusic.isCurrent()) {
-            // Old behavior for ViMusic
-            BasicText(
-                text = title,
-                style = TextStyle(
-                    fontSize = typography().xxl.bold.fontSize,
-                    fontWeight = typography().xxl.bold.fontWeight,
-                    color = colorPalette().text,
-                    textAlign = TextAlign.End
-                ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .fillMaxSize(if( showIcon ) 0.9f else 1f)
-            )
-
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             if ( showIcon ) {
                 SecondaryButton(
                     iconId = iconId,
                     enabled = enabled,
                     onClick = onClick,
                 )
+                Spacer(modifier = Modifier.width(8.dp))
             }
-        } else {
-            // New behavior for RiMusic and others
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                if ( showIcon ) {
-                    SecondaryButton(
-                        iconId = iconId,
-                        enabled = enabled,
-                        onClick = onClick,
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
 
-                BasicText(
-                    text = title,
-                    style = TextStyle(
-                        fontSize = typography().xxl.bold.fontSize,
-                        fontWeight = typography().xxl.bold.fontWeight,
-                        color = colorPalette().text,
-                        textAlign = TextAlign.Start
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+            BasicText(
+                text = title,
+                style = TextStyle(
+                    fontSize = typography().xxl.bold.fontSize,
+                    fontWeight = typography().xxl.bold.fontWeight,
+                    color = colorPalette().text,
+                    textAlign = TextAlign.Start
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
 
     }

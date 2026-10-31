@@ -79,7 +79,6 @@ import app.it.fast4x.rimusic.utils.playerPositionKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.seenChangelogsVersionKey
 import app.it.fast4x.rimusic.utils.transition
-import app.it.fast4x.rimusic.enums.UiType
 import app.n_zik.android.components.dialog.updater.CheckForUpdateDialog
 import app.n_zik.android.components.dialog.updater.NewUpdateAvailableDialog
 import app.n_zik.android.components.dialog.updater.BuildTransitionWarningDialog

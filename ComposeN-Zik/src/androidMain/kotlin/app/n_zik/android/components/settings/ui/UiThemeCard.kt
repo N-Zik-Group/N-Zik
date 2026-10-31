@@ -19,7 +19,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import app.it.fast4x.rimusic.enums.ColorPaletteName
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.DefaultLightColorPalette
 import app.it.fast4x.rimusic.utils.colorPaletteModeKey
@@ -46,9 +45,7 @@ import app.it.fast4x.rimusic.utils.customThemeLight_textDisabledKey
 import app.it.fast4x.rimusic.utils.customThemeLight_TextKey
 import app.it.fast4x.rimusic.utils.customThemeLight_textSecondaryKey
 import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.UiTypeKey
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
-import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.common.ButtonBarSettingEntry
 import app.n_zik.android.components.settings.common.ColorSettingEntry
@@ -61,11 +58,10 @@ import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.R
 
-/** Owns appearance preferences, palette confirmations and interface-mode selection. */
+/** Owns appearance preferences and palette confirmations. */
 @Composable
 internal fun UiThemeCard(search: Search) {
     val context = LocalContext.current
-    val uiType by rememberPreference(UiTypeKey, UiType.RiMusic)
     var colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
     var colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     var customThemeLight_Background0 by rememberPreference(customThemeLight_Background0Key, DefaultLightColorPalette.background0.hashCode())
@@ -117,8 +113,7 @@ internal fun UiThemeCard(search: Search) {
         )
     }
 
-    val uiSearchContextMatch = search.inputValue.isBlank() || stringResource(R.string.theme).contains(search.inputValue, true) ||
-        stringResource(R.string.interface_in_use).contains(search.inputValue, true) ||
+    val uiSearchContextMatch = search.inputValue.isBlank() ||
         stringResource(R.string.theme).contains(search.inputValue, true) ||
         stringResource(R.string.theme_mode).contains(search.inputValue, true)
 
@@ -132,32 +127,6 @@ internal fun UiThemeCard(search: Search) {
             title = stringResource(R.string.theme),
             icon = R.drawable.color_palette,
             content = {
-                var showUiTypeDialog by remember { mutableStateOf(false) }
-                if (search.inputValue.isBlank() || stringResource(R.string.interface_in_use).contains(search.inputValue, true)) {
-                    OtherSettingsEntry(
-                        modifier = Modifier.settingsSearchTarget("ui.theme.interface_in_use"),
-                        title = stringResource(R.string.interface_in_use),
-                        text = stringResource(R.string.settings_desc_ui_theme_interface_in_use),
-                        selectedValueText = uiType.text,
-                        icon = R.drawable.ui,
-                        onClick = { showUiTypeDialog = true }
-                    )
-                }
-
-                DialogPresence(visible = showUiTypeDialog) {
-                    ValueSelectorDialog(
-                        title = stringResource(R.string.interface_in_use),
-                        selectedValue = uiType,
-                        onValueSelected = {
-                            applyUiType(context, it)
-                            RestartAppDialog.showDialog()
-                        },
-                        valueText = { it.text },
-                        values = UiType.values().toList(),
-                        onDismiss = { showUiTypeDialog = false }
-                    )
-                }
-
                 var showThemeDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.theme).contains(search.inputValue, true)) {
                     OtherSettingsEntry(

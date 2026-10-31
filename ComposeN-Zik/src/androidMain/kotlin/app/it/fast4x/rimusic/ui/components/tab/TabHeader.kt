@@ -15,7 +15,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.utils.bold
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
@@ -23,22 +22,6 @@ import app.n_zik.android.typography
 @Composable
 private fun Title( titleId: Int ) {
     val fontStyle = TabHeader.style()
-    val sPadding: Dp
-    val ePadding: Dp
-    val alignment: TextAlign
-
-    when( UiType.current() ) {
-        UiType.RiMusic -> {
-            sPadding = Dp.Hairline
-            ePadding = 12.dp
-            alignment = TextAlign.Start
-        }
-        UiType.ViMusic -> {
-            sPadding = 12.dp
-            ePadding = Dp.Hairline
-            alignment = TextAlign.End
-        }
-    }
 
     Text(
         text = stringResource( titleId ),
@@ -46,16 +29,10 @@ private fun Title( titleId: Int ) {
             fontSize = fontStyle.fontSize,
             fontWeight = fontStyle.fontWeight,
             color = colorPalette().text,
-            textAlign = alignment
+            textAlign = TextAlign.Start
         ),
-        modifier = Modifier.padding( start = sPadding, end = ePadding )
+        modifier = Modifier.padding(start = Dp.Hairline, end = 12.dp)
     )
-}
-
-@Composable
-private fun ViMusicHeader( titleId: Int, additionalContent: @Composable () -> Unit ) {
-    additionalContent()
-    Title( titleId )
 }
 
 @Composable
@@ -70,41 +47,29 @@ interface TabHeader {
 
         @Composable
         fun style(): TextStyle =
-            when( UiType.current() ) {
-                UiType.RiMusic -> typography().xl.bold
-                UiType.ViMusic -> typography().xxxl.bold
-            }
+            typography().xl.bold
 
         @Composable
         fun height(): Dp = style().fontSize.value.dp + 14.dp
     }
 }
 
-/** Display tab header per theme: left-aligned in RiMusic, right-aligned and slightly bigger in ViMusic. */
+/** Displays the application tab header. */
 @Composable
 fun TabHeader(
     titleId: Int,
     additionalContent: @Composable () -> Unit
 ) {
-    // Align left if RiMusic, right if ViMusic
-    val arrangement =
-        if( UiType.ViMusic.isCurrent() )
-            Arrangement.End
-        else
-            Arrangement.Start
 
     Row(
-        horizontalArrangement = arrangement,
+        horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp)
             .padding(top = 10.dp, bottom = 4.dp)
     ) {
-        when( UiType.current() ) {
-            UiType.RiMusic -> RiMusicHeader( titleId, additionalContent )
-            UiType.ViMusic -> ViMusicHeader( titleId, additionalContent )
-        }
+        RiMusicHeader(titleId, additionalContent)
     }
 }
 

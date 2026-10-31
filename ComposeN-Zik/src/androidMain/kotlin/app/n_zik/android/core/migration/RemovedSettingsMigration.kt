@@ -4,8 +4,7 @@ import android.content.SharedPreferences
 import timber.log.Timber
 
 /**
- * Drops the stored values of settings that no longer exist (issue #606): the "Advanced"
- * notification type and the cover-as-wallpaper feature, which only worked through it.
+ * Drops values belonging to retired settings, without changing supported preferences.
  *
  * The keys are literals on purpose: their constants were deleted with the settings, and this
  * object is the only place in the code base allowed to still name them.
@@ -15,7 +14,16 @@ import timber.log.Timber
 object RemovedSettingsMigration {
     private const val TAG = "RemovedSettingsMigration"
 
-    internal val REMOVED_KEYS = listOf("notificationType", "enableWallpaper", "wallpaperType")
+    internal val REMOVED_KEYS = listOf(
+        "notificationType", "enableWallpaper", "wallpaperType", "UiType", "messageType",
+    )
+
+    fun isRemovedKey(key: String): Boolean = key in REMOVED_KEYS
+
+    /** Stages cleanup with an import's existing transaction; never clears unrelated keys. */
+    fun stageRemoval(editor: SharedPreferences.Editor) {
+        REMOVED_KEYS.forEach(editor::remove)
+    }
 
     /**
      * @return `true` if at least one obsolete key was present and has been removed.

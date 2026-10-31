@@ -41,7 +41,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.NavigationBarType
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
@@ -50,7 +49,6 @@ import app.it.fast4x.rimusic.utils.navigationBarPositionKey
 import app.it.fast4x.rimusic.utils.navigationBarTypeKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
-import app.it.fast4x.rimusic.utils.UiTypeKey
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.R
@@ -82,7 +80,7 @@ class HorizontalNavigationBarInsetsTest {
             .putBoolean(glassEnabledKey, true)
             .putString(navigationBarPositionKey, NavigationBarPosition.Bottom.name)
             .putString(navigationBarTypeKey, NavigationBarType.IconOnly.name)
-            .putString(UiTypeKey, UiType.RiMusic.name)
+
             .commit()
         val application = mockk<MainApplication>()
         every { application.applicationContext } returns context

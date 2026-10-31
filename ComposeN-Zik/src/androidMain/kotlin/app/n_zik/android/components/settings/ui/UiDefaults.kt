@@ -12,7 +12,6 @@ import app.it.fast4x.rimusic.enums.FontType
 import app.it.fast4x.rimusic.enums.HomeScreenTabs
 import app.it.fast4x.rimusic.enums.IconLikeType
 import app.it.fast4x.rimusic.enums.MenuStyle
-import app.it.fast4x.rimusic.enums.MessageType
 import app.it.fast4x.rimusic.enums.MiniPlayerType
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.NavigationBarType
@@ -30,10 +29,8 @@ import app.it.fast4x.rimusic.enums.QueueType
 import app.it.fast4x.rimusic.enums.SearchDisplayOrder
 import app.it.fast4x.rimusic.enums.ThumbnailType
 import app.it.fast4x.rimusic.enums.TransitionEffect
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.DefaultLightColorPalette
-import app.it.fast4x.rimusic.utils.UiTypeKey
 import app.it.fast4x.rimusic.utils.actionspacedevenlyKey
 import app.it.fast4x.rimusic.utils.albumSwipeLeftActionKey
 import app.it.fast4x.rimusic.utils.albumSwipeRightActionKey
@@ -75,7 +72,6 @@ import app.it.fast4x.rimusic.utils.effectRotationKey
 import app.it.fast4x.rimusic.utils.expandedplayertoggleKey
 import app.it.fast4x.rimusic.utils.fadingedgeKey
 import app.it.fast4x.rimusic.utils.fontTypeKey
-import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.hideStatusBarKey
 import app.it.fast4x.rimusic.utils.iconLikeTypeKey
 import app.it.fast4x.rimusic.utils.indexNavigationTabKey
@@ -85,7 +81,6 @@ import app.it.fast4x.rimusic.utils.lastPlayerPlayButtonTypeKey
 import app.it.fast4x.rimusic.utils.lastPlayerTimelineTypeKey
 import app.it.fast4x.rimusic.utils.lastThumbnailSizeDpKey
 import app.it.fast4x.rimusic.utils.menuStyleKey
-import app.it.fast4x.rimusic.utils.messageTypeKey
 import app.it.fast4x.rimusic.utils.miniPlayerTypeKey
 import app.it.fast4x.rimusic.utils.navigationBarPositionKey
 import app.it.fast4x.rimusic.utils.navigationBarTypeKey
@@ -170,7 +165,6 @@ internal fun applyUiDefaults(context: Context) {
         putBoolean(disableIconButtonOnTopKey, false)
         putEnum(lastPlayerTimelineTypeKey, PlayerTimelineType.Default)
         putFloat(lastThumbnailSizeDpKey, 30f)
-        putEnum(UiTypeKey, UiType.RiMusic)
         putBoolean(disablePlayerHorizontalSwipeKey, false)
         putEnum(lastPlayerPlayButtonTypeKey, PlayerPlayButtonType.Rectangular)
         putEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
@@ -212,7 +206,6 @@ internal fun applyUiDefaults(context: Context) {
         putInt(customThemeDark_iconButtonPlayerKey, DefaultDarkColorPalette.iconButtonPlayer.hashCode())
         putInt(customThemeDark_accentKey, DefaultDarkColorPalette.accent.hashCode())
         putEnum(playerPositionKey, PlayerPosition.Bottom)
-        putEnum(messageTypeKey, MessageType.Modern)
         putBoolean(showTopActionsBarKey, true)
         putEnum(playerControlsTypeKey, PlayerControlsType.Essential)
         putEnum(playerInfoTypeKey, PlayerInfoType.Modern)
@@ -317,76 +310,6 @@ internal fun resetUiPalette(context: Context, dark: Boolean) {
             putInt(customThemeLight_textDisabledKey, DefaultLightColorPalette.textDisabled.hashCode())
             putInt(customThemeLight_iconButtonPlayerKey, DefaultLightColorPalette.iconButtonPlayer.hashCode())
             putInt(customThemeLight_accentKey, DefaultLightColorPalette.accent.hashCode())
-        }
-    }
-}
-
-/** Applies the asymmetric legacy ViMusic/RiMusic preference rewrites. */
-internal fun applyUiType(context: Context, selectedType: UiType) {
-    val preferences = context.preferences
-    preferences.edit {
-        putEnum(UiTypeKey, selectedType)
-        if (selectedType == UiType.ViMusic) {
-            putBoolean(disablePlayerHorizontalSwipeKey, true)
-            putBoolean(disableIconButtonOnTopKey, true)
-            putEnum(playerTimelineTypeKey, PlayerTimelineType.AudioWaves)
-            putBoolean(visualizerEnabledKey, false)
-            putFloat(thumbnailSizeDpKey, 30f)
-            putBoolean(thumbnailTapEnabledKey, true)
-            putBoolean(showSearchTabKey, true)
-            putBoolean(showStatsInNavbarKey, true)
-            putEnum(navigationBarPositionKey, NavigationBarPosition.Left)
-            putBoolean(showTopActionsBarKey, false)
-            putEnum(playerTypeKey, PlayerType.Modern)
-            putEnum(queueTypeKey, QueueType.Modern)
-            putBoolean(fadingedgeKey, false)
-            putBoolean(carouselKey, true)
-            putEnum(carouselSizeKey, CarouselSize.Medium)
-            putEnum(thumbnailTypeKey, ThumbnailType.Essential)
-            putEnum(playerTimelineSizeKey, PlayerTimelineSize.Medium)
-            putBoolean(playerInfoShowIconsKey, true)
-            putEnum(miniPlayerTypeKey, MiniPlayerType.Modern)
-            putBoolean(playerSwapControlsWithTimelineKey, false)
-            putBoolean(transparentBackgroundPlayerActionBarKey, false)
-            putEnum(playerControlsTypeKey, PlayerControlsType.Essential)
-            putEnum(playerPlayButtonTypeKey, PlayerPlayButtonType.Disabled)
-            putBoolean(buttonzoomoutKey, true)
-            putEnum(iconLikeTypeKey, IconLikeType.Essential)
-            putEnum(playerBackgroundColorsKey, PlayerBackgroundColors.CoverColorGradient)
-            putBoolean(blackgradientKey, true)
-            putBoolean(showTotalTimeQueueKey, false)
-            putBoolean(showRemainingSongTimeKey, false)
-            putBoolean(showNextSongsInPlayerKey, false)
-            putBoolean(disableScrollingTextKey, false)
-            putBoolean(effectRotationKey, true)
-            putBoolean(clickOnLyricsTextKey, true)
-            putBoolean(playerEnableLyricsPopupMessageKey, true)
-            putEnum(backgroundProgressKey, BackgroundProgress.MiniPlayer)
-            putBoolean(transparentBackgroundPlayerActionBarKey, true)
-            putBoolean(actionspacedevenlyKey, false)
-            putBoolean(tapqueueKey, false)
-            putBoolean(swipeUpQueueKey, true)
-            putBoolean(showButtonPlayerDiscoverKey, false)
-            putBoolean(showButtonPlayerDownloadKey, false)
-            putBoolean(showButtonPlayerAddToPlaylistKey, false)
-            putBoolean(showButtonPlayerLoopKey, false)
-            putBoolean(showButtonPlayerShuffleKey, false)
-            putBoolean(showButtonPlayerLyricsKey, false)
-            putBoolean(expandedplayertoggleKey, false)
-            putBoolean(showButtonPlayerSleepTimerKey, false)
-            putBoolean(showButtonPlayerSystemEqualizerKey, false)
-            putBoolean(showButtonPlayerArrowKey, true)
-            putBoolean(showButtonPlayerShuffleKey, false)
-            putBoolean(showButtonPlayerMenuKey, true)
-            putBoolean(showthumbnailKey, true)
-            putBoolean(keepPlayerMinimizedKey, false)
-        } else {
-            putBoolean(disablePlayerHorizontalSwipeKey, false)
-            putBoolean(disableIconButtonOnTopKey, false)
-            putEnum(playerTimelineTypeKey, preferences.getEnum(lastPlayerTimelineTypeKey, PlayerTimelineType.Default))
-            putFloat(thumbnailSizeDpKey, preferences.getFloat(lastThumbnailSizeDpKey, 30f))
-            putEnum(playerPlayButtonTypeKey, preferences.getEnum(lastPlayerPlayButtonTypeKey, PlayerPlayButtonType.Rectangular))
-            putEnum(navigationBarPositionKey, NavigationBarPosition.Bottom)
         }
     }
 }

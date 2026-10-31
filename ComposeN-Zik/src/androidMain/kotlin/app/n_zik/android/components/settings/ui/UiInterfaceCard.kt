@@ -13,18 +13,15 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import app.it.fast4x.rimusic.enums.HomeScreenTabs
 import app.it.fast4x.rimusic.enums.MenuStyle
-import app.it.fast4x.rimusic.enums.MessageType
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.NavigationBarType
 import app.it.fast4x.rimusic.enums.PlayerPosition
 import app.it.fast4x.rimusic.enums.SearchDisplayOrder
 import app.it.fast4x.rimusic.enums.TransitionEffect
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.utils.disableNavigationBackStackKey
 import app.it.fast4x.rimusic.utils.hideStatusBarKey
 import app.it.fast4x.rimusic.utils.indexNavigationTabKey
 import app.it.fast4x.rimusic.utils.menuStyleKey
-import app.it.fast4x.rimusic.utils.messageTypeKey
 import app.it.fast4x.rimusic.utils.navigationBarPositionKey
 import app.it.fast4x.rimusic.utils.navigationBarTypeKey
 import app.it.fast4x.rimusic.utils.playerPositionKey
@@ -32,10 +29,7 @@ import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.rememberQueueScrollPositionKey
 import app.it.fast4x.rimusic.utils.searchDisplayOrderKey
 import app.it.fast4x.rimusic.utils.showFloatingIconKey
-import app.it.fast4x.rimusic.utils.showSearchTabKey
-import app.it.fast4x.rimusic.utils.showStatsInNavbarKey
 import app.it.fast4x.rimusic.utils.transitionEffectKey
-import app.it.fast4x.rimusic.utils.UiTypeKey
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
 import app.n_zik.android.components.search.SearchHistoryPageSettings
@@ -51,13 +45,10 @@ import app.n_zik.android.R
 @Composable
 internal fun UiInterfaceCard(search: Search) {
     var hideStatusBar by rememberPreference(hideStatusBarKey, false)
-    val uiType by rememberPreference(UiTypeKey, UiType.RiMusic)
     var indexNavigationTab by rememberPreference(
         indexNavigationTabKey,
         HomeScreenTabs.Default
     )
-    var showSearchTab by rememberPreference(showSearchTabKey, false)
-    var showStatsInNavbar by rememberPreference(showStatsInNavbarKey, false)
     var navigationBarPosition by rememberPreference(navigationBarPositionKey, NavigationBarPosition.BottomFloating)
     var navigationBarType by rememberPreference(navigationBarTypeKey, NavigationBarType.IconOnly)
     var showFloatingIcon by rememberPreference(showFloatingIconKey, false)
@@ -65,7 +56,6 @@ internal fun UiInterfaceCard(search: Search) {
     var transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Fade)
     var disableBackStack by rememberPreference(disableNavigationBackStackKey, false)
     var playerPosition by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
-    var messageType by rememberPreference(messageTypeKey, MessageType.Modern)
     var searchDisplayOrder by rememberPreference(searchDisplayOrderKey, SearchDisplayOrder.SuggestionsFirst)
 
     val navSearchContextMatch = search.inputValue.isBlank() ||
@@ -77,7 +67,6 @@ internal fun UiInterfaceCard(search: Search) {
         stringResource(R.string.navigation_bar_type).contains(search.inputValue, true) ||
         stringResource(R.string.player_position).contains(search.inputValue, true) ||
         stringResource(R.string.menu_style).contains(search.inputValue, true) ||
-        stringResource(R.string.message_type).contains(search.inputValue, true) ||
         stringResource(R.string.home_tabs_settings).contains(search.inputValue, true) ||
         stringResource(R.string.default_page).contains(search.inputValue, true) ||
         stringResource(R.string.transition_effect).contains(search.inputValue, true)
@@ -111,7 +100,7 @@ internal fun UiInterfaceCard(search: Search) {
                         text = stringResource(R.string.settings_desc_ui_user_interface_navigation_bar_position),
                         selectedValueText = navigationBarPosition.text,
                         icon = R.drawable.locate,
-                        onClick = { if (uiType != UiType.ViMusic) showNavPosDialog = true }
+                        onClick = { showNavPosDialog = true }
                     )
                 }
                 DialogPresence(visible = showNavPosDialog) {
@@ -188,28 +177,6 @@ internal fun UiInterfaceCard(search: Search) {
                         valueText = { it.text },
                         values = MenuStyle.values().toList(),
                         onDismiss = { showMenuStyleDialog = false }
-                    )
-                }
-
-                var showMessageTypeDialog by remember { mutableStateOf(false) }
-                if (search.inputValue.isBlank() || stringResource(R.string.message_type).contains(search.inputValue, true)) {
-                    OtherSettingsEntry(
-                        modifier = Modifier.settingsSearchTarget("ui.user_interface.message_type"),
-                        title = stringResource(R.string.message_type),
-                        text = stringResource(R.string.settings_desc_ui_user_interface_message_type),
-                        selectedValueText = messageType.text,
-                        icon = R.drawable.information,
-                        onClick = { showMessageTypeDialog = true }
-                    )
-                }
-                DialogPresence(visible = showMessageTypeDialog) {
-                    ValueSelectorDialog(
-                        title = stringResource(R.string.message_type),
-                        selectedValue = messageType,
-                        onValueSelected = { messageType = it },
-                        valueText = { it.text },
-                        values = MessageType.values().toList(),
-                        onDismiss = { showMessageTypeDialog = false }
                     )
                 }
 
@@ -308,29 +275,6 @@ internal fun UiInterfaceCard(search: Search) {
                         values = SearchDisplayOrder.values().toList(),
                         onDismiss = { showSearchOrderDialog = false }
                     )
-                }
-
-                if (UiType.ViMusic.isCurrent()) {
-                    if (search.inputValue.isBlank() || stringResource(R.string.vimusic_show_search_button_in_navigation_bar).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                            modifier = Modifier.settingsSearchTarget("ui.user_interface.vimusic_show_search_button_in_navigation_bar"),
-                            title = stringResource(R.string.vimusic_show_search_button_in_navigation_bar),
-                            text = stringResource(R.string.vismusic_only_in_left_right_navigation_bar),
-                            isChecked = showSearchTab,
-                            onCheckedChange = { showSearchTab = it },
-                            icon = R.drawable.search
-                        )
-                    }
-                    if (search.inputValue.isBlank() || stringResource(R.string.show_statistics_in_navigation_bar).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                            modifier = Modifier.settingsSearchTarget("ui.user_interface.show_statistics_in_navigation_bar"),
-                            title = stringResource(R.string.show_statistics_in_navigation_bar),
-                            text = stringResource(R.string.settings_desc_ui_user_interface_show_statistics_in_navigation_bar),
-                            isChecked = showStatsInNavbar,
-                            onCheckedChange = { showStatsInNavbar = it },
-                            icon = R.drawable.stats_chart
-                        )
-                    }
                 }
 
                 if (search.inputValue.isBlank() || stringResource(R.string.show_floating_icon).contains(search.inputValue, true)) {

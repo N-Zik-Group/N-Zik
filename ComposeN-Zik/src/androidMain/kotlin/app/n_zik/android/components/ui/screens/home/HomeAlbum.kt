@@ -97,7 +97,6 @@ import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
 import app.it.fast4x.rimusic.enums.AlbumsType
 import app.it.fast4x.rimusic.enums.FilterBy
 import app.it.fast4x.rimusic.enums.SortOrder
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.thumbnailShape

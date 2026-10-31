@@ -2,6 +2,8 @@ package app.n_zik.android.components.navigation.nav
 
 import android.app.Application
 import android.content.Context
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,12 +30,10 @@ import androidx.navigation.NavController
 import app.it.fast4x.rimusic.enums.FontType
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.enums.NavigationBarType
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
-import app.it.fast4x.rimusic.utils.UiTypeKey
 import app.it.fast4x.rimusic.utils.navigationBarPositionKey
 import app.it.fast4x.rimusic.utils.navigationBarTypeKey
 import app.it.fast4x.rimusic.utils.preferences
@@ -63,8 +63,9 @@ class NavigationTabTransitionTest {
     @Before fun setUp() {
         context = ApplicationProvider.getApplicationContext()
         setActiveProfile("default", context)
-        context.preferences.edit().clear().putString(UiTypeKey, UiType.RiMusic.name)
-            .putString(navigationBarTypeKey, NavigationBarType.IconAndText.name).commit()
+        context.preferences.edit().clear()
+            .putString(navigationBarTypeKey, NavigationBarType.IconAndText.name)
+            .putBoolean(glassEnabledKey, false).commit()
         val application = mockk<MainApplication>()
         every { application.applicationContext } returns context
         Dependencies.init(application)
@@ -81,7 +82,8 @@ class NavigationTabTransitionTest {
             val shape = RoundedCornerShape(12.dp)
             CompositionLocalProvider(LocalAppearance provides Appearance(ColorPalette.fallback,
                 typographyOf(Color.White, true, false, FontType.Rubik), shape, shape, shape)) {
-                Row(Modifier.size(containerWidth, 72.dp).testTag("viewport"), horizontalArrangement = Arrangement.SpaceEvenly) {
+                Row(Modifier.size(containerWidth, 72.dp).testTag("viewport")
+                    .horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.SpaceEvenly) {
                     val currentDestination = destination
                     val bar = HorizontalNavigationBar(0, {
                         if (currentDestination) newClicks++ else oldClicks++

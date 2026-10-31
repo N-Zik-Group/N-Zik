@@ -250,7 +250,6 @@
     <string name="disable_vertical_swipe">Disable song switching via Vertical swipe</string>
     <string name="disable_vertical_swipe_secondary">It affects only when the Expanded Player is off</string>
     <string name="disable_song_switching_via_swipe">Disable song switching via swipe</string>
-    <string name="interface_in_use">Interface in use</string>
     <string name="user_interface">User interface</string>
     <string name="ui_tab">UI</string>
     <string name="system_language">Stelsel taal</string>
@@ -532,7 +531,6 @@
     <string name="last_week">Last week</string>
     <string name="by_casual_played_song">By Casual played song</string>
     <string name="theme_material_you">Material You</string>
-    <string name="show_statistics_in_navigation_bar">Show statistics in navigation bar</string>
     <string name="settings">Settings</string>
     <string name="page_not_been_loaded">The page has not been loaded correctly, try to refresh the page.</string>
     <string name="info_show_hide_hidden_songs">Show/hide hidden songs</string>
@@ -587,8 +585,6 @@
     <string name="bg_colors_background_from_theme">Background from theme</string>
     <string name="bg_colors_gradient_background_from_cover">Gradient background from cover</string>
     <string name="bg_colors_gradient_background_from_theme">Gradient background from theme</string>
-    <string name="vimusic_show_search_button_in_navigation_bar">Show search button in navigation bar</string>
-    <string name="vismusic_only_in_left_right_navigation_bar">Only for ViMusic ui mode in left/right navigation bar</string>
     <string name="info_no_songs_yet">No songs yet</string>
     <string name="theme_customized">Customized</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">Do you really want to reset the custom light theme colors?</string>
@@ -764,9 +760,6 @@
     <string name="carouselsize">Thumbnail Size in Expanded Mode</string>
     <string name="addednext">Added to play next</string>
     <string name="autosync">Auto Sync Imported Playlists</string>
-    <string name="message_type">Message type</string>
-    <string name="message_type_modern">Modern</string>
-    <string name="message_type_essential">Essential</string>
     <string name="songs_number_to_show">Songs number to show</string>
     <string name="player_pause_on_volume_zero">Pause on volume zero</string>
     <string name="info_pauses_player_when_volume_zero">Pauses the player when the volume reaches 0 and resumes when the volume is greater than 0</string>

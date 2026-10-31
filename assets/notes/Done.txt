@@ -57,6 +57,12 @@ Fixed:
   - Assemble Debug and pass 29 focused search/Settings tests; complete independent reviews and keep real IME routing and deeper playlist/podcast host fixtures as separate verification follow-ups.
 
 Removed:
+- remove(ui): retire ViMusic and the obsolete toast-style selector
+  - Remove UiType, MessageType, applyUiType and alternate interface branches, including Quick Picks; retain the N-Zik interface and existing Modern toast engine.
+  - Remove unavailable selectors, search/default entries and ten dead resource keys across source/locales; preserve remaining translations and upstream credits.
+  - Ignore retired keys during backup restore/export and remove them idempotently on profile access without rewriting unrelated preferences.
+  - Assemble Debug and pass 503 regression tests; full former-preset device navigation remains a separate verification follow-up.
+
 - remove(updater): retire legacy full and full32 release asset compatibility
   - Require release64/release32 APK names for stable release selection and extraction, preserving modern ABI and beta routing.
   - Stop publishing full/full32 aliases in the stable workflow while retaining minified compatibility and separate beta/dev workflows.

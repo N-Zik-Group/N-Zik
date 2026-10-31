@@ -30,7 +30,6 @@ import androidx.navigation.NavController
 import app.n_zik.android.colorPalette
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.NavigationBarType
-import app.it.fast4x.rimusic.enums.UiType
 import app.n_zik.android.showSearchIconInNav
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.themed.Button
@@ -184,59 +183,14 @@ class VerticalNavigationBar(
                 .width(Dimensions.navigationRailWidth)
                 .verticalScroll( rememberScrollState() )
         ) {
-            Box(
-                contentAlignment = Alignment.TopCenter
-            ) {
-                // Show settings and statistics buttons in homepage
-                // Show back button in other screens
-                if(navController.currentBackStackEntry?.destination?.route != NavRoutes.home.name
-                    && UiType.ViMusic.isCurrent())
-                    BackButton().Draw()
-            }
-
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 content = { buttonList.forEach { it() } }
             )
 
-            // Only show search icon when UI is ViMusic and
-            // setting is turned on
 
-            if( UiType.ViMusic.isCurrent() ) {
-                val iconSize: Dp = Dimensions.navigationRailWidth
-                //val iconHeight: Dp = Dimensions.halfheaderHeight
-                if ( showSearchIconInNav() )
-                    Box(
-                        contentAlignment = Alignment.TopCenter,
-                        modifier = Modifier.size(iconSize),
-                        content = {
-                            SearchButton().Draw()
-                        }
-                    )
-
-                Box(
-                    contentAlignment = Alignment.TopCenter,
-                    modifier = Modifier.size(iconSize),
-                    content = {
-                        StatsButton().Draw()
-                    }
-                )
-                Box(
-                    contentAlignment = Alignment.TopCenter,
-                    modifier = Modifier.size(iconSize),
-                    content = {
-                        SettingsButton().Draw()
-                    }
-                )
-            }
         }
     }
 }
-
-
-
-
-
-
 
 

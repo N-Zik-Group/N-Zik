@@ -45,7 +45,6 @@ import app.it.fast4x.compose.persist.persist
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
-import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.ShimmerHost
