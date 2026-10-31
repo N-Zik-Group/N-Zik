@@ -165,3 +165,6 @@ Added:
 
 - fix(player): unify Glass controls carousel and landscape layout
   - Preserve player variants, current-cover identity, carousel overlays, queue budgets and native timelines; align landscape artwork above the toolbar.
+
+- fix(library): apply shared collection surfaces and spacing
+  - Integrate collection headers, swipe feedback, artwork overlays and safe content spacing.

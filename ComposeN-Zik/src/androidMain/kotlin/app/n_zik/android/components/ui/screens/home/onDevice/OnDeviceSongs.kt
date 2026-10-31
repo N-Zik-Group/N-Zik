@@ -31,7 +31,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material3.Button
+import app.n_zik.android.components.glass.PageButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
@@ -298,7 +298,7 @@ fun OnDeviceSong(
 
                         Spacer( Modifier.height( 20.dp ) )
 
-                        Button(
+                        PageButton(
                             border = BorderStroke( 2.dp, colorPalette().accent ),
                             colors = ButtonDefaults.buttonColors().copy( containerColor = Color.Transparent ),
                             onClick = {

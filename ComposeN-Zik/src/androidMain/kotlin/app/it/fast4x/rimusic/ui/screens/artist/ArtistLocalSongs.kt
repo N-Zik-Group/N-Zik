@@ -1,5 +1,6 @@
 package app.it.fast4x.rimusic.ui.screens.artist
 
+import app.n_zik.android.components.glass.GlassArtworkBackdrop
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.draw.clip
 
@@ -735,13 +736,14 @@ fun ArtistHeader(
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
     val isLandscape = isLandscape
 
+    GlassArtworkBackdrop(hasArtwork = !isLandscape) { artworkBackdrop ->
     Box(Modifier.fillMaxWidth()) {
         if (!isLandscape)
             Image(
                 painter = thumbnailPainter,
                 contentDescription = null,
                 contentScale = ContentScale.FillWidth,
-                modifier = Modifier
+                modifier = Modifier.then(artworkBackdrop)
                     .aspectRatio(4f / 3)
                     .fillMaxWidth()
                     .align(Alignment.Center)
@@ -795,6 +797,7 @@ fun ArtistHeader(
                 }
             )
         }
+    }
     }
 }
 

@@ -32,6 +32,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import app.n_zik.android.components.glass.explicitBadgeIconId
 import app.n_zik.android.components.glass.glassExplicitBadgeBackground
+import app.n_zik.android.components.glass.GlassSongRowSurface
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
@@ -370,15 +371,15 @@ fun SongItem(
     val context = LocalContext.current
     val colorPalette = LocalAppearance.current.colorPalette
 
+    GlassSongRowSurface(colorPalette.background0, if (isNowPlaying) colorPalette.favoritesOverlay else null,
+        uiRoundnessShape(), useNowPlayingMaterial = false, paintBackground = false) { rowSurface ->
     ItemContainer(
         alternative = false,
         thumbnailSizeDp = thumbnailSizeDp,
         modifier = modifier
             .padding(end = 8.dp)
             .clip(uiRoundnessShape())
-            .conditional(isNowPlaying){
-                background(colorPalette.favoritesOverlay)
-            }
+            .then(rowSurface)
 
     ) {
         Box(
@@ -402,7 +403,7 @@ fun SongItem(
                         else -> colorPalette().favoritesIcon
                     },
                     iconSize = 12.dp,
-                    modifier = Modifier
+                    placementModifier = Modifier
                         .align(Alignment.BottomStart)
                         .padding(4.dp)
 
@@ -728,6 +729,7 @@ fun SongItem(
 
             }
         }
+    }
     }
 }
 

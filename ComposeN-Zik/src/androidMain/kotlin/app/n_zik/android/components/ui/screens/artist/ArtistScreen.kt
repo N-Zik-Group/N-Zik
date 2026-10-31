@@ -1,6 +1,7 @@
 // Ported from RiPlay (AGPL-3.0) — base: it.fast4x.riplay.ui.screens.artist / it.fast4x.riplay.extensions.musicbrainz
 package app.n_zik.android.components.ui.screens.artist
 
+import app.n_zik.android.components.glass.GlassArtworkBackdrop
 import app.n_zik.android.components.ui.screens.CollectionPageStatus
 import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
@@ -552,13 +553,14 @@ fun ArtistOverview(
                 contentPadding = contentPadding,
             ) {
                 item("header") {
+                    GlassArtworkBackdrop(hasArtwork = !isLandscape) { artworkBackdrop ->
                     Box(Modifier.fillMaxWidth()) {
                         if (!isLandscape)
                             Image(
                                 painter = thumbnailPainter,
                                 contentDescription = null,
                                 contentScale = ContentScale.FillWidth,
-                                modifier = Modifier.aspectRatio(4f / 3)
+                                modifier = Modifier.then(artworkBackdrop).aspectRatio(4f / 3)
                                     .fillMaxWidth()
                                     .align(Alignment.Center)
                                     .fadingEdge(
@@ -625,6 +627,7 @@ fun ArtistOverview(
                             }
                         )
                         }
+                    }
                     }
                 }
 

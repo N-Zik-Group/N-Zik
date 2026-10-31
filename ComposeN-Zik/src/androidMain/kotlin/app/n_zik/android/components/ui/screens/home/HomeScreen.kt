@@ -363,6 +363,11 @@ fun HomeScreen(
                     app.n_zik.android.extensions.discord.DiscordUiState.currentHomeTab.value = currentTabId
                 }
 
+                androidx.compose.runtime.CompositionLocalProvider(
+                    app.n_zik.android.components.glass.LocalGlassScope provides
+                        if (currentTabId == "quickpicks") app.n_zik.android.components.glass.GlassScope.Home
+                        else app.n_zik.android.components.glass.GlassScope.Library,
+                ) {
                 when (currentTabId) {
                     "quickpicks" -> HomeQuickPicks(
                         topContentInsetProvider = topContentInset,
@@ -455,6 +460,7 @@ fun HomeScreen(
 
                     )
                 }
+                } // end home destination Glass scope
             }
         }
     }

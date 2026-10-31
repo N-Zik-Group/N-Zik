@@ -632,7 +632,16 @@ fun HomeAlbums(
 
                     val nestedScrollConnection = rememberHomeHeaderConnection(headerHeight, headerOffsetState, itemsOnDisplay.isNotEmpty())
 
-                    Box(modifier = Modifier.fillMaxSize().nestedScroll(nestedScrollConnection)) {
+                    HomeChromeLayout(
+                        modifier = Modifier.fillMaxSize().nestedScroll(nestedScrollConnection),
+                        header = {
+                            HomeCollapsingHeader(
+                                headerOffset = headerOffsetState,
+                                headerHeight = headerHeightState,
+                                topContentInset = topContentInsetProvider,
+                            ) { header(headerOffsetState, headerHeightState) }
+                        },
+                    ) {
                         val headerDensity = androidx.compose.ui.platform.LocalDensity.current
                         LazyVerticalGrid(
                             state = lazyGridState,
@@ -775,15 +784,6 @@ fun HomeAlbums(
                             }
                         }
 
-                        HomeCollapsingHeader(
-                            headerOffset = headerOffsetState,
-                            headerHeight = headerHeightState,
-                            topContentInset = topContentInsetProvider,
-                        ) {
-                            header(headerOffsetState, headerHeightState)
-                        }
-                    }
-
                 if (itemsOnDisplay.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding(topInsetProvider = scrollContentInsetProvider, base = PaddingValues(top = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() }, bottom = Dimensions.bottomSpacer))),
@@ -792,6 +792,7 @@ fun HomeAlbums(
                         if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.no_items))
                     }
                 }
+                    }
             }
             }
 

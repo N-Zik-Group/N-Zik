@@ -625,7 +625,16 @@ fun HomeArtists(
 
                     val nestedScrollConnection = rememberHomeHeaderConnection(headerHeight, headerOffsetState, itemsOnDisplay.isNotEmpty())
 
-                    Box(modifier = Modifier.fillMaxSize().nestedScroll(nestedScrollConnection)) {
+                    HomeChromeLayout(
+                        modifier = Modifier.fillMaxSize().nestedScroll(nestedScrollConnection),
+                        header = {
+                            HomeCollapsingHeader(
+                                headerOffset = headerOffsetState,
+                                headerHeight = headerHeightState,
+                                topContentInset = topContentInsetProvider,
+                            ) { header(headerOffsetState, headerHeightState) }
+                        },
+                    ) {
                         val headerDensity = androidx.compose.ui.platform.LocalDensity.current
                         LazyVerticalGrid(
                             state = lazyGridState,
@@ -759,14 +768,6 @@ fun HomeArtists(
                     }
                 }
                     }
-
-                        HomeCollapsingHeader(
-                            headerOffset = headerOffsetState,
-                            headerHeight = headerHeightState,
-                            topContentInset = topContentInsetProvider,
-                        ) {
-                            header(headerOffsetState, headerHeightState)
-                        }
             }
             }
 

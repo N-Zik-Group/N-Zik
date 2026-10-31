@@ -1,5 +1,7 @@
 package app.it.fast4x.rimusic.ui.screens.localplaylist
 
+import app.n_zik.android.components.glass.glassGlobalIndication
+
 import androidx.compose.foundation.layout.PaddingValues
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.dialog.common.DialogPresence
@@ -105,6 +107,7 @@ import app.it.fast4x.rimusic.ui.components.themed.FloatingActionsContainerWithSc
 import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassToolbarButtons
+import app.n_zik.android.components.glass.GlassControlOverflowColumn
 import app.n_zik.android.components.glass.GlassToolbarLoading
 import app.n_zik.android.components.glass.GlassToolbarRow
 import app.n_zik.android.components.glass.GlassToolbarColumn
@@ -195,6 +198,7 @@ import app.n_zik.android.components.playlist.PinPlaylist
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.components.playlist.PlaylistSongsSort
+import app.n_zik.android.components.playlist.LocalPlaylistHeaderSurfaceScope
 import app.n_zik.android.components.playlist.localPlaylistHeaderSurface
 import app.n_zik.android.components.dialog.playlist.PlaylistInsertionDialog
 import app.n_zik.android.utils.playlist.supportsInsertionPosition
@@ -1141,7 +1145,7 @@ fun LocalPlaylistSongs(
     val playlistThumbnailSizeDp = Dimensions.thumbnails.playlist
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
 
-    val rippleIndication = ripple(bounded = false)
+    val rippleIndication = glassGlobalIndication(ripple(bounded = false))
 
     val playlistNotMonthlyType =
         playlist?.name?.startsWith(MONTHLY_PREFIX, 0, true) == false &&
@@ -1199,6 +1203,7 @@ fun LocalPlaylistSongs(
                 key = "header",
                 contentType = 0
             ) {
+                GlassControlOverflowColumn {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -1219,6 +1224,7 @@ fun LocalPlaylistSongs(
 
                 }
 
+                LocalPlaylistHeaderSurfaceScope(glassSettings) { exported ->
                 Row(
                     horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically,
@@ -1226,7 +1232,7 @@ fun LocalPlaylistSongs(
                         //.background(colorPalette().background4)
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
-                        .localPlaylistHeaderSurface(glassSettings)
+                        .localPlaylistHeaderSurface(glassSettings, exported)
                 ) {
 
                     playlist?.let {
@@ -1361,6 +1367,7 @@ fun LocalPlaylistSongs(
                         }
                     }
                 }
+                }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
@@ -1395,7 +1402,7 @@ fun LocalPlaylistSongs(
                             "sync" -> if ( !offlineMode && !playlist?.browseId.isNullOrBlank() ) add( syncComponent )
                             "listen_on_yt" -> if ( !playlist?.browseId.isNullOrBlank() ) add( listenOnYT )
                             "import_menu" -> add( importMenu )
-                            // Spec 2: rewind-* keep their language-neutral name — no rename
+                            // Spec 2: rewind-* keep their language-neutral name â€” no rename
                             "rename" -> if ( !isRewindPlaylist ) add( renameDialog )
                             "delete" -> add( deleteDialog )
                             "export" -> add( exportDialog )
@@ -1451,6 +1458,7 @@ fun LocalPlaylistSongs(
                 }
 
                 Column { search.SearchBar( this ) }
+                }
             }
                 if (search.inputValue.isNotBlank() && loadedItems != null &&
                     filteredQuery == search.inputValue && itemsOnDisplay.isEmpty()

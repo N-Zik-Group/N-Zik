@@ -823,20 +823,20 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
             .fillMaxWidth()
             .nestedScroll(nestedScrollConnection)
     ) {
-        Column( Modifier.fillMaxSize().sharedHomeGlassContent().glassFloatingActionContent(floatingBackdrop) ) {
-            val headerPadding = with(androidx.compose.ui.platform.LocalDensity.current) { headerHeight.toDp() }
-            when( builtInPlaylist ) {
-                BuiltInPlaylist.OnDevice -> OnDeviceSong( navController, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, headerPadding, scrollContentInsetProvider )
-                else                     -> HomeSongs( navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, matchButton = null, onRecommendationCountChange = { count -> recommendationCount = count }, onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading }, isRecommendationEnabled = isRecommendationEnabled, refreshKey = matchRefreshKey, onMatchClick = { showConfirmMatchAllDialog = true }, headerPadding = headerPadding, topContentInsetProvider = scrollContentInsetProvider )
+        HomeChromeLayout(Modifier.fillMaxSize(), header = {
+            HomeCollapsingHeader(
+                headerOffset = headerOffsetState,
+                headerHeight = headerHeightState,
+                topContentInset = topContentInsetProvider,
+            ) { header(headerOffsetState, headerHeightState) }
+        }) {
+            Column( Modifier.fillMaxSize().sharedHomeGlassContent().glassFloatingActionContent(floatingBackdrop) ) {
+                val headerPadding = with(androidx.compose.ui.platform.LocalDensity.current) { headerHeight.toDp() }
+                when( builtInPlaylist ) {
+                    BuiltInPlaylist.OnDevice -> OnDeviceSong( navController, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, headerPadding, scrollContentInsetProvider )
+                    else                     -> HomeSongs( navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, ::getSongs, matchButton = null, onRecommendationCountChange = { count -> recommendationCount = count }, onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading }, isRecommendationEnabled = isRecommendationEnabled, refreshKey = matchRefreshKey, onMatchClick = { showConfirmMatchAllDialog = true }, headerPadding = headerPadding, topContentInsetProvider = scrollContentInsetProvider )
+                }
             }
-        }
-
-        HomeCollapsingHeader(
-            headerOffset = headerOffsetState,
-            headerHeight = headerHeightState,
-            topContentInset = topContentInsetProvider,
-        ) {
-            header(headerOffsetState, headerHeightState)
         }
         GlassFloatingActions(floatingBackdrop) {
             val showFloatingIcon by rememberPreference( showFloatingIconKey, false )

@@ -1,12 +1,12 @@
 package app.n_zik.android.components.ui.screens.home.quickpicks
 
 import app.n_zik.android.components.glass.GlassActionGroup
+import app.n_zik.android.components.glass.NativeSectionIconAction
 import app.n_zik.android.components.glass.GlassActionGroupItem
 import app.n_zik.android.components.glass.GlassActionCellWidth
 import app.n_zik.android.components.glass.GlassActionCellHeight
 import app.n_zik.android.components.glass.GlassActionIconSize
 import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import androidx.annotation.DrawableRes
@@ -20,7 +20,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.*
@@ -198,13 +197,16 @@ fun QuickPicksHeader(
                 if (isLoading) {
                     CircularProgressIndicator(Modifier.padding(end = 12.dp).size(24.dp), strokeWidth = 2.dp, color = colorPalette().textSecondary)
                 } else {
-                    Icon(painterResource(R.drawable.dice), stringResource(R.string.glass_action_shuffle), tint = colorPalette().text,
-                        modifier = Modifier.padding(end = 12.dp).clip(uiRoundnessShape()).glassAreaContour(glass, GlassArea.ActionButtons, uiRoundnessShape()).clickable(onClick = onDiceClick))
-                    Icon(painterResource(R.drawable.play), stringResource(R.string.glass_action_play_all), tint = colorPalette().text,
-                        modifier = Modifier.padding(end = 12.dp).clip(uiRoundnessShape()).glassAreaContour(glass, GlassArea.ActionButtons, uiRoundnessShape()).clickable(onClick = onPlayAllClick))
+                    NativeSectionIconAction(R.drawable.dice, stringResource(R.string.glass_action_shuffle),
+                        modifier = Modifier.padding(end = 12.dp), color = colorPalette().text,
+                        settings = glass, onClick = onDiceClick)
+                    NativeSectionIconAction(R.drawable.play, stringResource(R.string.glass_action_play_all),
+                        modifier = Modifier.padding(end = 12.dp), color = colorPalette().text,
+                        settings = glass, onClick = onPlayAllClick)
                 }
-                Icon(painterResource(R.drawable.settings), stringResource(R.string.sorting_order), tint = colorPalette().text,
-                    modifier = Modifier.clip(uiRoundnessShape()).glassAreaContour(glass, GlassArea.ActionButtons, uiRoundnessShape()).clickable(onClick = onSortClick))
+                NativeSectionIconAction(R.drawable.settings, stringResource(R.string.sorting_order),
+                        color = colorPalette().text,
+                        settings = glass, onClick = onSortClick)
             }
         }
 

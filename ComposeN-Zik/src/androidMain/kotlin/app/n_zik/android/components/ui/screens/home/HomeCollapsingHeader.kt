@@ -20,7 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
@@ -76,11 +76,12 @@ internal fun HomeCollapsingHeader(
         sharedGlass?.attach(owner)
         onDispose { sharedGlass?.detach(owner) }
     }
-    DisposableEffect(anchor, owner, headerHeight, headerOffset, density) {
+    DisposableEffect(anchor, owner, headerHeight, headerOffset, density, topContentInset) {
         anchor?.attach(
             owner,
             measuredHeight = { with(density) { headerHeight.intValue.toDp() } },
             scrollOffset = { with(density) { headerOffset.floatValue.toDp() } },
+            overlayTopInset = { anchor?.headerTopInset() ?: topContentInset() },
         ) {
             with(density) { visibleHomeHeaderHeightPx(headerHeight.intValue, headerOffset.floatValue).toDp() }
         }
@@ -149,9 +150,13 @@ internal fun HomeCollapsingHeader(
             .padding(panePadding)
             .clip(shape)
             .then(if (sharedGlass == null) Modifier.background(panelColor) else Modifier)
-            .onSizeChanged {
-                headerHeight.intValue = it.height
-                sharedGlass?.measuredPanelHeight?.intValue = it.height
+            .layout { measurable, constraints ->
+                val panel = measurable.measure(constraints)
+                // HomeChromeLayout measures this slot before subcomposing content.
+                // Publish in measurement, not an after-layout size callback.
+                headerHeight.intValue = panel.height
+                sharedGlass?.measuredPanelHeight?.intValue = panel.height
+                layout(panel.width, panel.height) { panel.placeRelative(0, 0) }
             }
     ) {
         Box(

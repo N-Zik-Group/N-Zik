@@ -1,14 +1,14 @@
 @file:kotlin.OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.n_zik.android.components
 
+import app.n_zik.android.components.glass.glassGlobalIndication
+
 import app.n_zik.android.core.database.*
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.ui.res.stringResource
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.LocalIndication
-import app.n_zik.android.components.glass.LocalGlassRippleActive
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -99,7 +99,7 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.components.tab.ItemSelector
-import app.n_zik.android.components.glass.glassNowPlayingRow
+import app.n_zik.android.components.glass.GlassSongRowSurface
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -130,10 +130,10 @@ private interface SongIndicator: Icon {
                 .clip(uiRoundnessShape())
                 .combinedClickable(
                     interactionSource = interactionSource,
-                    indication = ripple(
+                    indication = glassGlobalIndication(ripple(
                         bounded = false,
                         radius = 20.dp
-                    ),
+                    )),
                     enabled = isEnabled,
                     onClick = ::onShortClick,
                     onLongClick = {
@@ -210,15 +210,11 @@ fun SongItem(
     val currentMediaId by (player?.currentMediaItemIdAsState(player) ?: remember { mutableStateOf<String?>(null) })
     val isPlaying = currentMediaId == song.id
     val rowShape = uiRoundnessShape()
-    val rowBackground = if (isPlaying) {
-        Modifier.glassNowPlayingRow(backgroundColor, colorPalette.favoritesOverlay, rowShape)
-    } else {
-        Modifier.background(backgroundColor)
-    }
 
     val displaySong = song
 
     val menu = if( navController != null && onLongClick == null ) SongItemMenu( navController, displaySong ) else null
+    GlassSongRowSurface(backgroundColor, if (isPlaying) colorPalette.favoritesOverlay else null, rowShape) { rowBackground ->
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy( 12.dp ),
@@ -289,7 +285,7 @@ fun SongItem(
                     icon = if (likeState == true) getLikedIcon() else getDislikedIcon(),
                     color = if (likeState == false) colorPalette().red else colorPalette().favoritesIcon,
                     iconSize = 12.dp,
-                    modifier = Modifier
+                    placementModifier = Modifier
                         .align(Alignment.BottomStart)
                         .absoluteOffset( x = (-8).dp )
                 )
@@ -455,7 +451,7 @@ fun SongItem(
                     modifier = Modifier
                         .scale( 0.8f )
                         .clickable(
-                            indication = if (LocalGlassRippleActive.current) LocalIndication.current else null,
+                            indication = glassGlobalIndication(null),
                             interactionSource = remember { MutableInteractionSource() }
                         ) {
                             val newValue = !checkedState.value
@@ -467,6 +463,7 @@ fun SongItem(
         }
 
         trailingContent?.invoke( this )
+    }
     }
 }
 

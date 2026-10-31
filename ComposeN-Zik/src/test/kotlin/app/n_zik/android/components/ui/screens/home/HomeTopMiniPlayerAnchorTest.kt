@@ -11,6 +11,22 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class HomeTopMiniPlayerAnchorTest {
+    @Test fun `refresh overlay includes live Home header even without a top mini`() {
+        val state = HomeTopMiniPlayerAnchorState(mutableStateOf(null), mutableStateOf(8.dp))
+        var top = 88.dp
+        var visible = 112.dp
+        val owner = Any()
+        state.attach(owner, overlayTopInset = { top }) { visible }
+        assertEquals(200.dp, state.headerOverlayBottom())
+        visible = 56.dp
+        assertEquals(144.dp, state.headerOverlayBottom())
+        top = 24.dp
+        assertEquals(80.dp, state.headerOverlayBottom())
+        visible = 0.dp
+        assertEquals(24.dp, state.headerOverlayBottom())
+        state.detach(owner)
+        assertNull(state.headerOverlayBottom())
+    }
     @Test fun `side mini keeps its gap below the moving toolbar in both orientations`() {
         var visible = 180.dp
         val state = HomeTopMiniPlayerAnchorState(

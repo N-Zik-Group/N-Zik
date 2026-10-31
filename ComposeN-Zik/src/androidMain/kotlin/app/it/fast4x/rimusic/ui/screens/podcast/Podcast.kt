@@ -1,5 +1,8 @@
 package app.it.fast4x.rimusic.ui.screens.podcast
 
+import app.n_zik.android.components.glass.GlassArtworkBackdrop
+import app.n_zik.android.components.podcast.PodcastBannerThumbnail
+import app.n_zik.android.components.podcast.PodcastBookmarkAction
 import app.n_zik.android.components.ui.screens.CollectionPageStatus
 import androidx.compose.foundation.layout.PaddingValues
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
@@ -98,7 +101,6 @@ import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
 import app.n_zik.android.components.ui.screens.LayoutWithAdaptiveThumbnail
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsItemMenu
-import app.it.fast4x.rimusic.ui.components.themed.adaptiveThumbnailContent
 import app.n_zik.android.components.OfflineAwareLoader
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.search.UnifiedSearchBar
@@ -227,7 +229,9 @@ fun Podcast(
         mutableIntStateOf(0)
     }
 
-    val thumbnailContent = adaptiveThumbnailContent(podcastPage == null, podcastPage?.thumbnail?.firstOrNull()?.url)
+    val thumbnailContent: @Composable () -> Unit = {
+        PodcastBannerThumbnail(podcastPage == null, podcastPage?.thumbnail?.firstOrNull()?.url)
+    }
 
     val lazyListState = rememberLazyListState()
 
@@ -288,15 +292,17 @@ fun Podcast(
 
                     val modifierArt = if (isLandscape) Modifier.fillMaxWidth() else Modifier.fillMaxWidth().aspectRatio(4f / 3)
 
+                    GlassArtworkBackdrop(hasArtwork = !isLandscape && podcastPage != null) { artworkBackdrop ->
                     Box(
                         modifier = modifierArt
                     ) {
                         if (podcastPage != null) {
                             if(!isLandscape)
                                 ImageCacheFactory.AsyncImage(
+                                    shape = null,
                                     thumbnailUrl = podcastPage!!.thumbnail.firstOrNull()?.url?.resize(1000, 1000),
                                     contentDescription = stringResource(R.string.cd_loading),
-                                    modifier = Modifier
+                                    modifier = Modifier.then(artworkBackdrop)
                                         .fillMaxWidth()
                                         .align(Alignment.Center)
                                         .fadingEdge(
@@ -361,6 +367,7 @@ fun Podcast(
 
                         }
                     }
+                    }
 
                 }
 
@@ -370,7 +377,7 @@ fun Podcast(
                 ) {
                     val glassActions = rememberGlassSettings().usesGlassMaterial(GlassArea.ActionButtons)
                     Row(
-                        horizontalArrangement = if (glassActions) Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally) else Arrangement.Center,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .padding(top = 10.dp)
@@ -382,6 +389,14 @@ fun Podcast(
                         if (podcastPage != null) {
 
                             //actionsContent()
+
+                            PodcastBookmarkAction(
+                                browseId = browseId,
+                                title = podcastPage?.title.orEmpty(),
+                                episodes = podcastPage?.listEpisode.orEmpty()
+                                    .map(Innertube.Podcast.EpisodeItem::asMediaItem),
+                                onExistingImport = { isImportingPlaylist = true },
+                            )
 
                             val toolbarActions: @Composable () -> Unit = {
                                 HeaderIconButton(

@@ -18,6 +18,7 @@ internal class HomeTopMiniPlayerAnchorState(
         val owner: Any,
         val measuredHeight: (() -> Dp)?,
         val scrollOffset: (() -> Dp)?,
+        val overlayTopInset: (() -> Dp)?,
         val visibleHeight: () -> Dp,
     )
 
@@ -27,9 +28,10 @@ internal class HomeTopMiniPlayerAnchorState(
         owner: Any,
         measuredHeight: (() -> Dp)? = null,
         scrollOffset: (() -> Dp)? = null,
+        overlayTopInset: (() -> Dp)? = null,
         visibleHeight: () -> Dp,
     ) {
-        header = Header(owner, measuredHeight, scrollOffset, visibleHeight)
+        header = Header(owner, measuredHeight, scrollOffset, overlayTopInset, visibleHeight)
     }
 
     // Reattachment or late measurement changes placement; scrolling never changes this key.
@@ -55,6 +57,11 @@ internal class HomeTopMiniPlayerAnchorState(
     }
 
     fun miniPrecedesHeader(): Boolean = miniBeforeHeaderHeight.value != null
+
+    /** Live visual geometry, independent of the list's fixed initial reserve. */
+    fun headerOverlayBottom(): Dp? = header?.let { active ->
+        active.overlayTopInset?.invoke()?.let { top -> top + active.visibleHeight().coerceAtLeast(0.dp) }
+    }
 
     fun headerTopInset(): Dp? = baseTopInset.value?.invoke()?.let { base ->
         miniBeforeHeaderHeight.value?.let { base + it + topGap.value }

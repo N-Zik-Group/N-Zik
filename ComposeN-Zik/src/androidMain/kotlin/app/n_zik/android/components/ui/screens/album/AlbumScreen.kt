@@ -1,6 +1,7 @@
 // Ported from RiPlay (AGPL-3.0) — base: it.fast4x.riplay.ui.screens.album / it.fast4x.riplay.extensions.musicbrainz
 package app.n_zik.android.components.ui.screens.album
 
+import app.n_zik.android.components.glass.GlassArtworkBackdrop
 import app.n_zik.android.components.ui.screens.CollectionPageStatus
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import android.content.Intent
@@ -629,13 +630,14 @@ fun AlbumDetails(
                             .background(colorPalette().background0)
                     ) {
                         item("header") {
+                            GlassArtworkBackdrop(hasArtwork = !isLandscape) { artworkBackdrop ->
                             Box(Modifier.fillMaxWidth()) {
                                 if (!isLandscape)
                                     Image(
                                         painter = thumbnailPainter,
                                         contentDescription = null,
                                         contentScale = ContentScale.FillWidth,
-                                        modifier = Modifier.aspectRatio(4f / 3)
+                                        modifier = Modifier.then(artworkBackdrop).aspectRatio(4f / 3)
                                             .fillMaxWidth()
                                             .align(Alignment.Center)
                                             .fadingEdge(
@@ -686,6 +688,7 @@ fun AlbumDetails(
                                     }
                                 )
                                 }
+                            }
                             }
                         }
 

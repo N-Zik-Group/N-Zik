@@ -1,5 +1,6 @@
 package app.it.fast4x.rimusic.ui.screens.playlist
 
+import app.n_zik.android.components.glass.GlassArtworkBackdrop
 import app.n_zik.android.components.ui.screens.CollectionPageStatus
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.draw.alpha
@@ -471,6 +472,7 @@ fun PlaylistSongList(
 
                     val modifierArt = Modifier.fillMaxWidth()
 
+                    GlassArtworkBackdrop(hasArtwork = !isLandscape && playlistPage != null) { artworkBackdrop ->
                     Box(
                         modifier = modifierArt
                     ) {
@@ -484,7 +486,7 @@ fun PlaylistSongList(
                                             1000
                                         ),
                                         contentDescription = stringResource(R.string.cd_loading),
-                                        modifier = Modifier
+                                        modifier = Modifier.then(artworkBackdrop)
                                             .fillMaxWidth()
                                             .align(Alignment.Center)
                                             .fadingEdge(
@@ -565,6 +567,7 @@ fun PlaylistSongList(
                             }
 
                         }
+                    }
                     }
 
                 }
