@@ -61,7 +61,8 @@ class GlassPolicyTest {
         assertEquals(GlassQuality.Performance, defaultGlassQuality(35, true))
     }
 
-    @Test fun `reset retains profile and clears every material and surface override`() {
+    @Test fun `reset restores device profile and clears every material and surface override`() {
+        val fresh = store.read()
         store.setProfile(GlassQuality.Quality)
         store.setFloat(glassFilmKey, .9f)
         store.setFloat(glassIndicatorOpacityKey, .7f)
@@ -73,7 +74,7 @@ class GlassPolicyTest {
         listOf(glassDropdownsKey, glassDialogsKey, glassDialogButtonsKey, glassNowPlayingKey, glassImageRimsKey, glassSettingsCardRimsKey, glassSettingsCardsKey, glassSearchBarsKey)
             .forEach { store.setBoolean(it, false) }
         store.reset()
-        assertEquals(glassProfileDefaults(GlassQuality.Quality), store.read())
+        assertEquals(fresh, store.read())
     }
 
     @Test fun `profile switch discards optics while preserving destination tint and dimming choices`() {

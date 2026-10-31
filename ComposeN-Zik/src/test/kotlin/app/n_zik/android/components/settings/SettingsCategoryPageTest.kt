@@ -48,7 +48,6 @@ import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.GlassQuality
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.glass.glassFilmKey
-import app.n_zik.android.components.glass.glassProfileDefaults
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -267,8 +266,10 @@ class SettingsCategoryPageTest {
         assertEquals(null, resetScopeForTarget("general.playback.audio_quality"))
     }
 
-    @Test fun `Glass reset scope restores current quality defaults without changing master or other settings`() {
+    @Test fun `Glass reset scope restores cold defaults without changing master or other settings`() {
+        context.getSharedPreferences("nzik_square_glass_v2", Context.MODE_PRIVATE).edit().clear().commit()
         val store = GlassStore(context)
+        val fresh = store.read()
         store.setProfile(GlassQuality.Quality)
         store.setFloat(glassFilmKey, .263f)
         context.preferences.edit().putBoolean(glassEnabledKey, true).commit()
@@ -284,7 +285,7 @@ class SettingsCategoryPageTest {
         composeRule.onNodeWithTag("settings.reset.scope.-1").performScrollTo().performClick()
         assertEquals(.263f, store.read().film)
         composeRule.onNodeWithTag("settings.reset.glass.action").performClick()
-        assertEquals(glassProfileDefaults(GlassQuality.Quality), store.read())
+        assertEquals(fresh, store.read())
         assertEquals(before, context.preferences.all)
     }
 

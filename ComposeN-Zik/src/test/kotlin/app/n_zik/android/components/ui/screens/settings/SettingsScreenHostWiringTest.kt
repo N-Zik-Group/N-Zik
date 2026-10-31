@@ -55,6 +55,7 @@ import app.n_zik.android.MainApplication
 import app.n_zik.android.R
 import app.n_zik.android.core.navigation.LocalSettingsBackNavigation
 import app.n_zik.android.core.navigation.SettingsBackNavigation
+import app.n_zik.android.components.settings.common.AllSettingsEntryTargets
 import app.n_zik.android.components.settings.common.hasAutoUpdate
 import app.n_zik.android.components.settings.common.isGlassSettingsLink
 import app.n_zik.android.components.glass.GlassStore
@@ -285,6 +286,62 @@ class SettingsScreenHostWiringTest {
         }
         composeRule.onNodeWithTag("settings_global_search").assertTextEquals(query)
         verify(exactly = 0) { navController.navigate("settingsGlass") }
+        verify(exactly = 0) { navController.popBackStack(NavRoutes.home.name, false) }
+    }
+
+    @Test
+    fun rootBackRetainsSettingsContentDuringOuterNavigation() {
+        showHost()
+        composeRule.runOnIdle { assertTrue(backNavigation.handleBack()) }
+        composeRule.mainClock.advanceTimeBy(1000)
+        assertTrue("Outgoing Settings root remains composed until the outer host leaves", globalPageIsComposed())
+        verify(exactly = 1) { navController.popBackStack(NavRoutes.home.name, false) }
+    }
+
+    @Test
+    fun categoryGlassSearchUsesInnerGraphAndBackRetainsQuery() {
+        categoryExactSearchUsesInnerGraph(
+            category = "interface",
+            targetId = "glass.ripple.enabled",
+            destinationTag = "settings.glass.ripple.enabled",
+        )
+    }
+
+    @Test
+    fun categoryOrdinarySearchUsesInnerGraphAndBackRetainsQuery() {
+        categoryExactSearchUsesInnerGraph(
+            category = "audio",
+            targetId = "general.audio_effects.skip_silence",
+            destinationTag = "settings.target.general.audio_effects.skip_silence",
+        )
+    }
+
+    private fun categoryExactSearchUsesInnerGraph(category: String, targetId: String, destinationTag: String) {
+        showHost()
+        composeRule.onNodeWithTag("settings_global_list").performScrollToKey("groups")
+        composeRule.onNodeWithTag("settings_global_category_$category", useUnmergedTree = true)
+            .performSemanticsAction(SemanticsActions.OnClick) { it() }
+        pumpUntil("category opened", 30_000) {
+            composeRule.onAllNodesWithTag("settings.category.$category").fetchSemanticsNodes().size == 1 && globalPageIsGone()
+        }
+        val target = AllSettingsEntryTargets.single { it.id == targetId }
+        val query = context.getString(target.labelRes)
+        composeRule.onNode(hasSetTextAction()).performTextInput(query)
+        val result = "settings.category.entry.$targetId"
+        pumpUntil("exact category result", 30_000) {
+            runCatching { composeRule.onNodeWithTag(result).assertIsDisplayed() }.isSuccess
+        }
+        composeRule.onNodeWithTag(result).performClick()
+        verify(exactly = 0) { navController.navigate(any<String>()) }
+        pumpUntil("exact option opened in nested graph", 30_000) {
+            runCatching { composeRule.onNodeWithTag(destinationTag, useUnmergedTree = true).assertIsDisplayed() }.isSuccess &&
+                composeRule.onAllNodesWithTag(result).fetchSemanticsNodes().isEmpty()
+        }
+        composeRule.runOnIdle { assertTrue(backNavigation.handleBack()) }
+        pumpUntil("category search restored", 30_000) {
+            runCatching { composeRule.onNodeWithTag(result).assertIsDisplayed() }.isSuccess
+        }
+        composeRule.onNode(hasSetTextAction()).assertTextEquals(query)
         verify(exactly = 0) { navController.popBackStack(NavRoutes.home.name, false) }
     }
 

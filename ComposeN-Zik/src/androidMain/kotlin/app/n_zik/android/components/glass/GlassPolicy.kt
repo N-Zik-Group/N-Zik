@@ -281,9 +281,9 @@ class GlassStore(context: Context) {
             putString(glassQualityKey, profile.name)
         }.apply()
     }
+    /** Restores fresh device defaults; the separate profile-scoped master switch is unchanged. */
     fun reset() {
-        preferences.edit().clear().putString(glassQualityKey, read().quality.name)
-            .putBoolean(glassIndependentAreasKey, true).apply()
+        preferences.edit().clear().putBoolean(glassIndependentAreasKey, true).apply()
     }
     fun setFloat(key: String, value: Float) { preferences.edit().putFloat(key, clampGlassValue(key, value)).apply() }
     fun setBoolean(key: String, value: Boolean) {

@@ -77,10 +77,13 @@ class Search private constructor(
             null
         )
 
-        /** Variant for hosts that keep the bar visible from the first frame (no appearance animation). */
+        /** Hosts may retain input across nested destinations without restoring keyboard focus. */
         @Composable
-        operator fun invoke( initialVisible: Boolean ) = Search(
-            remember { mutableStateOf( TextFieldValue("") ) },
+        operator fun invoke(
+            initialVisible: Boolean,
+            inputState: MutableState<TextFieldValue> = remember { mutableStateOf(TextFieldValue("")) },
+        ) = Search(
+            inputState,
             remember { mutableStateOf( initialVisible ) },
             remember { mutableStateOf( false ) },
             null,

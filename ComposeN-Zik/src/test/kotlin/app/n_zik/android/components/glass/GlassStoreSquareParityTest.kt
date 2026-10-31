@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.test.core.app.ApplicationProvider
+import app.it.fast4x.rimusic.utils.preferences
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
@@ -46,29 +47,53 @@ class GlassStoreSquareParityTest {
         assertSquareSnapshot(lowRam, GlassQuality.Performance)
     }
 
-    @Test fun `reset restores selected Square profile after all overrides and survives reopening`() {
-        val store = GlassStore(deviceContext(false))
-        GlassQuality.entries.forEach { profile ->
-            store.setProfile(profile)
-            listOf(glassTintStrengthKey, glassVibrancyKey, glassBlurKey, glassFilmKey,
-                glassIndicatorOpacityKey, glassRimKey, glassDepthKey, glassAmountKey,
-                glassDialogDimmingKey, glassMenuDimmingKey).forEach { store.setFloat(it, .1f) }
-            store.setColor(0xFFFF0000.toInt())
-            store.setBoolean(glassDispersionKey, true)
-            store.setBoolean(glassDepthEffectKey, true)
-            GlassArea.entries.forEach { store.setAreaMode(it, GlassAreaMode.Disabled) }
-            store.reset()
-            val reopened = GlassStore(deviceContext(false)).read()
-            assertEquals(profile, reopened.quality)
-            assertSquareSnapshot(reopened, profile)
-            assertTrue(reopened.areaModes.isEmpty())
-            GlassArea.entries.forEach { area ->
-                assertEquals(if (area == GlassArea.Images) GlassAreaMode.ContourOnly
-                    else GlassAreaMode.GlassAndContour, reopened.mode(area))
+    @Test fun `reset matches cold device defaults from every quality without changing either master state`() {
+        val previousMaster = if (context.preferences.contains(glassEnabledKey))
+            context.preferences.getBoolean(glassEnabledKey, false) else null
+        try {
+            listOf(false, true).forEach { lowRam ->
+                GlassQuality.entries.forEach { profile ->
+                    listOf(false, true).forEach { enabled ->
+                        clearPreferences()
+                        val device = deviceContext(lowRam)
+                        val fresh = GlassStore(device).read()
+                        context.preferences.edit().putBoolean(glassEnabledKey, enabled).commit()
+                        val masterBefore = context.preferences.all.toMap()
+                        val store = GlassStore(device)
+                        store.setProfile(profile)
+                        listOf(glassTintStrengthKey, glassVibrancyKey, glassBlurKey, glassFilmKey,
+                            glassIndicatorOpacityKey, glassRimKey, glassDepthKey, glassAmountKey,
+                            glassDialogDimmingKey, glassMenuDimmingKey, glassRippleIntensityKey,
+                            glassRippleSizeKey, glassJellyIntensityKey).forEach { store.setFloat(it, .1f) }
+                        store.setColor(0xFFFF0000.toInt())
+                        store.setTint(GlassTintSource.Artwork)
+                        listOf(glassDispersionKey, glassDepthEffectKey).forEach { store.setBoolean(it, true) }
+                        listOf(glassRippleEnabledKey, glassJellyEnabledKey, glassSettingsCardRimsKey)
+                            .forEach { store.setBoolean(it, false) }
+                        GlassArea.entries.forEach { area ->
+                            store.setBoolean(area.legacyKey, false)
+                            store.setAreaMode(area, GlassAreaMode.Disabled)
+                        }
+                        GlassScope.entries.forEach { scope -> scope.areas.forEach { area ->
+                            store.setContextMode(scope, area, GlassAreaMode.Disabled)
+                        } }
+                        store.reset()
+                        val reopened = GlassStore(device).read()
+                        assertEquals("lowRam=$lowRam quality=$profile master=$enabled", fresh, reopened)
+                        assertFalse(context.getSharedPreferences("nzik_square_glass_v2", Context.MODE_PRIVATE)
+                            .contains(glassQualityKey))
+                        assertEquals(masterBefore, context.preferences.all)
+                        assertSquareSnapshot(reopened, fresh.quality)
+                        GlassScope.entries.forEach { scope -> GlassArea.entries.forEach { area ->
+                            assertEquals(fresh.contextMode(scope, area), reopened.contextMode(scope, area))
+                        } }
+                    }
+                }
             }
-            // NZik's independent menu/dialog controls return to their own documented defaults.
-            assertEquals(.75f, reopened.dialogDimming)
-            assertEquals(.75f, reopened.menuDimming)
+        } finally {
+            context.preferences.edit().apply {
+                previousMaster?.let { putBoolean(glassEnabledKey, it) } ?: remove(glassEnabledKey)
+            }.commit()
         }
     }
 

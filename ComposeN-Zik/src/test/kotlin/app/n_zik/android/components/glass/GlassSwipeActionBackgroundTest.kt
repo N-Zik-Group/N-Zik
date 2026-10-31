@@ -30,11 +30,14 @@ import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.R
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Rule
 import org.junit.Test
+import org.junit.After
+import org.junit.Before
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -45,6 +48,19 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassSwipeActionBackgroundTest {
     @get:Rule val compose = createComposeRule()
+    private val context = ApplicationProvider.getApplicationContext<Context>()
+    private var previousMaster: Boolean? = null
+
+    @Before fun saveMasterPreference() {
+        previousMaster = if (context.preferences.contains(glassEnabledKey))
+            context.preferences.getBoolean(glassEnabledKey, false) else null
+    }
+
+    @After fun restoreMasterPreference() {
+        context.preferences.edit().apply {
+            previousMaster?.let { putBoolean(glassEnabledKey, it) } ?: remove(glassEnabledKey)
+        }.commit()
+    }
 
     @Test fun `embedded rows expose their card at rest and retain the swipe action film`() {
         val revealed = mutableStateOf(false)
@@ -139,7 +155,8 @@ class GlassSwipeActionBackgroundTest {
         var right = 0
         compose.setContent {
             Appearance {
-                SwipeableContent(onSwipeToLeft = { left++ }, onSwipeToRight = { right++ },
+                SwipeableContent(swipeToLeftIcon = R.drawable.close, swipeToRightIcon = R.drawable.close,
+                    onSwipeToLeft = { left++ }, onSwipeToRight = { right++ },
                     backgroundColor = Color.Green, modifier = Modifier.testTag("swipe")) {
                     Box(Modifier.size(280.dp, 64.dp))
                 }

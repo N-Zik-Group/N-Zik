@@ -34,6 +34,21 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(settings): restore exact category search navigation and back state
+  - Route detailed results through the nested Settings NavController while preserving app-level actions.
+  - Save each category query across destination disposal and preserve outgoing content when leaving the Settings root.
+  - Cover Glass and ordinary results, query restoration and root-back navigation through the real host.
+
+- fix(glass): restore cold device defaults and honor feedback exclusions
+  - Clear the saved quality during Glass reset so every setting matches a fresh device-derived snapshot; retain the separate master switch and unrelated preferences.
+  - Verify all coefficients, color sources, context modes and interactions across 24 device/profile combinations and the actual reset dialog.
+  - Honor explicit search-control ripple exclusions while retaining Jelly motion and single callback ownership.
+  - Repair stale swipe/onboarding fixtures and wait for dialog entry motion before strict bounds assertions.
+
+- fix(ui): match floating actions to navbar gray in Pitch Black
+  - Use shared surfaceColor for native backgrounds and Glass film on floating controls, child actions and the scroll-up arrow.
+  - Preserve other palettes, sizes and actions; cover native and Glass surfaces across three palettes.
+
 - fix(player): restore external EQ sessions and correct crossfade duration (issue https://github.com/N-Zik-Group/N-Zik/issues/939)
   - Forward audioSessionId explicitly through DiagExoPlayer and SeekCoalescingPlayer instead of inheriting the Java default value of zero.
   - Share a valid AudioTrack session between both crossfade players; preserve effect-session ownership across preload, handoff, pause, session replacement and service shutdown.

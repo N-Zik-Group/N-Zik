@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassFloatingActionIcon
 import app.n_zik.android.components.glass.glassNativeActionContour
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.uiRoundnessShape
 
 @Composable
@@ -30,14 +30,14 @@ fun PrimaryButton(
             icon = painterResource(iconId), onClick = onClick,
             modifier = modifier, enabled = enabled,
             movable = true,
-            filmColor = colorPalette().background2,
+            filmColor = surfaceColor(colorPalette().background2),
         )) return
     Box(
         modifier = modifier
             .glassNativeActionContour()
             .clip(uiRoundnessShape())
             .clip(uiRoundnessShape()).clickable(enabled = enabled, onClick = onClick)
-            .background(colorPalette().background2)
+            .background(surfaceColor(colorPalette().background2))
             .size(62.dp)
     ) {
         Image(

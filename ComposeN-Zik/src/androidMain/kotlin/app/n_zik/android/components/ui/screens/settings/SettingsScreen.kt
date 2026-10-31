@@ -81,9 +81,7 @@ fun SettingsScreen(
     val backOwner = remember { Any() }
     val innerEntry by innerNavController.currentBackStackEntryAsState()
     val handleBack by rememberUpdatedState<() -> Unit>({
-        if (innerEntry?.destination?.route == SETTINGS_GLASS_ROUTE) {
-            innerNavController.popBackStack()
-        } else if (!innerNavController.popBackStack(SETTINGS_GLOBAL_ROUTE, inclusive = false)) {
+        if (innerEntry?.destination?.route == SETTINGS_GLOBAL_ROUTE || !innerNavController.popBackStack()) {
             if (!navController.popBackStack(NavRoutes.home.name, inclusive = false)) {
                 navController.navigate(NavRoutes.home.name) {
                     popUpTo(NavRoutes.home.name) { inclusive = true }
@@ -178,6 +176,7 @@ fun SettingsScreen(
                     navController = navController,
                     target = entry.arguments?.getString("target").orEmpty(),
                     parentTarget = entry.arguments?.getString("parent").orEmpty(),
+                    onSearchResultNavigate = { route -> innerNavController.navigate(route) },
                 )
             }
             composable(

@@ -19,6 +19,7 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
@@ -69,6 +70,50 @@ class SearchOverlayGlassTest {
 
     @Test fun `native overlay action retains exact fill size and single callback`() = checkAction(false)
     @Test fun `Glass overlay action retains size and single callback`() = checkAction(true)
+
+    @Test fun `Glass overlay opt out removes held highlight while retaining Jelly and clicks`() {
+        val shape = RoundedCornerShape(0.dp)
+        val settings = GlassSettings(quality = GlassQuality.Performance, rim = 0f)
+            .inScope(GlassScope.Search)
+        val clicks = IntArray(2)
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            CompositionLocalProvider(LocalAppearance provides
+                Appearance(DefaultDarkColorPalette, Typography.fallback, shape, shape, shape)) {
+                Column(Modifier.background(Color.Black)) {
+                    listOf(false, true).forEachIndexed { index, indication ->
+                        Box(Modifier.size(96.dp, 40.dp).testTag("action.$index")
+                            .searchOverlayAction(shape, Color(0xFF397159), nativeIndication = indication,
+                                settings = settings, onClick = { clicks[index]++ })) {
+                            Box(Modifier.size(16.dp).testTag("content.$index"))
+                        }
+                    }
+                }
+            }
+        }
+        compose.mainClock.advanceTimeBy(500)
+        for (index in 0..1) {
+            val action = compose.onNodeWithTag("action.$index")
+            val content = compose.onNodeWithTag("content.$index", useUnmergedTree = true)
+            val idleBounds = content.fetchSemanticsNode().boundsInRoot
+            val idle = action.captureToImage().toPixelMap().let { it[it.width / 2, it.height / 2] }
+            action.performTouchInput { down(center) }
+            compose.mainClock.advanceTimeBy(800)
+            val held = action.captureToImage().toPixelMap().let { it[it.width / 2, it.height / 2] }
+            if (index == 0) {
+                assertEquals("Opted-out action has no held highlight", idle.red, held.red, 1f / 255f)
+                assertEquals(idle.green, held.green, 1f / 255f)
+                assertEquals(idle.blue, held.blue, 1f / 255f)
+            } else {
+                assertTrue("Opted-in action keeps its held highlight", held.red > idle.red + .02f)
+            }
+            assertTrue("Both actions retain Jelly", content.fetchSemanticsNode().boundsInRoot.width > idleBounds.width)
+            action.performTouchInput { up() }
+            compose.mainClock.advanceTimeBy(1800)
+            action.assertWidthIsEqualTo(96.dp).assertHeightIsEqualTo(40.dp)
+        }
+        compose.runOnIdle { assertEquals(listOf(1, 1), clicks.toList()) }
+    }
 
     @Test fun `action and result card render Glass from the dimmed backdrop instead of native fill`() {
         val shape = RoundedCornerShape(16.dp)

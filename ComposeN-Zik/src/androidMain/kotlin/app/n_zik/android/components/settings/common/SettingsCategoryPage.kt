@@ -16,6 +16,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberUpdatedState
@@ -60,13 +61,23 @@ import kotlinx.coroutines.withTimeoutOrNull
 fun settingsCardTargetId(context: android.content.Context, tab: Int, titleRes: Int): String =
     "card.$tab.${context.resources.getResourceEntryName(titleRes)}"
 
+/** Detailed search uses the settings host graph; source content retains app-level navigation. */
 @OptIn(ExperimentalAnimationApi::class)
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-fun SettingsCategoryPage(categoryId: String, navController: NavController, target: String = "", parentTarget: String = "") {
+fun SettingsCategoryPage(
+    categoryId: String,
+    navController: NavController,
+    target: String = "",
+    parentTarget: String = "",
+    onSearchResultNavigate: (String) -> Unit = { navController.navigate(it) },
+) {
     val category = OrganizedSettingsCategories.firstOrNull { it.id == categoryId } ?: return
     val context = LocalContext.current
-    val search = Search(initialVisible = true)
+    val searchInput = rememberSaveable(categoryId, stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(""))
+    }
+    val search = Search(initialVisible = true, inputState = searchInput)
     val contentSearch = Search(initialVisible = false)
     val searchFocus = rememberSettingsSearchFocus(search.isFocused, search.inputValue.isBlank())
     val registry = remember(categoryId) { SettingsTargetRegistry() }
@@ -230,7 +241,7 @@ fun SettingsCategoryPage(categoryId: String, navController: NavController, targe
                             modifier = Modifier.testTag("settings.category.entry.${entry.id}"),
                             onClick = {
                                 recordQuery()
-                                navController.navigate(entry.destinationRoute(context))
+                                onSearchResultNavigate(entry.destinationRoute(context))
                             },
                         )
                     }

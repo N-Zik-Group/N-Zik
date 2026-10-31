@@ -33,6 +33,7 @@ import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.R
+import app.n_zik.android.components.dialog.common.DIALOG_MOTION_DURATION_MS
 import app.n_zik.android.components.settings.common.LocalSettingsTargets
 import app.n_zik.android.components.settings.common.SettingsTargetRegistry
 import app.n_zik.android.privacy.JournalPermission
@@ -174,6 +175,12 @@ class PermissionUsageDialogTest {
         pumpUntil("journal contents composed") {
             runCatching { composeRule.onNodeWithText(firstText).assertIsDisplayed() }.isSuccess
         }
+        // Visibility can become true partway through DialogFrame's entry scale.
+        // Semantic bounds include that transform; TextLayoutResult stays unscaled.
+        // Deliver the start frame and the complete production motion before comparing them.
+        composeRule.mainClock.advanceTimeByFrame()
+        composeRule.mainClock.advanceTimeBy(DIALOG_MOTION_DURATION_MS.toLong())
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(DIALOG_MOTION_DURATION_MS.toLong()))
         val body = composeRule.onNodeWithTag("dialogFrameBody").getBoundsInRoot()
         val list = composeRule.onNodeWithTag("permission_journal_list").getBoundsInRoot()
         val first = composeRule.onNodeWithText(firstText).getBoundsInRoot()

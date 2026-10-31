@@ -35,6 +35,10 @@ import app.n_zik.android.components.glass.glassFilmKey
 import app.n_zik.android.components.glass.glassRimKey
 import app.n_zik.android.components.glass.glassBlurKey
 import app.n_zik.android.components.glass.glassVibrancyKey
+import app.n_zik.android.components.glass.glassEnabledKey
+import app.it.fast4x.rimusic.utils.preferences
+import org.junit.After
+import org.junit.Before
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNull
@@ -51,10 +55,25 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class OnboardingPrimaryButtonTest {
     @get:Rule val compose = createComposeRule()
+    private val context = ApplicationProvider.getApplicationContext<Context>()
+    private var previousMaster: Boolean? = null
+
+    @Before fun saveMasterPreference() {
+        previousMaster = if (context.preferences.contains(glassEnabledKey))
+            context.preferences.getBoolean(glassEnabledKey, false) else null
+    }
+
+    @After fun restorePreferences() {
+        context.preferences.edit().apply {
+            previousMaster?.let { putBoolean(glassEnabledKey, it) } ?: remove(glassEnabledKey)
+        }.commit()
+        context.getSharedPreferences("nzik_square_glass_v2", Context.MODE_PRIVATE).edit().clear().commit()
+    }
 
     @Test fun `light onboarding primary actions use the accent foreground and retain clicks`() {
         // Native fallback isolates the reported accent-label mismatch from optical rendering.
         val context = ApplicationProvider.getApplicationContext<Context>()
+        context.preferences.edit().putBoolean(glassEnabledKey, false).commit()
         context.getSharedPreferences("nzik_square_glass_v2", Context.MODE_PRIVATE)
             .edit().clear().putBoolean(glassActionButtonsKey, false).commit()
         val palette = DefaultLightColorPalette
@@ -86,6 +105,7 @@ class OnboardingPrimaryButtonTest {
 
     @Test fun `Glass ON light primary label contrasts with the actual rendered translucent surface`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
+        context.preferences.edit().putBoolean(glassEnabledKey, true).commit()
         val prefs = context.getSharedPreferences("nzik_square_glass_v2", Context.MODE_PRIVATE)
         prefs.edit().clear().putBoolean(glassActionButtonsKey, true)
             .putFloat(glassFilmKey, .5f).putFloat(glassRimKey, 0f)

@@ -63,6 +63,7 @@ class GlassContextPolicyTest {
 
     @Test fun `quality changes only optical defaults and reset clears all contextual and shared overrides`() {
         val store = GlassStore(context)
+        val fresh = store.read()
         store.setProfile(GlassQuality.Balanced)
         store.setAreaMode(GlassArea.ActionButtons, GlassAreaMode.ContourOnly)
         store.setContextMode(GlassScope.PlayerTransport, GlassArea.ActionButtons, GlassAreaMode.Disabled)
@@ -84,7 +85,7 @@ class GlassContextPolicyTest {
         assertEquals(before.dialogDimming, after.dialogDimming, 0f)
         assertEquals(before.menuDimming, after.menuDimming, 0f)
         store.reset()
-        assertEquals(glassProfileDefaults(GlassQuality.Quality), GlassStore(context).read())
+        assertEquals(fresh, GlassStore(context).read())
         assertFalse(preferences.all.keys.any { it.startsWith("context.") })
     }
 

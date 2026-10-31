@@ -63,6 +63,7 @@ import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.navigation.FloatingMultiActionSize
 import app.n_zik.android.components.navigation.movableFloatingAction
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.uiRoundnessShape
 
 enum class MultiFabState {
@@ -171,7 +172,7 @@ fun MultiFloatingActionsButton (
                     modifier = Modifier
                         .movableFloatingAction(offsetX, offsetY)
                         .then(if (glassFloating) Modifier.size(FloatingMultiActionSize) else Modifier.glassNativeActionContour(glassSettings).clip(uiRoundnessShape())
-                        .background(colorPalette().background2)
+                        .background(surfaceColor(colorPalette().background2))
                         .height(FloatingMultiActionSize)
                         .width(FloatingMultiActionSize)
                         .clip(uiRoundnessShape()).combinedClickable(
@@ -188,7 +189,7 @@ fun MultiFloatingActionsButton (
                             iconSize = 24.dp,
                             iconModifier = Modifier.rotate(rotation),
                             settings = glassSettings,
-                            filmColor = colorPalette().background2,
+                            filmColor = surfaceColor(colorPalette().background2),
                         )) Image(
                         painter = if (!useAsActionsMenu) fabIcon else painterResource(R.drawable.menu),
                         contentDescription = null,
@@ -247,13 +248,13 @@ fun SmallFloatingActionButtonRow(
                 iconSize = 24.dp,
                 tint = colorPalette().favoritesIcon,
                 contentDescription = item.label,
-                filmColor = colorPalette().background2,
+                filmColor = surfaceColor(colorPalette().background2),
             )) SmallFloatingActionButton(
             shape = uiRoundnessShape(),
             modifier = Modifier
                 .padding(4.dp).glassNativeActionContour(),
             onClick = { item.onFabItemClicked() },
-            containerColor = colorPalette().background2,
+            containerColor = surfaceColor(colorPalette().background2),
             contentColor = colorPalette().favoritesIcon
         ) {
             Icon(

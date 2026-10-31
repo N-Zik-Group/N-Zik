@@ -82,7 +82,8 @@ internal fun Modifier.searchOverlayAction(
     val source = remember { MutableInteractionSource() }
     val shape = searchOverlayShape(nativeShape, uiRoundnessShape())
     val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
-    val feedback = if (material) Modifier.glassButtonFeedback(source, shape, settings = settings) else Modifier
+    val feedback = if (material) Modifier.glassButtonFeedback(source, shape,
+        drawHighlight = nativeIndication, settings = settings) else Modifier
     return then(feedback).searchOverlaySurface(nativeShape, fill, settings = settings)
         .clickable(interactionSource = source,
             indication = if (material) null else glassGlobalIndication(if (nativeIndication) LocalIndication.current else null),

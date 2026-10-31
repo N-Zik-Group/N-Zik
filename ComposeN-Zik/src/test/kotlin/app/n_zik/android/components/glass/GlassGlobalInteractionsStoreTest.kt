@@ -64,8 +64,9 @@ class GlassGlobalInteractionsStoreTest {
         }
     }
 
-    @Test fun `reset clears every interaction override and retains the selected optical quality`() {
+    @Test fun `reset clears every interaction override and restores the cold optical quality`() {
         val store = GlassStore(context)
+        val fresh = store.read()
         store.setProfile(GlassQuality.Quality)
         store.setBoolean(glassRippleEnabledKey, false)
         store.setBoolean(glassJellyEnabledKey, false)
@@ -74,7 +75,7 @@ class GlassGlobalInteractionsStoreTest {
         store.setFloat(glassJellyIntensityKey, .4f)
         store.reset()
         val saved = GlassStore(context).read()
-        assertEquals(GlassQuality.Quality, saved.quality)
+        assertEquals(fresh, saved)
         assertDefaults(saved)
     }
 
