@@ -34,6 +34,13 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(player): decouple expand state from cover overlays and restore carousel views
+  - Keep the expand button visible while the "show on thumbnail" toggles are active and light it in the expanded view instead of the collapsed one.
+  - Let the on-thumbnail toggles alone decide overlay placement: on keeps lyrics and visualizer on the carousel cover, expanded or not, and off switches to the fullscreen standalone views like the other modes; the carousel no longer forces overlays onto the cover.
+  - Stop the lyrics toggle from forcing the expanded state off, and resolve the artwork slot constraint conflict so expand and back respond in the right direction.
+  - Return to the stacked carousel view automatically in landscape, where the expanded state mapping is inverted versus portrait.
+  - Verify expand, back, overlay toggles and both orientations on the emulator and the user's device; pass the 389-test player selection.
+
 - fix(settings): restore exact category search navigation and back state
   - Route detailed results through the nested Settings NavController while preserving app-level actions.
   - Save each category query across destination disposal and preserve outgoing content when leaving the Settings root.
@@ -151,6 +158,9 @@ Fixed:
   - Assemble Debug and pass 29 focused search/Settings tests; complete independent reviews and keep real IME routing and deeper playlist/podcast host fixtures as separate verification follow-ups.
 
 Removed:
+- remove(settings): drop preset value buttons from Cover card sliders
+  - Remove the portrait/landscape size Min/25/50/75/Max rows and the thumbnail, artist and UI roundness button rows; the sliders keep their track value dots.
+
 - remove(ui): retire ViMusic and the obsolete toast-style selector
   - Remove UiType, MessageType, applyUiType and alternate interface branches, including Quick Picks; retain the N-Zik interface and existing Modern toast engine.
   - Remove unavailable selectors, search/default entries and ten dead resource keys across source/locales; preserve remaining translations and upstream credits.
