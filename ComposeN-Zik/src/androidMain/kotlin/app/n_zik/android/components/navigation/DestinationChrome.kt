@@ -19,6 +19,8 @@ import androidx.navigation.compose.composable
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.n_zik.android.LocalPlayerAwareWindowInsets
+import app.n_zik.android.components.glass.LocalGlassScope
+import app.n_zik.android.components.glass.glassScopeForRoute
 
 /** Each animated destination retains its own inset policy until it leaves composition. */
 internal fun NavGraphBuilder.chromeComposable(
@@ -35,6 +37,13 @@ internal fun NavGraphBuilder.chromeComposable(
 /** Reads live geometry but selects ownership from the rendered entry, never the navigation target. */
 @Composable
 internal fun DestinationChrome(route: String?, content: @Composable () -> Unit) {
+    CompositionLocalProvider(LocalGlassScope provides glassScopeForRoute(route)) {
+        DestinationChromeInsets(route, content)
+    }
+}
+
+@Composable
+private fun DestinationChromeInsets(route: String?, content: @Composable () -> Unit) {
     // The Rewind deck owns its safe areas and must remain full screen during header motion.
     if (route == "rewind" || route?.startsWith("rewind?") == true) {
         Box(Modifier.fillMaxSize()) { content() }

@@ -27,6 +27,10 @@ Fixed:
   - Apply UiRoundness to secondary onboarding actions and dialog outlined buttons while retaining native geometry and action ownership.
   - Pass the combined 30-test navigation/feedback/onboarding selection and assemble Debug; retain the documented limits of the pixel and mode matrices.
 
+- fix(navigation): retain each destination's Glass appearance scope
+  - Bind DestinationChrome to its own route, including Rewind, so coexisting outgoing and incoming pages do not inherit the current target's policy.
+  - Verify simultaneous route scopes and nested overrides; a real animated NavHost lifetime test remains a follow-up.
+
 - fix(android-auto): complete search paging, offline browsing and artwork (issue https://github.com/N-Zik-Group/N-Zik/issues/938)
   - Add numbered next-result batches across online search categories in AutoSearchWindowStore; retain complete queries, displayed ordering, duplicate occurrences and bounded continuation state.
   - Apply physical and forced offline policy to browsing, playback and artwork; hide Search and Quick Picks on fresh offline connections and reject stale count publications after policy/profile changes.
