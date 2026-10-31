@@ -177,3 +177,6 @@ Added:
 
 - feat(settings): organize Glass customization and pinned previews
   - Group destination choices and global Ripple/Jelly controls, animate dependent options and retain ON/OFF previews.
+
+- fix(settings): route global and page search to exact options
+  - Index nested customization entries with precise destination paths, dialog tabs and focus targets.

@@ -3,7 +3,6 @@ package app.n_zik.android.components.ui.screens.settings
 import android.net.Uri
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.components.settings.common.SettingsCategoryPage
-import app.n_zik.android.components.settings.common.parentCard
 import app.n_zik.android.components.settings.common.categoryId
 import app.n_zik.android.components.settings.common.settingsCardTargetId
 import androidx.compose.runtime.DisposableEffect
@@ -47,6 +46,7 @@ import app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.transitionEffectKey
 import app.n_zik.android.components.dialog.common.RestartAppDialog
+import app.n_zik.android.components.settings.common.destinationRoute
 import app.n_zik.android.components.settings.common.SettingsGlobalPage
 import app.n_zik.android.components.settings.common.SettingsPageItem
 import app.n_zik.android.components.settings.general.GeneralSettings
@@ -136,9 +136,10 @@ fun SettingsScreen(
             predictivePopExitTransition = transitions.predictivePopExitTransition,
         ) {
             composable(
-                route = SETTINGS_GLASS_ROUTE,
-            ) {
-                GlassSettingsPage()
+                route = "$SETTINGS_GLASS_ROUTE?target={target}",
+                arguments = listOf(navArgument("target") { type = NavType.StringType; defaultValue = "" }),
+            ) { entry ->
+                GlassSettingsPage(target = entry.arguments?.getString("target").orEmpty())
             }
             composable(route = SETTINGS_GLOBAL_ROUTE) {
                 SettingsGlobalPage(
@@ -156,9 +157,7 @@ fun SettingsScreen(
                         innerNavController.navigate(settingsTabRoute(tab, cardFocus))
                     },
                     onEntrySelected = { result ->
-                        val card = result.parentCard()
-                        val parent = Uri.encode(settingsCardTargetId(context, card.tab, card.titleRes))
-                        innerNavController.navigate("settingsCategory/${card.categoryId()}?target=${Uri.encode(result.id)}&parent=$parent")
+                        innerNavController.navigate(result.destinationRoute(context))
                     },
                     onOrganizedCardSelected = { card ->
                         val target = Uri.encode(settingsCardTargetId(context, card.tab, card.titleRes))

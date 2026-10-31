@@ -32,8 +32,39 @@ import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 
 object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = listOf(BuiltInPlaylist.All, BuiltInPlaylist.Favorites, BuiltInPlaylist.Disliked, BuiltInPlaylist.Offline, BuiltInPlaylist.Downloaded, BuiltInPlaylist.Top, BuiltInPlaylist.OnDevice)
+        .flatMapIndexed { index, tab -> tabAvailableIds.getValue(tab).map { id ->
+            SettingsNestedOption("${getTabPrefix(tab)}_$id", if (id == "sort" && tab == BuiltInPlaylist.Top) R.string.statistics else searchLabelResources.getValue(id), index, tab.textId)
+        } }
+
+    private val searchLabelResources = mapOf(
+        "position_lock" to R.string.info_lock_unlock_reorder_songs,
+        "match" to R.string.match_album_audio_version,
+        "search" to R.string.search,
+        "locator" to R.string.info_find_the_song_that_is_playing,
+        "download_all" to R.string.info_download_all_songs,
+        "delete_downloads" to R.string.info_remove_all_downloaded_songs,
+        "update" to R.string.update,
+        "shuffle" to R.string.info_shuffle,
+        "smart_shuffle" to R.string.info_smart_recommendation,
+        "item_selector" to R.string.item_select,
+        "play_next" to R.string.play_next,
+        "enqueue" to R.string.enqueue,
+        "add_to_favorite" to R.string.add_to_favorites,
+        "add_to_playlist" to R.string.add_to_playlist,
+        "import_menu" to R.string.import_playlist,
+        "export_dialog" to R.string.export_playlist,
+        "export_cache" to R.string.export_cached,
+        "smart_trash" to R.string.smart_trash,
+        "sync_ytm_likes" to R.string.autosync_likes,
+        "sort" to R.string.sorting_order,
+    )
+
 
     val allButtonIds = listOf(
         "sort", "position_lock", "match", "search", "sync_ytm_likes", "locator",
@@ -135,27 +166,27 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
         val isTopTab = currentTab == BuiltInPlaylist.Top
         val tabPrefix = getTabPrefix(currentTab)
 
-        val sortLabel = stringResource(R.string.sorting_order)
+        val sortLabel = stringResource(searchLabelResources.getValue("sort"))
         val topSortLabel = stringResource(R.string.statistics)
-        val positionLockLabel = stringResource(R.string.info_lock_unlock_reorder_songs)
-        val downloadAllLabel = stringResource(R.string.info_download_all_songs)
-        val deleteDownloadsLabel = stringResource(R.string.info_remove_all_downloaded_songs)
-        val updateLabel = stringResource(R.string.update)
-        val searchLabel = stringResource(R.string.search)
-        val locatorLabel = stringResource(R.string.info_find_the_song_that_is_playing)
-        val shuffleLabel = stringResource(R.string.info_shuffle)
-        val smartShuffleLabel = stringResource(R.string.info_smart_recommendation)
-        val itemSelectorLabel = stringResource(R.string.item_select)
-        val playNextLabel = stringResource(R.string.play_next)
-        val enqueueLabel = stringResource(R.string.enqueue)
-        val addToFavoriteLabel = stringResource(R.string.add_to_favorites)
-        val addToPlaylistLabel = stringResource(R.string.add_to_playlist)
-        val importMenuLabel = stringResource(R.string.import_playlist)
-        val exportDialogLabel = stringResource(R.string.export_playlist)
-        val exportCacheLabel = stringResource(R.string.export_cached)
-        val smartTrashLabel = stringResource(R.string.smart_trash)
-        val matchLabel = stringResource(R.string.match_album_audio_version)
-        val syncLabel = stringResource(R.string.autosync_likes)
+        val positionLockLabel = stringResource(searchLabelResources.getValue("position_lock"))
+        val downloadAllLabel = stringResource(searchLabelResources.getValue("download_all"))
+        val deleteDownloadsLabel = stringResource(searchLabelResources.getValue("delete_downloads"))
+        val updateLabel = stringResource(searchLabelResources.getValue("update"))
+        val searchLabel = stringResource(searchLabelResources.getValue("search"))
+        val locatorLabel = stringResource(searchLabelResources.getValue("locator"))
+        val shuffleLabel = stringResource(searchLabelResources.getValue("shuffle"))
+        val smartShuffleLabel = stringResource(searchLabelResources.getValue("smart_shuffle"))
+        val itemSelectorLabel = stringResource(searchLabelResources.getValue("item_selector"))
+        val playNextLabel = stringResource(searchLabelResources.getValue("play_next"))
+        val enqueueLabel = stringResource(searchLabelResources.getValue("enqueue"))
+        val addToFavoriteLabel = stringResource(searchLabelResources.getValue("add_to_favorite"))
+        val addToPlaylistLabel = stringResource(searchLabelResources.getValue("add_to_playlist"))
+        val importMenuLabel = stringResource(searchLabelResources.getValue("import_menu"))
+        val exportDialogLabel = stringResource(searchLabelResources.getValue("export_dialog"))
+        val exportCacheLabel = stringResource(searchLabelResources.getValue("export_cache"))
+        val smartTrashLabel = stringResource(searchLabelResources.getValue("smart_trash"))
+        val matchLabel = stringResource(searchLabelResources.getValue("match"))
+        val syncLabel = stringResource(searchLabelResources.getValue("sync_ytm_likes"))
 
         val currentLockedIds = lockedIds.map { "${tabPrefix}_$it" }.toSet()
 

@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.it.fast4x.rimusic.utils.showButtonPlayerAddToPlaylistKey
 import app.it.fast4x.rimusic.utils.showButtonPlayerArrowKey
 import app.it.fast4x.rimusic.utils.showButtonPlayerDiscoverKey
@@ -64,6 +65,10 @@ private fun buildButtonDefs(): Map<String, ButtonDef> = mapOf(
 )
 
 object PlayerActionBarSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = buildButtonDefs().values.map { SettingsNestedOption(it.id, it.labelRes) }
+
 
     override val dialogTitle: String
         @Composable

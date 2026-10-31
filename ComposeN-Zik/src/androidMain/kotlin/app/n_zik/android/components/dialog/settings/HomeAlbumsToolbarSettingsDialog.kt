@@ -27,8 +27,31 @@ import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 
 object HomeAlbumsToolbarSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = listOf("lib" to R.string.all, "favs" to R.string.favorites, "disliked" to R.string.disliked)
+        .flatMapIndexed { index, (tab, label) -> allButtonIds.map { id ->
+            SettingsNestedOption("${getTabPrefix(tab)}_$id", searchLabelResources.getValue(id), index, label)
+        } }
+
+    private val searchLabelResources = mapOf(
+        "sort" to R.string.sorting_order,
+        "position_lock" to R.string.info_lock_unlock_reorder_songs,
+        "search" to R.string.search,
+        "sync" to R.string.autosync_albums,
+        "randomizer" to R.string.randomizer,
+        "shuffle" to R.string.info_shuffle,
+        "item_selector" to R.string.item_select,
+        "play_next" to R.string.play_next,
+        "enqueue" to R.string.enqueue,
+        "add_to_playlist" to R.string.add_to_playlist,
+        "export_dialog" to R.string.export_playlist,
+        "item_size" to R.string.size,
+    )
+
 
     val allButtonIds = listOf(
         "sort", "position_lock", "search", "sync", "randomizer", "shuffle", "item_selector",
@@ -104,18 +127,18 @@ object HomeAlbumsToolbarSettingsDialog : ContentFramedDialog {
         }
         val tabPrefix = getTabPrefix(currentTabKey)
 
-        val sortLabel = stringResource(R.string.sorting_order)
-        val positionLockLabel = stringResource(R.string.info_lock_unlock_reorder_songs)
-        val searchLabel = stringResource(R.string.search)
-        val syncLabel = stringResource(R.string.autosync_albums)
-        val randomizerLabel = stringResource(R.string.randomizer)
-        val shuffleLabel = stringResource(R.string.info_shuffle)
-        val itemSelectorLabel = stringResource(R.string.item_select)
-        val playNextLabel = stringResource(R.string.play_next)
-        val enqueueLabel = stringResource(R.string.enqueue)
-        val addToPlaylistLabel = stringResource(R.string.add_to_playlist)
-        val exportDialogLabel = stringResource(R.string.export_playlist)
-        val itemSizeLabel = stringResource(R.string.size)
+        val sortLabel = stringResource(searchLabelResources.getValue("sort"))
+        val positionLockLabel = stringResource(searchLabelResources.getValue("position_lock"))
+        val searchLabel = stringResource(searchLabelResources.getValue("search"))
+        val syncLabel = stringResource(searchLabelResources.getValue("sync"))
+        val randomizerLabel = stringResource(searchLabelResources.getValue("randomizer"))
+        val shuffleLabel = stringResource(searchLabelResources.getValue("shuffle"))
+        val itemSelectorLabel = stringResource(searchLabelResources.getValue("item_selector"))
+        val playNextLabel = stringResource(searchLabelResources.getValue("play_next"))
+        val enqueueLabel = stringResource(searchLabelResources.getValue("enqueue"))
+        val addToPlaylistLabel = stringResource(searchLabelResources.getValue("add_to_playlist"))
+        val exportDialogLabel = stringResource(searchLabelResources.getValue("export_dialog"))
+        val itemSizeLabel = stringResource(searchLabelResources.getValue("item_size"))
 
         val currentLockedIds = lockedIds.map { "${tabPrefix}_$it" }.toSet()
 

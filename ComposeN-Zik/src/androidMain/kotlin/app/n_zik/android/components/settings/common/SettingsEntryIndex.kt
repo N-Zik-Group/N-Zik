@@ -9,6 +9,7 @@ data class SettingsEntryTarget(
     val cardTitleRes: Int,
     val labelRes: Int,
     val keywordRes: List<Int> = emptyList(),
+    val nestedDestination: SettingsNestedDestination? = null,
 )
 
 val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(

@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
@@ -19,6 +20,10 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import android.content.Context
 
 object HistorySortSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = sortIds.map { id -> SettingsNestedOption("hist_$id", requireNotNull(getSortLabelRes(id))) }
+
 
     private val sortIds = listOf("DATE", "ALPHABETICAL", "ARTIST")
 
@@ -42,13 +47,15 @@ object HistorySortSettingsDialog : ContentFramedDialog {
         "ARTIST" -> R.drawable.artist
         else -> R.drawable.text
     }
-    @Composable
-    private fun getSortLabel(id: String): String = when (id) {
-        "DATE" -> stringResource(R.string.date)
-        "ALPHABETICAL" -> stringResource(R.string.alphabetical)
-        "ARTIST" -> stringResource(R.string.artist)
-        else -> id
+    private fun getSortLabelRes(id: String): Int? = when (id) {
+        "DATE" -> R.string.date
+        "ALPHABETICAL" -> R.string.alphabetical
+        "ARTIST" -> R.string.artist
+        else -> null
     }
+
+    @Composable
+    private fun getSortLabel(id: String): String = getSortLabelRes(id)?.let { stringResource(it) } ?: id
 
     @Composable
     override fun DialogBody() {

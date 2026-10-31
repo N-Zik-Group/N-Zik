@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
@@ -19,6 +20,16 @@ import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
 object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = sortIds.map { id ->
+        SettingsNestedOption(
+            "pl_$id",
+            requireNotNull(getSortLabelRes(id)),
+            descriptionRes = if (id == "ArtistAndAlbum") R.string.sort_album else null,
+        )
+    }
+
 
     private val sortIds = listOf(
         "Title", "Artist", "Album", "ArtistAndAlbum", "Duration",
@@ -57,24 +68,28 @@ object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
         "Custom" -> R.drawable.position
         else -> R.drawable.text
     }
-    @Composable
-    private fun getSortLabel(id: String): String = when (id) {
-        "Title" -> stringResource(R.string.sort_title)
-        "Artist" -> stringResource(R.string.sort_artist)
-        "Album" -> stringResource(R.string.sort_album)
-        "ArtistAndAlbum" -> "${stringResource(R.string.sort_artist)}, ${stringResource(R.string.sort_album)}"
-        "Duration" -> stringResource(R.string.sort_duration)
-        "PlayCount" -> stringResource(R.string.sort_play_count)
-        "PlayTime" -> stringResource(R.string.sort_listening_time)
-        "RelativePlayTime" -> stringResource(R.string.relative_listening_time)
-        "DateAdded" -> stringResource(R.string.sort_date_added)
-        "DatePlayed" -> stringResource(R.string.sort_date_played)
-        "DateLiked" -> stringResource(R.string.sort_date_liked)
-        "AlbumYear" -> stringResource(R.string.sort_album_year)
-        "Downloaded" -> stringResource(R.string.sort_downloaded)
-        "Custom" -> stringResource(R.string.sort_custom_order)
-        else -> id
+    private fun getSortLabelRes(id: String): Int? = when (id) {
+        "Title" -> R.string.sort_title
+        "Artist" -> R.string.sort_artist
+        "Album" -> R.string.sort_album
+        "ArtistAndAlbum" -> R.string.sort_artist
+        "Duration" -> R.string.sort_duration
+        "PlayCount" -> R.string.sort_play_count
+        "PlayTime" -> R.string.sort_listening_time
+        "RelativePlayTime" -> R.string.relative_listening_time
+        "DateAdded" -> R.string.sort_date_added
+        "DatePlayed" -> R.string.sort_date_played
+        "DateLiked" -> R.string.sort_date_liked
+        "AlbumYear" -> R.string.sort_album_year
+        "Downloaded" -> R.string.sort_downloaded
+        "Custom" -> R.string.sort_custom_order
+        else -> null
     }
+
+    @Composable
+    private fun getSortLabel(id: String): String = if (id == "ArtistAndAlbum") {
+        "${stringResource(R.string.sort_artist)}, ${stringResource(R.string.sort_album)}"
+    } else getSortLabelRes(id)?.let { stringResource(it) } ?: id
 
     @Composable
     override fun DialogBody() {

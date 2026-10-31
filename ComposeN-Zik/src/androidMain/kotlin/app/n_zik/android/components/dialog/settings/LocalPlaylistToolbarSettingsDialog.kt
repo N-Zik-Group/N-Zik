@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
@@ -19,6 +20,35 @@ import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
 object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = allButtonIds.map { SettingsNestedOption("pl_$it", searchLabelResources.getValue(it)) }
+
+    private val searchLabelResources = mapOf(
+        "insertion_position" to R.string.playlist_insertion_position,
+        "pin" to R.string.info_pin_unpin_playlist,
+        "search" to R.string.search,
+        "position_lock" to R.string.info_lock_unlock_reorder_songs,
+        "match" to R.string.match_album_audio_version,
+        "renumber" to R.string.renumber_songs_positions,
+        "download_all" to R.string.info_download_all_songs,
+        "delete_downloads" to R.string.info_remove_all_downloaded_songs,
+        "item_selector" to R.string.item_select,
+        "play_next" to R.string.play_next,
+        "enqueue" to R.string.enqueue,
+        "add_to_favorite" to R.string.add_to_favorites,
+        "add_to_playlist" to R.string.add_to_playlist,
+        "sync" to R.string.sync,
+        "listen_on_yt" to R.string.listen_on_youtube,
+        "import_menu" to R.string.import_playlist,
+        "rename" to R.string.rename_playlist,
+        "delete" to R.string.delete,
+        "export" to R.string.export_playlist,
+        "thumbnail_picker" to R.string.edit_thumbnail,
+        "reset_thumbnail" to R.string.reset_thumbnail,
+        "update" to R.string.update,
+    )
+
 
     val allButtonIds = listOf(
         "insertion_position",
@@ -76,28 +106,28 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
             }
         }
 
-        val positionLockLabel = stringResource(R.string.info_lock_unlock_reorder_songs)
-        val downloadAllLabel = stringResource(R.string.info_download_all_songs)
-        val deleteDownloadsLabel = stringResource(R.string.info_remove_all_downloaded_songs)
-        val itemSelectorLabel = stringResource(R.string.item_select)
-        val playNextLabel = stringResource(R.string.play_next)
-        val enqueueLabel = stringResource(R.string.enqueue)
-        val addToFavoriteLabel = stringResource(R.string.add_to_favorites)
-        val addToPlaylistLabel = stringResource(R.string.add_to_playlist)
-        val importMenuLabel = stringResource(R.string.import_playlist)
-        val exportDialogLabel = stringResource(R.string.export_playlist)
-        val matchLabel = stringResource(R.string.match_album_audio_version)
-        val syncLabel = stringResource(R.string.sync)
-        val listenOnYTLabel = stringResource(R.string.listen_on_youtube)
-        val renameLabel = stringResource(R.string.rename_playlist)
-        val deleteLabel = stringResource(R.string.delete)
-        val thumbnailLabel = stringResource(R.string.edit_thumbnail)
-        val resetThumbnailLabel = stringResource(R.string.reset_thumbnail)
-        val updateLabel = stringResource(R.string.update)
-        val pinLabel = stringResource(R.string.info_pin_unpin_playlist)
-        val searchLabel = stringResource(R.string.search)
-        val renumberLabel = stringResource(R.string.renumber_songs_positions)
-        val insertionPositionLabel = stringResource(R.string.playlist_insertion_position)
+        val positionLockLabel = stringResource(searchLabelResources.getValue("position_lock"))
+        val downloadAllLabel = stringResource(searchLabelResources.getValue("download_all"))
+        val deleteDownloadsLabel = stringResource(searchLabelResources.getValue("delete_downloads"))
+        val itemSelectorLabel = stringResource(searchLabelResources.getValue("item_selector"))
+        val playNextLabel = stringResource(searchLabelResources.getValue("play_next"))
+        val enqueueLabel = stringResource(searchLabelResources.getValue("enqueue"))
+        val addToFavoriteLabel = stringResource(searchLabelResources.getValue("add_to_favorite"))
+        val addToPlaylistLabel = stringResource(searchLabelResources.getValue("add_to_playlist"))
+        val importMenuLabel = stringResource(searchLabelResources.getValue("import_menu"))
+        val exportDialogLabel = stringResource(searchLabelResources.getValue("export"))
+        val matchLabel = stringResource(searchLabelResources.getValue("match"))
+        val syncLabel = stringResource(searchLabelResources.getValue("sync"))
+        val listenOnYTLabel = stringResource(searchLabelResources.getValue("listen_on_yt"))
+        val renameLabel = stringResource(searchLabelResources.getValue("rename"))
+        val deleteLabel = stringResource(searchLabelResources.getValue("delete"))
+        val thumbnailLabel = stringResource(searchLabelResources.getValue("thumbnail_picker"))
+        val resetThumbnailLabel = stringResource(searchLabelResources.getValue("reset_thumbnail"))
+        val updateLabel = stringResource(searchLabelResources.getValue("update"))
+        val pinLabel = stringResource(searchLabelResources.getValue("pin"))
+        val searchLabel = stringResource(searchLabelResources.getValue("search"))
+        val renumberLabel = stringResource(searchLabelResources.getValue("renumber"))
+        val insertionPositionLabel = stringResource(searchLabelResources.getValue("insertion_position"))
 
         val lockedIds = setOf("pl_pin", "pl_position_lock", "pl_match")
 

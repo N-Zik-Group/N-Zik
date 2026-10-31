@@ -27,8 +27,15 @@ import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 
 object HomeLibrarySortSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = tabs.flatMapIndexed { index, tab -> tab.availableIds.map { id ->
+        SettingsNestedOption("${getPrefix(tab)}_$id", requireNotNull(getSortLabelRes(id)), index, tab.textId)
+    } }
+
 
     private val libraryPlaylistSortIds = listOf("Name", "SongCount", "ListeningTime", "PlayCount", "DateAdded", "Custom")
     private val ytPlaylistSortIds = listOf("Name", "SongCount", "DateAdded")
@@ -43,6 +50,13 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
     }
 
     private val tabs = LibraryTab.entries
+
+    private fun getPrefix(tab: LibraryTab): String = when (tab) {
+        LibraryTab.Playlist -> "lib_pl"
+        LibraryTab.YTPlaylist -> "lib_yt"
+        LibraryTab.PinnedPlaylist -> "lib_pin"
+        LibraryTab.Rewind -> "lib_rw"
+    }
 
     override val dialogTitle: String @Composable get() = stringResource(R.string.library) + " - Sort"
     override var isActive: Boolean by mutableStateOf(false)
@@ -67,16 +81,18 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
         "Custom" -> R.drawable.position
         else -> R.drawable.text
     }
-    @Composable
-    private fun getSortLabel(id: String): String = when (id) {
-        "Name" -> stringResource(R.string.sort_name)
-        "SongCount" -> stringResource(R.string.sort_songs_number)
-        "ListeningTime" -> stringResource(R.string.sort_listening_time)
-        "PlayCount" -> stringResource(R.string.sort_play_count)
-        "DateAdded" -> stringResource(R.string.sort_date_added)
-        "Custom" -> stringResource(R.string.sort_custom_order)
-        else -> id
+    private fun getSortLabelRes(id: String): Int? = when (id) {
+        "Name" -> R.string.sort_name
+        "SongCount" -> R.string.sort_songs_number
+        "ListeningTime" -> R.string.sort_listening_time
+        "PlayCount" -> R.string.sort_play_count
+        "DateAdded" -> R.string.sort_date_added
+        "Custom" -> R.string.sort_custom_order
+        else -> null
     }
+
+    @Composable
+    private fun getSortLabel(id: String): String = getSortLabelRes(id)?.let { stringResource(it) } ?: id
 
     @Composable
     override fun DialogBody() {
@@ -90,12 +106,7 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
             LibraryTab.PinnedPlaylist -> homeLibraryPinnedPlaylistSortMenuOrderKey
             LibraryTab.Rewind -> homeLibraryMonthlyPlaylistSortMenuOrderKey
         }
-        fun getPrefix(tab: LibraryTab): String = when (tab) {
-            LibraryTab.Playlist -> "lib_pl"
-            LibraryTab.YTPlaylist -> "lib_yt"
-            LibraryTab.PinnedPlaylist -> "lib_pin"
-            LibraryTab.Rewind -> "lib_rw"
-        }
+
 
         var workingOrders by remember {
             mutableStateOf(tabs.associate { tab -> tab to parseOrder(prefs.getString(getKey(tab), "") ?: "", tab.availableIds).toMutableList() }.toMutableMap())

@@ -3,12 +3,18 @@ package app.n_zik.android.components.settings.common
 import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
+import android.net.Uri
 import java.lang.ref.WeakReference
 import java.text.Normalizer
 import java.util.Locale
+import app.n_zik.android.R
+import app.n_zik.android.components.settings.ui.GlassSearchOptions
+import app.n_zik.android.components.settings.ui.GlassSearchParent
+import app.n_zik.android.components.settings.ui.glassSearchOption
 
 val AllSettingsEntryTargets: List<SettingsEntryTarget> by lazy {
-    SettingsEntryTargets + EmbeddedSettingsEntryTargets + AboutSettingsEntryTargets + PrivacySettingsEntryTargets
+    SettingsEntryTargets + EmbeddedSettingsEntryTargets + AboutSettingsEntryTargets +
+        PrivacySettingsEntryTargets + GlassSearchOptions.map { it.target } + SettingsNestedEntryTargets
 }
 
 private val combiningMarks = Regex("\\p{M}+")
@@ -103,4 +109,32 @@ internal fun settingsEntrySearchIndex(resources: Resources): SettingsEntrySearch
 
 /** Resolves the card containing an exact search target. */
 fun SettingsEntryTarget.parentCard(): SettingsCardRegistryEntry =
-    SettingsCards.first { it.tab == tab && it.titleRes == cardTitleRes }
+    if (id.startsWith("glass.")) GlassSearchParent else
+        SettingsCards.first { it.tab == tab && it.titleRes == cardTitleRes }
+
+/** Localized location shown before navigation, using the same parent and subgroup as routing. */
+fun SettingsEntryTarget.locationDescription(context: Context): String {
+    val card = parentCard()
+    val category = OrganizedSettingsCategories.first { it.id == card.categoryId() }
+    val nested = nestedDestination
+    val opener = nested?.let { destination -> AllSettingsEntryTargets.firstOrNull { it.id == destination.openerId } }
+    return listOfNotNull(context.getString(R.string.settings), context.getString(category.labelRes).takeUnless { id.startsWith("glass.") }, card.displayTitle(context),
+        glassSearchOption(id)?.let { context.getString(it.sectionTitle) },
+        opener?.let { context.getString(it.labelRes) },
+        nested?.sectionTitleRes?.let(context::getString))
+        .distinct().joinToString(" › ")
+}
+
+/** Uses the same destination for global and category results, including dedicated settings pages. */
+fun SettingsEntryTarget.destinationRoute(context: Context): String {
+    if (id.startsWith("glass.")) return "$SETTINGS_GLASS_ROUTE?target=${Uri.encode(id)}"
+    val card = parentCard()
+    val parent = Uri.encode(settingsCardTargetId(context, card.tab, card.titleRes))
+    return "settingsCategory/${card.categoryId()}?target=${Uri.encode(id)}&parent=$parent"
+}
+
+/** Distinguishes appearance policies from functional options with the same destination label. */
+fun SettingsEntryTarget.searchResultTitle(context: Context): String {
+    val label = context.getString(labelRes)
+    return if (id.startsWith("glass.")) "${context.getString(R.string.liquid_glass)} › $label" else label
+}

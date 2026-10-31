@@ -6,6 +6,7 @@ import app.n_zik.android.LocalPlayerAwareWindowInsets
 
 import android.app.Application
 import android.content.Context
+import android.net.Uri
 import android.os.Looper
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
@@ -13,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.test.performTextInput
@@ -23,6 +25,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.navigation.NavController
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.test.core.app.ApplicationProvider
@@ -39,6 +42,8 @@ import app.n_zik.android.MainApplication
 import app.n_zik.android.components.settings.common.SettingsCategoryPage
 import app.n_zik.android.components.settings.common.SettingsResetCard
 import app.n_zik.android.components.settings.common.resetScopeForTarget
+import app.n_zik.android.components.settings.common.AllSettingsEntryTargets
+import app.n_zik.android.components.settings.common.locationDescription
 import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.GlassQuality
 import app.n_zik.android.components.glass.glassEnabledKey
@@ -49,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -121,6 +127,32 @@ class SettingsCategoryPageTest {
         pumpUntil("matching category card restored") {
             runCatching { composeRule.onNodeWithTag(targetTag, useUnmergedTree = true).assertIsDisplayed() }.isSuccess
         }
+    }
+
+    @Test fun sectionSearchShowsExactOptionLocationAndNavigatesToItsStableRow() {
+        composeRule.mainClock.autoAdvance = false
+        val navigation = mockk<NavController>(relaxed = true)
+        val target = AllSettingsEntryTargets.single { it.id == "general.audio_effects.skip_silence" }
+        composeRule.setContent {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
+                SettingsCategoryPage(categoryId = "audio", navController = navigation)
+            }
+        }
+        pumpUntil("section search composed") {
+            runCatching { composeRule.onNode(hasSetTextAction()).fetchSemanticsNode() }.isSuccess
+        }
+        composeRule.onNode(hasSetTextAction()).performTextInput(context.getString(R.string.skip_silent_parts_during_playback))
+        val tag = "settings.category.entry.${target.id}"
+        pumpUntil("description finds exact audio option") {
+            runCatching { composeRule.onNodeWithTag(tag).assertIsDisplayed() }.isSuccess
+        }
+        composeRule.onNodeWithTag(tag).assertTextContains(target.locationDescription(context))
+        composeRule.onNodeWithTag("settings.category.entry.general.app_behavior.close_app_with_back_button").assertDoesNotExist()
+        composeRule.onNodeWithTag(tag).performClick()
+        verify {
+            navigation.navigate("settingsCategory/audio?target=${Uri.encode(target.id)}&parent=${Uri.encode("card.0.audio_effects")}")
+        }
+        assertEquals("unchanged", context.preferences.getString("organization-test-sentinel", null))
     }
 
     @Test fun focusedBlankAndUnmatchedAndShortCategoryResultsCannotScroll() {

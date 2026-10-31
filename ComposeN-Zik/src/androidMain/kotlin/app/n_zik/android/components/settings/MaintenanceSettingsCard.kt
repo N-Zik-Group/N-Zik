@@ -208,6 +208,7 @@ fun MaintenanceSettingsCard(
             if (BuildConfig.DEBUG) {
                 var updaterLayoutAccess by rememberPreference(DEBUG_UPDATER_ACCESS_KEY, false)
                 OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("embedded.maintenance.debug_updater_layout_access"),
                     title = stringResource(R.string.debug_updater_layout_access),
                     text = stringResource(R.string.debug_updater_layout_access_description),
                     isChecked = updaterLayoutAccess,

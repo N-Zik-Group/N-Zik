@@ -12,12 +12,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -52,6 +54,8 @@ import app.n_zik.android.components.settings.privacy.PrivacyRewindCard
 import app.n_zik.android.components.settings.privacy.PrivacyScreenCaptureCard
 import app.n_zik.android.components.settings.ui.UiSettingsContent
 import app.n_zik.android.components.tab.Search
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 
 fun settingsCardTargetId(context: android.content.Context, tab: Int, titleRes: Int): String =
     "card.$tab.${context.resources.getResourceEntryName(titleRes)}"
@@ -66,6 +70,12 @@ fun SettingsCategoryPage(categoryId: String, navController: NavController, targe
     val contentSearch = Search(initialVisible = false)
     val searchFocus = rememberSettingsSearchFocus(search.isFocused, search.inputValue.isBlank())
     val registry = remember(categoryId) { SettingsTargetRegistry() }
+    DisposableEffect(registry, target) {
+        onDispose {
+            registry.nestedTarget?.nestedDestination?.let { settingsNestedDialog(it.dialogId)?.hideDialog() }
+            registry.nestedTarget = null
+        }
+    }
     val scroll = rememberLazyListState()
     var hasPinnedFooter by remember(categoryId) { mutableStateOf(false) }
     val overscroll = rememberOverscrollEffect()
@@ -79,6 +89,8 @@ fun SettingsCategoryPage(categoryId: String, navController: NavController, targe
     }
     val cards = remember(categoryId) { cardsForCategory(categoryId) }
     val matches = if (search.inputValue.isBlank()) cards else searchSettingsCards(context, search.inputValue).filter { it.categoryId() == categoryId }
+    val entryMatches = searchSettingsEntries(context, search.inputValue)
+        .filter { it.parentCard().categoryId() == categoryId }
     val sourceTabs = remember(categoryId) {
         val preferred = when (categoryId) {
             "player" -> listOf(2, 0)
@@ -100,7 +112,7 @@ fun SettingsCategoryPage(categoryId: String, navController: NavController, targe
     }
     val latestRows by rememberUpdatedState(rows)
     val resetScopes = matches.filter { it.titleRes == R.string.settings_reset }.map { it.tab }
-    SettingsSearchEmptyFeedback(search.inputValue, matches.isEmpty())
+    SettingsSearchEmptyFeedback(search.inputValue, matches.isEmpty() && entryMatches.isEmpty())
     LaunchedEffect(target, parentTarget) {
         if (target.isBlank()) return@LaunchedEffect
         // Two layout frames include children and their initial conditional composition.
@@ -133,8 +145,27 @@ fun SettingsCategoryPage(categoryId: String, navController: NavController, targe
             withFrameNanos { }
             withFrameNanos { }
         }
+        val nested = entry?.nestedDestination
+        if (nested != null) {
+            val opener = withTimeoutOrNull(1500) {
+                snapshotFlow { registry.targets[nested.openerId] }.first { it != null }
+            }
+            if (opener != null) {
+                registry.nestedTarget = entry
+                settingsNestedDialog(nested.dialogId)?.showDialog()
+                withTimeoutOrNull(1500) {
+                    snapshotFlow { registry.targets[requestedTarget] }.first { it != null }
+                }
+            }
+        }
         val unavailable = !registry.targets.containsKey(requestedTarget)
-        if (unavailable) showMessage(unavailableMessage)
+        if (unavailable) {
+            if (nested != null) {
+                settingsNestedDialog(nested.dialogId)?.hideDialog()
+                registry.nestedTarget = null
+            }
+            showMessage(unavailableMessage)
+        }
         val resolved = if (!unavailable) requestedTarget else parentTarget
         withFrameNanos { }
         registry.targets[resolved]?.let {
@@ -188,6 +219,20 @@ fun SettingsCategoryPage(categoryId: String, navController: NavController, targe
                                 onQueryDeleteAll = { history.value = SearchHistoryStore.deleteAll(context.preferences, historyPage) },
                             )
                         }
+                    }
+                }
+                items(entryMatches, key = { "entry:${it.id}" }, contentType = { "entry" }) { entry ->
+                    Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha)) {
+                        OtherSettingsEntry(
+                            title = entry.searchResultTitle(context),
+                            text = entry.locationDescription(context),
+                            icon = entry.parentCard().iconRes,
+                            modifier = Modifier.testTag("settings.category.entry.${entry.id}"),
+                            onClick = {
+                                recordQuery()
+                                navController.navigate(entry.destinationRoute(context))
+                            },
+                        )
                     }
                 }
                 items(rows, key = { (tab, title) -> "$tab:$title" }, contentType = { "card" }) { (tab, title) ->

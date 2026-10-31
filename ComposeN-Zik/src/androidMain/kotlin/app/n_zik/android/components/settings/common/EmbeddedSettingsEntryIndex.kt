@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.common
 
 import app.n_zik.android.R
+import app.n_zik.android.BuildConfig
 
 /** Exact destinations for settings cards shared with other screens. */
 val EmbeddedSettingsEntryTargets = listOf(
@@ -62,4 +63,6 @@ val EmbeddedSettingsEntryTargets = listOf(
     SettingsEntryTarget("embedded.auto_backup.auto_backup_schedule_day_of_week", 4, R.string.auto_backup_title, R.string.auto_backup_schedule_day_of_week),
     SettingsEntryTarget("embedded.auto_backup.auto_backup_schedule_day_of_month", 4, R.string.auto_backup_title, R.string.auto_backup_schedule_day_of_month),
     SettingsEntryTarget("embedded.auto_backup.auto_backup_on_change", 4, R.string.auto_backup_title, R.string.auto_backup_on_change, keywordRes = listOf(R.string.auto_backup_on_change_description)),
-)
+) + if (BuildConfig.DEBUG) listOf(
+    SettingsEntryTarget("embedded.maintenance.debug_updater_layout_access", 7, R.string.maintenance, R.string.debug_updater_layout_access, keywordRes = listOf(R.string.debug_updater_layout_access_description)),
+) else emptyList()

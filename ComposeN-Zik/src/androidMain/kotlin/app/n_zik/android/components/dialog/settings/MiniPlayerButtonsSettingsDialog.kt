@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
@@ -95,6 +96,10 @@ private fun buildButtonDefs(): Map<String, MiniPlayerButtonDef> = mapOf(
 )
 
 object MiniPlayerButtonsSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = buildButtonDefs().values.map { SettingsNestedOption(it.id, it.labelRes) }
+
 
     override val dialogTitle: String
         @Composable

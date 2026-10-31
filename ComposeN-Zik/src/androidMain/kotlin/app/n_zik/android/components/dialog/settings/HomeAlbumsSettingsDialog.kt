@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
@@ -26,6 +27,15 @@ import android.content.Context
 private val albumsDefaultOrder = listOf("all", "favorites", "disliked")
 
 object HomeAlbumsSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = albumsDefaultOrder.map { SettingsNestedOption(it, searchLabelResources.getValue(it)) }
+
+    private val searchLabelResources = mapOf(
+        "all" to R.string.all,
+        "favorites" to R.string.favorites,
+        "disliked" to R.string.disliked,
+    )
     override val dialogTitle: String @Composable get() = stringResource(R.string.home_albums_settings)
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -60,9 +70,9 @@ object HomeAlbumsSettingsDialog : ContentFramedDialog {
             )
         }
 
-        val allLabel = stringResource(R.string.all)
-        val favLabel = stringResource(R.string.favorites)
-        val dislikedLabel = stringResource(R.string.disliked)
+        val allLabel = stringResource(searchLabelResources.getValue("all"))
+        val favLabel = stringResource(searchLabelResources.getValue("favorites"))
+        val dislikedLabel = stringResource(searchLabelResources.getValue("disliked"))
 
         val lazyListState = rememberLazyListState()
         val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->

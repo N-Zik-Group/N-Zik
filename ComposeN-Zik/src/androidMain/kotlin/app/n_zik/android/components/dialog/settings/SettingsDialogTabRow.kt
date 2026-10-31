@@ -10,6 +10,7 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.settings.common.LocalSettingsTargets
 
 /** Centers fitting category tabs while retaining Material scrolling for wider labels. */
 @Composable
@@ -27,6 +29,12 @@ internal fun SettingsDialogTabRow(
     selectedTabIndex: Int,
     onTabSelected: (Int) -> Unit,
 ) {
+    val target = LocalSettingsTargets.current?.nestedTarget
+    LaunchedEffect(target?.id) {
+        target?.nestedDestination?.tabIndex?.takeIf { it in labels.indices }?.let { index ->
+            if (selectedTabIndex != index) onTabSelected(index)
+        }
+    }
     val textStyle = MaterialTheme.typography.titleSmall.copy(textAlign = TextAlign.Center)
     val textMeasurer = rememberTextMeasurer()
     val density = LocalDensity.current

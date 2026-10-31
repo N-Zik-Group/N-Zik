@@ -11,6 +11,7 @@ import androidx.compose.ui.res.stringResource
 import app.it.fast4x.rimusic.utils.preferences
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
@@ -21,6 +22,19 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 
 /** Reorders expanded dock tabs with the same drag interaction as other toolbar dialogs. */
 object DockToolbarSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = buildHomeTabDefs().values.map { tab ->
+        val id = when (tab.id) {
+            "quickpicks" -> "sparkles"
+            "songs" -> "musical_notes"
+            "artists" -> "people"
+            "albums" -> "album"
+            else -> "library"
+        }
+        SettingsNestedOption(id, tab.labelRes)
+    }
+
     override val dialogTitle: String
         @Composable get() = stringResource(R.string.floating_dock_toolbar_order)
     override var isActive: Boolean by mutableStateOf(false)

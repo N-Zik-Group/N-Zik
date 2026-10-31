@@ -28,8 +28,32 @@ import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 
 object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = listOf("all" to R.string.all, "pin" to R.string.pinned_playlists, "rw" to R.string.rewind, "yt" to R.string.yt_playlists)
+        .flatMapIndexed { index, (tab, label) -> allButtonIds.map { id ->
+            SettingsNestedOption("${getTabPrefix(tab)}_$id", searchLabelResources.getValue(id), index, label)
+        } }
+
+    private val searchLabelResources = mapOf(
+        "sort" to R.string.sorting_order,
+        "position_lock" to R.string.info_lock_unlock_reorder_songs,
+        "search" to R.string.search,
+        "sync" to R.string.autosync,
+        "shuffle" to R.string.info_shuffle,
+        "item_selector" to R.string.item_select,
+        "play_next" to R.string.play_next,
+        "enqueue" to R.string.enqueue,
+        "add_to_playlist" to R.string.add_to_playlist,
+        "import_menu" to R.string.import_playlist,
+        "export_dialog" to R.string.export_playlist,
+        "delete_playlists" to R.string.delete_playlists_label,
+        "item_size" to R.string.size,
+    )
+
     val allButtonIds = listOf(
         "sort", "position_lock", "search", "sync", "shuffle", "item_selector",
         "play_next", "enqueue", "add_to_playlist", "import_menu", "export_dialog", "delete_playlists", "item_size"
@@ -106,19 +130,19 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
         }
         val tabPrefix = getTabPrefix(currentTabKey)
 
-        val sortLabel = stringResource(R.string.sorting_order)
-        val positionLockLabel = stringResource(R.string.info_lock_unlock_reorder_songs)
-        val searchLabel = stringResource(R.string.search)
-        val syncLabel = stringResource(R.string.autosync)
-        val shuffleLabel = stringResource(R.string.info_shuffle)
-        val itemSelectorLabel = stringResource(R.string.item_select)
-        val playNextLabel = stringResource(R.string.play_next)
-        val enqueueLabel = stringResource(R.string.enqueue)
-        val addToPlaylistLabel = stringResource(R.string.add_to_playlist)
-        val importMenuLabel = stringResource(R.string.import_playlist)
-        val exportDialogLabel = stringResource(R.string.export_playlist)
-        val deletePlaylistsLabel = stringResource(R.string.delete_playlists_label)
-        val itemSizeLabel = stringResource(R.string.size)
+        val sortLabel = stringResource(searchLabelResources.getValue("sort"))
+        val positionLockLabel = stringResource(searchLabelResources.getValue("position_lock"))
+        val searchLabel = stringResource(searchLabelResources.getValue("search"))
+        val syncLabel = stringResource(searchLabelResources.getValue("sync"))
+        val shuffleLabel = stringResource(searchLabelResources.getValue("shuffle"))
+        val itemSelectorLabel = stringResource(searchLabelResources.getValue("item_selector"))
+        val playNextLabel = stringResource(searchLabelResources.getValue("play_next"))
+        val enqueueLabel = stringResource(searchLabelResources.getValue("enqueue"))
+        val addToPlaylistLabel = stringResource(searchLabelResources.getValue("add_to_playlist"))
+        val importMenuLabel = stringResource(searchLabelResources.getValue("import_menu"))
+        val exportDialogLabel = stringResource(searchLabelResources.getValue("export_dialog"))
+        val deletePlaylistsLabel = stringResource(searchLabelResources.getValue("delete_playlists"))
+        val itemSizeLabel = stringResource(searchLabelResources.getValue("item_size"))
 
         val currentLockedIds = lockedIds.map { "${tabPrefix}_$it" }.toSet()
 

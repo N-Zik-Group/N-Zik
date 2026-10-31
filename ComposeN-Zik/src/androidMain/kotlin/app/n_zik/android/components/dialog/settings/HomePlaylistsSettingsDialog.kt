@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
@@ -24,6 +25,16 @@ import android.content.Context
 private val playlistsDefaultOrder = listOf("all", "pinned_playlists", "rewind", "yt_playlists")
 
 object HomePlaylistsSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = playlistsDefaultOrder.map { SettingsNestedOption(it, searchLabelResources.getValue(it)) }
+
+    private val searchLabelResources = mapOf(
+        "all" to R.string.all,
+        "yt_playlists" to R.string.yt_playlists,
+        "pinned_playlists" to R.string.pinned_playlists,
+        "rewind" to R.string.rewind,
+    )
     override val dialogTitle: String @Composable get() = stringResource(R.string.home_playlists_settings)
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -54,11 +65,11 @@ object HomePlaylistsSettingsDialog : ContentFramedDialog {
             )
         }
 
-        val allLabel = stringResource(R.string.all)
-        val ytLabel = stringResource(R.string.yt_playlists)
+        val allLabel = stringResource(searchLabelResources.getValue("all"))
+        val ytLabel = stringResource(searchLabelResources.getValue("yt_playlists"))
 
-        val pinnedLabel = stringResource(R.string.pinned_playlists)
-        val rewindLabel = stringResource(R.string.rewind)
+        val pinnedLabel = stringResource(searchLabelResources.getValue("pinned_playlists"))
+        val rewindLabel = stringResource(searchLabelResources.getValue("rewind"))
 
         val lazyListState = rememberLazyListState()
         val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->

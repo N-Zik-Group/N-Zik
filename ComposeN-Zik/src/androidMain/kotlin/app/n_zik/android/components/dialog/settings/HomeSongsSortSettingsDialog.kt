@@ -31,8 +31,16 @@ import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 
 object HomeSongsSortSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = listOf(BuiltInPlaylist.All, BuiltInPlaylist.Favorites, BuiltInPlaylist.Disliked, BuiltInPlaylist.Offline, BuiltInPlaylist.Downloaded, BuiltInPlaylist.Top, BuiltInPlaylist.OnDevice)
+        .flatMapIndexed { index, tab -> tabAvailableIds.getValue(tab).map { id ->
+            SettingsNestedOption("${getTabPrefix(tab)}_$id", requireNotNull(getSortLabelRes(id)), index, tab.textId)
+        } }
+
 
     private val songSortIds = listOf(
         "Title", "Artist", "AlbumName", "Duration", "PlayCount",
@@ -122,30 +130,32 @@ object HomeSongsSortSettingsDialog : ContentFramedDialog {
         else -> R.drawable.text
     }
 
-    @Composable
-    private fun getSortLabel(id: String): String = when (id) {
-        "Title" -> stringResource(R.string.sort_title)
-        "Artist" -> stringResource(R.string.sort_artist)
-        "AlbumName" -> stringResource(R.string.sort_album)
-        "Duration" -> stringResource(R.string.sort_duration)
-        "PlayCount" -> stringResource(R.string.sort_play_count)
-        "PlayTime" -> stringResource(R.string.sort_listening_time)
-        "RelativePlayTime" -> stringResource(R.string.relative_listening_time)
-        "DateAdded" -> stringResource(R.string.sort_date_added)
-        "DatePlayed" -> stringResource(R.string.sort_date_played)
-        "DateLiked" -> stringResource(R.string.sort_date_liked)
-        "Downloaded" -> stringResource(R.string.sort_downloaded)
-        "Custom" -> stringResource(R.string.sort_custom_order)
-        "Album" -> stringResource(R.string.sort_album)
-        "Today" -> stringResource(R.string.today)
-        "OneWeek" -> stringResource(R.string._1_week)
-        "OneMonth" -> stringResource(R.string._1_month)
-        "ThreeMonths" -> stringResource(R.string._3_month)
-        "SixMonths" -> stringResource(R.string._6_month)
-        "OneYear" -> stringResource(R.string._1_year)
-        "All" -> stringResource(R.string.all)
-        else -> id
+    private fun getSortLabelRes(id: String): Int? = when (id) {
+        "Title" -> R.string.sort_title
+        "Artist" -> R.string.sort_artist
+        "AlbumName" -> R.string.sort_album
+        "Duration" -> R.string.sort_duration
+        "PlayCount" -> R.string.sort_play_count
+        "PlayTime" -> R.string.sort_listening_time
+        "RelativePlayTime" -> R.string.relative_listening_time
+        "DateAdded" -> R.string.sort_date_added
+        "DatePlayed" -> R.string.sort_date_played
+        "DateLiked" -> R.string.sort_date_liked
+        "Downloaded" -> R.string.sort_downloaded
+        "Custom" -> R.string.sort_custom_order
+        "Album" -> R.string.sort_album
+        "Today" -> R.string.today
+        "OneWeek" -> R.string._1_week
+        "OneMonth" -> R.string._1_month
+        "ThreeMonths" -> R.string._3_month
+        "SixMonths" -> R.string._6_month
+        "OneYear" -> R.string._1_year
+        "All" -> R.string.all
+        else -> null
     }
+
+    @Composable
+    private fun getSortLabel(id: String): String = getSortLabelRes(id)?.let { stringResource(it) } ?: id
 
     @Composable
     override fun DialogBody() {

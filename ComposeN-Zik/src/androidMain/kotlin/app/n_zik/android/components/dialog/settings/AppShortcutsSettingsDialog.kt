@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
@@ -128,6 +129,10 @@ fun profileShortcutDefs(context: Context): Map<String, ShortcutDef> {
  * - Preferences stored as comma-separated strings in `"preferences"`.
  */
 object AppShortcutsSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = buildShortcutDefs().values.map { SettingsNestedOption(it.id, it.labelRes) }
+
 
     override val dialogTitle: String
         @Composable

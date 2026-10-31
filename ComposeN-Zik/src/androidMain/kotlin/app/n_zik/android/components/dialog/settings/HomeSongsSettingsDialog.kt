@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
@@ -29,6 +30,19 @@ import android.content.Context
 private val songsDefaultOrder = listOf("all", "favorites", "disliked", "cached", "downloaded", "top", "on_device")
 
 object HomeSongsSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = songsDefaultOrder.map { SettingsNestedOption(it, searchLabelResources.getValue(it)) }
+
+    private val searchLabelResources = mapOf(
+        "all" to R.string.all,
+        "favorites" to R.string.favorites,
+        "cached" to R.string.cached,
+        "downloaded" to R.string.downloaded,
+        "top" to R.string.playlist_top,
+        "on_device" to R.string.on_device,
+        "disliked" to R.string.disliked,
+    )
     override val dialogTitle: String @Composable get() = stringResource(R.string.home_songs_settings)
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -67,13 +81,13 @@ object HomeSongsSettingsDialog : ContentFramedDialog {
             )
         }
 
-        val allLabel = stringResource(R.string.all)
-        val favoritesLabel = stringResource(R.string.favorites)
-        val cachedLabel = stringResource(R.string.cached)
-        val downloadedLabel = stringResource(R.string.downloaded)
-        val topLabel = stringResource(R.string.playlist_top)
-        val onDeviceLabel = stringResource(R.string.on_device)
-        val dislikedLabel = stringResource(R.string.disliked)
+        val allLabel = stringResource(searchLabelResources.getValue("all"))
+        val favoritesLabel = stringResource(searchLabelResources.getValue("favorites"))
+        val cachedLabel = stringResource(searchLabelResources.getValue("cached"))
+        val downloadedLabel = stringResource(searchLabelResources.getValue("downloaded"))
+        val topLabel = stringResource(searchLabelResources.getValue("top"))
+        val onDeviceLabel = stringResource(searchLabelResources.getValue("on_device"))
+        val dislikedLabel = stringResource(searchLabelResources.getValue("disliked"))
 
         val lazyListState = rememberLazyListState()
         val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->

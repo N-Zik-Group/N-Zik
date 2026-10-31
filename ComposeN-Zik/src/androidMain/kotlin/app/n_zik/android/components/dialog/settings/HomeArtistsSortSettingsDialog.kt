@@ -26,8 +26,15 @@ import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 
 object HomeArtistsSortSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = tabs.flatMapIndexed { index, tab -> tab.availableIds.map { id ->
+        SettingsNestedOption("${getTabPrefix(tab)}_$id", requireNotNull(getSortLabelRes(id)), index, tab.textId)
+    } }
+
 
     private val librarySortIds = listOf("Name", "PlayCount", "ListeningTime", "DateAdded", "Custom")
     private val favoritesSortIds = listOf("Name", "PlayCount", "ListeningTime", "DateAdded")
@@ -63,15 +70,17 @@ object HomeArtistsSortSettingsDialog : ContentFramedDialog {
         "Custom" -> R.drawable.position
         else -> R.drawable.text
     }
-    @Composable
-    private fun getSortLabel(id: String): String = when (id) {
-        "Name" -> stringResource(R.string.sort_name)
-        "PlayCount" -> stringResource(R.string.sort_play_count)
-        "ListeningTime" -> stringResource(R.string.sort_listening_time)
-        "DateAdded" -> stringResource(R.string.sort_date_added)
-        "Custom" -> stringResource(R.string.sort_custom_order)
-        else -> id
+    private fun getSortLabelRes(id: String): Int? = when (id) {
+        "Name" -> R.string.sort_name
+        "PlayCount" -> R.string.sort_play_count
+        "ListeningTime" -> R.string.sort_listening_time
+        "DateAdded" -> R.string.sort_date_added
+        "Custom" -> R.string.sort_custom_order
+        else -> null
     }
+
+    @Composable
+    private fun getSortLabel(id: String): String = getSortLabelRes(id)?.let { stringResource(it) } ?: id
 
     private fun getTabPrefix(tab: ArtistTab): String = when (tab) {
         ArtistTab.Library -> "art_lib"

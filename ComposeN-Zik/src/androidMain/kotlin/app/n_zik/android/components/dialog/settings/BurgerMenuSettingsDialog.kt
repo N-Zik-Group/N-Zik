@@ -11,6 +11,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.ToggleItem
@@ -30,6 +31,27 @@ import timber.log.Timber
  * "Add separator" footer button).
  */
 object BurgerMenuSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = allItemIds.map { SettingsNestedOption(if (it == "separator") "separator#1" else it, searchLabelResources.getValue(it)) }
+
+    private val searchLabelResources = mapOf(
+        "history" to R.string.history,
+        "statistics" to R.string.statistics,
+        "rewind" to R.string.rewind,
+        "offline_mode" to R.string.offline_mode,
+        "listen_together" to R.string.listen_together,
+        "bridge_server" to R.string.bridge_server,
+        "profiles" to R.string.profiles,
+        "pip" to R.string.menu_go_to_picture_in_picture,
+        "settings" to R.string.settings,
+        "extensions" to R.string.modules_title,
+        "debug_logs" to R.string.maintenance_debug_logs,
+        "maintenance" to R.string.maintenance,
+        "rescue_center" to R.string.rescue_center,
+        "separator" to R.string.burger_separator,
+    )
+
 
     /** All burger entries in the default order, the separator included. */
     val allItemIds: List<String> = DataStoreUtils.DEFAULT_BURGER_MENU_ORDER
@@ -192,14 +214,14 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
 
     @Composable
     private fun itemSpec(rowKey: String, id: String, separatorInstance: Int, separatorCount: Int): ToggleItem? = when (id) {
-        "history" -> ToggleItem(rowKey, R.drawable.history, stringResource(R.string.history), DataStoreUtils.burgerMenuToggleKey(id), true)
-        "statistics" -> ToggleItem(rowKey, R.drawable.stats_chart, stringResource(R.string.statistics), DataStoreUtils.burgerMenuToggleKey(id), true)
-        "rewind" -> ToggleItem(rowKey, R.drawable.ic_launcher_monochrome, stringResource(R.string.rewind), DataStoreUtils.burgerMenuToggleKey(id), true)
-        "offline_mode" -> ToggleItem(rowKey, R.drawable.airplane, stringResource(R.string.offline_mode), DataStoreUtils.burgerMenuToggleKey(id), true)
-        "listen_together" -> ToggleItem(rowKey, R.drawable.people, stringResource(R.string.listen_together), DataStoreUtils.burgerMenuToggleKey(id), true)
-        "bridge_server" -> ToggleItem(rowKey, R.drawable.devices, stringResource(R.string.bridge_server), DataStoreUtils.burgerMenuToggleKey(id), true)
-        "profiles" -> ToggleItem(rowKey, R.drawable.person, stringResource(R.string.profiles), DataStoreUtils.burgerMenuToggleKey(id), true)
-        "pip" -> ToggleItem(rowKey, R.drawable.images_sharp, stringResource(R.string.menu_go_to_picture_in_picture), DataStoreUtils.burgerMenuToggleKey(id), true)
+        "history" -> ToggleItem(rowKey, R.drawable.history, stringResource(searchLabelResources.getValue("history")), DataStoreUtils.burgerMenuToggleKey(id), true)
+        "statistics" -> ToggleItem(rowKey, R.drawable.stats_chart, stringResource(searchLabelResources.getValue("statistics")), DataStoreUtils.burgerMenuToggleKey(id), true)
+        "rewind" -> ToggleItem(rowKey, R.drawable.ic_launcher_monochrome, stringResource(searchLabelResources.getValue("rewind")), DataStoreUtils.burgerMenuToggleKey(id), true)
+        "offline_mode" -> ToggleItem(rowKey, R.drawable.airplane, stringResource(searchLabelResources.getValue("offline_mode")), DataStoreUtils.burgerMenuToggleKey(id), true)
+        "listen_together" -> ToggleItem(rowKey, R.drawable.people, stringResource(searchLabelResources.getValue("listen_together")), DataStoreUtils.burgerMenuToggleKey(id), true)
+        "bridge_server" -> ToggleItem(rowKey, R.drawable.devices, stringResource(searchLabelResources.getValue("bridge_server")), DataStoreUtils.burgerMenuToggleKey(id), true)
+        "profiles" -> ToggleItem(rowKey, R.drawable.person, stringResource(searchLabelResources.getValue("profiles")), DataStoreUtils.burgerMenuToggleKey(id), true)
+        "pip" -> ToggleItem(rowKey, R.drawable.images_sharp, stringResource(searchLabelResources.getValue("pip")), DataStoreUtils.burgerMenuToggleKey(id), true)
         "separator" -> ToggleItem(
             rowKey,
             R.drawable.horizontal_straight_line,
@@ -208,11 +230,11 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
             DataStoreUtils.burgerMenuToggleKey(id),
             true
         )
-        "settings" -> ToggleItem(rowKey, R.drawable.settings, stringResource(R.string.settings), DataStoreUtils.burgerMenuToggleKey(id), true)
-        "extensions" -> ToggleItem(rowKey, R.drawable.extension, stringResource(R.string.modules_title), DataStoreUtils.burgerMenuToggleKey(id), true)
-        "debug_logs" -> ToggleItem(rowKey, R.drawable.bugs, stringResource(R.string.maintenance_debug_logs), DataStoreUtils.burgerMenuToggleKey(id), true)
-        "maintenance" -> ToggleItem(rowKey, R.drawable.shield_checkmark, stringResource(R.string.maintenance), DataStoreUtils.burgerMenuToggleKey(id), true)
-        "rescue_center" -> ToggleItem(rowKey, R.drawable.shortcut_rescue, stringResource(R.string.rescue_center), DataStoreUtils.burgerMenuToggleKey(id), true)
+        "settings" -> ToggleItem(rowKey, R.drawable.settings, stringResource(searchLabelResources.getValue("settings")), DataStoreUtils.burgerMenuToggleKey(id), true)
+        "extensions" -> ToggleItem(rowKey, R.drawable.extension, stringResource(searchLabelResources.getValue("extensions")), DataStoreUtils.burgerMenuToggleKey(id), true)
+        "debug_logs" -> ToggleItem(rowKey, R.drawable.bugs, stringResource(searchLabelResources.getValue("debug_logs")), DataStoreUtils.burgerMenuToggleKey(id), true)
+        "maintenance" -> ToggleItem(rowKey, R.drawable.shield_checkmark, stringResource(searchLabelResources.getValue("maintenance")), DataStoreUtils.burgerMenuToggleKey(id), true)
+        "rescue_center" -> ToggleItem(rowKey, R.drawable.shortcut_rescue, stringResource(searchLabelResources.getValue("rescue_center")), DataStoreUtils.burgerMenuToggleKey(id), true)
         else -> null
     }
 

@@ -12,8 +12,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.FontType
 import app.it.fast4x.rimusic.enums.PlayerBackgroundColors
@@ -33,12 +36,16 @@ import app.it.fast4x.rimusic.utils.skipSilenceKey
 import app.it.fast4x.rimusic.utils.thumbnailpauseKey
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
+import app.n_zik.android.components.dialog.settings.HomeSongsSortSettingsDialog
+import app.n_zik.android.components.dialog.settings.HomeSongsToolbarSettingsDialog
+import app.n_zik.android.components.dialog.settings.HomeArtistsToolbarSettingsDialog
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Duration
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -66,6 +73,12 @@ class SettingsSearchTargetTest {
         composeRule.mainClock.autoAdvance = false
     }
 
+    @After fun closeSearchDialog() {
+        HomeSongsSortSettingsDialog.hideDialog()
+        HomeSongsToolbarSettingsDialog.hideDialog()
+        HomeArtistsToolbarSettingsDialog.hideDialog()
+    }
+
     private val messages = mutableListOf<String>()
 
     private fun show(category: String, target: String, parent: String) {
@@ -87,7 +100,7 @@ class SettingsSearchTargetTest {
     }
 
     private fun highlighted(id: String, expected: Boolean): Boolean = runCatching {
-        composeRule.onNodeWithTag("settings.target.$id", useUnmergedTree = true)
+        composeRule.onNode(SemanticsMatcher.expectValue(SettingsTargetId, id), useUnmergedTree = true)
             .assert(SemanticsMatcher.expectValue(SettingsTargetHighlighted, expected))
     }.isSuccess
 
@@ -138,5 +151,54 @@ class SettingsSearchTargetTest {
         composeRule.onNodeWithTag("settings.target.unavailable").assertDoesNotExist()
         assertTrue(messages.isEmpty())
         assertEquals("opening a search destination must not normalize player settings", before, context.preferences.all)
+    }
+
+    @Test fun `nested search opens the correct tab and scrolls to the last option without applying preferences`() {
+        val entry = AllSettingsEntryTargets.first {
+            it.nestedDestination?.let { destination ->
+                destination.dialogId == "HomeSongsSortSettingsDialog" &&
+                    destination.tabIndex == 1 && destination.itemId == "favs_Custom"
+            } == true
+        }
+        val before = context.preferences.all.toMap()
+        show(entry.parentCard().categoryId(), entry.id, settingsCardTargetId(context, entry.tab, entry.cardTitleRes))
+        pumpUntil("the nested last option must be visible and highlighted") { highlighted(entry.id, true) }
+        composeRule.onNode(SemanticsMatcher.expectValue(SettingsTargetId, entry.id), useUnmergedTree = true).assertIsDisplayed()
+        composeRule.onNodeWithTag("settingsDialogTab1").assertIsSelected()
+        assertTrue("search must open the customization dialog", HomeSongsSortSettingsDialog.isActive)
+        assertTrue("a valid nested target must not report unavailable", messages.isEmpty())
+        assertEquals("opening and scrolling must never apply dialog preferences", before, context.preferences.all)
+    }
+
+    @Test fun `dismissed nested search cannot select tabs or highlight manually opened dialogs`() {
+        val entry = AllSettingsEntryTargets.first {
+            it.nestedDestination?.let { destination ->
+                destination.dialogId == "HomeSongsToolbarSettingsDialog" &&
+                    destination.tabIndex == 1 && destination.itemId == "favs_search"
+            } == true
+        }
+        val before = context.preferences.all.toMap()
+        show(entry.parentCard().categoryId(), entry.id, settingsCardTargetId(context, entry.tab, entry.cardTitleRes))
+        pumpUntil("the requested Songs Favorites option must be highlighted") { highlighted(entry.id, true) }
+        composeRule.onNodeWithTag("settingsDialogTab1").assertIsSelected()
+        composeRule.runOnUiThread { HomeSongsToolbarSettingsDialog.hideDialog() }
+        pumpUntil("the search dialog must finish dismissing") {
+            composeRule.onAllNodesWithTag("settingsDialogTab0").fetchSemanticsNodes().isEmpty()
+        }
+        composeRule.runOnUiThread { HomeArtistsToolbarSettingsDialog.showDialog() }
+        pumpUntil("a manually opened Artists dialog must retain its default tab") {
+            runCatching { composeRule.onNodeWithTag("settingsDialogTab0").assertIsSelected() }.isSuccess
+        }
+        composeRule.onNode(SemanticsMatcher.expectValue(SettingsTargetId, entry.id), useUnmergedTree = true).assertDoesNotExist()
+        composeRule.runOnUiThread { HomeArtistsToolbarSettingsDialog.hideDialog() }
+        pumpUntil("the Artists dialog must finish dismissing") {
+            composeRule.onAllNodesWithTag("settingsDialogTab0").fetchSemanticsNodes().isEmpty()
+        }
+        composeRule.runOnUiThread { HomeSongsToolbarSettingsDialog.showDialog() }
+        pumpUntil("manually reopening Songs must also retain its default tab") {
+            runCatching { composeRule.onNodeWithTag("settingsDialogTab0").assertIsSelected() }.isSuccess
+        }
+        composeRule.onNode(SemanticsMatcher.expectValue(SettingsTargetId, entry.id), useUnmergedTree = true).assertDoesNotExist()
+        assertEquals("dialog focus must never apply preferences", before, context.preferences.all)
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import app.n_zik.android.components.settings.common.SettingsDialogSearchScope
 
 interface Dialog {
 
@@ -79,15 +80,17 @@ interface Dialog {
 
     @Composable
     fun Render() {
-        DialogPresence(visible = isActive, inherit = true) {
-            DialogFrame(
-                onDismiss = ::hideDialog,
-                title = dialogTitle,
-                bodyPadding = bodyPadding,
-                footer = if (this@Dialog is InteractiveDialog) ({ Buttons() }) else null
-            ) {
-                Box( modifier = Modifier.weight( 1f, fill = false ) ) {
-                    DialogBody()
+        SettingsDialogSearchScope(this) {
+            DialogPresence(visible = isActive, inherit = true) {
+                DialogFrame(
+                    onDismiss = ::hideDialog,
+                    title = dialogTitle,
+                    bodyPadding = bodyPadding,
+                    footer = if (this@Dialog is InteractiveDialog) ({ Buttons() }) else null
+                ) {
+                    Box(modifier = Modifier.weight(1f, fill = false)) {
+                        DialogBody()
+                    }
                 }
             }
         }

@@ -26,8 +26,15 @@ import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 
 object HomeAlbumsSortSettingsDialog : ContentFramedDialog {
+
+    /** Exact searchable options from the same definitions used by this dialog. */
+    internal fun searchOptions(): List<SettingsNestedOption> = tabs.flatMapIndexed { index, tab -> tab.availableIds.map { id ->
+        SettingsNestedOption("${getTabPrefix(tab)}_$id", requireNotNull(getSortLabelRes(id)), index, tab.textId)
+    } }
+
 
     private val librarySortIds = listOf("AlbumName", "Artist", "Year", "DateAdded", "PlayCount", "Duration", "Custom")
 
@@ -74,17 +81,19 @@ object HomeAlbumsSortSettingsDialog : ContentFramedDialog {
         else -> R.drawable.text
     }
 
-    @Composable
-    private fun getSortLabel(id: String): String = when (id) {
-        "AlbumName" -> stringResource(R.string.sort_name)
-        "Artist" -> stringResource(R.string.sort_artist)
-        "Year" -> stringResource(R.string.sort_album_year)
-        "DateAdded" -> stringResource(R.string.sort_date_added)
-        "PlayCount" -> stringResource(R.string.sort_play_count)
-        "Duration" -> stringResource(R.string.sort_duration)
-        "Custom" -> stringResource(R.string.sort_custom_order)
-        else -> id
+    private fun getSortLabelRes(id: String): Int? = when (id) {
+        "AlbumName" -> R.string.sort_name
+        "Artist" -> R.string.sort_artist
+        "Year" -> R.string.sort_album_year
+        "DateAdded" -> R.string.sort_date_added
+        "PlayCount" -> R.string.sort_play_count
+        "Duration" -> R.string.sort_duration
+        "Custom" -> R.string.sort_custom_order
+        else -> null
     }
+
+    @Composable
+    private fun getSortLabel(id: String): String = getSortLabelRes(id)?.let { stringResource(it) } ?: id
 
     private fun getTabPrefix(tab: AlbumTab): String = when (tab) {
         AlbumTab.Library -> "alb_lib"
