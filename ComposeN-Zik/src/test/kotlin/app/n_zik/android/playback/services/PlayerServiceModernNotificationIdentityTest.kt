@@ -16,12 +16,14 @@ import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.manageDownload
 import app.n_zik.android.R
 import app.n_zik.android.appContext
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.listentogether.listenTogetherGuestLock
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.unmockkAll
@@ -70,6 +72,8 @@ class PlayerServiceModernNotificationIdentityTest {
         Dispatchers.setMain(dispatcher)
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { appContext() } returns ApplicationProvider.getApplicationContext<Application>()
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         // Inject the real flow so the service observes the same source its actions read.
         originalDownloads = MyDownloadHelper.downloads
         MyDownloadHelper.downloads = downloads
@@ -80,6 +84,7 @@ class PlayerServiceModernNotificationIdentityTest {
         // Do not start audio, network, widgets or the service's production DATA scope.
         (field("coroutineScope").get(service) as CoroutineScope).cancel()
         field("coroutineScope").set(service, scope)
+        field("crossfadeClockMs").set(service, { scheduler.currentTime })
         field("currentSong").set(service, notificationSongStates(service.currentMediaItem) { id ->
             rows.getOrPut(id) { MutableSharedFlow(extraBufferCapacity = 8) }
         }.stateIn(scope, SharingStarted.Lazily, NotificationSongState(null, null)))
@@ -316,6 +321,7 @@ class PlayerServiceModernNotificationIdentityTest {
     }
 
     private fun fadePlayer(id: String, listeners: MutableList<Player.Listener>) = mockk<ExoPlayer>(relaxed = true) {
+        every { audioSessionId } returns 77
         every { currentMediaItem } returns item(id)
         every { volume } returns 0.8f
         every { playWhenReady } returns true

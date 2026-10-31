@@ -137,6 +137,7 @@ import app.it.fast4x.rimusic.models.Event
 import app.it.fast4x.rimusic.models.QueuedMediaItem
 import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.playback.services.diagnostics.DiagExoPlayer
+import app.n_zik.android.playback.services.diagnostics.CrossfadeAudioDiagnostics
 import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
 import app.n_zik.android.playback.services.diagnostics.PlaybackStallWatchdog
 import app.n_zik.android.playback.services.diagnostics.discontinuityReasonName
@@ -227,6 +228,7 @@ import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.IdentityHashMap
 import kotlin.io.path.createTempDirectory
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
@@ -319,6 +321,17 @@ class PlayerServiceModern : MediaLibraryService(),
         AutoSessionCallback(this, Database, MyDownloadHelper)
     private var sessionController: MediaController? = null
     lateinit var player: ExoPlayer
+    private var playbackAudioSessionId = C.AUDIO_SESSION_ID_UNSET
+    private var internalEffectsSessionId = C.AUDIO_SESSION_ID_UNSET
+    private var bassBoostReady = false
+    private var reverbReady = false
+    private var normalizationReady = false
+    private var audioEffectPlayer: ExoPlayer? = null
+    private var audioEffectListener: Player.Listener? = null
+    private val audioEffectSession = AudioEffectSessionController { opened, sessionId ->
+        sendAudioEffectIntent(opened, sessionId)
+    }
+    private val crossfadeAudioDiagnostics = IdentityHashMap<ExoPlayer, CrossfadeAudioDiagnostics>()
     val playerUpdateTrigger = MutableStateFlow(0)
 
     /**
@@ -705,9 +718,15 @@ class PlayerServiceModern : MediaLibraryService(),
         }
 
 
-        // Issue #881 (gh-881): wrap the primary player in the diagnostics facade (spec S1) —
-        // every seek (UI / MediaSession / internal) is observed with the caller's stack trace.
-        // The builder config is unchanged; the wrapper delegates every member to the real player.
+        playbackAudioSessionId = runCatching {
+            getSystemService(AudioManager::class.java)?.generateAudioSessionId()
+                ?: C.AUDIO_SESSION_ID_UNSET
+        }.onFailure {
+            Timber.tag("AudioEffectSession").w(it, "Audio session allocation failed")
+        }.getOrDefault(C.AUDIO_SESSION_ID_UNSET)
+        if (playbackAudioSessionId <= 0) {
+            Timber.tag("AudioEffectSession").w("Waiting for Media3 to allocate a valid audio session")
+        }
         player = DiagExoPlayer(
             ExoPlayer.Builder(this)
                 .setMediaSourceFactory(createMediaSourceFactory())
@@ -730,10 +749,13 @@ class PlayerServiceModern : MediaLibraryService(),
                 .setSeekForwardIncrementMs(5000)
                 .build()
                 .apply {
+                    configureAudioSession(this)
                     addListener(this@PlayerServiceModern)
                     addAnalyticsListener(PlaybackStatsListener(false, this@PlayerServiceModern))
                 }
         )
+        attachCrossfadeAudioDiagnostics(player)
+        bindAudioEffectPlayer(player)
 
         // Guarded delegation facade for all external entry points (spec-listen-together-guest-lock-hardening,
         // spine AD-1): MediaSession / lockscreen / automotive commands route through it, so a
@@ -1112,6 +1134,7 @@ class PlayerServiceModern : MediaLibraryService(),
     @UnstableApi
     override fun onDestroy() {
         isRunning = false
+        closeAudioEffectSession()
         cancelCrossfadeAndReset()
         runCatching {
             /**
@@ -1142,6 +1165,7 @@ class PlayerServiceModern : MediaLibraryService(),
 //
             // The stop above stays on the raw player — internal teardown, and a fail-closed
             // guarded stop() would block a locked guest's service shutdown.
+            detachCrossfadeAudioDiagnostics(player)
             guestGuardPlayer.release()
             try{
                 unregisterReceiver(notificationActionReceiver)
@@ -1885,22 +1909,13 @@ class PlayerServiceModern : MediaLibraryService(),
 
     override fun onEvents(player: Player, events: Player.Events) {
         if (events.containsAny(Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_PLAY_WHEN_READY_CHANGED)) {
-            val isBufferingOrReady = player.playbackState == Player.STATE_BUFFERING || player.playbackState == Player.STATE_READY
-            
             if (player.playbackState == Player.STATE_READY && player.playWhenReady && events.contains(Player.EVENT_PLAYBACK_STATE_CHANGED)) {
                 Timber.tag("PlayerServiceModern").i("PLAYBACK OK - Streaming successfully [${player.currentMediaItem?.mediaMetadata?.title}]")
             }
-
-            if (isBufferingOrReady && player.playWhenReady) {
-                sendOpenEqualizerIntent()
-            } else {
-                sendCloseEqualizerIntent()
-                if (!player.playWhenReady) {
-                    waitingForNetwork.value = false
-                }
+            if (!player.playWhenReady) {
+                waitingForNetwork.value = false
             }
         }
-
     }
 
 
@@ -1918,12 +1933,15 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     private fun maybeBassBoost() {
+        bassBoostReady = false
+        if (player.audioSessionId <= 0) return
         if (!preferences.getBoolean(bassboostEnabledKey, false)) {
             runCatching {
                 bassBoost?.enabled = false
                 bassBoost?.release()
             }
             bassBoost = null
+            bassBoostReady = true
             maybeNormalizeVolume()
             return
         }
@@ -1936,12 +1954,15 @@ class PlayerServiceModern : MediaLibraryService(),
             bassBoost?.enabled = false
             bassBoost?.setStrength(bassboostLevel)
             bassBoost?.enabled = true
+            bassBoostReady = true
         }.onFailure {
             Toaster.e( R.string.cant_enable_bass_boost )
         }
     }
 
     private fun maybeReverb() {
+        reverbReady = false
+        if (player.audioSessionId <= 0) return
         val presetType = preferences.getEnum(audioReverbPresetKey, PresetsReverb.NONE)
 
         if (presetType == PresetsReverb.NONE) {
@@ -1950,7 +1971,8 @@ class PlayerServiceModern : MediaLibraryService(),
                 player.clearAuxEffectInfo()
                 reverbPreset?.release()
             }
-                reverbPreset = null
+            reverbPreset = null
+            reverbReady = true
             return
         }
 
@@ -1961,16 +1983,22 @@ class PlayerServiceModern : MediaLibraryService(),
             reverbPreset?.preset = presetType.preset
             reverbPreset?.enabled = true
             reverbPreset?.id?.let { player.setAuxEffectInfo(AuxEffectInfo(it, 1f)) }
+            reverbReady = true
+        }.onFailure {
+            Timber.tag("AudioEffectSession").w(it, "Failed to initialize reverb")
         }
     }
 
     @UnstableApi
     private fun maybeNormalizeVolume() {
+        normalizationReady = false
+        if (player.audioSessionId <= 0) return
         if (!preferences.getBoolean(volumeNormalizationKey, false)) {
             loudnessEnhancer?.enabled = false
             loudnessEnhancer?.release()
             loudnessEnhancer = null
             volumeNormalizationJob?.cancel()
+            normalizationReady = true
             return
         }
 
@@ -1983,6 +2011,7 @@ class PlayerServiceModern : MediaLibraryService(),
             return
         }
 
+        normalizationReady = true
         val baseGain = preferences.getFloat(loudnessBaseGainKey, 5.00f)
         val volumeBoostLevel = preferences.getFloat(volumeBoostLevelKey, 0f)
         player.currentMediaItem?.mediaId?.let { songId ->
@@ -2006,7 +2035,9 @@ class PlayerServiceModern : MediaLibraryService(),
                             try {
                                 loudnessEnhancer?.setTargetGain(baseGain.toMb() + volumeBoostLevel.toMb() - loudnessMb)
                                 loudnessEnhancer?.enabled = true
+                                normalizationReady = true
                             } catch (e: Exception) {
+                                normalizationReady = false
                                 Timber.tag("PlayerServiceModern").e("maybeNormalizeVolume apply targetGain ${e.stackTraceToString()}")
                             }
                         }
@@ -2067,7 +2098,8 @@ class PlayerServiceModern : MediaLibraryService(),
 
             // Captured once per sink: the mute predicate runs on the audio thread, per buffer
             val audioOutput = BridgeServerController.audioOutput
-            return DefaultAudioSink.Builder(applicationContext)
+            val sharedSessionId = playbackAudioSessionId
+            val sink = DefaultAudioSink.Builder(applicationContext)
                 .setEnableFloatOutput(enableFloatOutput)
                 .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
                 .setAudioOffloadSupportProvider(
@@ -2095,6 +2127,7 @@ class PlayerServiceModern : MediaLibraryService(),
                 .apply {
                     if (isAtLeastAndroid10) setOffloadMode(AudioSink.OFFLOAD_MODE_DISABLED)
                 }
+            return SharedAudioSessionSink(sink, sharedSessionId)
         }
     }
 
@@ -2407,26 +2440,167 @@ class PlayerServiceModern : MediaLibraryService(),
         }
     }
 
-    @UnstableApi
-    private fun sendOpenEqualizerIntent() {
-        sendBroadcast(
-            Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION).apply {
-                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, player.audioSessionId)
-                putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
-                putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+    private fun configureAudioSession(target: ExoPlayer) {
+        if (playbackAudioSessionId > 0) {
+            runCatching { target.setAudioSessionId(playbackAudioSessionId) }.onFailure {
+                Timber.tag("AudioEffectSession").w(it, "Could not share audio session %d", playbackAudioSessionId)
             }
-        )
+        }
     }
 
+    private fun attachCrossfadeAudioDiagnostics(target: ExoPlayer) {
+        if (crossfadeAudioDiagnostics.containsKey(target)) return
+        val diagnostics = CrossfadeAudioDiagnostics(target)
+        crossfadeAudioDiagnostics[target] = diagnostics
+        target.addAnalyticsListener(diagnostics)
+        diagnostics.mark("PLAYER_CREATED")
+    }
 
-    @UnstableApi
-    private fun sendCloseEqualizerIntent() {
+    private fun detachCrossfadeAudioDiagnostics(target: ExoPlayer) {
+        crossfadeAudioDiagnostics.remove(target)?.let { diagnostics ->
+            diagnostics.mark("PLAYER_RELEASE_REQUEST")
+            target.removeAnalyticsListener(diagnostics)
+        }
+    }
+
+    private fun markCrossfadeAudio(event: String, outgoing: ExoPlayer, incoming: ExoPlayer) {
+        crossfadeAudioDiagnostics[outgoing]?.mark("${event}_OUTGOING")
+        crossfadeAudioDiagnostics[incoming]?.mark("${event}_INCOMING")
+    }
+
+    private fun bindAudioEffectPlayer(target: ExoPlayer) {
+        audioEffectListener?.let { listener -> audioEffectPlayer?.removeListener(listener) }
+        audioEffectPlayer = target
+        val listener = object : Player.Listener {
+            override fun onEvents(player: Player, events: Player.Events) {
+                if (events.containsAny(
+                        Player.EVENT_AUDIO_SESSION_ID,
+                        Player.EVENT_PLAYBACK_STATE_CHANGED,
+                        Player.EVENT_PLAY_WHEN_READY_CHANGED,
+                    )
+                ) {
+                    syncAudioEffectSession(target, "player-event")
+                }
+            }
+        }
+        audioEffectListener = listener
+        target.addListener(listener)
+        syncAudioEffectSession(target, "bind")
+        // Auxiliary reverb attachment belongs to the AudioTrack even when its session is shared.
+        runCatching {
+            reverbPreset?.id?.let { target.setAuxEffectInfo(AuxEffectInfo(it, 1f)) }
+        }.onFailure {
+            reverbReady = false
+            Timber.tag("AudioEffectSession").w(it, "Failed to attach shared-session reverb")
+        }
+    }
+
+    private fun syncAudioEffectSession(target: ExoPlayer, reason: String) {
+        // Media3 reports its raw player, so ownership must use the captured diagnostic wrapper.
+        if (audioEffectPlayer !== target || player !== target) return
+        val sessionId = target.audioSessionId
+        val shouldOpen = target.playWhenReady &&
+            (target.playbackState == Player.STATE_BUFFERING || target.playbackState == Player.STATE_READY)
+        Timber.tag("AudioEffectSession").i(
+            "SYNC player=%d session=%d playing=%s reason=%s",
+            System.identityHashCode(target), sessionId, shouldOpen, reason,
+        )
+        // A session announcement can only move after the other audible track is stopped.
+        activeCrossfade?.let { handoff ->
+            val outgoingSessionId = handoff.outgoing.audioSessionId
+            if (sessionId <= 0 || outgoingSessionId <= 0 || outgoingSessionId != sessionId) {
+                Timber.tag("AudioEffectSession").w(
+                    "Stopping crossfade with divergent sessions incoming=%d outgoing=%d",
+                    sessionId, outgoingSessionId,
+                )
+                crossfadeJob?.cancel()
+                crossfadeJob = null
+                target.volume = handoff.startVolume
+                cleanupCrossfade()
+            }
+        }
+        secondaryPlayer?.let { preload ->
+            if (sessionId <= 0 || preload.audioSessionId != sessionId) {
+                Timber.tag("AudioEffectSession").w(
+                    "Discarding stale crossfade preload primary=%d preload=%d",
+                    sessionId, preload.audioSessionId,
+                )
+                cleanupCrossfade()
+            }
+        }
+        runCatching { audioEffectSession.sync(sessionId, shouldOpen) }.onFailure {
+            Timber.tag("AudioEffectSession").w(it, "Failed to reconcile audio effects session")
+        }
+        if (sessionId > 0) {
+            if (playbackAudioSessionId > 0 && playbackAudioSessionId != sessionId) {
+                Timber.tag("AudioEffectSession").w(
+                    "Actual audio session %d differs from requested %d", sessionId, playbackAudioSessionId,
+                )
+            }
+            playbackAudioSessionId = sessionId
+        }
+        runCatching { refreshInternalAudioEffects(sessionId) }.onFailure {
+            Timber.tag("AudioEffectSession").w(it, "Failed to rebind internal audio effects")
+        }
+    }
+
+    private fun closeAudioEffectSession() {
+        val target = audioEffectPlayer
+        val listener = audioEffectListener
+        audioEffectPlayer = null
+        audioEffectListener = null
+        if (listener != null) target?.removeListener(listener)
+        runCatching { audioEffectSession.close() }.onFailure {
+            Timber.tag("AudioEffectSession").w(it, "Failed to close audio effects session")
+        }
+        releaseInternalAudioEffects()
+    }
+
+    private fun refreshInternalAudioEffects(sessionId: Int) {
+        if (internalEffectsSessionId != sessionId) {
+            releaseInternalAudioEffects()
+            internalEffectsSessionId = sessionId
+        }
+        if (sessionId <= 0) return
+        // Successful effects stay bound; failed initialization remains eligible on later events.
+        if (!bassBoostReady) maybeBassBoost()
+        if (!reverbReady) maybeReverb()
+        if (!normalizationReady) maybeNormalizeVolume()
+    }
+
+    private fun releaseInternalAudioEffects() {
+        volumeNormalizationJob?.cancel()
+        volumeNormalizationJob = null
+        if (reverbPreset != null && ::player.isInitialized) {
+            runCatching { player.clearAuxEffectInfo() }.onFailure {
+                Timber.tag("AudioEffectSession").w(it, "Failed to detach released reverb")
+            }
+        }
+        listOf(bassBoost, reverbPreset, loudnessEnhancer).forEach { effect ->
+            runCatching { effect?.release() }.onFailure {
+                Timber.tag("AudioEffectSession").w(it, "Failed to release internal audio effect")
+            }
+        }
+        bassBoost = null
+        reverbPreset = null
+        loudnessEnhancer = null
+        internalEffectsSessionId = C.AUDIO_SESSION_ID_UNSET
+        bassBoostReady = false
+        reverbReady = false
+        normalizationReady = false
+    }
+
+    private fun sendAudioEffectIntent(opened: Boolean, sessionId: Int) {
+        val action = if (opened) AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION
+        else AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION
         sendBroadcast(
-            Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION).apply {
-                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, player.audioSessionId)
+            Intent(action).apply {
+                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, sessionId)
                 putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+                if (opened) putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
             }
         )
+        Timber.tag("AudioEffectSession").i("%s session=%d", if (opened) "OPEN" else "CLOSE", sessionId)
     }
 
     private fun actionSearch() {
@@ -3008,10 +3182,16 @@ class PlayerServiceModern : MediaLibraryService(),
 
     // --- Crossfade Logic ---
     private var isCrossfading = false
+    private var crossfadeClockMs: () -> Long = SystemClock::elapsedRealtime
     private var crossfadeJob: Job? = null
     private var crossfadeTriggerJob: Job? = null
     private var fadingPlayer: ExoPlayer? = null
-    private class CrossfadeHandoff(val incoming: ExoPlayer, val outgoing: ExoPlayer) {
+    private class CrossfadeHandoff(
+        val incoming: ExoPlayer,
+        val outgoing: ExoPlayer,
+        val startVolume: Float,
+    ) {
+        var timeline: CrossfadeTimeline? = null
         var outgoingEnded = false
         lateinit var syncListener: Player.Listener
         lateinit var endListener: Player.Listener
@@ -3041,8 +3221,11 @@ class PlayerServiceModern : MediaLibraryService(),
         crossfadeTriggerJob = null
         
         if (!isCrossfading && secondaryPlayer != null) {
-            secondaryPlayer?.removeListener(secondaryPlayerListener)
-            secondaryPlayer?.release()
+            secondaryPlayer?.let { preload ->
+                preload.removeListener(secondaryPlayerListener)
+                detachCrossfadeAudioDiagnostics(preload)
+                preload.release()
+            }
             secondaryPlayer = null
         }
 
@@ -3165,7 +3348,8 @@ class PlayerServiceModern : MediaLibraryService(),
                 // the crossfade player follows the same backward-seek pattern (spec gh-881).
                 .setLoadControl(createSeekFriendlyLoadControl())
                 .build()
-        )
+                .apply { configureAudioSession(this) }
+        ).also { attachCrossfadeAudioDiagnostics(it) }
     }
 
     /** Builds the guarded delegation facade for [targetPlayer]: the legacy "all commands" forwarding behavior (pre-Android-13 compatibility) plus the Listen Together guest-lock policy (spec-listen-together-guest-lock-hardening, spine AD-1/AD-2/AD-6). */
@@ -3227,12 +3411,24 @@ class PlayerServiceModern : MediaLibraryService(),
 
         secPlayer.prepare()
         secPlayer.playWhenReady = false
+        crossfadeAudioDiagnostics[secPlayer]?.mark("PRELOAD_PREPARED")
     }
 
     private fun startCrossfade() {
         if (isCrossfading) return
 
         val nextPlayer = secondaryPlayer ?: return
+        markCrossfadeAudio("START_ATTEMPT", player, nextPlayer)
+        val primarySessionId = player.audioSessionId
+        val incomingSessionId = nextPlayer.audioSessionId
+        if (primarySessionId <= 0 || incomingSessionId <= 0 || primarySessionId != incomingSessionId) {
+            Timber.tag("AudioEffectSession").w(
+                "Skipping crossfade with incompatible sessions primary=%d incoming=%d",
+                primarySessionId, incomingSessionId,
+            )
+            cleanupCrossfade()
+            return
+        }
         isCrossfading = true
         
         // Guard the entire swap so listener callbacks don't kill the crossfade
@@ -3242,7 +3438,7 @@ class PlayerServiceModern : MediaLibraryService(),
         
         // Setup the swap
         val currentPlayer = player
-        val handoff = CrossfadeHandoff(nextPlayer, currentPlayer)
+        val handoff = CrossfadeHandoff(nextPlayer, currentPlayer, startVolume)
         activeCrossfade = handoff
         // Read current settings at handoff: they may have changed after preloading.
         val repeatMode = currentPlayer.repeatMode
@@ -3262,6 +3458,12 @@ class PlayerServiceModern : MediaLibraryService(),
         
         // Keep listeners tied to this pair; later handoffs must never inherit them.
         handoff.endListener = object : Player.Listener {
+            override fun onEvents(player: Player, events: Player.Events) {
+                if (activeCrossfade === handoff && events.contains(Player.EVENT_AUDIO_SESSION_ID)) {
+                    syncAudioEffectSession(nextPlayer, "outgoing-session-event")
+                }
+            }
+
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
                 if (reason == Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM) {
                     handoff.outgoingEnded = true
@@ -3270,6 +3472,12 @@ class PlayerServiceModern : MediaLibraryService(),
         }
         currentPlayer.addListener(handoff.endListener)
         handoff.syncListener = object : Player.Listener {
+            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                if (activeCrossfade === handoff) {
+                    handoff.timeline?.setPlaying(playWhenReady, crossfadeClockMs())
+                }
+            }
+
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 if (activeCrossfade !== handoff) return
                 if (isPlaying && !handoff.outgoingEnded && currentPlayer.playbackState != Player.STATE_ENDED) {
@@ -3315,6 +3523,16 @@ class PlayerServiceModern : MediaLibraryService(),
 
         nextPlayer.volume = 0f
         nextPlayer.playWhenReady = currentPlayer.playWhenReady
+        bindAudioEffectPlayer(nextPlayer)
+        // Include transition publication and dispatcher lateness in the fade's elapsed time.
+        val durationMs = crossfadeDuration.toLong().coerceAtLeast(0L)
+        val timeline = CrossfadeTimeline(crossfadeClockMs(), nextPlayer.playWhenReady)
+        handoff.timeline = timeline
+        markCrossfadeAudio("FADE_BEGIN", currentPlayer, nextPlayer)
+        if (activeCrossfade !== handoff) {
+            isInternalCrossfadeSeek = false
+            return
+        }
         // Preparation happened before the primary listener was attached. Publish the same
         // transition as normal playback, including repeat-one's radio suppression.
         try {
@@ -3325,6 +3543,7 @@ class PlayerServiceModern : MediaLibraryService(),
             }
             onMediaItemTransition(nextPlayer.currentMediaItem, reason)
         } catch (e: Exception) {
+            markCrossfadeAudio("TRANSITION_ERROR", currentPlayer, nextPlayer)
             Timber.tag("PlayerServiceModern").e(e, "Failed to publish crossfade transition")
             if (activeCrossfade === handoff) {
                 try {
@@ -3341,21 +3560,45 @@ class PlayerServiceModern : MediaLibraryService(),
         crossfadeJob = coroutineScope.launch(NzikDispatchers.UI) {
             var completed = false
             try {
-                val steps = 50
-                val stepTime = crossfadeDuration.toLong() / steps
-                for (i in 1..steps) {
-                    while (!nextPlayer.playWhenReady) delay(100)
-                    val progress = i / steps.toFloat()
+                val updateIntervalMs = (durationMs / 50L).coerceAtLeast(1L)
+                var firstStep = true
+                var midpointMarked = false
+                while (true) {
+                    if (activeCrossfade !== handoff) return@launch
+                    // Listener timestamps preserve pauses even when they fall between updates.
+                    timeline.setPlaying(nextPlayer.playWhenReady, crossfadeClockMs())
+                    if (!nextPlayer.playWhenReady) {
+                        delay(100L)
+                        continue
+                    }
+                    val elapsedMs = timeline.elapsedMs(crossfadeClockMs())
+                    val progress = if (durationMs == 0L) 1f else {
+                        (elapsedMs.toDouble() / durationMs).coerceIn(0.0, 1.0).toFloat()
+                    }
                     nextPlayer.volume = startVolume * kotlin.math.sqrt(progress)
-                    currentPlayer.volume = startVolume * kotlin.math.sqrt(1.0f - progress)
-                    delay(stepTime)
+                    currentPlayer.volume = startVolume * kotlin.math.sqrt(1f - progress)
+                    if (firstStep) {
+                        markCrossfadeAudio("FADE_FIRST_STEP", currentPlayer, nextPlayer)
+                        firstStep = false
+                    }
+                    if (!midpointMarked && progress >= 0.5f) {
+                        markCrossfadeAudio("FADE_MIDPOINT", currentPlayer, nextPlayer)
+                        midpointMarked = true
+                    }
+                    if (elapsedMs >= durationMs) break
+                    // A delayed update catches up instead of extending all remaining steps.
+                    val remainingMs = durationMs - timeline.elapsedMs(crossfadeClockMs())
+                    if (remainingMs > 0L) delay(minOf(updateIntervalMs, remainingMs))
                 }
                 nextPlayer.volume = startVolume
                 currentPlayer.volume = 0f
+                markCrossfadeAudio("FADE_COMPLETE", currentPlayer, nextPlayer)
                 completed = true
             } catch (e: CancellationException) {
+                markCrossfadeAudio("FADE_CANCELLED", currentPlayer, nextPlayer)
                 throw e
             } catch (e: Exception) {
+                markCrossfadeAudio("FADE_ERROR", currentPlayer, nextPlayer)
                 Timber.tag("PlayerServiceModern").e(e, "Error during crossfade")
             } finally {
                 // Cancellation can finish after a new pair has started. Only its owner cleans up.
@@ -3385,15 +3628,18 @@ class PlayerServiceModern : MediaLibraryService(),
         val handoff = activeCrossfade
         activeCrossfade = null
         if (handoff != null) {
+            markCrossfadeAudio("PAIR_CLEANUP", handoff.outgoing, handoff.incoming)
             handoff.incoming.removeListener(handoff.syncListener)
             handoff.outgoing.removeListener(handoff.endListener)
             handoff.outgoing.stop()
+            detachCrossfadeAudioDiagnostics(handoff.outgoing)
             handoff.outgoing.release()
         }
         fadingPlayer = null
         secondaryPlayer?.let {
             it.removeListener(secondaryPlayerListener)
             it.stop()
+            detachCrossfadeAudioDiagnostics(it)
             it.release()
         }
         secondaryPlayer = null

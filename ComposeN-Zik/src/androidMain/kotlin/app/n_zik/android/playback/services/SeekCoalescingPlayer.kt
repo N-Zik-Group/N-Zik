@@ -46,6 +46,9 @@ internal class SeekCoalescingPlayer(
     private val settleScope: CoroutineScope = NzikDispatchers.fireAndForget(NzikDispatchers.UI),
 ) : Player by upstream {
 
+    // Forward the inherited Java default explicitly so EQ launchers see the real session.
+    override fun getAudioSessionId(): Int = upstream.audioSessionId
+
     private val stateLock = Any()
 
     /** Clock of the last seek applied by this wrapper, still awaiting settle. `null` = idle. */

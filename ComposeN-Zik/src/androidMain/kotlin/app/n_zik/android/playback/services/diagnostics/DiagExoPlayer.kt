@@ -21,6 +21,9 @@ import timber.log.Timber
 @UnstableApi
 class DiagExoPlayer(private val delegate: ExoPlayer) : ExoPlayer by delegate {
 
+    // Player's inherited Java default bypasses Kotlin delegation and otherwise returns session 0.
+    override fun getAudioSessionId(): Int = delegate.audioSessionId
+
     /** One `SEEK_CALL` line; [details] is a `k=v` fragment (may be empty). */
     private fun logSeek(op: String, details: String = "") {
         val detailPart = details.takeIf { it.isNotEmpty() }?.let { " $it" }.orEmpty()

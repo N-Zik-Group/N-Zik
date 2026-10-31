@@ -34,6 +34,14 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(player): restore external EQ sessions and correct crossfade duration (issue https://github.com/N-Zik-Group/N-Zik/issues/939)
+  - Forward audioSessionId explicitly through DiagExoPlayer and SeekCoalescingPlayer instead of inheriting the Java default value of zero.
+  - Share a valid AudioTrack session between both crossfade players; preserve effect-session ownership across preload, handoff, pause, session replacement and service shutdown.
+  - Retry failed internal-effect initialization without recreating successful effects, and detach auxiliary reverb before release.
+  - Calculate equal-power crossfade gains from monotonic elapsed time, excluding timestamped pauses and avoiding accumulated scheduling delays.
+  - Add bounded crossfade/output diagnostics and verify 67 targeted tests plus assembleDebug on the current main base.
+  - External EQ attachment was confirmed by the reporter; the remaining EQ-only transition microgap remains under investigation and is not claimed fixed.
+
 - fix(playlist): keep refresh-on-opening menu open when toggled
   - Update the live action in place; retain explicit menu dismissal for Radio actions.
 
