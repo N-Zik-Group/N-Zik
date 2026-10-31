@@ -10,3 +10,14 @@ N-Zik — done
   - Roundness artiste : 0/12/24/36/Max
   - Roundness UI : 0/10/20/30/Max
   Les sliders conservent leurs points sur la piste (drawValuePoints = true).
+- Fixes expand / carrousel du player (validés sur VM et téléphone) :
+  - Bouton expand : ne disparaît plus quand le toggle "sur pochette" est actif
+    (ActionBar.kt, condition simplifiée à expandedPlayerToggle).
+  - Bouton expand : couleur inversée (allumé en vue agrandi, gris sinon).
+  - Toggles lyrics/viz sur pochette : ON = overlay sur la pochette du carrousel
+    (expand ou non), OFF = plein écran standalone comme les autres modes
+    (PlayerCarouselCover.kt, plus de forcage keepCarousel).
+  - Les toggles ne touchent plus à expandedplayer (reset forcé supprimé).
+  - Landscape : retour automatique en vue carrousel (expandedplayer forcé à
+    true, la sémantique de l'état est inversée vs portrait).
+  - Conflit de slot pochette en expand : weight() gagne seul (Player.kt).

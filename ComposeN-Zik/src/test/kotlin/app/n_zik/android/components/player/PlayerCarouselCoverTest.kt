@@ -147,23 +147,25 @@ class PlayerCarouselCoverTest {
         }
     }
 
-    @Test fun `carousel forces overlays onto card without changing noncarousel preferences`() {
-        val stack = playerCoverOverlayPolicy(true, true, false, false)
-        assertTrue(stack.lyricsOnCover)
-        assertTrue(stack.visualizerOnCover)
-        assertTrue(playerCoverArtworkVisible(true, true, stack.lyricsOnCover, false, stack.visualizerOnCover))
-        assertTrue(playerCoverArtworkVisible(true, false, stack.lyricsOnCover, true, stack.visualizerOnCover))
-        assertEquals(false, playerStandaloneVisualizerVisible(true, true, stack.visualizerOnCover))
+    @Test fun `show on thumbnail toggles decide overlays in carousel and standalone`() {
+        val on = playerCoverOverlayPolicy(true, true)
+        assertTrue(on.lyricsOnCover)
+        assertTrue(on.visualizerOnCover)
+        assertTrue(playerCoverArtworkVisible(true, true, on.lyricsOnCover, false, on.visualizerOnCover))
+        assertTrue(playerCoverArtworkVisible(true, false, on.lyricsOnCover, true, on.visualizerOnCover))
+        assertEquals(false, playerStandaloneVisualizerVisible(true, true, on.visualizerOnCover))
         assertEquals(PlayerCoverOverlayVisibility(true, true), playerCoverOverlayVisibility(
-            1, 1, "playing", "playing", true, stack.lyricsOnCover, true, stack.visualizerOnCover, false))
-        assertEquals(PlayerCoverOverlayPolicy(false, false), playerCoverOverlayPolicy(false, true, false, false))
-        assertEquals(PlayerCoverOverlayPolicy(false, false), playerCoverOverlayPolicy(true, false, false, false))
+            1, 1, "playing", "playing", true, on.lyricsOnCover, true, on.visualizerOnCover, false))
+        // Toggles off: no overlay, standalone takes over like the other modes.
+        val off = playerCoverOverlayPolicy(false, false)
+        assertEquals(PlayerCoverOverlayPolicy(false, false), off)
+        assertTrue(playerStandaloneVisualizerVisible(true, true, off.visualizerOnCover))
     }
 
     @Test fun `front card overlay preserves bounds and adjacent artwork pages`() {
         val mode = mutableStateOf(0)
         compose.setContent {
-            val policy = playerCoverOverlayPolicy(true, true, false, false)
+            val policy = playerCoverOverlayPolicy(true, true)
             Box(Modifier.size(300.dp, 360.dp)) {
                 for (page in 0..2) {
                     PlayerCoverOverlayHost(

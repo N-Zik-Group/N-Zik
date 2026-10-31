@@ -661,11 +661,14 @@ fun BoxScope.ActionBar(
                         if (!isLandscape || ((playerType == PlayerType.Essential) && !showThumbnail)) {
                             val expandedPlayerToggle by rememberPreference( expandedplayertoggleKey, false )
                             var expandedPlayer by expandPlayerState
-                            if (expandedPlayerToggle && !showLyricsThumbnail)
+                            // The "show on thumbnail" toggles must not hide the expand button.
+                            if (expandedPlayerToggle)
                                 playerActions.add(PlayerActionSlot(buttonId, nativeHeight = 20.dp) {
                                 PlayerActionIcon(
                                         icon = R.drawable.maximize,
-                                        color = if ( expandedPlayer ) colorPalette().accent else Color.Gray,
+                                        // Inverted: the player reads as expanded while the persisted
+                                        // state is false, so the button lights up when it is NOT set.
+                                        color = if ( expandedPlayer ) Color.Gray else colorPalette().accent,
                                         onClick = {
                                             expandedPlayer = !expandedPlayer
                                         },

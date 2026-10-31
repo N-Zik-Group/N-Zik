@@ -509,6 +509,13 @@ fun Player(
     var swipeAnimationNoThumbnail by rememberPreference( swipeAnimationsNoThumbnailKey, SwipeAnimationNoThumbnail.Sliding )
     val expandPlayerState = rememberPreference( expandedplayerKey, false )
     var expandedplayer by expandPlayerState
+    // Landscape has no expand button: the carousel view is rendered while the
+    // expanded state is true (the state mapping is inverted vs portrait), so
+    // force it on to get the stacked carousel there.
+    val playerInLandscape = isLandscape
+    LaunchedEffect( playerInLandscape ) {
+        if ( playerInLandscape ) expandedplayer = true
+    }
 
     val playerUpdateTrigger by binder.playerUpdateTrigger.collectAsStateWithLifecycle(0, context = NzikDispatchers.DATA)
 
@@ -799,8 +806,6 @@ fun Player(
     val windowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
 
     var updateBrush by remember { mutableStateOf(false) }
-
-    if (showlyricsthumbnail && !(playerType == PlayerType.Modern && carousel)) expandedplayer = false
 
     LaunchedEffect(mediaItem.mediaId) {
         updateBrush = true
@@ -1335,8 +1340,6 @@ fun Player(
     val showLandscapeArtworkColumn = !isLandscape ||
         playerLandscapeArtworkColumnVisible(playerType, thumbnailType, expandedplayer, showthumbnail)
     val coverOverlayPolicy = playerCoverOverlayPolicy(
-        carousel = playerType == PlayerType.Modern && carousel && showLandscapeArtworkColumn,
-        showThumbnail = showthumbnail,
         lyricsOnCover = showlyricsthumbnail && showLandscapeArtworkColumn,
         visualizerOnCover = showvisthumbnail && showLandscapeArtworkColumn,
     )
@@ -2124,7 +2127,8 @@ fun Player(
                             if ((swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Scale) && isDraggedFS){
                                 Column {
                                     Spacer(modifier = Modifier
-                                        .conditional((screenWidth <= (screenHeight / 2)) && (showlyricsthumbnail || (!expandedplayer && !isShowingStandaloneLyrics))) {
+                                        // Same weight-wins-on-expand rule as the portrait artwork slot.
+                                        .conditional((screenWidth <= (screenHeight / 2)) && (!expandedplayer && !isShowingStandaloneLyrics)) {
                                             height(screenWidth)}
                                         .conditional((screenWidth > (screenHeight / 2)) || expandedplayer || isShowingStandaloneLyrics) {weight(1f)})
 
@@ -2309,7 +2313,10 @@ fun Player(
                 BoxWithConstraints(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .conditional((screenWidth <= (screenHeight / 2)) && (showlyricsthumbnail || (!expandedplayer && !isShowingStandaloneLyrics))) {height(screenWidth)}
+                        // When expanded, weight() must win alone: with both height() and
+                        // weight() applied the slot size became unpredictable and the
+                        // expand/back actions felt inverted.
+                        .conditional((screenWidth <= (screenHeight / 2)) && (!expandedplayer && !isShowingStandaloneLyrics)) {height(screenWidth)}
                         .conditional((screenWidth > (screenHeight / 2)) || expandedplayer || isShowingStandaloneLyrics) {weight(1f)}
                 ) {
 

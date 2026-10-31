@@ -27,15 +27,15 @@ val LocalPlayerCoverOverlay = staticCompositionLocalOf { false }
 /** Carousel overlays always occupy the playing card without changing saved single-cover preferences. */
 data class PlayerCoverOverlayPolicy(val lyricsOnCover: Boolean, val visualizerOnCover: Boolean)
 
+/**
+ * The "show on thumbnail" toggles alone decide whether lyrics/visualizer sit on the
+ * cover or go standalone — the carousel must not override them: on = on the carousel
+ * cover (expanded or not), off = fullscreen like the other modes.
+ */
 fun playerCoverOverlayPolicy(
-    carousel: Boolean,
-    showThumbnail: Boolean,
     lyricsOnCover: Boolean,
     visualizerOnCover: Boolean,
-): PlayerCoverOverlayPolicy {
-    val keepCarousel = carousel && showThumbnail
-    return PlayerCoverOverlayPolicy(keepCarousel || lyricsOnCover, keepCarousel || visualizerOnCover)
-}
+): PlayerCoverOverlayPolicy = PlayerCoverOverlayPolicy(lyricsOnCover, visualizerOnCover)
 
 /** The same artwork preference gate is used in portrait and landscape. */
 fun playerCoverArtworkVisible(
