@@ -122,12 +122,9 @@ Join the N-Zik Discord:
 - 📊 **Listening Statistics**: Track your habits, favorite artists, and playback trends.
 - ⬇️ **OTA Updates**: Receive automatic in-app updates without needing to reinstall manually.
 - 🌈 **Audio Visualizer**: Enjoy real-time visual effects synchronized with your music.
-
 > [!NOTE]
 > 🎤 The audio visualizer requires **microphone permission** and must be enabled in the settings.
-
 - 🕹️ **Discord Rich Presence**: Display your currently playing track directly on your Discord profile. An advanced mode adds custom text templates, activity type, up to 2 custom buttons, pause-presence, and a live interactive preview card.
-
 - 📰 **Discovery**: Explore moods, genres, releases, and albums from your favorite artists, plus trending picks.
 - 🔄 **Playlist Import & Export**: Easily back up, share, and restore playlists, you can import from Riplay, Spotify ([Exportify](https://exportify.net/)), Youtube Music and N-Zik
 - ✍️ **Advanced Lyrics Support**: Fetch, display word by word, sync and unsync lyrics with smart fallback mechanisms, edit, and translate them in real-time via Google Translate with source language detection.
@@ -139,7 +136,6 @@ Join the N-Zik Discord:
 - 📱 **On-Device Music**: Play local music files stored directly on your device.
 - 📺 **Wide Platform Support**: Compatible with Android Auto, Android Automotive, Android TV, and YouTube video playback.
 - 🪟 **Widgets**: New widgets for your home screen (Compact, Turntable, and Playlist).
-
 - 🧩 **Extensions**: Heavy features are delivered as small, downloadable modules that add capability without bloating every APK. Manage them from the burger menu → **Extensions**, which opens the Extensions page in Settings with **Installed** (state, size, update/uninstall) and **Marketplace** (browse + download available extensions) tabs. The first extension is **FFmpeg**, which unlocks **Media Export** and the **Metadata Editor**, the app's only FFmpeg-powered features; regular playback, streaming and downloads never use it. It downloads automatically on first use (≈ 25 MB, SHA-256 verified, app-update-style progress notification), updates and uninstalls independently of the app, and is version-pinned to the app. _(Note: the FFmpeg extension is not available on x86 32-bit devices.)_
 - 📤 **Media Export**: Export cached or downloaded music to external storage with full metadata (title, artist, album, cover art, copyright, etc.) powered by FFmpeg. _(Note: requires the **FFmpeg extension**; see the [Extensions](#-features) entry in the Features list. Managed in Settings → Extensions. Not available on x86 32-bit devices.)_
 - ✏️ **Metadata Editor**: Edit song metadata (title, artist, album, genre, year, cover art, and more) directly in-app. Supports both AAC and Opus codecs with automatic cover art embedding.
