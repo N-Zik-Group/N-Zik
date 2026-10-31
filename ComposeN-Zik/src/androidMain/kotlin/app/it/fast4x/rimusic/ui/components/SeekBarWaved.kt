@@ -1,4 +1,7 @@
 package app.it.fast4x.rimusic.ui.components
+import app.n_zik.android.components.player.PlayerSeekGlassThumb
+import app.n_zik.android.components.player.PlayerSeekOpticalThumb
+import app.n_zik.android.components.player.playerSeekTrack
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.MutableTransitionState
@@ -56,9 +59,14 @@ fun SeekBarWaved(
     isActive: Boolean = true,
     scrubberRadius: Dp = 6.dp,
     shape: Shape = RectangleShape,
+    glassThumb: PlayerSeekGlassThumb? = null,
 ) {
     val minimumValue = range.start
     val maximumValue = range.endInclusive
+    val targetPosition = position()
+    val visualPosition = glassThumb?.motion?.value?.let {
+        minimumValue + it * (maximumValue - minimumValue)
+    } ?: targetPosition
     val isDragging = remember {
         MutableTransitionState(false)
     }
@@ -83,18 +91,21 @@ fun SeekBarWaved(
         .padding(horizontal = scrubberRadius)
         .drawWithContent {
             drawContent()
-            drawScrubber(range, position(), color, currentScrubberHeight)
+            drawScrubber(range, visualPosition, color, currentScrubberHeight)
         }
     ) {
         SeekBarContent(
             backgroundColor,
             amplitude = { currentAmplitude },
-            position(),
+            visualPosition,
             minimumValue,
             maximumValue,
             shape,
-            color
+            color,
+            modifier = Modifier.playerSeekTrack(glassThumb)
         )
+        PlayerSeekOpticalThumb(glassThumb,
+            (targetPosition - minimumValue) / (maximumValue - minimumValue))
     }
 }
 
@@ -188,7 +199,8 @@ private fun SeekBarContent(
     minimumValue: Float,
     maximumValue: Float,
     shape: Shape,
-    color: Color
+    color: Color,
+    modifier: Modifier = Modifier,
 ) {
     val fraction = (position - minimumValue) / (maximumValue - minimumValue)
     val progress by rememberInfiniteTransition().animateFloat(
@@ -199,7 +211,7 @@ private fun SeekBarContent(
         ), label = ""
     )
     Box(
-        Modifier
+        modifier
             .fillMaxWidth()
             .height(6.dp)) {
         Spacer(

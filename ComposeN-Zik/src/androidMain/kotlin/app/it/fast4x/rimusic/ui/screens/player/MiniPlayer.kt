@@ -937,14 +937,6 @@ private fun MiniPlayerSlotButton(
     // Locked controls are also visibly disabled (spec-listen-together-guest-lock-hardening)
     val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
 
-    val fold = LocalCompactMiniPlayerProgress.current
-    val compact = fold > 0.5f
-    val dockPresentation = app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgressProvider.current != null
-    val modifier = Modifier
-        .rotate(rotationAngle)
-        .then(if (dockPresentation) Modifier.padding(horizontal = 2.dp + 4.dp * fold, vertical = 8.dp - 2.dp * fold)
-            else Modifier.padding(horizontal = if (compact) 12.dp else 2.dp, vertical = if (compact) 12.dp else 8.dp))
-        .size(24.dp)
 
     when (button) {
         MiniPlayerButton.SkipBack -> {
@@ -980,7 +972,9 @@ private fun MiniPlayerSlotButton(
             )
         }
         MiniPlayerButton.Shuffle -> {
-            IconButton(
+            GlassMiniPlayerIconButton(
+                contentDescription = stringResource(button.labelRes),
+                preserveNativeGeometry = true,
                 // Issue #866 (gh-866): app-wide shuffle confirmation flash (shuffle_ok ~1 s).
                 icon = shuffleButtonIcon(),
                 color = controlsColorText,
@@ -992,13 +986,16 @@ private fun MiniPlayerSlotButton(
                         if (effectRotationEnabled) onRotatedChange(!isRotated)
                     }
                 },
-                modifier = modifier.alpha(guestLockAlpha)
+                rotationAngle = rotationAngle,
+                alpha = guestLockAlpha
             )
         }
         MiniPlayerButton.Repeat -> {
             var currentRepeatMode by remember { mutableIntStateOf(binder.player.repeatMode) }
             val queueLoopType = QueueLoopType.from(currentRepeatMode)
-            IconButton(
+            GlassMiniPlayerIconButton(
+                contentDescription = stringResource(button.labelRes),
+                preserveNativeGeometry = true,
                 icon = queueLoopType.iconId,
                 color = if (queueLoopType != QueueLoopType.Default) colorPalette().accent else controlsColorText,
                 enabled = !listenTogetherGuestLock,
@@ -1010,11 +1007,14 @@ private fun MiniPlayerSlotButton(
                         if (effectRotationEnabled) onRotatedChange(!isRotated)
                     }
                 },
-                modifier = modifier.alpha(guestLockAlpha)
+                rotationAngle = rotationAngle,
+                alpha = guestLockAlpha
             )
         }
         MiniPlayerButton.Like -> {
-            IconButton(
+            GlassMiniPlayerIconButton(
+                contentDescription = stringResource(button.labelRes),
+                preserveNativeGeometry = true,
                 icon = when(likeState) {
                     false -> getDislikedIcon()
                     null -> getUnlikedIcon()
@@ -1025,11 +1025,13 @@ private fun MiniPlayerSlotButton(
                     else -> colorPalette().favoritesIcon
                 },
                 onClick = onLikeClick,
-                modifier = modifier
+                rotationAngle = rotationAngle
             )
         }
         MiniPlayerButton.AddToPlaylist -> {
-            IconButton(
+            GlassMiniPlayerIconButton(
+                contentDescription = stringResource(button.labelRes),
+                preserveNativeGeometry = true,
                 icon = R.drawable.add_in_playlist,
                 color = controlsColorText,
                 onClick = {
@@ -1044,23 +1046,27 @@ private fun MiniPlayerSlotButton(
                     }
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
-                modifier = modifier
+                rotationAngle = rotationAngle
             )
         }
         MiniPlayerButton.Download -> {
             val isDownloaded = mediaItem?.let { isDownloadedSong(it.mediaId) } ?: false
-            IconButton(
+            GlassMiniPlayerIconButton(
+                contentDescription = stringResource(button.labelRes),
+                preserveNativeGeometry = true,
                 icon = if (isDownloaded) R.drawable.downloaded else R.drawable.download,
                 color = if (isDownloaded) colorPalette().accent else controlsColorText,
                 onClick = {
                     mediaItem?.let { manageDownload(context, it, isDownloaded) }
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
-                modifier = modifier
+                rotationAngle = rotationAngle
             )
         }
         MiniPlayerButton.Share -> {
-            IconButton(
+            GlassMiniPlayerIconButton(
+                contentDescription = stringResource(button.labelRes),
+                preserveNativeGeometry = true,
                 icon = R.drawable.share_social,
                 color = controlsColorText,
                 onClick = {
@@ -1073,12 +1079,14 @@ private fun MiniPlayerSlotButton(
                     }
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
-                modifier = modifier
+                rotationAngle = rotationAngle
             )
         }
         MiniPlayerButton.Radio -> {
             val isRadioActive = binder.isRadioActive
-            IconButton(
+            GlassMiniPlayerIconButton(
+                contentDescription = stringResource(button.labelRes),
+                preserveNativeGeometry = true,
                 // Issue #866 (gh-866): state icon — radio_stop while the radio is active
                 // (the state change is the press feedback).
                 icon = radioButtonIcon(),
@@ -1090,7 +1098,8 @@ private fun MiniPlayerSlotButton(
                     if (!listenTogetherGuestLock) mediaItem?.let { binder.startRadio(it, false, null, true) }
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
-                modifier = modifier.alpha(guestLockAlpha)
+                rotationAngle = rotationAngle,
+                alpha = guestLockAlpha
             )
         }
         MiniPlayerButton.AudioOutput -> {
@@ -1143,19 +1152,22 @@ private fun MiniPlayerSlotButton(
             }
         }
         MiniPlayerButton.SleepTimer -> {
-            IconButton(
+            GlassMiniPlayerIconButton(
+                contentDescription = stringResource(button.labelRes),
+                preserveNativeGeometry = true,
                 icon = R.drawable.sleep,
                 color = if (listenTogetherGuestLock) colorPalette().textDisabled else controlsColorText,
                 // Guest lock: the sleep timer auto-stops the app — a session-level control,
                 // grayed + disabled for a guest (spec-listen-together-guest-lock-hardening).
                 enabled = !listenTogetherGuestLock,
                 onClick = {
-                    if (listenTogetherGuestLock) return@IconButton
+                    if (listenTogetherGuestLock) return@GlassMiniPlayerIconButton
                     pendingAction?.value = PendingMiniPlayerAction.SleepTimer
                     onShowPlayer()
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
-                modifier = modifier.alpha(guestLockAlpha)
+                rotationAngle = rotationAngle,
+                alpha = guestLockAlpha
             )
         }
         MiniPlayerButton.Lyrics -> {
@@ -1163,7 +1175,9 @@ private fun MiniPlayerSlotButton(
             var savedLyricsState by rememberPreference(saveLyricsStateKey, false)
             val shouldRememberLyricsState by rememberPreference(showLyricsStateKey, false)
             
-            IconButton(
+            GlassMiniPlayerIconButton(
+                contentDescription = stringResource(button.labelRes),
+                preserveNativeGeometry = true,
                 icon = R.drawable.song_lyrics,
                 color = if (isLyricsActive) colorPalette().accent else controlsColorText,
                 onClick = {
@@ -1176,7 +1190,7 @@ private fun MiniPlayerSlotButton(
                     }
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
-                modifier = modifier
+                rotationAngle = rotationAngle
             )
         }
         MiniPlayerButton.Visualizer -> {
@@ -1184,7 +1198,9 @@ private fun MiniPlayerSlotButton(
             var savedVisualizerState by rememberPreference(saveVisualizerStateKey, false)
             val shouldRememberVisualizerState by rememberPreference(showVisualizerStateKey, false)
             
-            IconButton(
+            GlassMiniPlayerIconButton(
+                contentDescription = stringResource(button.labelRes),
+                preserveNativeGeometry = true,
                 icon = R.drawable.sound_effect,
                 color = if (isVisualizerActive) colorPalette().accent else controlsColorText,
                 onClick = {
@@ -1197,34 +1213,39 @@ private fun MiniPlayerSlotButton(
                     }
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
-                modifier = modifier
+                rotationAngle = rotationAngle
             )
         }
         MiniPlayerButton.Queue -> {
-            IconButton(
+            GlassMiniPlayerIconButton(
+                contentDescription = stringResource(button.labelRes),
+                preserveNativeGeometry = true,
                 icon = R.drawable.reorder,
                 color = controlsColorText,
                 onClick = {
                     requestQueue?.invoke() ?: navController?.navigate(NavRoutes.queue.name)
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
-                modifier = modifier
+                rotationAngle = rotationAngle
             )
         }
         MiniPlayerButton.Video -> {
-            IconButton(
+            GlassMiniPlayerIconButton(
+                contentDescription = stringResource(button.labelRes),
+                preserveNativeGeometry = true,
                 icon = R.drawable.video,
                 color = if (listenTogetherGuestLock) colorPalette().textDisabled else controlsColorText,
                 // Guest lock: the video button pauses playback and opens the video overlay —
                 // a playback-affecting control owned by the host, grayed for a guest.
                 enabled = !listenTogetherGuestLock,
                 onClick = {
-                    if (listenTogetherGuestLock) return@IconButton
+                    if (listenTogetherGuestLock) return@GlassMiniPlayerIconButton
                     pendingAction?.value = PendingMiniPlayerAction.Video
                     onShowPlayer()
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
-                modifier = modifier.alpha(guestLockAlpha)
+                rotationAngle = rotationAngle,
+                alpha = guestLockAlpha
             )
         }
         MiniPlayerButton.Discover -> {
@@ -1232,7 +1253,9 @@ private fun MiniPlayerSlotButton(
             val isAutoFillEnabled by rememberPreference(autoLoadSongsInQueueKey, true)
             val isDiscoverClickable = binder.service.nzikRadio.isRadioActive || isAutoFillEnabled
 
-            IconButton(
+            GlassMiniPlayerIconButton(
+                contentDescription = stringResource(button.labelRes),
+                preserveNativeGeometry = true,
                 // Issue #866 (gh-866): state icon — discover_stop while discover mode is ON
                 // (the state change is the feedback).
                 icon = discoverButtonIconRes(discoverIsEnabled),
@@ -1245,9 +1268,8 @@ private fun MiniPlayerSlotButton(
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
                 onLongClick = { Toaster.i(R.string.discoverinfo) },
-                modifier = modifier
-                    .alpha(if (isDiscoverClickable) 1f else 0.4f)
-                    .alpha(guestLockAlpha)
+                rotationAngle = rotationAngle,
+                alpha = (if (isDiscoverClickable) 1f else 0.4f) * guestLockAlpha
             )
         }
         else -> {}

@@ -1,5 +1,11 @@
 package app.n_zik.android.components.player.lyrics
 
+import app.n_zik.android.components.player.LocalPlayerCoverOverlay
+import app.n_zik.android.components.player.PlayerTransportControlMotion
+import app.n_zik.android.components.player.playerTransportFeedback
+import app.n_zik.android.components.player.playerTransportIndication
+import app.n_zik.android.components.player.playerTransportFilledBackground
+
 import android.app.SearchManager
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -9,6 +15,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import app.n_zik.android.components.ui.nativeControlIndication
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -37,7 +44,11 @@ import app.n_zik.android.enums.lyrics.LyricsHighlight
 import app.n_zik.android.enums.lyrics.LyricsAlignment
 import app.n_zik.android.models.Lyrics
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
-import app.it.fast4x.rimusic.ui.components.themed.IconButton
+import app.n_zik.android.components.glass.GlassOverlayIconButton as IconButton
+import app.n_zik.android.components.glass.glassOverlayCanvasViewport
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.GlassOverlayControls
+import app.n_zik.android.components.glass.GlassOverlayScene
 import app.it.fast4x.rimusic.utils.lyricsTypeKey
 import app.n_zik.android.components.dialog.common.LyricsSizeDialog
 import app.it.fast4x.rimusic.ui.components.themed.TextPlaceholder
@@ -52,6 +63,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.song.EditLyricsDialog
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.components.glass.overlayViewportShape
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.typography
@@ -107,7 +119,8 @@ fun LyricsScreen(
         val currentView = LocalView.current
         val binder = LocalPlayerServiceBinder.current
 
-        var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, true)
+        val savedLyricsOnCover by rememberPreference(showlyricsthumbnailKey, true)
+        val showlyricsthumbnail = LocalPlayerCoverOverlay.current || savedLyricsOnCover
         var lyricsType by rememberPreference(lyricsTypeKey, LyricsType.Auto)
         var invalidLrc by remember(mediaId, lyricsType) { mutableStateOf(false) }
         var isPicking by remember(mediaId, lyricsType) { mutableStateOf(false) }
@@ -307,200 +320,206 @@ fun LyricsScreen(
             }
         }
 
-        Box(
+        val overlayCanvasViewport = Modifier.glassOverlayCanvasViewport(rememberGlassSettings(), showThumbnail = showlyricsthumbnail)
+        GlassOverlayScene(
+                scope = app.n_zik.android.components.glass.GlassScope.Lyrics,
+            background = if (!showlyricsthumbnail) Color.Transparent else Color.Black.copy(0.8f),
             contentAlignment = Alignment.Center,
             modifier = modifier
                 .pointerInput(Unit) { detectTapGestures(onTap = { onDismiss() }) }
                 .fillMaxSize()
-                .background(if (!showlyricsthumbnail) Color.Transparent else Color.Black.copy(0.8f))
-                .clip(thumbnailShape())
+                .then(overlayCanvasViewport)
+                .clip(overlayViewportShape(showlyricsthumbnail, thumbnailShape()))
         ) {
             val allSyncedSourcesChecked = checkedLyricsLrc && checkedLyricsKugou && checkedLyricsInnertube
             val noLyricsFound = text == null && allSyncedSourcesChecked
 
-            AnimatedVisibility(
-                visible = ((isError && text == null) || (invalidLrc && lyricsType != LyricsType.Unsynced)) && !noLyricsFound && !isFetching,
-                enter = slideInVertically { -it },
-                exit = slideOutVertically { -it },
-                modifier = Modifier.align(Alignment.TopCenter)
-            ) {
-                BasicText(
-                    text = stringResource(R.string.an_error_has_occurred_while_fetching_the_lyrics),
-                    style = typography().xs.center.medium.color(PureBlackColorPalette.text),
-                    modifier = Modifier
-                        .background(if (!showlyricsthumbnail) Color.Transparent else Color.Black.copy(0.4f))
-                        .padding(all = 8.dp)
-                        .fillMaxWidth()
-                )
-            }
-
-            if (text?.isEmpty() == true && !checkedLyricsLrc && !checkedLyricsKugou && !checkedLyricsInnertube) {
-                checkLyrics = !checkLyrics
-            }
-
-            if (text?.isNotEmpty() == true) {
-                val hasWordTimings = text.lines().any { it.trim().startsWith("<") && it.contains(":") && it.contains(">") }
-                when {
-                    actualLyricsType == LyricsType.Karaoke && hasWordTimings -> {
-                        KaraokeLyricsView(
-                            text = text,
-                            currentPositionProvider = { (binder?.player?.currentPosition ?: 0L) + lyricsOffsetState.value },
-                            isPlayingProvider = { binder?.player?.isPlaying == true },
-                            onSeekTo = { binder?.player?.seekTo(it) },
-                            showlyricsthumbnail = showlyricsthumbnail,
-                            isLandscape = isLandscape,
-                            trailingContent = trailingContent,
-                            showBackgroundLyrics = showBackgroundLyrics,
-                            lyricsBackground = lyricsBackground,
-                            showSecondLine = showSecondLine,
-                            translateEnabled = translateEnabled,
-                            romanizationEnabled = romanizationEnabled,
-                            languageDestination = languageDestination,
-                            translator = translator,
-                            lyricsOutline = lyricsOutline,
-                            colorPaletteMode = colorPaletteMode,
-                            fontSize = lyricsFontSize,
-                            customSize = customSize,
-                            lyricsSizeAnimate = lyricsSizeAnimate,
-                            lyricsColor = lyricsColor,
-                            lyricsCustomColor = lyricsCustomColor,
-                            isAutoScrollEnabled = isAutoScrollEnabled,
-                            onAutoScrollEnabledChange = { isAutoScrollEnabled = it },
-                            dominantColor = dominantColor,
-                            lyricsHighlight = lyricsHighlight,
-                            lyricsAlignment = lyricsAlignment,
-                            clickLyricsText = clickLyricsText,
-                            karaokeRespectAgentPosition = karaokeRespectAgentPosition,
-                            thumbnailSize = thumbnailSize,
-                            isDisplayed = isDisplayed,
-                            onDismiss = onDismiss,
-                            onInvalidLrc = { invalidLrc = it },
-                            showIntervalIndicator = showIntervalIndicator,
-                            showClipRectsDebug = showClipRectsDebug
-                        )
-                    }
-
-                    actualLyricsType == LyricsType.Synced || (actualLyricsType == LyricsType.Karaoke && !hasWordTimings) -> {
-                        SyncedLyricsView(
-                            text = text,
-                            currentPositionProvider = { (binder?.player?.currentPosition ?: 0L) + lyricsOffsetState.value },
-                            onSeekTo = { binder?.player?.seekTo(it) },
-                            showlyricsthumbnail = showlyricsthumbnail,
-                            isLandscape = isLandscape,
-                            trailingContent = trailingContent,
-                            showBackgroundLyrics = showBackgroundLyrics,
-                            lyricsBackground = lyricsBackground,
-                            showSecondLine = showSecondLine,
-                            translateEnabled = translateEnabled,
-                            romanizationEnabled = romanizationEnabled,
-                            languageDestination = languageDestination,
-                            translator = translator,
-                            lyricsOutline = lyricsOutline,
-                            colorPaletteMode = colorPaletteMode,
-                            fontSize = lyricsFontSize,
-                            customSize = customSize,
-                            lyricsAlignment = lyricsAlignment,
-                            lyricsSizeAnimate = lyricsSizeAnimate,
-                            lyricsColor = lyricsColor,
-                            lyricsCustomColor = lyricsCustomColor,
-                            isAutoScrollEnabled = isAutoScrollEnabled,
-                            onAutoScrollEnabledChange = { isAutoScrollEnabled = it },
-                            dominantColor = dominantColor,
-                            lyricsHighlight = lyricsHighlight,
-                            clickLyricsText = clickLyricsText,
-                            thumbnailSize = thumbnailSize,
-                            isDisplayed = isDisplayed,
-                            onDismiss = onDismiss,
-                            onInvalidLrc = { invalidLrc = it },
-                            showIntervalIndicator = showIntervalIndicator,
-                            karaokeRespectAgentPosition = karaokeRespectAgentPosition
-                        )
-                    }
-                    actualLyricsType == LyricsType.Unsynced -> {
-                        UnsyncedLyricsView(
-                            text = text,
-                            showlyricsthumbnail = showlyricsthumbnail,
-                            isDisplayed = isDisplayed,
-                            showSecondLine = showSecondLine,
-                            translateEnabled = translateEnabled,
-                            romanizationEnabled = romanizationEnabled,
-                            languageDestination = languageDestination,
-                            translator = translator,
-                            lyricsBackground = lyricsBackground,
-                            lyricsOutline = lyricsOutline,
-                            colorPaletteMode = colorPaletteMode,
-                            fontSize = lyricsFontSize,
-                            customSize = customSize,
-                            lyricsAlignment = lyricsAlignment,
-                            lyricsColor = lyricsColor,
-                            lyricsCustomColor = lyricsCustomColor,
-                            dominantColor = dominantColor,
-                            lyricsHighlight = lyricsHighlight,
-                            thumbnailSize = thumbnailSize,
-                            clickLyricsText = clickLyricsText,
-                            onDismiss = onDismiss
-                        )
-                    }
-                }
-            }
-
-            if (noLyricsFound && !isPicking && !isFetching) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(horizontal = 32.dp)
+            Box(Modifier.matchParentSize(), contentAlignment = Alignment.Center) {
+                AnimatedVisibility(
+                    visible = ((isError && text == null) || (invalidLrc && lyricsType != LyricsType.Unsynced)) && !noLyricsFound && !isFetching,
+                    enter = slideInVertically { -it },
+                    exit = slideOutVertically { -it },
+                    modifier = Modifier.align(Alignment.TopCenter)
                 ) {
                     BasicText(
-                        text = stringResource(R.string.lyrics_not_available),
-                        style = typography().s.center.medium.color(PureBlackColorPalette.text),
-                        modifier = Modifier.fillMaxWidth()
+                        text = stringResource(R.string.an_error_has_occurred_while_fetching_the_lyrics),
+                        style = typography().xs.center.medium.color(PureBlackColorPalette.text),
+                        modifier = Modifier
+                            .background(if (!showlyricsthumbnail) Color.Transparent else Color.Black.copy(0.4f))
+                            .padding(all = 8.dp)
+                            .fillMaxWidth()
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(
-                            icon = R.drawable.refresh,
-                            color = colorPalette().accent,
-                            enabled = true,
-                            onClick = {
-                                checkedLyricsLrc = false
-                                checkedLyricsKugou = false
-                                checkedLyricsInnertube = false
-                                resetGlobalAttemptForType(lyricsType)
-                                checkLyrics = !checkLyrics
-                            },
-                            modifier = Modifier
-                                .padding(all = 8.dp)
-                                .size(24.dp)
-                        )
-                        IconButton(
-                            icon = R.drawable.pencil,
-                            color = colorPalette().accent,
-                            enabled = true,
-                            onClick = { editLyricsDialog.onShortClick() },
-                            modifier = Modifier
-                                .padding(all = 8.dp)
-                                .size(24.dp)
-                        )
-                    }
                 }
-            }
 
-            if ((text == null && !isError && !noLyricsFound) || isFetching) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.shimmer()
-                ) {
-                    repeat(4) {
-                        TextPlaceholder(
-                            color = colorPalette().onOverlayShimmer,
-                            modifier = Modifier.alpha(1f - it * 0.1f)
-                        )
+                if (text?.isEmpty() == true && !checkedLyricsLrc && !checkedLyricsKugou && !checkedLyricsInnertube) {
+                    checkLyrics = !checkLyrics
+                }
+
+                if (text?.isNotEmpty() == true) {
+                    val hasWordTimings = text.lines().any { it.trim().startsWith("<") && it.contains(":") && it.contains(">") }
+                    when {
+                        actualLyricsType == LyricsType.Karaoke && hasWordTimings -> {
+                            KaraokeLyricsView(
+                                text = text,
+                                currentPositionProvider = { (binder?.player?.currentPosition ?: 0L) + lyricsOffsetState.value },
+                                isPlayingProvider = { binder?.player?.isPlaying == true },
+                                onSeekTo = { binder?.player?.seekTo(it) },
+                                showlyricsthumbnail = showlyricsthumbnail,
+                                isLandscape = isLandscape,
+                                trailingContent = trailingContent,
+                                showBackgroundLyrics = showBackgroundLyrics,
+                                lyricsBackground = lyricsBackground,
+                                showSecondLine = showSecondLine,
+                                translateEnabled = translateEnabled,
+                                romanizationEnabled = romanizationEnabled,
+                                languageDestination = languageDestination,
+                                translator = translator,
+                                lyricsOutline = lyricsOutline,
+                                colorPaletteMode = colorPaletteMode,
+                                fontSize = lyricsFontSize,
+                                customSize = customSize,
+                                lyricsSizeAnimate = lyricsSizeAnimate,
+                                lyricsColor = lyricsColor,
+                                lyricsCustomColor = lyricsCustomColor,
+                                isAutoScrollEnabled = isAutoScrollEnabled,
+                                onAutoScrollEnabledChange = { isAutoScrollEnabled = it },
+                                dominantColor = dominantColor,
+                                lyricsHighlight = lyricsHighlight,
+                                lyricsAlignment = lyricsAlignment,
+                                clickLyricsText = clickLyricsText,
+                                karaokeRespectAgentPosition = karaokeRespectAgentPosition,
+                                thumbnailSize = thumbnailSize,
+                                isDisplayed = isDisplayed,
+                                onDismiss = onDismiss,
+                                onInvalidLrc = { invalidLrc = it },
+                                showIntervalIndicator = showIntervalIndicator,
+                                showClipRectsDebug = showClipRectsDebug
+                            )
+                        }
+
+                        actualLyricsType == LyricsType.Synced || (actualLyricsType == LyricsType.Karaoke && !hasWordTimings) -> {
+                            SyncedLyricsView(
+                                text = text,
+                                currentPositionProvider = { (binder?.player?.currentPosition ?: 0L) + lyricsOffsetState.value },
+                                onSeekTo = { binder?.player?.seekTo(it) },
+                                showlyricsthumbnail = showlyricsthumbnail,
+                                isLandscape = isLandscape,
+                                trailingContent = trailingContent,
+                                showBackgroundLyrics = showBackgroundLyrics,
+                                lyricsBackground = lyricsBackground,
+                                showSecondLine = showSecondLine,
+                                translateEnabled = translateEnabled,
+                                romanizationEnabled = romanizationEnabled,
+                                languageDestination = languageDestination,
+                                translator = translator,
+                                lyricsOutline = lyricsOutline,
+                                colorPaletteMode = colorPaletteMode,
+                                fontSize = lyricsFontSize,
+                                customSize = customSize,
+                                lyricsAlignment = lyricsAlignment,
+                                lyricsSizeAnimate = lyricsSizeAnimate,
+                                lyricsColor = lyricsColor,
+                                lyricsCustomColor = lyricsCustomColor,
+                                isAutoScrollEnabled = isAutoScrollEnabled,
+                                onAutoScrollEnabledChange = { isAutoScrollEnabled = it },
+                                dominantColor = dominantColor,
+                                lyricsHighlight = lyricsHighlight,
+                                clickLyricsText = clickLyricsText,
+                                thumbnailSize = thumbnailSize,
+                                isDisplayed = isDisplayed,
+                                onDismiss = onDismiss,
+                                onInvalidLrc = { invalidLrc = it },
+                                showIntervalIndicator = showIntervalIndicator,
+                                karaokeRespectAgentPosition = karaokeRespectAgentPosition
+                            )
+                        }
+                        actualLyricsType == LyricsType.Unsynced -> {
+                            UnsyncedLyricsView(
+                                text = text,
+                                showlyricsthumbnail = showlyricsthumbnail,
+                                isDisplayed = isDisplayed,
+                                showSecondLine = showSecondLine,
+                                translateEnabled = translateEnabled,
+                                romanizationEnabled = romanizationEnabled,
+                                languageDestination = languageDestination,
+                                translator = translator,
+                                lyricsBackground = lyricsBackground,
+                                lyricsOutline = lyricsOutline,
+                                colorPaletteMode = colorPaletteMode,
+                                fontSize = lyricsFontSize,
+                                customSize = customSize,
+                                lyricsAlignment = lyricsAlignment,
+                                lyricsColor = lyricsColor,
+                                lyricsCustomColor = lyricsCustomColor,
+                                dominantColor = dominantColor,
+                                lyricsHighlight = lyricsHighlight,
+                                thumbnailSize = thumbnailSize,
+                                clickLyricsText = clickLyricsText,
+                                onDismiss = onDismiss
+                            )
+                        }
                     }
                 }
+
+                if (noLyricsFound && !isPicking && !isFetching) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(horizontal = 32.dp)
+                    ) {
+                        BasicText(
+                            text = stringResource(R.string.lyrics_not_available),
+                            style = typography().s.center.medium.color(PureBlackColorPalette.text),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(
+                                icon = R.drawable.refresh,
+                                color = colorPalette().accent,
+                                enabled = true,
+                                onClick = {
+                                    checkedLyricsLrc = false
+                                    checkedLyricsKugou = false
+                                    checkedLyricsInnertube = false
+                                    resetGlobalAttemptForType(lyricsType)
+                                    checkLyrics = !checkLyrics
+                                },
+                                modifier = Modifier
+                                    .padding(all = 8.dp)
+                                    .size(24.dp)
+                            )
+                            IconButton(
+                                icon = R.drawable.pencil,
+                                color = colorPalette().accent,
+                                enabled = true,
+                                onClick = { editLyricsDialog.onShortClick() },
+                                modifier = Modifier
+                                    .padding(all = 8.dp)
+                                    .size(24.dp)
+                            )
+                        }
+                    }
+                }
+
+                if ((text == null && !isError && !noLyricsFound) || isFetching) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.shimmer()
+                    ) {
+                        repeat(4) {
+                            TextPlaceholder(
+                                color = colorPalette().onOverlayShimmer,
+                                modifier = Modifier.alpha(1f - it * 0.1f)
+                            )
+                        }
+                    }
+                }
+
             }
 
             if (trailingContent != null) {
@@ -550,14 +569,18 @@ fun LyricsScreen(
                         .align(Alignment.BottomCenter)
                         .padding(bottom = 10.dp)
                 ){
+                    val previousInteraction = remember { MutableInteractionSource() }
+                    val playInteraction = remember { MutableInteractionSource() }
+                    val nextInteraction = remember { MutableInteractionSource() }
                     Image(
                         painter = painterResource(R.drawable.play_skip_back),
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(colorPalette().text),
                         modifier = Modifier
+                            .playerTransportFeedback(previousInteraction)
                             .clip(uiRoundnessShape()).clickable(
-                                indication = ripple(bounded = false),
-                                interactionSource = remember { MutableInteractionSource() },
+                                indication = playerTransportIndication(nativeControlIndication()),
+                                interactionSource = previousInteraction,
                                 onClick = {
                                     if (jumpPrevious == "") jumpPrevious = "0"
                                     if(binder?.player?.hasPreviousMediaItem() == false || (jumpPrevious != "0" && (binder?.player?.currentPosition ?: 0) > jumpPrevious.toInt() * 1000)
@@ -573,20 +596,21 @@ fun LyricsScreen(
                             .size(30.dp)
 
                     )
-                    Box {
+                    PlayerTransportControlMotion(playInteraction) {
                         Box(modifier = Modifier
                             .align(Alignment.Center)
                             .size(45.dp)
-                            .background(colorPalette().accent, uiRoundnessShape())
+                            .playerTransportFilledBackground(colorPalette().accent)
                         ){}
                         Image(
                             painter = painterResource(if (binder?.player?.isPlaying == true) R.drawable.pause else R.drawable.play),
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(if (colorPaletteName == ColorPaletteName.PureBlack) Color.Black else colorPalette().text),
                             modifier = Modifier
+                                .playerTransportFeedback(playInteraction)
                                 .clip(uiRoundnessShape()).clickable(
-                                    indication = ripple(bounded = false),
-                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = playerTransportIndication(nativeControlIndication()),
+                                    interactionSource = playInteraction,
                                     onClick = {
                                         if (binder?.player?.isPlaying == true) {
                                             binder.gracefulPause()
@@ -607,9 +631,10 @@ fun LyricsScreen(
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(colorPalette().text),
                         modifier = Modifier
+                            .playerTransportFeedback(nextInteraction)
                             .clip(uiRoundnessShape()).clickable(
-                                indication = ripple(bounded = false),
-                                interactionSource = remember { MutableInteractionSource() },
+                                indication = playerTransportIndication(nativeControlIndication()),
+                                interactionSource = nextInteraction,
                                 onClick = {
                                     binder?.player?.playNext()
                                     if (effectRotationEnabled) isRotated = !isRotated
@@ -623,53 +648,34 @@ fun LyricsScreen(
                 }
 
             }
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(bottom = if (thumbnailShape() == CircleShape) 16.dp else 0.dp)
-                    .fillMaxWidth(if (thumbnailShape() == CircleShape) 0.5f else 0.35f)
-            ) {
-
-                Row(
-                    modifier = Modifier
-                        .align(if (thumbnailShape() == CircleShape) Alignment.BottomStart else Alignment.BottomEnd)
-                        .padding(start = if (thumbnailShape() == CircleShape) 48.dp else 0.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+            Box(Modifier.fillMaxWidth().align(Alignment.BottomEnd)) {
+                GlassOverlayControls(
+                    showThumbnail = showlyricsthumbnail,
+                    circularThumbnail = thumbnailShape() == CircleShape,
                 ) {
                     AnimatedVisibility(
                         visible = !isAutoScrollEnabled,
                         enter = fadeIn() + scaleIn(),
                         exit = fadeOut() + scaleOut()
                     ) {
-                        Image(
-                            painter = painterResource(R.drawable.locate),
+                        IconButton(
+                            icon = R.drawable.locate,
+                            color = DefaultDarkColorPalette.text,
                             contentDescription = stringResource(R.string.cd_recenter),
-                            colorFilter = ColorFilter.tint(DefaultDarkColorPalette.text),
-                            modifier = Modifier
-                                .padding(all = 4.dp)
-                                .clip(uiRoundnessShape()).clickable(
-                                    indication = ripple(bounded = false),
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    onClick = {
-                                        isAutoScrollEnabled = true
-                                    }
-                                )
-                                .padding(all = 8.dp)
-                                .size(20.dp)
+                            modifier = Modifier.padding(all = 4.dp),
+                            iconSize = 24.dp,
+                            contentPadding = 6.dp,
+                            onClick = { isAutoScrollEnabled = true },
                         )
                     }
 
-                    Image(
-                        painter = painterResource(R.drawable.settings),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(DefaultDarkColorPalette.text),
-                        modifier = Modifier
-                            .padding(all = 4.dp)
-                            .clip(uiRoundnessShape()).clickable(
-                            indication = ripple(bounded = false),
-                            interactionSource = remember { MutableInteractionSource() },
-                            onClick = {
+                    IconButton(
+                        icon = R.drawable.settings,
+                        color = DefaultDarkColorPalette.text,
+                        modifier = Modifier.padding(all = 4.dp),
+                        iconSize = 24.dp,
+                        contentPadding = 6.dp,
+                        onClick = {
                                 menuState.display {
                                     LyricsSettingsMenu(
                                         isLandscape = isLandscape,
@@ -720,10 +726,7 @@ fun LyricsScreen(
                                         onShowOffsetDialog = { showOffsetDialog.onShortClick() }
                                     ).MenuComponent()
                                 }
-                            }
-                        )
-                        .padding(all = 8.dp)
-                        .size(20.dp)
+                        }
                     )
                 }
             }

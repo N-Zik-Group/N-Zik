@@ -1,11 +1,14 @@
 package app.it.fast4x.rimusic.ui.screens.player
 
+import app.n_zik.android.components.player.PlayerInformationGlassBlock
+import app.n_zik.android.components.player.PlayerInformationGlassRegion
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.utils.artistTextWithFallback
 import app.n_zik.android.utils.titleWithFallback
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
+import app.n_zik.android.components.player.playerInfoAwareContentSize
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -200,9 +203,12 @@ fun Controls(
     var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
     val expandedlandscape = (isLandscape && playerType == PlayerType.Modern) || (expandedplayer && !showthumbnail)
 
+    // Weight belongs to the panel child so the lower toolbar retains its own
+    // measured space with both the native and Glass presentation.
+    PlayerInformationGlassBlock(modifier = if (isLandscape) modifier else Modifier) {
     Box(
         modifier = Modifier
-            .animateContentSize()
+            .playerInfoAwareContentSize(modernInfo = playerInfoType == PlayerInfoType.Modern)
     ) {
         if ((!isLandscape) and ((expandedplayer || isShowingLyrics) && !showlyricsthumbnail))
             Column(
@@ -213,50 +219,56 @@ fun Controls(
             ) {
                 if (!isShowingLyrics || titleExpanded) {
                     if (playerInfoType == PlayerInfoType.Modern)
-                        InfoAlbumAndArtistModern(
-                            binder = binder,
-                            navController = navController,
-                            media = media,
-                            title = title,
-                            albumId = albumId,
-                            mediaId = mediaId,
-                            likedAt = currentSong?.likedAt,
-                            onCollapse = onCollapse,
-                            disableScrollingText = disableScrollingText,
-                            artist = artist,
-                            artistIds = artistIds,
-                            isExplicit = isExplicit
-                        )
+                        PlayerInformationGlassRegion("info", horizontalContentInset = 10.dp) {
+                            InfoAlbumAndArtistModern(
+                                binder = binder,
+                                navController = navController,
+                                media = media,
+                                title = title,
+                                albumId = albumId,
+                                mediaId = mediaId,
+                                likedAt = currentSong?.likedAt,
+                                onCollapse = onCollapse,
+                                disableScrollingText = disableScrollingText,
+                                artist = artist,
+                                artistIds = artistIds,
+                                isExplicit = isExplicit
+                            )
+                        }
 
                     if (playerInfoType == PlayerInfoType.Essential)
-                        InfoAlbumAndArtistEssential(
-                            binder = binder,
-                            navController = navController,
-                            media = media,
-                            title = title,
-                            albumId = albumId,
-                            mediaId = mediaId,
-                            likedAt = currentSong?.likedAt,
-                            onCollapse = onCollapse,
-                            disableScrollingText = disableScrollingText,
-                            artist = artist,
-                            artistIds = artistIds,
-                            isExplicit = isExplicit
-                        )
+                        PlayerInformationGlassRegion("info", vertical = true, horizontalContentInset = 10.dp) {
+                            InfoAlbumAndArtistEssential(
+                                binder = binder,
+                                navController = navController,
+                                media = media,
+                                title = title,
+                                albumId = albumId,
+                                mediaId = mediaId,
+                                likedAt = currentSong?.likedAt,
+                                onCollapse = onCollapse,
+                                disableScrollingText = disableScrollingText,
+                                artist = artist,
+                                artistIds = artistIds,
+                                isExplicit = isExplicit
+                            )
+                        }
                     Spacer(
                         modifier = Modifier
                             .height(10.dp)
                     )
                 }
                 if (!isShowingLyrics || timelineExpanded) {
-                GetSeekBar(
-                    position = position,
-                    duration = duration,
-                    media = media,
-                    mediaId = mediaId,
-                    shouldBePlaying = shouldBePlaying,
-                    isBuffering = isBuffering
-                )
+                PlayerInformationGlassRegion("timeline", vertical = true, horizontalContentInset = 10.dp) {
+                    GetSeekBar(
+                        position = position,
+                        duration = duration,
+                        media = media,
+                        mediaId = mediaId,
+                        shouldBePlaying = shouldBePlaying,
+                        isBuffering = isBuffering
+                    )
+                }
                     Spacer(
                         modifier = Modifier
                             .height(if (playerPlayButtonType != PlayerPlayButtonType.Disabled) 10.dp else 5.dp)
@@ -264,6 +276,7 @@ fun Controls(
                 }
                 if (!isShowingLyrics || controlsExpanded) {
                     GetControls(
+                        timelineHorizontalInset = playerTimelineSize.size.dp,
                         dynamicColorPalette = dynamicColorPalette,
                         binder = binder,
                         position = position,
@@ -295,36 +308,40 @@ fun Controls(
             ) {
 
                 if (playerInfoType == PlayerInfoType.Modern)
-                    InfoAlbumAndArtistModern(
-                        binder = binder,
-                        navController = navController,
-                        media = media,
-                        title = title,
-                        albumId = albumId,
-                        mediaId = mediaId,
-                        likedAt = currentSong?.likedAt,
-                        onCollapse = onCollapse,
-                        disableScrollingText = disableScrollingText,
-                        artist = artist,
-                        artistIds = artistIds,
-                        isExplicit = isExplicit
-                    )
+                    PlayerInformationGlassRegion("info", horizontalContentInset = 10.dp) {
+                        InfoAlbumAndArtistModern(
+                            binder = binder,
+                            navController = navController,
+                            media = media,
+                            title = title,
+                            albumId = albumId,
+                            mediaId = mediaId,
+                            likedAt = currentSong?.likedAt,
+                            onCollapse = onCollapse,
+                            disableScrollingText = disableScrollingText,
+                            artist = artist,
+                            artistIds = artistIds,
+                            isExplicit = isExplicit
+                        )
+                    }
 
                 if (playerInfoType == PlayerInfoType.Essential)
-                    InfoAlbumAndArtistEssential(
-                        binder = binder,
-                        navController = navController,
-                        media = media,
-                        title = title,
-                        albumId = albumId,
-                        mediaId = mediaId,
-                        likedAt = currentSong?.likedAt,
-                        onCollapse = onCollapse,
-                        disableScrollingText = disableScrollingText,
-                        artist = artist,
-                        artistIds = artistIds,
-                        isExplicit = isExplicit
-                    )
+                    PlayerInformationGlassRegion("info", vertical = true, horizontalContentInset = 10.dp) {
+                        InfoAlbumAndArtistEssential(
+                            binder = binder,
+                            navController = navController,
+                            media = media,
+                            title = title,
+                            albumId = albumId,
+                            mediaId = mediaId,
+                            likedAt = currentSong?.likedAt,
+                            onCollapse = onCollapse,
+                            disableScrollingText = disableScrollingText,
+                            artist = artist,
+                            artistIds = artistIds,
+                            isExplicit = isExplicit
+                        )
+                    }
 
                 Spacer(
                     modifier = Modifier
@@ -332,19 +349,22 @@ fun Controls(
                 )
 
                 if (!playerSwapControlsWithTimeline) {
-                GetSeekBar(
-                    position = position,
-                    duration = duration,
-                    media = media,
-                    mediaId = mediaId,
-                    shouldBePlaying = shouldBePlaying,
-                    isBuffering = isBuffering
-                )
+                PlayerInformationGlassRegion("timeline", vertical = true, horizontalContentInset = 10.dp) {
+                    GetSeekBar(
+                        position = position,
+                        duration = duration,
+                        media = media,
+                        mediaId = mediaId,
+                        shouldBePlaying = shouldBePlaying,
+                        isBuffering = isBuffering
+                    )
+                }
                     Spacer(
                         modifier = Modifier
                             .weight(0.4f)
                     )
                     GetControls(
+                        timelineHorizontalInset = playerTimelineSize.size.dp,
                         dynamicColorPalette = dynamicColorPalette,
                         binder = binder,
                         position = position,
@@ -360,6 +380,7 @@ fun Controls(
                     )
                 } else {
                     GetControls(
+                        timelineHorizontalInset = playerTimelineSize.size.dp,
                         dynamicColorPalette = dynamicColorPalette,
                         binder = binder,
                         position = position,
@@ -373,14 +394,16 @@ fun Controls(
                         modifier = Modifier
                             .weight(0.5f)
                     )
-                GetSeekBar(
-                    position = position,
-                    duration = duration,
-                    media = media,
-                    mediaId = mediaId,
-                    shouldBePlaying = shouldBePlaying,
-                    isBuffering = isBuffering
-                )
+                PlayerInformationGlassRegion("timeline", vertical = true, horizontalContentInset = 10.dp) {
+                    GetSeekBar(
+                        position = position,
+                        duration = duration,
+                        media = media,
+                        mediaId = mediaId,
+                        shouldBePlaying = shouldBePlaying,
+                        isBuffering = isBuffering
+                    )
+                }
                     Spacer(
                         modifier = Modifier
                             .weight(0.4f)
@@ -394,42 +417,46 @@ fun Controls(
         Column(
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Bottom,
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = playerTimelineSize.size.dp)
         ) {
 
             if (playerInfoType == PlayerInfoType.Modern)
-                InfoAlbumAndArtistModern(
-                    binder = binder,
-                    navController = navController,
-                    media = media,
-                    title = title,
-                    albumId = albumId,
-                    mediaId = mediaId,
-                    likedAt = currentSong?.likedAt,
-                    onCollapse = onCollapse,
-                    disableScrollingText = disableScrollingText,
-                    artist = artist,
-                    artistIds = artistIds,
-                    isExplicit = isExplicit
-                )
+                PlayerInformationGlassRegion("info", horizontalContentInset = 10.dp) {
+                    InfoAlbumAndArtistModern(
+                        binder = binder,
+                        navController = navController,
+                        media = media,
+                        title = title,
+                        albumId = albumId,
+                        mediaId = mediaId,
+                        likedAt = currentSong?.likedAt,
+                        onCollapse = onCollapse,
+                        disableScrollingText = disableScrollingText,
+                        artist = artist,
+                        artistIds = artistIds,
+                        isExplicit = isExplicit
+                    )
+                }
 
             if (playerInfoType == PlayerInfoType.Essential)
-                InfoAlbumAndArtistEssential(
-                    binder = binder,
-                    navController = navController,
-                    media = media,
-                    title = title,
-                    albumId = albumId,
-                    mediaId = mediaId,
-                    likedAt = currentSong?.likedAt,
-                    onCollapse = onCollapse,
-                    disableScrollingText = disableScrollingText,
-                    artist = artist,
-                    artistIds = artistIds,
-                    isExplicit = isExplicit
-                )
+                PlayerInformationGlassRegion("info", vertical = true, horizontalContentInset = 10.dp) {
+                    InfoAlbumAndArtistEssential(
+                        binder = binder,
+                        navController = navController,
+                        media = media,
+                        title = title,
+                        albumId = albumId,
+                        mediaId = mediaId,
+                        likedAt = currentSong?.likedAt,
+                        onCollapse = onCollapse,
+                        disableScrollingText = disableScrollingText,
+                        artist = artist,
+                        artistIds = artistIds,
+                        isExplicit = isExplicit
+                    )
+                }
 
             Spacer(
                 modifier = Modifier
@@ -437,14 +464,16 @@ fun Controls(
             )
 
             if (!playerSwapControlsWithTimeline) {
-                GetSeekBar(
-                    position = position,
-                    duration = duration,
-                    media = media,
-                    mediaId = mediaId,
-                    shouldBePlaying = shouldBePlaying,
-                    isBuffering = isBuffering
-                )
+                PlayerInformationGlassRegion("timeline", vertical = true, horizontalContentInset = 10.dp) {
+                    GetSeekBar(
+                        position = position,
+                        duration = duration,
+                        media = media,
+                        mediaId = mediaId,
+                        shouldBePlaying = shouldBePlaying,
+                        isBuffering = isBuffering
+                    )
+                }
                 Spacer(
                     modifier = Modifier
                         .animateContentSize()
@@ -452,6 +481,7 @@ fun Controls(
                         .conditional(expandedlandscape) { height(15.dp) }
                 )
                 GetControls(
+                    timelineHorizontalInset = playerTimelineSize.size.dp,
                     dynamicColorPalette = dynamicColorPalette,
                     binder = binder,
                     position = position,
@@ -468,6 +498,7 @@ fun Controls(
                 )
             } else {
                 GetControls(
+                    timelineHorizontalInset = playerTimelineSize.size.dp,
                     dynamicColorPalette = dynamicColorPalette,
                     binder = binder,
                     position = position,
@@ -482,14 +513,16 @@ fun Controls(
                         .conditional(!expandedlandscape) { weight(0.5f) }
                         .conditional(expandedlandscape) { height(15.dp) }
                 )
-                GetSeekBar(
-                    position = position,
-                    duration = duration,
-                    media = media,
-                    mediaId = mediaId,
-                    shouldBePlaying = shouldBePlaying,
-                    isBuffering = isBuffering
-                )
+                PlayerInformationGlassRegion("timeline", vertical = true, horizontalContentInset = 10.dp) {
+                    GetSeekBar(
+                        position = position,
+                        duration = duration,
+                        media = media,
+                        mediaId = mediaId,
+                        shouldBePlaying = shouldBePlaying,
+                        isBuffering = isBuffering
+                    )
+                }
                 Spacer(
                     modifier = Modifier
                         .animateContentSize()
@@ -498,6 +531,7 @@ fun Controls(
                 )
             }
         }
+    }
 }
 
 fun Modifier.bounceClick() = composed {

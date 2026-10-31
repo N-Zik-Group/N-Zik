@@ -172,7 +172,7 @@ class CompactMiniPlayerInteractionTest {
     @Test fun compactQueueButtonAndHoldRequestSameOverlayWithoutOpeningPlayer() {
         setQueueSlots()
         renderMini()
-        compose.onNode(hasClickAction() and !body and SemanticsMatcher.keyNotDefined(SemanticsProperties.ContentDescription)).performClick()
+        compose.onNodeWithContentDescription(context.getString(MiniPlayerButton.Queue.labelRes)).performClick()
         // With four controls the mini's center belongs to a button. Hold the artwork body.
         compose.onNode(body).performTouchInput { longClick(Offset(width * .05f, center.y)) }
         compose.runOnIdle {
@@ -185,7 +185,7 @@ class CompactMiniPlayerInteractionTest {
     @Test fun compactEmbeddedQueueDoesNotOpenDuplicateQueue() {
         setQueueSlots()
         renderMini(embedded = true)
-        compose.onNode(hasClickAction() and !body and SemanticsMatcher.keyNotDefined(SemanticsProperties.ContentDescription)).performClick()
+        compose.onNodeWithContentDescription(context.getString(MiniPlayerButton.Queue.labelRes)).performClick()
         // With four controls the mini's center belongs to a button. Hold the artwork body.
         compose.onNode(body).performTouchInput { longClick(Offset(width * .05f, center.y)) }
         compose.runOnIdle {
@@ -207,7 +207,7 @@ class CompactMiniPlayerInteractionTest {
         val next = context.getString(MiniPlayerButton.SkipForward.labelRes)
         val previous = context.getString(MiniPlayerButton.SkipBack.labelRes)
         val actions = hasClickAction() and !body
-        val queue = actions and SemanticsMatcher.keyNotDefined(SemanticsProperties.ContentDescription)
+        val queue = actions and androidx.compose.ui.test.hasContentDescription(context.getString(MiniPlayerButton.Queue.labelRes))
 
         fun assertConfiguredActions() {
             compose.onAllNodes(actions).assertCountEquals(4)

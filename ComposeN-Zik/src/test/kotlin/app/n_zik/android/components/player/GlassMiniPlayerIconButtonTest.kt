@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Computer
@@ -12,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -34,6 +36,7 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassAreaMode
 import app.n_zik.android.components.glass.GlassSettings
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -44,6 +47,45 @@ import org.robolectric.annotation.Config
 @Config(sdk = [28], application = Application::class)
 class GlassMiniPlayerIconButtonTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `disabled glass mini control leaves parent drag ownership while enabled control retains it`() {
+        val enabled = mutableStateOf(false)
+        var observedScroll: androidx.compose.foundation.ScrollState? = null
+        var clicks = 0
+        val shape = RoundedCornerShape(12.dp)
+        val appearance = Appearance(ColorPalette.fallback, Typography.fallback, shape, shape, shape)
+        compose.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                androidx.compose.runtime.key(enabled.value) {
+                    val scroll = androidx.compose.foundation.rememberScrollState()
+                    androidx.compose.runtime.SideEffect { observedScroll = scroll }
+                    androidx.compose.foundation.layout.Column(Modifier.size(120.dp).verticalScroll(scroll)) {
+                        GlassMiniPlayerIconButton(Icons.Filled.Computer, Color.White, { clicks++ },
+                            "Disabled drag", enabled = enabled.value,
+                            settings = GlassSettings(enabled = true))
+                        Box(Modifier.size(120.dp, 500.dp))
+                    }
+                }
+            }
+        }
+        for (active in listOf(false, true)) {
+            compose.runOnIdle { enabled.value = active }
+            val button = compose.onNodeWithContentDescription("Disabled drag")
+            if (active) button.assertIsEnabled() else button.assertIsNotEnabled()
+            button.performTouchInput {
+                down(center)
+                moveTo(center - Offset(0f, 100f), delayMillis = 300)
+                up()
+            }
+            compose.runOnIdle {
+                assertEquals(0, clicks)
+                if (active) assertEquals(0, requireNotNull(observedScroll).value)
+                else assertTrue(requireNotNull(observedScroll).value > 0)
+            }
+        }
+        compose.onNodeWithContentDescription("Disabled drag").performTouchInput { click() }
+        compose.runOnIdle { assertEquals(1, clicks) }
+    }
 
     @Test
     fun `central control retains size centered content and click while glass settings change`() {

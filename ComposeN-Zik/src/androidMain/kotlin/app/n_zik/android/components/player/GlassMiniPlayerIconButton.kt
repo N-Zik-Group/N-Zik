@@ -2,7 +2,17 @@ package app.n_zik.android.components.player
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import app.n_zik.android.components.ui.nativeControlIndication
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.platform.testTag
+import app.n_zik.android.components.glass.glassGlobalIndication
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,7 +26,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassSettings
@@ -34,6 +43,7 @@ import app.n_zik.android.surfaceColor
 import app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgress
 import app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgressProvider
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GlassMiniPlayerIconButton(
     @DrawableRes icon: Int,
@@ -45,20 +55,22 @@ fun GlassMiniPlayerIconButton(
     alpha: Float = 1f,
     settings: GlassSettings = rememberGlassSettings(),
     backdrop: Backdrop? = LocalGlassBackdrop.current ?: LocalGlassMenuHost.current?.backdrop,
+    onLongClick: (() -> Unit)? = null,
+    preserveNativeGeometry: Boolean = false,
 ) {
     MiniPlayerIconSurface(
-        enabled, rotationAngle, alpha, contentDescription, onClick, settings, backdrop,
-        fallback = { modifier -> IconButton(onClick, icon, color, modifier, enabled) },
+        enabled, rotationAngle, alpha, contentDescription, onClick, onLongClick, settings, backdrop, preserveNativeGeometry,
     ) {
         Image(
             painter = painterResource(icon),
             contentDescription = null,
             colorFilter = ColorFilter.tint(color),
-            modifier = Modifier.size(22.dp),
+            modifier = Modifier.size(it).testTag("mini.player.glyph"),
         )
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GlassMiniPlayerIconButton(
     icon: ImageVector,
@@ -70,20 +82,22 @@ fun GlassMiniPlayerIconButton(
     alpha: Float = 1f,
     settings: GlassSettings = rememberGlassSettings(),
     backdrop: Backdrop? = LocalGlassBackdrop.current ?: LocalGlassMenuHost.current?.backdrop,
+    onLongClick: (() -> Unit)? = null,
+    preserveNativeGeometry: Boolean = false,
 ) {
     MiniPlayerIconSurface(
-        enabled, rotationAngle, alpha, contentDescription, onClick, settings, backdrop,
-        fallback = { modifier -> IconButton(onClick, icon, color, modifier, enabled) },
+        enabled, rotationAngle, alpha, contentDescription, onClick, onLongClick, settings, backdrop, preserveNativeGeometry,
     ) {
         Image(
             imageVector = icon,
             contentDescription = null,
             colorFilter = ColorFilter.tint(color),
-            modifier = Modifier.size(22.dp),
+            modifier = Modifier.size(it).testTag("mini.player.glyph"),
         )
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MiniPlayerIconSurface(
     enabled: Boolean,
@@ -91,40 +105,43 @@ private fun MiniPlayerIconSurface(
     alpha: Float,
     description: String,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)?,
     settings: GlassSettings,
     backdrop: Backdrop?,
-    fallback: @Composable (Modifier) -> Unit,
-    icon: @Composable () -> Unit,
+    preserveNativeGeometry: Boolean,
+    icon: @Composable (androidx.compose.ui.unit.Dp) -> Unit,
 ) {
     val fold = LocalCompactMiniPlayerProgress.current
-    val compact = fold > 0.5f
     val dockPresentation = LocalCompactMiniPlayerProgressProvider.current != null
-    val controlSize = if (dockPresentation) 42.dp - 6.dp * fold else if (compact) 48.dp else 42.dp
-    val shape = if (dockPresentation) uiRoundnessShape() else searchBubbleShape()
-    val modifier = Modifier.rotate(rotationAngle)
-    if (!settings.usesGlassMaterial(GlassArea.MiniPlayer)) {
-        fallback(
-            modifier.then(if (dockPresentation) Modifier.padding(horizontal = 2.dp + 4.dp * fold, vertical = 8.dp - 2.dp * fold)
-                else Modifier.padding(horizontal = if (compact) 12.dp else 2.dp, vertical = if (compact) 12.dp else 8.dp)).size(24.dp)
-                .alpha(alpha).glassAreaContour(settings, GlassArea.MiniPlayer, shape).semantics { contentDescription = description },
-        )
-        return
+    val material = settings.usesGlassMaterial(GlassArea.MiniPlayer)
+    val geometry = miniPlayerIconGeometry(fold, dockPresentation, material && !preserveNativeGeometry)
+    val shape = uiRoundnessShape()
+    MiniPlayerActionCanvas(geometry, Modifier.rotate(rotationAngle)) { canvas ->
+        val modifier = canvas.alpha(alpha).semantics {
+            contentDescription = description
+            if (!enabled) disabled()
+        }
+        if (!material) {
+            Box(modifier.glassAreaContour(settings, GlassArea.MiniPlayer, shape).clip(shape)
+                .combinedClickable(interactionSource = remember { MutableInteractionSource() },
+                    indication = glassGlobalIndication(nativeControlIndication()),
+                    enabled = enabled, role = Role.Button, onClick = onClick, onLongClick = onLongClick),
+                contentAlignment = Alignment.Center) { icon(24.dp) }
+        } else {
+            LiquidButton(
+                onClick = onClick,
+                onLongClick = onLongClick,
+                backdrop = backdrop,
+                modifier = modifier,
+                settings = settings.forArea(GlassArea.MiniPlayer),
+                filmColor = surfaceColor(colorPalette().background2),
+                isInteractive = enabled,
+                enabled = enabled,
+                contentHeight = geometry.canvas,
+                contentPadding = 0.dp,
+                shape = shape,
+                backdropScale = 1f,
+            ) { icon(if (preserveNativeGeometry) 24.dp else 22.dp) }
+        }
     }
-    LiquidButton(
-        onClick = { if (enabled) onClick() },
-        backdrop = backdrop,
-        modifier = modifier.padding(horizontal = if (dockPresentation) 2.dp * (1f - fold) else if (compact) 0.dp else 2.dp).size(controlSize).alpha(alpha)
-            .semantics {
-                contentDescription = description
-                if (!enabled) disabled()
-            },
-        settings = settings.forArea(GlassArea.MiniPlayer),
-        filmColor = surfaceColor(colorPalette().background2),
-        isInteractive = enabled,
-        contentHeight = controlSize,
-        contentPadding = 0.dp,
-        shape = shape,
-        // A 42 dp pane must keep enough source pixels for the lens at low density.
-        backdropScale = 1f,
-    ) { icon() }
 }

@@ -162,3 +162,6 @@ Added:
 
 - fix(dialog): coordinate Glass menus dimming and transitions
   - Share dialog and menu surfaces, dimming and action presentation without changing their actions.
+
+- fix(player): unify Glass controls carousel and landscape layout
+  - Preserve player variants, current-cover identity, carousel overlays, queue budgets and native timelines; align landscape artwork above the toolbar.

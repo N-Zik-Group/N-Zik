@@ -1,5 +1,7 @@
 package app.n_zik.android.extensions.nextvisualizer
 
+import app.n_zik.android.components.glass.glassGlobalIndication
+
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.JournalPermission
@@ -26,13 +28,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -45,6 +45,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.Color
+import app.n_zik.android.components.player.LocalPlayerCoverOverlay
+import app.n_zik.android.components.glass.glassOverlayCanvasViewport
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.GlassOverlayControls
+import app.n_zik.android.components.glass.GlassOverlayScene
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -82,7 +88,7 @@ import utils.VisualizerHelper
 import views.VisualizerView
 import app.n_zik.android.typography
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.it.fast4x.rimusic.ui.components.themed.IconButton
+import app.n_zik.android.components.glass.GlassOverlayIconButton as IconButton
 import app.it.fast4x.rimusic.ui.components.themed.SecondaryTextButton
 import app.it.fast4x.rimusic.utils.DisposableListener
 import app.it.fast4x.rimusic.utils.currentVisualizerKey
@@ -92,9 +98,11 @@ import app.it.fast4x.rimusic.utils.isCompositionLaunched
 import app.it.fast4x.rimusic.utils.rememberPreference
 
 import app.it.fast4x.rimusic.utils.semiBold
+import app.it.fast4x.rimusic.utils.showvisthumbnailKey
 import app.it.fast4x.rimusic.utils.showVisualizerButtonsKey
 import app.it.fast4x.rimusic.utils.visualizerEnabledKey
 import painters.modifier.Rotate
+import app.n_zik.android.components.glass.overlayViewportShape
 import app.n_zik.android.thumbnailShape
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -113,10 +121,12 @@ import androidx.palette.graphics.Palette
 
 @OptIn(UnstableApi::class)
 @Composable
-fun NextVisualizer() {
+fun NextVisualizer(sceneBackground: Color = Color.Transparent) {
 
     val context = LocalContext.current
     val visualizerEnabled by rememberPreference(visualizerEnabledKey, false)
+    val savedThumbnail by rememberPreference(showvisthumbnailKey, true)
+    val showThumbnail = LocalPlayerCoverOverlay.current || savedThumbnail
 
     if (visualizerEnabled) {
 
@@ -296,31 +306,36 @@ fun NextVisualizer() {
             
             val menuState = LocalMenuState.current
 
-            Box(
+            GlassOverlayScene(
+                scope = app.n_zik.android.components.glass.GlassScope.Visualizer,
+                background = sceneBackground,
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(thumbnailShape()).clickable(
+                    .glassOverlayCanvasViewport(rememberGlassSettings(), showThumbnail = showThumbnail)
+                    .clip(overlayViewportShape(showThumbnail, thumbnailShape())).clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) { controlsTimerKey++ }
+                        indication = glassGlobalIndication(null)
+                    ) { controlsTimerKey++ },
+                scene = {
+                    AndroidView(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(),
+                        factory = { visualizerView },
+                        update = {
+                            // Read states to trigger real-time updates
+                            visualizerLineThickness.hashCode()
+                            visualizerWhiteColorOption.hashCode()
+                            visualizerCustomColor.hashCode()
+                            dominantColor.hashCode()
+                            bitmapCover.hashCode()
+
+                            it.setup(helper, visualizersList[currentVisualizer])
+                        }
+                    )
+
+                }
             ) {
-
-                AndroidView(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(),
-                    factory = { visualizerView },
-                    update = {
-                        // Read states to trigger real-time updates
-                        visualizerLineThickness.hashCode()
-                        visualizerWhiteColorOption.hashCode()
-                        visualizerCustomColor.hashCode()
-                        dominantColor.hashCode()
-                        bitmapCover.hashCode()
-
-                        it.setup(helper, visualizersList[currentVisualizer])
-                    }
-                )
 
                 AnimatedVisibility(
                     visible = !showVisualizerButtons || showControls,
@@ -328,54 +343,51 @@ fun NextVisualizer() {
                     exit = fadeOut(),
                     modifier = Modifier.align(Alignment.BottomCenter)
                 ) {
-                    Row(
-                        horizontalArrangement = if (thumbnailShape() == CircleShape) Arrangement.spacedBy(24.dp, Alignment.CenterHorizontally) else Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .padding(
-                                bottom = if (thumbnailShape() == CircleShape) 16.dp else 0.dp
+                    GlassOverlayControls(
+                        showThumbnail = showThumbnail,
+                        circularThumbnail = thumbnailShape() == CircleShape,
+                        cornerSeatSize = 32.dp,
+                        centerContent = {
+                            IconButton(
+                                onClick = {
+                                    controlsTimerKey++
+                                    if (currentVisualizer > 0) currentVisualizer--
+                                    else currentVisualizer = visualizersList.lastIndex
+                                },
+                                icon = R.drawable.arrow_left,
+                                color = colorPalette().text,
+                                modifier = Modifier.size(32.dp)
                             )
-                            .fillMaxWidth()
-                            .height(50.dp)
+                    
+                            BasicText(
+                                text = "${currentVisualizer + 1}/${visualizersList.size}",
+                                style = typography().xs.semiBold.copy(color = colorPalette().text),
+                            )
+                    
+                            IconButton(
+                                onClick = {
+                                    controlsTimerKey++
+                                    if (currentVisualizer < visualizersList.lastIndex) currentVisualizer++
+                                    else currentVisualizer = 0
+                                },
+                                icon = R.drawable.arrow_right,
+                                color = colorPalette().text,
+                                modifier = Modifier.size(32.dp)
+                            )
+                    
+                        },
                     ) {
-                    IconButton(
-                        onClick = {
-                            controlsTimerKey++
-                            if (currentVisualizer > 0) currentVisualizer--
-                            else currentVisualizer = visualizersList.lastIndex
-                        },
-                        icon = R.drawable.arrow_left,
-                        color = colorPalette().text,
-                        modifier = Modifier.size(32.dp)
-                    )
-                    
-                    BasicText(
-                        text = "${currentVisualizer + 1}/${visualizersList.size}",
-                        style = typography().xs.semiBold.copy(color = colorPalette().text),
-                    )
-                    
-                    IconButton(
-                        onClick = {
-                            controlsTimerKey++
-                            if (currentVisualizer < visualizersList.lastIndex) currentVisualizer++
-                            else currentVisualizer = 0
-                        },
-                        icon = R.drawable.arrow_right,
-                        color = colorPalette().text,
-                        modifier = Modifier.size(32.dp)
-                    )
-                    
-                    IconButton(
-                        onClick = {
-                            controlsTimerKey++
-                            menuState.display {
-                                VisualizerSettingsMenu().MenuComponent()
-                            }
-                        },
-                        icon = R.drawable.settings,
-                        color = colorPalette().text,
-                        modifier = Modifier.size(32.dp)
-                    )
+                        IconButton(
+                            onClick = {
+                                controlsTimerKey++
+                                menuState.display {
+                                    VisualizerSettingsMenu().MenuComponent()
+                                }
+                            },
+                            icon = R.drawable.settings,
+                            color = colorPalette().text,
+                            modifier = Modifier.size(32.dp)
+                        )
                     }
                 }
             }

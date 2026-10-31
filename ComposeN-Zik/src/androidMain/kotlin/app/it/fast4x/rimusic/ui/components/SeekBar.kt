@@ -24,6 +24,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToLong
+import androidx.compose.ui.platform.testTag
+import app.n_zik.android.components.player.PlayerSeekGlassThumb
+import app.n_zik.android.components.player.PlayerSeekOpticalThumb
+import app.n_zik.android.components.player.playerSeekTrack
 
 @Composable
 fun SeekBar(
@@ -41,7 +45,10 @@ fun SeekBar(
     scrubberRadius: Dp = 6.dp,
     shape: Shape = RectangleShape,
     drawSteps: Boolean = false,
+    glassThumb: PlayerSeekGlassThumb? = null,
 ) {
+    val visualFraction = glassThumb?.motion?.value
+        ?: ((value.toFloat() - minimumValue) / (maximumValue - minimumValue))
     val isDragging = remember {
         MutableTransitionState(false)
     }
@@ -125,13 +132,18 @@ fun SeekBar(
                 }
             }
             .padding(horizontal = scrubberRadius)
+
+            .height(scrubberRadius)
+    ) {
+
+        Box(Modifier.align(Alignment.Center).playerSeekTrack(glassThumb)
             .drawWithContent {
                 drawContent()
 
                 val scrubberPosition = if (maximumValue < minimumValue) {
                     0f
                 } else {
-                    (value.toFloat() - minimumValue) / (maximumValue - minimumValue) * size.width
+                    visualFraction * size.width
                 }
 
                 drawCircle(
@@ -152,9 +164,7 @@ fun SeekBar(
                     }
                 }
             }
-            .height(scrubberRadius)
-    ) {
-
+        ) {
         Spacer(
             modifier = Modifier
                 .height(currentBarHeight)
@@ -166,10 +176,14 @@ fun SeekBar(
         Spacer(
             modifier = Modifier
                 .height(currentBarHeight)
-                .fillMaxWidth((value.toFloat() - minimumValue) / (maximumValue - minimumValue))
+                .fillMaxWidth(visualFraction)
                 .background(color = color, shape = shape)
                 .align(Alignment.CenterStart)
+                .then(if (glassThumb != null) Modifier.testTag("player.seek.visualTrack") else Modifier)
         )
+        }
+        PlayerSeekOpticalThumb(glassThumb,
+            (value.toFloat() - minimumValue) / (maximumValue - minimumValue))
     }
 }
 
@@ -189,7 +203,10 @@ fun SeekBarThin(
     scrubberRadius: Dp = 6.dp,
     shape: Shape = RectangleShape,
     drawSteps: Boolean = false,
+    glassThumb: PlayerSeekGlassThumb? = null,
 ) {
+    val visualFraction = glassThumb?.motion?.value
+        ?: ((value.toFloat() - minimumValue) / (maximumValue - minimumValue))
     val isDragging = remember {
         MutableTransitionState(false)
     }
@@ -287,6 +304,7 @@ fun SeekBarThin(
             .height(scrubberRadius)
     ) {
 
+        Box(Modifier.align(Alignment.Center).playerSeekTrack(glassThumb)) {
         Spacer(
             modifier = Modifier
                 .height(barHeight)
@@ -298,12 +316,12 @@ fun SeekBarThin(
         Spacer(
             modifier = Modifier
                 .height(barHeight)
-                .fillMaxWidth((value.toFloat() - minimumValue) / (maximumValue - minimumValue))
+                .fillMaxWidth(visualFraction)
                 .background(color = color, shape = shape)
                 .align(Alignment.CenterStart)
         )
+        }
+        PlayerSeekOpticalThumb(glassThumb,
+            (value.toFloat() - minimumValue) / (maximumValue - minimumValue))
     }
 }
-
-
-

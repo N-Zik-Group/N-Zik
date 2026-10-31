@@ -39,6 +39,10 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import kotlin.math.abs
+import app.n_zik.android.components.player.PlayerSeekGlassThumb
+import app.n_zik.android.components.player.PlayerSeekOpticalThumb
+import app.n_zik.android.components.player.playerSeekTrack
+import app.n_zik.android.components.player.playerSeekWaveMarkerHeight
 import java.util.Random
 
 @Composable
@@ -51,7 +55,8 @@ fun SeekBarStaticAudioWaves(
     onPositionChange: (Long) -> Unit,
     onPositionChangeFinished: (() -> Unit)? = null,
     audioSessionId: () -> Int = { -1 },
-    unplayedColor: Color = Color.Unspecified
+    unplayedColor: Color = Color.Unspecified,
+    glassThumb: PlayerSeekGlassThumb? = null,
 ) {
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
@@ -151,7 +156,8 @@ fun SeekBarStaticAudioWaves(
 
     if (displayAmplitudes.isNotEmpty()) {
         // Draw static waves
-        val progress = if (duration > 0) position.toFloat() / duration.toFloat() else 0f
+        val progress = glassThumb?.motion?.value
+            ?: if (duration > 0) position.toFloat() / duration.toFloat() else 0f
         
         val waveAmplitudeMultiplier by animateFloatAsState(
             targetValue = if (isPlaying) 1f else 0f,
@@ -199,7 +205,7 @@ fun SeekBarStaticAudioWaves(
                     )
                 }
         ) {
-            Canvas(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+            Canvas(modifier = Modifier.fillMaxWidth().fillMaxHeight().playerSeekTrack(glassThumb)) {
                 val canvasWidth = size.width
                 val canvasHeight = size.height
                 if (canvasWidth <= 0f || canvasHeight <= 0f) return@Canvas
@@ -250,14 +256,17 @@ fun SeekBarStaticAudioWaves(
                     val thumbX = (canvasWidth * progress) - (thumbWidthPx / 2f)
                     val maxThumbX = (canvasWidth - thumbWidthPx).coerceAtLeast(0f)
                     val safeThumbX = thumbX.coerceIn(0f, maxThumbX)
+                    val thumbHeight = playerSeekWaveMarkerHeight(canvasHeight.toDp(), glassThumb).toPx()
                     drawRoundRect(
                         color = playedColor,
-                        topLeft = Offset(safeThumbX, 0f),
-                        size = Size(thumbWidthPx, canvasHeight),
+                        topLeft = Offset(safeThumbX, (canvasHeight - thumbHeight) / 2f),
+                        size = Size(thumbWidthPx, thumbHeight),
                         cornerRadius = CornerRadius(thumbWidthPx / 2, thumbWidthPx / 2)
                     )
                 }
             }
+            PlayerSeekOpticalThumb(glassThumb,
+                if (duration > 0) position.toFloat() / duration else 0f)
         }
     }
 }

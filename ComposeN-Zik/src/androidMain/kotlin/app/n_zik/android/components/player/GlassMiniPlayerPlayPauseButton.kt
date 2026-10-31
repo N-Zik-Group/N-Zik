@@ -45,7 +45,7 @@ fun GlassMiniPlayerPlayPauseButton(
     val fold = LocalCompactMiniPlayerProgress.current
     val dockPresentation = LocalCompactMiniPlayerProgressProvider.current != null
     // Compose clickable retains the 48dp minimum touch target around this visual control.
-    val controlSize = if (dockPresentation) 42.dp - 6.dp * fold else if (fold > 0.5f) 48.dp else 42.dp
+    val controlSize = miniPlayerControlSize(fold, dockPresentation)
     val shape = uiRoundnessShape()
     val modifier = Modifier.semantics { this.contentDescription = contentDescription }
     if (settings.usesGlassMaterial(GlassArea.MiniPlayer)) {

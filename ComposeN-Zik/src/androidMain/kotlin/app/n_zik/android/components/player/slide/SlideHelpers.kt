@@ -1,5 +1,7 @@
 package app.n_zik.android.components.player.slide
 
+import app.n_zik.android.components.glass.glassGlobalIndication
+
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.combinedClickable
@@ -156,7 +158,7 @@ fun Modifier.playerThumbnailCover(
     .glassImageRim(if (showCoverThumbnailAnimation) CircleShape else thumbnailShape())
     .combinedClickable(
         interactionSource = remember { MutableInteractionSource() },
-        indication = null,
+        indication = glassGlobalIndication(null),
         onClick = { onTap(page) },
         onLongClick = { onLongClick(page) },
     )

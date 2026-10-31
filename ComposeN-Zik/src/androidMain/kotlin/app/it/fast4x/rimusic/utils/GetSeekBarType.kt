@@ -55,6 +55,7 @@ import app.kreate.android.themed.rimusic.screen.player.timeline.DurationIndicato
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.player.PENDING_SEEK_POLL_INTERVAL_MS
+import app.n_zik.android.components.player.PlayerSeekGlass
 import app.n_zik.android.components.player.shouldReleasePendingSeekPosition
 import app.n_zik.android.components.player.skipBasePosition
 import app.it.fast4x.rimusic.enums.ColorPaletteMode
@@ -191,15 +192,23 @@ fun GetSeekBar(
             }
         } else {
 
+        PlayerSeekGlass(
+            type = playerTimelineType,
+            enabled = !ltGuestLocked,
+            fraction = {
+                val range = if (playerTimelineType == PlayerTimelineType.Wavy) media.duration else duration()
+                if (range > 0) (scrubbingPosition ?: pendingSeekTarget ?: position()).toFloat() / range else 0f
+            },
+        ) { glassThumb ->
         if (playerTimelineType != PlayerTimelineType.Default
             && playerTimelineType != PlayerTimelineType.Wavy
             && playerTimelineType != PlayerTimelineType.AudioWaves
             && playerTimelineType != PlayerTimelineType.ThinBar
             && playerTimelineType != PlayerTimelineType.ColoredBar
             && playerTimelineType != PlayerTimelineType.VisualizerBar
-            && playerTimelineType != PlayerTimelineType.BodiedBar
         )
             SeekBarCustom(
+                glassThumb = glassThumb,
                 type = playerTimelineType,
                 value = scrubbingPosition ?: pendingSeekTarget ?: position(),
                 minimumValue = 0,
@@ -251,6 +260,7 @@ fun GetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.Default)
             SeekBar(
+                glassThumb = glassThumb,
                 value = scrubbingPosition ?: pendingSeekTarget ?: position(),
                 minimumValue = 0,
                 maximumValue = duration(),
@@ -301,6 +311,7 @@ fun GetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.ThinBar)
             SeekBarThin(
+                glassThumb = glassThumb,
                 value = scrubbingPosition ?: pendingSeekTarget ?: position(),
                 minimumValue = 0,
                 maximumValue = duration(),
@@ -351,6 +362,7 @@ fun GetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.Wavy) {
             SeekBarWaved(
+                glassThumb = glassThumb,
                 position = { (scrubbingPosition ?: pendingSeekTarget)?.toFloat() ?: position().toFloat() },
                 range = 0f..media.duration.toFloat(),
                 onSeekStarted = {
@@ -399,6 +411,7 @@ fun GetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.VisualizerBar) {
             SeekBarVisualizer(
+                glassThumb = glassThumb,
                 audioSessionIdProvider = { try { binder.player.audioSessionId } catch (e: Exception) { null } },
                 isPlaying = binder.player.isPlaying,
                 progressPercentage = {
@@ -429,6 +442,7 @@ fun GetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.AudioWaves) {
             SeekBarStaticAudioWaves(
+                glassThumb = glassThumb,
                 uiMedia = media,
                 position = scrubbingPosition ?: pendingSeekTarget ?: position(),
                 duration = duration(),
@@ -470,6 +484,7 @@ fun GetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.ColoredBar)
             SeekBarColored(
+                glassThumb = glassThumb,
                 value = scrubbingPosition ?: pendingSeekTarget ?: position(),
                 minimumValue = 0,
                 maximumValue = duration(),
@@ -517,6 +532,8 @@ fun GetSeekBar(
                 shape = uiRoundnessShape()
             )
         }
+    }
+
     }
 
     Spacer( modifier = Modifier.height( 8.dp ) )

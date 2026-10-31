@@ -13,9 +13,9 @@ import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -30,9 +30,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
+import app.n_zik.android.components.ui.nativeControlIndication
 import androidx.compose.material3.ripple
 import app.n_zik.android.components.glass.explicitBadgeIconId
 import app.n_zik.android.components.glass.glassExplicitBadgeBackground
@@ -101,11 +101,8 @@ import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.showthumbnailKey
 import app.it.fast4x.rimusic.utils.textCopyToClipboard
-import app.n_zik.android.core.database.Database
-import app.kreate.android.me.knighthat.utils.Toaster
 import app.it.fast4x.rimusic.utils.textoutlineKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import app.kreate.android.me.knighthat.sync.YouTubeSync
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
@@ -113,6 +110,16 @@ import app.n_zik.android.enums.PlayerControlsColors
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import app.it.fast4x.rimusic.utils.playerControlsColorsKey
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.player.playerTransportNativeBounce
+import app.n_zik.android.components.player.playerTransportFeedback
+import app.n_zik.android.components.player.playerTransportIndication
+import app.n_zik.android.components.player.PlayerTransportIconButton
+import app.n_zik.android.components.player.PlayerTransportSmallControl
+import app.n_zik.android.components.player.PlayerTransportRibbedSurface
+import app.n_zik.android.components.player.playerTransportPlayShape
+import app.n_zik.android.components.player.playerTransportPlayBackground
+import app.n_zik.android.components.player.playerTransportSurface
 import app.n_zik.android.components.player.monochromeControlsColor
 import app.n_zik.android.components.player.placeholderCompositeBase
 import app.n_zik.android.components.player.textOutlineColor
@@ -135,6 +142,7 @@ fun InfoAlbumAndArtistEssential(
     onCollapse: () -> Unit,
     disableScrollingText: Boolean = false
 ) {
+    val glassTextFeedback = rememberGlassSettings().enabled
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     var effectRotationEnabled by rememberPreference(effectRotationKey, false)
     var showthumbnail by rememberPreference(showthumbnailKey, true)
@@ -164,7 +172,7 @@ fun InfoAlbumAndArtistEssential(
 
             var modifierTitle = Modifier
                 .clip(uiRoundnessShape()).combinedClickable (
-                    indication = ripple(bounded = true),
+                    indication = if (glassTextFeedback) LocalIndication.current else ripple(bounded = true),
                     interactionSource = remember { MutableInteractionSource() },
                     onClick = {
                         if (albumId != null) {
@@ -327,7 +335,7 @@ fun InfoAlbumAndArtistEssential(
 
         var modifierArtist = Modifier
             .clip(uiRoundnessShape()).combinedClickable (
-                indication = ripple(bounded = true),
+                indication = if (glassTextFeedback) LocalIndication.current else ripple(bounded = true),
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = {
                     if (artistIds?.isNotEmpty() == true && artistIds.size > 1)
@@ -349,6 +357,9 @@ fun InfoAlbumAndArtistEssential(
                 .conditional(!disableScrollingText){HorizontalfadingEdge2(0.025f)},
             contentAlignment = Alignment.Center
         ) {
+            val artistHorizontalInset = maxWidth * .025f
+            Box(if (glassTextFeedback) modifierArtist
+                .conditional(!disableScrollingText) { padding(horizontal = artistHorizontalInset) } else Modifier) {
             BasicText(
                 text = artist ?: "",
                 style = TextStyle(
@@ -366,8 +377,8 @@ fun InfoAlbumAndArtistEssential(
                     fontFamily = typography().m.bold.fontFamily
                 ),
                 maxLines = 1,
-                modifier = modifierArtist
-                    .conditional(!disableScrollingText){padding(horizontal = maxWidth*0.025f)}
+                modifier = if (glassTextFeedback) Modifier else modifierArtist
+                    .conditional(!disableScrollingText){padding(horizontal = artistHorizontalInset)}
 
             )
             BasicText(
@@ -383,10 +394,11 @@ fun InfoAlbumAndArtistEssential(
                     fontFamily = typography().m.bold.fontFamily
                 ),
                 maxLines = 1,
-                modifier = modifierArtist
-                    .conditional(!disableScrollingText){padding(horizontal = maxWidth*0.025f)}
+                modifier = if (glassTextFeedback) Modifier else modifierArtist
+                    .conditional(!disableScrollingText){padding(horizontal = artistHorizontalInset)}
 
             )
+            }
         }
 
     }
@@ -433,6 +445,7 @@ fun ControlsEssential(
         targetValue = if (isRotated) 360F else 0f,
         animationSpec = tween(durationMillis = 200), label = ""
     )
+    val transportPlayShape = playerTransportPlayShape(playerPlayButtonType, rotationAngle)
     val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = stringResource(R.string.txt_shouldbeplaying))
     val playPauseRoundness by shouldBePlayingTransition.animateDp(
         transitionSpec = { tween(durationMillis = 100, easing = LinearEasing) },
@@ -445,8 +458,15 @@ fun ControlsEssential(
     var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
     val currentMediaItem = binder.player.currentMediaItem
 
-    Box {
-        IconButton(
+    val likeInteraction = remember { MutableInteractionSource() }
+    val repeatInteraction = remember { MutableInteractionSource() }
+    val previousInteraction = remember { MutableInteractionSource() }
+    val playInteraction = remember { MutableInteractionSource() }
+    val nextInteraction = remember { MutableInteractionSource() }
+
+    PlayerTransportSmallControl("like", interactionSource = likeInteraction) {
+        PlayerTransportIconButton(
+            interactionSource = likeInteraction,
             color = if(likedAt == -1L) colorPalette().red else colorPalette().favoritesIcon,
             icon = getLikeState(mediaId),
             onClick = {
@@ -459,7 +479,6 @@ fun ControlsEssential(
                 if (effectRotationEnabled) isRotated = !isRotated
             },
             modifier = Modifier
-                //.padding(10.dp)
                 .size(26.dp)
         )
         if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) {
@@ -468,7 +487,6 @@ fun ControlsEssential(
                 tint = colorPalette().text,
                 contentDescription = null,
                 modifier = Modifier
-                    //.padding(10.dp)
                     .size(26.dp)
             )
         }
@@ -480,9 +498,10 @@ fun ControlsEssential(
         contentDescription = null,
         colorFilter = ColorFilter.tint(controlsColor),
         modifier = Modifier
+            .playerTransportFeedback(previousInteraction, uiRoundnessShape(), enabled = !listenTogetherGuestLock)
             .clip(uiRoundnessShape()).combinedClickable(
-                indication = ripple(bounded = false),
-                interactionSource = remember { MutableInteractionSource() },
+                indication = playerTransportIndication(nativeControlIndication()),
+                interactionSource = previousInteraction,
                 enabled = !listenTogetherGuestLock,
                 onClick = {
                     if (!listenTogetherGuestLock) {
@@ -497,6 +516,7 @@ fun ControlsEssential(
                 onLongClick = {}
             )
             .rotate(rotationAngle)
+            .playerTransportSurface()
             .padding(10.dp)
             .size(26.dp)
             .alpha(guestLockAlpha)
@@ -507,9 +527,10 @@ fun ControlsEssential(
 
     Box(
         modifier = Modifier
-            .clip(uiRoundnessShape()).combinedClickable(
-                indication = ripple(bounded = false),
-                interactionSource = remember { MutableInteractionSource() },
+            .playerTransportFeedback(playInteraction, transportPlayShape)
+            .clip(transportPlayShape).combinedClickable(
+                indication = playerTransportIndication(nativeControlIndication()),
+                interactionSource = playInteraction,
                 onClick = {
                     if (shouldBePlaying) {
                         binder.gracefulPause()
@@ -525,10 +546,11 @@ fun ControlsEssential(
                     else onShowSpeedPlayerDialog()
                 }
             )
-            .bounceClick()
-            .clip(uiRoundnessShape())
-            .background(
-                app.n_zik.android.components.player.playButtonContainerColor(
+            .playerTransportNativeBounce()
+            .clip(transportPlayShape)
+            .playerTransportPlayBackground(
+                type = playerPlayButtonType,
+                original = app.n_zik.android.components.player.playButtonContainerColor(
                     type = playerPlayButtonType,
                     paletteName = colorPaletteName,
                     palette = colorPalette(),
@@ -540,7 +562,14 @@ fun ControlsEssential(
 
     ) {
 
-        if (playerPlayButtonType == PlayerPlayButtonType.CircularRibbed)
+        if (playerPlayButtonType == PlayerPlayButtonType.CircularRibbed &&
+            !PlayerTransportRibbedSurface(
+                filmColor = when (colorPaletteName) {
+                    ColorPaletteName.PureBlack, ColorPaletteName.ModernBlack -> colorPalette().background4
+                    else -> if (isGradientBackgroundEnabled) colorPalette().background1 else colorPalette().background2
+                },
+                modifier = Modifier.fillMaxSize().rotate(rotationAngle).playerTransportNativeBounce(),
+            ))
             Image(
                 painter = painterResource(R.drawable.a13shape),
                 colorFilter = ColorFilter.tint(
@@ -553,7 +582,7 @@ fun ControlsEssential(
                 modifier = Modifier
                     .fillMaxSize()
                     .rotate(rotationAngle)
-                    .bounceClick(),
+                    .playerTransportNativeBounce(),
                 contentDescription = stringResource(R.string.cd_background_image),
                 contentScale = ContentScale.Fit
             )
@@ -577,7 +606,7 @@ fun ControlsEssential(
                     .rotate(rotationAngle)
                     .align(Alignment.Center)
                     .size(if (playerPlayButtonType == PlayerPlayButtonType.Disabled) 40.dp else 30.dp)
-                    .bounceClick()
+                    .playerTransportNativeBounce()
             )
         }
 
@@ -610,13 +639,13 @@ fun ControlsEssential(
         contentDescription = null,
         colorFilter = ColorFilter.tint(controlsColor),
         modifier = Modifier
+            .playerTransportFeedback(nextInteraction, uiRoundnessShape(), enabled = !listenTogetherGuestLock)
             .clip(uiRoundnessShape()).combinedClickable(
-                indication = ripple(bounded = false),
-                interactionSource = remember { MutableInteractionSource() },
+                indication = playerTransportIndication(nativeControlIndication()),
+                interactionSource = nextInteraction,
                 enabled = !listenTogetherGuestLock,
                 onClick = {
                     if (!listenTogetherGuestLock) {
-                        //binder.player.forceSeekToNext()
                         binder.player.playNext()
                         if (effectRotationEnabled) isRotated = !isRotated
                     }
@@ -624,19 +653,24 @@ fun ControlsEssential(
                 onLongClick = {}
             )
             .rotate(rotationAngle)
+            .playerTransportSurface()
             .padding(10.dp)
             .size(26.dp)
             .alpha(guestLockAlpha)
 
     )
 
-    IconButton(
-        icon = queueLoopType.iconId,
-        color = colorPalette().text,
-        enabled = !listenTogetherGuestLock,
-        onClick = { if (!listenTogetherGuestLock) queueLoopType = queueLoopType.next() },
-        modifier = Modifier.size( 26.dp ).alpha(guestLockAlpha)
-    )
+    PlayerTransportSmallControl("repeat", surfaceAlpha = guestLockAlpha, interactionSource = repeatInteraction,
+        enabled = !listenTogetherGuestLock) {
+        PlayerTransportIconButton(
+            interactionSource = repeatInteraction,
+            icon = queueLoopType.iconId,
+            color = colorPalette().text,
+            enabled = !listenTogetherGuestLock,
+            onClick = { if (!listenTogetherGuestLock) queueLoopType = queueLoopType.next() },
+            modifier = Modifier.size(26.dp).alpha(guestLockAlpha)
+        )
+    }
 }
 
 

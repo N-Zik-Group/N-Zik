@@ -1,5 +1,7 @@
 package app.n_zik.android.components.player.lyrics
 
+import app.n_zik.android.components.glass.glassGlobalIndication
+
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -342,7 +344,7 @@ fun LyricsTextPainter(
                     .clip(RoundedCornerShape(8.dp))
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = if (clickLyricsText) ripple(true) else null,
+                        indication = glassGlobalIndication(if (clickLyricsText) ripple(true) else null),
                         onClick = onClick
                     )
             )
@@ -382,7 +384,7 @@ fun LyricsTextPainter(
                     .clip(RoundedCornerShape(8.dp))
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = if (clickLyricsText) ripple(true) else null,
+                        indication = glassGlobalIndication(if (clickLyricsText) ripple(true) else null),
                         onClick = onClick
                     )
                     .background(
@@ -426,7 +428,7 @@ fun LyricsTextPainter(
                     .clip(RoundedCornerShape(8.dp))
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = if (clickLyricsText) ripple(true) else null,
+                        indication = glassGlobalIndication(if (clickLyricsText) ripple(true) else null),
                         onClick = onClick
                     )
             )

@@ -10,6 +10,7 @@ import app.n_zik.android.uiRoundnessShape
 import android.os.Build
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
@@ -25,10 +26,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
+import app.n_zik.android.components.ui.nativeControlIndication
 import androidx.compose.material3.ripple
 import app.n_zik.android.components.glass.explicitBadgeIconId
 import app.n_zik.android.components.glass.glassExplicitBadgeBackground
@@ -91,11 +91,8 @@ import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.showthumbnailKey
 import app.it.fast4x.rimusic.utils.textCopyToClipboard
-import app.n_zik.android.core.database.Database
-import app.kreate.android.me.knighthat.utils.Toaster
 import app.it.fast4x.rimusic.utils.textoutlineKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import app.kreate.android.me.knighthat.sync.YouTubeSync
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
@@ -103,6 +100,19 @@ import app.n_zik.android.enums.PlayerControlsColors
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import app.it.fast4x.rimusic.utils.playerControlsColorsKey
+import app.n_zik.android.components.player.playerTransportNativeBounce
+import app.n_zik.android.components.player.playerTransportFeedback
+import app.n_zik.android.components.player.playerTransportIndication
+import app.n_zik.android.components.player.PlayerTransportControlMotion
+import app.n_zik.android.components.player.PlayerInfoIconButton
+import app.n_zik.android.components.player.PlayerInfoGlassRail
+import app.n_zik.android.components.player.PlayerTransportRibbedSurface
+import app.n_zik.android.components.player.playerTransportPlayShape
+import app.n_zik.android.components.player.playerTransportNativeFill
+import app.n_zik.android.components.player.playerTransportSurface
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.player.monochromeControlsColor
 import app.n_zik.android.components.player.placeholderCompositeBase
 import app.n_zik.android.components.player.textOutlineColor
@@ -125,6 +135,7 @@ fun InfoAlbumAndArtistModern(
     onCollapse: () -> Unit,
     disableScrollingText: Boolean = false
 ) {
+    val glassTextFeedback = rememberGlassSettings().enabled
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     var showthumbnail by rememberPreference(showthumbnailKey, true)
     var effectRotationEnabled by rememberPreference(effectRotationKey, false)
@@ -135,6 +146,7 @@ fun InfoAlbumAndArtistModern(
     val playerInfoShowIcon by rememberPreference(playerInfoShowIconsKey, true)
     val currentMediaItem = binder.player.currentMediaItem
 
+    PlayerInfoGlassRail(iconsVisible = playerInfoShowIcon) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -150,7 +162,7 @@ fun InfoAlbumAndArtistModern(
         ) {
 
             if (playerInfoShowIcon) {
-                IconButton(
+                PlayerInfoIconButton(
                     icon = if (title == stringResource(R.string.unknown_title) || title == "Unknown Title") R.drawable.unknown else if (albumId == null && !media.isLocal) R.drawable.logo_youtube else R.drawable.album,
                     color = if (albumId == null) colorPalette().textDisabled else colorPalette().text,
                     enabled = albumId != null,
@@ -164,6 +176,7 @@ fun InfoAlbumAndArtistModern(
                     },
                     modifier = Modifier
                         .size(26.dp)
+                        .albumIconBounds()
                 )
 
                 Spacer(
@@ -174,7 +187,7 @@ fun InfoAlbumAndArtistModern(
 
             var modifierTitle = Modifier
                 .clip(uiRoundnessShape()).combinedClickable (
-                    indication = ripple(bounded = true),
+                    indication = if (glassTextFeedback) LocalIndication.current else ripple(bounded = true),
                     interactionSource = remember { MutableInteractionSource() },
                     onClick = {
                         if (albumId != null) {
@@ -207,9 +220,7 @@ fun InfoAlbumAndArtistModern(
                             .size(18.dp)
                             .glassExplicitBadgeBackground()
                     )
-             Box(
-
-             ){
+             Box(modifier = if (glassTextFeedback) modifierTitle else Modifier) {
                 BasicText(
                     text = cleanPrefix(title ?: ""),
                     style = TextStyle(
@@ -226,7 +237,7 @@ fun InfoAlbumAndArtistModern(
                         fontFamily = typography().l.bold.fontFamily
                     ),
                     maxLines = 1,
-                    modifier = modifierTitle
+                    modifier = if (glassTextFeedback) Modifier else modifierTitle
                 )
                 BasicText(
                     text = cleanPrefix(title ?: ""),
@@ -240,7 +251,7 @@ fun InfoAlbumAndArtistModern(
                         fontFamily = typography().l.bold.fontFamily
                     ),
                     maxLines = 1,
-                    modifier = modifierTitle
+                    modifier = if (glassTextFeedback) Modifier else modifierTitle
                 )
                 }
             }
@@ -313,7 +324,7 @@ fun InfoAlbumAndArtistModern(
 
 
         if (playerInfoShowIcon) {
-            IconButton(
+            PlayerInfoIconButton(
                 icon = if (artist == stringResource(R.string.unknown_artist) || artist == "Unknown Artist") R.drawable.unknown else if (artistIds?.isEmpty() == true && !media.isLocal) R.drawable.logo_youtube else if (artistIds?.size == 1) R.drawable.person else R.drawable.people,
                 color = if (artistIds?.isEmpty() == true) colorPalette().textDisabled else colorPalette().text,
                 onClick = {
@@ -329,6 +340,7 @@ fun InfoAlbumAndArtistModern(
                 modifier = Modifier
                     .size(24.dp)
                     .padding(start = 2.dp)
+                    .artistIconBounds()
             )
 
             Spacer(
@@ -339,7 +351,7 @@ fun InfoAlbumAndArtistModern(
 
         var modifierArtist = Modifier
             .clip(uiRoundnessShape()).combinedClickable (
-                indication = ripple(bounded = true),
+                indication = if (glassTextFeedback) LocalIndication.current else ripple(bounded = true),
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = {
                     if (artistIds?.isNotEmpty() == true && artistIds.size > 1)
@@ -356,9 +368,7 @@ fun InfoAlbumAndArtistModern(
 
         var textoutline by rememberPreference(textoutlineKey, false)
         if (!disableScrollingText) modifierArtist = modifierArtist.basicMarquee()
-        Box(
-
-        ) {
+        Box(modifier = if (glassTextFeedback) modifierArtist else Modifier) {
             BasicText(
                 text = artist ?: "",
                 style = TextStyle(
@@ -375,7 +385,7 @@ fun InfoAlbumAndArtistModern(
                     fontFamily = typography().m.bold.fontFamily
                 ),
                 maxLines = 1,
-                modifier = modifierArtist
+                modifier = if (glassTextFeedback) Modifier else modifierArtist
 
             )
             BasicText(
@@ -390,13 +400,14 @@ fun InfoAlbumAndArtistModern(
                     fontFamily = typography().m.bold.fontFamily
                 ),
                 maxLines = 1,
-                modifier = modifierArtist
+                modifier = if (glassTextFeedback) Modifier else modifierArtist
 
             )
         }
 
     }
 
+    }
 }
 
 
@@ -414,6 +425,12 @@ fun ControlsModern(
     onShowSpeedPlayerDialog: () -> Unit,
     dynamicColorPalette: ColorPalette
 ) {
+    val previousInteraction = remember { MutableInteractionSource() }
+    val playInteraction = remember { MutableInteractionSource() }
+    val nextInteraction = remember { MutableInteractionSource() }
+    val transportSettings = rememberGlassSettings()
+    val transportGlass = transportSettings.usesGlassMaterial(GlassArea.ActionButtons)
+    val transportFilm = colorPalette().background2.copy(0.95f)
     val playerControlsColors by rememberPreference(playerControlsColorsKey, PlayerControlsColors.Monochrome)
     val controlsColorText = when (playerControlsColors) {
         PlayerControlsColors.Cover -> dynamicColorPalette.accent
@@ -447,7 +464,9 @@ fun ControlsModern(
 
   if (playerPlayButtonType != PlayerPlayButtonType.Disabled) {
       CustomElevatedButton(
-          backgroundColor = colorPalette().background2.copy(0.95f),
+          glassTransport = true,
+          enabled = !listenTogetherGuestLock,
+          backgroundColor = playerTransportNativeFill(transportFilm, transportSettings),
           onClick = {
               if (!listenTogetherGuestLock) {
                   if (jumpPrevious == "") jumpPrevious = "0"
@@ -463,6 +482,7 @@ fun ControlsModern(
               .doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp)
               .clip(uiRoundnessShape())
               .alpha(guestLockAlpha)
+              .playerTransportSurface(transportFilm, settings = transportSettings)
       ) {
           Image(
               painter = painterResource(R.drawable.play_skip_back),
@@ -479,10 +499,11 @@ fun ControlsModern(
           Box(
              contentAlignment = Alignment.Center,
              modifier = Modifier
-                 .clip(uiRoundnessShape())
+                 .playerTransportFeedback(playInteraction, playerTransportPlayShape(playerPlayButtonType, rotationAngle))
+                 .clip(playerTransportPlayShape(playerPlayButtonType, rotationAngle))
                  .combinedClickable(
-                     indication = ripple(bounded = false),
-                     interactionSource = remember { MutableInteractionSource() },
+                     indication = playerTransportIndication(nativeControlIndication()),
+                     interactionSource = playInteraction,
                      onClick = {
                          if (shouldBePlaying) {
                              binder.gracefulPause()
@@ -498,10 +519,13 @@ fun ControlsModern(
                          else onShowSpeedPlayerDialog()
                      }
                  )
-                 .bounceClick()
+                 .playerTransportNativeBounce()
 
           ) {
-              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+              if (transportGlass && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                  Spacer(Modifier.size(115.dp))
+              }
+              if (!transportGlass && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
                   Icon(
                       painter = painterResource(R.drawable.a13shape),
                       contentDescription = null,
@@ -513,13 +537,14 @@ fun ControlsModern(
                       tint = Color.Black.copy(0.75f)
                   )
               }
-              Image(
+              if (!PlayerTransportRibbedSurface(transportFilm,
+                      Modifier.rotate(rotationAngle), transportSettings)) Image(
                   painter = painterResource(R.drawable.a13shape),
                   colorFilter = ColorFilter.tint(colorPalette().background2.copy(0.95f)),
                   modifier = Modifier
                       .rotate(rotationAngle)
                       .dropShadow(
-                          uiRoundnessShape(),
+                          playerTransportPlayShape(playerPlayButtonType),
                           if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) Color.Black.copy(0.75f) else Color.Transparent,
                           6.dp,
                           0.dp,
@@ -556,7 +581,8 @@ fun ControlsModern(
       }
       else {
           CustomElevatedButton(
-              backgroundColor = colorPalette().background2.copy(0.95f),
+          glassTransport = true,
+              backgroundColor = playerTransportNativeFill(transportFilm, transportSettings),
               onClick = {
                   if (shouldBePlaying) {
                       binder.gracefulPause()
@@ -574,31 +600,13 @@ fun ControlsModern(
               modifier = Modifier
                   .doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp)
                   .clip(uiRoundnessShape())
-                  .bounceClick()
+                  .playerTransportNativeBounce()
                   .width(playerPlayButtonType.width.dp)
                   .height(playerPlayButtonType.height.dp)
+                  .playerTransportSurface(transportFilm, settings = transportSettings)
 
           ) {
-              /*
-        if (playerPlayButtonType == PlayerPlayButtonType.CircularRibbed)
-            Image(
-                painter = painterResource(R.drawable.a13shape),
-                colorFilter = ColorFilter.tint(
-                    when (colorPaletteName) {
-                        ColorPaletteName.PureBlack, ColorPaletteName.ModernBlack -> colorPalette().background4
-                        else -> if (isGradientBackgroundEnabled) colorPalette().background1
-                        else colorPalette().background2
-                    }
-                ),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .rotate(rotationAngle),
-                contentDescription = stringResource(R.string.cd_background_image),
-                contentScale = ContentScale.Fit
-            )
-         */
-
-              if (isBuffering && shouldBePlaying) {
+if (isBuffering && shouldBePlaying) {
                   CircularWavyProgressIndicator(
                       color = colorPalette().accent,
                       trackColor = colorPalette().text,
@@ -617,7 +625,7 @@ fun ControlsModern(
                           .rotate(rotationAngle)
                           .align(Alignment.Center)
                           .size(30.dp)
-                          .bounceClick()
+                          .playerTransportNativeBounce()
                   )
               }
 
@@ -644,10 +652,11 @@ fun ControlsModern(
       }
 
     CustomElevatedButton(
-        backgroundColor = colorPalette().background2.copy(0.95f),
+          glassTransport = true,
+        enabled = !listenTogetherGuestLock,
+        backgroundColor = playerTransportNativeFill(transportFilm, transportSettings),
         onClick = {
             if (!listenTogetherGuestLock) {
-                //binder.player.forceSeekToNext()
                 binder.player.playNext()
                 if (effectRotationEnabled) isRotated = !isRotated
             }
@@ -657,6 +666,7 @@ fun ControlsModern(
             .doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp)
             .clip(uiRoundnessShape())
             .alpha(guestLockAlpha)
+            .playerTransportSurface(transportFilm, settings = transportSettings)
 
       ) {
           Image(
@@ -679,9 +689,7 @@ fun ControlsModern(
           modifier = Modifier
               .fillMaxWidth()
       ) {
-          Box(
-
-          )
+          PlayerTransportControlMotion(previousInteraction, enabled = !listenTogetherGuestLock)
           {
               Icon(
                   painter = painterResource(R.drawable.play_skip_back),
@@ -701,8 +709,9 @@ fun ControlsModern(
                       .padding(10.dp)
                       .size(34.dp)
                       .rotate(rotationAngle)
+                      .playerTransportFeedback(previousInteraction, enabled = !listenTogetherGuestLock)
                       .clip(uiRoundnessShape()).combinedClickable(
-                          interactionSource = null,
+                          interactionSource = previousInteraction,
                           indication = null,
                           enabled = !listenTogetherGuestLock,
                           onClick = {
@@ -721,10 +730,8 @@ fun ControlsModern(
               )
           }
 
-          Box(
-              modifier = Modifier
-                .bounceClick()
-          ) {
+          PlayerTransportControlMotion(playInteraction,
+              modifier = Modifier.playerTransportNativeBounce()) {
               Icon(
                   painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                   contentDescription = null,
@@ -743,8 +750,9 @@ fun ControlsModern(
                       .rotate(rotationAngle)
                       .size(44.dp)
                       .align(Alignment.Center)
+                      .playerTransportFeedback(playInteraction, enabled = true)
                       .clip(uiRoundnessShape()).combinedClickable(
-                          interactionSource = null,
+                          interactionSource = playInteraction,
                           indication = null,
                           onClick = {
                               if (shouldBePlaying) {
@@ -765,10 +773,7 @@ fun ControlsModern(
 
           }
 
-          Box(
-
-
-          ) {
+          PlayerTransportControlMotion(nextInteraction, enabled = !listenTogetherGuestLock) {
               Icon(
                   painter = painterResource(R.drawable.play_skip_forward),
                   contentDescription = null,
@@ -787,13 +792,13 @@ fun ControlsModern(
                       .padding(10.dp)
                       .size(34.dp)
                       .rotate(rotationAngle)
+                      .playerTransportFeedback(nextInteraction, enabled = !listenTogetherGuestLock)
                       .clip(uiRoundnessShape()).combinedClickable(
-                          interactionSource = null,
+                          interactionSource = nextInteraction,
                           indication = null,
                           enabled = !listenTogetherGuestLock,
                           onClick = {
                               if (!listenTogetherGuestLock) {
-                                  //binder.player.forceSeekToNext()
                                   binder.player.playNext()
                                   if (effectRotationEnabled) isRotated = !isRotated
                               }

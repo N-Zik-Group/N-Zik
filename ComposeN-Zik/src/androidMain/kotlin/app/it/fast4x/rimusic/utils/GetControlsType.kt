@@ -16,6 +16,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import app.n_zik.android.components.player.playerTransportLayout
+import app.n_zik.android.components.player.PlayerTransportCenter
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import app.it.fast4x.rimusic.enums.PlayerBackgroundColors
 import app.it.fast4x.rimusic.enums.PlayerControlsType
@@ -39,7 +43,8 @@ fun GetControls(
     likedAt: Long?,
     mediaId: String,
     onBlurScaleChange: (Float) -> Unit,
-    dynamicColorPalette: ColorPalette
+    dynamicColorPalette: ColorPalette,
+    timelineHorizontalInset: Dp = 0.dp,
 ) {
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     val playerPlayButtonType by rememberPreference(
@@ -83,10 +88,12 @@ fun GetControls(
             seconds = if (playbackDuration < 1f) 0 else playbackDuration.roundToInt()
         )
 
+    PlayerTransportCenter {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier
+            .playerTransportLayout(timelineHorizontalInset)
             .fillMaxWidth()
     ) {
 
@@ -117,6 +124,7 @@ fun GetControls(
                 onShowSpeedPlayerDialog = { menuState.display { playbackSettingsMenu.MenuComponent() } },
                 dynamicColorPalette = dynamicColorPalette
             )
+    }
     }
 }
 

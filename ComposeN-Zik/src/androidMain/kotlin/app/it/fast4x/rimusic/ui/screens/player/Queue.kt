@@ -1,5 +1,8 @@
 package app.it.fast4x.rimusic.ui.screens.player
 
+import app.n_zik.android.components.glass.glassGlobalIndication
+
+import app.n_zik.android.components.glass.queueToolbarBottomInset
 import app.n_zik.android.components.glass.glassQueueListBackdrop
 import app.n_zik.android.components.glass.LocalQueueRowBackdrop
 import app.n_zik.android.components.glass.rememberQueueRowGlassBackdrop
@@ -147,7 +150,7 @@ fun Queue(
     val coroutineScope = rememberCoroutineScope()
     val hapticFeedback = LocalHapticFeedback.current
 
-    val rippleIndication = ripple(bounded = false)
+    val rippleIndication = glassGlobalIndication(ripple(bounded = false))
 
     // Listen Together guest lock (spec-listen-together-guest-lock-hardening): a guest in a
     // room cannot edit the queue (reorder, remove, play-next swipe, clear) — it is host-owned.
@@ -410,7 +413,7 @@ fun Queue(
             LazyColumn(
                 state = lazyListState,
                 horizontalAlignment = Alignment.CenterHorizontally,
-                contentPadding = WindowInsets(bottom = Dimensions.bottomSpacer).asPaddingValues(),
+                contentPadding = WindowInsets(bottom = Dimensions.bottomSpacer + queueToolbarBottomInset()).asPaddingValues(),
                 modifier = Modifier.fillMaxSize()
                                    .glassQueueListBackdrop(lazyListState)
                                    .background(
@@ -602,7 +605,7 @@ fun Queue(
             val keyboardOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
             Column(
                 modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth()
-                    .padding(bottom = if (search.isVisible && !keyboardOpen) 60.dp else 0.dp)
+                    .padding(bottom = if (search.isVisible && !keyboardOpen) 60.dp + queueToolbarBottomInset() else 0.dp)
                     .imePadding(),
             ) { search.SearchBar(this) }
         }

@@ -1,13 +1,9 @@
 package app.kreate.android.themed.rimusic.screen.player.timeline
 
-import androidx.compose.ui.draw.clip
-
-import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.components.player.PlayerSkipTimeGlass
 import app.n_zik.android.components.player.durationOutlineColorOf
 import app.n_zik.android.components.player.displayedTimeRemainingOf
 
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -38,7 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -114,23 +110,21 @@ private fun RowScope.SkipTimeButton(
         binder.player.seekTo( newPosition )
     }
 
-    Icon(
-        painter = painterResource( R.drawable.play_forward ),
-        tint = colorPalette().favoritesIcon,
-        contentDescription = contentDescription,
-        modifier = modifier.size( DURATION_INDICATOR_HEIGHT.dp )
-                           .align( Alignment.CenterVertically )
-                           .clip(uiRoundnessShape()).combinedClickable(
-                               interactionSource = remember { MutableInteractionSource() },
-                               indication = null,
-                               role = Role.Button,
-                               onClickLabel = onClickLabel,
-                               onClick = { seekTo(tapAdjustment) },
-                               onDoubleClick = { seekTo(doubleTapAdjustment) },
-                               onLongClickLabel = onLongClickLabel,
-                               onLongClick = { seekTo(longTapAdjustment) }
-                           )
-    )
+    PlayerSkipTimeGlass(
+        onClickLabel = onClickLabel,
+        onClick = { seekTo(tapAdjustment) },
+        onDoubleClick = { seekTo(doubleTapAdjustment) },
+        onLongClickLabel = onLongClickLabel,
+        onLongClick = { seekTo(longTapAdjustment) },
+    ) {
+        Icon(
+            painter = painterResource( R.drawable.play_forward ),
+            tint = colorPalette().favoritesIcon,
+            contentDescription = contentDescription,
+            modifier = modifier.size( DURATION_INDICATOR_HEIGHT.dp )
+                .testTag("player.skipTime.glyph.$contentDescription")
+        )
+    }
 }
 
 @Composable

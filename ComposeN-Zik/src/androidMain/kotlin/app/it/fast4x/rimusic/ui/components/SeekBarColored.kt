@@ -28,6 +28,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import kotlin.math.roundToLong
+import app.n_zik.android.components.player.PlayerSeekGlassThumb
+import app.n_zik.android.components.player.PlayerSeekOpticalThumb
+import app.n_zik.android.components.player.playerSeekTrack
 
 @Composable
 fun SeekBarColored(
@@ -43,8 +46,13 @@ fun SeekBarColored(
     barHeight: Dp = 3.dp,
     scrubberColor: Color = color,
     scrubberRadius: Dp = 6.dp,
-    shape: Shape = RectangleShape
+    shape: Shape = RectangleShape,
+    glassThumb: PlayerSeekGlassThumb? = null,
 ) {
+    val visualFraction = glassThumb?.motion?.value
+        ?: ((value.toFloat() - minimumValue) / (maximumValue - minimumValue))
+    val colorPosition = if (glassThumb == null) value
+        else minimumValue + (visualFraction * (maximumValue - minimumValue)).toLong()
 
     val (colorPalette, typography) = LocalAppearance.current
     val isDragging = remember {
@@ -57,11 +65,11 @@ fun SeekBarColored(
     val currentScrubberRadius by transition.animateDp(label = "") { if (it) 0.dp else scrubberRadius }
 
     val barColor = when {
-        value >= 0 && value <= maximumValue / 5 -> colorPalette.text
-        value >= maximumValue / 5 && value <= maximumValue / 4 -> colorPalette.background0
-        value >= maximumValue / 4 && value <= maximumValue / 3 -> colorPalette.textDisabled
-        value >= maximumValue / 3 && value <= maximumValue / 2 -> colorPalette.background2
-        value >= maximumValue / 2 && value <= maximumValue -> colorPalette.accent
+        colorPosition >= 0 && colorPosition <= maximumValue / 5 -> colorPalette.text
+        colorPosition >= maximumValue / 5 && colorPosition <= maximumValue / 4 -> colorPalette.background0
+        colorPosition >= maximumValue / 4 && colorPosition <= maximumValue / 3 -> colorPalette.textDisabled
+        colorPosition >= maximumValue / 3 && colorPosition <= maximumValue / 2 -> colorPalette.background2
+        colorPosition >= maximumValue / 2 && colorPosition <= maximumValue -> colorPalette.accent
         else -> colorPalette.text
     }
 
@@ -127,13 +135,18 @@ fun SeekBarColored(
                 )
             }
             .padding(horizontal = scrubberRadius)
+
+            .height(scrubberRadius)
+    ) {
+
+        Box(Modifier.align(Alignment.Center).playerSeekTrack(glassThumb)
             .drawWithContent {
                 drawContent()
 
                 val scrubberPosition = if (maximumValue < minimumValue) {
                     0f
                 } else {
-                    (value.toFloat() - minimumValue) / (maximumValue - minimumValue) * size.width
+                    visualFraction * size.width
                 }
 
                 drawCircle(
@@ -143,9 +156,7 @@ fun SeekBarColored(
                 )
 
             }
-            .height(scrubberRadius)
-    ) {
-
+        ) {
         Spacer(
             modifier = Modifier
                 .height(currentBarHeight)
@@ -157,10 +168,13 @@ fun SeekBarColored(
         Spacer(
             modifier = Modifier
                 .height(currentBarHeight)
-                .fillMaxWidth((value.toFloat() - minimumValue) / (maximumValue - minimumValue))
+                .fillMaxWidth(visualFraction)
                 .background(color = backgroundColor, shape = shape)
                 .align(Alignment.CenterStart)
         )
+        }
+        PlayerSeekOpticalThumb(glassThumb,
+            (value.toFloat() - minimumValue) / (maximumValue - minimumValue))
     }
 
 

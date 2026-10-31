@@ -26,6 +26,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.enums.PlayerTimelineType
 import kotlin.math.roundToLong
+import app.n_zik.android.components.player.PlayerSeekGlassThumb
+import app.n_zik.android.components.player.PlayerSeekOpticalThumb
+import app.n_zik.android.components.player.playerSeekTrack
 
 @Composable
 fun SeekBarCustom(
@@ -44,7 +47,10 @@ fun SeekBarCustom(
     scrubberRadius: Dp = 2.dp,
     shape: Shape = RectangleShape,
     drawSteps: Boolean = false,
+    glassThumb: PlayerSeekGlassThumb? = null,
 ) {
+    val visualFraction = glassThumb?.motion?.value
+        ?: ((value.toFloat() - minimumValue) / (maximumValue - minimumValue))
     var _barHeight = barHeight
     var _backbarHeight = barHeight
     var _scrubberRadius = scrubberRadius
@@ -152,13 +158,18 @@ fun SeekBarCustom(
                 }
             }
             .padding(horizontal = scrubberRadius)
+
+            //.height(scrubberRadius)
+    ) {
+
+        Box(Modifier.align(Alignment.Center).playerSeekTrack(glassThumb)
             .drawWithContent {
                 drawContent()
 
                 val scrubberPosition = if (maximumValue < minimumValue) {
                     0f
                 } else {
-                    (value.toFloat() - minimumValue) / (maximumValue - minimumValue) * size.width
+                    visualFraction * size.width
                 }
 
                 drawCircle(
@@ -179,9 +190,7 @@ fun SeekBarCustom(
                     }
                 }
             }
-            //.height(scrubberRadius)
-    ) {
-
+        ) {
         Spacer(
             modifier = Modifier
                 //.height(currentBarHeight)
@@ -194,10 +203,13 @@ fun SeekBarCustom(
         Spacer(
             modifier = Modifier
                 .height(currentBarHeight)
-                .fillMaxWidth((value.toFloat() - minimumValue) / (maximumValue - minimumValue))
+                .fillMaxWidth(visualFraction)
                 .background(color = color, shape = shape)
                 .align(Alignment.CenterStart)
         )
+        }
+        PlayerSeekOpticalThumb(glassThumb,
+            (value.toFloat() - minimumValue) / (maximumValue - minimumValue))
     }
 }
 

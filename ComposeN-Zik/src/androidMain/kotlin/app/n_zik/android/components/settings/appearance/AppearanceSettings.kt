@@ -50,7 +50,6 @@ import app.it.fast4x.rimusic.utils.playerTypeKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.showlyricsthumbnailKey
 import app.it.fast4x.rimusic.utils.showthumbnailKey
-import app.it.fast4x.rimusic.utils.showvisthumbnailKey
 import app.it.fast4x.rimusic.utils.thumbnailpauseKey
 import app.n_zik.android.components.tab.Search
 import androidx.compose.runtime.LaunchedEffect
@@ -145,7 +144,6 @@ internal fun AppearanceSettingsContent(
         playerBackgroundColorsKey,
         PlayerBackgroundColors.AnimatedGradient
     )
-    var showvisthumbnail by rememberPreference(showvisthumbnailKey, true)
     var thumbnailpause by rememberPreference(thumbnailpauseKey, true)
     var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
     val restartState = rememberSaveable { mutableStateOf(false) }
@@ -155,8 +153,6 @@ internal fun AppearanceSettingsContent(
         showthumbnail = true
     if (!showthumbnail) {showlyricsthumbnail = false}
     if (playerType == PlayerType.Modern) {
-        showlyricsthumbnail = false
-        showvisthumbnail = false
         thumbnailpause = false
 
     }

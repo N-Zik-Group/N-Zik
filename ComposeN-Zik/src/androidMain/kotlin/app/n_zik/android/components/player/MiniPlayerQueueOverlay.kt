@@ -58,6 +58,7 @@ import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.NativeQueueRows
+import app.n_zik.android.components.glass.usesQueueToolbarGlass
 import app.n_zik.android.components.glass.GlassQueuePanel
 import app.n_zik.android.components.glass.glassQueuePanelBackground
 import app.n_zik.android.topUiRoundnessShape
@@ -153,7 +154,7 @@ fun MiniPlayerQueueOverlay(
                 }
                 .clip(topUiRoundnessShape())
                 .glassQueuePanelBackground(queuePanelBackground, topUiRoundnessShape())
-                .windowInsetsPadding(WindowInsets.navigationBars.union(
+                .windowInsetsPadding((if (usesQueueToolbarGlass()) WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal) else WindowInsets.navigationBars).union(
                         WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)
                     ))
         ) {
@@ -245,14 +246,16 @@ fun MiniPlayerQueueOverlay(
         }
 
         // Nav bar background for queue
-        val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(navBarHeight)
-                .align(Alignment.BottomCenter)
-                .background(colorPalette().background1)
-        )
+        if (!usesQueueToolbarGlass()) {
+            val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(navBarHeight)
+                    .align(Alignment.BottomCenter)
+                    .background(colorPalette().background1)
+            )
+        }
         } // Box(fillMaxSize)
     }
 }

@@ -43,6 +43,8 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
+import app.n_zik.android.components.player.LocalPlayerCoverOverlay
+import app.n_zik.android.components.glass.overlayViewportShape
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.themed.SecondaryTextButton
@@ -62,7 +64,8 @@ fun NextVisualizer(
 ) {
     val context = LocalContext.current
     val visualizerEnabled by rememberPreference(visualizerEnabledKey, false)
-    var showvisthumbnail by rememberPreference(showvisthumbnailKey, true)
+    val savedVisualizerOnCover by rememberPreference(showvisthumbnailKey, true)
+    val showvisthumbnail = LocalPlayerCoverOverlay.current || savedVisualizerOnCover
     var blackBackgroundForVisThumbnail by rememberPreference(blackBackgroundForVisThumbnailKey, true)
     
     val binder = LocalPlayerServiceBinder.current
@@ -143,10 +146,9 @@ fun NextVisualizer(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(thumbnailShape())
-                        .background(backgroundColor)
+                        .clip(overlayViewportShape(showvisthumbnail, thumbnailShape()))
                 ) {
-                    NextVisualizer()
+                    NextVisualizer(sceneBackground = backgroundColor)
                 }
             }
         }

@@ -1,5 +1,11 @@
 package app.it.fast4x.rimusic.ui.screens.player
 
+import androidx.compose.runtime.CompositionLocalProvider
+import app.n_zik.android.components.glass.LocalGlassOverlayArtworkBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.glass.rememberGlassRawPressFeedback
+
 import app.n_zik.android.core.database.*
 
 import androidx.annotation.OptIn
@@ -239,6 +245,8 @@ fun Thumbnail(
         val thumbnailType by rememberPreference(thumbnailTypeKey, ThumbnailType.Modern)
         val cropVideoThumbnails by rememberPreference(cropVideoThumbnailsKey, true)
 
+        val coverPressFeedback = rememberGlassRawPressFeedback()
+        val overlayArtworkBackdrop = rememberLayerBackdrop()
         var modifierUiType by remember { mutableStateOf(modifier) }
 
         if (showthumbnail)
@@ -269,6 +277,8 @@ fun Thumbnail(
             modifier = modifierUiType
         ) {
             if (showthumbnail) {
+                // Export the artwork sibling only; lyrics/visualizer utilities never enter this source.
+                Box(Modifier.matchParentSize().layerBackdrop(overlayArtworkBackdrop)) {
                 if ((!isShowingLyrics && !isShowingVisualizer) || (isShowingVisualizer && showvisthumbnail) || (isShowingLyrics && showlyricsthumbnail))
                     if (artImageAvailable) {
                         if (showCoverThumbnailAnimation)
@@ -277,8 +287,10 @@ fun Thumbnail(
                                 isSongPlaying = player.isPlaying,
                                 modifier = Modifier
                                     .glassImageRim(CircleShape)
+                                    .then(coverPressFeedback.modifier())
                                     .pointerInput(Unit) {
                                         detectTapGestures(
+                                            onPress = { coverPressFeedback.onPress(this, it) },
                                             onLongPress = { onShowStatsForNerds(true) },
                                             onTap = if (thumbnailTapEnabledKey) {
                                                 {
@@ -298,8 +310,10 @@ fun Thumbnail(
                                 contentDescription = null,
                                 contentScale = if (cropVideoThumbnails) ContentScale.Crop else ContentScale.Fit,
                                 modifier = Modifier
+                                    .then(coverPressFeedback.modifier())
                                     .pointerInput(Unit) {
                                         detectTapGestures(
+                                            onPress = { coverPressFeedback.onPress(this, it) },
                                             onLongPress = { onShowStatsForNerds(true) },
                                             onTap = if (thumbnailTapEnabledKey) {
                                                 {
@@ -320,8 +334,10 @@ fun Thumbnail(
                         Image(
                             painter = painterResource(R.drawable.ic_launcher_box),
                             modifier = Modifier
+                                .then(coverPressFeedback.modifier())
                                 .pointerInput(Unit) {
                                     detectTapGestures(
+                                        onPress = { coverPressFeedback.onPress(this, it) },
                                         onLongPress = { onShowStatsForNerds(true) },
                                         onTap = if (thumbnailTapEnabledKey) {
                                             {
@@ -341,6 +357,9 @@ fun Thumbnail(
                         )
                     }
 
+                }
+
+                CompositionLocalProvider(LocalGlassOverlayArtworkBackdrop provides overlayArtworkBackdrop) {
                 //if (!currentWindow.mediaItem.isLocal)
                 if (showlyricsthumbnail)
                     LyricsScreen(
@@ -358,15 +377,17 @@ fun Thumbnail(
                         clickLyricsText = clickLyricsText,
                     )
 
+                }
+
                 StatsForNerds(
                     mediaId = currentWindow.mediaItem.mediaId,
                     isDisplayed = isShowingStatsForNerds && error == null,
                     onDismiss = { onShowStatsForNerds(false) }
                 )
                 if (showvisthumbnail) {
-                    NextVisualizer(
-                        isDisplayed = isShowingVisualizer
-                    )
+                    CompositionLocalProvider(LocalGlassOverlayArtworkBackdrop provides overlayArtworkBackdrop) {
+                        NextVisualizer(isDisplayed = isShowingVisualizer)
+                    }
                 }
 
                 LaunchedEffect(error) {

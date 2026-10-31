@@ -1,8 +1,13 @@
 package app.n_zik.android.extensions.audiobar.views
+import app.n_zik.android.components.player.PlayerSeekGlassThumb
+import app.n_zik.android.components.player.PlayerSeekOpticalThumb
+import app.n_zik.android.components.player.playerSeekTrack
+import app.n_zik.android.components.player.playerSeekWaveMarkerHeight
 
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -73,9 +78,14 @@ fun SeekBarVisualizer(
     notPlayedColor: Color,
     waveInteraction: WaveInteraction,
     modifier: Modifier = Modifier,
+    glassThumb: PlayerSeekGlassThumb? = null,
 ) {
     BoxWithConstraints(modifier) {
+        val visualProgress: () -> ProgressPercentage = {
+            glassThumb?.motion?.value?.let { ProgressPercentage.safeValue(it) } ?: progressPercentage()
+        }
         val maxWidth = this.maxWidth
+        val trackHeight = maxHeight
         val updatedWaveInteraction by rememberUpdatedState(waveInteraction)
         val context = LocalContext.current
         val permission = Manifest.permission.RECORD_AUDIO
@@ -227,70 +237,72 @@ fun SeekBarVisualizer(
             }
         }
 
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(maxHeight)
-                .pointerInput(Unit) {
-                    detectTapGestures { offset ->
-                        updatedWaveInteraction.onInteraction(
-                            ProgressPercentage.of(current = offset.x.toDp(), target = maxWidth),
-                        )
+        Box(Modifier.fillMaxWidth().height(trackHeight).playerSeekTrack(glassThumb)) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(trackHeight)
+                    .pointerInput(Unit) {
+                        detectTapGestures { offset ->
+                            updatedWaveInteraction.onInteraction(
+                                ProgressPercentage.of(current = offset.x.toDp(), target = maxWidth),
+                            )
+                        }
                     }
-                }
-                .pointerInput(Unit) {
-                    detectHorizontalDragGestures { change: PointerInputChange, dragAmount: Float ->
-                        // Do not trigger on minuscule movements
-                        if (dragAmount.absoluteValue < 1f) return@detectHorizontalDragGestures
-                        updatedWaveInteraction.onInteraction(
-                            ProgressPercentage.of(
-                                current = change.position.x.toDp(),
-                                target = maxWidth
-                            ),
-                        )
-                    }
-                },
-        ) {
-            if (!hasPermission) {
-                BasicText(
-                    text = stringResource(R.string.require_mic_permission),
-                    modifier = Modifier.fillMaxWidth(),
-                    style = typography().xs.semiBold.copy(color = notPlayedColor, textAlign = TextAlign.Center)
-                )
-            } else {
-                repeat(numberOfWaves) { waveIndex ->
-                    AudioWavePill(
-                        waveform = liveWaveform,
-                        progressPercentage = progressPercentage,
-                        numberOfWaves = numberOfWaves,
-                        waveIndex = waveIndex,
-                        playedColor = playedColor,
-                        notPlayedColor = notPlayedColor,
-                        modifier = Modifier.width(waveWidth),
+                    .pointerInput(Unit) {
+                        detectHorizontalDragGestures { change: PointerInputChange, dragAmount: Float ->
+                            // Do not trigger on minuscule movements
+                            if (dragAmount.absoluteValue < 1f) return@detectHorizontalDragGestures
+                            updatedWaveInteraction.onInteraction(
+                                ProgressPercentage.of(
+                                    current = change.position.x.toDp(),
+                                    target = maxWidth
+                                ),
+                            )
+                        }
+                    },
+            ) {
+                if (!hasPermission) {
+                    BasicText(
+                        text = stringResource(R.string.require_mic_permission),
+                        modifier = Modifier.fillMaxWidth(),
+                        style = typography().xs.semiBold.copy(color = notPlayedColor, textAlign = TextAlign.Center)
                     )
+                } else {
+                    repeat(numberOfWaves) { waveIndex ->
+                        AudioWavePill(
+                            waveform = liveWaveform,
+                            progressPercentage = visualProgress,
+                            numberOfWaves = numberOfWaves,
+                            waveIndex = waveIndex,
+                            playedColor = playedColor,
+                            notPlayedColor = notPlayedColor,
+                            modifier = Modifier.width(waveWidth),
+                        )
+                    }
                 }
             }
+
+            if (!localIsPlaying) {
+                val thumbWidth = 2.dp
+                val offsetDp = (maxWidth * visualProgress().value) - (thumbWidth / 2)
+                val maxOffset = if (maxWidth > thumbWidth) maxWidth - thumbWidth else 0.dp
+                val safeOffset = offsetDp.coerceIn(0.dp, maxOffset)
+
+                Surface(
+                    shape = CircleShape,
+                    color = playedColor,
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .offset(x = safeOffset)
+                        .width(thumbWidth)
+                        .height(playerSeekWaveMarkerHeight(trackHeight, glassThumb))
+                ) {}
+            }
         }
-
-
-
-        if (!localIsPlaying) {
-            val thumbWidth = 2.dp
-            val offsetDp = (maxWidth * progressPercentage().value) - (thumbWidth / 2)
-            val maxOffset = if (maxWidth > thumbWidth) maxWidth - thumbWidth else 0.dp
-            val safeOffset = offsetDp.coerceIn(0.dp, maxOffset)
-            
-            Surface(
-                shape = CircleShape,
-                color = playedColor,
-                modifier = Modifier
-                    .offset(x = safeOffset)
-                    .width(thumbWidth)
-                    .fillMaxHeight()
-            ) {}
-        }
+        PlayerSeekOpticalThumb(glassThumb, progressPercentage().value)
     }
 }
 
