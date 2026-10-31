@@ -12,6 +12,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -62,7 +63,8 @@ class UiIconButtonFeedbackBoundsTest {
         compose.setContent {
             val shape = RoundedCornerShape(radius.value.dp)
             val settings = GlassSettings(enabled = global.value, jellyEnabled = false,
-                areaModes = mapOf(GlassArea.ActionButtons to GlassAreaMode.Disabled))
+                areaModes = mapOf(GlassArea.ActionButtons to GlassAreaMode.Disabled,
+                    GlassArea.DialogButtons to if (radius.value == 8) GlassAreaMode.ContourOnly else GlassAreaMode.Disabled))
             AppearanceFixture(shape, settings) {
                 Box(Modifier.size(100.dp, 80.dp).background(Color.Black).testTag("canvas"), Alignment.Center) {
                     // Recreate each control: Android RippleDrawable has its own looper clock.
@@ -74,8 +76,8 @@ class UiIconButtonFeedbackBoundsTest {
                 }
             }
         }
-        for (active in listOf(false, true)) for (kind in 0..2)
-            for (corner in listOf(0, 8, 48)) for (size in listOf(0, 42, 48)) {
+        for (active in listOf(false, true)) for (kind in 0..4)
+            for (corner in listOf(0, 8, 48)) for (size in listOf(0, 40, 48)) {
                 compose.mainClock.autoAdvance = true
                 compose.runOnIdle {
                     global.value = active; family.value = kind; radius.value = corner
@@ -116,8 +118,9 @@ class UiIconButtonFeedbackBoundsTest {
                 action.performTouchInput { up() }
                 shadowOf(Looper.getMainLooper()).idleFor(1600, TimeUnit.MILLISECONDS)
                 compose.mainClock.advanceTimeBy(1600)
+                if (active) assertIdentical(idle, canvas.captureToImage().toPixelMap(), "Released $description")
             }
-        compose.runOnIdle { assertEquals("Only Material owns each click", 54, clicks) }
+        compose.runOnIdle { assertEquals("Only Material owns each click", 90, clicks) }
     }
 
     @Test fun `compact row placement exactly matches native controls for default and explicit sizes`() {
@@ -128,7 +131,8 @@ class UiIconButtonFeedbackBoundsTest {
         compose.setContent {
             val shape = RoundedCornerShape(8.dp)
             val settings = GlassSettings(enabled = global.value,
-                areaModes = mapOf(GlassArea.ActionButtons to GlassAreaMode.Disabled))
+                areaModes = mapOf(GlassArea.ActionButtons to GlassAreaMode.Disabled,
+                    GlassArea.DialogButtons to GlassAreaMode.ContourOnly))
             AppearanceFixture(shape, settings) {
                 key(generation.value, wrapped.value) {
                     Row(Modifier.size(220.dp, 64.dp).background(Color.Black).testTag("row")) {
@@ -142,7 +146,7 @@ class UiIconButtonFeedbackBoundsTest {
                 }
             }
         }
-        for (active in listOf(false, true)) for (kind in 0..2) {
+        for (active in listOf(false, true)) for (kind in 0..4) {
             compose.runOnIdle { global.value = active; family.value = kind; wrapped.value = false; generation.value++ }
             settle()
             val row = compose.onNodeWithTag("row")
@@ -188,9 +192,10 @@ private fun AppearanceFixture(shape: Shape, settings: GlassSettings, content: @C
 private fun Control(family: Int, wrapped: Boolean, modifier: Modifier, shape: Shape,
     settings: GlassSettings, onClick: () -> Unit) {
     val glyph: @Composable () -> Unit = { Box(Modifier.size(12.dp).background(Color.Magenta)) }
-    if (family == 0) {
+    if (family == 0 || family == 3) {
         val colors = IconButtonDefaults.iconButtonColors(containerColor = Color.Red)
-        if (wrapped) UiIconButton(onClick, modifier, colors = colors, shape = shape, content = glyph)
+        if (wrapped && family == 3) GlassDialogIconButton(onClick, modifier, colors = colors, content = glyph)
+        else if (wrapped) UiIconButton(onClick, modifier, colors = colors, shape = shape, content = glyph)
         else IconButton({}, modifier, colors = colors, shape = shape, content = glyph)
     } else {
         val colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
@@ -199,10 +204,14 @@ private fun Control(family: Int, wrapped: Boolean, modifier: Modifier, shape: Sh
             if (wrapped) PageButton(onClick, modifier, shape = shape, colors = colors,
                 elevation = null, settings = settings, content = rowGlyph)
             else Button({}, modifier, shape = shape, colors = colors, elevation = null, content = rowGlyph)
-        } else {
+        } else if (family == 2) {
             if (wrapped) PageTextButton(onClick, modifier, shape = shape, colors = colors,
                 settings = settings, content = rowGlyph)
             else TextButton({}, modifier, shape = shape, colors = colors, content = rowGlyph)
+        } else {
+            if (wrapped) GlassDialogOutlinedButton(onClick, modifier, colors = colors,
+                border = null, content = rowGlyph)
+            else OutlinedButton({}, modifier, shape = shape, colors = colors, border = null, content = rowGlyph)
         }
     }
 }

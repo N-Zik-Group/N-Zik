@@ -43,6 +43,7 @@ import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.uiRoundnessShape
 import kotlinx.coroutines.flow.collect
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -165,7 +166,7 @@ class PageButtonTest {
                     Column(Modifier.background(DefaultDarkColorPalette.background0)) {
                         val colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6020A0))
                         Button({}, Modifier.size(160.dp, 48.dp).testTag("native"),
-                            colors = colors, elevation = null, interactionSource = interactions) {
+                            shape = uiRoundnessShape(), colors = colors, elevation = null, interactionSource = interactions) {
                             Box(Modifier.size(16.dp).background(Color.Magenta))
                         }
                         PageButton({}, Modifier.size(160.dp, 48.dp).testTag("page"),
@@ -210,7 +211,7 @@ class PageButtonTest {
                         Column {
                             val colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6020A0))
                             Button({}, Modifier.size(160.dp, 48.dp).testTag("global.native"),
-                                colors = colors, elevation = null, interactionSource = source) {}
+                                shape = uiRoundnessShape(), colors = colors, elevation = null, interactionSource = source) {}
                             PageButton({}, Modifier.size(160.dp, 48.dp).testTag("global.page"),
                                 colors = colors, elevation = null, interactionSource = source,
                                 settings = areaOff) {

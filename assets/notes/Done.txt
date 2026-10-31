@@ -22,6 +22,11 @@ Fixed:
   - Opt LocalSongSearch into retaining hidden row slots while keeping hidden playback, menu and accessibility actions inactive.
   - Preserve collapsing behavior for Settings search; cover visibility and stable bounds through the shared helper fixture.
 
+- fix(glass): align shared dialog and onboarding feedback surfaces
+  - Reuse measured native surface bounds for M3 dialog actions instead of their enlarged touch targets; preserve custom image and pill feedback paths.
+  - Apply UiRoundness to secondary onboarding actions and dialog outlined buttons while retaining native geometry and action ownership.
+  - Pass the combined 30-test navigation/feedback/onboarding selection and assemble Debug; retain the documented limits of the pixel and mode matrices.
+
 - fix(android-auto): complete search paging, offline browsing and artwork (issue https://github.com/N-Zik-Group/N-Zik/issues/938)
   - Add numbered next-result batches across online search categories in AutoSearchWindowStore; retain complete queries, displayed ordering, duplicate occurrences and bounded continuation state.
   - Apply physical and forced offline policy to browsing, playback and artwork; hide Search and Quick Picks on fresh offline connections and reject stale count publications after policy/profile changes.

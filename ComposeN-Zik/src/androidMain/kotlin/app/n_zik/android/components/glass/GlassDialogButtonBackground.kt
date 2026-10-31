@@ -56,11 +56,17 @@ internal fun GlassDialogIconButton(
     content: @Composable () -> Unit,
 ) {
     val shape = uiRoundnessShape()
-    GlassDialogButtonFeedback(enabled, shape, interactionSource = interactionSource) { feedback, source ->
+    val settings = rememberGlassSettings()
+    val nativeBounds = remember { GlassNativeSurfaceBounds() }
+    NativePageButtonFeedback(settings.usesGlassDialogButtonMaterial(), enabled, shape,
+        interactionSource, nativeBounds, settings) { feedback, source ->
         androidx.compose.material3.IconButton(
             onClick = onClick, modifier = feedback.then(modifier), enabled = enabled,
-            colors = colors, interactionSource = source, shape = shape, content = content,
-        )
+            colors = colors, interactionSource = source, shape = shape,
+        ) {
+            content()
+            NativeButtonSurfaceProbe(nativeBounds)
+        }
     }
 }
 
@@ -94,7 +100,7 @@ internal fun GlassDialogOutlinedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = ButtonDefaults.outlinedShape,
+    shape: Shape = uiRoundnessShape(),
     colors: ButtonColors = ButtonDefaults.outlinedButtonColors(),
     elevation: ButtonElevation? = null,
     border: BorderStroke? = ButtonDefaults.outlinedButtonBorder(enabled),
@@ -102,10 +108,16 @@ internal fun GlassDialogOutlinedButton(
     interactionSource: MutableInteractionSource? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
-    GlassDialogButtonFeedback(enabled, shape, interactionSource = interactionSource) { feedback, source ->
+    val settings = rememberGlassSettings()
+    val nativeBounds = remember { GlassNativeSurfaceBounds() }
+    NativePageButtonFeedback(settings.usesGlassDialogButtonMaterial(), enabled, shape,
+        interactionSource, nativeBounds, settings) { feedback, source ->
         OutlinedButton(onClick = onClick, modifier = feedback.then(modifier), enabled = enabled,
             shape = shape, colors = colors, elevation = elevation, border = border,
-            contentPadding = contentPadding, interactionSource = source, content = content)
+            contentPadding = contentPadding, interactionSource = source) {
+            content()
+            NativeButtonSurfaceProbe(nativeBounds, contentRows = 1)
+        }
     }
 }
 
