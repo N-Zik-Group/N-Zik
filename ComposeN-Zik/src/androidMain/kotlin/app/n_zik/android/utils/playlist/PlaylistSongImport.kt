@@ -4,10 +4,14 @@ import app.it.fast4x.rimusic.models.Playlist
 import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.ImportSong
+import app.n_zik.android.core.database.canEditPlaylistMembership
+import app.n_zik.android.core.database.canEditStoredPlaylistMembership
 
 /** Imports metadata and an ordered batch together; call inside Database.asyncTransaction for retries. */
 fun importSongsToPlaylist(playlist: Playlist, songs: List<Song>) {
     Database.syncTransaction {
+        check(canEditPlaylistMembership(playlist) &&
+            (playlist.id <= 0 || canEditStoredPlaylistMembership(playlist.id))) { "Playlist membership is read-only" }
         songTable.upsert(songs)
         mapIgnore(playlist, *songs.toTypedArray())
     }
@@ -20,6 +24,8 @@ internal fun importServiceSongsToPlaylist(
     onImported: (index: Int, position: Int) -> Unit = { _, _ -> },
 ) {
     Database.syncTransaction {
+        check(playlist == null || (canEditPlaylistMembership(playlist) &&
+            (playlist.id <= 0 || canEditStoredPlaylistMembership(playlist.id)))) { "Playlist membership is read-only" }
         if (playlist != null) mapIgnore(playlist, *songs.toTypedArray())
         else songs.forEach { songTable.insertIgnore(it) }
         songs.forEachIndexed { index, song ->

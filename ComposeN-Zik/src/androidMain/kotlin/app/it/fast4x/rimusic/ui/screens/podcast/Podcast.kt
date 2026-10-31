@@ -70,6 +70,8 @@ import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
+import app.n_zik.android.core.database.editStoredPlaylistMembership
+import app.n_zik.android.core.database.canEditStoredPlaylistMembership
 import app.n_zik.android.R
 import app.n_zik.android.components.radioButtonIcon
 import app.n_zik.android.components.shuffleButtonIcon
@@ -577,10 +579,13 @@ fun Podcast(
                                                                                                          ?.map( Innertube.Podcast.EpisodeItem::asMediaItem )
                                                                                                          .orEmpty()
                                                                 Database.asyncTransaction {
-                                                                    mapIgnore( playlistPreview.playlist, *songs.toTypedArray() )
+                                                                    editStoredPlaylistMembership(playlistPreview.playlist.id) {
+                                                                        mapIgnore(playlistPreview.playlist, *songs.toTypedArray())
+                                                                    }
                                                                 }
                                                             } else {
                                                                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                                                    if (!canEditStoredPlaylistMembership(playlistPreview.playlist.id)) return@launch
                                                                     playlistPreview.playlist.browseId?.let { id ->
                                                                         addToYtPlaylist(playlistPreview.playlist.id,
                                                                             position,

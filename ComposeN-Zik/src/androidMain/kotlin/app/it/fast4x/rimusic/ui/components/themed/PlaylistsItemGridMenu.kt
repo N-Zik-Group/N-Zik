@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import app.n_zik.android.core.database.canEditPlaylistMembership
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
@@ -178,14 +179,15 @@ fun PlaylistsItemGridMenu(
                 Database.playlistTable.sortPreviews( sortBy, sortOrder ).onEach { playlistsLoaded = true }
             }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
-            val pinnedPlaylists = playlistPreviews.filter {
+            val editablePreviews = playlistPreviews.filter { canEditPlaylistMembership(it.playlist) }
+            val pinnedPlaylists = editablePreviews.filter {
                 it.playlist.name.startsWith(PINNED_PREFIX, 0, true)
                         && if (isNetworkConnected(context)) !(it.playlist.isYoutubePlaylist && !it.playlist.isEditable) else !it.playlist.isYoutubePlaylist
             }
 
-            val youtubePlaylists = playlistPreviews.filter { it.playlist.isEditable && it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX) }
+            val youtubePlaylists = editablePreviews.filter { it.playlist.isEditable && it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX) }
 
-            val unpinnedPlaylists = playlistPreviews.filter {
+            val unpinnedPlaylists = editablePreviews.filter {
                 !it.playlist.name.startsWith(PINNED_PREFIX, 0, true) &&
                         !it.playlist.name.startsWith(MONTHLY_PREFIX, 0, true) &&
                         // Spec 2: generated rewind-* playlists are never add-to targets

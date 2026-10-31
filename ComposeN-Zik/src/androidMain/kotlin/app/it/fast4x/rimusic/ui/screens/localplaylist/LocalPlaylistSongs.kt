@@ -1,5 +1,15 @@
 package app.it.fast4x.rimusic.ui.screens.localplaylist
 
+import app.it.fast4x.rimusic.enums.NavRoutes
+import app.n_zik.android.components.podcast.launchSavedPodcastBookmarkToggle
+import app.n_zik.android.core.database.canEditPlaylistMembership
+import app.n_zik.android.core.database.editStoredPlaylistMembership
+import app.n_zik.android.components.playlist.canOfferPlaylistDeleteAction
+import app.n_zik.android.components.playlist.playlistMembershipSwipeAction
+import app.n_zik.android.components.playlist.RefreshPlaylistOnOpening
+import app.n_zik.android.components.playlist.playlistRefreshOnOpenAction
+import app.n_zik.android.components.playlist.launchPlaylistSourceRefresh
+
 import app.n_zik.android.components.glass.glassGlobalIndication
 
 import androidx.compose.foundation.layout.PaddingValues
@@ -43,6 +53,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -123,7 +134,6 @@ import app.it.fast4x.rimusic.ui.components.themed.ResetThumbnail
 import app.it.fast4x.rimusic.ui.components.themed.Synchronize
 import app.it.fast4x.rimusic.ui.components.themed.Bookmark
 import app.it.fast4x.rimusic.ui.components.themed.ThumbnailPicker
-import app.it.fast4x.rimusic.ui.components.themed.RemoveFromPlaylist
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.onOverlay
 import app.it.fast4x.rimusic.ui.styling.overlay
@@ -132,7 +142,6 @@ import app.kreate.android.themed.rimusic.component.playlist.PositionLock
 import app.it.fast4x.rimusic.utils.addNext
 
 import app.it.fast4x.rimusic.utils.asMediaItem
-import app.it.fast4x.rimusic.utils.autosyncKey
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.center
 import app.it.fast4x.rimusic.utils.checkFileExists
@@ -298,6 +307,10 @@ fun LocalPlaylistSongs(
 
     // Spec 2: generated `rewind-*` playlists are protected (Spotify principle) and get
     // the "Rewind Top" sort option; declared before the sort wiring that consumes it
+    val membershipEditable by rememberUpdatedState(playlist?.let(::canEditPlaylistMembership) == true)
+    RefreshPlaylistOnOpening(playlistId, playlist, offlineMode)
+    val refreshOnOpen = playlistRefreshOnOpenAction(playlist)
+
     val isRewindPlaylist = playlist?.name?.let { RewindPlaylists.isRewind(it) } == true
 
     val sort = PlaylistSongsSort(playlistId, isRewind = isRewindPlaylist)
@@ -360,9 +373,15 @@ fun LocalPlaylistSongs(
 
     val isSpecialPlaylist = playlist?.browseId?.removePrefix("VL") in listOf("LM", "SE")
     
-    var isBookmarked by remember(playlist?.id) { mutableStateOf(playlist?.isYoutubePlaylist == true) }
+    var isBookmarked by remember(playlist) { mutableStateOf(isPlaylistBookmarked(playlist)) }
 
     val bookmark = Bookmark(isBookmarked = isBookmarked) {
+        if (!canBookmarkPlaylist(playlist)) return@Bookmark
+        if (launchSavedPodcastBookmarkToggle(
+                playlist, coroutineScope,
+                onRemoved = { navController.popBackStack() },
+                onExistingImport = { playlist?.browseId?.let { NavRoutes.podcast.navigateHere(navController, it) } },
+            )) return@Bookmark
         if (isSpecialPlaylist) {
             Toaster.e(R.string.cannot_bookmark_special_playlist)
             return@Bookmark
@@ -760,7 +779,11 @@ fun LocalPlaylistSongs(
             override val messageId: Int = R.string.delete
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             @get:Composable override val dialogTitle: String get() = stringResource(messageId)
-            override fun onShortClick() { showDeleteConfirmDialog = true }
+            override fun onShortClick() {
+                if (canOfferPlaylistDeleteAction(playlist, itemSelector.isActive && itemSelector.isNotEmpty())) {
+                    showDeleteConfirmDialog = true
+                }
+            }
             override fun onLongClick() {}
             override var isActive: Boolean
                 get() = showDeleteConfirmDialog
@@ -768,7 +791,8 @@ fun LocalPlaylistSongs(
 
             @Composable
             override fun Render() {
-                DialogPresence(visible = showDeleteConfirmDialog) {
+                DialogPresence(visible = showDeleteConfirmDialog &&
+                    canOfferPlaylistDeleteAction(playlist, itemSelector.isActive && itemSelector.isNotEmpty())) {
                     val selectedSongs = itemSelector.toList()
                     val hasSelection = itemSelector.isActive && selectedSongs.isNotEmpty()
                     val text = if (hasSelection) {
@@ -784,13 +808,14 @@ fun LocalPlaylistSongs(
                         onConfirm = {
                             showDeleteConfirmDialog = false
                             if (hasSelection) {
+                                if (!membershipEditable) return@ConfirmationDialog
                                 coroutineScope.launch(NzikDispatchers.DATA) {
-                                    Database.asyncTransaction {
+                                    val removed = editStoredPlaylistMembership(playlistId) {
                                         selectedSongs.forEach { song ->
                                             songPlaylistMapTable.deleteBySongId(song.id, playlistId)
                                         }
                                     }
-                                    withContext(NzikDispatchers.UI) {
+                                    if (removed) withContext(NzikDispatchers.UI) {
                                         Toaster.s("${context.resources.getString(R.string.deleted)} ${selectedSongs.size}")
                                         itemSelector.isActive = false
                                     }
@@ -894,48 +919,9 @@ fun LocalPlaylistSongs(
             itemSelector.isActive = false
         }
     )
-    val removeFromPlaylist = RemoveFromPlaylist(
-        onConfirmAction = {
-            val songsToRemove = getSongs()
-            if (songsToRemove.isNotEmpty()) {
-                Database.asyncTransaction {
-                    songsToRemove.forEach { song ->
-                        songPlaylistMapTable.deleteBySongId(song.id, playlistId)
-                    }
-                }
-                Toaster.s(
-                    "${context.resources.getString( R.string.deleted )} ${songsToRemove.size} songs"
-                )
-                itemSelector.isActive = false
-            }
-        }
-    )
 
     fun sync() {
-        playlist?.let {
-            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                val browseId = it.browseId?.removePrefix(MODIFIED_PREFIX) ?: return@launch
-                val rp = YtMusic.getPlaylist(playlistId = browseId).getOrNull() ?: return@launch
-                val allSongs = rp.songs.toMutableList()
-                var continuation = rp.songsContinuation
-                while (continuation != null) {
-                    val contPage = YtMusic.getPlaylistContinuation(continuation).getOrNull()
-                    if (contPage != null) {
-                        allSongs.addAll(contPage.songs)
-                        continuation = contPage.continuation
-                    } else {
-                        break
-                    }
-                }
-                val mediaItems = allSongs.map(Innertube.SongItem::asMediaItem)
-                if (mediaItems.isNotEmpty()) {
-                    Database.asyncTransaction {
-                        songPlaylistMapTable.clear(playlistId)
-                        mapIgnore(it, *mediaItems.toTypedArray())
-                    }
-                }
-            }
-        }
+        launchPlaylistSourceRefresh(playlist, coroutineScope)
     }
     val syncComponent = Synchronize { sync() }
     val listenOnYT = ListenOnYouTube {
@@ -1104,7 +1090,6 @@ fun LocalPlaylistSongs(
         }
     }
 
-    var autosync by rememberPreference(autosyncKey, false)
 
     
 
@@ -1343,7 +1328,7 @@ fun LocalPlaylistSongs(
                                 recommendationButton()
                                 shuffle.ToolBarButton()
                             }
-                            if (playlist?.canBeBookmarked() == true) {
+                            if (canBookmarkPlaylist(playlist)) {
                                 Spacer(modifier = Modifier.height(10.dp))
                                 GlassToolbarRow(actionCount = 1, settings = glassSettings) {
                                     bookmark.ToolBarButton()
@@ -1359,7 +1344,7 @@ fun LocalPlaylistSongs(
                             Spacer(modifier = Modifier.height(10.dp))
                             shuffle.ToolBarButton()
                             // Bookmarking saves to the YouTube Music library: meaningless for a local playlist
-                            if (playlist?.canBeBookmarked() == true) {
+                            if (canBookmarkPlaylist(playlist)) {
                                 Spacer(modifier = Modifier.height(10.dp))
                                 bookmark.ToolBarButton()
                             }
@@ -1389,7 +1374,7 @@ fun LocalPlaylistSongs(
                             "search" -> add( search )
                             // Spec 2: renumbering/position-lock rewrites position, destroying the top order
                             "position_lock" -> if ( sort.sortBy == PlaylistSongSortBy.Custom && !isRewindPlaylist ) add( positionLock )
-                            "match" -> if ( !offlineMode && hasUnmatchedSongs ) add( matchAlbumButton )
+                            "match" -> if ( membershipEditable && !offlineMode && hasUnmatchedSongs ) add( matchAlbumButton )
                             "renumber" -> if ( sort.sortBy == PlaylistSongSortBy.Custom && !isRewindPlaylist ) add( renumberDialog )
                             "download_all" -> if ( !offlineMode ) add( downloadAllDialog )
                             "delete_downloads" -> add( deleteDownloadsDialog )
@@ -1398,12 +1383,13 @@ fun LocalPlaylistSongs(
                             "enqueue" -> add( enqueue )
                             "add_to_favorite" -> add( addToFavorite )
                             "add_to_playlist" -> add( addToPlaylist )
-                            "sync" -> if ( !offlineMode && !playlist?.browseId.isNullOrBlank() ) add( syncComponent )
-                            "listen_on_yt" -> if ( !playlist?.browseId.isNullOrBlank() ) add( listenOnYT )
-                            "import_menu" -> add( importMenu )
+                            "sync" -> if ( !offlineMode && canRefreshPlaylist(playlist) ) add( syncComponent )
+                            "refresh_on_open" -> if (canRefreshPlaylist(playlist)) add(refreshOnOpen)
+                            "listen_on_yt" -> if ( playlistLinkKind(playlist?.browseId) != PlaylistLinkKind.Local ) add( listenOnYT )
+                            "import_menu" -> if (membershipEditable) add( importMenu )
                             // Spec 2: rewind-* keep their language-neutral name â€” no rename
                             "rename" -> if ( !isRewindPlaylist ) add( renameDialog )
-                            "delete" -> add( deleteDialog )
+                            "delete" -> if (canOfferPlaylistDeleteAction(playlist, itemSelector.isActive && itemSelector.isNotEmpty())) add(deleteDialog)
                             "export" -> add( exportDialog )
                             "thumbnail_picker" -> add( thumbnailPicker )
                             "reset_thumbnail" -> add( resetThumbnail )
@@ -1414,11 +1400,6 @@ fun LocalPlaylistSongs(
 
                 GlassToolbarButtons( toolbarButtons )
 
-                LaunchedEffect(autosync, playlist?.browseId) {
-                    if ( autosync && isYouTubeSyncEnabled() && !playlist?.browseId.isNullOrBlank() ) {
-                        sync()
-                    }
-                }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
@@ -1514,16 +1495,17 @@ fun LocalPlaylistSongs(
                             binder?.player?.addNext(song.asMediaItem)
                         },
                         onRemoveFromQueue = {
-                            Database.asyncTransaction {
-                                songPlaylistMapTable.deleteBySongId( song.id, playlistId )
+                            if (membershipEditable) {
+                                Database.asyncTransaction {
+                                    if (editStoredPlaylistMembership(playlistId) {
+                                        songPlaylistMapTable.deleteBySongId(song.id, playlistId)
+                                    }) {
+                                        Toaster.s(
+                                            "${context.resources.getString(R.string.deleted)} \"${song.title}\""
+                                        )
+                                    }
+                                }
                             }
-
-
-
-
-                            Toaster.s(
-                                "${context.resources.getString( R.string.deleted )} \"${song.asMediaItem.mediaMetadata.title}\" - \"${song.asMediaItem.mediaMetadata.artist}\""
-                            )
                         },
                         onDownload = {
                             binder?.cache?.removeResource(song.asMediaItem.mediaId)
@@ -1547,8 +1529,8 @@ fun LocalPlaylistSongs(
                         },
                         downloadStateParam = downloadsMapState[song.id]?.state ?: Download.STATE_STOPPED,
                         downloadedStateMediaParam = downloadStatesMap[song.id] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
-                        swipeLeftActionParam = queueSwipeLeftAction,
-                        swipeRightActionParam = queueSwipeRightAction,
+                        swipeLeftActionParam = playlistMembershipSwipeAction(playlist, queueSwipeLeftAction),
+                        swipeRightActionParam = playlistMembershipSwipeAction(playlist, queueSwipeRightAction),
                     ) {
                         SongItem(
                             song = song,

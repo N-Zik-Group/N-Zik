@@ -326,7 +326,7 @@ fun OnlineSearchList(
                                     else -> colorPalette().favoritesIcon
                                 },
                                 iconSize = 12.dp,
-                                modifier = Modifier.align(Alignment.BottomStart)
+                                placementModifier = Modifier.align(Alignment.BottomStart)
                                                    .absoluteOffset(x = (-8).dp)
                             )
                     }

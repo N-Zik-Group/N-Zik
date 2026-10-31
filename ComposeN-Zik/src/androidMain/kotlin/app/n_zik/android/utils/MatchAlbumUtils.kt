@@ -13,6 +13,7 @@ import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.asSong
 import app.it.fast4x.rimusic.utils.durationTextToMillis
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.canEditStoredPlaylistMembership
 import app.kreate.android.me.knighthat.utils.PropUtils
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.searchPage
@@ -295,6 +296,7 @@ suspend fun getAlbumVersionFromVideo(song: Song, playlistId: Long, position: Int
     Timber.tag("MatchPlaylist").d("DB position for '${song.title}' = $dbPosition")
 
     Database.transaction {
+        if (!canEditStoredPlaylistMembership(playlistId)) return@transaction
         val oldPosition = songPlaylistMapTable.findPositionOf(song.id, playlistId)
 
         if (matchedSongIndex != -1 && matchedSong != null) {

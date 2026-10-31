@@ -35,6 +35,9 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import app.n_zik.android.core.database.canEditPlaylistMembership
+import app.n_zik.android.core.database.canEditStoredPlaylistMembership
+import app.n_zik.android.core.database.editStoredPlaylistMembership
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.rewind.RewindPlaylists
@@ -168,20 +171,25 @@ fun AddToPlaylistPlayerMenu(
         onGoToPlaylist = {
             onClosePlayer()
         },
-        onAddToPlaylist = { playlist, position ->
+        onAddToPlaylist = add@{ playlist, position ->
+            if (!canEditPlaylistMembership(playlist)) return@add
             if (!isYouTubeSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
-                    insertIgnore( mediaItem )
-                    mapIgnore( playlist, mediaItem.asSong )
+                    editStoredPlaylistMembership(playlist.id) {
+                        insertIgnore(mediaItem)
+                        mapIgnore(playlist, mediaItem.asSong)
+                    }
                 }
             } else {
                 coroutineScope.launch(NzikDispatchers.DATA) {
+                    if (!canEditStoredPlaylistMembership(playlist.id)) return@launch
                     addSongToYtPlaylist(playlist.id, position, playlist.browseId ?: "", mediaItem)
                 }
             }
 
         },
-        onRemoveFromPlaylist = { playlist ->
+        onRemoveFromPlaylist = remove@{ playlist ->
+            if (!canEditPlaylistMembership(playlist)) return@remove
             Database.asyncTransaction {
                 val position = songPlaylistMapTable.findPositionOf( mediaItem.mediaId, playlist.id )
                 if( position == -1 ) return@asyncTransaction
@@ -191,6 +199,7 @@ fun AddToPlaylistPlayerMenu(
             if(isYouTubeSyncEnabled() && playlist.isYoutubePlaylist && playlist.isEditable) {
                 Database.asyncTransaction {
                     coroutineScope.launch(NzikDispatchers.DATA) {
+                        if (!canEditStoredPlaylistMembership(playlist.id)) return@launch
                         if (removeYTSongFromPlaylist(
                                 mediaItem.mediaId,
                                 playlist.browseId ?: "",
@@ -203,7 +212,9 @@ fun AddToPlaylistPlayerMenu(
                 }
             } else
                 Database.asyncTransaction {
-                    songPlaylistMapTable.deleteBySongId( mediaItem.mediaId, playlist.id )
+                    editStoredPlaylistMembership(playlist.id) {
+                        songPlaylistMapTable.deleteBySongId(mediaItem.mediaId, playlist.id)
+                    }
                 }
         },
         onDismiss = onDismiss,
@@ -230,15 +241,18 @@ fun AddToPlaylistArtistSongs(
         onGoToPlaylist = {
             onClosePlayer()
         },
-        onAddToPlaylist = { playlistPreview ->
+        onAddToPlaylist = add@{ playlistPreview ->
+            if (!canEditPlaylistMembership(playlistPreview.playlist)) return@add
             position = playlistPreview.songCount.minus(1)
             if (position > 0) position++ else position = 0
 
             Database.asyncTransaction {
+                if (!canEditStoredPlaylistMembership(playlistPreview.playlist.id)) return@asyncTransaction
                 if ( !isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist )
                     mapIgnore( playlistPreview.playlist, *mediaItems.toTypedArray() )
                 else
                     coroutineScope.launch(NzikDispatchers.DATA) {
+                        if (!canEditStoredPlaylistMembership(playlistPreview.playlist.id)) return@launch
                         addToYtPlaylist(playlistPreview.playlist.id, position, playlistPreview.playlist.browseId ?: "", mediaItems)
                     }
 
@@ -288,14 +302,15 @@ fun AddToPlaylistItemMenu(
         Database.songPlaylistMapTable.mappedTo( mediaItem.mediaId )
     }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
-    val pinnedPlaylists = playlistPreviews.filter {
+    val editablePreviews = playlistPreviews.filter { canEditPlaylistMembership(it.playlist) }
+    val pinnedPlaylists = editablePreviews.filter {
         it.playlist.name.startsWith(PINNED_PREFIX, 0, true)
                 && if (isNetworkConnected(context)) !(it.playlist.isYoutubePlaylist && !it.playlist.isEditable) else !it.playlist.isYoutubePlaylist
     }
 
-    val youtubePlaylists = playlistPreviews.filter { it.playlist.isEditable && it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX) }
+    val youtubePlaylists = editablePreviews.filter { it.playlist.isEditable && it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX) }
 
-    val unpinnedPlaylists = playlistPreviews.filter {
+    val unpinnedPlaylists = editablePreviews.filter {
         !it.playlist.name.startsWith(PINNED_PREFIX, 0, true) &&
                 !it.playlist.name.startsWith(MONTHLY_PREFIX, 0, true) &&
                 // Spec 2: generated rewind-* playlists are never add-to targets
@@ -530,14 +545,15 @@ fun AddToPlaylistArtistSongsMenu(
         Database.playlistTable.sortPreviews( sortBy, sortOrder ).onEach { playlistsLoaded = true }
     }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
-    val pinnedPlaylists = playlistPreviews.filter {
+    val editablePreviews = playlistPreviews.filter { canEditPlaylistMembership(it.playlist) }
+    val pinnedPlaylists = editablePreviews.filter {
         it.playlist.name.startsWith(PINNED_PREFIX, 0, true)
                 && if (isNetworkConnected(context)) !(it.playlist.isYoutubePlaylist && !it.playlist.isEditable) else !it.playlist.isYoutubePlaylist
     }
 
-    val youtubePlaylists = playlistPreviews.filter { it.playlist.isEditable && it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX) }
+    val youtubePlaylists = editablePreviews.filter { it.playlist.isEditable && it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX) }
 
-    val unpinnedPlaylists = playlistPreviews.filter {
+    val unpinnedPlaylists = editablePreviews.filter {
         !it.playlist.name.startsWith(PINNED_PREFIX, 0, true) &&
                 !it.playlist.name.startsWith(MONTHLY_PREFIX, 0, true) &&
                 // Spec 2: generated rewind-* playlists are never add-to targets

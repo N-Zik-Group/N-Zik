@@ -4,6 +4,10 @@ package app.it.fast4x.rimusic.ui.components
 import app.n_zik.android.core.database.*
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.glass.glassSwipeActionBackground
+import app.n_zik.android.components.ui.SwipeActionGate
+import app.n_zik.android.components.ui.ObserveSwipeActionSettling
+import app.n_zik.android.components.ui.observeSwipeActionGesture
+import androidx.compose.runtime.rememberUpdatedState
 
 import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.Arrangement
@@ -91,15 +95,27 @@ fun SwipeableContent(
     content: @Composable () -> Unit
 ) {
     val hapticFeedback = LocalHapticFeedback.current
+    val actionGate = remember { SwipeActionGate() }
+    val currentSwipeToLeft by rememberUpdatedState(onSwipeToLeft)
+    val currentSwipeToRight by rememberUpdatedState(onSwipeToRight)
     val dismissState = rememberSwipeToDismissBoxState(
         positionalThreshold = { distance: Float -> distance * 0.25f },
         confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.StartToEnd) {onSwipeToRight();hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
-            else if (value == SwipeToDismissBoxValue.EndToStart) {onSwipeToLeft();hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
+            if (value == SwipeToDismissBoxValue.StartToEnd) actionGate.run {
+                currentSwipeToRight()
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+            }
+            else if (value == SwipeToDismissBoxValue.EndToStart) actionGate.run {
+                currentSwipeToLeft()
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+            }
 
             return@rememberSwipeToDismissBoxState false
         }
     )
+    ObserveSwipeActionSettling(actionGate) {
+        try { dismissState.requireOffset() } catch (_: IllegalStateException) { Float.NaN }
+    }
     val isSwipeToActionEnabled by rememberPreference(isSwipeToActionEnabledKey, true)
 
     val current = LocalViewConfiguration.current
@@ -109,7 +125,10 @@ fun SwipeableContent(
     }) {
         SwipeToDismissBox(
             gesturesEnabled = isSwipeToActionEnabled,
+            enableDismissFromStartToEnd = swipeToRightIcon != null,
+            enableDismissFromEndToStart = swipeToLeftIcon != null,
             modifier = modifier
+                .observeSwipeActionGesture(actionGate)
                 .clip(uiRoundnessShape()),
             state = dismissState,
             backgroundContent = {

@@ -104,8 +104,9 @@ class PlaylistsMenu private constructor(
 
     private fun onAdd( preview: PlaylistPreview ) = Database.asyncTransaction {
         try {
-            mapIgnore(preview.playlist, *mediaItems(preview).toTypedArray())
-            Toaster.done()
+            if (editStoredPlaylistMembership(preview.playlist.id) {
+                mapIgnore(preview.playlist, *mediaItems(preview).toTypedArray())
+            }) Toaster.done()
         } catch (e: Throwable) {
             onFailure(e, preview)
         } finally {
@@ -188,10 +189,11 @@ class PlaylistsMenu private constructor(
             Database.playlistTable.sortPreviewsByName().onEach { playlistsLoaded = true }
         }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
-        val pinnedPlaylists = playlistPreviews.filter {
+        val editablePreviews = playlistPreviews.filter { canEditPlaylistMembership(it.playlist) }
+        val pinnedPlaylists = editablePreviews.filter {
             it.playlist.name.startsWith(PINNED_PREFIX, 0, true)
         }
-        val unpinnedPlaylists = playlistPreviews.filter {
+        val unpinnedPlaylists = editablePreviews.filter {
             !it.playlist.name.startsWith(PINNED_PREFIX, 0, true) &&
                     !it.playlist.name.startsWith(MONTHLY_PREFIX, 0, true) &&
                     // Spec 2: generated rewind-* playlists are never add-to targets

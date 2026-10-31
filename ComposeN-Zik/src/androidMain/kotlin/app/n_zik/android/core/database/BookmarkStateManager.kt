@@ -54,7 +54,7 @@ object BookmarkStateManager {
     fun getPlaylistBookmarkStates(browseIds: List<String>): Flow<Map<String, Boolean>> {
         if (browseIds.isEmpty()) return flowOf(emptyMap())
         return combine(chunkedFlows(browseIds) { Database.playlistTable.getBookmarkStatesForPlaylists(it) }) { chunks ->
-            chunks.flatMap { it }.associate { it.browseId to it.isYoutubePlaylist }
+            chunks.flatMap { it }.associate { it.browseId to it.isBookmarked() }
         }
             .distinctUntilChanged()
     }

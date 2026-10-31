@@ -71,6 +71,12 @@ import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.isPlaylistBookmarked
+import app.n_zik.android.core.database.isPodcastBrowseId
+import app.n_zik.android.components.podcast.PodcastBookmarkOperation
+import app.n_zik.android.components.podcast.togglePodcastBookmark
+import kotlinx.coroutines.CancellationException
+import timber.log.Timber
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.n_zik.android.components.tab.SongShuffler
 import android.net.Uri
@@ -160,6 +166,8 @@ class OnlinePlaylistItemMenu private constructor(
         title: String?,
         authorText: String?,
         thumbnailUrl: String?,
+        songs: List<Song>?,
+        contentLoaded: Boolean,
         modifier: Modifier = Modifier
     ) {
         val context = LocalContext.current
@@ -207,7 +215,7 @@ class OnlinePlaylistItemMenu private constructor(
 
                     val localPlaylistFlow = remember(playlist.key) { Database.playlistTable.findByBrowseId(playlist.key) }
                     val localPlaylist by localPlaylistFlow.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
-                    val isBookmarked = localPlaylist?.isYoutubePlaylist == true
+                    val isBookmarked = isPlaylistBookmarked(localPlaylist)
 
                     if (isBookmarked)
                         HeaderIconButton(
@@ -215,7 +223,7 @@ class OnlinePlaylistItemMenu private constructor(
                             icon = R.drawable.bookmark,
                             color = colorPalette().favoritesIcon,
                             iconSize = 12.dp,
-                            modifier = Modifier.align( Alignment.BottomStart )
+                            placementModifier = Modifier.align( Alignment.BottomStart )
                                                .absoluteOffset( x = (-8).dp )
                         )
                 }
@@ -251,8 +259,9 @@ class OnlinePlaylistItemMenu private constructor(
                 // Trailing content (Bookmark & Share)
                 val localPlaylistFlow = remember(playlist.key) { Database.playlistTable.findByBrowseId(playlist.key) }
                 val localPlaylist by localPlaylistFlow.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
-                val isBookmarked = localPlaylist?.isYoutubePlaylist == true
+                val isBookmarked = isPlaylistBookmarked(localPlaylist)
                 val coroutineScope = rememberCoroutineScope()
+                var bookmarkBusy by remember(playlist.key) { mutableStateOf(false) }
 
                 Column(
                     Modifier.width(48.dp),
@@ -261,7 +270,36 @@ class OnlinePlaylistItemMenu private constructor(
                     IconButton(
                         icon = if (isBookmarked) R.drawable.bookmark else R.drawable.bookmark_outline,
                         color = colorPalette().favoritesIcon,
+                        enabled = !bookmarkBusy,
                         onClick = {
+                            if (bookmarkBusy) return@IconButton
+                            if (isPodcastBrowseId(playlist.key)) {
+                                if (localPlaylist == null && !contentLoaded) {
+                                    Toaster.w(if (songs == null) R.string.opening_url else R.string.no_song_found)
+                                    return@IconButton
+                                }
+                                bookmarkBusy = true
+                                coroutineScope.launch {
+                                    try {
+                                        val operation = togglePodcastBookmark(
+                                            playlist.key,
+                                            title.orEmpty(),
+                                            songs.orEmpty().map { it.asMediaItem },
+                                        )
+                                        if (operation == PodcastBookmarkOperation.ExistingImport) {
+                                            menuState.hide()
+                                            NavRoutes.podcast.navigateHere(navController, playlist.key)
+                                        } else Toaster.done()
+                                    } catch (cancelled: CancellationException) {
+                                        throw cancelled
+                                    } catch (error: Exception) {
+                                        Timber.tag("PodcastBookmark").e(error, "Unable to update podcast bookmark from search")
+                                    } finally {
+                                        bookmarkBusy = false
+                                    }
+                                }
+                                return@IconButton
+                            }
                             coroutineScope.launch(NzikDispatchers.DATA) {
                                 val browseId = playlist.key
                                 if (isYouTubeSyncEnabled()) {
@@ -298,7 +336,7 @@ class OnlinePlaylistItemMenu private constructor(
                         onClick = {
                             val intent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
-                                putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/playlist?list=${playlist.key}")
+                                putExtra(Intent.EXTRA_TEXT, onlinePlaylistShareUrl(playlist.key))
                             }
                             context.startActivity(Intent.createChooser(intent, null))
                         },
@@ -320,6 +358,7 @@ class OnlinePlaylistItemMenu private constructor(
         val coroutineScope = rememberCoroutineScope()
 
         var songs by remember { mutableStateOf<List<Song>?>(null) }
+        var contentLoaded by remember(playlist.key) { mutableStateOf(false) }
         
         var displayTitle by remember { mutableStateOf(playlist.title ?: playlist.info?.name) }
         var displayAuthor by remember { mutableStateOf(playlist.channel?.name) }
@@ -333,12 +372,13 @@ class OnlinePlaylistItemMenu private constructor(
 
         LaunchedEffect(playlist.key) {
             withContext(NzikDispatchers.DATA) {
-                val result = YtMusic.getPlaylist(playlist.key.removePrefix(MODIFIED_PREFIX)).getOrNull()
+                val result = loadOnlinePlaylistContent(playlist.key.removePrefix(MODIFIED_PREFIX))
                 if (result != null) {
-                    displayTitle = result.playlist.title.takeIf { !it.isNullOrBlank() } ?: displayTitle
-                    displayAuthor = result.playlist.channel?.name.takeIf { !it.isNullOrBlank() } ?: displayAuthor
-                    displayThumbnailUrl = result.playlist.thumbnail?.url.takeIf { !it.isNullOrBlank() } ?: displayThumbnailUrl
-                    songs = result.songs.mapNotNull { it.asSong }
+                    displayTitle = result.title.takeIf { !it.isNullOrBlank() } ?: displayTitle
+                    displayAuthor = result.author.takeIf { !it.isNullOrBlank() } ?: displayAuthor
+                    displayThumbnailUrl = result.thumbnailUrl.takeIf { !it.isNullOrBlank() } ?: displayThumbnailUrl
+                    songs = result.songs
+                    contentLoaded = true
                 } else {
                     songs = emptyList() // Failed to fetch or no songs
                 }
@@ -503,7 +543,7 @@ class OnlinePlaylistItemMenu private constructor(
                 override fun onShortClick() {
                     menuState.hide()
                     val intent = Intent(Intent.ACTION_VIEW).apply {
-                        data = Uri.parse("https://music.youtube.com/playlist?list=${playlist.key}")
+                        data = Uri.parse(onlinePlaylistShareUrl(playlist.key))
                     }
                     context.startActivity(intent)
                 }
@@ -520,7 +560,9 @@ class OnlinePlaylistItemMenu private constructor(
             PlaylistItemDisplay(
                 title = displayTitle,
                 authorText = displayAuthor,
-                thumbnailUrl = displayThumbnailUrl
+                thumbnailUrl = displayThumbnailUrl,
+                songs = songs,
+                contentLoaded = contentLoaded,
             )
 
             if (menuStyle == MenuStyle.List)

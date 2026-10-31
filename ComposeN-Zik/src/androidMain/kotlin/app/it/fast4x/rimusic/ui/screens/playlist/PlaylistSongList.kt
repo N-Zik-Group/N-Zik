@@ -88,6 +88,8 @@ import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastFirst
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import app.n_zik.android.core.database.editStoredPlaylistMembership
+import app.n_zik.android.core.database.canEditStoredPlaylistMembership
 import app.n_zik.android.R
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.resize
@@ -819,10 +821,13 @@ fun PlaylistSongList(
                                                                     val songs = filteredPageSongs
                                                                                                               ?.map( Innertube.SongItem::asMediaItem )
                                                                                                               .orEmpty()
-                                                                    mapIgnore( playlistPreview.playlist, *songs.toTypedArray() )
+                                                                    editStoredPlaylistMembership(playlistPreview.playlist.id) {
+                                                                        mapIgnore(playlistPreview.playlist, *songs.toTypedArray())
+                                                                    }
                                                                 }
                                                             } else {
                                                                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                                                    if (!canEditStoredPlaylistMembership(playlistPreview.playlist.id)) return@launch
                                                                     YtMusic.addPlaylistToPlaylist(
                                                                         cleanPrefix(playlistPreview.playlist.browseId ?: ""),
                                                                         browseId.substringAfter("VL")

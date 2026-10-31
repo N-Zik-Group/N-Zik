@@ -42,6 +42,8 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.isPlaylistBookmarked
+import app.n_zik.android.core.database.isYouTubePlaylistSource
 import app.it.fast4x.rimusic.MONTHLY_PREFIX
 import app.it.fast4x.rimusic.PINNED_PREFIX
 import app.n_zik.android.core.rewind.RewindPlaylists
@@ -200,7 +202,7 @@ fun PlaylistItem(
         alternative = alternative,
         showName = showName,
         disableScrollingText = disableScrollingText,
-        isYoutubePlaylist = isYoutubePlaylist,
+        isYoutubePlaylist = isPlaylistBookmarked(playlist.playlist, isYoutubePlaylist),
         showInfo = showInfo,
         isEditable = isEditable,
         thumbnailOverlay = thumbnailOverlay
@@ -230,7 +232,7 @@ fun PlaylistItem(
             Database.playlistTable.findByBrowseId(playlist.key)
         }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
     }
-    val isBookmarkedResolved = isBookmarked ?: (localPlaylist?.isYoutubePlaylist == true)
+    val isBookmarkedResolved = isBookmarked ?: isPlaylistBookmarked(localPlaylist)
 
     PlaylistItem(
         thumbnailContent = thumb@ {
@@ -253,6 +255,7 @@ fun PlaylistItem(
         showName = showName,
         disableScrollingText = disableScrollingText,
         browseId = playlist.key,
+        remoteSource = true,
         isYoutubePlaylist = isBookmarkedResolved,
         showInfo = showInfo,
         isEditable = isEditable
@@ -275,6 +278,7 @@ fun PlaylistItem(
     isYoutubePlaylist : Boolean = false,
     showInfo: Boolean = true,
     isEditable : Boolean = false,
+    remoteSource: Boolean = false,
     thumbnailOverlay: @Composable () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -338,7 +342,7 @@ fun PlaylistItem(
                             browseId == "RIPLAY_IMPORT" || browseId?.startsWith("RIPLAY_IMPORT") == true ->
                                 painterResource( R.drawable.riplay ) to Color.Unspecified
 
-                            isYoutubePlaylist || browseId?.startsWith("VL") == true ->
+                            isYouTubePlaylistSource(browseId, remoteSource || isYoutubePlaylist) ->
                                 painterResource( R.drawable.ytmusic ) to Color.Red
 
                             browseId.isNullOrEmpty() ->
@@ -385,7 +389,7 @@ fun PlaylistItem(
                     icon = R.drawable.bookmark,
                     color = colorPalette().favoritesIcon,
                     iconSize = 12.dp,
-                    modifier = Modifier.align( Alignment.BottomStart )
+                    placementModifier = Modifier.align( Alignment.BottomStart )
                                        .absoluteOffset( x = (-8).dp )
                 )
         }

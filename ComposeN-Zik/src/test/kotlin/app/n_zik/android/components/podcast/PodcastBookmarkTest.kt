@@ -18,12 +18,20 @@ class PodcastBookmarkTest {
         assertEquals(PodcastBookmarkOperation.Create, podcastBookmarkOperation(null))
     }
 
-    @Test fun `existing editable imports and remote entries open the import workflow without deletion`() {
+    @Test fun `editable imports and ordinary remote entries keep their workflow`() {
         val imported = Playlist(id = 7, name = "My edited import", browseId = "MPSPPL123")
         assertEquals(PodcastBookmarkOperation.ExistingImport, podcastBookmarkOperation(imported))
         assertEquals(PodcastBookmarkOperation.ExistingImport,
-            podcastBookmarkOperation(imported.copy(isEditable = false, isYoutubePlaylist = true)))
+            podcastBookmarkOperation(imported.copy(browseId = "PL123", isEditable = false, isYoutubePlaylist = true)))
         assertEquals(7L, imported.id)
         assertEquals("My edited import", imported.name)
+    }
+
+    @Test fun `old noneditable podcast remote bit does not trap its bookmark`() {
+        val oldSearchBookmark = Playlist(name = "Podcast", browseId = "MPSPPL123",
+            isEditable = false, isYoutubePlaylist = true)
+        assertEquals(PodcastBookmarkOperation.Remove, podcastBookmarkOperation(oldSearchBookmark))
+        assertEquals(PodcastBookmarkOperation.ExistingImport,
+            podcastBookmarkOperation(oldSearchBookmark.copy(isEditable = true)))
     }
 }

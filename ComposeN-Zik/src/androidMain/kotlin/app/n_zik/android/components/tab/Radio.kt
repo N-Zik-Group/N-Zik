@@ -3,7 +3,6 @@ package app.n_zik.android.components.tab
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.components.radioButtonIconRes
@@ -14,16 +13,21 @@ import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.MenuState
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.n_zik.android.colorPalette
 
 @UnstableApi
 class Radio private constructor(
-    private val binder: PlayerServiceModern.Binder?,
-    private val menuState: MenuState,
-    private val songs: () -> List<Song>
-): MenuIcon, Descriptive {
+    binder: PlayerServiceModern.Binder?,
+    menuState: MenuState,
+    songs: () -> List<Song>
+): StatefulMenuIcon(
+    menuState = menuState,
+    messageId = R.string.start_radio,
+    readActive = { binder?.isRadioActive == true },
+    readIcon = { radioButtonIconRes(binder) },
+    readTitle = { binder?.radioActionTextRes ?: R.string.start_radio },
+    performAction = { binder?.startRadio(songs().random(), false, null, true) },
+    closeMenuAfterAction = true,
+) {
 
     companion object {
         @Composable
@@ -35,9 +39,6 @@ class Radio private constructor(
             )
     }
 
-    // Issue #866 (gh-866): state icon — radio_stop while the radio is active (the state
-    // change is the press feedback).
-    override val iconId: Int get() = radioButtonIconRes(binder)
     // Guest lock (spec-listen-together-guest-lock-hardening): the radio is a host-owned stateful
     // control — a locked guest sees this menu item grayed (the tap is answered by the shared
 //
@@ -45,18 +46,5 @@ class Radio private constructor(
     // (MiniPlayer, ActionBar, PlaylistSongList).
     override val modifier: Modifier
         get() = Modifier.alpha(guestLockedAlpha(listenTogetherGuestLock.value))
-    override val color: androidx.compose.ui.graphics.Color
-        @Composable
-        get() = if (binder?.isRadioActive == true) colorPalette().accent else colorPalette().text
-    override val messageId: Int = R.string.start_radio
-    override val menuIconTitle: String
-        @Composable
-        get() = stringResource(binder?.radioActionTextRes ?: messageId)
-
-    override fun onShortClick() {
-        binder?.startRadio( songs().random(), false, null, true )
-
-        menuState.hide()
-    }
 }
 

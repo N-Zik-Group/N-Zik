@@ -43,6 +43,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import app.n_zik.android.core.database.dispatchPlaylistMembershipEdit
+import app.n_zik.android.core.database.canEditPlaylistMembership
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.it.fast4x.rimusic.MONTHLY_PREFIX
@@ -136,6 +138,9 @@ fun PlaylistsItemMenu(
     onLinkUnlink: (() -> Unit)? = null,
     disableScrollingText: Boolean
 ) {
+    val guardedOnAddToPlaylist: ((PlaylistPreview) -> Unit)? = onAddToPlaylist?.let { add ->
+        { target -> dispatchPlaylistMembershipEdit(target.playlist.id) { add(target) } }
+    }
     var isViewingPlaylists by remember {
         mutableStateOf(false)
     }
@@ -160,7 +165,7 @@ fun PlaylistsItemMenu(
             onDeleteSongsNotInLibrary = onDeleteSongsNotInLibrary,
             onEnqueue = onEnqueue,
             onImportOnlinePlaylist = onImportOnlinePlaylist,
-            onAddToPlaylist = onAddToPlaylist,
+            onAddToPlaylist = guardedOnAddToPlaylist,
             onAddToPreferites = onAddToPreferites,
             onAddToPreferitesYoutube = onAddToPreferitesYoutube,
             showOnSyncronize = showOnSyncronize,
@@ -203,14 +208,15 @@ fun PlaylistsItemMenu(
                     Database.playlistTable.sortPreviews( sortBy, sortOrder ).onEach { playlistsLoaded = true }
                 }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
-                val pinnedPlaylists = playlistPreviews.filter {
+                val editablePreviews = playlistPreviews.filter { canEditPlaylistMembership(it.playlist) }
+                val pinnedPlaylists = editablePreviews.filter {
                     it.playlist.name.startsWith(PINNED_PREFIX, 0, true)
                             && if (isNetworkConnected(context)) !(it.playlist.isYoutubePlaylist && !it.playlist.isEditable) else !it.playlist.isYoutubePlaylist
                 }
 
-                val youtubePlaylists = playlistPreviews.filter { it.playlist.isEditable && it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX) }
+                val youtubePlaylists = editablePreviews.filter { it.playlist.isEditable && it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX) }
 
-                val unpinnedPlaylists = playlistPreviews.filter {
+                val unpinnedPlaylists = editablePreviews.filter {
                     !it.playlist.name.startsWith(PINNED_PREFIX, 0, true) &&
                             !it.playlist.name.startsWith(MONTHLY_PREFIX, 0, true) &&
                             // Spec 2: generated rewind-* playlists are never add-to targets
@@ -225,8 +231,8 @@ fun PlaylistsItemMenu(
                     onDismiss()
                     Database.asyncTransaction {
                         val pId = playlist.id
-                        if (onAddToPlaylist != null) {
-                            onAddToPlaylist(
+                        if (guardedOnAddToPlaylist != null) {
+                            guardedOnAddToPlaylist(
                                 PlaylistPreview(
                                     Playlist(
                                         id = pId,
@@ -240,7 +246,7 @@ fun PlaylistsItemMenu(
                     Toaster.done()
                 }
 
-                if (onAddToPlaylist != null) {
+                if (guardedOnAddToPlaylist != null) {
                     newPlaylistDialog.Render()
                 }
 
@@ -275,7 +281,7 @@ fun PlaylistsItemMenu(
                             style = typography().m.semiBold,
                             modifier = Modifier.weight(1f).padding(start = 8.dp)
                         )
-                        if (onAddToPlaylist != null) {
+                        if (guardedOnAddToPlaylist != null) {
                             IconButton(
                                 onClick = { newPlaylistDialog.onShortClick() },
                                 icon = R.drawable.add_in_playlist,
@@ -307,7 +313,7 @@ fun PlaylistsItemMenu(
                             modifier = modifier.padding(start = 20.dp, top = 5.dp)
                         )
 
-                        onAddToPlaylist?.let { onAddToPlaylist ->
+                        guardedOnAddToPlaylist?.let { guardedOnAddToPlaylist ->
                             filteredPinnedPlaylists.forEach { playlistPreview ->
                                 ListMenu.Entry(
                                     text = cleanPrefix(playlistPreview.playlist.name),
@@ -316,7 +322,7 @@ fun PlaylistsItemMenu(
                                         R.string.songs
                                     ),
                                     onClick = {
-                                        onAddToPlaylist(
+                                        guardedOnAddToPlaylist(
                                             PlaylistPreview(
                                                 playlistPreview.playlist,
                                                 playlistPreview.songCount
@@ -363,14 +369,14 @@ fun PlaylistsItemMenu(
                             modifier = Modifier.padding(start = 20.dp, top = 5.dp)
                         )
 
-                        onAddToPlaylist?.let { onAddToPlaylist ->
+                        guardedOnAddToPlaylist?.let { guardedOnAddToPlaylist ->
                             filteredYoutubePlaylists.forEach { playlistPreview ->
                                 ListMenu.Entry(
                                     text = cleanPrefix(playlistPreview.playlist.name),
                                     icon = { SettingIcon(R.drawable.add_in_playlist) },
                                     subtitle = "${playlistPreview.songCount} " + stringResource(R.string.songs),
                                     onClick = {
-                                        onAddToPlaylist(
+                                        guardedOnAddToPlaylist(
                                             PlaylistPreview(
                                                 playlistPreview.playlist,
                                                 playlistPreview.songCount
@@ -406,7 +412,7 @@ fun PlaylistsItemMenu(
                             modifier = modifier.padding(start = 20.dp, top = 5.dp)
                         )
 
-                        onAddToPlaylist?.let { onAddToPlaylist ->
+                        guardedOnAddToPlaylist?.let { guardedOnAddToPlaylist ->
                             filteredUnpinnedPlaylists.forEach { playlistPreview ->
                                 ListMenu.Entry(
                                     text = cleanPrefix(playlistPreview.playlist.name),
@@ -415,7 +421,7 @@ fun PlaylistsItemMenu(
                                         R.string.songs
                                     ),
                                     onClick = {
-                                        onAddToPlaylist(
+                                        guardedOnAddToPlaylist(
                                             PlaylistPreview(
                                                 playlistPreview.playlist,
                                                 playlistPreview.songCount
@@ -583,7 +589,7 @@ fun PlaylistsItemMenu(
                             )
                     }
 
-                    if (onAddToPlaylist != null) {
+                    if (guardedOnAddToPlaylist != null) {
                         ListMenu.Entry(
                             text = stringResource(R.string.add_to_playlist),
                             icon = { SettingIcon(R.drawable.add_in_playlist) },

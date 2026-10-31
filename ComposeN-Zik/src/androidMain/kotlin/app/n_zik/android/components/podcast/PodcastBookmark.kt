@@ -21,6 +21,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassToolbarRow
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.isPodcastBrowseId
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.first
@@ -31,16 +32,42 @@ import timber.log.Timber
 
 internal enum class PodcastBookmarkOperation { Create, Remove, ExistingImport }
 
-/** Editable imports and remote-library entries belong to their existing workflows. */
+/** Editable imports and ordinary remote-library entries keep their existing workflows. */
 internal fun podcastBookmarkOperation(existing: Playlist?): PodcastBookmarkOperation = when {
     existing == null -> PodcastBookmarkOperation.Create
-    !existing.isEditable && !existing.isYoutubePlaylist -> PodcastBookmarkOperation.Remove
+    !existing.isEditable && (!existing.isYoutubePlaylist || isPodcastBrowseId(existing.browseId)) ->
+        PodcastBookmarkOperation.Remove
     else -> PodcastBookmarkOperation.ExistingImport
 }
 
 /** Podcast browse IDs (including MPSP...) are not playlist IDs: keep them verbatim and local. */
 internal fun podcastBookmarkPlaylist(browseId: String, title: String): Playlist =
     Playlist(name = title, browseId = browseId, isEditable = false, isYoutubePlaylist = false)
+
+/** Both the podcast page and search menu update the same exact browse-ID snapshot. */
+@androidx.annotation.OptIn(UnstableApi::class)
+internal suspend fun togglePodcastBookmark(
+    browseId: String,
+    title: String,
+    episodes: List<MediaItem>,
+): PodcastBookmarkOperation = withContext(NzikDispatchers.DATA) {
+    var operation = PodcastBookmarkOperation.Create
+    Database.transaction {
+        val latest = playlistTable.findByBrowseId(browseId).first()
+        operation = podcastBookmarkOperation(latest)
+        when (operation) {
+            PodcastBookmarkOperation.Create -> {
+                val playlist = podcastBookmarkPlaylist(browseId, title)
+                // mapIgnore intentionally skips an empty track list.
+                if (episodes.isEmpty()) playlistTable.insert(playlist)
+                else mapIgnore(playlist, *episodes.toTypedArray())
+            }
+            PodcastBookmarkOperation.Remove -> latest?.let(playlistTable::delete)
+            PodcastBookmarkOperation.ExistingImport -> Unit
+        }
+    }
+    operation
+}
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
@@ -65,24 +92,7 @@ fun PodcastBookmarkAction(
                     busy = true
                     scope.launch {
                         try {
-                            val operation = withContext(NzikDispatchers.DATA) {
-                                var action = PodcastBookmarkOperation.Create
-                                Database.transaction {
-                                    val latest = playlistTable.findByBrowseId(browseId).first()
-                                    action = podcastBookmarkOperation(latest)
-                                    when (action) {
-                                        PodcastBookmarkOperation.Create -> {
-                                            val playlist = podcastBookmarkPlaylist(browseId, title)
-                                            // mapIgnore intentionally skips an empty track list.
-                                            if (episodes.isEmpty()) playlistTable.insert(playlist)
-                                            else mapIgnore(playlist, *episodes.toTypedArray())
-                                        }
-                                        PodcastBookmarkOperation.Remove -> latest?.let(playlistTable::delete)
-                                        PodcastBookmarkOperation.ExistingImport -> Unit
-                                    }
-                                }
-                                action
-                            }
+                            val operation = togglePodcastBookmark(browseId, title, episodes)
                             if (operation == PodcastBookmarkOperation.ExistingImport) onExistingImport()
                             else Toaster.done()
                         } catch (cancelled: CancellationException) {

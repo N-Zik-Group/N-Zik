@@ -70,6 +70,14 @@ class LocalPlaylistToolbarSettingsDialogTest {
         )
     }
 
+    @Test fun `refresh on opening is configurable once and follows existing sync order`() {
+        val dialog = LocalPlaylistToolbarSettingsDialog
+        assertEquals(1, dialog.allButtonIds.count { it == "refresh_on_open" })
+        val saved = dialog.parseOrder("[\"export\",\"sync\",\"search\"]")
+        assertEquals(listOf("insertion_position", "export", "sync", "refresh_on_open", "search"), saved.take(5))
+        assertTrue(dialog.searchOptions().any { it.itemId == "pl_refresh_on_open" })
+    }
+
     @Test fun `insertion action setting uses its own key and local playlist title`() {
         showDialog()
 

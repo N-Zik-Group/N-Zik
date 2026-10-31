@@ -63,6 +63,15 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.components.dialog.playlist.RenamePlaylistDialog
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.isPlaylistBookmarked
+import app.n_zik.android.core.database.isPodcastBrowseId
+import app.n_zik.android.core.database.canBookmarkPlaylist
+import app.n_zik.android.core.database.canRefreshPlaylist
+import app.n_zik.android.core.database.playlistLinkKind
+import app.n_zik.android.core.database.PlaylistLinkKind
+import app.n_zik.android.components.podcast.launchSavedPodcastBookmarkToggle
+import app.n_zik.android.components.playlist.launchPlaylistSourceRefresh
+import app.n_zik.android.components.playlist.playlistRefreshOnOpenAction
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.components.glass.glassImageRim
 import app.n_zik.android.thumbnailShape
@@ -117,6 +126,8 @@ class LocalPlaylistItemMenu private constructor(
 
     lateinit var buttons: List<Button>
     private var offlineMode = false
+    private val hasYouTubeLink: Boolean
+        get() = playlistLinkKind(playlistPreview.playlist.browseId) != PlaylistLinkKind.Local
     override var menuStyle: MenuStyle by styleState
 
     @Composable
@@ -128,7 +139,7 @@ class LocalPlaylistItemMenu private constructor(
 
         // Section: Management
         SectionTitle(stringResource(R.string.management))
-        val mgmtEnd = if (playlistPreview.playlist.isYoutubePlaylist) buttons.size - 1 else buttons.size
+        val mgmtEnd = if (hasYouTubeLink) buttons.size - 1 else buttons.size
         for (i in 2 until mgmtEnd) {
             // idx 3 = download_all (network)
             if (offlineMode && i == 3) continue
@@ -136,7 +147,7 @@ class LocalPlaylistItemMenu private constructor(
         }
 
         // Section: Navigation
-        if (playlistPreview.playlist.isYoutubePlaylist) {
+        if (hasYouTubeLink) {
             SectionTitle(stringResource(R.string.navigation))
             buttons.lastOrNull()?.let { if (it is MenuIcon) it.ListMenuItem() }
         }
@@ -155,7 +166,7 @@ class LocalPlaylistItemMenu private constructor(
         item(span = { GridItemSpan(maxLineSpan) }) {
             SectionTitle(stringResource(R.string.management))
         }
-        val mgmtEnd = if (playlistPreview.playlist.isYoutubePlaylist) buttons.size - 1 else buttons.size
+        val mgmtEnd = if (hasYouTubeLink) buttons.size - 1 else buttons.size
         for (i in 2 until mgmtEnd) {
             // idx 3 = download_all (network)
             if (offlineMode && i == 3) continue
@@ -163,7 +174,7 @@ class LocalPlaylistItemMenu private constructor(
         }
 
         // Section: Navigation
-        if (playlistPreview.playlist.isYoutubePlaylist) {
+        if (hasYouTubeLink) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SectionTitle(stringResource(R.string.navigation))
             }
@@ -179,7 +190,7 @@ class LocalPlaylistItemMenu private constructor(
         modifier: Modifier = Modifier
     ) {
         // Bookmarking saves to the YouTube Music library: meaningless for a local playlist
-        val canBookmark = playlistPreview.playlist.canBeBookmarked()
+        val canBookmark = canBookmarkPlaylist(playlistPreview.playlist)
         val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
         val context = LocalContext.current
         
@@ -274,7 +285,7 @@ class LocalPlaylistItemMenu private constructor(
                             icon = R.drawable.bookmark,
                             color = colorPalette().favoritesIcon,
                             iconSize = 12.dp,
-                            modifier = Modifier.align( Alignment.BottomStart )
+                            placementModifier = Modifier.align( Alignment.BottomStart )
                                                .absoluteOffset( x = (-8).dp )
                         )
                 }
@@ -323,7 +334,9 @@ class LocalPlaylistItemMenu private constructor(
                         onClick = {
                             menuState.hide()
                             val browseId = playlistPreview.playlist.browseId
-                            if (!browseId.isNullOrBlank()) {
+                            if (isPodcastBrowseId(browseId)) {
+                                navController.navigate(route = "${NavRoutes.podcast.name}/$browseId")
+                            } else if (playlistLinkKind(browseId) == PlaylistLinkKind.YouTubePlaylist) {
                                 navController.navigate(route = "${NavRoutes.playlist.name}/$browseId")
                             } else {
                                 navController.navigate(route = "${NavRoutes.localPlaylist.name}/${playlistPreview.playlist.id}")
@@ -374,6 +387,8 @@ class LocalPlaylistItemMenu private constructor(
             }
             override fun onLongClick() {}
         }
+
+        val refreshOnOpen = playlistRefreshOnOpenAction(playlistPreview.playlist)
 
         val deleteAllDialog = DeleteAllDownloadedSongsDialog { songs ?: emptyList() }
         val deleteAll = object : MenuIcon by deleteAllDialog, Descriptive by deleteAllDialog, Clickable {
@@ -444,13 +459,24 @@ class LocalPlaylistItemMenu private constructor(
 
         val isSpecialPlaylist = playlistPreview.playlist.browseId?.removePrefix("VL") in listOf("LM", "SE")
         
-        var isBookmarked by remember(playlistPreview.playlist.id) { mutableStateOf(playlistPreview.playlist.isYoutubePlaylist) }
+        var isBookmarked by remember(playlistPreview.playlist) { mutableStateOf(isPlaylistBookmarked(playlistPreview.playlist)) }
+
+        fun toggleSavedPodcast(): Boolean = launchSavedPodcastBookmarkToggle(
+            playlistPreview.playlist, coroutineScope,
+            onRemoved = { menuState.hide() },
+            onExistingImport = {
+                menuState.hide()
+                playlistPreview.playlist.browseId?.let { NavRoutes.podcast.navigateHere(navController, it) }
+            },
+        )
 
         val bookmark = object : MenuIcon, Descriptive, Clickable {
             override val iconId: Int = if (isBookmarked) R.drawable.bookmark else R.drawable.bookmark_outline
             override val messageId: Int = R.string.bookmark
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() {
+                if (!canBookmarkPlaylist(playlistPreview.playlist)) return
+                if (toggleSavedPodcast()) return
                 if (isSpecialPlaylist) {
                     Toaster.e(R.string.cannot_bookmark_special_playlist)
                     return
@@ -484,7 +510,7 @@ class LocalPlaylistItemMenu private constructor(
         }
 
         // Define buttons
-        buttons = remember(playlistPreview, isBookmarked) {
+        buttons = remember(playlistPreview, isBookmarked, offlineMode, refreshOnOpen) {
             val list = mutableListOf<Button>()
             
             list.add(shuffle)
@@ -514,7 +540,7 @@ class LocalPlaylistItemMenu private constructor(
                         coroutineScope.launch(NzikDispatchers.DATA) {
                             val pushPlaylist = appContext().preferences.getBoolean(syncPushPlaylistKey, false)
                             val syncDirection = getSyncDirection()
-                            if (playlistPreview.playlist.isYoutubePlaylist && isYouTubeSyncEnabled() && pushPlaylist && syncDirection != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
+                            if (playlistPreview.playlist.isYoutubePlaylist && playlistLinkKind(playlistPreview.playlist.browseId) == PlaylistLinkKind.YouTubePlaylist && isYouTubeSyncEnabled() && pushPlaylist && syncDirection != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
                                 val browseId = playlistPreview.playlist.browseId
                                 if (browseId != null) {
                                     YtMusic.deletePlaylist(browseId.removePrefix("VL"))
@@ -528,25 +554,8 @@ class LocalPlaylistItemMenu private constructor(
                 })
             }
             
-            if (playlistPreview.playlist.isYoutubePlaylist) {
-                list.add(object : MenuIcon, Descriptive, Clickable {
-                    override val iconId: Int = R.drawable.play
-                    override val messageId: Int = R.string.listen_on_youtube
-                    @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
-                    override fun onShortClick() {
-                        menuState.hide()
-                        val browseId = playlistPreview.playlist.browseId ?: return
-                        val intent = Intent(Intent.ACTION_VIEW).apply {
-                            data = Uri.parse("https://music.youtube.com/playlist?list=$browseId")
-                        }
-                        context.startActivity(intent)
-                    }
-                    override fun onLongClick() {}
-                })
-            }
-
             // Auto-sync toggle for this playlist
-            if (playlistPreview.playlist.isYoutubePlaylist && isYouTubeSyncEnabled()) {
+            if (playlistPreview.playlist.isYoutubePlaylist && playlistLinkKind(playlistPreview.playlist.browseId) == PlaylistLinkKind.YouTubePlaylist && isYouTubeSyncEnabled()) {
                 list.add(object : MenuIcon, Descriptive, DynamicColor {
                     override var isFirstColor: Boolean = playlistPreview.playlist.isAutoSync
                     override val iconId: Int = R.drawable.sync
@@ -564,6 +573,38 @@ class LocalPlaylistItemMenu private constructor(
                 })
             }
 
+            if (canRefreshPlaylist(playlistPreview.playlist) && !offlineMode) {
+                list.add(object : MenuIcon, Descriptive, Clickable {
+                    override val iconId: Int = R.drawable.sync
+                    override val messageId: Int = R.string.sync
+                    @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
+                    override fun onShortClick() {
+                        launchPlaylistSourceRefresh(playlistPreview.playlist, NzikDispatchers.fireAndForget(NzikDispatchers.UI))
+                        menuState.hide()
+                    }
+                    override fun onLongClick() {}
+                })
+            }
+
+            if (canRefreshPlaylist(playlistPreview.playlist)) list.add(refreshOnOpen)
+
+            if (hasYouTubeLink) {
+                list.add(object : MenuIcon, Descriptive, Clickable {
+                    override val iconId: Int = R.drawable.play
+                    override val messageId: Int = R.string.listen_on_youtube
+                    @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
+                    override fun onShortClick() {
+                        menuState.hide()
+                        val browseId = playlistPreview.playlist.browseId ?: return
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            data = Uri.parse("https://music.youtube.com/playlist?list=$browseId")
+                        }
+                        context.startActivity(intent)
+                    }
+                    override fun onLongClick() {}
+                })
+            }
+
             list
         }
 
@@ -572,6 +613,8 @@ class LocalPlaylistItemMenu private constructor(
             downloadAllDialog.Render()
             deleteAllDialog.Render()
             PlaylistItemDisplay(playlistPreview, isBookmarked, onBookmarkToggle = {
+                if (!canBookmarkPlaylist(playlistPreview.playlist)) return@PlaylistItemDisplay
+                if (toggleSavedPodcast()) return@PlaylistItemDisplay
                 val wasBookmarked = isBookmarked
                 coroutineScope.launch(NzikDispatchers.DATA) {
                     val browseId = playlistPreview.playlist.browseId

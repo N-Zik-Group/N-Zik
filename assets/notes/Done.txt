@@ -1,4 +1,14 @@
 Added:
+- feat(playlist): refresh linked snapshots on opening and protect locked membership
+  - Add a per-playlist Refresh on opening action in the saved-playlist menu and configurable toolbar, independent of account synchronization.
+  - Default to enabled for locked YouTube sources and disabled for editable sources; preserve explicit profile-scoped overrides.
+  - Preserve local order for surviving songs during locked-source refresh and append new source songs after them.
+  - Refresh existing source titles without overwriting manually modified titles, favorites, playback statistics or unrelated metadata.
+  - Reject incomplete, empty, malformed or cyclic source responses before replacing saved membership; retain previous data on failure.
+  - Keep local reordering available while guarding user additions and removals for locked linked playlists.
+  - Hide selected-song removal, reject stale confirmations and disable destructive swipe directions; keep removing the saved playlist itself possible.
+  - Share the Radio control's live state and menu-action implementation for refresh color, icon and title.
+
 - feat(listen-together): open room invitation links (issue https://github.com/N-Zik-Group/N-Zik/issues/923)
   - Register the HTTPS metrolist.cc/listen invitation handler and accept VIEW/shared-text links; validate the host, path and eight-character room code before navigating.
   - Deliver invitations to the existing Listen Together screen through SavedStateHandle, prefill the code without a saved username, or join with the username saved in this app installation.
@@ -28,6 +38,17 @@ Fixed:
 - fix(ui): align section action spacing and Material share feedback
   - Absorb obsolete glyph spacing into common 42 dp action seats across sections and Quick Picks; preserve glyph sizes and actions.
   - Give Artist and Album sharing a complete native feedback canvas while retaining existing Glass geometry.
+
+- fix(ui): move thumbnail badges together with their clipping masks
+  - Apply placement before the action mask across album, artist, playlist and video cards, search and six detail menus.
+  - Preserve glyphs, colors and callbacks; verify full raster parity and edge hit targets, including the actual playlist item.
+
+- fix(podcast): separate YouTube source identity from saved bookmark state
+  - Preserve exact podcast browse IDs and load their episodes through the podcast endpoint instead of synthesizing a playlist browse request.
+  - Share bookmark and lock policy across search, podcast pages, saved headers and menus; preserve editable imports and remove saved snapshots locally.
+  - Refresh only the target podcast mappings after successful loading; preserve unrelated playlists and retain existing episodes on failure.
+  - Hide Bookmark and Sync without a recognized YouTube link; reject modified podcast refreshes while retaining ordinary linked playlist behavior.
+  - Keep the public playlist sharing URL with its exact ID. Other podcast ID formats remain unverified; universal prefix coverage is not claimed.
 
 - fix(glass): preserve exported fallback edges and completed scene ownership
   - Remove the duplicate tint-fallback shape mask and use native Auto compositing only for effect-free exports; keep ordinary fallback controls lightweight and normal optical layers unchanged.

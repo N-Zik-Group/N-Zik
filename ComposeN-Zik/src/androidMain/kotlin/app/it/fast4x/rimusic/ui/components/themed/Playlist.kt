@@ -26,6 +26,8 @@ import app.n_zik.android.R
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.colorPalette
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.isPlaylistBookmarked
+import app.n_zik.android.core.database.isReadOnlyPlaylistSource
 
 import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.models.Playlist
@@ -109,7 +111,7 @@ fun Playlist(
         // Locked badge as caller overlay so it renders on top of the base
         // composable's dark scrim.
         thumbnailOverlay = {
-            if (playlist.isYoutubePlaylist && !playlist.isEditable){
+            if (isReadOnlyPlaylistSource(playlist)){
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.BottomStart
@@ -137,7 +139,7 @@ fun Playlist(
         showName = showName,
         disableScrollingText = disableScrollingText,
         browseId = playlist.browseId,
-        isYoutubePlaylist = playlist.isYoutubePlaylist,
+        isYoutubePlaylist = isPlaylistBookmarked(playlist),
         isEditable = playlist.isEditable
     )
 }

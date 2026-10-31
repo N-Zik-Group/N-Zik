@@ -39,6 +39,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
         "add_to_favorite" to R.string.add_to_favorites,
         "add_to_playlist" to R.string.add_to_playlist,
         "sync" to R.string.sync,
+        "refresh_on_open" to R.string.playlist_refresh_on_open,
         "listen_on_yt" to R.string.listen_on_youtube,
         "import_menu" to R.string.import_playlist,
         "rename" to R.string.rename_playlist,
@@ -56,7 +57,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
         "download_all", "delete_downloads",
         "item_selector",
         "play_next", "enqueue", "add_to_favorite", "add_to_playlist",
-        "sync", "listen_on_yt",
+        "sync", "refresh_on_open", "listen_on_yt",
         "import_menu", "rename", "delete", "export",
         "thumbnail_picker", "reset_thumbnail", "update"
     )
@@ -75,6 +76,9 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
             for (i in 0 until a.length()) {
                 val id = a.getString(i)
                 if (id in allButtonIds && seen.add(id)) savedIds.add(id)
+            }
+            if ("refresh_on_open" !in savedIds && "sync" in savedIds) {
+                savedIds.add(savedIds.indexOf("sync") + 1, "refresh_on_open")
             }
             val missingIds = allButtonIds.filter { it !in savedIds && it != "insertion_position" }
             val leadingIds = if ("insertion_position" in savedIds) emptyList() else listOf("insertion_position")
@@ -118,6 +122,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
         val exportDialogLabel = stringResource(searchLabelResources.getValue("export"))
         val matchLabel = stringResource(searchLabelResources.getValue("match"))
         val syncLabel = stringResource(searchLabelResources.getValue("sync"))
+        val refreshOnOpenLabel = stringResource(searchLabelResources.getValue("refresh_on_open"))
         val listenOnYTLabel = stringResource(searchLabelResources.getValue("listen_on_yt"))
         val renameLabel = stringResource(searchLabelResources.getValue("rename"))
         val deleteLabel = stringResource(searchLabelResources.getValue("delete"))
@@ -149,6 +154,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
                 "add_to_favorite" -> ToggleItem(uid, R.drawable.heart, addToFavoriteLabel, pk, true)
                 "add_to_playlist" -> ToggleItem(uid, R.drawable.add_in_playlist, addToPlaylistLabel, pk, true)
                 "sync" -> ToggleItem(uid, R.drawable.sync, syncLabel, pk, true)
+                "refresh_on_open" -> ToggleItem(uid, R.drawable.sync, refreshOnOpenLabel, pk, true)
                 "listen_on_yt" -> ToggleItem(uid, R.drawable.play, listenOnYTLabel, pk, true)
                 "import_menu" -> ToggleItem(uid, R.drawable.import_outline, importMenuLabel, pk, true)
                 "rename" -> ToggleItem(uid, R.drawable.title_edit, renameLabel, pk, true)
