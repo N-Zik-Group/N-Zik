@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
 
 /** One themed search surface; its foreground and focus choreography remain native. */
 @Composable
@@ -21,6 +22,7 @@ internal fun Modifier.glassSearchBarBackground(
     shadowColor: Color,
     shadowElevation: Dp = 0.dp,
     settings: GlassSettings,
+    exportedBackdrop: LayerBackdrop? = null,
 ): Modifier {
     if (!settings.usesGlassMaterial(GlassArea.SearchBars)) {
         return then(if (shadowElevation > 0.dp) Modifier.shadow(
@@ -39,5 +41,6 @@ internal fun Modifier.glassSearchBarBackground(
         ownBackdrop = backdrop,
         filmColor = containerColor,
         drawShadow = false,
+        exportedBackdrop = exportedBackdrop,
     )
 }

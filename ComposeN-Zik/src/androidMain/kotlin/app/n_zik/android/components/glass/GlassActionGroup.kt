@@ -10,7 +10,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
@@ -37,14 +36,13 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
 import app.n_zik.android.colorPalette
+import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
-import app.n_zik.android.searchBubbleShape
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Shape
@@ -90,7 +88,7 @@ fun GlassActionGroup(
     filmColor: Color? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
-    val shape = searchBubbleShape()
+    val shape = uiRoundnessShape()
     val transferred = trailingTrigger?.isTransferred == true
     val singleMenuAction = trailingTrigger != null && menuActionCount == 1
     val rejoin = remember { Animatable(if (transferred) 0f else 1f) }
@@ -100,7 +98,8 @@ fun GlassActionGroup(
     // Home actions live inside the page capture. A themed canvas is safe to sample
     // when no independent header backdrop is supplied, without capturing ourselves.
     val fallbackBackdrop = rememberCanvasBackdrop(drawBackground)
-    val backdrop = LocalGlassBackdrop.current ?: fallbackBackdrop
+    val backdrop = LocalGlassContainerBackdrop.current ?: LocalGlassBackdrop.current ?: fallbackBackdrop
+    val actionFilm = filmColor ?: if (area == GlassArea.ActionButtons) glassActionFilmColor() else null
     val progress = if (transferred) 0f else if (!motion || singleMenuAction) 1f else rejoin.value
     val middleTrigger = menuActionCount != null && menuTriggerIndex > 0 && menuTriggerIndex < menuActionCount - 1
     SideEffect { trailingTrigger?.menuAnchorFraction = if (middleTrigger) .5f else 1f }
@@ -158,7 +157,11 @@ fun GlassActionGroup(
         if (leadingJoin) glassActionJoinShape(shape, cellWidthPx, joinProgress, fixedTrailingCell = true)
         else glassGroupFusionShape(shape, cellWidthPx, joinProgress)
     }
-    Box(modifier.onGloballyPositioned { rootWidth = it.findRootCoordinates().size.width }) {
+    GlassActionGroupMotionHost(
+        settings = settings,
+        enabled = settings.usesGlassMaterial(area) && motion && !transferred,
+        modifier = modifier.onGloballyPositioned { rootWidth = it.findRootCoordinates().size.width },
+    ) {
         val returning = !transferred && rejoin.value < 1f
         val separated = menuActionCount != null && (middleTrigger && transferred || returning &&
             (kotlin.math.abs(neighborShift.value) > .5f || kotlin.math.abs(rightShift.value) > .5f))
@@ -169,7 +172,7 @@ fun GlassActionGroup(
                         IntOffset((index * cellWidthPx).roundToInt() + (menuMotion?.offset(index) ?: 0), 0)
                     }.size(GlassActionCellWidth, GlassActionCellHeight).clip(shape)
                     Box(if (settings.usesGlassMaterial(area)) cellSurface.glassMaterial(
-                        settings.forArea(area), shape, ownBackdrop = backdrop, filmColor = filmColor)
+                        settings.forArea(area), shape, ownBackdrop = backdrop, filmColor = actionFilm)
                         else cellSurface.glassAreaContour(settings, area, shape))
                 }
             }
@@ -192,7 +195,7 @@ fun GlassActionGroup(
         // then mask only that pane. Glyphs and source anchors live in the untouched row.
         val pane = surface.clip(joinShape)
         val background = if (settings.usesGlassMaterial(area)) {
-            pane.glassMaterial(settings.forArea(area), shape, ownBackdrop = backdrop, filmColor = filmColor,
+            pane.glassMaterial(settings.forArea(area), shape, ownBackdrop = backdrop, filmColor = actionFilm,
                 highlightAlpha = if (joining) 0f else .3f)
                 .then(if (joining && settings.usesGlassContour(area))
                     Modifier.glassEdgeRim(settings, joinShape, glassTint(settings)) else Modifier)
@@ -204,7 +207,11 @@ fun GlassActionGroup(
             .glassActionGroupSeparators(settings, area, GlassActionCellWidth,
                 progress = { progress }, transferred = { transferred }, separatorBefore = separatorBefore))
         CompositionLocalProvider(LocalGlassGroupMenuMotion provides menuMotion) {
-            Row(verticalAlignment = Alignment.CenterVertically, content = content)
+            // Cell feedback stays inside the connected pane. This mask is INSIDE the
+            // whole-group motion host, so the complete capsule can still overdraw its slot.
+            // Detached menu cells retain their individual masks and moving seats.
+            Row(modifier = if (settings.usesGlassMaterial(area) && !separated && !transferred) Modifier.clip(joinShape) else Modifier,
+                verticalAlignment = Alignment.CenterVertically, content = content)
         }
     }
 }
@@ -226,10 +233,12 @@ fun GlassActionGroupItem(
     groupIndex: Int? = null,
     enabled: Boolean = true,
     nativeIndication: Boolean = false,
+    retainGesture: Boolean = true,
+    fillCell: Boolean = true,
     onLongClick: (() -> Unit)? = null,
+    shape: Shape = toolbarItemShape(),
     content: @Composable BoxScope.() -> Unit,
 ) {
-    val shape = searchBubbleShape()
     val indication = if (nativeIndication) LocalIndication.current else null
     val menuMotion = LocalGlassGroupMenuMotion.current
     val latestContent = rememberUpdatedState(content)
@@ -244,39 +253,26 @@ fun GlassActionGroupItem(
         }
     }
     val interaction = remember { MutableInteractionSource() }
-    val scale = remember { Animatable(1f) }
-    val context = LocalContext.current
-    // Square CapsuleAction / Pressable.kt (GPL-3.0, see NOTICE-square.txt): .92 dip.
-    // Queue the release after the dip so a short tap still shows the full response.
-    LaunchedEffect(interaction, context, nativeIndication) {
-        scale.snapTo(1f)
-        interaction.interactions.collect { event ->
-            // A skippable action need not recompose when the system policy changes.
-            if (nativeIndication || !isGlassMotionAllowed(context)) scale.snapTo(1f) else when (event) {
-                is PressInteraction.Press -> scale.animateTo(.92f, tween(90, easing = FastOutSlowInEasing))
-                is PressInteraction.Release, is PressInteraction.Cancel -> scale.animateTo(
-                    1f, spring(Spring.DampingRatioNoBouncy, Spring.StiffnessMediumLow),
-                )
-            }
-        }
-    }
     Box(
         modifier.then(if (groupIndex != null && menuMotion != null)
             Modifier.absoluteOffset { IntOffset(menuMotion.offset(groupIndex), 0) } else Modifier)
-            .size(GlassActionCellWidth, GlassActionCellHeight).glassMenuTrigger(menuTrigger)
+            .then(if (fillCell) Modifier.size(GlassActionCellWidth, GlassActionCellHeight) else Modifier)
+            .glassMenuTrigger(menuTrigger)
             .then(if (nativeIndication) Modifier.clip(shape) else Modifier)
-            .retainGlassButtonGesture(enabled)
+            .glassGroupPressMotion(interaction, enabled && !nativeIndication,
+                retainPressUntilUp = retainGesture)
+            .retainGlassButtonGesture(enabled && retainGesture && !nativeIndication)
             .then(if (onLongClick == null) Modifier.clickable(interactionSource = interaction,
                 indication = indication, enabled = enabled, role = Role.Button, onClick = onClick)
             else Modifier.combinedClickable(interactionSource = interaction, indication = indication,
                 enabled = enabled, role = Role.Button, onClick = onClick, onLongClick = onLongClick)),
         contentAlignment = Alignment.Center,
     ) {
-        // Keep the source anchor and click target outside the drawn press transform.
-        Box(Modifier.fillMaxSize().graphicsLayer {
-            scaleX = scale.value
-            scaleY = scale.value
-        }, contentAlignment = Alignment.Center, content = content)
+        // Keep the click target and menu source anchor fixed while the cell's drawing responds.
+        Box((if (fillCell) Modifier.fillMaxSize() else Modifier)
+            .glassButtonFeedback(interaction, shape, enabled && !nativeIndication, clipToBounds = true,
+                retainPressUntilUp = retainGesture, animateMotion = LocalGlassGroupPressMotion.current == null),
+            contentAlignment = Alignment.Center, content = content)
     }
 }
 

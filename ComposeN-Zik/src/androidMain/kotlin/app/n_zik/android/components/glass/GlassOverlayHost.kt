@@ -43,6 +43,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -118,7 +119,8 @@ class GlassMenuHostState {
     var backdropLuminance by mutableStateOf(0f)
     var standaloneSettings by mutableStateOf(false)
     val dialogs = GlassDialogHostState()
-    val hasOverlays: Boolean get() = entry != null || dialogs.hasDialogs
+    internal val nativeOverlays = mutableStateListOf<Any>()
+    val hasOverlays: Boolean get() = entry != null || dialogs.hasDialogs || nativeOverlays.isNotEmpty()
 
     fun show(next: GlassMenuEntry) {
         val previous = entry
@@ -258,7 +260,11 @@ internal val LocalGlassDropdownBackdropOwner = staticCompositionLocalOf<GlassDro
 fun GlassOverlayHost(host: GlassMenuHostState) {
     val entry = host.entry ?: return
     CompositionLocalProvider(entry.locals ?: currentCompositionLocalContext) {
-        GlassOverlayEntry(host, entry)
+        CompositionLocalProvider(
+            LocalGlassOpticsEnabled provides true,
+            LocalGlassOpticsTransitionProgress provides 1f,
+            LocalGlassUnderlayCovered provides host.nativeOverlays.isNotEmpty(),
+        ) { GlassOverlayEntry(host, entry) }
     }
 }
 

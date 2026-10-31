@@ -8,6 +8,8 @@ import app.n_zik.android.utils.toast.enqueueGlassToast
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.view.View
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalView
@@ -63,9 +66,10 @@ fun GlassToastHost(
     backdrop: Backdrop?,
     bottomInset: Dp,
     modifier: Modifier = Modifier,
-    settings: GlassSettings = rememberGlassSettings(),
+    settings: GlassSettings = rememberGlassSettings(GlassScope.Toast),
     onPresenceChanged: (Boolean) -> Unit = {},
 ) {
+    val settings = settings.inScope(GlassScope.Toast)
     val enabled by rememberUpdatedState(settings.enabled && settings.mode(GlassArea.Menus) != GlassAreaMode.Disabled &&
         (!settings.mode(GlassArea.Menus).hasMaterial || backdrop != null))
     val view = LocalView.current
@@ -108,13 +112,17 @@ fun GlassToastHost(
         }
     }
     val accessibility = LocalAccessibilityManager.current
+    val opacity = remember(message?.id) { Animatable(0f) }
     LaunchedEffect(message) {
         if (message != null) {
             val timeout = accessibility?.calculateRecommendedTimeoutMillis(
                 toastDurationMillis(message.duration), containsIcons = message.icon != null,
                 containsText = true, containsControls = false,
             ) ?: toastDurationMillis(message.duration)
+            opacity.animateTo(1f, tween(150))
             delay(timeout)
+            // Retain the message and live backdrop until its whole surface finishes fading out.
+            opacity.animateTo(0f, tween(150))
             if (queue.firstOrNull() === message) queue.removeAt(0)
         }
     }
@@ -133,6 +141,7 @@ fun GlassToastHost(
                     .widthIn(max = 480.dp)
                     .testTag("glassToast")
                     .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }
+                    .graphicsLayer { alpha = opacity.value }
                     .then(if (settings.usesGlassMaterial(GlassArea.Menus)) {
                         Modifier.glassMaterial(settings.forArea(GlassArea.Menus), shape,
                             ownBackdrop = backdrop, filmColor = Color(message.background))

@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
@@ -31,6 +32,7 @@ import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.Typography
+import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.R
 import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
 import app.n_zik.android.components.glass.backdrop.Backdrop
@@ -55,6 +57,65 @@ import kotlinx.coroutines.launch
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassQueueSurfaceTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `queue panel rim follows every Menus area mode without changing native fill`() {
+        val mode = mutableStateOf(GlassAreaMode.Disabled)
+        compose.setContent {
+            val shape = RoundedCornerShape(8.dp)
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                DefaultDarkColorPalette, Typography.fallback, shape, shape, shape,
+            )) {
+                Box(Modifier.size(64.dp).testTag("panel").glassQueuePanelBackground(
+                    Color.Black, shape, GlassSettings(rim = 1f, areaModes = mapOf(GlassArea.Menus to mode.value))))
+            }
+        }
+        for (value in GlassAreaMode.entries) {
+            compose.runOnIdle { mode.value = value }
+            val pixels = compose.onNodeWithTag("panel").captureToImage().toPixelMap()
+            var bright = false
+            for (y in 0 until pixels.height) for (x in 0 until pixels.width) {
+                val color = pixels[x, y]
+                if (color.red > .05f || color.green > .05f || color.blue > .05f) bright = true
+            }
+            assertEquals("Rim mode $value", value.hasContour, bright)
+            assertColorClose(Color.Black, pixels[pixels.width / 2, pixels.height / 2])
+            assertColorClose(Color.Black, pixels[pixels.width / 2, pixels.height - 1])
+        }
+    }
+
+    @Test fun `outer queue toolbar contour follows Menus mode and omits the physical bottom rim`() {
+        val mode = mutableStateOf(GlassAreaMode.Disabled)
+        val enabled = mutableStateOf(true)
+        compose.setContent {
+            val shape = RoundedCornerShape(8.dp)
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                DefaultDarkColorPalette, Typography.fallback, shape, shape, shape,
+            )) {
+                val settings = GlassSettings(enabled = enabled.value, quality = GlassQuality.Performance,
+                    film = 1f, rim = 1f, areaModes = mapOf(GlassArea.Menus to mode.value))
+                GlassQueuePanel(Modifier.size(120.dp, 80.dp), settings) {
+                    GlassQueueToolbar(Modifier.size(120.dp, 80.dp).testTag("outer_toolbar"),
+                        settings, systemBottomInset = 24.dp) { }
+                }
+            }
+        }
+        fun pixels() = compose.onNodeWithTag("outer_toolbar").captureToImage().toPixelMap()
+        for (value in GlassAreaMode.entries) {
+            compose.runOnIdle { mode.value = value }
+            val image = pixels()
+            val x = image.width / 2
+            val fill = image[x, image.height / 2]
+            val top = image[x, 0]
+            assertEquals("Outer toolbar contour in $value", value.hasContour,
+                top.red > fill.red + .05f || top.green > fill.green + .05f || top.blue > fill.blue + .05f)
+            assertColorClose(fill, image[x, image.height - 1])
+            assertColorClose(fill, image[x, image.height - 4])
+        }
+        compose.runOnIdle { mode.value = GlassAreaMode.GlassAndContour; enabled.value = false }
+        val off = pixels()
+        assertColorClose(DefaultDarkColorPalette.background1, off[off.width / 2, 0])
+        assertColorClose(DefaultDarkColorPalette.background1, off[off.width / 2, off.height - 1])
+    }
 
     @Test fun `only current queue row and revealed swipe use Glass over the native queue fill`() {
         val enabled = mutableStateOf(false)
@@ -220,6 +281,8 @@ class GlassQueueSurfaceTest {
     }
 
     @Test fun `master changes retain queue state and row policy does not disable menu settings or fixed siblings`() {
+        androidx.test.core.app.ApplicationProvider.getApplicationContext<Application>()
+            .preferences.edit().putBoolean(glassEnabledKey, true).commit()
         val enabled = mutableStateOf(false)
         var creations = 0
         var remembered = 0
@@ -338,6 +401,86 @@ class GlassQueueSurfaceTest {
             assertTrue(listState.isScrollInProgress)
             scrolling?.cancel()
         }
+    }
+
+    @Test fun `queue backing hands off the bottom inset independently of action button policy`() {
+        val modes = GlassAreaMode.entries
+        for (menuMode in modes) for (actionMode in modes) {
+            val settings = GlassSettings(areaModes = mapOf(GlassArea.Menus to menuMode,
+                GlassArea.ActionButtons to actionMode))
+            assertEquals(menuMode.hasMaterial, queueToolbarUsesGlassMaterial(settings))
+        }
+        assertFalse(queueToolbarUsesGlassMaterial(GlassSettings(enabled = false)))
+    }
+
+    @Test fun `toolbar backing fills navigation inset while content and mini stay above it`() {
+        compose.setContent {
+            val shape = RoundedCornerShape(8.dp)
+            val settings = GlassSettings(film = 1f, rim = 1f,
+                areaModes = mapOf(GlassArea.ActionButtons to GlassAreaMode.Disabled))
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                DefaultDarkColorPalette, Typography.fallback, shape, shape, shape,
+            )) {
+                GlassQueuePanel(Modifier.size(120.dp).background(Color.Blue), settings) {
+                    GlassQueueToolbar(Modifier.fillMaxWidth().height(64.dp).align(Alignment.BottomCenter)
+                        .testTag("inset_toolbar"), settings, systemBottomInset = 24.dp) {
+                        Box(Modifier.fillMaxWidth().height(40.dp).background(Color.Red))
+                        QueueEmbeddedMini {
+                            Box(Modifier.fillMaxWidth().height(16.dp).offset(y = (-20).dp).background(Color.Green))
+                        }
+                    }
+                }
+            }
+        }
+        val pixels = compose.onNodeWithTag("inset_toolbar").captureToImage().toPixelMap()
+        assertColorClose(Color.Red, pixels[pixels.width / 2, pixels.height / 4])
+        val bottom = pixels[pixels.width / 2, pixels.height - 1]
+        assertColorClose(DefaultDarkColorPalette.background1, bottom)
+        // Seamless backing has no second bright rim at the system navigation edge.
+        assertColorClose(bottom, pixels[pixels.width / 2, pixels.height - 4])
+    }
+
+    @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+    @Test fun `queue uses Home action capsule with native total outside and separate arrow bubble`() {
+        val enabled = mutableStateOf(true)
+        val clicks = IntArray(3)
+        val controls = List(3) { index -> object : app.it.fast4x.rimusic.ui.components.tab.toolbar.Icon {
+            override val iconId = R.drawable.musical_notes
+            override fun onShortClick() { clicks[index]++ }
+            @androidx.compose.runtime.Composable
+            override fun ToolBarButton() {
+                app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar.Icon(
+                    iconId = iconId, modifier = Modifier.testTag("queue_control_$index"),
+                    onShortClick = this::onShortClick, onLongClick = {},
+                )
+            }
+        } }
+        compose.setContent {
+            val shape = RoundedCornerShape(8.dp)
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                DefaultDarkColorPalette, Typography.fallback, shape, shape, shape,
+            )) {
+                androidx.compose.foundation.layout.Row(Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    // Represents the existing musical note and total: no Glass wrapper owns it.
+                    Box(Modifier.size(32.dp).background(Color.Magenta).testTag("queue_native_total"))
+                    GlassQueueToolbarActions(controls.take(2), controls.last(), GlassSettings(enabled = enabled.value))
+                }
+            }
+        }
+        val count = compose.onNodeWithTag("queue_native_total").fetchSemanticsNode().boundsInRoot
+        val actions = compose.onNodeWithTag("queue.toolbar.actions").fetchSemanticsNode().boundsInRoot
+        val arrow = compose.onNodeWithTag("queue.toolbar.arrow").fetchSemanticsNode().boundsInRoot
+        assertTrue(count.right <= actions.left)
+        assertTrue(actions.right <= arrow.left)
+        val nativePixels = compose.onNodeWithTag("queue_native_total").captureToImage().toPixelMap()
+        for (index in clicks.indices) compose.onNodeWithTag("queue_control_$index").performClick()
+        compose.runOnIdle { enabled.value = false }
+        for (index in clicks.indices) compose.onNodeWithTag("queue_control_$index").performClick()
+        val offPixels = compose.onNodeWithTag("queue_native_total").captureToImage().toPixelMap()
+        for (y in 0 until nativePixels.height) for (x in 0 until nativePixels.width)
+            assertEquals(nativePixels[x, y], offPixels[x, y])
+        compose.runOnIdle { for (count in clicks) assertEquals(2, count) }
     }
 
     private fun assertColorClose(expected: Color, actual: Color) {

@@ -1,18 +1,29 @@
 package app.n_zik.android.components.glass
 
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
+import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.topUiRoundnessShape
 import app.n_zik.android.utils.toast.trackToastObstruction
 import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
@@ -39,14 +50,17 @@ fun GlassQueuePanel(
     settings: GlassSettings = rememberGlassSettings(),
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val settings = settings.inScope(GlassScope.Queue)
     val list = rememberLayerBackdrop()
+    val capture = glassContentCaptureEnabled(settings)
     // Full-player owners provide only their cover/background here. Never use the whole scene:
     // it can already contain this panel and its sampling surfaces.
     val underlay = LocalGlassBackdrop.current
     val visible = if (underlay != null) rememberCombinedBackdrop(underlay, list) else list
     CompositionLocalProvider(
-        LocalQueueListBackdrop provides if (settings.enabled) list else null,
-        LocalQueueGlassBackdrop provides if (settings.enabled) visible else null,
+        LocalGlassScope provides GlassScope.Queue,
+        LocalQueueListBackdrop provides if (capture) list else null,
+        LocalQueueGlassBackdrop provides if (capture) visible else null,
         LocalQueueRowUnderlay provides underlay,
     ) {
         Box(modifier, content = content)
@@ -74,27 +88,71 @@ fun Modifier.glassQueueListBackdrop(state: LazyListState): Modifier {
 fun GlassQueueToolbar(
     modifier: Modifier = Modifier,
     settings: GlassSettings = rememberGlassSettings(),
+    systemBottomInset: Dp = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val settings = settings.inScope(GlassScope.Queue)
     val list = LocalQueueGlassBackdrop.current
     val shape = topUiRoundnessShape()
     val nativeColor = colorPalette().background1
-    val material = settings.usesGlassMaterial(GlassArea.ActionButtons) && list != null
+    val material = queueToolbarUsesGlassMaterial(settings)
+    val fallback = rememberCanvasBackdrop { drawRect(nativeColor) }
+    val bottomInset = if (material) systemBottomInset else 0.dp
     Box(modifier) {
-        val toolbarScope = this
         GlassMaterialContainerScope(
             modifier = Modifier.matchParentSize(),
             sectionFilm = if (material) null else nativeColor,
             material = if (material) ({ exported ->
-                Modifier.glassMaterial(settings.forArea(GlassArea.ActionButtons), shape,
-                    ownBackdrop = list, exportedBackdrop = exported, filmColor = nativeColor)
+                Modifier.glassMaterial(settings.forArea(GlassArea.Menus).copy(rim = 0f), shape,
+                    ownBackdrop = list ?: fallback, exportedBackdrop = exported, filmColor = nativeColor,
+                    applyEdgeEffects = false, highlightAlpha = 0f, drawShadow = false)
             }) else null,
         ) { surface ->
-            val native = if (material) surface else surface.background(nativeColor, shape)
-                .glassAreaContour(settings, GlassArea.ActionButtons, shape)
+            // The fixed optical pane deliberately omits lens edges; draw its one
+            // contour through the same Menus policy as the native-fill branch.
+            val native = (if (material) surface else surface.background(nativeColor, shape))
+                .glassAreaContour(settings, GlassArea.Menus, shape)
             // The mini is offset above the toolbar. Clip only the material, never its content.
             Box(native)
-            content(toolbarScope)
+            Box(Modifier.fillMaxSize().padding(bottom = bottomInset)) { content(this) }
+        }
+    }
+}
+
+/** The panel hosts use the same gate when handing the system bottom inset to this toolbar. */
+@Composable
+fun usesQueueToolbarGlass(settings: GlassSettings = rememberGlassSettings()): Boolean =
+    queueToolbarUsesGlassMaterial(settings)
+
+/** Content keeps its original safe position while the backing reaches the screen edge. */
+@Composable
+fun queueToolbarBottomInset(): Dp = if (usesQueueToolbarGlass())
+    WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() else 0.dp
+
+internal fun queueToolbarUsesGlassMaterial(settings: GlassSettings): Boolean =
+    settings.inScope(GlassScope.Queue).usesGlassMaterial(GlassArea.Menus)
+
+/** Uses the Home toolbar verbatim; the native total stays outside and the arrow has its own bubble. */
+@Composable
+fun RowScope.GlassQueueToolbarActions(
+    buttons: List<app.it.fast4x.rimusic.ui.components.tab.toolbar.Button>,
+    arrow: app.it.fast4x.rimusic.ui.components.tab.toolbar.Icon?,
+    settings: GlassSettings = rememberGlassSettings(),
+) {
+    val settings = settings.inScope(GlassScope.Queue)
+    CompositionLocalProvider(LocalGlassBackdrop provides LocalGlassContainerBackdrop.current) {
+        GlassToolbarButtons(
+            buttons = buttons,
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f).testTag("queue.toolbar.actions"),
+            settings = settings,
+            itemShape = uiRoundnessShape(),
+            disableAnimation = settings.usesGlassMaterial(GlassArea.ActionButtons),
+        )
+        if (arrow != null && arrow.isEnabled) {
+            GlassToolbarRow(actionCount = 1, settings = settings, itemShape = uiRoundnessShape(),
+                modifier = Modifier.testTag("queue.toolbar.arrow")) { arrow.ToolBarButton() }
         }
     }
 }
@@ -121,8 +179,10 @@ fun Modifier.glassQueuePanelBackground(
     shape: Shape,
     settings: GlassSettings = rememberGlassSettings(),
 ): Modifier {
+    val settings = settings.inScope(GlassScope.Queue)
     val filled = background(originalColor)
-    return if (settings.enabled && settings.rim > 0f) filled.glassEdgeRim(settings, shape, glassTint(settings)) else filled
+    // Queue sheets meet the physical bottom edge, just like the other Menus panes.
+    return filled.glassAreaContour(settings, GlassArea.Menus, shape)
 }
 
 /** Always keep the same content group when toggling Glass so queue state is retained. */
@@ -131,10 +191,9 @@ fun NativeQueueRows(
     settings: GlassSettings = rememberGlassSettings(),
     content: @Composable () -> Unit,
 ) {
+    val settings = settings.inScope(GlassScope.Queue)
     CompositionLocalProvider(
         LocalNativeQueueRows provides settings.enabled,
-        LocalGlassRippleActive provides if (settings.enabled) false else LocalGlassRippleActive.current,
-        LocalIndication provides if (settings.enabled) ripple() else LocalIndication.current,
         content = content,
     )
 }

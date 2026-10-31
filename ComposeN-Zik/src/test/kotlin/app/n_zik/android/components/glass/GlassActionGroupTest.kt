@@ -9,6 +9,7 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.foundation.background
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
@@ -41,6 +43,7 @@ import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.glass.backdrop.drawPlainBackdrop
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -60,6 +63,73 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassActionGroupTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `native vertical header cells let their parent scroll while glass cells retain drags`() {
+        val native = mutableStateOf(true)
+        var observedScroll: androidx.compose.foundation.ScrollState? = null
+        var clicks = 0
+        compose.setContent {
+            AppearanceProvider {
+                androidx.compose.runtime.key(native.value) {
+                    val scroll = androidx.compose.foundation.rememberScrollState()
+                    SideEffect { observedScroll = scroll }
+                    androidx.compose.foundation.layout.Column(Modifier.size(120.dp).verticalScroll(scroll)) {
+                        GlassVerticalActionGroup(GlassSettings(enabled = !native.value,
+                            quality = GlassQuality.Performance), GlassArea.Header) {
+                            GlassActionGroupItem({ clicks++ }, Modifier.testTag("header.drag"),
+                                nativeIndication = native.value) { Box(Modifier.size(20.dp)) }
+                        }
+                        Box(Modifier.size(120.dp, 500.dp))
+                    }
+                }
+            }
+        }
+        for (isNative in listOf(true, false)) {
+            compose.runOnIdle { native.value = isNative }
+            compose.onNodeWithTag("header.drag").performTouchInput {
+                down(center)
+                moveTo(center - Offset(0f, 100f), delayMillis = 300)
+                up()
+            }
+            compose.runOnIdle {
+                assertEquals(0, clicks)
+                if (isNative) assertTrue(requireNotNull(observedScroll).value > 0)
+                else assertEquals(0, requireNotNull(observedScroll).value)
+            }
+        }
+    }
+
+    @Test fun `group samples child free container before supplied backdrop and preserves fallback and off`() {
+        val container = mutableStateOf(true)
+        val global = mutableStateOf(true)
+        val glass = mutableStateOf(true)
+        compose.setContent {
+            AppearanceProvider {
+                val red = rememberCanvasBackdrop { drawRect(Color.Red) }
+                val blue = rememberCanvasBackdrop { drawRect(Color.Blue) }
+                CompositionLocalProvider(LocalGlassContainerBackdrop provides if (container.value) red else null,
+                    LocalGlassBackdrop provides if (global.value) blue else null) {
+                    Box(Modifier.background(Color.Green)) {
+                        GlassActionGroup(GlassSettings(enabled = glass.value, film = 0f, rim = 0f,
+                            blur = 0f, vibrancy = 0f), GlassArea.ActionButtons, Modifier.testTag("source.group")) {
+                            repeat(2) { GlassActionGroupItem({}) {} }
+                        }
+                    }
+                }
+            }
+        }
+        fun pixel(): Color {
+            val pixels = compose.onNodeWithTag("source.group").captureToImage().toPixelMap()
+            return pixels[pixels.width / 4, pixels.height / 2]
+        }
+        assertEquals(Color.Red, pixel())
+        compose.runOnIdle { container.value = false }
+        assertEquals(Color.Blue, pixel())
+        compose.runOnIdle { global.value = false }
+        assertEquals(DefaultDarkColorPalette.background0, pixel())
+        compose.runOnIdle { container.value = true; global.value = true; glass.value = false }
+        assertEquals(Color.Green, pixel())
+    }
 
     @Test fun `dropdown scene sample removes profile pixels when the measured menu takes ownership`() {
         val host = GlassMenuHostState()
@@ -122,7 +192,53 @@ class GlassActionGroupTest {
         compose.runOnIdle { assertEquals(listOf(1, 1, 1), clicks.toList()) }
     }
 
-    @Test fun `group press follows Square capsule dip while material hit targets and profile anchor stay fixed`() {
+    @Test fun `grouped and standalone cells share the same liquid response`() {
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            AppearanceProvider {
+                androidx.compose.foundation.layout.Column {
+                    val settings = GlassSettings(quality = GlassQuality.Performance, film = 1f)
+                    Box(Modifier.size(100.dp, 64.dp).background(Color.Red).testTag("group.scene"),
+                        contentAlignment = Alignment.Center) {
+                        GlassActionGroup(settings, GlassArea.ActionButtons) {
+                            GlassActionGroupItem({}, Modifier.testTag("group.cell")) {
+                                Box(Modifier.size(20.dp).background(Color.Blue).testTag("group.glyph"))
+                            }
+                        }
+                    }
+                    Box(Modifier.size(100.dp, 64.dp).background(Color.Red).testTag("standalone.scene"),
+                        contentAlignment = Alignment.Center) {
+                        LiquidButton({}, null, Modifier.size(GlassActionCellWidth, GlassActionCellHeight).testTag("standalone.cell"),
+                            settings = settings, contentHeight = GlassActionCellHeight, contentPadding = 0.dp) {
+                            Box(Modifier.size(20.dp).background(Color.Blue).testTag("standalone.glyph"))
+                        }
+                    }
+                }
+            }
+        }
+        fun visibleBounds(tag: String) = blueGlyphBounds(compose.onNodeWithTag(tag).captureToImage())
+        val initialGroup = visibleBounds("group.scene")
+        val initialStandalone = visibleBounds("standalone.scene")
+        val groupAnchor = compose.onNodeWithTag("group.glyph", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+        compose.onNodeWithTag("group.cell").performTouchInput { down(center) }
+        compose.mainClock.advanceTimeBy(300)
+        val groupScale = visibleBounds("group.scene").width / initialGroup.width
+        assertEquals("Drawing motion preserves the grouped glyph anchor", groupAnchor,
+            compose.onNodeWithTag("group.glyph", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot)
+        compose.onNodeWithTag("group.cell").performTouchInput { up() }
+        compose.mainClock.advanceTimeBy(1500)
+        compose.onNodeWithTag("standalone.cell").performTouchInput { down(center) }
+        compose.mainClock.advanceTimeBy(300)
+        val standaloneScale = visibleBounds("standalone.scene").width / initialStandalone.width
+        assertTrue(groupScale > 1f)
+        assertEquals(groupScale, standaloneScale, .01f)
+        compose.onNodeWithTag("standalone.cell").performTouchInput { up() }
+        compose.mainClock.advanceTimeBy(1500)
+        assertEquals(initialGroup, visibleBounds("group.scene"))
+        assertEquals(initialStandalone, visibleBounds("standalone.scene"))
+    }
+
+    @Test fun `group press uses liquid expansion while material hit targets and profile anchor stay fixed`() {
         var clicks = 0
         val trigger = GlassMenuTriggerState()
         compose.mainClock.autoAdvance = false
@@ -144,18 +260,26 @@ class GlassActionGroupTest {
         val bounds = action.fetchSemanticsNode().boundsInRoot
         val anchor = trigger.bounds
         val glyphBounds = glyph.fetchSemanticsNode().boundsInRoot
-        val before = compose.onNodeWithTag("host").captureToImage().toPixelMap()
+        val beforeImage = compose.onNodeWithTag("host").captureToImage()
+        val before = beforeImage.toPixelMap()
+        val restingInk = blueGlyphBounds(beforeImage)
         action.performTouchInput { down(center) }
         compose.mainClock.advanceTimeBy(160)
         assertEquals(bounds, action.fetchSemanticsNode().boundsInRoot)
         assertEquals(anchor, trigger.bounds)
-        assertEquals(glyphBounds.width * .92f, glyph.fetchSemanticsNode().boundsInRoot.width, 1f)
-        val held = compose.onNodeWithTag("host").captureToImage().toPixelMap()
+        assertEquals("Draw-only expansion preserves the source glyph anchor", glyphBounds, glyph.fetchSemanticsNode().boundsInRoot)
+        val heldImage = compose.onNodeWithTag("host").captureToImage()
+        val heldInk = blueGlyphBounds(heldImage)
+        assertTrue("Liquid feedback expands the rendered glyph", heldInk.width > restingInk.width)
+        assertTrue("Liquid feedback expands the rendered glyph vertically", heldInk.height > restingInk.height)
+        val held = heldImage.toPixelMap()
         assertEquals(before[before.width * 3 / 4, before.height / 2], held[held.width * 3 / 4, held.height / 2])
         action.performTouchInput { up() }
         compose.mainClock.advanceTimeBy(1600)
         compose.runOnIdle { assertEquals(1, clicks) }
         assertEquals(glyphBounds, glyph.fetchSemanticsNode().boundsInRoot)
+        assertEquals("Released pixels return to the resting glyph", restingInk,
+            blueGlyphBounds(compose.onNodeWithTag("host").captureToImage()))
 
         action.performTouchInput { down(center); moveTo(center + Offset(200f, 0f)); up() }
         compose.mainClock.advanceTimeBy(1600)
@@ -166,7 +290,9 @@ class GlassActionGroupTest {
 
         action.performTouchInput { click() }
         compose.mainClock.advanceTimeBy(64)
-        assertTrue(glyph.fetchSemanticsNode().boundsInRoot.width < glyphBounds.width)
+        assertEquals("A completed tap cannot queue a delayed press flash", glyphBounds, glyph.fetchSemanticsNode().boundsInRoot)
+        assertEquals("A completed tap cannot queue delayed visual expansion", restingInk,
+            blueGlyphBounds(compose.onNodeWithTag("host").captureToImage()))
         compose.mainClock.advanceTimeBy(1600)
         compose.runOnIdle { assertEquals(2, clicks) }
         assertEquals(glyphBounds, glyph.fetchSemanticsNode().boundsInRoot)
@@ -393,7 +519,7 @@ class GlassActionGroupTest {
                 Settings.Global.putFloat(resolver, Settings.Global.ANIMATOR_DURATION_SCALE, 0f)
                 trigger.release(owner)
             }
-            compose.mainClock.advanceTimeByFrame()
+            repeat(2) { compose.mainClock.advanceTimeByFrame(); compose.waitForIdle() }
             val settled = compose.onNodeWithTag("host").captureToImage().toPixelMap()
             assertNotEquals(Color.Red, settled[settled.width / 2, settled.height / 6])
             assertNotEquals(Color.Red, settled[settled.width * 3 / 4, settled.height / 2])
@@ -650,6 +776,26 @@ class GlassActionGroupTest {
             assertEquals("vertical join must have settled within 240ms",
                 rest[rest.width / 2, y], closed[closed.width / 2, y])
         }
+    }
+
+    /** Measures actual ink rather than layout coordinates, which draw-only springs preserve. */
+    private fun blueGlyphBounds(image: ImageBitmap): Rect {
+        val pixels = image.toPixelMap()
+        var left = pixels.width
+        var top = pixels.height
+        var right = -1
+        var bottom = -1
+        for (y in 0 until pixels.height) for (x in 0 until pixels.width) {
+            val color = pixels[x, y]
+            if (color.blue > .8f && color.red < .4f && color.green < .4f) {
+                left = minOf(left, x)
+                top = minOf(top, y)
+                right = maxOf(right, x)
+                bottom = maxOf(bottom, y)
+            }
+        }
+        assertTrue("The captured scene must contain the blue glyph", right >= left && bottom >= top)
+        return Rect(left.toFloat(), top.toFloat(), (right + 1).toFloat(), (bottom + 1).toFloat())
     }
 
     @Composable private fun AppearanceProvider(content: @Composable () -> Unit) {

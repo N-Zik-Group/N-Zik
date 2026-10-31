@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -24,6 +25,7 @@ import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.Typography
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
@@ -39,6 +41,44 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassMiniPlayerBackgroundTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test @Config(sdk = [32])
+    fun `native mini body exports its actual progress fill while action badges stay Glass`() {
+        var fraction by mutableStateOf(.5f)
+        var page by mutableStateOf(Color.Green)
+        val base = Color.Blue
+        val progress = Color.Red.copy(alpha = .4f)
+        compose.setContent {
+            val shape = RoundedCornerShape(0.dp)
+            val exported = rememberLayerBackdrop()
+            val controls = rememberMiniPlayerControlBackdrop(null, exported) { 0f }
+            val settings = GlassSettings(quality = GlassQuality.Balanced, film = 0f, rim = 0f,
+                blur = 0f, vibrancy = 0f, depth = 0f, amount = 0f,
+                areaModes = mapOf(GlassArea.MiniPlayer to GlassAreaMode.Disabled))
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                ColorPalette.fallback, Typography.fallback, shape, shape, shape),
+                LocalGlassContainerBackdrop provides controls) {
+                Box(Modifier.size(100.dp, 60.dp).background(page).testTag("native.mini")) {
+                    Box(Modifier.matchParentSize().glassMiniPlayerBackground(settings, shape, null, base,
+                        progressColor = progress, progressFraction = { fraction }, exportedBackdrop = exported))
+                    Box(Modifier.offset(12.dp, 20.dp).size(18.dp).testTag("native.mini.left.badge")
+                        .glassExplicitBadgeBackground(settings))
+                    Box(Modifier.offset(70.dp, 20.dp).size(18.dp).testTag("native.mini.right.badge")
+                        .glassExplicitBadgeBackground(settings))
+                }
+            }
+        }
+        for (position in listOf(0f, .5f, 1f)) {
+            compose.runOnIdle { fraction = position; page = Color.Magenta }
+            val body = compose.onNodeWithTag("native.mini").captureToImage().toPixelMap()
+            for ((tag, x) in listOf("native.mini.left.badge" to .2f, "native.mini.right.badge" to .8f)) {
+                val expected = if (x < position) progress.compositeOver(base) else base
+                assertColor(expected, body[(body.width * x).toInt(), body.height / 4])
+                val badge = compose.onNodeWithTag(tag).captureToImage().toPixelMap()
+                assertColor(expected, badge[badge.width / 2, badge.height / 2])
+            }
+        }
+    }
 
     @Test fun `body fades with sheet displacement and reverses without fading the foreground`() {
         var progress by mutableStateOf(0f)

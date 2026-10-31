@@ -5,6 +5,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,12 +18,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -54,6 +57,86 @@ import org.robolectric.util.ReflectionHelpers
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassToastHostTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `toast pixels fade in and out while queued messages retain their full lifetime`() {
+        val enabled = mutableStateOf(true)
+        val presence = mutableListOf<Boolean>()
+        lateinit var view: View
+        var density = 1f
+        compose.setContent {
+            view = LocalView.current
+            density = LocalDensity.current.density
+            val shape = RoundedCornerShape(12.dp)
+            CompositionLocalProvider(LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                typographyOf(Color.White, true, false, FontType.Rubik), shape, shape, shape)) {
+                Box(Modifier.size(360.dp, 640.dp).background(Color.Black).testTag("toastScene")) {
+                    GlassToastHost(null, 24.dp,
+                        settings = GlassSettings(enabled = enabled.value,
+                            areaModes = mapOf(GlassArea.Menus to GlassAreaMode.ContourOnly)),
+                        onPresenceChanged = { presence.add(it) })
+                }
+            }
+        }
+        compose.runOnIdle {
+            val info = ReflectionHelpers.getField<Any>(view, "mAttachInfo")
+            ReflectionHelpers.setField(info, "mWindowVisibility", View.VISIBLE)
+        }
+        compose.mainClock.autoAdvance = false
+        compose.runOnIdle {
+            assertTrue(GlassToastDispatcher.tryShow("First", Toast.LENGTH_SHORT, null, 0xffff0000.toInt(), -1))
+            assertTrue(GlassToastDispatcher.tryShow("Second", Toast.LENGTH_SHORT, null, 0xffff0000.toInt(), -1))
+        }
+        fun redAtToastMargin(): Float {
+            val bounds = compose.onNodeWithTag("glassToast").fetchSemanticsNode().boundsInRoot
+            val scene = compose.onNodeWithTag("toastScene")
+            val sceneBounds = scene.fetchSemanticsNode().boundsInRoot
+            val pixels = scene.captureToImage().toPixelMap()
+            // Inside the film, away from the text and the rounded contour.
+            return pixels[(bounds.left - sceneBounds.left + 10 * density).roundToInt(),
+                (bounds.center.y - sceneBounds.top).roundToInt()].red
+        }
+        repeat(2) { compose.mainClock.advanceTimeByFrame(); compose.waitForIdle() }
+        // The first animation frame establishes its start time after the host mounts.
+        compose.mainClock.advanceTimeBy(64)
+        val entering = redAtToastMargin()
+        assertTrue("Entrance must draw an intermediate opacity: $entering", entering > .01f && entering < .95f)
+        compose.mainClock.advanceTimeBy(236)
+        assertEquals(1f, redAtToastMargin(), .02f)
+        compose.mainClock.advanceTimeBy(1900)
+        // Delay resumes on a frame, and the exit animation then needs its own first frame.
+        // Follow the drawn onset rather than assuming both happen at the timeout timestamp.
+        var departure = redAtToastMargin()
+        var exitFrames = 0
+        while (departure >= .99f && exitFrames < 20) {
+            compose.mainClock.advanceTimeByFrame()
+            compose.waitForIdle()
+            departure = redAtToastMargin()
+            exitFrames++
+        }
+        assertTrue("Exit must begin while the toast is still drawn: $departure", departure > .01f && departure < .99f)
+        repeat(2) { compose.mainClock.advanceTimeByFrame(); compose.waitForIdle() }
+        val exiting = redAtToastMargin()
+        assertTrue("Exit must draw an intermediate opacity: $exiting", exiting > .01f && exiting < .95f)
+        compose.onNodeWithText("First").assertExists()
+        compose.onNodeWithText("Second").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(listOf(true), presence) }
+        compose.mainClock.advanceTimeBy(200)
+        compose.onNodeWithText("First").assertDoesNotExist()
+        compose.onNodeWithText("Second").assertExists()
+        compose.mainClock.advanceTimeBy(300)
+        assertEquals(1f, redAtToastMargin(), .02f)
+        compose.mainClock.advanceTimeBy(2200)
+        compose.onNodeWithTag("glassToast").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(listOf(true, false), presence) }
+        compose.runOnIdle { enabled.value = false }
+        repeat(2) { compose.mainClock.advanceTimeByFrame(); compose.waitForIdle() }
+        compose.runOnIdle {
+            assertFalse("Disabled Glass preserves native fallback", GlassToastDispatcher.tryShow(
+                "native", Toast.LENGTH_SHORT, null, 1, 2))
+        }
+        compose.onNodeWithTag("glassToast").assertDoesNotExist()
+        compose.mainClock.autoAdvance = true
+    }
 
     @Test fun `Glass and native use actual mini top then navigation top across toggles`() {
         val enabled = mutableStateOf(true)
@@ -107,7 +190,10 @@ class GlassToastHostTest {
         compose.runOnIdle {
             assertTrue(GlassToastDispatcher.tryShow("Visible toast", Toast.LENGTH_LONG, null, 0xff198754.toInt(), -1))
         }
-        fun settle() { compose.mainClock.advanceTimeBy(96); compose.waitForIdle() }
+        fun settle() {
+            repeat(2) { compose.mainClock.advanceTimeByFrame(); compose.waitForIdle() }
+            compose.mainClock.advanceTimeBy(96); compose.waitForIdle()
+        }
         fun assertGlassBottom(top: () -> Float) {
             settle()
             compose.onNodeWithText("Visible toast").assertExists()
@@ -166,7 +252,7 @@ class GlassToastHostTest {
         settle()
         compose.onNodeWithText("Expires").assertExists()
         compose.runOnIdle { assertEquals(true, presence.last()) }
-        compose.mainClock.advanceTimeBy(2200)
+        compose.mainClock.advanceTimeBy(2400)
         compose.onNodeWithTag("glassToast").assertDoesNotExist()
         compose.runOnIdle {
             assertEquals(false, presence.last())
@@ -211,15 +297,18 @@ class GlassToastHostTest {
         compose.mainClock.autoAdvance = false
         GlassAreaMode.entries.forEach { selected ->
             compose.runOnIdle { mode.value = selected }
+            repeat(2) { compose.mainClock.advanceTimeByFrame(); compose.waitForIdle() }
             compose.mainClock.advanceTimeBy(64)
             compose.runOnIdle {
                 assertEquals(selected != GlassAreaMode.Disabled,
                     GlassToastDispatcher.tryShow("mode $selected", Toast.LENGTH_SHORT, null, 1, 2))
             }
+            repeat(2) { compose.mainClock.advanceTimeByFrame(); compose.waitForIdle() }
             compose.mainClock.advanceTimeBy(64)
             if (selected != GlassAreaMode.Disabled) compose.onNodeWithTag("glassToast").assertExists()
         }
         compose.runOnIdle { enabled.value = false }
+        repeat(2) { compose.mainClock.advanceTimeByFrame(); compose.waitForIdle() }
         compose.mainClock.advanceTimeBy(64)
         compose.runOnIdle { assertFalse(GlassToastDispatcher.tryShow("native", Toast.LENGTH_SHORT, null, 1, 2)) }
         compose.onNodeWithTag("glassToast").assertDoesNotExist()

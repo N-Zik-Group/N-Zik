@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -23,6 +25,9 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.ui.screens.rewind.rewindCaptureMode
+import app.n_zik.android.components.ui.screens.rewind.rewindShareCaptureActive
+import app.n_zik.android.components.ui.screens.rewind.rewindImageDecorationPolicy
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
@@ -38,6 +43,70 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassImageRimTest {
     @get:Rule val composeRule = createComposeRule()
+
+    @Test fun `actual Rewind deck policy suppresses image contours during either export path`() {
+        var master by mutableStateOf(false)
+        composeRule.setContent {
+            CompositionLocalProvider(LocalGlassPreviewSettings provides GlassSettings(enabled = master, rim = 1f)) {
+                CompositionLocalProvider(rewindImageDecorationPolicy()) {
+                    Box(Modifier.size(60.dp).testTag("rewindImage")
+                        .glassImageRim(RectangleShape).background(Color.Blue))
+                }
+            }
+        }
+        fun pixels() = composeRule.onNodeWithTag("rewindImage").captureToImage().toPixelMap()
+        val original = pixels()
+        try {
+            composeRule.runOnIdle { master = true }
+            val live = pixels()
+            assertNotEquals(original[0, original.height / 2], live[0, live.height / 2])
+            for (capture in listOf(rewindCaptureMode, rewindShareCaptureActive)) {
+                composeRule.runOnIdle { capture.value = true }
+                val exported = pixels()
+                for (y in 0 until original.height) for (x in 0 until original.width)
+                    assertEquals(original[x, y], exported[x, y])
+                composeRule.runOnIdle { capture.value = false }
+                val restored = pixels()
+                assertNotEquals(original[0, original.height / 2], restored[0, restored.height / 2])
+            }
+        } finally {
+            composeRule.runOnIdle { rewindCaptureMode.value = false; rewindShareCaptureActive.value = false }
+        }
+    }
+
+    @Test fun `capture suppression preserves image pixels and restores the original native border`() {
+        var settings by mutableStateOf(GlassSettings(enabled = false, rim = 1f))
+        var decorate by mutableStateOf(true)
+        var useNativeBorder by mutableStateOf(false)
+        val fill = Color(0xFF165080)
+        composeRule.setContent {
+            CompositionLocalProvider(LocalGlassPreviewSettings provides settings,
+                LocalGlassImageDecorationsEnabled provides decorate) {
+                Box(Modifier.size(60.dp).testTag("captureImage")
+                    .then(if (useNativeBorder) Modifier.glassImageBorder(RectangleShape,
+                        BorderStroke(2.dp, Color.Red)) else Modifier.glassImageRim(RectangleShape))
+                    .background(fill))
+            }
+        }
+        fun pixels() = composeRule.onNodeWithTag("captureImage").captureToImage().toPixelMap()
+        val native = pixels()
+        composeRule.runOnIdle { settings = settings.copy(enabled = true) }
+        val live = pixels()
+        assertNotEquals(native[0, native.height / 2], live[0, live.height / 2])
+        composeRule.runOnIdle { decorate = false }
+        val captured = pixels()
+        for (y in 0 until native.height) for (x in 0 until native.width)
+            assertEquals(native[x, y], captured[x, y])
+        composeRule.runOnIdle { useNativeBorder = true; settings = settings.copy(enabled = false) }
+        val nativeBorder = pixels()
+        composeRule.runOnIdle { settings = settings.copy(enabled = true) }
+        val capturedBorder = pixels()
+        for (y in 0 until nativeBorder.height) for (x in 0 until nativeBorder.width)
+            assertEquals(nativeBorder[x, y], capturedBorder[x, y])
+        composeRule.runOnIdle { decorate = true }
+        val liveBorder = pixels()
+        assertNotEquals(nativeBorder[0, nativeBorder.height / 2], liveBorder[0, liveBorder.height / 2])
+    }
 
     @Test fun `rim preserves native image interior and follows live rectangle rounded and circle shapes`() {
         var shape: Shape by mutableStateOf(RectangleShape)

@@ -3,6 +3,7 @@ package app.n_zik.android.components.glass
 import androidx.compose.foundation.border
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -15,10 +16,13 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
+/** Captured artwork keeps its native pixels even when live image contours are enabled. */
+val LocalGlassImageDecorationsEnabled = compositionLocalOf { true }
+
 /** Adds only the Glass edge highlight, keeping the image content and clipping intact. */
 @Composable
 fun Modifier.glassImageRim(shape: Shape): Modifier {
-    if (LocalNativeQueueRows.current) return this
+    if (!LocalGlassImageDecorationsEnabled.current || LocalNativeQueueRows.current) return this
     val settings = rememberGlassSettings()
     if (!settings.usesGlassContour(GlassArea.Images)) return this
     return glassImageRim(settings, shape, glassTint(settings))
@@ -28,7 +32,7 @@ fun Modifier.glassImageRim(shape: Shape): Modifier {
 @Composable
 fun Modifier.glassImageBorder(shape: Shape, nativeBorder: BorderStroke): Modifier {
     val settings = rememberGlassSettings()
-    return if (!LocalNativeQueueRows.current && settings.enabled && settings.mode(GlassArea.Images).hasContour) {
+    return if (LocalGlassImageDecorationsEnabled.current && !LocalNativeQueueRows.current && settings.enabled && settings.mode(GlassArea.Images).hasContour) {
         glassImageRim(settings, shape, glassTint(settings))
     } else border(nativeBorder, shape)
 }

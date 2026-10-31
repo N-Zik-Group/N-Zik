@@ -20,6 +20,8 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.unit.Density
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.components.glass.backdrop.drawPlainBackdrop
 
 /** Follows the actual sheet position in both directions, including interrupted drags. */
 internal fun miniPlayerGlassBodyAlpha(progress: Float): Float =
@@ -86,6 +88,16 @@ fun Modifier.glassMiniPlayerBackground(
     motionOptimized: Boolean = false,
 ): Modifier {
     if (!settings.usesGlassMaterial(GlassArea.MiniPlayer)) {
+        if (exportedBackdrop != null) {
+            // Action badges can remain Glass while the body is native. Export the actual
+            // native fill/progress before foreground controls, rather than an empty layer.
+            val empty = rememberCanvasBackdrop {}
+            return drawPlainBackdrop(empty, { shape }, {}, exportedBackdrop = exportedBackdrop,
+                onDrawSurface = {
+                    drawRect(originalColor)
+                    drawRect(progressColor, size = Size(progressFraction() * size.width, size.maxDimension))
+                }).glassAreaContour(settings, GlassArea.MiniPlayer, shape)
+        }
         return background(originalColor).drawBehind {
             drawRect(progressColor, size = Size(progressFraction() * size.width, size.maxDimension))
         }.glassAreaContour(settings, GlassArea.MiniPlayer, shape)

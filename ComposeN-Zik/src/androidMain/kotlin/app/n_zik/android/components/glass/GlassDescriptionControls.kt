@@ -1,5 +1,7 @@
 package app.n_zik.android.components.glass
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Box
@@ -58,5 +60,10 @@ fun Modifier.glassExplicitBadgeBackground(
 ): Modifier {
     if (LocalNativeQueueRows.current) return this
     if (!settings.usesGlassMaterial(GlassArea.ActionButtons) && !settings.usesGlassContour(GlassArea.ActionButtons)) return this
-    return glassChipBackground(androidx.compose.ui.graphics.Color.Transparent, uiRoundnessShape(), settings)
+    // Transparent is the native fill, not an instruction to strip the shared Glass film.
+    val interaction = remember { MutableInteractionSource() }
+    // Keep a drag that starts on the badge without adding any click action.
+    return retainGlassButtonGesture().glassButtonFeedback(interaction, uiRoundnessShape(),
+        enabled = isGlassMotionAllowed(), retainPressUntilUp = true, drawHighlight = false)
+        .glassChipBackground(Color.Transparent, uiRoundnessShape(), settings, filmColor = null)
 }

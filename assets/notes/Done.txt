@@ -150,3 +150,6 @@ Added:
 
 - fix(glass): refresh nested materials and smooth optical transitions
   - Publish current parent captures and coordinate reduced-detail material fades.
+
+- fix(glass): share surfaces across cards groups and overlays
+  - Reuse common action, card, image, overlay and toast material families.

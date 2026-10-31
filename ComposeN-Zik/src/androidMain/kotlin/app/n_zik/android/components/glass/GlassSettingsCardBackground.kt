@@ -1,5 +1,6 @@
 package app.n_zik.android.components.glass
 
+import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -15,6 +16,7 @@ internal fun Modifier.glassSettingsCardBackground(
     cardColor: Color,
     shape: Shape,
     settings: GlassSettings,
+    exportedBackdrop: LayerBackdrop? = null,
 ): Modifier {
     if (!settings.usesGlassMaterial(GlassArea.SettingsCards)) return this
     // The page capture contains this card, so reproduce its flat backdrop independently.
@@ -29,6 +31,7 @@ internal fun Modifier.glassSettingsCardBackground(
         highlightAlpha = .3f,
         // Keep the lens/highlight at the card's own bounds, without a second shadow plate.
         drawShadow = false,
+        exportedBackdrop = exportedBackdrop,
         // The original themed fill also carries the existing search highlight.
         filmColor = cardColor,
     )

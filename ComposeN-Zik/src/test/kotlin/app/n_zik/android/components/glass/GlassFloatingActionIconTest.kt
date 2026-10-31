@@ -52,6 +52,46 @@ import org.robolectric.annotation.GraphicsMode
 class GlassFloatingActionIconTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun `native floating film stays live in enabled disabled and fallback renderers`() {
+        val enabled = mutableStateOf(true)
+        val film = mutableStateOf(Color.Red)
+        val quality = mutableStateOf(GlassQuality.Balanced)
+        val appearance = Appearance(
+            colorPalette = DefaultDarkColorPalette,
+            typography = typographyOf(Color.White, true, false, FontType.Rubik),
+            thumbnailShape = CircleShape,
+            uiRoundnessShape = CircleShape,
+            artistThumbnailShape = CircleShape,
+        )
+        compose.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                GlassFloatingActionIcon(
+                    painterResource(R.drawable.chevron_up), {},
+                    Modifier.testTag("floating"), enabled = enabled.value,
+                    settings = GlassSettings(quality = quality.value, film = 1f, rim = 0f,
+                        blur = 0f, vibrancy = 0f, depth = 0f, amount = 0f),
+                    filmColor = film.value,
+                )
+            }
+        }
+        fun assertFilm(expected: Color) {
+            val pixels = compose.onNodeWithTag("floating").captureToImage().toPixelMap()
+            // Read clear material above the central glyph, away from its outer shadow.
+            val actual = pixels[pixels.width / 2, pixels.height / 4]
+            assertEquals(expected.red, actual.red, .03f)
+            assertEquals(expected.green, actual.green, .03f)
+            assertEquals(expected.blue, actual.blue, .03f)
+        }
+        for (profile in listOf(GlassQuality.Balanced, GlassQuality.Performance)) {
+            for (interactive in listOf(true, false)) {
+                compose.runOnIdle { quality.value = profile; enabled.value = interactive; film.value = Color.Red }
+                assertFilm(Color.Red)
+                compose.runOnIdle { film.value = Color.Blue }
+                assertFilm(Color.Blue)
+            }
+        }
+    }
+
     @Test fun `canvas backdrop fills the complete logical surface at reduced recording scales`() {
         val scale = mutableStateOf(.4f)
         val background = mutableStateOf(Color.Red)

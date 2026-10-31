@@ -28,6 +28,7 @@ import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.Typography
+import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.glass.backdrop.drawPlainBackdrop
 import app.n_zik.android.components.dialog.common.DialogPresence
@@ -55,6 +56,7 @@ class GlassOverlayReadabilityTest {
     private lateinit var store: GlassStore
 
     @Before fun clearSettings() {
+        context.preferences.edit().clear().putBoolean(glassEnabledKey, true).commit()
         context.getSharedPreferences("nzik_square_glass_v2", Context.MODE_PRIVATE).edit().clear().commit()
         store = GlassStore(context)
         Settings.Global.putFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 0f)
@@ -99,7 +101,7 @@ class GlassOverlayReadabilityTest {
         compose.mainClock.advanceTimeBy(300)
         assertSceneBrightness(.25f)
         compose.runOnIdle { visible = false }
-        compose.mainClock.advanceTimeByFrame()
+        repeat(2) { compose.mainClock.advanceTimeByFrame(); compose.waitForIdle() }
         compose.mainClock.advanceTimeBy(80)
         assertIntermediateDimming()
         compose.mainClock.advanceTimeBy(300)
@@ -111,7 +113,6 @@ class GlassOverlayReadabilityTest {
     @Test fun `custom sheet forwards explicit colored and transparent scrims to physical and sampled scene`() {
         val host = GlassMenuHostState()
         var scrim by mutableStateOf(Color.Red.copy(alpha = .5f))
-        store.setBoolean(glassEnabledKey, true)
         compose.setContent {
             val white = rememberCanvasBackdrop { drawRect(Color.White) }
             val view = androidx.compose.ui.platform.LocalView.current

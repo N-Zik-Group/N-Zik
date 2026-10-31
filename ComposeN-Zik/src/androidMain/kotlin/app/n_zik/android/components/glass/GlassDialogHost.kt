@@ -104,17 +104,25 @@ internal fun GlassDialogWindow(
 ) {
     val host = LocalGlassMenuHost.current
     val presentation = LocalDialogPresentation.current
+    val settings = rememberGlassSettings()
     if (!useSharedHost || host == null || properties.securePolicy != SecureFlagPolicy.Inherit) {
+        val id = remember { Any() }
+        NativeGlassOverlayCoverage(host, id)
         Dialog(onDismissRequest, properties = properties) {
-            if (useSharedHost && host != null && properties.securePolicy != SecureFlagPolicy.Inherit && presentation != null) {
-                NativeDialogDimming(presentation)
+            CompositionLocalProvider(
+                LocalGlassOpticsEnabled provides true,
+                LocalGlassOpticsTransitionProgress provides 1f,
+                LocalGlassUnderlayCovered provides (host != null && host.nativeOverlays.lastOrNull() !== id),
+            ) {
+                if (presentation == null || (useSharedHost && host != null && properties.securePolicy != SecureFlagPolicy.Inherit)) {
+                    NativeDialogDimming(presentation, area, scrimColor, scrimVisible)
+                }
+                GlassRippleProvider(settings) { content() }
             }
-            content()
         }
         return
     }
     val id = remember { Any() }
-    val settings = rememberGlassSettings()
     val currentDimming = rememberUpdatedState(if (scrimColor.isSpecified) 1f
         else if (area == GlassArea.Menus) settings.menuDimming else settings.dialogDimming)
     val currentScrimColor = rememberUpdatedState(if (scrimColor.isSpecified) scrimColor else Color.Black)
@@ -172,20 +180,23 @@ fun GlassModalContent(
         }
         previouslyBlocked = blocked
     }
-    Box(Modifier.fillMaxSize().blockGlassCoveredInput(blocked)
-        .then(if (manageFocus) Modifier
-            .then(if (blocked) Modifier.clearAndSetSemantics { } else Modifier)
-            .focusRequester(focus)
-            .focusProperties {
-                onEnter = {
-                    if (blocked || (previouslyBlocked &&
-                            (!savedPageFocus || blockedSession != focusSessionKey)) ||
-                        (savedPageFocus && blockedSession == focusSessionKey && focus.restoreFocusedChild())) {
-                        cancelFocusChange()
+    val covered = LocalGlassUnderlayCovered.current || blocked
+    CompositionLocalProvider(LocalGlassUnderlayCovered provides covered) {
+        Box(Modifier.fillMaxSize().blockGlassCoveredInput(blocked)
+            .then(if (manageFocus) Modifier
+                .then(if (blocked) Modifier.clearAndSetSemantics { } else Modifier)
+                .focusRequester(focus)
+                .focusProperties {
+                    onEnter = {
+                        if (blocked || (previouslyBlocked &&
+                                (!savedPageFocus || blockedSession != focusSessionKey)) ||
+                            (savedPageFocus && blockedSession == focusSessionKey && focus.restoreFocusedChild())) {
+                            cancelFocusChange()
+                        }
                     }
                 }
-            }
-            .focusGroup() else Modifier), content = content)
+                .focusGroup() else Modifier), content = content)
+    }
 }
 
 /** The top dialog owns input; retained lower dialogs remain visible for nested dismissal. */
@@ -212,6 +223,11 @@ fun GlassDialogOverlayHost(host: GlassMenuHostState) {
             }
             CompositionLocalProvider(entry.locals) {
                 CompositionLocalProvider(
+                    LocalGlassOpticsEnabled provides true,
+                    LocalGlassOpticsTransitionProgress provides 1f,
+                    LocalGlassUnderlayCovered provides (
+                        entry !== host.dialogs.entries.lastOrNull() || host.entry != null || host.nativeOverlays.isNotEmpty()
+                    ),
                     LocalGlassBackdrop provides dimmedSource,
                     LocalGlassOverlayBackdrop provides completedBackdrop,
                     LocalGlassDropdownBackdropOwner provides null,
@@ -256,5 +272,14 @@ fun GlassDialogOverlayHost(host: GlassMenuHostState) {
                 }
             }
         }
+    }
+}
+
+/** Native windows still reduce the activity's optics until their animated content is disposed. */
+@Composable
+internal fun NativeGlassOverlayCoverage(host: GlassMenuHostState?, id: Any) {
+    DisposableEffect(host, id) {
+        host?.nativeOverlays?.add(id)
+        onDispose { host?.nativeOverlays?.remove(id) }
     }
 }

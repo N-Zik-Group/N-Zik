@@ -90,12 +90,16 @@ class GlassProfileAvatarFrameTest {
             val image = avatar.captureToImage().toPixelMap()
             return image[0, image.height / 2]
         }
-        listOf(GlassArea.SettingsCards, GlassArea.Header).forEach { role ->
+        listOf(GlassArea.SettingsCards, GlassArea.Header, GlassArea.MoodCards).forEach { role ->
             compose.runOnIdle { area.value = role; mode.value = GlassAreaMode.Disabled }
             verifyImageAndBounds(native = true)
             verifyNoExteriorPixels()
             assertEquals(Color.Magenta, edgePixel())
-            listOf(GlassAreaMode.GlassOnly, GlassAreaMode.GlassAndContour, GlassAreaMode.ContourOnly).forEach { material ->
+            compose.runOnIdle { mode.value = GlassAreaMode.GlassOnly }
+            verifyImageAndBounds(native = true)
+            verifyNoExteriorPixels()
+            assertEquals(Color.Magenta, edgePixel())
+            listOf(GlassAreaMode.GlassAndContour, GlassAreaMode.ContourOnly).forEach { material ->
                 compose.runOnIdle { mode.value = material }
                 verifyImageAndBounds()
                 verifyNoExteriorPixels()

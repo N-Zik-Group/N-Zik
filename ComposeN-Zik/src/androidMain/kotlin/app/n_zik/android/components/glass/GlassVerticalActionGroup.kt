@@ -18,7 +18,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
-import app.n_zik.android.searchBubbleShape
+import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.surfaceColor
 
 /** Connected vertical action cells, sharing one themed surface in both rendering modes. */
@@ -32,7 +32,7 @@ fun GlassVerticalActionGroup(
     leadingActionJoinProgress: Float? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val shape = searchBubbleShape()
+    val shape = uiRoundnessShape()
     val transferred = trailingTrigger?.isTransferred == true
     val rejoin = remember { Animatable(if (transferred) 0f else 1f) }
     val motion = isGlassMotionAllowed()
@@ -51,7 +51,11 @@ fun GlassVerticalActionGroup(
             fixedTrailingCell = true, vertical = true)
         else glassGroupFusionShape(shape, cellHeight, progress, vertical = true)
     }
-    Box(modifier) {
+    GlassActionGroupMotionHost(
+        settings = settings,
+        enabled = settings.usesGlassMaterial(area) && motion && !transferred,
+        modifier = modifier,
+    ) {
         val surface = Modifier.matchParentSize().layout { measurable, constraints ->
             val removed = if (transferred) GlassActionCellHeight.roundToPx() else 0
             val height = (constraints.maxHeight - removed).coerceAtLeast(0)
@@ -66,7 +70,7 @@ fun GlassVerticalActionGroup(
             Modifier.glassEdgeRim(settings, fusion, glassTint(settings)) else Modifier)
         else surface.glassAreaContour(settings, area, if (joining) fusion else shape))
         Column(
-            modifier = Modifier.drawWithContent {
+            modifier = (if (settings.usesGlassMaterial(area) && !transferred) Modifier.clip(fusion) else Modifier).drawWithContent {
                 drawContent()
                 if (!transferred && actionCount > 1 && settings.usesGlassSeparator(area)) {
                     val cell = GlassActionCellHeight.toPx()

@@ -125,6 +125,8 @@ fun CustomModalBottomSheet(
     }
 
     if (isComposing) {
+        val overlayId = remember { Any() }
+        NativeGlassOverlayCoverage(host, overlayId)
         val nativeBackdrop = rememberCanvasBackdrop { drawRect(sheetContainerColor) }
         ModalBottomSheet(
             onDismissRequest = onDismissRequest,
@@ -138,7 +140,7 @@ fun CustomModalBottomSheet(
             containerColor = if (glassSheet) Color.Transparent else sheetContainerColor,
             contentColor = contentColor,
             tonalElevation = tonalElevation,
-            scrimColor = if (scrimColor.isSpecified) scrimColor else BottomSheetDefaults.ScrimColor,
+            scrimColor = nativeGlassSheetScrimColor(glass, scrimColor, BottomSheetDefaults.ScrimColor),
             dragHandle = dragHandle,
             contentWindowInsets = contentWindowInsets
         ) {
@@ -192,10 +194,23 @@ fun CustomModalBottomSheet(
                 }
 
 
-                CompositionLocalProvider(LocalGlassContainerBackdrop provides nativeBackdrop) { content() }
+                CompositionLocalProvider(
+                    LocalGlassOpticsEnabled provides true,
+                    LocalGlassOpticsTransitionProgress provides 1f,
+                    LocalGlassUnderlayCovered provides (host != null && host.nativeOverlays.lastOrNull() !== overlayId),
+                    LocalGlassContainerBackdrop provides nativeBackdrop,
+                ) {
+                    GlassRippleProvider(glass) { content() }
+                }
             }
         }
     }
 }
 
 
+
+/** Material dimming remains user-controlled even when the renderer needs a native window. */
+internal fun nativeGlassSheetScrimColor(settings: GlassSettings, scrimOverride: Color, native: Color): Color =
+    if (scrimOverride.isSpecified) scrimOverride
+    else if (settings.usesGlassMaterial(GlassArea.Menus)) Color.Black.copy(alpha = settings.menuDimming)
+    else native

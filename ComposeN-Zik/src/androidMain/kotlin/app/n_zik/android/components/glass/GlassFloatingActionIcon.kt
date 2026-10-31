@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.painter.Painter
@@ -16,7 +17,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
-import app.n_zik.android.searchBubbleShape
+import app.n_zik.android.uiRoundnessShape
+
+/** Restores the action contour on an unchanged native fallback, without adding material. */
+@Composable
+fun Modifier.glassNativeActionContour(
+    settings: GlassSettings = rememberGlassSettings(),
+    shape: Shape = uiRoundnessShape(),
+): Modifier = if (settings.usesGlassMaterial(GlassArea.ActionButtons)) this
+    else glassAreaContour(settings, GlassArea.ActionButtons, shape)
 
 /**
  * Rendering hook: false preserves the caller's native floating action unchanged.
@@ -35,13 +44,14 @@ fun GlassFloatingActionIcon(
     tint: Color = colorPalette().text,
     contentDescription: String? = null,
     settings: GlassSettings = rememberGlassSettings(),
+    filmColor: Color? = null,
+    shape: Shape = uiRoundnessShape(),
 ): Boolean {
     if (!settings.usesGlassMaterial(GlassArea.ActionButtons)) return false
     val background = colorPalette().background0
     val drawBackground: DrawScope.() -> Unit = remember(background) { { drawRect(background) } }
     // Pages export a live content sibling here; never sample a page containing this action.
     val backdrop = LocalGlassContainerBackdrop.current ?: rememberCanvasBackdrop(drawBackground)
-    val shape = searchBubbleShape()
     val glyph: @Composable () -> Unit = {
         Icon(icon, contentDescription, Modifier.size(iconSize).then(iconModifier),
             tint = if (enabled) tint else tint.copy(alpha = tint.alpha * .5f))
@@ -52,6 +62,7 @@ fun GlassFloatingActionIcon(
             backdrop = backdrop,
             modifier = modifier.size(size),
             settings = settings.forArea(GlassArea.ActionButtons),
+            filmColor = filmColor,
             contentHeight = size,
             contentPadding = 0.dp,
             retainGesture = !movable,
@@ -60,7 +71,8 @@ fun GlassFloatingActionIcon(
     } else {
         Box(
             modifier.size(size)
-                .glassMaterial(settings.forArea(GlassArea.ActionButtons), shape, ownBackdrop = backdrop)
+                .glassMaterial(settings.forArea(GlassArea.ActionButtons), shape, ownBackdrop = backdrop,
+                    filmColor = filmColor)
                 .clickable(enabled = false, role = Role.Button, onClick = onClick),
             contentAlignment = Alignment.Center,
         ) { glyph() }

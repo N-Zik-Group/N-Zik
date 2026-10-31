@@ -2,9 +2,11 @@ package app.n_zik.android.components.glass
 
 import android.app.Application
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -21,6 +23,7 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -37,6 +40,8 @@ import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.R
 import kotlinx.coroutines.CompletableDeferred
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -52,6 +57,132 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassNowPlayingRowTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test @Config(sdk = [32])
+    fun `transparent native row keeps its container on first sample and late parent updates`() =
+        assertTranslucentRowSource(Color.Transparent, glassRow = false)
+
+    @Test @Config(sdk = [32])
+    fun `partially transparent native row composites its fill over its container`() =
+        assertTranslucentRowSource(Color.Blue.copy(alpha = .35f), glassRow = false)
+
+    @Test @Config(sdk = [32])
+    fun `transparent glass row samples its safe container on first sample and late parent updates`() =
+        assertTranslucentRowSource(Color.Transparent, glassRow = true)
+
+    @Test @Config(sdk = [32])
+    fun `partially transparent glass row composites its fill over its safe container`() =
+        assertTranslucentRowSource(Color.Blue.copy(alpha = .35f), glassRow = true)
+
+    private fun assertTranslucentRowSource(fill: Color, glassRow: Boolean) {
+        val parentColor = mutableStateOf(Color.Red)
+        val highlight = mutableStateOf<Color?>(if (glassRow) Color.Cyan.copy(alpha = .25f) else null)
+        val containingPage = object : Backdrop {
+            override val isCoordinatesDependent = false
+            override fun DrawScope.drawBackdrop(density: Density, coordinates: LayoutCoordinates?,
+                layerBlock: (GraphicsLayerScope.() -> Unit)?) {
+                error("A translucent row must not sample its containing page")
+            }
+        }
+        compose.setContent {
+            val shape = RoundedCornerShape(12.dp)
+            val safeParent = rememberCanvasBackdrop { drawRect(parentColor.value) }
+            val settings = GlassSettings(quality = GlassQuality.Balanced, film = 0f, rim = 0f,
+                blur = 0f, vibrancy = 0f, depth = 0f, amount = 0f,
+                areaModes = mapOf(GlassArea.NowPlaying to
+                    if (glassRow) GlassAreaMode.GlassOnly else GlassAreaMode.Disabled))
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                colorPalette = DefaultDarkColorPalette,
+                typography = typographyOf(Color.White, true, false, FontType.Rubik),
+                thumbnailShape = shape, uiRoundnessShape = shape, artistThumbnailShape = shape),
+                LocalGlassBackdrop provides containingPage,
+                LocalGlassContainerBackdrop provides safeParent) {
+                Box(Modifier.size(180.dp, 72.dp).background(parentColor.value)) {
+                    GlassSongRowSurface(fill, highlight.value, shape, settings) { surface ->
+                        Box(Modifier.size(160.dp, 56.dp).testTag("translucent.row").then(surface)) {
+                            // Black makes an empty/semitransparent export observable: the visible
+                            // row behind this consumer must not hide a missing parent in its source.
+                            val rowSource = LocalGlassContainerBackdrop.current
+                            Box(Modifier.align(Alignment.CenterEnd).size(20.dp)
+                                .testTag("translucent.sample").background(Color.Black)
+                                .glassMaterial(settings, shape, ownBackdrop = rowSource))
+                        }
+                    }
+                }
+            }
+        }
+        fun assertSurfaceAndExport() {
+            val base = fill.compositeOver(parentColor.value)
+            val expected = highlight.value?.compositeOver(base) ?: base
+            val row = compose.onNodeWithTag("translucent.row").captureToImage().toPixelMap()
+            val sample = compose.onNodeWithTag("translucent.sample").captureToImage().toPixelMap()
+            assertColor(expected, row[row.width / 4, row.height / 2])
+            assertColor(expected, sample[sample.width / 2, sample.height / 2])
+        }
+        assertSurfaceAndExport()
+        compose.runOnIdle { parentColor.value = Color.Green }
+        assertSurfaceAndExport()
+        compose.runOnIdle { highlight.value = Color.Magenta.copy(alpha = .4f) }
+        assertSurfaceAndExport()
+        compose.runOnIdle { parentColor.value = Color.Yellow }
+        assertSurfaceAndExport()
+    }
+
+    @Test @Config(sdk = [32])
+    fun `explicit badge samples its immediate selected row on first draw and after late color updates`() {
+        val rowColor = mutableStateOf(Color.Blue)
+        val pageColor = mutableStateOf(Color.Red)
+        val rowMode = mutableStateOf(GlassAreaMode.GlassAndContour)
+        val legacy = mutableStateOf(false)
+        val loadedColor = CompletableDeferred<Color>()
+        compose.setContent {
+            val shape = RoundedCornerShape(12.dp)
+            val unrelatedPage = rememberCanvasBackdrop { drawRect(pageColor.value) }
+            LaunchedEffect(Unit) { rowColor.value = loadedColor.await() }
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                colorPalette = DefaultDarkColorPalette,
+                typography = typographyOf(Color.White, true, false, FontType.Rubik),
+                thumbnailShape = shape, uiRoundnessShape = shape, artistThumbnailShape = shape),
+                LocalGlassBackdrop provides unrelatedPage,
+                LocalGlassContainerBackdrop provides unrelatedPage) {
+                val settings = GlassSettings(quality = GlassQuality.Balanced, film = 0f, rim = 0f,
+                    blur = 0f, vibrancy = 0f, depth = 0f, amount = 0f,
+                    areaModes = mapOf(GlassArea.NowPlaying to rowMode.value))
+                Box(Modifier.size(180.dp, 72.dp).background(pageColor.value)) {
+                    GlassSongRowSurface(Color.Black, rowColor.value, shape, settings,
+                        useNowPlayingMaterial = !legacy.value, paintBackground = !legacy.value) { surface ->
+                        Box(Modifier.size(160.dp, 56.dp).testTag("selected.row").then(surface)) {
+                            Box(Modifier.align(Alignment.CenterEnd).padding(end = 16.dp)) {
+                                Box(Modifier.size(18.dp).testTag("selected.row.explicit")
+                                    .glassExplicitBadgeBackground(settings)) {
+                                    Image(painterResource(explicitBadgeIconId(settings)), null)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        fun assertImmediateRow() {
+            val row = compose.onNodeWithTag("selected.row").captureToImage().toPixelMap()
+            val badge = compose.onNodeWithTag("selected.row.explicit").captureToImage().toPixelMap()
+            val expected = row[row.width / 4, row.height / 2]
+            // This is the transparent gap above the E's middle bar, inside its actual material.
+            val actual = badge[badge.width / 2, badge.height * 2 / 5]
+            assertColor(expected, actual)
+        }
+        assertImmediateRow()
+        compose.runOnIdle { loadedColor.complete(Color.Cyan); pageColor.value = Color.Green }
+        compose.waitForIdle()
+        assertImmediateRow()
+        for (nativeRow in listOf(false, true)) for (mode in listOf(GlassAreaMode.Disabled, GlassAreaMode.GlassAndContour)) {
+            compose.runOnIdle {
+                legacy.value = nativeRow; rowMode.value = mode
+                rowColor.value = if (nativeRow) Color.Blue.copy(alpha = .4f) else Color.Blue
+            }
+            assertImmediateRow()
+        }
+    }
 
     @Test fun `mounted row repaints violet theme highlight after first asynchronous palette completes`() {
         val loadedAccent = CompletableDeferred<Color>()

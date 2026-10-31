@@ -1,11 +1,35 @@
 package app.n_zik.android.components.glass
 
 import android.app.Application
+import android.os.Looper
+import androidx.compose.foundation.IndicationNodeFactory
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.InteractionSource
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.node.DelegatableNode
+import app.it.fast4x.rimusic.ui.styling.Appearance
+import app.it.fast4x.rimusic.ui.styling.ColorPalette
+import app.it.fast4x.rimusic.ui.styling.LocalAppearance
+import app.it.fast4x.rimusic.ui.styling.Typography
+import org.junit.Assert.assertNotSame
+import org.robolectric.Shadows.shadowOf
+import java.util.concurrent.TimeUnit
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -13,7 +37,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.assertIsDisplayed
+import kotlinx.coroutines.flow.collect
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.performClick
@@ -38,6 +67,115 @@ import org.robolectric.annotation.Config
 @Config(sdk = [33], application = Application::class)
 class GlassDialogHostTest {
     @get:Rule val composeRule = createComposeRule()
+
+    @Test fun `native sheet scrim respects menu dimming and explicit native overrides`() {
+        val glass = GlassSettings(enabled = true, menuDimming = .23f)
+        val native = Color.Black.copy(alpha = .6f)
+        assertEquals(Color.Black.copy(alpha = .23f), nativeGlassSheetScrimColor(glass, Color.Unspecified, native))
+        assertEquals(Color.Transparent, nativeGlassSheetScrimColor(glass, Color.Transparent, native))
+        assertEquals(native, nativeGlassSheetScrimColor(glass.copy(enabled = false), Color.Unspecified, native))
+        assertEquals(native, nativeGlassSheetScrimColor(glass.copy(menus = false), Color.Unspecified, native))
+        assertEquals(native, nativeGlassSheetScrimColor(glass.copy(areaModes = mapOf(GlassArea.Menus to GlassAreaMode.ContourOnly)), Color.Unspecified, native))
+    }
+
+    @Test fun `native dialog tracks its own pointer even with dialog material disabled`() {
+        assertNativeWindowTracksPointer(sheet = false)
+    }
+
+    @Test fun `native sheet tracks its own pointer even with menu material disabled`() {
+        assertNativeWindowTracksPointer(sheet = true)
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    private fun assertNativeWindowTracksPointer(sheet: Boolean) {
+        val settings = GlassSettings(enabled = true, dialogs = false, menus = false)
+        lateinit var node: GlassHighlightNode
+        var activityIndication: IndicationNodeFactory? = null
+        val source = MutableInteractionSource()
+        val interactions = mutableListOf<String>()
+        var bounds = Rect.Zero
+        var sheetState: SheetState? = null
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            LaunchedEffect(source) {
+                source.interactions.collect { interaction ->
+                    interactions += when (interaction) {
+                        is PressInteraction.Press -> "press(${interaction.pressPosition})"
+                        is PressInteraction.Release -> "release"
+                        is PressInteraction.Cancel -> "cancel"
+                        else -> interaction.toString()
+                    }
+                }
+            }
+            val nativeSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            sheetState = nativeSheetState
+            val shape = RoundedCornerShape(12.dp)
+            CompositionLocalProvider(
+                LocalGlassPreviewSettings provides settings,
+                LocalAppearance provides Appearance(
+                    colorPalette = ColorPalette.fallback, typography = Typography.fallback,
+                    thumbnailShape = shape, uiRoundnessShape = shape, artistThumbnailShape = shape,
+                ),
+            ) {
+                GlassRippleProvider(settings) {
+                    activityIndication = LocalIndication.current as IndicationNodeFactory
+                    val content: @androidx.compose.runtime.Composable () -> Unit = {
+                        val supplied = LocalIndication.current as IndicationNodeFactory
+                        assertNotSame("The native window must own a separate tracker", activityIndication, supplied)
+                        val indication = remember(supplied) {
+                            object : IndicationNodeFactory {
+                                override fun equals(other: Any?) = other === this
+                                override fun hashCode() = System.identityHashCode(this)
+                                override fun create(interactionSource: InteractionSource): DelegatableNode =
+                                    supplied.create(interactionSource).also { node = it as GlassHighlightNode }
+                            }
+                        }
+                        Box(Modifier.size(160.dp, 64.dp).testTag("native.row")
+                            .onGloballyPositioned { bounds = it.boundsInWindow() }
+                            .combinedClickable(
+                                interactionSource = source, indication = indication, onClick = {},
+                            ))
+                    }
+                    if (sheet) CustomModalBottomSheet(true, {}, sheetState = nativeSheetState, dragHandle = null) { content() }
+                    else GlassDialogWindow(false, {}, DialogProperties()) { content() }
+                }
+            }
+        }
+        // The sheet launches show() only after its first layout supplies draggable anchors.
+        repeat(3) {
+            composeRule.mainClock.advanceTimeByFrame()
+            composeRule.waitForIdle()
+        }
+        composeRule.mainClock.advanceTimeBy(600)
+        composeRule.waitForIdle()
+        composeRule.mainClock.advanceTimeByFrame()
+        composeRule.waitForIdle()
+        if (sheet) composeRule.runOnIdle {
+            assertEquals("The native sheet must finish entering before pointer injection", SheetValue.Expanded,
+                requireNotNull(sheetState).currentValue)
+        }
+        val row = composeRule.onNodeWithTag("native.row").assertIsDisplayed()
+        row.performTouchInput { down(Offset(20f, 20f)) }
+        shadowOf(Looper.getMainLooper()).idleFor(150, TimeUnit.MILLISECONDS)
+        // Sheet clickables defer PressInteraction inside their scroll container using Compose time.
+        composeRule.mainClock.advanceTimeBy(150)
+        composeRule.waitForIdle()
+        composeRule.runOnIdle {
+            assertTrue("Native row must receive a press: bounds=$bounds interactions=$interactions",
+                interactions.any { it.startsWith("press(") })
+            assertFalse("Native row press cancelled before movement: $interactions", interactions.contains("cancel"))
+        }
+        row.performTouchInput { moveTo(Offset(22f, 20f)) }
+        composeRule.mainClock.advanceTimeByFrame()
+        composeRule.waitForIdle()
+        composeRule.runOnIdle {
+            assertEquals("bounds=$bounds interactions=$interactions pressProgress=${node.highlight?.pressProgress} " +
+                "sheet=${sheetState?.currentValue}/${sheetState?.targetValue}",
+                Offset(2f, 0f), node.highlight?.offset)
+        }
+        row.performTouchInput { up() }
+        composeRule.mainClock.advanceTimeBy(1600)
+    }
 
     @Test fun `secure policy uses native window and leaves activity flags unchanged`() {
         val host = GlassMenuHostState()
