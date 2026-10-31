@@ -44,6 +44,64 @@ import org.robolectric.annotation.GraphicsMode
 class RewindCardMaterialTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun `outlined action modes use one shared rim and preserve native fill and export pixels`() {
+        val mode = mutableStateOf(GlassAreaMode.Disabled)
+        val enabled = mutableStateOf(true)
+        val shape = RoundedCornerShape(12.dp)
+        val fill = Color.Red.copy(alpha = .15f)
+        // Make accidental retention of the native border unmistakable in the full image.
+        val border = Color.Magenta
+        val appearance = Appearance(DefaultDarkColorPalette, Typography.fallback, shape, shape, shape)
+        compose.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                val settings = GlassSettings(enabled = enabled.value, quality = GlassQuality.Performance,
+                    areaModes = mapOf(GlassArea.ActionButtons to mode.value))
+                Column(Modifier.background(Color.Black)) {
+                    Box(Modifier.size(80.dp, 40.dp).testTag("outlined.native")
+                        .background(fill, shape).border(1.dp, border, shape))
+                    Box(Modifier.size(80.dp, 40.dp).testTag("outlined.actual")
+                        .rewindOutlinedActionBackground(fill, border, shape, settings))
+                    val expected = when {
+                        !settings.usesGlassMaterial(GlassArea.ActionButtons) &&
+                            !settings.usesGlassContour(GlassArea.ActionButtons) ->
+                            Modifier.background(fill, shape).border(1.dp, border, shape)
+                        !settings.usesGlassMaterial(GlassArea.ActionButtons) ->
+                            Modifier.background(fill, shape).glassAreaContour(settings, GlassArea.ActionButtons, shape)
+                        else -> Modifier.glassChipBackground(fill, shape, settings)
+                    }
+                    Box(Modifier.size(80.dp, 40.dp).testTag("outlined.expected").then(expected))
+                }
+            }
+        }
+        fun image(tag: String) = compose.onNodeWithTag(tag).captureToImage().toPixelMap()
+        val native = image("outlined.native")
+        for (master in listOf(false, true)) {
+            for (areaMode in GlassAreaMode.entries) {
+                compose.runOnIdle { enabled.value = master; mode.value = areaMode }
+                val actual = image("outlined.actual")
+                assertEquals("$master/$areaMode must use exactly one native or shared rim",
+                    true, samePixels(image("outlined.expected"), actual))
+                if (!master || areaMode == GlassAreaMode.Disabled) assertSamePixels(native, actual)
+                if (master && areaMode == GlassAreaMode.ContourOnly) {
+                    assertFalse("ContourOnly replaces the native border with the common rim", samePixels(native, actual))
+                    assertEquals("ContourOnly keeps the native fill", native[native.width / 2, native.height / 2],
+                        actual[actual.width / 2, actual.height / 2])
+                }
+            }
+        }
+        try {
+            for (areaMode in GlassAreaMode.entries) {
+                compose.runOnIdle { enabled.value = true; mode.value = areaMode; rewindCaptureMode.value = true }
+                assertSamePixels(native, image("outlined.actual"))
+                compose.runOnIdle { rewindCaptureMode.value = false; rewindShareCaptureActive.value = true }
+                assertSamePixels(native, image("outlined.actual"))
+                compose.runOnIdle { rewindShareCaptureActive.value = false }
+            }
+        } finally {
+            compose.runOnIdle { rewindCaptureMode.value = false; rewindShareCaptureActive.value = false }
+        }
+    }
+
     @Test
     fun `collage artwork fills its entire card when Glass toggles`() {
         val enabled = mutableStateOf(false)
@@ -62,6 +120,7 @@ class RewindCardMaterialTest {
                 }
             }
         }
+        val native = compose.onNodeWithTag("collage").captureToImage().toPixelMap()
         listOf(false, true, false).forEach { glassEnabled ->
             compose.runOnIdle { enabled.value = glassEnabled }
             assertEquals(
@@ -69,6 +128,9 @@ class RewindCardMaterialTest {
                 compose.onNodeWithTag("collage").fetchSemanticsNode().boundsInRoot,
                 compose.onNodeWithTag("artwork").fetchSemanticsNode().boundsInRoot,
             )
+            val pixels = compose.onNodeWithTag("collage").captureToImage().toPixelMap()
+            assertEquals("The photograph stays sharp and untinted", Color.Cyan, pixels[pixels.width / 2, pixels.height / 2])
+            if (glassEnabled) assertFalse("The shared Glass rim must draw above opaque collage photographs", samePixels(native, pixels))
         }
     }
 

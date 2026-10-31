@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCombinedBackdrop
@@ -38,16 +40,19 @@ fun GlassMaterialContainerScope(
     material: (@Composable (LayerBackdrop) -> Modifier)? = null,
     content: @Composable (Modifier) -> Unit,
 ) {
-    val exported = rememberLayerBackdrop()
+    val exported = if (material != null) rememberLayerBackdrop() else null
     val parent = if (includeParent) LocalGlassContainerBackdrop.current else null
     val surface = when {
-        sectionFilm != null -> rememberCanvasBackdrop { drawRect(sectionFilm) }
+        sectionFilm != null -> {
+            val drawSection: DrawScope.() -> Unit = remember(sectionFilm) { { drawRect(sectionFilm) } }
+            rememberCanvasBackdrop(drawSection)
+        }
         material != null -> exported
         else -> null
     }
     val backdrop = if (parent != null && surface != null) rememberCombinedBackdrop(parent, surface)
         else surface ?: parent
-    val materialModifier = material?.invoke(exported) ?: Modifier
+    val materialModifier = if (material != null && exported != null) material(exported) else Modifier
     CompositionLocalProvider(LocalGlassContainerBackdrop provides backdrop) {
         content(modifier.then(materialModifier))
     }

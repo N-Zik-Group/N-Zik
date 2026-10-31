@@ -22,7 +22,8 @@ import app.n_zik.android.utils.toast.BottomNavigationToastPlacement
 @Composable
 fun rememberGlassFloatingActionBackdrop(settings: GlassSettings = rememberGlassSettings()): LayerBackdrop? {
     val backdrop = rememberLayerBackdrop()
-    return backdrop.takeIf { settings.usesGlassMaterial(GlassArea.ActionButtons) }
+    val capture = glassContentCaptureEnabled(settings)
+    return backdrop.takeIf { settings.usesGlassMaterial(GlassArea.ActionButtons) && capture }
 }
 
 /** Apply only to the content sibling: capturing the actions themselves would create feedback. */

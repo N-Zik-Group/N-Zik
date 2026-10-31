@@ -147,3 +147,6 @@ Added:
 
 - fix(ui): unify Glass and Material press feedback
   - Align ripple bounds, UI roundness and retained Jelly gestures across standalone and grouped controls.
+
+- fix(glass): refresh nested materials and smooth optical transitions
+  - Publish current parent captures and coordinate reduced-detail material fades.

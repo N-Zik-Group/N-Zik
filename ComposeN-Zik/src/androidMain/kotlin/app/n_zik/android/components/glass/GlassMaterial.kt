@@ -41,7 +41,9 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.backdrop.BackdropEffectScope
 import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.glass.backdrop.drawBackdrop
+import app.n_zik.android.components.glass.backdrop.drawPlainBackdrop
 import app.n_zik.android.components.glass.backdrop.effects.blur
 import app.n_zik.android.components.glass.backdrop.effects.colorControls
 import app.n_zik.android.components.glass.backdrop.effects.lens
@@ -168,9 +170,16 @@ fun Modifier.glassMaterial(
     drawFilm: Boolean = true,
     drawShadow: Boolean = true,
     exportedBackdrop: LayerBackdrop? = null,
+    // Opt-in geometry implementation; receives the shared resolution-scaled, safe lens reach.
+    customLens: (BackdropEffectScope.(height: Float, amount: Float) -> Unit)? = null,
 ): Modifier {
     if (!settings.enabled) return this
     val backdrop = ownBackdrop ?: LocalGlassBackdrop.current
+    val opticsState = glassOpticsProgressState(glassOpticsEnabled())
+    val opticsProgress = opticsState.value
+    val opticalAlpha = remember(opticsState) { { opticsState.value } }
+    // Keep the optical node/source identity across the cheap endpoint. Only its
+    // processed layer fades; rebuilding the material here also discards exports.
     val renderer = if (separateWindow || backdrop == null) GlassRenderer.Tint else glassRenderer(settings)
     val baseFilm = glassSurfaceTint(settings)
     val nativeFilm = filmColor?.let { glassNativeSurfaceTint(settings, it) }
@@ -181,12 +190,29 @@ fun Modifier.glassMaterial(
     val cornerShape = glassOpticalShape(shape)
     val menuOpacity = menuFilmProgress.coerceIn(0f, 1f)
     val dark = colorPalette().isDark
-    val fallback = renderer == GlassRenderer.Tint || cornerShape == null || backdrop == null
+    val fallback = renderer == GlassRenderer.Tint || (cornerShape == null && customLens == null) || backdrop == null
     val opacity = glassFilmOpacity(settings.film, menu, menuOpacity, fallback, dark)
-    if (renderer == GlassRenderer.Tint || cornerShape == null || backdrop == null) {
+    if (fallback) {
+        val fill = if (exportedBackdrop == null) {
+            Modifier.background(if (drawFilm) film.copy(alpha = film.alpha * opacity) else Color.Transparent)
+                .then(if (onDrawTint != null) Modifier.drawBehind { onDrawTint.invoke(this) } else Modifier)
+        } else {
+            // Foreground controls still sample this passive film while its optics are disabled.
+            val drawEmpty: DrawScope.() -> Unit = remember { {} }
+            val emptySource = rememberCanvasBackdrop(drawEmpty)
+            val shapeBlock: () -> Shape = remember(shape) { { shape } }
+            val effects: BackdropEffectScope.() -> Unit = remember { {} }
+            val surface: DrawScope.() -> Unit = remember(film, opacity, drawFilm, onDrawTint) {
+                {
+                    if (drawFilm && opacity > 0f) drawRect(film.copy(alpha = film.alpha * opacity))
+                    onDrawTint?.invoke(this)
+                }
+            }
+            Modifier.drawPlainBackdrop(emptySource, shapeBlock, effects,
+                exportedBackdrop = exportedBackdrop, onDrawSurface = surface)
+        }
         return then(if (layerBlock != null) Modifier.graphicsLayer(layerBlock) else Modifier)
-            .clip(shape).background(if (drawFilm) film.copy(alpha = film.alpha * opacity) else Color.Transparent)
-            .then(if (onDrawTint != null) Modifier.drawBehind { onDrawTint.invoke(this) } else Modifier)
+            .clip(shape).then(fill)
             .then(if (menu) Modifier.glassMenuRim(shape, SolidColor(rimColor.copy(alpha = rimAlpha)))
                 else Modifier.border(GlassRimWidth, rimColor.copy(alpha = rimAlpha), shape))
     }
@@ -200,36 +226,41 @@ fun Modifier.glassMaterial(
     )
     val blurDp = blurBudget.radiusDp
     val resolution = blurBudget.resolution
+    // Retuning blur/lens on every fade frame changes padding and forces a new
+    // capture. A fade must only composite the live processed layer, otherwise
+    // that capture work can consume the entire animation before it is displayed.
     val blurPx = with(density) { blurDp.dp.toPx() } * resolution
     val heightPx = with(density) { (settings.depth * 48f).dp.toPx() } * resolution
     val amountPx = with(density) { (settings.amount * 48f).dp.toPx() } * resolution
     val saturation = glassSaturation(settings.vibrancy)
-    val shapeBlock: () -> Shape = remember(cornerShape) { { cornerShape } }
+    val opticalShape = cornerShape ?: shape
+    val shapeBlock: () -> Shape = remember(opticalShape) { { opticalShape } }
     val effects: BackdropEffectScope.() -> Unit = remember(
         saturation, blurPx, heightPx, amountPx, renderer, applyEdgeEffects,
-        settings.depthEffect, settings.dispersion,
+        settings.depthEffect, settings.dispersion, customLens,
     ) {
         {
             if (saturation != 1f) colorControls(saturation = saturation)
             if (blurPx > 0f) blur(blurPx)
-            if (renderer == GlassRenderer.Refraction && applyEdgeEffects && size.minDimension > 24f) {
+            if (renderer == GlassRenderer.Refraction && (applyEdgeEffects || customLens != null) && size.minDimension > 24f) {
                 val reach = size.minDimension * 0.45f
-                lens(
+                if (customLens != null) customLens.invoke(this,
+                    heightPx.coerceAtMost(reach), amountPx.coerceAtMost(reach)) else lens(
                     refractionHeight = heightPx.coerceAtMost(reach),
                     refractionAmount = amountPx.coerceAtMost(reach),
                     depthEffect = settings.depthEffect,
-                    dispersion = if (settings.dispersion) 1f else 0f,
+                    dispersion = settings.dispersionAmount(),
                 )
             }
         }
     }
-    val highlight: (() -> Highlight?)? = remember(applyEdgeEffects, rimColor, rimAlpha, menu) {
+    val highlight: (() -> Highlight?)? = remember(applyEdgeEffects, rimColor, rimAlpha, menu, opticsProgress) {
         if (applyEdgeEffects && rimAlpha > 0f) ({ Highlight(width = GlassRimWidth,
             style = HighlightStyle.Default(color = rimColor.copy(alpha = rimAlpha), angle = 45f),
-            excludeBottom = menu) }) else null
+            excludeBottom = menu, alpha = opticsProgress) }) else null
     }
-    val shadow: (() -> Shadow?)? = remember(applyEdgeEffects, drawShadow) {
-        if (applyEdgeEffects && drawShadow) ({ Shadow.Default }) else null
+    val shadow: (() -> Shadow?)? = remember(applyEdgeEffects, drawShadow, opticsProgress) {
+        if (applyEdgeEffects && drawShadow) ({ Shadow.Default.copy(alpha = opticsProgress) }) else null
     }
     val surface: DrawScope.() -> Unit = remember(film, opacity, onDrawTint, drawFilm) {
         {
@@ -244,8 +275,12 @@ fun Modifier.glassMaterial(
         highlight = highlight,
         shadow = shadow,
         onDrawSurface = surface,
+        opticsAlphaProvider = opticalAlpha,
         backdropScale = resolution,
         layerBlock = layerBlock,
         exportedBackdrop = exportedBackdrop,
-    )
+    ).then(if (opticsProgress < 1f) {
+        val rim = SolidColor(rimColor.copy(alpha = rimAlpha * (1f - opticsProgress)))
+        if (menu) Modifier.glassMenuRim(shape, rim) else Modifier.border(GlassRimWidth, rim, shape)
+    } else Modifier)
 }
