@@ -14,6 +14,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.io.File
+import org.json.JSONArray
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
@@ -30,6 +31,32 @@ class GlassSettingsBackupTest {
         credentials.edit().clear().commit()
         RescueFiles.initialize(context)
         RescueFiles.setRescueProfile("default")
+    }
+
+    @Test fun `mistyped known Glass records fail before replacing a readable store`() {
+        val store = GlassStore(context)
+        glass.edit().putFloat(glassBlurKey, 9f).commit()
+        val original = glass.all.toMap()
+        val recordType = SettingsPreferencesBridge.export(context, plain)
+            .single { SettingsPreferencesBridge.isGlassRecord(it.first) }.first
+        val malformed = listOf(
+            Triple("String", glassBlurKey, "wrong"),
+            Triple("Boolean", glassQualityKey, "true"),
+            Triple("Float", glassCustomColorKey, "0.5"),
+            Triple("Int", glassRippleEnabledKey, "1"),
+            Triple("Boolean", GlassArea.Nav.preferenceKey, "true"),
+            Triple("Int", GlassContextArea(GlassScope.Queue, GlassArea.Menus).preferenceKey, "1"),
+        )
+        malformed.forEach { (type, key, value) ->
+            val snapshot = JSONArray().put(JSONArray().put(type).put(key).put(value)).toString()
+            val result = runCatching {
+                SettingsPreferencesBridge.stageGlass(context,
+                    listOf(Triple(recordType, SettingsPreferencesBridge.GLASS_PREFERENCES, snapshot)))?.commit()
+            }
+            assertTrue("Mistyped $key must be rejected", result.isFailure)
+            assertEquals(original, glass.all)
+            assertEquals(9f, store.read().blur, 0f)
+        }
     }
 
     @Test fun `real CSV export import restores complete independent Glass store without key collisions`() {

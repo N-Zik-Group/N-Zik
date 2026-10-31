@@ -36,6 +36,11 @@ Fixed:
   - Distinguish cancelled pointer gestures from completed selection so cancellation cannot navigate to a tentative tab.
   - Cancel predecessor release jobs on a new press and verify cancellation callbacks, rapid re-press and normal final release.
 
+- fix(backup): reject incompatible known Glass preference types before import
+  - Validate known scalar, boolean, color and contextual mode types beside GlassStore before obtaining the namespace-replacement editor.
+  - Preserve unknown future settings and reject malformed known records without clearing or corrupting the readable saved store.
+  - Cover six incompatible known-key records and retain independent normal/credential restore behavior.
+
 - fix(search): preserve hidden local song row geometry
   - Opt LocalSongSearch into retaining hidden row slots while keeping hidden playback, menu and accessibility actions inactive.
   - Preserve collapsing behavior for Settings search; cover visibility and stable bounds through the shared helper fixture.

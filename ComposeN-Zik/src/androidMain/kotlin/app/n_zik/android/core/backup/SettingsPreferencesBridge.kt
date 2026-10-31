@@ -3,6 +3,7 @@ package app.n_zik.android.core.backup
 import android.content.Context
 import android.content.SharedPreferences
 import app.n_zik.android.core.migration.RemovedSettingsMigration
+import app.n_zik.android.components.glass.validGlassPreferenceValue
 import org.json.JSONArray
 
 /** Separate typed CSV record: its key can also exist in normal settings without collision. */
@@ -44,6 +45,7 @@ internal object SettingsPreferencesBridge {
                 "boolean" -> value.toBooleanStrict()
                 else -> error("Unsupported Glass setting type")
             }
+            require(validGlassPreferenceValue(key, parsed)) { "Invalid Glass setting value type" }
             key to parsed
         }
         return context.getSharedPreferences(GLASS_PREFERENCES, Context.MODE_PRIVATE).edit().clear().apply {
