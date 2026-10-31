@@ -281,7 +281,7 @@ fun LocalSongSearch(
                         val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
                         downloadState = getDownloadState(song.asMediaItem.mediaId)
                         val isDownloaded = if (!isLocal) isDownloadedSong(song.asMediaItem.mediaId) else true
-                        Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha).animateItem()) {
+                        Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha, retainSpace = true).animateItem()) {
                             SongItem(
                                 song = song,
                                 isLiked = likeStatesMap[song.id],

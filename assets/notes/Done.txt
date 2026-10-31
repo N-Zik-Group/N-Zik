@@ -18,6 +18,10 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(search): preserve hidden local song row geometry
+  - Opt LocalSongSearch into retaining hidden row slots while keeping hidden playback, menu and accessibility actions inactive.
+  - Preserve collapsing behavior for Settings search; cover visibility and stable bounds through the shared helper fixture.
+
 - fix(android-auto): complete search paging, offline browsing and artwork (issue https://github.com/N-Zik-Group/N-Zik/issues/938)
   - Add numbered next-result batches across online search categories in AutoSearchWindowStore; retain complete queries, displayed ordering, duplicate occurrences and bounded continuation state.
   - Apply physical and forced offline policy to browsing, playback and artwork; hide Search and Quick Picks on fresh offline connections and reject stale count publications after policy/profile changes.

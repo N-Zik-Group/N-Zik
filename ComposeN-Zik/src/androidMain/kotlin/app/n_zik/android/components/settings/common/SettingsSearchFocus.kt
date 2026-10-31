@@ -88,13 +88,16 @@ fun ColumnScope.settingsSearchTitle(
     }
 }
 
-/** Keeps state composed, but fully faded children occupy no scroll range or input space. */
-internal fun Modifier.settingsSearchContentVisibility(alpha: Float): Modifier =
+/** Keeps state composed; song lists can retain their slots while hidden settings release space. */
+internal fun Modifier.settingsSearchContentVisibility(
+    alpha: Float,
+    retainSpace: Boolean = false,
+): Modifier =
     graphicsLayer { this.alpha = alpha }
         .then(if (alpha <= 0f) Modifier.clearAndSetSemantics { } else Modifier)
         .layout { measurable, constraints ->
             val placeable = measurable.measure(constraints)
-            layout(placeable.width, if (alpha > 0f) placeable.height else 0) {
+            layout(placeable.width, if (alpha > 0f || retainSpace) placeable.height else 0) {
                 if (alpha > 0f) placeable.placeRelative(0, 0)
             }
         }

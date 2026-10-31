@@ -66,7 +66,7 @@ class SearchSongVisibilityTest {
                 Column {
                     Text("Saved query", Modifier.testTag("history"))
                     Box(Modifier.testTag("songSpace")) {
-                        Column(Modifier.settingsSearchContentVisibility(focus.contentAlpha)) {
+                        Column(Modifier.settingsSearchContentVisibility(focus.contentAlpha, retainSpace = true)) {
                             SongItem(
                                 song = Song("local:1", "Library song", durationText = "1:00", thumbnailUrl = null),
                                 isLiked = false,
