@@ -1,18 +1,3 @@
-// Room screen for the Listen Together feature (Metrolist port — N-Zik styling):
-// the UI is built exclusively from the app's own components — SettingsSectionCard /
-//
-// OtherSettingsEntry cards, app menus through the shared MenuState (ListMenu.Menu +
-//
-// ListMenu.Entry, same mechanism as the app's own item menus), themed
-// app-standard Button / IconButton / app spinner (M3 LoadingIndicator, like the
-//
-// app's themed Loader but without its full-page bottom spacer) —
-// with colorPalette(), typography() and uiRoundnessShape() throughout.
-//
-// Covers: connection status, create/join room, room code, connected users, host
-// management (join requests, suggestions, kick/block/transfer) and the settings card.
-//
-// Reference: docs/Metrolist app/src/main/kotlin/com/metrolist/music/ui/screens/ListenTogetherScreen.kt
 package app.n_zik.android.components.ui.screens.listentogether
 
 import android.content.ClipData
@@ -81,6 +66,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
@@ -100,9 +86,11 @@ import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.R
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.settings.ListenTogetherSettingsCard
+import app.n_zik.android.listentogether.INVITE_ROOM_CODE_KEY
 import app.n_zik.android.listentogether.ConnectionState
 import app.n_zik.android.listentogether.JoinRequestPayload
 import app.n_zik.android.listentogether.ListenTogetherEvent
@@ -114,16 +102,17 @@ import app.n_zik.android.listentogether.UserInfo
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.DataStoreUtils
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 private const val TAG = "ListenTogetherScreen"
 internal const val PREF_USERNAME = "listen_together_username"
 
-/** Metrolist web share format for the room invite link (per user request). */
+/** Metrolist room invitation URL. */
 internal const val LISTEN_INVITE_LINK_BASE = "https://metrolist.cc/listen"
 
-/** Live username preference (SharedPreferences string, same pattern as [DataStoreUtils] readers): seeds from disk on first composition, writes through on change. */
+/** Initializes the username from the persisted Listen Together preference. */
 @Composable
 internal fun rememberUsernamePreference(context: Context): MutableState<String> =
     remember(context) {
@@ -147,6 +136,23 @@ internal fun joinRejectionMessage(
     else -> "$deniedText: $reason"
 }
 
+/** Selects the action for a newly delivered invitation without changing the current room. */
+internal fun inviteAction(roomCode: String, currentRoomCode: String?, savedUsername: String): InviteAction = when {
+    currentRoomCode.equals(roomCode, ignoreCase = true) -> InviteAction.OPEN
+    currentRoomCode != null -> InviteAction.CONFIRM_SWITCH
+    savedUsername.isBlank() -> InviteAction.PREFILL
+    else -> InviteAction.JOIN
+}
+
+internal enum class InviteAction { OPEN, CONFIRM_SWITCH, PREFILL, JOIN }
+
+/** Removes an invitation before it can start a join or display a confirmation. */
+internal fun consumeInvitation(handle: SavedStateHandle): String? {
+    val code = handle.get<String>(INVITE_ROOM_CODE_KEY) ?: return null
+    handle.set<String?>(INVITE_ROOM_CODE_KEY, null)
+    return code
+}
+
 /**
  * Listen Together room screen. Rendered inside the app [Skeleton] scaffold — header,
  * background, nav bar and mini-player handling all come from there (same pattern as the
@@ -163,6 +169,11 @@ fun ListenTogetherScreen(
     val palette = colorPalette()
     val listenTogetherManager = remember { ListenTogetherManager.getInstance() }
     val usernamePref = rememberUsernamePreference(context)
+    val inviteHandle = remember(navController) { navController.currentBackStackEntry?.savedStateHandle }
+    val inviteCode by remember(inviteHandle) {
+        inviteHandle?.getStateFlow<String?>(INVITE_ROOM_CODE_KEY, null)
+            ?: MutableStateFlow<String?>(null)
+    }.collectAsStateWithLifecycle()
 
     if (listenTogetherManager == null) {
         Timber.tag(TAG).w("Manager not initialized, cannot render room screen")
@@ -185,6 +196,20 @@ fun ListenTogetherScreen(
     var isCreatingRoom by rememberSaveable { mutableStateOf(false) }
     var isJoiningRoom by rememberSaveable { mutableStateOf(false) }
     var joinErrorMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    var roomSwitchCode by rememberSaveable { mutableStateOf<String?>(null) }
+
+    fun joinInvitation(code: String) {
+        roomCodeInput = code
+        val savedUsername = DataStoreUtils.getString(context, PREF_USERNAME).trim()
+        if (savedUsername.isBlank()) return
+        usernameInput = savedUsername
+        usernamePref.value = savedUsername
+        isJoiningRoom = true
+        isCreatingRoom = false
+        joinErrorMessage = null
+        Toaster.i(R.string.listen_together_joining_room, code)
+        listenTogetherManager.joinRoom(code, savedUsername)
+    }
 
     val waitingForApprovalText = stringResource(R.string.listen_together_waiting_for_approval)
     val invalidRoomCodeText = stringResource(R.string.listen_together_invalid_room_code)
@@ -223,9 +248,7 @@ fun ListenTogetherScreen(
 
                 // A failure must end the waiting state instead of leaving it stuck: the server
                 // can reject the operation (e.g. host_not_allowed) or the connection can drop
-//
                 // while a create/join is still in flight (user-reported: stuck on "waiting for
-//
                 // host approval"). A user-initiated cancel already reset the flags, so the
                 // Disconnected branch is a no-op in that case.
                 is ListenTogetherEvent.ServerError -> {
@@ -249,7 +272,9 @@ fun ListenTogetherScreen(
                 }
 
                 is ListenTogetherEvent.Disconnected -> {
-                    if (isCreatingRoom || isJoiningRoom) {
+                    if ((isCreatingRoom || isJoiningRoom) &&
+                        listenTogetherManager.connectionState.value == ConnectionState.DISCONNECTED
+                    ) {
                         isCreatingRoom = false
                         isJoiningRoom = false
                         joinErrorMessage = connectionLostText
@@ -264,12 +289,49 @@ fun ListenTogetherScreen(
     val isInRoom = listenTogetherManager.isInRoom
     val isHost = roomState?.hostId == userId
 
+    LaunchedEffect(inviteCode) {
+        if (inviteCode == null) return@LaunchedEffect
+        val code = inviteHandle?.let(::consumeInvitation) ?: return@LaunchedEffect
+        roomSwitchCode = null
+        val savedUsername = DataStoreUtils.getString(context, PREF_USERNAME).trim()
+        when (inviteAction(code, listenTogetherManager.roomState.value?.roomCode, savedUsername)) {
+            InviteAction.OPEN -> Unit
+            InviteAction.CONFIRM_SWITCH -> roomSwitchCode = code
+            InviteAction.PREFILL -> {
+                if (isJoiningRoom || isCreatingRoom) listenTogetherManager.disconnect()
+                isJoiningRoom = false
+                isCreatingRoom = false
+                roomCodeInput = code
+                joinErrorMessage = null
+            }
+            InviteAction.JOIN -> {
+                if (isJoiningRoom || isCreatingRoom) listenTogetherManager.disconnect()
+                joinInvitation(code)
+            }
+        }
+    }
+
+    roomSwitchCode?.let { code ->
+        ConfirmationDialog(
+            title = stringResource(R.string.listen_together),
+            text = stringResource(R.string.listen_together_switch_room_confirmation, code),
+            confirmText = stringResource(R.string.listen_together_leave_room),
+            onDismiss = { roomSwitchCode = null },
+            onConfirm = {
+                roomSwitchCode = null
+                if (!listenTogetherManager.roomState.value?.roomCode.equals(code, ignoreCase = true)) {
+                    listenTogetherManager.leaveRoom()
+                    joinInvitation(code)
+                }
+            },
+        )
+    }
+
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     val bringIntoViewScope = rememberCoroutineScope()
 
     // This screen registers a single nav item, so the app draws no navigation bar
     // (both bars bail out with < 2 items). Reserve only the mini-player room below
-//
     // the content instead of the full Dimensions.bottomSpacer (which assumes a bar).
     val isFloatingNav = NavigationBarPosition.BottomFloating.isCurrent()
     val miniPlayerRoom =
@@ -293,8 +355,15 @@ fun ListenTogetherScreen(
         },
     ) { _ ->
         Box(modifier = Modifier.fillMaxSize()) {
-            // Cards provide their own spacing; only app chrome adds scrolling clearance.
-            // Keep the keyboard overlay behavior to avoid the previous stuck IME spacer.
+            // App cards (SettingsSectionCard) carry their own 16dp horizontal padding and a
+            // trailing 16dp spacer, so the list adds no extra horizontal padding or spacing;
+            // top is flush under the app header (the page header brings its own padding,
+            // same as the app's settings pages).
+            // No imePadding and no own background here (unlike the Metrolist port): the app's
+            // screens let the keyboard overlay the list — the app's own search/queue screens do
+            // the same — and the Skeleton scaffold paints the screen background. Padding the
+            // list with the IME insets left a stuck dark block behind the keyboard on this
+            // page (user-reported).
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = rememberPageChromeContentPadding(
@@ -555,7 +624,6 @@ internal fun ConnectionStatusCard(
 
                 // One UI per state: connect only when down, spinner only while (re)connecting,
                 // disconnect/reconnect only once connected (the action buttons used to show
-//
                 // ahead of time while the spinner was still running — user-reported).
                 when (connectionState) {
                     ConnectionState.DISCONNECTED,
