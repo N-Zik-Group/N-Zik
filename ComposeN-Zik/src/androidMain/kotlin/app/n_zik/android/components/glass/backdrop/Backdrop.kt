@@ -18,6 +18,9 @@ interface Backdrop {
 
     val isCoordinatesDependent: Boolean
 
+    /** Capture generation; material input changes may also register a draw dependency. */
+    val contentVersion: Int? get() = null
+
     fun DrawScope.drawBackdrop(
         density: Density,
         coordinates: LayoutCoordinates?,

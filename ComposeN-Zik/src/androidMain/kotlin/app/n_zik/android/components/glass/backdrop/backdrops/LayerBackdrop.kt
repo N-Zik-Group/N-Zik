@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
@@ -52,33 +53,48 @@ class LayerBackdrop internal constructor(
     internal var layerCoordinates: LayoutCoordinates? by mutableStateOf(null)
 
     /**
-     * Monotonic counter bumped by [LayerBackdropModifier]'s node each time this
+     * Capture generation bumped by [LayerBackdropModifier]'s node each time this
      * backdrop's content is re-recorded. Glass surfaces read it during their draw
      * pass to skip re-recording their own layers when the source is static (e.g.
      * a surface-local animation such as the rim highlight drift), which used to
      * re-capture the whole screen on every frame.
      *
-     * Deliberately a plain field, NOT snapshot state. It is written during the
-     * draw phase and read during the draw phase by every sampling glass surface;
+     * Its recording counter is deliberately a plain field, NOT snapshot state. It is
+     * written and read during the draw phase by every sampling glass surface;
      * as snapshot state that read registered a draw dependency, so the write at
      * the end of each frame invalidated every surface, which dirtied the root
      * layer, which re-ran this node's draw and bumped the counter again. That
      * loop redrew the whole app at the GPU's maximum rate forever, on every
      * screen, with nothing on screen moving — measured 394 draws in 5s on a
      * static settings list, with no recomposition, measure or layout in the
-     * trace. Freshness does not depend on the invalidation: a surface's recorded
-     * layer replays this backdrop's RenderNode by reference, so re-recording the
-     * source is picked up without the surface re-recording anything.
+     * trace. Raw source recordings replay their RenderNode by reference. Exported
+     * material input changes additionally publish one snapshot revision after the
+     * new recording is ready, so retained nested consumers refresh their processed
+     * captures without making every ordinary source record observable.
      */
-    internal var contentVersion: Int = 0
-        private set
+    private var recordingVersion: Int = 0
+    private var materialRevision by mutableIntStateOf(0)
+    private var pendingMaterialChange: Boolean = false
+
+    // Ordinary records never write snapshot state. Changed material inputs publish
+    // their revision only after recording: retained child layers can otherwise refresh
+    // before their enclosing layer draws and sample the previous export indefinitely.
+    override val contentVersion: Int get() = recordingVersion + materialRevision
+
+    internal fun materialChanged() {
+        pendingMaterialChange = true
+    }
 
     // NZik: never let a descendant put this RenderNode into its own display list.
     internal var isRecording: Boolean = false
 
     /** Called by the recording node after a successful record. */
     internal fun contentRecorded() {
-        contentVersion++
+        recordingVersion++
+        if (pendingMaterialChange) {
+            pendingMaterialChange = false
+            materialRevision++
+        }
     }
 
     /**
@@ -109,7 +125,7 @@ class LayerBackdrop internal constructor(
      * True once the source has been recorded at least once. Freezing before that would
      * leave sampling surfaces replaying an empty layer.
      */
-    internal val hasRecording: Boolean get() = contentVersion > 0
+    internal val hasRecording: Boolean get() = recordingVersion > 0
 
     private var inverseLayerScope: InverseLayerScope? = null
 

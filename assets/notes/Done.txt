@@ -138,3 +138,6 @@ Added:
 
 - feat(glass): add shared resources and upstream attribution
   - Provide shared Glass resources and preserve upstream license attribution.
+
+- fix(glass): synchronize backdrop layer publication
+  - Invalidate dependent materials after updated backdrop layers are recorded.

@@ -21,6 +21,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.scale
@@ -101,7 +102,9 @@ fun Modifier.drawPlainBackdrop(
     // versus 77 frames at 42ms with it off. The bar is moving and heavily
     // blurred for those ~300ms, so reusing the previous capture is not visible.
     frozen: () -> Boolean = NeverFrozen,
-    heldWhileMoving: () -> Boolean = NeverFrozen
+    heldWhileMoving: () -> Boolean = NeverFrozen,
+    opticsAlpha: Float = 1f,
+    opticsAlphaProvider: (() -> Float)? = null,
 ): Modifier {
     val shapeProvider = ShapeProvider(shape)
     return this
@@ -128,6 +131,8 @@ fun Modifier.drawPlainBackdrop(
                 onDrawBackdrop = onDrawBackdrop,
                 onDrawSurface = onDrawSurface,
                 onDrawFront = onDrawFront,
+                opticsAlpha = opticsAlpha,
+                opticsAlphaProvider = opticsAlphaProvider,
                 backdropScale = backdropScale.coerceIn(0.05f, 1f),
                 frozen = frozen,
                 heldWhileMoving = heldWhileMoving,
@@ -174,7 +179,10 @@ fun Modifier.drawBackdrop(
     // whole capture + blur/lens chain only needs to run once per bucket, ever,
     // instead of on every frame of every loop. Null (default) keeps the single-
     // layer behavior unchanged.
-    loopBucket: (() -> Int)? = null
+    loopBucket: (() -> Int)? = null,
+    // Composite after RenderEffect processing; does not invalidate source captures.
+    opticsAlpha: Float = 1f,
+    opticsAlphaProvider: (() -> Float)? = null,
 ): Modifier {
     val shapeProvider = ShapeProvider(shape)
     return this
@@ -231,6 +239,8 @@ fun Modifier.drawBackdrop(
                 onDrawBackdrop = onDrawBackdrop,
                 onDrawSurface = onDrawSurface,
                 onDrawFront = onDrawFront,
+                opticsAlpha = opticsAlpha,
+                opticsAlphaProvider = opticsAlphaProvider,
                 backdropScale = backdropScale.coerceIn(0.05f, 1f),
                 frozen = frozen,
                 heldWhileMoving = heldWhileMoving,
@@ -249,6 +259,8 @@ private class DrawBackdropElement(
     val onDrawBackdrop: DrawScope.(drawBackdrop: DrawScope.() -> Unit) -> Unit,
     val onDrawSurface: (DrawScope.() -> Unit)?,
     val onDrawFront: (DrawScope.() -> Unit)?,
+    val opticsAlpha: Float,
+    val opticsAlphaProvider: (() -> Float)?,
     val backdropScale: Float,
     val frozen: () -> Boolean,
     val heldWhileMoving: () -> Boolean,
@@ -266,6 +278,8 @@ private class DrawBackdropElement(
             onDrawBackdrop = onDrawBackdrop,
             onDrawSurface = onDrawSurface,
             onDrawFront = onDrawFront,
+            opticsAlpha = opticsAlpha,
+            opticsAlphaProvider = opticsAlphaProvider,
             backdropScale = backdropScale,
             frozen = frozen,
             heldWhileMoving = heldWhileMoving,
@@ -282,11 +296,21 @@ private class DrawBackdropElement(
         // lambdas — re-sampled the screen and re-ran saturation/blur/lens.
         val captureChanged =
             node.backdrop !== backdrop ||
-                node.shapeProvider !== shapeProvider ||
+                // The wrapper is rebuilt with the modifier; only its shape input
+                // changes the capture. Keep dynamic shape reads in the draw phase.
+                node.shapeProvider.shapeBlock !== shapeProvider.shapeBlock ||
                 node.effects !== effects ||
                 node.layerBlock !== layerBlock ||
                 node.onDrawBackdrop !== onDrawBackdrop ||
                 node.backdropScale != backdropScale
+
+        val exportedMaterialChanged = captureChanged ||
+            node.exportedBackdrop !== exportedBackdrop ||
+            node.onDrawBehind !== onDrawBehind ||
+            node.onDrawSurface !== onDrawSurface ||
+            node.onDrawFront !== onDrawFront ||
+            node.opticsAlpha != opticsAlpha.coerceIn(0f, 1f) ||
+            node.opticsAlphaProvider !== opticsAlphaProvider
 
         node.backdrop = backdrop
         node.shapeProvider = shapeProvider
@@ -300,9 +324,14 @@ private class DrawBackdropElement(
         node.onDrawBackdrop = onDrawBackdrop
         node.onDrawSurface = onDrawSurface
         node.onDrawFront = onDrawFront
+        node.opticsAlpha = opticsAlpha.coerceIn(0f, 1f)
+        node.opticsAlphaProvider = opticsAlphaProvider
         node.backdropScale = backdropScale
         node.frozen = frozen
         node.heldWhileMoving = heldWhileMoving
+        // Queue one consumer notification after the changed export is ready. Ordinary
+        // contentRecorded calls do not publish revisions, avoiding draw feedback loops.
+        if (exportedMaterialChanged) exportedBackdrop?.materialChanged()
         if (node.loopBucket !== loopBucket) {
             // A different bucket function (or losing/gaining one) invalidates
             // whatever's pooled — the old buckets no longer mean anything under
@@ -319,7 +348,7 @@ private class DrawBackdropElement(
             node.clearLoopPool()
         }
         // Always: the overlay repaints even when the capture is reused.
-        node.invalidateDrawCache()
+        if (captureChanged) node.invalidateDrawCache() else node.invalidateDraw()
     }
 
     override fun InspectorInfo.inspectableProperties() {
@@ -333,6 +362,8 @@ private class DrawBackdropElement(
         properties["onDrawBackdrop"] = onDrawBackdrop
         properties["onDrawSurface"] = onDrawSurface
         properties["onDrawFront"] = onDrawFront
+        properties["opticsAlpha"] = opticsAlpha
+        properties["opticsAlphaProvider"] = opticsAlphaProvider
     }
 
     override fun equals(other: Any?): Boolean {
@@ -349,6 +380,8 @@ private class DrawBackdropElement(
         if (onDrawSurface != other.onDrawSurface) return false
         if (onDrawFront != other.onDrawFront) return false
         if (backdropScale != other.backdropScale) return false
+        if (opticsAlpha != other.opticsAlpha) return false
+        if (opticsAlphaProvider != other.opticsAlphaProvider) return false
 
         return true
     }
@@ -364,6 +397,8 @@ private class DrawBackdropElement(
         result = 31 * result + (onDrawSurface?.hashCode() ?: 0)
         result = 31 * result + (onDrawFront?.hashCode() ?: 0)
         result = 31 * result + backdropScale.hashCode()
+        result = 31 * result + opticsAlpha.hashCode()
+        result = 31 * result + (opticsAlphaProvider?.hashCode() ?: 0)
         return result
     }
 }
@@ -378,6 +413,8 @@ private class DrawBackdropNode(
     var onDrawBackdrop: DrawScope.(drawBackdrop: DrawScope.() -> Unit) -> Unit,
     var onDrawSurface: (DrawScope.() -> Unit)?,
     var onDrawFront: (DrawScope.() -> Unit)?,
+    var opticsAlpha: Float,
+    var opticsAlphaProvider: (() -> Float)?,
     var backdropScale: Float,
     var frozen: () -> Boolean,
     var heldWhileMoving: () -> Boolean,
@@ -419,7 +456,7 @@ private class DrawBackdropNode(
     private var recordedBackdropOffset: Offset? = null
     private var recordedBackdropSize: IntSize = IntSize.Zero
 
-    private fun currentBackdropVersion(): Int? = (backdrop as? LayerBackdrop)?.contentVersion
+    private fun currentBackdropVersion(): Int? = backdrop.contentVersion
 
     /** True if [rect] falls entirely inside a region [backdrop] declared static
      *  this generation — see [LayerBackdrop.isFullyStatic]. */
@@ -707,26 +744,37 @@ private class DrawBackdropNode(
         }
     }
 
+    /** Alpha belongs outside the processed layer, leaving capture/effect geometry stable. */
+    private fun DrawScope.drawOpticalLayer() {
+        val opticalAlpha = (opticsAlphaProvider?.invoke() ?: opticsAlpha).coerceIn(0f, 1f)
+        if (opticalAlpha <= 0f) return
+        if (opticalAlpha >= 1f) {
+            drawBackdropLayer()
+            return
+        }
+        val canvas = drawContext.canvas
+        canvas.saveLayer(Rect(Offset.Zero, size), Paint().apply { alpha = opticalAlpha })
+        try { drawBackdropLayer() } finally { canvas.restore() }
+    }
+
     override fun ContentDrawScope.draw() {
         if (effectScope.update(this, backdropScale)) {
             updateEffects()
         }
 
         onDrawBehind?.invoke(this)
-        drawBackdropLayer()
+        drawOpticalLayer()
         onDrawSurface?.invoke(this)
-        drawContent()
-        onDrawFront?.invoke(this)
 
         exportedBackdrop?.let { exported ->
             // Film/progress can invalidate drawing without changing the optical capture.
-            // Refresh only on an existing draw request; never export descendant content.
+            // Publish before children sample it; never export descendant content.
             if (exported !== backdrop && !exported.isRecording) {
                 exported.isRecording = true
                 try {
                     recordLayer(this@DrawBackdropNode, exported.graphicsLayer) {
                         onDrawBehind?.invoke(this)
-                        drawBackdropLayer()
+                        drawOpticalLayer()
                         onDrawSurface?.invoke(this)
                         onDrawFront?.invoke(this)
                     }
@@ -736,6 +784,8 @@ private class DrawBackdropNode(
                 }
             }
         }
+        drawContent()
+        onDrawFront?.invoke(this)
         surfaceDirty = false
     }
 
@@ -758,15 +808,20 @@ private class DrawBackdropNode(
     }
 
     fun invalidateDrawCache() {
-        observeEffects()
+        observeDependencies()
         // Observed effect state can change without an element update (and thus
         // without Compose's automatic node invalidation). Repainting is needed
         // even when the effect's padding stays unchanged.
         invalidateDraw()
     }
 
-    private fun observeEffects() {
-        observeReads { updateEffects() }
+    private fun observeDependencies() {
+        observeReads {
+            // A retained child layer may not redraw merely because its enclosing
+            // material does. Subscribe this node itself to the source's input revision.
+            backdrop.contentVersion
+            updateEffects()
+        }
     }
 
     private fun updateEffects() {
@@ -784,9 +839,10 @@ private class DrawBackdropNode(
     override fun onAttach() {
         val graphicsContext = requireGraphicsContext()
         graphicsLayer = graphicsContext.createGraphicsLayer()
+        exportedBackdrop?.materialChanged()
 
         surfaceDirty = true
-        observeEffects()
+        observeDependencies()
     }
 
     override fun onDetach() {

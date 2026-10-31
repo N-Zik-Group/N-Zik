@@ -52,6 +52,13 @@ private class Combined2Backdrops(
     val backdrop2: Backdrop
 ) : Backdrop {
 
+    override val contentVersion: Int?
+        get() {
+            val first = backdrop1.contentVersion
+            val second = backdrop2.contentVersion
+            return if (first == null && second == null) null else 31 * (first ?: 0) + (second ?: 0)
+        }
+
     override val isCoordinatesDependent: Boolean =
         backdrop1.isCoordinatesDependent || backdrop2.isCoordinatesDependent
 
@@ -71,6 +78,15 @@ private class Combined3Backdrops(
     val backdrop2: Backdrop,
     val backdrop3: Backdrop
 ) : Backdrop {
+
+    override val contentVersion: Int?
+        get() {
+            val first = backdrop1.contentVersion
+            val second = backdrop2.contentVersion
+            val third = backdrop3.contentVersion
+            return if (first == null && second == null && third == null) null
+                else (31 * (first ?: 0) + (second ?: 0)) * 31 + (third ?: 0)
+        }
 
     override val isCoordinatesDependent: Boolean =
         backdrop1.isCoordinatesDependent ||
@@ -92,6 +108,18 @@ private class Combined3Backdrops(
 private class CombinedBackdrops(
     vararg val backdrops: Backdrop
 ) : Backdrop {
+
+    override val contentVersion: Int?
+        get() {
+            var version = 0
+            var versioned = false
+            for (backdrop in backdrops) {
+                val sourceVersion = backdrop.contentVersion
+                versioned = versioned || sourceVersion != null
+                version = version * 31 + (sourceVersion ?: 0)
+            }
+            return if (versioned) version else null
+        }
 
     override val isCoordinatesDependent: Boolean =
         backdrops.any { it.isCoordinatesDependent }
