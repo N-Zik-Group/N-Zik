@@ -159,6 +159,14 @@ internal fun GlassNavigationTabs(
                     else offsetAnimation.snapTo(0f)
                 }
             },
+            onDragCancelled = {
+                // A consumed/cancelled pointer is not a selection commit.
+                updateValue(currentSelected.toFloat())
+                scope.launch {
+                    if (motion) offsetAnimation.animateTo(0f, spring(1f, 300f, 0.5f))
+                    else offsetAnimation.snapTo(0f)
+                }
+            },
             onDrag = { _, amount ->
                 val delta = if (vertical) amount.y else amount.x
                 updateValue(glassDraggedTab(targetValue, delta, extent.floatValue - 2 * inset, count, reverse))

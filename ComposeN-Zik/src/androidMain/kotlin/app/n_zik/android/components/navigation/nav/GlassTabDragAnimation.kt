@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.IntSize
 import app.n_zik.android.components.glass.inspectDragGestures
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -39,6 +40,7 @@ internal class GlassTabDragAnimation(
     val pressedScale: Float,
     val onDragStarted: GlassTabDragAnimation.(position: Offset) -> Unit,
     val onDragStopped: GlassTabDragAnimation.() -> Unit,
+    val onDragCancelled: GlassTabDragAnimation.() -> Unit = {},
     val onDrag: GlassTabDragAnimation.(size: IntSize, dragAmount: Offset) -> Unit,
 ) {
 
@@ -67,6 +69,7 @@ internal class GlassTabDragAnimation(
     private val mutatorMutex = MutatorMutex()
 
     private val velocityTracker = VelocityTracker()
+    private var releaseJob: Job? = null
 
     val value: Float get() = valueAnimation.value
     val targetValue: Float get() = valueAnimation.targetValue
@@ -86,7 +89,7 @@ internal class GlassTabDragAnimation(
                 release()
             },
             onDragCancel = {
-                onDragStopped()
+                onDragCancelled()
                 release()
             }
         ) { _, dragAmount ->
@@ -95,6 +98,8 @@ internal class GlassTabDragAnimation(
     }
 
     fun press() {
+        // A new pointer owns the pressed presentation, including pending settle waiters.
+        releaseJob?.cancel()
         if (!motionAllowed) return
         velocityTracker.resetTracking()
         animationScope.launch {
@@ -105,8 +110,9 @@ internal class GlassTabDragAnimation(
     }
 
     fun release() {
+        releaseJob?.cancel()
         if (!motionAllowed) return
-        animationScope.launch {
+        releaseJob = animationScope.launch {
             awaitFrame()
             if (value != targetValue) {
                 val threshold = (valueRange.endInclusive - valueRange.start).coerceAtLeast(1f) * 0.025f
