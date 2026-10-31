@@ -1,6 +1,16 @@
 @file:kotlin.OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.n_zik.android.updater.ui
 
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.glassContentCaptureEnabled
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
+import app.n_zik.android.components.glass.NativeIconActionSize
+import app.n_zik.android.components.ui.iconBadgeBackground
+import app.n_zik.android.components.ui.LeadingIconBadge
+
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 
 import android.content.Context
@@ -19,8 +29,6 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,7 +44,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.Icon
@@ -105,6 +112,11 @@ import java.util.Date
 
 @Composable
 fun UpdateScreen(navController: NavController) {
+    UpdaterGlassScope { UpdateScreenContent(navController) }
+}
+
+@Composable
+private fun UpdateScreenContent(navController: NavController) {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
     val downloadState by UpdateDownloadManager.downloadState.collectAsStateWithLifecycle()
@@ -170,16 +182,20 @@ fun UpdateScreen(navController: NavController) {
     // a previously found APK after a failed re-check (githubRelease is cleared)
     val fileSize = if (hasUpdate) try { Updater.build.readableSize } catch (_: Exception) { "" } else ""
 
+    val footerBackdrop = rememberLayerBackdrop()
+    val updaterGlass = rememberGlassSettings()
+    val captureFooterBackdrop = updaterGlass.usesGlassMaterial(GlassArea.SettingsCards) &&
+        glassContentCaptureEnabled(updaterGlass)
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = colorPalette().background0,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             // Floating Action button at the bottom
-            Box(
+            UpdaterBottomPanel(
+                backdrop = footerBackdrop,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(colorPalette().background0.copy(alpha = 0.95f))
                     .padding(rememberPageChromeContentPadding(topInsetProvider = { 0.dp }))
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
@@ -187,7 +203,7 @@ fun UpdateScreen(navController: NavController) {
                     is UpdateDownloadManager.DownloadState.Starting,
                     is UpdateDownloadManager.DownloadState.Downloading,
                     is UpdateDownloadManager.DownloadState.Completed -> {
-                        Card(
+                        UpdaterCard(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = colorPalette().background1),
                             shape = uiRoundnessShape(),
@@ -237,21 +253,20 @@ fun UpdateScreen(navController: NavController) {
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.End
                                     ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .clip(uiRoundnessShape())
-                                                .clip(uiRoundnessShape()).clickable {
-                                                    Toaster.i(R.string.download_cancelled)
-                                                    UpdateDownloadManager.cancelDownload(context)
-                                                }
-                                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                                        UpdaterIconAction(
+                                            onClick = {
+                                                Toaster.i(R.string.download_cancelled)
+                                                UpdateDownloadManager.cancelDownload(context)
+                                            },
                                         ) {
+                                            Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                                             BasicText(
                                                 text = stringResource(R.string.cancel),
                                                 modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                                 maxLines = 1,
                                                 style = typography().s.semiBold.copy(color = colorPalette().red)
                                             )
+                                            }
                                         }
                                     }
                                 } else if (state is UpdateDownloadManager.DownloadState.Starting) {
@@ -274,10 +289,8 @@ fun UpdateScreen(navController: NavController) {
                                         )
                                     }
                                 } else if (state is UpdateDownloadManager.DownloadState.Completed) {
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clip(uiRoundnessShape()).clickable {
+                                    UpdaterActionCard(
+                                        onClick = {
                                                 val apkPath = state.filePath
                                                 if (preInstallBackupEnabled && preInstallBackupUri.isNotEmpty() && !isPreInstallBackupRunning) {
                                                     apkPathToInstall = apkPath
@@ -303,7 +316,10 @@ fun UpdateScreen(navController: NavController) {
                                                     apkPathToInstall = apkPath
                                                     showInstallWarningDialog = true
                                                 }
-                                            },
+
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
                                         colors = CardDefaults.cardColors(containerColor = colorPalette().accent),
                                         shape = uiRoundnessShape()
                                     ) {
@@ -347,16 +363,17 @@ fun UpdateScreen(navController: NavController) {
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 if (hasUpdate) {
-                                    Card(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clip(uiRoundnessShape()).clickable {
+                                    UpdaterActionCard(
+                                        onClick = {
                                                 UpdateDownloadManager.startDownload(
                                                     context,
                                                     Updater.build.downloadUrl,
                                                     newVersion
                                                 )
-                                            },
+
+                                        },
+                                        modifier = Modifier
+                                            .weight(1f),
                                         colors = CardDefaults.cardColors(containerColor = colorPalette().accent),
                                         shape = uiRoundnessShape()
                                     ) {
@@ -387,13 +404,14 @@ fun UpdateScreen(navController: NavController) {
                                         }
                                     }
                                 } else {
-                                    Card(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clip(uiRoundnessShape()).clickable {
+                                    UpdaterActionCard(
+                                        onClick = {
                                                 Toaster.i(R.string.checking_for_updates)
                                                 Updater.checkForUpdate(true, effectiveCheckBeta, showDialog = false)
-                                            },
+
+                                        },
+                                        modifier = Modifier
+                                            .weight(1f),
                                         colors = CardDefaults.cardColors(containerColor = colorPalette().background1),
                                         shape = uiRoundnessShape(),
                                         border = BorderStroke(1.dp, colorPalette().accent.copy(alpha = 0.5f))
@@ -423,10 +441,8 @@ fun UpdateScreen(navController: NavController) {
                                     }
                                 }
 
-                                Card(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clip(uiRoundnessShape()).clickable {
+                                UpdaterActionCard(
+                                        onClick = {
                                             // Prefer the actual release tag when the target release is
                                             // known, so the link always points to an existing release
 //
@@ -438,7 +454,10 @@ fun UpdateScreen(navController: NavController) {
                                             val tag = (if (hasUpdate) Updater.githubRelease?.tagName else null)
                                                 ?: Updater.releaseTag(currentVersion)
                                             uriHandler.openUri("${UpdateEndpoints.REPO_URL}/releases/tag/$tag")
+
                                         },
+                                    modifier = Modifier
+                                        .weight(1f),
                                     colors = CardDefaults.cardColors(containerColor = colorPalette().background1),
                                     shape = uiRoundnessShape(),
                                     border = BorderStroke(1.dp, colorPalette().textSecondary.copy(alpha = 0.5f))
@@ -473,7 +492,8 @@ fun UpdateScreen(navController: NavController) {
             }
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize()
+            .then(if (captureFooterBackdrop) Modifier.layerBackdrop(footerBackdrop) else Modifier)) {
             Column(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -495,7 +515,7 @@ fun UpdateScreen(navController: NavController) {
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 16.dp)
                     ) {
-                        Card(
+                        UpdaterCard(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(
                                 containerColor = surfaceColor(colorPalette().background1)
@@ -509,12 +529,9 @@ fun UpdateScreen(navController: NavController) {
                                     var showMenu by remember { mutableStateOf(false) }
                                     val menuTrigger = remember { GlassMenuTriggerState() }
                                     GlassMenuTrigger(menuTrigger, uiRoundnessShape()) {
-                                        Box(
-                                            modifier = Modifier
-                                                .clip(uiRoundnessShape())
-                                                .clickable { showMenu = true }
-                                                .padding(12.dp),
-                                            contentAlignment = Alignment.Center
+                                        UpdaterIconAction(
+                                            onClick = { showMenu = true },
+                                            modifier = Modifier.size(48.dp),
                                         ) {
                                             Icon(
                                                 painter = painterResource(R.drawable.ellipsis_vertical),
@@ -648,7 +665,7 @@ fun UpdateScreen(navController: NavController) {
                                             modifier = Modifier
                                                 .size(64.dp)
                                                 .clip(uiRoundnessShape())
-                                                .background(colorPalette().accent.copy(alpha = 0.1f)),
+                                                .iconBadgeBackground(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape()),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Icon(
@@ -684,7 +701,7 @@ fun UpdateScreen(navController: NavController) {
                                             modifier = Modifier
                                                 .size(64.dp)
                                                 .clip(uiRoundnessShape())
-                                                .background(colorPalette().accent.copy(alpha = 0.1f)),
+                                                .iconBadgeBackground(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape()),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Icon(
@@ -714,7 +731,7 @@ fun UpdateScreen(navController: NavController) {
                                             modifier = Modifier
                                                 .size(64.dp)
                                                 .clip(uiRoundnessShape())
-                                                .background(colorPalette().accent.copy(alpha = 0.1f)),
+                                                .iconBadgeBackground(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape()),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Icon(
@@ -814,7 +831,7 @@ fun UpdateScreen(navController: NavController) {
                             initialScale = 0.9f
                         )
                     ) {
-                        Card(
+                        UpdaterCard(
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                             colors = CardDefaults.cardColors(
                                 containerColor = surfaceColor(colorPalette().background1)
@@ -827,11 +844,10 @@ fun UpdateScreen(navController: NavController) {
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.padding(bottom = 16.dp)
                                 ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.sparkles),
+                                    LeadingIconBadge(
+                                        iconRes = R.drawable.sparkles,
                                         contentDescription = null,
-                                        tint = colorPalette().accent,
-                                        modifier = Modifier.size(20.dp)
+                                        modifier = Modifier.size(32.dp),
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     BasicText(
@@ -840,15 +856,10 @@ fun UpdateScreen(navController: NavController) {
                                         maxLines = 1,
                                         style = typography().m.bold.copy(color = colorPalette().text)
                                     )
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(uiRoundnessShape())
-                                            .combinedClickable(
-                                                onClick = { isTranslationActive = !isTranslationActive },
-                                                onLongClick = { showLanguageDialog = true }
-                                            )
-                                            .padding(6.dp),
-                                        contentAlignment = Alignment.Center
+                                    UpdaterIconAction(
+                                        modifier = Modifier.size(NativeIconActionSize),
+                                        onClick = { isTranslationActive = !isTranslationActive },
+                                        onLongClick = { showLanguageDialog = true },
                                     ) {
                                         Icon(
                                             painter = painterResource(R.drawable.translate),
@@ -1021,10 +1032,9 @@ fun ChangelogCard(rawText: String, translatedText: String?, colorPaletteMode: Co
         displaySections.forEach { section ->
             var expanded by remember { mutableStateOf(true) }
 
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(uiRoundnessShape()).clickable { expanded = !expanded },
+            UpdaterCard(
+                onClick = { expanded = !expanded },
+                modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
                     containerColor = Color.Transparent
                 ),
@@ -1036,20 +1046,17 @@ fun ChangelogCard(rawText: String, translatedText: String?, colorPaletteMode: Co
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(
-                            painter = painterResource(
-                                when (section.first.lowercase()) {
+                        LeadingIconBadge(
+                            iconRes = when (section.first.lowercase()) {
                                     UpdaterConstants.CHANGELOG_ADDED -> R.drawable.add
                                     UpdaterConstants.CHANGELOG_CHANGED -> R.drawable.pencil
                                     UpdaterConstants.CHANGELOG_IMPROVED -> R.drawable.refresh_circle
                                     UpdaterConstants.CHANGELOG_FIXED -> R.drawable.alert
                                     UpdaterConstants.CHANGELOG_DEV -> R.drawable.sparkles
                                     else -> R.drawable.information
-                                }
-                            ),
+                            },
                             contentDescription = null,
-                            tint = colorPalette().accent,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(32.dp),
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         BasicText(

@@ -183,3 +183,6 @@ Added:
 
 - fix(settings): restore defaults and add reset all
   - Reset application preferences consistently while preserving accounts, profiles, media, files and backup destinations.
+
+- feat(updater): connect cards actions and footer to Glass
+  - Use shared Glass cards and icon supports with a translucent scrolling footer and native fallback.
