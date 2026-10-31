@@ -11,7 +11,6 @@ Sadə dinləyici və ya audiofil: N-Zik məxfiliyinizi qoruyaraq musiqiniz üzə
 ✨ <b>NİYƏ N-ZIK?</b> Reklamsız, arxa planda oxutma, oflayn keşləmə, fərdiləşdirilə bilən UI - həmişə pulsuz.
 
 🎨 <b>Fərdiləşdirilə bilən UI</b>
-- Jetpack Compose və klassik ViMusic rejim keçidi
 - Temalar: AMOLED, Deep Dark, Crisp Light + rəngli aksentlər
 - 3D Carousel Player, ana ekran widgetləri, birləşdirilmiş pleyer və mini pleyer
 - Musiqiçilərin profilləri, Kəşf və moodlar, qatlanabilən ana ekran başlıqları

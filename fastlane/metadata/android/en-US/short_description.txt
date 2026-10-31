@@ -1,1 +1,1 @@
-Multilingual YT Music client
+Multilingual YT Music client with optional Glass effect (BETA)

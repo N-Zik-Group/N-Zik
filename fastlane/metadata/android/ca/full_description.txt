@@ -11,7 +11,6 @@ Sigues oient ocasional o audiòfil, N-Zik et dóna el control absolut de la mús
 ✨ <b>PER QUÈ N-ZIK?</b> Sense anuncis, reproducció en segon pla, memòria cau fora de línia, interfície personalitzable - gratuït, sempre.
 
 🎨 <b>Interfície personalitzable</b>
-- Jetpack Compose, commutador de mode clàssic ViMusic
 - Temes: AMOLED, Deep Dark, Crisp Light + accents de color
 - 3D Carousel Player, widgets d'inici, reproductor unificat i mini
 - Perfils d'artistes, descoberta i estats d'ànim, capçaleres plegables

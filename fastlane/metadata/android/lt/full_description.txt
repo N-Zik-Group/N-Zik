@@ -11,7 +11,6 @@ Klausytojas ar melomanas - N-Zik suteikia pilną kontrolę jūsų muzikos be pri
 ✨ <b>KODĖL N-ZIK?</b> Jokių reklamų, atkūrimas fone, offline kešas, pritaikoma sąsaja - nemokamai, visada.
 
 🎨 <b>Pritaikoma sąsaja</b>
-- Jetpack Compose su klasikinio ViMusic režimo perjungikliu
 - Temos: AMOLED, Deep Dark, Crisp Light + spalvinti akcentai
 - 3D Carousel Player, namų widget'ai, vieningas grotuvas su mini grotuvu
 - Atlikėjų profiliai, Discovery ir nuotaikos, sulankstomi antraščiai

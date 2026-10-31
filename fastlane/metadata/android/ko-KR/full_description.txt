@@ -11,7 +11,6 @@ Android용 다국어 YouTube Music 프론트엔드. 성능, UI/UX 개선, 기능
 ✨ <b>왜 N-ZIK?</b> 광고 없음, 백그라운드 재생, 오프라인 캐싱, 맞춤 설정 가능한 UI - 항상 무료.
 
 🎨 <b>맞춤 설정 가능한 UI</b>
-- 클래식 ViMusic 모드 토글이 있는 Jetpack Compose
 - 테마: AMOLED, Deep Dark, Crisp Light + 색상 강조
 - 3D Carousel Player, 홈 위젯, 통합 플레이어와 미니 플레이어
 - 아티스트 프로필, Discovery와 무드, 접이식 홈 헤더

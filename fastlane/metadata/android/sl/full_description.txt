@@ -11,7 +11,6 @@ Ali ste priložnostni poslušalec ali audiofil, N-Zik vam daje popoln nadzor nad
 ✨ <b>ZAKAJ N-ZIK?</b> Brez oglasov, predvajanje v ozadju, offline predpomnilnik, prilagodljiv vmesnik - vedno brezplačno.
 
 🎨 <b>Prilagodljiv vmesnik</b>
-- Jetpack Compose s preklopom na klasični način ViMusic
 - Teme: AMOLED, Deep Dark, Crisp Light + barvni poudarki
 - 3D Carousel Player, gradniki domačice, enotni predvajalnik in mini-player
 - Profili izvajalcev, Discovery in razpoloženja, zložljive glave domačice

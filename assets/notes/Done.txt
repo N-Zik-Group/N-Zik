@@ -186,3 +186,6 @@ Added:
 
 - feat(updater): connect cards actions and footer to Glass
   - Use shared Glass cards and icon supports with a translucent scrolling footer and native fallback.
+
+- docs: describe optional Glass and update acknowledgements
+  - Update project and store documentation for optional Glass and upstream acknowledgements.

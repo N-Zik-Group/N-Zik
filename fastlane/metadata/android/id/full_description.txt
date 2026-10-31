@@ -11,7 +11,6 @@ Pendengar kasual maupun audiofil, N-Zik memberi Anda kendali penuh atas musik ta
 ✨ <b>MENGAPA N-ZIK?</b> Tanpa iklan, pemutaran latar belakang, caching offline, UI dapat disesuaikan - gratis, selalu.
 
 🎨 <b>UI yang Dapat Disesuaikan</b>
-- Jetpack Compose dengan toggle mode ViMusic Klasik
 - Tema: AMOLED, Deep Dark, Crisp Light + aksen warna
 - 3D Carousel Player, widget home, pemain terpadu dan mini-pemain
 - Profil artis, Discovery dan mood, header home yang bisa dilipat

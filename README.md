@@ -114,7 +114,7 @@ Join the N-Zik Discord:
 - 🌍 **Multilingual Support**: Available in English, Italian, German, Russian, French, Spanish, Czech, Turkish, Romanian, and more. Contributions are always welcome!
 - 🔊 **High Quality Audio** - Premium streaming quality is unlocked automatically - just connect your YouTube Music Premium account.
 - 🎨 **Modern and Intuitive UI**
-- 🌓 **UI Mode Toggle**: Switch between the **N-Zik** experience and the classic **ViMusic** interface.
+- 🫧 **Glass Effect (BETA, optional)**: Disabled on fresh installations. Enable it in Settings, then choose native, contour-only or Glass presentation by category and adjust the rendering quality. Glass can increase rendering work and battery use; lower the quality or disable it to suit your device.
 - 💾 **Smart Offline Caching**: Automatically cache songs for offline playback with customizable cache limits.
 - 📥 **Downloads**: Download individual tracks or entire playlists for permanent offline access, with a dedicated download quality (Auto/High/Low) and a batch "Update downloads" action.
 - ▶️ **Background Playback**: Keep your music playing while using other apps.
@@ -351,6 +351,8 @@ New:
 
 ### 🎨 Design & UI Contributions:
 
+- [**Square / Convx Project**](https://github.com/Lelonio/Square): Glass material, interaction physics and presentation adaptations, licensed under GPL-3.0. See the [Square attribution notice](ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/NOTICE-square.txt).
+- [**Kyant0 / AndroidLiquidGlass (Backdrop)**](https://github.com/Kyant0/AndroidLiquidGlass): The underlying backdrop and optical rendering sources, licensed separately under Apache-2.0. See the [Backdrop license](ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/LICENSE-backdrop.txt).
 - Current banner and logo [**OrangeZXZ**](https://github.com/OrangeZXZ), [**NEVARLeVrai**](https://github.com/NEVARLeVrai)
 - Player design: [**aneesh1122**](https://github.com/aneesh1122), [**OrangeZXZ**](https://github.com/OrangeZXZ), [**NEVARLeVrai**](https://github.com/NEVARLeVrai)
 - Icons: [**Ionicons**](https://github.com/ionic-team/ionicons), [**FlatIcon.com**](https://www.flaticon.com)

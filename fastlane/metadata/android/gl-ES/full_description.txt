@@ -11,7 +11,6 @@ Sexas escoitador ocasional ou audiófilo, N-Zik dáche control total da túa mú
 ✨ <b>Por que N-ZIK?</b> Sen anuncios, reprodución en segundo plano, caché offline, UI personalizable - gratis, sempre.
 
 🎨 <b>UI personalizable</b>
-- Jetpack Compose, alternancia do modo clásico de ViMusic
 - Temas: AMOLED, Deep Dark, Crisp Light + acentos tonificados
 - 3D Carousel Player, widgets, reprodutor e mini-reprodutor unificados
 - Perfís de artista, Descuberta e estados de ánimo, cabeceiras plegables

@@ -11,7 +11,6 @@ Kaswal man o audiophile, ibibigay ng N-Zik ang buong kontrol sa musika mo walang
 ✨ <b>BAKIT N-ZIK?</b> Walang ad, background playback, offline caching, customizable UI - libre, palagi.
 
 🎨 <b>Personalisadong UI</b>
-- Jetpack Compose na may Classic ViMusic mode toggle
 - Mga tema: AMOLED, Deep Dark, Crisp Light + mga accent na may tint
 - 3D Carousel Player, widget sa home, unified player at mini-player
 - Profile ng artist, Discovery at mood, collapsible na header sa home

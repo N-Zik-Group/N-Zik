@@ -11,7 +11,6 @@ Oled harrastajakuulaja või audiofiil? N-Zik annab täieliku kontrolli muusika �
 ✨ <b>MIKS N-ZIK?</b> Ilma reklaamita, esitus taustal, võrguta vahemälu, kohandatav UI - alati tasuta.
 
 🎨 <b>Kohandatav UI</b>
-- Jetpack Compose, klassikalise ViMusic režiimi lülitus
 - Teemad: AMOLED, Deep Dark, Crisp Light + värvilised aktsendid
 - 3D Carousel Player, avakuva vidinad, ühtne mängija ja minimängija
 - Artisti profiilid, avastamine ja meeleolud, kokkupandavad avakuva päised

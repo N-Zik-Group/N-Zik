@@ -1,4 +1,4 @@
-Interface YouTube Music multilingue pour Android, axée performance, raffinement UI/UX, extension des fonctions et support long terme.
+Client YouTube Music multilingue et open source pour Android.
 
 <b>N-Zik</b> est un fork open source de <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
@@ -6,12 +6,11 @@ Interface YouTube Music multilingue pour Android, axée performance, raffinement
 
 <b>Utilisation de l'IA :</b> J'utilise l'IA générative pour le code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), révisé et testé avant publication.
 
-Auditeur occasionnel ou audiophile, N-Zik vous donne le contrôle total de votre musique, sans nuire à la vie privée.
-
 ✨ <b>POURQUOI N-ZIK ?</b> Sans publicité, lecture en arrière-plan, cache hors ligne, UI personnalisable - gratuit, toujours.
 
 🎨 <b>UI personnalisable</b>
-- Jetpack Compose avec bascule du mode classique ViMusic
+- Interface Jetpack Compose
+- Effet Glass facultatif (BETA), désactivé à la première installation : natif, contour ou Glass par catégorie, qualité réglable. Peut augmenter le travail de rendu et la consommation de batterie.
 - Thèmes : AMOLED, Deep Dark, Crisp Light + accents colorés
 - 3D Carousel Player, widgets d'accueil, lecteur unifié + mini-lecteur
 - Profils d'artistes, Discovery et ambiances, en-têtes pliables
@@ -63,3 +62,5 @@ Auditeur occasionnel ou audiophile, N-Zik vous donne le contrôle total de votre
 - Dev64/Dev32 (`com.nevar.nzik.dev`): Builds de développement, tests uniquement
 
 Aucun build n'embarque FFmpeg : c'est une extension téléchargeable (installée à la première utilisation, gérée dans Paramètres → Extensions). Seul FOSS est sur F-Droid.
+
+Crédits Glass : Square / Convx Project (GPL-3.0) ; Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0). ViMusic reste crédité pour les origines du projet.

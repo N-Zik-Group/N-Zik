@@ -11,7 +11,6 @@ Jeni dëgjues i rastësishëm apo audiofil, N-Zik ju jep kontroll të plotë mbi
 ✨ <b>PSE N-ZIK?</b> Pa reklama, riprodhim në sfond, ruajtje jashtë linje, ndërfaqe e personalizueshme - falas, gjithmonë.
 
 🎨 <b>Ndërfaqe e personalizueshme</b>
-- Jetpack Compose me modalitetin klasik ViMusic
 - Tema: AMOLED, Deep Dark, Crisp Light + theks të ngjyrosur
 - 3D Carousel Player, widget-e të ekranit kryesor, player i unifikuar dhe mini-player
 - Profile artistësh, Discovery dhe mood, koka të palosshme

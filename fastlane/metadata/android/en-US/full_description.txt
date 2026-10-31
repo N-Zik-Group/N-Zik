@@ -6,12 +6,11 @@ A multilingual YouTube Music frontend for Android, focused on performance, UI/UX
 
 <b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), reviewed and tested before shipping.
 
-Whether casual listener or audiophile, N-Zik gives you full control over your music without compromising privacy.
-
 ✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI - free, always.
 
 🎨 <b>Customizable UI</b>
-- Jetpack Compose with Classic ViMusic mode toggle
+- Jetpack Compose interface
+- Optional Glass effect (BETA), off on fresh installs: native, contour or Glass by category, with adjustable quality. May increase rendering work and battery use.
 - Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
 - 3D Carousel Player, home widgets, unified player and mini-player
 - Artist profiles, Discovery and moods, collapsible home headers
@@ -63,3 +62,5 @@ Whether casual listener or audiophile, N-Zik gives you full control over your mu
 - Dev64/Dev32 (`com.nevar.nzik.dev`): Development builds, testing only
 
 No build bundles FFmpeg: it is a downloadable extension (installed on first use, managed in Settings → Extensions). Only FOSS is on F-Droid.
+
+Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0). Historical project credits include ViMusic.

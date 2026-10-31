@@ -11,7 +11,6 @@ Sıradan dinleyici ya da odyofil olun, N-Zik gizliliğinizden ödün vermeden m�
 ✨ <b>NEDEN N-ZIK?</b> Reklamsız, arka plan oynatma, çevrimdışı önbellekleme, ayarlanabilir arayüz - her zaman ücretsiz.
 
 🎨 <b>Ayarlanabilir Arayüz</b>
-- Klasik ViMusic modu geçişli Jetpack Compose
 - Temalar: AMOLED, Deep Dark, Crisp Light + renkli vurgular
 - 3D Carousel Player, ana ekran widget'ları, birleşik ve mini-oynatıcı
 - Sanatçı profilleri, Keşif/ruh halleri, katlanabilir ana ekran başlıkları
