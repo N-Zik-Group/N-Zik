@@ -29,6 +29,8 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.typography
 import app.n_zik.android.updater.services.Updater
+import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.ui.iconBadgeBackground
 
 /** Reference label for the header badges: the rendered width of this title at the badge style caps the width of EVERY header badge (version + debug) — no badge may be wider than the "DEBUG" badge; longer labels scroll in a marquee instead. */
 internal const val HEADER_BADGE_REF_TITLE = "DEBUG"
@@ -74,19 +76,21 @@ internal fun HeaderBadgeBox(
     text: String,
     color: Color,
     onToggle: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    glassSettings: GlassSettings? = null,
 ) {
     val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
     val style = headerBadgeStyle().copy(color = color)
     val maxWidth = clampedLabelMaxWidth(HEADER_BADGE_REF_TITLE, style)
+    val shape = uiRoundnessShape()
+    val fill = color.copy(alpha = 0.2f)
+    val background = if (glassSettings == null) Modifier.background(fill, shape)
+        else Modifier.iconBadgeBackground(fill, shape, glassSettings)
 
     Box(
         modifier = modifier
-            .background(
-                color = color.copy(alpha = 0.2f),
-                shape = uiRoundnessShape()
-            )
-            .clip(uiRoundnessShape())
+            .then(background)
+            .clip(shape)
             // Only the interactive debug badge gets the click modifier: even a
             // disabled clickable would enforce the 48dp minimum touch target and
 //

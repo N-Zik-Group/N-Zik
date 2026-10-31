@@ -34,6 +34,7 @@ import app.n_zik.android.components.player.miniPlayerTopDockPaddingPx
 import app.n_zik.android.components.player.miniPlayerTopInset
 import app.n_zik.android.components.player.miniPlayerTopPaddingPx
 import app.n_zik.android.components.player.rememberAnimatedMiniPlayerTopInset
+import app.n_zik.android.components.ui.screens.home.LocalHomeTopMiniPlayerAnchor
 
 /** Unlike scrolling start padding, the refresh affordance must clear visible chrome at every frame. */
 internal fun pullRefreshOverlayInsetPx(
@@ -48,9 +49,10 @@ internal fun pullRefreshOverlayInsetPx(
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-internal fun rememberPullRefreshOverlayInsetProvider(): () -> Dp {
+internal fun rememberPullRefreshOverlayInsetProvider(viewportTopPx: () -> Float = { 0f }): () -> Dp {
     val contentInset = LocalAppHeaderContentInset.current
     val headerInset = LocalAppHeaderOverlayInset.current
+    val homeHeader = LocalHomeTopMiniPlayerAnchor.current
     val density = LocalDensity.current
     val statusTop = WindowInsets.safeDrawing.getTop(density).toFloat()
     val navigation = NavigationBarPosition.current()
@@ -73,7 +75,8 @@ internal fun rememberPullRefreshOverlayInsetProvider(): () -> Dp {
     })
     val currentProvider by rememberUpdatedState<() -> Dp> {
         // Other routes still position their entire viewport below chrome.
-        if (contentInset() <= 0.dp) 0.dp else with(density) {
+        val homeBottom = homeHeader?.headerOverlayBottom()
+        if (contentInset() <= 0.dp && homeBottom == null) 0.dp else with(density) {
             val fold = (dock?.progress?.value ?: 0f).coerceIn(0f, 1f)
             val miniHeight = (FloatingDockDimensions.expandedMiniHeight * (1f - fold) +
                 FloatingDockDimensions.compactHeight * fold).dp.toPx()
@@ -86,8 +89,16 @@ internal fun rememberPullRefreshOverlayInsetProvider(): () -> Dp {
                     retainedTopInsetPx = miniInset.value - headerHeight,
                 )
             } else null
-            pullRefreshOverlayInsetPx(headerInset().toPx(), navHeight, miniTop, miniHeight).toDp()
+            val chromeBottom = maxOf(
+                pullRefreshOverlayInsetPx(headerInset().toPx(), navHeight, miniTop, miniHeight),
+                homeBottom?.toPx() ?: 0f,
+            )
+            pullRefreshLocalInsetPx(chromeBottom, viewportTopPx()).toDp()
         }
     }
     return remember { { currentProvider() } }
 }
+
+/** Indicator translation is local to its refresh viewport, while chrome geometry is absolute. */
+internal fun pullRefreshLocalInsetPx(chromeBottomPx: Float, viewportTopPx: Float): Float =
+    (chromeBottomPx - viewportTopPx).coerceAtLeast(0f)

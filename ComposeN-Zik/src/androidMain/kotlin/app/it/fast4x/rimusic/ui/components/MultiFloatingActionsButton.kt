@@ -1,5 +1,7 @@
 package app.it.fast4x.rimusic.ui.components
 
+import app.n_zik.android.components.glass.glassGlobalIndication
+
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.Transition
@@ -27,7 +29,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
-import androidx.compose.material3.SmallFloatingActionButton
+import app.n_zik.android.components.ui.UiSmallFloatingActionButton as SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -56,6 +58,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassFloatingActionIcon
+import app.n_zik.android.components.glass.glassNativeActionContour
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.navigation.FloatingMultiActionSize
@@ -118,7 +121,7 @@ fun MultiFloatingActionsButton (
     val modifier = if (currentState == MultiFabState.Expanded)
         Modifier
             .fillMaxSize()
-            .clip(uiRoundnessShape()).clickable(indication = null,
+            .clip(uiRoundnessShape()).clickable(indication = glassGlobalIndication(null),
                 interactionSource = remember { MutableInteractionSource() }) {
                 currentState = MultiFabState.Collapsed
             } else Modifier.fillMaxSize()
@@ -167,7 +170,7 @@ fun MultiFloatingActionsButton (
                 Box(
                     modifier = Modifier
                         .movableFloatingAction(offsetX, offsetY)
-                        .then(if (glassFloating) Modifier.size(FloatingMultiActionSize) else Modifier.clip(uiRoundnessShape())
+                        .then(if (glassFloating) Modifier.size(FloatingMultiActionSize) else Modifier.glassNativeActionContour(glassSettings).clip(uiRoundnessShape())
                         .background(colorPalette().background2)
                         .height(FloatingMultiActionSize)
                         .width(FloatingMultiActionSize)
@@ -185,6 +188,7 @@ fun MultiFloatingActionsButton (
                             iconSize = 24.dp,
                             iconModifier = Modifier.rotate(rotation),
                             settings = glassSettings,
+                            filmColor = colorPalette().background2,
                         )) Image(
                         painter = if (!useAsActionsMenu) fabIcon else painterResource(R.drawable.menu),
                         contentDescription = null,
@@ -243,10 +247,11 @@ fun SmallFloatingActionButtonRow(
                 iconSize = 24.dp,
                 tint = colorPalette().favoritesIcon,
                 contentDescription = item.label,
+                filmColor = colorPalette().background2,
             )) SmallFloatingActionButton(
             shape = uiRoundnessShape(),
             modifier = Modifier
-                .padding(4.dp),
+                .padding(4.dp).glassNativeActionContour(),
             onClick = { item.onFabItemClicked() },
             containerColor = colorPalette().background2,
             contentColor = colorPalette().favoritesIcon

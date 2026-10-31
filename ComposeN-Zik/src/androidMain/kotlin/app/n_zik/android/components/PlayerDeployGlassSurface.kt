@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
@@ -38,9 +39,10 @@ internal fun PlayerDeployGlassSurface(
     exportedBackdrop: LayerBackdrop,
     modifier: Modifier = Modifier,
     horizontalPadding: Dp = 16.dp,
+    handoffProgress: () -> Float = { if (progress() >= 1f) 1f else 0f },
 ) {
     val position = progress().let { if (it.isFinite()) it.coerceIn(0f, 1f) else 0f }
-    if (!isPlayerDeployGlassActive(position)) return
+    if (position <= 0f || handoffProgress() >= 1f) return
     BoxWithConstraints(modifier.fillMaxSize()) {
         val density = LocalDensity.current
         val viewport = Size(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat())
@@ -55,6 +57,7 @@ internal fun PlayerDeployGlassSurface(
             .testTag("player_deploy_glass")
             .offset { IntOffset(geometry.left.roundToInt(), 0) }
             .size(with(density) { geometry.width.toDp() }, with(density) { geometry.height.toDp() })
+            .graphicsLayer { alpha = 1f - handoffProgress().coerceIn(0f, 1f) }
             .glassMiniPlayerBackground(settings.copy(rim = 0f), shape,
                 backdrop = backdrop, originalColor = filmColor, exportedBackdrop = exportedBackdrop,
                 motionOptimized = true)

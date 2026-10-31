@@ -44,6 +44,8 @@ import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import app.n_zik.android.components.player.rememberMiniPlayerPlacementMotion
+import app.n_zik.android.components.player.LocalPlayerSheetGlassTransition
+import app.n_zik.android.components.player.rememberPlayerSheetGlassTransition
 
 /**
  * Géométrie de la carte "deploy" à un instant t (progress p).
@@ -260,10 +262,9 @@ fun CustomBottomSheet(
     val scope = rememberCoroutineScope()
     val glass = rememberGlassSettings()
     val miniPlayerGlass = glass.usesGlassMaterial(GlassArea.MiniPlayer)
-    val deployGlassActive by remember(state, miniPlayerGlass) {
-        derivedStateOf { miniPlayerGlass && isPlayerDeployGlassActive(state.progress) }
-    }
-    val deployBackdrop = if (deployGlassActive) rememberLayerBackdrop() else null
+    val transition = rememberPlayerSheetGlassTransition(state)
+    // Retain the source at the endpoint until the shared handoff has finished.
+    val deployBackdrop = rememberLayerBackdrop()
     val pageBackdrop = LocalGlassMenuHost.current?.backdrop
 
     // Elevated surface: the deployed card stays on the mini-player's surface
@@ -272,8 +273,11 @@ fun CustomBottomSheet(
     val anchoredAtTop = topPadding != null
     val animatedPlacement = rememberMiniPlayerPlacementMotion(placementKey)
 
-    CompositionLocalProvider(LocalGlassContainerBackdrop provides
-        if (deployGlassActive) deployBackdrop else LocalGlassContainerBackdrop.current) {
+    CompositionLocalProvider(
+        LocalPlayerSheetGlassTransition provides transition,
+        LocalGlassContainerBackdrop provides
+            if (miniPlayerGlass && state.progress > 0f) deployBackdrop else LocalGlassContainerBackdrop.current,
+    ) {
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -376,12 +380,13 @@ fun CustomBottomSheet(
                 }
             }
     ) {
-        if (deployBackdrop != null) PlayerDeployGlassSurface(
+        if (miniPlayerGlass) PlayerDeployGlassSurface(
             progress = { state.progress }, collapsedHeight = collapsedHeight(),
             startInset = startInset(), endInset = endInset(),
             horizontalPadding = horizontalPadding(),
             baseShape = baseShape, settings = glass, backdrop = pageBackdrop,
             filmColor = miniPlayerColor, exportedBackdrop = deployBackdrop,
+            handoffProgress = { transition.value },
         )
         if (!state.isCollapsed && !state.isDismissed) {
             BackHandler(onBack = state::collapseSoft)

@@ -6,6 +6,17 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class PullRefreshOverlayInsetTest {
+    @Test fun indicatorUsesTheSameRootBottomForRootAndAlreadyInsetViewports() {
+        // Root QuickPicks, inset destination, Home panel and side/landscape containers.
+        for (chromeBottom in listOf(0f, 24f, 88f, 152f, 264f, 320f)) {
+            for (viewportTop in listOf(0f, 24f, 88f, 152f, 360f)) {
+                val local = pullRefreshLocalInsetPx(chromeBottom, viewportTop)
+                assertEquals(maxOf(chromeBottom, viewportTop), viewportTop + local, 0f)
+            }
+        }
+        assertEquals(0f, pullRefreshLocalInsetPx(88f, 88f), 0f)
+        assertEquals(112f, pullRefreshLocalInsetPx(264f, 152f), 0f)
+    }
     @Test fun bottomMiniOnlyClearsTheVisibleHeaderAndTopNavigation() {
         for (headerBottom in listOf(88f, 56f, 24f)) {
             assertEquals(headerBottom, pullRefreshOverlayInsetPx(headerBottom, 0f), 0f)

@@ -1,8 +1,11 @@
 ﻿package app.it.fast4x.rimusic.ui.components.themed
 
+import app.n_zik.android.components.glass.NativeSectionIconAction
+
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.components.glass.GlassTitleActionRow
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
@@ -43,16 +46,11 @@ fun Title(
     onClick: (() -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .fillMaxWidth()
-            //.windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
-            .clip(uiRoundnessShape()).clickable(enabled = onClick != null) {
-                if (enableClick)
-                    onClick?.invoke()
-            }
-            .padding(horizontal = 12.dp, vertical = verticalPadding)
+    GlassTitleActionRow(
+        modifier = modifier.fillMaxWidth(),
+        verticalPadding = verticalPadding,
+        hasTrailingActions = trailingIcon != null,
+        onClick = onClick?.let { action -> { if (enableClick) action() } },
     ) {
         Text(
             text = title,
@@ -112,27 +110,21 @@ fun Title2Actions(
 
         )
         if (onClick2 != null && enableClick) {
-            Icon(
-                painter = painterResource(icon2 ?: R.drawable.arrow_forward),
+            NativeSectionIconAction(
+                icon = icon2 ?: R.drawable.arrow_forward,
                 contentDescription = null,
-                tint = colorPalette().text,
-                modifier = Modifier
-                    .padding(end = 12.dp)
-                    .clip(uiRoundnessShape()).clickable {
-                        onClick2.invoke()
-                    }
+                modifier = Modifier.padding(end = 12.dp),
+                color = colorPalette().text,
+                onClick = onClick2,
             )
         }
 
         if (onClick1 != null && enableClick) {
-            Icon(
-                painter = painterResource(icon1 ?: R.drawable.arrow_forward),
+            NativeSectionIconAction(
+                icon = icon1 ?: R.drawable.arrow_forward,
                 contentDescription = null,
-                tint = colorPalette().text,
-                modifier = Modifier
-                    .clip(uiRoundnessShape()).clickable {
-                    onClick1.invoke()
-                }
+                color = colorPalette().text,
+                onClick = onClick1,
             )
         }
 
@@ -172,40 +164,31 @@ fun Title3Actions(
             modifier = Modifier.weight(1f)
         )
         if (onClick3 != null && enableClick) {
-            Icon(
-                painter = painterResource(icon3 ?: R.drawable.arrow_forward),
+            NativeSectionIconAction(
+                icon = icon3 ?: R.drawable.arrow_forward,
                 contentDescription = null,
-                tint = colorPalette().text,
-                modifier = Modifier
-                    .padding(end = 12.dp)
-                    .clip(uiRoundnessShape()).clickable {
-                        onClick3.invoke()
-                    }
+                modifier = Modifier.padding(end = 12.dp),
+                color = colorPalette().text,
+                onClick = onClick3,
             )
         }
 
         if (onClick2 != null && enableClick) {
-            Icon(
-                painter = painterResource(icon2 ?: R.drawable.arrow_forward),
+            NativeSectionIconAction(
+                icon = icon2 ?: R.drawable.arrow_forward,
                 contentDescription = null,
-                tint = colorPalette().text,
-                modifier = Modifier
-                    .padding(end = 12.dp)
-                    .clip(uiRoundnessShape()).clickable {
-                        onClick2.invoke()
-                    }
+                modifier = Modifier.padding(end = 12.dp),
+                color = colorPalette().text,
+                onClick = onClick2,
             )
         }
 
         if (onClick1 != null && enableClick) {
-            Icon(
-                painter = painterResource(icon1 ?: R.drawable.arrow_forward),
+            NativeSectionIconAction(
+                icon = icon1 ?: R.drawable.arrow_forward,
                 contentDescription = null,
-                tint = colorPalette().text,
-                modifier = Modifier
-                    .clip(uiRoundnessShape()).clickable {
-                        onClick1.invoke()
-                    }
+                color = colorPalette().text,
+                onClick = onClick1,
             )
         }
     }

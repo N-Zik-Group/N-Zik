@@ -1,17 +1,20 @@
 package app.n_zik.android.components.musicbrainz
 
+import app.n_zik.android.components.glass.NativeIconActionSize
+
 import android.text.format.DateUtils
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -32,8 +35,11 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassControlOverflowColumn
 import app.n_zik.android.components.glass.GlassSectionAction
+import app.n_zik.android.components.glass.NativeSectionIconAction
 import app.n_zik.android.components.glass.GlassSectionActions
+import app.n_zik.android.components.glass.GlassTitleActionRow
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.ui.screens.album.Translate
@@ -91,18 +97,16 @@ fun InfoAndCommunity(
         }
     }
 
-    Column(
+    GlassControlOverflowColumn(
         modifier = modifier
             .fillMaxWidth()
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(uiRoundnessShape())
-                .then(if (materialActions) Modifier else Modifier.clickable { readMore = !readMore })
-                .padding(horizontal = 16.dp)
-                .padding(top = 24.dp, bottom = 8.dp)
+        GlassTitleActionRow(
+            modifier = Modifier.fillMaxWidth(),
+            verticalPadding = 0.dp,
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
+            hasTrailingActions = true,
+            onClick = if (materialActions) null else ({ readMore = !readMore }),
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -147,23 +151,20 @@ fun InfoAndCommunity(
                 settings = glass,
                 nativeContent = {
                     if (isSyncing) {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .padding(end = 12.dp)
-                                .size(18.dp),
-                            color = colorPalette().textSecondary,
-                            strokeWidth = 2.dp
-                        )
+                        Box(Modifier.size(NativeIconActionSize), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                color = colorPalette().textSecondary,
+                                strokeWidth = 2.dp,
+                            )
+                        }
                     } else {
-                        Icon(
-                            painter = painterResource(R.drawable.refresh),
-                            contentDescription = stringResource(R.string.mb_resync),
-                            tint = colorPalette().textSecondary,
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .clickable { onResyncClick() }
-                                .padding(6.dp)
-                                .size(18.dp)
+                        NativeSectionIconAction(
+                            icon = R.drawable.refresh,
+                            contentDescription = resyncDescription,
+                            iconSize = 18.dp,
+                            settings = glass,
+                            onClick = onResyncClick,
                         )
                     }
                     Icon(
@@ -271,14 +272,12 @@ fun InfoAndCommunity(
             }
         }
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(uiRoundnessShape())
-                .then(if (materialActions) Modifier else Modifier.clickable(onClick = onInsightsClick))
-                .padding(horizontal = 16.dp)
-                .padding(top = 24.dp, bottom = 8.dp)
+        GlassTitleActionRow(
+            modifier = Modifier.fillMaxWidth(),
+            verticalPadding = 0.dp,
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
+            hasTrailingActions = true,
+            onClick = if (materialActions) null else onInsightsClick,
         ) {
             Text(
                 text = stringResource(R.string.mb_insights),

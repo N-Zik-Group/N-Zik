@@ -103,9 +103,9 @@ fun Slider(
                     finalValue = defaultValue
                 }
             }
-            if (isInteracting) {
-                setState(finalValue)
-            }
+            // Material emits this for pointer, keyboard and accessibility actions alike.
+            // Requiring a pressed pointer silently drops keyboard and SetProgress changes.
+            setState(finalValue)
         },
         onValueChangeFinished = {
             onSlideComplete()

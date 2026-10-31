@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import app.n_zik.android.components.ui.UiIconButton as IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -14,6 +14,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
+import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassToolbarIcon
 import app.n_zik.android.components.glass.GlassToolbarLoading
@@ -76,7 +77,7 @@ class SmartShuffle private constructor(
                     strokeWidth = 2.dp
                 )
             } else {
-                IconButton(onClick = { onToggleRecommendation() }) {
+                IconButton(onClick = { onToggleRecommendation() }, shape = uiRoundnessShape()) {
                     Icon(
                         painter = painterResource(R.drawable.smart_shuffle),
                         contentDescription = stringResource(R.string.info_smart_recommendation),

@@ -1,20 +1,20 @@
 ﻿@file:kotlin.OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.it.fast4x.rimusic.ui.components.themed
 
-import androidx.compose.ui.draw.clip
+import app.n_zik.android.components.glass.glassGlobalIndication
+
+import app.n_zik.android.components.ui.nativeControlIndication
+import app.n_zik.android.components.ui.reservedIconActionCanvas
 
 import app.n_zik.android.uiRoundnessShape
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.Indication
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.LoadingIndicator
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -24,7 +24,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
-import app.n_zik.android.R
 import app.it.fast4x.rimusic.utils.getDownloadProgress
 import androidx.compose.ui.graphics.drawscope.Stroke
 import app.n_zik.android.colorPalette
@@ -54,14 +53,13 @@ fun DownloadStateIconButton(
                 || downloadState == Download.STATE_RESTARTING
                 ){
         Box(
-            modifier = Modifier
-                .clip(uiRoundnessShape()).clickable(
-                    indication = indication ?: ripple(bounded = false, radius = 24.dp),
+            modifier = modifier.reservedIconActionCanvas(
+                    shape = uiRoundnessShape(),
+                    indication = glassGlobalIndication(indication ?: nativeControlIndication()),
                     interactionSource = remember { MutableInteractionSource() },
                     enabled = enabled,
-                    onClick = onCancelButtonClicked
-                )
-                .then(modifier),
+                    onClick = onCancelButtonClicked,
+                ),
             contentAlignment = Alignment.Center
         ) {
             if (progress > 0.01f && downloadState == Download.STATE_DOWNLOADING) {
@@ -88,19 +86,13 @@ fun DownloadStateIconButton(
             painter = painterResource(icon),
             contentDescription = null,
             colorFilter = ColorFilter.tint(color),
-            modifier = Modifier
-                .clip(uiRoundnessShape()).clickable(
-                    indication = indication ?: ripple(bounded = false),
+            modifier = modifier.reservedIconActionCanvas(
+                    shape = uiRoundnessShape(),
+                    indication = glassGlobalIndication(indication ?: nativeControlIndication()),
                     interactionSource = remember { MutableInteractionSource() },
                     enabled = enabled,
-                    onClick = onClick
+                    onClick = onClick,
                 )
-                .then(modifier)
         )
     }
 }
-
-
-
-
-

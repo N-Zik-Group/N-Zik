@@ -1,11 +1,15 @@
 package app.n_zik.android.components.ui.screens.listentogether
 
+import androidx.compose.ui.platform.testTag
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.ui.screens.profiles.ProfileAvatarFrame
+
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
+import app.n_zik.android.components.glass.glassAwareContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
@@ -41,7 +45,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import app.n_zik.android.components.ui.UiIconButton as IconButton
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -583,7 +587,7 @@ internal fun ConnectionStatusCard(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .animateContentSize(
+                        .glassAwareContentSize(
                             animationSpec =
                                 spring(
                                     dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -789,7 +793,7 @@ internal fun ConnectedUsersSection(
 }
 
 @Composable
-private fun UserAvatar(
+internal fun UserAvatar(
     user: UserInfo,
     isCurrentUser: Boolean,
     isClickable: Boolean,
@@ -806,29 +810,32 @@ private fun UserAvatar(
         Box(
             contentAlignment = Alignment.Center,
         ) {
-            Box(
-                modifier =
-                    Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(
+            ProfileAvatarFrame(size = 56.dp, area = GlassArea.SettingsCards, shape = CircleShape,
+                modifier = Modifier.testTag("listen.avatar.face.${user.userId}")) {
+                Box(
+                    modifier =
+                        Modifier
+                            .size(56.dp)
+                            .clip(CircleShape)
+                            .background(
+                                when {
+                                    user.isHost -> palette.accent
+                                    isCurrentUser -> palette.accent.copy(alpha = 0.45f)
+                                    else -> palette.background2
+                                },
+                            ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = user.username.take(1).uppercase(),
+                        style = typography().l.semiBold,
+                        color =
                             when {
-                                user.isHost -> palette.accent
-                                isCurrentUser -> palette.accent.copy(alpha = 0.45f)
-                                else -> palette.background2
+                                user.isHost -> palette.onAccent
+                                else -> palette.text
                             },
-                        ),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = user.username.take(1).uppercase(),
-                    style = typography().l.semiBold,
-                    color =
-                        when {
-                            user.isHost -> palette.onAccent
-                            else -> palette.text
-                        },
-                )
+                    )
+            }
             }
 
             if (user.isHost || isCurrentUser) {
@@ -838,6 +845,7 @@ private fun UserAvatar(
                             .align(Alignment.BottomEnd)
                             .offset(x = 4.dp, y = 4.dp)
                             .size(20.dp)
+                            .testTag("listen.avatar.badge.${user.userId}")
                             .clip(CircleShape)
                             .background(
                                 if (user.isHost) palette.accent else palette.accent.copy(alpha = 0.6f),

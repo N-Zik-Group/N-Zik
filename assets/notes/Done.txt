@@ -153,3 +153,6 @@ Added:
 
 - fix(glass): share surfaces across cards groups and overlays
   - Reuse common action, card, image, overlay and toast material families.
+
+- fix(ui): align reusable action canvases and touch targets
+  - Preserve control actions while sizing native and Glass canvases to their visible bounds.

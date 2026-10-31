@@ -1,6 +1,7 @@
 package app.it.fast4x.rimusic.ui.components.themed
 
-import androidx.compose.ui.draw.clip
+import app.n_zik.android.components.ui.reservedIconActionCanvas
+import app.n_zik.android.components.glass.glassGlobalIndication
 
 import app.n_zik.android.uiRoundnessShape
 
@@ -8,11 +9,10 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Indication
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.ripple
+import app.n_zik.android.components.ui.nativeControlIndication
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -34,9 +34,11 @@ fun HeaderIconButton(
     enabled: Boolean = true,
     indication: Indication? = null,
     iconSize: Dp? = 20.dp,
-    onLongClick: (() -> Unit)? = null
+    onLongClick: (() -> Unit)? = null,
+    placementModifier: Modifier = Modifier,
 ) {
     if (GlassToolbarIcon(painterResource(icon), color, iconSize ?: 18.dp, enabled,
+            modifier = placementModifier.then(modifier), modifierOnContainer = true,
             onClick = onClick, onLongClick = onLongClick)) return
     IconButton(
         icon = icon,
@@ -45,6 +47,7 @@ fun HeaderIconButton(
         enabled = enabled,
         indication = indication,
         onLongClick = onLongClick,
+        placementModifier = placementModifier,
         modifier = modifier
             .padding(all = 2.dp)
             .size(iconSize ?: 18.dp)
@@ -60,20 +63,21 @@ fun IconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     indication: Indication? = null,
-    onLongClick: (() -> Unit)? = null
+    onLongClick: (() -> Unit)? = null,
+    placementModifier: Modifier = Modifier,
 ) {
     Image(
         painter = painterResource(icon),
         contentDescription = null,
         colorFilter = ColorFilter.tint(color),
-        modifier = modifier
-            .clip(uiRoundnessShape())
-            .combinedClickable(
-                indication = indication ?: ripple(bounded = false),
+        modifier = modifier.reservedIconActionCanvas(
+                shape = uiRoundnessShape(),
+                indication = glassGlobalIndication(indication ?: nativeControlIndication()),
                 interactionSource = remember { MutableInteractionSource() },
                 enabled = enabled,
                 onClick = onClick,
-                onLongClick = onLongClick
+                onLongClick = onLongClick,
+                placementModifier = placementModifier,
             )
     )
 }
@@ -87,20 +91,21 @@ fun IconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     indication: Indication? = null,
-    onLongClick: (() -> Unit)? = null
+    onLongClick: (() -> Unit)? = null,
+    placementModifier: Modifier = Modifier,
 ) {
     Image(
         imageVector = icon,
         contentDescription = null,
         colorFilter = ColorFilter.tint(color),
-        modifier = modifier
-            .clip(uiRoundnessShape())
-            .combinedClickable(
-                indication = indication ?: ripple(bounded = false),
+        modifier = modifier.reservedIconActionCanvas(
+                shape = uiRoundnessShape(),
+                indication = glassGlobalIndication(indication ?: nativeControlIndication()),
                 interactionSource = remember { MutableInteractionSource() },
                 enabled = enabled,
                 onClick = onClick,
-                onLongClick = onLongClick
+                onLongClick = onLongClick,
+                placementModifier = placementModifier,
             )
     )
 }
