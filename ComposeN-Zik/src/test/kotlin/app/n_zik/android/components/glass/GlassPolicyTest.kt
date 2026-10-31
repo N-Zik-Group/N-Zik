@@ -23,7 +23,7 @@ class GlassPolicyTest {
         store = GlassStore(context)
     }
 
-    @Test fun `defaults enable glass with exact Square store values`() {
+    @Test fun `optical profile retains exact Square values independently of the master switch`() {
         val settings = glassProfileDefaults(GlassQuality.Balanced)
         assertTrue(settings.enabled)
         assertEquals(GlassTintSource.None, settings.source)
@@ -41,6 +41,11 @@ class GlassPolicyTest {
         assertFalse(settings.depthEffect)
         assertEquals(GlassRenderer.Refraction, selectGlassRenderer(settings, 35, false))
         assertEquals(GlassRenderer.Tint, selectGlassRenderer(settings.copy(enabled = false), 35, false))
+    }
+
+    @Test fun `all lens adapters share the persisted dispersion switch`() {
+        assertEquals(0f, GlassSettings(dispersion = false).dispersionAmount(), 0f)
+        assertEquals(1f, GlassSettings(dispersion = true).dispersionAmount(), 0f)
     }
 
     @Test fun `quality and performance profiles match Square`() {
@@ -71,7 +76,7 @@ class GlassPolicyTest {
         assertEquals(glassProfileDefaults(GlassQuality.Quality), store.read())
     }
 
-    @Test fun `profile switch discards previous overrides`() {
+    @Test fun `profile switch discards optics while preserving destination tint and dimming choices`() {
         store.setProfile(GlassQuality.Balanced)
         store.setFloat(glassBlurKey, 20f)
         store.setFloat(glassDialogDimmingKey, .1f)
@@ -80,8 +85,9 @@ class GlassPolicyTest {
         store.setBoolean(glassMenusKey, false)
         listOf(glassDropdownsKey, glassDialogsKey, glassDialogButtonsKey, glassNowPlayingKey, glassImageRimsKey, glassSettingsCardRimsKey, glassSettingsCardsKey, glassSearchBarsKey)
             .forEach { store.setBoolean(it, false) }
+        val before = store.read()
         store.setProfile(GlassQuality.Performance)
-        assertEquals(glassProfileDefaults(GlassQuality.Performance), store.read())
+        assertEquals(before.copy(quality = GlassQuality.Performance, blur = 2f, film = .55f), store.read())
     }
 
     @Test fun `slider values obey Square ranges including invalid values`() {

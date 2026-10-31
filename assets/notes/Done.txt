@@ -141,3 +141,6 @@ Added:
 
 - fix(glass): synchronize backdrop layer publication
   - Invalidate dependent materials after updated backdrop layers are recorded.
+
+- feat(glass): centralize destination and interaction policies
+  - Keep fresh-install Glass disabled and share scoped material, contour and interaction choices.

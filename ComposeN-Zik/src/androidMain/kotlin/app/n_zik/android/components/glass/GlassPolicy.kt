@@ -24,6 +24,9 @@ import app.n_zik.android.colorPalette
 val LocalGlassArtworkColor = staticCompositionLocalOf<Color?> { null }
 const val glassEnabledKey = "liquidGlassEnabled"
 
+/** Fresh installations opt in explicitly; persisted choices remain authoritative. */
+const val glassEnabledDefault = false
+
 // This store is separate from the interrupted prototype's percentage preferences.
 const val glassTintSourceKey = "source"
 const val glassQualityKey = "profile"
@@ -39,6 +42,11 @@ const val glassRimKey = "rim"
 const val glassDepthKey = "lens_height"
 const val glassAmountKey = "lens_amount"
 const val glassDispersionKey = "dispersion"
+const val glassRippleEnabledKey = "ripple_enabled"
+const val glassRippleIntensityKey = "ripple_intensity"
+const val glassRippleSizeKey = "ripple_size"
+const val glassJellyEnabledKey = "jelly_enabled"
+const val glassJellyIntensityKey = "jelly_intensity"
 const val glassDepthEffectKey = "depth_effect"
 const val glassHeaderKey = "header"
 const val glassNavKey = "nav_bar"
@@ -94,6 +102,11 @@ data class GlassSettings(
     val amount: Float = .6f,
     val dispersion: Boolean = false,
     val depthEffect: Boolean = false,
+    val rippleEnabled: Boolean = true,
+    val rippleIntensity: Float = 1f,
+    val rippleSize: Float = 1f,
+    val jellyEnabled: Boolean = true,
+    val jellyIntensity: Float = 1f,
     val header: Boolean = true,
     val nav: Boolean = true,
     val menus: Boolean = true,
@@ -108,10 +121,15 @@ data class GlassSettings(
     val searchBars: Boolean = true,
     val actionButtons: Boolean = true,
     val areaModes: Map<GlassArea, GlassAreaMode> = emptyMap(),
+    val contextModes: Map<GlassContextArea, GlassAreaMode> = emptyMap(),
+    val scope: GlassScope = GlassScope.Shared,
 )
 
 /** Lazily migrate older switches without changing their saved values or appearance. */
 fun GlassSettings.mode(area: GlassArea): GlassAreaMode {
+    if (area in scope.areas) contextModes[GlassContextArea(scope, area)]?.let {
+        return if (area == GlassArea.Images && it != GlassAreaMode.Disabled) GlassAreaMode.ContourOnly else it
+    }
     areaModes[area]?.let { return if (area == GlassArea.Images && it != GlassAreaMode.Disabled) GlassAreaMode.ContourOnly else it }
     val material = when (area) {
         GlassArea.Nav -> nav
@@ -162,12 +180,13 @@ fun clampGlassValue(key: String, value: Float): Float {
     val range = when (key) {
         glassVibrancyKey -> 0f..2f
         glassBlurKey -> 0f..24f
+        glassRippleSizeKey -> .5f..2f
         else -> 0f..1f
     }
     return if (value.isFinite()) value.coerceIn(range) else range.start
 }
 
-/** One versioned preference file; profile changes/reset remove all overrides. */
+/** One versioned preference file; destination policies survive optical profile changes. */
 class GlassStore(context: Context) {
     private val preferences = context.applicationContext.getSharedPreferences("nzik_square_glass_v2", Context.MODE_PRIVATE)
     private val defaultQuality = defaultGlassQuality(Build.VERSION.SDK_INT,
@@ -204,6 +223,11 @@ class GlassStore(context: Context) {
             amount = value(glassAmountKey, base.amount),
             dispersion = preferences.getBoolean(glassDispersionKey, base.dispersion),
             depthEffect = preferences.getBoolean(glassDepthEffectKey, base.depthEffect),
+            rippleEnabled = preferences.getBoolean(glassRippleEnabledKey, true),
+            rippleIntensity = value(glassRippleIntensityKey, 1f),
+            rippleSize = value(glassRippleSizeKey, 1f),
+            jellyEnabled = preferences.getBoolean(glassJellyEnabledKey, true),
+            jellyIntensity = value(glassJellyIntensityKey, 1f),
             header = preferences.getBoolean(glassHeaderKey, true),
             nav = preferences.getBoolean(glassNavKey, true),
             menus = preferences.getBoolean(glassMenusKey, true),
@@ -217,6 +241,11 @@ class GlassStore(context: Context) {
             settingsCards = preferences.getBoolean(glassSettingsCardsKey, true),
             searchBars = preferences.getBoolean(glassSearchBarsKey, true),
             actionButtons = preferences.getBoolean(glassActionButtonsKey, true),
+            contextModes = GlassScope.entries.flatMap { scope -> scope.areas.mapNotNull { area ->
+                val key = GlassContextArea(scope, area)
+                val saved = preferences.getString(key.preferenceKey, null)
+                GlassAreaMode.entries.firstOrNull { it.name == saved }?.let { key to it }
+            } }.toMap(),
             areaModes = GlassArea.entries.mapNotNull { area ->
                 val saved = preferences.getString(area.preferenceKey, null)
                 GlassAreaMode.entries.firstOrNull { it.name == saved }?.let { area to it }
@@ -226,8 +255,13 @@ class GlassStore(context: Context) {
 
     fun setProfile(profile: GlassQuality) {
         if (read().quality == profile) return
-        preferences.edit().clear().putString(glassQualityKey, profile.name)
-            .putBoolean(glassIndependentAreasKey, true).apply()
+        preferences.edit().apply {
+            // A quality selection is an optical preset, never a reset of destinations or tint.
+            listOf(glassVibrancyKey, glassBlurKey, glassFilmKey, glassIndicatorOpacityKey,
+                glassRimKey, glassDepthKey, glassAmountKey, glassDispersionKey, glassDepthEffectKey)
+                .forEach(::remove)
+            putString(glassQualityKey, profile.name)
+        }.apply()
     }
     fun reset() {
         preferences.edit().clear().putString(glassQualityKey, read().quality.name)
@@ -245,6 +279,13 @@ class GlassStore(context: Context) {
         val supported = if (area == GlassArea.Images && mode != GlassAreaMode.Disabled) GlassAreaMode.ContourOnly else mode
         preferences.edit().putString(area.preferenceKey, supported.name).apply()
     }
+    fun setContextMode(scope: GlassScope, area: GlassArea, mode: GlassAreaMode?) {
+        require(area in scope.areas) { "Unsupported Glass context: $scope/$area" }
+        val key = GlassContextArea(scope, area).preferenceKey
+        preferences.edit().apply {
+            if (mode == null) remove(key) else putString(key, mode.name)
+        }.apply()
+    }
     fun setTint(source: GlassTintSource) { preferences.edit().putString(glassTintSourceKey, source.name).apply() }
     fun setColor(color: Int) { preferences.edit().putInt(glassCustomColorKey, color).putString(glassTintSourceKey, GlassTintSource.Custom.name).apply() }
     fun register(listener: SharedPreferences.OnSharedPreferenceChangeListener) = preferences.registerOnSharedPreferenceChangeListener(listener)
@@ -261,18 +302,18 @@ fun rememberGlassStore(): GlassStore {
 internal val LocalGlassPreviewSettings = staticCompositionLocalOf<GlassSettings?> { null }
 
 @Composable
-fun rememberGlassSettings(): GlassSettings {
+fun rememberGlassSettings(scope: GlassScope = LocalGlassScope.current): GlassSettings {
     LocalGlassPreviewSettings.current?.let { return it }
     val store = rememberGlassStore()
     var settings by remember(store) { mutableStateOf(store.read()) }
-    val enabled by rememberPreference(glassEnabledKey, true)
+    val enabled by rememberPreference(glassEnabledKey, glassEnabledDefault)
     DisposableEffect(store) {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> settings = store.read() }
         store.register(listener)
         settings = store.read()
         onDispose { store.unregister(listener) }
     }
-    return settings.copy(enabled = enabled)
+    return settings.copy(enabled = enabled, scope = scope)
 }
 
 fun selectGlassRenderer(settings: GlassSettings, sdk: Int, lowRam: Boolean): GlassRenderer = when {
@@ -311,3 +352,6 @@ internal fun isGlassMotionAllowed(context: Context): Boolean {
     val manager = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
     return glassMotionAllowed(scale, manager?.isTouchExplorationEnabled == true)
 }
+
+/** Shared lens coefficient for the user-controlled colour-splitting switch. */
+internal fun GlassSettings.dispersionAmount(): Float = if (dispersion) 1f else 0f
