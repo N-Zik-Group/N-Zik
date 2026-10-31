@@ -33,6 +33,7 @@ import app.it.fast4x.rimusic.enums.TransitionEffect
 import app.it.fast4x.rimusic.enums.UiType
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.DefaultLightColorPalette
+import app.it.fast4x.rimusic.utils.UiTypeKey
 import app.it.fast4x.rimusic.utils.actionspacedevenlyKey
 import app.it.fast4x.rimusic.utils.albumSwipeLeftActionKey
 import app.it.fast4x.rimusic.utils.albumSwipeRightActionKey
@@ -46,25 +47,25 @@ import app.it.fast4x.rimusic.utils.clickOnLyricsTextKey
 import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import app.it.fast4x.rimusic.utils.colorPaletteNameKey
 import app.it.fast4x.rimusic.utils.customColorKey
-import app.it.fast4x.rimusic.utils.customThemeDark_accentKey
 import app.it.fast4x.rimusic.utils.customThemeDark_Background0Key
 import app.it.fast4x.rimusic.utils.customThemeDark_Background1Key
 import app.it.fast4x.rimusic.utils.customThemeDark_Background2Key
 import app.it.fast4x.rimusic.utils.customThemeDark_Background3Key
 import app.it.fast4x.rimusic.utils.customThemeDark_Background4Key
+import app.it.fast4x.rimusic.utils.customThemeDark_TextKey
+import app.it.fast4x.rimusic.utils.customThemeDark_accentKey
 import app.it.fast4x.rimusic.utils.customThemeDark_iconButtonPlayerKey
 import app.it.fast4x.rimusic.utils.customThemeDark_textDisabledKey
-import app.it.fast4x.rimusic.utils.customThemeDark_TextKey
 import app.it.fast4x.rimusic.utils.customThemeDark_textSecondaryKey
-import app.it.fast4x.rimusic.utils.customThemeLight_accentKey
 import app.it.fast4x.rimusic.utils.customThemeLight_Background0Key
 import app.it.fast4x.rimusic.utils.customThemeLight_Background1Key
 import app.it.fast4x.rimusic.utils.customThemeLight_Background2Key
 import app.it.fast4x.rimusic.utils.customThemeLight_Background3Key
 import app.it.fast4x.rimusic.utils.customThemeLight_Background4Key
+import app.it.fast4x.rimusic.utils.customThemeLight_TextKey
+import app.it.fast4x.rimusic.utils.customThemeLight_accentKey
 import app.it.fast4x.rimusic.utils.customThemeLight_iconButtonPlayerKey
 import app.it.fast4x.rimusic.utils.customThemeLight_textDisabledKey
-import app.it.fast4x.rimusic.utils.customThemeLight_TextKey
 import app.it.fast4x.rimusic.utils.customThemeLight_textSecondaryKey
 import app.it.fast4x.rimusic.utils.disableIconButtonOnTopKey
 import app.it.fast4x.rimusic.utils.disableNavigationBackStackKey
@@ -128,9 +129,9 @@ import app.it.fast4x.rimusic.utils.showPinnedPlaylistsKey
 import app.it.fast4x.rimusic.utils.showRemainingSongTimeKey
 import app.it.fast4x.rimusic.utils.showSearchTabKey
 import app.it.fast4x.rimusic.utils.showStatsInNavbarKey
-import app.it.fast4x.rimusic.utils.showthumbnailKey
 import app.it.fast4x.rimusic.utils.showTopActionsBarKey
 import app.it.fast4x.rimusic.utils.showTotalTimeQueueKey
+import app.it.fast4x.rimusic.utils.showthumbnailKey
 import app.it.fast4x.rimusic.utils.swipeUpQueueKey
 import app.it.fast4x.rimusic.utils.tapqueueKey
 import app.it.fast4x.rimusic.utils.thumbnailSizeDpKey
@@ -138,7 +139,6 @@ import app.it.fast4x.rimusic.utils.thumbnailTapEnabledKey
 import app.it.fast4x.rimusic.utils.thumbnailTypeKey
 import app.it.fast4x.rimusic.utils.transitionEffectKey
 import app.it.fast4x.rimusic.utils.transparentBackgroundPlayerActionBarKey
-import app.it.fast4x.rimusic.utils.UiTypeKey
 import app.it.fast4x.rimusic.utils.useSystemFontKey
 import app.it.fast4x.rimusic.utils.visualizerEnabledKey
 import app.n_zik.android.components.dialog.settings.BurgerMenuSettingsDialog
@@ -174,7 +174,7 @@ internal fun applyUiDefaults(context: Context) {
         putBoolean(disablePlayerHorizontalSwipeKey, false)
         putEnum(lastPlayerPlayButtonTypeKey, PlayerPlayButtonType.Rectangular)
         putEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
-        putEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
+        putEnum(colorPaletteModeKey, ColorPaletteMode.System)
         putEnum(indexNavigationTabKey, HomeScreenTabs.Default)
         putEnum(fontTypeKey, FontType.Rubik)
         putBoolean(useSystemFontKey, false)
@@ -214,7 +214,7 @@ internal fun applyUiDefaults(context: Context) {
         putEnum(playerPositionKey, PlayerPosition.Bottom)
         putEnum(messageTypeKey, MessageType.Modern)
         putBoolean(showTopActionsBarKey, true)
-        putEnum(playerControlsTypeKey, PlayerControlsType.Modern)
+        putEnum(playerControlsTypeKey, PlayerControlsType.Essential)
         putEnum(playerInfoTypeKey, PlayerInfoType.Modern)
         putEnum(playerTypeKey, PlayerType.Essential)
         putEnum(queueTypeKey, QueueType.Modern)
@@ -223,7 +223,7 @@ internal fun applyUiDefaults(context: Context) {
         putEnum(carouselSizeKey, CarouselSize.Biggest)
         putEnum(thumbnailTypeKey, ThumbnailType.Modern)
         putEnum(playerTimelineTypeKey, PlayerTimelineType.Wavy)
-        putFloat(thumbnailSizeDpKey, 0f)
+        putFloat(thumbnailSizeDpKey, 90f)
         putEnum(playerTimelineSizeKey, PlayerTimelineSize.Biggest)
         putBoolean(playerInfoShowIconsKey, true)
         putEnum(miniPlayerTypeKey, MiniPlayerType.Essential)

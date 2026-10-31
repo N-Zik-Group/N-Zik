@@ -19,12 +19,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material3.Text
+import app.it.fast4x.rimusic.utils.RestartPlayerService
+import app.n_zik.android.colorPalette
+import app.n_zik.android.typography
 import app.n_zik.android.R
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.components.glass.rememberGlassStore
 
 private val resetScopeNames = listOf("general", "ui", "appearance", "ai", "data", "accounts", "network", "other")
 private const val GLASS_RESET_SCOPE = -1
+private const val ALL_RESET_SCOPE = -2
 
 private data class ResetDialogStep(val scope: Int?)
 
@@ -33,16 +39,22 @@ else resetScopeNames.indices.firstOrNull { tab ->
     target == "card.$tab.settings_reset" || target == "${resetScopeNames[tab]}.settings_reset.settings_reset"
 }
 
-private fun resetScopeLabel(scope: Int): Int = if (scope == GLASS_RESET_SCOPE) R.string.liquid_glass
-    else SettingsCategories.first { it.tab == scope }.labelRes
+private fun resetScopeLabel(scope: Int): Int = when (scope) {
+    ALL_RESET_SCOPE -> R.string.settings_reset_all
+    GLASS_RESET_SCOPE -> R.string.liquid_glass
+    else -> SettingsCategories.first { it.tab == scope }.labelRes
+}
 
 /** Reuses each original reset action so its defaults and restart behavior remain unchanged. */
 @Composable
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 internal fun SettingsResetCard(
     scopes: List<Int>,
     target: String,
     resetContent: @Composable (Int) -> Unit,
 ) {
+    val context = LocalContext.current
+    var restartService by remember { mutableStateOf(false) }
     val initialScope = resetScopeForTarget(target)
     var open by remember(target) { mutableStateOf(initialScope != null) }
     var selectedScope by remember(target) { mutableStateOf(initialScope) }
@@ -71,6 +83,19 @@ internal fun SettingsResetCard(
             } ?: stringResource(R.string.settings_reset),
             footer = {
                 ButtonRow(buttons = buildList {
+                    if (scope == ALL_RESET_SCOPE) {
+                        add(DialogButton(
+                            text = stringResource(R.string.settings_reset_all_confirm),
+                            danger = true,
+                            onClick = {
+                                if (open && selectedScope == ALL_RESET_SCOPE) {
+                                    open = false
+                                    applyAllSettingsDefaults(context) { restartService = true }
+                                    Toaster.done()
+                                }
+                            },
+                        ))
+                    }
                     if (scope != null) {
                         add(DialogButton(
                             text = stringResource(R.string.settings_reset_scope_back),
@@ -91,6 +116,13 @@ internal fun SettingsResetCard(
                     .padding(vertical = 24.dp)
             ) {
                 if (scope == null) {
+                    OtherSettingsEntry(
+                        title = stringResource(R.string.settings_reset_all),
+                        text = stringResource(R.string.settings_reset_all_description),
+                        icon = R.drawable.refresh,
+                        modifier = Modifier.testTag("settings.reset.all.open"),
+                        onClick = { if (open && selectedScope == null) selectedScope = ALL_RESET_SCOPE },
+                    )
                     val availableScopes = scopes.flatMap { if (it == 1) listOf(it, GLASS_RESET_SCOPE) else listOf(it) }
                     availableScopes.forEach { tab ->
                         val label = resetScopeLabel(tab)
@@ -102,6 +134,13 @@ internal fun SettingsResetCard(
                             onClick = { if (open && selectedScope == null) selectedScope = tab },
                         )
                     }
+                } else if (scope == ALL_RESET_SCOPE) {
+                    Text(
+                        text = stringResource(R.string.settings_reset_all_confirmation),
+                        color = colorPalette().text,
+                        style = typography().xs,
+                        modifier = Modifier.testTag("settings.reset.all.confirmation"),
+                    )
                 } else if (scope == GLASS_RESET_SCOPE) {
                     val store = rememberGlassStore()
                     OtherSettingsEntry(
@@ -122,4 +161,5 @@ internal fun SettingsResetCard(
             }
         }
     }
+    RestartPlayerService(restartService, onRestart = { restartService = false })
 }

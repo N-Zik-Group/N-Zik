@@ -12,7 +12,9 @@ import app.it.fast4x.rimusic.utils.proxyHostnameKey
 import app.it.fast4x.rimusic.utils.proxyModeKey
 import app.it.fast4x.rimusic.utils.proxyPortKey
 import app.it.fast4x.rimusic.utils.putEnum
+import app.it.fast4x.rimusic.utils.regionOverrideKey
 import app.it.fast4x.rimusic.utils.showFoldersOnDeviceKey
+import it.fast4x.innertube.Innertube
 import java.net.Proxy
 
 internal fun applyOtherDefaults(context: Context) {
@@ -21,10 +23,13 @@ internal fun applyOtherDefaults(context: Context) {
         putString(proxyHostnameKey, "")
         putInt(proxyPortKey, 1080)
         putEnum(proxyModeKey, Proxy.Type.HTTP)
+        putString(regionOverrideKey, "")
         putString(defaultFolderKey, "/")
         putBoolean(isKeepScreenOnEnabledKey, false)
         putBoolean(showFoldersOnDeviceKey, true)
         putBoolean(parentalControlEnabledKey, false)
         putBoolean(logDebugEnabledKey, false)
     }
+    Innertube.regionOverride = ""
+    Innertube.regionOverrideActive = false
 }

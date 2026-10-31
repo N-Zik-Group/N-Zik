@@ -180,3 +180,6 @@ Added:
 
 - fix(settings): route global and page search to exact options
   - Index nested customization entries with precise destination paths, dialog tabs and focus targets.
+
+- fix(settings): restore defaults and add reset all
+  - Reset application preferences consistently while preserving accounts, profiles, media, files and backup destinations.
