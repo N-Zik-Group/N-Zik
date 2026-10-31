@@ -1,8 +1,10 @@
 package app.n_zik.android.components.glass
 
 import android.app.Application
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.size
@@ -10,13 +12,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.test.captureToImage
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertCountEquals
@@ -25,6 +37,8 @@ import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -38,6 +52,7 @@ import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.n_zik.android.R
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -54,6 +69,45 @@ import org.robolectric.annotation.GraphicsMode
 class GlassToolbarButtonsTest {
     @get:Rule val compose = createComposeRule()
     private val settings = GlassSettings(quality = GlassQuality.Performance)
+
+    @Test fun `touch exploration replaces toolbar content without an animated outgoing control`() {
+        val application = org.robolectric.RuntimeEnvironment.getApplication()
+        val manager = application.getSystemService(android.content.Context.ACCESSIBILITY_SERVICE) as android.view.accessibility.AccessibilityManager
+        val shadow = org.robolectric.Shadows.shadowOf(manager)
+        shadow.setTouchExplorationEnabled(true)
+        try {
+            assertFalse(isGlassMotionAllowed(application))
+            val first = object : Button {
+                @Composable override fun ToolBarButton() { Box(Modifier.size(40.dp).testTag("motion.first")) }
+            }
+            val second = object : Button {
+                @Composable override fun ToolBarButton() { Box(Modifier.size(40.dp).testTag("motion.second")) }
+            }
+            val buttons = mutableStateOf(listOf<Button>(first))
+            compose.setContent {
+                AppearanceProvider {
+                    // Match the manager whose touch-exploration state this fixture controls.
+                    CompositionLocalProvider(LocalContext provides application) {
+                        GlassToolbarButtons(buttons.value, modifier = Modifier.width(240.dp), settings = settings)
+                    }
+                }
+            }
+            compose.onNodeWithTag("motion.first").assertExists()
+            compose.mainClock.autoAdvance = false
+            compose.runOnIdle { buttons.value = listOf(second) }
+            compose.mainClock.advanceTimeByFrame()
+            compose.waitForIdle()
+            // Flush the composition invalidated at the preceding frame/Android layout boundary.
+            // Two frames remain below the 90ms delayed animated entrance.
+            compose.mainClock.advanceTimeByFrame()
+            compose.waitForIdle()
+            compose.onNodeWithTag("motion.second").assertExists()
+            compose.onNodeWithTag("motion.first").assertDoesNotExist()
+        } finally {
+            shadow.setTouchExplorationEnabled(false)
+            compose.mainClock.autoAdvance = true
+        }
+    }
 
     @Test fun `long icon overloads retain caller modifier on action container in native and Glass rows`() {
         val glass = mutableStateOf(false)
@@ -76,13 +130,19 @@ class GlassToolbarButtonsTest {
             listOf("long.painter", "long.resource").forEach { tag ->
                 val action = compose.onNodeWithTag(tag, useUnmergedTree = true)
                 assertTrue("$tag must tag the clickable container", hasClickAction().matches(action.fetchSemanticsNode()))
-                // Padding remains outside the hit semantics, just as in the native overload.
-                val targetSize = if (tag == "long.painter") 32.dp else 36.dp
+                // Native feedback now owns the full existing36/40dp seat; Glass retains its
+                // original inner32/36dp material cell. Neither branch changes the glyph or row seat.
+                val outerSize = if (tag == "long.painter") 36.dp else 40.dp
+                val targetSize = if (enabled) outerSize - 4.dp else outerSize
                 action.assertWidthIsEqualTo(targetSize).assertHeightIsEqualTo(targetSize)
                 val row = compose.onNodeWithTag("long.row").fetchSemanticsNode().boundsInRoot
                 val bounds = action.fetchSemanticsNode().boundsInRoot
                 val density = bounds.width / targetSize.value
-                assertEquals("Bottom alignment must reach the row edge before padding", row.bottom - 2f * density, bounds.bottom, .5f)
+                assertEquals("Bottom alignment must preserve the original row seat", row.bottom - (if (enabled) 2f * density else 0f), bounds.bottom, .5f)
+                if (!enabled) {
+                    compose.onNode(hasTestTag("toolbar.native.glyph") and hasAnyAncestor(hasTestTag(tag)),
+                        useUnmergedTree = true).assertWidthIsEqualTo(32.dp).assertHeightIsEqualTo(32.dp)
+                }
                 action.performTouchInput { click() }
                 action.performTouchInput { longClick() }
             }
@@ -272,6 +332,159 @@ class GlassToolbarButtonsTest {
             val follow = compose.onNodeWithTag("detail.follow").fetchSemanticsNode().boundsInRoot
             val bar = compose.onNodeWithTag("detail.bar").fetchSemanticsNode().boundsInRoot
             assertEquals(viewport.center.x, (follow.left + bar.right) / 2f, .5f)
+        }
+    }
+
+    @Test fun `standalone toolbar samples container then supplied backdrop then native fallback without affecting off`() {
+        val container = mutableStateOf(true)
+        val global = mutableStateOf(true)
+        val glass = mutableStateOf(true)
+        val controlEnabled = mutableStateOf(true)
+        compose.setContent {
+            AppearanceProvider {
+                val red = rememberCanvasBackdrop { drawRect(Color.Red) }
+                val blue = rememberCanvasBackdrop { drawRect(Color.Blue) }
+                CompositionLocalProvider(LocalGlassContainerBackdrop provides if (container.value) red else null,
+                    LocalGlassBackdrop provides if (global.value) blue else null) {
+                    Box(Modifier.background(Color.Green)) {
+                        GlassToolbarRow(1, Modifier.testTag("source.row"), GlassSettings(
+                            enabled = glass.value, film = 0f, rim = 0f, blur = 0f, vibrancy = 0f,
+                        )) {
+                            TabToolBar.Icon(R.drawable.play, tint = Color.Transparent,
+                                enabled = controlEnabled.value, onClick = {})
+                        }
+                    }
+                }
+            }
+        }
+        fun pixel(): Color {
+            val pixels = compose.onNodeWithTag("source.row").captureToImage().toPixelMap()
+            // Disabled native tint applies alpha=.5 to the transparent glyph; sample the pane beside it.
+            return pixels[pixels.width / 8, pixels.height / 2]
+        }
+        assertEquals(Color.Red, pixel())
+        compose.runOnIdle { controlEnabled.value = false }
+        assertEquals(Color.Red, pixel())
+        compose.runOnIdle { container.value = false }
+        assertEquals(Color.Blue, pixel())
+        compose.runOnIdle { global.value = false }
+        assertEquals(DefaultDarkColorPalette.background0, pixel())
+        compose.runOnIdle { container.value = true; global.value = true; glass.value = false }
+        assertEquals(Color.Green, pixel())
+    }
+
+    @Test fun `queue item shape override reaches standalone pane and grouped overflow cell without changing their seats`() {
+        val radius = mutableStateOf(16.dp)
+        val enabled = mutableStateOf(true)
+        val outlines = mutableListOf<Pair<Size, Float>>()
+        var clicks = 0
+        compose.setContent {
+            val nativeShape = Appearance.restore(listOf(null, null, 12f, radius.value.value, 48f)).uiRoundnessShape
+            val itemShape = object : Shape {
+                override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
+                    val outline = nativeShape.createOutline(size, layoutDirection, density)
+                    when (outline) {
+                        is Outline.Rounded -> outlines += size to outline.roundRect.topLeftCornerRadius.x
+                        is Outline.Rectangle -> outlines += size to 0f
+                        is Outline.Generic -> error("Queue UI roundness must retain a rounded or rectangular outline")
+                    }
+                    return outline
+                }
+            }
+            AppearanceProvider {
+                Column {
+                    GlassToolbarRow(1, settings = settings.copy(enabled = enabled.value), itemShape = itemShape) {
+                        GlassToolbarIcon(painterResource(R.drawable.chevron_down), Color.White, 32.dp, true,
+                            onClick = { clicks++ }, contentDescription = "queue.arrow.shape")
+                    }
+                    GlassToolbarRow(2, settings = settings.copy(enabled = enabled.value), itemShape = itemShape) {
+                        GlassToolbarIcon(painterResource(R.drawable.play), Color.White, 32.dp, true,
+                            onClick = {}, contentDescription = "queue.play.shape")
+                        GlassToolbarIcon(painterResource(R.drawable.ellipsis_horizontal), Color.White, 32.dp, true,
+                            onClick = { clicks++ }, contentDescription = "queue.overflow.shape")
+                    }
+                }
+            }
+        }
+        for (r in listOf(48.dp, 0.dp, 8.dp)) {
+            compose.runOnIdle { outlines.clear(); radius.value = r }
+            compose.onNodeWithContentDescription("queue.arrow.shape").captureToImage()
+            compose.onNodeWithContentDescription("queue.overflow.shape").captureToImage()
+            compose.runOnIdle {
+                val standalone = with(compose.density) { GlassStandaloneActionSize.toPx() }
+                val cell = with(compose.density) { GlassActionCellWidth.toPx() }
+                assertTrue("Standalone pane must use the supplied UI shape", outlines.any { kotlin.math.abs(it.first.width - standalone) < 1f })
+                assertTrue("Grouped ellipsis feedback must use the supplied UI shape", outlines.any { kotlin.math.abs(it.first.width - cell) < 1f })
+                outlines.forEach { (size, corner) ->
+                    val expected = minOf(with(compose.density) { r.toPx() }, size.minDimension * .4f)
+                    assertEquals("Small controls keep the normal UI cap rather than the search bubble cap", expected, corner, .1f)
+                }
+            }
+        }
+        compose.onNodeWithContentDescription("queue.arrow.shape").performTouchInput { click() }
+        compose.onNodeWithContentDescription("queue.overflow.shape").performTouchInput { click() }
+        assertEquals(2, clicks)
+    }
+
+    @Test fun `small action policy keeps the UI shape object and its production forty percent cap`() {
+        val radius = mutableStateOf(48.dp)
+        var uiShape: Shape? = null
+        var resolved: Shape? = null
+        compose.setContent {
+            val shape = Appearance.restore(listOf(null, null, 12f, radius.value.value, 48f)).uiRoundnessShape
+            CompositionLocalProvider(LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                typographyOf(Color.White, true, false, FontType.Rubik), shape, shape, shape)) {
+                val actual = toolbarItemShape()
+                SideEffect { uiShape = shape; resolved = actual }
+                GlassToolbarRow(1, settings = settings) {
+                    GlassToolbarIcon(painterResource(R.drawable.checked_filled), Color.White, 32.dp, true,
+                        onClick = {}, contentDescription = "select.all.default")
+                }
+            }
+        }
+        for (r in listOf(48.dp, 0.dp, 8.dp)) {
+            compose.runOnIdle { radius.value = r }
+            compose.onNodeWithContentDescription("select.all.default").assertExists()
+            compose.runOnIdle {
+                assertSame("Individual actions must not replace the native bounded shape with a search bubble", uiShape, resolved)
+                val outline = requireNotNull(resolved).createOutline(Size(40f, 40f), LayoutDirection.Ltr, Density(1f))
+                val corner = when (outline) {
+                    is Outline.Rounded -> outline.roundRect.topLeftCornerRadius.x
+                    is Outline.Rectangle -> 0f
+                    is Outline.Generic -> error("Unexpected UI shape")
+                }
+                assertEquals(minOf(r.value, 16f), corner, .1f)
+            }
+        }
+    }
+
+    @Test fun `short native selector and toggle renderers pass the UI shape to Material without changing click behavior`() {
+        val outlines = mutableListOf<Float>()
+        var clicks = 0
+        compose.setContent {
+            val shape = object : Shape {
+                override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
+                    val outline = Appearance.restore(listOf(null, null, 12f, 48f, 48f)).uiRoundnessShape.createOutline(size, layoutDirection, density)
+                    if (outline is Outline.Rounded) outlines += outline.roundRect.topLeftCornerRadius.x / size.minDimension
+                    return outline
+                }
+            }
+            CompositionLocalProvider(LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                typographyOf(Color.White, true, false, FontType.Rubik), shape, shape, shape)) {
+                Row {
+                    TabToolBar.Icon(painterResource(R.drawable.checked_filled), onClick = { clicks++ })
+                    TabToolBar.Toggleable(R.drawable.checked_filled, R.drawable.unchecked_outline,
+                        toggleCondition = false, onClick = { clicks++ })
+                }
+            }
+        }
+        compose.onAllNodes(hasClickAction()).assertCountEquals(2)
+        compose.onAllNodes(hasClickAction())[0].performTouchInput { click() }
+        compose.onAllNodes(hasClickAction())[1].performTouchInput { click() }
+        compose.runOnIdle {
+            assertEquals(2, clicks)
+            assertTrue("Material IconButton must receive the project's UI shape", outlines.isNotEmpty())
+            outlines.forEach { assertEquals(.4f, it, .001f) }
         }
     }
 

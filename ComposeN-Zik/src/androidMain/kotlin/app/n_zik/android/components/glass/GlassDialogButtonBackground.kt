@@ -1,17 +1,113 @@
 package app.n_zik.android.components.glass
 
+import app.n_zik.android.components.ui.reservedIconActionCanvas
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonElevation
+import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.draw.clip
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.surfaceColor
+import app.n_zik.android.uiRoundnessShape
+
+/** One native action source moves the entire material and foreground without another ripple. */
+@Composable
+internal fun GlassDialogButtonFeedback(
+    enabled: Boolean,
+    shape: Shape,
+    settings: GlassSettings = rememberGlassSettings(),
+    interactionSource: MutableInteractionSource? = null,
+    content: @Composable (Modifier, MutableInteractionSource?) -> Unit,
+) {
+    PageButtonFeedback(settings.usesGlassDialogButtonMaterial(), enabled, shape,
+        interactionSource, settings, content)
+}
+
+/** Material icon geometry and input remain native; the caller's material is inside the motion. */
+@PublishedApi
+@Composable
+internal fun GlassDialogIconButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    colors: IconButtonColors = IconButtonDefaults.iconButtonColors(),
+    interactionSource: MutableInteractionSource? = null,
+    content: @Composable () -> Unit,
+) {
+    val shape = uiRoundnessShape()
+    GlassDialogButtonFeedback(enabled, shape, interactionSource = interactionSource) { feedback, source ->
+        androidx.compose.material3.IconButton(
+            onClick = onClick, modifier = feedback.then(modifier), enabled = enabled,
+            colors = colors, interactionSource = source, shape = shape, content = content,
+        )
+    }
+}
+
+/** Presentation equivalent of the existing image icon button, sharing its sole clickable source. */
+@OptIn(ExperimentalFoundationApi::class)
+@PublishedApi
+@Composable
+internal fun GlassDialogIconButton(
+    onClick: () -> Unit,
+    icon: Int,
+    color: Color,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    val settings = rememberGlassSettings()
+    if (!settings.usesGlassDialogButtonMaterial()) {
+        app.it.fast4x.rimusic.ui.components.themed.IconButton(onClick, icon, color, modifier, enabled)
+        return
+    }
+    val shape = uiRoundnessShape()
+    GlassDialogButtonFeedback(enabled, shape, settings) { feedback, source ->
+        Image(painterResource(icon), contentDescription = null, colorFilter = ColorFilter.tint(color),
+            modifier = feedback.then(modifier.reservedIconActionCanvas(shape,
+                interactionSource = source, indication = null, enabled = enabled, onClick = onClick, role = Role.Button)))
+    }
+}
+
+/** Keeps OutlinedButton's layout and action ownership while moving its supplied Glass material. */
+@Composable
+internal fun GlassDialogOutlinedButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    shape: Shape = ButtonDefaults.outlinedShape,
+    colors: ButtonColors = ButtonDefaults.outlinedButtonColors(),
+    elevation: ButtonElevation? = null,
+    border: BorderStroke? = ButtonDefaults.outlinedButtonBorder(enabled),
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    interactionSource: MutableInteractionSource? = null,
+    content: @Composable RowScope.() -> Unit,
+) {
+    GlassDialogButtonFeedback(enabled, shape, interactionSource = interactionSource) { feedback, source ->
+        OutlinedButton(onClick = onClick, modifier = feedback.then(modifier), enabled = enabled,
+            shape = shape, colors = colors, elevation = elevation, border = border,
+            contentPadding = contentPadding, interactionSource = source, content = content)
+    }
+}
 
 private fun GlassSettings.usesGlassDialogButtonMaterial(): Boolean =
     usesGlassMaterial(GlassArea.DialogButtons)

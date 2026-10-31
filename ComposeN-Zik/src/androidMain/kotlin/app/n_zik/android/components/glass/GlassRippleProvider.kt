@@ -14,12 +14,6 @@ import androidx.compose.ui.Modifier
 
 internal val LocalGlassRippleActive = staticCompositionLocalOf { false }
 
-@Suppress("DEPRECATION") // Installed Material3 still reads these state-layer alpha overrides.
-private val glassRippleConfiguration = RippleConfiguration(
-    color = Color.White,
-    rippleAlpha = RippleAlpha(draggedAlpha = .12f, focusedAlpha = .12f, hoveredAlpha = .08f, pressedAlpha = .12f),
-)
-
 /** Changes only indication styling, leaving native click, long-click and scroll handling intact. */
 @Composable
 fun GlassRippleProvider(
@@ -31,11 +25,19 @@ fun GlassRippleProvider(
     val nativeConfiguration = LocalRippleConfiguration.current
     val nativeIndication = LocalIndication.current
     val pointerTracker = remember { GlassHighlightPointerTracker() }
-    val glassIndication = remember(pointerTracker) { GlassHighlightIndication(pointerTracker) }
+    val policy = settings.interactionPolicy()
+    val rippleActive = settings.enabled && policy.rippleIntensity > 0f
+    val glassIndication = remember(pointerTracker, policy) { GlassHighlightIndication(pointerTracker, policy = policy) }
+    val configuration = remember(policy) {
+        RippleConfiguration(color = Color.White, rippleAlpha = RippleAlpha(
+            draggedAlpha = .12f * policy.rippleIntensity, focusedAlpha = .12f * policy.rippleIntensity,
+            hoveredAlpha = .08f * policy.rippleIntensity, pressedAlpha = .12f * policy.rippleIntensity,
+        ))
+    }
     CompositionLocalProvider(
-        LocalGlassRippleActive provides settings.enabled,
-        LocalRippleConfiguration provides if (settings.enabled) glassRippleConfiguration else nativeConfiguration,
-        LocalIndication provides if (settings.enabled) glassIndication else nativeIndication,
+        LocalGlassRippleActive provides rippleActive,
+        LocalRippleConfiguration provides if (rippleActive) configuration else nativeConfiguration,
+        LocalIndication provides if (rippleActive) glassIndication else nativeIndication,
     ) {
         Box(
             modifier = Modifier.trackGlassHighlightPointers(pointerTracker),

@@ -144,3 +144,6 @@ Added:
 
 - feat(glass): centralize destination and interaction policies
   - Keep fresh-install Glass disabled and share scoped material, contour and interaction choices.
+
+- fix(ui): unify Glass and Material press feedback
+  - Align ripple bounds, UI roundness and retained Jelly gestures across standalone and grouped controls.

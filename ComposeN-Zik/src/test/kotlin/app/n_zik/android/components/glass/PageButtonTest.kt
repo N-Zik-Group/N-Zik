@@ -57,7 +57,6 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import org.robolectric.shadows.ShadowLooper
 import java.util.concurrent.TimeUnit
-import kotlin.math.hypot
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [32], application = Application::class)
@@ -197,6 +196,61 @@ class PageButtonTest {
         compose.runOnIdle { assertSame(nativeRipple, observed) }
     }
 
+    @Test fun `global hold reaches native page button with action material off and restores native ripple`() {
+        val source = MutableInteractionSource()
+        val global = mutableStateOf(true)
+        val nativeRipple = RippleConfiguration(Color.Black)
+        var observed: RippleConfiguration? = nativeRipple
+        val areaOff = GlassSettings(enabled = true, actionButtons = false)
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            PageButtonAppearance {
+                CompositionLocalProvider(LocalRippleConfiguration provides nativeRipple) {
+                    GlassRippleProvider(GlassSettings(enabled = global.value)) {
+                        Column {
+                            val colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6020A0))
+                            Button({}, Modifier.size(160.dp, 48.dp).testTag("global.native"),
+                                colors = colors, elevation = null, interactionSource = source) {}
+                            PageButton({}, Modifier.size(160.dp, 48.dp).testTag("global.page"),
+                                colors = colors, elevation = null, interactionSource = source,
+                                settings = areaOff) {
+                                val ripple = LocalRippleConfiguration.current
+                                SideEffect { observed = ripple }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        compose.mainClock.advanceTimeByFrame()
+        compose.runOnIdle { assertNull("Explicit Glass halo disables Material's internal ripple", observed) }
+        val node = compose.onNodeWithTag("global.page")
+        val before = node.captureToImage().toPixelMap()
+        val press = PressInteraction.Press(Offset(80f, 24f))
+        compose.runOnIdle { assertTrue(source.tryEmit(press)) }
+        compose.mainClock.advanceTimeBy(1200)
+        val held = node.captureToImage().toPixelMap()
+        val x = held.width / 2
+        val y = held.height / 2
+        assertTrue("Native material receives Glass white halo", held[x, y].red > before[x, y].red + .02f)
+        assertTrue(held[x, y].green > before[x, y].green && held[x, y].blue > before[x, y].blue)
+        compose.runOnIdle { source.tryEmit(PressInteraction.Release(press)); global.value = false }
+        compose.mainClock.advanceTimeBy(1600)
+        compose.runOnIdle { assertSame(nativeRipple, observed) }
+        // Restored Material ripple layers may quantize the same color one 8-bit
+        // step apart. Compare the complete capsule, including its antialiased edge.
+        assertIdentical("global.native", "global.page", channelTolerance = 1f / 255f)
+        val nativePress = PressInteraction.Press(Offset(80f, 24f))
+        compose.runOnIdle { assertTrue(source.tryEmit(nativePress)) }
+        compose.mainClock.advanceTimeBy(800)
+        val native = compose.onNodeWithTag("global.native").captureToImage().toPixelMap()
+        val restored = node.captureToImage().toPixelMap()
+        for (sample in listOf(native.width / 4, native.width * 3 / 4)) {
+            assertColor(native[sample, native.height / 2], restored[sample, restored.height / 2])
+        }
+        compose.runOnIdle { source.tryEmit(PressInteraction.Release(nativePress)) }
+    }
+
     @Test fun `glass button press uses bounded white hold instead of inherited dark material ripple`() {
         assertGlassHold(textButton = false)
     }
@@ -205,23 +259,23 @@ class PageButtonTest {
         assertGlassHold(textButton = true)
     }
 
-    @Test fun `glass page button light follows finger and cancel cannot revive it`() {
+    @Test fun `glass page button pane and glyph follow the finger until physical up`() {
         assertFingerTracking(textButton = false)
     }
 
-    @Test fun `glass page text button light follows finger and cancel cannot revive it`() {
+    @Test fun `glass page text button pane and glyph follow the finger until physical up`() {
         assertFingerTracking(textButton = true)
     }
 
     private fun assertFingerTracking(textButton: Boolean) {
         val source = MutableInteractionSource()
-        var activePress: PressInteraction.Press? = null
+        var nativeCancels = 0
         var movementConsumed = false
         var clicks = 0
         compose.mainClock.autoAdvance = false
         compose.setContent {
             LaunchedEffect(source) {
-                source.interactions.collect { if (it is PressInteraction.Press) activePress = it }
+                source.interactions.collect { if (it is PressInteraction.Cancel) nativeCancels++ }
             }
             PageButtonAppearance {
                 val modifier = Modifier.size(160.dp, 48.dp).testTag("tracking")
@@ -238,9 +292,9 @@ class PageButtonTest {
                 val colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF402060))
                 Box(Modifier.background(DefaultDarkColorPalette.background0)) {
                     if (textButton) PageTextButton({ clicks++ }, modifier, colors = colors,
-                        interactionSource = source, settings = settings) { }
+                        interactionSource = source, settings = settings) { Box(Modifier.size(12.dp).background(Color.Magenta)) }
                     else PageButton({ clicks++ }, modifier, colors = colors, elevation = null,
-                        interactionSource = source, settings = settings) { }
+                        interactionSource = source, settings = settings) { Box(Modifier.size(12.dp).background(Color.Magenta)) }
                 }
             }
         }
@@ -259,34 +313,55 @@ class PageButtonTest {
         action.performTouchInput { moveTo(right) }
         compose.mainClock.advanceTimeByFrame()
         val moved = action.captureToImage().toPixelMap()
+        fun glyphCenter(pixels: androidx.compose.ui.graphics.PixelMap): Float {
+            val positions = (0 until pixels.height).flatMap { y ->
+                (0 until pixels.width).filter { x ->
+                    val pixel = pixels[x, y]
+                    pixel.red > .8f && pixel.blue > .8f && pixel.green < .4f
+                }
+            }
+            assertTrue("The actual foreground marker must remain visible", positions.isNotEmpty())
+            return positions.average().toFloat()
+        }
+        assertTrue("The foreground must travel with the entire Glass pane",
+            glyphCenter(moved) > glyphCenter(initial) + 1f)
         val xLeft = left.x.toInt()
         val xRight = right.x.toInt()
         val y = left.y.toInt()
         assertTrue("The initial light must be at the finger", initial[xLeft, y].red > initial[xRight, y].red + .03f)
         assertTrue("The same held light must follow across the actual button", moved[xRight, y].red > moved[xLeft, y].red + .03f)
         compose.runOnIdle {
-            assertFalse("Highlight must leave movement to the button", movementConsumed)
-            assertTrue(source.tryEmit(PressInteraction.Cancel(requireNotNull(activePress))))
+            assertTrue("A fixed Glass button consumes its drag before an ancestor can scroll", movementConsumed)
+            assertEquals("The retained drag cancels the sole native action", 1, nativeCancels)
         }
-        compose.mainClock.advanceTimeBy(1600)
+        compose.mainClock.advanceTimeBy(800)
+        val nativeCanceled = action.captureToImage().toPixelMap()
+        assertTrue("Native action cancellation must not release a physically held Glass pane",
+            nativeCanceled[xRight, y].red > original[xRight, y].red + .03f)
         action.performTouchInput { moveTo(left) }
         compose.mainClock.advanceTimeByFrame()
-        val cancelled = action.captureToImage().toPixelMap()
-        assertColor(original[xLeft, y], cancelled[xLeft, y])
         action.performTouchInput { up() }
-        compose.runOnIdle { assertEquals(1, clicks) }
+        compose.mainClock.advanceTimeBy(1600)
+        val released = action.captureToImage().toPixelMap()
+        assertColor(original[xLeft, y], released[xLeft, y])
+        compose.runOnIdle { assertEquals("Returning inside cannot revive a cancelled drag", 0, clicks) }
+        action.performTouchInput { click() }
+        compose.runOnIdle { assertEquals("A fresh tap still has exactly one action owner", 1, clicks) }
     }
 
-    @Test fun `glass button leaves vertical scroll cancellation to its parent`() {
+    @Test fun `fixed glass button consumes a vertical drag before its parent can scroll`() {
         var clicks = 0
         var cancels = 0
+        var scroll: androidx.compose.foundation.ScrollState? = null
         val source = MutableInteractionSource()
         compose.setContent {
             LaunchedEffect(source) {
                 source.interactions.collect { if (it is PressInteraction.Cancel) cancels++ }
             }
             PageButtonAppearance {
-                Column(Modifier.size(180.dp, 120.dp).verticalScroll(rememberScrollState())) {
+                val state = rememberScrollState()
+                SideEffect { scroll = state }
+                Column(Modifier.size(180.dp, 120.dp).verticalScroll(state)) {
                     PageButton({ clicks++ }, Modifier.size(160.dp, 80.dp).testTag("scrollAction"),
                         interactionSource = source, settings = GlassSettings(quality = GlassQuality.Performance)) { }
                     Box(Modifier.size(160.dp, 500.dp))
@@ -301,6 +376,7 @@ class PageButtonTest {
         compose.runOnIdle {
             assertEquals(0, clicks)
             assertEquals(1, cancels)
+            assertEquals("A drag held by a fixed Glass button cannot scroll its parent", 0, requireNotNull(scroll).value)
         }
     }
 
@@ -354,7 +430,9 @@ class PageButtonTest {
         assertTrue("Glass hold must lighten its film: $diagnostic", after.red > before.red + .02f)
         assertTrue("Glass hold must not darken its film: $diagnostic", after.green >= before.green && after.blue >= before.blue)
         assertTrue("Glass hold remains translucent: $diagnostic", after.red - before.red < .3f)
-        assertColor(Color.Magenta, held[held.width / 2, held.height / 2])
+        val foreground = held[held.width / 2, held.height / 2]
+        assertTrue("The sharp foreground keeps its saturated channels under the shared Plus highlight",
+            foreground.red >= .98f && foreground.blue >= .98f && foreground.green <= .25f)
         assertEquals(bounds, action.fetchSemanticsNode().boundsInRoot)
         compose.runOnIdle { assertEquals(0, clicks) }
         action.performTouchInput { up() }
@@ -373,11 +451,6 @@ class PageButtonTest {
             val expected = native[x, y]
             val actual = page[x, y]
             val message = "pixel $x,$y"
-            val radius = native.height / 2f
-            val centerX = (x + .5f).coerceIn(radius, native.width - radius)
-            val distance = hypot(x + .5f - centerX, y + .5f - radius)
-            // Native ripple layers rasterize the two-pixel antialiased capsule edge separately.
-            if (channelTolerance > 0f && distance >= radius - 2f) continue
             assertEquals(message, expected.red, actual.red, channelTolerance)
             assertEquals(message, expected.green, actual.green, channelTolerance)
             assertEquals(message, expected.blue, actual.blue, channelTolerance)

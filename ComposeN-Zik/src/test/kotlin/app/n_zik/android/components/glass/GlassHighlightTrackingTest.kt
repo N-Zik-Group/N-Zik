@@ -8,6 +8,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -38,6 +39,48 @@ import java.util.concurrent.TimeUnit
 @Config(sdk = [32], application = Application::class)
 class GlassHighlightTrackingTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `simultaneous row presses track their own finger after the first lifts`() {
+        val nodes = mutableMapOf<Int, GlassHighlightNode>()
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            GlassRippleProvider(GlassSettings(enabled = true)) {
+                val supplied = LocalIndication.current as IndicationNodeFactory
+                Row(Modifier.testTag("rows")) {
+                    repeat(2) { index ->
+                        val indication = object : IndicationNodeFactory {
+                            override fun equals(other: Any?) = other === this
+                            override fun hashCode() = System.identityHashCode(this)
+                            override fun create(interactionSource: InteractionSource): DelegatableNode =
+                                supplied.create(interactionSource).also { nodes[index] = it as GlassHighlightNode }
+                        }
+                        Box(Modifier.size(100.dp).combinedClickable(
+                            interactionSource = null, indication = indication, onClick = {}))
+                    }
+                }
+            }
+        }
+        val rows = compose.onNodeWithTag("rows")
+        val first = Offset(20f, 20f)
+        val second = Offset(with(compose.density) { 100.dp.toPx() } + 20f, 20f)
+        rows.performTouchInput { down(0, first); down(1, second) }
+        shadowOf(Looper.getMainLooper()).idleFor(150, TimeUnit.MILLISECONDS)
+        compose.mainClock.advanceTimeByFrame()
+        compose.waitForIdle()
+        rows.performTouchInput { moveTo(0, first + Offset(2f, 0f)); moveTo(1, second + Offset(0f, 2f)) }
+        compose.mainClock.advanceTimeByFrame()
+        compose.waitForIdle()
+        compose.runOnIdle {
+            assertEquals(Offset(2f, 0f), nodes.getValue(0).highlight?.offset)
+            assertEquals(Offset(0f, 2f), nodes.getValue(1).highlight?.offset)
+        }
+        rows.performTouchInput { up(0); moveTo(1, second + Offset(0f, 3f)) }
+        compose.mainClock.advanceTimeByFrame()
+        compose.waitForIdle()
+        compose.runOnIdle { assertEquals(Offset(0f, 3f), nodes.getValue(1).highlight?.offset) }
+        rows.performTouchInput { up(1) }
+        compose.mainClock.advanceTimeBy(1600)
+    }
 
     @Test fun `native hold tracks consumed movement without owning gestures and cancel stays authoritative`() {
         val source = MutableInteractionSource()

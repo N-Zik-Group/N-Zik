@@ -1,6 +1,7 @@
 package app.n_zik.android.components.glass
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerId
@@ -24,28 +25,40 @@ internal fun Modifier.trackGlassHighlightPointers(tracker: GlassHighlightPointer
 internal class GlassHighlightPointerTracker {
     var coordinates: LayoutCoordinates? = null
     private val activeNodes = mutableSetOf<GlassHighlightNode>()
-    private var pointerId: PointerId? = null
+    private val pointerByNode = mutableMapOf<GlassHighlightNode, PointerId>()
+    private var pressedPointers: Map<PointerId, Offset> = emptyMap()
 
     fun add(node: GlassHighlightNode) {
         activeNodes.add(node)
+        bindPointer(node)
     }
 
     fun remove(node: GlassHighlightNode) {
         activeNodes.remove(node)
+        pointerByNode.remove(node)
     }
 
     fun observe(event: PointerEvent) {
-        if (pointerId == null) pointerId = event.changes.firstOrNull { it.pressed }?.id
-        val change = event.changes.firstOrNull { it.id == pointerId }
-        val coordinates = coordinates
+        pressedPointers = event.changes.filter { it.pressed }.associate { it.id to it.position }
+        val coordinates = coordinates ?: return
         // A native long click consumes movement while its press remains active.
-        if (change?.pressed == true && coordinates != null) {
-            activeNodes.forEach { it.movePointer(change.position, coordinates) }
+        activeNodes.forEach { node ->
+            bindPointer(node)
+            pressedPointers[pointerByNode[node]]?.let { node.movePointer(it, coordinates) }
         }
-        if (event.changes.none { it.pressed }) pointerId = null
+    }
+
+    private fun bindPointer(node: GlassHighlightNode) {
+        if (pointerByNode.containsKey(node)) return
+        val coordinates = coordinates ?: return
+        val origin = node.pressPositionIn(coordinates) ?: return
+        val pointer = pressedPointers.entries.filter { it.key !in pointerByNode.values }
+            .minByOrNull { (it.value - origin).getDistanceSquared() } ?: return
+        pointerByNode[node] = pointer.key
     }
 
     fun cancelPointerInput() {
-        pointerId = null
+        pointerByNode.clear()
+        pressedPointers = emptyMap()
     }
 }

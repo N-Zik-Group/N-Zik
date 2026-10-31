@@ -22,6 +22,8 @@ import androidx.compose.ui.util.fastCoerceIn
 import app.n_zik.android.components.glass.backdrop.RuntimeShader
 import app.n_zik.android.components.glass.backdrop.asComposeShader
 import app.n_zik.android.components.glass.backdrop.isRuntimeShaderSupported
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -65,9 +67,9 @@ half4 main(float2 coord) {
             null
         }
 
-    internal fun drawHighlight(scope: DrawScope) {
+    internal fun drawHighlight(scope: DrawScope, intensity: Float = 1f, radiusScale: Float = 1f) {
         with(scope) {
-            val progress = pressProgressAnimation.value
+            val progress = pressProgressAnimation.value * clampGlassValue(glassRippleIntensityKey, intensity)
             if (progress > 0f) {
                 if (shader != null) {
                     drawRect(
@@ -78,7 +80,7 @@ half4 main(float2 coord) {
                         val position = position(size, positionAnimation.value)
                         setFloatUniform("size", size.width, size.height)
                         setColorUniform("color", Color.White.copy(0.15f * progress))
-                        setFloatUniform("radius", size.minDimension * 1.5f)
+                        setFloatUniform("radius", size.minDimension * 1.5f * clampGlassValue(glassRippleSizeKey, radiusScale))
                         setFloatUniform(
                             "position",
                             position.x.fastCoerceIn(0f, size.width),
@@ -101,7 +103,7 @@ half4 main(float2 coord) {
                             0.5f to Color.White.copy(0.15f * progress),
                             1f to Color.Transparent,
                             center = Offset(center.x.fastCoerceIn(0f, size.width), center.y.fastCoerceIn(0f, size.height)),
-                            radius = size.minDimension * 1.5f,
+                            radius = size.minDimension * 1.5f * clampGlassValue(glassRippleSizeKey, radiusScale),
                         ),
                         blendMode = BlendMode.Plus
                     )
@@ -116,23 +118,38 @@ half4 main(float2 coord) {
         drawContent()
     }
 
+    private var progressJob: Job? = null
+    private var positionJob: Job? = null
+
     internal fun startPress(position: Offset) {
         startPosition = position
-        animationScope.launch {
-            launch { pressProgressAnimation.animateTo(1f, pressProgressAnimationSpec) }
-            launch { positionAnimation.snapTo(startPosition) }
+        progressJob?.cancel()
+        positionJob?.cancel()
+        // Start immediately so a release in the same frame cannot queue a late press flash.
+        progressJob = animationScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            pressProgressAnimation.animateTo(1f, pressProgressAnimationSpec)
+        }
+        positionJob = animationScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            positionAnimation.snapTo(startPosition)
         }
     }
 
     internal fun releasePress() {
-        animationScope.launch {
-            launch { pressProgressAnimation.animateTo(0f, releaseProgressAnimationSpec) }
-            launch { positionAnimation.animateTo(startPosition, positionAnimationSpec) }
+        progressJob?.cancel()
+        positionJob?.cancel()
+        progressJob = animationScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            pressProgressAnimation.animateTo(0f, releaseProgressAnimationSpec)
+        }
+        positionJob = animationScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            positionAnimation.animateTo(startPosition, positionAnimationSpec)
         }
     }
 
     internal fun movePress(position: Offset) {
-        animationScope.launch { positionAnimation.snapTo(position) }
+        positionJob?.cancel()
+        positionJob = animationScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            positionAnimation.snapTo(position)
+        }
     }
 
     val gestureModifier: Modifier =

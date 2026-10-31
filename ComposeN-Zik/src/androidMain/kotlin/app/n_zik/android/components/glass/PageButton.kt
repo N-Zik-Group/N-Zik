@@ -5,6 +5,8 @@ import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -15,10 +17,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.unit.dp
+import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 
@@ -28,7 +32,7 @@ fun PageButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = ButtonDefaults.shape,
+    shape: Shape = uiRoundnessShape(),
     colors: ButtonColors = ButtonDefaults.buttonColors(),
     elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
     border: BorderStroke? = null,
@@ -38,10 +42,11 @@ fun PageButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
-    PageButtonFeedback(material, enabled, shape, interactionSource) { feedback, source ->
+    val nativeBounds = remember { GlassNativeSurfaceBounds() }
+    NativePageButtonFeedback(material, enabled, shape, interactionSource, nativeBounds, settings) { feedback, source ->
         Button(
             onClick = onClick,
-            modifier = modifier.pageButtonMaterial(enabled, shape, colors, settings).then(feedback),
+            modifier = modifier.then(feedback).pageButtonMaterial(enabled, shape, colors, settings),
             enabled = enabled,
             shape = shape,
             colors = if (material) colors.copy(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent) else colors,
@@ -49,8 +54,10 @@ fun PageButton(
             border = if (material || settings.usesGlassContour(GlassArea.ActionButtons)) null else border,
             contentPadding = contentPadding,
             interactionSource = source,
-            content = content,
-        )
+        ) {
+            content()
+            NativeButtonSurfaceProbe(nativeBounds, contentRows = 1)
+        }
     }
 }
 
@@ -60,7 +67,7 @@ fun PageTextButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = ButtonDefaults.textShape,
+    shape: Shape = uiRoundnessShape(),
     colors: ButtonColors = ButtonDefaults.textButtonColors(),
     elevation: ButtonElevation? = null,
     border: BorderStroke? = null,
@@ -70,10 +77,11 @@ fun PageTextButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
-    PageButtonFeedback(material, enabled, shape, interactionSource) { feedback, source ->
+    val nativeBounds = remember { GlassNativeSurfaceBounds() }
+    NativePageButtonFeedback(material, enabled, shape, interactionSource, nativeBounds, settings) { feedback, source ->
         TextButton(
             onClick = onClick,
-            modifier = modifier.pageButtonMaterial(enabled, shape, colors, settings).then(feedback),
+            modifier = modifier.then(feedback).pageButtonMaterial(enabled, shape, colors, settings),
             enabled = enabled,
             shape = shape,
             colors = if (material) colors.copy(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent) else colors,
@@ -81,33 +89,90 @@ fun PageTextButton(
             border = if (material || settings.usesGlassContour(GlassArea.ActionButtons)) null else border,
             contentPadding = contentPadding,
             interactionSource = source,
-            content = content,
-        )
+        ) {
+            content()
+            NativeButtonSurfaceProbe(nativeBounds, contentRows = 1)
+        }
     }
 }
 
-/** Native buttons retain their own ripple; Glass uses the shared light beneath sharp content. */
+/** Use one explicit Glass indication; native buttons otherwise retain their own ripple. */
 @Composable
-private fun PageButtonFeedback(
+internal fun PageButtonFeedback(
     material: Boolean,
     enabled: Boolean,
     shape: Shape,
     interactionSource: MutableInteractionSource?,
+    settings: GlassSettings = rememberGlassSettings(),
     content: @Composable (Modifier, MutableInteractionSource?) -> Unit,
 ) {
-    if (!material) {
+    PageButtonFeedbackImpl(material, enabled, shape, interactionSource, settings, null, content)
+}
+
+/** Known native adapters export actual surface coordinates without changing caller layout. */
+@Composable
+internal fun NativePageButtonFeedback(
+    material: Boolean,
+    enabled: Boolean,
+    shape: Shape,
+    interactionSource: MutableInteractionSource?,
+    nativeBounds: GlassNativeSurfaceBounds,
+    settings: GlassSettings = rememberGlassSettings(),
+    content: @Composable (Modifier, MutableInteractionSource?) -> Unit,
+) {
+    PageButtonFeedbackImpl(material, enabled, shape, interactionSource, settings, nativeBounds, content)
+}
+
+/** A zero-size sibling preserves the native content's Box/RowScope and all of its measurements. */
+@Composable
+internal fun NativeButtonSurfaceProbe(bounds: GlassNativeSurfaceBounds, contentRows: Int = 0) {
+    Spacer(Modifier.size(0.dp).then(bounds.indication).onPlaced { probe ->
+        var surface = probe.parentLayoutCoordinates
+        repeat(contentRows) { surface = surface?.parentLayoutCoordinates }
+        bounds.coordinates = surface
+    })
+}
+
+@Composable
+private fun PageButtonFeedbackImpl(
+    material: Boolean,
+    enabled: Boolean,
+    shape: Shape,
+    interactionSource: MutableInteractionSource?,
+    settings: GlassSettings,
+    nativeBounds: GlassNativeSurfaceBounds?,
+    content: @Composable (Modifier, MutableInteractionSource?) -> Unit,
+) {
+    // Native adapters draw their indication on the content probe under M3's own clip.
+    // Reset it on every branch so master/material/disabled changes remove old nodes.
+    nativeBounds?.indication = Modifier
+    val global = LocalGlassRippleActive.current
+    if (!material && !global) {
         content(Modifier, interactionSource)
         return
     }
     val source = interactionSource ?: remember { MutableInteractionSource() }
-    val active = enabled && isGlassMotionAllowed()
+    val active = enabled && (global || isGlassMotionAllowed())
     if (!active) {
         content(Modifier, source)
         return
     }
+    if (material) {
+        val feedback = Modifier.retainGlassButtonGesture().glassButtonFeedback(source, shape,
+            drawMotionOnly = true, retainPressUntilUp = true, settings = settings)
+        CompositionLocalProvider(LocalRippleConfiguration provides null) { content(feedback, source) }
+        return
+    }
     val tracker = remember { GlassHighlightPointerTracker() }
-    val indication = remember(tracker) { GlassHighlightIndication(tracker, drawBeforeContent = true) }
-    val feedback = Modifier.clip(shape).trackGlassHighlightPointers(tracker).indication(source, indication)
+    val policy = settings.interactionPolicy()
+    val indication = remember(tracker, policy, shape, nativeBounds) {
+        GlassHighlightIndication(tracker, policy = policy, nativeSurfaceShape = shape, nativeSurfaceBounds = nativeBounds)
+    }
+    val pointerFeedback = Modifier.trackGlassHighlightPointers(tracker)
+    val feedback = if (nativeBounds == null) pointerFeedback.indication(source, indication) else {
+        nativeBounds.indication = Modifier.indication(source, indication)
+        pointerFeedback
+    }
     CompositionLocalProvider(LocalRippleConfiguration provides null) { content(feedback, source) }
 }
 
