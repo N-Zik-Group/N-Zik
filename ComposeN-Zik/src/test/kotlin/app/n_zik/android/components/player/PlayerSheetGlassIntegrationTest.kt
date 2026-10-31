@@ -31,6 +31,9 @@ import app.it.fast4x.rimusic.ui.styling.Typography
 import app.n_zik.android.components.CustomBottomSheet
 import app.n_zik.android.components.glass.GLASS_OPTICS_FADE_MILLIS
 import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.GlassMenuHostState
+import app.n_zik.android.components.glass.LocalGlassMenuHost
+import app.n_zik.android.components.glass.glassPlayerSceneSource
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassOpticsTransitionProgress
 import app.n_zik.android.components.glass.LocalGlassUnderlayCovered
@@ -40,6 +43,8 @@ import app.n_zik.android.components.glass.glassMaterial
 import app.n_zik.android.components.glass.glassOpticsProgress
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertNotNull
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -59,11 +64,13 @@ class PlayerSheetGlassIntegrationTest {
         lateinit var sheet: PlayerSheetState
         var transitionValue = 0f
         var sourceSamples = 0
+        val host = GlassMenuHostState()
         val scene = mutableStateOf(Color.Blue)
         val covered = mutableStateOf(false)
         compose.setContent {
             val shape = RoundedCornerShape(16.dp)
-            CompositionLocalProvider(LocalAppearance provides Appearance(DefaultDarkColorPalette,
+            CompositionLocalProvider(LocalGlassMenuHost provides host,
+                LocalAppearance provides Appearance(DefaultDarkColorPalette,
                 Typography.fallback, shape, shape, shape)) {
                 sheet = rememberPlayerSheetState(0.dp, 200.dp, 60.dp)
                 Box(Modifier.size(200.dp).background(Color.Red).testTag("scene")) {
@@ -74,10 +81,13 @@ class PlayerSheetGlassIntegrationTest {
                             { sourceSamples++; drawContent() }
                         }
                         val livePlayer = rememberLayerBackdrop(onDraw = recording)
+                        val completedPlayer = rememberLayerBackdrop()
                         val capture = playerGlassSourceCaptureActive(GlassSettings(), transition, true)
                         val source = rememberPlayerControlsGlassSource(LocalGlassContainerBackdrop.current,
                             livePlayer, transition)
-                        Box(Modifier.size(200.dp).background(Color.Black)) {
+                        Box(Modifier.size(200.dp)
+                            .glassPlayerSceneSource(completedPlayer, capture, sheet.isExpanded)
+                            .background(Color.Black)) {
                             Box(Modifier.size(200.dp)
                                 .then(if (capture) Modifier.layerBackdrop(livePlayer) else Modifier)
                                 .background(scene.value))
@@ -120,10 +130,15 @@ class PlayerSheetGlassIntegrationTest {
         assertTrue("Native player pixels remain live during restoration", pixel("native").green > .9f)
         advance(GLASS_OPTICS_FADE_MILLIS + 32L)
         assertEquals(1f, transitionValue, .001f)
+        compose.runOnIdle { assertNotNull(host.foregroundBackdrop) }
         assertTrue("Restored optics sample the new live scene", pixel("pane").green > .9f)
         assertEquals(bounds, compose.onNodeWithTag("pane").fetchSemanticsNode().boundsInRoot)
 
         position(.99f)
+        compose.runOnIdle {
+            assertTrue("Control capture survives leaving the endpoint", transitionValue > 0f)
+            assertNull("A translated sheet cannot replace the full scene", host.foregroundBackdrop)
+        }
         advance(48)
         val reversing = transitionValue
         assertTrue(reversing in 0f..1f && reversing < 1f)
@@ -132,6 +147,7 @@ class PlayerSheetGlassIntegrationTest {
         assertTrue("Rapid reversal resumes from the in-flight value", transitionValue > 0f)
         advance(GLASS_OPTICS_FADE_MILLIS + 32L)
         assertEquals(1f, transitionValue, .001f)
+        compose.runOnIdle { assertNotNull("Reversal restores full coverage ownership", host.foregroundBackdrop) }
         position(.99f)
         advance(GLASS_OPTICS_FADE_MILLIS + 32L)
         assertEquals(0f, transitionValue, .001f)

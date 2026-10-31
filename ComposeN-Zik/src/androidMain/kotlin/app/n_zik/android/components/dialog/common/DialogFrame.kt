@@ -161,6 +161,7 @@ fun DialogFrame(
                         sectionFilm = if (useGlass) null else surface,
                         material = if (useGlass) ({ exported -> Modifier.glassMaterial(
                             glass.forArea(GlassArea.Dialogs), shape, menu = true, filmColor = surface,
+                            excludeBottomRim = false,
                             exportedBackdrop = exported,
                         ) }) else null,
                     ) {

@@ -61,7 +61,15 @@ class GlassDialogButtonBackgroundTest {
         compose.setContent {
             val state = rememberScrollState()
             SideEffect { scroll = state }
-            CompositionLocalProvider(LocalGlassPreviewSettings provides GlassSettings(quality = GlassQuality.Performance)) {
+            val shape = RoundedCornerShape(12.dp)
+            CompositionLocalProvider(
+                LocalGlassPreviewSettings provides GlassSettings(quality = GlassQuality.Performance),
+                LocalAppearance provides Appearance(
+                    colorPalette = DefaultDarkColorPalette,
+                    typography = typographyOf(Color.White, true, false, FontType.Rubik),
+                    thumbnailShape = shape, uiRoundnessShape = shape, artistThumbnailShape = shape,
+                ),
+            ) {
                 Box(Modifier.size(220.dp, 180.dp).clickable { closes++ }) {
                     Column(Modifier.verticalScroll(state)) {
                         GlassDialogOutlinedButton({ clicks++ }, Modifier.size(160.dp, 48.dp).testTag("fixed.action")) {

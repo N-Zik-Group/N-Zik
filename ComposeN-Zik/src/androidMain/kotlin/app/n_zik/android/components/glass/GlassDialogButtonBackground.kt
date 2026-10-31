@@ -156,6 +156,7 @@ internal fun Modifier.glassDialogButtonBackground(
         shape = shape,
         ownBackdrop = LocalGlassContainerBackdrop.current ?: sharedBackdrop ?: backdrop,
         menu = true,
+        excludeBottomRim = false,
         filmColor = filmColor,
     )
 }

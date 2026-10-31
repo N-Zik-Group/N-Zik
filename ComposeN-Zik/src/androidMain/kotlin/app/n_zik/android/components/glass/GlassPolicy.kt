@@ -186,6 +186,24 @@ fun clampGlassValue(key: String, value: Float): Float {
     return if (value.isFinite()) value.coerceIn(range) else range.start
 }
 
+/** Reject mistyped known backup values before they reach typed SharedPreferences reads. */
+internal fun validGlassPreferenceValue(key: String, value: Any): Boolean = when (key) {
+    glassQualityKey, glassTintSourceKey -> value is String
+    glassCustomColorKey -> value is Int
+    glassTintStrengthKey, glassVibrancyKey, glassBlurKey, glassFilmKey,
+    glassIndicatorOpacityKey, glassDialogDimmingKey, glassMenuDimmingKey,
+    glassRimKey, glassDepthKey, glassAmountKey, glassRippleIntensityKey,
+    glassRippleSizeKey, glassJellyIntensityKey -> value is Float && value.isFinite()
+    glassDispersionKey, glassDepthEffectKey, glassRippleEnabledKey, glassJellyEnabledKey,
+    glassSettingsCardRimsKey, glassIndependentAreasKey -> value is Boolean
+    else -> when {
+        GlassArea.entries.any { it.legacyKey == key } -> value is Boolean
+        key.endsWith("_mode") -> value is String
+        // Preserve settings added by future versions; current readers ignore unknown keys.
+        else -> true
+    }
+}
+
 /** One versioned preference file; destination policies survive optical profile changes. */
 class GlassStore(context: Context) {
     private val preferences = context.applicationContext.getSharedPreferences("nzik_square_glass_v2", Context.MODE_PRIVATE)

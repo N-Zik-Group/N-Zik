@@ -2722,16 +2722,27 @@ class MainActivity :
 
                             }
                             }
-                            GlassDialogOverlayHost(glassMenuHost)
-                            // Draw anchored glass menus above both navigation and the player.
-                            GlassOverlayHost(glassMenuHost)
-                            app.n_zik.android.components.glass.GlassToastHost(
+                            val toastGlass = rememberGlassSettings(app.n_zik.android.components.glass.GlassScope.Toast)
+                            app.n_zik.android.components.glass.GlassToastOverlayScene(
                                 backdrop = glassMenuHost.modalBackdrop,
-                                onPresenceChanged = { toastNeedsLiveBackdrop = it },
-                                bottomInset = with(LocalDensity.current) {
-                                    windowsInsets.getBottom(this).toDp()
+                                captureOverlays = toastNeedsLiveBackdrop &&
+                                    toastGlass.usesGlassMaterial(GlassArea.Menus) &&
+                                    app.n_zik.android.components.glass.glassContentCaptureEnabled(toastGlass) &&
+                                    (glassMenuHost.dialogs.hasDialogs || glassMenuHost.entry != null),
+                                overlays = {
+                                    GlassDialogOverlayHost(glassMenuHost)
+                                    // Draw anchored glass menus above both navigation and the player.
+                                    GlassOverlayHost(glassMenuHost)
                                 },
-                            )
+                            ) { toastBackdrop ->
+                                app.n_zik.android.components.glass.GlassToastHost(
+                                    backdrop = toastBackdrop,
+                                    onPresenceChanged = { toastNeedsLiveBackdrop = it },
+                                    bottomInset = with(LocalDensity.current) {
+                                        windowsInsets.getBottom(this).toDp()
+                                    },
+                                )
+                            }
                             }
 
                         }

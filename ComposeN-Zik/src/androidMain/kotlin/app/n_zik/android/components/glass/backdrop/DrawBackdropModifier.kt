@@ -105,6 +105,8 @@ fun Modifier.drawPlainBackdrop(
     heldWhileMoving: () -> Boolean = NeverFrozen,
     opticsAlpha: Float = 1f,
     opticsAlphaProvider: (() -> Float)? = null,
+    // Passive exported tint surfaces have no effects and retain native clip compositing.
+    compositingStrategy: CompositingStrategy = CompositingStrategy.Offscreen,
 ): Modifier {
     val shapeProvider = ShapeProvider(shape)
     return this
@@ -118,7 +120,7 @@ fun Modifier.drawPlainBackdrop(
         .graphicsLayer {
             clip = true
             this.shape = shapeProvider.shape
-            compositingStrategy = CompositingStrategy.Offscreen
+            this.compositingStrategy = compositingStrategy
         }
         .then(
             DrawBackdropElement(

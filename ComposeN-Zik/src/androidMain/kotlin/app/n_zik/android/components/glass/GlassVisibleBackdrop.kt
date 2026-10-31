@@ -31,11 +31,12 @@ private val LocalGlassSceneNeedsLiveBackdrop = staticCompositionLocalOf { false 
  * the sibling overlay hosts. Clearing ownership on collapse restores the whole-scene source.
  */
 @Composable
-fun Modifier.glassPlayerSceneSource(backdrop: LayerBackdrop, active: Boolean): Modifier {
+fun Modifier.glassPlayerSceneSource(backdrop: LayerBackdrop, active: Boolean,
+    fullyCovering: Boolean = active): Modifier {
     val host = LocalGlassMenuHost.current
     val live = LocalGlassSceneNeedsLiveBackdrop.current
     SideEffect {
-        if (active) host?.foregroundBackdrop = backdrop
+        if (active && fullyCovering) host?.foregroundBackdrop = backdrop
         else if (host?.foregroundBackdrop === backdrop) host.foregroundBackdrop = null
     }
     DisposableEffect(host, backdrop) {

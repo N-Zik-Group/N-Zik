@@ -32,10 +32,12 @@ import app.it.fast4x.rimusic.enums.FontType
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
+import app.it.fast4x.rimusic.ui.styling.Typography
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.n_zik.android.components.settings.common.SettingsCardSurface
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Rule
@@ -222,10 +224,48 @@ class GlassSettingsCardBackgroundTest {
         assertColor(cardColor.copy(alpha = .5f).compositeOver(page), pixels[pixels.width / 2, pixels.height / 2])
     }
 
-    private fun assertColor(expected: Color, actual: Color) {
-        assertEquals(expected.red, actual.red, .02f)
-        assertEquals(expected.green, actual.green, .02f)
-        assertEquals(expected.blue, actual.blue, .02f)
-        assertEquals(expected.alpha, actual.alpha, .02f)
+    @Test fun `exporting fallback material preserves every visible film and rim pixel`() {
+        var radius by mutableStateOf(18.dp)
+        var rim by mutableStateOf(0f)
+        var film by mutableStateOf(Color.Blue)
+        compose.setContent {
+            val shape = RoundedCornerShape(radius)
+            val settings = GlassSettings(quality = GlassQuality.Performance,
+                film = .5f, tintStrength = 0f, rim = rim)
+            val backdrop = rememberCanvasBackdrop { drawRect(Color.Black) }
+            val exported = rememberLayerBackdrop()
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                DefaultDarkColorPalette, Typography.fallback,
+                shape, shape, shape)) {
+                Row(Modifier.background(Color.Black)) {
+                    Box(Modifier.size(80.dp).testTag("plain.fallback").glassMaterial(
+                        settings, shape, ownBackdrop = backdrop, filmColor = film, drawShadow = false))
+                    Box(Modifier.size(80.dp).testTag("exported.fallback").glassMaterial(
+                        settings, shape, ownBackdrop = backdrop, filmColor = film, drawShadow = false,
+                        exportedBackdrop = exported))
+                }
+            }
+        }
+        for (roundness in listOf(0.dp, 18.dp, 32.dp)) for (edge in listOf(0f, 1f)) {
+            compose.runOnIdle { radius = roundness; rim = edge; film = Color.Blue }
+            fun assertParity() {
+                val plain = compose.onNodeWithTag("plain.fallback").captureToImage().toPixelMap()
+                val exported = compose.onNodeWithTag("exported.fallback").captureToImage().toPixelMap()
+                for (y in 0 until plain.height) for (x in 0 until plain.width) {
+                    assertColor(plain[x, y], exported[x, y],
+                        "radius=$roundness rim=$edge film=$film pixel=($x,$y)")
+                }
+            }
+            assertParity()
+            compose.runOnIdle { film = Color.Magenta }
+            assertParity()
+        }
+    }
+
+    private fun assertColor(expected: Color, actual: Color, context: String = "") {
+        assertEquals("$context red", expected.red, actual.red, .02f)
+        assertEquals("$context green", expected.green, actual.green, .02f)
+        assertEquals("$context blue", expected.blue, actual.blue, .02f)
+        assertEquals("$context alpha", expected.alpha, actual.alpha, .02f)
     }
 }

@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.ClipOp
@@ -172,6 +173,8 @@ fun Modifier.glassMaterial(
     exportedBackdrop: LayerBackdrop? = null,
     // Opt-in geometry implementation; receives the shared resolution-scaled, safe lens reach.
     customLens: (BackdropEffectScope.(height: Float, amount: Float) -> Unit)? = null,
+    // Overlay film and blur policy also serve floating dialogs with a complete perimeter.
+    excludeBottomRim: Boolean = menu,
 ): Modifier {
     if (!settings.enabled) return this
     val backdrop = ownBackdrop ?: LocalGlassBackdrop.current
@@ -209,11 +212,16 @@ fun Modifier.glassMaterial(
                 }
             }
             Modifier.drawPlainBackdrop(emptySource, shapeBlock, effects,
-                exportedBackdrop = exportedBackdrop, onDrawSurface = surface)
+                exportedBackdrop = exportedBackdrop, onDrawSurface = surface,
+                // Empty source and effects: export the passive film without forcing
+                // different edge compositing from the ordinary tint fallback.
+                compositingStrategy = CompositingStrategy.Auto)
         }
         return then(if (layerBlock != null) Modifier.graphicsLayer(layerBlock) else Modifier)
-            .clip(shape).then(fill)
-            .then(if (menu) Modifier.glassMenuRim(shape, SolidColor(rimColor.copy(alpha = rimAlpha)))
+            // drawPlainBackdrop already owns the exported surface's shape mask.
+            // A second mask multiplies antialias coverage along rounded edges.
+            .then(if (exportedBackdrop == null) Modifier.clip(shape) else Modifier).then(fill)
+            .then(if (excludeBottomRim) Modifier.glassMenuRim(shape, SolidColor(rimColor.copy(alpha = rimAlpha)))
                 else Modifier.border(GlassRimWidth, rimColor.copy(alpha = rimAlpha), shape))
     }
     val density = LocalDensity.current
@@ -254,10 +262,10 @@ fun Modifier.glassMaterial(
             }
         }
     }
-    val highlight: (() -> Highlight?)? = remember(applyEdgeEffects, rimColor, rimAlpha, menu, opticsProgress) {
+    val highlight: (() -> Highlight?)? = remember(applyEdgeEffects, rimColor, rimAlpha, excludeBottomRim, opticsProgress) {
         if (applyEdgeEffects && rimAlpha > 0f) ({ Highlight(width = GlassRimWidth,
             style = HighlightStyle.Default(color = rimColor.copy(alpha = rimAlpha), angle = 45f),
-            excludeBottom = menu, alpha = opticsProgress) }) else null
+            excludeBottom = excludeBottomRim, alpha = opticsProgress) }) else null
     }
     val shadow: (() -> Shadow?)? = remember(applyEdgeEffects, drawShadow, opticsProgress) {
         if (applyEdgeEffects && drawShadow) ({ Shadow.Default.copy(alpha = opticsProgress) }) else null
@@ -281,6 +289,6 @@ fun Modifier.glassMaterial(
         exportedBackdrop = exportedBackdrop,
     ).then(if (opticsProgress < 1f) {
         val rim = SolidColor(rimColor.copy(alpha = rimAlpha * (1f - opticsProgress)))
-        if (menu) Modifier.glassMenuRim(shape, rim) else Modifier.border(GlassRimWidth, rim, shape)
+        if (excludeBottomRim) Modifier.glassMenuRim(shape, rim) else Modifier.border(GlassRimWidth, rim, shape)
     } else Modifier)
 }

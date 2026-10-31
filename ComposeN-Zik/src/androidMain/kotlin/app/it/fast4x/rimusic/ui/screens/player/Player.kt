@@ -1445,14 +1445,15 @@ fun Player(
         LocalGlassUnderlayCovered provides playerUnderlayCovered,
         LocalGlassBackdrop provides controlsSource,
         LocalGlassContainerBackdrop provides controlsSource,
-        LocalGlassOverlayBackdrop provides if (capturePlayerScene) playerVisibleBackdrop
+        LocalGlassOverlayBackdrop provides if (capturePlayerScene && playerSheetState.isExpanded) playerVisibleBackdrop
             else if (capturePlayerBackground) glassSceneOverlayBackdrop(playerVisibleBackdrop) else LocalGlassOverlayBackdrop.current,
     ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .playerTransportGeometryHost()
-            .glassPlayerSceneSource(playerVisibleBackdrop, active = capturePlayerScene)
+            .glassPlayerSceneSource(playerVisibleBackdrop, active = capturePlayerScene,
+                fullyCovering = playerSheetState.isExpanded)
     ) {
         @Composable
         fun ActionsBar() {
