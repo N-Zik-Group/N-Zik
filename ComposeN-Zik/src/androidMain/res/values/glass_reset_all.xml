@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_reset_all">Reset all settings</string>
+    <string name="settings_reset_all_description">Restore all application settings to their defaults.</string>
+    <string name="settings_reset_all_confirmation">Reset all application settings? Saved accounts, credentials, profiles, playlists, downloads and files will be kept.</string>
+    <string name="settings_reset_all_confirm">Reset all</string>
+</resources>

@@ -136,3 +136,5 @@ Added:
   - Adapt backdrop sampling, shaders and continuous shapes for Glass surfaces.
   - Keep upstream Apache and GPL attribution with the adapted sources and shared strings.
 
+- feat(glass): add shared resources and upstream attribution
+  - Provide shared Glass resources and preserve upstream license attribution.
