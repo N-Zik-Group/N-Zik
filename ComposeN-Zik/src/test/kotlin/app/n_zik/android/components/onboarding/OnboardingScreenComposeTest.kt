@@ -11,6 +11,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.lifecycle.Lifecycle
@@ -134,7 +135,9 @@ class OnboardingScreenComposeTest {
         composeRule.onNodeWithText(app.getString(R.string.glass_enable_confirm)).performClick()
         composeRule.waitForIdle()
         assertTrue(app.preferences.getBoolean(glassEnabledKey, false))
-        composeRule.onNodeWithTag("onboarding.glass.continue").assertIsDisplayed().performClick()
+        // The CTA belongs to the scroll content so it does not paint an opaque footer.
+        composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("onboarding.footer")
+        composeRule.onNodeWithTag("onboarding.glass.continue").performScrollTo().assertIsDisplayed().performClick()
         composeRule.onNodeWithText("Accounts step").assertIsDisplayed()
         composeRule.onNodeWithTag("onboarding.glass").assertDoesNotExist()
         assertEquals("ACCOUNTS", DataStoreUtils.getString(app, DataStoreUtils.KEY_ONBOARDING_STEP, ""))

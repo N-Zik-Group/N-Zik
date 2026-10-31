@@ -1,5 +1,7 @@
 package app.n_zik.android.components.ui.screens.rewind.slides
 
+import app.n_zik.android.components.glass.glassGlobalIndication
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -507,34 +509,37 @@ internal fun rewindBioMaxLines(areaHeightDp: Dp, lineHeightDp: Dp, reservedDp: D
  * opens the full-bio sheet. Same visual language as the deck's outlined action pills.
  */
 @Composable
-private fun RewindSeeMorePill(
+internal fun RewindSeeMorePill(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier
-            .rewindOutlinedActionBackground(
-                rewindColors.value.cream.copy(alpha = 0.10f),
-                rewindColors.value.cream.copy(alpha = 0.45f),
-                RoundedCornerShape(100.dp)
+    val shape = rewindActionShape(RoundedCornerShape(100.dp))
+    RewindActionFeedback(shape, nativeIndicationEnabled = false) { feedback, source ->
+        Row(
+            modifier = modifier.then(feedback)
+                .rewindOutlinedActionBackground(
+                    rewindColors.value.cream.copy(alpha = 0.10f),
+                    rewindColors.value.cream.copy(alpha = 0.45f),
+                    shape
+                )
+                .clickable(
+                    onClick = onClick,
+                    indication = if (source == null) glassGlobalIndication(null) else null,
+                    interactionSource = source
+                )
+                .padding(horizontal = 14.dp, vertical = 7.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = text,
+                color = rewindColors.value.cream,
+                fontSize = 8.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 0.7.sp,
+                maxLines = 1
             )
-            .clickable(
-                onClick = onClick,
-                indication = null,
-                interactionSource = remember { MutableInteractionSource() }
-            )
-            .padding(horizontal = 14.dp, vertical = 7.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = text,
-            color = rewindColors.value.cream,
-            fontSize = 8.sp,
-            fontWeight = FontWeight.Black,
-            letterSpacing = 0.7.sp,
-            maxLines = 1
-        )
+        }
     }
 }

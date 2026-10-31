@@ -19,7 +19,7 @@ import app.n_zik.android.components.settings.ui.GlassSettingsContent
 @Composable
 fun OnboardingGlassScreen(modifier: Modifier = Modifier, onComplete: () -> Unit) {
     Box(modifier.fillMaxSize().statusBarsPadding().testTag("onboarding.glass")) {
-        GlassSettingsContent(footer = {
+        GlassSettingsContent(onboardingFooter = {
             OnboardingPrimaryButton(
                 onClick = onComplete,
                 modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(16.dp)

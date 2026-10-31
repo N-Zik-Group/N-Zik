@@ -2,7 +2,6 @@ package app.n_zik.android.components.ui.screens.profiles
 
 import android.app.Activity
 import android.content.Context
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -633,7 +632,8 @@ private fun ProfileStateActionCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        interactionModifier = Modifier.clickable(enabled = enabled) { onClick() },
+        onClick = onClick,
+        enabled = enabled,
     ) {
         Row(
             modifier = Modifier.padding(16.dp),

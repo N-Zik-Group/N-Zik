@@ -2,7 +2,7 @@ package app.n_zik.android.components.onboarding
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.IconButton
+import app.n_zik.android.components.ui.UiIconButton as IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp

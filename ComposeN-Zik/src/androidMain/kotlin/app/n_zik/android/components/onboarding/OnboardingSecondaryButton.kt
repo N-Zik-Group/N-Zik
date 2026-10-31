@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.PageButton
+import app.n_zik.android.components.glass.PageButtonFeedback
 import app.n_zik.android.components.glass.PageTextButton
 import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.rememberGlassSettings
@@ -28,14 +29,17 @@ internal fun OnboardingSecondaryButton(
     val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
     val shape = if (material) uiRoundnessShape() else ButtonDefaults.shape
     if (outlined && !material) {
-        OutlinedButton(
-            onClick = onClick,
-            modifier = Modifier.glassAreaContour(settings, GlassArea.ActionButtons, shape),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = colorPalette().text),
-            border = if (settings.usesGlassContour(GlassArea.ActionButtons)) null
-                else BorderStroke(1.dp, colorPalette().textSecondary),
-            content = content,
-        )
+        PageButtonFeedback(false, true, ButtonDefaults.outlinedShape, null, settings) { feedback, source ->
+            OutlinedButton(
+                onClick = onClick,
+                modifier = Modifier.then(feedback).glassAreaContour(settings, GlassArea.ActionButtons, shape),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = colorPalette().text),
+                border = if (settings.usesGlassContour(GlassArea.ActionButtons)) null
+                    else BorderStroke(1.dp, colorPalette().textSecondary),
+                interactionSource = source,
+                content = content,
+            )
+        }
     } else if (outlined) {
         // PageButton keeps Material input and uses one shared Glass highlight.
         PageButton(

@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import app.n_zik.android.components.ui.UiIconButton as IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -424,10 +424,8 @@ fun ProfileCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        // Keep the native ripple clipped before the card's click target.
-        interactionModifier = Modifier
-            .clip(uiRoundnessShape())
-            .clickable(enabled = onSwitch != null) { onSwitch?.invoke() },
+        onClick = { onSwitch?.invoke() },
+        enabled = onSwitch != null,
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(

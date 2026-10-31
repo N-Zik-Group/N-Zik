@@ -1,5 +1,7 @@
 package app.n_zik.android.components.ui.screens.rewind.slides
 
+import app.n_zik.android.components.glass.glassGlobalIndication
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -487,35 +489,38 @@ fun RewindFinaleCard(
 //
                     // as the song item menu) holding the individual actions.
                     RewindReveal(active, 1_080) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .iconBadgeBackground(rewindColors.value.lime, RoundedCornerShape(100.dp))
-                                .clickable(
-                                    onClick = { showExportMenu = true },
-                                    indication = null,
-                                    interactionSource = remember { MutableInteractionSource() }
+                        val actionShape = rewindActionShape(RoundedCornerShape(100.dp))
+                        RewindActionFeedback(actionShape, nativeIndicationEnabled = false) { feedback, source ->
+                            Row(
+                                modifier = Modifier.then(feedback)
+                                    .fillMaxWidth()
+                                    .iconBadgeBackground(rewindColors.value.lime, actionShape)
+                                    .clickable(
+                                        onClick = { showExportMenu = true },
+                                        indication = if (source == null) glassGlobalIndication(null) else null,
+                                        interactionSource = source
+                                    )
+                                    .padding(vertical = 8.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.share_social),
+                                    contentDescription = null,
+                                    tint = onLime,
+                                    modifier = Modifier.size(14.dp)
                                 )
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.share_social),
-                                contentDescription = null,
-                                tint = onLime,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(Modifier.width(6.dp))
-                            Text(
-                                text = stringResource(R.string.rw_finale_export_options),
-                                color = onLime,
-                                fontSize = textScale.size(11.sp),
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = textScale.letterSpacing(0.7.sp),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    text = stringResource(R.string.rw_finale_export_options),
+                                    color = onLime,
+                                    fontSize = textScale.size(11.sp),
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = textScale.letterSpacing(0.7.sp),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
                     }
                 }

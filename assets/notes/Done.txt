@@ -171,3 +171,6 @@ Added:
 
 - fix(search): coordinate Glass inputs results and feedback
   - Use shared input and result surfaces while preserving native interaction exclusions.
+
+- feat(ui): complete profile rewind and onboarding Glass surfaces
+  - Share avatar contours, Rewind actions and onboarding presentation while preserving scrolling.

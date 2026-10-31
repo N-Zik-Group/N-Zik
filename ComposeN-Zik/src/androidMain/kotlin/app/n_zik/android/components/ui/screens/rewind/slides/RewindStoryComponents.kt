@@ -385,27 +385,30 @@ internal fun RewindStoryShell(
  * (see [app.n_zik.android.components.ui.screens.rewind.shareRewindSlide]).
  */
 @Composable
-private fun RewindShareSlideButton(
+internal fun RewindShareSlideButton(
     tint: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier
-            .size(40.dp)
-            // Same rounded chrome as the deck's volume toggle (spec 3)
-            .clip(RoundedCornerShape(14.dp))
-            .iconBadgeBackground(rewindColors.value.cream.copy(alpha = 0.12f), RoundedCornerShape(14.dp))
-            .clickable(onClick = onClick)
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.share_social),
-            contentDescription = stringResource(R.string.rw_share_slide),
-            tint = tint,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .size(24.dp)
-        )
+    val shape = rewindActionShape(RoundedCornerShape(14.dp))
+    RewindActionFeedback(shape) { feedback, source ->
+        Box(
+            modifier = modifier.then(feedback)
+                .size(40.dp)
+                // Same rounded chrome as the deck's volume toggle (spec 3)
+                .clip(shape)
+                .iconBadgeBackground(rewindColors.value.cream.copy(alpha = 0.12f), shape)
+                .clickable(interactionSource = source, indication = if (source == null) androidx.compose.foundation.LocalIndication.current else null, onClick = onClick)
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.share_social),
+                contentDescription = stringResource(R.string.rw_share_slide),
+                tint = tint,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(24.dp)
+            )
+        }
     }
 }
 

@@ -70,6 +70,8 @@ import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.screens.rewind.slides.rewindCollageFrame
+import app.n_zik.android.components.ui.screens.rewind.slides.RewindActionFeedback
+import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassFilterChip
 import app.n_zik.android.components.glass.GlassSectionAction
 import app.n_zik.android.components.glass.GlassSectionActions
@@ -533,159 +535,160 @@ private fun RewindHomeYearRow(
         !tops.album.isNullOrBlank() ||
         !tops.artist.isNullOrBlank() ||
         tops.playlist != null
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(rowHeight)
-            .rewindCollageFrame(palette.background1, uiRoundnessShape())
-            .clip(uiRoundnessShape())
-            // Theme background (not raw black): while the network artworks are loading,
-            // the row blends into the page instead of flashing black (same user decision
-//
-            // as the month cells, 2026-09-24).
-            .background(palette.background1)
-            .then(
-                if (locked) Modifier.clickable(onClick = onLockedTap)
-                else Modifier.clickable(onClick = onClick)
-            ),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        if (locked) {
-            // In-progress year: no album/artist previews — they would spoil the annual
-            // deck (user decision, 2026-09-24). The N-Zik launcher box under the dark
-//
-            // scrim, same treatment as the locked month cells.
-            RewindHomeLauncherBox(Modifier.fillMaxSize())
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.7f))
-            )
-        } else if (hasArtwork) {
-            // The year's top song, album, artist and playlist as a strip behind the text;
-            // the dark scrim keeps the white text readable over any covers.
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // 1: song
-                Box(modifier = Modifier.weight(1f)) {
-                    if (tops.song.isNullOrBlank()) {
-                        RewindHomeLauncherBox(Modifier.fillMaxSize())
-                    } else {
-                        RewindArtwork(
-                            imageUrl = tops.song,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                }
-                // 2: album
-                Box(modifier = Modifier.weight(1f)) {
-                    if (tops.album.isNullOrBlank()) {
-                        RewindHomeLauncherBox(Modifier.fillMaxSize())
-                    } else {
-                        RewindArtwork(
-                            imageUrl = tops.album,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                }
-                // 3: artist
-                Box(modifier = Modifier.weight(1f)) {
-                    if (tops.artist.isNullOrBlank()) {
-                        RewindHomeLauncherBox(Modifier.fillMaxSize())
-                    } else {
-                        RewindArtwork(
-                            imageUrl = tops.artist,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                }
-                // 4: playlist — the same quadrant as the others. The cover mosaic is sized to
-                // the quadrant's height so its corner-aligned covers fill the whole cell, as in
-//
-                // the month collage.
-                BoxWithConstraints(modifier = Modifier.weight(1f)) {
-                    val playlist = tops.playlist
-                    if (playlist != null) {
-                        RewindPlaylistArtwork(
-                            playlistId = playlist.playlist.id,
-                            title = playlist.playlist.cleanName(),
-                            name = playlist.playlist.name,
-                            browseId = playlist.playlist.browseId,
-                            isYoutubePlaylist = playlist.playlist.isYoutubePlaylist,
-                            sizeDp = maxHeight,
-                            shape = RoundedCornerShape(0.dp),
-                            emptyFallback = true,
-                            // The year row paints its own dark scrim over the strip.
-                            dimOverlay = false,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
-                        RewindHomeLauncherBox(Modifier.fillMaxSize())
-                    }
-                }
-            }
-            // Dark scrim on top of the images so the text is readable — same 0.7 as the month cell.
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.7f))
-            )
-        } else {
-            // No plays this year: the N-Zik launcher box behind the label, under a dark
-            // scrim — same treatment as an empty month cell.
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.55f))
-            )
-            RewindHomeLauncherBox(Modifier.fillMaxSize())
-        }
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(14.dp),
-            verticalArrangement = Arrangement.Center
+    RewindActionFeedback(uiRoundnessShape(), area = GlassArea.MoodCards) { feedback, source ->
+        Box(
+            modifier = Modifier.then(feedback)
+                .fillMaxWidth()
+                .height(rowHeight)
+                .rewindCollageFrame(palette.background1, uiRoundnessShape())
+                .clip(uiRoundnessShape())
+                // Theme background (not raw black): while the network artworks are loading,
+                // the row blends into the page instead of flashing black (same user decision
+    //
+                // as the month cells, 2026-09-24).
+                .background(palette.background1)
+                .clickable(interactionSource = source,
+                    indication = if (source == null) androidx.compose.foundation.LocalIndication.current else null,
+                    onClick = if (locked) onLockedTap else onClick),
+            contentAlignment = Alignment.CenterStart
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            if (locked) {
+                // In-progress year: no album/artist previews — they would spoil the annual
+                // deck (user decision, 2026-09-24). The N-Zik launcher box under the dark
+    //
+                // scrim, same treatment as the locked month cells.
+                RewindHomeLauncherBox(Modifier.fillMaxSize())
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.7f))
+                )
+            } else if (hasArtwork) {
+                // The year's top song, album, artist and playlist as a strip behind the text;
+                // the dark scrim keeps the white text readable over any covers.
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // 1: song
+                    Box(modifier = Modifier.weight(1f)) {
+                        if (tops.song.isNullOrBlank()) {
+                            RewindHomeLauncherBox(Modifier.fillMaxSize())
+                        } else {
+                            RewindArtwork(
+                                imageUrl = tops.song,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                    // 2: album
+                    Box(modifier = Modifier.weight(1f)) {
+                        if (tops.album.isNullOrBlank()) {
+                            RewindHomeLauncherBox(Modifier.fillMaxSize())
+                        } else {
+                            RewindArtwork(
+                                imageUrl = tops.album,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                    // 3: artist
+                    Box(modifier = Modifier.weight(1f)) {
+                        if (tops.artist.isNullOrBlank()) {
+                            RewindHomeLauncherBox(Modifier.fillMaxSize())
+                        } else {
+                            RewindArtwork(
+                                imageUrl = tops.artist,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                    // 4: playlist — the same quadrant as the others. The cover mosaic is sized to
+                    // the quadrant's height so its corner-aligned covers fill the whole cell, as in
+    //
+                    // the month collage.
+                    BoxWithConstraints(modifier = Modifier.weight(1f)) {
+                        val playlist = tops.playlist
+                        if (playlist != null) {
+                            RewindPlaylistArtwork(
+                                playlistId = playlist.playlist.id,
+                                title = playlist.playlist.cleanName(),
+                                name = playlist.playlist.name,
+                                browseId = playlist.playlist.browseId,
+                                isYoutubePlaylist = playlist.playlist.isYoutubePlaylist,
+                                sizeDp = maxHeight,
+                                shape = RoundedCornerShape(0.dp),
+                                emptyFallback = true,
+                                // The year row paints its own dark scrim over the strip.
+                                dimOverlay = false,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            RewindHomeLauncherBox(Modifier.fillMaxSize())
+                        }
+                    }
+                }
+                // Dark scrim on top of the images so the text is readable — same 0.7 as the month cell.
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.7f))
+                )
+            } else {
+                // No plays this year: the N-Zik launcher box behind the label, under a dark
+                // scrim — same treatment as an empty month cell.
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.55f))
+                )
+                RewindHomeLauncherBox(Modifier.fillMaxSize())
+            }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.Center
             ) {
-                Text(
-                    text = label,
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 0.5.sp
-                )
-                Spacer(Modifier.weight(1f))
-                Text(
-                    text = stats,
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(Modifier.width(4.dp))
-                if (locked) {
-                    // In-progress year: a padlock instead of the "open the deck" chevron —
-                    // the annual deck unlocks once the year is over.
-                    Icon(
-                        painter = painterResource(R.drawable.locked),
-                        contentDescription = null,
-                        tint = Color.White.copy(alpha = 0.7f),
-                        modifier = Modifier.size(15.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = label,
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 0.5.sp
                     )
-                } else {
-                    Icon(
-                        painter = painterResource(R.drawable.chevron_forward),
-                        contentDescription = null,
-                        tint = Color.White.copy(alpha = 0.7f),
-                        modifier = Modifier.size(15.dp)
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = stats,
+                        color = Color.White.copy(alpha = 0.7f),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
+                    Spacer(Modifier.width(4.dp))
+                    if (locked) {
+                        // In-progress year: a padlock instead of the "open the deck" chevron —
+                        // the annual deck unlocks once the year is over.
+                        Icon(
+                            painter = painterResource(R.drawable.locked),
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.7f),
+                            modifier = Modifier.size(15.dp)
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(R.drawable.chevron_forward),
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.7f),
+                            modifier = Modifier.size(15.dp)
+                        )
+                    }
                 }
             }
         }
@@ -726,112 +729,113 @@ private fun RewindHomeMonthCell(
             !tops.artist.isNullOrBlank() ||
             !tops.album.isNullOrBlank() ||
             tops.playlist != null)
-    Box(
-        modifier = modifier
-            .aspectRatio(0.92f)
-            .rewindCollageFrame(palette.background1, uiRoundnessShape())
-            .clip(uiRoundnessShape())
-            // Theme background (not raw black): while the network artworks are loading,
-            // the cell blends into the page instead of flashing black (user decision,
-//
-            // 2026-09-24).
-            .background(palette.background1)
-            .then(
-                when {
-                    playable -> Modifier.clickable(onClick = onClick)
-                    locked -> Modifier.clickable(onClick = onLockedTap)
-                    // Empty finished month: tap for a random sad reply.
-                    else -> Modifier.clickable(onClick = onEmptyTap)
-                }
-            ),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        if (showArtwork) {
-            // The month's top song, album, artist and playlist as a 2x2 collage behind the
-            // text; the dark scrim keeps the white text readable over any covers.
-            RewindHomeMonthCollage(tops, Modifier.fillMaxSize())
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.7f))
-            )
-        } else {
-            // No artwork: an empty finished month or an unfinished one — the N-Zik launcher
-            // box under the same dark scrim as the playable cells (scrim on top of the
-//
-            // image, full opacity, so the text stays readable — user decision 2026-09-24).
-            RewindHomeLauncherBox(Modifier.fillMaxSize())
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.7f))
-            )
-            if (locked) {
-                // Unfinished month: a padlock on top, no stats and no message (the funny
-                // replies only come out when the cell is spammed). The deck unlocks once
-//
-                // the month is over.
+    RewindActionFeedback(uiRoundnessShape(), area = GlassArea.MoodCards) { feedback, source ->
+        Box(
+            modifier = modifier.then(feedback)
+                .aspectRatio(0.92f)
+                .rewindCollageFrame(palette.background1, uiRoundnessShape())
+                .clip(uiRoundnessShape())
+                // Theme background (not raw black): while the network artworks are loading,
+                // the cell blends into the page instead of flashing black (user decision,
+    //
+                // 2026-09-24).
+                .background(palette.background1)
+                .clickable(interactionSource = source,
+                    indication = if (source == null) androidx.compose.foundation.LocalIndication.current else null,
+                    onClick = when {
+                        playable -> onClick
+                        locked -> onLockedTap
+                        else -> onEmptyTap
+                    }),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            if (showArtwork) {
+                // The month's top song, album, artist and playlist as a 2x2 collage behind the
+                // text; the dark scrim keeps the white text readable over any covers.
+                RewindHomeMonthCollage(tops, Modifier.fillMaxSize())
                 Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.locked),
-                        contentDescription = null,
-                        tint = Color.White.copy(alpha = 0.7f),
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-        }
-        Column(modifier = Modifier.padding(9.dp)) {
-            Text(
-                text = month.month.uppercase(Locale.getDefault()),
-                color = if (showArtwork || empty || locked) Color.White else palette.text,
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 0.7.sp
-            )
-            if (locked) {
-                // Locked cell: the "LOCKED" label under the month name (same treatment as
-                // the locked year row — user decision, 2026-09-24); the funny replies still
-//
-                // appear as toasts while the cell is spammed.
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = stringResource(R.string.rw_home_locked),
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 8.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            } else if (playable) {
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = rewindHomeDuration(month.minutes),
-                    color = if (showArtwork) Color.White else palette.text,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = stringResource(
-                        R.string.rw_home_plays,
-                        formatRewindNumber(month.plays.toLong())
-                    ),
-                    color = if (showArtwork) Color.White.copy(alpha = 0.7f) else palette.textSecondary,
-                    fontSize = 8.sp,
-                    fontWeight = FontWeight.Medium
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.7f))
                 )
             } else {
-                // Empty finished month: a sad one-liner instead of the dash + "0 plays"
-                // (user decision, 2026-09-24)
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = stringResource(R.string.rw_home_month_empty_sad),
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 8.sp,
-                    fontWeight = FontWeight.Medium
+                // No artwork: an empty finished month or an unfinished one — the N-Zik launcher
+                // box under the same dark scrim as the playable cells (scrim on top of the
+    //
+                // image, full opacity, so the text stays readable — user decision 2026-09-24).
+                RewindHomeLauncherBox(Modifier.fillMaxSize())
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.7f))
                 )
+                if (locked) {
+                    // Unfinished month: a padlock on top, no stats and no message (the funny
+                    // replies only come out when the cell is spammed). The deck unlocks once
+    //
+                    // the month is over.
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.locked),
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.7f),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+            }
+            Column(modifier = Modifier.padding(9.dp)) {
+                Text(
+                    text = month.month.uppercase(Locale.getDefault()),
+                    color = if (showArtwork || empty || locked) Color.White else palette.text,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 0.7.sp
+                )
+                if (locked) {
+                    // Locked cell: the "LOCKED" label under the month name (same treatment as
+                    // the locked year row — user decision, 2026-09-24); the funny replies still
+    //
+                    // appear as toasts while the cell is spammed.
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.rw_home_locked),
+                        color = Color.White.copy(alpha = 0.7f),
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                } else if (playable) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = rewindHomeDuration(month.minutes),
+                        color = if (showArtwork) Color.White else palette.text,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = stringResource(
+                            R.string.rw_home_plays,
+                            formatRewindNumber(month.plays.toLong())
+                        ),
+                        color = if (showArtwork) Color.White.copy(alpha = 0.7f) else palette.textSecondary,
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                } else {
+                    // Empty finished month: a sad one-liner instead of the dash + "0 plays"
+                    // (user decision, 2026-09-24)
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.rw_home_month_empty_sad),
+                        color = Color.White.copy(alpha = 0.7f),
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
     }

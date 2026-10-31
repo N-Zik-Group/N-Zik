@@ -86,6 +86,8 @@ import com.mikepenz.hypnoticcanvas.shaders.GradientFlow
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.components.ui.iconBadgeBackground
+import app.n_zik.android.components.ui.screens.rewind.slides.RewindActionFeedback
+import app.n_zik.android.components.ui.screens.rewind.slides.rewindActionShape
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
@@ -150,6 +152,12 @@ internal val rewindCaptureMode = mutableStateOf(false)
  * stuck-true state would make the live deck pad with hidden-bar insets.
  */
 internal val rewindShareCaptureActive = mutableStateOf(false)
+
+/** One policy covers ordinary Coil artwork and directly framed playlist mosaics in every deck page. */
+@Composable
+internal fun rewindImageDecorationPolicy(): androidx.compose.runtime.ProvidedValue<Boolean> =
+    app.n_zik.android.components.glass.LocalGlassImageDecorationsEnabled provides
+        !(rewindCaptureMode.value || rewindShareCaptureActive.value)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -479,6 +487,7 @@ fun RewindScreen(
                     }
                 }
                 CompositionLocalProvider(
+                    rewindImageDecorationPolicy(),
                     LocalRewindActive provides active,
                     LocalRewindShaderWarm provides shaderWarm,
                     LocalRewindTextScale provides rememberRewindScale()
@@ -594,42 +603,47 @@ fun RewindScreen(
                     .statusBarsPadding()
                     .padding(top = 44.dp, end = 60.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .iconBadgeBackground(rewindColors.value.cream.copy(alpha = 0.12f), RoundedCornerShape(14.dp))
-                        .combinedClickable(
-                            onClick = {
-                                DataStoreUtils.saveBoolean(
-                                    context,
-                                    DataStoreUtils.KEY_REWIND_BGM_ENABLED,
-                                    !bgmEnabled
-                                )
-                            },
-                            onLongClick = { bgmSliderVisible = !bgmSliderVisible }
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.volume_up),
-                        contentDescription = stringResource(R.string.rw_bgmusic_mute_cd),
-                        tint = rewindColors.value.cream.copy(alpha = if (bgmOff) 0.35f else 0.85f),
-                        modifier = Modifier.size(24.dp)
-                    )
-                    if (bgmOff) {
-                        // No mute icon ships in the project: a rotated 2 dp bar over the
-                        // speaker reads as "off" at a glance
-                        Box(
-                            modifier = Modifier
-                                .width(24.dp)
-                                .height(2.dp)
-                                .graphicsLayer { rotationZ = -45f }
-                                .background(
-                                    rewindColors.value.cream.copy(alpha = 0.85f),
-                                    RoundedCornerShape(1.dp)
-                                )
+                val actionShape = rewindActionShape(RoundedCornerShape(14.dp))
+                RewindActionFeedback(actionShape) { feedback, source ->
+                    Box(
+                        modifier = Modifier.then(feedback)
+                            .size(40.dp)
+                            .clip(actionShape)
+                            .iconBadgeBackground(rewindColors.value.cream.copy(alpha = 0.12f), actionShape)
+                            .combinedClickable(
+                                interactionSource = source,
+                                indication = if (source == null) androidx.compose.foundation.LocalIndication.current else null,
+                                onClick = {
+                                    DataStoreUtils.saveBoolean(
+                                        context,
+                                        DataStoreUtils.KEY_REWIND_BGM_ENABLED,
+                                        !bgmEnabled
+                                    )
+                                },
+                                onLongClick = { bgmSliderVisible = !bgmSliderVisible }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.volume_up),
+                            contentDescription = stringResource(R.string.rw_bgmusic_mute_cd),
+                            tint = rewindColors.value.cream.copy(alpha = if (bgmOff) 0.35f else 0.85f),
+                            modifier = Modifier.size(24.dp)
                         )
+                        if (bgmOff) {
+                            // No mute icon ships in the project: a rotated 2 dp bar over the
+                            // speaker reads as "off" at a glance
+                            Box(
+                                modifier = Modifier
+                                    .width(24.dp)
+                                    .height(2.dp)
+                                    .graphicsLayer { rotationZ = -45f }
+                                    .background(
+                                        rewindColors.value.cream.copy(alpha = 0.85f),
+                                        RoundedCornerShape(1.dp)
+                                    )
+                            )
+                        }
                     }
                 }
             }
