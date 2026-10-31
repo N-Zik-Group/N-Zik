@@ -159,3 +159,6 @@ Added:
 
 - fix(navigation): stabilize docks headers and safe insets
   - Coordinate persistent navigation, keyboard clearance, compact player placement and Android safe areas.
+
+- fix(dialog): coordinate Glass menus dimming and transitions
+  - Share dialog and menu surfaces, dimming and action presentation without changing their actions.

@@ -13,7 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import app.n_zik.android.components.glass.GlassDialogIconButton as IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
@@ -30,7 +30,6 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.glassDialogButtonBackground
 import app.n_zik.android.surfaceColor
 import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.shape.CircleShape
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
@@ -108,7 +107,7 @@ inline fun StringListDialog(
                                 modifier = Modifier.size(32.dp)
                                     .glassDialogButtonBackground(
                                         backgroundColor = Color.Transparent,
-                                        shape = CircleShape,
+                                        shape = uiRoundnessShape(),
                                         filmColor = surfaceColor(colorPalette().background2)
                                     )
                             ) {

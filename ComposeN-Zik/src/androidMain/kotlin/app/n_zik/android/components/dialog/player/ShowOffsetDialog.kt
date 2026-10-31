@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
 import app.n_zik.android.components.ui.sliders.SliderControl
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -35,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -44,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.NativeSectionIconAction
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.InteractiveDialog
@@ -168,17 +167,14 @@ class ShowOffsetDialog private constructor(
                 if (lyricsOffset != 0) {
                     Spacer(Modifier.width(8.dp))
 
-                    Icon(
-                        painter = painterResource(R.drawable.refresh),
-                        tint = palette.accent,
+                    NativeSectionIconAction(
+                        icon = R.drawable.refresh,
+                        color = palette.accent,
                         contentDescription = stringResource(R.string.cd_reset),
-                        modifier = Modifier
-                            .clip(uiRoundnessShape())
-                            .clickable {
-                                lyricsOffset = 0
-                                textFieldValue = "0"
-                            }
-                            .size(24.dp)
+                        onClick = {
+                            lyricsOffset = 0
+                            textFieldValue = "0"
+                        },
                     )
                 }
             }

@@ -1,5 +1,7 @@
 package app.n_zik.android.components.dialog.common
 
+import app.n_zik.android.components.glass.glassGlobalIndication
+
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.PaddingValues
@@ -98,7 +100,7 @@ abstract class CheckboxDialog(activeState: MutableState<Boolean>): ConfirmDialog
                                    .padding( vertical = 3.dp )
                                    .clickable(
                                        interactionSource = remember { MutableInteractionSource() },
-                                       indication = null,
+                                       indication = glassGlobalIndication(null),
                                        onClick = ::onShortClick
                                    )
             ) {

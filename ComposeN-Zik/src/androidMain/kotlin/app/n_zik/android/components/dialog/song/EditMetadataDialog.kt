@@ -69,7 +69,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
-import androidx.compose.material3.OutlinedButton
+import app.n_zik.android.components.glass.GlassDialogOutlinedButton as OutlinedButton
 import app.n_zik.android.components.glass.glassDialogButtonBackground
 import app.n_zik.android.components.glass.glassDialogButtonBorder
 import androidx.compose.foundation.Canvas

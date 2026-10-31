@@ -22,11 +22,10 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import app.n_zik.android.components.glass.GlassDialogIconButton as IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
@@ -44,8 +43,9 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.glassDialogButtonBackground
+import app.n_zik.android.components.settings.common.LocalSettingsTargets
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.surfaceColor
-import androidx.compose.foundation.shape.CircleShape
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.it.fast4x.rimusic.utils.preferences
@@ -63,11 +63,7 @@ data class ToggleItem(
     val description: String? = null
 )
 
-/**
- * Checkbox list with optional drag reorder. Rows are keyed by [ToggleItem.id], so
- * callers must pass unique ids. [onRowAction] (optional) renders a per-row remove icon
- * before the drag handle; it is hidden for the ids in [lockedCheckedIds].
- */
+/** Checkbox list keyed by unique [ToggleItem.id], with optional drag and unlocked-row actions. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ToggleListDialog(
@@ -92,6 +88,13 @@ fun ToggleListDialog(
     onDismiss: (() -> Unit)? = null,
     bodyHeader: @Composable ColumnScope.() -> Unit = {}
 ) {
+    val nestedTarget = LocalSettingsTargets.current?.nestedTarget
+    val nestedItemId = nestedTarget?.nestedDestination?.itemId
+    val itemIds = items.map { it.id }
+    LaunchedEffect(nestedTarget?.id, itemIds, lazyListState) {
+        val index = itemIds.indexOf(nestedItemId)
+        if (index >= 0) lazyListState.scrollToItem(index)
+    }
     val effectiveCheckedStates = checkedStatesOverride?.let { override ->
         items.mapIndexed { index, item ->
             if (item.id in lockedCheckedIds) true else override[index]
@@ -140,7 +143,8 @@ fun ToggleListDialog(
                     if (reorderableState != null && !isPinned) {
                         ReorderableItem(reorderableState, key = item.id) { isDragging ->
                             ToggleRow(
-                                modifier = Modifier.testTag("toggleListDialogItem.$index"),
+                                modifier = Modifier.testTag("toggleListDialogItem.$index")
+                                    .then(if (item.id == nestedItemId && nestedTarget != null) Modifier.settingsSearchTarget(nestedTarget.id) else Modifier),
                                 icon = item.iconRes,
                                 label = item.label,
                                 isChecked = isChecked,
@@ -157,7 +161,8 @@ fun ToggleListDialog(
                         }
                     } else {
                         ToggleRow(
-                            modifier = Modifier.testTag("toggleListDialogItem.$index"),
+                            modifier = Modifier.testTag("toggleListDialogItem.$index")
+                                .then(if (item.id == nestedItemId && nestedTarget != null) Modifier.settingsSearchTarget(nestedTarget.id) else Modifier),
                             icon = item.iconRes,
                             label = item.label,
                             isChecked = isChecked,
@@ -329,7 +334,7 @@ private fun ToggleRow(
                     .padding(4.dp)
                     .glassDialogButtonBackground(
                         backgroundColor = Color.Transparent,
-                        shape = CircleShape,
+                        shape = uiRoundnessShape(),
                         filmColor = surfaceColor(colorPalette().background2)
                     )
             ) {

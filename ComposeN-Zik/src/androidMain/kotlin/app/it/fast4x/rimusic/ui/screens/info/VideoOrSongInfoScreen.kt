@@ -23,6 +23,7 @@ import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.info.InformationMenuSurface
+import app.n_zik.android.components.menu.info.InformationStatsCard
 import app.n_zik.android.components.menu.info.informationMenuBodyColor
 import app.n_zik.android.components.menu.info.informationMenuHeaderColor
 import app.n_zik.android.components.OfflineContent
@@ -322,14 +323,10 @@ fun VideoOrSongInfoScreen(
                 ) {
                     // ── Stats card ────────────────────────────────────────────────────
                     item {
-                        Card(
+                        InformationStatsCard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 16.dp),
-                            shape = uiRoundnessShape(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = colorPalette().accent.copy(alpha = 0.2f)
-                            )
                         ) {
                             Row(
                                 modifier = Modifier

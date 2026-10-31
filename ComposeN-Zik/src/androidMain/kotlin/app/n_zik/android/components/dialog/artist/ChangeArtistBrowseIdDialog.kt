@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.artist
 
+import app.n_zik.android.components.glass.GlassDialogIconButton as IconButton
 import androidx.compose.foundation.layout.height
 import app.n_zik.android.components.search.SearchEmptyFeedback
 
@@ -36,7 +37,6 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.glassDialogButtonBackground
 import app.n_zik.android.surfaceColor
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.Color
 import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.components.dialog.common.ButtonRow
@@ -147,7 +147,7 @@ class ChangeArtistBrowseIdDialog private constructor(
                     onClick = { performSearch() },
                     modifier = Modifier.glassDialogButtonBackground(
                         backgroundColor = Color.Transparent,
-                        shape = CircleShape,
+                        shape = uiRoundnessShape(),
                         filmColor = surfaceColor(colorPalette().background2)
                     )
                 ) {

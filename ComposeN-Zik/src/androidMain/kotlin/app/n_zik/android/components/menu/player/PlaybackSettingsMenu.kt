@@ -1,5 +1,7 @@
 package app.n_zik.android.components.menu.player
 
+import app.n_zik.android.components.glass.NativeIconActionSize
+
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.core.database.*
 
@@ -609,7 +611,7 @@ class PlaybackSettingsMenu private constructor(
         ) {
             Box(
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(NativeIconActionSize)
                     .iconBadgeBackground(
                         color = colorPalette().accent.copy(alpha = 0.1f),
                         shape = uiRoundnessShape()

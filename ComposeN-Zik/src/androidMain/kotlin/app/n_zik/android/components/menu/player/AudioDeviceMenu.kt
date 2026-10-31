@@ -49,7 +49,7 @@ import android.media.AudioManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.animateContentSize
+import app.n_zik.android.components.glass.glassAwareContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -67,7 +67,7 @@ import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Speaker
 import androidx.compose.material.icons.outlined.Error
-import androidx.compose.material3.Button
+import app.n_zik.android.components.ui.UiButton as Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -108,7 +108,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.animateContentSize
+import app.n_zik.android.components.glass.glassAwareContentSize
 import android.media.AudioDeviceCallback
 import androidx.car.app.connection.CarConnection
 import app.n_zik.android.utils.isCar
@@ -348,7 +348,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
     val menuStyle by rememberPreference(menuStyleKey, MenuStyle.List)
 
     val menuContent: @Composable (MenuStyle) -> Unit = { style ->
-        Column(modifier = Modifier.animateContentSize()) {
+        Column(modifier = Modifier.glassAwareContentSize()) {
             Crossfade(targetState = isLoading to errorMessage, label = "MenuStateTransition") { (loading, error) ->
                 if (loading) {
                     val configuration = LocalConfiguration.current

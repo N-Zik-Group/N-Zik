@@ -13,6 +13,12 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowProvider
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassAreaMode
+import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.GlassDialogWindow
+import app.n_zik.android.components.glass.LocalGlassPreviewSettings
+import androidx.compose.ui.window.DialogProperties
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
@@ -30,6 +36,41 @@ import org.robolectric.annotation.Config
 @Config(sdk = [33], application = Application::class)
 class NativeDialogDimmingTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `fallback dimming obeys Glass area sliders without changing native disabled modes`() {
+        val glass = GlassSettings(enabled = true, dialogDimming = .27f, menuDimming = .81f)
+        assertEquals(.27f, nativeGlassDialogDimAmount(glass, GlassArea.Dialogs, .6f), 0f)
+        assertEquals(.81f, nativeGlassDialogDimAmount(glass, GlassArea.Menus, .6f), 0f)
+        assertEquals(.6f, nativeGlassDialogDimAmount(glass.copy(enabled = false), GlassArea.Dialogs, .6f), 0f)
+        assertEquals(.6f, nativeGlassDialogDimAmount(glass.copy(areaModes = mapOf(GlassArea.Dialogs to GlassAreaMode.ContourOnly)), GlassArea.Dialogs, .6f), 0f)
+    }
+
+    @Test fun `native dialog window updates its dim slider live down to zero`() {
+        val settings = mutableStateOf(GlassSettings(enabled = true, dialogDimming = .27f))
+        var observedWindow: Window? = null
+        compose.setContent {
+            CompositionLocalProvider(LocalGlassPreviewSettings provides settings.value) {
+                GlassDialogWindow(false, {}, DialogProperties()) {
+                    val window = (LocalView.current.parent as DialogWindowProvider).window
+                    SideEffect { observedWindow = window }
+                    BasicText("Native fallback")
+                }
+            }
+        }
+        compose.waitForIdle()
+        val window = requireNotNull(observedWindow)
+        compose.runOnIdle {
+            assertEquals(.27f, window.attributes.dimAmount, .001f)
+            settings.value = settings.value.copy(dialogDimming = .73f)
+        }
+        compose.waitForIdle()
+        compose.runOnIdle {
+            assertEquals(.73f, window.attributes.dimAmount, .001f)
+            settings.value = settings.value.copy(dialogDimming = 0f)
+        }
+        compose.waitForIdle()
+        compose.runOnIdle { assertEquals(0f, window.attributes.dimAmount, .001f) }
+    }
 
     @Test fun `native window dim follows retained dialog motion on entry and exit`() {
         compose.mainClock.autoAdvance = false

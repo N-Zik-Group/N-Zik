@@ -35,7 +35,7 @@ import app.n_zik.android.core.profiles.coversDir
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.saveImageToInternalStorage
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import androidx.compose.material3.OutlinedButton
+import app.n_zik.android.components.glass.GlassDialogOutlinedButton as OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.foundation.BorderStroke
 import app.n_zik.android.uiRoundnessShape

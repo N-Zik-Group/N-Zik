@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.album
 
+import app.n_zik.android.components.glass.GlassDialogIconButton as IconButton
 import androidx.compose.foundation.layout.height
 import app.n_zik.android.components.search.SearchEmptyFeedback
 
@@ -34,7 +35,6 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.glassDialogButtonBackground
 import app.n_zik.android.surfaceColor
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.Color
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
@@ -146,7 +146,7 @@ class ChangeAlbumBrowseIdDialog private constructor(
                     onClick = { performSearch() },
                     modifier = Modifier.glassDialogButtonBackground(
                         backgroundColor = Color.Transparent,
-                        shape = CircleShape,
+                        shape = uiRoundnessShape(),
                         filmColor = surfaceColor(colorPalette().background2)
                     )
                 ) {

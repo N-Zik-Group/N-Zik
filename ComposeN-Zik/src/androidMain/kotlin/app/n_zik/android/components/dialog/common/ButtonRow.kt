@@ -25,6 +25,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.n_zik.android.components.glass.glassDialogButtonBackground
+import app.n_zik.android.components.glass.GlassDialogButtonFeedback
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.medium
@@ -105,34 +107,36 @@ private fun DialogPill(button: DialogButton, modifier: Modifier) {
     val iconOnly = button.icon != null && button.text.isEmpty()
     val style = (if (button.primary) typography().xs.semiBold else typography().xs.medium)
         .copy(color = resolvedColor(button, palette), textAlign = TextAlign.Center)
-    Row(
-        modifier = pillModifier(button, palette, modifier),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        button.icon?.let { iconRes ->
-            Icon(
-                painter = painterResource(iconRes),
-                contentDescription = null,
-                tint = resolvedColor(button, palette),
-                modifier = Modifier.size(16.dp),
-            )
-            if (!iconOnly) Spacer(Modifier.width(6.dp))
-        }
-        if (!iconOnly) {
-            BasicText(
-                text = button.text,
-                maxLines = 1,
-                style = style,
-                modifier = Modifier.weight(1f).basicMarquee(iterations = Int.MAX_VALUE),
-            )
+    GlassDialogButtonFeedback(button.enabled && dialogInputEnabled, uiRoundnessShape()) { feedback, source ->
+        Row(
+            modifier = pillModifier(button, palette, modifier.then(feedback), source),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            button.icon?.let { iconRes ->
+                Icon(
+                    painter = painterResource(iconRes),
+                    contentDescription = null,
+                    tint = resolvedColor(button, palette),
+                    modifier = Modifier.size(16.dp),
+                )
+                if (!iconOnly) Spacer(Modifier.width(6.dp))
+            }
+            if (!iconOnly) {
+                BasicText(
+                    text = button.text,
+                    maxLines = 1,
+                    style = style,
+                    modifier = Modifier.weight(1f).basicMarquee(iterations = Int.MAX_VALUE),
+                )
+            }
         }
     }
 }
 
 /** The pill surface of every [DialogButton]: rounded clip, role fill, tap and padding. */
 @Composable
-private fun pillModifier(button: DialogButton, palette: ColorPalette, modifier: Modifier): Modifier {
+private fun pillModifier(button: DialogButton, palette: ColorPalette, modifier: Modifier, source: MutableInteractionSource?): Modifier {
     val presentation = LocalDialogInput.current ?: LocalDialogPresentation.current
     val shape = uiRoundnessShape()
     return modifier
@@ -144,7 +148,8 @@ private fun pillModifier(button: DialogButton, palette: ColorPalette, modifier: 
             else palette.background2,
             shape = shape,
         )
-        .clickable(enabled = button.enabled && dialogInputEnabled) {
+        .clickable(interactionSource = source, indication = if (source != null) null else androidx.compose.foundation.LocalIndication.current,
+            enabled = button.enabled && dialogInputEnabled) {
             if (presentation?.interactive != false) button.onClick()
         }
         .padding(horizontal = 16.dp, vertical = 10.dp)

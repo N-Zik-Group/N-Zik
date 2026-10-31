@@ -19,7 +19,7 @@ import app.n_zik.android.surfaceColor
 import androidx.compose.ui.graphics.Color
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.ui.sliders.SliderControl
-import app.it.fast4x.rimusic.ui.components.themed.IconButton
+import app.n_zik.android.components.glass.GlassDialogIconButton as IconButton
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.isLandscape
 import app.it.fast4x.rimusic.utils.lyricsSizeKey

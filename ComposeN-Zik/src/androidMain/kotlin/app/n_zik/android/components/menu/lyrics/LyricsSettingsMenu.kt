@@ -1,5 +1,7 @@
 package app.n_zik.android.components.menu.lyrics
 
+import app.n_zik.android.components.glass.NativeIconActionSize
+
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -270,7 +272,7 @@ class LyricsSettingsMenu private constructor(
                     if (fontSize == LyricsFontSize.Custom) {
                         Box(
                             modifier = Modifier
-                                .size(32.dp)
+                                .size(NativeIconActionSize)
                                 .clip(uiRoundnessShape())
                                 .iconBadgeBackground(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape())
                                 .clickable { onShowLyricsSizeDialog() },
@@ -702,7 +704,7 @@ class LyricsSettingsMenu private constructor(
                         if (fontSize == LyricsFontSize.Custom) {
                             Box(
                                 modifier = Modifier
-                                    .size(32.dp)
+                                    .size(NativeIconActionSize)
                                     .clip(uiRoundnessShape())
                                     .iconBadgeBackground(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape())
                                     .clickable { onShowLyricsSizeDialog() },
