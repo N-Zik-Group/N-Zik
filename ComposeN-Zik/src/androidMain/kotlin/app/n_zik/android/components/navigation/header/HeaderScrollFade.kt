@@ -8,8 +8,11 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.LayerOutsets
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 
 /** Shared opacity clock for the header and its stationary Android status cover. */
 internal fun headerScrollOpacity(statusBarTopPx: Float, hideRangePx: Float, offsetPx: Float): Float {
@@ -23,6 +26,7 @@ internal fun Modifier.headerScrollFade(
     hideRangePx: Float,
     surfaceColor: Color? = null,
     clipStatusAtRest: Boolean = false,
+    motionVisualOutset: Dp = 0.dp,
     offsetPx: () -> Float,
 ): Modifier = graphicsLayer {
     val offset = offsetPx()
@@ -36,7 +40,13 @@ internal fun Modifier.headerScrollFade(
         offset < 0f || clipStatusAtRest -> statusBarTopPx - offset
         else -> 0f
     }
-    shape = HeaderVisibleShape(top)
+    // Keep the status/hidden mask, but let held Glass controls draw past the chrome's
+    // other edges. Outsets also preserve that drawing during offscreen alpha fades.
+    val overflow = if (visibility > 0f) motionVisualOutset.toPx() else 0f
+    shape = HeaderVisibleShape(top, overflow)
+    outsets = if (visibility > 0f) LayerOutsets(
+        left = motionVisualOutset, right = motionVisualOutset, bottom = motionVisualOutset,
+    ) else LayerOutsets.Zero
     clip = true
 }.drawWithContent {
     // Keep the exact configured color and film throughout movement; the shared layer
@@ -47,7 +57,8 @@ internal fun Modifier.headerScrollFade(
     drawContent()
 }
 
-private data class HeaderVisibleShape(val top: Float) : Shape {
+private data class HeaderVisibleShape(val top: Float, val overflow: Float) : Shape {
     override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline =
-        Outline.Rectangle(Rect(0f, top.coerceIn(0f, size.height), size.width, size.height))
+        Outline.Rectangle(Rect(-overflow, top.coerceIn(0f, size.height),
+            size.width + overflow, size.height + overflow))
 }

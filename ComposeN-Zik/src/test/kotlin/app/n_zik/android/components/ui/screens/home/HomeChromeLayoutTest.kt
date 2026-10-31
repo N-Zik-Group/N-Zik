@@ -26,6 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.testTag
@@ -58,6 +60,63 @@ class HomeChromeLayoutTest {
     @Test fun libraryGridsClearRightRailAndKeepContinuousToolbarScroll() = verifyHome(isGrid = true)
 
     @Test fun topMiniFollowsHomeToolbarWithoutMovingTheListViewport() = verifyHome(isGrid = false, hasTopMini = true)
+
+    @Test fun listFirstMeasuredFrameAlreadyContainsTheDynamicHeaderReserve() = verifyFirstMeasurement(isGrid = false)
+
+    @Test fun gridFirstMeasuredFrameAlreadyContainsTheDynamicHeaderReserve() = verifyFirstMeasurement(isGrid = true)
+
+    private fun verifyFirstMeasurement(isGrid: Boolean) {
+        val height = mutableIntStateOf(0)
+        val offset = mutableFloatStateOf(0f)
+        val composedReserves = mutableListOf<Int>()
+        val firstPlacements = mutableListOf<Float>()
+        val topInset = mutableStateOf(88.dp)
+        compose.setContent {
+            CompositionLocalProvider(LocalDensity provides Density(1f),
+                LocalSideRailContentInsets provides WindowInsets(0, 0, 0, 0),
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0)) {
+                HomeChromeLayout(Modifier.size(360.dp, 600.dp).testTag("initial.root"), header = {
+                    HomeCollapsingHeader(offset, height, { topInset.value },
+                        backgroundColor = Color.Transparent, shape = RoundedCornerShape(0.dp)) {
+                        Column {
+                            Box(Modifier.fillMaxWidth().height(56.dp))
+                            Box(Modifier.fillMaxWidth().height(56.dp))
+                        }
+                    }
+                }) {
+                    // Capture every composition and initial placement, rather than wait
+                    // for onSizeChanged's second-frame correction before asserting.
+                    composedReserves += height.intValue
+                    val padding = rememberPageChromeContentPadding(
+                        base = PaddingValues(top = height.intValue.dp),
+                        topInsetProvider = { topInset.value },
+                    )
+                    val firstRow: @Composable () -> Unit = {
+                        Box(Modifier.fillMaxWidth().height(48.dp).testTag("initial.item")
+                            .onPlaced { firstPlacements += it.positionInRoot().y })
+                    }
+                    if (isGrid) LazyVerticalGrid(GridCells.Fixed(2), Modifier.fillMaxSize().testTag("initial.viewport"),
+                        contentPadding = padding) { item { firstRow() } }
+                    else LazyColumn(Modifier.fillMaxSize().testTag("initial.viewport"), contentPadding = padding) { item { firstRow() } }
+                }
+            }
+        }
+        compose.runOnIdle {
+            assertTrue("Content must never compose with the zero height guess", composedReserves.isNotEmpty() && composedReserves.all { it == 112 })
+            assertTrue("Even the first placement already clears the header", firstPlacements.isNotEmpty() && firstPlacements.all { it == 200f })
+        }
+        val viewport = compose.onNodeWithTag("initial.viewport").fetchSemanticsNode().boundsInRoot
+        // Same layout contract for hidden landscape chrome, side bars, top tabs and top mini.
+        for (inset in listOf(0.dp, 24.dp, 88.dp, 152.dp, 232.dp)) {
+            compose.runOnIdle { topInset.value = inset }
+            assertEquals(inset.value + 112f, compose.onNodeWithTag("initial.item").fetchSemanticsNode().boundsInRoot.top, 0f)
+            assertEquals(viewport, compose.onNodeWithTag("initial.viewport").fetchSemanticsNode().boundsInRoot)
+        }
+        val stationary = compose.onNodeWithTag("initial.item").fetchSemanticsNode().boundsInRoot
+        compose.runOnIdle { offset.floatValue = -56f }
+        assertEquals("Collapsing overlay cannot change the fixed initial reserve", stationary,
+            compose.onNodeWithTag("initial.item").fetchSemanticsNode().boundsInRoot)
+    }
 
     private fun advanceFrames(count: Int) {
         repeat(count) {

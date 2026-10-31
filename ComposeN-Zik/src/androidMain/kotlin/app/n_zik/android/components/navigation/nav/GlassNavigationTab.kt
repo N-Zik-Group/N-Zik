@@ -54,7 +54,8 @@ internal fun GlassNavigationTab(
     val replica = LocalGlassTabReplica.current
     val scale = LocalGlassTabScale.current
     val ink = if (replica) colorPalette().text else color
-    val tabModifier = Modifier.clip(uiRoundnessShape())
+    // The material owns its mask; magnified Glass glyphs need room beyond their resting slot.
+    val tabModifier = (if (nativeIndication != null) Modifier.clip(uiRoundnessShape()) else Modifier)
             .then(if (replica) Modifier else Modifier
                 .semantics { contentDescription = text; this.selected = selected }
                 .clickable(interactionSource = null, indication = nativeIndication, role = Role.Tab, onClick = onClick))

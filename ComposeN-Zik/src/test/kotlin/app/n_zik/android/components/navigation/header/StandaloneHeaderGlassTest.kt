@@ -25,6 +25,7 @@ import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.Typography
 import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.GLASS_OPTICS_FADE_MILLIS
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.glass.backdrop.drawPlainBackdrop
 import org.junit.Assert.assertEquals
@@ -119,6 +120,15 @@ class StandaloneHeaderGlassTest {
             }
         }
         fun pixels() = compose.onNodeWithTag("scene").captureToImage().toPixelMap()
+        fun settleNativeFrames() {
+            // Render every native frame as well as advancing Compose's clock;
+            // otherwise captureToImage can return the previous layer opacity.
+            repeat((GLASS_OPTICS_FADE_MILLIS + 32 + 15) / 16) {
+                compose.mainClock.advanceTimeBy(16)
+                compose.waitForIdle()
+                compose.onNodeWithTag("scene").captureToImage()
+            }
+        }
         fun assertMaterial(green: Boolean) {
             val image = pixels()
             for (y in listOf(12, 40, 70)) {
@@ -138,15 +148,23 @@ class StandaloneHeaderGlassTest {
         assertMaterial(true)
         assertEquals(.4f, pixels()[1, 86].red, .03f)
         compose.runOnIdle { userShape.value = RoundedCornerShape(20.dp); offset.floatValue = -32f }
+        settleNativeFrames()
         assertEquals(Color.White, pixels()[1, 54])
+        // This point belongs to the foreground control. It samples the raw
+        // material export; its foreground owner applies opacity separately so
+        // the header's alpha must not already be baked into that export.
         assertEquals(.4f, pixels()[100, 54].red, .03f)
         assertEquals(Color.White, pixels()[40, 70])
-        assertEquals(.4f, pixels()[40, 12].red, .03f)
-        compose.runOnIdle { offset.floatValue = -52f }
+        // The pane itself fades at alpha .5: .4 * .5 + 1 * .5 = .7.
         assertEquals(.7f, pixels()[40, 12].red, .03f)
-        assertEquals(.7f, pixels()[40, 28].red, .03f)
+        compose.runOnIdle { offset.floatValue = -52f }
+        settleNativeFrames()
+        // 12/64 opacity remains: .4 * .1875 + 1 * .8125 = .8875.
+        assertEquals(.8875f, pixels()[40, 12].red, .03f)
+        assertEquals(.8875f, pixels()[40, 28].red, .03f)
         assertEquals(88f, compose.onNodeWithTag("foreground").fetchSemanticsNode().boundsInRoot.height, .1f)
         compose.runOnIdle { offset.floatValue = -64f }
+        settleNativeFrames()
         assertEquals(Color.White, pixels()[40, 12])
         assertEquals(Color.White, pixels()[40, 28])
     }

@@ -78,10 +78,11 @@ private fun HorizontalNavigationPresentation(
     interactive: Boolean,
 ) {
     val top = position == NavigationBarPosition.Top
+    val imeLiftPx = rememberBottomNavigationImeLift(position)
     val settings = rememberGlassSettings()
     val backdrop = LocalGlassBackdrop.current
     Box(Modifier.fillMaxSize().navigationPresentationInput(interactive)
-        .offset { IntOffset(0, if (top) 0 else bottomOffsetPx().roundToInt()) }
+        .offset { IntOffset(0, if (top) 0 else bottomOffsetPx().roundToInt() - imeLiftPx()) }
         .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))) {
         // Destination changes must never restart a visibility/placement animation.
         AnimatedVisibility(

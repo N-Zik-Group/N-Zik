@@ -218,6 +218,7 @@ import app.n_zik.android.listentogether.restoreListenTogetherInvite
 import app.n_zik.android.listentogether.saveListenTogetherInvite
 import app.n_zik.android.listentogether.shouldDisablePlayerSheetDismiss
 import app.n_zik.android.components.navigation.dock.FloatingDockDimensions
+import app.n_zik.android.components.navigation.dock.rememberBottomNavigationImeLift
 import app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgressProvider
 import app.n_zik.android.components.navigation.dock.floatingMiniStandaloneInset
 import app.n_zik.android.components.navigation.dock.dockHasAttachedMini
@@ -1872,6 +1873,7 @@ class MainActivity :
                 val isFloatingNavBar = NavigationBarPosition.BottomFloating.isCurrent()
                 val isIconOnlyNav = app.it.fast4x.rimusic.enums.NavigationBarType.IconOnly.isCurrent()
                 val navBarBottomPad = Dimensions.navBarBottomPadding(isFloatingNavBar)
+                val bottomNavigationImeLift = rememberBottomNavigationImeLift(dockNavigationPosition)
                 // Route-aware: only screens that actually render the app nav bar reserve its
                 // height under the mini-player, so it drops to the screen edge on bar-less pages.
 //
@@ -2359,6 +2361,11 @@ class MainActivity :
                                 },
                                 label = "onboardingPhase"
                             ) { phase ->
+                                CompositionLocalProvider(
+                                    app.n_zik.android.components.glass.LocalGlassScope provides
+                                        if (phase == null) app.n_zik.android.components.glass.GlassScope.Shared
+                                        else app.n_zik.android.components.glass.GlassScope.Onboarding,
+                                ) {
                                 when (phase) {
                                     null -> app.n_zik.android.components.player.PlayerCoveredPage(
                                         covered = playerSheetState.isExpanded,
@@ -2414,6 +2421,7 @@ class MainActivity :
                                         onComplete = { advanceOnboarding() }
                                     )
                                 }
+                                } // end onboarding Glass scope
                             }
 
                             // The restart prompt (a Discord-token restart from the
@@ -2579,9 +2587,12 @@ class MainActivity :
                                                 }
                                             },
                                             bottomPadding = {
-                                                if (floatingDockEnabled && !topDock && !isTopPlayer)
+                                                val dockPadding = if (floatingDockEnabled && !topDock && !isTopPlayer)
                                                     navBarBottomPad + dockGeometry().miniBottomOffset.dp * dockPresence.value
                                                 else playerPadBottom.value
+                                                dockPadding + with(density) {
+                                                    if (isTopPlayer) 0.dp else bottomNavigationImeLift().toDp()
+                                                }
                                             },
                                             topPadding = playerTopPadding,
                                             placementKey = playerPlacementKey,

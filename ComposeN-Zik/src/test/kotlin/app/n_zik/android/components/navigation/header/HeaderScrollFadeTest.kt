@@ -82,13 +82,15 @@ class HeaderScrollFadeTest {
         assertEquals(.6f, sample(20, 40).red, .02f)
         assertEquals(Color.Red, sample(100, 64))
         compose.runOnIdle { offset.floatValue = -32f }
-        assertEquals(.6f, sample(20, 40).red, .02f)
-        assertEquals(Color.Red, sample(100, 36))
+        // Half of the shared chrome fade remains at -32px of the 64px travel.
+        assertEquals(.8f, sample(20, 40).red, .02f)
+        assertEquals(.5f, sample(100, 36).green, .02f)
         assertEquals(Color.White, sample(100, 64))
         assertEquals(Color.White, sample(100, 12))
         compose.runOnIdle { offset.floatValue = -52f }
-        assertEquals(.8f, sample(20, 30).red, .02f)
-        assertEquals(.5f, sample(100, 26).green, .02f)
+        // At -52px the shared header/status opacity is .1875.
+        assertEquals(.925f, sample(20, 30).red, .02f)
+        assertEquals(.8125f, sample(100, 26).green, .02f)
         compose.runOnIdle { offset.floatValue = -64f }
         assertEquals(Color.White, sample(20, 12))
         assertEquals(Color.White, sample(20, 40))
@@ -98,7 +100,7 @@ class HeaderScrollFadeTest {
         assertEquals(Color.Red, sample(100, 64))
     }
 
-    @Test fun `header stays opaque below status icons and hidden endpoint releases page input`() {
+    @Test fun `header shares status fade below status icons and hidden endpoint releases page input`() {
         val offset = mutableFloatStateOf(0f)
         var headerClicks = 0
         var pageClicks = 0
@@ -118,7 +120,9 @@ class HeaderScrollFadeTest {
         scene.performTouchInput { click(Offset(100f, 40f)) }
         compose.runOnIdle { offset.floatValue = -.5f }
         assertEquals(Color.White, sample(12))
-        assertEquals(Color.Red, sample(40))
+        assertEquals(1f, sample(40).red, .01f)
+        assertEquals(.5f, sample(40).green, .01f)
+        assertEquals(.5f, sample(40).blue, .01f)
         scene.performTouchInput { click(Offset(100f, 12f)) }
         compose.runOnIdle { offset.floatValue = -1f }
         assertEquals(Color.White, sample(12))

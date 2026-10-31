@@ -4,6 +4,7 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.glassAreaContour
+import app.n_zik.android.components.glass.headerGlassMotionVisualOutset
 import app.n_zik.android.core.navigation.navigationChromeTween
 import app.n_zik.android.core.navigation.rememberAppBackAction
 
@@ -91,6 +92,7 @@ class AppHeader(
         val hasTopGlassBackdrop = statusBackgroundVisible && glassSettings.usesGlassMaterial(GlassArea.Nav)
         val sharedHomeGlass = LocalSharedHomeHeaderGlass.current?.takeIf { it.owner != null }
         val standaloneGlass = glassEnabled && !hasTopGlassBackdrop && sharedHomeGlass == null
+        val motionVisualOutset = if (glassEnabled) headerGlassMotionVisualOutset() else 0.dp
 
         Box(Modifier.fillMaxWidth()) {
         // Glass Top owns one continuous pane behind both this header and its nav row.
@@ -113,6 +115,7 @@ class AppHeader(
                     statusBarTopPx, headerHeightPx,
                     surfaceColor = headerColor.takeUnless { statusBackgroundVisible || standaloneGlass || sharedHomeGlass != null },
                     clipStatusAtRest = true,
+                    motionVisualOutset = motionVisualOutset,
                 ) { topBarOffsetState.value }
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
                 .fillMaxWidth()

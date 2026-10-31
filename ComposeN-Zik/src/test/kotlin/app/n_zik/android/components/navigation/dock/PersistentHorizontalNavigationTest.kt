@@ -2,11 +2,15 @@ package app.n_zik.android.components.navigation.dock
 
 import android.app.Application
 import android.content.Context
+import android.view.View
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -32,6 +37,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ApplicationProvider
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
@@ -61,6 +69,65 @@ class PersistentHorizontalNavigationTest {
     @Test fun topKeepsFrameBoundsAcrossSettingsPushPop() = frames(NavigationBarPosition.Top)
     @Test fun bottomKeepsFrameBoundsAcrossSettingsPushPop() = frames(NavigationBarPosition.Bottom)
     @Test fun floatingKeepsFrameBoundsAcrossSettingsPushPop() = frames(NavigationBarPosition.BottomFloating)
+
+    @Test fun bottomFollowsKeyboardAndReturns() = keyboard(NavigationBarPosition.Bottom, false)
+    @Test fun floatingFollowsKeyboardAndReturns() = keyboard(NavigationBarPosition.BottomFloating, false)
+    @Test fun glassBottomFollowsKeyboardAndReturns() = keyboard(NavigationBarPosition.Bottom, true)
+    @Test fun glassFloatingFollowsKeyboardAndReturns() = keyboard(NavigationBarPosition.BottomFloating, true)
+    @Test fun topKeepsItsAnchorWhileKeyboardChanges() = keyboard(NavigationBarPosition.Top, false)
+
+    private fun keyboard(position: NavigationBarPosition, glass: Boolean) {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.preferences.edit().putBoolean(glassEnabledKey, glass).commit()
+        lateinit var view: View
+        val scrollOffset = mutableStateOf(0f)
+        compose.setContent {
+            view = LocalView.current
+            val density = LocalDensity.current
+            val systemBars = WindowInsets.systemBars
+            val registration = FloatingDockState.Registration(Any(), true) {
+                Box(Modifier.padding(bottom = with(density) { systemBars.getBottom(density).toDp() })) {
+                    Box(Modifier.size(180.dp, 61.dp).testTag("keyboard-tabs"))
+                }
+            }
+            Box(Modifier.fillMaxSize().testTag("keyboard-viewport")) {
+                PersistentHorizontalNavigation(position, { "search" }, { true }, { registration }, false,
+                    topPx = { 64 }, bottomOffsetPx = { scrollOffset.value })
+            }
+        }
+        fun insets(ime: Int, system: Int) {
+            compose.runOnIdle {
+                ViewCompat.dispatchApplyWindowInsets(view, WindowInsetsCompat.Builder()
+                    .setInsets(WindowInsetsCompat.Type.navigationBars(), Insets.of(0, 0, 0, system))
+                    .setVisible(WindowInsetsCompat.Type.navigationBars(), system > 0)
+                    .setInsets(WindowInsetsCompat.Type.ime(), Insets.of(0, 0, 0, ime))
+                    .setVisible(WindowInsetsCompat.Type.ime(), ime > 0).build())
+            }
+            compose.waitForIdle()
+        }
+        insets(0, 24)
+        val resting = compose.onNodeWithTag("keyboard-tabs").fetchSemanticsNode().boundsInRoot
+        val viewport = compose.onNodeWithTag("keyboard-viewport").fetchSemanticsNode().boundsInRoot
+        for (system in listOf(24, 72, 0)) {
+            for (ime in listOf(160, 304, 160, 0)) {
+                insets(ime, system)
+                val tabs = compose.onNodeWithTag("keyboard-tabs").fetchSemanticsNode().boundsInRoot
+                if (position == NavigationBarPosition.Top) {
+                    assertEquals(resting.top, tabs.top, 1f)
+                } else {
+                    assertEquals(viewport.bottom - maxOf(system, ime), tabs.bottom, 1f)
+                }
+            }
+        }
+        insets(304, 24)
+        compose.runOnIdle { scrollOffset.value = 17f }
+        val scrolled = compose.onNodeWithTag("keyboard-tabs").fetchSemanticsNode().boundsInRoot
+        assertEquals(if (position == NavigationBarPosition.Top) resting.top else viewport.bottom - 304 + 17 - resting.height,
+            scrolled.top, 1f)
+        compose.runOnIdle { scrollOffset.value = 0f }
+        insets(0, 24)
+        assertEquals(resting, compose.onNodeWithTag("keyboard-tabs").fetchSemanticsNode().boundsInRoot)
+    }
 
     @Test fun pendingOutgoingPresentationCannotDispatchAnOldTabAction() {
         val target = mutableStateOf("home")

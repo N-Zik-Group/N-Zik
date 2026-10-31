@@ -156,3 +156,6 @@ Added:
 
 - fix(ui): align reusable action canvases and touch targets
   - Preserve control actions while sizing native and Glass canvases to their visible bounds.
+
+- fix(navigation): stabilize docks headers and safe insets
+  - Coordinate persistent navigation, keyboard clearance, compact player placement and Android safe areas.

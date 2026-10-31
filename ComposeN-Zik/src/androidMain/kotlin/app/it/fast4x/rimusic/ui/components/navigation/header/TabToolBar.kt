@@ -1,5 +1,9 @@
 package app.it.fast4x.rimusic.ui.components.navigation.header
 
+import app.n_zik.android.components.ui.reservedIconActionCanvas
+import app.n_zik.android.components.ui.nativeControlIndication
+import app.n_zik.android.components.glass.glassGlobalIndication
+
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.uiRoundnessShape
@@ -12,11 +16,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
@@ -119,9 +125,13 @@ object TabToolBar {
         onClick: () -> Unit = {}
     ) {
         if (GlassToolbarIcon(icon, tint, size, enabled, modifier, onClick)) return
-        IconButton(
-            onClick = onClick,
-            enabled = enabled
+        val interactionSource = remember { MutableInteractionSource() }
+        Box(
+            modifier = Modifier.minimumInteractiveComponentSize().reservedIconActionCanvas(
+                shape = uiRoundnessShape(), interactionSource = interactionSource,
+                indication = glassGlobalIndication(nativeControlIndication()),
+                enabled = enabled, onClick = onClick, role = Role.Button),
+            contentAlignment = Alignment.Center,
         ) {
             Icon(
                 painter = icon,
@@ -149,13 +159,10 @@ object TabToolBar {
         Box(
             modifier = modifier
                 .minimumInteractiveComponentSize()
-                .clip(uiRoundnessShape())
-                .combinedClickable(
+                .reservedIconActionCanvas(
+                    shape = uiRoundnessShape(),
                     interactionSource = interactionSource,
-                    indication = ripple(
-                        bounded = false,
-                        radius = 20.dp
-                    ),
+                    indication = glassGlobalIndication(nativeControlIndication()),
                     enabled = enabled,
                     onClick = onClick,
                     onLongClick = onLongClick
@@ -166,6 +173,7 @@ object TabToolBar {
                 painter = icon,
                 contentDescription = null,
                 modifier = Modifier
+                    .then(Modifier.testTag("toolbar.native.glyph"))
                     .size(size)
                     .padding(horizontal = 4.dp),
                 tint = if (enabled) tint else tint.copy(alpha = 0.5f)
@@ -183,9 +191,13 @@ object TabToolBar {
         onClick: () -> Unit
     ) {
         if (GlassToolbarIcon(painterResource(iconId), tint, size, enabled, modifier, onClick)) return
-        IconButton(
-            onClick = onClick,
-            enabled = enabled
+        val interactionSource = remember { MutableInteractionSource() }
+        Box(
+            modifier = Modifier.minimumInteractiveComponentSize().reservedIconActionCanvas(
+                shape = uiRoundnessShape(), interactionSource = interactionSource,
+                indication = glassGlobalIndication(nativeControlIndication()),
+                enabled = enabled, onClick = onClick, role = Role.Button),
+            contentAlignment = Alignment.Center,
         ) {
             Icon(
                 painter = painterResource( iconId ),
@@ -214,13 +226,10 @@ object TabToolBar {
         Box(
             modifier = modifier
                 .minimumInteractiveComponentSize()
-                .clip(uiRoundnessShape())
-                .combinedClickable(
+                .reservedIconActionCanvas(
+                    shape = uiRoundnessShape(),
                     interactionSource = interactionSource,
-                    indication = ripple(
-                        bounded = false,
-                        radius = 20.dp
-                    ),
+                    indication = glassGlobalIndication(nativeControlIndication()),
                     enabled = enabled,
                     onClick = onShortClick,
                     onLongClick = onLongClick
@@ -231,6 +240,7 @@ object TabToolBar {
                 painter = painterResource(iconId),
                 contentDescription = null,
                 modifier = Modifier
+                    .then(Modifier.testTag("toolbar.native.glyph"))
                     .size(size)
                     .padding(horizontal = 4.dp),
                 tint = if (enabled) tint else tint.copy(alpha = 0.5f)
@@ -273,13 +283,11 @@ object TabToolBar {
         Box(
             modifier = modifier
                 .minimumInteractiveComponentSize()
-                .clip(uiRoundnessShape())
-                .combinedClickable(
+                .reservedIconActionCanvas(
+                    shape = uiRoundnessShape(),
                     interactionSource = interactionSource,
-                    indication = ripple(
-                        bounded = false,
-                        radius = 20.dp
-                    ),
+                    indication = glassGlobalIndication(nativeControlIndication()),
+                    enabled = true,
                     onClick = onShortClick,
                     onLongClick = onLongClick
                 ),
@@ -289,6 +297,7 @@ object TabToolBar {
                 painter = painterResource(if (toggleCondition) onIconId else offIconId),
                 contentDescription = null,
                 modifier = Modifier
+                    .then(Modifier.testTag("toolbar.native.glyph"))
                     .size(size)
                     .padding(horizontal = 4.dp),
                 tint = tint
@@ -334,13 +343,10 @@ object TabToolBar {
         Box(
             modifier = modifier
                 .minimumInteractiveComponentSize()
-                .clip(uiRoundnessShape())
-                .combinedClickable(
+                .reservedIconActionCanvas(
+                    shape = uiRoundnessShape(),
                     interactionSource = interactionSource,
-                    indication = ripple(
-                        bounded = false,
-                        radius = 20.dp
-                    ),
+                    indication = glassGlobalIndication(nativeControlIndication()),
                     enabled = enabled,
                     onClick = onShortClick,
                     onLongClick = onLongClick
@@ -351,6 +357,7 @@ object TabToolBar {
                 painter = painterResource(iconId),
                 contentDescription = null,
                 modifier = Modifier
+                    .then(Modifier.testTag("toolbar.native.glyph"))
                     .size(size)
                     .padding(horizontal = 4.dp),
                 tint = if (enabled) (if (toggleCondition) tintOn else tintOff) else colorPalette().textDisabled

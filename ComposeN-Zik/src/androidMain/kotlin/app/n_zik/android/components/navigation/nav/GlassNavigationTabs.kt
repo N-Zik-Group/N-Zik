@@ -3,6 +3,8 @@
 // Adapted from Square LiquidBottomTabs at 4cde83d, GPL-3.0; see NOTICE-square.txt.
 package app.n_zik.android.components.navigation.nav
 
+import app.n_zik.android.components.glass.dispersionAmount
+
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.spring
@@ -58,11 +60,13 @@ import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdr
 import app.n_zik.android.components.glass.backdrop.drawBackdrop
 import app.n_zik.android.components.glass.backdrop.effects.blur
 import app.n_zik.android.components.glass.backdrop.effects.lens
-import app.n_zik.android.components.glass.backdrop.effects.vibrancy
+import app.n_zik.android.components.glass.backdrop.effects.colorControls
 import app.n_zik.android.components.glass.backdrop.highlight.Highlight
 import app.n_zik.android.components.glass.backdrop.shadow.InnerShadow
 import app.n_zik.android.components.glass.backdrop.shadow.Shadow
 import app.n_zik.android.components.glass.glassMaterial
+import app.n_zik.android.components.glass.glassOpticsProgress
+import app.n_zik.android.components.glass.drawGlassOptics
 import app.n_zik.android.components.glass.glassRenderer
 import app.n_zik.android.components.glass.glassNativeSurfaceTint
 import app.n_zik.android.components.glass.isGlassMotionAllowed
@@ -175,7 +179,8 @@ internal fun GlassNavigationTabs(
     }
     val backdrop = LocalGlassBackdrop.current
     val renderer = glassRenderer(settings)
-    val optical = backdrop != null && renderer != GlassRenderer.Tint
+    val opticsProgress = glassOpticsProgress()
+    val optical = opticsProgress > 0f && backdrop != null && renderer != GlassRenderer.Tint
     val tabsBackdrop = rememberLayerBackdrop()
     val ownSurfaceBackdrop = rememberLayerBackdrop()
     val surfaceBackdrop = externalSurfaceBackdrop ?: ownSurfaceBackdrop
@@ -192,7 +197,7 @@ internal fun GlassNavigationTabs(
     val slotLens: BackdropEffectScope.() -> Unit = {
         if (renderer == GlassRenderer.Refraction) {
             val progress = animation.pressProgress
-            lens(10.dp.toPx() * progress, 14.dp.toPx() * progress, dispersion = 1f)
+            lens(10.dp.toPx() * progress * opticsProgress, 14.dp.toPx() * progress * opticsProgress, dispersion = settings.dispersionAmount())
         }
     }
     Box(modifier.onSizeChanged {
@@ -291,20 +296,22 @@ internal fun GlassNavigationTabs(
                     backdrop = pressedBackdrop,
                     shape = { shape },
                     effects = {
-                        vibrancy()
-                        blur(8.dp.toPx() * (1f - animation.pressProgress.coerceIn(0f, 1f)))
+                        colorControls(saturation = 1f + .5f * opticsProgress)
+                        blur(8.dp.toPx() * (1f - animation.pressProgress.coerceIn(0f, 1f)) * opticsProgress)
                         slotLens()
                     },
-                    highlight = if (settings.rim > 0f) ({ Highlight.Default.copy(alpha = animation.pressProgress * (settings.rim / .55f).coerceIn(0f, 1f)) }) else null,
-                    shadow = { Shadow(alpha = animation.pressProgress) },
+                    highlight = if (settings.rim > 0f) ({ Highlight.Default.copy(alpha = opticsProgress * animation.pressProgress * (settings.rim / .55f).coerceIn(0f, 1f)) }) else null,
+                    shadow = { Shadow(alpha = animation.pressProgress * opticsProgress) },
                     innerShadow = {
-                        InnerShadow(radius = 8.dp * animation.pressProgress, alpha = animation.pressProgress)
+                        InnerShadow(radius = 8.dp * animation.pressProgress, alpha = animation.pressProgress * opticsProgress)
                     },
+                    onDrawBackdrop = { draw -> drawGlassOptics(opticsProgress, draw) },
+                    onDrawBehind = { drawRect(wash, alpha = 1f - opticsProgress) },
                     onDrawSurface = {
                         val progress = animation.pressProgress
-                        drawRect(film, alpha = 1f - progress)
-                        drawRect(wash, alpha = 1f - progress)
-                        drawRect(Color.Black.copy(alpha = 0.03f * progress))
+                        drawRect(film, alpha = (1f - progress) * opticsProgress)
+                        drawRect(wash, alpha = (1f - progress) * opticsProgress)
+                        drawRect(Color.Black.copy(alpha = 0.03f * progress * opticsProgress))
                     },
                 ) else Modifier.clip(shape).background(wash)),
         )
@@ -314,6 +321,7 @@ internal fun GlassNavigationTabs(
                 backdrop = tabsBackdrop,
                 shape = { shape },
                 effects = slotLens,
+                onDrawBackdrop = { draw -> drawGlassOptics(opticsProgress, draw) },
                 highlight = null,
                 shadow = null,
             ))

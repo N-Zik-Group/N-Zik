@@ -476,6 +476,10 @@ fun AppNavigation(
         },
     ) {
     SearchResultsViewport {
+    CompositionLocalProvider(
+        app.n_zik.android.components.glass.LocalGlassScope provides
+            app.n_zik.android.components.glass.glassScopeForRoute(currentEntry?.destination?.route),
+    ) {
     NavHost(
         modifier = Modifier.fillMaxSize()
             .then(if (captureGlass) Modifier.graphicsLayer().layerBackdrop(pageBackdrop) else Modifier),
@@ -896,6 +900,7 @@ fun AppNavigation(
             UpdateScreen(navController = navController)
         }
     }
+    } // end destination Glass scope
     } // end SearchResultsViewport
     }
     if (!navigationPosition.isHorizontal && !navigationPosition.isFloating) CompositionLocalProvider(

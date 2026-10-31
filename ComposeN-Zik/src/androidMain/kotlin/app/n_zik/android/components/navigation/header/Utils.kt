@@ -65,6 +65,7 @@ internal fun HeaderIcon(
             modifier = modifier.size(GlassStandaloneActionSize),
             contentHeight = GlassStandaloneActionSize,
             contentPadding = 0.dp,
+            shape = uiRoundnessShape(),
             menuTrigger = menuTrigger,
         ) { icon() }
     } else {
