@@ -7,7 +7,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -28,7 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -98,9 +95,7 @@ fun VoiceSearchOverlay(
                     ) {
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White.copy(alpha = 0.2f))
-                                .clickable { onCancel() }
+                                .searchOverlayAction(RoundedCornerShape(12.dp), Color.White.copy(alpha = 0.2f), onClick = onCancel)
                                 .padding(horizontal = 32.dp, vertical = 12.dp)
                         ) {
                             BasicText(
@@ -114,9 +109,7 @@ fun VoiceSearchOverlay(
 
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(colorPalette().accent)
-                                .clickable { onRetry() }
+                                .searchOverlayAction(RoundedCornerShape(12.dp), colorPalette().accent, onClick = onRetry)
                                 .padding(horizontal = 32.dp, vertical = 12.dp)
                         ) {
                             BasicText(
@@ -155,9 +148,7 @@ fun VoiceSearchOverlay(
 
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color.White.copy(alpha = 0.2f))
-                            .clickable { onCancel() }
+                            .searchOverlayAction(RoundedCornerShape(12.dp), Color.White.copy(alpha = 0.2f), onClick = onCancel)
                             .padding(horizontal = 32.dp, vertical = 12.dp)
                     ) {
                         BasicText(

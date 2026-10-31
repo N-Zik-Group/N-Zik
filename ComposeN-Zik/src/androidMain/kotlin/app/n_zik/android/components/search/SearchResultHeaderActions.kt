@@ -2,7 +2,6 @@ package app.n_zik.android.components.search
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -11,11 +10,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import app.n_zik.android.components.ui.UiIconButton as IconButton
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
+import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassToolbarIcon
@@ -29,6 +29,7 @@ import app.n_zik.android.components.glass.GlassMenuTrigger
 import app.n_zik.android.components.glass.LocalGlassMenuTrigger
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.glass.usesGlassContour
 
 private val LocalSearchResultMenuTrigger = staticCompositionLocalOf<GlassMenuTriggerState?> { null }
 
@@ -47,7 +48,7 @@ fun SearchResultHeaderActions(
         GlassActionGroup(settings, GlassArea.ActionButtons,
             modifier = if (glass) Modifier.width(GlassActionCellWidth * count) else Modifier,
             trailingTrigger = trigger, menuActionCount = count, menuTriggerIndex = 1,
-            drawSurface = glass, separatorBefore = emptySet()) {
+            drawSurface = glass || settings.usesGlassContour(GlassArea.ActionButtons), separatorBefore = emptySet()) {
             SearchResultHeaderIcon(R.drawable.pencil, stringResource(R.string.search), onEditQuery) {
                 IconButton(onClick = onEditQuery) {
                     Icon(painterResource(R.drawable.pencil), stringResource(R.string.search), tint = colorPalette().text)
@@ -81,7 +82,7 @@ fun SearchResultHeaderIcon(
     }
     if (trigger != null) {
         GlassActionGroupNativeItem(index) {
-            if (icon == R.drawable.discover) GlassMenuTrigger(trigger, CircleShape, content = nativeContent)
+            if (icon == R.drawable.discover) GlassMenuTrigger(trigger, uiRoundnessShape(), content = nativeContent)
             else nativeContent()
         }
         return

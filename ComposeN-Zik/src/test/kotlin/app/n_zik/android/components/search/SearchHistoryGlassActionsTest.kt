@@ -22,6 +22,9 @@ import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.R
 import app.n_zik.android.components.glass.glassEnabledKey
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassAreaMode
+import app.n_zik.android.components.glass.GlassStore
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -42,10 +45,15 @@ class SearchHistoryGlassActionsTest {
         assertCallbacks(glass = false)
     }
 
-    private fun assertCallbacks(glass: Boolean) {
+    @Test fun `contour delete edit and delete-all retain the original row behavior`() {
+        assertCallbacks(glass = true, contourOnly = true)
+    }
+
+    private fun assertCallbacks(glass: Boolean, contourOnly: Boolean = false) {
         val context = ApplicationProvider.getApplicationContext<Context>()
         context.getSharedPreferences("nzik_square_glass_v2", Context.MODE_PRIVATE).edit().clear().commit()
         context.preferences.edit().putBoolean(glassEnabledKey, glass).commit()
+        if (contourOnly) GlassStore(context).setAreaMode(GlassArea.ActionButtons, GlassAreaMode.ContourOnly)
         val appearance = Appearance(
             colorPalette = DefaultDarkColorPalette,
             typography = typographyOf(Color.White, true, false, FontType.Rubik),
@@ -71,7 +79,7 @@ class SearchHistoryGlassActionsTest {
         }
         compose.mainClock.advanceTimeBy(400)
         compose.waitForIdle()
-        val delete = if (glass) compose.onNodeWithContentDescription(context.getString(R.string.delete))
+        val delete = if (glass && !contourOnly) compose.onNodeWithContentDescription(context.getString(R.string.delete))
             else compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.OnLongClick))
         delete.performTouchInput { click() }
         delete.performTouchInput { longClick() }

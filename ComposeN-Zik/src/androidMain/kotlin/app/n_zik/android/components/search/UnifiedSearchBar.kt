@@ -33,6 +33,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
@@ -53,6 +54,7 @@ import app.n_zik.android.components.ui.LeadingIconBadge
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassMaterialContainerScope
 import app.n_zik.android.components.glass.LiquidButton
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.usesGlassMaterial
@@ -142,73 +144,90 @@ fun UnifiedSearchBar(
         modifier = modifier.fillMaxWidth().zIndex(1f),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .glassSearchBarBackground(
-                    backgroundColor = colorPalette().background0,
-                    containerColor = surfaceColor(baseSurface ?: colorPalette().background1),
+        val barFill = surfaceColor(baseSurface ?: colorPalette().background1)
+        val pageFill = colorPalette().background0
+        val glassBar = glassSettings.usesGlassMaterial(GlassArea.SearchBars)
+        GlassMaterialContainerScope(
+            modifier = Modifier.weight(1f),
+            sectionFilm = if (glassBar) null else barFill.compositeOver(pageFill),
+            material = if (glassBar) { exported ->
+                Modifier.glassSearchBarBackground(
+                    backgroundColor = pageFill,
+                    containerColor = barFill,
                     shape = barShape,
                     shadowColor = colorPalette().accent.copy(alpha = 0.3f),
                     shadowElevation = 8.dp,
                     settings = glassSettings,
+                    exportedBackdrop = exported,
                 )
-                .clip(barShape)
-                // Padding taps must focus search instead of reaching the underlying list.
-                .clickable { focusRequester.requestFocus() }
-                .padding(horizontal = 20.dp, vertical = 16.dp)
-                .testTag("unified_search_bar"),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                LeadingIconBadge(
-                    iconRes = R.drawable.search,
-                    contentDescription = stringResource(R.string.search),
-                    modifier = Modifier.size(20.dp),
-                )
+            } else null,
+        ) { material ->
+            Box(
+                modifier = material.then(if (glassBar) Modifier else Modifier.glassSearchBarBackground(
+                        backgroundColor = pageFill,
+                        containerColor = barFill,
+                        shape = barShape,
+                        shadowColor = colorPalette().accent.copy(alpha = 0.3f),
+                        shadowElevation = 8.dp,
+                        settings = glassSettings,
+                    ))
+                    .clip(barShape)
+                    // Padding taps must focus search instead of reaching the underlying list.
+                    .clickable { focusRequester.requestFocus() }
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .testTag("unified_search_bar"),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    LeadingIconBadge(
+                        iconRes = R.drawable.search,
+                        contentDescription = stringResource(R.string.search),
+                        modifier = Modifier.size(20.dp),
+                    )
 
-                Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
 
-                BasicTextField(
-                    value = input,
-                    onValueChange = { newValue ->
-                        onInputChanged(
-                            newValue.copy(
-                                text = newValue.text,
-                                selection = newValue.selection
+                    BasicTextField(
+                        value = input,
+                        onValueChange = { newValue ->
+                            onInputChanged(
+                                newValue.copy(
+                                    text = newValue.text,
+                                    selection = newValue.selection
+                                )
                             )
-                        )
-                    },
-                    textStyle = typography().xs.semiBold,
-                    singleLine = true,
-                    maxLines = 1,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions = KeyboardActions(onSearch = {
-                        onSearch()
-                        keyboardController?.hide()
-                        focusManager.clearFocus(force = true)
-                    }),
-                    cursorBrush = SolidColor(colorPalette().text),
-                    decorationBox = { innerTextField ->
-                        if (input.text.isEmpty()) {
-                            BasicText(
-                                text = stringResource(placeholderRes),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                style = typography().xs.semiBold.secondary,
-                            )
-                        }
+                        },
+                        textStyle = typography().xs.semiBold,
+                        singleLine = true,
+                        maxLines = 1,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = {
+                            onSearch()
+                            keyboardController?.hide()
+                            focusManager.clearFocus(force = true)
+                        }),
+                        cursorBrush = SolidColor(colorPalette().text),
+                        decorationBox = { innerTextField ->
+                            if (input.text.isEmpty()) {
+                                BasicText(
+                                    text = stringResource(placeholderRes),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    style = typography().xs.semiBold.secondary,
+                                )
+                            }
 
-                        innerTextField()
-                    },
-                    modifier = (
-                        if (textFieldTestTag != null) Modifier.weight(1f).testTag(textFieldTestTag)
-                        else Modifier.weight(1f)
-                        ).onFocusChanged { focused ->
-                            isFocused = focused.isFocused
-                            onFocused(focused.isFocused)
-                        }
-                        .focusRequester(focusRequester),
-                )
+                            innerTextField()
+                        },
+                        modifier = (
+                            if (textFieldTestTag != null) Modifier.weight(1f).testTag(textFieldTestTag)
+                            else Modifier.weight(1f)
+                            ).onFocusChanged { focused ->
+                                isFocused = focused.isFocused
+                                onFocused(focused.isFocused)
+                            }
+                            .focusRequester(focusRequester),
+                    )
+                }
             }
         }
 
@@ -250,7 +269,8 @@ fun UnifiedSearchBar(
 }
 
 @Composable
-private fun SearchBarBubbleButton(bubble: SearchBarBubble, glassSettings: GlassSettings) {
+internal fun SearchBarBubbleButton(bubble: SearchBarBubble, glassSettings: GlassSettings) {
+    val actionShape = uiRoundnessShape()
     if (glassSettings.usesGlassMaterial(GlassArea.SearchBars)) {
         val background = colorPalette().background0
         val drawBackground: DrawScope.() -> Unit = remember(background) { { drawRect(background) } }
@@ -263,7 +283,7 @@ private fun SearchBarBubbleButton(bubble: SearchBarBubble, glassSettings: GlassS
             filmColor = surfaceColor(colorPalette().background2),
             contentHeight = 48.dp,
             contentPadding = 0.dp,
-            shape = searchBubbleShape(),
+            shape = actionShape,
         ) {
             Icon(
                 painter = painterResource(bubble.iconRes),
@@ -276,7 +296,7 @@ private fun SearchBarBubbleButton(bubble: SearchBarBubble, glassSettings: GlassS
     }
     // clip before clickable so the ripple indication follows the shape instead
     // of staying a square; background2 surface keeps the pitch-black fallback.
-    val shape = searchBubbleShape()
+    val shape = actionShape
     Box(
         modifier = Modifier
             .size(48.dp)

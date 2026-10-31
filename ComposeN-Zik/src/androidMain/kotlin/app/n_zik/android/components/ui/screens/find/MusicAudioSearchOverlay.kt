@@ -1,5 +1,12 @@
 package app.n_zik.android.components.ui.screens.find
 
+import app.n_zik.android.components.searchOverlayAction
+import app.n_zik.android.components.searchOverlaySurface
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import androidx.compose.runtime.CompositionLocalProvider
+
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.JournalPermission
@@ -15,10 +22,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -276,9 +279,7 @@ fun MusicAudioSearchOverlay(
             ) {
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color.White.copy(alpha = 0.2f))
-                        .clickable { handleDismiss() }
+                        .searchOverlayAction(RoundedCornerShape(12.dp), Color.White.copy(alpha = 0.2f), onClick = { handleDismiss() })
                         .padding(horizontal = 32.dp, vertical = 12.dp)
                 ) {
                     BasicText(
@@ -292,9 +293,7 @@ fun MusicAudioSearchOverlay(
 
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(colorPalette().accent)
-                        .clickable { startListening() }
+                        .searchOverlayAction(RoundedCornerShape(12.dp), colorPalette().accent, onClick = { startListening() })
                         .padding(horizontal = 32.dp, vertical = 12.dp)
                 ) {
                     BasicText(
@@ -343,9 +342,7 @@ fun MusicAudioSearchOverlay(
 
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White.copy(alpha = 0.2f))
-                    .clickable { handleDismiss() }
+                    .searchOverlayAction(RoundedCornerShape(12.dp), Color.White.copy(alpha = 0.2f), onClick = { handleDismiss() })
                     .padding(horizontal = 32.dp, vertical = 12.dp)
             ) {
                 BasicText(
@@ -381,9 +378,7 @@ fun MusicAudioSearchOverlay(
                     // Close button at the bottom of results
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color.White.copy(alpha = 0.2f))
-                            .clickable { handleDismiss() }
+                            .searchOverlayAction(RoundedCornerShape(12.dp), Color.White.copy(alpha = 0.2f), onClick = { handleDismiss() })
                             .padding(horizontal = 32.dp, vertical = 12.dp)
                             .align(Alignment.CenterHorizontally)
                     ) {
@@ -410,15 +405,16 @@ private fun RecognizedTrackCard(
     onPlay: () -> Unit,
     onSearch: () -> Unit
 ) {
+    val cardBackdrop = rememberLayerBackdrop()
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(colorPalette().background2)
-            .border(
-                1.dp,
-                colorPalette().accent.copy(alpha = 0.18f),
-                RoundedCornerShape(18.dp)
+            .searchOverlaySurface(
+                nativeShape = RoundedCornerShape(18.dp),
+                fill = colorPalette().background2,
+                area = GlassArea.SettingsCards,
+                nativeBorder = colorPalette().accent.copy(alpha = 0.18f),
+                exportedBackdrop = cardBackdrop,
             )
             .padding(14.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp),
@@ -460,54 +456,44 @@ private fun RecognizedTrackCard(
                 Text(genre, style = typography().xxs, color = colorPalette().accent)
             }
             Spacer(Modifier.height(4.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(colorPalette().accent)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                            onClick = onPlay
-                        ),
-                    contentAlignment = Alignment.Center
+            CompositionLocalProvider(LocalGlassContainerBackdrop provides cardBackdrop) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (isPlaying) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .searchOverlayAction(CircleShape, colorPalette().accent, nativeIndication = false, onClick = onPlay),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (isPlaying) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                color = colorPalette().onAccent,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            androidx.compose.material3.Icon(
+                                painter = painterResource(R.drawable.play),
+                                contentDescription = stringResource(R.string.play),
+                                tint = colorPalette().onAccent,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                    Box(
+                        modifier = Modifier
+                            .searchOverlayAction(RoundedCornerShape(10.dp), colorPalette().accent, nativeIndication = false, onClick = onSearch)
+                            .padding(horizontal = 14.dp, vertical = 7.dp)
+                    ) {
+                        Text(
+                            stringResource(R.string.find_more_details),
+                            style = typography().xxs,
                             color = colorPalette().onAccent,
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        androidx.compose.material3.Icon(
-                            painter = painterResource(R.drawable.play),
-                            contentDescription = stringResource(R.string.play),
-                            tint = colorPalette().onAccent,
-                            modifier = Modifier.size(18.dp)
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
-                }
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(colorPalette().accent)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                            onClick = onSearch
-                        )
-                        .padding(horizontal = 14.dp, vertical = 7.dp)
-                ) {
-                    Text(
-                        stringResource(R.string.find_more_details),
-                        style = typography().xxs,
-                        color = colorPalette().onAccent,
-                        fontWeight = FontWeight.SemiBold
-                    )
                 }
             }
         }

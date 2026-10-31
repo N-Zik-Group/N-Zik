@@ -1,5 +1,7 @@
 package app.it.fast4x.rimusic.ui.screens.search
 
+import app.n_zik.android.components.glass.glassGlobalIndication
+
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.navigation.TopOverlayContentPadding
 import app.n_zik.android.components.navigation.LocalSideRailContentInsets
@@ -178,7 +180,7 @@ fun OnlineSearch(
         loading = suggestionsResult?.isSuccess != true
     )
 
-    val rippleIndication = ripple(bounded = false)
+    val rippleIndication = glassGlobalIndication(ripple(bounded = false))
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -437,13 +439,6 @@ fun OnlineSearch(
                                             contentDescription = null,
                                             colorFilter = ColorFilter.tint(colorPalette().textDisabled),
                                             modifier = Modifier
-                                                .clip(uiRoundnessShape()).clickable(
-                                                    indication = rippleIndication,
-                                                    interactionSource = remember { MutableInteractionSource() },
-                                                    onClick = editQuery
-                                                )
-                                                //.rotate(225f)
-                                                .padding(horizontal = 8.dp)
                                                 .size(22.dp)
                                         )
                                     }
@@ -700,13 +695,6 @@ fun OnlineSearch(
                                             contentDescription = null,
                                             colorFilter = ColorFilter.tint(colorPalette().textDisabled),
                                             modifier = Modifier
-                                                .clip(uiRoundnessShape()).clickable(
-                                                    indication = rippleIndication,
-                                                    interactionSource = remember { MutableInteractionSource() },
-                                                    onClick = editQuery
-                                                )
-                                                //.rotate(225f)
-                                                .padding(horizontal = 8.dp)
                                                 .size(22.dp)
                                         )
                                     }

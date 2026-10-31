@@ -43,7 +43,7 @@ import app.it.fast4x.rimusic.utils.showButtonPlayerVideoKey
 import androidx.compose.foundation.text.BasicText
 import app.n_zik.android.typography
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import app.n_zik.android.components.ui.UiIconButton as IconButton
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GlassDropdownMenu
 import androidx.compose.material3.DropdownMenuItem

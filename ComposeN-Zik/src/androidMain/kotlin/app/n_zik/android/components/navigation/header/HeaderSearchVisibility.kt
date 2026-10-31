@@ -43,7 +43,7 @@ internal fun VerticalHeaderSearchVisibility(progress: State<Float>, fade: Boolea
 
 @Composable
 private fun SharedHeaderSearchVisibility(progress: State<Float>, vertical: Boolean, fade: Boolean, content: @Composable () -> Unit) {
-    Box(Modifier.clipToBounds().layout { measurable, constraints ->
+    Box(Modifier.then(if (progress.value < 1f) Modifier.clipToBounds() else Modifier).layout { measurable, constraints ->
         val fraction = progress.value.coerceIn(0f, 1f)
         val cell = measurable.measure(if (vertical) constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity)
             else constraints.copy(minWidth = 0, maxWidth = Constraints.Infinity))

@@ -168,3 +168,6 @@ Added:
 
 - fix(library): apply shared collection surfaces and spacing
   - Integrate collection headers, swipe feedback, artwork overlays and safe content spacing.
+
+- fix(search): coordinate Glass inputs results and feedback
+  - Use shared input and result surfaces while preserving native interaction exclusions.
