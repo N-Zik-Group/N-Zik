@@ -3,6 +3,7 @@
     <string name="cancel">ביטול</string>
     <string name="reset">Reset</string>
     <string name="done">בוצע</string>
+    <string name="hidesong">Do you really want to hide this song? Its playback time and cache will be wiped. This action is irreversible.</string>
     <string name="new_playlist">רשימת השמעה חדשה</string>
     <string name="start_radio">הפעל רדיו</string>
     <string name="stop_radio">Stop radio</string>
@@ -13,10 +14,11 @@
     <string name="go_to_album">מעבר לאלבום</string>
     <string name="remove_from_queue">הסרה מהתור</string>
     <string name="remove_from_playlist">הסרה מרשימת ההשמעה</string>
+    <string name="hide">הסתרה</string>
     <string name="related_albums">אלבומים קשורים</string>
     <string name="similar_artists">אומנים דומים</string>
     <string name="playlists_you_might_like">רשימות השמעה שאולי תאהבו</string>
-    <string name="forgotten_favorites">Forgotten favorites</string>
+    <string name="forgotten_favorites">מועדפים שנשכחו</string>
     <string name="fresh_finds_old_favorites">Fresh finds, old favorites</string>
     <string name="mixed_for_you">Mixed for you</string>
     <string name="your_daily_discover">Your daily discover</string>
@@ -250,6 +252,7 @@
     <string name="disable_vertical_swipe">השבת את החלפת השיר באמצעות החלקה</string>
     <string name="disable_vertical_swipe_secondary">It affects only when the Expanded Player is off</string>
     <string name="disable_song_switching_via_swipe">השבת את החלפת השיר באמצעות החלקה</string>
+    <string name="interface_in_use">ממשק בשימוש</string>
     <string name="user_interface">ממשק משתמש</string>
     <string name="ui_tab">מצב ממשק</string>
     <string name="system_language">שפת מערכת</string>
@@ -531,6 +534,7 @@
     <string name="last_week">שבוע שעבר</string>
     <string name="by_casual_played_song">Random</string>
     <string name="theme_material_you">חומר אתה</string>
+    <string name="show_statistics_in_navigation_bar">הצג נתונים סטטיסטיים בסרגל הניווט</string>
     <string name="settings">הגדרות</string>
     <string name="page_not_been_loaded">Unable to load the page, swipe down to refresh.</string>
     <string name="info_show_hide_hidden_songs">הצג/הסתר שירים מוסתרים</string>
@@ -585,6 +589,8 @@
     <string name="bg_colors_background_from_theme">Match theme</string>
     <string name="bg_colors_gradient_background_from_cover">Gradient from song cover</string>
     <string name="bg_colors_gradient_background_from_theme">Gradient from theme</string>
+    <string name="vimusic_show_search_button_in_navigation_bar">Show the search button in the navigation bar</string>
+    <string name="vismusic_only_in_left_right_navigation_bar">Only for left or right navigation bar in ViMusic UI</string>
     <string name="info_no_songs_yet">No songs available</string>
     <string name="theme_customized">מותאם אישית</string>
     <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">האם אתה באמת רוצה לאפס את צבעי נושא האור המותאמים אישית?</string>
@@ -641,11 +647,15 @@
     <string name="lang_vietnamese">Vietnamese (tiếng Việt)</string>
     <string name="parental_control">בקרת הורים</string>
     <string name="info_prevent_play_songs_with_age_limitation">מנע השמעת שירים עם הגבלת גיל</string>
+    <string name="stream_clients">Stream Clients</string>
     <string name="preferred_stream_client">Preferred Stream Client</string>
     <string name="preferred_stream_client_title">Preferred Stream Client</string>
+    <string name="preferred_stream_client_description">Choose which stream client to try first</string>
     <string name="preferred_stream_client_changed">Preferred client changed. Will apply on next track.</string>
     <string name="stream_client_redownload_recommendation">Re-download songs for new quality (especially with Web Remix/ YTB Premium account)</string>
+    <string name="disabled_stream_clients">Disabled stream clients</string>
     <string name="disabled_stream_clients_title">Disabled Stream Clients</string>
+    <string name="configure_which_stream_clients_are_enabled">Configure which stream clients are enabled</string>
     <string name="codec">Codec</string>
     <string name="sample_rate">Sample Rate</string>
     <string name="perceptual_loudness">Perceptual Loudness</string>
@@ -716,6 +726,8 @@
     <string name="showvisthumbnail">Show thumbnail for visualizer</string>
     <string name="black_background_for_visualizer">Dark background for visualizer</string>
     <string name="show_visualizer_buttons">Auto-hide visualizer buttons</string>
+    <string name="androidheadunit">Android head unit</string>
+    <string name="extra_space">Extra space at the top</string>
     <string name="white">White</string>
     <string name="black">Black</string>
     <string name="highlight">Highlight</string>
@@ -725,6 +737,7 @@
     <string name="crop_video_thumbnails">Crop video thumbnails</string>
     <string name="showtwosongs">Show Next two Songs in Queue</string>
     <string name="showalbumcover">Show album cover</string>
+    <string name="do_not_translate">אל תתרגם</string>
     <string name="info_sleep_timer_delayed_at_end_of_song">Sleep timer set to the end of this song</string>
     <string name="lyricsbackground">Lyrics background</string>
     <string name="tapqueue">Tap to open queue</string>
@@ -760,6 +773,9 @@
     <string name="carouselsize">Thumbnail Size in Expanded Mode</string>
     <string name="addednext">Added to play next</string>
     <string name="autosync">Auto Sync Imported Playlists</string>
+    <string name="message_type">Popup message style</string>
+    <string name="message_type_modern">מודרני</string>
+    <string name="message_type_essential">חיוני</string>
     <string name="songs_number_to_show">Songs displayed</string>
     <string name="player_pause_on_volume_zero">Pause on volume zero</string>
     <string name="info_pauses_player_when_volume_zero">Pause the song when the volume reaches 0 and resume it when the volume is greater than 0</string>
@@ -861,6 +877,7 @@
     <string name="loudness_boost_level">Loudness boost level</string>
     <string name="loudness_boost_level_info">Additional loudness level, to be used without overdoing it, may damage the device</string>
     <string name="settings_target_gain_loudness_info">Target gain for the loudness normalization</string>
+    <string name="error_media_cannot_be_played">Song cannot be played</string>
     <string name="full_screen_lyrics_components">Fullscreen lyrics components</string>
     <string name="titleartist">Title and Artists</string>
     <string name="miniqueue">Next song queue</string>
@@ -870,6 +887,7 @@
     <string name="skip_media_on_error">Skip song on error</string>
     <string name="skip_media_on_error_description">If an error occurs, skip to the next song</string>
     <string name="skip_media_on_error_message">An error occurred while playing the song %1$s</string>
+    <string name="login_required_to_play_this_media">Logging in is required to play this song</string>
     <string name="search_results_for">Search results for:</string>
     <string name="statsfornerds">Stats for Nerds</string>
     <string name="actionbar">Action Bar</string>
@@ -914,6 +932,7 @@
     <string name="dislikes">Dislikes</string>
     <string name="description">Description</string>
     <string name="press_once_again_to_exit">Press once again to exit</string>
+    <string name="random_sorting">Random sorting</string>
     <string name="music_animations_bars">Bars</string>
     <string name="music_animations_crazy_bars">Crazy bars</string>
     <string name="music_animations_crazy_points">Crazy points</string>
@@ -1100,6 +1119,8 @@
     <string name="added_to_dislikes">Disliked %s</string>
     <string name="removed_from_dislikes">Removed %s from dislikes</string>
     <string name="rotating_cover_title">Rotating album cover</string>
+    <string name="title_appearance_changes">Appearance Change</string>
+    <string name="appearance_changes_message">If you change Player or UI settings,\nit is strongly recommended to restart the application.</string>
     <string name="title_import_settings_migration">Import migration file.</string>
     <string name="description_import_settings_migration">For old users before conversion.\nUse old app to make a backup for migration.</string>
     <string name="log_in_to_ytm">Log in to your YTM account for more content</string>
@@ -1113,6 +1134,8 @@
     <string name="beta_title">BETA</string>
     <string name="dev_title">DEV</string>
     <string name="debug_title">DEBUG</string>
+    <string name="full_title">FULL</string>
+    <string name="stable_title">STABLE</string>
     <string name="minified_title">MINIFIED</string>
     <string name="update_file_size">File size: %s</string>
     <string name="beta_text">This is still in Beta and may contain bugs and crash</string>
@@ -1198,6 +1221,7 @@
     <string name="error_session_expired">YouTube session expired, please sign in again</string>
     <string name="error_cookie_invalid">YouTube cookie is invalid, please log in again</string>
     <string name="stream_error_retrying">Retrying: %1$s</string>
+    <string name="error_playback_failed">Playback failed: %1$s</string>
     <string name="error_playback_failed_with_code">Playback failed: %1$s [%2$s]</string>
     <string name="stream_still_retrying">Still loading… Attempt %1$s</string>
     <string name="stream_unexpected_skip">Unexpected track change detected</string>
@@ -1307,6 +1331,7 @@
     <string name="cd_arrow_up">arrow_up</string>
     <string name="txt_lyricsintervalprogress">lyricsIntervalProgress</string>
     <string name="cd_recenter">Recenter</string>
+    <string name="cd_increase">Increase</string>
     <string name="cd_reset">Reset</string>
     <string name="cd_import_playlist_name">import playlist name</string>
     <string name="cd_new_playlist_name">new playlist name</string>
@@ -1350,6 +1375,8 @@
     <string name="no_lyrics">No lyrics</string>
     <string name="no_items_found">No items found</string>
     <string name="no_new_releases">There are no new releases for your favorite artists</string>
+    <string name="not_selectable">Not selectable</string>
+    <string name="unknown_playback_error">Unknown playback error</string>
     <string name="unknown_error">Unknown error</string>
     <string name="github">GitHub</string>
     <string name="update_channel_name">App Updates</string>
@@ -1366,6 +1393,7 @@
     <string name="reverb_medium_hall">Medium Hall</string>
     <string name="reverb_large_hall">Large Hall</string>
     <string name="reverb_plate">Plate</string>
+    <string name="fluid">FLUID</string>
     <string name="lyrics_not_available">No lyrics available. Please try again or enter them manually.</string>
     <string name="source_betterlyrics_synced">BetterLyrics (synced)</string>
     <string name="source_betterlyrics_karaoke">BetterLyrics (karaoke)</string>
@@ -2062,6 +2090,7 @@
     <string name="approve">Approve</string>
     <string name="reject">Reject</string>
     <string name="maintenance">Maintenance</string>
+    <string name="maintenance_card_desc">App state at a glance: last boot passes and live subsystems</string>
     <string name="maintenance_all_systems_ok">All systems operational</string>
     <plurals name="maintenance_systems_need_attention">
         <item quantity="one">%d system needs attention</item>
@@ -2073,6 +2102,9 @@
     <string name="maintenance_refresh">Refresh</string>
     <string name="maintenance_no_data">No data</string>
     <string name="maintenance_dedup">Same-name artist dedup</string>
+    <string name="maintenance_dedup_summary">%1$d groups · %2$d resolved · %3$d skipped</string>
+    <string name="maintenance_dedup_clean">Nothing to dedup</string>
+    <string name="maintenance_dedup_no_groups">No same-name groups detected</string>
     <string name="maintenance_dedup_merged">Merged %d row(s)</string>
     <string name="maintenance_dedup_flagged">Flagged %d row(s)</string>
     <string name="maintenance_dedup_merged_flagged">Merged %1$d row(s) · Flagged %2$d row(s)</string>
@@ -2085,6 +2117,8 @@
     <string name="maintenance_skip_no_candidate">No unanimous candidate</string>
     <string name="maintenance_skip_network_failure">Network failure (retried next launch)</string>
     <string name="maintenance_convergence">Name convergence</string>
+    <string name="maintenance_convergence_changed">%d copies rewritten</string>
+    <string name="maintenance_convergence_no_change">Already converged</string>
     <string name="maintenance_convergence_copies_rewritten">%d copies rewritten</string>
     <string name="maintenance_convergence_unbacked_songs">%d unbacked songs</string>
     <string name="maintenance_convergence_unlinked_songs">%d unlinked songs</string>
@@ -2094,6 +2128,10 @@
     <string name="maintenance_convergence_count_mismatch_albums">%d count-mismatched albums</string>
     <string name="maintenance_convergence_custom_albums">%d custom albums</string>
     <string name="maintenance_db_cleanup">Artist link cleanup</string>
+    <string name="maintenance_db_cleanup_removed">%d stale link(s) removed</string>
+    <string name="maintenance_db_cleanup_clean">Nothing to clean</string>
+    <string name="maintenance_db_cleanup_detail_removed">Last run removed %d stale link(s)</string>
+    <string name="maintenance_db_cleanup_detail_clean">Last run found nothing to clean</string>
     <string name="maintenance_migration_done">בוצע</string>
     <string name="maintenance_live_subsystems">Live subsystems</string>
     <string name="maintenance_sync_ytm">YTM sync</string>
