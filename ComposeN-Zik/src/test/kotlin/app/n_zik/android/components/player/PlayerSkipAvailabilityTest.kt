@@ -13,6 +13,7 @@ import io.mockk.slot
 import io.mockk.verify
 import app.n_zik.android.playback.utils.playNextIfAvailable
 import app.n_zik.android.playback.utils.playPreviousIfAvailable
+import app.n_zik.android.playback.utils.seekPreviousIfAvailable
 import org.junit.Assert.assertFalse
 import org.junit.Rule
 import org.junit.Test
@@ -61,8 +62,10 @@ class PlayerSkipAvailabilityTest {
         every { player.isCommandAvailable(any()) } returns false
         assertFalse(player.playNextIfAvailable())
         assertFalse(player.playPreviousIfAvailable())
+        assertFalse(player.seekPreviousIfAvailable())
         verify(exactly = 0) { player.seekToNextMediaItem() }
         verify(exactly = 0) { player.seekToPreviousMediaItem() }
+        verify(exactly = 0) { player.seekToPrevious() }
         verify(exactly = 0) { player.prepare() }
         verify(exactly = 0) { player.playWhenReady = any() }
     }

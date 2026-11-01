@@ -192,7 +192,7 @@ import app.n_zik.android.components.player.MiniPlayerSwipeAction
 import app.n_zik.android.components.player.GlassMiniPlayerIconButton
 import app.n_zik.android.components.player.rememberPlayerSkipAvailability
 import app.n_zik.android.playback.utils.playNextIfAvailable
-import app.n_zik.android.playback.utils.playPreviousIfAvailable
+import app.n_zik.android.playback.utils.seekPreviousIfAvailable
 import app.n_zik.android.components.player.GlassMiniPlayerPlayPauseButton
 import app.n_zik.android.components.player.SwipeActionLatch
 import app.n_zik.android.components.player.WithDoubledTouchSlop
@@ -948,15 +948,14 @@ private fun MiniPlayerSlotButton(
                 icon = R.drawable.play_skip_back,
                 color = controlsColorText,
                 contentDescription = stringResource(button.labelRes),
-                enabled = !listenTogetherGuestLock && skipAvailability.previousItem,
+                enabled = !listenTogetherGuestLock && skipAvailability.previous,
                 onClick = {
-                    if (!listenTogetherGuestLock) {
-                        binder.player.playPreviousIfAvailable()
+                    if (!listenTogetherGuestLock && binder.player.seekPreviousIfAvailable()) {
                         if (effectRotationEnabled) onRotatedChange(!isRotated)
                     }
                 },
                 rotationAngle = rotationAngle,
-                alpha = if (!listenTogetherGuestLock && skipAvailability.previousItem) 1f else 0.38f,
+                alpha = if (!listenTogetherGuestLock && skipAvailability.previous) 1f else 0.38f,
             )
         }
         MiniPlayerButton.SkipForward -> {

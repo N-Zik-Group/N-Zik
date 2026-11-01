@@ -17,6 +17,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -229,13 +231,38 @@ class CompactMiniPlayerInteractionTest {
         assertConfiguredActions()
         compose.onNode(queue).performClick()
         compose.runOnIdle {
-            verify(exactly = 1) { player.seekToPreviousMediaItem() }
+            verify(exactly = 1) { player.seekToPrevious() }
             verify(exactly = 1) { binder.gracefulPlay() }
             verify(exactly = 1) { player.seekToNextMediaItem() }
             assertEquals(1, queueOpens)
             assertEquals(0, playerOpens)
             assertEquals("home", navigation.currentDestination?.route)
         }
+    }
+
+    @Test fun materialPreviousCanRestartFirstQueueItem() = assertPreviousAtQueueBoundary(false)
+
+    @Test fun glassPreviousCanRestartFirstQueueItem() = assertPreviousAtQueueBoundary(true)
+
+    private fun assertPreviousAtQueueBoundary(glass: Boolean) {
+        context.preferences.edit().putBoolean(glassEnabledKey, glass).commit()
+        every { player.isCommandAvailable(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM) } returns false
+        every { player.isCommandAvailable(Player.COMMAND_SEEK_TO_PREVIOUS) } returns true
+        renderMini()
+        val previous = compose.onNodeWithContentDescription(context.getString(MiniPlayerButton.SkipBack.labelRes))
+        previous.assertIsEnabled().performClick()
+        compose.runOnIdle {
+            verify(exactly = 1) { player.seekToPrevious() }
+            verify(exactly = 0) { player.seekToPreviousMediaItem() }
+        }
+    }
+
+    @Test fun unavailablePreviousStaysDisabled() {
+        every { player.isCommandAvailable(Player.COMMAND_SEEK_TO_PREVIOUS) } returns false
+        renderMini()
+        compose.onNodeWithContentDescription(context.getString(MiniPlayerButton.SkipBack.labelRes))
+            .assertIsNotEnabled()
+        compose.runOnIdle { verify(exactly = 0) { player.seekToPrevious() } }
     }
 
     private fun setQueueSlots() {

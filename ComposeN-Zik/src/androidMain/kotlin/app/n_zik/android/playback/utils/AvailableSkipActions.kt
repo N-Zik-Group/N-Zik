@@ -16,3 +16,10 @@ fun Player.playPreviousIfAvailable(): Boolean {
     playPrevious()
     return true
 }
+
+/** The UI Previous command can restart the current item even at the queue boundary. */
+fun Player.seekPreviousIfAvailable(): Boolean {
+    if (!isCommandAvailable(Player.COMMAND_SEEK_TO_PREVIOUS)) return false
+    seekToPrevious()
+    return true
+}

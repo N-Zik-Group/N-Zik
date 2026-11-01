@@ -361,3 +361,8 @@ Added:
 
 - docs: describe optional Glass and update acknowledgements
   - Update project and store documentation for optional Glass and upstream acknowledgements.
+
+- fix(player): restore mini-player Previous at the queue boundary
+  - Use the generic Previous command so the first track can restart when no previous queue item exists, in Material and Glass.
+  - Preserve unavailable-command and Listen Together guest protections; retain strict item-skip helpers for notification consumers.
+  - Verify actual mini-player queue-boundary interaction, disabled state and folding handlers with targeted tests; assembleDebug passes.
