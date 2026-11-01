@@ -43,6 +43,11 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(ui): align section actions and header trailing centers
+  - Route standalone heading arrows through shared action seats instead of raw icons; center Glass bubbles in the same horizontal seat as grouped actions.
+  - Align Profile with the last section action using section-mode-aware header padding, including independently configured Header and ActionButtons Glass modes.
+  - Preserve icon sizes, primary Material arrow tint, UI roundness and heading actions; verify actual trailing centers in Material and Glass and user-confirmed emulator layout.
+
 - fix(playback): preserve notification and Android Auto progress during buffering (issues https://github.com/N-Zik-Group/N-Zik/issues/938, https://github.com/N-Zik-Group/N-Zik/issues/939)
   - Publish validated finite current-track duration through MediaMetadata.durationMs and remove conflicting reserved duration extras from a copy; prefer actual source duration and preserve live/unknown duration behavior.
   - Keep real buffering states, positions, commands and artwork event delivery intact; terminate aborted crossfades without scheduling another fade or reporting false completion.

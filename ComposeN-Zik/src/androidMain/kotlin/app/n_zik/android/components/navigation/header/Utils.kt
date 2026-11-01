@@ -1,5 +1,7 @@
 package app.n_zik.android.components.navigation.header
 
+import app.n_zik.android.components.glass.GlassActionCellWidth
+import app.n_zik.android.components.glass.NativeIconActionSize
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassActionIconSize
 import app.n_zik.android.components.glass.usesGlassMaterial
@@ -35,6 +37,10 @@ import app.n_zik.android.components.glass.rememberGlassSettings
 
 /** Matches the visible N-ZIK logo bounds without resizing its glyphs. */
 internal val HeaderActionCanvasSize = 36.dp
+
+/** Keep the trailing control center on the same axis as section actions. */
+internal fun headerActionEndPadding(glass: Boolean): Dp = 12.dp +
+    ((if (glass) GlassActionCellWidth else NativeIconActionSize) - HeaderActionCanvasSize) / 2
 
 @Composable
 internal fun HeaderIcon(

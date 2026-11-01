@@ -39,6 +39,7 @@ internal data class GlassSectionAction(
     val nativeEndPadding: Dp = 0.dp,
     val iconModifier: Modifier = Modifier,
     val nativeIconSize: Dp = 24.dp,
+    val nativeColor: Color? = null,
     val loading: Boolean = false,
     val separateBefore: Boolean = false,
     val onLongClick: (() -> Unit)? = null,
@@ -62,7 +63,7 @@ internal fun GlassSectionActions(
             // A supplied container is child-free; otherwise avoid sampling the ancestor page capture.
             val fallbackBackdrop = rememberCanvasBackdrop(drawBackground)
             val backdrop = LocalGlassContainerBackdrop.current ?: fallbackBackdrop
-            Box(modifier) {
+            Box(modifier.size(GlassActionCellWidth, GlassActionCellHeight), contentAlignment = Alignment.Center) {
                 LiquidButton(
                     onClick = singleAction.onClick,
                     onLongClick = singleAction.onLongClick,
@@ -130,6 +131,7 @@ internal fun GlassSectionActions(
                             endSpacing = action.nativeEndPadding,
                             iconModifier = action.iconModifier,
                             iconSize = action.nativeIconSize,
+                            color = action.nativeColor ?: colorPalette().textSecondary,
                             settings = settings,
                             onLongClick = action.onLongClick,
                             onClick = action.onClick,

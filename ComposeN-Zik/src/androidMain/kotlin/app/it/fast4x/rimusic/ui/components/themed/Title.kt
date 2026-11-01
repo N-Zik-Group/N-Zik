@@ -1,5 +1,7 @@
 ﻿package app.it.fast4x.rimusic.ui.components.themed
 
+import app.n_zik.android.components.glass.GlassSectionAction
+import app.n_zik.android.components.glass.GlassSectionActions
 import app.n_zik.android.components.glass.NativeSectionIconAction
 
 import androidx.compose.ui.draw.clip
@@ -49,7 +51,7 @@ fun Title(
     GlassTitleActionRow(
         modifier = modifier.fillMaxWidth(),
         verticalPadding = verticalPadding,
-        hasTrailingActions = trailingIcon != null,
+        hasTrailingActions = trailingIcon != null || (onClick != null && enableClick),
         onClick = onClick?.let { action -> { if (enableClick) action() } },
     ) {
         Text(
@@ -65,11 +67,12 @@ fun Title(
         )
 
         if (onClick != null && enableClick) {
-            Icon(
-                painter = painterResource(icon ?: R.drawable.arrow_forward),
-                contentDescription = null,
-                tint = colorPalette().text
-            )
+            GlassSectionActions(actions = listOf(GlassSectionAction(
+                icon = icon ?: R.drawable.arrow_forward,
+                contentDescription = title,
+                nativeColor = colorPalette().text,
+                onClick = onClick,
+            )))
         }
         if (trailingIcon != null) {
             Spacer(Modifier.width(8.dp))

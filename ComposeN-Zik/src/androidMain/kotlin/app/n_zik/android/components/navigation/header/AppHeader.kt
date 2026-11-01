@@ -114,7 +114,7 @@ class AppHeader(
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
                 .fillMaxWidth()
                 .height(64.dp)
-                .padding(start = startPadding, end = 12.dp),
+                .padding(start = startPadding, end = headerActionEndPadding(glassSettings.usesGlassMaterial(GlassArea.ActionButtons))),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Restore TopAppBar's default content coloring behavior for action buttons

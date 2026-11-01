@@ -46,14 +46,8 @@ internal fun HomeSectionTitle(
             modifier = Modifier.weight(1f),
         )
         GlassSectionActions(
-            actions = listOf(GlassSectionAction(R.drawable.arrow_forward, title, onClick = onClick)),
-            nativeContent = {
-                Icon(
-                    painter = painterResource(R.drawable.arrow_forward),
-                    contentDescription = null,
-                    tint = colorPalette().text,
-                )
-            },
+            actions = listOf(GlassSectionAction(R.drawable.arrow_forward, title, nativeColor = colorPalette().text, onClick = onClick)),
+
         )
     }
 }
