@@ -6,11 +6,14 @@ import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -48,6 +51,7 @@ fun GlassMiniPlayerPlayPauseButton(
     val controlSize = miniPlayerControlSize(fold, dockPresentation)
     val shape = uiRoundnessShape()
     val modifier = Modifier.semantics { this.contentDescription = contentDescription }
+    val interactionSource = remember { MutableInteractionSource() }
     if (settings.usesGlassMaterial(GlassArea.MiniPlayer)) {
         val controlSettings = settings.forArea(GlassArea.MiniPlayer).copy(film = glassFilmOpacity(
             configured = settings.film,
@@ -58,7 +62,8 @@ fun GlassMiniPlayerPlayPauseButton(
         LiquidButton(
             onClick = onClick,
             backdrop = backdrop,
-            modifier = modifier.size(controlSize),
+            modifier = modifier.playerControlPressMotion(interactionSource).size(controlSize),
+            interactionSource = interactionSource,
             settings = controlSettings,
             filmColor = backgroundColor,
             contentHeight = controlSize,
@@ -70,7 +75,9 @@ fun GlassMiniPlayerPlayPauseButton(
         }
     } else {
         Box(
-            modifier.clip(shape).clickable(role = Role.Button, onClick = onClick)
+            modifier.playerControlPressMotion(interactionSource).clip(shape)
+                .clickable(interactionSource = interactionSource, indication = LocalIndication.current,
+                    role = Role.Button, onClick = onClick)
                 .background(backgroundColor).glassAreaContour(settings, GlassArea.MiniPlayer, shape).size(controlSize),
             content = content,
         )

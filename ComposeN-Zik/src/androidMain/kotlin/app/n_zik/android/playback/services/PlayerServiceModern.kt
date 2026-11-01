@@ -1,5 +1,7 @@
 package app.n_zik.android.playback.services
 
+import app.n_zik.android.playback.utils.playNextIfAvailable
+import app.n_zik.android.playback.utils.playPreviousIfAvailable
 import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.it.fast4x.rimusic.utils.activeProfileKey
@@ -2838,13 +2840,9 @@ class PlayerServiceModern : MediaLibraryService(),
                 Action.playPause.value -> {
                     if (player.isPlaying) binder.gracefulPause() else binder.gracefulPlay()
                 }
-                // Full skip semantics on the facade (seek + prepare + restoreGlobalVolume +
-                // playWhenReady=true, as before the guard): unchanged for host/out-of-room users.
-//
-                // For a locked guest the blocked seek arms the guard's 50 ms tail window, so the
-                // pass-through tail (prepare/playWhenReady) is suppressed — clean no-op + toast.
-                Action.next.value -> player.playNext()
-                Action.previous.value -> player.playPrevious()
+                // Reject unavailable commands before seek/prepare/resume side effects.
+                Action.next.value -> player.playNextIfAvailable()
+                Action.previous.value -> player.playPreviousIfAvailable()
                 Action.like.value -> {
                     binder.toggleLike()
                 }

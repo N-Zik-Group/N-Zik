@@ -117,6 +117,7 @@ class CompactMiniPlayerInteractionTest {
         mockkObject(Database)
         every { Database.songTable } returns songs
         every { binder.player } returns player
+        every { player.isCommandAvailable(any()) } returns true
         every { binder.playerUpdateTrigger } returns MutableStateFlow(0)
         every { player.currentMediaItem } returns MediaItem.Builder()
             .setMediaId("local:compact-controls")

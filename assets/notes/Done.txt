@@ -34,6 +34,13 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(player): unify transport feedback and honor queue availability
+  - Apply press shrink to the complete Play/Pause, Previous and Next controls in the mini-player and Essential/Modern player, with and without Glass; share interaction sources and avoid duplicate scaling.
+  - Observe Media3 navigation commands, dim and disable unavailable controls, preserve grand-player restart semantics and mini-player previous-item behavior, and reject stale skip requests before prepare/resume side effects.
+  - Filter navigation capabilities exposed by the Listen Together facade for media-session clients including notifications and Android Auto while preserving guest restrictions.
+  - Explicitly forward all 37 Media3 listener callbacks instead of Kotlin delegation over Java default methods, restoring notification, mini-player and player event delivery.
+  - Pass the merged 196-test playback selection and Debug assembly; install on emulator-5554 and verify media notification, mini-player and grand-player return. Android Auto host runtime was not tested.
+
 - fix(player): smooth carousel travel and blurred cover transitions
   - Scale landscape carousel finger travel to its short page stride, preserve portrait expand state across rotation and clamp animated pager padding to nonnegative values.
   - Crossfade loaded cover frames and animate blur, opacity, artwork slot and edge fade instead of replacing the background instantly on song changes or expand/back.

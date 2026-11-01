@@ -57,6 +57,13 @@ class ListenTogetherGuestGuardPlayer(
     companion object {
         private const val TAG = "LTGuestGuard"
 
+        private val NAVIGATION_COMMANDS = intArrayOf(
+            Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM,
+            Player.COMMAND_SEEK_TO_PREVIOUS,
+            Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM,
+            Player.COMMAND_SEEK_TO_NEXT,
+        )
+
         /** Minimum interval between "the host controls playback" toasts (spam-free on repeated taps). */
         const val TOAST_THROTTLE_MS = 2000L
 
@@ -158,22 +165,22 @@ class ListenTogetherGuestGuardPlayer(
     @Volatile
     private var tailSuppressUntilMs: Long = 0L
 
-    /** Listeners registered on this facade (kept in parallel with the upstream registration) so [announceAvailableCommandsChanged] can notify them when the guest lock toggles — MediaSession only re-evaluates its available commands on that event (no re-polling in media3 1.10.1). */
-    private val commandListeners = mutableListOf<Player.Listener>()
+    /** Original listeners mapped to the adapters registered through [ForwardingPlayer]. */
+    private val commandListeners = mutableMapOf<Player.Listener, Player.Listener>()
 
-    // ── Available commands (AD-6: hide next/prev/shuffle/stop for guests) ─────────────────────
+    override fun getAvailableCommands(): Player.Commands = commandsFor(upstream.availableCommands)
 
-    override fun getAvailableCommands(): Player.Commands {
-        // Same "all commands" behavior as the service's legacy forwarding player (pre-Android-13
-        // compatibility), minus the commands mapping to guest-blocked operations. Commands are
-//
-        // removed one at a time (identical FlagSet result to removeAll) so the guest-lock policy
-//
-        // is unit-testable on the JVM, where Commands' android.util.SparseBooleanArray cannot run.
-        var builder = upstream.getAvailableCommands().buildUpon().addAllCommands()
+    private fun commandsFor(upstreamCommands: Player.Commands): Player.Commands {
+        // Preserve pre-Android-13 compatibility for other commands. Navigation must retain
+        // the upstream repeat/shuffle/live policy, including previous's restart-current action.
+        var builder = upstreamCommands.buildUpon().addAllCommands()
         if (listenTogetherGuestLock.value) {
             for (command in GUEST_LOCKED_HIDDEN_COMMANDS) {
                 builder = builder.remove(command)
+            }
+        } else {
+            for (command in NAVIGATION_COMMANDS) {
+                if (!upstreamCommands.contains(command)) builder = builder.remove(command)
             }
         }
         return builder.build()
@@ -181,36 +188,35 @@ class ListenTogetherGuestGuardPlayer(
 
     override fun isCommandAvailable(command: Int): Boolean {
         if (listenTogetherGuestLock.value && command in GUEST_LOCKED_HIDDEN_COMMANDS) return false
+        if (command in NAVIGATION_COMMANDS) return getAvailableCommands().contains(command)
         return super.isCommandAvailable(command)
     }
 
-    /**
-     * Notifies every registered listener of the current available commands. The player service
-     * calls this when the guest lock toggles so the MediaSession (lockscreen / automotive)
-     * hides or restores the transport buttons.
-     */
+    /** Publishes the current facade commands when the Listen Together guest lock changes. */
     fun announceAvailableCommandsChanged() {
         val commands = getAvailableCommands()
-        synchronized(commandListeners) {
-            for (listener in commandListeners) {
-                runCatching { listener.onAvailableCommandsChanged(commands) }
-                    .onFailure { Timber.tag(TAG).e(it, "Failed to announce available commands change") }
-            }
+        val listeners = synchronized(commandListeners) { commandListeners.keys.toList() }
+        for (listener in listeners) {
+            runCatching { listener.onAvailableCommandsChanged(commands) }
+                .onFailure { Timber.tag(TAG).e(it, "Failed to announce available commands change") }
         }
     }
 
     override fun addListener(listener: Player.Listener) {
         synchronized(commandListeners) {
-            if (!commandListeners.contains(listener)) commandListeners.add(listener)
+            if (commandListeners.containsKey(listener)) return
+            val adapter = CommandFilteringPlayerListener(listener, ::commandsFor)
+            commandListeners[listener] = adapter
+            // ForwardingPlayer keeps onEvents' player argument bound to this facade.
+            super.addListener(adapter)
         }
-        super.addListener(listener)
     }
 
     override fun removeListener(listener: Player.Listener) {
         synchronized(commandListeners) {
-            commandListeners.remove(listener)
+            val adapter = commandListeners.remove(listener) ?: return
+            super.removeListener(adapter)
         }
-        super.removeListener(listener)
     }
 
     // ── Guarded operations (AD-2 matrix) ─────────────────────────────────────────────────────

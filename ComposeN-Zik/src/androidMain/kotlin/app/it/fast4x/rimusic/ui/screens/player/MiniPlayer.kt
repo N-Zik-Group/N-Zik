@@ -190,6 +190,9 @@ import app.it.fast4x.rimusic.utils.getBitmapFromUrl
 import app.n_zik.android.core.coil.thumbnail
 import app.n_zik.android.components.player.MiniPlayerSwipeAction
 import app.n_zik.android.components.player.GlassMiniPlayerIconButton
+import app.n_zik.android.components.player.rememberPlayerSkipAvailability
+import app.n_zik.android.playback.utils.playNextIfAvailable
+import app.n_zik.android.playback.utils.playPreviousIfAvailable
 import app.n_zik.android.components.player.GlassMiniPlayerPlayPauseButton
 import app.n_zik.android.components.player.SwipeActionLatch
 import app.n_zik.android.components.player.WithDoubledTouchSlop
@@ -936,6 +939,7 @@ private fun MiniPlayerSlotButton(
     val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
     // Locked controls are also visibly disabled (spec-listen-together-guest-lock-hardening)
     val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
+    val skipAvailability by rememberPlayerSkipAvailability(binder.player)
 
 
     when (button) {
@@ -944,15 +948,15 @@ private fun MiniPlayerSlotButton(
                 icon = R.drawable.play_skip_back,
                 color = controlsColorText,
                 contentDescription = stringResource(button.labelRes),
-                enabled = !listenTogetherGuestLock,
+                enabled = !listenTogetherGuestLock && skipAvailability.previousItem,
                 onClick = {
                     if (!listenTogetherGuestLock) {
-                        binder.player.playPrevious()
+                        binder.player.playPreviousIfAvailable()
                         if (effectRotationEnabled) onRotatedChange(!isRotated)
                     }
                 },
                 rotationAngle = rotationAngle,
-                alpha = guestLockAlpha,
+                alpha = if (!listenTogetherGuestLock && skipAvailability.previousItem) 1f else 0.38f,
             )
         }
         MiniPlayerButton.SkipForward -> {
@@ -960,15 +964,15 @@ private fun MiniPlayerSlotButton(
                 icon = R.drawable.play_skip_forward,
                 color = controlsColorText,
                 contentDescription = stringResource(button.labelRes),
-                enabled = !listenTogetherGuestLock,
+                enabled = !listenTogetherGuestLock && skipAvailability.next,
                 onClick = {
                     if (!listenTogetherGuestLock) {
-                        binder.player.playNext()
+                        binder.player.playNextIfAvailable()
                         if (effectRotationEnabled) onRotatedChange(!isRotated)
                     }
                 },
                 rotationAngle = rotationAngle,
-                alpha = guestLockAlpha,
+                alpha = if (!listenTogetherGuestLock && skipAvailability.next) 1f else 0.38f,
             )
         }
         MiniPlayerButton.Shuffle -> {

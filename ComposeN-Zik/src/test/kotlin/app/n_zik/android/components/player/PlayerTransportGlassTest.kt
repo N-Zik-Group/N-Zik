@@ -103,6 +103,7 @@ class PlayerTransportGlassTest {
     @Before fun setup() {
         preferences.edit().clear().putBoolean("buttonzoomout", false).commit()
         every { binder.player } returns player
+        every { player.isCommandAvailable(any()) } returns true
         every { player.currentMediaItem } returns null
         val songs = mockk<SongTable>()
         every { songs.likeState(any()) } returns flowOf(null)

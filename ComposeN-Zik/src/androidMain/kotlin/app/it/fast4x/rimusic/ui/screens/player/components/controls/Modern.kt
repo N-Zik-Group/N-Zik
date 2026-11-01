@@ -73,7 +73,6 @@ import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.themed.CustomElevatedButton
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.n_zik.android.components.dialog.common.SelectorArtistsDialog
-import app.it.fast4x.rimusic.ui.screens.player.bounceClick
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.bold
 import app.it.fast4x.rimusic.utils.doubleShadowDrop
@@ -100,8 +99,9 @@ import app.n_zik.android.enums.PlayerControlsColors
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import app.it.fast4x.rimusic.utils.playerControlsColorsKey
-import app.n_zik.android.components.player.playerTransportNativeBounce
 import app.n_zik.android.components.player.playerTransportFeedback
+import app.n_zik.android.components.player.rememberPlayerSkipAvailability
+import app.n_zik.android.playback.utils.playNextIfAvailable
 import app.n_zik.android.components.player.playerTransportIndication
 import app.n_zik.android.components.player.PlayerTransportControlMotion
 import app.n_zik.android.components.player.PlayerInfoIconButton
@@ -461,14 +461,17 @@ fun ControlsModern(
     val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
     val context = LocalContext.current
     val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
+    val skipAvailability by rememberPlayerSkipAvailability(binder.player)
+    val previousEnabled = !listenTogetherGuestLock && skipAvailability.previous
+    val nextEnabled = !listenTogetherGuestLock && skipAvailability.next
 
   if (playerPlayButtonType != PlayerPlayButtonType.Disabled) {
       CustomElevatedButton(
           glassTransport = true,
-          enabled = !listenTogetherGuestLock,
+          enabled = previousEnabled,
           backgroundColor = playerTransportNativeFill(transportFilm, transportSettings),
           onClick = {
-              if (!listenTogetherGuestLock) {
+              if (previousEnabled) {
                   if (jumpPrevious == "") jumpPrevious = "0"
                   if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && binder.player.currentPosition > jumpPrevious.toInt()*1000)){
                       binder.player.seekTo(0)
@@ -481,7 +484,7 @@ fun ControlsModern(
               .size(55.dp)
               .doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp)
               .clip(uiRoundnessShape())
-              .alpha(guestLockAlpha)
+              .alpha(if (previousEnabled) 1f else 0.38f)
               .playerTransportSurface(transportFilm, settings = transportSettings)
       ) {
           Image(
@@ -519,7 +522,7 @@ fun ControlsModern(
                          else onShowSpeedPlayerDialog()
                      }
                  )
-                 .playerTransportNativeBounce()
+
 
           ) {
               if (transportGlass && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -600,7 +603,7 @@ fun ControlsModern(
               modifier = Modifier
                   .doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp)
                   .clip(uiRoundnessShape())
-                  .playerTransportNativeBounce()
+
                   .width(playerPlayButtonType.width.dp)
                   .height(playerPlayButtonType.height.dp)
                   .playerTransportSurface(transportFilm, settings = transportSettings)
@@ -625,7 +628,7 @@ if (isBuffering && shouldBePlaying) {
                           .rotate(rotationAngle)
                           .align(Alignment.Center)
                           .size(30.dp)
-                          .playerTransportNativeBounce()
+
                   )
               }
 
@@ -653,11 +656,11 @@ if (isBuffering && shouldBePlaying) {
 
     CustomElevatedButton(
           glassTransport = true,
-        enabled = !listenTogetherGuestLock,
+        enabled = nextEnabled,
         backgroundColor = playerTransportNativeFill(transportFilm, transportSettings),
         onClick = {
-            if (!listenTogetherGuestLock) {
-                binder.player.playNext()
+            if (nextEnabled) {
+                binder.player.playNextIfAvailable()
                 if (effectRotationEnabled) isRotated = !isRotated
             }
         },
@@ -665,7 +668,7 @@ if (isBuffering && shouldBePlaying) {
             .size(55.dp)
             .doubleShadowDrop(uiRoundnessShape(), 4.dp, 8.dp)
             .clip(uiRoundnessShape())
-            .alpha(guestLockAlpha)
+            .alpha(if (nextEnabled) 1f else 0.38f)
             .playerTransportSurface(transportFilm, settings = transportSettings)
 
       ) {
@@ -689,7 +692,7 @@ if (isBuffering && shouldBePlaying) {
           modifier = Modifier
               .fillMaxWidth()
       ) {
-          PlayerTransportControlMotion(previousInteraction, enabled = !listenTogetherGuestLock)
+          PlayerTransportControlMotion(previousInteraction, modifier = Modifier.alpha(if (previousEnabled) 1f else 0.38f), enabled = previousEnabled)
           {
               Icon(
                   painter = painterResource(R.drawable.play_skip_back),
@@ -709,13 +712,13 @@ if (isBuffering && shouldBePlaying) {
                       .padding(10.dp)
                       .size(34.dp)
                       .rotate(rotationAngle)
-                      .playerTransportFeedback(previousInteraction, enabled = !listenTogetherGuestLock)
+                      .playerTransportFeedback(previousInteraction, enabled = previousEnabled)
                       .clip(uiRoundnessShape()).combinedClickable(
                           interactionSource = previousInteraction,
                           indication = null,
-                          enabled = !listenTogetherGuestLock,
+                          enabled = previousEnabled,
                           onClick = {
-                              if (!listenTogetherGuestLock) {
+                              if (previousEnabled) {
                                   if (jumpPrevious == "") jumpPrevious = "0"
                                   if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && binder.player.currentPosition > jumpPrevious.toInt()*1000)){
                                       binder.player.seekTo(0)
@@ -726,12 +729,11 @@ if (isBuffering && shouldBePlaying) {
                           },
                           onLongClick = {}
                       )
-                      .alpha(guestLockAlpha)
               )
           }
 
           PlayerTransportControlMotion(playInteraction,
-              modifier = Modifier.playerTransportNativeBounce()) {
+              modifier = Modifier) {
               Icon(
                   painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                   contentDescription = null,
@@ -773,7 +775,7 @@ if (isBuffering && shouldBePlaying) {
 
           }
 
-          PlayerTransportControlMotion(nextInteraction, enabled = !listenTogetherGuestLock) {
+          PlayerTransportControlMotion(nextInteraction, modifier = Modifier.alpha(if (nextEnabled) 1f else 0.38f), enabled = nextEnabled) {
               Icon(
                   painter = painterResource(R.drawable.play_skip_forward),
                   contentDescription = null,
@@ -792,20 +794,19 @@ if (isBuffering && shouldBePlaying) {
                       .padding(10.dp)
                       .size(34.dp)
                       .rotate(rotationAngle)
-                      .playerTransportFeedback(nextInteraction, enabled = !listenTogetherGuestLock)
+                      .playerTransportFeedback(nextInteraction, enabled = nextEnabled)
                       .clip(uiRoundnessShape()).combinedClickable(
                           interactionSource = nextInteraction,
                           indication = null,
-                          enabled = !listenTogetherGuestLock,
+                          enabled = nextEnabled,
                           onClick = {
-                              if (!listenTogetherGuestLock) {
-                                  binder.player.playNext()
+                              if (nextEnabled) {
+                                  binder.player.playNextIfAvailable()
                                   if (effectRotationEnabled) isRotated = !isRotated
                               }
                           },
                           onLongClick = {}
                       )
-                      .alpha(guestLockAlpha)
               )
           }
       }

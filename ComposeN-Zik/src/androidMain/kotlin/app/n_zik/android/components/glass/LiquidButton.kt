@@ -58,10 +58,10 @@ fun LiquidButton(
     shape: Shape = uiRoundnessShape(),
     backdropScale: Float = 0.4f,
     enabled: Boolean = true,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     content: @Composable RowScope.() -> Unit
 ) {
     val interactive = enabled && isInteractive && isGlassMotionAllowed()
-    val interactionSource = remember { MutableInteractionSource() }
     if (menuTrigger != null) {
         val latestContent = rememberUpdatedState(content)
         val sourceLocals = currentCompositionLocalContext

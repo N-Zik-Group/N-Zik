@@ -74,6 +74,7 @@ class ListenTogetherGuestGuardPlayerTest {
         val builder = mockk<Player.Commands.Builder>(relaxed = true)
         val upstreamCommands = mockk<Player.Commands>(relaxed = true)
         val built = mockk<Player.Commands>(relaxed = true)
+        every { upstreamCommands.contains(any()) } returns true
         every { upstreamCommands.buildUpon() } returns builder
         every { builder.addAllCommands() } returns builder
         every { builder.remove(any()) } returns builder

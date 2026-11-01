@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.screens.player.bounceClick
 import app.it.fast4x.rimusic.enums.PlayerPlayButtonType
 import app.n_zik.android.components.glass.glassButtonFeedback
 import app.n_zik.android.components.glass.usesGlassContour
@@ -100,11 +99,6 @@ internal fun Modifier.playerTransportFilledBackground(
 ): Modifier = background(playerTransportNativeFill(original, settings), shape)
     .playerTransportSurface(original, shape, settings)
 
-/** Preserve the optional legacy shrink only when Glass feedback is disabled. */
-@Composable
-fun Modifier.playerTransportNativeBounce(settings: GlassSettings = rememberGlassSettings(GlassScope.PlayerTransport)): Modifier =
-    if (settings.enabled) this else bounceClick()
-
 /** Adds feedback to the existing gesture source without creating another clickable. */
 @Composable
 fun Modifier.playerTransportFeedback(
@@ -112,7 +106,9 @@ fun Modifier.playerTransportFeedback(
     shape: Shape = uiRoundnessShape(),
     enabled: Boolean = true,
     settings: GlassSettings = rememberGlassSettings(GlassScope.PlayerTransport),
-): Modifier = retainGlassButtonGesture(enabled && settings.enabled)
+): Modifier = playerControlPressMotion(interactionSource,
+    enabled = enabled && !LocalTransportFeedbackOwned.current)
+    .retainGlassButtonGesture(enabled && settings.enabled)
     .glassButtonFeedback(interactionSource, shape,
         enabled && settings.enabled && !LocalTransportFeedbackOwned.current, retainPressUntilUp = true,
         animateMotion = settings.inScope(GlassScope.PlayerTransport).usesGlassMaterial(GlassArea.ActionButtons),
@@ -208,7 +204,7 @@ fun PlayerTransportSmallControl(
                 .testTag("player.transport.$id.material")
                 .playerTransportSurface(settings = settings))
         }
-        CompositionLocalProvider(LocalTransportFeedbackOwned provides ownsFeedback,
+        CompositionLocalProvider(LocalTransportFeedbackOwned provides (ownsFeedback || !settings.enabled),
             LocalTransportCanvasSize provides 46.dp) { content() }
     }
 }
@@ -223,10 +219,11 @@ fun PlayerTransportControlMotion(
     content: @Composable BoxScope.() -> Unit,
 ) {
     val settings = settings.inScope(GlassScope.PlayerTransport)
-    Box(modifier.glassButtonFeedback(interactionSource, uiRoundnessShape(),
+    Box(modifier.playerControlPressMotion(interactionSource, enabled)
+        .glassButtonFeedback(interactionSource, uiRoundnessShape(),
         enabled && settings.enabled, retainPressUntilUp = true,
         animateMotion = settings.usesGlassMaterial(GlassArea.ActionButtons), settings = settings)) {
-        CompositionLocalProvider(LocalTransportFeedbackOwned provides settings.enabled) { content() }
+        CompositionLocalProvider(LocalTransportFeedbackOwned provides true) { content() }
     }
 }
 

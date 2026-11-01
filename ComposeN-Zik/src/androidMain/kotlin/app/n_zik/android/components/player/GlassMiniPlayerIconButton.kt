@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
+import app.n_zik.android.R
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LiquidButton
@@ -60,6 +61,7 @@ fun GlassMiniPlayerIconButton(
 ) {
     MiniPlayerIconSurface(
         enabled, rotationAngle, alpha, contentDescription, onClick, onLongClick, settings, backdrop, preserveNativeGeometry,
+        nativePressMotion = icon == R.drawable.play_skip_back || icon == R.drawable.play_skip_forward,
     ) {
         Image(
             painter = painterResource(icon),
@@ -87,6 +89,7 @@ fun GlassMiniPlayerIconButton(
 ) {
     MiniPlayerIconSurface(
         enabled, rotationAngle, alpha, contentDescription, onClick, onLongClick, settings, backdrop, preserveNativeGeometry,
+        nativePressMotion = false,
     ) {
         Image(
             imageVector = icon,
@@ -109,6 +112,7 @@ private fun MiniPlayerIconSurface(
     settings: GlassSettings,
     backdrop: Backdrop?,
     preserveNativeGeometry: Boolean,
+    nativePressMotion: Boolean,
     icon: @Composable (androidx.compose.ui.unit.Dp) -> Unit,
 ) {
     val fold = LocalCompactMiniPlayerProgress.current
@@ -116,14 +120,16 @@ private fun MiniPlayerIconSurface(
     val material = settings.usesGlassMaterial(GlassArea.MiniPlayer)
     val geometry = miniPlayerIconGeometry(fold, dockPresentation, material && !preserveNativeGeometry)
     val shape = uiRoundnessShape()
+    val interactionSource = remember { MutableInteractionSource() }
     MiniPlayerActionCanvas(geometry, Modifier.rotate(rotationAngle)) { canvas ->
         val modifier = canvas.alpha(alpha).semantics {
             contentDescription = description
             if (!enabled) disabled()
         }
         if (!material) {
-            Box(modifier.glassAreaContour(settings, GlassArea.MiniPlayer, shape).clip(shape)
-                .combinedClickable(interactionSource = remember { MutableInteractionSource() },
+            Box(modifier.playerControlPressMotion(interactionSource, enabled && nativePressMotion)
+                .glassAreaContour(settings, GlassArea.MiniPlayer, shape).clip(shape)
+                .combinedClickable(interactionSource = interactionSource,
                     indication = glassGlobalIndication(nativeControlIndication()),
                     enabled = enabled, role = Role.Button, onClick = onClick, onLongClick = onLongClick),
                 contentAlignment = Alignment.Center) { icon(24.dp) }
@@ -132,7 +138,8 @@ private fun MiniPlayerIconSurface(
                 onClick = onClick,
                 onLongClick = onLongClick,
                 backdrop = backdrop,
-                modifier = modifier,
+                modifier = modifier.playerControlPressMotion(interactionSource, enabled && nativePressMotion),
+                interactionSource = interactionSource,
                 settings = settings.forArea(GlassArea.MiniPlayer),
                 filmColor = surfaceColor(colorPalette().background2),
                 isInteractive = enabled,

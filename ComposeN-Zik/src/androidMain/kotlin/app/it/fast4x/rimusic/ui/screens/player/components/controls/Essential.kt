@@ -80,7 +80,6 @@ import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.n_zik.android.components.dialog.common.SelectorArtistsDialog
-import app.it.fast4x.rimusic.ui.screens.player.bounceClick
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.HorizontalfadingEdge2
 import app.it.fast4x.rimusic.utils.bold
@@ -111,8 +110,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import app.it.fast4x.rimusic.utils.playerControlsColorsKey
 import app.n_zik.android.components.glass.rememberGlassSettings
-import app.n_zik.android.components.player.playerTransportNativeBounce
 import app.n_zik.android.components.player.playerTransportFeedback
+import app.n_zik.android.components.player.rememberPlayerSkipAvailability
+import app.n_zik.android.playback.utils.playNextIfAvailable
 import app.n_zik.android.components.player.playerTransportIndication
 import app.n_zik.android.components.player.PlayerTransportIconButton
 import app.n_zik.android.components.player.PlayerTransportSmallControl
@@ -435,6 +435,9 @@ fun ControlsEssential(
     // Locked controls are non-interactive and visibly disabled.
     val listenTogetherGuestLock by app.n_zik.android.listentogether.listenTogetherGuestLock
     val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
+    val skipAvailability by rememberPlayerSkipAvailability(binder.player)
+    val previousEnabled = !listenTogetherGuestLock && skipAvailability.previous
+    val nextEnabled = !listenTogetherGuestLock && skipAvailability.next
     val context = LocalContext.current
     val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
@@ -498,13 +501,14 @@ fun ControlsEssential(
         contentDescription = null,
         colorFilter = ColorFilter.tint(controlsColor),
         modifier = Modifier
-            .playerTransportFeedback(previousInteraction, uiRoundnessShape(), enabled = !listenTogetherGuestLock)
+            .alpha(if (previousEnabled) 1f else 0.38f)
+            .playerTransportFeedback(previousInteraction, uiRoundnessShape(), enabled = previousEnabled)
             .clip(uiRoundnessShape()).combinedClickable(
                 indication = playerTransportIndication(nativeControlIndication()),
                 interactionSource = previousInteraction,
-                enabled = !listenTogetherGuestLock,
+                enabled = previousEnabled,
                 onClick = {
-                    if (!listenTogetherGuestLock) {
+                    if (previousEnabled) {
                         if (jumpPrevious == "") jumpPrevious = "0"
                         if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && binder.player.currentPosition > jumpPrevious.toInt()*1000)){
                             binder.player.seekTo(0)
@@ -519,7 +523,6 @@ fun ControlsEssential(
             .playerTransportSurface()
             .padding(10.dp)
             .size(26.dp)
-            .alpha(guestLockAlpha)
 
     )
 
@@ -546,7 +549,7 @@ fun ControlsEssential(
                     else onShowSpeedPlayerDialog()
                 }
             )
-            .playerTransportNativeBounce()
+
             .clip(transportPlayShape)
             .playerTransportPlayBackground(
                 type = playerPlayButtonType,
@@ -568,7 +571,7 @@ fun ControlsEssential(
                     ColorPaletteName.PureBlack, ColorPaletteName.ModernBlack -> colorPalette().background4
                     else -> if (isGradientBackgroundEnabled) colorPalette().background1 else colorPalette().background2
                 },
-                modifier = Modifier.fillMaxSize().rotate(rotationAngle).playerTransportNativeBounce(),
+                modifier = Modifier.fillMaxSize().rotate(rotationAngle),
             ))
             Image(
                 painter = painterResource(R.drawable.a13shape),
@@ -582,7 +585,7 @@ fun ControlsEssential(
                 modifier = Modifier
                     .fillMaxSize()
                     .rotate(rotationAngle)
-                    .playerTransportNativeBounce(),
+                    ,
                 contentDescription = stringResource(R.string.cd_background_image),
                 contentScale = ContentScale.Fit
             )
@@ -606,7 +609,7 @@ fun ControlsEssential(
                     .rotate(rotationAngle)
                     .align(Alignment.Center)
                     .size(if (playerPlayButtonType == PlayerPlayButtonType.Disabled) 40.dp else 30.dp)
-                    .playerTransportNativeBounce()
+
             )
         }
 
@@ -639,15 +642,15 @@ fun ControlsEssential(
         contentDescription = null,
         colorFilter = ColorFilter.tint(controlsColor),
         modifier = Modifier
-            .playerTransportFeedback(nextInteraction, uiRoundnessShape(), enabled = !listenTogetherGuestLock)
+            .alpha(if (nextEnabled) 1f else 0.38f)
+            .playerTransportFeedback(nextInteraction, uiRoundnessShape(), enabled = nextEnabled)
             .clip(uiRoundnessShape()).combinedClickable(
                 indication = playerTransportIndication(nativeControlIndication()),
                 interactionSource = nextInteraction,
-                enabled = !listenTogetherGuestLock,
+                enabled = nextEnabled,
                 onClick = {
-                    if (!listenTogetherGuestLock) {
-                        binder.player.playNext()
-                        if (effectRotationEnabled) isRotated = !isRotated
+                    if (nextEnabled) {
+                        if (binder.player.playNextIfAvailable() && effectRotationEnabled) isRotated = !isRotated
                     }
                 },
                 onLongClick = {}
@@ -656,7 +659,6 @@ fun ControlsEssential(
             .playerTransportSurface()
             .padding(10.dp)
             .size(26.dp)
-            .alpha(guestLockAlpha)
 
     )
 
