@@ -1,17 +1,16 @@
 package app.n_zik.android.playback.services
 
 import android.app.Application
-import android.content.Context
 import android.content.Intent
 import android.media.audiofx.AudioEffect
 import androidx.media3.common.C
 import androidx.media3.common.FlagSet
+import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
-import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.test.core.app.ApplicationProvider
@@ -88,7 +87,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
     }
 
     @Test
-    fun `real handoff keeps shared session open and incoming pause resume owns broadcasts`() {
+    fun `real handoff keeps effect session open and incoming pause resume owns broadcasts`() {
         val outgoing = Target("A", 41)
         val incoming = Target("B", 41)
         prepareHandoff(outgoing, incoming)
@@ -152,8 +151,10 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
 
         invoke("startCrossfade")
         scheduler.runCurrent()
-        assertEquals(0.8f * kotlin.math.sqrt(0.125f), incoming.currentVolume, 0.0001f)
-        assertEquals(0.8f * kotlin.math.sqrt(0.875f), outgoing.currentVolume, 0.0001f)
+        // Metrolist quadratic ramp: at progress 0.125, fadeIn = 1 - 0.875^2.
+        val fadeInAtOneEighth = 1f - 0.875f * 0.875f
+        assertEquals(0.8f * fadeInAtOneEighth, incoming.currentVolume, 0.0001f)
+        assertEquals(0.8f * (1f - fadeInAtOneEighth), outgoing.currentVolume, 0.0001f)
         scheduler.advanceTimeBy(6999L)
         scheduler.runCurrent()
         assertTrue(field("isCrossfading").getBoolean(service))
@@ -193,8 +194,10 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         scheduler.runCurrent()
 
         assertFalse(field("isCrossfading").getBoolean(service))
+        // Completion is measured on the inflated clock the fade itself sees: with 20 fixed
+        // steps the deadline can be crossed by at most one 400 ms step plus update overhead.
         assertTrue("Repeated update work must not extend an eight-second fade by seconds",
-            releasedAtMs - startedAtMs in 8000L..8160L)
+            releasedAtMs - startedAtMs in 8000L..8600L)
         assertEquals(0.8f, incoming.currentVolume, 0f)
         assertEquals(0f, outgoing.currentVolume, 0f)
     }
@@ -209,16 +212,18 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         scheduler.advanceTimeBy(1000L)
         scheduler.runCurrent()
         incoming.readyToPlay = false
-        incoming.listeners.toList().forEach {
-            it.onPlayWhenReadyChanged(false, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
+        // The service's own listener needs the encrypted prefs the test sandbox lacks;
+        // the fade clock only needs the handoff's sync listener.
+        incoming.listeners.toList().filter { it !== service }.forEach {
+            it.onIsPlayingChanged(false)
         }
         val pausedVolume = incoming.currentVolume
         scheduler.advanceTimeBy(4000L)
         scheduler.runCurrent()
         assertEquals(pausedVolume, incoming.currentVolume, 0f)
         incoming.readyToPlay = true
-        incoming.listeners.toList().forEach {
-            it.onPlayWhenReadyChanged(true, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
+        incoming.listeners.toList().filter { it !== service }.forEach {
+            it.onIsPlayingChanged(true)
         }
         scheduler.advanceTimeBy(6999L)
         scheduler.runCurrent()
@@ -241,15 +246,15 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         scheduler.advanceTimeBy(1000L)
         scheduler.runCurrent()
         incoming.readyToPlay = false
-        incoming.listeners.toList().forEach {
-            it.onPlayWhenReadyChanged(false, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
+        incoming.listeners.toList().filter { it !== service }.forEach {
+            it.onIsPlayingChanged(false)
         }
-        // Both callbacks occur before the next 160ms gain-update tick at 1120ms.
+        // Both callbacks occur before the next 400ms gain-update tick at 1200ms.
         scheduler.advanceTimeBy(40L)
         scheduler.runCurrent()
         incoming.readyToPlay = true
-        incoming.listeners.toList().forEach {
-            it.onPlayWhenReadyChanged(true, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
+        incoming.listeners.toList().filter { it !== service }.forEach {
+            it.onIsPlayingChanged(true)
         }
         scheduler.advanceTimeBy(6999L)
         scheduler.runCurrent()
@@ -356,95 +361,139 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
     }
 
     @Test
-    fun `primary session event invalidates preloaded old session while primary keeps playing`() {
+    fun `per player sessions swap without the shared session gate`() {
         val primary = Target("A", 41)
-        val preloaded = Target("B", 41)
+        val preloaded = Target("B", 42)
         prepareHandoff(primary, preloaded)
-        primary.sessionId = 42
 
-        primary.events(Player.EVENT_AUDIO_SESSION_ID)
+        invoke("startCrossfade")
 
-        assertSame(primary.player, service.player)
-        assertNull(field("secondaryPlayer").get(service))
-        assertFalse(field("isCrossfading").getBoolean(service))
-        verify(exactly = 1) { preloaded.player.stop() }
-        verify(exactly = 1) { preloaded.player.release() }
+        // Per-player sessions are the Metrolist model: distinct session ids no longer block
+        // the swap, and the effect session announcement moves close-old/open-new.
+        assertSame(preloaded.player, service.player)
+        assertTrue(field("isCrossfading").getBoolean(service))
         verify(exactly = 0) { primary.player.stop() }
-        verify(exactly = 0) { primary.player.pause() }
         verify(exactly = 0) { primary.player.release() }
-        assertTrue(primary.readyToPlay)
         assertSessions(open(41), close(41), open(42))
     }
 
     @Test
-    fun `session divergence immediately before handoff refuses overlap without closing primary`() {
-        val primary = Target("A", 41)
-        val preloaded = Target("B", 41)
-        prepareHandoff(primary, preloaded)
-        preloaded.sessionId = 42
-
-        invoke("startCrossfade")
-
-        assertSame(primary.player, service.player)
-        assertNull(field("secondaryPlayer").get(service))
-        assertFalse(field("isCrossfading").getBoolean(service))
-        verify(exactly = 1) { preloaded.player.release() }
-        verify(exactly = 0) { primary.player.stop() }
-        verify(exactly = 0) { primary.player.release() }
-        assertSessions(open(41))
-    }
-
-    @Test
-    fun `active fade divergence releases outgoing before closing its announced session`() {
+    fun `cleanup recovers failed session swaps before stopping or releasing outgoing`() {
         val outgoing = Target("A", 41)
-        val incoming = Target("B", 41)
+        val incoming = Target("B", 42)
         prepareHandoff(outgoing, incoming)
-        invoke("startCrossfade")
-        scheduler.runCurrent()
-        var sessionsAtRelease: List<Pair<String?, Int>>? = null
-        every { outgoing.player.release() } answers {
-            sessionsAtRelease = sessionHistory()
+        val session = field("mediaSession").get(service) as MediaLibrarySession
+        var sessionPlayer: Player = SessionArtworkPlayer(outgoing.player)
+        var attempts = 0
+        every { session.player } answers { sessionPlayer }
+        every { session.player = any() } answers {
+            attempts++
+            if (attempts <= 2) throw IllegalStateException("Session swap rejected")
+            sessionPlayer = firstArg()
             Unit
         }
-        incoming.sessionId = 42
+        every { outgoing.player.stop() } answers {
+            assertSame(incoming.player, underlyingPlayer(session.player))
+            Unit
+        }
+        every { outgoing.player.release() } answers {
+            assertSame(incoming.player, underlyingPlayer(session.player))
+            Unit
+        }
 
-        incoming.events(Player.EVENT_AUDIO_SESSION_ID)
+        invoke("startCrossfade")
+        scheduler.runCurrent()
+        assertEquals(2, attempts)
+        assertSame(outgoing.player, underlyingPlayer(session.player))
+        verify(exactly = 0) { outgoing.player.stop() }
+        verify(exactly = 0) { outgoing.player.release() }
+
+        invoke("cleanupCrossfade")
         scheduler.runCurrent()
 
-        assertEquals(listOf(open(41)), sessionsAtRelease)
-        assertSame(incoming.player, service.player)
-        assertFalse(field("isCrossfading").getBoolean(service))
+        assertEquals(3, attempts)
+        assertSame(incoming.player, underlyingPlayer(session.player))
         verify(exactly = 1) { outgoing.player.stop() }
         verify(exactly = 1) { outgoing.player.release() }
         verify(exactly = 0) { incoming.player.release() }
-        verify { incoming.player.volume = 0.8f }
-        assertSessions(open(41), close(41), open(42))
     }
 
     @Test
-    fun `outgoing session event also terminates a divergent active fade`() {
+    fun `failed cleanup keeps session bound outgoing alive until a successful rebind`() {
+        val outgoing = Target("A", 41)
+        val incoming = Target("B", 42)
+        prepareHandoff(outgoing, incoming)
+        val session = field("mediaSession").get(service) as MediaLibrarySession
+        var sessionPlayer: Player = SessionArtworkPlayer(outgoing.player)
+        var rejectSwap = true
+        var attempts = 0
+        every { session.player } answers { sessionPlayer }
+        every { session.player = any() } answers {
+            attempts++
+            if (rejectSwap) throw IllegalStateException("Session swap rejected")
+            sessionPlayer = firstArg()
+            Unit
+        }
+
+        invoke("startCrossfade")
+        scheduler.runCurrent()
+        invoke("cleanupCrossfade")
+        scheduler.runCurrent()
+
+        assertEquals(3, attempts)
+        assertSame(outgoing.player, underlyingPlayer(session.player))
+        verify(exactly = 0) { outgoing.player.stop() }
+        verify(exactly = 0) { outgoing.player.release() }
+
+        every { outgoing.player.stop() } answers {
+            assertSame(incoming.player, underlyingPlayer(session.player))
+            Unit
+        }
+        every { outgoing.player.release() } answers {
+            assertSame(incoming.player, underlyingPlayer(session.player))
+            Unit
+        }
+        rejectSwap = false
+        PlayerServiceModern::class.java.getDeclaredMethod("rebindMediaSessionPlayer", Player::class.java)
+            .apply { isAccessible = true }.invoke(service, incoming.player)
+        scheduler.runCurrent()
+
+        assertSame(incoming.player, underlyingPlayer(session.player))
+        verify(exactly = 1) { outgoing.player.stop() }
+        verify(exactly = 1) { outgoing.player.release() }
+        verify(exactly = 0) { incoming.player.release() }
+    }
+
+    @Test
+    fun `buffering incoming track freezes the fade clock`() {
         val outgoing = Target("A", 41)
         val incoming = Target("B", 41)
         prepareHandoff(outgoing, incoming)
+        service.preferences.edit().putInt(crossfadeDurationKey, 8000).commit()
         invoke("startCrossfade")
+        scheduler.advanceTimeBy(1000L)
         scheduler.runCurrent()
-        outgoing.sessionId = 42
-
-        outgoing.events(Player.EVENT_AUDIO_SESSION_ID)
+        val volumeBeforeBuffering = incoming.currentVolume
+        assertTrue(volumeBeforeBuffering > 0f)
+        // Incoming buffers: playWhenReady stays true but isPlaying is false, so the fade
+        // must hold instead of burning its time (Metrolist gates the fade on isPlaying).
+        incoming.playing = false
+        incoming.listeners.toList().filter { it !== service }.forEach { it.onIsPlayingChanged(false) }
+        scheduler.advanceTimeBy(4000L)
+        scheduler.runCurrent()
+        assertEquals(volumeBeforeBuffering, incoming.currentVolume, 0f)
+        incoming.playing = true
+        incoming.listeners.toList().filter { it !== service }.forEach { it.onIsPlayingChanged(true) }
+        scheduler.advanceTimeBy(9000L)
         scheduler.runCurrent()
 
-        assertSame(incoming.player, service.player)
         assertFalse(field("isCrossfading").getBoolean(service))
-        verify(exactly = 1) { outgoing.player.stop() }
+        assertEquals(0.8f, incoming.currentVolume, 0f)
         verify(exactly = 1) { outgoing.player.release() }
-        verify(exactly = 0) { incoming.player.release() }
-        verify { incoming.player.volume = 0.8f }
-        assertSessions(open(41))
     }
 
     @Test
-    fun `crossfade player factory configures the adopted primary session before prepare`() {
-        field("playbackAudioSessionId").setInt(service, 41)
+    fun `crossfade player factory keeps the ExoPlayer allocated session and wires diagnostics and facade`() {
         every { service["createMediaSourceFactory"]() } returns mockk<DefaultMediaSourceFactory>(relaxed = true)
         val created = invoke("createCrossfadeExoPlayer") as ExoPlayer
         val diagnostics = field("crossfadeAudioDiagnostics").get(service) as Map<*, *>
@@ -460,18 +509,22 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
             val raw = created.javaClass.getDeclaredField("delegate").apply {
                 isAccessible = true
             }.get(created) as ExoPlayer
-            // Explicit IDs are published synchronously; the diagnostics facade must expose them too.
-            assertEquals("Factory must configure the raw player", 41, raw.audioSessionId)
-            assertEquals("Diagnostics facade must delegate the session getter", 41, created.audioSessionId)
-            val guarded = PlayerServiceModern::class.java.getDeclaredMethod(
-                "createGuestGuardPlayer", Player::class.java,
-            ).apply { isAccessible = true }.invoke(service, created) as Player
-            assertEquals("UI facade must preserve the session through seek coalescing", 41, guarded.audioSessionId)
+            // No shared service session: the factory no longer pins an explicit session ID.
+            assertEquals(C.AUDIO_SESSION_ID_UNSET, raw.audioSessionId)
             assertEquals(Player.STATE_IDLE, created.playbackState)
             // Empty preparation deterministically reaches ENDED without loading media or AudioTrack.
             created.prepare()
             shadowOf(created.applicationLooper).idle()
             assertEquals(Player.STATE_ENDED, created.playbackState)
+            // The session ExoPlayer allocated for this player alone must surface through
+            // both the diagnostics facade and the guarded UI facade.
+            val rawSession = raw.audioSessionId
+            assertTrue("Prepared factory player must keep its own allocated session", rawSession > 0)
+            assertEquals("Diagnostics facade must delegate the session getter", rawSession, created.audioSessionId)
+            val guarded = PlayerServiceModern::class.java.getDeclaredMethod(
+                "createGuestGuardPlayer", Player::class.java,
+            ).apply { isAccessible = true }.invoke(service, created) as Player
+            assertEquals("UI facade must preserve the session through seek coalescing", rawSession, guarded.audioSessionId)
             val playbackRecords = records.filter { it.startsWith("event=PLAYBACK_STATE ") }
             assertTrue("The real factory player must deliver analytics through the attached listener", playbackRecords.any {
                 it.contains("player=${System.identityHashCode(created)} ") &&
@@ -491,21 +544,14 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         }
     }
 
-    @Test
-    fun `production renderers factory pins automatic renderer messages to the shared sink session`() {
-        field("playbackAudioSessionId").setInt(service, 41)
-        val factory = requireNotNull(invoke("createRendersFactory"))
-        val sink = factory.javaClass.getDeclaredMethod(
-            "buildAudioSink", Context::class.java, Boolean::class.javaPrimitiveType, Boolean::class.javaPrimitiveType,
-        ).apply { isAccessible = true }.invoke(factory, service, false, false) as AudioSink
-        // Capture the actual factory-created wrapper's output without initializing an AudioTrack.
-        assertTrue(sink is SharedAudioSessionSink)
-        val delegate = mockk<AudioSink>(relaxed = true)
-        sink.javaClass.getDeclaredField("delegate").apply { isAccessible = true }.set(sink, delegate)
-        sink.setAudioSessionId(C.AUDIO_SESSION_ID_UNSET)
-        sink.setAudioSessionId(99)
-        verify(exactly = 2) { delegate.setAudioSessionId(41) }
-        assertSessions()
+    /** Follow the actual session facades instead of treating a setter call as a completed bind. */
+    private fun underlyingPlayer(player: Player): Player = when (player) {
+        is ForwardingPlayer -> underlyingPlayer(player.wrappedPlayer)
+        is SeekCoalescingPlayer -> underlyingPlayer(
+            SeekCoalescingPlayer::class.java.getDeclaredField("upstream")
+                .apply { isAccessible = true }.get(player) as Player
+        )
+        else -> player
     }
 
     private fun prepareHandoff(outgoing: Target, incoming: Target) {
@@ -520,6 +566,8 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
     private inner class Target(val id: String, var sessionId: Int) {
         var currentVolume = 0.8f
         var readyToPlay = true
+        // Audio flow independent of playWhenReady: a buffering track is ready but not playing.
+        var playing = true
         val listeners = mutableListOf<Player.Listener>()
         val analyticsListeners = mutableListOf<AnalyticsListener>()
         val player = mockk<ExoPlayer>(relaxed = true) {
@@ -529,6 +577,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
             every { volume = any() } answers { currentVolume = firstArg(); Unit }
             every { playbackState } returns Player.STATE_READY
             every { playWhenReady } answers { readyToPlay }
+            every { isPlaying } answers { playing && readyToPlay }
             every { playWhenReady = any() } answers { readyToPlay = firstArg(); Unit }
             every { repeatMode } returns Player.REPEAT_MODE_ALL
             every { playbackParameters } returns PlaybackParameters.DEFAULT

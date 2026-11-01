@@ -34,6 +34,13 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(playback): restore notification events and crossfade EQ handoff (issues https://github.com/N-Zik-Group/N-Zik/issues/938, https://github.com/N-Zik-Group/N-Zik/issues/939)
+  - Replace Kotlin Player.Listener delegation with explicit forwarding of all Media3 callbacks; retain profile-owned artwork refresh and identity-safe listener removal in SessionArtworkPlayer.
+  - Restore independent ExoPlayer audio sessions for crossfade, move effects with the active player and close the outgoing effect session during cleanup.
+  - Use the approved quadratic, twenty-step, speed-adjusted fade; freeze elapsed fade time during pause or buffering and preserve the shuffle order during preload.
+  - Keep a session-bound outgoing player alive when reattachment fails instead of releasing the player still used by notification and Android Auto controls.
+  - Verify 543 playback tests and the debug build; user confirmed restored notification/buttons and successful crossfades, and the external EQ tester reported no regression on the shared APK.
+
 - fix(player): decouple expand state from cover overlays and restore carousel views
   - Keep the expand button visible while the "show on thumbnail" toggles are active and light it in the expanded view instead of the collapsed one.
   - Let the on-thumbnail toggles alone decide overlay placement: on keeps lyrics and visualizer on the carousel cover, expanded or not, and off switches to the fullscreen standalone views like the other modes; the carousel no longer forces overlays onto the cover.

@@ -109,7 +109,9 @@ class PlayerServiceModernAudioStartupTest {
             assertSame(boundary, actual)
         }
         assertTrue(service.player is DiagExoPlayer)
-        verify(exactly = 1) { rawPlayer.setAudioSessionId(41) }
+        // Per-player sessions (Metrolist model): startup must not pin an explicit session;
+        // the raw player keeps the one ExoPlayer allocated for it.
+        verify(exactly = 0) { rawPlayer.setAudioSessionId(any()) }
         assertSame(service.player, field("audioEffectPlayer").get(service))
         val diagnostics = field("crossfadeAudioDiagnostics").get(service) as Map<*, *>
         val primaryDiagnostics = requireNotNull(diagnostics[service.player])

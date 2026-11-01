@@ -1,5 +1,7 @@
 package app.n_zik.android.playback.services
 
+import java.util.IdentityHashMap
+
 import androidx.media3.common.FlagSet
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaMetadata
@@ -17,7 +19,7 @@ import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMap
 /** Publishes lightweight session metadata with profile-owned artwork identity. */
 @UnstableApi
 class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { System.currentTimeMillis() }) : ForwardingPlayer(upstream) {
-    private val listeners = linkedMapOf<Player.Listener, Player.Listener>()
+    private val listeners = IdentityHashMap<Player.Listener, Player.Listener>()
     private var profile = getActiveProfile(appContext())
     private var square = appContext().preferences.getBoolean(cropVideoThumbnailsKey, true)
     private var revision = ArtworkRevisions.current()
@@ -25,7 +27,7 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
 
     override fun addListener(listener: Player.Listener) {
         if (listener in listeners) return
-        val translated = object : Player.Listener by listener {
+        val translated = object : ExplicitForwardingPlayerListener(listener) {
             override fun onMediaMetadataChanged(metadata: MediaMetadata) = listener.onMediaMetadataChanged(mediaMetadata)
             override fun onEvents(player: Player, events: Player.Events) = listener.onEvents(this@SessionArtworkPlayer, events)
         }

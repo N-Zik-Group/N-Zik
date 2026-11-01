@@ -321,7 +321,6 @@ class PlayerServiceModern : MediaLibraryService(),
         AutoSessionCallback(this, Database, MyDownloadHelper)
     private var sessionController: MediaController? = null
     lateinit var player: ExoPlayer
-    private var playbackAudioSessionId = C.AUDIO_SESSION_ID_UNSET
     private var internalEffectsSessionId = C.AUDIO_SESSION_ID_UNSET
     private var bassBoostReady = false
     private var reverbReady = false
@@ -359,6 +358,7 @@ class PlayerServiceModern : MediaLibraryService(),
      * bridge [ListenTogetherPlayerBridge] (AD-4) — never by external callers.
      */
     private lateinit var guestGuardPlayer: ListenTogetherGuestGuardPlayer
+    private var guestGuardPlayerTarget: Player? = null
 
     /**
      * Issue #881 (gh-881), Phase 3 Fix B (review patch): the seek coalescer backing the current
@@ -718,15 +718,8 @@ class PlayerServiceModern : MediaLibraryService(),
         }
 
 
-        playbackAudioSessionId = runCatching {
-            getSystemService(AudioManager::class.java)?.generateAudioSessionId()
-                ?: C.AUDIO_SESSION_ID_UNSET
-        }.onFailure {
-            Timber.tag("AudioEffectSession").w(it, "Audio session allocation failed")
-        }.getOrDefault(C.AUDIO_SESSION_ID_UNSET)
-        if (playbackAudioSessionId <= 0) {
-            Timber.tag("AudioEffectSession").w("Waiting for Media3 to allocate a valid audio session")
-        }
+        // Metrolist model: each player keeps its own ExoPlayer-allocated audio session;
+        // effects follow the active player via explicit session open/close broadcasts.
         player = DiagExoPlayer(
             ExoPlayer.Builder(this)
                 .setMediaSourceFactory(createMediaSourceFactory())
@@ -749,7 +742,6 @@ class PlayerServiceModern : MediaLibraryService(),
                 .setSeekForwardIncrementMs(5000)
                 .build()
                 .apply {
-                    configureAudioSession(this)
                     addListener(this@PlayerServiceModern)
                     addAnalyticsListener(PlaybackStatsListener(false, this@PlayerServiceModern))
                 }
@@ -1156,6 +1148,8 @@ class PlayerServiceModern : MediaLibraryService(),
             encryptedPreferences.unregisterOnSharedPreferenceChangeListener(encryptedPrefsListener)
             stopService(intent<MyDownloadService>())
             stopService(intent<PlayerServiceModern>())
+            mediaLibrarySessionCallback.release()
+            mediaSession.release()
             player.removeListener(this)
             // Issue #881 (gh-881): detach the diagnostics listener before teardown
             player.removeListener(playbackDiagnosticsListener)
@@ -1167,6 +1161,9 @@ class PlayerServiceModern : MediaLibraryService(),
             // guarded stop() would block a locked guest's service shutdown.
             detachCrossfadeAudioDiagnostics(player)
             guestGuardPlayer.release()
+            if (guestGuardPlayerTarget != null && guestGuardPlayerTarget !== player) player.release()
+            if (pendingSessionPlayerRelease === guestGuardPlayerTarget) pendingSessionPlayerRelease = null
+            releasePendingSessionPlayer()
             try{
                 unregisterReceiver(notificationActionReceiver)
             } catch (e: Exception){
@@ -1182,8 +1179,6 @@ class PlayerServiceModern : MediaLibraryService(),
             } catch (e: Exception){
                 Timber.tag("PlayerServiceModern").e("onDestroy unregisterReceiver screenStateReceiver "+e.stackTraceToString())
             }
-            mediaLibrarySessionCallback.release()
-            mediaSession.release()
             sessionController?.release()
             sessionController = null
             cache.release()
@@ -2098,8 +2093,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
             // Captured once per sink: the mute predicate runs on the audio thread, per buffer
             val audioOutput = BridgeServerController.audioOutput
-            val sharedSessionId = playbackAudioSessionId
-            val sink = DefaultAudioSink.Builder(applicationContext)
+            return DefaultAudioSink.Builder(applicationContext)
                 .setEnableFloatOutput(enableFloatOutput)
                 .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
                 .setAudioOffloadSupportProvider(
@@ -2127,7 +2121,6 @@ class PlayerServiceModern : MediaLibraryService(),
                 .apply {
                     if (isAtLeastAndroid10) setOffloadMode(AudioSink.OFFLOAD_MODE_DISABLED)
                 }
-            return SharedAudioSessionSink(sink, sharedSessionId)
         }
     }
 
@@ -2440,14 +2433,6 @@ class PlayerServiceModern : MediaLibraryService(),
         }
     }
 
-    private fun configureAudioSession(target: ExoPlayer) {
-        if (playbackAudioSessionId > 0) {
-            runCatching { target.setAudioSessionId(playbackAudioSessionId) }.onFailure {
-                Timber.tag("AudioEffectSession").w(it, "Could not share audio session %d", playbackAudioSessionId)
-            }
-        }
-    }
-
     private fun attachCrossfadeAudioDiagnostics(target: ExoPlayer) {
         if (crossfadeAudioDiagnostics.containsKey(target)) return
         val diagnostics = CrossfadeAudioDiagnostics(target)
@@ -2486,12 +2471,12 @@ class PlayerServiceModern : MediaLibraryService(),
         audioEffectListener = listener
         target.addListener(listener)
         syncAudioEffectSession(target, "bind")
-        // Auxiliary reverb attachment belongs to the AudioTrack even when its session is shared.
+        // Auxiliary reverb attachment belongs to the bound player's own AudioTrack.
         runCatching {
             reverbPreset?.id?.let { target.setAuxEffectInfo(AuxEffectInfo(it, 1f)) }
         }.onFailure {
             reverbReady = false
-            Timber.tag("AudioEffectSession").w(it, "Failed to attach shared-session reverb")
+            Timber.tag("AudioEffectSession").w(it, "Failed to attach reverb to the bound player")
         }
     }
 
@@ -2505,39 +2490,8 @@ class PlayerServiceModern : MediaLibraryService(),
             "SYNC player=%d session=%d playing=%s reason=%s",
             System.identityHashCode(target), sessionId, shouldOpen, reason,
         )
-        // A session announcement can only move after the other audible track is stopped.
-        activeCrossfade?.let { handoff ->
-            val outgoingSessionId = handoff.outgoing.audioSessionId
-            if (sessionId <= 0 || outgoingSessionId <= 0 || outgoingSessionId != sessionId) {
-                Timber.tag("AudioEffectSession").w(
-                    "Stopping crossfade with divergent sessions incoming=%d outgoing=%d",
-                    sessionId, outgoingSessionId,
-                )
-                crossfadeJob?.cancel()
-                crossfadeJob = null
-                target.volume = handoff.startVolume
-                cleanupCrossfade()
-            }
-        }
-        secondaryPlayer?.let { preload ->
-            if (sessionId <= 0 || preload.audioSessionId != sessionId) {
-                Timber.tag("AudioEffectSession").w(
-                    "Discarding stale crossfade preload primary=%d preload=%d",
-                    sessionId, preload.audioSessionId,
-                )
-                cleanupCrossfade()
-            }
-        }
         runCatching { audioEffectSession.sync(sessionId, shouldOpen) }.onFailure {
             Timber.tag("AudioEffectSession").w(it, "Failed to reconcile audio effects session")
-        }
-        if (sessionId > 0) {
-            if (playbackAudioSessionId > 0 && playbackAudioSessionId != sessionId) {
-                Timber.tag("AudioEffectSession").w(
-                    "Actual audio session %d differs from requested %d", sessionId, playbackAudioSessionId,
-                )
-            }
-            playbackAudioSessionId = sessionId
         }
         runCatching { refreshInternalAudioEffects(sessionId) }.onFailure {
             Timber.tag("AudioEffectSession").w(it, "Failed to rebind internal audio effects")
@@ -3186,6 +3140,7 @@ class PlayerServiceModern : MediaLibraryService(),
     private var crossfadeJob: Job? = null
     private var crossfadeTriggerJob: Job? = null
     private var fadingPlayer: ExoPlayer? = null
+    private var pendingSessionPlayerRelease: ExoPlayer? = null
     private class CrossfadeHandoff(
         val incoming: ExoPlayer,
         val outgoing: ExoPlayer,
@@ -3193,6 +3148,9 @@ class PlayerServiceModern : MediaLibraryService(),
     ) {
         var timeline: CrossfadeTimeline? = null
         var outgoingEnded = false
+        // True once the MediaSession actually wraps the incoming player; false means the
+        // session still wraps the outgoing one and cleanup must re-bind it before release.
+        var sessionSwapped = false
         lateinit var syncListener: Player.Listener
         lateinit var endListener: Player.Listener
     }
@@ -3230,6 +3188,7 @@ class PlayerServiceModern : MediaLibraryService(),
         }
 
         if (!crossfadeEnabled) return
+        if (crossfadeDuration <= 0) return
         // Guest in a Listen Together room (spec-listen-together-guest-lock-hardening): the
         // host drives track transitions (CHANGE_TRACK), so a local crossfade — which starts
 //
@@ -3348,7 +3307,6 @@ class PlayerServiceModern : MediaLibraryService(),
                 // the crossfade player follows the same backward-seek pattern (spec gh-881).
                 .setLoadControl(createSeekFriendlyLoadControl())
                 .build()
-                .apply { configureAudioSession(this) }
         ).also { attachCrossfadeAudioDiagnostics(it) }
     }
 
@@ -3375,11 +3333,12 @@ class PlayerServiceModern : MediaLibraryService(),
         guard.onGuestPlayPause = { playWhenReady ->
             ListenTogetherManager.getInstance()?.guestPlayPause(playWhenReady)
         }
+        guestGuardPlayerTarget = targetPlayer
         return guard
     }
 
     private fun preloadCrossfade(triggerTime: Long) {
-        if (isCrossfading || secondaryPlayer != null) return
+        if (isCrossfading || secondaryPlayer != null || pendingSessionPlayerRelease != null) return
 
         val currentIndex = player.currentMediaItemIndex
         if (currentIndex == C.INDEX_UNSET) return
@@ -3406,6 +3365,7 @@ class PlayerServiceModern : MediaLibraryService(),
         secPlayer.volume = 0f
         secPlayer.repeatMode = player.repeatMode
         secPlayer.shuffleModeEnabled = player.shuffleModeEnabled
+        secPlayer.shuffleOrder = player.shuffleOrder
         secPlayer.playbackParameters = player.playbackParameters
         secPlayer.skipSilenceEnabled = player.skipSilenceEnabled
 
@@ -3419,16 +3379,6 @@ class PlayerServiceModern : MediaLibraryService(),
 
         val nextPlayer = secondaryPlayer ?: return
         markCrossfadeAudio("START_ATTEMPT", player, nextPlayer)
-        val primarySessionId = player.audioSessionId
-        val incomingSessionId = nextPlayer.audioSessionId
-        if (primarySessionId <= 0 || incomingSessionId <= 0 || primarySessionId != incomingSessionId) {
-            Timber.tag("AudioEffectSession").w(
-                "Skipping crossfade with incompatible sessions primary=%d incoming=%d",
-                primarySessionId, incomingSessionId,
-            )
-            cleanupCrossfade()
-            return
-        }
         isCrossfading = true
         
         // Guard the entire swap so listener callbacks don't kill the crossfade
@@ -3472,13 +3422,12 @@ class PlayerServiceModern : MediaLibraryService(),
         }
         currentPlayer.addListener(handoff.endListener)
         handoff.syncListener = object : Player.Listener {
-            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-                if (activeCrossfade === handoff) {
-                    handoff.timeline?.setPlaying(playWhenReady, crossfadeClockMs())
-                }
-            }
-
             override fun onIsPlayingChanged(isPlaying: Boolean) {
+                if (activeCrossfade === handoff) {
+                    // The fade clock only elapses while the incoming track actually plays audio;
+                    // a buffering or paused incoming track freezes the fade instead of burning it.
+                    handoff.timeline?.setPlaying(isPlaying, crossfadeClockMs())
+                }
                 if (activeCrossfade !== handoff) return
                 if (isPlaying && !handoff.outgoingEnded && currentPlayer.playbackState != Player.STATE_ENDED) {
                     currentPlayer.play()
@@ -3495,18 +3444,16 @@ class PlayerServiceModern : MediaLibraryService(),
         // Issue #881 (gh-881): diagnostics follow the PRIMARY player across the swap
         nextPlayer.addListener(playbackDiagnosticsListener)
 
-        // Update MediaSession to show the new song in the UI — the guarded facade is rebuilt and
+        // Update MediaSession to show the new song in the UI: the guarded facade is rebuilt and
         // re-attached to the new player (AD-5: the guest lock must survive crossfade swaps).
-        try {
-            // Issue #881 (gh-881), Phase 3 Fix B (review patch): detach the OLD coalescer before
-            // rebuilding the facade — its settle job (≤ 1 s) could otherwise fire against the
-//
-            // fading player, which cleanupCrossfade() releases later bypassing the wrapper chain.
-            currentSeekCoalescer?.detach()
-            guestGuardPlayer = createGuestGuardPlayer(player)
-            mediaSession.player = SessionArtworkPlayer(mediaLibrarySessionCallback.wrapPlayer(guestGuardPlayer))
-        } catch (e: Exception) {
-            Timber.tag("PlayerServiceModern").e(e, "Failed to swap player in MediaSession")
+        // A failed swap would leave the session wrapping the outgoing player that
+        // cleanupCrossfade() releases, orphaning the notification, so one retry is forced and
+        // the outcome is tracked on the handoff for the orphan-proof cleanup.
+        if (rebindMediaSessionPlayer(player)) {
+            handoff.sessionSwapped = true
+        } else {
+            Timber.tag("PlayerServiceModern").e("Failed to swap player in MediaSession, retrying")
+            handoff.sessionSwapped = rebindMediaSessionPlayer(player)
         }
 
         // Issue #881 (gh-881): instance identity across the crossfade swap (spec S6) — a mismatch
@@ -3525,8 +3472,10 @@ class PlayerServiceModern : MediaLibraryService(),
         nextPlayer.playWhenReady = currentPlayer.playWhenReady
         bindAudioEffectPlayer(nextPlayer)
         // Include transition publication and dispatcher lateness in the fade's elapsed time.
-        val durationMs = crossfadeDuration.toLong().coerceAtLeast(0L)
-        val timeline = CrossfadeTimeline(crossfadeClockMs(), nextPlayer.playWhenReady)
+        // Metrolist model: the fade duration is corrected by the playback speed.
+        val fadeSpeed = nextPlayer.playbackParameters.speed.coerceAtLeast(0.1f)
+        val durationMs = (crossfadeDuration.toLong() / fadeSpeed).toLong().coerceAtLeast(0L)
+        val timeline = CrossfadeTimeline(crossfadeClockMs(), nextPlayer.isPlaying)
         handoff.timeline = timeline
         markCrossfadeAudio("FADE_BEGIN", currentPlayer, nextPlayer)
         if (activeCrossfade !== handoff) {
@@ -3560,14 +3509,16 @@ class PlayerServiceModern : MediaLibraryService(),
         crossfadeJob = coroutineScope.launch(NzikDispatchers.UI) {
             var completed = false
             try {
-                val updateIntervalMs = (durationMs / 50L).coerceAtLeast(1L)
+                // Metrolist model: 20 fixed steps over the speed-corrected duration.
+                val updateIntervalMs = (durationMs / 20L).coerceAtLeast(1L)
                 var firstStep = true
                 var midpointMarked = false
                 while (true) {
                     if (activeCrossfade !== handoff) return@launch
-                    // Listener timestamps preserve pauses even when they fall between updates.
-                    timeline.setPlaying(nextPlayer.playWhenReady, crossfadeClockMs())
-                    if (!nextPlayer.playWhenReady) {
+                    // The fade clock only advances while the incoming track actually plays audio;
+                    // a buffering or paused incoming track freezes the gains in place.
+                    timeline.setPlaying(nextPlayer.isPlaying, crossfadeClockMs())
+                    if (!nextPlayer.isPlaying) {
                         delay(100L)
                         continue
                     }
@@ -3575,8 +3526,9 @@ class PlayerServiceModern : MediaLibraryService(),
                     val progress = if (durationMs == 0L) 1f else {
                         (elapsedMs.toDouble() / durationMs).coerceIn(0.0, 1.0).toFloat()
                     }
-                    nextPlayer.volume = startVolume * kotlin.math.sqrt(progress)
-                    currentPlayer.volume = startVolume * kotlin.math.sqrt(1f - progress)
+                    val fadeIn = 1f - (1f - progress) * (1f - progress)
+                    nextPlayer.volume = startVolume * fadeIn
+                    currentPlayer.volume = startVolume * (1f - fadeIn)
                     if (firstStep) {
                         markCrossfadeAudio("FADE_FIRST_STEP", currentPlayer, nextPlayer)
                         firstStep = false
@@ -3624,6 +3576,55 @@ class PlayerServiceModern : MediaLibraryService(),
         cleanupCrossfade()
     }
 
+    /**
+     * Rebuilds the guarded facade over [target] and re-attaches it to the MediaSession.
+     * Returns whether the session now wraps [target]; a failed re-attach leaves the session
+     * on its previous player so the caller can retry or re-bind later.
+     */
+    private fun rebindMediaSessionPlayer(target: Player): Boolean {
+        // Issue #881 (gh-881), Phase 3 Fix B (review patch): detach the OLD coalescer before
+        // rebuilding the facade - its settle job (<= 1 s) could otherwise fire against the
+        // fading player, which cleanupCrossfade() releases later bypassing the wrapper chain.
+        val rebound = runCatching {
+            currentSeekCoalescer?.detach()
+            guestGuardPlayer = createGuestGuardPlayer(target)
+            mediaSession.player = SessionArtworkPlayer(mediaLibrarySessionCallback.wrapPlayer(guestGuardPlayer))
+        }.onFailure {
+            Timber.tag("PlayerServiceModern").e(it, "Failed to rebind MediaSession player")
+        }.isSuccess
+        if (rebound) releasePendingSessionPlayer(target)
+        return rebound
+    }
+
+    /** Releases the retired player only after the session has moved away or has been released. */
+    private fun releasePendingSessionPlayer(retainedPlayer: Player? = null) {
+        val pending = pendingSessionPlayerRelease ?: return
+        if (pending === retainedPlayer) {
+            pendingSessionPlayerRelease = null
+            return
+        }
+        runCatching {
+            pending.stop()
+            detachCrossfadeAudioDiagnostics(pending)
+            pending.release()
+            pendingSessionPlayerRelease = null
+        }.onFailure {
+            Timber.tag("PlayerServiceModern").e(it, "Failed to release retired session player")
+        }
+    }
+
+    /** Closes the outgoing player's effect session so external effect apps drop the dead session. */
+    private fun closeCrossfadeEffectSession(handoff: CrossfadeHandoff) {
+        runCatching {
+            val sessionId = handoff.outgoing.audioSessionId
+            if (sessionId > 0 && sessionId != handoff.incoming.audioSessionId) {
+                sendAudioEffectIntent(false, sessionId)
+            }
+        }.onFailure {
+            Timber.tag("AudioEffectSession").w(it, "Failed to close outgoing crossfade effect session")
+        }
+    }
+
     private fun cleanupCrossfade() {
         val handoff = activeCrossfade
         activeCrossfade = null
@@ -3631,9 +3632,25 @@ class PlayerServiceModern : MediaLibraryService(),
             markCrossfadeAudio("PAIR_CLEANUP", handoff.outgoing, handoff.incoming)
             handoff.incoming.removeListener(handoff.syncListener)
             handoff.outgoing.removeListener(handoff.endListener)
-            handoff.outgoing.stop()
+            if (!handoff.sessionSwapped && !rebindMediaSessionPlayer(player)) {
+                // Failed rebinds keep the session on the first retired player. Later outgoing
+                // players were never session-bound and do not need another retained slot.
+                if (pendingSessionPlayerRelease == null) pendingSessionPlayerRelease = handoff.outgoing
+                Timber.tag("PlayerServiceModern").e("Retaining outgoing player after MediaSession rebind failure")
+            }
+            closeCrossfadeEffectSession(handoff)
             detachCrossfadeAudioDiagnostics(handoff.outgoing)
-            handoff.outgoing.release()
+            if (pendingSessionPlayerRelease === handoff.outgoing) {
+                runCatching {
+                    handoff.outgoing.volume = 0f
+                    handoff.outgoing.pause()
+                }.onFailure {
+                    Timber.tag("PlayerServiceModern").e(it, "Failed to silence retired session player")
+                }
+            } else {
+                handoff.outgoing.stop()
+                handoff.outgoing.release()
+            }
         }
         fadingPlayer = null
         secondaryPlayer?.let {

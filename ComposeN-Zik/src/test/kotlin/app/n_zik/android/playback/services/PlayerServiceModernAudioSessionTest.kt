@@ -141,16 +141,6 @@ class PlayerServiceModernAudioSessionTest {
     }
 
     @Test
-    fun `unbound secondary preload cannot publish an equalizer session`() {
-        val primary = Target(sessionId = 41)
-        bind(primary)
-        val preload = Target(sessionId = 42)
-        invokeTarget("configureAudioSession", preload.player)
-        assertTrue(preload.listeners.isEmpty())
-        assertSessions(open(41))
-    }
-
-    @Test
     fun `close sends remembered open ID even if the current player ID changed without callback`() {
         val target = Target(sessionId = 41)
         bind(target)
@@ -200,32 +190,6 @@ class PlayerServiceModernAudioSessionTest {
     }
 
     @Test
-    fun `primary and preload are configured with the shared service session`() {
-        field("playbackAudioSessionId").setInt(service, 77)
-        val primary = Target(sessionId = C.AUDIO_SESSION_ID_UNSET)
-        val preload = Target(sessionId = C.AUDIO_SESSION_ID_UNSET)
-        invokeTarget("configureAudioSession", primary.player)
-        invokeTarget("configureAudioSession", preload.player)
-        verify(exactly = 1) { primary.player.setAudioSessionId(77) }
-        verify(exactly = 1) { preload.player.setAudioSessionId(77) }
-        verify(exactly = 0) { primary.player.prepare() }
-        verify(exactly = 0) { preload.player.prepare() }
-        assertSessions()
-    }
-
-    @Test
-    fun `allocation failure fallback adopts actual primary session for the preload`() {
-        field("playbackAudioSessionId").setInt(service, C.AUDIO_SESSION_ID_UNSET)
-        val primary = Target(sessionId = 41)
-        bind(primary)
-        val preload = Target(sessionId = C.AUDIO_SESSION_ID_UNSET)
-        invokeTarget("configureAudioSession", preload.player)
-        assertEquals(41, field("playbackAudioSessionId").getInt(service))
-        verify(exactly = 1) { preload.player.setAudioSessionId(41) }
-        assertSessions(open(41))
-    }
-
-    @Test
     fun `enabled effects release old instances and bind replacements to changed session`() {
         enableInternalEffects()
         val target = Target(sessionId = 41)
@@ -247,21 +211,24 @@ class PlayerServiceModernAudioSessionTest {
     }
 
     @Test
-    fun `shared session handoff preserves enabled effects and attaches reverb to incoming track`() {
+    fun `per player handoff migrates enabled effects to the incoming session and attaches reverb`() {
         enableInternalEffects()
         val outgoing = Target(sessionId = 41)
         bind(outgoing)
         val original = internalEffects()
         assertEffectsOnSession(original, 41)
-        val reverb = original.filterIsInstance<PresetReverb>().single()
-        val incoming = Target(sessionId = 41)
+        val incoming = Target(sessionId = 42)
 
         bind(incoming)
 
-        original.zip(internalEffects()).forEach { (old, current) -> assertSame(old, current) }
-        assertEquals(original.toSet(), ShadowAudioEffect.getAudioEffects().toSet())
-        verify(atLeast = 1) { incoming.player.setAuxEffectInfo(AuxEffectInfo(reverb.id, 1f)) }
-        assertSessions(open(41))
+        // Effects move with the player: the outgoing session instances are released and
+        // rebuilt on the incoming player's own session, announced close-then-open.
+        val replacement = internalEffects()
+        original.zip(replacement).forEach { (old, new) -> assertNotSame(old, new) }
+        assertEffectsOnSession(replacement, 42)
+        val newReverb = replacement.filterIsInstance<PresetReverb>().single()
+        verify(atLeast = 1) { incoming.player.setAuxEffectInfo(AuxEffectInfo(newReverb.id, 1f)) }
+        assertSessions(open(41), close(41), open(42))
     }
 
     @Test

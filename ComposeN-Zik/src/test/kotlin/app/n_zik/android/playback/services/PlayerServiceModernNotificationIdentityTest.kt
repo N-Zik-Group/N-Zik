@@ -330,6 +330,8 @@ class PlayerServiceModernNotificationIdentityTest {
         every { playbackParameters } returns PlaybackParameters(1.5f)
         every { skipSilenceEnabled } returns true
         every { playbackState } returns Player.STATE_READY
+        // The fade loop gates its clock on actual audio flow, not just playWhenReady.
+        every { isPlaying } returns true
         every { addListener(any()) } answers { listeners += firstArg<Player.Listener>(); Unit }
     }
 
