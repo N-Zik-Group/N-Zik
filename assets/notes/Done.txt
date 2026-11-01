@@ -366,3 +366,8 @@ Added:
   - Use the generic Previous command so the first track can restart when no previous queue item exists, in Material and Glass.
   - Preserve unavailable-command and Listen Together guest protections; retain strict item-skip helpers for notification consumers.
   - Verify actual mini-player queue-boundary interaction, disabled state and folding handlers with targeted tests; assembleDebug passes.
+
+- fix(ui): restore pull-to-refresh contrast in Pitch Black
+  - Keep the palette accent container and draw the refresh spinner in black on Pitch Black surfaces; retain existing colors elsewhere.
+  - Verify the rendered container and spinner across Pitch Black mode, both black palettes, dark and light themes.
+  - Targeted render test and assembleDebug pass; revised APK installed on the VM for human validation.

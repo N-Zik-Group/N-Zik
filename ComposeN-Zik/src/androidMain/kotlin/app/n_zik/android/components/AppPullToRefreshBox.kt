@@ -3,7 +3,6 @@ package app.n_zik.android.components
 
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.offset
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -22,6 +21,7 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.IntOffset
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.n_zik.android.components.pullrefresh.rememberPullRefreshOverlayInsetProvider
+import app.n_zik.android.isPitchBlackSurface
 
 @Composable
 fun AppPullToRefreshBox(
@@ -32,6 +32,7 @@ fun AppPullToRefreshBox(
 ) {
     val pullRefreshState = rememberPullToRefreshState()
     val colorPalette = LocalAppearance.current.colorPalette
+    val pitchBlack = isPitchBlackSurface()
     var viewportCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val indicatorInset = rememberPullRefreshOverlayInsetProvider {
         viewportCoordinates?.takeIf { it.isAttached }?.positionInRoot()?.y ?: 0f
@@ -51,7 +52,7 @@ fun AppPullToRefreshBox(
                     IntOffset(0, with(density) { indicatorInset().roundToPx() })
                 },
                 containerColor = colorPalette.accent,
-                color = if (colorPalette.isDark) Color.White else Color.Black
+                color = if (pitchBlack || !colorPalette.isDark) Color.Black else Color.White
             )
         },
         content = content
