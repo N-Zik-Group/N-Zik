@@ -178,6 +178,7 @@ fun Modifier.glassMaterial(
 ): Modifier {
     if (!settings.enabled) return this
     val backdrop = ownBackdrop ?: LocalGlassBackdrop.current
+    val liveFrame = LocalGlassLiveFrame.current
     val opticsState = glassOpticsProgressState(glassOpticsEnabled())
     val opticsProgress = opticsState.value
     val opticalAlpha = remember(opticsState) { { opticsState.value } }
@@ -228,7 +229,7 @@ fun Modifier.glassMaterial(
     val blurBudget = playerOverlayBlurBudget(
         radiusDp = blurRadiusDp,
         resolution = (backdropScale ?: glassResolutionScale(blurRadiusDp)).coerceIn(.05f, 1f),
-        playerActive = LocalGlassPlayerOverlayActive.current,
+        playerActive = LocalGlassPlayerOverlayActive.current && liveFrame == null,
         menu = menu,
         queue = LocalQueueGlassBackdrop.current != null,
     )
@@ -285,6 +286,7 @@ fun Modifier.glassMaterial(
         onDrawSurface = surface,
         opticsAlphaProvider = opticalAlpha,
         backdropScale = resolution,
+        liveFrame = liveFrame,
         layerBlock = layerBlock,
         exportedBackdrop = exportedBackdrop,
     ).then(if (opticsProgress < 1f) {

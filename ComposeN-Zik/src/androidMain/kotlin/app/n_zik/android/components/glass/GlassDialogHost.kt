@@ -112,6 +112,8 @@ internal fun GlassDialogWindow(
             CompositionLocalProvider(
                 LocalGlassOpticsEnabled provides true,
                 LocalGlassOpticsTransitionProgress provides 1f,
+                LocalGlassLiveFrame provides rememberGlassModalLiveFrameIfEnabled(
+                    covered = host != null && host.nativeOverlays.lastOrNull() !== id),
                 LocalGlassUnderlayCovered provides (host != null && host.nativeOverlays.lastOrNull() !== id),
             ) {
                 if (presentation == null || (useSharedHost && host != null && properties.securePolicy != SecureFlagPolicy.Inherit)) {
@@ -225,9 +227,9 @@ fun GlassDialogOverlayHost(host: GlassMenuHostState) {
                 CompositionLocalProvider(
                     LocalGlassOpticsEnabled provides true,
                     LocalGlassOpticsTransitionProgress provides 1f,
-                    LocalGlassUnderlayCovered provides (
-                        entry !== host.dialogs.entries.lastOrNull() || host.entry != null || host.nativeOverlays.isNotEmpty()
-                    ),
+                    LocalGlassLiveFrame provides rememberGlassModalLiveFrameIfEnabled(
+                        covered = entry !== host.dialogs.entries.lastOrNull() || host.entry != null || host.nativeOverlays.isNotEmpty()),
+                    LocalGlassUnderlayCovered provides (entry !== host.dialogs.entries.lastOrNull() || host.entry != null || host.nativeOverlays.isNotEmpty()),
                     LocalGlassBackdrop provides dimmedSource,
                     LocalGlassOverlayBackdrop provides completedBackdrop,
                     LocalGlassDropdownBackdropOwner provides null,
@@ -275,7 +277,7 @@ fun GlassDialogOverlayHost(host: GlassMenuHostState) {
     }
 }
 
-/** Native windows still reduce the activity's optics until their animated content is disposed. */
+/** Native windows reduce background optics until their animated content is disposed. */
 @Composable
 internal fun NativeGlassOverlayCoverage(host: GlassMenuHostState?, id: Any) {
     DisposableEffect(host, id) {

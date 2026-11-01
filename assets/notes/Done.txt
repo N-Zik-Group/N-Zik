@@ -43,6 +43,12 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(glass): keep foreground modals live and reduce covered optics
+  - Give each foreground Glass menu/dialog its own display-frame clock and bypass retained capture, frozen holds and loop buckets; retain full configured foreground optics.
+  - Keep frame updates independent of Android animation scale and prevent nested overlays from inheriting a disposed parent clock.
+  - Preserve the original quality reduction behind menus/dialogs and stop live clocks on covered windows; native and tint-only modals retain idle behavior.
+  - Validate live captures, zero animation scale, stale inherited clocks, disposal, background coverage and optical fades with the focused 25-test selection and successful Debug assembly; user confirmed the installed emulator build.
+
 - fix(ui): align section actions and header trailing centers
   - Route standalone heading arrows through shared action seats instead of raw icons; center Glass bubbles in the same horizontal seat as grouped actions.
   - Align Profile with the last section action using section-mode-aware header padding, including independently configured Header and ActionButtons Glass modes.

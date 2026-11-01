@@ -107,6 +107,7 @@ fun Modifier.drawPlainBackdrop(
     opticsAlphaProvider: (() -> Float)? = null,
     // Passive exported tint surfaces have no effects and retain native clip compositing.
     compositingStrategy: CompositingStrategy = CompositingStrategy.Offscreen,
+    liveFrame: (() -> Long)? = null,
 ): Modifier {
     val shapeProvider = ShapeProvider(shape)
     return this
@@ -138,6 +139,7 @@ fun Modifier.drawPlainBackdrop(
                 backdropScale = backdropScale.coerceIn(0.05f, 1f),
                 frozen = frozen,
                 heldWhileMoving = heldWhileMoving,
+                liveFrame = liveFrame,
                 loopBucket = null
             )
         )
@@ -185,6 +187,7 @@ fun Modifier.drawBackdrop(
     // Composite after RenderEffect processing; does not invalidate source captures.
     opticsAlpha: Float = 1f,
     opticsAlphaProvider: (() -> Float)? = null,
+    liveFrame: (() -> Long)? = null,
 ): Modifier {
     val shapeProvider = ShapeProvider(shape)
     return this
@@ -246,6 +249,7 @@ fun Modifier.drawBackdrop(
                 backdropScale = backdropScale.coerceIn(0.05f, 1f),
                 frozen = frozen,
                 heldWhileMoving = heldWhileMoving,
+                liveFrame = liveFrame,
                 loopBucket = loopBucket
             )
         )
@@ -266,6 +270,7 @@ private class DrawBackdropElement(
     val backdropScale: Float,
     val frozen: () -> Boolean,
     val heldWhileMoving: () -> Boolean,
+    val liveFrame: (() -> Long)?,
     val loopBucket: (() -> Int)?
 ) : ModifierNodeElement<DrawBackdropNode>() {
 
@@ -285,6 +290,7 @@ private class DrawBackdropElement(
             backdropScale = backdropScale,
             frozen = frozen,
             heldWhileMoving = heldWhileMoving,
+            liveFrame = liveFrame,
             loopBucket = loopBucket
         )
     }
@@ -304,7 +310,8 @@ private class DrawBackdropElement(
                 node.effects !== effects ||
                 node.layerBlock !== layerBlock ||
                 node.onDrawBackdrop !== onDrawBackdrop ||
-                node.backdropScale != backdropScale
+                node.backdropScale != backdropScale ||
+                node.liveFrame !== liveFrame
 
         val exportedMaterialChanged = captureChanged ||
             node.exportedBackdrop !== exportedBackdrop ||
@@ -329,6 +336,7 @@ private class DrawBackdropElement(
         node.opticsAlpha = opticsAlpha.coerceIn(0f, 1f)
         node.opticsAlphaProvider = opticsAlphaProvider
         node.backdropScale = backdropScale
+        node.liveFrame = liveFrame
         node.frozen = frozen
         node.heldWhileMoving = heldWhileMoving
         // Queue one consumer notification after the changed export is ready. Ordinary
@@ -366,12 +374,14 @@ private class DrawBackdropElement(
         properties["onDrawFront"] = onDrawFront
         properties["opticsAlpha"] = opticsAlpha
         properties["opticsAlphaProvider"] = opticsAlphaProvider
+        properties["liveFrame"] = liveFrame
     }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is DrawBackdropElement) return false
 
+        if (liveFrame != other.liveFrame) return false
         if (backdrop != other.backdrop) return false
         if (shapeProvider != other.shapeProvider) return false
         if (effects != other.effects) return false
@@ -390,6 +400,7 @@ private class DrawBackdropElement(
 
     override fun hashCode(): Int {
         var result = backdrop.hashCode()
+        result = 31 * result + (liveFrame?.hashCode() ?: 0)
         result = 31 * result + shapeProvider.hashCode()
         result = 31 * result + effects.hashCode()
         result = 31 * result + (layerBlock?.hashCode() ?: 0)
@@ -420,6 +431,7 @@ private class DrawBackdropNode(
     var backdropScale: Float,
     var frozen: () -> Boolean,
     var heldWhileMoving: () -> Boolean,
+    var liveFrame: (() -> Long)?,
     var loopBucket: (() -> Int)?
 ) : DrawModifierNode, GlobalPositionAwareModifierNode, ObserverModifierNode, Modifier.Node() {
 
@@ -583,7 +595,11 @@ private class DrawBackdropNode(
     }
 
     private val drawBackdropLayer: DrawScope.() -> Boolean = drawBackdropLayer@{
-        val bucket = loopBucket?.invoke()
+        // The modal frame read invalidates this draw node while open, even when
+        // ordinary source generations are intentionally not snapshot-observable.
+        liveFrame?.invoke()
+        val live = liveFrame != null
+        val bucket = if (live) null else loopBucket?.invoke()
         if (bucket != null) {
             return@drawBackdropLayer drawBucketedLayer(bucket)
         }
@@ -643,7 +659,7 @@ private class DrawBackdropNode(
             // nothing at the end big enough to see.
             val now = System.nanoTime()
             val heldLongEnough = (now - lastRecordedAt) / 1_000_000f >= HoldRefreshMillis
-            val holding = frozen() &&
+            val holding = !live && frozen() &&
                 hasRecording &&
                 !heldLongEnough &&
                 (!geometryChanged || heldWhileMoving())
@@ -659,6 +675,7 @@ private class DrawBackdropNode(
             // was moving to correct it.
             val refreshAfterHold = wasHolding && !holding
             val needsRecord = when {
+                live -> true
                 holding -> false
                 refreshAfterHold -> true
                 else -> (geometryChanged || versionChanged) && !versionChangeIsElsewhere
@@ -671,7 +688,7 @@ private class DrawBackdropNode(
             // over it. Only after a hold — an ordinary re-record during a scroll
             // is a small change from the frame before it, and crossing them
             // would only cost an extra layer for nothing.
-            val endingHold = refreshAfterHold
+            val endingHold = refreshAfterHold && !live
             if (endingHold) {
                 val keeper = handoverLayer
                     ?: requireGraphicsContext().createGraphicsLayer().also { handoverLayer = it }
@@ -702,7 +719,7 @@ private class DrawBackdropNode(
                 else IntOffset.Zero
 
             val handover = handoverLayer
-            val fade = if (handover != null && handoverStartedAt != 0L) {
+            val fade = if (!live && handover != null && handoverStartedAt != 0L) {
                 val elapsed = (System.nanoTime() - handoverStartedAt) / 1_000_000f
                 (elapsed / HandoverMillis).fastCoerceIn(0f, 1f)
             } else {

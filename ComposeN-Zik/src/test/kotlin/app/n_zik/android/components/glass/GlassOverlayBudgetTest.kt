@@ -105,6 +105,22 @@ class GlassOverlayBudgetTest {
         compose.runOnIdle { assertTrue(menuOptics); assertFalse(requireNotNull(host.entry).settings.enabled) }
     }
 
+    @Test fun `modal content preserves explicit inherited queue coverage`() {
+        val host = GlassMenuHostState()
+        val covered = mutableStateOf(true)
+        var enabled = true
+        compose.setContent {
+            CompositionLocalProvider(LocalGlassUnderlayCovered provides covered.value) {
+                GlassModalContent(host, manageFocus = false) {
+                    val optics = glassOpticsEnabled()
+                    SideEffect { enabled = optics }
+                }
+            }
+        }
+        compose.runOnIdle { assertFalse(enabled); covered.value = false }
+        compose.runOnIdle { assertTrue(enabled) }
+    }
+
     @Test fun `native menu coverage remains through exit and clears only on removal`() {
         val host = GlassMenuHostState()
         val settings = GlassSettings(enabled = false)

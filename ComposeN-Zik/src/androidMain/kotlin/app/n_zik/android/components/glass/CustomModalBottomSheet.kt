@@ -197,6 +197,7 @@ fun CustomModalBottomSheet(
                 CompositionLocalProvider(
                     LocalGlassOpticsEnabled provides true,
                     LocalGlassOpticsTransitionProgress provides 1f,
+                    LocalGlassLiveFrame provides rememberGlassModalLiveFrameIfEnabled(covered = host != null && host.nativeOverlays.lastOrNull() !== overlayId),
                     LocalGlassUnderlayCovered provides (host != null && host.nativeOverlays.lastOrNull() !== overlayId),
                     LocalGlassContainerBackdrop provides nativeBackdrop,
                 ) {
