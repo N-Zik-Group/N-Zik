@@ -24,6 +24,10 @@ Added:
   - Keep the separately observed connection-abort/stale-approval problem outside this change; a complete live host approval was not validated. Android web-link defaults still require domain approval.
 
 Changed:
+- chore(build): cap Kotlin compiler daemon heap at 8 GB
+  - Limit kotlin.daemon.jvmargs to -Xmx8g instead of the machine-dependent default that can reserve roughly a quarter of physical memory.
+  - Keep the compiler setting used during successful Debug assembly and player/header regression validation; application runtime behavior is unchanged.
+
 - chore(build): update Android Gradle Plugin to 9.5.0
   - Update the existing agp catalog entry from 9.4.1 to 9.5.0 without changing Kotlin or application versions.
   - Keep the toolchain used by the successful Debug builds and focused rendering/placement tests recorded during Glass validation.
