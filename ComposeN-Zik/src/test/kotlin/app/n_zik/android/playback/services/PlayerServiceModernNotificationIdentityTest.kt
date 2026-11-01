@@ -2,6 +2,7 @@ package app.n_zik.android.playback.services
 
 import android.app.Application
 import android.net.Uri
+import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
@@ -13,6 +14,8 @@ import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.NotificationButtons
 import app.it.fast4x.rimusic.models.Song
+import app.it.fast4x.rimusic.utils.crossfadeDurationKey
+import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.manageDownload
 import app.n_zik.android.R
 import app.n_zik.android.appContext
@@ -299,6 +302,81 @@ class PlayerServiceModernNotificationIdentityTest {
         verify(exactly = 0) { incoming.release() }
     }
 
+    @Test
+    fun `repeated handoffs with notification and access refresh never leave a retired session target`() {
+        service.preferences.edit().putInt(crossfadeDurationKey, 3000).commit()
+        val session = field("mediaSession").get(service) as MediaLibrarySession
+        val retired = mutableSetOf<Player>()
+        var live = fadePlayer("track-0", mutableListOf())
+        var sessionPlayer: Player = SessionArtworkPlayer(live)
+        var refreshEvents = 0
+        val observer = object : Player.Listener {
+            override fun onEvents(player: Player, events: Player.Events) {
+                assertFalse(retired.contains(underlyingPlayer(player)))
+                refreshEvents++
+            }
+        }
+        every { session.player } answers { sessionPlayer }
+        every { session.notifyChildrenChanged(any<String>(), any<Int>(), any()) } just Runs
+        every { session.setMediaButtonPreferences(any<List<CommandButton>>()) } answers {
+            assertFalse(retired.contains(underlyingPlayer(session.player)))
+            published += firstArg<List<CommandButton>>().toList()
+            Unit
+        }
+        repeat(5) { index ->
+            val outgoing = live
+            val id = "track-${index + 1}"
+            val (_, incoming) = prepareHandoff(id, outgoing = outgoing)
+            // Observe the real facade chain after each successful MediaSession assignment.
+            every { session.player = any() } answers {
+                sessionPlayer.removeListener(observer)
+                sessionPlayer = firstArg()
+                sessionPlayer.addListener(observer)
+                assertFalse(retired.contains(underlyingPlayer(sessionPlayer)))
+                Unit
+            }
+            every { outgoing.stop() } answers {
+                assertSame(incoming, underlyingPlayer(session.player))
+                retired += outgoing
+                Unit
+            }
+            every { outgoing.release() } answers {
+                assertSame(incoming, underlyingPlayer(session.player))
+                retired += outgoing
+                Unit
+            }
+            invoke("startCrossfade")
+            repeat(4) { tick ->
+                invoke("refreshSessionAccess")
+                row(id, if (tick % 2 == 0) 42L else null)
+                download(id, if (tick % 2 == 0) Download.STATE_COMPLETED else Download.STATE_DOWNLOADING)
+                invoke("updateDefaultNotification")
+                scheduler.advanceTimeBy(500L)
+                scheduler.runCurrent()
+                assertSame(incoming, underlyingPlayer(session.player))
+                assertEquals(id, service.currentMediaItem.value?.mediaId)
+                assertFalse(retired.contains(underlyingPlayer(session.player)))
+            }
+            assertFalse(field("isCrossfading").getBoolean(service))
+            verify(exactly = 1) { outgoing.stop() }
+            verify(exactly = 1) { outgoing.release() }
+            verify(exactly = 0) { incoming.release() }
+            live = incoming
+        }
+        assertEquals(5, retired.size)
+        assertEquals(20, refreshEvents)
+        assertIcons(R.drawable.heart_outline, R.drawable.download_progress)
+    }
+
+    private fun underlyingPlayer(player: Player): Player = when (player) {
+        is ForwardingPlayer -> underlyingPlayer(player.wrappedPlayer)
+        is SeekCoalescingPlayer -> underlyingPlayer(
+            SeekCoalescingPlayer::class.java.getDeclaredField("upstream")
+                .apply { isAccessible = true }.get(player) as Player
+        )
+        else -> player
+    }
+
     private fun prepareHandoff(
         id: String,
         outgoingListeners: MutableList<Player.Listener> = mutableListOf(),
@@ -323,6 +401,7 @@ class PlayerServiceModernNotificationIdentityTest {
     private fun fadePlayer(id: String, listeners: MutableList<Player.Listener>) = mockk<ExoPlayer>(relaxed = true) {
         every { audioSessionId } returns 77
         every { currentMediaItem } returns item(id)
+        every { mediaMetadata } returns item(id).mediaMetadata
         every { volume } returns 0.8f
         every { playWhenReady } returns true
         every { repeatMode } returns Player.REPEAT_MODE_ALL
@@ -330,6 +409,7 @@ class PlayerServiceModernNotificationIdentityTest {
         every { playbackParameters } returns PlaybackParameters(1.5f)
         every { skipSilenceEnabled } returns true
         every { playbackState } returns Player.STATE_READY
+        every { playerError } returns null
         // The fade loop gates its clock on actual audio flow, not just playWhenReady.
         every { isPlaying } returns true
         every { addListener(any()) } answers { listeners += firstArg<Player.Listener>(); Unit }

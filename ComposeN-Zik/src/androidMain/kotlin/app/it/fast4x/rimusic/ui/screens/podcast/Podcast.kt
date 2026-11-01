@@ -3,7 +3,10 @@ package app.it.fast4x.rimusic.ui.screens.podcast
 import app.n_zik.android.components.glass.GlassArtworkBackdrop
 import app.n_zik.android.components.podcast.PodcastBannerThumbnail
 import app.n_zik.android.components.podcast.PodcastBookmarkAction
-import app.n_zik.android.components.ui.screens.CollectionPageStatus
+import app.n_zik.android.components.podcast.PodcastEmptyEpisodes
+import app.n_zik.android.components.podcast.PodcastLoadingStatus
+import app.n_zik.android.components.podcast.PodcastPageLoader
+import app.n_zik.android.components.podcast.PodcastPageStatus
 import androidx.compose.foundation.layout.PaddingValues
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.it.fast4x.rimusic.utils.asSong
@@ -13,16 +16,12 @@ import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 
-import app.n_zik.android.core.database.*
-
 import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -33,7 +32,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -54,7 +52,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -81,7 +78,6 @@ import app.n_zik.android.core.coil.resize
 import app.n_zik.android.colorPalette
 import it.fast4x.innertube.Innertube
 import app.it.fast4x.compose.persist.persist
-import it.fast4x.innertube.requests.podcastPage
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.it.fast4x.rimusic.enums.NavRoutes
@@ -98,16 +94,13 @@ import app.n_zik.android.components.glass.GlassToolbarRow
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
-import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
 import app.n_zik.android.components.ui.screens.LayoutWithAdaptiveThumbnail
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsItemMenu
-import app.n_zik.android.components.OfflineAwareLoader
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.search.UnifiedSearchBar
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.ui.styling.Dimensions
-import app.it.fast4x.rimusic.ui.styling.px
 import app.it.fast4x.rimusic.utils.addNext
 import app.it.fast4x.rimusic.utils.addToYtPlaylist
 import app.it.fast4x.rimusic.utils.asMediaItem
@@ -117,12 +110,10 @@ import app.it.fast4x.rimusic.utils.enqueue
 import app.it.fast4x.rimusic.utils.excludeMediaItems
 import app.it.fast4x.rimusic.utils.fadingEdge
 import app.it.fast4x.rimusic.utils.forcePlayAtIndex
-import app.it.fast4x.rimusic.utils.forcePlayFromBeginning
 import app.it.fast4x.rimusic.utils.formatAsTime
 import app.it.fast4x.rimusic.utils.getDownloadState
 import app.it.fast4x.rimusic.utils.isDownloadedSong
 import app.it.fast4x.rimusic.utils.isLandscape
-import app.it.fast4x.rimusic.utils.isNowPlaying
 import app.it.fast4x.rimusic.utils.manageDownload
 import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.rememberPreference
@@ -164,17 +155,19 @@ fun Podcast(
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
 
     var podcastPage by persist<Innertube.Podcast?>("podcast/$browseId/listEpisodes")
+    val podcastLoader = remember(browseId) { PodcastPageLoader(podcastPage) }
+    val podcastLoadState by podcastLoader.state.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
+    var retryAttempt by remember(browseId) { mutableIntStateOf(0) }
 
     var filter: String? by rememberSaveable { mutableStateOf(null) }
     var showConfirmDownloadAllDialog by remember { mutableStateOf(false) }
     var showConfirmDeleteDownloadDialog by remember { mutableStateOf(false) }
     val hapticFeedback = LocalHapticFeedback.current
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(podcastLoader, retryAttempt) {
         if (podcastPage == null) {
-            podcastPage = withContext(NzikDispatchers.DATA) {
-                Innertube.podcastPage(browseId = browseId.removePrefix(MODIFIED_PREFIX)).getOrNull()
-            }
+            podcastLoader.load(browseId.removePrefix(MODIFIED_PREFIX))
+            podcastPage = podcastLoader.state.value.page
         }
     }
 
@@ -182,9 +175,6 @@ fun Podcast(
     filterCharSequence = filter.toString()
 
     var searching by rememberSaveable { mutableStateOf(false) }
-
-    val songThumbnailSizeDp = Dimensions.thumbnails.song
-    val songThumbnailSizePx = songThumbnailSizeDp.px
 
     var isImportingPlaylist by rememberSaveable {
         mutableStateOf(false)
@@ -231,7 +221,10 @@ fun Podcast(
     }
 
     val thumbnailContent: @Composable () -> Unit = {
-        PodcastBannerThumbnail(podcastPage == null, podcastPage?.thumbnail?.firstOrNull()?.url)
+        PodcastBannerThumbnail(
+            podcastLoadState.status == PodcastPageStatus.Loading,
+            podcastPage?.thumbnail?.firstOrNull()?.url,
+        )
     }
 
     val lazyListState = rememberLazyListState()
@@ -264,18 +257,16 @@ fun Podcast(
         Box(
             modifier = Modifier
                 .background(colorPalette().background0)
-                //.fillMaxSize()
                 .fillMaxHeight()
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
             if (podcastPage == null) {
-                CollectionPageStatus {
-                    OfflineAwareLoader(
-                        isOnline = isOnline,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                PodcastLoadingStatus(
+                    status = podcastLoadState.status,
+                    isOnline = isOnline,
+                    onRetry = { retryAttempt++ },
+                )
             } else {
                 CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
                 LazyColumn(
@@ -301,7 +292,7 @@ fun Podcast(
                             if(!isLandscape)
                                 ImageCacheFactory.AsyncImage(
                                     shape = null,
-                                    thumbnailUrl = podcastPage!!.thumbnail.firstOrNull()?.url?.resize(1000, 1000),
+                                    thumbnailUrl = podcastPage?.thumbnail?.firstOrNull()?.url?.resize(1000, 1000),
                                     contentDescription = stringResource(R.string.cd_loading),
                                     modifier = Modifier.then(artworkBackdrop)
                                         .fillMaxWidth()
@@ -331,13 +322,12 @@ fun Podcast(
                             )
 
                             BasicText(
-                                text = podcastPage!!.listEpisode.size.toString() + " "
+                                text = podcastPage?.listEpisode.orEmpty().size.toString() + " "
                                         + stringResource(R.string.songs)
                                         + " - " + formatAsTime(totalPlayTimes),
                                 style = typography().xs.medium,
                                 maxLines = 1,
                                 modifier = Modifier
-                                    //.padding(top = 10.dp)
                                     .align(Alignment.BottomCenter)
                             )
 
@@ -385,11 +375,7 @@ fun Podcast(
                             .fillMaxWidth()
                     ) {
 
-                        //if (!isLandscape) thumbnailContent()
-
                         if (podcastPage != null) {
-
-                            //actionsContent()
 
                             PodcastBookmarkAction(
                                 browseId = browseId,
@@ -536,7 +522,7 @@ fun Podcast(
                                 )
 
                                 HeaderIconButton(
-                                    // Issue #866 (gh-866): state icon — radio_stop while the radio
+                                    // Issue #866 (gh-866): state icon, radio_stop while the radio
                                     // is active (the state change is the press feedback).
                                     icon = radioButtonIcon(),
                                     enabled = podcastPage?.listEpisode?.isNotEmpty() == true,
@@ -674,6 +660,12 @@ fun Podcast(
                     }
                 }
 
+                if (podcastLoadState.status == PodcastPageStatus.Empty) {
+                    item(key = "empty-episodes", contentType = "empty-episodes") {
+                        PodcastEmptyEpisodes()
+                    }
+                }
+
                 itemsIndexed(
                     items = podcastPage?.listEpisode?.filter {item ->
                         if (!filter.isNullOrBlank()) {
@@ -714,7 +706,6 @@ fun Podcast(
                             binder?.player?.enqueue(song.asMediaItem)
                         }
                     ) {
-                        var forceRecompose by remember { mutableStateOf(false) }
                         SongItem(
                             song = song.asMediaItem.asSong,
                             navController = navController,

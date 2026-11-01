@@ -93,6 +93,7 @@ class AutoBrowseTree(
             val loaded = if (access.online) loadedRows else {
                 val available = access.eligible(loadedRows.filter { it.mediaMetadata.isPlayable == true }).map { it.value }.toSet()
                 loadedRows.filter { it.mediaMetadata.isPlayable != true || it in available ||
+                    AutoMediaIdContract.playlistCategoryForAction(it.mediaId) != null ||
                     (AutoMediaIdContract.isQueueAction(it.mediaId) && available.isNotEmpty()) }
             }
             synchronized(publicationLock) {

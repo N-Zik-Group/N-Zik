@@ -52,6 +52,27 @@ object AutoMediaIdContract {
         ?: parsePlaylistShuffle(shuffleId)?.let(::playlistPlayAll)
         ?: (shuffleId.removeSuffix("_SHUFFLE") + "_PLAY_ALL")
 
+    /** Resolves aggregate library actions; saved legacy YouTube actions mean All. */
+    fun playlistCategoryForAction(mediaId: String): String? {
+        val parentId = when {
+            mediaId.endsWith("_SHUFFLE") -> mediaId.removeSuffix("_SHUFFLE")
+            mediaId.endsWith("_PLAY_ALL") -> mediaId.removeSuffix("_PLAY_ALL")
+            else -> return null
+        }
+        return when (parentId) {
+            AutoSessionConstants.ID_PLAYLISTS_YT -> AutoSessionConstants.ID_PLAYLISTS_YT_ALL
+            AutoSessionConstants.ID_PLAYLISTS_LOCAL,
+            AutoSessionConstants.ID_PLAYLISTS_YT_ALL,
+            AutoSessionConstants.ID_PLAYLISTS_YT_PLAYLISTS,
+            AutoSessionConstants.ID_PLAYLISTS_YT_PODCASTS,
+            AutoSessionConstants.ID_PLAYLISTS_PINNED,
+            AutoSessionConstants.ID_PLAYLISTS_REWIND_ALL,
+            AutoSessionConstants.ID_PLAYLISTS_REWIND_MONTH,
+            AutoSessionConstants.ID_PLAYLISTS_REWIND_YEAR -> parentId
+            else -> null
+        }
+    }
+
     fun page(parentId: String, index: Int): String {
         require(parentId.isNotEmpty() && index >= 0)
         return "$PAGE/${Uri.encode(parentId)}/$index"

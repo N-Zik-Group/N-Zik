@@ -1125,7 +1125,11 @@ class PlayerServiceModern : MediaLibraryService(),
 
     @UnstableApi
     override fun onDestroy() {
+        if (isDestroying) return
+        isDestroying = true
         isRunning = false
+        sessionRebindRecoveryJob?.cancel()
+        sessionRebindRecoveryJob = null
         closeAudioEffectSession()
         cancelCrossfadeAndReset()
         runCatching {
@@ -1149,21 +1153,7 @@ class PlayerServiceModern : MediaLibraryService(),
             stopService(intent<MyDownloadService>())
             stopService(intent<PlayerServiceModern>())
             mediaLibrarySessionCallback.release()
-            mediaSession.release()
-            player.removeListener(this)
-            // Issue #881 (gh-881): detach the diagnostics listener before teardown
-            player.removeListener(playbackDiagnosticsListener)
-            player.stop()
-            // Release through the guarded facade so its commandListeners are cleared before the
-            // raw player goes (review finding: the facade's release() was dead on teardown).
-//
-            // The stop above stays on the raw player — internal teardown, and a fail-closed
-            // guarded stop() would block a locked guest's service shutdown.
-            detachCrossfadeAudioDiagnostics(player)
-            guestGuardPlayer.release()
-            if (guestGuardPlayerTarget != null && guestGuardPlayerTarget !== player) player.release()
-            if (pendingSessionPlayerRelease === guestGuardPlayerTarget) pendingSessionPlayerRelease = null
-            releasePendingSessionPlayer()
+            releasePlaybackPlayersOnDestroy()
             try{
                 unregisterReceiver(notificationActionReceiver)
             } catch (e: Exception){
@@ -1203,7 +1193,37 @@ class PlayerServiceModern : MediaLibraryService(),
         }.onFailure {
             Timber.tag("PlayerServiceModern").e("Failed onDestroy "+it.stackTraceToString())
         }
+        // Teardown must also run when an unrelated, partially initialized dependency failed.
+        releasePlaybackPlayersOnDestroy()
+        coroutineScope.cancel()
         super.onDestroy()
+    }
+
+    private fun releasePlaybackPlayersOnDestroy() {
+        if (playbackPlayersReleased) return
+        // Detach the session before releasing either the current or retained raw player.
+        if (::mediaSession.isInitialized && runCatching { mediaSession.release() }.isFailure) return
+        playbackPlayersReleased = true
+        currentSeekCoalescer?.detach()
+        val owned = IdentityHashMap<ExoPlayer, Boolean>()
+        if (::player.isInitialized) owned[player] = true
+        pendingSessionPlayerRelease?.let { owned[it] = true }
+        pendingSessionPlayerRelease = null
+        owned.keys.forEach { target ->
+            runCatching {
+                target.removeListener(this)
+                target.removeListener(playbackDiagnosticsListener)
+                detachCrossfadeAudioDiagnostics(target)
+                target.stop()
+            }.onFailure { Timber.tag("PlayerServiceModern").e(it, "Failed to stop player during destruction") }
+            runCatching {
+                if (::guestGuardPlayer.isInitialized && guestGuardPlayerTarget === target) {
+                    guestGuardPlayer.release()
+                } else {
+                    target.release()
+                }
+            }.onFailure { Timber.tag("PlayerServiceModern").e(it, "Failed to release player during destruction") }
+        }
     }
 
 
@@ -3141,6 +3161,9 @@ class PlayerServiceModern : MediaLibraryService(),
     private var crossfadeTriggerJob: Job? = null
     private var fadingPlayer: ExoPlayer? = null
     private var pendingSessionPlayerRelease: ExoPlayer? = null
+    private var sessionRebindRecoveryJob: Job? = null
+    private var isDestroying = false
+    private var playbackPlayersReleased = false
     private class CrossfadeHandoff(
         val incoming: ExoPlayer,
         val outgoing: ExoPlayer,
@@ -3518,6 +3541,10 @@ class PlayerServiceModern : MediaLibraryService(),
                     // The fade clock only advances while the incoming track actually plays audio;
                     // a buffering or paused incoming track freezes the gains in place.
                     timeline.setPlaying(nextPlayer.isPlaying, crossfadeClockMs())
+                    // End, error and explicit stop cannot resume this fade. Pause/buffering can.
+                    if (nextPlayer.playbackState == Player.STATE_ENDED ||
+                        nextPlayer.playbackState == Player.STATE_IDLE || nextPlayer.playerError != null
+                    ) break
                     if (!nextPlayer.isPlaying) {
                         delay(100L)
                         continue
@@ -3561,7 +3588,7 @@ class PlayerServiceModern : MediaLibraryService(),
                         cleanupCrossfade()
                         crossfadeJob = null
                     }
-                    if (completed) scheduleCrossfade()
+                    if (completed && !isDestroying) scheduleCrossfade()
                 }
             }
         }
@@ -3582,6 +3609,7 @@ class PlayerServiceModern : MediaLibraryService(),
      * on its previous player so the caller can retry or re-bind later.
      */
     private fun rebindMediaSessionPlayer(target: Player): Boolean {
+        if (isDestroying || target !== player) return false
         // Issue #881 (gh-881), Phase 3 Fix B (review patch): detach the OLD coalescer before
         // rebuilding the facade - its settle job (<= 1 s) could otherwise fire against the
         // fading player, which cleanupCrossfade() releases later bypassing the wrapper chain.
@@ -3596,6 +3624,29 @@ class PlayerServiceModern : MediaLibraryService(),
         return rebound
     }
 
+    /** Retry independently of preloading, which is blocked while the old session target is retained. */
+    private fun scheduleSessionRebindRecovery() {
+        if (isDestroying || sessionRebindRecoveryJob?.isActive == true) return
+        val retained = pendingSessionPlayerRelease ?: return
+        sessionRebindRecoveryJob = coroutineScope.launch(NzikDispatchers.UI) {
+            try {
+                for (backoffMs in listOf(250L, 500L, 1000L, 2000L, 4000L)) {
+                    delay(backoffMs)
+                    if (isDestroying || pendingSessionPlayerRelease !== retained) return@launch
+                    // Resolve the live target on every attempt; never reattach a superseded player.
+                    val target = player
+                    if (rebindMediaSessionPlayer(target)) {
+                        scheduleCrossfade()
+                        return@launch
+                    }
+                }
+                Timber.tag("PlayerServiceModern").e("MediaSession recovery exhausted; retaining its player until destruction")
+            } finally {
+                sessionRebindRecoveryJob = null
+            }
+        }
+    }
+
     /** Releases the retired player only after the session has moved away or has been released. */
     private fun releasePendingSessionPlayer(retainedPlayer: Player? = null) {
         val pending = pendingSessionPlayerRelease ?: return
@@ -3603,12 +3654,14 @@ class PlayerServiceModern : MediaLibraryService(),
             pendingSessionPlayerRelease = null
             return
         }
+        pendingSessionPlayerRelease = null
         runCatching {
             pending.stop()
             detachCrossfadeAudioDiagnostics(pending)
-            pending.release()
-            pendingSessionPlayerRelease = null
         }.onFailure {
+            Timber.tag("PlayerServiceModern").e(it, "Failed to stop retired session player")
+        }
+        runCatching { pending.release() }.onFailure {
             Timber.tag("PlayerServiceModern").e(it, "Failed to release retired session player")
         }
     }
@@ -3637,6 +3690,7 @@ class PlayerServiceModern : MediaLibraryService(),
                 // players were never session-bound and do not need another retained slot.
                 if (pendingSessionPlayerRelease == null) pendingSessionPlayerRelease = handoff.outgoing
                 Timber.tag("PlayerServiceModern").e("Retaining outgoing player after MediaSession rebind failure")
+                scheduleSessionRebindRecovery()
             }
             closeCrossfadeEffectSession(handoff)
             detachCrossfadeAudioDiagnostics(handoff.outgoing)

@@ -42,11 +42,9 @@ import timber.log.Timber
 import app.it.fast4x.rimusic.enums.MaxSongs
 import app.it.fast4x.rimusic.enums.MaxTopPlaylistItems
 import app.it.fast4x.rimusic.enums.OnDeviceSongSortBy
-import app.it.fast4x.rimusic.enums.PlaylistSortBy
 import app.it.fast4x.rimusic.enums.SongSortBy
 import app.it.fast4x.rimusic.enums.SortOrder
 import app.it.fast4x.rimusic.models.Song
-import app.it.fast4x.rimusic.PINNED_PREFIX
 import app.it.fast4x.rimusic.repository.QuickPicksRepository
 import app.it.fast4x.rimusic.utils.asSong
 import app.it.fast4x.rimusic.utils.getEnum
@@ -60,9 +58,10 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.kreate.android.me.knighthat.utils.getLocalSongs
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.browse.AutoBrowseTree
+import app.n_zik.android.playback.services.automotive.browse.loadAutoLibraryPlaylists
+import app.n_zik.android.playback.services.automotive.browse.loadAutoPlaylistSongs
 import app.n_zik.android.playback.services.automotive.DislikedExclusion
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper
 import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
@@ -527,7 +526,9 @@ class AutoSessionCallback(
         }
         val playlistShuffle = AutoMediaIdContract.parsePlaylistShuffle(selectedId)
         val playlistPlayAll = AutoMediaIdContract.parsePlaylistPlayAll(selectedId)
+        val playlistCategory = AutoMediaIdContract.playlistCategoryForAction(selectedId)
         val actionParent = when {
+            playlistCategory != null -> playlistCategory
             playlistShuffle != null -> "${PlayerServiceModern.PLAYLIST}/$playlistShuffle"
             playlistPlayAll != null -> "${PlayerServiceModern.PLAYLIST}/$playlistPlayAll"
             selectedId == AutoSessionConstants.ID_LUCKY_SHUFFLE -> AutoSessionConstants.ID_QUICK_PICKS
@@ -535,7 +536,7 @@ class AutoSessionCallback(
             selectedId.endsWith("_PLAY_ALL") -> selectedId.removeSuffix("_PLAY_ALL")
             else -> null
         }
-        if (actionParent != null) {
+        if (actionParent != null && playlistCategory == null) {
             val displayed = autoBrowseTree.selectionStore.itemsForParent(actionParent)
             if (!displayed.isNullOrEmpty()) {
                 val allowed = accessPolicy().eligible(displayed, actionParent).map { it.value }
@@ -610,34 +611,15 @@ class AutoSessionCallback(
             val allSongs = database.artistTable.allFollowing().first().flatMap { artist -> database.songArtistMapTable.allSongsBy(artist.id).first() }.distinctBy { song -> song.id }.filter { song -> song.id !in excludedIds }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
             if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
         }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_LOCAL_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_LOCAL_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val sortBy = try { context.preferences.getEnum(Preference.HOME_LIBRARY_PLAYLIST_SORT_BY.key, PlaylistSortBy.SongCount) } catch (e: Exception) { PlaylistSortBy.SongCount }
-            val sortOrder = try { context.preferences.getEnum(Preference.HOME_LIBRARY_PLAYLIST_SORT_ORDER.key, SortOrder.Ascending) } catch (e: Exception) { SortOrder.Ascending }
-            val allSongs = database.playlistTable.sortPreviews(sortBy, sortOrder).first().flatMap { preview -> database.songPlaylistMapTable.allSongsOf(preview.playlist.id).first() }.distinctBy { song -> song.id }.filter { song -> song.id !in excludedIds }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
-        }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_YT_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_YT_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val allSongs = database.playlistTable.allAsPreview().first().filter { it.playlist.isYoutubePlaylist }.flatMap { preview -> database.songPlaylistMapTable.allSongsOf(preview.playlist.id).first() }.distinctBy { song -> song.id }.filter { song -> song.id !in excludedIds }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
-        }
-
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_PINNED_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_PINNED_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val allSongs = database.playlistTable.allAsPreview().first().filter { it.playlist.name.startsWith(PINNED_PREFIX, true) }.flatMap { preview -> database.songPlaylistMapTable.allSongsOf(preview.playlist.id).first() }.distinctBy { song -> song.id }.filter { song -> song.id !in excludedIds }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
-        }
-        // Rewind sub-group shuffles: deduplicated union of the generated playlists of
-        // the type (Month -> monthly, Year -> yearly, All -> both + all-time).
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_REWIND_MONTH_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_REWIND_MONTH_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val allSongs = rewindSongs(RewindPlaylists.Filter.Month).filter { song -> song.id !in excludedIds }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
-        }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_REWIND_YEAR_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_REWIND_YEAR_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val allSongs = rewindSongs(RewindPlaylists.Filter.Year).filter { song -> song.id !in excludedIds }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
-        }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_REWIND_ALL_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_PLAYLISTS_REWIND_ALL_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val allSongs = rewindSongs(RewindPlaylists.Filter.All).filter { song -> song.id !in excludedIds }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
+        if (playlistCategory != null) {
+            val items = loadAutoLibraryPlaylists(context, database, playlistCategory)
+                .flatMap { preview -> playlistSongs(preview.playlist.id.toString()) }
+                .distinctBy { song -> song.id }
+                .filter { song -> song.id !in excludedIds }
+                .map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }
+            val allowed = accessPolicy().eligible(items, playlistCategory).map { it.value }
+            val queue = if (AutoMediaIdContract.isShuffle(selectedId)) allowed.shuffled() else allowed
+            return MediaSession.MediaItemsWithStartPosition(queue, 0, 0)
         }
         // Disliked category shuffle: only the songs flagged as disliked (likedAt == -1L).
         if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_DISLIKED_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_DISLIKED_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
@@ -765,15 +747,12 @@ class AutoSessionCallback(
         }
         // Online playlists keep their songs scoped by playlist id so queues
         // never mix previously opened playlists (issue #777).
-        else -> { if (playlistId.toLongOrNull() != null) database.songPlaylistMapTable.allSongsOf(playlistId.toLong()).first() else AutoSearchState.playlistSongsById[playlistId].orEmpty() }
+        else -> {
+            val localId = playlistId.toLongOrNull()
+            if (localId == null) AutoSearchState.playlistSongsById[playlistId].orEmpty()
+            else loadAutoPlaylistSongs(context, database, downloadHelper, localId)
+        }
     }
-
-    /** Returns the deduplicated union of the requested Rewind playlists. */
-    private suspend fun rewindSongs(group: RewindPlaylists.Filter): List<Song> =
-        database.playlistTable.allAsPreview().first()
-            .filter { preview -> RewindPlaylists.matches(group, preview.playlist.name) }
-            .flatMap { preview -> database.songPlaylistMapTable.allSongsOf(preview.playlist.id).first() }
-            .distinctBy { song -> song.id }
 
     /** Uses the same disliked-song list as the browse category. */
     private suspend fun dislikedSongs(): List<Song> = DislikedExclusion.dislikedSongs(context, database)

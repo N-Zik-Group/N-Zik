@@ -470,15 +470,9 @@ data class PlayedText (
 
 @Serializable
 data class PlayedTextRun (
-    val text: TextEnum? = null,
+    val text: String? = null,
     val textColor: Long? = null
 )
-
-@Serializable
-enum class TextEnum(val value: String) {
-    @SerialName(" • ") Empty(" • "),
-    @SerialName("Played") Played("Played");
-}
 
 @Serializable
 data class Title (

@@ -1,8 +1,5 @@
 package app.n_zik.android.playback.services.automotive.session
 
-import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper
-import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
-
 import android.content.Context
 import android.os.Bundle
 import androidx.annotation.OptIn
@@ -11,6 +8,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.SessionCommand
 import app.n_zik.android.R
+import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper
 
 object AutoSessionConstants {
     const val ID_QUICK_PICKS = "QUICK_PICKS"
@@ -49,9 +47,15 @@ object AutoSessionConstants {
     const val ID_SONGS_TOP_SHUFFLE = "SONGS_TOP_SHUFFLE"
     const val ID_PLAYLISTS_LOCAL = "PLAYLISTS_LOCAL"
     const val ID_PLAYLISTS_YT = "PLAYLISTS_YT"
+    const val ID_PLAYLISTS_YT_ALL = "PLAYLISTS_YT_ALL"
+    const val ID_PLAYLISTS_YT_PLAYLISTS = "PLAYLISTS_YT_PLAYLISTS"
+    const val ID_PLAYLISTS_YT_PODCASTS = "PLAYLISTS_YT_PODCASTS"
     const val ID_PLAYLISTS_PINNED = "PLAYLISTS_PINNED"
     const val ID_PLAYLISTS_LOCAL_SHUFFLE = "PLAYLISTS_LOCAL_SHUFFLE"
     const val ID_PLAYLISTS_YT_SHUFFLE = "PLAYLISTS_YT_SHUFFLE"
+    const val ID_PLAYLISTS_YT_ALL_SHUFFLE = "PLAYLISTS_YT_ALL_SHUFFLE"
+    const val ID_PLAYLISTS_YT_PLAYLISTS_SHUFFLE = "PLAYLISTS_YT_PLAYLISTS_SHUFFLE"
+    const val ID_PLAYLISTS_YT_PODCASTS_SHUFFLE = "PLAYLISTS_YT_PODCASTS_SHUFFLE"
     const val ID_PLAYLISTS_PINNED_SHUFFLE = "PLAYLISTS_PINNED_SHUFFLE"
     // Rewind section: root folder + 3 sub-groups (All/Month/Year) + one shuffle per sub-group.
     const val ID_PLAYLISTS_REWIND = "PLAYLISTS_REWIND"

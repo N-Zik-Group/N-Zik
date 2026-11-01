@@ -2,6 +2,7 @@ package app.n_zik.android.components.playlist
 
 import io.ktor.client.call.body
 import it.fast4x.innertube.Innertube
+import it.fast4x.innertube.models.Thumbnail
 import it.fast4x.innertube.models.v0624.podcasts.BrowsePodcastsResponse0624
 import it.fast4x.innertube.models.v0624.podcasts.Continuation
 import it.fast4x.innertube.requests.parseContinuationPodcastEpisodes
@@ -23,15 +24,24 @@ internal suspend fun loadCompletePodcastEpisodes(
     browse: suspend (String?, String?) -> BrowsePodcastsResponse0624 = { id, continuation ->
         Innertube.browse(browseId = id, continuation = continuation, setLogin = true).body()
     },
-): List<Innertube.Podcast.EpisodeItem> {
+): List<Innertube.Podcast.EpisodeItem> = loadCompletePodcastPage(browseId, browse).listEpisode
+
+/** Shares complete-snapshot validation between online browsing, imports and saved feeds. */
+internal suspend fun loadCompletePodcastPage(
+    browseId: String,
+    browse: suspend (String?, String?) -> BrowsePodcastsResponse0624 = { id, continuation ->
+        Innertube.browse(browseId = id, continuation = continuation, setLogin = true).body()
+    },
+): Innertube.Podcast {
     require(browseId.startsWith("MPSP")) { "Not a podcast browse endpoint" }
     currentCoroutineContext().ensureActive()
     val response = browse(browseId, null)
     val renderer = requireNotNull(response.contents?.twoColumnBrowseResultsRenderer)
-    val header = renderer.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer
-        ?.contents?.firstOrNull()?.musicResponsiveHeaderRenderer
-    require(!header?.title?.runs?.firstOrNull()?.text.isNullOrBlank()) { "Missing podcast header" }
-    val author = header?.straplineTextOne?.runs?.firstOrNull()?.text.orEmpty()
+    val header = requireNotNull(renderer.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer
+        ?.contents?.firstOrNull()?.musicResponsiveHeaderRenderer) { "Missing podcast header" }
+    val title = requireNotNull(header.title?.runs?.firstOrNull()?.text)
+    require(title.isNotBlank()) { "Missing podcast title" }
+    val author = header.straplineTextOne?.runs?.firstOrNull()?.text.orEmpty()
     val shelf = requireNotNull(renderer.secondaryContents?.sectionListRenderer?.contents
         ?.firstOrNull()?.musicShelfRenderer) { "Missing podcast shelf" }
     val episodes = parsePodcastData(requireNotNull(shelf.contents), author).toMutableList()
@@ -49,5 +59,16 @@ internal suspend fun loadCompletePodcastEpisodes(
     }
     currentCoroutineContext().ensureActive()
     require(episodes.all { it.videoId.isNotBlank() && it.title.isNotBlank() }) { "Malformed podcast episode" }
-    return episodes
+    return Innertube.Podcast(
+        title = title,
+        author = author,
+        authorThumbnail = header.straplineThumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails
+            ?.maxByOrNull { (it.width ?: 0) * (it.height ?: 0) }?.url,
+        thumbnail = response.background?.musicThumbnailRenderer?.thumbnail?.thumbnails.orEmpty().map {
+            Thumbnail(url = it.url.orEmpty(), width = it.width?.toInt(), height = it.height?.toInt())
+        },
+        description = header.description?.musicDescriptionShelfRenderer?.description?.runs
+            ?.joinToString("") { it.text.orEmpty() }.orEmpty(),
+        listEpisode = episodes,
+    )
 }
