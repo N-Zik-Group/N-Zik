@@ -6,12 +6,16 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import app.it.fast4x.rimusic.models.Playlist
+import app.it.fast4x.rimusic.utils.asMediaItem
+import app.n_zik.android.components.playlist.loadCompletePodcastEpisodes
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.DatabaseInitializer
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
+import it.fast4x.innertube.models.v0624.podcasts.BrowsePodcastsResponse0624
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -116,6 +120,24 @@ class PodcastBookmarkDatabaseTest {
         togglePodcastBookmark(podcastId, "Podcast", listOf(episode("old-episode")))
         val saved = requireNotNull(Database.playlistTable.findByBrowseId(podcastId).first())
         assertFalse(refreshPodcastPlaylist(saved.id, podcastId) { null })
+        assertEquals(saved, Database.playlistTable.findById(saved.id).first())
+        assertEquals(listOf("old-episode"), db.songPlaylistMapTable.songsByPositionDirect(saved.id).map { it.id })
+    }
+
+    @Test fun `malformed feed and cancellation never replace a saved podcast snapshot`() = runBlocking {
+        togglePodcastBookmark(podcastId, "Podcast", listOf(episode("old-episode")))
+        val saved = requireNotNull(Database.playlistTable.findByBrowseId(podcastId).first())
+        val malformed = runCatching {
+            refreshPodcastPlaylist(saved.id, podcastId) { id ->
+                loadCompletePodcastEpisodes(id) { _, _ -> BrowsePodcastsResponse0624() }
+                    .map { it.asMediaItem }
+            }
+        }
+        assertTrue(malformed.isFailure)
+        val cancelled = runCatching {
+            refreshPodcastPlaylist(saved.id, podcastId) { throw CancellationException("Cancelled feed") }
+        }
+        assertTrue(cancelled.exceptionOrNull() is CancellationException)
         assertEquals(saved, Database.playlistTable.findById(saved.id).first())
         assertEquals(listOf("old-episode"), db.songPlaylistMapTable.songsByPositionDirect(saved.id).map { it.id })
     }

@@ -8,12 +8,16 @@ import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.offline.Download
 import app.it.fast4x.rimusic.enums.MaxTopPlaylistItems
-import app.it.fast4x.rimusic.enums.PlaylistSongSortBy
 import app.it.fast4x.rimusic.enums.SongSortBy
 import app.it.fast4x.rimusic.enums.SortOrder
-import app.it.fast4x.rimusic.utils.*
+import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsCustomValueKey
+import app.it.fast4x.rimusic.utils.MaxTopPlaylistItemsKey
+import app.it.fast4x.rimusic.utils.Preference
+import app.it.fast4x.rimusic.utils.asSong
+import app.it.fast4x.rimusic.utils.getEnum
+import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.core.rewind.RewindPlaylists
+import app.n_zik.android.playback.services.automotive.browse.loadAutoPlaylistSongs
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.models.CancellableAutoMediaItemMapper
 import app.n_zik.android.playback.services.automotive.session.AutoMediaIdContract
@@ -24,6 +28,7 @@ import app.n_zik.android.playback.services.automotive.models.AutoSearchState
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.playlistPage
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import app.it.fast4x.rimusic.enums.OnDeviceSongSortBy
 import app.kreate.android.me.knighthat.utils.getLocalSongs
@@ -82,24 +87,14 @@ class PlaylistDetailHandler : BrowseHandler {
             }
             else -> {
                 if (playlistId.toLongOrNull() != null) {
-                    // Spec 2: generated rewind-* playlists default to their top-order
-                    // snapshot on Android Auto (like the app detail screen)
-                    val localPlaylistId = playlistId.toLong()
-                    val isRewindPlaylist = database.playlistTable.findById(localPlaylistId).first()
-                        ?.name?.let { RewindPlaylists.isRewind(it) } == true
-                    val sortBy = context.preferences.getEnum(
-                        "PlaylistSongsSortBy_$playlistId",
-                        if (isRewindPlaylist) PlaylistSongSortBy.RewindTop else PlaylistSongSortBy.Title
-                    )
-                    val sortOrder = context.preferences.getEnum("PlaylistSongsSortOrder_$playlistId", SortOrder.Ascending)
-                    database.songPlaylistMapTable.sortSongs(localPlaylistId, sortBy, sortOrder)
+                    flowOf(loadAutoPlaylistSongs(context, database, downloadHelper, playlistId.toLong()))
                 } else {
                     val playlistPage = if (AutoAccessPolicy(context, database, downloadHelper, binder).online) Innertube.playlistPage(browseId = playlistId.removePrefix(MODIFIED_PREFIX))?.getOrNull() else null
                     val songs = playlistPage?.songsPage?.items?.map { item -> item.asSong } ?: emptyList()
                     // Scope the songs to their own playlist id so playback queues
                     // never mix songs from previously opened playlists (issue #777).
                     AutoSearchState.playlistSongsById = AutoSearchState.playlistSongsById + (playlistId to songs.distinctBy { s -> s.id })
-                    kotlinx.coroutines.flow.flowOf(songs)
+                    flowOf(songs)
                 }
             }
         }

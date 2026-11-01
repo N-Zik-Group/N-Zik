@@ -1,4 +1,9 @@
 Added:
+- feat(android-auto): add saved podcast filters and align library ordering (issue https://github.com/N-Zik-Group/N-Zik/issues/938)
+  - Add All, Playlists and Podcasts under YouTube using the same source classification and filter preferences as the phone library.
+  - Align Rewind visibility, playlist sort order, completed-download grouping and scoped playback actions with the phone; preserve browse snapshots, offline eligibility and queue limits.
+  - User validated podcasts on Android Auto and the phone with the debug APK installed on Xperia.
+
 - feat(library): filter saved YouTube playlists and podcasts separately
   - Include podcast snapshots by source rather than account-sync flags and add independent All, Playlists and Podcasts subfilters.
   - Keep bulk playback, export, deletion and refresh scoped to visible results; retained toolbar callbacks read current targets and cached songs.
@@ -56,6 +61,16 @@ Fixed:
   - Crossfade loaded cover frames and animate blur, opacity, artwork slot and edge fade instead of replacing the background instantly on song changes or expand/back.
   - Reserve the complete lower carousel content in both rendering modes to prevent clipped controls and opening layout jumps; retain existing user settings.
   - Validate carousel geometry, cover transitions and player budget tests with successful Debug builds; user verified playback and the installed emulator layout.
+
+- fix(podcast): accept translated playback labels and end failed loading
+  - Decode localized played labels as text, including French Lue, instead of rejecting the podcast response.
+  - Distinguish loading, failure, empty content and success; expose Retry after errors and preserve valid empty-page metadata and actions.
+  - Share complete-page validation between browsing and saved feeds; retain saved episodes when loading fails or is cancelled.
+
+- fix(playback): recover retained sessions and finish terminal crossfades (issues https://github.com/N-Zik-Group/N-Zik/issues/938, https://github.com/N-Zik-Group/N-Zik/issues/939)
+  - Retry transient MediaSession reattachment failures with bounded backoff independent of preloading; resolve the current player on each retry.
+  - End fades on incoming end, stop or error while preserving pause and buffering waits; detach the session before releasing retained players during destruction.
+  - Add regression coverage for speed-adjusted gain/deadline, real shuffle handoff, teardown and repeated notification refreshes.
 
 - fix(playback): restore notification events and crossfade EQ handoff (issues https://github.com/N-Zik-Group/N-Zik/issues/938, https://github.com/N-Zik-Group/N-Zik/issues/939)
   - Replace Kotlin Player.Listener delegation with explicit forwarding of all Media3 callbacks; retain profile-owned artwork refresh and identity-safe listener removal in SessionArtworkPlayer.
