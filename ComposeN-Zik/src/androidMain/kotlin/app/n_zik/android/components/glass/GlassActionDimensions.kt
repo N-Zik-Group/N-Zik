@@ -9,3 +9,8 @@ val GlassActionIconSize = 20.dp
 
 /** A standalone action retains the capsule's height without its horizontal spacing. */
 val GlassStandaloneActionSize = GlassActionCellHeight
+
+/** Scope action geometry without changing page toolbar defaults. */
+internal val LocalGlassActionCellSize = androidx.compose.runtime.staticCompositionLocalOf {
+    androidx.compose.ui.unit.DpSize(GlassActionCellWidth, GlassActionCellHeight)
+}

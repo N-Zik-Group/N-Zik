@@ -34,6 +34,12 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(header): align action canvases and balance button spacing
+  - Align Back, Search and Profile on the 36dp N-ZIK logo canvas, center the 28dp avatar and retain the reduced search glyph in Material and Glass.
+  - Use 12dp header side margins and 8dp external Back/logo and Material Search/Profile spacing without changing connected Glass fusion behavior.
+  - Scope group dimensions to header descendants so ordinary action toolbars keep their 44x40dp cells; use the same dimensions for drawing, separators and transferred menu anchors.
+  - Pass 28 geometry, group feedback and header transition tests plus the final focused canvas test and Debug builds; user validated the adjusted emulator rendering.
+
 - fix(player): unify transport feedback and honor queue availability
   - Apply press shrink to the complete Play/Pause, Previous and Next controls in the mini-player and Essential/Modern player, with and without Glass; share interaction sources and avoid duplicate scaling.
   - Observe Media3 navigation commands, dim and disable unavailable controls, preserve grand-player restart semantics and mini-player previous-item behavior, and reject stale skip requests before prepare/resume side effects.

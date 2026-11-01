@@ -2,7 +2,6 @@ package app.n_zik.android.components.navigation.header
 
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassActionIconSize
-import app.n_zik.android.components.glass.GlassStandaloneActionSize
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
@@ -34,6 +33,9 @@ import androidx.compose.runtime.SideEffect
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.rememberGlassSettings
 
+/** Matches the visible N-ZIK logo bounds without resizing its glyphs. */
+internal val HeaderActionCanvasSize = 36.dp
+
 @Composable
 internal fun HeaderIcon(
     iconId: Int,
@@ -62,8 +64,8 @@ internal fun HeaderIcon(
             backdrop = LocalGlassBackdrop.current,
             settings = glass.forArea(GlassArea.Header),
             filmColor = surfaceColor(colorPalette().background1),
-            modifier = modifier.size(GlassStandaloneActionSize),
-            contentHeight = GlassStandaloneActionSize,
+            modifier = modifier.size(HeaderActionCanvasSize),
+            contentHeight = HeaderActionCanvasSize,
             contentPadding = 0.dp,
             shape = uiRoundnessShape(),
             menuTrigger = menuTrigger,
@@ -75,7 +77,7 @@ internal fun HeaderIcon(
             menuTrigger?.shape = shape
         }
         Box(
-            modifier = modifier.size(48.dp).glassMenuTrigger(menuTrigger).clip(shape)
+            modifier = modifier.size(HeaderActionCanvasSize).glassMenuTrigger(menuTrigger).clip(shape)
                 .glassAreaContour(glass, GlassArea.Header, shape).clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) { icon() }

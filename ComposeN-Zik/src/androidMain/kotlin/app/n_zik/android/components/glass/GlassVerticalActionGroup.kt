@@ -32,6 +32,7 @@ fun GlassVerticalActionGroup(
     leadingActionJoinProgress: Float? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val cellSize = LocalGlassActionCellSize.current
     val shape = uiRoundnessShape()
     val transferred = trailingTrigger?.isTransferred == true
     val rejoin = remember { Animatable(if (transferred) 0f else 1f) }
@@ -45,7 +46,7 @@ fun GlassVerticalActionGroup(
         .copy(alpha = settings.rim.coerceIn(0f, 1f) * .65f)
     val leadingJoin = !transferred && rejoin.value == 1f && leadingActionJoinProgress != null
     val progress = if (leadingJoin) leadingActionJoinProgress ?: 1f else rejoin.value
-    val cellHeight = with(LocalDensity.current) { GlassActionCellHeight.toPx() }
+    val cellHeight = with(LocalDensity.current) { cellSize.height.toPx() }
     val fusion = remember(shape, cellHeight, progress, leadingJoin) {
         if (leadingJoin) glassActionJoinShape(shape, cellHeight, progress,
             fixedTrailingCell = true, vertical = true)
@@ -57,7 +58,7 @@ fun GlassVerticalActionGroup(
         modifier = modifier,
     ) {
         val surface = Modifier.matchParentSize().layout { measurable, constraints ->
-            val removed = if (transferred) GlassActionCellHeight.roundToPx() else 0
+            val removed = if (transferred) cellSize.height.roundToPx() else 0
             val height = (constraints.maxHeight - removed).coerceAtLeast(0)
             val pane = measurable.measure(Constraints.fixed(constraints.maxWidth, height))
             layout(constraints.maxWidth, constraints.maxHeight) { pane.place(0, 0) }
@@ -73,7 +74,7 @@ fun GlassVerticalActionGroup(
             modifier = (if (settings.usesGlassMaterial(area) && !transferred) Modifier.clip(fusion) else Modifier).drawWithContent {
                 drawContent()
                 if (!transferred && actionCount > 1 && settings.usesGlassSeparator(area)) {
-                    val cell = GlassActionCellHeight.toPx()
+                    val cell = cellSize.height.toPx()
                     val halfWidth = 10.dp.toPx().coerceAtMost(size.width / 4f)
                     var y = (size.height - cell * (actionCount - 1)).coerceAtLeast(0f)
                     while (y < size.height) {

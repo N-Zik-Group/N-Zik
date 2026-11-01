@@ -88,6 +88,7 @@ fun GlassActionGroup(
     filmColor: Color? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
+    val cellSize = LocalGlassActionCellSize.current
     val shape = uiRoundnessShape()
     val transferred = trailingTrigger?.isTransferred == true
     val singleMenuAction = trailingTrigger != null && menuActionCount == 1
@@ -152,7 +153,7 @@ fun GlassActionGroup(
     val menuMotion = if (trailingTrigger != null && menuActionCount != null)
         GlassGroupMenuMotion(trailingTrigger, menuTriggerIndex, 1f - rejoin.value,
             neighborShift.value, middleTrigger, rightShift.value) else null
-    val cellWidthPx = with(LocalDensity.current) { GlassActionCellWidth.toPx() }
+    val cellWidthPx = with(LocalDensity.current) { cellSize.width.toPx() }
     val joinShape = remember(shape, cellWidthPx, joinProgress, leadingJoin) {
         if (leadingJoin) glassActionJoinShape(shape, cellWidthPx, joinProgress, fixedTrailingCell = true)
         else glassGroupFusionShape(shape, cellWidthPx, joinProgress)
@@ -170,7 +171,7 @@ fun GlassActionGroup(
                 if (index != menuTriggerIndex || !transferred) {
                     val cellSurface = Modifier.absoluteOffset {
                         IntOffset((index * cellWidthPx).roundToInt() + (menuMotion?.offset(index) ?: 0), 0)
-                    }.size(GlassActionCellWidth, GlassActionCellHeight).clip(shape)
+                    }.size(cellSize.width, cellSize.height).clip(shape)
                     Box(if (settings.usesGlassMaterial(area)) cellSurface.glassMaterial(
                         settings.forArea(area), shape, ownBackdrop = backdrop, filmColor = actionFilm)
                         else cellSurface.glassAreaContour(settings, area, shape))
@@ -182,7 +183,7 @@ fun GlassActionGroup(
         val surface = Modifier.matchParentSize().absoluteOffset {
             IntOffset(menuMotion?.offset() ?: neighborShift.value.roundToInt(), 0)
         }.layout { measurable, constraints ->
-            val cellWidth = GlassActionCellWidth.roundToPx()
+            val cellWidth = cellSize.width.roundToPx()
             val restingWidth = if (menuActionCount != null) constraints.maxWidth - cellWidth else cellWidth
             val width = if (singleMenuAction) constraints.maxWidth
                 else if (returning) constraints.maxWidth
@@ -204,7 +205,7 @@ fun GlassActionGroup(
         if (drawSurface && !separated) Box(Modifier.graphicsLayer {
             alpha = if (singleMenuAction && trailingTrigger?.isTransferred == true) 0f else 1f
         }.then(background)
-            .glassActionGroupSeparators(settings, area, GlassActionCellWidth,
+            .glassActionGroupSeparators(settings, area, cellSize.width,
                 progress = { progress }, transferred = { transferred }, separatorBefore = separatorBefore))
         CompositionLocalProvider(LocalGlassGroupMenuMotion provides menuMotion) {
             // Cell feedback stays inside the connected pane. This mask is INSIDE the
@@ -239,6 +240,7 @@ fun GlassActionGroupItem(
     shape: Shape = toolbarItemShape(),
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val cellSize = LocalGlassActionCellSize.current
     val indication = if (nativeIndication) LocalIndication.current else null
     val menuMotion = LocalGlassGroupMenuMotion.current
     val latestContent = rememberUpdatedState(content)
@@ -256,7 +258,7 @@ fun GlassActionGroupItem(
     Box(
         modifier.then(if (groupIndex != null && menuMotion != null)
             Modifier.absoluteOffset { IntOffset(menuMotion.offset(groupIndex), 0) } else Modifier)
-            .then(if (fillCell) Modifier.size(GlassActionCellWidth, GlassActionCellHeight) else Modifier)
+            .then(if (fillCell) Modifier.size(cellSize.width, cellSize.height) else Modifier)
             .glassMenuTrigger(menuTrigger)
             .then(if (nativeIndication) Modifier.clip(shape) else Modifier)
             .glassGroupPressMotion(interaction, enabled && !nativeIndication,

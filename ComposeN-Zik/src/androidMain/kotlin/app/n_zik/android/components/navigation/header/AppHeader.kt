@@ -3,18 +3,15 @@ package app.n_zik.android.components.navigation.header
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.usesGlassMaterial
-import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.headerGlassMotionVisualOutset
 import app.n_zik.android.core.navigation.navigationChromeTween
 import app.n_zik.android.core.navigation.rememberAppBackAction
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
@@ -26,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import androidx.compose.ui.platform.LocalContext
@@ -35,14 +31,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.ui.components.themed.Button
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.n_zik.android.R
 import app.n_zik.android.LocalTopBarOffset
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.components.player.APP_HEADER_HEIGHT
-import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.ui.header.CollapsingAppTitle
 import app.n_zik.android.components.glass.rememberGlassSettings
 import androidx.compose.runtime.CompositionLocalProvider
@@ -80,7 +74,7 @@ class AppHeader(
         // Animate the start padding smoothly so the logo has nice spacing when home, 
         // and the back button aligns correctly when present.
         val startPadding by animateDpAsState(
-            targetValue = if (isHome || glassEnabled) 12.dp else 4.dp,
+            targetValue = 12.dp,
             animationSpec = navigationChromeTween()
         )
 
@@ -120,7 +114,7 @@ class AppHeader(
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
                 .fillMaxWidth()
                 .height(64.dp)
-                .padding(start = startPadding, end = if (glassEnabled) 12.dp else 4.dp),
+                .padding(start = startPadding, end = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Restore TopAppBar's default content coloring behavior for action buttons
@@ -130,24 +124,8 @@ class AppHeader(
             ) {
                 // Glass Back fades in at its anchor; only the title's reserved space expands.
                 HeaderBackSlot(visible = !isHome, glass = glassEnabled) {
-                    if (glassEnabled) {
-                        Box(Modifier.padding(end = 12.dp)) {
-                            HeaderIcon(R.drawable.chevron_back, colorPalette().favoritesIcon, onClick = onAppBack)
-                        }
-                    } else Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(uiRoundnessShape())
-                            .glassAreaContour(glassSettings, GlassArea.Header, uiRoundnessShape())
-                            .clickable(onClick = onAppBack),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Button(
-                            R.drawable.chevron_back,
-                            colorPalette().favoritesIcon,
-                            0.dp,
-                            24.dp
-                        ).Draw()
+                    Box(Modifier.padding(end = 8.dp)) {
+                        HeaderIcon(R.drawable.chevron_back, colorPalette().favoritesIcon, onClick = onAppBack)
                     }
                 }
     

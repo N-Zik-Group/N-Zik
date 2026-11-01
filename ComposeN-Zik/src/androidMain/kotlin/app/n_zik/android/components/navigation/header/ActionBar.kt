@@ -12,6 +12,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Box
 import app.n_zik.android.components.glass.GlassHorizontalSeparator
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.unit.DpSize
+import app.n_zik.android.components.glass.LocalGlassActionCellSize
+import app.n_zik.android.components.glass.glassAreaContour
+import app.n_zik.android.uiRoundnessShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -362,13 +367,14 @@ fun ActionBar(
     val hasSearchCell = sideSearchProgress.value > 0f
     val profileContent: @Composable () -> Unit = {
         val face = activeFace
-        ProfileAvatarFrame(size = 32.dp, area = GlassArea.Header, settings = glass) {
+        ProfileAvatarFrame(size = 28.dp, area = GlassArea.Header, settings = glass) {
             ProfileFaceAvatar(
-                avatar = face.avatar, faceName = face.name, size = 32.dp,
+                avatar = face.avatar, faceName = face.name, size = 28.dp,
                 modifier = Modifier.clip(artistThumbnailShape()),
             )
         }
     }
+    CompositionLocalProvider(LocalGlassActionCellSize provides DpSize(HeaderActionCanvasSize, HeaderActionCanvasSize)) {
     if (vertical) {
         GlassVerticalActionGroup(glass, GlassArea.Header, trailingTrigger = menuTrigger,
             actionCount = if (sideSearchProgress.value > 0f) 2 else 1,
@@ -411,23 +417,25 @@ fun ActionBar(
             menuTriggerIndex = if (hasSearchCell) 1 else 0, drawSurface = false) {
             HorizontalHeaderSearchVisibility(sideSearchProgress, fade = true) {
                 GlassActionGroupNativeItem(0) {
-                    HeaderIcon(R.drawable.search) { navController.navigate(NavRoutes.search.name) }
+                    HeaderIcon(R.drawable.search, modifier = Modifier.padding(end = 8.dp)) { navController.navigate(NavRoutes.search.name) }
                 }
             }
             GlassActionGroupNativeItem(if (hasSearchCell) 1 else 0) {
-                val face = activeFace
-                val sourceShape = artistThumbnailShape()
+                val sourceShape = uiRoundnessShape()
                 SideEffect {
                     menuTrigger.content = profileContent
                     menuTrigger.shape = sourceShape
                 }
-                ProfileAvatarFrame(size = 32.dp, area = GlassArea.Header,
-                    modifier = Modifier.padding(end = 10.dp).glassMenuTrigger(menuTrigger), settings = glass) {
-                    ProfileFaceAvatar(avatar = face.avatar, faceName = face.name, size = 32.dp,
-                        modifier = Modifier.clip(sourceShape).clickable { expanded = !expanded })
-                }
+                Box(
+                    modifier = Modifier.size(HeaderActionCanvasSize).glassMenuTrigger(menuTrigger)
+                        .clip(uiRoundnessShape())
+                        .glassAreaContour(glass, GlassArea.Header, uiRoundnessShape())
+                        .clickable { expanded = !expanded },
+                    contentAlignment = Alignment.Center,
+                ) { profileContent() }
             }
         }
+    }
     }
     Box(modifier = Modifier, contentAlignment = Alignment.Center) {
         // Define actions for when item inside menu clicked,
