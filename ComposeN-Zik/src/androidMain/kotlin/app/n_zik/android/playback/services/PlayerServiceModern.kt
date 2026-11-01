@@ -3542,7 +3542,7 @@ class PlayerServiceModern : MediaLibraryService(),
                     // End, error and explicit stop cannot resume this fade. Pause/buffering can.
                     if (nextPlayer.playbackState == Player.STATE_ENDED ||
                         nextPlayer.playbackState == Player.STATE_IDLE || nextPlayer.playerError != null
-                    ) break
+                    ) return@launch
                     if (!nextPlayer.isPlaying) {
                         delay(100L)
                         continue

@@ -17,6 +17,7 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.utils.crossfadeDurationKey
+import app.it.fast4x.rimusic.utils.crossfadeEnabledKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.appContext
 import io.mockk.every
@@ -567,6 +568,12 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         val outgoing = Target("A", 41)
         val incoming = Target("B", 42)
         prepareHandoff(outgoing, incoming)
+        service.preferences.edit().putBoolean(crossfadeEnabledKey, true).commit()
+        every { incoming.player.duration } returns 180_000L
+        every { incoming.player.currentPosition } returns 1_000L
+        every { incoming.player.hasNextMediaItem() } returns true
+        every { incoming.player.nextMediaItemIndex } returns 1
+        every { incoming.player.getMediaItemAt(1) } returns MediaItem.Builder().setMediaId("C").build()
         invoke("startCrossfade")
         scheduler.advanceTimeBy(600L)
         scheduler.runCurrent()
@@ -579,6 +586,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         scheduler.runCurrent()
         assertFalse(field("isCrossfading").getBoolean(service))
         assertNull(field("activeCrossfade").get(service))
+        assertNull("Terminal cleanup must not arm another fade", field("crossfadeTriggerJob").get(service))
         assertEquals(0.8f, incoming.currentVolume, 0f)
         verify(exactly = 1) { outgoing.player.release() }
         verify(exactly = 0) { incoming.player.release() }

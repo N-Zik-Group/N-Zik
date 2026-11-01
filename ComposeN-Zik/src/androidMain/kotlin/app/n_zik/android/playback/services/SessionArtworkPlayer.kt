@@ -2,6 +2,8 @@ package app.n_zik.android.playback.services
 
 import java.util.IdentityHashMap
 
+import android.media.MediaMetadata.METADATA_KEY_DURATION
+import android.os.Bundle
 import androidx.media3.common.FlagSet
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaMetadata
@@ -69,8 +71,21 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
         }?.let { ArtworkContentProvider.uriFor(LocalArtworkRules.songIdOf(it)) }
         val needsTitleFallback = hasLoadedTrack && SessionMetadataFallbacks.needsFallback(metadata.title)
         val needsArtistFallback = hasLoadedTrack && SessionMetadataFallbacks.needsFallback(metadata.artist)
-        if (providerArtworkUri == null && !needsTitleFallback && !needsArtistFallback) return metadata
+        // Media3 prefers the real player duration over this declared-duration fallback.
+        val declaredDuration = currentItem?.let {
+            metadata.durationMs?.takeIf { it > 0 }
+                ?: it.mediaMetadata.durationMs?.takeIf { duration -> duration > 0 }
+                ?: SessionDurationMetadata.fromDurationText(metadata.extras?.getString("durationText"))
+                ?: SessionDurationMetadata.fromDurationText(it.mediaMetadata.extras?.getString("durationText"))
+        }?.takeUnless { isCurrentMediaItemLive }
+        val hasReservedDuration = metadata.extras?.containsKey(METADATA_KEY_DURATION) == true
+        if (providerArtworkUri == null && !needsTitleFallback && !needsArtistFallback &&
+            declaredDuration == metadata.durationMs && !hasReservedDuration
+        ) return metadata
         return metadata.buildUpon().apply {
+            setDurationMs(declaredDuration)
+            // Legacy conversion applies extras last, so a reserved key could clobber the real duration.
+            if (hasReservedDuration) setExtras(Bundle(metadata.extras).apply { remove(METADATA_KEY_DURATION) })
             providerArtworkUri?.let { setArtworkUri(it); setArtworkData(null, null) }
             if (needsTitleFallback) setTitle(appContext().getString(R.string.unknown_title))
             if (needsArtistFallback) setArtist(appContext().getString(R.string.unknown_artist))

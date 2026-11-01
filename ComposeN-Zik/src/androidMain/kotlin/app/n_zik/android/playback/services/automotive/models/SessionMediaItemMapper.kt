@@ -15,7 +15,6 @@ import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.hasExplicitPrefix
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.utils.EXPLICIT_BUNDLE_TAG
-import app.it.fast4x.rimusic.utils.durationTextToMillis
 import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.preferences
@@ -26,6 +25,7 @@ import app.n_zik.android.core.coil.thumbnail
 import app.n_zik.android.playback.services.ArtworkContentProvider
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.playback.services.LocalArtworkRules
+import app.n_zik.android.playback.services.SessionDurationMetadata
 import app.n_zik.android.playback.services.SessionMetadataFallbacks
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
@@ -81,6 +81,7 @@ object SessionMediaItemMapper {
         val metadata = MediaMetadata.Builder()
             .setTitle(title.takeUnless { it == "null" }.orEmpty())
             .setArtist(artist.takeUnless { it == "null" }.orEmpty())
+            .setDurationMs(SessionDurationMetadata.fromDurationText(song.durationText))
             .setExtras(bundleOf(
                 "durationText" to song.durationText,
                 EXPLICIT_BUNDLE_TAG to explicit,
@@ -206,13 +207,6 @@ object SessionMediaItemMapper {
         val metadataBuilder = baseItem.mediaMetadata.buildUpon()
         applyMetadataFallbacks(metadataBuilder, baseItem.mediaMetadata)
         setArtworkUri(metadataBuilder, song, bestArtworkSource(song.thumbnailUrl))
-
-        val extras = Bundle(metadataBuilder.build().extras ?: Bundle()).apply {
-            if (!song.isLocal) {
-                putLong("android.media.metadata.DURATION", durationTextToMillis(song.durationText.orEmpty()))
-            }
-        }
-        metadataBuilder.setExtras(extras)
 
         return if (path.contains(AutoSessionConstants.ID_SEARCH_VIDEOS)) {
             baseItem.buildUpon()
