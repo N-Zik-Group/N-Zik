@@ -1,5 +1,8 @@
 package app.n_zik.android.components.player
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -54,6 +57,25 @@ internal class PlayerCoverFrameState<T> {
     }
 }
 
+internal const val PLAYER_COVER_FADE_MS = 500
+
+@Composable
+internal fun PlayerCoverCrossfade(frame: PlayerCoverFrame<Painter>, modifier: Modifier = Modifier) {
+    Crossfade(
+        targetState = frame,
+        modifier = modifier,
+        animationSpec = tween(PLAYER_COVER_FADE_MS, easing = FastOutSlowInEasing),
+        label = "playerCoverFade",
+    ) { visible ->
+        Image(
+            painter = visible.image,
+            contentDescription = stringResource(R.string.cd_blurred_background),
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.fillMaxSize(),
+        )
+    }
+}
+
 /** One committed cover frame serves both the visible background and its enclosing glass capture. */
 @Composable
 fun PlayerCurrentCover(
@@ -84,8 +106,17 @@ fun PlayerCurrentCover(
     BoxWithConstraints(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         val squareSize = maxOf(maxWidth, maxHeight)
         val scale = sqrt(maxWidth.value * maxWidth.value + maxHeight.value * maxHeight.value) / squareSize.value
-        val blurRadius = if (showThumbnail || (isShowingLyrics && !isShowingVisualizer) || !noBlur)
-            blurAdjuster.strength else 0f
+        val blurRadius by animateFloatAsState(
+            targetValue = if (showThumbnail || (isShowingLyrics && !isShowingVisualizer) || !noBlur)
+                blurAdjuster.strength else 0f,
+            animationSpec = tween(PLAYER_COVER_FADE_MS, easing = FastOutSlowInEasing),
+            label = "playerCoverBlur",
+        )
+        val backdropAlpha by animateFloatAsState(
+            targetValue = (blurAdjuster.backdrop / 100f).coerceIn(0f, 1f),
+            animationSpec = tween(PLAYER_COVER_FADE_MS, easing = FastOutSlowInEasing),
+            label = "playerCoverBackdrop",
+        )
         val angle by rememberInfiniteTransition(label = "currentCoverRotation").animateFloat(
             initialValue = 0f,
             targetValue = if (blurAdjuster.isCoverRotating) 360f else 0f,
@@ -93,17 +124,15 @@ fun PlayerCurrentCover(
             label = "currentCoverAngle",
         )
         Box(Modifier.requiredSize(squareSize)) {
-            if (frame != null) Image(
-                painter = frame.image,
-                contentDescription = stringResource(R.string.cd_blurred_background),
-                contentScale = ContentScale.Fit,
+            if (frame != null) PlayerCoverCrossfade(
+                frame = frame,
                 modifier = Modifier.fillMaxSize()
                     .then(if (blurRadius > 0f) Modifier.blur(blurRadius.dp) else Modifier)
                     .graphicsLayer { scaleX = scale; scaleY = scale; rotationZ = angle },
             )
         }
         Box(Modifier.fillMaxSize().background(Color.Black.copy(
-            alpha = (blurAdjuster.backdrop / 100f).coerceIn(0f, 1f),
+            alpha = backdropAlpha,
         )))
     }
 }

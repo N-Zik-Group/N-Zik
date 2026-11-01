@@ -1,11 +1,46 @@
 package app.n_zik.android.components.player.slide
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import app.n_zik.android.enums.PlayerSwipeSensitivity
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class SlideHelpersTest {
+
+    @Test
+    fun `stacked drag uses the selected finger sensitivity in both directions`() {
+        for (sensitivity in PlayerSwipeSensitivity.entries) {
+            val connection = CarouselDragConnection({ 1f }, sensitivity)
+            for (distance in listOf(-30f, 30f)) {
+                val available = Offset(12f, distance)
+                val consumed = connection.onPreScroll(available, NestedScrollSource.UserInput)
+                assertEquals(0f, consumed.x)
+                assertEquals(distance / sensitivity.threshold, distance - consumed.y, 0.0001f)
+            }
+        }
+    }
+
+    @Test
+    fun `drag damping follows changing geometry but preserves animations and normal pages`() {
+        var stride = 1f
+        val connection = CarouselDragConnection({ stride }, PlayerSwipeSensitivity.Low)
+        val drag = Offset(0f, -30f)
+        assertEquals(Offset.Zero, connection.onPreScroll(drag, NestedScrollSource.SideEffect))
+        assertTrue(connection.onPreScroll(drag, NestedScrollSource.UserInput).y < 0f)
+        stride = 400f
+        assertEquals(Offset.Zero, connection.onPreScroll(drag, NestedScrollSource.UserInput))
+    }
+
+    @Test
+    fun `crossing the midpoint does not falsely satisfy the release threshold`() {
+        assertEquals(0.6f, carouselDragDisplacement(11, 10, -0.4f), 0.0001f)
+        assertEquals(0.6f, carouselDragDisplacement(9, 10, 0.4f), 0.0001f)
+        assertEquals(0.9f, carouselDragDisplacement(11, 10, -0.1f), 0.0001f)
+        assertEquals(0.2f, carouselDragDisplacement(10, 10, -0.2f), 0.0001f)
+    }
 
     @Test
     fun `current page has highest z-index`() {

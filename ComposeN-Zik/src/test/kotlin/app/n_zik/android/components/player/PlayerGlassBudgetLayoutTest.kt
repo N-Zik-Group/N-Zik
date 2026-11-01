@@ -97,4 +97,21 @@ class PlayerGlassBudgetLayoutTest {
         assertEquals(Color.Magenta, pixels[(50f * density).toInt(), (790f * density).toInt()])
     }
 
+    @Test
+    fun `reserveLowerContent anchors lower content without Glass so expand never switches layout modes`() {
+        compose.setContent {
+            PlayerGlassBudgetLayout(enabled = false, expandedCarousel = false, reserveLowerContent = true,
+                modifier = Modifier.requiredSize(400.dp, 800.dp),
+                header = { Box(Modifier.size(400.dp, 50.dp)) },
+                artwork = { Box(Modifier.size(400.dp).testTag("cover")) },
+                information = { Box(Modifier.size(400.dp, 250.dp).testTag("lower")) })
+        }
+        val density = compose.density.density
+        val lower = compose.onNodeWithTag("lower").fetchSemanticsNode().boundsInRoot
+        val cover = compose.onNodeWithTag("cover").fetchSemanticsNode().boundsInRoot
+        assertEquals(800f * density, lower.bottom, 1f)
+        assertEquals(400f * density, cover.height, 1f)
+        assertEquals(50f * density, cover.top, 1f)
+    }
+
 }

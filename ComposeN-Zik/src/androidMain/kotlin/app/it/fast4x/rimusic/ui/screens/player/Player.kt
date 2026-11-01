@@ -75,6 +75,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.thumbnail
+import app.n_zik.android.components.player.slide.landscapeCarouselDrag
 import app.n_zik.android.components.player.slide.flingBehaviorFor
 import app.n_zik.android.components.player.slide.itemZIndexFor
 import app.n_zik.android.components.player.slide.playerThumbnailCover
@@ -204,7 +205,6 @@ import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
-import app.kreate.android.screens.player.background.BlurredCover
 import app.kreate.android.themed.rimusic.screen.player.ActionBar
 import com.mikepenz.hypnoticcanvas.shaderBackground
 import com.mikepenz.hypnoticcanvas.shaders.BlackCherryCosmos
@@ -509,13 +509,24 @@ fun Player(
     var swipeAnimationNoThumbnail by rememberPreference( swipeAnimationsNoThumbnailKey, SwipeAnimationNoThumbnail.Sliding )
     val expandPlayerState = rememberPreference( expandedplayerKey, false )
     var expandedplayer by expandPlayerState
-    // Landscape has no expand button: the carousel view is rendered while the
-    // expanded state is true (the state mapping is inverted vs portrait), so
-    // force it on to get the stacked carousel there.
+    // Landscape forces the expanded layout (left artwork column + stacked carousel).
+    // The portrait expand state is captured before that and restored when coming
+    // back, so portrait keeps the layout the user left it in.
     val playerInLandscape = isLandscape
+    var portraitExpandedPlayer by remember { mutableStateOf(expandedplayer) }
     LaunchedEffect( playerInLandscape ) {
-        if ( playerInLandscape ) expandedplayer = true
+        if ( playerInLandscape ) {
+            portraitExpandedPlayer = expandedplayer
+            expandedplayer = true
+        } else {
+            expandedplayer = portraitExpandedPlayer
+        }
     }
+    // Animate the bottom gradient start so it does not flash on expand/back.
+    val playerGradientStartY by animateFloatAsState(
+        targetValue = if ( playerInLandscape ) 600f else if ( expandedplayer ) 1300f else 950f,
+        label = "playerGradientStartY",
+    )
 
     val playerUpdateTrigger by binder.playerUpdateTrigger.collectAsStateWithLifecycle(0, context = NzikDispatchers.DATA)
 
@@ -967,7 +978,6 @@ fun Player(
         noBlur: Boolean,
         isShowingLyrics: Boolean,
         isShowingVisualizer: Boolean,
-        contentScale: ContentScale,
         modifier: Modifier = Modifier,
         captureBackdrop: Boolean = true,
     ) {
@@ -975,12 +985,12 @@ fun Player(
             Box(Modifier.fillMaxSize().then(
                 if (capturePlayerBackground && captureBackdrop) Modifier.layerBackdrop(playerCoverBackground) else Modifier
             )) {
-                BlurredCover(thumbnailUrl, blurAdjuster, showThumbnail, noBlur,
-                    isShowingLyrics, isShowingVisualizer, contentScale, modifier)
+                PlayerCurrentCover(thumbnailUrl, thumbnailUrl, blurAdjuster, showThumbnail, noBlur,
+                    isShowingLyrics, isShowingVisualizer, modifier)
             }
         } else {
-            BlurredCover(thumbnailUrl, blurAdjuster, showThumbnail, noBlur,
-                isShowingLyrics, isShowingVisualizer, contentScale, modifier)
+            PlayerCurrentCover(thumbnailUrl, thumbnailUrl, blurAdjuster, showThumbnail, noBlur,
+                isShowingLyrics, isShowingVisualizer, modifier)
         }
     }
 
@@ -1033,25 +1043,6 @@ fun Player(
         ))
     }
 
-    @Composable
-    fun CurrentPlayerCover() {
-        Box(Modifier.fillMaxSize().then(
-            if (opticalPlayerBackground && capturePlayerBackground)
-                Modifier.layerBackdrop(playerCoverBackground) else Modifier
-        )) {
-            PlayerCurrentCover(
-                mediaId = mediaItem.mediaId,
-                artworkUri = mediaItem.mediaMetadata.artworkUri?.toString().orEmpty(),
-                blurAdjuster = blurAdjuster,
-                showThumbnail = showthumbnail,
-                noBlur = noblur,
-                isShowingLyrics = isShowingLyrics,
-                isShowingVisualizer = isShowingVisualizer,
-            )
-        }
-    }
-
-
     if (!isGradientBackgroundEnabled) {
         if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor && (playerType == PlayerType.Essential || (showthumbnail && (!albumCoverRotation)))) {
             // A cached clip layer inside the capture span would retain the suppressed foreground.
@@ -1063,7 +1054,7 @@ fun Player(
                         1.0f to if (bottomgradient) if (colorPaletteMode == ColorPaletteMode.Light) Color.White.copy(
                             if (isLandscape) 0.8f else 0.75f
                         ) else Color.Black.copy(if (isLandscape) 0.8f else 0.75f) else Color.Transparent,
-                        startY = if (isLandscape) 600f else if (expandedplayer) 1300f else 950f,
+                        startY = playerGradientStartY,
                         endY = POSITIVE_INFINITY
                     )
                 )
@@ -1497,7 +1488,7 @@ fun Player(
         if (isLandscape) {
          Box{
              if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor && playerType == PlayerType.Modern && (!showthumbnail || albumCoverRotation)) {
-                   val fling = flingBehaviorFor(pagerStateFS)
+                   val fling = flingBehaviorFor(pagerStateFS, landscape = true, sensitivity = playerSwipeSensitivity)
                    pagerStateFS.LaunchedEffectScrollToPage(
                        binder,
                        playerUpdateTrigger,
@@ -1566,7 +1557,6 @@ fun Player(
                          noBlur = noblur,
                          isShowingLyrics = isShowingLyrics,
                          isShowingVisualizer = isShowingVisualizer,
-                         contentScale = if (albumCoverRotation && (isShowingLyrics || showthumbnail)) ContentScale.Fit else ContentScale.Crop,
                          modifier = Modifier.zIndex(if (it == pagerStateFS.currentPage) 1f else 0.9f)
                                             .conditional(albumCoverRotation) {
                                                 graphicsLayer {
@@ -1603,7 +1593,7 @@ fun Player(
                              1.0f to if (bottomgradient) if (lightTheme) Color.White.copy(
                                  if (isLandscape) 0.8f else 0.75f
                              ) else Color.Black.copy(if (isLandscape) 0.8f else 0.75f) else Color.Transparent,
-                             startY = if (isLandscape) 600f else if (expandedplayer) 1300f else 950f,
+                             startY = playerGradientStartY,
                              endY = POSITIVE_INFINITY
                          )
                      )
@@ -1614,14 +1604,13 @@ fun Player(
                      )){}
              }
 
-             if (fullCoverPresentation) CurrentPlayerCover() else PlayerBlurredCover(
-                 thumbnailUrl = mediaItems.getOrNull(if (!showLandscapeArtworkColumn) binder.player.currentMediaItemIndex else if (!showthumbnail || albumCoverRotation) pagerStateFS.currentPage else if (playerType == PlayerType.Modern) pagerState.currentPage else binder.player.currentMediaItemIndex)?.mediaMetadata?.artworkUri?.toString() ?: "",
+             PlayerBlurredCover(
+                 thumbnailUrl = if (fullCoverPresentation) mediaItem.mediaMetadata.artworkUri?.toString().orEmpty() else mediaItems.getOrNull(if (!showLandscapeArtworkColumn) binder.player.currentMediaItemIndex else if (!showthumbnail || albumCoverRotation) pagerStateFS.currentPage else if (playerType == PlayerType.Modern) pagerState.currentPage else binder.player.currentMediaItemIndex)?.mediaMetadata?.artworkUri?.toString() ?: "",
                  blurAdjuster = blurAdjuster,
                  showThumbnail = showthumbnail,
                  noBlur = noblur,
                  isShowingLyrics = isShowingLyrics,
                  isShowingVisualizer = isShowingVisualizer,
-                 contentScale = ContentScale.FillHeight
              )
 
             PlayerLandscapeColumns(
@@ -1662,7 +1651,7 @@ fun Player(
                              //.padding(vertical = 10.dp)
                          ) {
                              if (playerCoverArtworkVisible(showthumbnail, isShowingLyrics, coverOverlayPolicy.lyricsOnCover, isShowingVisualizer, coverOverlayPolicy.visualizerOnCover)) {
-                                  val fling = flingBehaviorFor(pagerState)
+                                  val fling = flingBehaviorFor(pagerState, landscape = true, sensitivity = playerSwipeSensitivity)
                                    val animatePageSpacing by animateDpAsState(
                                        if (expandedplayer) (thumbnailSpacingL.toInt() * 0.01 * maxHeight -
                                            if (carousel) 3 * carouselSize.size.dp else 2 * carouselSize.size.dp)
@@ -1673,9 +1662,19 @@ fun Player(
                                        if (expandedplayer) carouselSize.size.dp else ((100f - thumbnailSizeLDp) * 0.5f).dp,
                                        label = "landscapeCarouselPadding",
                                    )
+                                   // Animate the slot height so the cover re-centering transitions smoothly.
+                                   val animatedSlotHeight by animateDpAsState(
+                                       maxHeight,
+                                       label = "coverSlotHeight",
+                                   )
+                                   // Animate the edge fade strength so it does not flash on expand/back.
+                                   val playerCoverEdgeFade by animateFloatAsState(
+                                       if (expandedplayer) thumbnailFadeEx else thumbnailFade,
+                                       label = "coverEdgeFade",
+                                   )
                                    val carouselGeometry = playerCarouselGeometry(
                                        width = maxWidth,
-                                       height = maxHeight,
+                                       height = animatedSlotHeight,
                                        padding = animatePadding,
                                        pageSpacing = animatePageSpacing,
                                        compactStack = expandedplayer && carousel,
@@ -1699,14 +1698,15 @@ fun Player(
                                      pageSize = PageSize.Fixed(carouselGeometry.pageSize),
                                      pageSpacing = carouselGeometry.pageSpacing,
                                      contentPadding = PaddingValues(
-                                         top = (maxHeight - carouselGeometry.pageSize) / 2,
-                                         bottom = (maxHeight - carouselGeometry.pageSize) / 2 +
-                                             (-carouselGeometry.pageSpacing).coerceAtLeast(0.dp),
+                                         top = ((maxHeight - carouselGeometry.pageSize) / 2).coerceAtLeast(0.dp),
+                                         bottom = ((maxHeight - carouselGeometry.pageSize) / 2 +
+                                             (-carouselGeometry.pageSpacing).coerceAtLeast(0.dp)).coerceAtLeast(0.dp),
                                      ),
                                      beyondViewportPageCount = 2,
                                      flingBehavior = fling,
                                      userScrollEnabled = expandedplayer || !disablePlayerHorizontalSwipe,
                                      modifier = Modifier
+                                         .landscapeCarouselDrag(pagerState, playerSwipeSensitivity)
                                          .padding(
                                              all = (if (thumbnailType == ThumbnailType.Modern) -(10.dp) else 0.dp).coerceAtLeast(
                                                  0.dp
@@ -1714,7 +1714,7 @@ fun Player(
                                          )
                                          .conditional(fadingedge) {
                                              VerticalfadingEdge2(
-                                                 fade = (if (expandedplayer) thumbnailFadeEx else thumbnailFade) * 0.05f,
+                                                 fade = playerCoverEdgeFade * 0.05f,
                                                  showTopActionsBar, topPadding, expandedplayer,
                                              )
                                          }
@@ -1957,7 +1957,7 @@ fun Player(
         } else {
            Box {
                if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor && playerType == PlayerType.Modern && (!showthumbnail || albumCoverRotation)) {
-                     val fling = flingBehaviorFor(pagerStateFS)
+                     val fling = flingBehaviorFor(pagerStateFS, sensitivity = playerSwipeSensitivity)
                     val scaleAnimationFloat by animateFloatAsState(
                         if (isDraggedFS) 0.85f else 1f, label = ""
                     )
@@ -2046,7 +2046,6 @@ fun Player(
                                 noBlur = noblur,
                                 isShowingLyrics = isShowingLyrics,
                                 isShowingVisualizer = isShowingVisualizer,
-                                contentScale = if (albumCoverRotation && (isShowingLyrics || showthumbnail)) ContentScale.Fit else ContentScale.Crop,
                                 modifier = Modifier.conditional(albumCoverRotation) {
                                                        graphicsLayer {
                                                            scaleX = if (isShowingLyrics || showthumbnail) (screenHeight / screenWidth) + 0.5f else 1f
@@ -2175,7 +2174,7 @@ fun Player(
                                 1.0f to if (bottomgradient) if (colorPaletteMode == ColorPaletteMode.Light) Color.White.copy(
                                     if (isLandscape) 0.8f else 0.75f
                                 ) else Color.Black.copy(if (isLandscape) 0.8f else 0.75f) else Color.Transparent,
-                                startY = if (isLandscape) 600f else if (expandedplayer) 1300f else 950f,
+                                startY = playerGradientStartY,
                                 endY = POSITIVE_INFINITY
                             )
                         )
@@ -2186,19 +2185,22 @@ fun Player(
                         )){}
                 }
 
-               if (fullCoverPresentation) CurrentPlayerCover() else PlayerBlurredCover(
-                   thumbnailUrl = mediaItems.getOrNull(if (!showthumbnail || albumCoverRotation) pagerStateFS.currentPage else if (playerType == PlayerType.Modern) pagerState.currentPage else binder.player.currentMediaItemIndex)?.mediaMetadata?.artworkUri?.toString() ?: "",
+               PlayerBlurredCover(
+                   thumbnailUrl = if (fullCoverPresentation) mediaItem.mediaMetadata.artworkUri?.toString().orEmpty() else mediaItems.getOrNull(if (!showthumbnail || albumCoverRotation) pagerStateFS.currentPage else if (playerType == PlayerType.Modern) pagerState.currentPage else binder.player.currentMediaItemIndex)?.mediaMetadata?.artworkUri?.toString() ?: "",
                    blurAdjuster = blurAdjuster,
                    showThumbnail = showthumbnail,
                    noBlur = noblur,
                    isShowingLyrics = isShowingLyrics,
                    isShowingVisualizer = isShowingVisualizer,
-                   contentScale = ContentScale.FillHeight
                )
 
             PlayerGlassBudgetLayout(
                 enabled = glassSettings.enabled,
                 expandedCarousel = expandedplayer && carousel && playerType == PlayerType.Modern,
+                // Modern + carousel keeps the budget layout in both collapsed and expanded
+                // states, so the expand/collapse toggle never switches layout modes (same
+                // behavior as the Glass path).
+                reserveLowerContent = carousel && playerType == PlayerType.Modern,
                 modifier = (if (capturePlayerBackground) playerBackground.background else Modifier).then(containerModifier)
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                     //.padding(top = 10.dp)
@@ -2318,12 +2320,14 @@ fun Player(
                         // expand/back actions felt inverted.
                         .conditional((screenWidth <= (screenHeight / 2)) && (!expandedplayer && !isShowingStandaloneLyrics)) {height(screenWidth)}
                         .conditional((screenWidth > (screenHeight / 2)) || expandedplayer || isShowingStandaloneLyrics) {weight(1f)}
+                        // Animate the square <-> weighted slot size so expand/back does not jump.
+                        .animateContentSize()
                 ) {
 
                       if (showthumbnail) {
                          if (playerCoverArtworkVisible(showthumbnail, isShowingLyrics, coverOverlayPolicy.lyricsOnCover, isShowingVisualizer, coverOverlayPolicy.visualizerOnCover)) {
                              if (playerType == PlayerType.Modern) {
-                                   val fling = flingBehaviorFor(pagerState)
+                                   val fling = flingBehaviorFor(pagerState, sensitivity = playerSwipeSensitivity)
 
                                    pagerState.LaunchedEffectScrollToPage(
                                        binder,
@@ -2347,6 +2351,16 @@ fun Player(
                                  val animatePadding by animateDpAsState(
                                      if (expandedplayer) carouselSize.size.dp else ((100f - thumbnailSizeDp) * 1.5f).dp
                                  )
+                                  // Animate the slot height so the cover re-centering transitions smoothly.
+                                  val animatedSlotHeight by animateDpAsState(
+                                      maxHeight,
+                                      label = "coverSlotHeight",
+                                  )
+                                  // Animate the edge fade strength so it does not flash on expand/back.
+                                  val playerCoverEdgeFade by animateFloatAsState(
+                                      if (expandedplayer) thumbnailFadeEx else thumbnailFade,
+                                      label = "coverEdgeFade",
+                                  )
                                  val carouselGeometry = playerCarouselGeometry(
                                      width = maxWidth,
                                      height = maxHeight,
@@ -2358,10 +2372,10 @@ fun Player(
                                      state = pagerState,
                                      pageSize = PageSize.Fixed(carouselGeometry.pageSize),
                                      contentPadding = PaddingValues(
-                                         top = (maxHeight - carouselGeometry.pageSize)/2,
-                                         bottom = (maxHeight - carouselGeometry.pageSize)/2 + if (expandedplayer && carousel)
+                                         top = ((animatedSlotHeight - carouselGeometry.pageSize)/2).coerceAtLeast(0.dp),
+                                         bottom = ((animatedSlotHeight - carouselGeometry.pageSize)/2 + if (expandedplayer && carousel)
                                              (-carouselGeometry.pageSpacing).coerceAtLeast(0.dp)
-                                         else if (pageSpacing < 0.dp) -pageSpacing else 0.dp
+                                         else if (pageSpacing < 0.dp) -pageSpacing else 0.dp).coerceAtLeast(0.dp)
                                      ),
                                      pageSpacing = carouselGeometry.pageSpacing,
                                      beyondViewportPageCount = 2,
@@ -2374,7 +2388,7 @@ fun Player(
                                              )
                                          )
                                          .conditional(fadingedge) {
-                                             VerticalfadingEdge2(fade = (if (expandedplayer) thumbnailFadeEx else thumbnailFade)*0.05f,showTopActionsBar,topPadding,expandedplayer)
+                                             VerticalfadingEdge2(fade = playerCoverEdgeFade*0.05f,showTopActionsBar,topPadding,expandedplayer)
                                          }
                                  ){
 
@@ -2515,7 +2529,7 @@ fun Player(
                 },
                 information = {
                 PlayerInformationGlassBlock(modifier = Modifier
-                    .conditional(!glassSettings.enabled && !expandedplayer && !isShowingStandaloneLyrics){weight(1f)}) {
+                    .conditional(!glassSettings.enabled && !expandedplayer && !isShowingStandaloneLyrics && !(carousel && playerType == PlayerType.Modern)){weight(1f)}) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 if (!expandedplayer || !isShowingStandaloneLyrics || queueDurationExpanded) {
                     if (showTotalTimeQueue) {
@@ -2577,7 +2591,7 @@ fun Player(
                     )
                 }
                 Box(modifier = Modifier
-                    .conditional(!glassSettings.enabled && !expandedplayer && !isShowingStandaloneLyrics){weight(1f)}) {
+                    .conditional(!glassSettings.enabled && !expandedplayer && !isShowingStandaloneLyrics && !(carousel && playerType == PlayerType.Modern)){weight(1f)}) {
                     val standaloneOverlay = isShowingStandaloneLyrics ||
                         (isShowingVisualizer && !coverOverlayPolicy.visualizerOnCover)
                     if (playerType == PlayerType.Essential || standaloneOverlay ||

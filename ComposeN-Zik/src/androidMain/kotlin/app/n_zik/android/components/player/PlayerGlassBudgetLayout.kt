@@ -16,11 +16,16 @@ fun PlayerGlassBudgetLayout(
     enabled: Boolean,
     modifier: Modifier = Modifier,
     expandedCarousel: Boolean = false,
+    /**
+     * Also reserve lower content while collapsed, so an expand/collapse toggle never
+     * switches between layout modes and the lower content stays in place.
+     */
+    reserveLowerContent: Boolean = false,
     header: @Composable ColumnScope.() -> Unit,
     artwork: @Composable ColumnScope.() -> Unit,
     information: @Composable ColumnScope.() -> Unit,
 ) {
-    if (!enabled && !expandedCarousel) {
+    if (!enabled && !expandedCarousel && !reserveLowerContent) {
         Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
             header()
             artwork()

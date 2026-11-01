@@ -34,6 +34,12 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(player): smooth carousel travel and blurred cover transitions
+  - Scale landscape carousel finger travel to its short page stride, preserve portrait expand state across rotation and clamp animated pager padding to nonnegative values.
+  - Crossfade loaded cover frames and animate blur, opacity, artwork slot and edge fade instead of replacing the background instantly on song changes or expand/back.
+  - Reserve the complete lower carousel content in both rendering modes to prevent clipped controls and opening layout jumps; retain existing user settings.
+  - Validate carousel geometry, cover transitions and player budget tests with successful Debug builds; user verified playback and the installed emulator layout.
+
 - fix(playback): restore notification events and crossfade EQ handoff (issues https://github.com/N-Zik-Group/N-Zik/issues/938, https://github.com/N-Zik-Group/N-Zik/issues/939)
   - Replace Kotlin Player.Listener delegation with explicit forwarding of all Media3 callbacks; retain profile-owned artwork refresh and identity-safe listener removal in SessionArtworkPlayer.
   - Restore independent ExoPlayer audio sessions for crossfade, move effects with the active player and close the outgoing effect session during cleanup.
