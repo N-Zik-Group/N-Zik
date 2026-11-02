@@ -191,20 +191,12 @@ class PlayerStandaloneOverlayPlacementTest {
             }
             compose.runOnIdle { onCover.value = true }
             settle()
-            // AndroidView and AnimatedVisibility can schedule placement after the first idle.
-            // Record subsequent settled frames to distinguish deferred placement from a wrong inset.
-            val embeddedInsetFrames = if (visualizer) List(3) {
-                settle()
-                val frame = sceneBounds()
-                frame.bottom - settingsBottom(frame.right)
-            } else emptyList()
             val embedded = sceneBounds()
             assertEquals("Embedded canvas retains its full artwork viewport", host.bottom, embedded.bottom, 1f)
             val embeddedSettingsInset = embedded.bottom - settingsBottom(embedded.right)
             assertEquals("Only the circular on-cover scene reserves 16dp below settings: " +
                 "visualizer=$visualizer landscape=$wide glass=$enabled " +
-                "standaloneInset=$standaloneSettingsInset embeddedInset=$embeddedSettingsInset " +
-                "settledEmbeddedFrames=$embeddedInsetFrames",
+                "standaloneInset=$standaloneSettingsInset embeddedInset=$embeddedSettingsInset",
                 with(compose.density) { 16.dp.toPx() }, embeddedSettingsInset - standaloneSettingsInset, 1f)
             assertTrue(context.preferences.getBoolean(showlyricsthumbnailKey, false))
             assertTrue(context.preferences.getBoolean(showvisthumbnailKey, false))
@@ -226,10 +218,14 @@ class PlayerStandaloneOverlayPlacementTest {
     }
 
     private fun settle() {
-        compose.mainClock.advanceTimeByFrame()
-        compose.mainClock.advanceTimeBy(600)
-        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(600))
-        compose.waitForIdle()
+        // The Android renderer posts layout work after the Compose frame. Flush that work,
+        // then render its resulting placement in a second frame before reading semantics.
+        repeat(2) {
+            compose.mainClock.advanceTimeByFrame()
+            compose.mainClock.advanceTimeBy(600)
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(600))
+            compose.waitForIdle()
+        }
     }
 
     private fun findVisualizer(view: View): VisualizerView? {
