@@ -1,5 +1,7 @@
 package app.n_zik.android.components.menu
 
+import app.n_zik.android.components.glass.glassOverlayPaint
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
@@ -82,6 +84,7 @@ object GridMenu {
         GlassMaterialContainerColumn(
             Modifier.heightIn( max = (screenHeight * CONTENT_HEIGHT_FRACTION).dp )
                        .fillMaxWidth()
+                       .glassOverlayPaint(if (useGlass) 0f else nativeBodyColor.alpha)
                        .conditional(ownsSurface || !useGlass) { clip(menuShape) }
                        .then(if (useGlass) Modifier else Modifier.background(recessedSurfaceColor(colorPalette().background0))
                         .then(if (ownsSurface) Modifier.glassAreaContour(glass, GlassArea.Menus, menuShape) else Modifier)),
@@ -98,12 +101,12 @@ object GridMenu {
                 GlassMaterialContainerColumn(
                     includeParent = true,
                     sectionFilm = headerFilm,
-                    sectionFilmIsMaterial = useGlass,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxWidth()
                         .conditional(!useGlass) { clip(menuShape) }
                         .background(headerFilm)
+                        .glassOverlayPaint(headerFilm.alpha)
                 ) {
                     if (showDragHandle) {
                         MenuSheetDragHandle(color = colorPalette().text)
@@ -151,10 +154,9 @@ object GridMenu {
             GlassMaterialContainerScope(
                 Modifier.fillMaxWidth().weight(1f)
                     .conditional(!hasHeader && (!useGlass || ownsSurface)) { clip(menuShape) }
-                    .background(bodyFilm),
+                    .background(bodyFilm).glassOverlayPaint(bodyFilm.alpha),
                 includeParent = true,
                 sectionFilm = bodyFilm,
-                sectionFilmIsMaterial = useGlass,
             ) { bodyModifier ->
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive( minSize = 120.dp ),

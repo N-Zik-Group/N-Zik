@@ -36,6 +36,7 @@ import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import kotlin.math.roundToInt
 
 /** The four library Homes own status backing when no horizontal app header covers it. */
@@ -63,6 +64,7 @@ internal fun HomeCollapsingHeader(
     val density = LocalDensity.current
     val owner = remember { Any() }
     val sharedGlass = LocalSharedHomeHeaderGlass.current
+    val controlsBackdrop = sharedGlass?.surface ?: rememberCanvasBackdrop { drawRect(panelColor) }
     val railInsets = LocalSideRailContentInsets.current
     val direction = LocalLayoutDirection.current
     val leftRail = with(density) { railInsets.getLeft(density, direction).toDp() }
@@ -165,9 +167,9 @@ internal fun HomeCollapsingHeader(
                 .padding(if (sideGlass) PaddingValues(0.dp) else railInsets.asPaddingValues())
         ) {
             CompositionLocalProvider(
-                LocalGlassContainerBackdrop provides (sharedGlass?.surface ?: LocalGlassContainerBackdrop.current),
-                LocalGlassMaterialSource provides (sharedGlass?.list ?: LocalGlassMaterialSource.current),
-                LocalGlassBackdrop provides (sharedGlass?.surface ?: LocalGlassBackdrop.current),
+                LocalGlassContainerBackdrop provides controlsBackdrop,
+                LocalGlassMaterialSource provides controlsBackdrop,
+                LocalGlassBackdrop provides controlsBackdrop,
             ) { content() }
         }
     }

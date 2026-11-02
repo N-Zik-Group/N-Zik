@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalContext
 import androidx.compose.runtime.CompositionLocalProvider
@@ -36,6 +38,11 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
@@ -68,6 +75,7 @@ internal class GlassDialogEntry(
     val dimmingAlpha: () -> Float,
     val scrimProgress: () -> Float,
     val scrimColor: () -> Color = { Color.Black },
+    val contentAlpha: () -> Float = { 1f },
 ) {
     internal val exposure = Animatable(1f)
 }
@@ -116,10 +124,14 @@ internal fun GlassDialogWindow(
                 LocalGlassContainerBackdrop provides transparentSource,
                 LocalGlassMaterialSource provides transparentSource,
                 LocalGlassOpticsEnabled provides true,
+                LocalGlassOpticalUnderlayCovered provides (host != null && host.overlaysAbove(id).isNotEmpty()),
                 LocalGlassOpticsTransitionProgress provides 1f,
                 LocalGlassLiveFrame provides rememberGlassModalLiveFrameIfEnabled(
                     covered = host != null && host.nativeOverlays.lastOrNull() !== id),
-                LocalGlassUnderlayCovered provides (host != null && host.nativeOverlays.lastOrNull() !== id),
+                LocalGlassUnderlayCovered provides (host?.visuallyCovered(id) == true),
+                LocalGlassOverlayPaintScope provides host?.let { GlassOverlayPaintScope(it, id) {
+                    presentation?.motion?.value?.let(::dialogFadeAlpha) ?: 1f
+                } },
             ) {
                 if (presentation == null || (useSharedHost && host != null && properties.securePolicy != SecureFlagPolicy.Inherit)) {
                     NativeDialogDimming(presentation, area, scrimColor, scrimVisible)
@@ -155,8 +167,9 @@ internal fun GlassDialogWindow(
         host.dialogs.add(GlassDialogEntry(id, locals, { currentDismiss.value() },
             { currentProperties.value }, { currentEdgeToEdge.value }, { currentContent.value() }, {
                 if (dropdownOwner != null) dropdownOwner.resolve(currentBackdrop.value) else currentBackdrop.value
-            }, { currentDimming.value }, { currentScrimProgress.value() }, { currentScrimColor.value }))
-        onDispose { host.dialogs.remove(id) }
+            }, { currentDimming.value }, { currentScrimProgress.value() }, { currentScrimColor.value },
+            { presentation?.motion?.value?.let(::dialogFadeAlpha) ?: 1f }))
+        onDispose { host.dialogs.remove(id); host.visibility.removeOverlay(id) }
     }
 }
 
@@ -187,9 +200,31 @@ fun GlassModalContent(
         }
         previouslyBlocked = blocked
     }
-    val covered = LocalGlassUnderlayCovered.current || blocked
-    CompositionLocalProvider(LocalGlassUnderlayCovered provides covered) {
-        Box(Modifier.fillMaxSize().blockGlassCoveredInput(blocked)
+    val viewportId = remember { Any() }
+    var viewport by remember { mutableStateOf(Rect.Zero) }
+    val view = LocalView.current
+    val density = LocalDensity.current
+    val direction = LocalLayoutDirection.current
+    val safe = WindowInsets.safeDrawing
+    val safeTop = safe.getTop(density)
+    val safeLeft = safe.getLeft(density, direction)
+    val safeRight = safe.getRight(density, direction)
+    DisposableEffect(host, viewportId) { onDispose { host.visibility.viewports.remove(viewportId) } }
+    val covered = LocalGlassUnderlayCovered.current || host.visuallyCovered(viewport = viewport)
+    val cheapOptics = LocalGlassOpticalUnderlayCovered.current || blocked
+    CompositionLocalProvider(LocalGlassUnderlayCovered provides covered,
+        LocalGlassOpticalUnderlayCovered provides cheapOptics) {
+        Box(Modifier.fillMaxSize().onGloballyPositioned {
+            val bounds = it.glassBoundsOnScreen(view)
+            val rootOrigin = IntArray(2)
+            view.rootView.getLocationOnScreen(rootOrigin)
+            viewport = Rect(maxOf(bounds.left, rootOrigin[0] + safeLeft.toFloat()),
+                maxOf(bounds.top, rootOrigin[1] + safeTop.toFloat()),
+                minOf(bounds.right, rootOrigin[0] + view.rootView.width - safeRight.toFloat()), bounds.bottom)
+            host.visibility.viewports[viewportId] = viewport
+        // Read after layout: the first lowered frame must draw newly exposed content,
+        // even before the physical-coverage local is recomposed for animation consumers.
+        }.drawWithContent { if (!host.visuallyCovered(viewport = viewport)) drawContent() }.blockGlassCoveredInput(blocked)
             .then(if (manageFocus) Modifier
                 .then(if (blocked) Modifier.clearAndSetSemantics { } else Modifier)
                 .focusRequester(focus)
@@ -231,10 +266,14 @@ fun GlassDialogOverlayHost(host: GlassMenuHostState) {
             CompositionLocalProvider(entry.locals) {
                 CompositionLocalProvider(
                     LocalGlassOpticsEnabled provides true,
+                    LocalGlassOpticalUnderlayCovered provides host.overlaysAbove(entry.id).isNotEmpty(),
                     LocalGlassOpticsTransitionProgress provides 1f,
                     LocalGlassLiveFrame provides rememberGlassModalLiveFrameIfEnabled(
                         covered = entry !== host.dialogs.entries.lastOrNull() || host.entry != null || host.nativeOverlays.isNotEmpty()),
-                    LocalGlassUnderlayCovered provides (entry !== host.dialogs.entries.lastOrNull() || host.entry != null || host.nativeOverlays.isNotEmpty()),
+                    LocalGlassUnderlayCovered provides host.visuallyCovered(entry.id),
+                    LocalGlassOverlayPaintScope provides GlassOverlayPaintScope(host, entry.id) {
+                        entry.contentAlpha() * dialogFadeAlpha(entry.exposure.value)
+                    },
                     LocalGlassBackdrop provides dimmedSource,
                     LocalGlassMaterialSource provides dimmedSource,
                     LocalGlassOverlayBackdrop provides completedBackdrop,
@@ -288,6 +327,6 @@ fun GlassDialogOverlayHost(host: GlassMenuHostState) {
 internal fun NativeGlassOverlayCoverage(host: GlassMenuHostState?, id: Any) {
     DisposableEffect(host, id) {
         host?.nativeOverlays?.add(id)
-        onDispose { host?.nativeOverlays?.remove(id) }
+        onDispose { host?.nativeOverlays?.remove(id); host?.visibility?.removeOverlay(id) }
     }
 }

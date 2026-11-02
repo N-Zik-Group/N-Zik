@@ -122,7 +122,8 @@ class GlassCaptureFreshnessTest {
                 val source = rememberLayerBackdrop()
                 val paintSource: DrawScope.() -> Unit = remember { { drawRect(sourceColor.value) } }
                 val material = Modifier.glassMaterial(
-                    GlassSettings(film = 1f, rim = 0f, blur = 0f, depth = 0f, amount = 0f, vibrancy = 0f),
+                    // A transparent native role retains the shared film. Its slider owns coverage.
+                    GlassSettings(film = film.value.alpha, rim = 0f, blur = 0f, depth = 0f, amount = 0f, vibrancy = 0f),
                     shape, ownBackdrop = source, filmColor = film.value, drawShadow = false,
                 )
                 // Inspect the real renderer's adapter, rather than a second implementation

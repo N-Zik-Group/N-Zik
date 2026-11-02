@@ -10,6 +10,7 @@
 package app.n_zik.android.components.glass.backdrop.highlight
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Paint
@@ -20,9 +21,10 @@ import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.layer.GraphicsLayer
-import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.node.ObserverModifierNode
+import androidx.compose.ui.node.observeReads
 import androidx.compose.ui.node.invalidateDraw
 import androidx.compose.ui.node.requireGraphicsContext
 import androidx.compose.ui.platform.InspectorInfo
@@ -31,6 +33,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.fastCoerceAtMost
 import app.n_zik.android.components.glass.backdrop.RuntimeShaderCacheImpl
 import app.n_zik.android.components.glass.backdrop.internal.ShapeProvider
+import app.n_zik.android.components.glass.backdrop.internal.MaterialDecoration
 import app.n_zik.android.components.glass.backdrop.internal.blur
 import app.n_zik.android.components.glass.backdrop.internal.clipOutline
 import app.n_zik.android.components.glass.backdrop.internal.setRuntimeShader
@@ -78,7 +81,7 @@ internal class HighlightElement(
 internal class HighlightNode(
     var shapeProvider: ShapeProvider,
     var highlight: () -> Highlight?
-) : DrawModifierNode, Modifier.Node() {
+) : DrawModifierNode, ObserverModifierNode, Modifier.Node() {
 
     override val shouldAutoInvalidate: Boolean = false
 
@@ -92,15 +95,21 @@ internal class HighlightNode(
 
     private val runtimeShaderCache = RuntimeShaderCacheImpl()
 
-    private var prevStyle: HighlightStyle? = null
-
     override fun ContentDrawScope.draw() {
+        var decoration: MaterialDecoration? = null
+        observeReads { decoration = prepareHighlight() }
+        shapeProvider.materialLayers?.highlight = decoration
+        drawContent()
+        decoration?.draw(this)
+    }
+
+    override fun onObservedReadsChanged() = invalidateDraw()
+
+    private fun DrawScope.prepareHighlight(): MaterialDecoration? {
         val highlight = highlight()
         if (highlight == null || highlight.width.value <= 0f) {
-            return drawContent()
+            return null
         }
-
-        drawContent()
 
         val highlightLayer = highlightLayer
         if (highlightLayer != null) {
@@ -144,10 +153,9 @@ internal class HighlightNode(
                 }
             }
 
-            translate(-1f, -1f) {
-                drawLayer(highlightLayer)
-            }
+            return MaterialDecoration(highlightLayer, highlight, Offset(-1f, -1f))
         }
+        return null
     }
 
     override fun onAttach() {
@@ -163,7 +171,7 @@ internal class HighlightNode(
         }
         clipPath = null
         runtimeShaderCache.clear()
-        prevStyle = null
+        shapeProvider.materialLayers?.highlight = null
     }
 
     private fun DrawScope.configurePaint(highlight: Highlight) {

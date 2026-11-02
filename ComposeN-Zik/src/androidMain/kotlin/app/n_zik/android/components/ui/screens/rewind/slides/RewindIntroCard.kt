@@ -38,6 +38,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.n_zik.android.R
+import app.n_zik.android.components.glass.LocalGlassUnderlayCovered
+import app.n_zik.android.components.player.LocalPlayerCoveredPage
 import app.n_zik.android.components.ui.screens.profiles.ProfileFaceAvatar
 import app.n_zik.android.components.ui.screens.rewind.RewindData
 import app.n_zik.android.components.ui.screens.rewind.RewindPeriod
@@ -291,9 +293,11 @@ private fun RewindListeningWave(
     val white = rewindColors.value.cream
     val black = rewindColors.value.ink
     var time by remember { mutableFloatStateOf(0f) }
-
-    LaunchedEffect(active) {
-        if (!active) return@LaunchedEffect
+    // Keep the phase and completed reveal while hidden; restarting a frame clock must not
+    // replay the intro's opening lock or count elapsed time behind an opaque player/menu.
+    val visible = active && !LocalGlassUnderlayCovered.current && !LocalPlayerCoveredPage.current
+    LaunchedEffect(visible) {
+        if (!visible) return@LaunchedEffect
         // Frame-driven invalidation: advance the phase once per rendered frame, scaled by the
         // real frame delta (a fixed 16 ms tick was off-vsync on 120 Hz displays), and wrap on
 //

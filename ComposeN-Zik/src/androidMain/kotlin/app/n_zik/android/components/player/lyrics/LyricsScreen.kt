@@ -20,6 +20,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.input.pointer.pointerInput
@@ -49,7 +51,6 @@ import app.n_zik.android.components.glass.glassOverlayCanvasViewport
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.GlassOverlayControls
 import app.n_zik.android.components.glass.OverlayFade
-import app.n_zik.android.components.glass.GlassOverlayScene
 import app.it.fast4x.rimusic.utils.lyricsTypeKey
 import app.n_zik.android.components.dialog.common.LyricsSizeDialog
 import app.it.fast4x.rimusic.ui.components.themed.TextPlaceholder
@@ -73,7 +74,6 @@ import app.n_zik.android.ui.saveable.TolerantStringStateSaver
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.withContext
-import kotlin.Float.Companion.POSITIVE_INFINITY
 import app.n_zik.android.components.menu.lyrics.LyricsSettingsMenu
 import app.n_zik.android.components.dialog.player.ShowOffsetDialog
 import app.n_zik.android.components.player.extractM3ECoverColors
@@ -318,16 +318,18 @@ fun LyricsScreen(
         }
 
         val overlayCanvasViewport = Modifier.glassOverlayCanvasViewport(rememberGlassSettings(), showThumbnail = showlyricsthumbnail)
-        GlassOverlayScene(
-                scope = app.n_zik.android.components.glass.GlassScope.Lyrics,
+        var transportHeightPx by remember { mutableIntStateOf(0) }
+        LyricsGlassScene(
             background = if (!showlyricsthumbnail) Color.Transparent else Color.Black.copy(0.8f),
-            contentAlignment = Alignment.Center,
             modifier = modifier
                 .pointerInput(Unit) { detectTapGestures(onTap = { onDismiss() }) }
                 .fillMaxSize()
                 .then(overlayCanvasViewport)
-                .clip(overlayViewportShape(showlyricsthumbnail, thumbnailShape()))
-        ) {
+                .clip(overlayViewportShape(showlyricsthumbnail, thumbnailShape())),
+            transportHeight = with(LocalDensity.current) { transportHeightPx.toDp() },
+            transportShade = if (!showlyricsthumbnail && isLandscape && landscapeControls)
+                (if (lightTheme) Color.White else Color.Black).copy(alpha = .5f) else Color.Transparent,
+            scene = {
             val allSyncedSourcesChecked = checkedLyricsLrc && checkedLyricsKugou && checkedLyricsInnertube
             val noLyricsFound = text == null && allSyncedSourcesChecked
 
@@ -520,6 +522,7 @@ fun LyricsScreen(
 
             }
 
+            }, controls = {
             if (trailingContent != null) {
                 Box(
                     modifier = Modifier
@@ -557,13 +560,7 @@ fun LyricsScreen(
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(Color.Transparent,if (lightTheme) Color.White.copy(0.5f) else Color.Black.copy(0.5f)),
-                                startY = 0f,
-                                endY = POSITIVE_INFINITY
-                            ),
-                        )
+                        .onSizeChanged { transportHeightPx = it.height }
                         .align(Alignment.BottomCenter)
                         .padding(bottom = 10.dp)
                 ){
@@ -728,7 +725,7 @@ fun LyricsScreen(
                     )
                 }
             }
-        }
+        })
     }
 }
 

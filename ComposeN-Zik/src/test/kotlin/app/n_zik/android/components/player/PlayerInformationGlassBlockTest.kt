@@ -62,6 +62,7 @@ import app.n_zik.android.components.glass.LocalGlassOpticsEnabled
 import app.n_zik.android.components.glass.LocalGlassUnderlayCovered
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import org.junit.Assert.assertEquals
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -171,6 +172,7 @@ class PlayerInformationGlassBlockTest {
         val player = mockk<Player>(relaxed = true)
         val binder = mockk<PlayerServiceModern.Binder>(relaxed = true)
         every { binder.player } returns player
+        every { binder.playerUpdateTrigger } returns MutableStateFlow(0)
         every { player.currentPosition } returns 30_000L
         every { player.duration } returns 120_000L
         val sheet = mockk<PlayerSheetState>(relaxed = true)
@@ -326,7 +328,7 @@ class PlayerInformationGlassBlockTest {
         assertEquals(gated, pixel())
     }
 
-    @Test fun `information children apply their material once regardless of the surrounding plate film`() {
+    @Test fun `information children reflect the rendered surrounding plate and its live film updates`() {
         val headerEnabled = mutableStateOf(false)
         val headerFilm = mutableStateOf(.5f)
         compose.setContent { AppearanceProvider {
@@ -373,14 +375,17 @@ class PlayerInformationGlassBlockTest {
             }
         }
         val withoutPlate = centers()
+        var previous = withoutPlate
         for (film in listOf(.5f, .9f)) {
             compose.runOnIdle { headerEnabled.value = true; headerFilm.value = film }
             compose.onNodeWithTag("player.informationBlock.surface").assertExists()
-            centers().zip(withoutPlate).forEachIndexed { index, (actual, expected) ->
-                assertEquals("${tags[index]} red with header film=$film", expected.red, actual.red, .015f)
-                assertEquals("${tags[index]} green with header film=$film", expected.green, actual.green, .015f)
-                assertEquals("${tags[index]} blue with header film=$film", expected.blue, actual.blue, .015f)
+            val current = centers()
+            current.zip(previous).forEachIndexed { index, (actual, expected) ->
+                val difference = kotlin.math.abs(expected.red - actual.red) +
+                    kotlin.math.abs(expected.green - actual.green) + kotlin.math.abs(expected.blue - actual.blue)
+                assertTrue("${tags[index]} must reflect the changed parent plate film=$film", difference > .025f)
             }
+            previous = current
         }
     }
 
@@ -398,6 +403,7 @@ class PlayerInformationGlassBlockTest {
         val binder = mockk<PlayerServiceModern.Binder>(relaxed = true)
         val player = mockk<Player>(relaxed = true)
         every { binder.player } returns player
+        every { binder.playerUpdateTrigger } returns MutableStateFlow(0)
         every { player.currentMediaItem } returns null
         every { player.currentPosition } returns 30_000L
         every { player.duration } returns 120_000L

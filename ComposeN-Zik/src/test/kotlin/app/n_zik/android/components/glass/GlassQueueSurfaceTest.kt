@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -33,6 +35,7 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasClickAction
@@ -77,6 +80,77 @@ import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackd
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassQueueSurfaceTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `queue player source retains real player objects beneath the live native scrim`() {
+        val expansion = mutableStateOf(0f)
+        var compositions = 0
+        compose.setContent {
+            androidx.compose.runtime.SideEffect { compositions++ }
+            val player = rememberCanvasBackdrop {
+                drawRect(Color.Red)
+                drawRect(Color.White, androidx.compose.ui.geometry.Offset(size.width / 2f, 0f),
+                    androidx.compose.ui.geometry.Size(size.width / 2f, size.height))
+            }
+            val source = app.n_zik.android.components.player.rememberPlayerQueueBackdrop(player) { expansion.value }
+            Box(Modifier.size(64.dp).testTag("queue.player.scrim").drawBehind {
+                with(source) { drawBackdrop(this@drawBehind, null, null) }
+            })
+        }
+        compose.waitForIdle()
+        val settled = compositions
+        for (fraction in listOf(0f, .325f, .65f, 1f)) {
+            compose.runOnIdle { expansion.value = fraction }
+            val pixels = compose.onNodeWithTag("queue.player.scrim").captureToImage().toPixelMap()
+            val scrim = Color.Black.copy(alpha = (fraction / .65f).coerceIn(0f, 1f) * .5f)
+            assertColorClose(scrim.compositeOver(Color.Red), pixels[16, 32])
+            assertColorClose(scrim.compositeOver(Color.White), pixels[48, 32])
+        }
+        assertEquals("scrim animation is observed during draw", settled, compositions)
+    }
+
+    @Test fun `queue mini and row sources retain the native panel beneath the translucent list`() {
+        val panelFill = mutableStateOf(Color.Blue.copy(alpha = .5f))
+        val listFill = Color.Green.copy(alpha = .25f)
+        var list: LayerBackdrop? = null
+        var miniSource: Backdrop? = null
+        var rowSource: Backdrop? = null
+        compose.setContent {
+            val shape = RoundedCornerShape(8.dp)
+            val settings = GlassSettings(enabled = true)
+            val player = rememberCanvasBackdrop { drawRect(Color.Red) }
+            CompositionLocalProvider(LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                Typography.fallback, shape, shape, shape), LocalGlassBackdrop provides player) {
+                Column {
+                    GlassQueuePanel(Modifier.size(64.dp).glassQueuePanelBackground(panelFill.value, shape, settings), settings,
+                        panelBackgroundColor = panelFill.value, panelShape = shape) {
+                        val currentList = LocalQueueListBackdrop.current
+                        val currentRowSource = rememberQueueRowGlassBackdrop(listFill, settings)
+                        androidx.compose.runtime.SideEffect { list = currentList; rowSource = currentRowSource }
+                        Box(Modifier.size(64.dp).glassQueueListBackdrop(rememberLazyListState())
+                            .glassQueueListBackground(listFill, settings))
+                        QueueEmbeddedMini {
+                            val source = LocalGlassContainerBackdrop.current
+                            androidx.compose.runtime.SideEffect { miniSource = source }
+                        }
+                    }
+                    Box(Modifier.size(64.dp).testTag("panel.mini.source").drawBehind {
+                        miniSource?.let { with(it) { drawBackdrop(this@drawBehind, list?.layerCoordinates, null) } }
+                    })
+                    Box(Modifier.size(64.dp).testTag("panel.row.source").drawBehind {
+                        rowSource?.let { with(it) { drawBackdrop(this@drawBehind, list?.layerCoordinates, null) } }
+                    })
+                }
+            }
+        }
+        for (alpha in listOf(.5f, 1f, 0f)) {
+            compose.runOnIdle { panelFill.value = Color.Blue.copy(alpha = alpha) }
+            val expected = listFill.compositeOver(panelFill.value.compositeOver(Color.Red))
+            for (tag in listOf("panel.mini.source", "panel.row.source")) {
+                val pixels = compose.onNodeWithTag(tag).captureToImage().toPixelMap()
+                assertColorClose(expected, pixels[pixels.width / 2, pixels.height / 2])
+            }
+        }
+    }
 
     private fun setAppearanceContent(content: @Composable () -> Unit) {
         compose.setContent {
@@ -155,6 +229,7 @@ class GlassQueueSurfaceTest {
         val revealed = mutableStateOf(true)
         val nativeFill = Color.Green.copy(alpha = .5f)
         var isolatedSource: Backdrop? = null
+        var listCoordinates: androidx.compose.ui.layout.LayoutCoordinates? = null
         compose.setContent {
             val shape = RoundedCornerShape(8.dp)
             val settings = GlassSettings(enabled = enabled.value, source = GlassTintSource.Custom,
@@ -168,7 +243,7 @@ class GlassQueueSurfaceTest {
                         isolatedSource = safeSource
                         NativeQueueRows(settings) {
                             CompositionLocalProvider(LocalQueueRowBackdrop provides safeSource) {
-                                Column(Modifier.background(Color.Blue)) {
+                                Column(Modifier.background(Color.Blue).then(Modifier.onGloballyPositioned { listCoordinates = it })) {
                                     for (id in listOf("first", "second")) {
                                         val row = if (id == currentId.value)
                                             Modifier.glassNowPlayingRow(Color.Transparent, Color.Red.copy(alpha = .25f), shape, settings)
@@ -186,7 +261,7 @@ class GlassQueueSurfaceTest {
                     }
                     Box(Modifier.size(64.dp).testTag("isolated_queue_source").drawBehind {
                         isolatedSource?.let { source -> with(source) {
-                            drawBackdrop(this@drawBehind, null, null)
+                            drawBackdrop(this@drawBehind, listCoordinates, null)
                         } }
                     })
                 }
@@ -570,19 +645,19 @@ class GlassQueueSurfaceTest {
         }
     }
 
-    @Test fun `native queue toolbar leaves bottom inset ownership with its host in every policy`() {
+    @Test fun `queue toolbar owns bottom inset only when its scoped panel material is active`() {
         val modes = GlassAreaMode.entries
         for (menuMode in modes) for (actionMode in modes) {
             val settings = GlassSettings(areaModes = mapOf(GlassArea.Menus to menuMode,
                 GlassArea.ActionButtons to actionMode))
-            assertFalse(queueToolbarUsesGlassMaterial(settings))
+            assertEquals(menuMode.hasMaterial, queueToolbarUsesGlassMaterial(settings))
         }
         assertFalse(queueToolbarUsesGlassMaterial(GlassSettings(enabled = false)))
     }
 
     @Test
     @Config(qualifiers = "land")
-    fun `real queue toolbar stays sixty dp above system navigation without adding a second inset`() {
+    fun `real queue toolbar reserves navigation once and extends material through its inset`() {
         val settings = mutableStateOf(GlassSettings(quality = GlassQuality.Performance))
         lateinit var view: View
         var observedNavigationInset = -1
@@ -594,12 +669,14 @@ class GlassQueueSurfaceTest {
             view = LocalView.current
             val density = LocalDensity.current
             observedNavigationInset = WindowInsets.navigationBars.getBottom(density)
-            extraToolbarInset = queueToolbarBottomInset()
             materialOwnsInset = usesQueueToolbarGlass(settings.value)
             nativeHeightPx = with(density) { 60.dp.toPx() }
             CompositionLocalProvider(LocalGlassPreviewSettings provides settings.value) {
+                extraToolbarInset = queueToolbarBottomInset()
                 Box(Modifier.size(300.dp, 160.dp).testTag("native.queue.viewport")) {
-                    GlassQueuePanel(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.navigationBars), settings.value) {
+                    val hostInsets = if (materialOwnsInset) WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
+                        else WindowInsets.navigationBars
+                    GlassQueuePanel(Modifier.fillMaxSize().windowInsetsPadding(hostInsets), settings.value) {
                         QueueToolBar(Modifier.align(Alignment.BottomCenter).testTag("native.queue.toolbar"))
                     }
                 }
@@ -616,13 +693,16 @@ class GlassQueueSurfaceTest {
                 }
                 compose.runOnIdle {
                     assertEquals(insetPx, observedNavigationInset)
-                    assertEquals(0.dp, extraToolbarInset)
-                    assertFalse(materialOwnsInset)
+                    assertEquals(enabled && mode.hasMaterial, materialOwnsInset)
+                    assertEquals(if (materialOwnsInset) insetPx.toFloat() else 0f,
+                        extraToolbarInset.value * (nativeHeightPx / 60f), .5f)
                 }
                 val viewport = compose.onNodeWithTag("native.queue.viewport").fetchSemanticsNode().boundsInRoot
                 val toolbar = compose.onNodeWithTag("native.queue.toolbar").fetchSemanticsNode().boundsInRoot
-                assertEquals("Native toolbar height for $mode", nativeHeightPx, toolbar.height, .5f)
-                assertEquals("Host reserves the inset once for $mode", viewport.bottom - insetPx, toolbar.bottom, .5f)
+                assertEquals("Toolbar height for $mode", nativeHeightPx + if (materialOwnsInset) insetPx else 0,
+                    toolbar.height, .5f)
+                assertEquals("Inset reserved once for $mode", viewport.bottom - if (materialOwnsInset) 0 else insetPx,
+                    toolbar.bottom, .5f)
             }
         }
         QueueToolBarState.reset()

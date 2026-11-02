@@ -25,22 +25,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.GraphicsLayerScope
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
@@ -68,7 +62,6 @@ import app.n_zik.android.components.glass.glassMaterial
 import app.n_zik.android.components.glass.glassOpticsProgress
 import app.n_zik.android.components.glass.drawGlassOptics
 import app.n_zik.android.components.glass.glassRenderer
-import app.n_zik.android.components.glass.glassNativeSurfaceTint
 import app.n_zik.android.components.glass.glassSaturation
 import app.n_zik.android.components.glass.isGlassMotionAllowed
 import app.n_zik.android.uiRoundnessShape
@@ -207,8 +200,6 @@ internal fun GlassNavigationTabs(
     val shape = uiRoundnessShape()
     val panelShape = containerShape ?: shape
     val originalFilm = surfaceColor(colorPalette().background1)
-    val tintedFilm = glassNativeSurfaceTint(settings, originalFilm)
-    val film = tintedFilm.copy(alpha = tintedFilm.alpha * settings.film.coerceIn(0f, 1f))
     val wash = (if (colorPalette().isDark) Color.Black else Color.White)
         .copy(alpha = settings.indicatorOpacity.coerceIn(0f, 1f))
     val panelTranslation = Modifier.graphicsLayer {
@@ -285,37 +276,14 @@ internal fun GlassNavigationTabs(
                 child.place((width - expandedWidth) / 2, (height - expandedHeight) / 2)
             }
         }
-        val pressedBackdrop = remember(backdrop, surfaceBackdrop, animation) {
-            object : Backdrop {
-                private val surfacePaint = Paint()
-                override val isCoordinatesDependent = true
-                override fun DrawScope.drawBackdrop(
-                    density: Density,
-                    coordinates: LayoutCoordinates?,
-                    layerBlock: (GraphicsLayerScope.() -> Unit)?,
-                ) {
-                    backdrop?.let { with(it) { drawBackdrop(density, coordinates, layerBlock) } }
-                    val progress = animation.pressProgress.coerceIn(0f, 1f)
-                    if (progress > 0f) {
-                        surfacePaint.alpha = progress
-                        val canvas = drawContext.canvas
-                        canvas.saveLayer(Rect(0f, 0f, size.width, size.height), surfacePaint)
-                        try {
-                            with(surfaceBackdrop) { drawBackdrop(density, coordinates, layerBlock) }
-                        } finally {
-                            canvas.restore()
-                        }
-                    }
-                }
-            }
-        }
         Box(
             slotPlacement
                 .then(if (motion) interactiveHighlight.gestureModifier else Modifier)
                 .then(animation.modifier)
                 .then(slotGrowth)
                 .then(if (optical) Modifier.drawBackdrop(
-                    backdrop = pressedBackdrop,
+                    // The parent already contains its film; keep it beneath every press state.
+                    backdrop = surfaceBackdrop,
                     shape = { shape },
                     effects = {
                         val configured = glassTabOptics(settings, animation.pressProgress, opticsProgress)
@@ -332,7 +300,6 @@ internal fun GlassNavigationTabs(
                     onDrawBehind = { drawRect(wash, alpha = 1f - opticsProgress) },
                     onDrawSurface = {
                         val progress = animation.pressProgress
-                        drawRect(film, alpha = (1f - progress) * opticsProgress)
                         drawRect(wash, alpha = (1f - progress) * opticsProgress)
                         drawRect(Color.Black.copy(alpha = 0.03f * progress * opticsProgress))
                     },

@@ -43,6 +43,24 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+
+- fix(glass): synchronize layered materials with their visible parent surfaces
+  - Rebuild Queue current-song materials from the player, native panel, preceding row materials and swipe-action backgrounds while excluding each row's own foreground and frontmost siblings.
+  - Export clipped material fills, contours, highlights and shadows independently of artwork/text; refresh combined backdrop captures when consumers move without a source-content change.
+  - Include the complete Queue bottom panel and navigation inset in nested toolbar sources; retain foreground optical budgets separately from the covered player.
+  - Connect player information, lyrics controls, menus/dialogues, navigation, headers, search overlays, settings previews, Rewind cards and updater actions to their immediate rendered parent sources.
+  - Restore closed dropdown lower boundaries while preserving the open lower edge of attached menu sheets.
+
+- fix(player): restore seekbar state after gestures and external playback changes
+  - Share playback/timeline observations and gesture lifecycle handling across native and Glass seekbar styles, including player rebinding, media changes, buffering and external controls.
+  - Clamp seek targets to known durations, clear interrupted gestures and retain pending seek targets until the playback timeline catches up.
+  - Preserve flat Wavy presentation while seeking or paused and restore waves when playback resumes; use absolute pointer positions for static audio-wave seeking.
+
+- fix(queue): suspend covered Essential animations at the actual expanded endpoint
+  - Compare the panel height against its real layout endpoint instead of mixing configuration-height and edge-to-edge inset measurements.
+  - Propagate opaque full-coverage and independent optical budgets from the mini-player queue to its underlying scene; preserve the queue's foreground Glass and resume exposed decorations during lowering or closing.
+  - Keep Modern and translucent queues animated; distinguish measured opaque modal coverage from modal presence, and pause the hidden Rewind wave clock without resetting its phase.
+
 - fix(player): compact glass mini-player controls uniformly
   - Use 36dp glass seats for every mini-player action, including play/pause and custom buttons, while preserving Material geometry and native glyph sizing.
   - Reduce the default four-button glass row from 216dp to 180dp; retain Compose touch-target expansion and compact dock behavior.

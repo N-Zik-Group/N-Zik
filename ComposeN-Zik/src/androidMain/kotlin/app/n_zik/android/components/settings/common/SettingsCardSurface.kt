@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -19,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassControlOverflowSurface
 import app.n_zik.android.components.glass.GlassMaterialContainerScope
+import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import androidx.compose.ui.graphics.compositeOver
 import app.n_zik.android.components.glass.glassSettingsCardBackground
 import app.n_zik.android.components.glass.glassSettingsCardRim
@@ -62,7 +65,11 @@ internal fun SettingsCardSurface(
                         colors = CardDefaults.cardColors(containerColor = containerColor),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)) { }
                 }
-            }, content = content)
+            }, content = {
+                CompositionLocalProvider(LocalGlassMaterialSource provides LocalGlassContainerBackdrop.current) {
+                    content()
+                }
+            })
         }
         return
     }

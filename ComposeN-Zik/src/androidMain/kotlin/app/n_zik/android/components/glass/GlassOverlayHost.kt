@@ -102,6 +102,7 @@ data class GlassMenuEntry(
 
 /** A dismissed entry stays mounted until its exit animation actually completes. */
 class GlassMenuHostState {
+    internal val visibility = GlassOverlayVisibility()
     var entry by mutableStateOf<GlassMenuEntry?>(null)
         private set
     var exitGeneration by mutableStateOf(0L)
@@ -267,7 +268,9 @@ fun GlassOverlayHost(host: GlassMenuHostState) {
             LocalGlassOpticsEnabled provides true,
             LocalGlassOpticsTransitionProgress provides 1f,
             LocalGlassLiveFrame provides rememberGlassModalLiveFrameIfEnabled(covered = host.nativeOverlays.isNotEmpty()),
-            LocalGlassUnderlayCovered provides (host.nativeOverlays.isNotEmpty()),
+            LocalGlassUnderlayCovered provides host.visuallyCovered(entry.id),
+            LocalGlassOpticalUnderlayCovered provides host.nativeOverlays.isNotEmpty(),
+            LocalGlassOverlayPaintScope provides remember(host, entry.id) { GlassOverlayPaintScope(host, entry.id) },
         ) { GlassOverlayEntry(host, entry) }
     }
 }
@@ -389,6 +392,8 @@ private fun GlassOverlayEntry(host: GlassMenuHostState, entry: GlassMenuEntry) {
                             .absoluteOffset { IntOffset(frame.bounds.left.roundToInt(), frame.bounds.top.roundToInt()) }
                             .graphicsLayer { alpha = if (!ready) 0f else if (sharedTrigger) 1f else (fraction * 5f).coerceIn(0f, 1f) }
                             .layerBackdrop(visibleMenu)
+                            .glassOverlayPaint((if (glassEnabled) entry.settings.film else nativeColor.alpha) *
+                                (if (!ready) 0f else if (sharedTrigger) 1f else (fraction * 5f).coerceIn(0f, 1f)))
                             .semantics { paneTitle = "Menu" }
                             .pointerInput(entry.id) {
                                 // Keep taps in the pane's padding away from the outside-dismiss sibling.
@@ -403,7 +408,7 @@ private fun GlassOverlayEntry(host: GlassMenuHostState, entry: GlassMenuEntry) {
                                     }
                                 })
                             .then(if (glassEnabled) Modifier.glassMaterial(
-                                settings, shape, menu = true, highlightAlpha = .3f,
+                                settings, shape, menu = true, highlightAlpha = .3f, excludeBottomRim = false,
                                 filmColor = entry.containerColor,
                                 menuFilmProgress = if (sharedTrigger) fraction else 1f,
                                 blurRadiusDp = settings.blur * if (sharedTrigger) (.5f + .5f * fraction) else 1f,
@@ -417,7 +422,14 @@ private fun GlassOverlayEntry(host: GlassMenuHostState, entry: GlassMenuEntry) {
                         ) else entry.modifier,
                         pivot = placement.pivot,
                         onFinalSize = { menuSize = it },
-                        content = entry.content,
+                        content = {
+                            // The pane exports before its foreground. Descendant badges see
+                            // that visible plate without redirecting the pane to its own export.
+                            CompositionLocalProvider(LocalGlassMaterialSource provides
+                                if (glassEnabled) menuMaterial else nativeMaterial) {
+                                entry.content(this)
+                            }
+                        },
                     )
                     if (ready) entry.trigger?.content?.let { sourceContent ->
                         GlassMenuSource(fraction, returnAnchor, frame.bounds, sourceContent)

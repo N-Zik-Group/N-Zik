@@ -74,7 +74,7 @@ internal fun UnifiedTopNavigationGlass(
         }
         return
     }
-    val surfaceBackdrop = rememberLayerBackdrop()
+    val surfaceBackdrop = LocalUnifiedTopGlassSurface.current ?: rememberLayerBackdrop()
     val shape = topNavigationBarShape(uiRoundnessShape())
     val material = Modifier.extendGlassPastScreenEdge(GlassScreenEdge.Top).layerBackdrop(surfaceBackdrop).glassMaterial(
         settings = settings.forArea(GlassArea.Nav),

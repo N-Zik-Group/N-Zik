@@ -7,8 +7,6 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
-import app.n_zik.android.privacy.JournalPermission
-import app.n_zik.android.privacy.PermissionEventKind
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
@@ -77,7 +75,6 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.RippleConfiguration
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -119,11 +116,9 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -146,7 +141,6 @@ import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import android.graphics.Bitmap
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.ime
 import com.kieronquinn.monetcompat.core.MonetActivityAccessException
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.kieronquinn.monetcompat.interfaces.MonetColorsChangedListener
@@ -320,7 +314,6 @@ import app.it.fast4x.rimusic.utils.navigationBarPositionKey
 import app.it.fast4x.rimusic.utils.navigationBarTypeKey
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 import app.it.fast4x.rimusic.utils.pipModuleKey
-import app.it.fast4x.rimusic.utils.playNext
 import app.it.fast4x.rimusic.utils.playerBackgroundColorsKey
 import app.it.fast4x.rimusic.utils.playerThumbnailSizeKey
 import app.it.fast4x.rimusic.utils.playerVisualizerTypeKey
@@ -358,7 +351,6 @@ import kotlinx.coroutines.withContext
 import me.knighthat.invidious.Invidious
 import app.kreate.android.me.knighthat.utils.Toaster
 import it.fast4x.innertube.Innertube.proxy
-import okhttp3.OkHttpClient
 import timber.log.Timber
 import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
 import app.n_zik.android.playback.services.diagnostics.UiFrameClockDiagnostics
@@ -371,7 +363,6 @@ import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.extensions.discord.DiscordUiState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.navigation.NavController
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.lifecycle.Lifecycle
 import app.n_zik.android.enums.PendingMiniPlayerAction
 import app.n_zik.android.core.backup.BackupManager
@@ -390,7 +381,6 @@ import android.Manifest
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import kotlinx.coroutines.Job
 import androidx.compose.foundation.layout.offset
-import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 
@@ -2307,11 +2297,13 @@ class MainActivity :
                             GlassRippleProvider {
                             val sceneGlassSettings = rememberGlassSettings()
                             var toastNeedsLiveBackdrop by remember { mutableStateOf(false) }
+                            var miniQueueMounted by remember { mutableStateOf(false) }
+                            val miniQueueVisible = showQueueOverlay || miniQueueMounted
                             // Shared by overlay freshness and the debounced media-presence gate below.
                             val currentMediaId by (binder?.player?.currentMediaItemIdAsState() ?: remember { mutableStateOf<String?>(null) })
                             GlassSceneContent(glassMenuHost,
                                 enabled = sceneGlassSettings.enabled && glassRenderer(sceneGlassSettings) != GlassRenderer.Tint,
-                                needsLiveBackdrop = toastNeedsLiveBackdrop,
+                                needsLiveBackdrop = toastNeedsLiveBackdrop || miniQueueVisible,
                                 refreshKey = listOf(
                                     currentMediaId, finalAppearance.colorPalette,
                                     navController.currentBackStackEntryAsState().value?.id,
@@ -2322,6 +2314,7 @@ class MainActivity :
                                 modifier = Modifier.appearanceBackground()) {
                             GlassModalContent(glassMenuHost,
                                 focusSessionKey = navController.currentBackStackEntryAsState().value?.id) {
+                            app.n_zik.android.components.player.MiniPlayerQueueScene(queueVisible = miniQueueVisible, scene = {
                             // First-launch onboarding: rendered instead of the main
                             // navigation while the flag is false. Page changes (permissions ->
 //
@@ -2670,11 +2663,14 @@ class MainActivity :
                                 }
                             }
 
+                            }, overlay = {
                             MiniPlayerQueueOverlay(
                                 showSheet = showQueueOverlay,
                                 navController = navController,
-                                onDismiss = { showQueueOverlay = false }
+                                onDismiss = { showQueueOverlay = false },
+                                onVisibilityChange = { miniQueueMounted = it },
                             )
+                            })
 
                             val isVideo = binder?.player?.currentMediaItem?.isVideo ?: false
                             val isVideoEnabled =

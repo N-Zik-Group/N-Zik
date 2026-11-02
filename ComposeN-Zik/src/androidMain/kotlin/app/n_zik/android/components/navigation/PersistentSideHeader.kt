@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -20,6 +21,9 @@ import androidx.navigation.NavController
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.LocalGlassBackdrop
+import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import app.n_zik.android.components.navigation.header.SideAppHeaderControls
 import app.n_zik.android.components.navigation.nav.SideNavigationSurface
@@ -43,8 +47,14 @@ internal fun PersistentSideHeader(
                 modifier = Modifier.align(Alignment.TopCenter).padding(top = 8.dp, bottom = 8.dp)
                     .verticalScroll(rememberScrollState()),
             ) {
-                SideAppHeaderControls(navController)
-                SideRailBodySubcompose(pageKey, expectsTabs, registration, surfaceBackdrop)
+                CompositionLocalProvider(
+                    LocalGlassBackdrop provides surfaceBackdrop,
+                    LocalGlassContainerBackdrop provides surfaceBackdrop,
+                    LocalGlassMaterialSource provides surfaceBackdrop,
+                ) {
+                    SideAppHeaderControls(navController)
+                    SideRailBodySubcompose(pageKey, expectsTabs, registration, surfaceBackdrop)
+                }
             }
         }
     }

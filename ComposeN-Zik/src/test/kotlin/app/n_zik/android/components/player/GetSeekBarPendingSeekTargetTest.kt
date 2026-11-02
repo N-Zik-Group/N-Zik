@@ -36,6 +36,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -46,35 +47,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-/**
- * Issue #881 (gh-881), Phase 3 Fix E (review patch): the composable wiring of the held
- * (optimistic) seek target in [GetSeekBar] + DurationIndicator. The pure release decision
- * is pinned by [PendingSeekScrubTest]; this pins what the UI does with it:
- *
- * - a skip-button seek HOLDS its target on the label while the player position is stale
- *   (the "snap back" complaint); a consecutive tap accumulates from the HELD position,
- * - the hold RELEASES once the position converges (no stuck bar; a fresh tap
- *   accumulates from the live position),
- * - a forward tap with unset duration issues NO seek (minOf against C.TIME_UNSET is
- *   garbage; the `newPosition < 0` guard is pinned at the UI level),
- * - Phase 3.3: the position cache ticks while the sheet is collapsed — the removed gate
- *   would have frozen it there and the pause-between-songs trigger (the cache's only
- *   consumer) would never fire.
- *
- * The held value is observed two ways: the label text (formatAsDuration of the held
- * target) and the NEXT click's seek target (skip buttons adjust from `skipBasePosition`:
- * drag ?: un-converged held target ?: live position, read at tap time — Phase 3.1).
- * OutlinedText renders the label as TWO BasicTexts (main + outline), hence
- * `onAllNodesWithText`.
- *
- * JUnit 4 + [RobolectricTestRunner] through the project's junit-vintage-engine on the
- * JUnit 5 platform (`createComposeRule()` only works with JUnit 4), plain [Application]
- * (heavy init skipped; same pattern as HeaderVersionBadgeTest). Player/binder are mocks;
- * `position()` is test-driven Compose state so convergence is observable. Clicks use
- * `performSemanticsAction(OnClick)` — `performClick()` hit-tests, and off-screen or
- * stale-bounds nodes are silent no-ops under Robolectric (see
- * OnboardingProfileScreenWiringTest).
- */
+/** Verifies held seek positions and live skip targets through the actual player controls. */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
 class GetSeekBarPendingSeekTargetTest {
@@ -110,6 +83,7 @@ class GetSeekBarPendingSeekTargetTest {
     @Before
     fun setUp() {
         fakePosition = BASE_POSITION_MS
+        every { binder.playerUpdateTrigger } returns MutableStateFlow(0)
         every { binder.player } returns mockPlayer
         // Phase 3.1: the skip buttons read their base LIVE from the player at tap time —
         // the mock player mirrors the test-driven position (an in-sync UI by default).

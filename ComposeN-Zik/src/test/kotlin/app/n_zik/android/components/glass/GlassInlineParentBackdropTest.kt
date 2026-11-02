@@ -54,7 +54,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 class GlassInlineParentBackdropTest {
     @get:Rule val compose = createComposeRule()
 
-    @Test fun `badges use raw source for Glass cards and the original skin for native cards`() {
+    @Test fun `badges reflect rendered parent cards in every renderer and original native skin`() {
         val fill = mutableStateOf(Color.Green)
         val mode = mutableStateOf(GlassAreaMode.GlassOnly)
         val quality = mutableStateOf(GlassQuality.Balanced)
@@ -93,10 +93,8 @@ class GlassInlineParentBackdropTest {
                 assertEquals("$tag $renderer $cardMode enabled=$active parent red", color.red, parent.red, .03f)
                 assertEquals("$tag $renderer $cardMode enabled=$active parent green", color.green, parent.green, .03f)
                 assertEquals("$tag $renderer $cardMode enabled=$active parent blue", color.blue, parent.blue, .03f)
-                val rawSourceVisible = active && cardMode.hasMaterial && renderer != GlassQuality.Performance
-                val expectedChild = if (rawSourceVisible) {
-                    if (tag == "settings") Color.Black else Color(0xFF101010)
-                } else parent
+                // A neutral child sees the actual parent, including its opaque film.
+                val expectedChild = parent
                 assertEquals("$tag $renderer $cardMode enabled=$active red", expectedChild.red, child.red, .03f)
                 assertEquals("$tag $renderer $cardMode enabled=$active green", expectedChild.green, child.green, .03f)
                 assertEquals("$tag $renderer $cardMode enabled=$active blue", expectedChild.blue, child.blue, .03f)
@@ -104,7 +102,7 @@ class GlassInlineParentBackdropTest {
         }
     }
 
-    @Test fun `real search badge uses one raw source instead of reprocessing its bar film`() {
+    @Test fun `real search badge composites its own film over the rendered bar in every renderer`() {
         val fill = mutableStateOf(Color.Green)
         val quality = mutableStateOf(GlassQuality.Balanced)
         compose.setContent {
@@ -151,14 +149,11 @@ class GlassInlineParentBackdropTest {
             val evidence = "$renderer parent=$greenParent -> $blueParent badge=$green -> $blue"
             assertTrue(evidence, greenParent.green > blueParent.green + .05f)
             assertTrue(evidence, blueParent.blue > greenParent.blue + .05f)
-            if (renderer == GlassQuality.Performance) {
-                // Tint fallback has no optical sampling and naturally overlays the existing bar.
-                assertTrue(evidence, green.green > blue.green + .05f)
-                assertTrue(evidence, blue.blue > green.blue + .05f)
-            } else {
-                assertEquals(evidence, green.red, blue.red, .03f)
-                assertEquals(evidence, green.green, blue.green, .03f)
-                assertEquals(evidence, green.blue, blue.blue, .03f)
+            for ((parent, badge) in listOf(greenParent to green, blueParent to blue)) {
+                val expected = Color.Red.copy(alpha = .5f).compositeOver(parent)
+                assertEquals(evidence, expected.red, badge.red, .03f)
+                assertEquals(evidence, expected.green, badge.green, .03f)
+                assertEquals(evidence, expected.blue, badge.blue, .03f)
             }
         }
     }

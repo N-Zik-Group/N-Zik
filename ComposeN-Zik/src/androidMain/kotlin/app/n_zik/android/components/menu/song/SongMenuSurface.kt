@@ -1,6 +1,7 @@
 package app.n_zik.android.components.menu.song
 
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.glassOverlayPaint
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.usesGlassContour
 import app.n_zik.android.components.glass.glassAreaContour
@@ -40,7 +41,7 @@ internal fun SongMenuSurface(
     val headerColor = if (useGlass) glassNativeSurfaceTint(glass, nativeHeaderColor) else nativeHeaderColor
     val bodyColor = if (useGlass) glassNativeSurfaceTint(glass, nativeBodyColor) else nativeBodyColor
     val filmOpacity = if (useGlass) menuSheetFilmOpacity(glass) else 1f
-    GlassMaterialContainerColumn(modifier.fillMaxWidth().then(
+    GlassMaterialContainerColumn(modifier.fillMaxWidth().glassOverlayPaint(if (useGlass) 0f else bodyColor.alpha).then(
         if (useGlass) Modifier else Modifier.background(bodyColor).glassAreaContour(glass, GlassArea.Menus, topUiRoundnessShape())
     ), sectionFilm = if (useGlass) null else bodyColor,
         materialSource = if (useGlass) LocalGlassBackdrop.current else null,
@@ -53,13 +54,15 @@ internal fun SongMenuSurface(
             sectionFilm = headerColor.copy(alpha = headerColor.alpha * filmOpacity),
             sectionFilmIsMaterial = useGlass,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth().background(headerColor.copy(alpha = headerColor.alpha * filmOpacity)),
+            modifier = Modifier.fillMaxWidth().background(headerColor.copy(alpha = headerColor.alpha * filmOpacity))
+                .glassOverlayPaint(headerColor.alpha * filmOpacity),
         ) {
             CompositionLocalProvider(LocalMenuSheetSurface provides (useGlass || glass.usesGlassContour(GlassArea.Menus))) { header() }
             GlassHorizontalSeparator(Modifier.height(1.dp))
         }
         GlassMaterialContainerColumn(
-            Modifier.fillMaxWidth().background(bodyColor.copy(alpha = bodyColor.alpha * filmOpacity)),
+            Modifier.fillMaxWidth().background(bodyColor.copy(alpha = bodyColor.alpha * filmOpacity))
+                .glassOverlayPaint(bodyColor.alpha * filmOpacity),
             includeParent = true,
             sectionFilm = bodyColor.copy(alpha = bodyColor.alpha * filmOpacity),
             sectionFilmIsMaterial = useGlass,

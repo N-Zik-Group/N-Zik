@@ -1,5 +1,6 @@
 package app.n_zik.android.components.glass
 
+import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,6 +14,7 @@ internal fun Modifier.glassMoodCardBackground(
     cardColor: Color,
     shape: Shape,
     settings: GlassSettings = rememberGlassSettings(),
+    exportedBackdrop: LayerBackdrop? = null,
 ): Modifier {
     if (!settings.usesGlassMaterial(GlassArea.MoodCards)) {
         return background(cardColor, shape)
@@ -26,5 +28,6 @@ internal fun Modifier.glassMoodCardBackground(
         highlightAlpha = .3f,
         drawShadow = false,
         filmColor = cardColor,
+        exportedBackdrop = exportedBackdrop,
     )
 }

@@ -73,6 +73,7 @@ class GetSeekBarBufferLayoutTest {
         val binder = mockk<PlayerServiceModern.Binder>(relaxed = true)
         val cache = mockk<Cache>(relaxed = true)
         every { binder.player } returns player
+        every { binder.playerUpdateTrigger } returns MutableStateFlow(0)
         every { binder.downloadCache } returns cache
         every { binder.cache } returns cache
         every { binder.service.currentSongStateDownload } returns MutableStateFlow(Download.STATE_STOPPED)

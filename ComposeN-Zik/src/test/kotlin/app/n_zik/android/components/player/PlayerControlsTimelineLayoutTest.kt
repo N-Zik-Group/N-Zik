@@ -93,6 +93,7 @@ class PlayerControlsTimelineLayoutTest {
     @Before fun setup() {
         preferences.edit().clear().putBoolean("buttonzoomout", false).commit()
         every { binder.player } returns player
+        every { binder.playerUpdateTrigger } returns MutableStateFlow(0)
         every { player.currentMediaItem } returns null
         val songs = mockk<SongTable>()
         val formats = mockk<FormatTable>()

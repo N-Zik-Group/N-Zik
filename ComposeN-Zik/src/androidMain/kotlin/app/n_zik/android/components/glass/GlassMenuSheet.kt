@@ -17,6 +17,7 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -134,12 +135,19 @@ internal fun SharedGlassMenuSheet(
                     else ({ CenteredMenuSheetDragHandle(dragHandle) }),
                 containerColor = Color.Transparent,
                 sheetContent = {
+                    val paintScope = LocalGlassOverlayPaintScope.current
+                    CompositionLocalProvider(LocalGlassOverlayPaintScope provides paintScope?.let {
+                        GlassOverlayPaintScope(it.host, it.id) {
+                            if (sheetState.currentValue == SheetValue.Expanded && sheetState.targetValue == SheetValue.Expanded) it.alpha() else 0f
+                        }
+                    }) {
                     if (maxSheetHeight.isSpecified) {
                         Column(Modifier.heightIn(max = maxSheetHeight)) {
                             dragHandle?.let { CenteredMenuSheetDragHandle(it) }
                             content()
                         }
                     } else content()
+                    }
                 },
             ) { }
         }

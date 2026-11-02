@@ -1,8 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
-import app.n_zik.android.components.glass.glassMiniPlayerBackground
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -16,6 +14,7 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,8 +64,12 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.LocalGlassArtworkColor
 import app.n_zik.android.components.glass.LocalGlassBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.glass.glassMiniPlayerBackground
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.player.GlassMiniPlayerIconButton
 import app.n_zik.android.components.player.GlassMiniPlayerPlayPauseButton
 import app.n_zik.android.components.player.monochromeControlsColor
@@ -174,6 +177,10 @@ internal fun GlassMiniPlayerPreview(
         else -> colors.accent
     }
     val backdrop = LocalGlassBackdrop.current
+    val stageBackdrop = rememberPreviewStageBackdrop(backdrop)
+    val material = rememberLayerBackdrop()
+    val exportedMaterial = material.takeIf { settings.usesGlassMaterial(GlassArea.MiniPlayer) }
+    val controlsBackdrop = exportedMaterial ?: backdrop
     val shape = uiRoundnessShape()
     val height = Dimensions.miniPlayerHeight
 
@@ -186,62 +193,66 @@ internal fun GlassMiniPlayerPreview(
                 modifier = Modifier.requiredWidth(nativeWidth).height(height)
                     .graphicsLayer { scaleX = scale; scaleY = scale }
                     .clip(shape)
-                    .glassMiniPlayerBackground(settings, shape, backdrop, colors.background2)
+                    .glassMiniPlayerBackground(settings, shape, stageBackdrop, colors.background2,
+                        exportedBackdrop = exportedMaterial)
                     .padding(horizontal = 14.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(Modifier.size(48.dp).clip(thumbnailShape())) {
-                    if (metadata.artworkUri != null) {
-                        ImageCacheFactory.Thumbnail(
-                            thumbnailUrl = metadata.artworkUri.toString(),
-                            contentDescription = title,
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    } else {
-                        Image(painterResource(R.drawable.ic_launcher_box), title,
-                            Modifier.fillMaxSize().glassImageRim(thumbnailShape()))
+                // Export only the row material; its own input remains the preview stage.
+                CompositionLocalProvider(LocalGlassBackdrop provides controlsBackdrop) {
+                    Box(Modifier.size(48.dp).clip(thumbnailShape())) {
+                        if (metadata.artworkUri != null) {
+                            ImageCacheFactory.Thumbnail(
+                                thumbnailUrl = metadata.artworkUri.toString(),
+                                contentDescription = title,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        } else {
+                            Image(painterResource(R.drawable.ic_launcher_box), title,
+                                Modifier.fillMaxSize().glassImageRim(thumbnailShape()))
+                        }
                     }
-                }
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
-                    BasicText(title, style = typography().xxs.semiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    BasicText(artist, style = typography().xxs.semiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    buttons.forEach { button ->
-                        when (button) {
-                            MiniPlayerButton.PlayPause -> GlassMiniPlayerPlayPauseButton(
-                                onClick = { playing = !playing },
-                                backgroundColor = colors.background2,
-                                contentDescription = stringResource(if (playing) R.string.notification_pause else R.string.play),
-                                settings = settings,
-                                backdrop = backdrop,
-                            ) {
-                                Image(
-                                    painterResource(if (playing) R.drawable.pause else R.drawable.play),
-                                    contentDescription = null,
-                                    colorFilter = ColorFilter.tint(controlsColor),
-                                    modifier = Modifier.align(Alignment.Center).size(24.dp),
-                                )
-                            }
-                            MiniPlayerButton.SkipBack, MiniPlayerButton.SkipForward, MiniPlayerButton.AudioOutput ->
-                                GlassMiniPlayerIconButton(
-                                    icon = button.iconRes,
-                                    color = controlsColor,
-                                    onClick = {},
-                                    contentDescription = stringResource(button.labelRes),
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+                        BasicText(title, style = typography().xxs.semiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        BasicText(artist, style = typography().xxs.semiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        buttons.forEach { button ->
+                            when (button) {
+                                MiniPlayerButton.PlayPause -> GlassMiniPlayerPlayPauseButton(
+                                    onClick = { playing = !playing },
+                                    backgroundColor = colors.background2,
+                                    contentDescription = stringResource(if (playing) R.string.notification_pause else R.string.play),
                                     settings = settings,
-                                    backdrop = backdrop,
-                                )
-                            else -> {
-                                val description = stringResource(button.labelRes)
-                                IconButton(
-                                    icon = button.iconRes,
-                                    color = controlsColor,
-                                    onClick = {},
-                                    modifier = Modifier.padding(horizontal = 2.dp, vertical = 8.dp)
-                                        .size(24.dp).semantics { contentDescription = description },
-                                )
+                                    backdrop = controlsBackdrop,
+                                ) {
+                                    Image(
+                                        painterResource(if (playing) R.drawable.pause else R.drawable.play),
+                                        contentDescription = null,
+                                        colorFilter = ColorFilter.tint(controlsColor),
+                                        modifier = Modifier.align(Alignment.Center).size(24.dp),
+                                    )
+                                }
+                                MiniPlayerButton.SkipBack, MiniPlayerButton.SkipForward, MiniPlayerButton.AudioOutput ->
+                                    GlassMiniPlayerIconButton(
+                                        icon = button.iconRes,
+                                        color = controlsColor,
+                                        onClick = {},
+                                        contentDescription = stringResource(button.labelRes),
+                                        settings = settings,
+                                        backdrop = controlsBackdrop,
+                                    )
+                                else -> {
+                                    val description = stringResource(button.labelRes)
+                                    IconButton(
+                                        icon = button.iconRes,
+                                        color = controlsColor,
+                                        onClick = {},
+                                        modifier = Modifier.padding(horizontal = 2.dp, vertical = 8.dp)
+                                            .size(24.dp).semantics { contentDescription = description },
+                                    )
+                                }
                             }
                         }
                     }

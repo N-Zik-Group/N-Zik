@@ -36,6 +36,7 @@ import app.n_zik.android.components.glass.GlassMaterialContainerScope
 import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.LocalGlassScope
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
@@ -74,7 +75,8 @@ fun PlayerWhatsNextGlassSurface(
                     ownBackdrop = parent, separateWindow = parent == null, exportedBackdrop = exported)
             }) else null,
         ) { surface ->
-            CompositionLocalProvider(LocalGlassScope provides GlassScope.PlayerActions) {
+            CompositionLocalProvider(LocalGlassScope provides GlassScope.PlayerActions,
+                LocalGlassMaterialSource provides LocalGlassContainerBackdrop.current) {
                 renderSlot(if (material) surface.padding(horizontal = 6.dp, vertical = playerWhatsNextGlassExtraHeight(scoped) / 2)
                     else surface.background(nativeBackground)
                     .glassAreaContour(scoped, GlassArea.ActionButtons, shape))

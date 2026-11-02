@@ -11,7 +11,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -75,7 +74,6 @@ fun SeekBarWaved(
 
     val currentAmplitude by transition.animateDp(label = "") { if (it || !isActive) 0.dp else 2.dp }
     val currentScrubberHeight by transition.animateDp(label = "") {
-        //if (it) 10.dp else 5.dp
         if (it) 20.dp else 15.dp
     }
 
@@ -153,6 +151,8 @@ private suspend fun PointerInputScope.detectDrags(
         })
     } catch (e: IllegalStateException) {
         // View may have been detached before gesture detection
+    } finally {
+        isDragging.targetState = false
     }
 }
 

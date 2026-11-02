@@ -3,7 +3,6 @@ package app.n_zik.android.components.ui.screens.rewind.slides
 import app.n_zik.android.components.glass.glassGlobalIndication
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,14 +30,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -302,43 +299,45 @@ fun RewindFinaleCard(
                 // avoid showing it twice in the shared image.
                 if (!shareMode && !rewindShareCaptureActive.value) {
                     RewindReveal(active, 740, scaleFrom = 0.94f) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .rewindCardBackground(rewindColors.value.cream, RoundedCornerShape(10.dp))
-                                .padding(horizontal = 12.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
+                        RewindCardSurface(rewindColors.value.cream, RoundedCornerShape(10.dp)) { cardSurface ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .then(cardSurface)
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = stringResource(R.string.rw_finale_listener_level),
+                                        color = rewindColors.value.ink.copy(alpha = 0.54f),
+                                        fontSize = textScale.size(8.sp),
+                                        fontWeight = FontWeight.Black,
+                                        letterSpacing = textScale.letterSpacing(0.8.sp),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = stringResource(badge.titleId),
+                                        color = rewindColors.value.ink,
+                                        fontSize = textScale.size(13.sp),
+                                        fontWeight = FontWeight.Black,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
                                 Text(
-                                    text = stringResource(R.string.rw_finale_listener_level),
-                                    color = rewindColors.value.ink.copy(alpha = 0.54f),
-                                    fontSize = textScale.size(8.sp),
-                                    fontWeight = FontWeight.Black,
-                                    letterSpacing = textScale.letterSpacing(0.8.sp),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Text(
-                                    text = stringResource(badge.titleId),
-                                    color = rewindColors.value.ink,
-                                    fontSize = textScale.size(13.sp),
+                                    text = badge.index.toString(),
+                                    color = onLime,
+                                    fontSize = textScale.size(15.sp),
                                     fontWeight = FontWeight.Black,
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier
+                                        .rewindCardBackground(rewindColors.value.lime, CircleShape)
+                                        .padding(horizontal = 10.dp, vertical = 7.dp)
                                 )
                             }
-                            Text(
-                                text = badge.index.toString(),
-                                color = onLime,
-                                fontSize = textScale.size(15.sp),
-                                fontWeight = FontWeight.Black,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier
-                                    .rewindCardBackground(rewindColors.value.lime, CircleShape)
-                                    .padding(horizontal = 10.dp, vertical = 7.dp)
-                            )
                         }
                     }
                 }
@@ -452,31 +451,33 @@ fun RewindFinaleCard(
                             // the badge readable on the slide background in the exported image,
 //
                             // where a bare text line would vanish.
-                            Row(
-                                modifier = Modifier
-                                    .rewindCardBackground(rewindColors.value.cream, RoundedCornerShape(100.dp))
-                                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = stringResource(badge.titleId),
-                                    color = rewindColors.value.ink,
-                                    fontSize = textScale.size(11.sp),
-                                    fontWeight = FontWeight.Black,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Text(
-                                    text = badge.index.toString(),
-                                    color = onLime,
-                                    fontSize = textScale.size(12.sp),
-                                    fontWeight = FontWeight.Black,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
+                            RewindCardSurface(rewindColors.value.cream, RoundedCornerShape(100.dp)) { cardSurface ->
+                                Row(
                                     modifier = Modifier
-                                        .rewindCardBackground(rewindColors.value.lime, CircleShape)
-                                        .padding(horizontal = 8.dp, vertical = 5.dp)
-                                )
+                                        .then(cardSurface)
+                                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = stringResource(badge.titleId),
+                                        color = rewindColors.value.ink,
+                                        fontSize = textScale.size(11.sp),
+                                        fontWeight = FontWeight.Black,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = badge.index.toString(),
+                                        color = onLime,
+                                        fontSize = textScale.size(12.sp),
+                                        fontWeight = FontWeight.Black,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier
+                                            .rewindCardBackground(rewindColors.value.lime, CircleShape)
+                                            .padding(horizontal = 8.dp, vertical = 5.dp)
+                                    )
+                                }
                             }
                         }
                     }

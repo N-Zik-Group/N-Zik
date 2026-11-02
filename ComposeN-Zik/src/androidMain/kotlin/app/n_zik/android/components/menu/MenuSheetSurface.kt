@@ -1,6 +1,7 @@
 package app.n_zik.android.components.menu
 
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.glassOverlayPaint
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.usesGlassContour
 import app.n_zik.android.components.glass.glassAreaContour
@@ -30,7 +31,7 @@ internal fun MenuSheetSurface(
     val settings = rememberGlassSettings()
     val useGlass = settings.usesGlassMaterial(GlassArea.Menus)
     GlassMaterialContainerColumn(
-        modifier.fillMaxWidth().then(
+        modifier.fillMaxWidth().glassOverlayPaint(if (useGlass) 0f else recessedSurfaceColor(colorPalette().background0).alpha).then(
             if (useGlass) Modifier else Modifier.background(recessedSurfaceColor(colorPalette().background0))
                 .glassAreaContour(settings, GlassArea.Menus, topUiRoundnessShape())
         ),
@@ -52,4 +53,11 @@ internal fun menuSheetSectionColor(color: Color): Color {
     val settings = rememberGlassSettings()
     return glassNativeSurfaceTint(settings, color)
         .copy(alpha = color.alpha * menuSheetFilmOpacity(settings))
+}
+
+/** The custom media header owns this paint, separately from the list/grid body below it. */
+@Composable
+internal fun Modifier.menuSheetSectionBackground(color: Color): Modifier {
+    val film = menuSheetSectionColor(color)
+    return background(film).glassOverlayPaint(film.alpha)
 }

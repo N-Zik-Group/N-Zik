@@ -1,6 +1,7 @@
 package app.n_zik.android.components.dialog.common
 
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.glassOverlayPaint
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -56,6 +57,8 @@ import app.n_zik.android.components.glass.canHostGlassDialog
 import app.n_zik.android.components.glass.glassRenderer
 import app.n_zik.android.components.glass.GlassMaterialContainerColumn
 import app.n_zik.android.components.glass.LocalGlassBackdrop
+import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 
@@ -163,7 +166,8 @@ fun DialogFrame(
                     elevation = CardDefaults.cardElevation(defaultElevation = if (useGlass) 0.dp else 8.dp)
                 ) {
                     GlassMaterialContainerColumn(
-                        modifier = Modifier.fillMaxWidth().testTag(if (useGlass) "dialogFrameGlass" else "dialogFrameNative"),
+                        modifier = Modifier.fillMaxWidth().testTag(if (useGlass) "dialogFrameGlass" else "dialogFrameNative")
+                            .glassOverlayPaint(if (useGlass) glass.forArea(GlassArea.Dialogs).film else surface.alpha),
                         sectionFilm = if (useGlass) null else surface,
                         materialSource = if (useGlass) materialSource else null,
                         material = if (useGlass) ({ exported -> Modifier.glassMaterial(
@@ -173,43 +177,50 @@ fun DialogFrame(
                             exportedBackdrop = exported,
                         ) }) else null,
                     ) {
-                        title?.let {
+                        // Shared-window actions sample the child-free visible plate. Native
+                        // windows retain direct alpha compositing: sampling their transparent
+                        // tint export again would apply that same parent film twice.
+                        val childSource = if (useGlass && useSharedHost) LocalGlassContainerBackdrop.current
+                            else LocalGlassMaterialSource.current
+                        CompositionLocalProvider(LocalGlassMaterialSource provides childSource) {
+                            title?.let {
+                                Column(
+                                    modifier = Modifier
+                                        .testTag("dialogFrameHeader")
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 24.dp, vertical = 20.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    BasicText(
+                                        text = it,
+                                        modifier = Modifier.fillMaxWidth().testTag("dialogFrameTitle"),
+                                        style = typography().l.semiBold.copy(
+                                            color = colorPalette().text,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    )
+                                }
+                            }
                             Column(
                                 modifier = Modifier
-                                    .testTag("dialogFrameHeader")
+                                    .weight(1f, fill = false)
+                                    .testTag("dialogFrameBody")
+                                    .clipToBounds()
                                     .fillMaxWidth()
-                                    .padding(horizontal = 24.dp, vertical = 20.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                BasicText(
-                                    text = it,
-                                    modifier = Modifier.fillMaxWidth().testTag("dialogFrameTitle"),
-                                    style = typography().l.semiBold.copy(
-                                        color = colorPalette().text,
-                                        textAlign = TextAlign.Center
-                                    )
+                                    .padding(bodyPadding),
+                                horizontalAlignment = horizontalAlignment,
+                                content = content
+                            )
+                            footer?.let {
+                                Column(
+                                    modifier = Modifier
+                                        .testTag("dialogFrameFooter")
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                                    horizontalAlignment = horizontalAlignment,
+                                    content = it
                                 )
                             }
-                        }
-                        Column(
-                            modifier = Modifier
-                                .weight(1f, fill = false)
-                                .testTag("dialogFrameBody")
-                                .clipToBounds()
-                                .fillMaxWidth()
-                                .padding(bodyPadding),
-                            horizontalAlignment = horizontalAlignment,
-                            content = content
-                        )
-                        footer?.let {
-                            Column(
-                                modifier = Modifier
-                                    .testTag("dialogFrameFooter")
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 24.dp, vertical = 16.dp),
-                                horizontalAlignment = horizontalAlignment,
-                                content = it
-                            )
                         }
                     }
                 }

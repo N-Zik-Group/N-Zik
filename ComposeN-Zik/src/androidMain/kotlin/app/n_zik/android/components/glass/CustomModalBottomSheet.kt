@@ -14,6 +14,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -86,7 +87,7 @@ fun CustomModalBottomSheet(
             shape = sheetShape,
             contentWindowInsets = contentWindowInsets,
         ) {
-            if (glassSheet) GlassMaterialContainerColumn(modifier.fillMaxWidth(),
+            if (glassSheet) GlassMaterialContainerColumn(modifier.fillMaxWidth().glassOverlayPaint(glass.forArea(GlassArea.Menus).film),
                 materialSource = LocalGlassBackdrop.current,
                 material = { exported -> Modifier.glassMaterial(
                     glass.forArea(GlassArea.Menus), sheetShape, menu = true, filmColor = sheetContainerColor,
@@ -138,9 +139,15 @@ fun CustomModalBottomSheet(
             dragHandle = null,
             contentWindowInsets = { WindowInsets(0) },
         ) {
+            CompositionLocalProvider(LocalGlassOverlayPaintScope provides host?.let {
+                GlassOverlayPaintScope(it, overlayId) {
+                    if (sheetState.currentValue == SheetValue.Expanded && sheetState.targetValue == SheetValue.Expanded) 1f else 0f
+                }
+            }) {
             // The native host translates its content after the caller's modifier.
             // Keep the material inside that translation and outside its content insets.
-            Column(Modifier.fillMaxWidth().then(
+            Column(Modifier.fillMaxWidth()
+                .glassOverlayPaint(if (glassSheet) glass.forArea(GlassArea.Menus).film else sheetContainerColor.alpha).then(
                 if (glassSheet) Modifier.glassMaterial(
                     glass.forArea(GlassArea.Menus), sheetShape, separateWindow = true, menu = true,
                     filmColor = sheetContainerColor,
@@ -199,9 +206,10 @@ fun CustomModalBottomSheet(
 
                 CompositionLocalProvider(
                     LocalGlassOpticsEnabled provides true,
+                    LocalGlassOpticalUnderlayCovered provides (host != null && host.overlaysAbove(overlayId).isNotEmpty()),
                     LocalGlassOpticsTransitionProgress provides 1f,
                     LocalGlassLiveFrame provides rememberGlassModalLiveFrameIfEnabled(covered = host != null && host.nativeOverlays.lastOrNull() !== overlayId),
-                    LocalGlassUnderlayCovered provides (host != null && host.nativeOverlays.lastOrNull() !== overlayId),
+                    LocalGlassUnderlayCovered provides (host?.visuallyCovered(overlayId) == true),
                     LocalGlassContainerBackdrop provides nativeBackdrop,
                     LocalGlassMaterialSource provides nativeBackdrop,
                     LocalGlassBackdrop provides null,
@@ -209,6 +217,7 @@ fun CustomModalBottomSheet(
                 ) {
                     GlassRippleProvider(glass) { content() }
                 }
+            }
             }
         }
     }

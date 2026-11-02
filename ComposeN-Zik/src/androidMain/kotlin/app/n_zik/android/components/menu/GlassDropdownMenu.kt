@@ -46,7 +46,8 @@ fun GlassDropdownMenu(
     trigger: GlassMenuTriggerState? = LocalGlassMenuTrigger.current,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val menuShape = remember(shape) { straightBottomMenuShape(shape) }
+    // Floating dropdowns retain their complete perimeter; only attached sheets open below.
+    val menuShape = shape
     val settings = rememberGlassSettings()
     val host = LocalGlassMenuHost.current
     val overlayBackdrop = currentGlassOverlayBackdrop()
@@ -91,7 +92,8 @@ fun GlassDropdownMenu(
         onDismissRequest = onDismissRequest,
         containerColor = if (glassEnabled) Color.Transparent else originalContainerColor,
         modifier = if (glassEnabled) modifier.glassMaterial(
-            settings.forArea(GlassArea.Dropdowns), menuShape, separateWindow = true, menu = true, filmColor = originalContainerColor,
+            settings.forArea(GlassArea.Dropdowns), menuShape, separateWindow = true, menu = true,
+            filmColor = originalContainerColor, excludeBottomRim = false,
         ) else modifier.glassAreaContour(settings, GlassArea.Dropdowns, menuShape),
         shape = menuShape,
         content = content,

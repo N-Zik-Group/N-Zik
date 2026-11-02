@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -29,26 +31,40 @@ import app.it.fast4x.rimusic.ui.styling.Typography
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
+import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicBoolean
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [32], application = Application::class, qualifiers = "w360dp-h800dp-mdpi")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassTitleActionRowTest {
     @get:Rule val compose = createComposeRule()
+    private var disposeApplyObserver: () -> Unit = {}
+
+    @After fun disposeSnapshotObserver() { disposeApplyObserver() }
 
     @Test fun `actual Title preserves a whole held capsule above its following opaque sibling`() {
         val enabled = mutableStateOf(true)
         var titleClicks = 0
         var actionClicks = 0
+        val renderedEnabled = AtomicBoolean(true)
+        val appliedModeChanges = AtomicInteger()
+        val renderedModeChanges = AtomicInteger()
+        val applyObserver = Snapshot.registerApplyObserver { changed, _ ->
+            if (enabled in changed) appliedModeChanges.incrementAndGet()
+        }
+        disposeApplyObserver = { applyObserver.dispose() }
         compose.mainClock.autoAdvance = false
         compose.setContent {
             val shape = RoundedCornerShape(24.dp)
             val settings = GlassSettings(enabled = enabled.value, quality = GlassQuality.Performance)
+            SideEffect { renderedEnabled.set(settings.enabled); renderedModeChanges.incrementAndGet() }
             CompositionLocalProvider(LocalAppearance provides Appearance(
                 DefaultDarkColorPalette, Typography.fallback, shape, shape, shape,
             ), LocalGlassPreviewSettings provides settings) {
@@ -107,7 +123,24 @@ class GlassTitleActionRowTest {
         title.performTouchInput { click(Offset(20f, center.y)) }
         compose.mainClock.advanceTimeBy(1800)
         compose.runOnIdle { assertEquals(1, titleClicks) }
-        compose.runOnIdle { enabled.value = false }
+        compose.mainClock.autoAdvance = true
+        val beforeModeChange = renderedModeChanges.get()
+        compose.runOnIdle {
+            enabled.value = false
+            assertEquals("The input snapshot has switched OFF", false, enabled.value)
+            // Paused Robolectric frames do not themselves deliver global snapshot applies.
+            // The existing group-transfer fixtures explicitly publish the same notification.
+            Snapshot.sendApplyNotifications()
+            assertTrue("The recomposer must receive the OFF snapshot apply", appliedModeChanges.get() > 0)
+        }
+        // Native Title includes its original 42dp action seat rather than the Glass 40dp
+        // row; resolve that mode's layout before taking the native press reference.
+        compose.waitUntil(timeoutMillis = 5_000) {
+            !renderedEnabled.get() && renderedModeChanges.get() > beforeModeChange
+        }
+        compose.waitForIdle()
+        compose.runOnIdle { assertEquals(false, renderedEnabled.get()) }
+        compose.mainClock.autoAdvance = false
         val off = blueBounds()
         action.performTouchInput { down(center); moveTo(center + Offset(0f, 500f), 100) }
         compose.mainClock.advanceTimeBy(700)

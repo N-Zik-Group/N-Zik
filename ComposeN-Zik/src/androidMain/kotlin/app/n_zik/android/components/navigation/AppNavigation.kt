@@ -124,6 +124,7 @@ import app.n_zik.android.components.ui.screens.home.HomeScreen
 import app.n_zik.android.extensions.discord.DiscordUiState
 import app.n_zik.android.components.ui.screens.home.LocalHomeTopMiniPlayerAnchor
 import app.n_zik.android.components.ui.screens.home.LocalSharedHomeHeaderGlass
+import app.n_zik.android.components.navigation.header.LocalUnifiedTopGlassSurface
 import app.n_zik.android.components.ui.screens.home.rememberSharedHomeHeaderGlass
 import app.n_zik.android.components.ui.screens.home.usesSharedHomeHeaderGlass
 import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherScreen
@@ -213,6 +214,7 @@ fun AppNavigation(
     val glassMenuHost = parentGlassHost ?: remember { GlassMenuHostState() }
     val pageBackdrop = rememberLayerBackdrop()
     val overlayBackdrop = rememberLayerBackdrop()
+    val unifiedTopBackdrop = rememberLayerBackdrop()
     val captureGlass = glassSettings.enabled && glassRenderer(glassSettings) != GlassRenderer.Tint
     val captureNavigationOverlay = captureGlass && parentGlassHost?.sceneBackdrop == null
     SideEffect {
@@ -375,6 +377,9 @@ fun AppNavigation(
         LocalSideHeaderSearchProgress provides sideHeaderSearchProgress,
         LocalSettingsBackNavigation provides settingsBackNavigation,
         LocalSharedHomeHeaderGlass provides sharedHomeGlass,
+        LocalUnifiedTopGlassSurface provides unifiedTopBackdrop.takeIf {
+            hasTopNavBarVisible && glassSettings.usesGlassMaterial(GlassArea.Nav)
+        },
         LocalGlassArtworkColor provides artworkColor,
         LocalGlassMenuHost provides glassMenuHost,
         app.n_zik.android.components.ui.screens.home.LocalHomeTopCover provides (isBarlessScreen || hasSideNavBarVisible),

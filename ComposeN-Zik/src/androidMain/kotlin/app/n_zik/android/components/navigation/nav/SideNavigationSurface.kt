@@ -45,6 +45,8 @@ internal fun SideNavigationSurface(
         ) else Modifier)
             .then(if (surfaceBackdrop != null) Modifier.layerBackdrop(surfaceBackdrop) else Modifier)
             .glassMaterial(settings.forArea(GlassArea.Nav), shape, filmColor = film).clip(shape)
-    } else modifier.clip(shape).background(film).glassAreaContour(settings, GlassArea.Nav, shape)
+    } else modifier
+        .then(if (surfaceBackdrop != null) Modifier.layerBackdrop(surfaceBackdrop) else Modifier)
+        .clip(shape).background(film).glassAreaContour(settings, GlassArea.Nav, shape)
     Box(surface)
 }

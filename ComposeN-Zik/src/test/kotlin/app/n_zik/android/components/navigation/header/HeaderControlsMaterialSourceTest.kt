@@ -1,8 +1,12 @@
 package app.n_zik.android.components.navigation.header
 
 import android.app.Application
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
@@ -27,7 +31,9 @@ import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.LocalGlassPreviewSettings
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import app.n_zik.android.components.glass.glassChipBackground
+import app.n_zik.android.components.ui.header.HeaderBadgeBox
 import app.n_zik.android.surfaceColor
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -43,8 +49,47 @@ import org.robolectric.annotation.GraphicsMode
 class HeaderControlsMaterialSourceTest {
     @get:Rule val compose = createComposeRule()
 
-    @Test fun `shared and standalone header controls use raw live scene and apply their film once`() {
-        val shared = mutableStateOf(true)
+    @Test fun `Glass debug badge on native header excludes covered page and follows native fill changes`() {
+        val page = mutableStateOf(Color.Red)
+        val native = mutableStateOf(Color.Blue)
+        compose.setContent {
+            val shape = RoundedCornerShape(0.dp)
+            val settings = GlassSettings(header = false, actionButtons = true, film = 0f,
+                blur = 0f, rim = 0f, tintStrength = 0f, vibrancy = 0f, depth = 0f, amount = 0f)
+            val raw = rememberCanvasBackdrop { drawRect(page.value) }
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(DefaultDarkColorPalette, Typography.fallback, shape, shape, shape),
+                LocalGlassPreviewSettings provides settings,
+                LocalGlassBackdrop provides raw,
+            ) {
+                // AppHeader paints the native fill before its children at rest.
+                // Header-disabled still leaves the debug badge's ActionButtons Glass enabled.
+                Box(Modifier.size(160.dp, 64.dp).background(page.value)) {
+                    Box(Modifier.size(160.dp, 64.dp).background(native.value)) {
+                        val source = rememberHeaderControlsBackdrop(false, native.value)
+                        HeaderControlsGlassSources(source) {
+                            HeaderBadgeBox("DEBUG", Color.Transparent,
+                                modifier = Modifier.size(72.dp, 32.dp).testTag("native-badge"))
+                        }
+                    }
+                }
+            }
+        }
+        fun assertBadge(expected: Color) {
+            val pixels = compose.onNodeWithTag("native-badge").captureToImage().toPixelMap()
+            val actual = pixels[pixels.width / 2, pixels.height / 2]
+            assertEquals("badge red", expected.red, actual.red, .03f)
+            assertEquals("badge green", expected.green, actual.green, .03f)
+            assertEquals("badge blue", expected.blue, actual.blue, .03f)
+        }
+        assertBadge(Color.Blue)
+        compose.runOnIdle { page.value = Color.Yellow }
+        assertBadge(Color.Blue)
+        compose.runOnIdle { native.value = Color.Green }
+        assertBadge(Color.Green)
+    }
+
+    @Test fun `standalone header controls sample the rendered live parent before applying their own film`() {
         val scene = mutableStateOf(Color.Blue)
         val film = mutableStateOf(0f)
         var controlFilm = Color.Unspecified
@@ -58,21 +103,61 @@ class HeaderControlsMaterialSourceTest {
                 LocalGlassPreviewSettings provides settings,
             ) {
                 controlFilm = surfaceColor(Color.Yellow)
-                // Simulate the already filmed output exported by the header pane. Sampling
-                // this output again at film .5 would produce .75 film instead of .5.
-                val output = rememberCanvasBackdrop {
-                    drawRect(controlFilm.copy(alpha = film.value).compositeOver(scene.value))
-                }
                 val raw = rememberCanvasBackdrop { drawRect(scene.value) }
                 val stale = rememberCanvasBackdrop { drawRect(Color.Red) }
                 CompositionLocalProvider(
                     LocalGlassBackdrop provides stale,
                     LocalGlassContainerBackdrop provides stale,
-                    LocalGlassMaterialSource provides (if (shared.value) stale else raw),
+                    LocalGlassMaterialSource provides raw,
                 ) {
-                    HeaderControlsGlassSources(output, ownsMaterial = true,
-                        materialSource = raw.takeIf { shared.value }) {
-                        Row {
+                    StandaloneHeaderGlass(settings, Color.Red, raw, 0f, 64f, { 0f }, WindowInsets(0)) { output ->
+                        HeaderControlsGlassSources(output) {
+                            Row(Modifier.fillMaxWidth().height(64.dp)) {
+                                HeaderIcon(R.drawable.search, tint = Color.Transparent,
+                                    modifier = Modifier.testTag("icon")) {}
+                                Box(Modifier.size(36.dp).testTag("chip")
+                                    .glassChipBackground(controlFilm, shape, settings))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for (color in listOf(Color.Blue, Color.Green)) {
+            for (opacity in listOf(0f, .5f)) {
+                compose.runOnIdle { scene.value = color; film.value = opacity }
+                val parent = Color.Red.copy(alpha = opacity).compositeOver(color)
+                assertControls(controlFilm.copy(alpha = opacity).compositeOver(parent))
+            }
+        }
+    }
+
+    @Test fun `Top header controls sample the real unified navigation pane`() {
+        val scene = mutableStateOf(Color.Blue)
+        val film = mutableStateOf(.5f)
+        var controlFilm = Color.Unspecified
+        compose.setContent {
+            val shape = RoundedCornerShape(0.dp)
+            val settings = GlassSettings(film = film.value, blur = 0f, rim = 0f,
+                tintStrength = 0f, vibrancy = 0f, depth = 0f, amount = 0f)
+            val raw = rememberCanvasBackdrop { drawRect(scene.value) }
+            val unified = rememberLayerBackdrop()
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(DefaultDarkColorPalette.copy(background1 = Color.Yellow),
+                    Typography.fallback, shape, shape, shape),
+                LocalGlassPreviewSettings provides settings,
+                LocalGlassBackdrop provides raw,
+                LocalGlassMaterialSource provides raw,
+                LocalUnifiedTopGlassSurface provides unified,
+            ) {
+                controlFilm = surfaceColor(Color.Yellow)
+                Box {
+                    UnifiedTopNavigationGlass(settings, Color.Red, raw, { 0 }) {
+                        Box(Modifier.fillMaxWidth().height(64.dp))
+                    }
+                    val parent = rememberHeaderControlsBackdrop(true, Color.Magenta)
+                    HeaderControlsGlassSources(parent) {
+                        Row(Modifier.fillMaxWidth().height(64.dp)) {
                             HeaderIcon(R.drawable.search, tint = Color.Transparent,
                                 modifier = Modifier.testTag("icon")) {}
                             Box(Modifier.size(36.dp).testTag("chip")
@@ -82,11 +167,10 @@ class HeaderControlsMaterialSourceTest {
                 }
             }
         }
-        for (owner in listOf(true, false)) for (color in listOf(Color.Blue, Color.Green)) {
-            for (opacity in listOf(0f, .5f)) {
-                compose.runOnIdle { shared.value = owner; scene.value = color; film.value = opacity }
-                assertControls(controlFilm.copy(alpha = opacity).compositeOver(color))
-            }
+        for (color in listOf(Color.Blue, Color.Green)) for (opacity in listOf(.5f, 0f)) {
+            compose.runOnIdle { scene.value = color; film.value = opacity }
+            val parent = Color.Red.copy(alpha = opacity).compositeOver(color)
+            assertControls(controlFilm.copy(alpha = opacity).compositeOver(parent))
         }
     }
 
@@ -104,8 +188,8 @@ class HeaderControlsMaterialSourceTest {
                 LocalGlassContainerBackdrop provides page,
                 LocalGlassMaterialSource provides page,
             ) {
-                val header = rememberHeaderControlsBackdrop(true, false, native.value)
-                HeaderControlsGlassSources(header, ownsMaterial = false) {
+                val header = rememberHeaderControlsBackdrop(false, native.value)
+                HeaderControlsGlassSources(header) {
                     Row {
                         HeaderIcon(R.drawable.search, tint = Color.Transparent,
                             modifier = Modifier.testTag("icon")) {}

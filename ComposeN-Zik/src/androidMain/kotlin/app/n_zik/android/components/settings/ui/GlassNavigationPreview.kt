@@ -1,13 +1,12 @@
 package app.n_zik.android.components.settings.ui
 
-import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.glass.forArea
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +25,9 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
 import app.n_zik.android.components.dialog.settings.buildHomeTabDefs
 import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.LocalGlassBackdrop
+import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.navigation.nav.GlassNavigationBarHeight
 import app.n_zik.android.components.navigation.nav.GlassNavigationTab
 import app.n_zik.android.components.navigation.nav.GlassNavigationTabs
@@ -59,28 +61,31 @@ internal fun GlassNavigationPreview(config: GlassSettings, modifier: Modifier = 
     val widthFraction = if (NavigationBarPosition.BottomFloating.isCurrent()) {
         if (showLabel || activeTabs.size > 5) .95f else .85f
     } else 1f
-    Box(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        GlassNavigationTabs(
-            selectedIndex = selectedIndex,
-            indices = activeTabs.indices.toList(),
-            onTabChanged = { selectedId = activeTabs[it] },
-            settings = config.forArea(GlassArea.Nav),
-            vertical = false,
-            modifier = Modifier.fillMaxWidth(widthFraction).height(GlassNavigationBarHeight),
-        ) {
-            activeTabs.forEachIndexed { index, id ->
-                val definition = definitions.getValue(id)
-                val color by transition.animateColor(label = "glassPreviewTabColor") {
-                    if (it == index) colorPalette().text else colorPalette().textDisabled
+    val stageBackdrop = rememberPreviewStageBackdrop(LocalGlassBackdrop.current)
+    CompositionLocalProvider(LocalGlassBackdrop provides stageBackdrop) {
+        Box(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            GlassNavigationTabs(
+                selectedIndex = selectedIndex,
+                indices = activeTabs.indices.toList(),
+                onTabChanged = { selectedId = activeTabs[it] },
+                settings = config.forArea(GlassArea.Nav),
+                vertical = false,
+                modifier = Modifier.fillMaxWidth(widthFraction).height(GlassNavigationBarHeight),
+            ) {
+                activeTabs.forEachIndexed { index, id ->
+                    val definition = definitions.getValue(id)
+                    val color by transition.animateColor(label = "glassPreviewTabColor") {
+                        if (it == index) colorPalette().text else colorPalette().textDisabled
+                    }
+                    GlassNavigationTab(
+                        text = stringResource(definition.labelRes),
+                        iconId = definition.iconRes,
+                        selected = index == selectedIndex,
+                        showLabel = showLabel,
+                        color = color,
+                        onClick = { selectedId = id },
+                    )
                 }
-                GlassNavigationTab(
-                    text = stringResource(definition.labelRes),
-                    iconId = definition.iconRes,
-                    selected = index == selectedIndex,
-                    showLabel = showLabel,
-                    color = color,
-                    onClick = { selectedId = id },
-                )
             }
         }
     }

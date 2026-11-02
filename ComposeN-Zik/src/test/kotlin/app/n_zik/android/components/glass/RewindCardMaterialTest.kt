@@ -1,6 +1,14 @@
 package app.n_zik.android.components.glass
 
 import android.app.Application
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.view.View
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -31,6 +39,13 @@ import app.n_zik.android.components.ui.screens.rewind.slides.rewindCardBackgroun
 import app.n_zik.android.components.ui.screens.rewind.slides.rewindOutlinedActionBackground
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import app.n_zik.android.components.ui.screens.rewind.slides.RewindStoryShell
+import app.n_zik.android.components.ui.screens.rewind.slides.RewindCardSurface
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.components.ui.screens.rewind.slides.LocalRewindShaderWarm
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -43,6 +58,154 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class RewindCardMaterialTest {
     @get:Rule val compose = createComposeRule()
+    private lateinit var view: View
+
+    @Test fun `real story cards and actions sample live backdrop artwork without capturing themselves`() {
+        val art = mutableStateOf(Color.Green)
+        val shape = RoundedCornerShape(12.dp)
+        val optics = GlassSettings(enabled = true, blur = 0f, film = 0f, rim = 0f,
+            depth = 0f, amount = 0f, vibrancy = 0f)
+        try {
+            compose.setContent {
+                view = LocalView.current
+                CompositionLocalProvider(LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                    Typography.fallback, shape, shape, shape), LocalRewindShaderWarm provides false,
+                    LocalGlassPreviewSettings provides optics) {
+                    RewindStoryShell(0, 1, Color.Blue, Color.White,
+                        modifier = Modifier.size(320.dp, 360.dp).testTag("rewind.live.scene"),
+                        showProgress = false, showBrand = false,
+                        backgroundArt = { Box(Modifier.fillMaxSize().background(art.value)) }) {
+                        Row {
+                            Box(Modifier.size(64.dp).rewindCardBackground(Color.Red, shape, optics)
+                                .testTag("rewind.live.card"))
+                            Spacer(Modifier.width(24.dp))
+                            Box(Modifier.size(64.dp).rewindActionBackground(Color.Red, shape, optics)
+                                .testTag("rewind.live.action"))
+                        }
+                    }
+                }
+            }
+            fun assertSamples(expected: Color) {
+                for (tag in listOf("rewind.live.card", "rewind.live.action")) {
+                    val bounds = compose.onNodeWithTag(tag, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+                    val p = windowPixels()
+                    val actual = p[bounds.center.x.toInt(), bounds.center.y.toInt()]
+                    assertEquals("$tag red", expected.red, actual.red, .03f)
+                    assertEquals("$tag green", expected.green, actual.green, .03f)
+                    assertEquals("$tag blue", expected.blue, actual.blue, .03f)
+                }
+            }
+            assertSamples(Color.Green)
+            compose.runOnIdle { art.value = Color.Blue }
+            assertSamples(Color.Blue)
+            compose.runOnIdle { art.value = Color.Transparent }
+            val root = compose.onNodeWithTag("rewind.live.scene", useUnmergedTree = true)
+                .fetchSemanticsNode().boundsInRoot
+            val scrimPixels = windowPixels()
+            val renderedScrim = scrimPixels[(root.left + 10).toInt(), root.center.y.toInt()]
+            assertSamples(renderedScrim)
+            compose.runOnIdle { art.value = Color.Blue; rewindCaptureMode.value = true }
+            assertSamples(Color.Red)
+            compose.runOnIdle { rewindCaptureMode.value = false; rewindShareCaptureActive.value = true }
+            assertSamples(Color.Red)
+            compose.runOnIdle { rewindShareCaptureActive.value = false }
+            assertSamples(Color.Blue)
+        } finally {
+            compose.runOnIdle { rewindCaptureMode.value = false; rewindShareCaptureActive.value = false }
+        }
+    }
+
+    @Test fun `nested listener badge includes its parent card and capture keeps authored colors`() {
+        val film = mutableStateOf(.45f)
+        val shape = RoundedCornerShape(12.dp)
+        val optics = GlassSettings(enabled = true, blur = 0f, film = 0f, rim = 0f,
+            depth = 0f, amount = 0f, vibrancy = 0f)
+        try {
+            compose.setContent {
+                view = LocalView.current
+                val background = rememberCanvasBackdrop { drawRect(Color.Blue) }
+                CompositionLocalProvider(LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                    Typography.fallback, shape, shape, shape), LocalGlassContainerBackdrop provides background,
+                    LocalGlassMaterialSource provides background) {
+                    Box(Modifier.size(240.dp, 120.dp).background(Color.Blue)) {
+                        RewindCardSurface(Color.Red, shape, optics.copy(film = film.value)) { surface ->
+                            Row(Modifier.size(200.dp, 80.dp).then(surface)) {
+                                Box(Modifier.size(40.dp).rewindCardBackground(Color.Green, shape, optics)
+                                    .testTag("nested.badge"))
+                                Spacer(Modifier.width(40.dp))
+                                Box(Modifier.size(40.dp).testTag("nested.parent"))
+                            }
+                        }
+                    }
+                }
+            }
+            fun color(tag: String): Color {
+                val bounds = compose.onNodeWithTag(tag, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+                val p = windowPixels()
+                return p[bounds.center.x.toInt(), bounds.center.y.toInt()]
+            }
+            for (opacity in listOf(.45f, .85f)) {
+                compose.runOnIdle { film.value = opacity }
+                val parent = color("nested.parent")
+                val badge = color("nested.badge")
+                assertEquals("Badge includes parent red", parent.red, badge.red, .03f)
+                assertEquals("Badge includes parent blue", parent.blue, badge.blue, .03f)
+            }
+            compose.runOnIdle { rewindCaptureMode.value = true }
+            assertEquals(Color.Red, color("nested.parent"))
+            assertEquals(Color.Green, color("nested.badge"))
+            compose.runOnIdle { rewindCaptureMode.value = false; rewindShareCaptureActive.value = true }
+            assertEquals(Color.Red, color("nested.parent"))
+            assertEquals(Color.Green, color("nested.badge"))
+        } finally {
+            compose.runOnIdle { rewindCaptureMode.value = false; rewindShareCaptureActive.value = false }
+        }
+    }
+
+    @Test fun `story share action samples preceding foreground but never its own glyph`() {
+        val foreground = mutableStateOf(Color.Cyan)
+        val shape = RoundedCornerShape(12.dp)
+        val optics = GlassSettings(enabled = true, blur = 0f, film = 0f, rim = 0f,
+            depth = 0f, amount = 0f, vibrancy = 0f)
+        compose.setContent {
+            view = LocalView.current
+            CompositionLocalProvider(LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                Typography.fallback, shape, shape, shape), LocalRewindShaderWarm provides false,
+                LocalGlassPreviewSettings provides optics) {
+                RewindStoryShell(0, 1, Color.Green, Color.White,
+                    modifier = Modifier.size(320.dp, 360.dp), showProgress = false, showBrand = false,
+                    onShareSlide = {}) {
+                    Box(Modifier.fillMaxSize().background(foreground.value).testTag("rewind.share.underlay"))
+                }
+            }
+        }
+        compose.mainClock.advanceTimeBy(600)
+        val label = ApplicationProvider.getApplicationContext<Application>().getString(R.string.rw_share_slide)
+        fun assertShare(expected: Color) {
+            val icon = compose.onNodeWithContentDescription(label, useUnmergedTree = true)
+                .fetchSemanticsNode().boundsInRoot
+            val underlying = compose.onNodeWithTag("rewind.share.underlay", useUnmergedTree = true)
+                .fetchSemanticsNode().boundsInRoot
+            // The 24dp icon sits centered in a 40dp pane. Sample beside its own glyph.
+            val point = icon.center.copy(x = icon.center.x - with(compose.density) { 16.dp.toPx() })
+            org.junit.Assert.assertTrue("The real share pane must overlap the preceding foreground", underlying.contains(point))
+            val p = windowPixels()
+            val actual = p[point.x.toInt(), point.y.toInt()]
+            assertEquals("Share red", expected.red, actual.red, .03f)
+            assertEquals("Share green", expected.green, actual.green, .03f)
+            assertEquals("Share blue", expected.blue, actual.blue, .03f)
+        }
+        assertShare(Color.Cyan)
+        compose.runOnIdle { foreground.value = Color.Magenta }
+        assertShare(Color.Magenta)
+        repeat(3) { compose.mainClock.advanceTimeByFrame(); assertShare(Color.Magenta) }
+    }
+
+    private fun windowPixels(): PixelMap = compose.runOnIdle {
+        Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888).also {
+            view.draw(Canvas(it))
+        }.asImageBitmap().toPixelMap()
+    }
 
     @Test fun `outlined action modes use one shared rim and preserve native fill and export pixels`() {
         val mode = mutableStateOf(GlassAreaMode.Disabled)

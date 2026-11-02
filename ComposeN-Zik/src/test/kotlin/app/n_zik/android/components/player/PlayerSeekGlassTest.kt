@@ -848,6 +848,95 @@ class PlayerSeekGlassTest {
         }
     }
 
+    @Test fun `held seek lens samples preceding information content where its pane overlaps`() {
+        var informationColor by mutableStateOf(Color.Green)
+        var held by mutableStateOf(false)
+        val optics = GlassSettings(enabled = true, blur = 0f, film = 0f, rim = 0f,
+            depth = 0f, amount = 0f, vibrancy = 0f)
+        compose.setContent { AppearanceProvider {
+            val player = rememberCanvasBackdrop { drawRect(Color.Blue) }
+            CompositionLocalProvider(LocalGlassContainerBackdrop provides player) {
+                Box(Modifier.requiredWidth(320.dp).height(180.dp).background(Color.Blue)
+                    .testTag("information.overlap.scene")) {
+                    PlayerInformationGlassBlock(Modifier.padding(30.dp), optics, landscape = false) {
+                        Column {
+                            PlayerInformationGlassRegion("info") {
+                                Box(Modifier.requiredWidth(260.dp).height(40.dp)
+                                    .background(informationColor).testTag("information.overlap.content"))
+                            }
+                            PlayerInformationGlassRegion("timeline", vertical = true) {
+                                SeekBar(50, 0, 100, {}, {}, {}, Color.White, Color.Gray,
+                                    glassThumb = fixedThumb(held, settings = optics))
+                            }
+                        }
+                    }
+                }
+            }
+        } }
+        fun assertInformationInsideLens() {
+            val pane = compose.onNodeWithTag("player.seek.glassThumb").fetchSemanticsNode().boundsInRoot
+            val info = compose.onNodeWithTag("information.overlap.content").fetchSemanticsNode().boundsInRoot
+            val root = compose.onNodeWithTag("information.overlap.scene").fetchSemanticsNode().boundsInRoot
+            val sample = Offset(pane.center.x, pane.center.y - pane.height / 4f)
+            assertTrue("Fixture must overlap actual preceding information content", info.contains(sample))
+            val pixels = compose.onNodeWithTag("information.overlap.scene").captureToImage().toPixelMap()
+            val x = (sample.x - root.left).toInt()
+            val y = (sample.y - root.top).toInt()
+            val expected = pixels[x - 55, y]
+            val actual = pixels[x, y]
+            assertEquals("Lens must retain preceding information red", expected.red, actual.red, .04f)
+            assertEquals("Lens must retain preceding information green", expected.green, actual.green, .04f)
+            assertEquals("Lens must retain preceding information blue", expected.blue, actual.blue, .04f)
+        }
+        compose.runOnIdle { held = true }
+        compose.mainClock.advanceTimeBy(600)
+        assertInformationInsideLens()
+        compose.runOnIdle { informationColor = Color.Red }
+        assertInformationInsideLens()
+    }
+
+    @Test fun `held native seek lens reflects its actual information plate and mounted film updates`() {
+        var film by mutableStateOf(.45f)
+        var scene by mutableStateOf(Color.Blue)
+        var held by mutableStateOf(false)
+        val optics = GlassSettings(enabled = true, blur = 0f, film = 0f, rim = 0f,
+            depth = 0f, amount = 0f, vibrancy = 0f)
+        compose.setContent { AppearanceProvider {
+            val player = rememberCanvasBackdrop { drawRect(scene) }
+            val unrelated = rememberCanvasBackdrop { drawRect(Color.Green) }
+            CompositionLocalProvider(LocalGlassContainerBackdrop provides player, LocalGlassBackdrop provides unrelated) {
+                Box(Modifier.requiredWidth(320.dp).height(180.dp).background(Color.Blue).testTag("plate.seek.scene")) {
+                    PlayerInformationGlassBlock(Modifier.padding(30.dp), optics.copy(film = film), landscape = false) {
+                        PlayerInformationGlassRegion("timeline", vertical = true) {
+                            SeekBar(50, 0, 100, {}, {}, {}, Color.White, Color.Gray,
+                                Modifier.padding(vertical = 40.dp), glassThumb = fixedThumb(held, settings = optics))
+                        }
+                    }
+                }
+            }
+        } }
+        fun assertLensMatchesPlate() {
+            val thumb = compose.onNodeWithTag("player.seek.glassThumb").fetchSemanticsNode().boundsInRoot
+            val root = compose.onNodeWithTag("plate.seek.scene").fetchSemanticsNode().boundsInRoot
+            val pixels = compose.onNodeWithTag("plate.seek.scene").captureToImage().toPixelMap()
+            val x = (thumb.center.x - root.left).toInt().coerceIn(0, pixels.width - 1)
+            val y = (thumb.center.y - thumb.height / 4 - root.top).toInt().coerceIn(0, pixels.height - 1)
+            val expected = pixels[(x - 55).coerceAtLeast(0), y]
+            val actual = pixels[x, y]
+            assertEquals("Lens must include the rendered panel red", expected.red, actual.red, .04f)
+            assertEquals("Lens must include the rendered panel green", expected.green, actual.green, .04f)
+            assertEquals("Lens must include the rendered panel blue", expected.blue, actual.blue, .04f)
+            assertTrue("Unrelated green page must never enter the lens", actual.green < actual.blue)
+        }
+        compose.runOnIdle { held = true }
+        compose.mainClock.advanceTimeBy(600)
+        assertLensMatchesPlate()
+        compose.runOnIdle { film = .85f }
+        assertLensMatchesPlate()
+        compose.runOnIdle { scene = Color(0.3f, 0.1f, 0.9f) }
+        assertLensMatchesPlate()
+    }
+
     @Test fun `transparent optical thumb leaves rest clear and reveals live player scene while held without white fill`() {
         var scene by mutableStateOf(Color.Red)
         var held by mutableStateOf(false)
@@ -914,11 +1003,12 @@ class PlayerSeekGlassTest {
         }
     }
 
-    @Composable private fun fixedThumb(held: Boolean, track: LayerBackdrop? = null): PlayerSeekGlassThumb {
+    @Composable private fun fixedThumb(held: Boolean, track: LayerBackdrop? = null,
+        settings: GlassSettings = GlassSettings()): PlayerSeekGlassThumb {
         val scope = rememberCoroutineScope()
         val animation = remember { PlayerSeekGlassMotion(scope, .5f) }
         LaunchedEffect(held) { if (held) animation.press() else animation.release() }
-        return remember(animation, track) { PlayerSeekGlassThumb(animation, track) }
+        return remember(animation, track, settings) { PlayerSeekGlassThumb(animation, track, settings = settings) }
     }
 
     @Composable private fun NativeBar(type: PlayerTimelineType, start: () -> Unit, finish: () -> Unit,

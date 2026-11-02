@@ -10,6 +10,7 @@
 package app.n_zik.android.components.glass.backdrop.shadow
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawOutline
@@ -18,15 +19,17 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.layer.CompositingStrategy
 import androidx.compose.ui.graphics.layer.GraphicsLayer
-import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.node.ObserverModifierNode
+import androidx.compose.ui.node.observeReads
 import androidx.compose.ui.node.invalidateDraw
 import androidx.compose.ui.node.requireGraphicsContext
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import app.n_zik.android.components.glass.backdrop.internal.ShapeProvider
+import app.n_zik.android.components.glass.backdrop.internal.MaterialDecoration
 import app.n_zik.android.components.glass.backdrop.internal.blur
 import kotlin.math.ceil
 
@@ -71,7 +74,7 @@ internal class ShadowElement(
 internal class ShadowNode(
     var shapeProvider: ShapeProvider,
     var shadow: () -> Shadow?
-) : DrawModifierNode, Modifier.Node() {
+) : DrawModifierNode, ObserverModifierNode, Modifier.Node() {
 
     override val shouldAutoInvalidate: Boolean = false
 
@@ -80,7 +83,17 @@ internal class ShadowNode(
     private val paint = Paint()
 
     override fun ContentDrawScope.draw() {
-        val shadow = shadow() ?: return drawContent()
+        var decoration: MaterialDecoration? = null
+        observeReads { decoration = prepareShadow() }
+        shapeProvider.materialLayers?.shadow = decoration
+        decoration?.draw(this)
+        drawContent()
+    }
+
+    override fun onObservedReadsChanged() = invalidateDraw()
+
+    private fun DrawScope.prepareShadow(): MaterialDecoration? {
+        val shadow = shadow() ?: return null
 
         val shadowLayer = shadowLayer
         if (shadowLayer != null) {
@@ -111,12 +124,9 @@ internal class ShadowNode(
                 }
             }
 
-            translate(-radius * 2f, -radius * 2f) {
-                drawLayer(shadowLayer)
-            }
+            return MaterialDecoration(shadowLayer, shadow, Offset(-radius * 2f, -radius * 2f))
         }
-
-        drawContent()
+        return null
     }
 
     override fun onAttach() {
@@ -133,6 +143,7 @@ internal class ShadowNode(
             graphicsContext.releaseGraphicsLayer(layer)
             shadowLayer = null
         }
+        shapeProvider.materialLayers?.shadow = null
     }
 
     private fun DrawScope.configurePaint(shadow: Shadow) {

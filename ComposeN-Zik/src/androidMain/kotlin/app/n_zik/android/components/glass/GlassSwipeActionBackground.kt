@@ -26,14 +26,16 @@ fun Modifier.glassSwipeActionBackground(
     backdrop: Backdrop? = null,
     backdropColor: Color = colorPalette().background0,
 ): Modifier {
+    // The sibling foreground row needs this complete background, including its action glyph.
+    val surface = glassQueueUnderlayBackdrop(Any())
     val queueBackdrop = LocalQueueRowBackdrop.current
     if (LocalNativeQueueRows.current && queueBackdrop == null) {
-        return background(if (isRevealed) originalColor else LocalSwipeRestingBackground.current ?: originalColor)
+        return surface.background(if (isRevealed) originalColor else LocalSwipeRestingBackground.current ?: originalColor)
     }
     // Transparent row content exposes this layer even when no swipe is in progress.
-    if (!isRevealed) return background(LocalSwipeRestingBackground.current ?: originalColor)
+    if (!isRevealed) return surface.background(LocalSwipeRestingBackground.current ?: originalColor)
     if (!settings.usesGlassMaterial(area)) {
-        return background(originalColor).glassAreaContour(settings, area, shape)
+        return surface.background(originalColor).glassAreaContour(settings, area, shape)
     }
     // List reveals belong to the page capture: never sample that containing capture.
     // Chrome callers may explicitly supply the page capture when they are its siblings.
@@ -41,7 +43,7 @@ fun Modifier.glassSwipeActionBackground(
         { drawRect(backdropColor) }
     }
     val independentBackdrop = rememberCanvasBackdrop(drawBackground)
-    return glassMaterial(
+    return surface.glassMaterial(
         settings = settings.forArea(area),
         shape = shape,
         ownBackdrop = backdrop ?: queueBackdrop ?: independentBackdrop,

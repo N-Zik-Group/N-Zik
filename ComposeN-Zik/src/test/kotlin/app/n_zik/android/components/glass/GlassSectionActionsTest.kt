@@ -64,7 +64,8 @@ class GlassSectionActionsTest {
             }
         }
         compose.onNodeWithTag("actions").assertDoesNotExist()
-        listOf(1 to 40.dp, 2 to 88.dp, 3 to 132.dp).forEach { (size, width) ->
+        // The single 40dp bubble is centered in the same 44dp action seat as a capsule cell.
+        listOf(1 to 44.dp, 2 to 88.dp, 3 to 132.dp).forEach { (size, width) ->
             compose.runOnIdle { count.value = size }
             compose.onNodeWithTag("actions").assertWidthIsEqualTo(width).assertHeightIsEqualTo(40.dp)
             repeat(size) { index ->

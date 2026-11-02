@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
@@ -18,7 +19,7 @@ import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import timber.log.Timber
 
-/** The row and its descendants apply optics to this child-free input only once. */
+/** Builds the native row input without sampling its containing page. */
 @Composable
 private fun rememberNowPlayingRowInput(backgroundColor: Color): Backdrop {
     val fill = rememberCanvasBackdrop { drawRect(backgroundColor) }
@@ -36,6 +37,7 @@ internal fun Modifier.glassNowPlayingRow(
     shape: Shape,
     settings: GlassSettings = rememberGlassSettings(),
     exportedBackdrop: LayerBackdrop? = null,
+    sceneBackdrop: Backdrop? = null,
 ): Modifier {
     val base = background(backgroundColor)
     val queueBackdrop = LocalQueueRowBackdrop.current
@@ -52,25 +54,27 @@ internal fun Modifier.glassNowPlayingRow(
         )
     }
 
-    // The page capture contains this row: sampling it here would create a render-node cycle.
-    // Reproduce the flat fill over a child-free container export when it is translucent.
-    // LocalGlassBackdrop may contain this row, so it must never be used as that underlay.
-    val rowBackdrop = rememberNowPlayingRowInput(backgroundColor)
-    // An explicit Glass source owns the film hue; a second theme overlay can lag behind artwork.
-    // Read the changing palette in the draw pass. The row can live inside recorded
-    // page layers, so replacing a captured colour alone must not be its redraw signal.
-    val latestHighlight = rememberUpdatedState(highlightColor)
-    val drawHighlight: (DrawScope.() -> Unit)? = remember(settings.source) {
-        if (settings.source == GlassTintSource.None) ({ drawRect(latestHighlight.value) }) else null
+    // Queue scenes exclude this logical row's complete foreground and any objects in front of it.
+    val rowBackdrop = sceneBackdrop ?: rememberNowPlayingRowInput(backgroundColor)
+    val rowFilm = if (sceneBackdrop != null) queueNowPlayingFilm(settings, highlightColor) else highlightColor
+    val latestHighlight = rememberUpdatedState(rowFilm)
+    val drawHighlight: (DrawScope.() -> Unit)? = remember(settings.source, sceneBackdrop != null) {
+        if (sceneBackdrop != null || settings.source == GlassTintSource.None)
+            ({ drawRect(latestHighlight.value) }) else null
     }
     return base.glassMaterial(
         settings = settings.forArea(GlassArea.NowPlaying),
         shape = shape,
         ownBackdrop = rowBackdrop,
+        drawFilm = sceneBackdrop == null,
         onDrawTint = drawHighlight,
         exportedBackdrop = exportedBackdrop,
     )
 }
+
+@Composable
+private fun queueNowPlayingFilm(settings: GlassSettings, highlight: Color): Color =
+    glassNativeSurfaceTint(settings, highlight).let { it.copy(alpha = it.alpha * settings.film.coerceIn(0f, 1f)) }
 
 /** Exposes only the immediate row surface; badges never sample a page containing their own glyph. */
 @Composable
@@ -84,10 +88,15 @@ internal fun GlassSongRowSurface(
     content: @Composable (Modifier) -> Unit,
 ) {
     val exported = rememberLayerBackdrop()
+    val queueCapture = rememberQueueRowSceneCapture(content)
     val parent = LocalGlassContainerBackdrop.current
     val material = useNowPlayingMaterial && highlightColor != null &&
         settings.usesGlassMaterial(GlassArea.NowPlaying) &&
         (!LocalNativeQueueRows.current || LocalQueueRowBackdrop.current != null)
+    SideEffect {
+        queueCapture?.material = exported.takeIf { material }
+        queueCapture?.surfaceShape = shape
+    }
     val nativeSurface = rememberCanvasBackdrop {
         // These are the exact same flat fills painted by the native row below.
         if (paintBackground) drawRect(backgroundColor)
@@ -98,20 +107,29 @@ internal fun GlassSongRowSurface(
             ?: if (!paintBackground) rememberCanvasBackdrop { drawRect(backgroundColor) } else null
     val backdrop = if (material) exported else if (nativeUnderlay != null)
         rememberCombinedBackdrop(nativeUnderlay, nativeSurface) else nativeSurface
+    val queueUnderlay = LocalQueueRowBackdrop.current
+    val sceneBackdrop = if (material && queueUnderlay != null) queueCapture?.source(queueUnderlay) else null
     val surface = if (useNowPlayingMaterial && highlightColor != null) {
-        Modifier.glassNowPlayingRow(backgroundColor, highlightColor, shape, settings, exportedBackdrop = exported)
+        Modifier.glassNowPlayingRow(backgroundColor, highlightColor, shape, settings,
+            exportedBackdrop = exported, sceneBackdrop = sceneBackdrop)
     } else {
         (if (paintBackground) Modifier.background(backgroundColor) else Modifier)
             .then(if (highlightColor != null) Modifier.background(highlightColor) else Modifier)
     }
-    val materialSource = if (material) {
+    val materialSource = if (sceneBackdrop != null) {
+        remember(exported) { RenderedMaterialBackdrop(exported) }
+    } else if (material) {
         val raw = rememberNowPlayingRowInput(backgroundColor)
-        // The selected-row accent is semantic native paint, not the configurable Glass film.
         val accent = rememberCanvasBackdrop {
-            if (settings.source == GlassTintSource.None && highlightColor != null) drawRect(highlightColor)
+            if (settings.source == GlassTintSource.None) drawRect(highlightColor)
         }
         rememberCombinedBackdrop(raw, accent)
     } else backdrop
+    val capturedSurface = when {
+        queueCapture == null -> surface
+        material -> surface.then(queueCapture.modifier)
+        else -> queueCapture.modifier.then(surface)
+    }
     CompositionLocalProvider(LocalGlassContainerBackdrop provides backdrop,
-        LocalGlassMaterialSource provides materialSource) { content(surface) }
+        LocalGlassMaterialSource provides materialSource) { content(capturedSurface) }
 }

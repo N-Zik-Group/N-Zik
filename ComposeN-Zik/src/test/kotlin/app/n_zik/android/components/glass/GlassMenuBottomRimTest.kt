@@ -37,7 +37,7 @@ import org.robolectric.annotation.GraphicsMode
 class GlassMenuBottomRimTest {
     @get:Rule val compose = createComposeRule()
 
-    @Test fun `contour only menus and dropdowns retain gradient and native fill except bottom rim`() {
+    @Test fun `attached menus open below while floating dropdowns retain the complete native contour`() {
         val area = mutableStateOf(GlassArea.Nav)
         val shape = mutableStateOf<Shape>(RectangleShape)
         val fill = Color(0xFF182430)
@@ -66,8 +66,15 @@ class GlassMenuBottomRimTest {
                 val menu = capture()
                 val center = menu.width / 2
                 assertTrue("Native contour bottom was visible", full[center, full.height - 1].red > fill.red + .05f)
-                assertEquals("Native fill at bottom", fill, menu[center, menu.height - 1])
-                for (y in 0 until full.height - 1) for (x in 0 until full.width) {
+                if (menuArea == GlassArea.Menus) {
+                    assertEquals("Attached menu keeps native fill instead of a bottom rim", fill,
+                        menu[center, menu.height - 1])
+                } else {
+                    assertEquals("Floating dropdown retains the complete bottom rim",
+                        full[center, full.height - 1], menu[center, menu.height - 1])
+                }
+                val comparedHeight = if (menuArea == GlassArea.Menus) full.height - 1 else full.height
+                for (y in 0 until comparedHeight) for (x in 0 until full.width) {
                     assertEquals("Gradient preserved at $x,$y area=$menuArea shape=$outline",
                         full[x, y].red, menu[x, y].red, .015f)
                     assertEquals(full[x, y].green, menu[x, y].green, .015f)

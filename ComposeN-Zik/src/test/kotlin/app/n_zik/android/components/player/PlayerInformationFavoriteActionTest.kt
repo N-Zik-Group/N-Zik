@@ -71,6 +71,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHeightIsEqualTo
@@ -92,6 +93,7 @@ import app.n_zik.android.components.glass.GlassAreaMode
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassStandaloneActionSize
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.glassSurfaceTint
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.glass.backdrop.drawPlainBackdrop
 import org.junit.Assert.assertEquals
@@ -113,16 +115,19 @@ class PlayerInformationFavoriteActionTest {
         val titleColor = mutableStateOf(Color.Cyan)
         val showProbe = mutableStateOf(false)
         val mode = mutableStateOf(GlassAreaMode.GlassOnly)
+        var renderedParent = Color.Transparent
         compose.setContent { AppearanceProvider {
             val parent = rememberCanvasBackdrop { drawRect(Color.Blue) }
             val settings = GlassSettings(enabled = true, blur = 0f, film = 0f, rim = 0f,
                 depth = 0f, amount = 0f, vibrancy = 1f, contextModes = mapOf(
                     GlassContextArea(GlassScope.PlayerFavorite, GlassArea.ActionButtons) to mode.value))
+            val parentFilm = glassSurfaceTint(settings).copy(alpha = .7f)
+            SideEffect { renderedParent = parentFilm.compositeOver(Color.Blue) }
             CompositionLocalProvider(LocalGlassContainerBackdrop provides parent) {
                 PlayerInformationGlassBlock(settings = settings.copy(film = .7f)) {
                     PlayerInformationGlassRegion("title.capture") {
                         PlayerInformationFavoriteBackdrop(active = true, settings = settings) { title, source ->
-                            Box(Modifier.size(100.dp).background(Color.Blue), contentAlignment = Alignment.Center) {
+                            Box(Modifier.size(100.dp), contentAlignment = Alignment.Center) {
                                 Box(Modifier.size(100.dp).then(title).drawBehind {
                                     drawRect(titleColor.value, Offset(0f, 40.dp.toPx()), Size(size.width, 20.dp.toPx()))
                                 })
@@ -151,12 +156,12 @@ class PlayerInformationFavoriteActionTest {
             compose.runOnIdle { showProbe.value = true }
             val source = compose.onNodeWithTag("favorite.source").captureToImage().toPixelMap()
             assertColor(color, source[source.width / 2, source.height / 2])
-            assertColor(Color.Blue, source[source.width / 2, source.height / 4])
+            assertColor(renderedParent, source[source.width / 2, source.height / 4])
         }
         for (nativeMode in listOf(GlassAreaMode.ContourOnly, GlassAreaMode.Disabled)) {
             compose.runOnIdle { mode.value = nativeMode }
             val source = compose.onNodeWithTag("favorite.source").captureToImage().toPixelMap()
-            assertColor(Color.Blue, source[source.width / 2, source.height / 2])
+            assertColor(renderedParent, source[source.width / 2, source.height / 2])
         }
     }
 

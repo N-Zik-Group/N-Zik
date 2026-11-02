@@ -1,5 +1,12 @@
 package app.n_zik.android.components.ui.screens.rewind.slides
 
+import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
+import app.n_zik.android.components.glass.glassContentCaptureEnabled
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCombinedBackdrop
 import android.util.LruCache
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -55,10 +62,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
@@ -102,8 +106,6 @@ import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.it.fast4x.rimusic.ui.styling.Hsl
 import app.it.fast4x.rimusic.ui.styling.hsl
 import app.it.fast4x.rimusic.ui.styling.overlay
-import app.it.fast4x.rimusic.ui.styling.onOverlay
-import app.it.fast4x.rimusic.ui.styling.px
 import it.fast4x.innertube.YtMusic
 import it.fast4x.innertube.requests.ArtistPage
 import kotlinx.coroutines.CompletableDeferred
@@ -270,109 +272,130 @@ internal fun RewindStoryShell(
 //
     // appears or disappears.
     val showShareButton = onShareSlide != null && LocalRewindActive.current && !rewindShareCaptureActive.value
+    val capture = glassContentCaptureEnabled(rememberGlassSettings()) &&
+        !rewindCaptureMode.value && !rewindShareCaptureActive.value
+    val backgroundSource = if (capture) rememberLayerBackdrop() else null
+    val foregroundSource = if (capture) rememberLayerBackdrop() else null
     Box(
         modifier = modifier
             .fillMaxSize()
             .clickable(enabled = onNext != null) { onNext?.invoke() }
     ) {
-        // Dark scrim over every slide background so the bright shader colors (and the
-        // solid fallback) never wash out the typography
-        val scrim = rewindColors.value.ink.copy(alpha = REWIND_SCRIM_ALPHA)
-        if (shader != null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .shaderBackground(shader)
-                    .background(scrim)
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(background)
-                    .background(scrim)
-            )
+        // This sibling ends before every sampling card and action.
+        Box(Modifier.matchParentSize().then(if (backgroundSource != null)
+            Modifier.layerBackdrop(backgroundSource) else Modifier)) {
+            // Dark scrim over every slide background so the bright shader colors (and the
+            // solid fallback) never wash out the typography
+            val scrim = rewindColors.value.ink.copy(alpha = REWIND_SCRIM_ALPHA)
+            if (shader != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .shaderBackground(shader)
+                        .background(scrim)
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(background)
+                        .background(scrim)
+                )
+            }
+            backgroundArt()
         }
-        backgroundArt()
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .then(
-                    if (holdBarPadding) {
-                        Modifier.windowInsetsPadding(WindowInsets.statusBarsIgnoringVisibility)
-                    } else {
-                        Modifier.statusBarsPadding()
+        CompositionLocalProvider(LocalGlassContainerBackdrop provides backgroundSource,
+            LocalGlassMaterialSource provides backgroundSource) {
+            Box(Modifier.matchParentSize().then(if (foregroundSource != null)
+                Modifier.layerBackdrop(foregroundSource) else Modifier)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(
+                            if (holdBarPadding) {
+                                Modifier.windowInsetsPadding(WindowInsets.statusBarsIgnoringVisibility)
+                            } else {
+                                Modifier.statusBarsPadding()
+                            }
+                        )
+                        .then(
+                            if (holdBarPadding) {
+                                Modifier.windowInsetsPadding(WindowInsets.navigationBarsIgnoringVisibility)
+                            } else {
+                                Modifier.navigationBarsPadding()
+                            }
+                        )
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 28.dp, bottom = if (showBrand) 58.dp else 36.dp)
+                ) {
+                    RewindStoryProgress(
+                        page = page,
+                        pageCount = pageCount,
+                        color = progressColor,
+                        visible = showProgress
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Box(modifier = Modifier.weight(1f)) {
+                        content()
                     }
-                )
-                .then(
-                    if (holdBarPadding) {
-                        Modifier.windowInsetsPadding(WindowInsets.navigationBarsIgnoringVisibility)
-                    } else {
-                        Modifier.navigationBarsPadding()
-                    }
-                )
-                .padding(horizontal = 20.dp)
-                .padding(top = 28.dp, bottom = if (showBrand) 58.dp else 36.dp)
-        ) {
-            RewindStoryProgress(
-                page = page,
-                pageCount = pageCount,
-                color = progressColor,
-                visible = showProgress
-            )
-            Spacer(Modifier.height(16.dp))
-            Box(modifier = Modifier.weight(1f)) {
-                content()
+                }
+                if (showBrand) {
+                    RewindBrandBug(
+                        foreground = progressColor,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .then(
+                                if (holdBarPadding) {
+                                    Modifier.windowInsetsPadding(WindowInsets.navigationBarsIgnoringVisibility)
+                                } else {
+                                    Modifier.navigationBarsPadding()
+                                }
+                            )
+                            .padding(end = 16.dp, bottom = 8.dp)
+                    )
+                }
             }
         }
-        if (showBrand) {
-            RewindBrandBug(
-                foreground = progressColor,
+        // The overlay share control may overlap slide text. Its source includes
+        // preceding foreground, but the capture ends before this control itself.
+        val shareSource = if (backgroundSource != null && foregroundSource != null)
+            rememberCombinedBackdrop(backgroundSource, foregroundSource) else backgroundSource
+        CompositionLocalProvider(LocalGlassContainerBackdrop provides shareSource,
+            LocalGlassMaterialSource provides shareSource) {
+            // Per-slide system share (single PNG): only the active page offers it, hidden
+            // during the export capture so it never lands in the exported frames. Overlay
+    //
+            // below the progress row (RewindShareSlideButton) — never in the layout flow,
+            // so toggling it can't reflow the slide. Pops in/out with a small scale/fade,
+    //
+            // with an instant exit during a capture so no copied frame shows it mid-animation
+            // (same rule as the deck's reveal snaps).
+            AnimatedVisibility(
+                visible = showShareButton,
+                enter = scaleIn(
+                    initialScale = 0.5f,
+                    // Spring with a light overshoot: a smooth transition that still reads as a pop
+                    animationSpec = spring(dampingRatio = 0.62f, stiffness = Spring.StiffnessMedium)
+                ) + fadeIn(tween(200, easing = LinearOutSlowInEasing)),
+                exit = if (rewindShareCaptureActive.value) {
+                    // Export capture in flight: vanish instantly for a clean frame
+                    fadeOut(tween(0))
+                } else {
+                    scaleOut(
+                        targetScale = 0.8f,
+                        animationSpec = tween(160, easing = FastOutLinearInEasing)
+                    ) + fadeOut(tween(160, easing = FastOutLinearInEasing))
+                },
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .then(
-                        if (holdBarPadding) {
-                            Modifier.windowInsetsPadding(WindowInsets.navigationBarsIgnoringVisibility)
-                        } else {
-                            Modifier.navigationBarsPadding()
-                        }
-                    )
-                    .padding(end = 16.dp, bottom = 8.dp)
-            )
-        }
-        // Per-slide system share (single PNG): only the active page offers it, hidden
-        // during the export capture so it never lands in the exported frames. Overlay
-//
-        // below the progress row (RewindShareSlideButton) — never in the layout flow,
-        // so toggling it can't reflow the slide. Pops in/out with a small scale/fade,
-//
-        // with an instant exit during a capture so no copied frame shows it mid-animation
-        // (same rule as the deck's reveal snaps).
-        AnimatedVisibility(
-            visible = showShareButton,
-            enter = scaleIn(
-                initialScale = 0.5f,
-                // Spring with a light overshoot: a smooth transition that still reads as a pop
-                animationSpec = spring(dampingRatio = 0.62f, stiffness = Spring.StiffnessMedium)
-            ) + fadeIn(tween(200, easing = LinearOutSlowInEasing)),
-            exit = if (rewindShareCaptureActive.value) {
-                // Export capture in flight: vanish instantly for a clean frame
-                fadeOut(tween(0))
-            } else {
-                scaleOut(
-                    targetScale = 0.8f,
-                    animationSpec = tween(160, easing = FastOutLinearInEasing)
-                ) + fadeOut(tween(160, easing = FastOutLinearInEasing))
-            },
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .statusBarsPadding()
-                .padding(top = 44.dp, end = 12.dp)
-        ) {
-            RewindShareSlideButton(
-                tint = progressColor.copy(alpha = 0.85f),
-                onClick = { onShareSlide?.invoke() }
-            )
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(top = 44.dp, end = 12.dp)
+            ) {
+                RewindShareSlideButton(
+                    tint = progressColor.copy(alpha = 0.85f),
+                    onClick = { onShareSlide?.invoke() }
+                )
+            }
         }
     }
 }

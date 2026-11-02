@@ -11,6 +11,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -111,17 +112,22 @@ class GlassOverlayReadabilityTest {
 
     @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
     @Test fun `custom sheet forwards explicit colored and transparent scrims to physical and sampled scene`() {
-        val host = GlassMenuHostState()
+        lateinit var host: GlassMenuHostState
         var scrim by mutableStateOf(Color.Red.copy(alpha = .5f))
         compose.setContent {
             val white = rememberCanvasBackdrop { drawRect(Color.White) }
             val view = androidx.compose.ui.platform.LocalView.current
+            // This fixture exercises the shared window from its first composition. A late
+            // SideEffect would first compose a native window, whose backdrop is intentionally null.
+            host = remember(view.rootView) {
+                GlassMenuHostState().apply { dialogs.windowRoot = view.rootView }
+            }
             val shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
             val appearance = Appearance(
                 colorPalette = DefaultDarkColorPalette, typography = Typography.fallback,
                 thumbnailShape = shape, uiRoundnessShape = shape, artistThumbnailShape = shape,
             )
-            SideEffect { host.backdrop = white; host.dialogs.windowRoot = view.rootView }
+            SideEffect { host.backdrop = white }
             CompositionLocalProvider(LocalGlassMenuHost provides host, LocalAppearance provides appearance,
                 LocalGlassBackdrop provides white) {
                 Box(Modifier.size(240.dp).background(Color.White).testTag("scene")) {

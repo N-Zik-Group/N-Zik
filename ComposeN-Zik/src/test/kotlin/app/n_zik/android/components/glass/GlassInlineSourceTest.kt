@@ -49,7 +49,7 @@ class GlassInlineSourceTest {
     private val forbidden = object : Backdrop {
         override val isCoordinatesDependent = false
         override fun DrawScope.drawBackdrop(density: Density, coordinates: LayoutCoordinates?, layerBlock: (GraphicsLayerScope.() -> Unit)?) {
-            error("Inline surfaces must never sample their own page or an already processed parent")
+            error("Inline surfaces must never sample their own page or an unrelated parent")
         }
     }
 
@@ -80,7 +80,7 @@ class GlassInlineSourceTest {
         assertSource(Color.Red)
     }
 
-    @Test fun `nested badge samples raw Glass once but retains native container when its mode is off`() {
+    @Test fun `nested badge composites over its rendered Glass card and retains native container when off`() {
         val settings = mutableStateOf(GlassSettings(enabled = true, film = .5f, blur = 0f, rim = 0f, vibrancy = 0f, tintStrength = 0f))
         compose.setContent {
             val source = rememberCanvasBackdrop { drawRect(Color.Green) }
@@ -96,7 +96,8 @@ class GlassInlineSourceTest {
             val pixels = compose.onNodeWithTag("badge").captureToImage().toPixelMap()
             return pixels[pixels.width / 2, pixels.height / 2]
         }
-        assertColor(Color.Red.copy(alpha = .5f).compositeOver(Color.Green), badgeColor())
+        val renderedCard = Color.Blue.copy(alpha = .5f).compositeOver(Color.Green)
+        assertColor(Color.Red.copy(alpha = .5f).compositeOver(renderedCard), badgeColor())
         compose.runOnIdle { settings.value = settings.value.copy(settingsCards = false) }
         assertColor(Color.Red.copy(alpha = .5f).compositeOver(Color.Blue), badgeColor())
     }

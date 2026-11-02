@@ -3,6 +3,8 @@ package app.n_zik.android.components.playlist
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
+import app.n_zik.android.components.glass.backdrop.Backdrop
 import androidx.compose.ui.graphics.compositeOver
 import app.n_zik.android.components.glass.GlassRenderer
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
@@ -28,6 +30,8 @@ import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.uiRoundnessShape
 
+private val LocalPlaylistHeaderInput = staticCompositionLocalOf<Backdrop?> { null }
+
 /** Styles the existing playlist header bounds without changing its content or spacing. */
 @Composable
 internal fun Modifier.localPlaylistHeaderSurface(settings: GlassSettings, exported: LayerBackdrop? = null): Modifier {
@@ -40,6 +44,7 @@ internal fun Modifier.localPlaylistHeaderSurface(settings: GlassSettings, export
             shape = shape,
             settings = settings,
             exportedBackdrop = exported,
+            sourceBackdrop = LocalPlaylistHeaderInput.current,
         )
     }
     val shape = thumbnailShape()
@@ -66,8 +71,11 @@ internal fun LocalPlaylistHeaderSurfaceScope(
     // The Tint renderer has no optical layer, so export its exact composite fill.
     val source = if (material && !fallback) export else uniform
     val materialSource = if (material) rememberInlineGlassBackdrop(palette.background0) else uniform
+    // The modifier below is built inside this scope. Keep its input separate from
+    // the rendered export offered to its buttons, otherwise the header samples itself.
     CompositionLocalProvider(LocalGlassContainerBackdrop provides source,
-        LocalGlassMaterialSource provides materialSource) {
+        LocalPlaylistHeaderInput provides materialSource,
+        LocalGlassMaterialSource provides source) {
         content(export.takeIf { material && !fallback })
     }
 }

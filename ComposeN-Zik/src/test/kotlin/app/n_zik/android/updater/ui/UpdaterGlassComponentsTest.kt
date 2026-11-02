@@ -17,12 +17,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
@@ -50,6 +52,8 @@ import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LocalGlassPreviewSettings
 import app.n_zik.android.components.glass.LocalGlassScope
+import app.n_zik.android.components.glass.LocalGlassBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -64,6 +68,53 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class UpdaterGlassComponentsTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `footer actions and status cards sample their rendered parent film`() {
+        val film = mutableStateOf(.45f)
+        val page = mutableStateOf(Color.Blue)
+        val neutral = GlassSettings(enabled = true, blur = 0f, film = 0f, rim = 0f,
+            depth = 0f, amount = 0f, vibrancy = 0f, tintStrength = 0f)
+        compose.setContent {
+            val source = rememberCanvasBackdrop { drawRect(page.value) }
+            val shape = RoundedCornerShape(16.dp)
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(DefaultDarkColorPalette.copy(background0 = Color.Red),
+                    Typography.fallback, shape, shape, shape),
+                LocalGlassPreviewSettings provides neutral.copy(film = film.value),
+                LocalGlassBackdrop provides source,
+            ) {
+                UpdaterGlassScope {
+                    Box(Modifier.size(300.dp, 120.dp)) {
+                        UpdaterBottomPanel(Modifier.size(300.dp, 120.dp).testTag("footer.parent"), source) {
+                            CompositionLocalProvider(LocalGlassPreviewSettings provides neutral) {
+                                UpdaterActionCard(onClick = {}, modifier = Modifier.size(80.dp, 48.dp).testTag("footer.action"),
+                                    colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {}
+                                UpdaterCard(modifier = Modifier.offset(x = 100.dp).size(80.dp, 48.dp).testTag("footer.status"),
+                                    colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        fun verify() {
+            val parent = compose.onNodeWithTag("footer.parent").fetchSemanticsNode().boundsInRoot
+            val pixels = compose.onRoot().captureToImage().toPixelMap()
+            for (tag in listOf("footer.action", "footer.status")) {
+                val child = compose.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot
+                val expected = pixels[(parent.right - 12).toInt(), child.center.y.toInt()]
+                val actual = pixels[child.center.x.toInt(), child.center.y.toInt()]
+                assertEquals("$tag includes parent red", expected.red, actual.red, .025f)
+                assertEquals("$tag includes parent green", expected.green, actual.green, .025f)
+                assertEquals("$tag includes parent blue", expected.blue, actual.blue, .025f)
+            }
+        }
+        verify()
+        compose.runOnIdle { film.value = .8f }
+        verify()
+        compose.runOnIdle { page.value = Color.Green }
+        verify()
+    }
 
     @Test fun `material off retains native card fill and working actions`() =
         checkContent(enabled = false, cards = GlassAreaMode.GlassAndContour, actions = GlassAreaMode.GlassAndContour)

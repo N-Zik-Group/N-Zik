@@ -194,10 +194,9 @@ fun SeekBarStaticAudioWaves(
                         onDragEnd = {
                             updatedOnPositionChangeFinished?.invoke()
                         },
-                        onHorizontalDrag = { change: PointerInputChange, dragAmount: Float ->
+                        onHorizontalDrag = { change: PointerInputChange, _ ->
                             change.consume()
-                            dragPosition += dragAmount
-                            dragPosition = dragPosition.coerceIn(0f, size.width.toFloat())
+                            dragPosition = change.position.x.coerceIn(0f, size.width.toFloat())
                             val newPosition = (dragPosition / size.width) * duration
                             updatedOnPositionChange(newPosition.toLong())
                         }

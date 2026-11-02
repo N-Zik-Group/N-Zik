@@ -350,7 +350,7 @@ class MenuSheetPresentationTest {
         }
     }
 
-    @Test fun `dropdowns normalize lower corners in both native and shared hosts`() {
+    @Test fun `floating dropdowns preserve lower corners in both native and shared hosts`() {
         val shared = mutableStateOf(false)
         lateinit var host: GlassMenuHostState
         compose.setContent {
@@ -373,8 +373,8 @@ class MenuSheetPresentationTest {
             compose.waitForIdle()
             if (useShared) compose.runOnIdle {
                 val shape = requireNotNull(host.entry).shape as CornerBasedShape
-                assertEquals(0f, shape.bottomStart.toPx(Size(200f, 100f), Density(1f)), 0f)
-                assertEquals(0f, shape.bottomEnd.toPx(Size(200f, 100f), Density(1f)), 0f)
+                assertEquals(32f, shape.bottomStart.toPx(Size(200f, 100f), Density(1f)), 0f)
+                assertEquals(32f, shape.bottomEnd.toPx(Size(200f, 100f), Density(1f)), 0f)
             }
             val body = compose.onNodeWithTag("dropdown.body")
             val pixels = if (useShared) {
@@ -388,7 +388,8 @@ class MenuSheetPresentationTest {
                 )
             } else body.captureToImage().toPixelMap()
             for (x in listOf(1, pixels.width - 2)) {
-                assertTrue("Dropdown lower corner shared=$useShared", pixels[x, pixels.height - 2].red > .95f)
+                assertTrue("Dropdown lower corner stays clipped to its round shape shared=$useShared",
+                    pixels[x, pixels.height - 2].red < .1f)
             }
         }
     }

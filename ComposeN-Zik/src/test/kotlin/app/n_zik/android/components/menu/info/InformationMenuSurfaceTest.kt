@@ -2,6 +2,9 @@ package app.n_zik.android.components.menu.info
 
 import android.app.Application
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,11 +14,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
@@ -43,6 +48,13 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.profilePreferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.n_zik.android.components.glass.GlassStore
+import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.LocalGlassBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
+import app.n_zik.android.components.glass.LocalGlassMenuHost
+import app.n_zik.android.components.glass.GlassMenuHostState
+import app.n_zik.android.components.glass.LocalGlassPreviewSettings
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.menu.LocalMenuSheetSurface
 import io.mockk.coEvery
@@ -82,6 +94,59 @@ class InformationMenuSurfaceTest {
         context.preferences.edit().clear().commit()
         GlassStore(context).reset()
         context.profilePreferences.edit().putString(activeProfileKey, previousProfile).commit()
+    }
+
+    @Test
+    @Config(sdk = [32])
+    fun `statistics card samples the painted information body and its live film`() {
+        val film = mutableStateOf(.45f)
+        val page = mutableStateOf(Color.Blue)
+        lateinit var view: View
+        composeRule.setContent {
+            view = LocalView.current
+            val source = rememberCanvasBackdrop { drawRect(page.value) }
+            val root = LocalView.current.rootView
+            val host = remember(root, source) {
+                GlassMenuHostState().apply { dialogs.windowRoot = root; backdrop = source }
+            }
+            val settings = GlassSettings(enabled = true, film = film.value, blur = 0f,
+                depth = 0f, amount = 0f, rim = 0f, vibrancy = 0f, tintStrength = 0f)
+            CompositionLocalProvider(
+                LocalAppearance provides appearance(DefaultDarkColorPalette.copy(background0 = Color.Red)),
+                LocalGlassBackdrop provides source,
+                LocalGlassMaterialSource provides source,
+                LocalGlassMenuHost provides host,
+                LocalGlassPreviewSettings provides settings,
+            ) {
+                InformationMenuSurface(Modifier.size(240.dp, 160.dp)) {
+                    Box(Modifier.fillMaxWidth().height(160.dp).background(informationMenuBodyColor())
+                        .testTag("information.body")) {
+                        InformationStatsCard(Modifier.size(100.dp, 80.dp).testTag("information.card"),
+                            settings.copy(film = 0f)) {}
+                    }
+                }
+            }
+        }
+        fun verify() {
+            val card = composeRule.onNodeWithTag("information.card").fetchSemanticsNode().boundsInRoot
+            val body = composeRule.onNodeWithTag("information.body").fetchSemanticsNode().boundsInRoot
+            composeRule.runOnIdle {
+                val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+                try {
+                    view.draw(Canvas(bitmap))
+                    val reference = Color(bitmap.getPixel((body.right - 12).toInt(), card.center.y.toInt()))
+                    val actual = Color(bitmap.getPixel(card.center.x.toInt(), card.center.y.toInt()))
+                    assertEquals("statistics must include body red", reference.red, actual.red, .025f)
+                    assertEquals("statistics must include body green", reference.green, actual.green, .025f)
+                    assertEquals("statistics must include body blue", reference.blue, actual.blue, .025f)
+                } finally { bitmap.recycle() }
+            }
+        }
+        verify()
+        composeRule.runOnIdle { film.value = .8f }
+        verify()
+        composeRule.runOnIdle { page.value = Color.Green }
+        verify()
     }
 
     @Test
@@ -160,6 +225,7 @@ class InformationMenuSurfaceTest {
     }
 
     @Test
+    @Config(sdk = [32]) // The loading/interaction fixture does not exercise unsupported Robolectric AGSL.
     fun `actual information menu retains local title and playback after loading`() {
         context.preferences.edit().putBoolean(glassEnabledKey, true)
             .putString(colorPaletteModeKey, ColorPaletteMode.PitchBlack.name).commit()

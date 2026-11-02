@@ -21,14 +21,16 @@ import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.layer.CompositingStrategy
 import androidx.compose.ui.graphics.layer.GraphicsLayer
-import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.node.ObserverModifierNode
+import androidx.compose.ui.node.observeReads
 import androidx.compose.ui.node.invalidateDraw
 import androidx.compose.ui.node.requireGraphicsContext
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Density
 import app.n_zik.android.components.glass.backdrop.internal.ShapeProvider
+import app.n_zik.android.components.glass.backdrop.internal.MaterialDecoration
 import app.n_zik.android.components.glass.backdrop.internal.clipOutline
 import app.n_zik.android.components.glass.backdrop.isRenderEffectSupported
 
@@ -73,7 +75,7 @@ internal class InnerShadowElement(
 internal class InnerShadowNode(
     var shapeProvider: ShapeProvider,
     var shadow: () -> InnerShadow?
-) : DrawModifierNode, Modifier.Node() {
+) : DrawModifierNode, ObserverModifierNode, Modifier.Node() {
 
     override val shouldAutoInvalidate: Boolean = false
 
@@ -85,11 +87,19 @@ internal class InnerShadowNode(
     private var prevRadius = Float.NaN
 
     override fun ContentDrawScope.draw() {
+        var decoration: MaterialDecoration? = null
+        observeReads { decoration = prepareShadow() }
+        shapeProvider.materialLayers?.innerShadow = decoration
         drawContent()
+        decoration?.draw(this)
+    }
 
-        if (!isRenderEffectSupported()) return
+    override fun onObservedReadsChanged() = invalidateDraw()
 
-        val shadow = shadow() ?: return
+    private fun DrawScope.prepareShadow(): MaterialDecoration? {
+        if (!isRenderEffectSupported()) return null
+
+        val shadow = shadow() ?: return null
 
         val shadowLayer = shadowLayer
         if (shadowLayer != null) {
@@ -133,12 +143,9 @@ internal class InnerShadowNode(
                 canvas.restore()
             }
 
-            val canvas = drawContext.canvas
-            canvas.save()
-            canvas.clipOutline(outline, clipPath)
-            drawLayer(shadowLayer)
-            canvas.restore()
+            return MaterialDecoration(shadowLayer, shadow, outline = outline, clipPath = clipPath)
         }
+        return null
     }
 
     override fun onAttach() {
@@ -155,6 +162,7 @@ internal class InnerShadowNode(
             graphicsContext.releaseGraphicsLayer(layer)
             shadowLayer = null
         }
+        shapeProvider.materialLayers?.innerShadow = null
     }
 
     private fun DrawScope.configurePaint(shadow: InnerShadow) {

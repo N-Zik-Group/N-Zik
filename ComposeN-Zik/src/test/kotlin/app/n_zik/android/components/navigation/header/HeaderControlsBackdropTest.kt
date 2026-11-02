@@ -40,7 +40,7 @@ class HeaderControlsBackdropTest {
         compose.setContent {
             val page = rememberCanvasBackdrop { drawRect(pageColor.value) }
             CompositionLocalProvider(LocalGlassBackdrop provides page) {
-                val source = requireNotNull(rememberHeaderControlsBackdrop(true, false, nativeColor.value))
+                val source = requireNotNull(rememberHeaderControlsBackdrop(false, nativeColor.value))
                 Box(Modifier.size(100.dp).background(nativeColor.value)) {
                     Box(Modifier.size(64.dp).testTag("control")
                         .drawPlainBackdrop(source, { RectangleShape }, effects = {}))
@@ -54,9 +54,8 @@ class HeaderControlsBackdropTest {
         assertSample(nativeColor.value)
     }
 
-    @Test fun `actual Top glass and disabled header glass retain inherited optical source`() {
+    @Test fun `actual Top glass uses inherited source then native header covers the page`() {
         val topGlass = mutableStateOf(true)
-        val headerGlass = mutableStateOf(true)
         val pageColor = mutableStateOf(Color.Cyan)
         var inherited: Backdrop? = null
         var observed: Backdrop? = null
@@ -64,7 +63,7 @@ class HeaderControlsBackdropTest {
             val page = rememberCanvasBackdrop { drawRect(pageColor.value) }
             inherited = page
             CompositionLocalProvider(LocalGlassBackdrop provides page) {
-                val source = rememberHeaderControlsBackdrop(headerGlass.value, topGlass.value, Color.Black)
+                val source = rememberHeaderControlsBackdrop(topGlass.value, Color.Black)
                 observed = source
                 Box(Modifier.size(64.dp).testTag("control")
                     .drawPlainBackdrop(requireNotNull(source), { RectangleShape }, effects = {}))
@@ -74,8 +73,8 @@ class HeaderControlsBackdropTest {
         assertSample(Color.Cyan)
         compose.runOnIdle { pageColor.value = Color.Green }
         assertSample(Color.Green)
-        compose.runOnIdle { headerGlass.value = false; topGlass.value = false }
-        compose.runOnIdle { assertSame(inherited, observed) }
+        compose.runOnIdle { topGlass.value = false }
+        assertSample(Color.Black)
     }
 
     private fun assertSample(expected: Color) {

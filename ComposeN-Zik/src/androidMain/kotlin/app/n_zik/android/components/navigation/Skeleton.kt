@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.n_zik.android.core.navigation.currentPageNavigationEntry
+import app.n_zik.android.components.RegisterSearchOverlayPageBackdrop
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.core.navigation.RevealScaffoldOnPageSelection
 import app.n_zik.android.colorPalette
@@ -132,6 +133,7 @@ fun Skeleton(
     // During a NavHost transition the ViewModel owner can already point at the incoming
     // entry while the outgoing page still composes. Its saved-state owner remains page-local.
     val pageEntry = currentPageNavigationEntry()
+    RegisterSearchOverlayPageBackdrop(pageEntry, contentBackdrop.takeIf { captureGlass })
     val dockPageKey = pageEntry?.id ?: remember(navController) { navController.currentBackStackEntry?.id }
     RegisterDockNavigation(dockPageKey, navigationBar.buttonList.size, visible = !hideNavBar) {
         CompositionLocalProvider(

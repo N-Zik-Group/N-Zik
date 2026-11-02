@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +27,11 @@ import app.it.fast4x.rimusic.utils.isLandscape
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCombinedBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.glassMaterial
@@ -41,6 +47,7 @@ import kotlin.math.roundToInt
 val PlayerInformationVerticalPadding = 10.dp
 
 internal class PlayerInformationBounds {
+    var informationBackdrop by mutableStateOf<LayerBackdrop?>(null)
     var host: LayoutCoordinates? = null
     var viewportHost: LayoutCoordinates? = null
     var viewport by mutableStateOf<Rect?>(null)
@@ -152,11 +159,17 @@ fun PlayerInformationGlassBlock(
             geometry?.landscapeInformationTopOutset = null
         }
     }
-    // Every player pane samples the same original scene. Exporting this plate to its
-    // children would apply film and blur twice to the time, information rail and heart.
+    val plate = rememberLayerBackdrop()
+    val childBackdrop = if (material) {
+        if (parent != null) rememberCombinedBackdrop(parent, plate) else plate
+    } else parent
+    // Build the plate against its parent before exposing the rendered surface to
+    // children. The exported layer contains no child controls or seek lens.
     val surface = if (material) Modifier.glassMaterial(settings.forArea(GlassArea.ActionButtons), shape,
-        ownBackdrop = parent, separateWindow = parent == null) else Modifier
-    CompositionLocalProvider(LocalPlayerInformationBounds provides scope) {
+        ownBackdrop = parent, separateWindow = parent == null, exportedBackdrop = plate) else Modifier
+    CompositionLocalProvider(LocalPlayerInformationBounds provides scope,
+        LocalGlassContainerBackdrop provides childBackdrop,
+        LocalGlassMaterialSource provides childBackdrop) {
         Layout(modifier = modifier.onPlaced {
             scope.host = it; scope.viewportHost = geometry?.host; scope.update()
         }, content = {
@@ -229,10 +242,32 @@ fun PlayerInformationGlassRegion(
             it.update()
         }
     }
+    // All Controls layouts paint information before the timeline. Record that
+    // sibling separately: an overflowing seek lens may sample its text/rail, but
+    // information controls must never sample their own recording or the timeline.
+    val information = if (scope != null && key == "info") rememberLayerBackdrop() else null
+    DisposableEffect(scope, information) {
+        if (information != null) scope?.informationBackdrop = information
+        onDispose {
+            scope?.let {
+                if (information != null && it.informationBackdrop === information)
+                    it.informationBackdrop = null
+            }
+        }
+    }
+    if (information != null) SideEffect { information.materialChanged() }
+    val parent = LocalGlassContainerBackdrop.current
+    val precedingInformation = if (key == "timeline") scope?.informationBackdrop else null
+    val childBackdrop = if (precedingInformation != null && parent != null)
+        rememberCombinedBackdrop(parent, precedingInformation) else parent
+    val capture = if (information != null) region.layerBackdrop(information) else region
     // GetSeekBar emits a track Row, its 8dp spacer, then DurationIndicator.
     // Preserve their original parent Column flow; a Box would stack them at the same origin.
-    CompositionLocalProvider(LocalPlayerInformationRole provides key) {
-        if (vertical) Column(region) { content() } else Box(region) { content() }
+    CompositionLocalProvider(LocalPlayerInformationRole provides key,
+        LocalGlassContainerBackdrop provides childBackdrop,
+        LocalGlassMaterialSource provides if (precedingInformation != null) childBackdrop
+            else LocalGlassMaterialSource.current) {
+        if (vertical) Column(capture) { content() } else Box(capture) { content() }
     }
 }
 

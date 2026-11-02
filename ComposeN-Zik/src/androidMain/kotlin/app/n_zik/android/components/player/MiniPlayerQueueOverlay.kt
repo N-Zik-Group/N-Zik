@@ -27,6 +27,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,6 +62,7 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.NativeQueueRows
 import app.n_zik.android.components.glass.usesQueueToolbarGlass
 import app.n_zik.android.components.glass.GlassQueuePanel
+import app.n_zik.android.components.glass.LocalQueuePlayerBackdrop
 import app.n_zik.android.components.glass.glassQueuePanelBackground
 import app.n_zik.android.components.menu.MenuDragHandleBar
 import app.n_zik.android.topUiRoundnessShape
@@ -72,7 +77,11 @@ fun MiniPlayerQueueOverlay(
     showSheet: Boolean,
     navController: NavController,
     onDismiss: () -> Unit,
+    onVisibilityChange: (Boolean) -> Unit = {},
 ) {
+    val reportCoverage = LocalMiniQueueCoverage.current
+    val latestCoverage by rememberUpdatedState(reportCoverage)
+    DisposableEffect(Unit) { onDispose { latestCoverage(false) } }
     val binder = LocalPlayerServiceBinder.current
     val queueType by rememberPreference(queueTypeKey, QueueType.Modern)
     val queueLoopState = rememberPreference(queueLoopTypeKey, QueueLoopType.Default)
@@ -80,6 +89,12 @@ fun MiniPlayerQueueOverlay(
     // Inline resizable queue panel — exact copy of Player.kt:2315-2482
     val queuePanelHeightFraction = remember { Animatable(0f) }
     var isQueuePanelVisible by remember { mutableStateOf(false) }
+    val visibilityChanged by rememberUpdatedState(onVisibilityChange)
+    SideEffect {
+        visibilityChanged(isQueuePanelVisible)
+        if (!isQueuePanelVisible) reportCoverage(false)
+    }
+    DisposableEffect(Unit) { onDispose { visibilityChanged(false) } }
     val queuePanelCoroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(showSheet) {
@@ -113,6 +128,9 @@ fun MiniPlayerQueueOverlay(
         }
         val maxFraction = ((screenHeightPx - statusBarTopPx).toFloat() / screenHeightPx).coerceAtMost(1f)
 
+        val scene = LocalQueuePlayerBackdrop.current
+        val underlay = scene?.let { rememberPlayerQueueBackdrop(it) { queuePanelHeightFraction.value } }
+        CompositionLocalProvider(LocalQueuePlayerBackdrop provides underlay) {
         Box(modifier = Modifier.fillMaxSize()) {
 
         // Scrim — read fraction inside graphicsLayer to avoid recomposition
@@ -132,6 +150,8 @@ fun MiniPlayerQueueOverlay(
         // Queue panel — height controlled via Modifier.layout to avoid recomposition
         val queuePanelBackground = if (queueType == QueueType.Modern) Color.Transparent else colorPalette().background2
         GlassQueuePanel(
+            panelBackgroundColor = queuePanelBackground,
+            panelShape = topUiRoundnessShape(),
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
@@ -139,6 +159,8 @@ fun MiniPlayerQueueOverlay(
                     // Read fraction in LAYOUT phase (not composition) → no recomposition
                     val f = queuePanelHeightFraction.value.coerceIn(0.01f, 1f)
                     val panelHeight = (constraints.maxHeight * f).toInt().coerceAtLeast(1)
+                    reportCoverage(playerQueueUnderlayCovered(false, true, queueType,
+                        queuePanelAtExpandedEndpoint(panelHeight, constraints.maxHeight, maxFraction, queuePanelBackground.alpha)))
                     val placeable = measurable.measure(
                         constraints.copy(minHeight = panelHeight, maxHeight = panelHeight)
                     )
@@ -245,5 +267,6 @@ fun MiniPlayerQueueOverlay(
             )
         }
         } // Box(fillMaxSize)
+        } // Queue underlay
     }
 }

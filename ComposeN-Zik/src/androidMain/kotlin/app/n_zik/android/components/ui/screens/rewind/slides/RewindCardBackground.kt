@@ -4,6 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
+import app.n_zik.android.components.glass.rememberInlineGlassBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCombinedBackdrop
+import app.n_zik.android.components.glass.backdrop.drawPlainBackdrop
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -35,6 +43,33 @@ internal fun Modifier.rewindCardBackground(
 ): Modifier =
     if (rewindCaptureMode.value || rewindShareCaptureActive.value) background(color, shape)
     else glassMoodCardBackground(rewindColors.value.ink, color, shape, settings)
+
+/** A parent card exports only its surface; nested cards never sample their own foreground. */
+@Composable
+internal fun RewindCardSurface(
+    color: Color,
+    shape: Shape,
+    settings: GlassSettings = rememberGlassSettings(),
+    content: @Composable (Modifier) -> Unit,
+) {
+    val parent = rememberInlineGlassBackdrop(rewindColors.value.ink)
+    val exported = rememberLayerBackdrop()
+    val liveMaterial = !rewindCaptureMode.value && !rewindShareCaptureActive.value &&
+        settings.usesGlassMaterial(GlassArea.MoodCards)
+    // Build this before the child provider so the parent keeps its original input.
+    val surface = if (liveMaterial) Modifier.glassMoodCardBackground(
+        rewindColors.value.ink, color, shape, settings, exportedBackdrop = exported)
+    else {
+        val empty = rememberCanvasBackdrop {}
+        Modifier.drawPlainBackdrop(empty, { shape }, {}, exportedBackdrop = exported,
+            onDrawSurface = { drawRect(color) }).then(
+            if (rewindCaptureMode.value || rewindShareCaptureActive.value) Modifier
+            else Modifier.glassAreaContour(settings, GlassArea.MoodCards, shape))
+    }
+    val visible = rememberCombinedBackdrop(parent, exported)
+    CompositionLocalProvider(LocalGlassContainerBackdrop provides visible,
+        LocalGlassMaterialSource provides visible) { content(surface) }
+}
 
 /** Applies the shared action material without changing capture colours or bounds. */
 @Composable

@@ -18,15 +18,19 @@ val LocalGlassOpticsEnabled = compositionLocalOf { true }
 /** The expanded endpoint requests full optics; deployment fades to the inexpensive fill. */
 internal fun playerGlassOpticsEnabled(isExpanded: Boolean): Boolean = isExpanded
 
-/** Independent of player deployment so an expanded player cannot override modal coverage. */
+/** True only when opaque paint covers the viewport; visible decorations may then pause. */
 val LocalGlassUnderlayCovered = compositionLocalOf { false }
+
+/** Any modal/deployment may lower sampling cost while still-visible animations continue. */
+val LocalGlassOpticalUnderlayCovered = compositionLocalOf { false }
 
 /** Shared deployment clock; modal coverage still has its own independent fade. */
 val LocalGlassOpticsTransitionProgress = compositionLocalOf { 1f }
 
 /** Effective sampling budget; source recordings remain available to foreground overlays. */
 @Composable
-fun glassOpticsEnabled(): Boolean = LocalGlassOpticsEnabled.current && !LocalGlassUnderlayCovered.current
+fun glassOpticsEnabled(): Boolean = LocalGlassOpticsEnabled.current &&
+    !LocalGlassUnderlayCovered.current && !LocalGlassOpticalUnderlayCovered.current
 
 internal const val GLASS_OPTICS_FADE_MILLIS = 280
 

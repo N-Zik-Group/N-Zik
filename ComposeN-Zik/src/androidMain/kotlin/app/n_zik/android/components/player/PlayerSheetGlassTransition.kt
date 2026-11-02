@@ -29,5 +29,9 @@ fun playerGlassSourceCaptureActive(settings: GlassSettings, transition: State<Fl
     return settings.enabled && glassRenderer(settings) != GlassRenderer.Tint && progress > 0f
 }
 
+/** Modal owners retain the completed expanded player independently of its control optics budget. */
+fun playerGlassSceneCaptureActive(settings: GlassSettings, expanded: Boolean,
+    backgroundCapture: Boolean): Boolean = backgroundCapture || (settings.enabled && expanded)
+
 /** Quality fades must never introduce the deploy card's underlying application scene. */
 fun rememberPlayerControlsGlassSource(player: Backdrop): Backdrop = player

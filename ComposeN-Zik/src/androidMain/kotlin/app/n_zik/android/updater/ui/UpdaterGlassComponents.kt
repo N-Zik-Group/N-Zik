@@ -31,6 +31,8 @@ import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.glassMaterial
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.LocalGlassScope
 import app.n_zik.android.components.glass.PageButton
@@ -161,7 +163,9 @@ internal fun UpdaterBottomPanel(
             Box(Modifier.fillMaxWidth()) {
                 // Record/export only the pane, leaving button springs outside its clip.
                 Box(Modifier.matchParentSize().extendGlassPastScreenEdge(GlassScreenEdge.Bottom).then(skin))
-                Box(modifier, content = content)
+                CompositionLocalProvider(LocalGlassMaterialSource provides LocalGlassContainerBackdrop.current) {
+                    Box(modifier, content = content)
+                }
             }
         }
         return

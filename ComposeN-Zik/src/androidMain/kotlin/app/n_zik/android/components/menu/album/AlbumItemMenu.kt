@@ -92,7 +92,7 @@ import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.menu.MenuSheetSurface
-import app.n_zik.android.components.menu.menuSheetSectionColor
+import app.n_zik.android.components.menu.menuSheetSectionBackground
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.components.song.GoToArtist
 import app.n_zik.android.components.tab.SongShuffler
@@ -211,7 +211,7 @@ class AlbumItemMenu private constructor(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
                 .fillMaxWidth()
-                .background(menuSheetSectionColor(surfaceColor(colorPalette().background1)))
+                .menuSheetSectionBackground(surfaceColor(colorPalette().background1))
         ) {
             MenuSheetDragHandle()
 

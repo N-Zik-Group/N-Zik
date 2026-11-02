@@ -21,6 +21,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -28,8 +29,11 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.layer.setOutline
+import androidx.compose.ui.graphics.layer.CompositingStrategy as LayerCompositingStrategy
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.node.DrawModifierNode
+import androidx.compose.ui.node.DelegatingNode
 import androidx.compose.ui.node.invalidateDraw
 import androidx.compose.ui.node.GlobalPositionAwareModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
@@ -45,6 +49,7 @@ import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
 import app.n_zik.android.components.glass.backdrop.highlight.Highlight
 import app.n_zik.android.components.glass.backdrop.highlight.HighlightElement
 import app.n_zik.android.components.glass.backdrop.internal.ShapeProvider
+import app.n_zik.android.components.glass.backdrop.internal.MaterialLayers
 import app.n_zik.android.components.glass.backdrop.internal.recordLayer
 import app.n_zik.android.components.glass.backdrop.shadow.InnerShadow
 import app.n_zik.android.components.glass.backdrop.shadow.InnerShadowElement
@@ -130,6 +135,7 @@ fun Modifier.drawPlainBackdrop(
                 effects = effects,
                 layerBlock = layerBlock,
                 exportedBackdrop = exportedBackdrop,
+                compositingStrategy = compositingStrategy,
                 onDrawBehind = onDrawBehind,
                 onDrawBackdrop = onDrawBackdrop,
                 onDrawSurface = onDrawSurface,
@@ -189,7 +195,7 @@ fun Modifier.drawBackdrop(
     opticsAlphaProvider: (() -> Float)? = null,
     liveFrame: (() -> Long)? = null,
 ): Modifier {
-    val shapeProvider = ShapeProvider(shape)
+    val shapeProvider = ShapeProvider(shape, if (exportedBackdrop != null) MaterialLayers() else null)
     return this
         .then(
             if (layerBlock != null) {
@@ -240,6 +246,7 @@ fun Modifier.drawBackdrop(
                 effects = effects,
                 layerBlock = layerBlock,
                 exportedBackdrop = exportedBackdrop,
+                compositingStrategy = CompositingStrategy.Offscreen,
                 onDrawBehind = onDrawBehind,
                 onDrawBackdrop = onDrawBackdrop,
                 onDrawSurface = onDrawSurface,
@@ -261,6 +268,7 @@ private class DrawBackdropElement(
     val effects: BackdropEffectScope.() -> Unit,
     val layerBlock: (GraphicsLayerScope.() -> Unit)?,
     val exportedBackdrop: LayerBackdrop?,
+    val compositingStrategy: CompositingStrategy,
     val onDrawBehind: (DrawScope.() -> Unit)?,
     val onDrawBackdrop: DrawScope.(drawBackdrop: DrawScope.() -> Unit) -> Unit,
     val onDrawSurface: (DrawScope.() -> Unit)?,
@@ -281,6 +289,7 @@ private class DrawBackdropElement(
             effects = effects,
             layerBlock = layerBlock,
             exportedBackdrop = exportedBackdrop,
+            compositingStrategy = compositingStrategy,
             onDrawBehind = onDrawBehind,
             onDrawBackdrop = onDrawBackdrop,
             onDrawSurface = onDrawSurface,
@@ -315,6 +324,7 @@ private class DrawBackdropElement(
 
         val exportedMaterialChanged = captureChanged ||
             node.exportedBackdrop !== exportedBackdrop ||
+            node.compositingStrategy != compositingStrategy ||
             node.onDrawBehind !== onDrawBehind ||
             node.onDrawSurface !== onDrawSurface ||
             node.onDrawFront !== onDrawFront ||
@@ -324,6 +334,7 @@ private class DrawBackdropElement(
         node.backdrop = backdrop
         node.shapeProvider = shapeProvider
         node.effects = effects
+        node.compositingStrategy = compositingStrategy
         node.layerBlock = layerBlock
         if (node.exportedBackdrop != exportedBackdrop) {
             node.exportedBackdrop?.layerCoordinates = null
@@ -387,6 +398,7 @@ private class DrawBackdropElement(
         if (effects != other.effects) return false
         if (layerBlock != other.layerBlock) return false
         if (exportedBackdrop != other.exportedBackdrop) return false
+        if (compositingStrategy != other.compositingStrategy) return false
         if (onDrawBehind != other.onDrawBehind) return false
         if (onDrawBackdrop != other.onDrawBackdrop) return false
         if (onDrawSurface != other.onDrawSurface) return false
@@ -405,6 +417,7 @@ private class DrawBackdropElement(
         result = 31 * result + effects.hashCode()
         result = 31 * result + (layerBlock?.hashCode() ?: 0)
         result = 31 * result + (exportedBackdrop?.hashCode() ?: 0)
+        result = 31 * result + compositingStrategy.hashCode()
         result = 31 * result + (onDrawBehind?.hashCode() ?: 0)
         result = 31 * result + onDrawBackdrop.hashCode()
         result = 31 * result + (onDrawSurface?.hashCode() ?: 0)
@@ -422,6 +435,7 @@ private class DrawBackdropNode(
     var effects: BackdropEffectScope.() -> Unit,
     var layerBlock: (GraphicsLayerScope.() -> Unit)?,
     var exportedBackdrop: LayerBackdrop?,
+    var compositingStrategy: CompositingStrategy,
     var onDrawBehind: (DrawScope.() -> Unit)?,
     var onDrawBackdrop: DrawScope.(drawBackdrop: DrawScope.() -> Unit) -> Unit,
     var onDrawSurface: (DrawScope.() -> Unit)?,
@@ -433,7 +447,16 @@ private class DrawBackdropNode(
     var heldWhileMoving: () -> Boolean,
     var liveFrame: (() -> Long)?,
     var loopBucket: (() -> Int)?
-) : DrawModifierNode, GlobalPositionAwareModifierNode, ObserverModifierNode, Modifier.Node() {
+) : DrawModifierNode, GlobalPositionAwareModifierNode, ObserverModifierNode, DelegatingNode() {
+
+    private val materialObserver = delegate(MaterialObserverNode {
+        exportedBackdrop?.materialChanged()
+        invalidateDraw()
+    })
+    private var exportedOutline: Outline? = null
+    private var exportedHighlight: Any? = null
+    private var exportedShadow: Any? = null
+    private var exportedInnerShadow: Any? = null
 
     private val effectScope =
         object : BackdropEffectScopeImpl() {
@@ -479,9 +502,12 @@ private class DrawBackdropNode(
 
     /** Position of this surface within the backdrop source's coordinate space. */
     private fun currentBackdropOffset(): Offset? {
-        val source = backdrop as? LayerBackdrop ?: return null
+        val selfCoordinates = layoutCoordinates?.takeIf { it.isAttached } ?: return null
+        // Combined sources have no single producer origin. Their capture still depends
+        // on the consumer's window position, even when every source revision is stable.
+        val source = backdrop as? LayerBackdrop
+            ?: return if (backdrop.isCoordinatesDependent) selfCoordinates.localToWindow(Offset.Zero) else null
         val sourceCoordinates = source.layerCoordinates ?: return null
-        val selfCoordinates = layoutCoordinates ?: return null
         return try {
             sourceCoordinates.localPositionOf(selfCoordinates)
         } catch (_: Exception) {
@@ -781,21 +807,42 @@ private class DrawBackdropNode(
             updateEffects()
         }
 
-        onDrawBehind?.invoke(this)
-        drawOpticalLayer()
-        onDrawSurface?.invoke(this)
-
         exportedBackdrop?.let { exported ->
             // Film/progress can invalidate drawing without changing the optical capture.
             // Publish before children sample it; never export descendant content.
             if (exported !== backdrop && !exported.isRecording) {
                 exported.isRecording = true
                 try {
-                    recordLayer(this@DrawBackdropNode, exported.graphicsLayer) {
-                        onDrawBehind?.invoke(this)
-                        drawOpticalLayer()
-                        onDrawSurface?.invoke(this)
-                        onDrawFront?.invoke(this)
+                    materialObserver.observeMaterial {
+                        val outline = shapeProvider.shape.createOutline(size, layoutDirection, this)
+                        val material = shapeProvider.materialLayers
+                        if (outline != exportedOutline ||
+                            material?.highlight?.input != exportedHighlight ||
+                            material?.shadow?.input != exportedShadow ||
+                            material?.innerShadow?.input != exportedInnerShadow
+                        ) {
+                            exported.materialChanged()
+                            exportedOutline = outline
+                            exportedHighlight = material?.highlight?.input
+                            exportedShadow = material?.shadow?.input
+                            exportedInnerShadow = material?.innerShadow?.input
+                        }
+                        exported.graphicsLayer.setOutline(outline)
+                        exported.graphicsLayer.clip = true
+                        exported.graphicsLayer.compositingStrategy = when (compositingStrategy) {
+                            CompositingStrategy.Offscreen -> LayerCompositingStrategy.Offscreen
+                            CompositingStrategy.ModulateAlpha -> LayerCompositingStrategy.ModulateAlpha
+                            else -> LayerCompositingStrategy.Auto
+                        }
+                        recordLayer(this@DrawBackdropNode, exported.graphicsLayer) {
+                            material?.shadow?.draw(this)
+                            onDrawBehind?.invoke(this)
+                            drawOpticalLayer()
+                            onDrawSurface?.invoke(this)
+                            onDrawFront?.invoke(this)
+                            material?.highlight?.draw(this)
+                            material?.innerShadow?.draw(this)
+                        }
                     }
                     exported.contentRecorded()
                 } finally {
@@ -803,6 +850,11 @@ private class DrawBackdropNode(
                 }
             }
         }
+        // Export preparation can refresh a changed peer's optical capture. Paint
+        // that same prepared state on screen before descendants sample it.
+        onDrawBehind?.invoke(this)
+        drawOpticalLayer()
+        onDrawSurface?.invoke(this)
         drawContent()
         onDrawFront?.invoke(this)
         surfaceDirty = false
@@ -822,6 +874,7 @@ private class DrawBackdropNode(
     }
 
     override fun onObservedReadsChanged() {
+        exportedBackdrop?.materialChanged()
         surfaceDirty = true
         invalidateDrawCache()
     }
@@ -882,5 +935,18 @@ private class DrawBackdropNode(
         recordedBackdropVersion = null
         recordedBackdropOffset = null
         recordedBackdropSize = IntSize.Zero
+        exportedOutline = null
+        exportedHighlight = null
+        exportedShadow = null
+        exportedInnerShadow = null
     }
+}
+
+/** Observes film reads separately so their updates do not invalidate the optical capture. */
+private class MaterialObserverNode(
+    private val changed: () -> Unit,
+) : ObserverModifierNode, Modifier.Node() {
+    fun observeMaterial(block: () -> Unit) = observeReads(block)
+
+    override fun onObservedReadsChanged() = changed()
 }

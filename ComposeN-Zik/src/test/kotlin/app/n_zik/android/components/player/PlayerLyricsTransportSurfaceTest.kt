@@ -37,6 +37,8 @@ import app.n_zik.android.components.glass.inScope
 import app.n_zik.android.components.glass.mode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -45,12 +47,29 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.util.concurrent.TimeUnit
+import androidx.test.core.app.ApplicationProvider
+import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.buttonzoomoutKey
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [32], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class PlayerLyricsTransportSurfaceTest {
     @get:Rule val compose = createComposeRule()
+    private var nativeShrink: Boolean? = null
+
+    @Before fun isolateGlassMotionFromNativePressShrink() {
+        val preferences = ApplicationProvider.getApplicationContext<Application>().preferences
+        nativeShrink = if (preferences.contains(buttonzoomoutKey)) preferences.getBoolean(buttonzoomoutKey, true) else null
+        preferences.edit().putBoolean(buttonzoomoutKey, false).commit()
+    }
+
+    @After fun restoreNativePressShrink() {
+        val edit = ApplicationProvider.getApplicationContext<Application>().preferences.edit()
+        val previous = nativeShrink
+        if (previous == null) edit.remove(buttonzoomoutKey) else edit.putBoolean(buttonzoomoutKey, previous)
+        edit.commit()
+    }
 
     @Test fun `landscape lyrics fill follows transport role and jelly requires its material`() {
         val mode = mutableStateOf(GlassAreaMode.Disabled)

@@ -30,11 +30,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -53,6 +55,8 @@ import app.n_zik.android.components.glass.GlassContextArea
 import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -68,6 +72,48 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class PlayerWhatsNextGlassTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `upcoming floating button reflects its rendered plate instead of bypassing to raw player pixels`() {
+        val film = mutableStateOf(.45f)
+        val color = mutableStateOf(Color.Blue)
+        val optics = GlassSettings(enabled = true, blur = 0f, film = 0f, rim = 0f,
+            depth = 0f, amount = 0f, vibrancy = 0f)
+        compose.setContent { AppearanceProvider {
+            val player = rememberCanvasBackdrop { drawRect(color.value) }
+            val unrelated = rememberCanvasBackdrop { drawRect(Color.Green) }
+            CompositionLocalProvider(LocalGlassContainerBackdrop provides player,
+                LocalGlassMaterialSource provides player, LocalGlassBackdrop provides unrelated) {
+                Box(Modifier.requiredWidth(320.dp).height(100.dp).background(Color.Blue).testTag("next.material.scene")) {
+                    PlayerWhatsNextGlassSurface(Color.Black, optics.copy(film = film.value), false, WindowInsets(0)) { surface ->
+                        Row(surface.fillMaxWidth().height(40.dp), verticalAlignment = Alignment.CenterVertically) {
+                            PlayerWhatsNextAction(R.drawable.play, Color.Transparent, {}, settings = optics)
+                        }
+                    }
+                }
+            }
+        } }
+        fun assertButtonMatchesPlate(): Color {
+            val root = compose.onNodeWithTag("next.material.scene").fetchSemanticsNode().boundsInRoot
+            val button = compose.onNodeWithTag("player.whatsNext.action.canvas", useUnmergedTree = true)
+                .fetchSemanticsNode().boundsInRoot
+            val pixels = compose.onNodeWithTag("next.material.scene").captureToImage().toPixelMap()
+            val x = (button.center.x - root.left).toInt()
+            val y = (button.center.y - root.top).toInt()
+            val expected = pixels[(x + 80).coerceAtMost(pixels.width - 1), y]
+            val actual = pixels[x, y]
+            assertEquals("Button must include its parent panel red", expected.red, actual.red, .04f)
+            assertEquals("Button must include its parent panel green", expected.green, actual.green, .04f)
+            assertEquals("Button must include its parent panel blue", expected.blue, actual.blue, .04f)
+            assertTrue("Unrelated page must stay outside player optics", actual.green < actual.blue)
+            return actual
+        }
+        val initial = assertButtonMatchesPlate()
+        compose.runOnIdle { film.value = .85f }
+        val updated = assertButtonMatchesPlate()
+        assertTrue("Mounted button must observe plate film updates", kotlin.math.abs(initial.blue - updated.blue) > .025f)
+        compose.runOnIdle { color.value = Color(0.3f, 0.1f, 0.9f) }
+        assertButtonMatchesPlate()
+    }
 
     @Test fun `landscape square cover and native carousel viewport end above unchanged toolbar bottom`() {
         val mode = mutableStateOf(GlassAreaMode.Disabled)

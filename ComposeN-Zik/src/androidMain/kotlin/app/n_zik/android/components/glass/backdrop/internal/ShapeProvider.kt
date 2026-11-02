@@ -17,7 +17,11 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 
 @Immutable
-internal class ShapeProvider(val shapeBlock: () -> Shape) {
+internal class ShapeProvider(
+    val shapeBlock: () -> Shape,
+    val materialLayers: MaterialLayers?,
+) {
+    constructor(shapeBlock: () -> Shape) : this(shapeBlock, null)
 
     private var _shape: Shape? = null
     private var _outline: Outline? = null

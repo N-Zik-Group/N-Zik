@@ -9,12 +9,11 @@ import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackd
 /** Controls sample the surface actually visible beneath them, before the row's group fade. */
 @Composable
 internal fun rememberHeaderControlsBackdrop(
-    glassEnabled: Boolean,
     hasTopGlassBackdrop: Boolean,
     headerColor: Color,
-): Backdrop? = if (glassEnabled && !hasTopGlassBackdrop) {
+): Backdrop? = if (hasTopGlassBackdrop) {
+    LocalUnifiedTopGlassSurface.current ?: LocalGlassBackdrop.current
+} else {
     // The native header is opaque: sampling the page would reveal covered artwork.
     rememberCanvasBackdrop { drawRect(headerColor) }
-} else {
-    LocalGlassBackdrop.current
 }

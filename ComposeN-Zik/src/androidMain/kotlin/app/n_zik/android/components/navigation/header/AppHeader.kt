@@ -125,8 +125,6 @@ class AppHeader(
             ) {
                 HeaderControlsGlassSources(
                     controlsBackdrop = controlsBackdrop,
-                    ownsMaterial = standaloneGlass || sharedHomeGlass != null || hasTopGlassBackdrop,
-                    materialSource = sharedHomeGlass?.list,
                 ) {
                     // Glass Back fades in at its anchor; only the title's reserved space expands.
                     HeaderBackSlot(visible = !isHome, glass = glassEnabled) {
@@ -135,14 +133,14 @@ class AppHeader(
                         }
                     }
     
-                    // Logo + Title — shifts right smoothly as back button expands.
+                    // Logo + Title â€” shifts right smoothly as back button expands.
                     // Takes the full remaining width (weight, fill) so its extras can
 
                     // collapse behind the logo instead of compressing the action bar, which
                     // stays pinned to the right edge.
                     CollapsingAppTitle(navController, context, Modifier.weight(1f))
 
-                    // Action icons (search, settings…)
+                    // Action icons (search, settingsâ€¦)
                     ActionBar(navController)
                 }
             }
@@ -161,26 +159,22 @@ class AppHeader(
                 content = controls,
             )
         } else {
-            controls(rememberHeaderControlsBackdrop(glassEnabled, hasTopGlassBackdrop, headerColor))
+            controls(rememberHeaderControlsBackdrop(hasTopGlassBackdrop, headerColor))
         }
         }
     }
 }
 
-/** Keep the visible header export separate from the input used to render each control once. */
+/** Descendants sample the child-free header material, including its own film. */
 @Composable
 internal fun HeaderControlsGlassSources(
     controlsBackdrop: Backdrop?,
-    ownsMaterial: Boolean,
-    materialSource: Backdrop? = null,
     content: @Composable () -> Unit,
 ) {
-    val raw = if (ownsMaterial) materialSource ?: LocalGlassMaterialSource.current
-        ?: LocalGlassContainerBackdrop.current ?: LocalGlassBackdrop.current else controlsBackdrop
     CompositionLocalProvider(
         LocalGlassBackdrop provides controlsBackdrop,
-        LocalGlassContainerBackdrop provides (if (ownsMaterial) controlsBackdrop else LocalGlassContainerBackdrop.current),
-        LocalGlassMaterialSource provides raw,
+        LocalGlassContainerBackdrop provides controlsBackdrop,
+        LocalGlassMaterialSource provides controlsBackdrop,
         content = content,
     )
 }

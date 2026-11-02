@@ -2,13 +2,9 @@ package app.n_zik.android.components.ui.screens.find
 
 import app.n_zik.android.components.searchOverlayAction
 import app.n_zik.android.components.searchOverlaySurface
-import app.n_zik.android.components.rememberSearchOverlayMaterialSource
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
-import app.n_zik.android.components.glass.GlassScope
-import app.n_zik.android.components.glass.rememberGlassSettings
-import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.runtime.CompositionLocalProvider
 
@@ -37,7 +33,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -79,7 +74,6 @@ import app.n_zik.android.recognition.RecognizedTrack
 import app.n_zik.android.recognition.ShazamRepository
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.asMediaItem
-import app.it.fast4x.rimusic.utils.forcePlay
 import app.n_zik.android.core.coil.ImageCacheFactory
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.searchPage
@@ -411,8 +405,6 @@ private fun RecognizedTrackCard(
     onSearch: () -> Unit
 ) {
     val cardBackdrop = rememberLayerBackdrop()
-    val cardSource = rememberSearchOverlayMaterialSource()
-    val glassCard = rememberGlassSettings(GlassScope.Search).usesGlassMaterial(GlassArea.SettingsCards)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -464,7 +456,7 @@ private fun RecognizedTrackCard(
             }
             Spacer(Modifier.height(4.dp))
             CompositionLocalProvider(LocalGlassContainerBackdrop provides cardBackdrop,
-                LocalGlassMaterialSource provides if (glassCard) cardSource else cardBackdrop) {
+                LocalGlassMaterialSource provides cardBackdrop) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically

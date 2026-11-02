@@ -97,7 +97,7 @@ import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.menu.MenuSheetSurface
-import app.n_zik.android.components.menu.menuSheetSectionColor
+import app.n_zik.android.components.menu.menuSheetSectionBackground
 import app.n_zik.android.components.song.GoToAlbum
 import app.n_zik.android.components.song.GoToArtist
 import app.n_zik.android.components.tab.LikeComponent
@@ -819,7 +819,7 @@ class PlayerItemMenu private constructor(
         MenuSheetSurface {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.background(menuSheetSectionColor(surfaceColor(colorPalette().background1)))
+                modifier = Modifier.menuSheetSectionBackground(surfaceColor(colorPalette().background1))
             ) {
                 MenuSheetDragHandle()
 

@@ -81,8 +81,14 @@ class PlayerRibbedAreaModesTest {
         val glass = set(GlassAreaMode.GlassOnly, 0f)
         val cheapContour = set(GlassAreaMode.GlassAndContour, 0f)
         assertTrue("Covered material retains its selected contour", changed(glass, cheapContour) > 25)
-        for (image in listOf(disabled, contour, glass, cheapContour)) {
+        for (image in listOf(disabled, contour)) {
             assertEquals(Color.Blue, image[image.width / 2, image.height / 2])
+            assertEquals(Color.Black, image[0, 0])
+        }
+        // The legacy Blue argument belongs to the native fallback; selected material keeps
+        // its full shared film even when the optical sampling budget is zero.
+        for (image in listOf(glass, cheapContour)) {
+            assertEquals(Color(0xFF4A4A4E), image[image.width / 2, image.height / 2])
             assertEquals(Color.Black, image[0, 0])
         }
         compose.runOnIdle { master.value = false }

@@ -1,6 +1,10 @@
 package app.it.fast4x.rimusic.ui.screens.player
 
 import app.n_zik.android.components.player.playerQueueUnderlayCovered
+import app.n_zik.android.components.player.queuePanelAtExpandedEndpoint
+import app.n_zik.android.components.player.rememberPlayerQueueBackdrop
+import app.n_zik.android.components.player.playerGlassSceneCaptureActive
+import app.n_zik.android.components.glass.LocalQueuePlayerBackdrop
 import app.n_zik.android.components.glass.LocalGlassUnderlayCovered
 import app.n_zik.android.components.player.LocalPlayerSheetGlassTransition
 import app.n_zik.android.components.player.rememberPlayerSheetGlassTransition
@@ -30,6 +34,7 @@ import app.n_zik.android.components.glass.backdrop.backdrops.rememberCombinedBac
 import app.n_zik.android.components.player.animatePlayerCarouselGeometry
 import app.n_zik.android.components.player.animatePlayerCarouselDp
 import app.n_zik.android.components.player.PlayerGlassBudgetLayout
+import app.n_zik.android.components.player.playerQueueOpticsEnabled
 import app.n_zik.android.components.player.rememberPlayerArtworkShadowOverflow
 import app.n_zik.android.components.player.playerArtworkShadowOverflow
 import app.n_zik.android.components.player.playerArtworkOverflowViewport
@@ -133,7 +138,6 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import app.n_zik.android.components.player.rememberPlayerArtworkPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
@@ -239,7 +243,7 @@ import app.it.fast4x.rimusic.enums.ThumbnailCoverType
 import app.it.fast4x.rimusic.enums.ThumbnailType
 import app.it.fast4x.rimusic.models.ui.toUiMedia
 import app.n_zik.android.typography
-import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
+import app.n_zik.android.components.glass.CustomModalBottomSheet
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.themed.NowPlayingSongIndicator
 import app.n_zik.android.extensions.nextvisualizer.views.NextVisualizer
@@ -924,7 +928,8 @@ fun Player(
     val inheritedOpticsEnabled = LocalGlassOpticsEnabled.current
     val inheritedUnderlayCovered = LocalGlassUnderlayCovered.current
     var isQueuePanelVisible by remember { mutableStateOf(false) }
-    val playerUnderlayCovered = playerQueueUnderlayCovered(inheritedUnderlayCovered, isQueuePanelVisible)
+    var isQueueFullyCovering by remember { mutableStateOf(false) }
+    val playerUnderlayCovered = playerQueueUnderlayCovered(inheritedUnderlayCovered, isQueuePanelVisible, isQueueFullyCovering)
     val decorationsActive = rememberPlayerDecorationsActive(
         playerContentVisible && !appRunningInBackground && !playerUnderlayCovered)
     val playerTransition = LocalPlayerSheetGlassTransition.current
@@ -937,7 +942,8 @@ fun Player(
     val playerControlsBackdrop = rememberCombinedBackdrop(playerCoverBackground, playerBackground.backdrop)
     val controlsSource = rememberPlayerControlsGlassSource(playerControlsBackdrop)
     val playerVisibleBackdrop = rememberLayerBackdrop()
-    val capturePlayerScene = capturePlayerBackground
+    val queuePlayerBackdrop = rememberLayerBackdrop()
+    val capturePlayerScene = playerGlassSceneCaptureActive(glassSettings, playerSheetState.isExpanded, capturePlayerBackground)
 
     @Composable
     fun PlayerBlurredCover(
@@ -1401,7 +1407,7 @@ fun Player(
         controlsSource, artworkShadowOverflow, capturePlayerBackground)
     CompositionLocalProvider(
         LocalPlayerTransportGeometry provides remember { PlayerTransportGeometry() },
-        LocalGlassOpticsEnabled provides inheritedOpticsEnabled,
+        LocalGlassOpticsEnabled provides playerQueueOpticsEnabled(inheritedOpticsEnabled, isQueuePanelVisible),
         LocalGlassOpticsTransitionProgress provides playerTransition.value,
         LocalGlassUnderlayCovered provides playerUnderlayCovered,
         LocalGlassBackdrop provides artworkControlsSource,
@@ -1452,6 +1458,7 @@ fun Player(
 
         val player = binder.player
 
+        Box(Modifier.fillMaxSize().then(if (capturePlayerScene) Modifier.layerBackdrop(queuePlayerBackdrop) else Modifier)) {
         if (isLandscape) {
          Box{
              if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor && playerType == PlayerType.Modern && (!showthumbnail || albumCoverRotation)) {
@@ -2621,6 +2628,8 @@ fun Player(
            }
         }
 
+        }
+
         // Inline resizable queue panel
         val queuePanelHeightFraction = remember { Animatable(0f) }
         val queuePanelCoroutineScope = rememberCoroutineScope()
@@ -2643,10 +2652,15 @@ fun Player(
         }
 
         if (isQueuePanelVisible) {
+            val queueUnderlay = rememberPlayerQueueBackdrop(
+                if (capturePlayerScene) queuePlayerBackdrop else artworkControlsSource,
+            ) { queuePanelHeightFraction.value }
             // The queue is the foreground surface; a global modal still covers it.
             CompositionLocalProvider(
+                LocalGlassOpticsEnabled provides inheritedOpticsEnabled,
                 LocalGlassUnderlayCovered provides inheritedUnderlayCovered,
                 LocalGlassOpticsTransitionProgress provides 1f,
+                LocalQueuePlayerBackdrop provides queueUnderlay,
             ) {
             BackHandler { showQueue = false }
 
@@ -2678,6 +2692,8 @@ fun Player(
             // Queue panel — height controlled via Modifier.layout to avoid recomposition
             val queuePanelBackground = if (queueType == QueueType.Modern) Color.Transparent else colorPalette().background2
             GlassQueuePanel(
+                panelBackgroundColor = queuePanelBackground,
+                panelShape = topUiRoundnessShape(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
@@ -2685,6 +2701,7 @@ fun Player(
                         // Read fraction in LAYOUT phase (not composition) → no recomposition
                         val f = queuePanelHeightFraction.value.coerceIn(0.01f, 1f)
                         val panelHeight = (constraints.maxHeight * f).toInt().coerceAtLeast(1)
+                        isQueueFullyCovering = queuePanelAtExpandedEndpoint(panelHeight, constraints.maxHeight, maxFraction, queuePanelBackground.alpha)
                         val placeable = measurable.measure(
                             constraints.copy(minHeight = panelHeight, maxHeight = panelHeight)
                         )

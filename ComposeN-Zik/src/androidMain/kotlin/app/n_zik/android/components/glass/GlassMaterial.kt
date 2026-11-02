@@ -13,6 +13,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.ImageBitmapConfig
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
@@ -30,14 +35,21 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.toSize
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.backdrop.BackdropEffectScope
@@ -57,8 +69,26 @@ internal val GlassRimWidth = 0.8.dp
 
 /** Draws a fallback menu rim without laying out, masking, or moving the glass underneath. */
 internal fun Modifier.glassMenuRim(shape: Shape, brush: Brush): Modifier = drawWithCache {
-    val outline = shape.createOutline(size, layoutDirection, this)
-    val width = minOf(kotlin.math.ceil(GlassRimWidth.toPx()), kotlin.math.ceil(size.minDimension / 2f))
+    val drawRim = createGlassRimDraw(shape, brush, size, layoutDirection, this, excludeBottom = true)
+    onDrawWithContent {
+        drawContent()
+        drawRim()
+    }
+}
+
+private fun createGlassRimDraw(
+    shape: Shape,
+    brush: Brush,
+    size: Size,
+    layoutDirection: LayoutDirection,
+    density: Density,
+    excludeBottom: Boolean,
+): DrawScope.() -> Unit {
+    val outline = shape.createOutline(size, layoutDirection, density)
+    val width = minOf(kotlin.math.ceil(with(density) { GlassRimWidth.toPx() }), kotlin.math.ceil(size.minDimension / 2f))
+    if (outline is Outline.Generic && !excludeBottom) {
+        return createGenericRimDraw(outline, brush, width, size, layoutDirection, density)
+    }
     val half = width / 2f
     val inset = Offset(half, half)
     val borderSize = Size(size.width - width, size.height - width)
@@ -78,22 +108,78 @@ internal fun Modifier.glassMenuRim(shape: Shape, brush: Brush): Modifier = drawW
             op(this, inner, PathOperation.Difference)
         }
     }
-    onDrawWithContent {
-        drawContent()
-        clipRect(left = -width, top = (size.height - width).coerceAtLeast(0f),
-            right = size.width + width, bottom = size.height + width, clipOp = ClipOp.Difference) {
-            when {
-                outline is Outline.Rectangle -> drawRect(brush, inset, borderSize, style = stroke)
-                roundedPath != null -> drawPath(roundedPath, brush)
-                rounded != null && rounded.topLeftCornerRadius.x < half ->
-                    clipRect(width, width, size.width - width, size.height - width, ClipOp.Difference) {
-                        drawRoundRect(brush, cornerRadius = rounded.topLeftCornerRadius)
-                    }
-                rounded != null -> drawRoundRect(brush, inset, borderSize,
-                    rounded.topLeftCornerRadius.inset(half), style = stroke)
-                else -> drawOutline(outline, brush, style = Stroke(width * 2f))
+    val paint: DrawScope.() -> Unit = {
+        when {
+            outline is Outline.Rectangle -> drawRect(brush, inset, borderSize, style = stroke)
+            roundedPath != null -> drawPath(roundedPath, brush)
+            rounded != null && rounded.topLeftCornerRadius.x < half ->
+                clipRect(width, width, size.width - width, size.height - width, ClipOp.Difference) {
+                    drawRoundRect(brush, cornerRadius = rounded.topLeftCornerRadius)
+                }
+            rounded != null -> drawRoundRect(brush, inset, borderSize,
+                rounded.topLeftCornerRadius.inset(half), style = stroke)
+            else -> drawOutline(outline, brush, style = Stroke(width * 2f))
+        }
+    }
+    return {
+        if (excludeBottom) {
+            clipRect(left = -width, top = (size.height - width).coerceAtLeast(0f),
+                right = size.width + width, bottom = size.height + width,
+                clipOp = ClipOp.Difference, block = paint)
+        } else paint()
+    }
+}
+
+// Generic mask adapted from AndroidX Foundation 1.12.1 Border.kt (AOSP, Apache-2.0).
+private fun createGenericRimDraw(
+    outline: Outline.Generic,
+    brush: Brush,
+    width: Float,
+    size: Size,
+    layoutDirection: LayoutDirection,
+    density: Density,
+): DrawScope.() -> Unit {
+    if (width * 2f > size.minDimension) return { drawPath(outline.path, brush) }
+    val bounds = outline.path.getBounds()
+    val bitmapSize = IntSize(kotlin.math.ceil(bounds.width).toInt(), kotlin.math.ceil(bounds.height).toInt())
+    if (bitmapSize.width <= 0 || bitmapSize.height <= 0) return {}
+    val solid = brush as? SolidColor
+    val bitmap = ImageBitmap(bitmapSize.width, bitmapSize.height,
+        if (solid != null) ImageBitmapConfig.Alpha8 else ImageBitmapConfig.Argb8888)
+    val outside = Path().apply {
+        addRect(bounds)
+        op(this, outline.path, PathOperation.Difference)
+    }
+    CanvasDrawScope().draw(density, layoutDirection, Canvas(bitmap), bitmapSize.toSize()) {
+        translate(-bounds.left, -bounds.top) {
+            drawPath(outline.path, brush, style = Stroke(width * 2f))
+            scale((this.size.width + 1f) / this.size.width, (this.size.height + 1f) / this.size.height) {
+                drawPath(outside, brush, blendMode = BlendMode.Clear)
             }
         }
+    }
+    bitmap.prepareToDraw()
+    val tint = solid?.let { ColorFilter.tint(it.value.copy(alpha = 1f)) }
+    return {
+        translate(bounds.left, bounds.top) {
+            drawImage(bitmap, srcSize = bitmapSize, colorFilter = tint)
+        }
+    }
+}
+
+private fun cachedGlassRimDraw(shape: Shape, brush: Brush, excludeBottom: Boolean): DrawScope.() -> Unit {
+    var previousSize = Size.Unspecified
+    var previousDensity = Float.NaN
+    var previousDirection: LayoutDirection? = null
+    var paint: (DrawScope.() -> Unit)? = null
+    return {
+        if (size != previousSize || density != previousDensity || layoutDirection != previousDirection) {
+            previousSize = size
+            previousDensity = density
+            previousDirection = layoutDirection
+            paint = createGlassRimDraw(shape, brush, size, layoutDirection, this, excludeBottom)
+        }
+        paint?.invoke(this)
     }
 }
 
@@ -183,8 +269,12 @@ fun Modifier.glassMaterial(
     excludeBottomRim: Boolean = menu,
 ): Modifier {
     if (!settings.enabled) return this
-    val backdrop = if (ownBackdrop != null && ownBackdrop === LocalGlassContainerBackdrop.current)
-        LocalGlassMaterialSource.current ?: ownBackdrop else ownBackdrop ?: LocalGlassBackdrop.current
+    val backdrop = when {
+        ownBackdrop is RenderedMaterialBackdrop -> ownBackdrop
+        ownBackdrop != null && ownBackdrop === LocalGlassContainerBackdrop.current ->
+            LocalGlassMaterialSource.current ?: ownBackdrop
+        else -> ownBackdrop ?: LocalGlassBackdrop.current
+    }
     val liveFrame = LocalGlassLiveFrame.current
     val opticsState = glassOpticsProgressState(glassOpticsEnabled())
     val opticsProgress = opticsState.value
@@ -204,6 +294,9 @@ fun Modifier.glassMaterial(
     val fallback = renderer == GlassRenderer.Tint || (cornerShape == null && customLens == null) || backdrop == null
     val opacity = glassFilmOpacity(settings.film, menu, menuOpacity, fallback, dark)
     if (fallback) {
+        val exportedRim = if (exportedBackdrop != null) remember(shape, rimColor, rimAlpha, excludeBottomRim) {
+            cachedGlassRimDraw(shape, SolidColor(rimColor.copy(alpha = rimAlpha)), excludeBottomRim)
+        } else null
         val fill = if (exportedBackdrop == null) {
             Modifier.background(if (drawFilm) film.copy(alpha = film.alpha * opacity) else Color.Transparent)
                 .then(if (onDrawTint != null) Modifier.drawBehind { onDrawTint.invoke(this) } else Modifier)
@@ -221,6 +314,7 @@ fun Modifier.glassMaterial(
             }
             Modifier.drawPlainBackdrop(emptySource, shapeBlock, effects,
                 exportedBackdrop = exportedBackdrop, onDrawSurface = surface,
+                onDrawFront = exportedRim,
                 // Empty source and effects: export the passive film without forcing
                 // different edge compositing from the ordinary tint fallback.
                 compositingStrategy = CompositingStrategy.Auto)
@@ -229,7 +323,8 @@ fun Modifier.glassMaterial(
             // drawPlainBackdrop already owns the exported surface's shape mask.
             // A second mask multiplies antialias coverage along rounded edges.
             .then(if (exportedBackdrop == null) Modifier.clip(shape) else Modifier).then(fill)
-            .then(if (excludeBottomRim) Modifier.glassMenuRim(shape, SolidColor(rimColor.copy(alpha = rimAlpha)))
+            .then(if (exportedBackdrop != null) Modifier
+                else if (excludeBottomRim) Modifier.glassMenuRim(shape, SolidColor(rimColor.copy(alpha = rimAlpha)))
                 else Modifier.border(GlassRimWidth, rimColor.copy(alpha = rimAlpha), shape))
     }
     val density = LocalDensity.current
@@ -284,6 +379,11 @@ fun Modifier.glassMaterial(
             onDrawTint?.invoke(this)
         }
     }
+    val exportedRim = if (exportedBackdrop != null && opticsProgress < 1f) {
+        remember(shape, rimColor, rimAlpha, opticsProgress, excludeBottomRim) {
+            cachedGlassRimDraw(shape, SolidColor(rimColor.copy(alpha = rimAlpha * (1f - opticsProgress))), excludeBottomRim)
+        }
+    } else null
     return drawBackdrop(
         backdrop = backdrop,
         shape = shapeBlock,
@@ -291,12 +391,13 @@ fun Modifier.glassMaterial(
         highlight = highlight,
         shadow = shadow,
         onDrawSurface = surface,
+        onDrawFront = exportedRim,
         opticsAlphaProvider = opticalAlpha,
         backdropScale = resolution,
         liveFrame = liveFrame,
         layerBlock = layerBlock,
         exportedBackdrop = exportedBackdrop,
-    ).then(if (opticsProgress < 1f) {
+    ).then(if (exportedBackdrop == null && opticsProgress < 1f) {
         val rim = SolidColor(rimColor.copy(alpha = rimAlpha * (1f - opticsProgress)))
         if (excludeBottomRim) Modifier.glassMenuRim(shape, rim) else Modifier.border(GlassRimWidth, rim, shape)
     } else Modifier)

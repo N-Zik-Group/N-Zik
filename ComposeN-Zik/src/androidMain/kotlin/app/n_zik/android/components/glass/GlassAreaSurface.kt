@@ -1,6 +1,7 @@
 package app.n_zik.android.components.glass
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -46,7 +47,7 @@ internal fun rememberMiniPlayerControlBackdrop(
     body: Backdrop,
     progress: () -> Float,
 ): Backdrop = remember(parent, body, progress) {
-    if (parent == null) body else object : Backdrop {
+    val rendered = if (parent == null) body else object : Backdrop {
         override val isCoordinatesDependent = true
 
         override fun DrawScope.drawBackdrop(
@@ -63,6 +64,7 @@ internal fun rememberMiniPlayerControlBackdrop(
             }
         }
     }
+    RenderedMaterialBackdrop(rendered)
 }
 
 /** Applied to the native branch only: the material branch already owns its sole contour. */
@@ -70,8 +72,10 @@ internal fun rememberMiniPlayerControlBackdrop(
 fun Modifier.glassAreaContour(settings: GlassSettings, area: GlassArea, shape: Shape): Modifier {
     if (!settings.usesGlassContour(area)) return this
     val tint = glassTint(settings)
-    return if (area == GlassArea.Menus || area == GlassArea.Dropdowns) {
+    return if (area == GlassArea.Menus) {
         glassMenuRim(shape, glassEdgeLightBrush(settings, tint))
+    } else if (area == GlassArea.Dropdowns) {
+        border(GlassRimWidth, glassEdgeLightBrush(settings, tint), shape)
     } else glassEdgeRim(settings, shape, tint)
 }
 

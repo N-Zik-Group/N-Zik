@@ -5,6 +5,10 @@ import app.n_zik.android.components.glass.glassGlobalIndication
 import app.n_zik.android.components.glass.queueToolbarBottomInset
 import app.n_zik.android.components.glass.glassQueueListBackdrop
 import app.n_zik.android.components.glass.LocalQueueRowBackdrop
+import app.n_zik.android.components.glass.LocalQueueGlassBackdrop
+import app.n_zik.android.components.glass.GlassFloatingActions
+import app.n_zik.android.components.glass.glassQueueObjectBackdrop
+import app.n_zik.android.components.glass.QueueGlassRowObjects
 import app.n_zik.android.components.glass.rememberQueueRowGlassBackdrop
 import app.n_zik.android.components.glass.glassQueueListBackground
 import app.n_zik.android.components.glass.queueContentBackground
@@ -23,7 +27,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.ime
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -423,7 +426,7 @@ fun Queue(
                 itemsIndexed(
                     items = rowsOnDisplay,
                     key = { _, row -> row.window.uid.toString() }
-                ) { _, row ->
+                ) { displayIndex, row ->
                     val window = row.window
                     val song = row.song
 
@@ -437,6 +440,7 @@ fun Queue(
                         reorderableLazyListState,
                         key = window.uid.toString()
                     ) { isDraggingItem ->
+                        QueueGlassRowObjects(displayIndex, isDraggingItem) {
                         Box(
                             modifier = Modifier.fillMaxWidth()
                                                .animateItem()
@@ -456,6 +460,8 @@ fun Queue(
                                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                             }
                                         )
+                                        // Capture only this passive sibling, including its native guest opacity.
+                                        .glassQueueObjectBackdrop(isDraggingItem to guestLockAlpha)
                                         // Reorder handle is visibly disabled for a locked guest
                                         .alpha( guestLockAlpha ),
                                     contentAlignment = Alignment.Center
@@ -582,6 +588,7 @@ fun Queue(
                                 )
                             }
                         }
+                        }
                     }
                 }
 
@@ -607,10 +614,12 @@ fun Queue(
             ) { search.SearchBar(this) }
         }
 
-        FloatingActionsContainerWithScrollToTop(
-            lazyListState = lazyListState,
-            modifier = Modifier.padding(bottom = Dimensions.miniPlayerHeight)
-        )
+        GlassFloatingActions(LocalQueueGlassBackdrop.current) {
+            FloatingActionsContainerWithScrollToTop(
+                lazyListState = lazyListState,
+                modifier = Modifier.padding(bottom = Dimensions.miniPlayerHeight)
+            )
+        }
     }
 }
 
