@@ -60,7 +60,7 @@ fun GlassDescriptionExpansion(
 fun GlassExplicitBadge(color: Color, modifier: Modifier = Modifier, settings: GlassSettings = rememberGlassSettings()) {
     val glass = settings.usesGlassMaterial(GlassArea.ActionButtons) || settings.usesGlassContour(GlassArea.ActionButtons)
     Box(modifier, contentAlignment = androidx.compose.ui.Alignment.Center) {
-        if (glass) MiniPlayerGlassExplicitBadge(settings)
+        if (glass) MiniPlayerGlassExplicitBadge(settings, Modifier.matchParentSize())
         else androidx.compose.foundation.Image(
             painter = painterResource(R.drawable.explicit), contentDescription = null,
             colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(color),
@@ -69,10 +69,10 @@ fun GlassExplicitBadge(color: Color, modifier: Modifier = Modifier, settings: Gl
     }
 }
 
-/** Canonical 14dp mini-player component shared by all Glass explicit indicators. */
+/** Mini-player material and glyph adapt to each caller's original badge dimensions. */
 @Composable
-private fun MiniPlayerGlassExplicitBadge(settings: GlassSettings) {
-    Box(Modifier.size(14.dp).glassExplicitBadgeBackground(settings)) {
+private fun MiniPlayerGlassExplicitBadge(settings: GlassSettings, modifier: Modifier) {
+    Box(modifier.glassExplicitBadgeBackground(settings)) {
         androidx.compose.foundation.Image(
             painter = painterResource(R.drawable.explicit_glass_glyph), contentDescription = null,
             colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(app.n_zik.android.colorPalette().text),
