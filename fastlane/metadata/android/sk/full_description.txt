@@ -4,9 +4,7 @@ Viacjazyčný YouTube Music frontend pre Android: výkon, vyladenie UI/UX, rozš
 
 <b>Poznámka:</b> N-Zik začal ako vedľajší projekt. Zrelšie alternatívy: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> alebo <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Využívanie AI:</b> Na kód používam generatívnu AI (cez <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), pred vydaním všetko preverím a otestujem.
-
-Príležitostný posluchateľ či audiofil - N-Zik vám dáva plnú kontrolu nad hudbou bez kompromisu v súkromí.
+<b>Využívanie AI:</b> Na kód používam generatívnu AI (cez BMAD Method), pred vydaním všetko preverím a otestujem.
 
 ✨ <b>PREČO N-ZIK?</b> Žiadne reklamy, prehrávanie na pozadí, offline cache, prispôsobiteľné rozhranie - vždy zadarmo.
 
@@ -14,6 +12,10 @@ Príležitostný posluchateľ či audiofil - N-Zik vám dáva plnú kontrolu nad
 - Témy: AMOLED, Deep Dark, Crisp Light + farebné akcenty
 - 3D Carousel Player, domovské widgety, jednotný prehrávač a mini prehrávač
 - Profily umelcov, Discovery a nálady, skrývateľné domovské hlavičky
+
+🫧 <b>Efekt Glass (BETA, voliteľný)</b>
+Po novej inštalácii vypnutý. Zapnite v Nastaveniach: pôvodný vzhľad, len obrys či Glass podľa kategórie, nastaviteľná kvalita. Môže zvýšiť záťaž vykresľovania a spotrebu batérie: znížte kvalitu alebo vypnite.
+Poďakovanie za Glass: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Zvukový zážitok</b>
 - Prvotriedna kvalita vďaka YouTube Music Premium, aplikovaná automaticky

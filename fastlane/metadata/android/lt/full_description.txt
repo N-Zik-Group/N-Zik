@@ -4,9 +4,7 @@ Daugiakalbė YouTube Music sąsaja Androidui: našumas, UI/UX tobulinimas, funkc
 
 <b>Pastaba:</b> N-Zik - šalutinis projektas. Brandesnės alternatyvos: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> arba <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>AI naudojimas:</b> Naudoju generatyvųjį AI kodui (per <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), prieš išleidžiant, viskas peržiūrima ir išbandoma.
-
-Klausytojas ar melomanas - N-Zik suteikia pilną kontrolę jūsų muzikos be privatumo pažeidimo.
+<b>AI naudojimas:</b> Naudoju generatyvųjį AI kodui (per BMAD Method), prieš išleidžiant, viskas peržiūrima ir išbandoma.
 
 ✨ <b>KODĖL N-ZIK?</b> Jokių reklamų, atkūrimas fone, offline kešas, pritaikoma sąsaja - nemokamai, visada.
 
@@ -14,6 +12,10 @@ Klausytojas ar melomanas - N-Zik suteikia pilną kontrolę jūsų muzikos be pri
 - Temos: AMOLED, Deep Dark, Crisp Light + spalvinti akcentai
 - 3D Carousel Player, namų widget'ai, vieningas grotuvas su mini grotuvu
 - Atlikėjų profiliai, Discovery ir nuotaikos, sulankstomi antraščiai
+
+🫧 <b>Glass efektas (BETA, pasirenkamas)</b>
+Naujai įdiegus išjungtas. Nustatymuose įjunkite: įprastas vaizdas, tik kontūras ar Glass pagal kategoriją, keičiama kokybė. Gali didėti atvaizdavimo apkrova ir baterijos sąnaudos: mažinkite kokybę ar išjunkite.
+Glass autoriai: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Garso patirtis</b>
 - Premium kokybė per YouTube Music Premium, taikoma automatiškai

@@ -15,6 +15,10 @@ Android용 다국어 YouTube Music 프론트엔드. 성능, UI/UX 개선, 기능
 - 3D Carousel Player, 홈 위젯, 통합 플레이어와 미니 플레이어
 - 아티스트 프로필, Discovery와 무드, 접이식 홈 헤더
 
+🫧 <b>Glass 효과 (BETA, 선택 사항)</b>
+새로 설치하면 꺼져 있습니다. 설정에서 켜고 범주별로 기본, 윤곽선만 또는 Glass를 선택하고 품질을 조절하세요. 렌더링 부하와 배터리 소모가 증가할 수 있으니 필요하면 품질을 낮추거나 끄세요.
+Glass 크레딧: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+
 🎵 <b>오디오 경험</b>
 - YouTube Music Premium을 통한 프리미엄 품질, 자동 적용
 - 편집 및 실시간 번역이 가능한 동기화 가사

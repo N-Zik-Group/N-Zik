@@ -6,14 +6,16 @@ Interface YouTube Music multilíngue para Android, focada em desempenho, refinam
 
 <b>Uso de IA:</b> Uso IA generativa no código (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), revisada e testada antes de lançar.
 
-Ouvinte casual ou audiófilo, o N-Zik dá controlo total sobre a música, sem comprometer a privacidade.
-
 ✨ <b>POR QUE O N-ZIK?</b> Sem anúncios, reprodução em segundo plano, cache offline e interface personalizável - grátis, sempre.
 
 🎨 <b>Interface Personalizável</b>
 - Temas: AMOLED, Deep Dark, Crisp Light + acentos coloridos
 - 3D Carousel Player, widgets de ecrã inicial, player e mini-player unificados
 - Perfis de artistas, Discovery e humores, cabeçalhos recolhíveis
+
+🫧 <b>Efeito Glass (BETA, opcional)</b>
+Desativado numa nova instalação. Ative nas Definições: nativo, só contorno ou Glass por categoria, qualidade ajustável. Pode aumentar a carga gráfica e o consumo da bateria; reduza a qualidade ou desative.
+Créditos Glass: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Experiência de Áudio</b>
 - Qualidade premium via YouTube Music Premium, aplicada automaticamente

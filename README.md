@@ -114,7 +114,7 @@ Join the N-Zik Discord:
 - 🌍 **Multilingual Support**: Available in English, Italian, German, Russian, French, Spanish, Czech, Turkish, Romanian, and more. Contributions are always welcome!
 - 🔊 **High Quality Audio** - Premium streaming quality is unlocked automatically - just connect your YouTube Music Premium account.
 - 🎨 **Modern and Intuitive UI**
-- 🫧 **Glass Effect (BETA, optional)**: Disabled on fresh installations. Enable it in Settings, then choose native, contour-only or Glass presentation by category and adjust the rendering quality. Glass can increase rendering work and battery use; lower the quality or disable it to suit your device.
+- 🫧 **[Glass Effect (BETA, optional)](#glass-effect-beta)**: Configurable glass and contour presentation, disabled on fresh installations.
 - 💾 **Smart Offline Caching**: Automatically cache songs for offline playback with customizable cache limits.
 - 📥 **Downloads**: Download individual tracks or entire playlists for permanent offline access, with a dedicated download quality (Auto/High/Low) and a batch "Update downloads" action.
 - ▶️ **Background Playback**: Keep your music playing while using other apps.
@@ -165,6 +165,25 @@ Join the N-Zik Discord:
 - ⚡ **App Shortcuts**: Dynamically registered home-screen shortcuts (search, albums, artists, library, rescue).
 - 📈 **Audio Bar**: A visual waveform seekbar for precise track navigation.
 
+<a id="glass-effect-beta"></a>
+
+# 🫧 Glass Effect (BETA)
+
+Glass is optional and **disabled on fresh installations**. Enable it in Settings, then choose native, contour-only or Glass presentation by category and adjust the rendering quality. Glass can increase rendering work and battery use; lower the quality or disable it to suit your device.
+
+<div align="center">
+  <img alt="Glass settings and quality controls" src="assets/design/preview/img/04.png" height="300px" />
+  <img alt="Home with Glass enabled" src="assets/design/preview/img/05.png" height="300px" />
+  <img alt="Player with Glass enabled" src="assets/design/preview/img/06.png" height="300px" />
+  <img alt="Carousel player with Glass enabled" src="assets/design/preview/img/07.png" height="300px" />
+  <br><br>
+  <img alt="Glass demonstration in the existing phone frame" src="assets/design/preview/framed_videos/glass-demo.gif" height="300px" />
+</div>
+
+[Preview media guide](assets/design/preview/MEDIA-PREVIEWS.md).
+
+Glass builds on [Square / Convx Project](https://github.com/Lelonio/Square) (GPL-3.0) and [Kyant0 AndroidLiquidGlass / Backdrop](https://github.com/Kyant0/AndroidLiquidGlass) (Apache-2.0). Full attribution and license notices appear under [Glass credits](#glass-credits).
+
 # 📷 Screenshots & Videos
 
 <div align="center">
@@ -180,41 +199,41 @@ Join the N-Zik Discord:
     <img alt="VZ Demo" src="assets/design/preview/framed_videos/vz.gif" height="300px" />
     <br><br>
     <h3>🏠 Main</h3>
-    <img alt="Home (Light)" src="assets/design/preview/img/1.png" height="300px" />
-    <img alt="Home (Dark)" src="assets/design/preview/img/2.png" height="300px" />
-    <img alt="Home (AMOLED)" src="assets/design/preview/img/3.png" height="300px" />
+    <img alt="Home (Light)" src="assets/design/preview/img/01.png" height="300px" />
+    <img alt="Home (Dark)" src="assets/design/preview/img/02.png" height="300px" />
+    <img alt="Home (AMOLED)" src="assets/design/preview/img/03.png" height="300px" />
     <br><br>
     <h3>▶️ Player</h3>
-    <img alt="Player" src="assets/design/preview/img/4.png" height="300px" />
-    <img alt="Player (Cover Animation)" src="assets/design/preview/img/5.png" height="300px" />
-    <img alt="Player (Audio Bar)" src="assets/design/preview/img/6.png" height="300px" />
-    <img alt="Player (Lyrics)" src="assets/design/preview/img/7.png" height="300px" />
+    <img alt="Player" src="assets/design/preview/img/08.png" height="300px" />
+    <img alt="Player (Cover Animation)" src="assets/design/preview/img/09.png" height="300px" />
+    <img alt="Player (Audio Bar)" src="assets/design/preview/img/10.png" height="300px" />
+    <img alt="Player (Lyrics)" src="assets/design/preview/img/11.png" height="300px" />
     <br><br>
     <h3>📃 Player - queue</h3>
-    <img alt="Player Queue" src="assets/design/preview/img/8.png" height="300px" />
-    <img alt="Player Queue2" src="assets/design/preview/img/9.png" height="300px" />
+    <img alt="Player Queue" src="assets/design/preview/img/12.png" height="300px" />
+    <img alt="Player Queue2" src="assets/design/preview/img/13.png" height="300px" />
     <br><br>
     <h3>🎵 Library</h3>
-    <img alt="Playlist" src="assets/design/preview/img/10.png" height="300px" />
-    <img alt="Artist" src="assets/design/preview/img/11.png" height="300px" />
+    <img alt="Playlist" src="assets/design/preview/img/14.png" height="300px" />
+    <img alt="Artist" src="assets/design/preview/img/15.png" height="300px" />
     <br><br>
     <h3>🔍 Search</h3>
-    <img alt="Search" src="assets/design/preview/img/12.png" height="300px" />
-    <img alt="Voice Search" src="assets/design/preview/img/16.png" height="300px" />
-    <img alt="Song Recognition" src="assets/design/preview/img/17.png" height="300px" />
+    <img alt="Search" src="assets/design/preview/img/16.png" height="300px" />
+    <img alt="Voice Search" src="assets/design/preview/img/17.png" height="300px" />
+    <img alt="Song Recognition" src="assets/design/preview/img/18.png" height="300px" />
     <br><br>
     <h3>📊 History</h3>
-    <img alt="History" src="assets/design/preview/img/13.png" height="300px" />
-    <img alt="Stats" src="assets/design/preview/img/14.png" height="300px" />
+    <img alt="History" src="assets/design/preview/img/19.png" height="300px" />
+    <img alt="Stats" src="assets/design/preview/img/20.png" height="300px" />
     <br><br>
     <h3>⚙️ Settings</h3>
-    <img alt="Settings" src="assets/design/preview/img/15.png" height="300px" />
-    <img alt="Profiles" src="assets/design/preview/img/18.png" height="300px" />
-    <img alt="Accounts" src="assets/design/preview/img/19.png" height="300px" />
+    <img alt="Settings" src="assets/design/preview/img/21.png" height="300px" />
+    <img alt="Profiles" src="assets/design/preview/img/22.png" height="300px" />
+    <img alt="Accounts" src="assets/design/preview/img/23.png" height="300px" />
     <br><br>
     <h3>🕹️ Discord</h3>
-    <img alt="Discord RPC (Settings)" src="assets/design/preview/img/20.png" height="300px" />
-    <img alt="Discord RPC (Live)" src="assets/design/preview/img/21.png" height="300px" />
+    <img alt="Discord RPC (Settings)" src="assets/design/preview/img/24.png" height="300px" />
+    <img alt="Discord RPC (Live)" src="assets/design/preview/img/25.png" height="300px" />
     <br>
     <img width="280" height="100" alt="Discord Rich Presence Preview 1" src="https://github.com/user-attachments/assets/f820686e-8e24-4ac1-8133-505dd94550cc" />
     <img width="280" height="100" alt="Discord Rich Presence Preview 2" src="https://github.com/user-attachments/assets/8d03df13-3114-40d4-a403-f7d57524787c" />
@@ -222,17 +241,17 @@ Join the N-Zik Discord:
     <img width="320" height="207" alt="Discord Rich Presence Preview 3" src="https://github.com/user-attachments/assets/f9d0c5a7-b334-45df-a35a-810813ddd26a" />
     <br><br>
     <h3>⬇️ Auto Update</h3>
-    <img alt="OTA Updates" src="assets/design/preview/img/22.png" height="300px" />
+    <img alt="OTA Updates" src="assets/design/preview/img/26.png" height="300px" />
     <br><br>
     <h3>🗓️ Rewind</h3>
-    <img alt="Rewind" src="assets/design/preview/img/24.png" height="300px" />
-    <img alt="Rewind (Intro)" src="assets/design/preview/img/23.png" height="300px" />
+    <img alt="Rewind" src="assets/design/preview/img/27.png" height="300px" />
+    <img alt="Rewind (Intro)" src="assets/design/preview/img/28.png" height="300px" />
     <br><br>
     <h3>📺 Other Android Platforms</h3>
-    <img alt="Android Auto" src="assets/design/preview/img/AndroidAuto.png" height="200px" />
-    <img alt="Android Automotive" src="assets/design/preview/img/AndroidAutomotive.png" height="200px" />
-    <img alt="Android TV" src="assets/design/preview/img/AndroidTV.png" height="200px" />
-    <img alt="Android Tablet" src="assets/design/preview/img/AndroidTablet.png" height="200px" />
+    <img alt="Android Auto" src="assets/design/preview/img/29.png" height="200px" />
+    <img alt="Android Automotive" src="assets/design/preview/img/30.png" height="200px" />
+    <img alt="Android TV" src="assets/design/preview/img/31.png" height="200px" />
+    <img alt="Android Tablet" src="assets/design/preview/img/32.png" height="200px" />
     <br><br>
     <h3>🪟 Widgets</h3>
     <img width="220" src="https://github.com/user-attachments/assets/d1ebf277-433d-4ed4-b3c7-4cff067c5cb9" alt="Compact Widget Preview 1"/>
@@ -347,10 +366,15 @@ New:
 - [**ViMusic**](https://github.com/vfsfitvnm/ViMusic)
 
 
-### 🎨 Design & UI Contributions:
+### 🫧 Glass credits
+
+<a id="glass-credits"></a>
 
 - [**Square / Convx Project**](https://github.com/Lelonio/Square): Glass material, interaction physics and presentation adaptations, licensed under GPL-3.0. See the [Square attribution notice](ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/NOTICE-square.txt).
 - [**Kyant0 / AndroidLiquidGlass (Backdrop)**](https://github.com/Kyant0/AndroidLiquidGlass): The underlying backdrop and optical rendering sources, licensed separately under Apache-2.0. See the [Backdrop license](ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/LICENSE-backdrop.txt).
+
+### 🎨 Design & UI Contributions:
+
 - Current banner and logo [**OrangeZXZ**](https://github.com/OrangeZXZ), [**NEVARLeVrai**](https://github.com/NEVARLeVrai)
 - Player design: [**aneesh1122**](https://github.com/aneesh1122), [**OrangeZXZ**](https://github.com/OrangeZXZ), [**NEVARLeVrai**](https://github.com/NEVARLeVrai)
 - Icons: [**Ionicons**](https://github.com/ionic-team/ionicons), [**FlatIcon.com**](https://www.flaticon.com)

@@ -6,14 +6,16 @@ Multilingual na YouTube Music frontend para sa Android: performance, pagpapabuti
 
 <b>Paggamit ng AI:</b> Gumagamit ako ng generative AI sa code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), sinusuri at sinusubok bago ipalabas.
 
-Kaswal man o audiophile, ibibigay ng N-Zik ang buong kontrol sa musika mo walang kompromiso sa privacy.
-
 ✨ <b>BAKIT N-ZIK?</b> Walang ad, background playback, offline caching, customizable UI - libre, palagi.
 
 🎨 <b>Personalisadong UI</b>
 - Mga tema: AMOLED, Deep Dark, Crisp Light + mga accent na may tint
 - 3D Carousel Player, widget sa home, unified player at mini-player
 - Profile ng artist, Discovery at mood, collapsible na header sa home
+
+<b>Opsyonal na Glass (BETA)</b>
+Off sa bagong install; i-on sa Settings. Kada kategorya: native, outline lang o Glass; ayusin ang kalidad. Posibleng mabigat sa rendering/baterya; babaan ang kalidad o i-off.
+Pagkilala: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Karanasan sa Audio</b>
 - Premium kalidad via YouTube Music Premium, awtomatikong itinatag

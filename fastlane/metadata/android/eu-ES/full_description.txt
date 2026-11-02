@@ -6,14 +6,16 @@ YouTube Musiceko frontenda, hainbat hizkuntzan, Androiderako: errendimendua, UI/
 
 <b>AI erabilera:</b> AI generatiboa erabiltzen dut kodetarako (<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a> bidez), aurretik aztertu eta probatuta.
 
-Entzule arrunta edo audiophile, N-Zik-ek musikaren kontrol osoa ematen dizu, pribatutasuna kaltetatu gabe.
-
 ✨ <b>Zergatik N-ZIK?</b> Iragarkirik gabe, hondo-erreprodukzioa, cache offline, UI pertsonalizagarria - doan, beti.
 
 🎨 <b>UI pertsonalizagarria</b>
 - Gaiak: AMOLED, Deep Dark, Crisp Light + akzentu tonatuak
 - 3D Carousel Player, hasierako widgetak, jokalari + mini-jokalari bateratuak
 - Artista profilak, Discovery eta moodak, hasierako goiburu ezkutagarriak
+
+<b>Aukerako Glass (BETA)</b>
+Instalazio berrietan itzalita; aktibatu Ezarpenetan. Kategoriaka: jatorrizkoa, ingeradak soilik edo Glass; kalitatea doitu. Errendatze/bateria-karga igo daiteke; jaitsi kalitatea edo itzali.
+Eskerrak: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Soinu-esperientzia</b>
 - Kalitate premiuma YouTube Music Premium bidez, automatikoki

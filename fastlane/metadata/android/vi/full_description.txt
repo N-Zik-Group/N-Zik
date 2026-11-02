@@ -6,14 +6,16 @@ Giao diện YouTube Music đa ngôn ngữ cho Android: hiệu suất, tinh chỉ
 
 <b>Sử dụng AI:</b> Tôi sử dụng AI tạo sinh cho code (thông qua <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), mọi thứ được xem xét và kiểm tra trước khi phát hành.
 
-Dù là người nghe thông thường hay tín đồ âm thanh, N-Zik mang đến quyền kiểm soát tuyệt đối với âm nhạc, không ảnh hưởng quyền riêng tư.
-
 ✨ <b>TẠI SAO N-ZIK?</b> Không quảng cáo, phát nền, bộ nhớ đệm ngoại tuyến, giao diện tùy chỉnh - luôn miễn phí.
 
 🎨 <b>Giao diện tùy chỉnh</b>
 - Chủ đề: AMOLED, Deep Dark, Crisp Light + điểm nhấn màu sắc
 - 3D Carousel Player, tiện ích màn hình chính, trình phát thống nhất và mini-player
 - Hồ sơ nghệ sĩ, Khám phá và tâm trạng, tiêu đề thu gọn
+
+🫧 <b>Hiệu ứng Glass (BETA, tùy chọn)</b>
+Tắt khi cài mới. Bật trong Cài đặt: giao diện gốc, chỉ viền hoặc Glass theo danh mục, tùy chỉnh chất lượng. Có thể tăng tải kết xuất và hao pin; giảm chất lượng hoặc tắt nếu cần.
+Ghi công Glass: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Trải nghiệm âm thanh</b>
 - Chất lượng cao cấp qua YouTube Music Premium, tự động

@@ -4,9 +4,7 @@ Frontend shumëgjuhësh i YouTube Music për Android: performancë, përmirësim
 
 <b>Shënim:</b> N-Zik filloi si një projekt anësor. Për alternativa më të pjekura, shikoni <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ose <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Përdorimi i AI:</b> Përdor AI gjenerative për kodin (përmes <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), shqyrtohet dhe testohet përpara dërgimit.
-
-Jeni dëgjues i rastësishëm apo audiofil, N-Zik ju jep kontroll të plotë mbi muzikën pa cenuar privatësinë.
+<b>Përdorimi i AI:</b> Përdor AI gjenerative për kodin (përmes BMAD Method), shqyrtohet dhe testohet përpara dërgimit.
 
 ✨ <b>PSE N-ZIK?</b> Pa reklama, riprodhim në sfond, ruajtje jashtë linje, ndërfaqe e personalizueshme - falas, gjithmonë.
 
@@ -14,6 +12,10 @@ Jeni dëgjues i rastësishëm apo audiofil, N-Zik ju jep kontroll të plotë mbi
 - Tema: AMOLED, Deep Dark, Crisp Light + theks të ngjyrosur
 - 3D Carousel Player, widget-e të ekranit kryesor, player i unifikuar dhe mini-player
 - Profile artistësh, Discovery dhe mood, koka të palosshme
+
+🫧 <b>Efekti Glass (BETA, opsional)</b>
+I çaktivizuar pas instalimit të ri. Aktivizoni te Cilësimet: pamje origjinale, vetëm kontur ose Glass sipas kategorisë, cilësi e rregullueshme. Mund të rrisë ngarkesën grafike dhe konsumin e baterisë: ulni cilësinë ose çaktivizoni.
+Meritat për Glass: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Përvoja e audios</b>
 - Cilësi premium përmes YouTube Music Premium, automatikisht

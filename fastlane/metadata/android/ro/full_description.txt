@@ -6,14 +6,16 @@ Frontend YouTube Music multilingv pentru Android: performanță, rafinarea UI/UX
 
 <b>Utilizarea AI:</b> Folosesc AI generativ pentru cod (prin <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), revizuit și testat înainte de lansare.
 
-Ascultător ocazional sau audiofil, N-Zik îți oferă control deplin asupra muzicii, fără a compromite confidențialitatea.
-
 ✨ <b>DE CE N-ZIK?</b> Fără reclame, redare în fundal, cache offline, interfață personalizabilă - gratuit, întotdeauna.
 
 🎨 <b>Interfață personalizabilă</b>
 - Teme: AMOLED, Deep Dark, Crisp Light + accente colorate
 - 3D Carousel Player, widget-uri pe home, player unificat și mini-player
 - Profiluri de artiști, Discovery și stări de spirit, anteturi pliabile pe home
+
+🫧 <b>Efect Glass (BETA, opțional)</b>
+Dezactivat la instalare. Activați în Setări: nativ, doar contur sau Glass pe categorii, calitate reglabilă. Poate crește sarcina de randare și consumul bateriei: reduceți calitatea sau dezactivați.
+Credite Glass: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Experiență audio</b>
 - Calitate premium prin YouTube Music Premium, aplicată automat

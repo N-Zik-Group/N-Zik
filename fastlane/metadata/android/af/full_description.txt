@@ -6,14 +6,16 @@
 
 <b>KI-gebruik:</b> Ek gebruik generatiewe KI vir kode (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), alles hersien en getoets voor vrygawe.
 
-Gemiddelde luisteraar of audiofil: N-Zik gee jou volle beheer oor jou musiek sonder privaatheidskompromisse.
-
 ✨ <b>WAAROM N-ZIK?</b> Geen advertensies, agtergrondspeling, offline-stasiegeheue, aanpasbare koppelvlak - altyd gratis.
 
 🎨 <b>Aanpasbare koppelvlak</b>
 - Temas: AMOLED, Deep Dark, Crisp Light + getinte aksente
 - 3D Carousel Player, tuiswidgets, verenigde speler plus minispieler
 - Kunstenaarsprofiele, Ontdekking en buie, opvoubare tuisbladafdelings
+
+<b>Opsionele Glass (BETA)</b>
+Af by nuwe installasies; aktiveer in Instellings. Per kategorie: oorspronklik, slegs kontoere of Glass; verstel kwaliteit. Kan leweringswerk en batteryverbruik verhoog; verlaag kwaliteit of skakel af.
+Erkenning: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Klankervaring</b>
 - Premium kwaliteit via YouTube Music Premium, outomaties

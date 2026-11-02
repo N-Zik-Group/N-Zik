@@ -6,14 +6,16 @@ YouTube Musici mitmekeelne esiosa Androidile: jõudlus, UI/UX lihvimine, funktsi
 
 <b>KI kasutus:</b> Koodi loon genereeriva KI-ga (kud <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), vaatan üle ja testin enne avalikustamist.
 
-Oled harrastajakuulaja või audiofiil? N-Zik annab täieliku kontrolli muusika üle, privaatsuse kahjustamata.
-
 ✨ <b>MIKS N-ZIK?</b> Ilma reklaamita, esitus taustal, võrguta vahemälu, kohandatav UI - alati tasuta.
 
 🎨 <b>Kohandatav UI</b>
 - Teemad: AMOLED, Deep Dark, Crisp Light + värvilised aktsendid
 - 3D Carousel Player, avakuva vidinad, ühtne mängija ja minimängija
 - Artisti profiilid, avastamine ja meeleolud, kokkupandavad avakuva päised
+
+<b>Valikuline Glass (BETA)</b>
+Uuel paigaldusel väljas; lülita sisse seadetes. Kategooriati: tavaline, ainult kontuurid või Glass; vali kvaliteet. Võib koormata renderdust ja akut; vähenda kvaliteeti või lülita välja.
+Tänuavaldused: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Helikogemus</b>
 - Premiumkvaliteet YouTube Music Premiumi kaudu, automaatselt

@@ -6,14 +6,16 @@ Vícejazyčné YouTube Music rozhraní pro Android: výkon, vyladění UI/UX, no
 
 <b>Využití AI:</b> Používám generativní AI pro kód (prostřednictvím <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), testováno a zkontrolováno před vydáním.
 
-Ať už jste příležitostný posluchač či audiofil, N-Zik vám dává plnou kontrolu nad hudbou bez kompromisů v soukromí.
-
 ✨ <b>PROČ N-ZIK?</b> Žádné reklamy, přehrávání na pozadí, offline ukládání a přizpůsobitelné UI - vždy zdarma.
 
 🎨 <b>Přizpůsobitelné UI</b>
 - Témata: AMOLED, Deep Dark, Crisp Light + barevné akcenty
 - 3D Carousel Player, widgety na domovskou obrazovku, sjednocený player a mini-player
 - Profily umělců, Discovery a moods, sbalitelné hlavičky na domovské obrazovce
+
+<b>Volitelný Glass (BETA)</b>
+V nové instalaci vypnutý; zapněte v Nastavení. Dle kategorie: nativní, jen obrysy nebo Glass; volba kvality. Může zatížit vykreslování a baterii; snižte kvalitu nebo vypněte.
+Poděkování: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Audio zážitek</b>
 - Prvotřídní kvalita přes YouTube Music Premium, aplikovaná automaticky

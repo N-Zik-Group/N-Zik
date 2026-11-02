@@ -10,10 +10,13 @@ Client YouTube Music multilingue et open source pour Android.
 
 🎨 <b>UI personnalisable</b>
 - Interface Jetpack Compose
-- Effet Glass facultatif (BETA), désactivé à la première installation : natif, contour ou Glass par catégorie, qualité réglable. Peut augmenter le travail de rendu et la consommation de batterie.
 - Thèmes : AMOLED, Deep Dark, Crisp Light + accents colorés
 - 3D Carousel Player, widgets d'accueil, lecteur unifié + mini-lecteur
 - Profils d'artistes, Discovery et ambiances, en-têtes pliables
+
+🫧 <b>Effet Glass (BETA, facultatif)</b>
+Désactivé à l’installation. Activez dans Paramètres : natif, contour seul ou Glass par catégorie, qualité réglable. Peut alourdir le rendu et consommer plus de batterie ; réduisez la qualité ou désactivez si besoin.
+Crédits Glass : Square / Convx Project (GPL-3.0) ; Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Expérience audio</b>
 - Qualité premium via YouTube Music Premium, auto-appliquée
@@ -63,4 +66,4 @@ Client YouTube Music multilingue et open source pour Android.
 
 Aucun build n'embarque FFmpeg : c'est une extension téléchargeable (installée à la première utilisation, gérée dans Paramètres → Extensions). Seul FOSS est sur F-Droid.
 
-Crédits Glass : Square / Convx Project (GPL-3.0) ; Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0). ViMusic reste crédité pour les origines du projet.
+ViMusic reste crédité pour les origines du projet.

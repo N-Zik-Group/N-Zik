@@ -10,10 +10,13 @@ A multilingual YouTube Music frontend for Android, focused on performance, UI/UX
 
 🎨 <b>Customizable UI</b>
 - Jetpack Compose interface
-- Optional Glass effect (BETA), off on fresh installs: native, contour or Glass by category, with adjustable quality. May increase rendering work and battery use.
 - Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
 - 3D Carousel Player, home widgets, unified player and mini-player
 - Artist profiles, Discovery and moods, collapsible home headers
+
+🫧 <b>Glass Effect (BETA, optional)</b>
+Disabled on fresh installs. Enable in Settings: native, contour-only or Glass by category, with adjustable quality. May increase rendering work and battery use; reduce quality or disable if needed.
+Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Audio Experience</b>
 - Premium quality via YouTube Music Premium, applied automatically
@@ -63,4 +66,4 @@ A multilingual YouTube Music frontend for Android, focused on performance, UI/UX
 
 No build bundles FFmpeg: it is a downloadable extension (installed on first use, managed in Settings → Extensions). Only FOSS is on F-Droid.
 
-Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0). Historical project credits include ViMusic.
+Historical project credits include ViMusic.

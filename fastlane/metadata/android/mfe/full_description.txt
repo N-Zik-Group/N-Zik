@@ -15,6 +15,10 @@ Si to enn senp lekouter ouswa enn audiophile, N-Zik donn to kontrol koupe lor to
 - 3D Carousel Player, widget pou lakaz, player inifie ek mini-player
 - Profil artis, Discovery ek mood, tet lakaz ki kapav pliye
 
+🫧 <b>Lefe Glass (BETA, opsionel)</b>
+Nouvo instalasion: dezaktive. Aktiv dan Paramèt: natif, kontour selman ouswa Glass par kategori; azist kalite. Kapav ogmant sarz grafik ek batri: bes kalite ouswa dezaktiv.
+Kredi Glass: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+
 🎵 <b>Eksperians Audio</b>
 - Kalite premium via YouTube Music Premium, ki aplik otomatikman
 - Parol ki sinkronize, avek edision ek tradiksion an tan real

@@ -6,14 +6,16 @@ Android üçün çoxdilli YouTube Music frontend proqramı: performans, UI/UX, g
 
 <b>Süni intellektin istifadəsi:</b> Kod üçün generativ süni intellektdən istifadə edirəm (<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>); kod yayımlanmazdan əvvəl yoxlanıb və test edilib.
 
-Sadə dinləyici və ya audiofil: N-Zik məxfiliyinizi qoruyaraq musiqiniz üzərində tam nəzarət verir.
-
 ✨ <b>NİYƏ N-ZIK?</b> Reklamsız, arxa planda oxutma, oflayn keşləmə, fərdiləşdirilə bilən UI - həmişə pulsuz.
 
 🎨 <b>Fərdiləşdirilə bilən UI</b>
 - Temalar: AMOLED, Deep Dark, Crisp Light + rəngli aksentlər
 - 3D Carousel Player, ana ekran widgetləri, birləşdirilmiş pleyer və mini pleyer
 - Musiqiçilərin profilləri, Kəşf və moodlar, qatlanabilən ana ekran başlıqları
+
+<b>İstəyə bağlı Glass (BETA)</b>
+Yeni quraşdırmada sönülüdür; Parametrlərdə açın. Kateqoriyaya görə: yerli, yalnız kontur və ya Glass; keyfiyyəti seçin. Görüntüləmə yükü və batareya sərfi arta bilər; keyfiyyəti azaldın və ya söndürün.
+Təşəkkür: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Audio təcrübəsi</b>
 - Premium keyfiyyət (YouTube Music Premium), avtomatik tətbiq olunur
