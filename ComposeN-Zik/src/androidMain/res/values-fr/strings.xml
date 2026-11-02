@@ -2809,5 +2809,5 @@ Volume BAS : titre précédent</string>
     <string name="listen_together_switch_room_confirmation">Quitter la salle dans laquelle vous vous trouvez actuellement et ouvrir l\'invitation %1$s ?</string>
     <string name="playlist_refresh_on_open">Actualiser à l\'ouverture</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
-    <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="playlist_refresh_on_open_enable">Activer l\'actualisation à l\'ouverture</string>
 </resources>
