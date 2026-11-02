@@ -43,8 +43,16 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(collections): center collection and artist actions in Material and Glass
+  - Preserve playlist/podcast actions and original album/artist overflow counts, separate bookmarks, and restore 44dp action cells.
+  - Align artist toolbar sizing with the online reference and show available monthly listeners on the local page.
+- fix(podcast): accept unknown optional icons and unify retry buttons
+  - Decode KEEP and future decorative icons without discarding structurally invalid page errors.
+  - Reuse dialog action styling for Retry in both Material and Glass.
+  - Validate 36 targeted regressions and Debug assembly.
+
 - fix(glass): unify explicit badges and move glyphs with jelly feedback
-  - Use the mini-player filled E throughout Glass song rows, player variants and filter menus.
+  - Keep the transparent mini-player E glyph throughout Glass without a badge film; retain the filled Material symbol.
   - Replace empty badge buttons with one passive surface and glyph motion layer; preserve native size and tint.
   - Validate four badge regressions including held glyph motion and Debug assembly.
 
