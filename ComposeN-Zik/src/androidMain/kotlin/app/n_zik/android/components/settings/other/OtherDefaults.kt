@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.other
 
+import app.n_zik.android.core.settings.defaultProxyPort
+
 import android.content.Context
 import androidx.core.content.edit
 import app.it.fast4x.rimusic.utils.defaultFolderKey
@@ -21,7 +23,7 @@ internal fun applyOtherDefaults(context: Context) {
     context.preferences.edit {
         putBoolean(isProxyEnabledKey, false)
         putString(proxyHostnameKey, "")
-        putInt(proxyPortKey, 1080)
+        putInt(proxyPortKey, defaultProxyPort)
         putEnum(proxyModeKey, Proxy.Type.HTTP)
         putString(regionOverrideKey, "")
         putString(defaultFolderKey, "/")

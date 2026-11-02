@@ -1,5 +1,7 @@
 package app.n_zik.android.components.maintenance
 
+import app.n_zik.android.core.coil.configuredImageCacheBytes
+
 import android.content.Context
 import android.text.format.Formatter
 import androidx.annotation.DrawableRes
@@ -50,13 +52,10 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import app.it.fast4x.rimusic.enums.CoilDiskCacheMaxSize
 import app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize
 import app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize
 import app.n_zik.android.components.glass.SampledMenuSheet
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
-import app.it.fast4x.rimusic.utils.coilCustomDiskCacheKey
-import app.it.fast4x.rimusic.utils.coilDiskCacheMaxSizeKey
 import app.it.fast4x.rimusic.utils.conditional
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
@@ -774,10 +773,7 @@ internal suspend fun loadMaintenanceSnapshot(context: Context): MaintenanceSnaps
         val settingsSizeBytes =
             runCatching { profilePrefsFile(app, activeProfileId).length().takeIf { it > 0L } }.getOrNull()
         val imagesCache = runCatching {
-            val size = preferences.getEnum(coilDiskCacheMaxSizeKey, CoilDiskCacheMaxSize.`128MB`)
-            val max = if (size == CoilDiskCacheMaxSize.Custom) {
-                preferences.getInt(coilCustomDiskCacheKey, 128) * 1_000_000L
-            } else size.bytes
+            val max = configuredImageCacheBytes(preferences)
             // The ACTIVE profile's coil cache (tracked) + the other distinct coil dirs
             // (base + every profile, deduped — spec-profile-data-separation) walked.
             val activeCoilDir = coilImageCacheDir(app, activeProfileId)

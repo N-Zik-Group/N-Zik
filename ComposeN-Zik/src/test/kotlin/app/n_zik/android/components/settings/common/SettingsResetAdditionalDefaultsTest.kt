@@ -9,6 +9,12 @@ import app.it.fast4x.rimusic.utils.checkUpdateStateKey
 import app.it.fast4x.rimusic.utils.checkBetaUpdatesKey
 import app.it.fast4x.rimusic.utils.otherLanguageAppUpdateKey
 import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.playbackDurationKey
+import app.it.fast4x.rimusic.utils.playbackPitchKey
+import app.it.fast4x.rimusic.utils.playbackSpeedKey
+import app.it.fast4x.rimusic.utils.playbackVolumeKey
+import app.it.fast4x.rimusic.utils.playbackDeviceVolumeKey
+import app.it.fast4x.rimusic.utils.playerBackdropKey
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.n_zik.android.core.backup.BackupManager
 import app.n_zik.android.extensions.discord.DiscordAdvancedSettings
@@ -145,6 +151,29 @@ class SettingsResetAdditionalDefaultsTest {
         listOf(checkUpdateStateKey, checkBetaUpdatesKey, otherLanguageAppUpdateKey, "updateTranslationActive")
             .forEach { assertFalse("Updater must return to its read default: $it", prefs.contains(it)) }
         assertTrue(otherProfile.getBoolean(checkBetaUpdatesKey, false))
+    }
+
+    @Test fun resetRestoresPlayerControlsWithoutChangingDeviceVolumeOrOtherProfiles() {
+        val defaults = mapOf(playbackSpeedKey to 1f, playbackPitchKey to 1f,
+            playbackVolumeKey to 1f, playbackDurationKey to 0f, playerBackdropKey to 0f)
+        val prefs = context.preferences
+        val principal = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val other = context.getSharedPreferences("preferences_player-reset-other", Context.MODE_PRIVATE)
+        listOf(prefs, principal, other).forEach { store ->
+            store.edit().apply { defaults.keys.forEach { putFloat(it, .7f) } }.commit()
+        }
+        prefs.edit().putFloat(playbackDeviceVolumeKey, .4f).putString("queue", "saved queue").commit()
+
+        repeat(2) { resetAdditionalSettingsDefaults(context) {} }
+
+        defaults.forEach { (key, default) ->
+            assertFalse("Return to the player reader's initial default: $key", prefs.contains(key))
+            assertEquals(default, prefs.getFloat(key, default), 0f)
+            assertEquals(.7f, principal.getFloat(key, -1f), 0f)
+            assertEquals(.7f, other.getFloat(key, -1f), 0f)
+        }
+        assertEquals(.4f, prefs.getFloat(playbackDeviceVolumeKey, -1f), 0f)
+        assertEquals("saved queue", prefs.getString("queue", null))
     }
 
     @Test fun resetRestoresDiscordAndLastFmBehaviorWhilePreservingAllAccountSecretsAndIdentity() {

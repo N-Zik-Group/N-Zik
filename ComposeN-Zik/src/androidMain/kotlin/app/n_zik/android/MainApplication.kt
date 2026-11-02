@@ -1,5 +1,7 @@
 package app.n_zik.android
 
+import app.n_zik.android.core.settings.readProxyPort
+
 import android.app.ActivityManager
 import android.app.Application
 import android.app.NotificationChannel
@@ -63,6 +65,7 @@ import app.n_zik.android.core.network.client.Store
 import app.n_zik.android.core.notifications.ensureProfileChannels
 import app.n_zik.android.core.rescue.RescueProcess
 import app.n_zik.android.components.settings.applyUseLoginForSearch
+import app.n_zik.android.core.settings.ensurePlayerBehaviorDefaults
 import app.n_zik.android.core.settings.ensureDefaultColorPaletteMode
 import app.n_zik.android.extensions.audiobar.VisualizerCaptureCoordinator
 import app.n_zik.android.listentogether.ListenTogetherClient
@@ -182,6 +185,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // profile's prefs, where every pre-existing read site falls back to Dark. Seed the
         // default ("Theme mode" = System) before the first composition.
         ensureDefaultColorPaletteMode(preferences)
+        ensurePlayerBehaviorDefaults(preferences)
 
         // Profile "last used" (spec-profiles-page-face): the active profile counts as
         // used on every app start (switches record it themselves) — the Profiles page
@@ -345,7 +349,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             var proxy: Proxy? = null
             if (preferences.getBoolean(isProxyEnabledKey, false)) {
                 val hostName = preferences.getString(proxyHostnameKey, null)
-                val proxyPort = preferences.getInt(proxyPortKey, 8080)
+                val proxyPort = preferences.readProxyPort()
                 val proxyMode = preferences.getEnum(proxyModeKey, Proxy.Type.HTTP)
                 val proxyUsername = preferences.getString(proxyUsernameKey, "")
                 val proxyPassword = preferences.getString(proxyPasswordKey, "")

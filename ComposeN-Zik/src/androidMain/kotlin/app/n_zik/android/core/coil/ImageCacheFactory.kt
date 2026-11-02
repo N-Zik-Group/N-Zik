@@ -43,20 +43,18 @@ import coil3.toBitmap
 import it.fast4x.innertube.models.Thumbnail
 import app.n_zik.android.appContext
 import app.it.fast4x.rimusic.cleanPrefix
-import app.it.fast4x.rimusic.enums.CoilDiskCacheMaxSize
 import app.it.fast4x.rimusic.enums.ImageQualityFormat
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 // import GlobalNetworkLogger
 import app.n_zik.android.core.network.models.NetworkQuality as NZikNetworkQuality
-import app.it.fast4x.rimusic.utils.coilCustomDiskCacheKey
-import app.it.fast4x.rimusic.utils.coilDiskCacheMaxSizeKey
 import app.it.fast4x.rimusic.utils.getEnum
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.imageQualityFormatKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.core.profiles.coilImageCacheDir
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import okhttp3.OkHttpClient
 import okio.Path.Companion.toOkioPath
 // import Timber
@@ -84,16 +82,9 @@ object ImageCacheFactory {
 
     val DISK_CACHE: DiskCache by lazy {
         val preferences = appContext().preferences
-        val diskSize = preferences.getEnum(coilDiskCacheMaxSizeKey, CoilDiskCacheMaxSize.`128MB`)
         // The Coil image cache of the ACTIVE profile (spec-profile-data-separation).
         val cacheDir = coilDiskCacheDir(appContext())
-        val maxSizeBytes = when (diskSize) {
-            CoilDiskCacheMaxSize.Custom -> {
-                val customSize = preferences.getInt(coilCustomDiskCacheKey, 128)
-                customSize.times(1000L).times(1000)
-            }
-            else -> diskSize.bytes
-        }
+        val maxSizeBytes = configuredImageCacheBytes(preferences)
         DiskCache.Builder()
             .directory(cacheDir.toPath().toOkioPath())
             .maxSizeBytes(maxSizeBytes)
@@ -118,9 +109,11 @@ object ImageCacheFactory {
         private fun getPrefs() = appContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         // Store format: "lowResUrl|highResUrl"
+        @Synchronized
         fun save(id: String, url: String, isHigh: Boolean) {
             try {
-                val current = getPrefs().getString(id, null)
+                val preferences = getPrefs()
+                val current = preferences.getString(id, null)
                 val parts = current?.split("|")
                 var low = parts?.getOrNull(0).orEmpty()
                 var high = parts?.getOrNull(1).orEmpty()
@@ -139,9 +132,10 @@ object ImageCacheFactory {
                     }
                 }
 
-                if (low.isNotEmpty() || high.isNotEmpty()) {
-                    getPrefs().edit().putString(id, "$low|$high").apply()
-                    storeVersion.value++
+                val updated = "$low|$high"
+                if ((low.isNotEmpty() || high.isNotEmpty()) && updated != current) {
+                    preferences.edit().putString(id, updated).apply()
+                    storeVersion.update { it + 1 }
                 }
             } catch (e: Exception) {
             }

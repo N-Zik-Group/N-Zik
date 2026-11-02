@@ -124,7 +124,7 @@ fun context(): Context = Dependencies.application
 // display-name consumers (Rewind deck, onboarding, Accounts card) expect a String
 fun ytAccountName(): String = appContext().encryptedPreferences.getString(ytAccountNameKey, "").orEmpty()
 fun ytAccountThumbnail() = appContext().encryptedPreferences.getString(ytAccountThumbnailKey, "")
-fun isVideoEnabled() = appContext().preferences.getBoolean(showButtonPlayerVideoKey, false)
+fun isVideoEnabled() = appContext().preferences.getBoolean(showButtonPlayerVideoKey, true)
 
 fun isConnectionMeteredEnabled() = appContext().preferences.getBoolean(isConnectionMeteredEnabledKey, true)
 fun isHandleAudioFocusEnabled() = appContext().preferences.getBoolean(handleAudioFocusEnabledKey, true)

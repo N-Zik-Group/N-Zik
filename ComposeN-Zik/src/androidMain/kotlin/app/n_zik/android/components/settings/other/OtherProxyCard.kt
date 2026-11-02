@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.other
 
+import app.n_zik.android.core.settings.defaultProxyPort
+
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.ui.Modifier
@@ -43,7 +45,7 @@ internal fun OtherProxyCard(search: Search) {
     val context = LocalContext.current
     var isProxyEnabled by rememberPreference(isProxyEnabledKey, false)
     var proxyHost by rememberPreference(proxyHostnameKey, "")
-    var proxyPort by rememberPreference(proxyPortKey, 1080)
+    var proxyPort by rememberPreference(proxyPortKey, defaultProxyPort)
     var proxyMode by rememberPreference(proxyModeKey, Proxy.Type.HTTP)
     var proxyUsername by rememberPreference(proxyUsernameKey, "")
 
@@ -159,7 +161,7 @@ internal fun OtherProxyCard(search: Search) {
                             initialValue = proxyPort.toString(),
                             placeholder = stringResource(R.string.proxy_port),
                             onDismiss = { showProxyPortDialog = false },
-                            onSetValue = { proxyPort = it.toIntOrNull() ?: 1080 }
+                            onSetValue = { proxyPort = it.toIntOrNull() ?: defaultProxyPort }
                         ).apply {
                             showDialog()
                             Render()

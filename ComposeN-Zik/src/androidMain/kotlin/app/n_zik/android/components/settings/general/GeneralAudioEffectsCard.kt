@@ -147,7 +147,7 @@ fun GeneralAudioEffectsCard(
                         toDisplay = { "%.2f dB".format(it) },
                         range = -20f..20f,
                         stepSize = 0f,
-                        defaultValue = 0f,
+                        defaultValue = 5f,
                         drawValuePoints = true,
                         icon = R.drawable.volume_up
                     )

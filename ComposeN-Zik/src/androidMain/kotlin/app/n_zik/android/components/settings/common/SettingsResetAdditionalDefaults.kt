@@ -11,6 +11,11 @@ import app.it.fast4x.rimusic.utils.autosyncKey
 import app.it.fast4x.rimusic.utils.autosyncLikesKey
 import app.it.fast4x.rimusic.utils.autosyncPlaylistsKey
 import app.it.fast4x.rimusic.utils.encryptedPreferences
+import app.it.fast4x.rimusic.utils.playbackDurationKey
+import app.it.fast4x.rimusic.utils.playbackPitchKey
+import app.it.fast4x.rimusic.utils.playbackSpeedKey
+import app.it.fast4x.rimusic.utils.playbackVolumeKey
+import app.it.fast4x.rimusic.utils.playerBackdropKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.syncBackgroundGuardKey
 import app.it.fast4x.rimusic.utils.syncCooldownKey
@@ -52,6 +57,8 @@ private val additionalProfileSettingKeys = setOf(
     syncImportUploadedAlbumsKey, syncImportEpisodesKey, useLoginForBrowseKey, useLoginForSearchKey,
     blockScreenCaptureKey, PermissionUsageJournal.PAUSED_KEY, DEBUG_UPDATER_ACCESS_KEY,
     checkUpdateStateKey, checkBetaUpdatesKey, otherLanguageAppUpdateKey, "updateTranslationActive",
+    // Player menu controls are profile settings; leave the device's physical volume alone.
+    playbackSpeedKey, playbackPitchKey, playbackVolumeKey, playbackDurationKey, playerBackdropKey,
 )
 
 // AutoBackupSettingsBlock is the canonical reader. Keep PREF_URI and the SAF grant:

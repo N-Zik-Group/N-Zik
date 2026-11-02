@@ -3,7 +3,6 @@ package app.n_zik.android.components.menu.player
 import app.n_zik.android.components.glass.NativeIconActionSize
 
 import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.core.database.*
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -128,7 +127,7 @@ class PlaybackSettingsMenu private constructor(
         var blurStrength by rememberPreference(blurStrengthKey, 25f)
         var bassBoost by rememberPreference(bassboostLevelKey, 0f)
         val volumeNormalization by rememberPreference(volumeNormalizationKey, false)
-        var loudnessBaseGain by rememberPreference(loudnessBaseGainKey, 0f)
+        var loudnessBaseGain by rememberPreference(loudnessBaseGainKey, 5f)
         var volumeBoostLevel by rememberPreference(volumeBoostLevelKey, 0f)
 
         ListMenu.Menu(title = stringResource(R.string.controls_header_customize)) {
@@ -289,12 +288,12 @@ class PlaybackSettingsMenu private constructor(
                 valueRange = -20f..20f,
                 displayValue = { "%.2f dB".format(it) },
                 onReset = {
-                    tempLoudnessGain = 0f
-                    loudnessBaseGain = 0f
+                    tempLoudnessGain = 5f
+                    loudnessBaseGain = 5f
                 },
                 isEnabled = volumeNormalization,
                 stepSize = 0f,
-                defaultValue = 0f,
+                defaultValue = 5f,
                 drawValuePoints = true
             )
 
@@ -332,7 +331,7 @@ class PlaybackSettingsMenu private constructor(
         var blurStrength by rememberPreference(blurStrengthKey, 25f)
         var bassBoost by rememberPreference(bassboostLevelKey, 0f)
         val volumeNormalization by rememberPreference(volumeNormalizationKey, false)
-        var loudnessBaseGain by rememberPreference(loudnessBaseGainKey, 0f)
+        var loudnessBaseGain by rememberPreference(loudnessBaseGainKey, 5f)
         var volumeBoostLevel by rememberPreference(volumeBoostLevelKey, 0f)
 
         DisposableEffect(Unit) {
@@ -511,12 +510,12 @@ class PlaybackSettingsMenu private constructor(
                     onSlideComplete = { loudnessBaseGain = tempLoudnessGain },
                     valueRange = -20f..20f,
                     onReset = {
-                        tempLoudnessGain = 0f
-                        loudnessBaseGain = 0f
+                        tempLoudnessGain = 5f
+                        loudnessBaseGain = 5f
                     },
                     isEnabled = volumeNormalization,
                     stepSize = 0f,
-                    defaultValue = 0f,
+                    defaultValue = 5f,
                     drawValuePoints = true
                 )
             }

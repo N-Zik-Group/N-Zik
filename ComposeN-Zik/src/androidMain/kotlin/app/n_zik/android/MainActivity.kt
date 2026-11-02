@@ -1,5 +1,8 @@
 package app.n_zik.android
 
+import app.n_zik.android.core.settings.ensurePlayerBehaviorDefaults
+import app.n_zik.android.core.settings.readProxyPort
+
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.privacy.PermissionUsageJournal
@@ -1043,6 +1046,8 @@ class MainActivity :
         ExperimentalMaterial3Api::class
     )
     fun startApp(isRestoredInstance: Boolean) {
+        // A cold profile shortcut can change the active store after Application startup.
+        ensurePlayerBehaviorDefaults(preferences)
 
         // Check YouTube cookie status on startup — warn user if expired/invalid
         when (MainApplication.cookieStatus) {
@@ -1074,7 +1079,7 @@ class MainActivity :
             }
         }
 
-        if (!preferences.getBoolean(closeWithBackButtonKey, false))
+        if (!preferences.getBoolean(closeWithBackButtonKey, true))
             if (Build.VERSION.SDK_INT >= 33) {
                 onBackInvokedDispatcher.registerOnBackInvokedCallback(
                     OnBackInvokedDispatcher.PRIORITY_DEFAULT
@@ -1121,7 +1126,7 @@ class MainActivity :
             }
             val proxy = if (getBoolean(isProxyEnabledKey, false)) {
                 val hostName = getString(proxyHostnameKey, null)
-                val proxyPort = getInt(proxyPortKey, 8080)
+                val proxyPort = readProxyPort()
                 val proxyMode = getEnum(proxyModeKey, Proxy.Type.HTTP)
                 if (isValidIP(hostName) && hostName != null) {
                     it.fast4x.innertube.utils.getProxy(ProxyPreferenceItem(hostName, proxyPort, proxyMode))
@@ -1473,7 +1478,7 @@ class MainActivity :
                                 
                                 if (isProxyEnabled) {
                                     val hostName = sharedPreferences.getString(proxyHostnameKey, null)
-                                    val proxyPort = sharedPreferences.getInt(proxyPortKey, 8080)
+                                    val proxyPort = sharedPreferences.readProxyPort()
                                     val proxyMode = sharedPreferences.getEnum(proxyModeKey, Proxy.Type.HTTP)
                                     if (isValidIP(hostName)) {
                                         hostName?.let { hName ->
@@ -2672,7 +2677,7 @@ class MainActivity :
 
                             val isVideo = binder?.player?.currentMediaItem?.isVideo ?: false
                             val isVideoEnabled =
-                                preferences.getBoolean(showButtonPlayerVideoKey, false)
+                                preferences.getBoolean(showButtonPlayerVideoKey, true)
 
                             val youtubePlayer: @Composable () -> Unit = {
                                 binder?.player?.currentMediaItem?.mediaId?.let {

@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
@@ -117,10 +118,10 @@ class BlurAdjuster private constructor(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 IconButton(
-                    onClick = { backdrop = 0f },
+                    onClick = { isCoverRotating = false },
                     icon = R.drawable.image,
                     color = colorPalette().favoritesIcon,
-                    modifier = Modifier.size( 24.dp )
+                    modifier = Modifier.size( 24.dp ).testTag("player.blur.reset-rotation")
                 )
 
                 SwitchSettingEntry(

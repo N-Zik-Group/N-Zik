@@ -16,6 +16,7 @@ import app.it.fast4x.rimusic.utils.proxyUsernameKey
 import app.it.fast4x.rimusic.utils.regionOverrideKey
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.it.fast4x.rimusic.utils.showFoldersOnDeviceKey
+import app.n_zik.android.core.settings.readProxyPort
 import it.fast4x.innertube.Innertube
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -97,6 +98,18 @@ class OtherSettingsPreferencesTest {
         assertEquals(mapOf(proxyPortKey to 8123), context.preferences.all)
         context.preferences.edit().clear().commit()
         setActiveProfile("other-settings-test", context)
+    }
+
+    @Test fun `proxy activated without editing the displayed port uses the same port as reset`() {
+        context.preferences.edit().putString(proxyHostnameKey, "127.0.0.1")
+            .putBoolean(isProxyEnabledKey, true).commit()
+        assertFalse(context.preferences.contains(proxyPortKey))
+        assertEquals(1080, context.preferences.readProxyPort())
+
+        context.preferences.edit().putInt(proxyPortKey, 8123).commit()
+        assertEquals(8123, context.preferences.readProxyPort())
+        applyOtherDefaults(context)
+        assertEquals(1080, context.preferences.readProxyPort())
     }
 
     @Test fun `inventory keeps existing order and all focus aliases without accepting unknown focus`() {
