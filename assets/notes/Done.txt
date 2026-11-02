@@ -43,6 +43,8 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(album): add 8dp between album metadata and the action toolbar in both styles
+
 - fix(collections): center collection and artist actions in Material and Glass
   - Preserve playlist/podcast actions and original album/artist overflow counts, separate bookmarks, and restore 44dp action cells.
   - Align artist toolbar sizing with the online reference and show available monthly listeners on the local page.
@@ -52,8 +54,8 @@ Fixed:
   - Validate 36 targeted regressions and Debug assembly.
 
 - fix(glass): unify explicit badges and move glyphs with jelly feedback
-  - Render the same complete 14dp mini-player Glass badge in every location, including filter menus, with its text tint, material, contour and glyph motion; retain the filled Material symbol.
-  - Verify pixel equality between mini-player and other Glass placements despite different caller slot sizes and tints (five passing badge tests).
+  - Render the same complete mini-player Glass badge at each location's original size in every location, including filter menus, with its text tint, material, contour and glyph motion; retain the filled Material symbol.
+  - Verify original 14dp mini-player and 18dp row/player dimensions plus held glyph motion (five passing badge tests).
   - Replace empty badge buttons with one passive surface and glyph motion layer; preserve native size and tint.
   - Validate four badge regressions including held glyph motion and Debug assembly.
 
