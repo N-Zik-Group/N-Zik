@@ -103,7 +103,7 @@ import app.it.fast4x.rimusic.ui.components.themed.AutoResizeText
 import app.it.fast4x.rimusic.ui.components.themed.Enqueue
 import app.it.fast4x.rimusic.ui.components.themed.FontSizeRange
 import app.n_zik.android.components.ui.HeaderIconAction
-import app.n_zik.android.components.glass.GlassToolbarButtons
+import app.n_zik.android.components.ui.CollectionButtonToolbar
 import app.n_zik.android.components.glass.GlassToolbarRow
 import app.it.fast4x.rimusic.ui.components.themed.ItemsList
 import app.it.fast4x.rimusic.ui.components.themed.Loader
@@ -711,16 +711,10 @@ fun AlbumDetails(
                         }
 
                         item("action_buttons") {
-                            Row(
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                GlassToolbarRow(1) { bookmark.ToolBarButton() }
-
-                                Spacer(Modifier.width(15.dp))
-
-                                GlassToolbarButtons(
+                            CollectionButtonToolbar(
+                                bookmark = { bookmark.ToolBarButton() },
+                                originalNativeBookmarkWidth = 48.dp,
+                                buttons = listOf(
                                     downloadALlDialog,
                                     deleteAllDownloadsDialog,
                                     shuffle,
@@ -733,9 +727,8 @@ fun AlbumDetails(
                                     playNext,
                                     enqueue,
                                     addToPlaylist,
-                                    modifier = Modifier.fillMaxWidth(.8f),
-                                )
-                            }
+                                ),
+                            )
                         }
 
                         item("info_and_community") {

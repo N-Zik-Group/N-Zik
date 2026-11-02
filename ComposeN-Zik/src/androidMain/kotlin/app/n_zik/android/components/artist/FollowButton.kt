@@ -1,16 +1,11 @@
 package app.n_zik.android.components.artist
 
-import app.n_zik.android.core.database.*
-import app.n_zik.android.uiRoundnessShape
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -20,41 +15,37 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.R
-import it.fast4x.innertube.YtMusic
-import app.n_zik.android.core.database.Database
-import app.n_zik.android.appContext
-import app.n_zik.android.colorPalette
-import app.it.fast4x.rimusic.models.Artist
-import app.it.fast4x.rimusic.utils.preferences
-import app.n_zik.android.typography
-import app.it.fast4x.rimusic.utils.showDislikedArtistKey
-import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.it.fast4x.rimusic.enums.DislikeMode
-import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
+import app.it.fast4x.rimusic.enums.SyncDirection
+import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
-import app.it.fast4x.rimusic.utils.isNetworkConnected
-import app.it.fast4x.rimusic.utils.syncPushArtistFollowKey
-import app.it.fast4x.rimusic.utils.syncDirectionKey
+import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
 import app.it.fast4x.rimusic.utils.getSyncDirection
 import app.it.fast4x.rimusic.utils.isNetworkConnected
-import app.it.fast4x.rimusic.enums.SyncDirection
+import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.syncPushArtistFollowKey
+import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.R
 import app.n_zik.android.appContext
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassActionCellHeight
+import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LiquidButton
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
-import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
-import kotlinx.coroutines.launch
-import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
+import app.n_zik.android.core.database.Database
+import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import it.fast4x.innertube.YtMusic
+import kotlinx.coroutines.launch
 
 /** Local and online artist action bars share the same visible footprint. */
 const val ArtistToolbarActionCount = 4
@@ -191,7 +182,7 @@ internal fun ArtistFollowButton(
 
         val shape = uiRoundnessShape()
         val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
-        val height = if (material) GlassActionCellHeight else TabToolBar.TOOLBAR_ICON_SIZE
+        val height = GlassActionCellHeight
         val bounds = modifier.requiredSize(100.dp, height)
         if (material) {
             val background = colorPalette.background0

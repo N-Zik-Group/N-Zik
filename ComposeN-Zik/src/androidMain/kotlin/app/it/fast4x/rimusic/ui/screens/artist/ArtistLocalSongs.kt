@@ -14,7 +14,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -95,11 +94,10 @@ import app.it.fast4x.rimusic.utils.fadingEdge
 import app.it.fast4x.rimusic.utils.isLandscape
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.components.artist.FollowButton
-import app.n_zik.android.components.artist.ArtistToolbarActionCount
+import app.n_zik.android.components.artist.artistStatisticsText
+import app.n_zik.android.components.ui.CollectionToolbar
 import app.n_zik.android.components.glass.GlassToolbarRow
-import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.glass.rememberGlassSettings
-import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.glass.GlassActionCellWidth
 import app.n_zik.android.playback.utils.Shuffler
 import app.it.fast4x.rimusic.utils.addNext
 import app.n_zik.android.components.SongItem
@@ -214,14 +212,12 @@ fun ArtistLocalSongs(
             )
         }
         item {
-            val glassActions = rememberGlassSettings().usesGlassMaterial(GlassArea.ActionButtons)
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 8.dp)
-            ) {
-                FollowButton { localArtist }.ToolBarButton()
-                val toolbarActions: @Composable () -> Unit = {
+            CollectionToolbar(
+                bookmark = { FollowButton { localArtist }.ToolBarButton() },
+                bookmarkWidth = 100.dp,
+                actionCellWidth = GlassActionCellWidth,
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 8.dp),
+                actions = listOf({
                     HeaderIconButton(
                         icon = R.drawable.download,
                         color = colorPalette().text,
@@ -230,6 +226,7 @@ fun ArtistLocalSongs(
                         onClick = { showConfirmDownloadAllDialog = true },
                         onLongClick = { Toaster.i(context.resources.getString(R.string.info_download_all_songs)) }
                     )
+                }, {
                     HeaderIconButton(
                         icon = R.drawable.downloaded,
                         color = colorPalette().text,
@@ -238,6 +235,7 @@ fun ArtistLocalSongs(
                         onClick = { showConfirmDeleteDownloadDialog = true },
                         onLongClick = { Toaster.i(context.resources.getString(R.string.info_remove_all_downloaded_songs)) }
                     )
+                }, {
                     HeaderIconButton(
                         icon = R.drawable.enqueue,
                         enabled = !songs.isNullOrEmpty(),
@@ -259,6 +257,7 @@ fun ArtistLocalSongs(
                         },
                         onLongClick = { Toaster.i(context.resources.getString(R.string.info_enqueue_songs)) }
                     )
+                }, {
                     HeaderIconButton(
                         // Issue #866 (gh-866): app-wide shuffle confirmation flash.
                         icon = shuffleButtonIcon(),
@@ -278,13 +277,8 @@ fun ArtistLocalSongs(
                         },
                         onLongClick = { Toaster.i(context.resources.getString(R.string.info_shuffle)) }
                     )
-                }
-                if (glassActions) {
-                    GlassToolbarRow(actionCount = ArtistToolbarActionCount) { toolbarActions() }
-                } else {
-                    toolbarActions()
-                }
-            }
+                }),
+            )
         }
         item {
             DialogPresence(visible = showConfirmDownloadAllDialog) {
@@ -768,11 +762,14 @@ fun ArtistHeader(
                     .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                     .align(Alignment.CenterHorizontally)
             )
-            BasicText(
-                text = artistPage?.subscribers.orEmpty(),
-                style = typography().s.copy(colorPalette().textSecondary),
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
+            val statsText = artistStatisticsText(artistPage?.subscribers, artistPage?.listeners)
+            if (statsText.isNotBlank()) {
+                BasicText(
+                    text = statsText,
+                    style = typography().s.copy(colorPalette().textSecondary),
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            }
         }
 
         GlassToolbarRow(

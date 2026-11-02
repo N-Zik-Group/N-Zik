@@ -69,7 +69,7 @@ class ArtistFollowButtonTest {
             compose.runOnIdle { palette.value = palette.value.copy(accent = Color.Green) }
             assertFill(Color.Green)
             compose.onNodeWithTag("follow").assertWidthIsEqualTo(100.dp)
-                .assertHeightIsEqualTo(if (selected.hasMaterial) 40.dp else 32.dp)
+                .assertHeightIsEqualTo(40.dp)
             compose.onNodeWithText(context.getString(R.string.following)).performClick()
         }
         compose.runOnIdle { assertEquals(4, clicks); state.value = false }

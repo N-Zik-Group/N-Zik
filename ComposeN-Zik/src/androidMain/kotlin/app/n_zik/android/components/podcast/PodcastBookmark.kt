@@ -81,7 +81,7 @@ fun PodcastBookmarkAction(
         .collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
     var busy by remember(browseId) { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    GlassToolbarRow(actionCount = 1) {
+    GlassToolbarRow(actionCount = 1, compact = true) {
         HeaderIconButton(
             icon = if (existing != null) R.drawable.bookmark else R.drawable.bookmark_outline,
             color = if (existing != null) colorPalette().favoritesIcon else colorPalette().text,

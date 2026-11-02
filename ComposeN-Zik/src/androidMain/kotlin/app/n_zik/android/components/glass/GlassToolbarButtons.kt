@@ -41,6 +41,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import app.n_zik.android.components.ui.nativeControlIndication
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -49,7 +52,6 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
@@ -64,7 +66,8 @@ import app.n_zik.android.uiRoundnessShape
 internal fun toolbarItemShape(override: Shape? = null): Shape = override ?: uiRoundnessShape()
 
 private data class ToolbarStyle(val count: Int, val settings: GlassSettings,
-    val cellWidth: Dp = GlassActionCellWidth, val wide: Boolean = false, val itemShape: Shape? = null)
+    val cellWidth: Dp = GlassActionCellWidth, val wide: Boolean = false, val itemShape: Shape? = null,
+    val compact: Boolean = false)
 private val LocalToolbarStyle = staticCompositionLocalOf<ToolbarStyle?> { null }
 
 /** Retains the original toolbar controls and overflow; only their icon presentation changes. */
@@ -177,10 +180,12 @@ fun GlassToolbarRow(
     expandToWidth: Boolean = false,
     trailingSeparator: Boolean = false,
     itemShape: Shape? = null,
+    compact: Boolean = false,
     content: @Composable RowScope.() -> Unit,
 ) {
     if (actionCount <= 0) return
-    if (!settings.usesGlassMaterial(GlassArea.ActionButtons)) {
+    val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
+    if (!material && !compact) {
         Row(modifier.glassAreaContour(settings, GlassArea.ActionButtons,
             if (actionCount == 1) toolbarItemShape(itemShape) else uiRoundnessShape()),
             verticalAlignment = Alignment.CenterVertically, content = content)
@@ -190,8 +195,10 @@ fun GlassToolbarRow(
         val cellWidth = if (constraints.hasBoundedWidth && actionCount > 1)
             (maxWidth / actionCount).let { if (expandToWidth) it else it.coerceAtMost(GlassActionCellWidth) }
             else GlassActionCellWidth
-        CompositionLocalProvider(LocalToolbarStyle provides ToolbarStyle(actionCount, settings, cellWidth, expandToWidth, itemShape)) {
+        CompositionLocalProvider(LocalToolbarStyle provides ToolbarStyle(actionCount, settings, cellWidth, expandToWidth, itemShape, compact)) {
             if (actionCount == 1) Row(verticalAlignment = Alignment.CenterVertically, content = content)
+            else if (!material) Row(Modifier.width(cellWidth * actionCount),
+                verticalAlignment = Alignment.CenterVertically, content = content)
             else {
                 // Fit every inline action: dragging a button belongs to that button,
                 // so no actions may depend on scrolling through the capsule.
@@ -258,17 +265,30 @@ fun GlassToolbarIcon(
     val backdrop = LocalGlassContainerBackdrop.current ?: LocalGlassBackdrop.current ?: fallbackBackdrop
     val itemShape = toolbarItemShape(style.itemShape)
     val glyph: @Composable () -> Unit = {
-        val iconSize = if (style.wide) (size - 8.dp).coerceIn(GlassActionIconSize, 24.dp) else GlassActionIconSize
-        Icon(icon, contentDescription, Modifier.size(iconSize).then(if (modifierOnContainer) Modifier else modifier),
+        val iconSize = if (style.wide && !style.compact) (size - 8.dp).coerceIn(GlassActionIconSize, 24.dp) else GlassActionIconSize
+        Icon(icon, contentDescription, Modifier.size(iconSize).then(if (modifierOnContainer || style.compact) Modifier else modifier),
             tint = if (enabled) tint else tint.copy(alpha = .5f))
     }
+    // Collection rows own the complete cell. Legacy per-icon padding must not
+    // enlarge a cell after the row has divided its available width.
+    val containerModifier = if (modifierOnContainer && !style.compact) modifier else Modifier
+    if (style.compact && !style.settings.usesGlassMaterial(GlassArea.ActionButtons)) {
+        Box(containerModifier.size(if (style.count == 1) GlassStandaloneActionSize else style.cellWidth,
+            GlassActionCellHeight).clip(itemShape)
+            .glassAreaContour(style.settings, GlassArea.ActionButtons, itemShape)
+            .combinedClickable(remember { MutableInteractionSource() },
+                glassGlobalIndication(nativeControlIndication()), enabled = enabled, role = Role.Button,
+                onClick = onClick, onLongClick = onLongClick),
+            contentAlignment = Alignment.Center) { glyph() }
+        return true
+    }
     if (style.count == 1 && enabled) {
-        LiquidButton(onClick, backdrop, (if (modifierOnContainer) modifier else Modifier).size(GlassStandaloneActionSize),
+        LiquidButton(onClick, backdrop, containerModifier.size(GlassStandaloneActionSize),
             onLongClick = onLongClick, settings = style.settings.forArea(GlassArea.ActionButtons),
             filmColor = glassActionFilmColor(),
             contentHeight = GlassStandaloneActionSize, contentPadding = 0.dp, shape = itemShape, content = { glyph() })
     } else {
-        val dimensions = (if (modifierOnContainer) modifier else Modifier).size(if (style.count == 1) GlassStandaloneActionSize else style.cellWidth,
+        val dimensions = containerModifier.size(if (style.count == 1) GlassStandaloneActionSize else style.cellWidth,
             GlassActionCellHeight)
         val surface = if (style.count == 1) dimensions.glassMaterial(
             style.settings.forArea(GlassArea.ActionButtons), itemShape,

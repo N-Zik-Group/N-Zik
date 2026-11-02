@@ -79,14 +79,13 @@ import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.n_zik.android.components.navigation.Skeleton
 import app.it.fast4x.rimusic.ui.components.SwipeablePlaylistItem
-import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.ui.components.themed.AutoResizeText
 import app.it.fast4x.rimusic.ui.components.themed.Enqueue
 import app.it.fast4x.rimusic.ui.components.themed.FontSizeRange
 import app.n_zik.android.components.ui.HeaderIconAction
-import app.n_zik.android.components.glass.GlassToolbarButtons
+import app.n_zik.android.components.ui.CollectionButtonToolbar
 import app.n_zik.android.components.glass.GlassToolbarRow
 import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.it.fast4x.rimusic.ui.components.themed.PlayNext
@@ -126,11 +125,13 @@ import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.glass.GlassSectionAction
 import app.n_zik.android.components.glass.GlassSectionActions
 import app.n_zik.android.components.glass.NativeIconActionSize
+import app.n_zik.android.components.glass.GlassActionCellWidth
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.shuffleButtonIconRes
 import app.n_zik.android.components.artist.FollowButton
+import app.n_zik.android.components.artist.artistStatisticsText
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
@@ -593,13 +594,7 @@ fun ArtistOverview(
                                     .align(Alignment.CenterHorizontally)
                             )
 
-                            val statsText = buildString {
-                                val subs = artistPage.subscribers
-                                val listeners = artistPage.listeners
-                                if (!subs.isNullOrBlank()) append(subs)
-                                if (!subs.isNullOrBlank() && !listeners.isNullOrBlank()) append(" • ")
-                                if (!listeners.isNullOrBlank()) append(listeners)
-                            }
+                            val statsText = artistStatisticsText(artistPage.subscribers, artistPage.listeners)
                             if (statsText.isNotBlank()) {
                                 BasicText(
                                     text = statsText,
@@ -640,34 +635,34 @@ fun ArtistOverview(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                                .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 8.dp)
-                        ) {
-                            followButton?.ToolBarButton()
-
                             if (isGlobalLoading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    strokeWidth = 2.dp,
-                                    color = colorPalette().accent
-                                )
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 8.dp),
+                                ) {
+                                    followButton?.ToolBarButton()
+                                    Box(Modifier.size(176.dp, 40.dp),
+                                        contentAlignment = Alignment.Center) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(24.dp),
+                                            strokeWidth = 2.dp,
+                                            color = colorPalette().accent,
+                                        )
+                                    }
+                                }
                             } else {
-                                GlassToolbarButtons(
-                                    shuffler,
-                                    playNext,
-                                    enqueue,
-                                    radio,
-                                    itemSelector,
-                                    downloadAllDialog,
-                                    deleteAllDownloadsDialog,
-                                    modifier = Modifier.fillMaxWidth(.8f),
-                                    showTrailingSeparator = false,
+                                CollectionButtonToolbar(
+                                    bookmark = { followButton?.ToolBarButton() },
+                                    buttons = listOf(shuffler, playNext, enqueue, radio, itemSelector,
+                                        downloadAllDialog, deleteAllDownloadsDialog),
+                                    bookmarkWidth = 100.dp,
+                                    actionCellWidth = GlassActionCellWidth,
+                                    originalBookmarkGap = 10.dp,
+                                    modifier = Modifier.padding(start = 12.dp, end = 12.dp,
+                                        top = 12.dp, bottom = 8.dp),
                                 )
                             }
-                        }
                     }
                 }
 
