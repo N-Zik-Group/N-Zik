@@ -87,7 +87,7 @@ class GlassMiniPlayerBackdropTest {
         compose.runOnIdle {
             assertTrue("the controls must sample the page backdrop", scales.size >= 3)
             scales.forEach { assertEquals(1f, it, 0f) }
-            opticalSizes.forEach { assertEquals("42 px panes must clear the 24 px lens threshold", 42f, it, 0f) }
+            opticalSizes.forEach { assertEquals("36 px panes must clear the 24 px lens threshold", 36f, it, 0f) }
         }
     }
 

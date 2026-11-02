@@ -1,33 +1,31 @@
 package app.n_zik.android.components.player
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import app.n_zik.android.components.ui.nativeControlIndication
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.platform.testTag
-import app.n_zik.android.components.glass.glassGlobalIndication
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.colorPalette
 import app.n_zik.android.R
+import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LiquidButton
@@ -36,13 +34,14 @@ import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
+import app.n_zik.android.components.glass.glassGlobalIndication
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
-import app.n_zik.android.searchBubbleShape
-import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.surfaceColor
 import app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgress
 import app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgressProvider
+import app.n_zik.android.components.ui.nativeControlIndication
+import app.n_zik.android.surfaceColor
+import app.n_zik.android.uiRoundnessShape
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -57,6 +56,7 @@ fun GlassMiniPlayerIconButton(
     settings: GlassSettings = rememberGlassSettings(),
     backdrop: Backdrop? = LocalGlassBackdrop.current ?: LocalGlassMenuHost.current?.backdrop,
     onLongClick: (() -> Unit)? = null,
+    // Glass seats stay uniform; this option preserves the native glyph size.
     preserveNativeGeometry: Boolean = false,
 ) {
     MiniPlayerIconSurface(
@@ -85,6 +85,7 @@ fun GlassMiniPlayerIconButton(
     settings: GlassSettings = rememberGlassSettings(),
     backdrop: Backdrop? = LocalGlassBackdrop.current ?: LocalGlassMenuHost.current?.backdrop,
     onLongClick: (() -> Unit)? = null,
+    // Glass seats stay uniform; this option preserves the native glyph size.
     preserveNativeGeometry: Boolean = false,
 ) {
     MiniPlayerIconSurface(
@@ -118,7 +119,7 @@ private fun MiniPlayerIconSurface(
     val fold = LocalCompactMiniPlayerProgress.current
     val dockPresentation = LocalCompactMiniPlayerProgressProvider.current != null
     val material = settings.usesGlassMaterial(GlassArea.MiniPlayer)
-    val geometry = miniPlayerIconGeometry(fold, dockPresentation, material && !preserveNativeGeometry)
+    val geometry = miniPlayerIconGeometry(fold, dockPresentation, material)
     val shape = uiRoundnessShape()
     val interactionSource = remember { MutableInteractionSource() }
     MiniPlayerActionCanvas(geometry, Modifier.rotate(rotationAngle)) { canvas ->

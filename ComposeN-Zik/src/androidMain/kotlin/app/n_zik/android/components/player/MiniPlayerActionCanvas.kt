@@ -13,14 +13,13 @@ import androidx.compose.ui.unit.dp
 /** Action geometry is independent from its glyph and from the seat reserved by its row. */
 internal data class MiniPlayerControlGeometry(val canvas: Dp, val seatWidth: Dp, val seatHeight: Dp)
 
-internal fun miniPlayerControlSize(fold: Float, dockPresentation: Boolean): Dp =
-    if (dockPresentation) 42.dp - 6.dp * fold else if (fold > .5f) 48.dp else 42.dp
+internal fun miniPlayerControlSize(fold: Float, dockPresentation: Boolean, glass: Boolean = false): Dp =
+    if (glass) 36.dp else if (dockPresentation) 42.dp - 6.dp * fold else if (fold > .5f) 48.dp else 42.dp
 
 internal fun miniPlayerIconGeometry(fold: Float, dockPresentation: Boolean, material: Boolean): MiniPlayerControlGeometry {
-    val canvas = miniPlayerControlSize(fold, dockPresentation)
+    val canvas = miniPlayerControlSize(fold, dockPresentation, glass = material)
     if (material) {
-        val padding = if (dockPresentation) 2.dp * (1f - fold) else if (fold > .5f) 0.dp else 2.dp
-        return MiniPlayerControlGeometry(canvas, canvas + padding * 2, canvas)
+        return MiniPlayerControlGeometry(canvas, canvas, canvas)
     }
     val horizontal = if (dockPresentation) 2.dp + 4.dp * fold else if (fold > .5f) 12.dp else 2.dp
     val vertical = if (dockPresentation) 8.dp - 2.dp * fold else if (fold > .5f) 12.dp else 8.dp

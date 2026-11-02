@@ -1,9 +1,8 @@
 package app.n_zik.android.components.player
 
+import java.util.concurrent.TimeUnit
 import android.app.Application
 import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -13,30 +12,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertWidthIsEqualTo
-import androidx.compose.ui.test.click
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.test.onNodeWithTag
-import app.n_zik.android.components.navigation.header.HeaderIcon
-import app.n_zik.android.components.glass.LocalGlassPreviewSettings
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.n_zik.android.R
-import app.n_zik.android.components.glass.GlassMenuTriggerState
-import app.n_zik.android.components.glass.GlassSettings
-import app.n_zik.android.components.glass.LiquidButton
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
@@ -47,7 +40,14 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import org.robolectric.shadows.ShadowLooper
-import java.util.concurrent.TimeUnit
+import app.it.fast4x.rimusic.ui.styling.Appearance
+import app.it.fast4x.rimusic.ui.styling.LocalAppearance
+import app.n_zik.android.R
+import app.n_zik.android.components.glass.GlassMenuTriggerState
+import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.LiquidButton
+import app.n_zik.android.components.glass.LocalGlassPreviewSettings
+import app.n_zik.android.components.navigation.header.HeaderIcon
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [32], application = Application::class)
@@ -103,7 +103,7 @@ class SmallActionRoundnessTest {
         for (enabled in listOf(false, true)) for (value in listOf(0f, 8f, 48f)) {
             compose.runOnIdle { glass.value = enabled; radius.value = value }
             val node = compose.onNodeWithTag("header.back")
-            val size = if (enabled) 40.dp else 48.dp
+            val size = 36.dp
             node.assertWidthIsEqualTo(size).assertHeightIsEqualTo(size)
             compose.runOnIdle {
                 assertSame("The actual back action and its menu trigger must share the ordinary UI outline", expected, trigger.shape)
@@ -141,7 +141,6 @@ class SmallActionRoundnessTest {
                     when (action.value) {
                         0 -> GlassMiniPlayerIconButton(R.drawable.play_skip_back, Color.Transparent, {}, "target", settings = settings)
                         1 -> GlassMiniPlayerPlayPauseButton({}, Color.Black, "target", settings = settings) {
-                            // Real Play always paints its centered24dp glyph (or buffering spinner).
                             Image(painterResource(R.drawable.play), null, colorFilter = ColorFilter.tint(Color.Blue),
                                 modifier = Modifier.align(Alignment.Center).size(24.dp))
                         }
@@ -162,10 +161,9 @@ class SmallActionRoundnessTest {
             compose.mainClock.advanceTimeBy(160)
             compose.waitForIdle()
             val node = compose.onNodeWithContentDescription("target")
-            val size = if (index < 2) 42.dp else 40.dp
+            val size = if (index < 2) 36.dp else 40.dp
             node.assertWidthIsEqualTo(size).assertHeightIsEqualTo(size)
-            // Capture the real parent frame: a control's semantics node can be inside the
-            // ancestor graphics layer that draws its shared feedback (notably Play's content Box).
+            // Capture the parent to include feedback drawn by ancestor layers.
             val host = compose.onNodeWithTag("small.action.host")
             val hostBounds = host.fetchSemanticsNode().boundsInRoot
             val nodeBounds = node.fetchSemanticsNode().boundsInRoot
@@ -181,9 +179,8 @@ class SmallActionRoundnessTest {
             compose.waitForIdle()
             compose.mainClock.advanceTimeBy(900)
             val held = host.captureToImage().toPixelMap()
-            // At full press the shared4dp expansion puts this sample inside the ordinary .4 UI
-            // corner, but outside a .5 circular bubble. This exercises each real action renderer.
-            val inset = with(compose.density) { 3.dp.roundToPx() }
+            // Mini controls shrink to 80%; sample inside their UI corner but outside a circle.
+            val inset = with(compose.density) { (if (index < 2) 7.dp else 3.dp).roundToPx() }
             val x = (nodeBounds.left - hostBounds.left).toInt() + inset
             val y = (nodeBounds.top - hostBounds.top).toInt() + inset
             val centerX = (nodeBounds.center.x - hostBounds.left).toInt()

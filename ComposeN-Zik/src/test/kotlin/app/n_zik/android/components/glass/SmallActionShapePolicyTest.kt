@@ -1,19 +1,18 @@
 package app.n_zik.android.components.glass
 
 import android.app.Application
-import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.Icon
-import androidx.compose.ui.res.painterResource
-import app.n_zik.android.components.ui.UiIconButton
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertWidthIsEqualTo
@@ -26,16 +25,17 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.n_zik.android.R
-import app.n_zik.android.components.player.GlassMiniPlayerPlayPauseButton
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import app.it.fast4x.rimusic.ui.styling.Appearance
+import app.it.fast4x.rimusic.ui.styling.LocalAppearance
+import app.n_zik.android.R
+import app.n_zik.android.components.player.GlassMiniPlayerPlayPauseButton
+import app.n_zik.android.components.ui.UiIconButton
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [32], application = Application::class)
@@ -59,7 +59,8 @@ class SmallActionShapePolicyTest {
         }
         for (enabled in listOf(false, true)) for (value in listOf(48f, 0f, 8f)) {
             compose.runOnIdle { glass.value = enabled; radius.value = value }
-            compose.onNodeWithContentDescription("reference.play").assertWidthIsEqualTo(42.dp).assertHeightIsEqualTo(42.dp)
+            val playSize = if (enabled) 36.dp else 42.dp
+            compose.onNodeWithContentDescription("reference.play").assertWidthIsEqualTo(playSize).assertHeightIsEqualTo(playSize)
             compose.onNodeWithTag("overlay.seat", useUnmergedTree = true).assertWidthIsEqualTo(32.dp).assertHeightIsEqualTo(32.dp)
             compose.onAllNodes(hasClickAction()).assertCountEquals(2)
             val expected = Appearance.restore(listOf(null, null, 12f, value, 48f)).uiRoundnessShape

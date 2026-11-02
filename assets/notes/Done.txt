@@ -43,6 +43,12 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(player): compact glass mini-player controls uniformly
+  - Use 36dp glass seats for every mini-player action, including play/pause and custom buttons, while preserving Material geometry and native glyph sizing.
+  - Reduce the default four-button glass row from 216dp to 180dp; retain Compose touch-target expansion and compact dock behavior.
+  - Verify reordered controls, dock states, edge clicks, long presses, press animations, backdrop rendering and settings previews with 21 passing targeted tests; assembleDebug and assembleDev64 pass.
+  - User validated the size on the phone; generated and verified a signed dev64 APK for testing.
+
 - fix(glass): preserve native queue transparency and align supported settings
   - Keep Modern and Essential queue backgrounds and opacity unchanged; apply only the configured frost contour to the panel, list and native toolbar.
   - Restore native navigation-inset ownership while preserving independent Glass controls, current-track effects and the embedded mini-player.
