@@ -82,37 +82,21 @@ class GlassDescriptionControlsTest {
             compose.runOnIdle { enabled.value = glass }
             compose.onNodeWithTag("badge").assertWidthIsEqualTo(18.dp).assertHeightIsEqualTo(18.dp)
             compose.onAllNodes(hasClickAction()).assertCountEquals(0)
-            compose.runOnIdle { assertEquals(R.drawable.explicit, iconId) }
+            compose.runOnIdle { assertEquals(if (glass) R.drawable.explicit_glass_glyph else R.drawable.explicit, iconId) }
         }
     }
 
-    @Test fun `explicit badge retains the same film as neighboring glass instead of becoming clear`() {
+    @Test fun `glass explicit badge adds no film behind its transparent glyph`() {
         compose.setContent {
             AppearanceProvider {
-                val settings = GlassSettings()
-                val background: DrawScope.() -> Unit = remember {
-                    { drawRect(DefaultDarkColorPalette.background0) }
-                }
-                val source = rememberCanvasBackdrop(background)
-                val shape = RoundedCornerShape(24.dp)
-                Row {
-                    Box(Modifier.size(18.dp).testTag("explicit")
-                        .glassExplicitBadgeBackground(settings))
-                    Box(Modifier.size(18.dp).testTag("reference")
-                        .glassMaterial(settings.forArea(GlassArea.ActionButtons), shape,
-                            ownBackdrop = source, drawShadow = false))
+                Box(Modifier.size(50.dp).background(Color.Blue).testTag("scene")) {
+                    Box(Modifier.size(18.dp).glassExplicitBadgeBackground(GlassSettings()))
                 }
             }
         }
-        fun center(tag: String): Color {
-            val image = compose.onNodeWithTag(tag).captureToImage().toPixelMap()
-            return image[image.width / 2, image.height / 2]
-        }
-        val actual = center("explicit")
-        val expected = center("reference")
-        assertEquals(expected.red, actual.red, 1f / 255f)
-        assertEquals(expected.green, actual.green, 1f / 255f)
-        assertEquals(expected.blue, actual.blue, 1f / 255f)
+        val pixels = compose.onNodeWithTag("scene").captureToImage().toPixelMap()
+        for (x in 0 until pixels.width) for (y in 0 until pixels.height)
+            assertEquals(Color.Blue, pixels[x, y])
     }
 
     @Test fun `explicit glyph follows held motion without acquiring a click action`() {

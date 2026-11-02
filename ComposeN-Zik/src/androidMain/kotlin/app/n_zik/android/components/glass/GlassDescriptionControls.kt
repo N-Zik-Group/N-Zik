@@ -12,9 +12,11 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.uiRoundnessShape
 
-/** Use the mini-player's filled explicit symbol consistently in every renderer. */
+/** Glass keeps the transparent mini-player glyph; Material retains its filled native badge. */
 @Composable
-fun explicitBadgeIconId(settings: GlassSettings = rememberGlassSettings()): Int = R.drawable.explicit
+fun explicitBadgeIconId(settings: GlassSettings = rememberGlassSettings()): Int =
+    if (settings.usesGlassMaterial(GlassArea.ActionButtons) || settings.usesGlassContour(GlassArea.ActionButtons))
+        R.drawable.explicit_glass_glyph else R.drawable.explicit
 
 /** Shared translation bubble with the original active tint and both native callbacks. */
 @Composable
@@ -75,6 +77,5 @@ fun Modifier.glassExplicitBadgeBackground(
     // Keep a drag that starts on the badge without adding any click action.
     return retainGlassButtonGesture().glassButtonFeedback(interaction, uiRoundnessShape(),
         enabled = isGlassMotionAllowed(), retainPressUntilUp = true, drawHighlight = false)
-        .glassChipBackground(Color.Transparent, uiRoundnessShape(), settings, filmColor = null,
-            allowInNativeQueue = true)
+
 }
