@@ -10,7 +10,9 @@ import android.view.accessibility.AccessibilityManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -19,6 +21,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import app.it.fast4x.rimusic.utils.rememberPreference
+import app.it.fast4x.rimusic.utils.activeProfileKey
+import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.it.fast4x.rimusic.utils.profilePreferences
 import app.n_zik.android.colorPalette
 
 val LocalGlassArtworkColor = staticCompositionLocalOf<Color?> { null }
@@ -204,9 +209,9 @@ internal fun validGlassPreferenceValue(key: String, value: Any): Boolean = when 
     }
 }
 
-/** One versioned preference file; destination policies survive optical profile changes. */
-class GlassStore(context: Context) {
-    private val preferences = context.applicationContext.getSharedPreferences("nzik_square_glass_v2", Context.MODE_PRIVATE)
+/** Captures one app profile; destination policies survive optical quality changes. */
+class GlassStore(context: Context, val profileId: String = getActiveProfile(context)) {
+    private val preferences = GlassProfilePreferences.preferences(context, profileId)
     private val defaultQuality = defaultGlassQuality(Build.VERSION.SDK_INT,
         (context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager)?.isLowRamDevice == true)
 
@@ -313,18 +318,33 @@ class GlassStore(context: Context) {
 @Composable
 fun rememberGlassStore(): GlassStore {
     val context = LocalContext.current.applicationContext
-    return remember(context) { GlassStore(context) }
+    var profileId by remember(context) { mutableStateOf(getActiveProfile(context)) }
+    DisposableEffect(context) {
+        val preferences = context.profilePreferences
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, changedKey ->
+            if (changedKey == activeProfileKey || changedKey == null) profileId = getActiveProfile(context)
+        }
+        preferences.registerOnSharedPreferenceChangeListener(listener)
+        profileId = getActiveProfile(context)
+        onDispose { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+    return remember(context, profileId) { GlassStore(context, profileId) }
 }
 
 /** Isolates a preview's descendants from the persisted application configuration. */
 internal val LocalGlassPreviewSettings = staticCompositionLocalOf<GlassSettings?> { null }
+
+/** Rebinds the profile-owned master toggle when a mounted page changes profile. */
+@Composable
+internal fun rememberGlassEnabled(store: GlassStore): MutableState<Boolean> =
+    key(store.profileId) { rememberPreference(glassEnabledKey, glassEnabledDefault) }
 
 @Composable
 fun rememberGlassSettings(scope: GlassScope = LocalGlassScope.current): GlassSettings {
     LocalGlassPreviewSettings.current?.let { return it }
     val store = rememberGlassStore()
     var settings by remember(store) { mutableStateOf(store.read()) }
-    val enabled by rememberPreference(glassEnabledKey, glassEnabledDefault)
+    val enabled by rememberGlassEnabled(store)
     DisposableEffect(store) {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> settings = store.read() }
         store.register(listener)

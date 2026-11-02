@@ -8,12 +8,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.components.glass.glassEnabledDefault
-import app.n_zik.android.components.glass.glassEnabledKey
+import app.n_zik.android.components.glass.rememberGlassEnabled
+import app.n_zik.android.components.glass.rememberGlassStore
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsSearchTarget
@@ -21,8 +20,9 @@ import app.n_zik.android.components.settings.common.settingsSearchTarget
 /** Master switch on the dedicated page; disabling it does not disable its preview. */
 @Composable
 internal fun UiGlassCard() {
-    var enabled by rememberPreference(glassEnabledKey, glassEnabledDefault)
-    var showPerformanceWarning by rememberSaveable { mutableStateOf(false) }
+    val store = rememberGlassStore()
+    var enabled by rememberGlassEnabled(store)
+    var showPerformanceWarning by rememberSaveable(store.profileId) { mutableStateOf(false) }
     val label = stringResource(R.string.liquid_glass)
     val enabledLabel = stringResource(R.string.liquid_glass_enable)
     SettingsSectionCard(title = label, icon = R.drawable.color_palette, content = {

@@ -2,6 +2,8 @@ package app.n_zik.android.core.rescue
 
 import android.app.ActivityManager
 import app.n_zik.android.core.backup.SettingsPreferencesBridge
+import app.n_zik.android.components.glass.GlassProfilePreferences
+import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.migration.RemovedSettingsMigration
 import android.content.Context
 import android.content.SharedPreferences
@@ -124,7 +126,8 @@ object RescueFiles {
      */
     private const val SHARED_PREFS_DIR = "shared_prefs"
     private val SETTINGS_FILE_NAMES: List<String>
-        get() = listOf("$PREFS_NAME.xml", "$ENCRYPTED_PREFS_NAME.xml")
+        get() = listOf("$PREFS_NAME.xml", "$ENCRYPTED_PREFS_NAME.xml",
+            "${GlassProfilePreferences.fileName(rescueTargetProfile())}.xml")
 
     /** Suffixes of the files that make up one SQLite database, main file first. */
     private val DB_FILE_SUFFIXES = listOf("", "-wal", "-shm", "-journal")
@@ -421,8 +424,9 @@ object RescueFiles {
         includeLastfm: Boolean = false,
         includeProxy: Boolean = false
     ): Result<SettingsOutcome> = runCatching {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val entries = SettingsPreferencesBridge.export(context, prefs)
+        val profile = rescueTargetProfile()
+        val prefs = profileDataPrefs(context, profile)
+        val entries = SettingsPreferencesBridge.export(context, prefs, profile)
 
         // Encrypted credentials (optional, may fail)
         var encryptedSkipped = false
@@ -481,10 +485,11 @@ object RescueFiles {
 
         if (rows.isEmpty()) error("Empty settings file")
 
-        val editor = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
+        val profile = rescueTargetProfile()
+        val editor = profileDataPrefs(context, profile).edit()
         val encEditor = encryptedPrefsResult?.getOrNull()?.edit()
 
-        val glassEditor = SettingsPreferencesBridge.stageGlass(context, rows)
+        val glassEditor = SettingsPreferencesBridge.stageGlass(context, rows, profile)
         val stats = applySettingRows(rows, editor, encEditor)
         val hasRemovedRows = rows.any { RemovedSettingsMigration.isRemovedKey(it.second) }
         // A file holding only credentials, with the keystore unavailable: nothing to write, but
@@ -797,7 +802,9 @@ object RescueFiles {
         // The settings XMLs (plain + encrypted) under their stored names.
         val sharedPrefsDir = File(context.applicationInfo.dataDir, SHARED_PREFS_DIR)
         val suffix = if (profileId == DEFAULT_PROFILE_ID) "" else "_$profileId"
-        listOf("preferences$suffix", "secure_preferences$suffix").forEach { name ->
+        // Materialize inherited settings before capturing the profile reset backup.
+        check(GlassProfilePreferences.preferences(context, profileId).edit().commit()) { "Could not flush Glass settings" }
+        listOf("preferences$suffix", "secure_preferences$suffix", GlassProfilePreferences.fileName(profileId)).forEach { name ->
             val xml = File(sharedPrefsDir, "$name.xml")
             if (xml.exists()) moveReplacing(xml, File(backup, "$name.xml"))
         }
@@ -860,7 +867,7 @@ object RescueFiles {
         // The settings XMLs replace the live ones (fresh default files created since
         // the reset are overwritten, like the database is swapped).
         val sharedPrefsDir = File(context.applicationInfo.dataDir, SHARED_PREFS_DIR)
-        listOf("preferences$suffix", "secure_preferences$suffix").forEach { name ->
+        listOf("preferences$suffix", "secure_preferences$suffix", GlassProfilePreferences.fileName(profileId)).forEach { name ->
             val src = File(backup, "$name.xml")
             if (src.exists()) moveReplacing(src, File(sharedPrefsDir, "$name.xml"))
         }
@@ -950,6 +957,7 @@ object RescueFiles {
      * not an error: the profile may have never written settings.
      */
     private fun deleteProfileSettingsFiles(context: Context, profileId: String) {
+        GlassProfilePreferences.delete(context, profileId)
         val suffix = if (profileId == DEFAULT_PROFILE_ID) "" else "_$profileId"
         // The same names the app itself uses: plain settings + encrypted settings
         // (secure_preferences — the account credentials). Mirrors PREFS_NAME /
@@ -1445,6 +1453,8 @@ object RescueFiles {
         context: Context,
         encryptedPrefsResult: Result<SharedPreferences>? = null
     ): Result<Unit> = runCatching {
+        val glass = GlassProfilePreferences.preferences(context, rescueTargetProfile())
+        check(glass.edit().commit()) { "Could not flush Glass settings" }
         backupSettingsFiles(
             sharedPrefsDir = File(context.applicationInfo.dataDir, SHARED_PREFS_DIR),
             backupDir = File(context.filesDir, RESCUE_BACKUPS_DIR)
@@ -1456,6 +1466,7 @@ object RescueFiles {
             .clear()
             .commit()
         Timber.tag(TAG).i("Normal preferences cleared")
+        check(glass.edit().clear().commit()) { "Could not clear Glass settings" }
 
         // Clear encrypted preferences
         val encPrefs = encryptedPrefsResult?.getOrNull()

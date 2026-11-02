@@ -2,22 +2,24 @@ package app.n_zik.android.core.backup
 
 import android.content.Context
 import android.content.SharedPreferences
+import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.components.glass.GlassProfilePreferences
 import app.n_zik.android.core.migration.RemovedSettingsMigration
 import app.n_zik.android.components.glass.validGlassPreferenceValue
 import org.json.JSONArray
 
 /** Separate typed CSV record: its key can also exist in normal settings without collision. */
 internal object SettingsPreferencesBridge {
-    const val GLASS_PREFERENCES = "nzik_square_glass_v2"
+    const val GLASS_PREFERENCES = GlassProfilePreferences.LEGACY_NAME
     private const val GLASS_RECORD_TYPE = "NzikGlassPreferencesV2"
 
-    fun export(context: Context, plain: SharedPreferences): MutableList<Triple<String, String, Any>> {
+    fun export(context: Context, plain: SharedPreferences, profileId: String = getActiveProfile(context)): MutableList<Triple<String, String, Any>> {
         val entries = plain.all.mapNotNull { (key, value) ->
             if (RemovedSettingsMigration.isRemovedKey(key)) return@mapNotNull null
             value?.let { Triple(it::class.simpleName ?: "null", key, it) }
         }.toMutableList()
         val snapshot = JSONArray()
-        context.getSharedPreferences(GLASS_PREFERENCES, Context.MODE_PRIVATE).all.forEach { (key, value) ->
+        GlassProfilePreferences.preferences(context, profileId).all.forEach { (key, value) ->
             if (value != null) snapshot.put(JSONArray().put(value::class.simpleName).put(key).put(value))
         }
         // Carry an empty snapshot too, so a fresh/default store restores without stale overrides.
@@ -26,7 +28,7 @@ internal object SettingsPreferencesBridge {
     }
 
     /** Validates the whole namespace before staging replacement; old CSVs do not touch it. */
-    fun stageGlass(context: Context, rows: List<Triple<String, String, String>>): SharedPreferences.Editor? {
+    fun stageGlass(context: Context, rows: List<Triple<String, String, String>>, profileId: String = getActiveProfile(context)): SharedPreferences.Editor? {
         val records = rows.filter { isGlassRecord(it.first) }
         if (records.isEmpty()) return null
         require(records.size == 1 && records.single().second == GLASS_PREFERENCES) { "Invalid Glass settings record" }
@@ -48,7 +50,7 @@ internal object SettingsPreferencesBridge {
             require(validGlassPreferenceValue(key, parsed)) { "Invalid Glass setting value type" }
             key to parsed
         }
-        return context.getSharedPreferences(GLASS_PREFERENCES, Context.MODE_PRIVATE).edit().clear().apply {
+        return GlassProfilePreferences.preferences(context, profileId).edit().clear().apply {
             values.forEach { (key, value) ->
                 when (value) {
                     is String -> putString(key, value)

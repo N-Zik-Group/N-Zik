@@ -40,7 +40,7 @@ class ImportSettings private constructor(
             val rows = RescueFiles.readSettingsCsv(inStream)
             val editor = plainProfilePrefs(context, profile).edit()
             val encryptedEditor = profileSecurePrefs(context, profile).edit()
-            val glassEditor = SettingsPreferencesBridge.stageGlass(context, rows)
+            val glassEditor = SettingsPreferencesBridge.stageGlass(context, rows, profile)
             RescueFiles.applySettingRows(rows, editor, encryptedEditor)
             check(editor.commit()) { "Could not save the settings" }
             check(encryptedEditor.commit()) { "Could not save the credentials" }

@@ -1,5 +1,7 @@
 package app.n_zik.android.components.ui.screens.profiles
 
+import app.n_zik.android.components.glass.GlassProfilePreferences
+
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
@@ -125,6 +127,7 @@ fun deleteProfileAvatar(context: Context, profileId: String) {
  * so the purge is unit-testable without the screen.
  */
 fun purgeProfileData(context: Context, profileId: String) {
+    if (profileId != DEFAULT_PROFILE_ID) GlassProfilePreferences.delete(context, profileId)
     RescueFiles.deleteProfileDataFiles(context, profileId)
     context.clearProfileShareFlags(profileId)
 }

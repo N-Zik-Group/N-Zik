@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.ytCookieKey
 import app.n_zik.android.components.ui.screens.profiles.profileSecurePrefs
+import app.n_zik.android.core.migration.RemovedSettingsMigration
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -38,10 +39,14 @@ class ImportSettingsProfileTargetTest {
         targetPlain = mockk()
         targetPlainEditor = mockk()
         every { targetPlain.edit() } returns targetPlainEditor
+        every { targetPlainEditor.remove(any()) } returns targetPlainEditor
+        every { targetPlainEditor.putString(any(), any()) } returns targetPlainEditor
+        every { targetPlainEditor.putBoolean(any(), any()) } returns targetPlainEditor
         every { targetPlainEditor.commit() } returns true
         targetSecure = mockk()
         targetSecureEditor = mockk()
         every { targetSecure.edit() } returns targetSecureEditor
+        every { targetSecureEditor.putString(any(), any()) } returns targetSecureEditor
         every { targetSecureEditor.commit() } returns true
         // The base profile's plain prefs — an import into "work" must not touch them
         basePlain = mockk()
@@ -70,6 +75,9 @@ class ImportSettingsProfileTargetTest {
         verify { targetPlainEditor.putString("greet", "hello") }
         verify { targetPlainEditor.putBoolean("flag", true) }
         verify { targetPlainEditor.commit() }
+        RemovedSettingsMigration.REMOVED_KEYS.forEach { key ->
+            verify(exactly = 1) { targetPlainEditor.remove(key) }
+        }
         verify { targetSecureEditor.commit() }
         verify(exactly = 0) { basePlain.edit() }
     }
@@ -97,6 +105,8 @@ class ImportSettingsProfileTargetTest {
         // The base profile's plain prefs are the un-suffixed "preferences" file, and
         // the secure store is resolved for the base target too.
         val baseEditor = mockk<SharedPreferences.Editor>()
+        every { baseEditor.remove(any()) } returns baseEditor
+        every { baseEditor.putString(any(), any()) } returns baseEditor
         every { baseEditor.commit() } returns true
         every { basePlain.edit() } returns baseEditor
         every { profileSecurePrefs(any(), DEFAULT_PROFILE_ID) } returns targetSecure

@@ -40,6 +40,7 @@ class ProfileDataPurgeTest {
     private val editor = mockk<SharedPreferences.Editor>(relaxed = true)
 
     init {
+        every { editor.commit() } returns true
         every { editor.putBoolean(any(), any()) } answers {
             store[firstArg<String>()] = secondArg<Boolean>()
             editor
@@ -56,12 +57,15 @@ class ProfileDataPurgeTest {
         cacheDir = File(tmp, "cache").apply { mkdirs() }
         databasesDir = File(tmp, "databases").apply { mkdirs() }
         val prefs = mockk<SharedPreferences> {
+            every { all } returns emptyMap()
             every { edit() } answers { editor }
             // Reads go through the same in-memory map the editor writes to.
             every { getBoolean(any(), any()) } answers { (store[firstArg<String>()] as? Boolean) ?: secondArg() }
             every { contains(any()) } answers { store.containsKey(firstArg<String>()) }
         }
         context = mockk()
+        every { context.applicationContext } returns context
+        every { context.deleteSharedPreferences(any()) } returns true
         every { context.filesDir } returns filesDir
         every { context.cacheDir } returns cacheDir
         every { context.getDatabasePath(any()) } answers {
