@@ -10,6 +10,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -17,6 +19,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipPath
@@ -31,9 +34,12 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.util.lerp
+import app.n_zik.android.components.player.LocalMiniPlayerFeedbackOverflow
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -59,6 +65,7 @@ fun Modifier.glassButtonFeedback(
     animateMotion: Boolean = true,
     drawHighlight: Boolean = true,
     settings: GlassSettings = glassInteractionSettings(),
+    clipContent: Boolean = true,
 ): Modifier {
     if (!enabled) return this
     val policy = settings.interactionPolicy()
@@ -68,6 +75,37 @@ fun Modifier.glassButtonFeedback(
     val positionOffset = Offset(outset, outset)
     val scope = rememberCoroutineScope()
     val highlight = remember(scope, interactionSource, outset) { InteractiveHighlight(scope) }
+    val overflow = LocalMiniPlayerFeedbackOverflow.current
+    var feedbackCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    val density = LocalDensity.current
+    DisposableEffect(overflow, highlight, motionEnabled, drawMotionOnly, outset, policy.jellyIntensity, context) {
+        overflow?.register(highlight) { target ->
+            val coordinates = feedbackCoordinates
+            if (coordinates == null || !coordinates.isAttached || !motionEnabled ||
+                !isGlassMotionAllowed(context) ||
+                (highlight.pressProgress == 0f && highlight.offset == Offset.Zero)) null
+            else {
+                // Reading the spring here invalidates only the ancestor's clipping layer.
+                val surface = Size(coordinates.size.width.toFloat(), coordinates.size.height.toFloat())
+                val motion = glassButtonMotion(Size(surface.width + 2 * outset, surface.height + 2 * outset),
+                    with(density) { 4.dp.toPx() }, highlight, policy.jellyIntensity)
+                if (outset == 0f && !drawMotionOnly) {
+                    // Coordinates already include this control's animated graphics layer.
+                    target.localBoundingBoxOf(coordinates, clipBounds = false)
+                } else {
+                    val center = Offset(surface.width / 2f, surface.height / 2f)
+                    fun point(x: Float, y: Float) = target.localPositionOf(coordinates, Offset(
+                        center.x + (x - center.x) * motion.scaleX + motion.x,
+                        center.y + (y - center.y) * motion.scaleY + motion.y,
+                    ))
+                    val points = listOf(point(-outset, -outset), point(surface.width + outset, -outset),
+                        point(-outset, surface.height + outset), point(surface.width + outset, surface.height + outset))
+                    Rect(points.minOf { it.x }, points.minOf { it.y }, points.maxOf { it.x }, points.maxOf { it.y })
+                }
+            }
+        }
+        onDispose { overflow?.unregister(highlight) }
+    }
     val state = remember(highlight) { GlassButtonPressState() }
     val stateLayer = remember(highlight) { GlassInteractionStateLayer() }
     val elevation = LocalGlassGroupElevation.current
@@ -103,6 +141,8 @@ fun Modifier.glassButtonFeedback(
     return (if (clipToBounds) clip(shape) else this)
         .zIndex(if (active) 3f else 0f)
         .graphicsLayer { if (motionEnabled && outset == 0f && !drawMotionOnly && isGlassMotionAllowed(context)) glassButtonLayer(highlight, policy.jellyIntensity) }
+        // This marker must be inside the layer so its coordinates include its spring transform.
+        .then(if (overflow != null) Modifier.onGloballyPositioned { feedbackCoordinates = it } else Modifier)
         .drawWithContent {
             // A visual overdraw pane may be larger than the unchanged native hit slot.
             val motion = glassButtonMotion(Size(size.width + 2 * outset, size.height + 2 * outset), 4.dp.toPx(), highlight, policy.jellyIntensity)
@@ -120,8 +160,9 @@ fun Modifier.glassButtonFeedback(
                     is Outline.Rectangle -> Path().apply { addRect(outline.rect) }
                     is Outline.Rounded -> Path().apply { addRoundRect(outline.roundRect) }
                 }
+                if (!clipContent) translate(outset, outset) { this@drawWithContent.drawContent() }
                 clipPath(path) {
-                    translate(outset, outset) { this@drawWithContent.drawContent() }
+                    if (clipContent) translate(outset, outset) { this@drawWithContent.drawContent() }
                     if (drawHighlight) {
                         stateLayer.draw(this, policy.rippleIntensity)
                         highlight.drawHighlight(this, policy.rippleIntensity, policy.rippleSize)

@@ -58,9 +58,8 @@ import app.n_zik.android.components.glass.GlassMaterialContainerScope
 import app.n_zik.android.components.glass.LiquidButton
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.usesGlassMaterial
-import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import app.n_zik.android.components.glass.glassSearchBarBackground
+import app.n_zik.android.components.glass.rememberInlineGlassBackdrop
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.searchBubbleShape
 import app.n_zik.android.surfaceColor
@@ -147,8 +146,10 @@ fun UnifiedSearchBar(
         val barFill = surfaceColor(baseSurface ?: colorPalette().background1)
         val pageFill = colorPalette().background0
         val glassBar = glassSettings.usesGlassMaterial(GlassArea.SearchBars)
+        val sourceBackdrop = rememberInlineGlassBackdrop(pageFill)
         GlassMaterialContainerScope(
             modifier = Modifier.weight(1f),
+            materialSource = sourceBackdrop.takeIf { glassBar },
             sectionFilm = if (glassBar) null else barFill.compositeOver(pageFill),
             material = if (glassBar) { exported ->
                 Modifier.glassSearchBarBackground(
@@ -159,6 +160,7 @@ fun UnifiedSearchBar(
                     shadowElevation = 8.dp,
                     settings = glassSettings,
                     exportedBackdrop = exported,
+                    sourceBackdrop = sourceBackdrop,
                 )
             } else null,
         ) { material ->
@@ -272,9 +274,7 @@ fun UnifiedSearchBar(
 internal fun SearchBarBubbleButton(bubble: SearchBarBubble, glassSettings: GlassSettings) {
     val actionShape = uiRoundnessShape()
     if (glassSettings.usesGlassMaterial(GlassArea.SearchBars)) {
-        val background = colorPalette().background0
-        val drawBackground: DrawScope.() -> Unit = remember(background) { { drawRect(background) } }
-        val backdrop = rememberCanvasBackdrop(drawBackground)
+        val backdrop = rememberInlineGlassBackdrop(colorPalette().background0)
         LiquidButton(
             onClick = bubble.onClick,
             backdrop = backdrop,

@@ -130,6 +130,7 @@ import app.it.fast4x.rimusic.utils.showthumbnailKey
 import app.it.fast4x.rimusic.utils.swipeUpQueueKey
 import app.it.fast4x.rimusic.utils.tapqueueKey
 import app.it.fast4x.rimusic.utils.thumbnailSizeDpKey
+import app.it.fast4x.rimusic.utils.thumbnailSizeLDpKey
 import app.it.fast4x.rimusic.utils.thumbnailTapEnabledKey
 import app.it.fast4x.rimusic.utils.thumbnailTypeKey
 import app.it.fast4x.rimusic.utils.transitionEffectKey
@@ -217,6 +218,7 @@ internal fun applyUiDefaults(context: Context) {
         putEnum(thumbnailTypeKey, ThumbnailType.Modern)
         putEnum(playerTimelineTypeKey, PlayerTimelineType.Wavy)
         putFloat(thumbnailSizeDpKey, 90f)
+        remove(thumbnailSizeLDpKey)
         putEnum(playerTimelineSizeKey, PlayerTimelineSize.Biggest)
         putBoolean(playerInfoShowIconsKey, true)
         putEnum(miniPlayerTypeKey, MiniPlayerType.Essential)

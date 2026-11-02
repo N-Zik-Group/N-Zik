@@ -94,7 +94,7 @@ class GlassContainerBackdropTest {
                                         dragHandle = null, contentWindowInsets = { WindowInsets(0) }) {
                                         val view = LocalView.current
                                         SideEffect { modalView = view }
-                                        Box(Modifier.fillMaxWidth().height(160.dp)) {
+                                        Box(Modifier.fillMaxWidth().height(160.dp).testTag("modal-body")) {
                                             Box(Modifier.size(80.dp, 60.dp).testTag("modal-action")
                                                 .glassChipBackground(Color.Transparent, shape,
                                                     GlassSettings(enabled = true, film = 0f, rim = 0f,
@@ -108,24 +108,34 @@ class GlassContainerBackdropTest {
                     }
                 }
             }
-            fun check(expected: Color) {
+            fun check(expectedScene: Color) {
                 val bounds = compose.onNodeWithTag("modal-action").fetchSemanticsNode().boundsInRoot
+                val bodyBounds = compose.onNodeWithTag("modal-body").fetchSemanticsNode().boundsInRoot
                 var actual = Color.Unspecified
+                var actualBody = Color.Unspecified
                 compose.runOnIdle {
                     val view = requireNotNull(modalView)
                     val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
                     view.draw(Canvas(bitmap))
                     actual = Color(bitmap.getPixel(bounds.center.x.toInt(), bounds.center.y.toInt()))
+                    actualBody = Color(bitmap.getPixel(bodyBounds.center.x.toInt(), bodyBounds.center.y.toInt()))
                     bitmap.recycle()
                 }
-                assertEquals(expected.red, actual.red, .04f)
-                assertEquals(expected.green, actual.green, .04f)
-                assertEquals(expected.blue, actual.blue, .04f)
+                // A clear child samples the raw player scene, while the surrounding
+                // sheet independently retains its configured green film.
+                assertEquals(expectedScene.red, actual.red, .04f)
+                assertEquals(expectedScene.green, actual.green, .04f)
+                assertEquals(expectedScene.blue, actual.blue, .04f)
+                val expectedBody = if (transparent.value) expectedScene
+                    else Color.Green.copy(alpha = .5f).compositeOver(expectedScene)
+                assertEquals(expectedBody.red, actualBody.red, .04f)
+                assertEquals(expectedBody.green, actualBody.green, .04f)
+                assertEquals(expectedBody.blue, actualBody.blue, .04f)
                 compose.runOnIdle { assertEquals(1, host.dialogs.entries.size) }
             }
-            check(Color.Green.copy(alpha = .5f).compositeOver(Color.Red))
+            check(Color.Red)
             compose.runOnIdle { playerColor.value = Color.Yellow }
-            check(Color.Green.copy(alpha = .5f).compositeOver(Color.Yellow))
+            check(Color.Yellow)
             compose.runOnIdle { transparent.value = true }
             check(Color.Yellow)
         } finally {

@@ -1,8 +1,6 @@
 package app.it.fast4x.rimusic.ui.screens.player
 
 import app.n_zik.android.components.player.playerQueueUnderlayCovered
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.DisposableEffect
 import app.n_zik.android.components.glass.LocalGlassUnderlayCovered
 import app.n_zik.android.components.player.LocalPlayerSheetGlassTransition
 import app.n_zik.android.components.player.rememberPlayerSheetGlassTransition
@@ -10,15 +8,14 @@ import app.n_zik.android.components.player.rememberPlayerControlsGlassSource
 import app.n_zik.android.components.player.playerGlassSourceCaptureActive
 import app.n_zik.android.components.glass.LocalGlassOpticsTransitionProgress
 import app.n_zik.android.components.glass.LocalGlassOpticsEnabled
-import app.n_zik.android.components.glass.playerGlassOpticsEnabled
-import app.n_zik.android.components.glass.glassOpticsProgress
-import app.n_zik.android.components.glass.usesGlassMaterial
-import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.LocalGlassBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.NativeQueueRows
 import app.n_zik.android.components.glass.usesQueueToolbarGlass
 import app.n_zik.android.components.glass.GlassOverlayHost
+import app.n_zik.android.components.glass.rememberOverlayTransition
+import app.n_zik.android.components.glass.hasOverlayContent
 import app.n_zik.android.components.glass.GlassQueuePanel
 import app.n_zik.android.components.glass.glassQueuePanelBackground
 import app.n_zik.android.components.glass.LocalGlassOverlayBackdrop
@@ -30,9 +27,20 @@ import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCombinedBackdrop
-import app.n_zik.android.components.player.playerCarouselGeometry
+import app.n_zik.android.components.player.animatePlayerCarouselGeometry
+import app.n_zik.android.components.player.animatePlayerCarouselDp
 import app.n_zik.android.components.player.PlayerGlassBudgetLayout
-import app.n_zik.android.components.player.playerActionPanelBounds
+import app.n_zik.android.components.player.rememberPlayerArtworkShadowOverflow
+import app.n_zik.android.components.player.playerArtworkShadowOverflow
+import app.n_zik.android.components.player.playerArtworkOverflowViewport
+import app.n_zik.android.components.player.playerArtworkOverflowFade
+import app.n_zik.android.components.player.rememberPlayerArtworkControlsBackdrop
+import app.n_zik.android.components.player.playerPortraitUsesWeightedInformation
+import app.n_zik.android.components.player.playerPortraitPrioritizesArtwork
+import app.n_zik.android.components.player.PlayerPortraitThumbnailFrame
+import app.n_zik.android.components.player.PlayerPortraitInformationLayout
+import app.n_zik.android.components.player.playerPortraitInformationGap
+import app.n_zik.android.components.player.playerThumbnailPadding
 import app.n_zik.android.components.player.PlayerInformationGlassBlock
 import app.n_zik.android.components.player.LocalPlayerTransportGeometry
 import app.n_zik.android.components.player.PlayerTransportGeometry
@@ -59,12 +67,10 @@ import android.annotation.SuppressLint
 import android.graphics.RenderEffect
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.spring
@@ -99,15 +105,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.displayCutout
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -118,6 +121,7 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import app.n_zik.android.components.player.playerLandscapeArtworkColumnVisible
 import app.n_zik.android.components.player.PlayerLandscapeColumns
+import app.n_zik.android.components.player.PlayerLandscapeThumbnailFrame
 import app.n_zik.android.components.player.playerLandscapeControlsMargin
 import app.n_zik.android.components.player.PlayerCarouselCover
 import app.n_zik.android.components.player.playerCoverOverlayPolicy
@@ -128,8 +132,7 @@ import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import timber.log.Timber
-import androidx.compose.foundation.shape.CircleShape
+import app.n_zik.android.components.player.rememberPlayerArtworkPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -155,7 +158,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -164,7 +166,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.LinearGradientShader
+import app.n_zik.android.components.player.rememberPlayerFluidShader
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
@@ -176,9 +178,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
@@ -194,8 +193,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
-import androidx.compose.ui.util.fastZip
-import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
 import androidx.core.graphics.ColorUtils.colorToHSL
 import androidx.media3.common.MediaItem
@@ -240,9 +237,7 @@ import app.it.fast4x.rimusic.enums.QueueType
 import app.it.fast4x.rimusic.enums.SwipeAnimationNoThumbnail
 import app.it.fast4x.rimusic.enums.ThumbnailCoverType
 import app.it.fast4x.rimusic.enums.ThumbnailType
-import app.it.fast4x.rimusic.models.Info
 import app.it.fast4x.rimusic.models.ui.toUiMedia
-import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.CustomModalBottomSheet
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
@@ -252,7 +247,8 @@ import app.n_zik.android.components.menu.player.PlayerMenu
 import app.n_zik.android.components.player.m3eCoverBackgroundColor
 import app.it.fast4x.rimusic.ui.components.themed.RotateThumbnailCoverAnimationModern
 import app.n_zik.android.components.dialog.common.ThumbnailOffsetDialog
-import app.it.fast4x.rimusic.ui.components.themed.animateBrushRotation
+import app.n_zik.android.components.player.animatePlayerBrushRotation
+import app.n_zik.android.components.player.rememberPlayerDecorationsActive
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.collapsedPlayerProgressBar
 import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
@@ -275,10 +271,9 @@ import app.it.fast4x.rimusic.utils.coverThumbnailAnimationKey
 import app.it.fast4x.rimusic.utils.disablePlayerHorizontalSwipeKey
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.discoverKey
-import app.it.fast4x.rimusic.utils.doubleShadowDrop
-import app.it.fast4x.rimusic.utils.durationTextToMillis
+import app.n_zik.android.components.player.rememberPlayerQueueDuration
+import app.n_zik.android.components.player.playerStandaloneLyricsVisible
 import app.it.fast4x.rimusic.utils.effectRotationKey
-import app.it.fast4x.rimusic.utils.expandedplayertoggleKey
 import app.it.fast4x.rimusic.utils.expandedplayerKey
 import app.it.fast4x.rimusic.utils.fadingedgeKey
 import app.it.fast4x.rimusic.utils.formatAsTime
@@ -292,7 +287,7 @@ import app.it.fast4x.rimusic.utils.playNext
 import app.it.fast4x.rimusic.utils.playPrevious
 import app.it.fast4x.rimusic.utils.playbackStateState
 import app.it.fast4x.rimusic.utils.playerBackgroundColorsKey
-import app.it.fast4x.rimusic.utils.thumbnailSizeLDpKey
+import app.n_zik.android.components.player.rememberPlayerLandscapeArtworkSize
 import app.it.fast4x.rimusic.utils.playerTypeKey
 import app.it.fast4x.rimusic.utils.positionAndDurationState
 import app.it.fast4x.rimusic.utils.queueDurationExpandedKey
@@ -304,13 +299,10 @@ import app.it.fast4x.rimusic.utils.shouldBePlaying
 import app.it.fast4x.rimusic.utils.showButtonPlayerMenuKey
 import app.it.fast4x.rimusic.utils.showCoverThumbnailAnimationKey
 import app.it.fast4x.rimusic.utils.showTopActionsBarKey
-import app.it.fast4x.rimusic.utils.showalbumcoverKey
 import app.it.fast4x.rimusic.utils.showlyricsthumbnailKey
-import app.it.fast4x.rimusic.utils.showsongsKey
 import app.it.fast4x.rimusic.utils.playerSwipeSensitivityKey
 import app.n_zik.android.enums.PlayerSwipeSensitivity
 import app.it.fast4x.rimusic.utils.showTotalTimeQueueKey
-import app.it.fast4x.rimusic.utils.showlyricsthumbnailKey
 import app.it.fast4x.rimusic.utils.showthumbnailKey
 import app.it.fast4x.rimusic.utils.showvisthumbnailKey
 import app.it.fast4x.rimusic.utils.statsExpandedKey
@@ -327,11 +319,9 @@ import app.it.fast4x.rimusic.utils.timelineExpandedKey
 import app.it.fast4x.rimusic.utils.titleExpandedKey
 import app.it.fast4x.rimusic.utils.topPaddingKey
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import android.graphics.Bitmap
@@ -339,9 +329,8 @@ import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.player.PlayerCurrentCover
 import app.n_zik.android.components.player.BlurAdjuster
-import app.n_zik.android.components.player.extractM3ECoverColors
+import app.n_zik.android.components.player.extractCoverPalette
 import app.n_zik.android.components.player.m3eDarkenBy
-import app.n_zik.android.components.player.m3eDominantDynamicPaletteOf
 import app.n_zik.android.components.player.textOutlineColor
 import app.n_zik.android.components.player.m3eSaturate
 import app.kreate.android.me.knighthat.utils.Toaster
@@ -362,7 +351,6 @@ import android.app.Activity
 import android.view.Window
 import android.content.ContextWrapper
 import androidx.compose.ui.layout.layout
-import kotlinx.coroutines.CoroutineScope
 import app.kreate.android.me.knighthat.sync.YouTubeSync
 
 /** Issue #606 H10 — result bundle for [computePlayerDynamicPalette], mirroring the 8 Compose state variables (`dynamicColorPalette`, `dominant`, `vibrant`, `lightVibrant`, `darkVibrant`, `muted`, `lightMuted`, `darkMuted`) that `Player`'s `LaunchedEffect` used to assign one-by-one, inline, on whatever dispatcher that effect resumes on. */
@@ -377,35 +365,16 @@ internal data class PlayerDynamicPaletteResult(
     val darkMuted: Int,
 )
 
-/**
- * Issue #606 H10 -- `Player`'s cover-swipe `LaunchedEffect` used to run `dynamicColorPaletteOf`
- * (CPU-bound `Palette` extraction) and `Palette.from(bitmap).generate()` plus 6
- * `Palette.get*Color` calls inline, on whatever dispatcher the effect resumes on -- Main, since it
- * follows `getBitmapFromUrl`'s suspension. Extracted here so the composable can dispatch the
- * whole CPU-bound sequence via `withContext(NzikDispatchers.MEDIA)` in one call and so it is
- * unit-testable without instantiating the composable. `internal` (not `private`) purely so
- * `PlayerDynamicPaletteOffMainTest` can call it directly -- it adds no new public legacy API.
- * The extraction and the local dynamic palette now delegate to the shared M3E cover extraction
- * (`app.n_zik.android.components.player`) -- RiPlay-based: capped 8 palette, dominant swatch,
- * achromatic neutralization -- via `extractM3ECoverColors` + `m3eDominantDynamicPaletteOf`, the
- * same dominant-based construction the app uses (`m3eDynamicColorPaletteOf`), so the player's
- * palette, the 7 swatches feeding the cover-based backgrounds (`M3EMorphingCover`,
- * `FluidCoverColorGradient`, `ColorPalette` stripes) and the "cover color" surfaces stay in
- * parity with the app (single source of extraction, spec
- * `spec-fix-palette-extractor-riplay-reference`, OQ1=A/OQ2=B).
- */
+/** Computes the palette and background swatches from one shared cover extraction. */
 internal suspend fun computePlayerDynamicPalette(
     bitmap: Bitmap,
     isDark: Boolean,
     fallbackColor: ColorPalette,
 ): PlayerDynamicPaletteResult {
-    val colors = extractM3ECoverColors(bitmap, isDark)
+    val extracted = extractCoverPalette(bitmap, isDark)
+    val colors = extracted?.colors
     if (colors == null) {
-        // No dominant swatch: propagate the caller's fallback, exactly like
-        // extractM3ECoverColors' null contract.
-
-        // Every raw swatch falls back to the same accent the shared extraction
-        // would have used as each role's fallback.
+        // Without a dominant swatch, retain the caller's palette and accent.
         val accent = fallbackColor.accent.toArgb()
         return PlayerDynamicPaletteResult(
             palette = fallbackColor,
@@ -419,7 +388,7 @@ internal suspend fun computePlayerDynamicPalette(
         )
     }
     return PlayerDynamicPaletteResult(
-        palette = m3eDominantDynamicPaletteOf(colors, bitmap, isDark),
+        palette = requireNotNull(extracted).palette,
         dominant = colors.dominant,
         vibrant = colors.vibrant,
         lightVibrant = colors.lightVibrant,
@@ -466,7 +435,7 @@ fun Player(
     val showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, true)
     val effectRotationEnabled by rememberPreference(effectRotationKey, false)
     val thumbnailSizeDp by rememberPreference( thumbnailSizeDpKey, 90f )
-    val thumbnailSizeLDp by rememberPreference( thumbnailSizeLDpKey, 30f )
+    val thumbnailSizeLDp by rememberPlayerLandscapeArtworkSize()
     val showvisthumbnail by rememberPreference(showvisthumbnailKey, true)
     var thumbnailSpacing  by rememberPreference( thumbnailSpacingKey, 0f )
     var thumbnailSpacingL  by rememberPreference( thumbnailSpacingLKey, 0f )
@@ -768,7 +737,11 @@ fun Player(
             
     if (binder.player.currentTimeline.windowCount == 0 || mediaItems.isEmpty()) return
 
-    val pagerState = rememberPagerState(pageCount = { mediaItems.size })
+    val pagerState = rememberPlayerArtworkPagerState(
+        landscape = isLandscape,
+        playingIndex = binder.player.currentMediaItemIndex,
+        pageCount = { mediaItems.size },
+    )
     val pagerStateFS = rememberPagerState(pageCount = { mediaItems.size })
     val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
     val isDraggedFS by pagerStateFS.interactionSource.collectIsDraggedAsState()
@@ -938,13 +911,7 @@ fun Player(
 
     var sizeShader by remember { mutableStateOf(Size.Zero) }
 
-    var totalPlayTimes = 0L
-    mediaItems.forEach {
-        totalPlayTimes += it.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
-            durationTextToMillis(it1)
-        }?.toLong() ?: 0
-    }
-
+    val totalPlayTimes = rememberPlayerQueueDuration(mediaItems, showTotalTimeQueue)
 
     // Issue #881 (gh-881): tolerant saver (spec M5).
     var isShowingStatsForNerds by rememberSaveable(saver = TolerantBoolStateSaver("player.isShowingStatsForNerds")) {
@@ -957,6 +924,8 @@ fun Player(
     val inheritedUnderlayCovered = LocalGlassUnderlayCovered.current
     var isQueuePanelVisible by remember { mutableStateOf(false) }
     val playerUnderlayCovered = playerQueueUnderlayCovered(inheritedUnderlayCovered, isQueuePanelVisible)
+    val decorationsActive = rememberPlayerDecorationsActive(
+        playerContentVisible && !appRunningInBackground && !playerUnderlayCovered)
     val playerTransition = LocalPlayerSheetGlassTransition.current
         ?: rememberPlayerSheetGlassTransition(playerSheetState)
     val opticalPlayerBackground = glassSettings.enabled && glassRenderer(glassSettings) != GlassRenderer.Tint
@@ -965,8 +934,7 @@ fun Player(
     val playerBackground = rememberGlassPlayerBackground()
     val playerCoverBackground = rememberLayerBackdrop()
     val playerControlsBackdrop = rememberCombinedBackdrop(playerCoverBackground, playerBackground.backdrop)
-    val controlsSource = rememberPlayerControlsGlassSource(LocalGlassContainerBackdrop.current,
-        playerControlsBackdrop, playerTransition)
+    val controlsSource = rememberPlayerControlsGlassSource(playerControlsBackdrop)
     val playerVisibleBackdrop = rememberLayerBackdrop()
     val capturePlayerScene = capturePlayerBackground
 
@@ -1167,39 +1135,17 @@ fun Player(
                 when( type ) {
                     AnimatedGradient.FluidThemeColorGradient, AnimatedGradient.FluidCoverColorGradient,
                     AnimatedGradient.M3EMorphingTheme, AnimatedGradient.M3EMorphingCover -> {
-                        val shaderA = LinearGradientShader(
-                            Offset(sizeShader.width / 2f, 0f),
-                            Offset(sizeShader.width / 2f, sizeShader.height),
-                            listOf(
-                                dynamicColorPalette.background2,
-                                colorPalette().background2,
-                            ),
-                            listOf(0f, 1f)
-                        )
-                        val brushA by animateBrushRotation(shaderA, sizeShader, 20_000, true)
+                        val shaderA = rememberPlayerFluidShader(sizeShader,
+                            dynamicColorPalette.background2, colorPalette().background2)
+                        val brushA by animatePlayerBrushRotation(shaderA, sizeShader, 20_000, true, decorationsActive)
 
-                        val shaderB = LinearGradientShader(
-                            Offset(sizeShader.width / 2f, 0f),
-                            Offset(sizeShader.width / 2f, sizeShader.height),
-                            listOf(
-                                colorPalette().background1,
-                                dynamicColorPalette.accent,
-                            ),
-                            listOf(0f, 1f)
-                        )
-                        val brushB by animateBrushRotation(shaderB, sizeShader, 12_000, false)
+                        val shaderB = rememberPlayerFluidShader(sizeShader,
+                            colorPalette().background1, dynamicColorPalette.accent)
+                        val brushB by animatePlayerBrushRotation(shaderB, sizeShader, 12_000, false, decorationsActive)
 
-                        val shaderMask = LinearGradientShader(
-                            Offset(sizeShader.width / 2f, 0f),
-                            Offset(sizeShader.width / 2f, sizeShader.height),
-                            listOf(
-                                //Color.White,
-                                colorPalette().background2,
-                                Color.Transparent,
-                            ),
-                            listOf(0f, 1f)
-                        )
-                        val brushMask by animateBrushRotation(shaderMask, sizeShader, 15_000, true)
+                        val shaderMask = rememberPlayerFluidShader(sizeShader,
+                            colorPalette().background2, Color.Transparent)
+                        val brushMask by animatePlayerBrushRotation(shaderMask, sizeShader, 15_000, true, decorationsActive)
 
                         containerModifier = containerModifier
                             .drawBehind {
@@ -1212,6 +1158,7 @@ fun Player(
                             val isTheme = type == AnimatedGradient.M3EMorphingTheme
                             containerModifier = containerModifier.animatedM3EBackground(
                                 animating = isActuallyPlaying,
+                                active = decorationsActive,
                                 D = if (isTheme) colorPalette().background1 else saturate(dominant).darkenBy(),
                                 V = if (isTheme) colorPalette().background2 else saturate(vibrant).darkenBy(),
                                 LV = if (isTheme) dynamicColorPalette.background2 else saturate(lightVibrant).darkenBy(),
@@ -1328,13 +1275,22 @@ fun Player(
 
     }
 
+    val artworkShadowOverflow = rememberPlayerArtworkShadowOverflow()
     val showLandscapeArtworkColumn = !isLandscape ||
         playerLandscapeArtworkColumnVisible(playerType, thumbnailType, expandedplayer, showthumbnail)
     val coverOverlayPolicy = playerCoverOverlayPolicy(
-        lyricsOnCover = showlyricsthumbnail && showLandscapeArtworkColumn,
-        visualizerOnCover = showvisthumbnail && showLandscapeArtworkColumn,
+        lyricsOnCover = showlyricsthumbnail && showthumbnail && showLandscapeArtworkColumn,
+        visualizerOnCover = showvisthumbnail && showthumbnail && showLandscapeArtworkColumn,
     )
-    val isShowingStandaloneLyrics = isShowingLyrics && !coverOverlayPolicy.lyricsOnCover
+    val isShowingStandaloneLyrics = playerStandaloneLyricsVisible(
+        showthumbnail, isShowingLyrics, coverOverlayPolicy.lyricsOnCover)
+    val landscapeStandaloneVisualizer = playerStandaloneVisualizerVisible(
+        showthumbnail, isShowingVisualizer, coverOverlayPolicy.visualizerOnCover)
+    val landscapeModernVisualizerState = rememberOverlayTransition(isLandscape && showLandscapeArtworkColumn &&
+        landscapeStandaloneVisualizer && playerType == PlayerType.Modern)
+    val landscapeEssentialVisualizerState = rememberOverlayTransition(isLandscape && showLandscapeArtworkColumn &&
+        landscapeStandaloneVisualizer && playerType == PlayerType.Essential)
+
 
     val thumbnailContent: @Composable () -> Unit = {
         var deltaX by remember { mutableStateOf(0f) }
@@ -1345,6 +1301,12 @@ fun Player(
                 .distinctUntilChanged()
         }.collectAsStateWithLifecycle(false, context = NzikDispatchers.DATA)
 
+        PlayerPortraitThumbnailFrame(
+            enabled = !isLandscape && playerCoverArtworkVisible(showthumbnail, isShowingLyrics,
+                coverOverlayPolicy.lyricsOnCover, isShowingVisualizer, coverOverlayPolicy.visualizerOnCover),
+            verticalPadding = if (thumbnailType == ThumbnailType.Modern) 16.dp else 0.dp,
+            contentPadding = playerThumbnailPadding(thumbnailSizeDp),
+        ) {
             Thumbnail(
                 thumbnailTapEnabledKey = thumbnailTapEnabled,
                 isShowingLyrics = isShowingLyrics,
@@ -1354,6 +1316,7 @@ fun Player(
                 isShowingVisualizer = isShowingVisualizer,
                 onShowEqualizer = { isShowingVisualizer = it },
                 showthumbnail = showthumbnail,
+                verticalPadding = if (isLandscape) 0.dp else 8.dp,
                 onMaximize = {},
                 onDoubleTap = {
                     val currentMediaItem = binder.player.currentMediaItem
@@ -1392,12 +1355,13 @@ fun Player(
 
                         )
                     }
-                    .padding(all = if (isLandscape) ((100f - thumbnailSizeLDp) * 0.5f).dp else ((100f - thumbnailSizeDp) * 1.5f).dp)
+                    .padding(all = playerThumbnailPadding(if (isLandscape) thumbnailSizeLDp else thumbnailSizeDp, isLandscape))
                     .thumbnailpause(
                         shouldBePlaying = shouldBePlaying
                     )
 
             )
+        }
 
     }
 
@@ -1432,13 +1396,16 @@ fun Player(
 
     blurAdjuster.Render()
 
+    val artworkControlsSource = rememberPlayerArtworkControlsBackdrop(
+        controlsSource, artworkShadowOverflow, capturePlayerBackground)
     CompositionLocalProvider(
         LocalPlayerTransportGeometry provides remember { PlayerTransportGeometry() },
         LocalGlassOpticsEnabled provides inheritedOpticsEnabled,
         LocalGlassOpticsTransitionProgress provides playerTransition.value,
         LocalGlassUnderlayCovered provides playerUnderlayCovered,
-        LocalGlassBackdrop provides controlsSource,
-        LocalGlassContainerBackdrop provides controlsSource,
+        LocalGlassBackdrop provides artworkControlsSource,
+        LocalGlassMaterialSource provides artworkControlsSource,
+        LocalGlassContainerBackdrop provides artworkControlsSource,
         LocalGlassOverlayBackdrop provides if (capturePlayerScene && playerSheetState.isExpanded) playerVisibleBackdrop
             else if (capturePlayerBackground) glassSceneOverlayBackdrop(playerVisibleBackdrop) else LocalGlassOverlayBackdrop.current,
     ) {
@@ -1452,8 +1419,7 @@ fun Player(
         @Composable
         fun ActionsBar() {
             if (glassSettings.enabled) {
-                Box(Modifier.align(if (isLandscape) Alignment.BottomEnd else Alignment.BottomCenter)
-                    .playerActionPanelBounds()) { ActionBar(
+                Box(Modifier.align(if (isLandscape) Alignment.BottomEnd else Alignment.BottomCenter)) { ActionBar(
             navController,
             showQueueState,
             showSearchEntityState,
@@ -1467,7 +1433,7 @@ fun Player(
             onDismiss
         ) }
             } else {
-                Box(Modifier.playerActionPanelBounds()) { ActionBar(
+                Box { ActionBar(
             navController,
             showQueueState,
             showSearchEntityState,
@@ -1488,7 +1454,7 @@ fun Player(
         if (isLandscape) {
          Box{
              if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor && playerType == PlayerType.Modern && (!showthumbnail || albumCoverRotation)) {
-                   val fling = flingBehaviorFor(pagerStateFS, landscape = true, sensitivity = playerSwipeSensitivity)
+                   val fling = flingBehaviorFor(pagerStateFS, sensitivity = playerSwipeSensitivity)
                    pagerStateFS.LaunchedEffectScrollToPage(
                        binder,
                        playerUpdateTrigger,
@@ -1630,51 +1596,50 @@ fun Player(
                         }
                     }
                     .then(if (capturePlayerBackground) playerBackground.content else Modifier)
-                    .then(playerForegroundClip),
+                    .then(playerForegroundClip)
+                    .playerArtworkShadowOverflow(artworkShadowOverflow),
                 artwork = {
                     if (showthumbnail && (playerType == PlayerType.Essential)) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxWidth()
+                        PlayerLandscapeThumbnailFrame(
+                            contentPadding = playerThumbnailPadding(thumbnailSizeLDp, landscape = true),
+                            artworkVisible = playerCoverArtworkVisible(showthumbnail, isShowingLyrics,
+                                coverOverlayPolicy.lyricsOnCover, isShowingVisualizer, coverOverlayPolicy.visualizerOnCover),
                         ) {
-                            if ((!isShowingLyrics && !isShowingVisualizer) || (isShowingVisualizer && showvisthumbnail) || (isShowingLyrics && showlyricsthumbnail))
-                                thumbnailContent()
+                            thumbnailContent()
                         }
                     }
-                    if (playerType == PlayerType.Modern && (playerCoverArtworkVisible(showthumbnail, isShowingLyrics, coverOverlayPolicy.lyricsOnCover, isShowingVisualizer, coverOverlayPolicy.visualizerOnCover) || playerStandaloneVisualizerVisible(showthumbnail, isShowingVisualizer, coverOverlayPolicy.visualizerOnCover))) {
+                    if (playerType == PlayerType.Modern && (playerCoverArtworkVisible(showthumbnail, isShowingLyrics, coverOverlayPolicy.lyricsOnCover, isShowingVisualizer, coverOverlayPolicy.visualizerOnCover) || landscapeStandaloneVisualizer || landscapeModernVisualizerState.hasOverlayContent)) {
                         BoxWithConstraints(
                              contentAlignment = Alignment.Center,
                              modifier = Modifier
                                  .weight(1f)
+                                 .playerArtworkOverflowViewport(artworkShadowOverflow)
                              /*modifier = Modifier
                             .weight(1f)*/
                              //.padding(vertical = 10.dp)
                          ) {
                              if (playerCoverArtworkVisible(showthumbnail, isShowingLyrics, coverOverlayPolicy.lyricsOnCover, isShowingVisualizer, coverOverlayPolicy.visualizerOnCover)) {
-                                  val fling = flingBehaviorFor(pagerState, landscape = true, sensitivity = playerSwipeSensitivity)
-                                   val animatePageSpacing by animateDpAsState(
+                                  val fling = flingBehaviorFor(pagerState, sensitivity = playerSwipeSensitivity)
+                                   val animatePageSpacing by animatePlayerCarouselDp(
                                        if (expandedplayer) (thumbnailSpacingL.toInt() * 0.01 * maxHeight -
                                            if (carousel) 3 * carouselSize.size.dp else 2 * carouselSize.size.dp)
                                        else 10.dp,
+                                       viewportWidth = maxWidth,
                                        label = "landscapeCarouselSpacing",
                                    )
-                                   val animatePadding by animateDpAsState(
-                                       if (expandedplayer) carouselSize.size.dp else ((100f - thumbnailSizeLDp) * 0.5f).dp,
+                                   val animatePadding by animatePlayerCarouselDp(
+                                       if (expandedplayer) carouselSize.size.dp else playerThumbnailPadding(thumbnailSizeLDp, landscape = true),
+                                       viewportWidth = maxWidth,
                                        label = "landscapeCarouselPadding",
-                                   )
-                                   // Animate the slot height so the cover re-centering transitions smoothly.
-                                   val animatedSlotHeight by animateDpAsState(
-                                       maxHeight,
-                                       label = "coverSlotHeight",
                                    )
                                    // Animate the edge fade strength so it does not flash on expand/back.
                                    val playerCoverEdgeFade by animateFloatAsState(
                                        if (expandedplayer) thumbnailFadeEx else thumbnailFade,
                                        label = "coverEdgeFade",
                                    )
-                                   val carouselGeometry = playerCarouselGeometry(
+                                   val carouselGeometry = animatePlayerCarouselGeometry(
                                        width = maxWidth,
-                                       height = animatedSlotHeight,
+                                       height = maxHeight,
                                        padding = animatePadding,
                                        pageSpacing = animatePageSpacing,
                                        compactStack = expandedplayer && carousel,
@@ -1699,8 +1664,7 @@ fun Player(
                                      pageSpacing = carouselGeometry.pageSpacing,
                                      contentPadding = PaddingValues(
                                          top = ((maxHeight - carouselGeometry.pageSize) / 2).coerceAtLeast(0.dp),
-                                         bottom = ((maxHeight - carouselGeometry.pageSize) / 2 +
-                                             (-carouselGeometry.pageSpacing).coerceAtLeast(0.dp)).coerceAtLeast(0.dp),
+                                         bottom = ((maxHeight - carouselGeometry.pageSize) / 2).coerceAtLeast(0.dp),
                                      ),
                                      beyondViewportPageCount = 2,
                                      flingBehavior = fling,
@@ -1712,7 +1676,8 @@ fun Player(
                                                  0.dp
                                              )
                                          )
-                                         .conditional(fadingedge) {
+                                         .playerArtworkOverflowFade(artworkShadowOverflow, fadingedge && carousel, playerCoverEdgeFade * 0.05f)
+                                         .conditional(fadingedge && !carousel) {
                                              VerticalfadingEdge2(
                                                  fade = playerCoverEdgeFade * 0.05f,
                                                  showTopActionsBar, topPadding, expandedplayer,
@@ -1726,6 +1691,7 @@ fun Player(
 
                                       val coverModifier = Modifier.playerThumbnailCover(
                                           pagerState = pagerState,
+                                          shadowOverflow = artworkShadowOverflow,
                                           page = it,
                                           padding = carouselGeometry.coverPadding,
                                           carousel = carousel,
@@ -1798,8 +1764,10 @@ fun Player(
                                      }
                                  }
                              }
-                            if (playerStandaloneVisualizerVisible(showthumbnail, isShowingVisualizer, coverOverlayPolicy.visualizerOnCover)) {
-                                Box(
+                            if (landscapeModernVisualizerState.hasOverlayContent) {
+                                GlassOverlayHost(
+                                    active = landscapeStandaloneVisualizer, settings = glassSettings,
+                                    fadeDurationMillis = 500, transitionState = landscapeModernVisualizerState,
                                     modifier = Modifier
                                         .pointerInput(Unit) {
                                             detectHorizontalDragGestures(
@@ -1827,14 +1795,16 @@ fun Player(
                                         }
                                 ) {
                                     NextVisualizer(
-                                        isDisplayed = isShowingVisualizer
+                                        isDisplayed = landscapeStandaloneVisualizer, onCover = false, fadeHosted = true
                                     )
                                 }
                             }
                         }
                     }
-                    if (isShowingVisualizer && !coverOverlayPolicy.visualizerOnCover && playerType == PlayerType.Essential) {
-                        Box(
+                    if (landscapeEssentialVisualizerState.hasOverlayContent) {
+                        GlassOverlayHost(
+                            active = landscapeStandaloneVisualizer, settings = glassSettings,
+                            fadeDurationMillis = 500, transitionState = landscapeEssentialVisualizerState,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .pointerInput(Unit) {
@@ -1863,7 +1833,7 @@ fun Player(
                                 }
                         ) {
                             NextVisualizer(
-                                    isDisplayed = isShowingVisualizer
+                                    isDisplayed = landscapeStandaloneVisualizer, onCover = false, fadeHosted = true
                                 )
                         }
                     }
@@ -1887,6 +1857,7 @@ fun Player(
                                 durationProvider = player::getDuration,
                                 isLandscape = isLandscape,
                                 clickLyricsText = clickLyricsText,
+                                onCover = false,
                                 modifier = Modifier
                                     .pointerInput(Unit) {
                                         detectHorizontalDragGestures(
@@ -1916,20 +1887,30 @@ fun Player(
                         }
                     }
                 }, controls = {
-                    if (!showLandscapeArtworkColumn && (isShowingLyrics || isShowingVisualizer)) {
+                    val landscapeLyricsState = rememberOverlayTransition(isShowingLyrics && !showLandscapeArtworkColumn)
+                    val landscapeVisualizerState = rememberOverlayTransition(isShowingVisualizer && !showLandscapeArtworkColumn)
+                    if (!showLandscapeArtworkColumn &&
+                        (landscapeLyricsState.hasOverlayContent || landscapeVisualizerState.hasOverlayContent)) {
                         Box(Modifier.weight(1f).fillMaxWidth()) {
-                            LyricsScreen(
-                                mediaId = mediaItem.mediaId,
-                                isDisplayed = isShowingLyrics,
-                                onDismiss = { isShowingLyrics = false },
-                                ensureSongInserted = { Database.insertIgnore(mediaItem) },
-                                size = 1000.dp,
-                                mediaMetadataProvider = mediaItem::mediaMetadata,
-                                durationProvider = player::getDuration,
-                                isLandscape = isLandscape,
-                                clickLyricsText = clickLyricsText,
-                            )
-                            NextVisualizer(isDisplayed = isShowingVisualizer)
+                            GlassOverlayHost(isShowingLyrics, glassSettings, transitionState = landscapeLyricsState) {
+                                LyricsScreen(
+                                    mediaId = mediaItem.mediaId,
+                                    isDisplayed = isShowingLyrics,
+                                    onDismiss = { isShowingLyrics = false },
+                                    ensureSongInserted = { Database.insertIgnore(mediaItem) },
+                                    size = 1000.dp,
+                                    mediaMetadataProvider = mediaItem::mediaMetadata,
+                                    durationProvider = player::getDuration,
+                                    isLandscape = isLandscape,
+                                    clickLyricsText = clickLyricsText,
+                                    onCover = false,
+                                    fadeHosted = true,
+                                )
+                            }
+                            GlassOverlayHost(isShowingVisualizer, glassSettings, fadeDurationMillis = 500,
+                                transitionState = landscapeVisualizerState) {
+                                NextVisualizer(isDisplayed = isShowingVisualizer, onCover = false, fadeHosted = true)
+                            }
                         }
                     }
                     val controllerIndex = (if (!showthumbnail) pagerStateFS.currentPage else pagerState.currentPage)
@@ -2194,13 +2175,21 @@ fun Player(
                    isShowingVisualizer = isShowingVisualizer,
                )
 
+            val prioritizePortraitArtwork = playerPortraitPrioritizesArtwork(
+                playerCoverArtworkVisible(showthumbnail, isShowingLyrics, coverOverlayPolicy.lyricsOnCover,
+                    isShowingVisualizer, coverOverlayPolicy.visualizerOnCover), playerType)
+            val weightedPortraitInformation = playerPortraitUsesWeightedInformation(
+                expandedplayer, isShowingStandaloneLyrics, playerType, carousel, showlyricsthumbnail)
             PlayerGlassBudgetLayout(
-                enabled = glassSettings.enabled,
+                enabled = false,
                 expandedCarousel = expandedplayer && carousel && playerType == PlayerType.Modern,
-                // Modern + carousel keeps the budget layout in both collapsed and expanded
-                // states, so the expand/collapse toggle never switches layout modes (same
-                // behavior as the Glass path).
                 reserveLowerContent = carousel && playerType == PlayerType.Modern,
+                prioritizeArtwork = prioritizePortraitArtwork,
+                expandInformation = weightedPortraitInformation,
+                informationGap = playerPortraitInformationGap(),
+                // Thumbnail's Modern style already has 8dp above and below its square.
+                artworkVerticalPadding = if (playerType == PlayerType.Essential && thumbnailType == ThumbnailType.Modern)
+                    16.dp else 0.dp,
                 modifier = (if (capturePlayerBackground) playerBackground.background else Modifier).then(containerModifier)
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                     //.padding(top = 10.dp)
@@ -2218,7 +2207,8 @@ fun Player(
                         }
                     }
                     .then(if (capturePlayerBackground) playerBackground.content else Modifier)
-                    .then(playerForegroundClip),
+                    .then(playerForegroundClip)
+                    .playerArtworkShadowOverflow(artworkShadowOverflow),
 
 
                 header = {
@@ -2320,8 +2310,7 @@ fun Player(
                         // expand/back actions felt inverted.
                         .conditional((screenWidth <= (screenHeight / 2)) && (!expandedplayer && !isShowingStandaloneLyrics)) {height(screenWidth)}
                         .conditional((screenWidth > (screenHeight / 2)) || expandedplayer || isShowingStandaloneLyrics) {weight(1f)}
-                        // Animate the square <-> weighted slot size so expand/back does not jump.
-                        .animateContentSize()
+                        .playerArtworkOverflowViewport(artworkShadowOverflow)
                 ) {
 
                       if (showthumbnail) {
@@ -2343,39 +2332,36 @@ fun Player(
                                   )
 
                                  val pageSpacing = (thumbnailSpacing.toInt()*0.01*(screenHeight) - if (carousel) (3*carouselSize.size.dp) else (2*((100f - thumbnailSizeDp) * 1.5f).dp))
-                                 val animatePageSpacing by animateDpAsState(
+                                 val animatePageSpacing by animatePlayerCarouselDp(
                                      if (expandedplayer) (thumbnailSpacing.toInt()*0.01*(screenHeight) - if (carousel) (3*carouselSize.size.dp) else (2*carouselSize.size.dp)) else 10.dp,
-                                     label = ""
+                                      viewportWidth = maxWidth,
+                                      label = "portraitCarouselSpacing",
                                  )
 
-                                 val animatePadding by animateDpAsState(
-                                     if (expandedplayer) carouselSize.size.dp else ((100f - thumbnailSizeDp) * 1.5f).dp
+                                 val animatePadding by animatePlayerCarouselDp(
+                                      if (expandedplayer) carouselSize.size.dp else playerThumbnailPadding(thumbnailSizeDp),
+                                      viewportWidth = maxWidth,
+                                      label = "portraitCarouselPadding",
                                  )
-                                  // Animate the slot height so the cover re-centering transitions smoothly.
-                                  val animatedSlotHeight by animateDpAsState(
-                                      maxHeight,
-                                      label = "coverSlotHeight",
-                                  )
                                   // Animate the edge fade strength so it does not flash on expand/back.
                                   val playerCoverEdgeFade by animateFloatAsState(
                                       if (expandedplayer) thumbnailFadeEx else thumbnailFade,
                                       label = "coverEdgeFade",
                                   )
-                                 val carouselGeometry = playerCarouselGeometry(
+                                 val carouselGeometry = animatePlayerCarouselGeometry(
                                      width = maxWidth,
                                      height = maxHeight,
                                      padding = animatePadding,
                                      pageSpacing = animatePageSpacing,
                                      compactStack = expandedplayer && carousel,
                                  )
+                                 if (carouselGeometry.pageSize > carouselGeometry.coverPadding * 2)
                                  VerticalPager(
                                      state = pagerState,
                                      pageSize = PageSize.Fixed(carouselGeometry.pageSize),
                                      contentPadding = PaddingValues(
-                                         top = ((animatedSlotHeight - carouselGeometry.pageSize)/2).coerceAtLeast(0.dp),
-                                         bottom = ((animatedSlotHeight - carouselGeometry.pageSize)/2 + if (expandedplayer && carousel)
-                                             (-carouselGeometry.pageSpacing).coerceAtLeast(0.dp)
-                                         else if (pageSpacing < 0.dp) -pageSpacing else 0.dp).coerceAtLeast(0.dp)
+                                         top = ((maxHeight - carouselGeometry.pageSize)/2).coerceAtLeast(0.dp),
+                                         bottom = ((maxHeight - carouselGeometry.pageSize)/2).coerceAtLeast(0.dp)
                                      ),
                                      pageSpacing = carouselGeometry.pageSpacing,
                                      beyondViewportPageCount = 2,
@@ -2387,7 +2373,8 @@ fun Player(
                                                  0.dp
                                              )
                                          )
-                                         .conditional(fadingedge) {
+                                         .playerArtworkOverflowFade(artworkShadowOverflow, fadingedge && carousel, playerCoverEdgeFade * 0.05f)
+                                         .conditional(fadingedge && !carousel) {
                                              VerticalfadingEdge2(fade = playerCoverEdgeFade*0.05f,showTopActionsBar,topPadding,expandedplayer)
                                          }
                                  ){
@@ -2398,6 +2385,7 @@ fun Player(
 
                                       val coverModifier = Modifier.playerThumbnailCover(
                                           pagerState = pagerState,
+                                          shadowOverflow = artworkShadowOverflow,
                                           page = it,
                                           padding = carouselGeometry.coverPadding,
                                           carousel = carousel,
@@ -2475,11 +2463,7 @@ fun Player(
                          }
                       }
 
-                   GlassOverlayHost(
-                        active = isShowingStandaloneLyrics ||
-                            (isShowingVisualizer && !coverOverlayPolicy.visualizerOnCover),
-                        settings = glassSettings,
-                        modifier = Modifier
+                   val standaloneOverlayModifier = Modifier
                             .pointerInput(Unit) {
                                 detectHorizontalDragGestures(
                                     onHorizontalDrag = { _, dragAmount ->
@@ -2504,33 +2488,44 @@ fun Player(
 
                                 )
                             }
+                   GlassOverlayHost(
+                        active = isShowingStandaloneLyrics,
+                        settings = glassSettings,
+                        modifier = standaloneOverlayModifier,
                     ) {
-                        if (!coverOverlayPolicy.lyricsOnCover)
-                            LyricsScreen(
-                                mediaId = mediaItem.mediaId,
-                                isDisplayed = isShowingLyrics,
-                                onDismiss = {
-                                        isShowingLyrics = false
-                                },
-                                ensureSongInserted = { Database.insertIgnore( mediaItem ) },
-                                size = 1000.dp,
-                                mediaMetadataProvider = mediaItem::mediaMetadata,
-                                durationProvider = player::getDuration,
-                                isLandscape = isLandscape,
-                                clickLyricsText = clickLyricsText,
-                            )
-                        if (!coverOverlayPolicy.visualizerOnCover)
-                            NextVisualizer(
-                                isDisplayed = isShowingVisualizer
-                            )
+                        LyricsScreen(
+                            mediaId = mediaItem.mediaId,
+                            isDisplayed = isShowingStandaloneLyrics,
+                            onDismiss = { isShowingLyrics = false },
+                            ensureSongInserted = { Database.insertIgnore(mediaItem) },
+                            size = 1000.dp,
+                            mediaMetadataProvider = mediaItem::mediaMetadata,
+                            durationProvider = player::getDuration,
+                            isLandscape = isLandscape,
+                            clickLyricsText = clickLyricsText,
+                            onCover = false,
+                            fadeHosted = true,
+                        )
+                    }
+                   val standaloneVisualizer = playerStandaloneVisualizerVisible(
+                        showthumbnail, isShowingVisualizer, coverOverlayPolicy.visualizerOnCover)
+                   GlassOverlayHost(
+                        active = standaloneVisualizer,
+                        settings = glassSettings,
+                        modifier = standaloneOverlayModifier,
+                        fadeDurationMillis = 500,
+                    ) {
+                        NextVisualizer(isDisplayed = standaloneVisualizer, onCover = false, fadeHosted = true)
                     }
                 }
 
                 },
                 information = {
-                PlayerInformationGlassBlock(modifier = Modifier
-                    .conditional(!glassSettings.enabled && !expandedplayer && !isShowingStandaloneLyrics && !(carousel && playerType == PlayerType.Modern)){weight(1f)}) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                PlayerInformationGlassBlock {
+                PlayerPortraitInformationLayout(
+                    artworkPrioritized = prioritizePortraitArtwork,
+                    weightedControls = weightedPortraitInformation,
+                    above = {
                 if (!expandedplayer || !isShowingStandaloneLyrics || queueDurationExpanded) {
                     if (showTotalTimeQueue) {
                         PlayerInformationGlassRegion("queueDuration") {
@@ -2590,8 +2585,7 @@ fun Player(
                             .height(10.dp)
                     )
                 }
-                Box(modifier = Modifier
-                    .conditional(!glassSettings.enabled && !expandedplayer && !isShowingStandaloneLyrics && !(carousel && playerType == PlayerType.Modern)){weight(1f)}) {
+                }, controls = {
                     val standaloneOverlay = isShowingStandaloneLyrics ||
                         (isShowingVisualizer && !coverOverlayPolicy.visualizerOnCover)
                     if (playerType == PlayerType.Essential || standaloneOverlay ||
@@ -2608,12 +2602,7 @@ fun Player(
                             duration = { durationState.value }
                         )
                     }
-                }
-
-                // Weighted native spacers collapse during the Glass minimum-content pass.
-                // Keep room for the information plate and transport envelopes on both sides.
-                if (glassSettings.enabled) Spacer(Modifier.height(40.dp))
-
+                }, below = {
                 if (!showthumbnail || playerType == PlayerType.Modern) {
                     if (!isShowingStandaloneLyrics || statsExpanded) {
                         StatsForNerds(
@@ -2624,7 +2613,7 @@ fun Player(
                     }
                 }
                 ActionsBar()
-              }
+              })
               }
                 }
             )
@@ -2854,12 +2843,14 @@ fun PagerState.LaunchedEffectScrollToPage(
     skipAnimation: Boolean = false,
 ) {
     val pagerState = this
-    val context = LocalContext.current
+    var synchronized by remember(pagerState) { mutableStateOf(false) }
     LaunchedEffect(playerUpdateTrigger, index) {
+        val animate = synchronized && !appRunningInBackground && playerContentVisible && !skipAnimation
+        synchronized = true
         val targetIndex = binder.player.currentMediaItemIndex
-        if (pagerState.currentPage != targetIndex || pagerState.targetPage != targetIndex) {
-            kotlinx.coroutines.delay(50)
-            if (!appRunningInBackground && playerContentVisible && !skipAnimation) {
+        if (pagerState.currentPage != targetIndex || pagerState.targetPage != targetIndex ||
+            (!pagerState.isScrollInProgress && kotlin.math.abs(pagerState.currentPageOffsetFraction) > 0.001f)) {
+            if (animate) {
                 pagerState.animateScrollToPage(
                     targetIndex,
                     animationSpec = tween(SLIDE_SETTLE_DURATION_MS, easing = FastOutSlowInEasing)

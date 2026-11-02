@@ -50,7 +50,51 @@ import org.robolectric.annotation.GraphicsMode
 class PlayerSeekWaveMarkerTest {
     @get:Rule val compose = createComposeRule()
 
-    @Test fun `both waveform cursors stay full height at rest and contract inside the captured Glass ball while pressed`() {
+    @Test @Config(qualifiers = "w360dp-h800dp-mdpi")
+    fun `visualizer resting marker matches audio waveform in their actual different height fields with Glass off and on`() {
+        shadowOf(ApplicationProvider.getApplicationContext<Application>()).grantPermissions(Manifest.permission.RECORD_AUDIO)
+        var glass by mutableStateOf(false)
+        compose.setContent {
+            val shape = RoundedCornerShape(16.dp)
+            CompositionLocalProvider(LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                typographyOf(Color.White, true, false, FontType.Rubik), shape, shape, shape)) {
+                val scope = rememberCoroutineScope()
+                val motion = remember { PlayerSeekGlassMotion(scope, .5f) }
+                val thumb = remember { PlayerSeekGlassThumb(motion) }
+                Column(Modifier.requiredWidth(300.dp).background(Color.Black)) {
+                    SeekBarStaticAudioWaves(uiMedia = null, position = 50, duration = 100,
+                        isPlaying = false, onPositionChange = {},
+                        modifier = Modifier.height(40.dp).testTag("waveform.reference"),
+                        glassThumb = if (glass) thumb else null)
+                    SeekBarVisualizer(isPlaying = false,
+                        progressPercentage = { ProgressPercentage(.5f) },
+                        playedColor = Color.White, notPlayedColor = Color.Gray, waveInteraction = {},
+                        modifier = Modifier.height(50.dp).testTag("visualizer.comparison"),
+                        glassThumb = if (glass) thumb else null)
+                }
+            }
+        }
+        fun markerSize(tag: String): Pair<Int, Int> {
+            val pixels = compose.onNodeWithTag(tag).captureToImage().toPixelMap()
+            fun lit(x: Int, y: Int) = pixels[x, y].let { it.red + it.green + it.blue > .15f }
+            // Eight dp above the baseline excludes both paused waveform amplitude fields.
+            val row = pixels.height / 2 - with(compose.density) { 8.dp.roundToPx() }
+            return (0 until pixels.width).count { lit(it, row) } to
+                (0 until pixels.height).count { lit(pixels.width / 2, it) }
+        }
+        val reference = markerSize("waveform.reference")
+        assertEquals(with(compose.density) { 2.dp.roundToPx() }, reference.first)
+        assertEquals(with(compose.density) { 40.dp.roundToPx() }, reference.second)
+        for (enabled in listOf(false, true)) {
+            compose.runOnIdle { glass = enabled }
+            assertEquals("Correct waveform marker stays unchanged with Glass=$enabled", reference,
+                markerSize("waveform.reference"))
+            assertEquals("Visualizer marker matches waveform with Glass=$enabled", reference,
+                markerSize("visualizer.comparison"))
+        }
+    }
+
+    @Test fun `both waveform cursors keep their full native height at rest and while Glass is pressed`() {
         shadowOf(ApplicationProvider.getApplicationContext<Application>()).grantPermissions(Manifest.permission.RECORD_AUDIO)
         var visualizer by mutableStateOf(false)
         var glass by mutableStateOf(false)
@@ -95,7 +139,7 @@ class PlayerSeekWaveMarkerTest {
             compose.runOnIdle { held = true }
             compose.mainClock.advanceTimeBy(700)
             assertMarker("capture", offsetDp = 12f, present = true)
-            assertMarker("capture", offsetDp = 18f, present = false)
+            assertMarker("capture", offsetDp = 18f, present = true)
             compose.runOnIdle { held = false }
             compose.mainClock.advanceTimeBy(700)
             assertMarker("source", offsetDp = 15f, present = true)

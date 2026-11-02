@@ -9,7 +9,6 @@ import app.n_zik.android.privacy.PermissionEventKind
 
 import androidx.compose.ui.draw.clip
 
-import app.n_zik.android.uiRoundnessShape
 
 import android.Manifest
 import android.content.Intent
@@ -26,7 +25,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -68,22 +66,15 @@ import painters.fft.FftBar
 import painters.fft.FftCBar
 import painters.fft.FftCLine
 import painters.fft.FftCWave
-import painters.fft.FftCWaveRgb
 import painters.fft.FlatWave
 import painters.fft.FftLine
 import painters.fft.FftWave
-import painters.fft.FftWaveRgb
-import painters.misc.Gradient
 import painters.misc.Icon
-import painters.modifier.Beat
-import painters.modifier.Blend
 import painters.modifier.Compose
-import painters.modifier.Glitch
 import painters.modifier.Move
 import painters.modifier.Shake
 import painters.modifier.Scale
 import painters.waveform.WfmAnalog
-import utils.Preset
 import utils.VisualizerHelper
 import views.VisualizerView
 import app.n_zik.android.typography
@@ -121,12 +112,12 @@ import androidx.palette.graphics.Palette
 
 @OptIn(UnstableApi::class)
 @Composable
-fun NextVisualizer(sceneBackground: Color = Color.Transparent) {
+fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean? = null) {
 
     val context = LocalContext.current
     val visualizerEnabled by rememberPreference(visualizerEnabledKey, false)
     val savedThumbnail by rememberPreference(showvisthumbnailKey, true)
-    val showThumbnail = LocalPlayerCoverOverlay.current || savedThumbnail
+    val showThumbnail = onCover ?: (LocalPlayerCoverOverlay.current || savedThumbnail)
 
     if (visualizerEnabled) {
 

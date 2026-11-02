@@ -2,67 +2,39 @@ package app.it.fast4x.rimusic.utils
 
 import android.os.SystemClock
 import androidx.annotation.OptIn
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
-import app.n_zik.android.R
 import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.kreate.android.themed.rimusic.screen.player.timeline.DurationIndicator
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.player.PENDING_SEEK_POLL_INTERVAL_MS
+import app.n_zik.android.components.player.PlayerTimelineSlot
 import app.n_zik.android.components.player.PlayerSeekGlass
+import app.n_zik.android.components.player.PlayerDurationBounds
+import app.n_zik.android.components.player.playerSeekBarBounds
 import app.n_zik.android.components.player.shouldReleasePendingSeekPosition
 import app.n_zik.android.components.player.skipBasePosition
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
-import app.it.fast4x.rimusic.enums.PauseBetweenSongs
 import app.it.fast4x.rimusic.enums.PlayerTimelineType
 import app.it.fast4x.rimusic.models.ui.UiMedia
-import app.n_zik.android.typography
 import app.n_zik.android.extensions.audiobar.views.ProgressPercentage
 import app.it.fast4x.rimusic.ui.components.SeekBar
 import app.n_zik.android.extensions.audiobar.views.SeekBarVisualizer
@@ -71,9 +43,7 @@ import app.it.fast4x.rimusic.ui.components.SeekBarCustom
 import app.it.fast4x.rimusic.ui.components.SeekBarThin
 import app.it.fast4x.rimusic.ui.components.SeekBarWaved
 import app.it.fast4x.rimusic.ui.styling.collapsedPlayerProgressBar
-import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.extensions.audiobar.views.SeekBarStaticAudioWaves
 
@@ -95,18 +65,11 @@ fun GetSeekBar(
     var scrubbingPosition by remember(mediaId) {
         mutableStateOf<Long?>(null)
     }
-    // Issue #881 (gh-881), Phase 3 Fix E: the tapped / skip-button seek target held on the bar
-    // until the player COMMITS the seek. Without it the bar snaps back to the stale player
-
-    // position on every seek (player reports the pre-seek position until the seek commits),
-    // the user-visible "l'ancienne position brièvement puis téléport" (field report 2026-10-03).
-
-    // Cleared by the release effect below (convergence / safety timeout) or by the next drag.
+    // Hold the requested position until the player commits it to avoid a stale-position jump.
     var pendingSeekTarget by remember(mediaId) {
         mutableStateOf<Long?>(null)
     }
-    // Issue #881 (gh-881), Phase 3.1: when the target was issued — lets the skip buttons
-    // decide AT TAP TIME whether the held target is still the right base (see skipBasePosition).
+    // Skip buttons validate this timestamp at tap time.
     var pendingSeekIssuedAtMs by remember(mediaId) {
         mutableLongStateOf(0L)
     }
@@ -116,42 +79,11 @@ fun GetSeekBar(
     }
     var transparentbar by rememberPreference(transparentbarKey, true)
     val scope = rememberCoroutineScope()
-    // Listen Together guest lock (spec-listen-together-guest-lock-hardening): a guest in a room
-    // cannot seek — the bar is fully INERT: the scrubber position is never captured (no visual
-
-    // jump) and no seek op is issued; every interaction attempt shows the throttled "the host
-    // controls playback" toast. The bar keeps full opacity and size — .alpha() must NOT be
-
-    // applied to this subtree: alpha < 1 promotes content to a compositing layer sized to the
-    // layout bounds and implicitly clips everything drawn outside them, which cut the Wavy bar's
-
-    // overflow drawing (15px-stroke wave + 15-20dp scrubber pill around a 6dp box) and made it
-    // look "crushed" (user feedback 2026-09-29, confirmed by the Modifier.alpha docs).
+    // Keep guests inert without alpha layers that would clip the waveform overflow.
     val ltGuestLocked = rememberListenTogetherGuestLock()
     val ltContext = LocalContext.current
 
-    // Issue #881 (gh-881), Phase 3 Fix E: release the held target once the player converges on
-    // it (see shouldReleasePendingSeekPosition) — or after the safety timeout if the seek never
-
-    // commits (error state). Keyed on the target: a new tap/drag restarts the effect with the
-    // new value, and remember(mediaId) drops it on track changes.
-
-    // Phase 3.2 (R2): the convergence source is the player's LIVE position, not the poll
-    // cache `position()`: while that cache was gated on sheet visibility it could freeze on
-
-    // a stale value — and converging on a frozen cache kept the hold alive until the 10 s
-    // safety timeout, chaining every subsequent skip tap from the stale value (field logs
-
-    // 2026-10-04). The player's own state is the release signal (RiMusic/Kreate check
-    // convergence against the player, never against a UI cache); the displayed value after
-
-    // release is re-anchored by positionAndDurationState's event writes (Phase 3.2 R1; the
-    // poll itself has been ungated since Phase 3.3).
-
-    // Invariant: the `position()` cache the bar renders from must be built from this SAME
-    // player instance (every call site feeds it from this binder's player) — the hold is
-
-    // released on the player's live position while the bar displays that cache.
+    // Check the live player, not the polling cache, so stalled polling cannot hold a seek.
     LaunchedEffect(pendingSeekTarget) {
         val target = pendingSeekTarget ?: return@LaunchedEffect
         val startedAtMs = SystemClock.elapsedRealtime()
@@ -169,10 +101,10 @@ fun GetSeekBar(
         }
     }
 
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+    PlayerTimelineSlot(
+        type = playerTimelineType,
         modifier = Modifier
+            .playerSeekBarBounds()
             .padding(horizontal = 10.dp)
             .fillMaxWidth()
     ) {
@@ -538,31 +470,33 @@ fun GetSeekBar(
 
     Spacer( modifier = Modifier.height( 8.dp ) )
 
-    DurationIndicator(
-        binder,
-        scrubbingPosition ?: pendingSeekTarget,
-        // Issue #881 (gh-881), Phase 3 Fix E (review patch): the skip buttons must compute
-        // their adjustment from the HELD target, not the stale player position — otherwise a
+    PlayerDurationBounds {
+        DurationIndicator(
+            binder,
+            scrubbingPosition ?: pendingSeekTarget,
+            // Issue #881 (gh-881), Phase 3 Fix E (review patch): the skip buttons must compute
+            // their adjustment from the HELD target, not the stale player position — otherwise a
 
-        // consecutive tap lands from the old position while the label shows the target.
-        scrubbingPosition ?: pendingSeekTarget ?: position(),
-        duration(),
-        // Issue #881 (gh-881), Phase 3 Fix E: skip-button seeks hold their target on the label
-        // until the player commits it (same pendingSeekTarget state as the bar taps).
-        onSeekIssued = { holdSeekTarget(it) },
-        // Issue #881 (gh-881), Phase 3.1: the skip base is read LIVE at tap time — the composed
-        // position above froze on the previous track after a screen-off track change (field
+            // consecutive tap lands from the old position while the label shows the target.
+            scrubbingPosition ?: pendingSeekTarget ?: position(),
+            duration(),
+            // Issue #881 (gh-881), Phase 3 Fix E: skip-button seeks hold their target on the label
+            // until the player commits it (same pendingSeekTarget state as the bar taps).
+            onSeekIssued = { holdSeekTarget(it) },
+            // Issue #881 (gh-881), Phase 3.1: the skip base is read LIVE at tap time — the composed
+            // position above froze on the previous track after a screen-off track change (field
 
-        // logs 2026-10-04), so every tap re-seeked to the same stale value ± 5/30 s.
-        seekBasePosition = {
-            skipBasePosition(
-                scrubbingMs = scrubbingPosition,
-                pendingTargetMs = pendingSeekTarget,
-                pendingHeldForMs = SystemClock.elapsedRealtime() - pendingSeekIssuedAtMs,
-                livePlayerPositionMs = binder.player.currentPosition,
-            )
-        },
-    )
+            // logs 2026-10-04), so every tap re-seeked to the same stale value ± 5/30 s.
+            seekBasePosition = {
+                skipBasePosition(
+                    scrubbingMs = scrubbingPosition,
+                    pendingTargetMs = pendingSeekTarget,
+                    pendingHeldForMs = SystemClock.elapsedRealtime() - pendingSeekIssuedAtMs,
+                    livePlayerPositionMs = binder.player.currentPosition,
+                )
+            },
+        )
+    }
 }
 
 

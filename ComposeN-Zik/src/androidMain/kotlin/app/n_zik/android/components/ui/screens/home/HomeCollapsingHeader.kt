@@ -33,6 +33,7 @@ import app.n_zik.android.components.navigation.LocalSideRailContentInsets
 import app.n_zik.android.components.navigation.nav.topNavigationBarShape
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.rememberGlassSettings
 import kotlin.math.roundToInt
@@ -165,6 +166,7 @@ internal fun HomeCollapsingHeader(
         ) {
             CompositionLocalProvider(
                 LocalGlassContainerBackdrop provides (sharedGlass?.surface ?: LocalGlassContainerBackdrop.current),
+                LocalGlassMaterialSource provides (sharedGlass?.list ?: LocalGlassMaterialSource.current),
                 LocalGlassBackdrop provides (sharedGlass?.surface ?: LocalGlassBackdrop.current),
             ) { content() }
         }

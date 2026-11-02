@@ -1,6 +1,7 @@
 package app.n_zik.android.components.glass
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
@@ -40,6 +41,7 @@ internal val LocalQueueListBackdrop = staticCompositionLocalOf<LayerBackdrop?> {
 internal val LocalQueueGlassBackdrop = staticCompositionLocalOf<Backdrop?> { null }
 internal val LocalQueueRowBackdrop = staticCompositionLocalOf<Backdrop?> { null }
 private val LocalQueueRowUnderlay = staticCompositionLocalOf<Backdrop?> { null }
+private val LocalQueuePanelHosted = staticCompositionLocalOf { false }
 internal val LocalEmbeddedQueueMini = staticCompositionLocalOf { false }
 private val IgnoreEmbeddedQueueRequest: () -> Unit = {}
 
@@ -62,16 +64,18 @@ fun GlassQueuePanel(
         LocalQueueListBackdrop provides if (capture) list else null,
         LocalQueueGlassBackdrop provides if (capture) visible else null,
         LocalQueueRowUnderlay provides underlay,
+        LocalQueuePanelHosted provides true,
     ) {
         Box(modifier, content = content)
     }
 }
 
-/** Reconstructs only the actual native queue fill over its isolated underlay, excluding all rows. */
+/** Reconstructs the queue's isolated underlay, excluding all rows and repeated Glass film. */
 @Composable
-internal fun rememberQueueRowGlassBackdrop(nativeFill: Color): Backdrop {
-    val fill = rememberCanvasBackdrop { drawRect(nativeFill) }
-    val underlay = LocalQueueRowUnderlay.current
+internal fun rememberQueueRowGlassBackdrop(nativeFill: Color, settings: GlassSettings = rememberGlassSettings()): Backdrop {
+    val color = queueContentBackground(nativeFill, settings)
+    val fill = rememberCanvasBackdrop { drawRect(color) }
+    val underlay = LocalQueueRowUnderlay.current ?: LocalGlassContainerBackdrop.current
     return if (underlay != null) rememberCombinedBackdrop(underlay, fill) else fill
 }
 
@@ -102,9 +106,10 @@ fun GlassQueueToolbar(
         GlassMaterialContainerScope(
             modifier = Modifier.matchParentSize(),
             sectionFilm = if (material) null else nativeColor,
+            materialSource = if (material) list ?: fallback else null,
             material = if (material) ({ exported ->
                 Modifier.glassMaterial(settings.forArea(GlassArea.Menus).copy(rim = 0f), shape,
-                    ownBackdrop = list ?: fallback, exportedBackdrop = exported, filmColor = nativeColor,
+                    ownBackdrop = list ?: fallback, exportedBackdrop = exported,
                     applyEdgeEffects = false, highlightAlpha = 0f, drawShadow = false)
             }) else null,
         ) { surface ->
@@ -167,12 +172,13 @@ fun QueueEmbeddedMini(content: @Composable () -> Unit) {
         LocalNativeQueueRows provides false,
         LocalGlassBackdrop provides (list ?: LocalGlassBackdrop.current),
         LocalGlassContainerBackdrop provides (list ?: LocalGlassContainerBackdrop.current),
+        LocalGlassMaterialSource provides (list ?: LocalGlassMaterialSource.current),
     ) {
         Box(Modifier.trackToastObstruction()) { content() }
     }
 }
 
-/** One inexpensive edge around the user's native queue fill; its original alpha is unchanged. */
+/** The shared material replaces the native queue fill only in material modes. */
 @Composable
 fun Modifier.glassQueuePanelBackground(
     originalColor: Color,
@@ -180,10 +186,29 @@ fun Modifier.glassQueuePanelBackground(
     settings: GlassSettings = rememberGlassSettings(),
 ): Modifier {
     val settings = settings.inScope(GlassScope.Queue)
+    if (settings.usesGlassMaterial(GlassArea.Menus)) {
+        val underlay = LocalGlassBackdrop.current
+        return glassMaterial(settings.forArea(GlassArea.Menus).copy(rim = 0f), shape, menu = true,
+            ownBackdrop = underlay, separateWindow = underlay == null,
+            applyEdgeEffects = false, drawShadow = false)
+            .glassAreaContour(settings, GlassArea.Menus, shape)
+    }
     val filled = background(originalColor)
     // Queue sheets meet the physical bottom edge, just like the other Menus panes.
     return filled.glassAreaContour(settings, GlassArea.Menus, shape)
 }
+
+/** The panel owns one film; a standalone queue owns its film on the list instead. */
+@Composable
+fun Modifier.glassQueueListBackground(originalColor: Color, settings: GlassSettings = rememberGlassSettings()): Modifier {
+    if (!queueToolbarUsesGlassMaterial(settings)) return background(originalColor)
+    return if (LocalQueuePanelHosted.current) this
+        else glassQueuePanelBackground(originalColor, RoundedCornerShape(0.dp), settings)
+}
+
+/** Native queue-type colours remain exact when the queue material is disabled. */
+internal fun queueContentBackground(originalColor: Color, settings: GlassSettings): Color =
+    if (queueToolbarUsesGlassMaterial(settings)) Color.Transparent else originalColor
 
 /** Always keep the same content group when toggling Glass so queue state is retained. */
 @Composable

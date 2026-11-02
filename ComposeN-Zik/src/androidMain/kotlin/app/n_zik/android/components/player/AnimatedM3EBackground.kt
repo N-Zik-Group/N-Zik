@@ -1,7 +1,7 @@
 
 package app.n_zik.android.components.player
 
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.remember
@@ -9,7 +9,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
@@ -33,7 +32,6 @@ import android.graphics.Path as AndroidPath
 import android.graphics.Matrix as AndroidMatrix
 import kotlin.math.abs
 import kotlin.math.sin
-import kotlin.math.cos
 import kotlin.math.PI
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -65,7 +63,8 @@ fun Modifier.animatedM3EBackground(
     M: Color,
     LM: Color,
     DM: Color,
-    skipToken: Any? = null
+    skipToken: Any? = null,
+    active: Boolean = true,
 ): Modifier = composed {
     val accumulatedTime = remember { mutableFloatStateOf(0f) }
 
@@ -79,14 +78,17 @@ fun Modifier.animatedM3EBackground(
     val latestSkipToken by rememberUpdatedState(skipToken)
 
     val visibilityTarget = m3eVisibilityTarget(animating, skipMaskActive, immediateSkipHide)
-    val visibilityProgress by animateFloatAsState(
-        targetValue = visibilityTarget,
-        animationSpec = tween(
-            durationMillis = if (visibilityTarget == 1f) 600 else if (skipMaskActive || immediateSkipHide) 150 else 600,
-            easing = FastOutSlowInEasing
-        ),
-        label = "visibility"
-    )
+    val visibilityAnimation = remember { Animatable(visibilityTarget) }
+    val visibilityProgress by visibilityAnimation.asState()
+    LaunchedEffect(active, visibilityTarget) {
+        if (active) visibilityAnimation.animateTo(
+            targetValue = visibilityTarget,
+            animationSpec = tween(
+                durationMillis = if (visibilityTarget == 1f) 600 else if (skipMaskActive || immediateSkipHide) 150 else 600,
+                easing = FastOutSlowInEasing
+            )
+        )
+    }
 
     val shapes = remember {
         val states = mutableListOf<ShapeConfig>()
@@ -129,12 +131,12 @@ fun Modifier.animatedM3EBackground(
     val context = LocalContext.current
 
     // Lazy shake detection - only active when animating and not disabled
-    DisposableEffect(animating) {
+    DisposableEffect(animating, active) {
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         var listener: SensorEventListener? = null
 
-        if (animating && accelerometer != null) {
+        if (animating && active && accelerometer != null) {
             val sensitivity = context.preferences.getEnum(shakeSensitivityThemeKey, ShakeSensitivityTheme.Disabled)
             if (sensitivity != ShakeSensitivityTheme.Disabled) {
                 var lastShakeTime = 0L
@@ -223,24 +225,23 @@ fun Modifier.animatedM3EBackground(
     }
 
     // Animation loop - physics simulation with grid-based collision
-    LaunchedEffect(animating) {
-        if (animating) {
+    LaunchedEffect(animating, active) {
+        if (animating && active) {
             val gridSize = 8
-            val grid = Array(gridSize * gridSize) { mutableListOf<ShapeConfig>() }
+            val grid = Array(gridSize * gridSize) { mutableListOf<Int>() }
 
-            var lastFrameTime = withFrameNanos { it }
-            while (true) {
-                val currentFrameTime = withFrameNanos { it }
-                val delta = ((currentFrameTime - lastFrameTime) / 1_000_000_000f).coerceAtMost(0.05f)
+            playerDecorationFrames { deltaNanos ->
+                val delta = (deltaNanos / 1_000_000_000f).coerceAtMost(0.05f)
 
                 // Clear grid
                 for (cell in grid) cell.clear()
 
                 // Assign shapes to grid cells
-                for (shape in shapes) {
+                for (index in shapes.indices) {
+                    val shape = shapes[index]
                     val cellX = ((shape.x * gridSize).toInt()).coerceIn(0, gridSize - 1)
                     val cellY = ((shape.y * gridSize).toInt()).coerceIn(0, gridSize - 1)
-                    grid[cellY * gridSize + cellX].add(shape)
+                    grid[cellY * gridSize + cellX].add(index)
                 }
 
                 // Collision detection - only check adjacent cells, process each pair once
@@ -254,10 +255,9 @@ fun Modifier.animatedM3EBackground(
                             val neighborX = cellX1 + dx
                             val neighborY = cellY1 + dy
                             if (neighborX in 0 until gridSize && neighborY in 0 until gridSize) {
-                                for (shape2 in grid[neighborY * gridSize + neighborX]) {
-                                    if (shape1 === shape2) continue
-                                    val j = shapes.indexOf(shape2)
+                                for (j in grid[neighborY * gridSize + neighborX]) {
                                     if (j <= i) continue
+                                    val shape2 = shapes[j]
                                     val ddx = shape2.x - shape1.x
                                     val ddy = shape2.y - shape1.y
                                     val distSq = ddx * ddx + ddy * ddy
@@ -310,7 +310,6 @@ fun Modifier.animatedM3EBackground(
                 }
 
                 accumulatedTime.floatValue += delta
-                lastFrameTime = currentFrameTime
             }
         }
     }
@@ -332,8 +331,6 @@ fun Modifier.animatedM3EBackground(
             Morph(poly, morphPolygons[(index + 1) % morphPolygons.size])
         }
     }
-
-    val cachedComposePaths = remember { List(18) { ComposePath() } }
 
     this.drawWithCache {
         val width = size.width
@@ -369,12 +366,12 @@ fun Modifier.animatedM3EBackground(
 
         val cachedMatrix = AndroidMatrix()
         val cachedPath = AndroidPath()
+        val cachedComposePath = cachedPath.asComposePath()
 
         onDrawBehind {
             val time = accumulatedTime.floatValue
             if (visibilityProgress <= 0.01f) return@onDrawBehind
 
-            var shapeIndex = 0
             shapes.forEach { shape ->
                 val scaleFactor = shape.radiusScale
                 val radius = scaleFactor * minDim
@@ -405,16 +402,11 @@ fun Modifier.animatedM3EBackground(
                         val morph = sequenceMorphs[morphIndex]
 
                         cachedPath.rewind()
-                        val legacyPath = morph.toPath(easedProgress, cachedPath)
+                        morph.toPath(easedProgress, cachedPath)
 
                         cachedMatrix.reset()
                         cachedMatrix.setScale(minDim, minDim)
-                        legacyPath.transform(cachedMatrix)
-
-                        // Reuse pre-allocated ComposePath to avoid per-frame allocation
-                        val cachedComposePath = cachedComposePaths[shapeIndex % cachedComposePaths.size]
-                        cachedComposePath.reset()
-                        cachedComposePath.addPath(legacyPath.asComposePath())
+                        cachedPath.transform(cachedMatrix)
                         cachedComposePath
                     } else {
                         basePaths[shape.type % basePaths.size]
@@ -426,7 +418,6 @@ fun Modifier.animatedM3EBackground(
                         blendMode = BlendMode.SrcOver
                     )
                 }
-                shapeIndex++
             }
         }
     }

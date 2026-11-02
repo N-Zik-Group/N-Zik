@@ -124,7 +124,7 @@ class PageButtonTest {
         }
         fun check(fill: Color) {
             val pixels = compose.onNodeWithTag("action").captureToImage().toPixelMap()
-            val expected = fill.copy(alpha = fill.alpha * glassFilmOpacity(.5f, overlay = false))
+            val expected = fill.copy(alpha = glassFilmOpacity(.5f, overlay = false))
                 .compositeOver(DefaultDarkColorPalette.background0)
             assertColor(expected, pixels[pixels.width / 4, pixels.height / 2])
             assertColor(Color.Magenta, pixels[pixels.width / 2, pixels.height / 2])

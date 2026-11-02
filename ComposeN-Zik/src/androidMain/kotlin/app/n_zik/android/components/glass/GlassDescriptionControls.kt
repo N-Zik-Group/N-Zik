@@ -14,7 +14,7 @@ import app.n_zik.android.uiRoundnessShape
 /** Native badges keep their filled icon; Glass draws only the sharp E over its own surface. */
 @Composable
 fun explicitBadgeIconId(settings: GlassSettings = rememberGlassSettings()): Int =
-    if (!LocalNativeQueueRows.current && (settings.usesGlassMaterial(GlassArea.ActionButtons) || settings.usesGlassContour(GlassArea.ActionButtons)))
+    if (settings.usesGlassMaterial(GlassArea.ActionButtons) || settings.usesGlassContour(GlassArea.ActionButtons))
         R.drawable.explicit_glass_glyph else R.drawable.explicit
 
 /** Shared translation bubble with the original active tint and both native callbacks. */
@@ -58,12 +58,12 @@ fun GlassDescriptionExpansion(
 fun Modifier.glassExplicitBadgeBackground(
     settings: GlassSettings = rememberGlassSettings(),
 ): Modifier {
-    if (LocalNativeQueueRows.current) return this
     if (!settings.usesGlassMaterial(GlassArea.ActionButtons) && !settings.usesGlassContour(GlassArea.ActionButtons)) return this
     // Transparent is the native fill, not an instruction to strip the shared Glass film.
     val interaction = remember { MutableInteractionSource() }
     // Keep a drag that starts on the badge without adding any click action.
     return retainGlassButtonGesture().glassButtonFeedback(interaction, uiRoundnessShape(),
         enabled = isGlassMotionAllowed(), retainPressUntilUp = true, drawHighlight = false)
-        .glassChipBackground(Color.Transparent, uiRoundnessShape(), settings, filmColor = null)
+        .glassChipBackground(Color.Transparent, uiRoundnessShape(), settings, filmColor = null,
+            allowInNativeQueue = true)
 }

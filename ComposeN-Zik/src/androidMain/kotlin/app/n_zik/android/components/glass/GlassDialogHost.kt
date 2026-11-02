@@ -109,7 +109,12 @@ internal fun GlassDialogWindow(
         val id = remember { Any() }
         NativeGlassOverlayCoverage(host, id)
         Dialog(onDismissRequest, properties = properties) {
+            val transparentSource = app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop {}
             CompositionLocalProvider(
+                LocalGlassBackdrop provides null,
+                LocalGlassOverlayBackdrop provides null,
+                LocalGlassContainerBackdrop provides transparentSource,
+                LocalGlassMaterialSource provides transparentSource,
                 LocalGlassOpticsEnabled provides true,
                 LocalGlassOpticsTransitionProgress provides 1f,
                 LocalGlassLiveFrame provides rememberGlassModalLiveFrameIfEnabled(
@@ -231,6 +236,7 @@ fun GlassDialogOverlayHost(host: GlassMenuHostState) {
                         covered = entry !== host.dialogs.entries.lastOrNull() || host.entry != null || host.nativeOverlays.isNotEmpty()),
                     LocalGlassUnderlayCovered provides (entry !== host.dialogs.entries.lastOrNull() || host.entry != null || host.nativeOverlays.isNotEmpty()),
                     LocalGlassBackdrop provides dimmedSource,
+                    LocalGlassMaterialSource provides dimmedSource,
                     LocalGlassOverlayBackdrop provides completedBackdrop,
                     LocalGlassDropdownBackdropOwner provides null,
                 ) {

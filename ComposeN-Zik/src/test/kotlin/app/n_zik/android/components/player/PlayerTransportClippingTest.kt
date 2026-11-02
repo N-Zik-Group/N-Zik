@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -22,6 +24,11 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
+import app.it.fast4x.rimusic.enums.FontType
+import app.it.fast4x.rimusic.ui.styling.Appearance
+import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
+import app.it.fast4x.rimusic.ui.styling.LocalAppearance
+import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.it.fast4x.rimusic.utils.playerInfoShowIconsKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.components.glass.GlassSettings
@@ -52,10 +59,11 @@ class PlayerTransportClippingTest {
         val geometry = PlayerTransportGeometry()
         val information = PlayerInformationBounds()
         var transport = Rect.Zero
-        compose.setContent {
+        compose.setContent { AppearanceProvider {
             CompositionLocalProvider(LocalPlayerTransportGeometry provides geometry,
                 LocalPlayerInformationBounds provides information) {
-                PlayerGlassBudgetLayout(enabled = false, expandedCarousel = true,
+                PlayerGlassBudgetLayout(
+                    enabled = false, expandedCarousel = true,
                     modifier = Modifier.requiredSize(300.dp, 500.dp).background(Color.White)
                         .playerTransportGeometryHost().testTag("native.viewport"),
                     header = { Box(Modifier.size(300.dp, 40.dp)) },
@@ -85,7 +93,7 @@ class PlayerTransportClippingTest {
                         }
                     })
             }
-        }
+        } }
         for (next in listOf(false, true, false)) {
             compose.runOnIdle { nextTrack.value = next }
             compose.waitForIdle()
@@ -117,24 +125,24 @@ class PlayerTransportClippingTest {
         val nextTrack = mutableStateOf(true)
         val modern = mutableStateOf(false)
         val geometry = PlayerTransportGeometry()
-        val information = PlayerInformationBounds()
         var transport = Rect.Zero
-        compose.setContent {
-            CompositionLocalProvider(LocalPlayerTransportGeometry provides geometry,
-                LocalPlayerInformationBounds provides information) {
+        compose.setContent { AppearanceProvider {
+            CompositionLocalProvider(LocalPlayerTransportGeometry provides geometry) {
                 Box(Modifier.requiredSize(300.dp, 300.dp).background(Color.White)
                     .playerTransportGeometryHost().testTag("viewport")) {
                     Column(Modifier.fillMaxSize()) {
-                        Box(Modifier.playerInfoAwareContentSize(modern.value, GlassSettings(enabled = true))
-                            .onGloballyPositioned { information.host = it; information.update() }) {
-                            Column {
-                                PlayerInformationGlassRegion("info") { Box(Modifier.size(300.dp, 30.dp)) }
-                                PlayerInformationGlassRegion("timeline") { Box(Modifier.size(300.dp, 30.dp)) }
-                                PlayerTransportCenter {
-                                    Box(Modifier.size(80.dp).background(Color.Magenta).onGloballyPositioned {
-                                        val origin = it.positionInRoot()
-                                        transport = Rect(origin.x, origin.y, origin.x + it.size.width, origin.y + it.size.height)
-                                    })
+                        PlayerInformationGlassBlock(landscape = false) {
+                            Box(Modifier.playerInfoAwareContentSize(modern.value, GlassSettings(enabled = true))
+                                .testTag("translated.controls")) {
+                                Column {
+                                    PlayerInformationGlassRegion("info") { Box(Modifier.size(300.dp, 30.dp)) }
+                                    PlayerInformationGlassRegion("timeline") { Box(Modifier.size(300.dp, 30.dp)) }
+                                    PlayerTransportCenter {
+                                        Box(Modifier.size(80.dp).background(Color.Magenta).onGloballyPositioned {
+                                            val origin = it.positionInRoot()
+                                            transport = Rect(origin.x, origin.y, origin.x + it.size.width, origin.y + it.size.height)
+                                        })
+                                    }
                                 }
                             }
                         }
@@ -146,22 +154,34 @@ class PlayerTransportClippingTest {
                     }
                 }
             }
-        }
+        } }
         for (isModern in listOf(false, true)) for (next in listOf(false, true)) {
             compose.runOnIdle { modern.value = isModern; nextTrack.value = next }
             compose.waitForIdle()
             val viewport = compose.onNodeWithTag("viewport").fetchSemanticsNode().boundsInRoot
             val density = compose.density.density
             val bottom = geometry.actionPanel?.top ?: error("Missing action panel")
-            assertEquals((70f * density + bottom - 80f * density) / 2f,
+            val plate = compose.onNodeWithTag("player.informationBlock.surface", useUnmergedTree = true)
+                .fetchSemanticsNode().boundsInRoot
+            assertEquals((plate.bottom - viewport.top + bottom - transport.height) / 2f,
                 transport.top - viewport.top, 1f)
+            val controls = compose.onNodeWithTag("translated.controls").fetchSemanticsNode().boundsInRoot
             assertTrue("Fixture must move transport below its original clipping boundary",
-                transport.bottom - viewport.top > 140f * density)
+                transport.bottom > controls.bottom + 1f)
             val pixels = compose.onNodeWithTag("viewport").captureToImage().toPixelMap()
             val x = (transport.center.x - viewport.left).toInt()
             val y = (transport.bottom - viewport.top - 5f * density).toInt()
             assertEquals("Lower transport stays visible: modern=$isModern next=$next",
                 Color.Magenta, pixels[x, y])
         }
+    }
+
+    @Composable private fun AppearanceProvider(content: @Composable () -> Unit) {
+        val shape = RoundedCornerShape(16.dp)
+        CompositionLocalProvider(LocalAppearance provides Appearance(
+            colorPalette = DefaultDarkColorPalette,
+            typography = typographyOf(Color.White, true, false, FontType.Rubik),
+            thumbnailShape = shape, uiRoundnessShape = shape, artistThumbnailShape = shape,
+        ), content = content)
     }
 }

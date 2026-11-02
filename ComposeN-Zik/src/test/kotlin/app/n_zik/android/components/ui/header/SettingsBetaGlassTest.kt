@@ -19,6 +19,7 @@ import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.Typography
 import app.n_zik.android.components.glass.GlassQuality
+import app.n_zik.android.components.glass.LocalGlassPreviewSettings
 import app.n_zik.android.components.glass.GlassSettings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -34,6 +35,30 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class SettingsBetaGlassTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `header badges honor ambient Glass settings without an explicit override`() {
+        val settings = mutableStateOf(GlassSettings(enabled = false, quality = GlassQuality.Performance))
+        compose.setContent {
+            CompositionLocalProvider(LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                Typography.fallback, CircleShape, CircleShape, CircleShape),
+                LocalGlassPreviewSettings provides settings.value) {
+                Box(Modifier.background(Color.Black)) {
+                    HeaderBadgeBox("DEBUG", Color.Blue, modifier = Modifier.testTag("default-badge"))
+                }
+            }
+        }
+        fun rim(): Color {
+            val pixels = compose.onNodeWithTag("default-badge").captureToImage().toPixelMap()
+            return pixels[pixels.width / 2, 0]
+        }
+        val bounds = compose.onNodeWithTag("default-badge").fetchSemanticsNode().boundsInRoot
+        val native = rim()
+        compose.runOnIdle { settings.value = settings.value.copy(enabled = true) }
+        assertTrue("header badges must adopt the current Glass material", rim().luminance() > native.luminance())
+        assertEquals(bounds, compose.onNodeWithTag("default-badge").fetchSemanticsNode().boundsInRoot)
+        compose.runOnIdle { settings.value = settings.value.copy(enabled = false) }
+        assertEquals(native, rim())
+    }
 
     @Test fun `settings beta gains the shared glass rim without changing its native footprint`() {
         val settings = mutableStateOf(GlassSettings(enabled = false, quality = GlassQuality.Performance))

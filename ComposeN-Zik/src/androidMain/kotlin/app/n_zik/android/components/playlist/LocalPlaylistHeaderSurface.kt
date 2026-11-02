@@ -6,6 +6,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.compositeOver
 import app.n_zik.android.components.glass.GlassRenderer
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
+import app.n_zik.android.components.glass.rememberInlineGlassBackdrop
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassFilmOpacity
 import app.n_zik.android.components.glass.glassNativeSurfaceTint
@@ -63,7 +65,9 @@ internal fun LocalPlaylistHeaderSurfaceScope(
     val uniform = rememberCanvasBackdrop { drawRect(visibleFill) }
     // The Tint renderer has no optical layer, so export its exact composite fill.
     val source = if (material && !fallback) export else uniform
-    CompositionLocalProvider(LocalGlassContainerBackdrop provides source) {
+    val materialSource = if (material) rememberInlineGlassBackdrop(palette.background0) else uniform
+    CompositionLocalProvider(LocalGlassContainerBackdrop provides source,
+        LocalGlassMaterialSource provides materialSource) {
         content(export.takeIf { material && !fallback })
     }
 }

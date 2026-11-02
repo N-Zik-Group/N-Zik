@@ -19,6 +19,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.runtime.CompositionLocalProvider
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.LocalGlassOverlayBackdrop
 import app.n_zik.android.components.glass.glassSceneOverlayBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
@@ -35,9 +36,7 @@ import app.n_zik.android.components.glass.glassSwipeActionBackground
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.rememberGlassSettings
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -53,7 +52,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -88,7 +86,6 @@ import app.it.fast4x.rimusic.utils.showLyricsStateKey
 import app.it.fast4x.rimusic.utils.showVisualizerStateKey
 import app.it.fast4x.rimusic.utils.saveLyricsStateKey
 import app.it.fast4x.rimusic.utils.saveVisualizerStateKey
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -126,7 +123,6 @@ import app.n_zik.android.components.menu.player.AudioDeviceMenu
 import app.n_zik.android.playback.services.AudioOutputManager
 import android.content.Intent
 import timber.log.Timber
-import android.content.pm.PackageManager
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.ui.components.themed.NowPlayingSongIndicator
@@ -167,11 +163,8 @@ import app.it.fast4x.rimusic.utils.showMiniPlayerVisualizerKey
 import app.it.fast4x.rimusic.utils.showMiniPlayerQueueKey
 import app.it.fast4x.rimusic.utils.showMiniPlayerVideoKey
 import app.it.fast4x.rimusic.utils.showMiniPlayerDiscoverKey
-import app.it.fast4x.rimusic.utils.playNext
-import app.it.fast4x.rimusic.utils.playPrevious
 import app.it.fast4x.rimusic.utils.shuffleQueue
 import app.it.fast4x.rimusic.utils.positionAndDurationState
-import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.shouldBePlaying
 import app.it.fast4x.rimusic.enums.QueueLoopType
@@ -576,12 +569,19 @@ private fun MiniPlayerContent(
     val useGlass = glass.usesGlassMaterial(GlassArea.MiniPlayer)
     val inQueue = LocalEmbeddedQueueMini.current
     val parentMaterial = LocalGlassContainerBackdrop.current
-    val glassBackdrop = if (inQueue) parentMaterial else LocalGlassMenuHost.current?.backdrop
+    val glassBackdrop = if (inQueue) parentMaterial else LocalGlassMenuHost.current?.let {
+        it.miniPlayerBackdrop ?: it.backdrop
+    }
     val controlsBackdrop = rememberLayerBackdrop()
     val miniBodyProgress = { if (inQueue) 0f else playerSheetState.progress }
     val controlMaterial = rememberMiniPlayerControlBackdrop(
         if (useGlass) parentMaterial else null, controlsBackdrop, miniBodyProgress,
     )
+    // Controls apply their optics once to the same source as the body. Native bodies
+    // still export their actual fill/progress for independently enabled child badges.
+    val controlSource = if (!useGlass) controlMaterial
+        else if (glassBackdrop === parentMaterial) LocalGlassMaterialSource.current ?: glassBackdrop
+        else glassBackdrop
     val visibleMiniPlayerBackdrop = rememberLayerBackdrop()
     val shape = uiRoundnessShape()
 
@@ -590,8 +590,7 @@ private fun MiniPlayerContent(
     SwipeToDismissBox(
         modifier = Modifier
             .padding(horizontal = 16.dp * (1f - compactProgress))
-            .shadow(elevation = if (isFloating && !useGlass) 8.dp else 0.dp, shape = shape)
-            .clip(shape),
+            .shadow(elevation = if (isFloating && !useGlass) 8.dp else 0.dp, shape = shape),
         enableDismissFromStartToEnd = sheetGestureState.isAtRest,
         enableDismissFromEndToStart = sheetGestureState.isAtRest,
         // Switched off once the action ran: that ends a drag the finger keeps alive, so the box
@@ -617,6 +616,7 @@ private fun MiniPlayerContent(
             Row(
                 modifier = Modifier
                     .fillMaxSize()
+                    .clip(shape)
                     .glassSwipeActionBackground(
                         originalColor = miniPlayerSwipeBackgroundColor(glass, isSwipeRevealed,
                             surfaceColor(colorPalette().background1)),
@@ -661,7 +661,7 @@ private fun MiniPlayerContent(
         BoxWithConstraints(
             modifier = Modifier
                 .layerBackdrop(visibleMiniPlayerBackdrop)
-                .clip(shape).combinedClickable(
+                .combinedClickable(
                     onLongClick = {
                         requestQueue?.invoke() ?: navController?.navigate(NavRoutes.queue.name)
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -677,6 +677,7 @@ private fun MiniPlayerContent(
         ) {
             val availableMiniWidth = maxWidth
             Box(Modifier.matchParentSize()
+                .clip(shape)
                 .glassMiniPlayerBodyVisibility(glass, miniBodyProgress)
                 .glassMiniPlayerBackground(
                     glass, shape, glassBackdrop, surfaceColor(colorPalette.background2),
@@ -700,6 +701,7 @@ private fun MiniPlayerContent(
             CompositionLocalProvider(
                 LocalGlassBackdrop provides controlMaterial,
                 LocalGlassContainerBackdrop provides controlMaterial,
+                LocalGlassMaterialSource provides controlSource,
                 LocalGlassOverlayBackdrop provides glassSceneOverlayBackdrop(visibleMiniPlayerBackdrop),
             ) {
             Spacer(

@@ -1,6 +1,8 @@
 package app.n_zik.android.components.navigation.header
 
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.headerGlassMotionVisualOutset
@@ -120,24 +122,29 @@ class AppHeader(
             // Restore TopAppBar's default content coloring behavior for action buttons
             CompositionLocalProvider(
                 LocalContentColor provides colorPalette().text,
-                LocalGlassBackdrop provides controlsBackdrop,
             ) {
-                // Glass Back fades in at its anchor; only the title's reserved space expands.
-                HeaderBackSlot(visible = !isHome, glass = glassEnabled) {
-                    Box(Modifier.padding(end = 8.dp)) {
-                        HeaderIcon(R.drawable.chevron_back, colorPalette().favoritesIcon, onClick = onAppBack)
+                HeaderControlsGlassSources(
+                    controlsBackdrop = controlsBackdrop,
+                    ownsMaterial = standaloneGlass || sharedHomeGlass != null || hasTopGlassBackdrop,
+                    materialSource = sharedHomeGlass?.list,
+                ) {
+                    // Glass Back fades in at its anchor; only the title's reserved space expands.
+                    HeaderBackSlot(visible = !isHome, glass = glassEnabled) {
+                        Box(Modifier.padding(end = 8.dp)) {
+                            HeaderIcon(R.drawable.chevron_back, colorPalette().favoritesIcon, onClick = onAppBack)
+                        }
                     }
-                }
     
-                // Logo + Title — shifts right smoothly as back button expands.
-                // Takes the full remaining width (weight, fill) so its extras can
+                    // Logo + Title — shifts right smoothly as back button expands.
+                    // Takes the full remaining width (weight, fill) so its extras can
 
-                // collapse behind the logo instead of compressing the action bar, which
-                // stays pinned to the right edge.
-                CollapsingAppTitle(navController, context, Modifier.weight(1f))
+                    // collapse behind the logo instead of compressing the action bar, which
+                    // stays pinned to the right edge.
+                    CollapsingAppTitle(navController, context, Modifier.weight(1f))
 
-                // Action icons (search, settings…)
-                ActionBar(navController)
+                    // Action icons (search, settings…)
+                    ActionBar(navController)
+                }
             }
         }
         }
@@ -158,4 +165,22 @@ class AppHeader(
         }
         }
     }
+}
+
+/** Keep the visible header export separate from the input used to render each control once. */
+@Composable
+internal fun HeaderControlsGlassSources(
+    controlsBackdrop: Backdrop?,
+    ownsMaterial: Boolean,
+    materialSource: Backdrop? = null,
+    content: @Composable () -> Unit,
+) {
+    val raw = if (ownsMaterial) materialSource ?: LocalGlassMaterialSource.current
+        ?: LocalGlassContainerBackdrop.current ?: LocalGlassBackdrop.current else controlsBackdrop
+    CompositionLocalProvider(
+        LocalGlassBackdrop provides controlsBackdrop,
+        LocalGlassContainerBackdrop provides (if (ownsMaterial) controlsBackdrop else LocalGlassContainerBackdrop.current),
+        LocalGlassMaterialSource provides raw,
+        content = content,
+    )
 }

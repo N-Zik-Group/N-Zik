@@ -55,6 +55,9 @@ import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.canHostGlassDialog
 import app.n_zik.android.components.glass.glassRenderer
 import app.n_zik.android.components.glass.GlassMaterialContainerColumn
+import app.n_zik.android.components.glass.LocalGlassBackdrop
+import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 
 /** Shared dialog surface with bounded width and height. */
 @Composable
@@ -79,7 +82,8 @@ fun DialogFrame(
     val glass = rememberGlassSettings()
     val glassHost = LocalGlassMenuHost.current
     val sameWindow = glassHost?.dialogs?.windowRoot === LocalView.current.rootView
-    val useGlass = canHostGlassDialog(glass, glassRenderer(glass), sameWindow && glassHost?.modalBackdrop != null)
+    val useGlass = glass.usesGlassMaterial(GlassArea.Dialogs)
+    val useSharedHost = canHostGlassDialog(glass, glassRenderer(glass), sameWindow && glassHost?.modalBackdrop != null)
     val shape = uiRoundnessShape()
     val surface = surfaceColor(colorPalette().background1)
     val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
@@ -90,7 +94,7 @@ fun DialogFrame(
         if (isLandscape) Dialog.MAX_HEIGHT_LANDSCAPE else Dialog.MAX_HEIGHT_PORTRAIT
 
     GlassDialogWindow(
-        useSharedHost = useGlass,
+        useSharedHost = useSharedHost,
         onDismissRequest = { if (presentation.interactive) onDismiss() },
         properties = DialogProperties(
             usePlatformDefaultWidth = false,
@@ -98,7 +102,9 @@ fun DialogFrame(
             dismissOnClickOutside = interactive
         )
     ) {
-        if (!useGlass) NativeDialogDimming(presentation)
+        if (!useSharedHost) NativeDialogDimming(presentation)
+        val transparentSource = rememberCanvasBackdrop {}
+        val materialSource = if (useSharedHost) LocalGlassBackdrop.current else transparentSource
         val focusManager = LocalFocusManager.current
         LaunchedEffect(interactive) { if (!interactive) focusManager.clearFocus(force = true) }
         CompositionLocalProvider(
@@ -157,10 +163,12 @@ fun DialogFrame(
                     elevation = CardDefaults.cardElevation(defaultElevation = if (useGlass) 0.dp else 8.dp)
                 ) {
                     GlassMaterialContainerColumn(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().testTag(if (useGlass) "dialogFrameGlass" else "dialogFrameNative"),
                         sectionFilm = if (useGlass) null else surface,
+                        materialSource = if (useGlass) materialSource else null,
                         material = if (useGlass) ({ exported -> Modifier.glassMaterial(
                             glass.forArea(GlassArea.Dialogs), shape, menu = true, filmColor = surface,
+                            ownBackdrop = materialSource, separateWindow = !useSharedHost,
                             excludeBottomRim = false,
                             exportedBackdrop = exported,
                         ) }) else null,

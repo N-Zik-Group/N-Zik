@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.height
@@ -348,6 +349,57 @@ class GlassOverlayControlsTest {
         }
     }
 
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `standalone fades show intermediate frames and dispose inactive content with input stopped immediately`() {
+        val active = mutableStateOf(false)
+        var mounts = 0
+        var disposals = 0
+        var clicks = 0
+        var durationMillis: Int? = null
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            Box(Modifier.size(100.dp).background(Color.Blue).testTag("fade.viewport")) {
+                val transition = rememberOverlayTransition(active.value)
+                if (transition.hasOverlayContent) {
+                    GlassOverlayHost(active.value, GlassSettings(enabled = true),
+                        fadeDurationMillis = durationMillis, transitionState = transition) {
+                        DisposableEffect(Unit) { mounts++; onDispose { disposals++ } }
+                        Box(Modifier.fillMaxSize().background(Color.Red).clickable { clicks++ })
+                    }
+                }
+            }
+        }
+        fun red() = compose.onNodeWithTag("fade.viewport").captureToImage()
+            .toPixelMap().let { it[it.width / 2, it.height / 2].red }
+        compose.runOnIdle { assertEquals("Inactive content has never been mounted", 0, mounts) }
+        for (duration in listOf(null, 500)) {
+            val halfDuration = (duration ?: 300) / 2L
+            compose.runOnIdle { durationMillis = duration; active.value = true }
+            compose.waitForIdle()
+            compose.mainClock.advanceTimeByFrame()
+            compose.mainClock.advanceTimeBy(halfDuration)
+            assertTrue("Opening has a real intermediate optical frame", red() in .1f.. .9f)
+            compose.mainClock.advanceTimeBy(600)
+            assertTrue(red() > .95f)
+            compose.onNodeWithTag("fade.viewport").performTouchInput { click() }
+            compose.runOnIdle { assertEquals(1, clicks); active.value = false }
+            compose.waitForIdle()
+            compose.mainClock.advanceTimeByFrame()
+            compose.mainClock.advanceTimeBy(halfDuration)
+            assertTrue("Closing retains a real intermediate optical frame", red() in .1f.. .9f)
+            compose.onNodeWithTag("fade.viewport").performTouchInput { click() }
+            compose.runOnIdle { assertEquals("Closing cannot activate child controls", 1, clicks) }
+            compose.mainClock.advanceTimeBy(600)
+            compose.runOnIdle {
+                assertEquals("Each inactive expensive subtree is disposed", mounts, disposals)
+                clicks = 0
+            }
+            assertTrue(red() < .05f)
+        }
+        compose.runOnIdle { assertEquals(2, mounts); assertEquals(2, disposals) }
+    }
 
     private class OverlayCanvasView(context: Context) : View(context) {
         override fun onDraw(canvas: Canvas) { canvas.drawColor(android.graphics.Color.CYAN) }

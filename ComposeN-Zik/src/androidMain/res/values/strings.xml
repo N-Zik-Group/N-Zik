@@ -2720,6 +2720,7 @@
     <string name="glass_destination_shared">Shared elements</string>
     <string name="glass_role_player_header">Player · information panel</string>
     <string name="glass_role_player_information">Player · information controls</string>
+    <string name="glass_role_player_favorite">Player · favorite beside the title</string>
     <string name="glass_role_player_time">Player · time and duration</string>
     <string name="glass_role_player_seek">Player · timeline indicator</string>
     <string name="glass_role_player_transport">Player · playback controls</string>
@@ -2762,6 +2763,7 @@
     <string name="glass_mini_player_description">The small player with the song cover and playback buttons.</string>
     <string name="glass_role_player_header_description">The large panel behind the song title, artist and progress bar.</string>
     <string name="glass_role_player_information_description">The Album and Artist buttons beside the song title.</string>
+    <string name="glass_role_player_favorite_description">The heart beside the song title, independently of the information panel and playback controls.</string>
     <string name="glass_role_player_time_description">The listening-time label and the buttons beside the song times.</string>
     <string name="glass_role_player_seek_description">The handle you drag along the progress bar to move through a song.</string>
     <string name="glass_role_player_transport_description">The Like, Previous, Play, Next and Repeat buttons.</string>

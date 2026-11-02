@@ -12,10 +12,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
@@ -27,6 +28,9 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.addPointerInputChange
@@ -41,11 +45,14 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import app.n_zik.android.components.player.rememberMiniPlayerPlacementMotion
 import app.n_zik.android.components.player.LocalPlayerSheetGlassTransition
 import app.n_zik.android.components.player.rememberPlayerSheetGlassTransition
+import app.n_zik.android.components.player.MiniPlayerFeedbackOverflow
+import app.n_zik.android.components.player.LocalMiniPlayerFeedbackOverflow
 
 /**
  * Géométrie de la carte "deploy" à un instant t (progress p).
@@ -259,24 +266,31 @@ fun CustomBottomSheet(
     val endInset = { (collapsedEndInsetProvider?.invoke() ?: collapsedEndInset).coerceAtLeast(0.dp) }
     val horizontalPadding = { (collapsedHorizontalPaddingProvider?.invoke() ?: 16.dp).coerceAtLeast(0.dp) }
     val baseShape = app.n_zik.android.uiRoundnessShape()
+    val layoutDirection = LocalLayoutDirection.current
     val scope = rememberCoroutineScope()
     val glass = rememberGlassSettings()
     val miniPlayerGlass = glass.usesGlassMaterial(GlassArea.MiniPlayer)
     val transition = rememberPlayerSheetGlassTransition(state)
     // Retain the source at the endpoint until the shared handoff has finished.
     val deployBackdrop = rememberLayerBackdrop()
-    val pageBackdrop = LocalGlassMenuHost.current?.backdrop
+    val glassHost = LocalGlassMenuHost.current
+    val pageBackdrop = glassHost?.miniPlayerBackdrop ?: glassHost?.backdrop
 
     // Elevated surface: the deployed card stays on the mini-player's surface
     // color (dark gray in pitch black) instead of pure black
     val miniPlayerColor = surfaceColor(colorPalette().background2)
     val anchoredAtTop = topPadding != null
     val animatedPlacement = rememberMiniPlayerPlacementMotion(placementKey)
+    val feedbackOverflow = remember { MiniPlayerFeedbackOverflow() }
+    var sheetCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var miniCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     CompositionLocalProvider(
         LocalPlayerSheetGlassTransition provides transition,
         LocalGlassContainerBackdrop provides
             if (miniPlayerGlass && state.progress > 0f) deployBackdrop else LocalGlassContainerBackdrop.current,
+        LocalGlassMaterialSource provides
+            if (miniPlayerGlass && state.progress > 0f) pageBackdrop else LocalGlassMaterialSource.current,
     ) {
     Box(
         modifier = modifier
@@ -294,6 +308,10 @@ fun CustomBottomSheet(
                 translationY = (animatedPlacement(collapsedY + offset) - offset) *
                     (1f - state.progress.coerceIn(0f, 1f)) + offset
             }
+            .onGloballyPositioned { sheetCoordinates = it }
+            // The exact card still bounds ordinary input. Only a currently animated mini
+            // control contributes its own visual rectangle to the mask; idle navigation
+            // and the full player's clip retain the original geometry.
             // ── Clip to the exact animated card rect (same geometry as drawBehind) ──
             // MUST precede the pointerInput below: the hit-test walks this chain
 
@@ -319,7 +337,10 @@ fun CustomBottomSheet(
                     startInsetPx = startInset().toPx(),
                     endInsetPx = endInset().toPx(),
                 )
-                shape = CardClipShape(geometry)
+                val feedbackClip = feedbackOverflow.clipFrame(CardClipShape(geometry), sheetCoordinates,
+                    size, layoutDirection, this)
+                shape = feedbackClip.shape
+                outsets = feedbackClip.outsets
                 clip = true
             }
             .pointerInput(state, isExpandable, disableDismiss, anchoredAtTop) {
@@ -428,6 +449,12 @@ fun CustomBottomSheet(
                 }
                 .graphicsLayer {
                     alpha = playerContentFade(state.progress)
+                    val p = state.progress.coerceIn(0f, 1f)
+                    val corner = collapsedCardCornerPx(baseShape, size, collapsedHeight().toPx(),
+                        horizontalPadding().toPx(), startInset().toPx(), endInset().toPx(), this)
+                    shape = CardClipShape(computeCardGeometry(p, size, collapsedHeight().toPx(),
+                        horizontalPadding().toPx(), corner, 28.dp.toPx(), startInset().toPx(), endInset().toPx()))
+                    clip = true
                 },
             content = content
         )
@@ -466,12 +493,13 @@ fun CustomBottomSheet(
                         onClick = { if (isExpandable) state.expandSoft() },
                     )
                     .fillMaxWidth()
+                    .onGloballyPositioned { miniCoordinates = it }
                     .graphicsLayer {
                         alpha = miniPlayerContentFade(state.progress, miniPlayerGlass)
                         if (state.progress > 0.01f) {
                             val baseCornerPx = collapsedCardCornerPx(baseShape, size, collapsedHeight().toPx(),
                                 horizontalPadding().toPx(), density = this)
-                            shape = CardClipShape(
+                            val collapsedClip = CardClipShape(
                                 computeCardGeometry(
                                     p = 0f,
                                     size = size,
@@ -481,10 +509,18 @@ fun CustomBottomSheet(
                                     corner28Px = 28.dp.toPx(),
                                 )
                             )
+                            val feedbackClip = feedbackOverflow.clipFrame(collapsedClip, miniCoordinates,
+                                size, layoutDirection, this)
+                            shape = feedbackClip.shape
+                            outsets = feedbackClip.outsets
                             clip = true
                         }
                     },
-                content = collapsedContent,
+                content = {
+                    CompositionLocalProvider(LocalMiniPlayerFeedbackOverflow provides feedbackOverflow) {
+                        collapsedContent()
+                    }
+                },
             )
         }
     }

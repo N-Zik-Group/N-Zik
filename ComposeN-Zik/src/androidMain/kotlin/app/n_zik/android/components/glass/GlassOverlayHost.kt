@@ -107,6 +107,9 @@ class GlassMenuHostState {
     var exitGeneration by mutableStateOf(0L)
         private set
     var backdrop by mutableStateOf<Backdrop?>(null)
+    // Navigation-complete source for the sibling mini-player, excluding all player pixels.
+    var miniPlayerBackdrop by mutableStateOf<Backdrop?>(null)
+        internal set
     // Chrome samples the page; overlays sample the completed page plus its chrome.
     var overlayBackdrop by mutableStateOf<Backdrop?>(null)
     // The activity scene includes siblings outside navigation, notably the full/mini player.
@@ -371,6 +374,7 @@ private fun GlassOverlayEntry(host: GlassMenuHostState, entry: GlassMenuEntry) {
             )
             CompositionLocalProvider(
                 LocalGlassBackdrop provides dimmedSource,
+                LocalGlassMaterialSource provides if (glassEnabled) dimmedSource else nativeMaterial,
                 LocalGlassOverlayBackdrop provides completedBackdrop,
                 LocalGlassContainerBackdrop provides if (glassEnabled) menuMaterial else nativeMaterial,
                 LocalGlassDropdownBackdropOwner provides remember(host, entry.id, source) {

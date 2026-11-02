@@ -57,6 +57,12 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassAreaMode
 import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.GlassScope
+import app.n_zik.android.components.glass.GlassContextArea
+import app.n_zik.android.components.glass.GlassQuality
+import app.n_zik.android.components.glass.glassMaterial
+import app.n_zik.android.components.glass.LocalGlassPreviewSettings
+import androidx.compose.ui.graphics.compositeOver
 import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.glassFilmKey
 import app.n_zik.android.components.glass.glassRimKey
@@ -395,6 +401,81 @@ class PlayerTransportGlassTest {
         for (tag in listOf("ordinary", "ribbed")) {
             val pixels = compose.onNodeWithTag(tag).captureToImage().toPixelMap()
             assertEquals(Color.Black, pixels[pixels.width / 2, pixels.height / 2])
+        }
+    }
+
+    @Test fun `transport and Essential play share configured film instead of native colour opacity`() {
+        val film = mutableStateOf(0f)
+        val material = mutableStateOf(true)
+        val native = Color.Red.copy(alpha = .2f)
+        compose.setContent {
+            AppearanceProvider {
+                val shape = RoundedCornerShape(0.dp)
+                val settings = GlassSettings(quality = GlassQuality.Performance, film = film.value, rim = 0f,
+                    areaModes = mapOf(GlassArea.ActionButtons to GlassAreaMode.Disabled),
+                    contextModes = mapOf(GlassContextArea(GlassScope.PlayerTransport, GlassArea.ActionButtons) to
+                        if (material.value) GlassAreaMode.GlassOnly else GlassAreaMode.Disabled))
+                Row(Modifier.background(Color.Black)) {
+                    Box(Modifier.size(60.dp).testTag("transport.film")
+                        .playerTransportFilledBackground(native, shape, settings))
+                    Box(Modifier.size(60.dp).testTag("essential.film")
+                        .playerTransportPlayBackground(PlayerPlayButtonType.Default, native, settings))
+                    Box(Modifier.size(100.dp).testTag("ribbed.film")) {
+                        PlayerTransportRibbedSurface(native, settings = settings)
+                    }
+                    Box(Modifier.size(60.dp).testTag("shared.film")
+                        .glassMaterial(settings, shape, separateWindow = true))
+                }
+            }
+        }
+        fun center(tag: String): Color {
+            val image = compose.onNodeWithTag(tag).captureToImage().toPixelMap()
+            return image[image.width / 2, image.height / 2]
+        }
+        for (opacity in listOf(0f, .5f, 1f)) {
+            compose.runOnIdle { film.value = opacity }
+            for (tag in listOf("transport.film", "essential.film", "ribbed.film")) {
+                val expected = center("shared.film")
+                val actual = center(tag)
+                assertEquals(expected.red, actual.red, .02f)
+                assertEquals(expected.green, actual.green, .02f)
+                assertEquals(expected.blue, actual.blue, .02f)
+            }
+        }
+        compose.runOnIdle { material.value = false }
+        for (tag in listOf("transport.film", "essential.film")) {
+            val expected = native.compositeOver(Color.Black)
+            val actual = center(tag)
+            assertEquals(expected.red, actual.red, .02f)
+            assertEquals(expected.green, actual.green, .02f)
+            assertEquals(expected.blue, actual.blue, .02f)
+        }
+    }
+
+    @Test fun `Modern ribbed background gate follows transport override independently of shared actions`() {
+        val sharedMode = mutableStateOf(GlassAreaMode.GlassOnly)
+        compose.setContent {
+            AppearanceProvider {
+                val settings = GlassSettings(quality = GlassQuality.Performance, film = 0f, rim = 0f,
+                    areaModes = mapOf(GlassArea.ActionButtons to sharedMode.value),
+                    contextModes = mapOf(GlassContextArea(GlassScope.PlayerTransport, GlassArea.ActionButtons) to
+                        GlassAreaMode.GlassOnly))
+                CompositionLocalProvider(LocalGlassPreviewSettings provides settings) {
+                    Row(Modifier.background(Color.White)) {
+                        ControlsModern(binder, { 0L }, 1f, false, false,
+                            PlayerPlayButtonType.CircularRibbed, false, {}, DefaultDarkColorPalette)
+                    }
+                }
+            }
+        }
+        val play = compose.onAllNodes(hasClickAction())[1]
+        val baseline = play.captureToImage().toPixelMap()
+        compose.runOnIdle { sharedMode.value = GlassAreaMode.Disabled }
+        val overridden = play.captureToImage().toPixelMap()
+        assertEquals(baseline.width, overridden.width)
+        assertEquals(baseline.height, overridden.height)
+        for (y in 0 until baseline.height) for (x in 0 until baseline.width) {
+            assertEquals("Transport override at $x,$y", baseline[x, y], overridden[x, y])
         }
     }
 

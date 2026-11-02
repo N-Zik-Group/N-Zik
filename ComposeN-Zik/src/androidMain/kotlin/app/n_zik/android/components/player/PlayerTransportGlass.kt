@@ -75,7 +75,8 @@ fun playerTransportPlayShape(type: PlayerPlayButtonType, rotation: Float = 0f): 
     }
 }
 
-/** Passive transport material; the original control retains its sole gesture owner. */
+/** Passive transport material; native fills never override the shared Glass film. */
+@Suppress("UNUSED_PARAMETER") // Native-colour callers keep their source-compatible signature.
 @Composable
 fun Modifier.playerTransportSurface(
     filmColor: Color? = null,
@@ -85,7 +86,7 @@ fun Modifier.playerTransportSurface(
     val settings = settings.inScope(GlassScope.PlayerTransport)
     return if (settings.usesGlassMaterial(GlassArea.ActionButtons)) {
         glassMaterial(settings.forArea(GlassArea.ActionButtons), shape,
-            ownBackdrop = LocalGlassContainerBackdrop.current, filmColor = filmColor,
+            ownBackdrop = LocalGlassContainerBackdrop.current,
             separateWindow = LocalGlassContainerBackdrop.current == null)
     } else glassAreaContour(settings, GlassArea.ActionButtons, shape)
 }
@@ -249,6 +250,7 @@ fun Modifier.playerTransportPlayBackground(
 }
 
 /** Uses the existing scene through the artwork's alpha-derived outline, without capturing a control. */
+@Suppress("UNUSED_PARAMETER") // The native artwork still owns this colour when Glass is disabled.
 @Composable
 fun PlayerTransportRibbedSurface(
     filmColor: Color,
@@ -276,7 +278,7 @@ fun PlayerTransportRibbedSurface(
     // The exact clip, SDF lens and normal highlight share the same rotating local coordinates.
     Box(modifier.size(100.dp).clip(PlayerTransportRibbedShape)
         .glassMaterial(settings.forArea(GlassArea.ActionButtons).copy(rim = 0f), PlayerTransportRibbedShape,
-            ownBackdrop = LocalGlassContainerBackdrop.current, filmColor = filmColor,
+            ownBackdrop = LocalGlassContainerBackdrop.current,
             separateWindow = LocalGlassContainerBackdrop.current == null,
             applyEdgeEffects = false, drawShadow = false, customLens = customLens)
         .playerRibbedHighlight(settings, field, opticsProgress)

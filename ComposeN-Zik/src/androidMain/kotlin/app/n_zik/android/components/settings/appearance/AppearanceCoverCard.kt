@@ -51,7 +51,7 @@ import app.it.fast4x.rimusic.ui.styling.BoundedCornerSize
 import app.it.fast4x.rimusic.utils.uiRoundnessDpKey
 import androidx.compose.foundation.shape.CircleShape
 import app.n_zik.android.components.glass.PageTextButton as TextButton
-import app.it.fast4x.rimusic.utils.thumbnailSizeLDpKey
+import app.n_zik.android.components.player.rememberPlayerLandscapeArtworkSize
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.foundation.layout.Row
 import app.it.fast4x.rimusic.utils.thumbnailSizeDpKey
@@ -77,7 +77,7 @@ internal fun AppearanceCoverCard(search: Search) {
     var showthumbnail by rememberPreference(showthumbnailKey, true)
     var expandedplayer by rememberPreference(expandedplayerKey, false)
     var thumbnailSizeDp by rememberPreference(thumbnailSizeDpKey, 90f)
-    var thumbnailSizeLDp by rememberPreference(thumbnailSizeLDpKey, 0f)
+    var thumbnailSizeLDp by rememberPlayerLandscapeArtworkSize()
     var expandedplayertoggle by rememberPreference(expandedplayertoggleKey, false)
     var thumbnailRoundnessDp by rememberPreference(thumbnailRoundnessDpKey, 12f)
     var artistThumbnailRoundnessDp by rememberPreference(artistThumbnailRoundnessDpKey, 48f)
@@ -292,7 +292,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                         state = thumbnailSizeLDp,
                                         range = 0f..100f,
                                         stepSize = 0f,
-                                        defaultValue = 100f,
+                                        defaultValue = thumbnailSizeDp,
                                         drawValuePoints = true,
                                         isIntegerOnly = true,
                                         onSlide = { thumbnailSizeLDp = kotlin.math.round(it) },

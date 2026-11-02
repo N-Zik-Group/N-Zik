@@ -102,12 +102,11 @@ fun Modifier.glassMiniPlayerBackground(
             drawRect(progressColor, size = Size(progressFraction() * size.width, size.maxDimension))
         }.glassAreaContour(settings, GlassArea.MiniPlayer, shape)
     }
-    val baseFilm = glassNativeSurfaceTint(settings, originalColor)
-    val progressFilm = glassNativeSurfaceTint(settings, progressColor.compositeOver(originalColor))
+    val baseFilm = glassRoleFilmTint(settings, originalColor)
+    val progressFilm = glassRoleFilmTint(settings, progressColor.compositeOver(originalColor))
     val opacity = settings.film.coerceIn(0f, 1f)
-    // A denser played film stays readable even when the global tint merges both source colours.
-    val progressOpacity = opacity + .8f * opacity * (1f - opacity)
-    // Both regions share one capture, optical surface and contour; only their film changes.
+    // Both regions share one optical surface and one configured film opacity.
+    // Progress changes its role colour, never the material's coverage.
     return glassMaterial(
         settings.forArea(GlassArea.MiniPlayer), shape, ownBackdrop = backdrop,
         highlightAlpha = .3f, drawFilm = false, exportedBackdrop = exportedBackdrop,
@@ -117,8 +116,8 @@ fun Modifier.glassMiniPlayerBackground(
         onDrawTint = {
             val fraction = progressFraction().let { if (it.isFinite()) it.coerceIn(0f, 1f) else 0f }
             val split = size.width * fraction
-            clipRect(right = split) { drawRect(progressFilm.copy(alpha = progressFilm.alpha * progressOpacity)) }
-            clipRect(left = split) { drawRect(baseFilm.copy(alpha = baseFilm.alpha * opacity)) }
+            clipRect(right = split) { drawRect(progressFilm.copy(alpha = opacity)) }
+            clipRect(left = split) { drawRect(baseFilm.copy(alpha = opacity)) }
         },
     )
 }

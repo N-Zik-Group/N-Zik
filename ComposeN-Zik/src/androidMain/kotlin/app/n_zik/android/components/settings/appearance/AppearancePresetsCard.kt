@@ -5,7 +5,6 @@ import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,6 +34,7 @@ import app.it.fast4x.rimusic.utils.actionspacedevenlyKey
 import app.it.fast4x.rimusic.utils.animatedGradientKey
 import app.it.fast4x.rimusic.utils.blurStrengthKey
 import app.it.fast4x.rimusic.utils.bottomgradientKey
+import app.it.fast4x.rimusic.utils.carouselKey
 import app.it.fast4x.rimusic.utils.carouselSizeKey
 import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import app.it.fast4x.rimusic.utils.colorPaletteNameKey
@@ -159,6 +159,7 @@ internal fun AppearancePresetsCard(search: Search) {
                 var actionspacedevenly by rememberPreference(actionspacedevenlyKey, true)
                 var noblur by rememberPreference(noblurKey, true)
                 var fadingedge by rememberPreference(fadingedgeKey, false)
+                var carousel by rememberPreference(carouselKey, true)
                 var carouselSize by rememberPreference(carouselSizeKey, CarouselSize.Biggest)
                 var topPadding by rememberPreference(topPaddingKey, true)
                 var animatedGradient by rememberPreference(
@@ -231,6 +232,7 @@ internal fun AppearancePresetsCard(search: Search) {
                     thumbnailFadeEx = 4f
                     thumbnailSpacing = -32f
                     thumbnailType = ThumbnailType.Essential
+                    carousel = true
                     carouselSize = CarouselSize.Big
                     thumbnailSizeDp = 100f
                     showTotalTimeQueue = false
@@ -302,6 +304,7 @@ internal fun AppearancePresetsCard(search: Search) {
                     appearanceChooser = false
                 },
                 onClick3 = {
+                    carousel = false
                     showTopActionsBar = false
                     topPadding = false
                     showthumbnail = true
@@ -347,6 +350,7 @@ internal fun AppearancePresetsCard(search: Search) {
                     appearanceChooser = false
                 },
                 onClick4 = {
+                    carousel = false
                     showTopActionsBar = false
                     topPadding = true
                     showthumbnail = true
@@ -362,13 +366,13 @@ internal fun AppearancePresetsCard(search: Search) {
                     transparentbar = false
                     playerType = PlayerType.Modern
                     expandedplayer = false
-                    thumbnailSizeDp = 100f
+                    thumbnailSizeDp = 85f
                     showTotalTimeQueue = false
                     transparentBackgroundActionBarPlayer = true
                     showRemainingSongTime = true
                     showlyricsthumbnail = false
                     thumbnailType = ThumbnailType.Modern
-                    thumbnailRoundnessDp = 36f
+                    thumbnailRoundnessDp = 20f
                     fadingedge = true
                     thumbnailFade = 0f
                     thumbnailFadeEx = 5f
@@ -406,13 +410,13 @@ internal fun AppearancePresetsCard(search: Search) {
                     transparentbar = false
                     playerType = PlayerType.Essential
                     expandedplayer = true
-                    thumbnailSizeDp = 75f
+                    thumbnailSizeDp = 80f
                     showTotalTimeQueue = false
                     transparentBackgroundActionBarPlayer = true
                     showRemainingSongTime = true
                     showlyricsthumbnail = false
                     thumbnailType = ThumbnailType.Modern
-                    thumbnailRoundnessDp = 36f
+                    thumbnailRoundnessDp = 20f
                     showNextSongsInPlayer = false
                     transparentBackgroundActionBarPlayer = true
                     actionspacedevenly = true
@@ -571,6 +575,5 @@ internal fun AppearancePresetsCard(search: Search) {
 
             }
         )
-            /* Removed Spacer */
             }
 }

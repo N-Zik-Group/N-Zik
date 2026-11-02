@@ -16,6 +16,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import app.n_zik.android.components.glass.blockGlassCoveredInput
+import app.n_zik.android.components.glass.LocalGlassUnderlayCovered
 
 /** Geometry belonging to an unplaced page must not obstruct player toasts. */
 val LocalPlayerCoveredPage = staticCompositionLocalOf { false }
@@ -29,6 +30,7 @@ val LocalPlayerCoveredPage = staticCompositionLocalOf { false }
 fun PlayerCoveredPage(
     covered: Boolean,
     modifier: Modifier = Modifier,
+    reduceGlassEffects: Boolean = covered,
     content: @Composable () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
@@ -36,7 +38,13 @@ fun PlayerCoveredPage(
     LaunchedEffect(covered) {
         if (covered && pageHasFocus) focusManager.clearFocus(force = true)
     }
-    CompositionLocalProvider(LocalPlayerCoveredPage provides covered) {
+    // Reuse the modal underlay gate throughout both deployment directions. Keep it
+    // scoped to navigation: the visible player remains a fully independent sibling.
+    val underlayCovered = LocalGlassUnderlayCovered.current || reduceGlassEffects
+    CompositionLocalProvider(
+        LocalPlayerCoveredPage provides covered,
+        LocalGlassUnderlayCovered provides underlayCovered,
+    ) {
         Layout(
             content = content,
             modifier = modifier

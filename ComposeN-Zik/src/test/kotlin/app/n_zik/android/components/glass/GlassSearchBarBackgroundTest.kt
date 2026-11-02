@@ -48,7 +48,7 @@ import org.robolectric.annotation.GraphicsMode
 class GlassSearchBarBackgroundTest {
     @get:Rule val compose = createComposeRule()
 
-    @Test fun `search uses original translucent film sharp foreground live shape and independent backdrop`() {
+    @Test fun `search uses configured film sharp foreground live shape and independent backdrop`() {
         var settings by mutableStateOf(GlassSettings(enabled = true, film = .5f,
             rim = 0f, blur = 0f, vibrancy = 0f))
         var shape: Shape by mutableStateOf(RoundedCornerShape(0.dp))
@@ -88,7 +88,7 @@ class GlassSearchBarBackgroundTest {
         fun assertFilm() {
             val pixels = capture()
             val film = if (settings.source == GlassTintSource.Custom) Color.Green.copy(alpha = fill.alpha) else fill
-            assertColor(film.copy(alpha = film.alpha * .5f).compositeOver(page),
+            assertColor(film.copy(alpha = .5f).compositeOver(page),
                 pixels[pixels.width / 4, pixels.height / 2])
             for (y in pixels.height / 2 - 3..pixels.height / 2 + 3) {
                 for (x in pixels.width / 2 - 3..pixels.width / 2 + 3) assertEquals(Color.Yellow, pixels[x, y])

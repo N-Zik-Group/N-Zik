@@ -58,6 +58,29 @@ import org.robolectric.util.ReflectionHelpers
 class GlassToastHostTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun `performance toast retains configured material without recording a backdrop`() {
+        lateinit var view: View
+        compose.setContent {
+            view = LocalView.current
+            val shape = RoundedCornerShape(12.dp)
+            CompositionLocalProvider(LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                typographyOf(Color.White, true, false, FontType.Rubik), shape, shape, shape)) {
+                Box(Modifier.size(360.dp, 640.dp).background(Color.Black)) {
+                    GlassToastHost(null, 24.dp, settings = GlassSettings(
+                        quality = GlassQuality.Performance,
+                        areaModes = mapOf(GlassArea.Menus to GlassAreaMode.GlassAndContour)))
+                }
+            }
+        }
+        compose.runOnIdle {
+            val info = ReflectionHelpers.getField<Any>(view, "mAttachInfo")
+            ReflectionHelpers.setField(info, "mWindowVisibility", View.VISIBLE)
+            assertTrue(GlassToastDispatcher.tryShow("Performance material", Toast.LENGTH_SHORT, null, -1, -1))
+        }
+        compose.mainClock.advanceTimeBy(500)
+        compose.onNodeWithTag("glassToast").assertExists()
+    }
+
     @Test fun `toast pixels fade in and out while queued messages retain their full lifetime`() {
         val enabled = mutableStateOf(true)
         val presence = mutableListOf<Boolean>()

@@ -66,7 +66,7 @@ fun PlayerWhatsNextGlassSurface(
     val shape = uiRoundnessShape()
     Box(Modifier.fillMaxWidth().windowInsetsPadding(horizontalInsets), contentAlignment = Alignment.Center) {
         GlassMaterialContainerScope(
-            modifier = Modifier.playerActionToolbarWidth(landscape).testTag("player.whatsNext.surface"),
+            modifier = Modifier.playerActionToolbarWidth(landscape).playerActionPanelBounds().testTag("player.whatsNext.surface"),
             includeParent = true,
             sectionFilm = if (material) null else nativeBackground,
             material = if (material) ({ exported ->

@@ -15,7 +15,18 @@ import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackd
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCombinedBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
+import app.n_zik.android.components.glass.backdrop.Backdrop
 import timber.log.Timber
+
+/** The row and its descendants apply optics to this child-free input only once. */
+@Composable
+private fun rememberNowPlayingRowInput(backgroundColor: Color): Backdrop {
+    val fill = rememberCanvasBackdrop { drawRect(backgroundColor) }
+    val parent = (LocalGlassMaterialSource.current ?: LocalGlassContainerBackdrop.current)
+        .takeIf { backgroundColor.alpha < 1f }
+    val background = if (parent != null) rememberCombinedBackdrop(parent, fill) else fill
+    return LocalQueueRowBackdrop.current ?: background
+}
 
 /** Active song highlight; the row's artwork, text and actions stay outside the material. */
 @Composable
@@ -44,12 +55,7 @@ internal fun Modifier.glassNowPlayingRow(
     // The page capture contains this row: sampling it here would create a render-node cycle.
     // Reproduce the flat fill over a child-free container export when it is translucent.
     // LocalGlassBackdrop may contain this row, so it must never be used as that underlay.
-    val drawBackground: DrawScope.() -> Unit = remember(backgroundColor) {
-        { drawRect(backgroundColor) }
-    }
-    val backdrop = rememberCanvasBackdrop(drawBackground)
-    val parent = LocalGlassContainerBackdrop.current.takeIf { backgroundColor.alpha < 1f }
-    val rowBackdrop = if (parent != null) rememberCombinedBackdrop(parent, backdrop) else backdrop
+    val rowBackdrop = rememberNowPlayingRowInput(backgroundColor)
     // An explicit Glass source owns the film hue; a second theme overlay can lag behind artwork.
     // Read the changing palette in the draw pass. The row can live inside recorded
     // page layers, so replacing a captured colour alone must not be its redraw signal.
@@ -60,7 +66,7 @@ internal fun Modifier.glassNowPlayingRow(
     return base.glassMaterial(
         settings = settings.forArea(GlassArea.NowPlaying),
         shape = shape,
-        ownBackdrop = queueBackdrop ?: rowBackdrop,
+        ownBackdrop = rowBackdrop,
         onDrawTint = drawHighlight,
         exportedBackdrop = exportedBackdrop,
     )
@@ -98,5 +104,14 @@ internal fun GlassSongRowSurface(
         (if (paintBackground) Modifier.background(backgroundColor) else Modifier)
             .then(if (highlightColor != null) Modifier.background(highlightColor) else Modifier)
     }
-    CompositionLocalProvider(LocalGlassContainerBackdrop provides backdrop) { content(surface) }
+    val materialSource = if (material) {
+        val raw = rememberNowPlayingRowInput(backgroundColor)
+        // The selected-row accent is semantic native paint, not the configurable Glass film.
+        val accent = rememberCanvasBackdrop {
+            if (settings.source == GlassTintSource.None && highlightColor != null) drawRect(highlightColor)
+        }
+        rememberCombinedBackdrop(raw, accent)
+    } else backdrop
+    CompositionLocalProvider(LocalGlassContainerBackdrop provides backdrop,
+        LocalGlassMaterialSource provides materialSource) { content(surface) }
 }

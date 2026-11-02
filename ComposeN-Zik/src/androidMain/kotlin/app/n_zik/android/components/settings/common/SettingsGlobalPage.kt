@@ -14,9 +14,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -38,6 +36,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.glass.GlassFloatingActions
+import app.n_zik.android.components.glass.glassFloatingActionContent
+import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.it.fast4x.rimusic.utils.lastUpdateCheckKey
@@ -55,7 +56,6 @@ import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.UnifiedSearchBar
 import app.n_zik.android.components.search.filterSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
-import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.updater.services.Updater
@@ -75,6 +75,7 @@ fun SettingsGlobalPage(
     val context = LocalContext.current
     val scrollState = rememberLazyListState()
     val overscroll = rememberOverscrollEffect()
+    val floatingBackdrop = rememberGlassFloatingActionBackdrop()
 
     var searchInput by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
     var isSearchFocused by remember { mutableStateOf(false) }
@@ -89,8 +90,7 @@ fun SettingsGlobalPage(
         searchSettingsPageItems(context, query)
     }
     val cardResults = remember(context, configuration, query) {
-        if (query.isBlank()) emptyList() else
-            SettingsCards.filter { context.getString(it.titleRes).contains(query.trim(), true) }
+        searchSettingsCardResults(context, query)
     }
     val entryResults = remember(context, configuration, query) { searchSettingsEntries(context, query) }
     val categoryResults = remember(context, configuration, query) {
@@ -123,6 +123,7 @@ fun SettingsGlobalPage(
             contentPadding = rememberSettingsContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
             overscrollEffect = if (scrollState.canScrollForward || scrollState.canScrollBackward) overscroll else null,
             modifier = Modifier
+                .glassFloatingActionContent(floatingBackdrop)
                 .background(colorPalette().background0)
                 .fillMaxWidth()
                 .testTag("settings_global_list")
@@ -179,7 +180,7 @@ fun SettingsGlobalPage(
                 item(key = "groups", contentType = "groups") {
                     Column(modifier = Modifier.settingsSearchContentVisibility(contentAlpha)) {
                         SettingsPageGroups.forEach { group ->
-                            GlobalPageCard(
+                            SettingsResultCard(
                                 testTag = "settings_global_group_${group.group}",
                                 content = {
                                     SettingsPageItems
@@ -196,28 +197,25 @@ fun SettingsGlobalPage(
                 // Empty-result feedback is a debounced toast; keep the page clear.
             } else {
                 items(entryResults, key = { "entry_${it.id}" }, contentType = { "entry" }) { result ->
-                    val card = result.parentCard()
-                    GlobalPageCard(testTag = "settings_result_entry_${result.id}") {
-                        OtherSettingsEntry(
-                            title = result.searchResultTitle(context),
-                            text = result.locationDescription(context),
-                            icon = card.iconRes,
-                            modifier = Modifier.clip(uiRoundnessShape()).testTag("settings_global_entry_${result.id}"),
-                            onClick = {
-                                recordSearchQuery()
-                                onEntrySelected?.invoke(result) ?: onCardSelected(card.tab, card.focusId)
-                            },
-                        )
-                    }
+                    SettingsEntryResultRow(
+                        result = result,
+                        surfaceTag = "settings_result_entry_${result.id}",
+                        rowTag = "settings_global_entry_${result.id}",
+                        onClick = {
+                            recordSearchQuery()
+                            val card = result.parentCard()
+                            onEntrySelected?.invoke(result) ?: onCardSelected(card.tab, card.focusId)
+                        },
+                    )
                 }
                 items(categoryResults, key = { "category_${it.id}" }, contentType = { "category" }) { category ->
                     val item = SettingsPageItems.first { it.categoryId == category.id }
-                    GlobalPageCard(testTag = "settings_result_category_${category.id}") {
+                    SettingsResultCard(testTag = "settings_result_category_${category.id}") {
                         GlobalPageItemRow(item = item, onItemSelected = { recordSearchQuery(); onItemSelected(it) })
                     }
                 }
                 items(itemResults, key = { "item_${it.labelRes}" }, contentType = { "item" }) { item ->
-                    GlobalPageCard(testTag = "settings_result_item_${item.route}") {
+                    SettingsResultCard(testTag = "settings_result_item_${item.route}") {
                         GlobalPageItemRow(
                             item = item,
                             onItemSelected = { recordSearchQuery(); onItemSelected(it) },
@@ -226,47 +224,22 @@ fun SettingsGlobalPage(
                     }
                 }
                 items(cardResults, key = { "card_${it.tab}_${it.titleRes}" }, contentType = { "card" }) { card ->
-                    val section = OrganizedSettingsCategories.first { it.id == card.categoryId() }
-                    GlobalPageCard(testTag = "settings_result_card_${card.tab}_${card.titleRes}") {
-                    OtherSettingsEntry(
-                        title = card.displayTitle(context),
-                        text = stringResource(section.labelRes),
-                        icon = card.iconRes,
-                        modifier = Modifier.clip(uiRoundnessShape()).testTag("settings_global_result_${card.tab}_${card.titleRes}"),
-                        onClick = { recordSearchQuery(); onOrganizedCardSelected?.invoke(card) ?: onCardSelected(card.tab, card.focusId) }
+                    SettingsCardResultRow(
+                        card = card,
+                        surfaceTag = "settings_result_card_${card.tab}_${card.titleRes}",
+                        rowTag = "settings_global_result_${card.tab}_${card.titleRes}",
+                        onClick = { recordSearchQuery(); onOrganizedCardSelected?.invoke(card) ?: onCardSelected(card.tab, card.focusId) },
                     )
-                    }
                 }
             }
 
         }
-    }
-}
-
-/** Native titleless container for Global rows. */
-@Composable
-private fun GlobalPageCard(
-    testTag: String,
-    content: @Composable () -> Unit,
-) {
-    val containerColor = surfaceColor(colorPalette().background1)
-    Column(modifier = Modifier.fillMaxWidth()) {
-        SettingsCardSurface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .testTag(testTag),
-            shape = uiRoundnessShape(),
-            containerColor = containerColor,
-            backgroundColor = colorPalette().background0,
-            shadowColor = colorPalette().accent.copy(alpha = 0.2f),
-            shadowElevation = 4.dp
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                content()
-            }
+        GlassFloatingActions(floatingBackdrop) {
+            SettingsScrollToTop(
+                lazyListState = scrollState,
+                modifier = Modifier.testTag("settings.global.scrollToTop"),
+            )
         }
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 

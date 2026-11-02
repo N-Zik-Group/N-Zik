@@ -73,7 +73,7 @@ class PlayerActionHostClipTest {
             CompositionLocalProvider(LocalGlassContainerBackdrop provides scene,
                 LocalAppearance provides Appearance(DefaultDarkColorPalette,
                     typographyOf(Color.White, true, false, FontType.Rubik), shape, shape, shape)) {
-                val layout = rememberPlayerActionToolbarLayout()
+                val layout = rememberPlayerActionToolbarLayout(settings)
                 val actions = listOf(PlayerActionSlot("first") {}, PlayerActionSlot("last") {})
                 val outer = Modifier.requiredWidth(320.dp)
                     .requiredHeight(layout.hostHeight(90.dp + playerWhatsNextGlassExtraHeight(settings)))

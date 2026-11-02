@@ -71,7 +71,7 @@ fun GlassToastHost(
 ) {
     val settings = settings.inScope(GlassScope.Toast)
     val enabled by rememberUpdatedState(settings.enabled && settings.mode(GlassArea.Menus) != GlassAreaMode.Disabled &&
-        (!settings.mode(GlassArea.Menus).hasMaterial || backdrop != null))
+        (!settings.mode(GlassArea.Menus).hasMaterial || backdrop != null || glassRenderer(settings) == GlassRenderer.Tint))
     val view = LocalView.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val queue = remember { mutableStateListOf<GlassToastMessage>() }

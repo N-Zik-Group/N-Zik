@@ -2,7 +2,7 @@ package app.n_zik.android.components.glass
 
 import androidx.compose.runtime.staticCompositionLocalOf
 
-/** The visible full player uses lighter live blur for its menus and queue, without changing preferences. */
+/** The visible full player uses cheaper sampling for its menus and queue, without changing the material. */
 val LocalGlassPlayerOverlayActive = staticCompositionLocalOf { false }
 
 internal data class GlassOverlayBlurBudget(val radiusDp: Float, val resolution: Float)
@@ -15,7 +15,7 @@ internal fun playerOverlayBlurBudget(
     menu: Boolean,
     queue: Boolean,
 ): GlassOverlayBlurBudget = if (playerActive && (menu || queue) && radiusDp > 0f) {
-    GlassOverlayBlurBudget(radiusDp * .75f, resolution.coerceAtMost(.25f))
+    GlassOverlayBlurBudget(radiusDp, resolution.coerceAtMost(.25f))
 } else {
     GlassOverlayBlurBudget(radiusDp, resolution)
 }

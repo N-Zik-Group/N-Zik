@@ -1,5 +1,14 @@
 package app.n_zik.android.components.glass
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Arrangement
@@ -79,15 +88,15 @@ internal fun overlayCanvasBottomReserve(settings: GlassSettings): Dp =
 /** Reduce the complete visible overlay inside its stable host, including background and utilities. */
 @Composable
 internal fun Modifier.glassOverlayCanvasViewport(settings: GlassSettings, showThumbnail: Boolean = false): Modifier {
+    // Embedded scenes already occupy the painted artwork, inside its padding and crop.
+    if (!settings.enabled || showThumbnail) return this
     val geometry = LocalPlayerTransportGeometry.current
     val density = LocalDensity.current
     var sourceBottom by remember(geometry) { mutableStateOf<Float?>(null) }
-    if (!settings.enabled) return this
     val measuredReserve = geometry?.informationSurfaceTop?.let { top ->
         sourceBottom?.let { bottom -> with(density) { (bottom - top).toDp() } + PlayerInformationVerticalPadding }
     }
-    val fallback = if (showThumbnail) 0.dp else overlayCanvasBottomReserve(settings)
-    val reserve = maxOf(0.dp, measuredReserve ?: fallback)
+    val reserve = maxOf(0.dp, measuredReserve ?: overlayCanvasBottomReserve(settings))
     return onGloballyPositioned { sourceBottom = geometry?.bounds(it)?.bottom }
         .padding(bottom = reserve).clipToBounds()
 }
@@ -96,15 +105,58 @@ internal fun Modifier.glassOverlayCanvasViewport(settings: GlassSettings, showTh
 internal fun Modifier.glassOverlayHostViewport(settings: GlassSettings): Modifier =
     if (settings.enabled) fillMaxSize() else this
 
-/** Inactive overlays install neither a full-size layout nor a pointer-input surface over the cover. */
+/** Starts an entrance even when a caller mounts an already requested overlay. */
+@Composable
+internal fun rememberOverlayTransition(active: Boolean): MutableTransitionState<Boolean> =
+    remember { MutableTransitionState(false) }.apply { targetState = active }
+
+internal val MutableTransitionState<Boolean>.hasOverlayContent: Boolean
+    get() = currentState || targetState || !isIdle
+
+private fun Modifier.overlayInput(active: Boolean): Modifier = if (active) this else
+    onPreviewKeyEvent { true }
+        .pointerInput(Unit) {
+            awaitPointerEventScope {
+                while (true) awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }
+            }
+        }
+        .clearAndSetSemantics { }
+
+/** Owns fade lifetime; content hosted by an ancestor reuses that fade without doubling opacity. */
+@Composable
+internal fun OverlayFade(
+    active: Boolean,
+    modifier: Modifier = Modifier,
+    durationMillis: Int? = null,
+    state: MutableTransitionState<Boolean>? = null,
+    hosted: Boolean = false,
+    content: @Composable () -> Unit,
+) {
+    if (hosted) {
+        content()
+    } else {
+        AnimatedVisibility(
+            visibleState = state ?: rememberOverlayTransition(active),
+            modifier = modifier.overlayInput(active),
+            enter = if (durationMillis == null) fadeIn() else fadeIn(tween(durationMillis)),
+            exit = if (durationMillis == null) fadeOut() else fadeOut(tween(durationMillis)),
+        ) { content() }
+    }
+}
+
+/** Inactive overlays install no full-size layout; closing overlays retain their real fade lifetime. */
 @Composable
 internal fun GlassOverlayHost(
     active: Boolean,
     settings: GlassSettings,
     modifier: Modifier = Modifier,
+    fadeDurationMillis: Int? = null,
+    transitionState: MutableTransitionState<Boolean> = rememberOverlayTransition(active),
     content: @Composable BoxScope.() -> Unit,
 ) {
-    if (active) Box(modifier.glassOverlayHostViewport(settings), content = content)
+    OverlayFade(active, durationMillis = fadeDurationMillis, state = transitionState) {
+        Box(modifier.glassOverlayHostViewport(settings), content = content)
+    }
 }
 
 /** Coverless canvases are rectangular; only overlays drawn on artwork inherit its crop. */

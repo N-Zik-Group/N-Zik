@@ -40,6 +40,7 @@ internal fun glassDestinationRows(group: GlassDestinationGroup): List<GlassPolic
         GlassPolicyRow(R.string.glass_mini_player, GlassArea.MiniPlayer, description = R.string.glass_mini_player_description),
         GlassPolicyRow(R.string.glass_role_player_header, GlassArea.ActionButtons, GlassScope.PlayerHeader, description = R.string.glass_role_player_header_description),
         GlassPolicyRow(R.string.glass_role_player_information, GlassArea.ActionButtons, GlassScope.PlayerInformation, description = R.string.glass_role_player_information_description),
+        GlassPolicyRow(R.string.glass_role_player_favorite, GlassArea.ActionButtons, GlassScope.PlayerFavorite, description = R.string.glass_role_player_favorite_description),
         GlassPolicyRow(R.string.glass_role_player_time, GlassArea.ActionButtons, GlassScope.PlayerTime, description = R.string.glass_role_player_time_description),
         GlassPolicyRow(R.string.glass_role_player_seek, GlassArea.ActionButtons, GlassScope.PlayerSeek, description = R.string.glass_role_player_seek_description),
         GlassPolicyRow(R.string.glass_role_player_transport, GlassArea.ActionButtons, GlassScope.PlayerTransport, description = R.string.glass_role_player_transport_description),
@@ -83,6 +84,7 @@ private val GlassPolicyRow.icon: Int
         area == GlassArea.MoodCards -> R.drawable.image
         else -> when (scope) {
         GlassScope.PlayerTransport -> R.drawable.play
+        GlassScope.PlayerFavorite -> R.drawable.heart
         GlassScope.PlayerActions -> R.drawable.ellipsis_horizontal
         GlassScope.Lyrics -> R.drawable.song_lyrics
         GlassScope.Visualizer -> R.drawable.equalizer

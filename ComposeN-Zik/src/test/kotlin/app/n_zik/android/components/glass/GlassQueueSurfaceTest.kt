@@ -23,7 +23,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -58,15 +60,27 @@ import kotlinx.coroutines.launch
 class GlassQueueSurfaceTest {
     @get:Rule val compose = createComposeRule()
 
-    @Test fun `queue panel rim follows every Menus area mode without changing native fill`() {
+    private fun setAppearanceContent(content: @androidx.compose.runtime.Composable () -> Unit) {
+        compose.setContent {
+            val shape = RoundedCornerShape(8.dp)
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                DefaultDarkColorPalette, Typography.fallback, shape, shape, shape,
+            )) { content() }
+        }
+    }
+
+    @Test fun `queue panel rim follows every Menus area mode independently of clear film`() {
         val mode = mutableStateOf(GlassAreaMode.Disabled)
         compose.setContent {
             val shape = RoundedCornerShape(8.dp)
             CompositionLocalProvider(LocalAppearance provides Appearance(
                 DefaultDarkColorPalette, Typography.fallback, shape, shape, shape,
             )) {
-                Box(Modifier.size(64.dp).testTag("panel").glassQueuePanelBackground(
-                    Color.Black, shape, GlassSettings(rim = 1f, areaModes = mapOf(GlassArea.Menus to mode.value))))
+                Box(Modifier.background(Color.Black)) {
+                    Box(Modifier.size(64.dp).testTag("panel").glassQueuePanelBackground(
+                        Color.Black, shape, GlassSettings(film = 0f, rim = 1f,
+                            areaModes = mapOf(GlassArea.Menus to mode.value))))
+                }
             }
         }
         for (value in GlassAreaMode.entries) {
@@ -132,7 +146,7 @@ class GlassQueueSurfaceTest {
             ), LocalGlassBackdrop provides rememberCanvasBackdrop { drawRect(Color.Blue) }) {
                 Column {
                     GlassQueuePanel(settings = settings) {
-                        val safeSource = rememberQueueRowGlassBackdrop(nativeFill)
+                        val safeSource = rememberQueueRowGlassBackdrop(nativeFill, settings)
                         isolatedSource = safeSource
                         NativeQueueRows(settings) {
                             CompositionLocalProvider(LocalQueueRowBackdrop provides safeSource) {
@@ -217,10 +231,10 @@ class GlassQueueSurfaceTest {
         assertMiniPainted()
     }
 
-    @Test fun `queue retains native transparency with only an edge and restores exact native pixels when disabled`() {
+    @Test fun `clear queue film removes native fill and restores exact native pixels when disabled`() {
         val enabled = mutableStateOf(false)
         val original = Color.Red.copy(alpha = .5f)
-        compose.setContent {
+        setAppearanceContent {
             val settings = GlassSettings(enabled = enabled.value, source = GlassTintSource.Custom,
                 customColor = 0xFFFFFFFF.toInt(), rim = 1f, film = 0f, blur = 24f)
             Box(Modifier.background(Color.Blue)) {
@@ -232,52 +246,137 @@ class GlassQueueSurfaceTest {
         assertColorClose(original.compositeOver(Color.Blue), off[off.width / 2, off.height / 2])
         compose.runOnIdle { enabled.value = true }
         val on = compose.onNodeWithTag("panel").captureToImage().toPixelMap()
-        assertColorClose(original.compositeOver(Color.Blue), on[on.width / 2, on.height / 2])
+        assertColorClose(Color.Blue, on[on.width / 2, on.height / 2])
         assertNotEquals(on[on.width / 2, on.height / 2], on[on.width / 2, 0])
         compose.runOnIdle { enabled.value = false }
         val restored = compose.onNodeWithTag("panel").captureToImage().toPixelMap()
         for (y in 0 until off.height) for (x in 0 until off.width) assertEquals(off[x, y], restored[x, y])
     }
 
-    @Test fun `transparent and opaque native queue fills are both preserved when Glass is enabled`() {
+    @Test fun `queue film endpoints and middle match shared material regardless of native queue type`() {
         val fill = mutableStateOf(Color.Transparent)
-        compose.setContent {
-            Box(Modifier.background(Color.Blue)) {
-                Box(Modifier.size(64.dp).testTag("choice").glassQueuePanelBackground(fill.value,
-                    RoundedCornerShape(0.dp), GlassSettings(enabled = true, rim = 0f)))
+        val film = mutableStateOf(0f)
+        setAppearanceContent {
+            val settings = GlassSettings(quality = GlassQuality.Performance, rim = 0f, film = film.value)
+            Column(Modifier.background(Color.Blue)) {
+                Box(Modifier.size(64.dp).testTag("choice").glassQueuePanelBackground(
+                    fill.value, RoundedCornerShape(0.dp), settings))
+                Box(Modifier.size(64.dp).testTag("shared").glassMaterial(
+                    settings, RoundedCornerShape(0.dp), separateWindow = true))
             }
         }
-        val transparent = compose.onNodeWithTag("choice").captureToImage().toPixelMap()
-        assertColorClose(Color.Blue, transparent[transparent.width / 2, transparent.height / 2])
-        compose.runOnIdle { fill.value = Color.Red }
-        val opaque = compose.onNodeWithTag("choice").captureToImage().toPixelMap()
-        assertColorClose(Color.Red, opaque[opaque.width / 2, opaque.height / 2])
+        for (nativeFill in listOf(Color.Transparent, Color.Red)) for (opacity in listOf(0f, .5f, 1f)) {
+            compose.runOnIdle { fill.value = nativeFill; film.value = opacity }
+            val panel = compose.onNodeWithTag("choice").captureToImage().toPixelMap()
+            val shared = compose.onNodeWithTag("shared").captureToImage().toPixelMap()
+            assertColorClose(shared[shared.width / 2, shared.height / 2], panel[panel.width / 2, panel.height / 2])
+            if (opacity == 0f) assertColorClose(Color.Blue, panel[panel.width / 2, panel.height / 2])
+        }
     }
 
-    @Test fun `queue row highlights badges chips and swipe reveals retain native rendering`() {
+    @Test fun `queue keeps native rows while explicit badge matches standalone in every action mode`() {
         val enabled = mutableStateOf(false)
+        val mode = mutableStateOf(GlassAreaMode.GlassAndContour)
         var badge = 0
         compose.setContent {
+            val shape = RoundedCornerShape(8.dp)
             val settings = GlassSettings(enabled = enabled.value, source = GlassTintSource.Custom,
-                customColor = 0xFF00FF00.toInt(), film = .1f, rim = 1f)
-            NativeQueueRows(settings) {
-                val shape = RoundedCornerShape(8.dp)
-                badge = explicitBadgeIconId(settings)
-                Column(Modifier.testTag("rows").background(Color.Blue)) {
-                    Box(Modifier.size(64.dp, 24.dp).glassNowPlayingRow(Color.Transparent,
-                        Color.Red.copy(alpha = .25f), shape, settings))
-                    Box(Modifier.size(64.dp, 24.dp).glassChipBackground(Color.Red.copy(alpha = .3f), shape, settings))
-                    Box(Modifier.size(64.dp, 24.dp).glassSwipeActionBackground(Color.Red, shape,
-                        isRevealed = true, settings = settings, backdropColor = Color.Blue))
-                    Box(Modifier.size(64.dp, 24.dp).glassExplicitBadgeBackground(settings))
+                customColor = 0xFF00FF00.toInt(), film = .5f, rim = 1f,
+                areaModes = mapOf(GlassArea.ActionButtons to mode.value))
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                DefaultDarkColorPalette, Typography.fallback, shape, shape, shape,
+            )) {
+                Column {
+                    NativeQueueRows(settings) {
+                        badge = explicitBadgeIconId(settings)
+                        Column(Modifier.testTag("rows").background(Color.Blue)) {
+                            Box(Modifier.size(64.dp, 24.dp).glassNowPlayingRow(Color.Transparent,
+                                Color.Red.copy(alpha = .25f), shape, settings))
+                            Box(Modifier.size(64.dp, 24.dp).glassChipBackground(Color.Red.copy(alpha = .3f), shape, settings))
+                            Box(Modifier.size(64.dp, 24.dp).glassSwipeActionBackground(Color.Red, shape,
+                                isRevealed = true, settings = settings, backdropColor = Color.Blue))
+                            Box(Modifier.size(64.dp, 24.dp).testTag("queue.explicit")
+                                .glassExplicitBadgeBackground(settings))
+                        }
+                    }
+                    Box(Modifier.background(Color.Blue)) {
+                        Box(Modifier.size(64.dp, 24.dp).testTag("standalone.explicit")
+                            .glassExplicitBadgeBackground(settings))
+                    }
                 }
             }
         }
-        val off = compose.onNodeWithTag("rows").captureToImage().toPixelMap()
-        compose.runOnIdle { enabled.value = true }
-        val on = compose.onNodeWithTag("rows").captureToImage().toPixelMap()
+        val native = compose.onNodeWithTag("rows").captureToImage().toPixelMap()
+        val nativeBadge = compose.onNodeWithTag("queue.explicit").captureToImage().toPixelMap()
+        val unchangedRowsHeight = native.height * 3 / 4
+        for (value in GlassAreaMode.entries) {
+            compose.runOnIdle { enabled.value = true; mode.value = value }
+            val rows = compose.onNodeWithTag("rows").captureToImage().toPixelMap()
+            for (y in 0 until unchangedRowsHeight) for (x in 0 until native.width)
+                assertEquals("Native queue row in $value at $x,$y", native[x, y], rows[x, y])
+            val actual = compose.onNodeWithTag("queue.explicit").captureToImage().toPixelMap()
+            val reference = compose.onNodeWithTag("standalone.explicit").captureToImage().toPixelMap()
+            var changed = false
+            for (y in 0 until actual.height) for (x in 0 until actual.width) {
+                assertEquals("Explicit surface parity in $value at $x,$y", reference[x, y], actual[x, y])
+                if (actual[x, y] != nativeBadge[x, y]) changed = true
+            }
+            assertEquals("Explicit surface follows $value", value != GlassAreaMode.Disabled, changed)
+            val center = actual[actual.width / 2, actual.height / 2]
+            assertEquals("Only material changes the badge film in $value", value.hasMaterial,
+                center != nativeBadge[nativeBadge.width / 2, nativeBadge.height / 2])
+            compose.runOnIdle {
+                assertEquals(if (value == GlassAreaMode.Disabled) R.drawable.explicit
+                    else R.drawable.explicit_glass_glyph, badge)
+            }
+            compose.onAllNodes(hasClickAction()).assertCountEquals(0)
+        }
+        compose.runOnIdle { enabled.value = false }
+        val restored = compose.onNodeWithTag("rows").captureToImage().toPixelMap()
+        for (y in 0 until native.height) for (x in 0 until native.width)
+            assertEquals(native[x, y], restored[x, y])
         compose.runOnIdle { assertEquals(R.drawable.explicit, badge) }
-        for (y in 0 until off.height) for (x in 0 until off.width) assertEquals(off[x, y], on[x, y])
+    }
+
+    @Test fun `embedded and standalone queue draw one shared film and honor queue scope`() {
+        val mode = mutableStateOf(GlassAreaMode.GlassOnly)
+        val enabled = mutableStateOf(true)
+        val film = mutableStateOf(.5f)
+        setAppearanceContent {
+            val settings = GlassSettings(enabled = enabled.value, quality = GlassQuality.Performance,
+                film = film.value, rim = 0f,
+                areaModes = mapOf(GlassArea.Menus to GlassAreaMode.Disabled),
+                contextModes = mapOf(GlassContextArea(GlassScope.Queue, GlassArea.Menus) to mode.value))
+            val shape = RoundedCornerShape(0.dp)
+            Column(Modifier.background(Color.Blue)) {
+                GlassQueuePanel(Modifier.size(64.dp).testTag("embedded.film")
+                    .glassQueuePanelBackground(Color.Red, shape, settings), settings) {
+                    Box(Modifier.size(64.dp).glassQueueListBackground(Color.Red, settings)
+                        .background(queueContentBackground(Color.Red, settings)))
+                }
+                Box(Modifier.size(64.dp).testTag("standalone.film")
+                    .glassQueueListBackground(Color.Red, settings))
+                Box(Modifier.size(64.dp).testTag("reference.film")
+                    .glassMaterial(settings.copy(enabled = true), shape, separateWindow = true))
+            }
+        }
+        fun center(tag: String): Color {
+            val image = compose.onNodeWithTag(tag).captureToImage().toPixelMap()
+            return image[image.width / 2, image.height / 2]
+        }
+        for (opacity in listOf(0f, .5f, 1f)) {
+            compose.runOnIdle { film.value = opacity }
+            assertColorClose(center("reference.film"), center("embedded.film"))
+            assertColorClose(center("reference.film"), center("standalone.film"))
+        }
+        for (nativeMode in listOf(GlassAreaMode.Disabled, GlassAreaMode.ContourOnly)) {
+            compose.runOnIdle { mode.value = nativeMode }
+            assertColorClose(Color.Red, center("embedded.film"))
+            assertColorClose(Color.Red, center("standalone.film"))
+        }
+        compose.runOnIdle { mode.value = GlassAreaMode.GlassOnly; enabled.value = false }
+        assertColorClose(Color.Red, center("embedded.film"))
+        assertColorClose(Color.Red, center("standalone.film"))
     }
 
     @Test fun `master changes retain queue state and row policy does not disable menu settings or fixed siblings`() {
@@ -435,7 +534,7 @@ class GlassQueueSurfaceTest {
         val pixels = compose.onNodeWithTag("inset_toolbar").captureToImage().toPixelMap()
         assertColorClose(Color.Red, pixels[pixels.width / 2, pixels.height / 4])
         val bottom = pixels[pixels.width / 2, pixels.height - 1]
-        assertColorClose(DefaultDarkColorPalette.background1, bottom)
+        assertColorClose(Color(0xFF4A4A4E), bottom)
         // Seamless backing has no second bright rim at the system navigation edge.
         assertColorClose(bottom, pixels[pixels.width / 2, pixels.height - 4])
     }

@@ -54,6 +54,8 @@ import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.n_zik.android.R
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassAreaMode
+import app.n_zik.android.components.glass.GlassContextArea
+import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
@@ -133,8 +135,9 @@ class PlayerGlassActionsTest {
             }
             for (enabled in listOf(false, true)) {
                 compose.runOnIdle { glass.value = enabled }
-                assertEquals(native, compose.onAllNodes(hasClickAction()).fetchSemanticsNodes().map { it.boundsInRoot })
-                assertEquals(glyphs, listOf("first", "second").map {
+                val offset = with(compose.density) { if (enabled) 4.dp.toPx() else 0f }
+                assertEquals(native.map { it.translate(0f, offset) }, compose.onAllNodes(hasClickAction()).fetchSemanticsNodes().map { it.boundsInRoot })
+                assertEquals(glyphs.map { it.translate(0f, offset) }, listOf("first", "second").map {
                     compose.onNodeWithTag("corner.glyph.$it", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
                 })
                 val pixels = compose.onAllNodes(hasClickAction())[0].captureToImage().toPixelMap()
@@ -289,9 +292,12 @@ class PlayerGlassActionsTest {
                 val target = compose.onAllNodes(hasClickAction())[index]
                     .assertHeightIsEqualTo(48.dp)
                 val bounds = target.fetchSemanticsNode().boundsInRoot
-                assertTrue("Every full action canvas stays inside its capsule glass=$enabled index=$index surface=$surface bounds=$bounds",
-                    bounds.left >= surface.left - 1f && bounds.right <= surface.right + 1f &&
-                        bounds.top >= surface.top - 1f && bounds.bottom <= surface.bottom + 1f)
+                assertTrue("Every action canvas stays within the toolbar's side margins glass=$enabled index=$index surface=$surface bounds=$bounds",
+                    bounds.left >= surface.left - 1f && bounds.right <= surface.right + 1f)
+                if (enabled) assertTrue("The Glass capsule contains its full canvas index=$index surface=$surface bounds=$bounds",
+                    bounds.top >= surface.top - 1f && bounds.bottom <= surface.bottom + 1f)
+                else assertEquals("Material keeps its native visible row around the expanded touch canvas", 24.dp,
+                    with(compose.density) { surface.height.toDp() })
                 val availableWidth = minOf(with(compose.density) { 48.dp.toPx() },
                     if (index > 0) glyphs[index].center.x - glyphs[index - 1].center.x else Float.POSITIVE_INFINITY,
                     if (index < glyphs.lastIndex) glyphs[index + 1].center.x - glyphs[index].center.x else Float.POSITIVE_INFINITY)
@@ -299,9 +305,10 @@ class PlayerGlassActionsTest {
                 assertEquals(glyphs[index].center.x, bounds.center.x, .5f)
                 assertTrue("Canvas extends beyond the original glyph", bounds.left < glyphs[index].left)
                 target.performTouchInput { click(androidx.compose.ui.geometry.Offset(2f, center.y)) }
+                target.performTouchInput { click(androidx.compose.ui.geometry.Offset(center.x, 2f)) }
             }
         }
-        compose.runOnIdle { clicked.forEach { assertEquals("Exactly one action owns each expanded canvas", 2, it) } }
+        compose.runOnIdle { clicked.forEach { assertEquals("Exactly one action owns both sides of each expanded canvas", 4, it) } }
     }
 
     @Test fun `empty toolbar space opens the queue without a parent ripple in either mode`() {
@@ -366,8 +373,8 @@ class PlayerGlassActionsTest {
         val safeInsets = mutableStateOf(WindowInsets(0.dp))
         compose.setContent {
             AppearanceProvider {
-                val layout = rememberPlayerActionToolbarLayout()
                 val currentSettings = settings.copy(enabled = glass.value)
+                val layout = rememberPlayerActionToolbarLayout(currentSettings)
                 Column(Modifier.requiredWidth(width.value)) {
                     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Row(Modifier.padding(safeInsets.value.asPaddingValues())
@@ -399,17 +406,16 @@ class PlayerGlassActionsTest {
                 safeInsets.value = if (inset) WindowInsets(left = 20.dp, right = 30.dp) else WindowInsets(0.dp)
             }
             val native = (0 until actionCount).map { compose.onNodeWithTag("glyph.$it", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot }
-            val nativeCanvas = compose.onNodeWithTag("player.actionToolbar.native", useUnmergedTree = true)
-                .assertHeightIsEqualTo(56.dp).fetchSemanticsNode().boundsInRoot
+            compose.onNodeWithTag("player.actionToolbar.native", useUnmergedTree = true)
+                .assertHeightIsEqualTo(24.dp)
             val preview = if (showNext) compose.onNodeWithTag("next.preview").fetchSemanticsNode().boundsInRoot else null
-            compose.onNodeWithTag("geometry.host").assertHeightIsEqualTo(if (showNext) 122.dp else 82.dp)
+            compose.onNodeWithTag("geometry.host").assertHeightIsEqualTo(if (showNext) 90.dp else 50.dp)
             compose.runOnIdle { glass.value = true }
             val decorated = (0 until actionCount).map { compose.onNodeWithTag("glyph.$it", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot }
             val top = compose.onNodeWithTag("top.row").fetchSemanticsNode().boundsInRoot
             val host = compose.onNodeWithTag("geometry.host").fetchSemanticsNode().boundsInRoot
             val materialNode = compose.onNodeWithTag("player.actionToolbar.material", useUnmergedTree = true)
             val material = materialNode.assertHeightIsEqualTo(56.dp).fetchSemanticsNode().boundsInRoot
-            assertEquals("Both presentations share the same canvas dimensions and margins", nativeCanvas, material)
             compose.onNodeWithTag("geometry.host").assertHeightIsEqualTo(if (showNext) 122.dp else 82.dp)
             if (actionCount > 1) {
                 assertEquals(top.left, material.left, .5f)
@@ -423,7 +429,8 @@ class PlayerGlassActionsTest {
                 .fetchSemanticsNode().boundsInRoot }
             val context = "viewport=$viewport even=$spaceEvenly count=$actionCount state=$state preview=$showNext " +
                 "inset=$inset row=$actualRow canvas=$material slots=$slots"
-            assertEquals("Glass preserves every native glyph rectangle $context", native, decorated)
+            val addedCenter = with(compose.density) { 16.dp.toPx() }
+            assertEquals("Glass adds only its vertical surface reserve $context", native.map { it.translate(0f, addedCenter) }, decorated)
             if (actionCount > 1) {
                 slots.zipWithNext().forEach { (left, right) ->
                     assertTrue("Configured action order and nonoverlapping slots are retained $context", left.right <= right.left + 1f)
@@ -447,7 +454,7 @@ class PlayerGlassActionsTest {
                 assertTrue("Adjacent interaction canvases do not overlap $context", left.right <= right.left + 1f)
             }
             native.zip(decorated).forEach { (before, after) ->
-                assertEquals("exact added row footprint", before.center.y, after.center.y, .5f)
+                assertEquals("exact added row footprint", before.center.y + addedCenter, after.center.y, .5f)
                 assertEquals(before.width, after.width, .5f)
                 assertEquals(before.height, after.height, .5f)
             }
@@ -498,10 +505,50 @@ class PlayerGlassActionsTest {
 
     @Test fun `host height uses exact twenty dp slots for both presentations and has no empty increment`() {
         val layout = PlayerActionToolbarLayout()
+        assertEquals(50.dp, layout.hostHeight(50.dp))
         layout.reconcile(listOf(PlayerActionSlot("equalizer", 20.dp) {}))
+        assertEquals(50.dp, layout.hostHeight(50.dp))
+        layout.configure(settings)
         assertEquals(86.dp, layout.hostHeight(50.dp))
         layout.reconcile(emptyList())
         assertEquals(50.dp, layout.hostHeight(50.dp))
+    }
+
+    @Test fun `scoped disabled and master off restore native padding through mode and visibility toggles`() {
+        val mode = mutableStateOf(GlassAreaMode.Disabled)
+        val master = mutableStateOf(true)
+        val visible = mutableStateOf(true)
+        val next = mutableStateOf(false)
+        compose.setContent {
+            AppearanceProvider {
+                val configured = settings.copy(enabled = master.value,
+                    areaModes = mapOf(GlassArea.ActionButtons to GlassAreaMode.GlassAndContour),
+                    contextModes = mapOf(GlassContextArea(GlassScope.PlayerActions, GlassArea.ActionButtons) to mode.value))
+                val layout = rememberPlayerActionToolbarLayout(configured)
+                Column(Modifier.width(300.dp).height(layout.hostHeight(if (next.value) 90.dp else 50.dp))
+                    .testTag("padding.host"), verticalArrangement = Arrangement.SpaceAround) {
+                    if (next.value) Box(Modifier.height(40.dp))
+                    PlayerActionToolbar(if (visible.value) listOf(PlayerActionSlot("action") {
+                        PlayerActionIcon(R.drawable.play, Color.White, {}, Modifier.size(24.dp).testTag("padding.glyph"))
+                    }) else emptyList(), true, settings = configured, layout = layout)
+                }
+            }
+        }
+        for (upcoming in listOf(false, true)) for (enabled in listOf(true, false, true)) {
+            for (treatment in GlassAreaMode.entries + GlassAreaMode.Disabled) {
+                compose.runOnIdle { next.value = upcoming; master.value = enabled; mode.value = treatment }
+                val decorated = enabled && (treatment.hasMaterial || treatment.hasContour && settings.rim > 0f)
+                compose.onNodeWithTag("padding.host").assertHeightIsEqualTo(
+                    (if (upcoming) 90.dp else 50.dp) + if (decorated) 32.dp else 0.dp)
+                compose.onNodeWithTag(if (enabled && treatment.hasMaterial) "player.actionToolbar.material"
+                    else "player.actionToolbar.native", useUnmergedTree = true)
+                    .assertHeightIsEqualTo(if (decorated) 56.dp else 24.dp)
+                compose.onNodeWithTag("padding.glyph", useUnmergedTree = true).assertHeightIsEqualTo(24.dp)
+            }
+        }
+        compose.runOnIdle { mode.value = GlassAreaMode.GlassAndContour; visible.value = false }
+        compose.onNodeWithTag("padding.host").assertHeightIsEqualTo(90.dp)
+        compose.onNodeWithTag("player.actionToolbar.material", useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test fun `top and lower materials reflect changing background only sources`() {

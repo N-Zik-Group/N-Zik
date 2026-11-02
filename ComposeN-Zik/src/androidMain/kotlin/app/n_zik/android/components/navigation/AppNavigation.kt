@@ -23,6 +23,7 @@ import app.n_zik.android.components.glass.GlassOverlayHost
 import app.n_zik.android.components.glass.GlassDialogOverlayHost
 import app.n_zik.android.components.glass.GlassModalContent
 import app.n_zik.android.components.glass.LocalGlassMenuHost
+import app.n_zik.android.components.glass.GlassNavigationContent
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.rememberGlassArtworkColor
@@ -403,6 +404,7 @@ fun AppNavigation(
     ) {
     androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) {
     GlassModalContent(glassMenuHost, manageFocus = parentGlassHost == null, focusSessionKey = currentEntry?.id) {
+    GlassNavigationContent(glassMenuHost, enabled = captureGlass, modifier = Modifier.appearanceBackground()) {
     AppHeaderOverlay(
         // The page-only capture cannot cover the header: a fully expanded menu would
         // sample transparent pixels over the header and expose its unblurred icons.
@@ -909,6 +911,7 @@ fun AppNavigation(
         PersistentSideHeader(navController, navigationPosition,
             pageKey = { currentEntry?.id }, expectsTabs = { hasPageNavBar },
             registration = sideRail::registration)
+    }
     }
     if (parentGlassHost == null) {
         GlassDialogOverlayHost(glassMenuHost)

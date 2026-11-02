@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -16,8 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.findRootCoordinates
-import androidx.compose.ui.layout.layout
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Constraints
@@ -25,7 +24,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.utils.isLandscape
 import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.glass.GlassMaterialContainerScope
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.forArea
@@ -48,12 +46,40 @@ internal class PlayerInformationBounds {
     var viewport by mutableStateOf<Rect?>(null)
     var toolbarHost: LayoutCoordinates? = null
     var toolbarBounds by mutableStateOf<Rect?>(null)
+    var seekBarCoordinates: LayoutCoordinates? = null
+    var seekBar by mutableStateOf<Rect?>(null)
+    var durationCoordinates: LayoutCoordinates? = null
+    var duration by mutableStateOf<Rect?>(null)
     val regions = mutableStateMapOf<Any, Rect>()
     val coordinates = mutableMapOf<Any, LayoutCoordinates>()
     val horizontalInsets = mutableMapOf<Any, Float>()
     val roles = mutableMapOf<Any, Any?>()
+    var landscape: Boolean = false
+    var horizontalPadding: Float = 0f
+    var verticalPadding: Float = 0f
+
+    fun surfaceBounds(): Rect? {
+        val union = regions.values.reduceOrNull { a, b -> Rect(
+            minOf(a.left, b.left), minOf(a.top, b.top), maxOf(a.right, b.right), maxOf(a.bottom, b.bottom)) }
+            ?: return null
+        val center = regions.filterKeys { it in horizontalInsets }.values.maxByOrNull { it.width }
+            ?.center?.x ?: union.center.x
+        val requestedRadius = maxOf(center - union.left, union.right - center) + horizontalPadding
+        val availableRadius = viewport?.let { minOf(center - it.left, it.right - center).coerceAtLeast(0f) }
+            ?: requestedRadius
+        val radius = minOf(requestedRadius, availableRadius)
+        val rail = if (landscape) toolbarBounds else null
+        return Rect(rail?.left ?: (center - radius), union.top - verticalPadding,
+            rail?.right ?: (center + radius), union.bottom + verticalPadding)
+    }
     fun update() {
         val origin = host?.takeIf { it.isAttached } ?: return
+        seekBar = seekBarCoordinates?.takeIf { it.isAttached }?.let {
+            origin.localBoundingBoxOf(it, clipBounds = false)
+        }
+        duration = durationCoordinates?.takeIf { it.isAttached }?.let {
+            origin.localBoundingBoxOf(it, clipBounds = false)
+        }
         viewport = origin.localBoundingBoxOf(viewportHost?.takeIf { it.isAttached } ?: origin.findRootCoordinates(), clipBounds = false)
         toolbarBounds = toolbarHost?.takeIf { it.isAttached }?.let {
             origin.localBoundingBoxOf(it, clipBounds = false)
@@ -71,9 +97,33 @@ internal class PlayerInformationBounds {
 internal val LocalPlayerInformationBounds = staticCompositionLocalOf<PlayerInformationBounds?> { null }
 private val LocalPlayerInformationRole = staticCompositionLocalOf<Any?> { null }
 
-/** One passive plate follows the actual metadata/time regions without changing their measurement.
- * A user's swapped timeline may place transport between those regions; its placement stays intact.
- */
+/** Exposes the track row separately from the durations underneath it. */
+@Composable
+fun Modifier.playerSeekBarBounds(): Modifier {
+    val scope = LocalPlayerInformationBounds.current ?: return this
+    DisposableEffect(scope) {
+        onDispose { scope.seekBarCoordinates = null; scope.seekBar = null }
+    }
+    return testTag("player.seekBar.track").onPlaced {
+        scope.seekBarCoordinates = it
+        scope.update()
+    }
+}
+
+/** Records the duration row whose text is vertically centered, without changing its measurement. */
+@Composable
+fun PlayerDurationBounds(content: @Composable () -> Unit) {
+    val scope = LocalPlayerInformationBounds.current
+    DisposableEffect(scope) {
+        onDispose { scope?.durationCoordinates = null; scope?.duration = null }
+    }
+    Box(Modifier.testTag("player.timeline.duration").onPlaced {
+        scope?.durationCoordinates = it
+        scope?.update()
+    }) { content() }
+}
+
+/** A passive plate follows metadata and time regions without changing their measurement. */
 @Composable
 fun PlayerInformationGlassBlock(
     modifier: Modifier = Modifier,
@@ -92,63 +142,61 @@ fun PlayerInformationGlassBlock(
     val geometry = LocalPlayerTransportGeometry.current
     val shape = searchBubbleShape()
     val parent = LocalGlassContainerBackdrop.current
-    val x = with(LocalDensity.current) { 10.dp.toPx() }
-    val y = with(LocalDensity.current) { PlayerInformationVerticalPadding.toPx() }
-    val bounds = scope.regions.values.reduceOrNull { a, b -> Rect(
-        minOf(a.left, b.left), minOf(a.top, b.top), maxOf(a.right, b.right), maxOf(a.bottom, b.bottom)) }
-        ?.let {
-            // Keep the plate and centered duration capsule aligned with the native
-            // information/timeline rows, even when the icon rail overflows only left.
-            val center = scope.regions.filterKeys { key -> key in scope.horizontalInsets }
-                .values.maxByOrNull { region -> region.width }?.center?.x ?: it.center.x
-            val requestedRadius = maxOf(center - it.left, it.right - center) + x
-            val viewport = scope.viewport
-            val availableRadius = viewport?.let { area -> minOf(center - area.left, area.right - center) }
-                ?.coerceAtLeast(0f) ?: requestedRadius
-            val radius = minOf(requestedRadius, availableRadius)
-            val rail = if (landscape) scope.toolbarBounds else null
-            Rect(rail?.left ?: (center - radius), it.top - y,
-                rail?.right ?: (center + radius), it.bottom + y)
-        }
-    val surfaceTop = if (material || contour) scope.host?.takeIf { it.isAttached }
-        ?.let { geometry?.bounds(it)?.top }?.let { top -> bounds?.top?.plus(top) } else null
-    SideEffect {
-        geometry?.informationSurfaceTop = surfaceTop
-        val visibleTop = if (material || contour) bounds?.top else scope.regions.values.minOfOrNull { it.top }
-        geometry?.landscapeInformationTopOutset = if (landscape)
-            visibleTop?.let { (-it).coerceAtLeast(0f) } else 0f
-    }
+    scope.landscape = landscape
+    scope.horizontalPadding = with(LocalDensity.current) { 10.dp.toPx() }
+    scope.verticalPadding = with(LocalDensity.current) { PlayerInformationVerticalPadding.toPx() }
     DisposableEffect(geometry) {
         onDispose {
             geometry?.informationSurfaceTop = null
+            geometry?.informationSurfaceBounds = null
             geometry?.landscapeInformationTopOutset = null
         }
     }
-    // The export records only this passive material, never the children or player controls.
-    GlassMaterialContainerScope(Modifier, includeParent = true, material = if (material && bounds != null) {
-        { exported -> Modifier.glassMaterial(settings.forArea(GlassArea.ActionButtons), shape,
-            ownBackdrop = parent, separateWindow = parent == null, exportedBackdrop = exported) }
-    } else null) { surface ->
-        CompositionLocalProvider(LocalPlayerInformationBounds provides scope) {
-            Box(modifier.onGloballyPositioned {
-                scope.host = it; scope.viewportHost = geometry?.host; scope.update()
-            }) {
+    // Every player pane samples the same original scene. Exporting this plate to its
+    // children would apply film and blur twice to the time, information rail and heart.
+    val surface = if (material) Modifier.glassMaterial(settings.forArea(GlassArea.ActionButtons), shape,
+        ownBackdrop = parent, separateWindow = parent == null) else Modifier
+    CompositionLocalProvider(LocalPlayerInformationBounds provides scope) {
+        Layout(modifier = modifier.onPlaced {
+            scope.host = it; scope.viewportHost = geometry?.host; scope.update()
+        }, content = {
+            Box {
                 if (landscape) {
                     // Measure the same outer rail as the lower toolbar without remeasuring its content.
                     Box(Modifier.matchParentSize().playerActionToolbarWidth(landscape = true)
-                        .onGloballyPositioned { scope.toolbarHost = it; scope.update() })
-                }
-                if ((material || contour) && bounds != null) {
-                    Box(Modifier.matchParentSize().layout { measurable, constraints ->
-                        val pane = measurable.measure(Constraints.fixed(
-                            bounds.width.roundToInt().coerceAtLeast(0), bounds.height.roundToInt().coerceAtLeast(0)))
-                        layout(constraints.maxWidth, constraints.maxHeight) {
-                            pane.place(bounds.left.roundToInt(), bounds.top.roundToInt())
-                        }
-                    }.testTag("player.informationBlock.surface")
-                        .then(if (material) surface else Modifier.glassAreaContour(settings, GlassArea.ActionButtons, shape)))
+                        .onPlaced { scope.toolbarHost = it; scope.update() })
                 }
                 content()
+            }
+            if (material || contour) Box(Modifier.testTag("player.informationBlock.surface")
+                .then(if (material) surface else if (contour)
+                    Modifier.glassAreaContour(settings, GlassArea.ActionButtons, shape) else Modifier))
+        }) { children, constraints ->
+            val body = children[0].measure(constraints)
+            val lookahead = isLookingAhead
+            layout(body.width, body.height) {
+                // Content placement publishes current coordinates before the passive pane
+                // is measured. A resize never reuses the previous frame's plate geometry.
+                body.placeRelative(0, 0)
+                if (!lookahead) scope.update()
+                val bounds = if (lookahead) null else scope.surfaceBounds()
+                val origin = scope.host?.takeIf { it.isAttached }?.let { geometry?.bounds(it) }
+                val surfaceBounds = if (material || contour) bounds?.let { rect ->
+                    origin?.let { rect.translate(it.left, it.top) }
+                } else null
+                val visibleTop = if (material || contour) bounds?.top else scope.regions.values.minOfOrNull { it.top }
+                if (!lookahead) {
+                    geometry?.informationSurfaceTop = surfaceBounds?.top
+                    geometry?.informationSurfaceBounds = surfaceBounds
+                    geometry?.landscapeInformationTopOutset = if (landscape)
+                        visibleTop?.let { (-it).coerceAtLeast(0f) } else 0f
+                }
+                children.getOrNull(1)?.let { surface ->
+                    val pane = surface.measure(Constraints.fixed(
+                        bounds?.width?.roundToInt()?.coerceAtLeast(0) ?: 0,
+                        bounds?.height?.roundToInt()?.coerceAtLeast(0) ?: 0))
+                    pane.place(bounds?.left?.roundToInt() ?: 0, bounds?.top?.roundToInt() ?: 0, zIndex = -1f)
+                }
             }
         }
     }
@@ -173,7 +221,7 @@ fun PlayerInformationGlassRegion(
             scope?.roles?.remove(token)
         }
     }
-    val region = Modifier.testTag("player.informationRegion.$key").onGloballyPositioned { child ->
+    val region = Modifier.testTag("player.informationRegion.$key").onPlaced { child ->
         scope?.let {
             it.coordinates[token] = child
             it.horizontalInsets[token] = inset
@@ -197,7 +245,7 @@ internal fun Modifier.playerInformationGlassVisualBounds(): Modifier {
     DisposableEffect(scope, token) {
         onDispose { scope.coordinates.remove(token); scope.regions.remove(token); scope.roles.remove(token) }
     }
-    return onGloballyPositioned { child ->
+    return onPlaced { child ->
         scope.coordinates[token] = child
         scope.roles[token] = role
         scope.update()

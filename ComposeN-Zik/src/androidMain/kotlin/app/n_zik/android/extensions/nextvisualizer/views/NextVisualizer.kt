@@ -11,11 +11,8 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,6 +41,7 @@ import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.components.player.LocalPlayerCoverOverlay
+import app.n_zik.android.components.glass.OverlayFade
 import app.n_zik.android.components.glass.overlayViewportShape
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
@@ -60,95 +58,95 @@ import app.n_zik.android.extensions.nextvisualizer.NextVisualizer
 @UnstableApi
 @Composable
 fun NextVisualizer(
-    isDisplayed: Boolean
+    isDisplayed: Boolean,
+    onCover: Boolean? = null,
+    fadeHosted: Boolean = false,
 ) {
-    val context = LocalContext.current
-    val visualizerEnabled by rememberPreference(visualizerEnabledKey, false)
-    val savedVisualizerOnCover by rememberPreference(showvisthumbnailKey, true)
-    val showvisthumbnail = LocalPlayerCoverOverlay.current || savedVisualizerOnCover
-    var blackBackgroundForVisThumbnail by rememberPreference(blackBackgroundForVisThumbnailKey, true)
-    
-    val binder = LocalPlayerServiceBinder.current
-    var isPlaying by remember(binder) { mutableStateOf(binder?.player?.isPlaying == true) }
+    OverlayFade(active = isDisplayed, durationMillis = 500, hosted = fadeHosted) {
+        val context = LocalContext.current
+        val visualizerEnabled by rememberPreference(visualizerEnabledKey, false)
+        val savedVisualizerOnCover by rememberPreference(showvisthumbnailKey, true)
+        val showvisthumbnail = onCover ?: (LocalPlayerCoverOverlay.current || savedVisualizerOnCover)
+        var blackBackgroundForVisThumbnail by rememberPreference(blackBackgroundForVisThumbnailKey, true)
 
-    DisposableEffect(binder) {
-        val listener = object : Player.Listener {
-            override fun onIsPlayingChanged(isPlayingChanged: Boolean) {
-                isPlaying = isPlayingChanged
+        val binder = LocalPlayerServiceBinder.current
+        var isPlaying by remember(binder) { mutableStateOf(binder?.player?.isPlaying == true) }
+
+        DisposableEffect(binder) {
+            val listener = object : Player.Listener {
+                override fun onIsPlayingChanged(isPlayingChanged: Boolean) {
+                    isPlaying = isPlayingChanged
+                }
+            }
+            binder?.player?.addListener(listener)
+            onDispose {
+                binder?.player?.removeListener(listener)
             }
         }
-        binder?.player?.addListener(listener)
-        onDispose {
-            binder?.player?.removeListener(listener)
-        }
-    }
 
-    if (visualizerEnabled) {
-        val permission = Manifest.permission.RECORD_AUDIO
+        if (visualizerEnabled) {
+            val permission = Manifest.permission.RECORD_AUDIO
 
-        var relaunchPermission by remember {
-            mutableStateOf(false)
-        }
-
-        var hasPermission by remember(isCompositionLaunched()) {
-            mutableStateOf(context.applicationContext.hasPermission(permission))
-        }
-
-        val launcher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission(),
-            onResult = {
-                hasPermission = it
-                PermissionUsageJournal.record(context, PermissionFeature.VISUALIZER, JournalPermission.MICROPHONE,
-                    if (it) PermissionEventKind.GRANTED else PermissionEventKind.DENIED)
+            var relaunchPermission by remember {
+                mutableStateOf(false)
             }
-        )
 
-        if (!hasPermission) {
-            LaunchedEffect(Unit, relaunchPermission) { PermissionUsageJournal.record(context, PermissionFeature.VISUALIZER, JournalPermission.MICROPHONE, PermissionEventKind.REQUESTED); launcher.launch(permission) }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(if (!showvisthumbnail) Color.Transparent else Color.Black.copy(0.8f)),
-                verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                BasicText(
-                    text = stringResource(R.string.require_mic_permission),
-                    modifier = Modifier.fillMaxWidth(0.75f),
-                    style = typography().xs.semiBold
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                SecondaryTextButton(
-                    text = stringResource(R.string.open_permission_settings),
-                    onClick = {
-                        context.startActivity(
-                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                setData(Uri.fromParts("package", context.packageName, null))
-                            }
-                        )
-                    }
-                )
+            var hasPermission by remember(isCompositionLaunched()) {
+                mutableStateOf(context.applicationContext.hasPermission(permission))
             }
-        } else {
-            AnimatedVisibility(
-                visible = isDisplayed,
-                enter = fadeIn(tween(500)),
-                exit = fadeOut(tween(500)),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                val backgroundColor by animateColorAsState(
-                    targetValue = if (!showvisthumbnail || !blackBackgroundForVisThumbnail || !isPlaying) Color.Transparent else Color.Black.copy(0.6f),
-                    animationSpec = tween(500),
-                    label = stringResource(R.string.txt_visualizerbackground)
-                )
-                
-                Box(
+
+            val launcher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestPermission(),
+                onResult = {
+                    hasPermission = it
+                    PermissionUsageJournal.record(context, PermissionFeature.VISUALIZER, JournalPermission.MICROPHONE,
+                        if (it) PermissionEventKind.GRANTED else PermissionEventKind.DENIED)
+                }
+            )
+
+            if (!hasPermission) {
+                LaunchedEffect(Unit, relaunchPermission) { PermissionUsageJournal.record(context, PermissionFeature.VISUALIZER, JournalPermission.MICROPHONE, PermissionEventKind.REQUESTED); launcher.launch(permission) }
+
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(overlayViewportShape(showvisthumbnail, thumbnailShape()))
+                        .background(if (!showvisthumbnail) Color.Transparent else Color.Black.copy(0.8f)),
+                    verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    NextVisualizer(sceneBackground = backgroundColor)
+                    BasicText(
+                        text = stringResource(R.string.require_mic_permission),
+                        modifier = Modifier.fillMaxWidth(0.75f),
+                        style = typography().xs.semiBold
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                    SecondaryTextButton(
+                        text = stringResource(R.string.open_permission_settings),
+                        onClick = {
+                            context.startActivity(
+                                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                    setData(Uri.fromParts("package", context.packageName, null))
+                                }
+                            )
+                        }
+                    )
+                }
+            } else {
+                Box(Modifier.fillMaxSize()) {
+                    val backgroundColor by animateColorAsState(
+                        targetValue = if (!showvisthumbnail || !blackBackgroundForVisThumbnail || !isPlaying) Color.Transparent else Color.Black.copy(0.6f),
+                        animationSpec = tween(500),
+                        label = stringResource(R.string.txt_visualizerbackground)
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(overlayViewportShape(showvisthumbnail, thumbnailShape()))
+                    ) {
+                        NextVisualizer(sceneBackground = backgroundColor, onCover = showvisthumbnail)
+                    }
                 }
             }
         }

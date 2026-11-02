@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -23,6 +24,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.glass.LocalGlassUnderlayCovered
+import app.n_zik.android.components.glass.glassOpticsEnabled
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
@@ -39,6 +42,42 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class PlayerCoveredPageTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `opening and closing reduce only page optics and preserve inherited modal coverage`() {
+        var expanded by mutableStateOf(false)
+        var movingOrOpen by mutableStateOf(false)
+        var modalCovered by mutableStateOf(false)
+        var pageOptics = true
+        var playerOptics = true
+        var pageCovered = false
+        compose.setContent {
+            CompositionLocalProvider(LocalGlassUnderlayCovered provides modalCovered) {
+                Box {
+                    PlayerCoveredPage(covered = expanded, reduceGlassEffects = movingOrOpen) {
+                        pageOptics = glassOpticsEnabled()
+                        pageCovered = LocalPlayerCoveredPage.current
+                        Box(Modifier.size(100.dp))
+                    }
+                    playerOptics = glassOpticsEnabled()
+                }
+            }
+        }
+        compose.runOnIdle { assertTrue(pageOptics); movingOrOpen = true }
+        compose.runOnIdle {
+            assertFalse("underlay uses the same cheap optics gate as a menu", pageOptics)
+            assertFalse("page remains placed throughout opening", pageCovered)
+            assertTrue("player sibling keeps its own optics", playerOptics)
+            expanded = true
+        }
+        compose.runOnIdle { assertTrue(pageCovered); expanded = false }
+        compose.runOnIdle {
+            assertFalse("collapse exposes the page again", pageCovered)
+            assertFalse("page stays cheap throughout collapse", pageOptics)
+            movingOrOpen = false
+        }
+        compose.runOnIdle { assertTrue(pageOptics); modalCovered = true }
+        compose.runOnIdle { assertFalse(pageOptics); assertFalse(playerOptics) }
+    }
 
     @Test fun `covered page stops drawing and taps while preserving scroll and remembered composition`() {
         var covered by mutableStateOf(false)

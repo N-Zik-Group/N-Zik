@@ -69,6 +69,7 @@ import app.n_zik.android.components.glass.glassOpticsProgress
 import app.n_zik.android.components.glass.drawGlassOptics
 import app.n_zik.android.components.glass.glassRenderer
 import app.n_zik.android.components.glass.glassNativeSurfaceTint
+import app.n_zik.android.components.glass.glassSaturation
 import app.n_zik.android.components.glass.isGlassMotionAllowed
 import app.n_zik.android.uiRoundnessShape
 import kotlinx.coroutines.launch
@@ -81,6 +82,17 @@ internal val LocalGlassTabScale = staticCompositionLocalOf { { 1f } }
 
 internal val GlassNavigationBarHeight = 64.dp
 internal val GlassNavigationPlayerGap = 18.dp
+
+internal data class GlassTabOptics(val blurDp: Float, val saturation: Float, val depthDp: Float, val amountDp: Float)
+
+/** Press motion modulates the user's material, including a fully clear/no-refraction endpoint. */
+internal fun glassTabOptics(settings: GlassSettings, pressProgress: Float, opticsProgress: Float): GlassTabOptics {
+    val press = pressProgress.coerceIn(0f, 1f)
+    val optics = opticsProgress.coerceIn(0f, 1f)
+    return GlassTabOptics(settings.blur * (1f - press) * optics,
+        1f + (glassSaturation(settings.vibrancy) - 1f) * optics,
+        settings.depth * 48f * press * optics, settings.amount * 48f * press * optics)
+}
 
 /** Converts a physical drag into a bounded tab position, including RTL and empty layouts. */
 internal fun glassDraggedTab(position: Float, delta: Float, extent: Float, count: Int, reverse: Boolean): Float {
@@ -204,8 +216,10 @@ internal fun GlassNavigationTabs(
     }
     val slotLens: BackdropEffectScope.() -> Unit = {
         if (renderer == GlassRenderer.Refraction) {
-            val progress = animation.pressProgress
-            lens(10.dp.toPx() * progress * opticsProgress, 14.dp.toPx() * progress * opticsProgress, dispersion = settings.dispersionAmount())
+            val configured = glassTabOptics(settings, animation.pressProgress, opticsProgress)
+            val reach = size.minDimension * .45f
+            lens(configured.depthDp.dp.toPx().coerceAtMost(reach), configured.amountDp.dp.toPx().coerceAtMost(reach),
+                depthEffect = settings.depthEffect, dispersion = settings.dispersionAmount())
         }
     }
     Box(modifier.onSizeChanged {
@@ -304,8 +318,9 @@ internal fun GlassNavigationTabs(
                     backdrop = pressedBackdrop,
                     shape = { shape },
                     effects = {
-                        colorControls(saturation = 1f + .5f * opticsProgress)
-                        blur(8.dp.toPx() * (1f - animation.pressProgress.coerceIn(0f, 1f)) * opticsProgress)
+                        val configured = glassTabOptics(settings, animation.pressProgress, opticsProgress)
+                        colorControls(saturation = configured.saturation)
+                        if (configured.blurDp > 0f) blur(configured.blurDp.dp.toPx())
                         slotLens()
                     },
                     highlight = if (settings.rim > 0f) ({ Highlight.Default.copy(alpha = opticsProgress * animation.pressProgress * (settings.rim / .55f).coerceIn(0f, 1f)) }) else null,

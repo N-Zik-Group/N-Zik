@@ -1,6 +1,9 @@
 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.it.fast4x.rimusic.ui.screens.player.components.controls
 
+import app.n_zik.android.components.player.PlayerInformationFavoriteAction
+import app.n_zik.android.components.player.PlayerInformationFavoriteBackdrop
+import app.n_zik.android.components.glass.GlassStandaloneActionSize
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.uiRoundnessShape
@@ -91,7 +94,6 @@ import app.it.fast4x.rimusic.utils.effectRotationKey
 import app.it.fast4x.rimusic.utils.getLikeState
 import app.it.fast4x.rimusic.utils.getUnlikedIcon
 import app.it.fast4x.rimusic.utils.jumpPreviousKey
-import app.it.fast4x.rimusic.utils.playNext
 import app.it.fast4x.rimusic.utils.playPrevious
 import app.it.fast4x.rimusic.utils.playerBackgroundColorsKey
 import app.it.fast4x.rimusic.utils.playerControlsTypeKey
@@ -144,17 +146,13 @@ fun InfoAlbumAndArtistEssential(
 ) {
     val glassTextFeedback = rememberGlassSettings().enabled
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
-    var effectRotationEnabled by rememberPreference(effectRotationKey, false)
     var showthumbnail by rememberPreference(showthumbnailKey, true)
-    // Issue #881 (gh-881): tolerant saver (spec M5).
-    var isRotated by rememberSaveable(saver = TolerantBoolStateSaver("essential.infoAlbumArtist.isRotated")) { mutableStateOf(false) }
     var showSelectDialog by remember { mutableStateOf(false) }
     var textoutline by rememberPreference(textoutlineKey, false)
     val buttonState by rememberPreference(buttonStateKey, ButtonState.Idle)
-    val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey,PlayerBackgroundColors.AnimatedGradient)
-    var likeButtonWidth by remember{ mutableStateOf(0.dp) }
     val currentMediaItem = binder.player.currentMediaItem
 
+    PlayerInformationFavoriteBackdrop(playerControlsType == PlayerControlsType.Modern) { titleBackdrop, favoriteBackdrop ->
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -208,13 +206,14 @@ fun InfoAlbumAndArtistEssential(
             BoxWithConstraints(
                 modifier = Modifier
                     .weight(1f)
+                    .then(titleBackdrop)
                     .conditional(!disableScrollingText){HorizontalfadingEdge2(0.025f)},
                 contentAlignment = Alignment.Center
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically,
                     modifier = modifierTitle
                     .conditional(!disableScrollingText) {padding(horizontal = maxWidth * 0.025f)}
-                    .conditional(playerControlsType == PlayerControlsType.Modern){padding(start = likeButtonWidth)}
+                    .conditional(playerControlsType == PlayerControlsType.Modern) { padding(start = GlassStandaloneActionSize) }
                 ) {
                     if (isExplicit) {
                         IconButton(
@@ -267,44 +266,25 @@ fun InfoAlbumAndArtistEssential(
                 }
             }
 
-            //}
-            if (playerControlsType == PlayerControlsType.Modern){
-                BoxWithConstraints(
-                    modifier = Modifier.weight(0.1f)
-                ) {
-                    likeButtonWidth = maxWidth
-                    IconButton(
-                        color = if(likedAt == -1L) colorPalette().red else colorPalette().favoritesIcon,
-                        icon = getLikeState(mediaId),
-                        onClick = {
-                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                currentMediaItem?.let {
-                                    YouTubeSync.rotateSongLikeState( appContext(), it )
-                                }
+            if (playerControlsType == PlayerControlsType.Modern) {
+                PlayerInformationFavoriteAction(
+                    ownBackdrop = favoriteBackdrop,
+                    color = if (likedAt == -1L) colorPalette().red else colorPalette().favoritesIcon,
+                    icon = getLikeState(mediaId),
+                    onClick = {
+                        NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                            currentMediaItem?.let {
+                                YouTubeSync.rotateSongLikeState(appContext(), it)
                             }
-
-                            if (effectRotationEnabled) isRotated = !isRotated
-                        },
-                        modifier = Modifier
-                            .padding(start = 5.dp)
-                            .size(24.dp)
-                    )
-                    if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) {
-                        Icon(
-                            painter = painterResource(id = getUnlikedIcon()),
-                            tint = colorPalette().text,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .padding(start = 5.dp)
-                                .size(24.dp)
-                        )
-                    }
-                }
+                        }
+                    },
+                )
             }
         }
 
     }
 
+    }
 
     Spacer(
         modifier = Modifier

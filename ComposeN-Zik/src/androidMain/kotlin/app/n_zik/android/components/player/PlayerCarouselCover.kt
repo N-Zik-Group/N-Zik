@@ -11,6 +11,9 @@ import androidx.media3.common.util.UnstableApi
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassScope
+import app.n_zik.android.components.glass.OverlayFade
+import app.n_zik.android.components.glass.hasOverlayContent
+import app.n_zik.android.components.glass.rememberOverlayTransition
 import app.n_zik.android.components.glass.LocalGlassOverlayArtworkBackdrop
 import app.n_zik.android.components.glass.glassContentCaptureEnabled
 import app.n_zik.android.components.glass.rememberGlassSettings
@@ -27,11 +30,7 @@ val LocalPlayerCoverOverlay = staticCompositionLocalOf { false }
 /** Carousel overlays always occupy the playing card without changing saved single-cover preferences. */
 data class PlayerCoverOverlayPolicy(val lyricsOnCover: Boolean, val visualizerOnCover: Boolean)
 
-/**
- * The "show on thumbnail" toggles alone decide whether lyrics/visualizer sit on the
- * cover or go standalone — the carousel must not override them: on = on the carousel
- * cover (expanded or not), off = fullscreen like the other modes.
- */
+/** Saved thumbnail toggles choose cover or standalone placement independently of carousel expansion. */
 fun playerCoverOverlayPolicy(
     lyricsOnCover: Boolean,
     visualizerOnCover: Boolean,
@@ -46,6 +45,13 @@ fun playerCoverArtworkVisible(
     visualizerOnCover: Boolean,
 ): Boolean = showThumbnail && ((!showingLyrics && !showingVisualizer) ||
     (showingLyrics && lyricsOnCover) || (showingVisualizer && visualizerOnCover))
+
+/** Saved on-cover placement falls back to standalone when artwork is unavailable. */
+fun playerStandaloneLyricsVisible(
+    showThumbnail: Boolean,
+    showingLyrics: Boolean,
+    lyricsOnCover: Boolean,
+): Boolean = showingLyrics && (!showThumbnail || !lyricsOnCover)
 
 /** Without a visible thumbnail, the visualizer falls back to the standalone player area. */
 fun playerStandaloneVisualizerVisible(
@@ -106,6 +112,7 @@ fun PlayerCarouselCover(
             if (mediaItem != null) LyricsScreen(
                 mediaId = mediaItem.mediaId,
                 isDisplayed = visibility.lyrics,
+                fadeHosted = true,
                 onDismiss = onDismissLyrics,
                 ensureSongInserted = { Database.insertIgnore(mediaItem) },
                 size = Dimensions.thumbnails.player.song,
@@ -115,7 +122,7 @@ fun PlayerCarouselCover(
                 clickLyricsText = clickLyricsText,
             )
         },
-        visualizer = { NextVisualizer(isDisplayed = visibility.visualizer) },
+        visualizer = { NextVisualizer(isDisplayed = visibility.visualizer, fadeHosted = true) },
     )
 }
 
@@ -127,8 +134,10 @@ internal fun PlayerCoverOverlayHost(
     lyrics: @Composable () -> Unit,
     visualizer: @Composable () -> Unit,
 ) {
-    val captureLyricsArtwork = visibility.lyrics && coverOverlayNeedsArtwork(GlassScope.Lyrics)
-    val captureVisualizerArtwork = visibility.visualizer && coverOverlayNeedsArtwork(GlassScope.Visualizer)
+    val lyricsTransition = rememberOverlayTransition(visibility.lyrics)
+    val visualizerTransition = rememberOverlayTransition(visibility.visualizer)
+    val captureLyricsArtwork = lyricsTransition.hasOverlayContent && coverOverlayNeedsArtwork(GlassScope.Lyrics)
+    val captureVisualizerArtwork = visualizerTransition.hasOverlayContent && coverOverlayNeedsArtwork(GlassScope.Visualizer)
     val artworkBackdrop = if (captureLyricsArtwork || captureVisualizerArtwork) rememberLayerBackdrop() else null
     Box(modifier) {
         // Keep artwork in the same composition slot when optical capture is toggled.
@@ -142,8 +151,8 @@ internal fun PlayerCoverOverlayHost(
             // The card is its own viewport; the global information plate may sit beside/above it.
             LocalPlayerTransportGeometry provides null,
         ) {
-            if (visibility.lyrics) lyrics()
-            if (visibility.visualizer) visualizer()
+            OverlayFade(visibility.lyrics, state = lyricsTransition, content = lyrics)
+            OverlayFade(visibility.visualizer, durationMillis = 500, state = visualizerTransition, content = visualizer)
         }
     }
 }

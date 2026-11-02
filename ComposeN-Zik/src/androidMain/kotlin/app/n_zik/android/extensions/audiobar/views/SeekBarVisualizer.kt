@@ -2,10 +2,10 @@ package app.n_zik.android.extensions.audiobar.views
 import app.n_zik.android.components.player.PlayerSeekGlassThumb
 import app.n_zik.android.components.player.PlayerSeekOpticalThumb
 import app.n_zik.android.components.player.playerSeekTrack
-import app.n_zik.android.components.player.playerSeekWaveMarkerHeight
+import app.n_zik.android.components.player.playerSeekVisualizerMarkerHeight
 
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -27,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.util.lerp
 import kotlin.math.abs
@@ -36,14 +35,12 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.random.Random
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.annotation.FloatRange
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.unit.Dp
 import kotlinx.coroutines.delay
 import android.Manifest
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.text.BasicText
@@ -80,6 +77,21 @@ fun SeekBarVisualizer(
     modifier: Modifier = Modifier,
     glassThumb: PlayerSeekGlassThumb? = null,
 ) {
+    val player = LocalPlayerServiceBinder.current?.player
+    // Parameter updates must not replace the state retained by this player's listener.
+    val playbackState = remember(player) { mutableStateOf(player?.isPlaying ?: isPlaying) }
+    DisposableEffect(player) {
+        val listener = object : Player.Listener {
+            override fun onIsPlayingChanged(isPlayingChanged: Boolean) {
+                playbackState.value = isPlayingChanged
+            }
+        }
+        player?.addListener(listener)
+        player?.isPlaying?.let { playbackState.value = it }
+        onDispose { player?.removeListener(listener) }
+    }
+    LaunchedEffect(isPlaying) { playbackState.value = isPlaying }
+    val localIsPlaying = playbackState.value
     BoxWithConstraints(modifier) {
         val visualProgress: () -> ProgressPercentage = {
             glassThumb?.motion?.value?.let { ProgressPercentage.safeValue(it) } ?: progressPercentage()
@@ -92,30 +104,6 @@ fun SeekBarVisualizer(
         
         var audioSessionId by remember { mutableStateOf(audioSessionIdProvider()) }
         
-        val binder = LocalPlayerServiceBinder.current
-        var localIsPlaying by remember(binder, isPlaying) { mutableStateOf(binder?.player?.isPlaying ?: isPlaying) }
-
-        DisposableEffect(binder) {
-            val listener = object : Player.Listener {
-                override fun onIsPlayingChanged(isPlayingChanged: Boolean) {
-                    localIsPlaying = isPlayingChanged
-                }
-            }
-            binder?.player?.addListener(listener)
-            // Catch state change if media started instantly
-            binder?.player?.isPlaying?.let { localIsPlaying = it }
-            onDispose {
-                binder?.player?.removeListener(listener)
-            }
-        }
-        
-        // Also respect parameter updates just in case
-        LaunchedEffect(isPlaying) {
-            if (isPlaying != localIsPlaying) {
-                localIsPlaying = isPlaying
-            }
-        }
-
         LaunchedEffect(localIsPlaying) {
             while (localIsPlaying) {
                 val newId = audioSessionIdProvider()
@@ -165,11 +153,7 @@ fun SeekBarVisualizer(
             @Suppress("SENSELESS_COMPARISON")
             val currentSessionId = audioSessionId ?: return@BoxWithConstraints
 
-            // Issue #606: no more direct Visualizer.getFft() call here. The shared capture
-            // coordinator (NzikDispatchers.VISUALIZER) publishes one snapshot per sessionId at
-//
-            // 60fps and VisualizerView reads the same instance through VisualizerHelper's
-            // snapshotProvider -- this just collects it, lifecycle-aware.
+            // Share the lifecycle-aware capture instead of polling FFT on the UI thread.
             val snapshot by VisualizerCaptureCoordinator.snapshotFlow(currentSessionId)
                 .collectAsStateWithLifecycle()
 
@@ -237,32 +221,41 @@ fun SeekBarVisualizer(
             }
         }
 
-        Box(Modifier.fillMaxWidth().height(trackHeight).playerSeekTrack(glassThumb)) {
+        Box(Modifier.fillMaxWidth().height(trackHeight).playerSeekTrack(glassThumb)
+                    .pointerInput(maxWidth) {
+                        awaitEachGesture {
+                            val down = awaitFirstDown()
+                            down.consume()
+                            var dragging = false
+                            while (true) {
+                                val change = awaitPointerEvent().changes.firstOrNull { it.id == down.id }
+                                    ?: break
+                                if (change.isConsumed) break
+                                if (!change.pressed) {
+                                    if (!dragging) updatedWaveInteraction.onInteraction(
+                                        ProgressPercentage.of(current = change.position.x.toDp(), target = maxWidth))
+                                    change.consume()
+                                    break
+                                }
+                                val distance = change.position - down.position
+                                if (!dragging) {
+                                    // Let vertical player scrolling win before taking seek ownership.
+                                    if (distance.y.absoluteValue > viewConfiguration.touchSlop &&
+                                        distance.y.absoluteValue >= distance.x.absoluteValue) break
+                                    if (distance.x.absoluteValue <= viewConfiguration.touchSlop) continue
+                                    dragging = true
+                                }
+                                updatedWaveInteraction.onInteraction(
+                                    ProgressPercentage.of(current = change.position.x.toDp(), target = maxWidth))
+                                change.consume()
+                            }
+                        }
+                    }
+        ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(trackHeight)
-                    .pointerInput(Unit) {
-                        detectTapGestures { offset ->
-                            updatedWaveInteraction.onInteraction(
-                                ProgressPercentage.of(current = offset.x.toDp(), target = maxWidth),
-                            )
-                        }
-                    }
-                    .pointerInput(Unit) {
-                        detectHorizontalDragGestures { change: PointerInputChange, dragAmount: Float ->
-                            // Do not trigger on minuscule movements
-                            if (dragAmount.absoluteValue < 1f) return@detectHorizontalDragGestures
-                            updatedWaveInteraction.onInteraction(
-                                ProgressPercentage.of(
-                                    current = change.position.x.toDp(),
-                                    target = maxWidth
-                                ),
-                            )
-                        }
-                    },
+                modifier = Modifier.fillMaxWidth().height(trackHeight),
             ) {
                 if (!hasPermission) {
                     BasicText(
@@ -298,7 +291,8 @@ fun SeekBarVisualizer(
                         .align(Alignment.CenterStart)
                         .offset(x = safeOffset)
                         .width(thumbWidth)
-                        .height(playerSeekWaveMarkerHeight(trackHeight, glassThumb))
+                        .height(playerSeekVisualizerMarkerHeight(trackHeight))
+                        .testTag("player.seek.visualizer.pausedCursor")
                 ) {}
             }
         }

@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassMaterialContainerScope
+import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.glassMaterial
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.GlassArea
@@ -150,7 +151,7 @@ internal fun UpdaterBottomPanel(
     val shape = app.n_zik.android.components.navigation.nav.bottomNavigationBarShape(uiRoundnessShape())
     val settings = rememberGlassSettings()
     if (settings.usesGlassMaterial(GlassArea.SettingsCards)) {
-        GlassMaterialContainerScope(Modifier, material = { exported ->
+        GlassMaterialContainerScope(Modifier, materialSource = backdrop ?: LocalGlassBackdrop.current, material = { exported ->
             Modifier.glassMaterial(
                 settings = settings.forArea(GlassArea.SettingsCards), shape = shape,
                 ownBackdrop = backdrop, filmColor = colorPalette().background0,

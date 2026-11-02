@@ -20,6 +20,8 @@ import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
+import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.glass.backdrop.drawPlainBackdrop
@@ -38,6 +40,15 @@ import app.n_zik.android.components.glass.usesGlassMaterial
 internal fun searchOverlayShape(native: Shape, global: Shape): Shape =
     if (native === CircleShape) native else global
 
+/** The recognition card and its children share one input, before the card applies its film. */
+@Composable
+internal fun rememberSearchOverlayMaterialSource(): Backdrop {
+    val fallbackColor = colorPalette().background0
+    val fallback = rememberCanvasBackdrop { drawRect(fallbackColor) }
+    val dimmed = rememberGlassDimmedBackdrop(LocalGlassBackdrop.current ?: fallback, .85f)
+    return LocalGlassMaterialSource.current ?: LocalGlassContainerBackdrop.current ?: dimmed ?: fallback
+}
+
 /** Child-free material includes the same black scrim as both recognition overlays. */
 @Composable
 internal fun Modifier.searchOverlaySurface(
@@ -50,10 +61,7 @@ internal fun Modifier.searchOverlaySurface(
 ): Modifier {
     val shape = searchOverlayShape(nativeShape, uiRoundnessShape())
     val material = settings.usesGlassMaterial(area)
-    val fallbackColor = colorPalette().background0
-    val fallback = rememberCanvasBackdrop { drawRect(fallbackColor) }
-    val dimmed = rememberGlassDimmedBackdrop(LocalGlassBackdrop.current ?: fallback, .85f)
-    val backdrop = LocalGlassContainerBackdrop.current ?: dimmed
+    val backdrop = rememberSearchOverlayMaterialSource()
     val surface = if (material) {
         Modifier.glassMaterial(settings.forArea(area), shape, ownBackdrop = backdrop,
             filmColor = fill, drawShadow = false, exportedBackdrop = exportedBackdrop)

@@ -29,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import app.n_zik.android.components.glass.GlassHorizontalSeparator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.GlassMaterialContainerColumn
 import app.n_zik.android.components.glass.GlassMaterialContainerScope
 import androidx.compose.runtime.getValue
@@ -93,6 +94,7 @@ object GridMenu {
             horizontalAlignment = Alignment.CenterHorizontally,
             includeParent = useGlass && !ownsSurface,
             sectionFilm = if (useGlass) null else nativeBodyColor,
+            materialSource = if (useGlass && ownsSurface) LocalGlassBackdrop.current else null,
             material = if (useGlass && ownsSurface) ({ exported -> Modifier.menuSheetMaterial(
                 glass, menuShape, drawFilm = false, exportedBackdrop = exported,
             ) }) else null,
@@ -102,6 +104,7 @@ object GridMenu {
                 GlassMaterialContainerColumn(
                     includeParent = true,
                     sectionFilm = headerFilm,
+                    sectionFilmIsMaterial = useGlass,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -163,6 +166,7 @@ object GridMenu {
                     .background(bodyFilm),
                 includeParent = true,
                 sectionFilm = bodyFilm,
+                sectionFilmIsMaterial = useGlass,
             ) { bodyModifier ->
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive( minSize = 120.dp ),

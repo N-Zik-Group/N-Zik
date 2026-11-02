@@ -18,7 +18,7 @@ fun PlayerActionPanel(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val breathingRoom = if (landscape)
-        ((layout.hostHeight(50.dp) - PlayerActionToolbarHeight) / 2).coerceAtLeast(0.dp)
+        ((layout.hostHeight(50.dp) - layout.toolbarHeight()) / 2).coerceAtLeast(0.dp)
     else 0.dp
     Column(
         modifier = Modifier.fillMaxSize().padding(bottom = breathingRoom),

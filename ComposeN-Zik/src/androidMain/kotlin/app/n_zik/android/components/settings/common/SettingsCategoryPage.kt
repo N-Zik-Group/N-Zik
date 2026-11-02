@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.common
 
+import android.net.Uri
+import androidx.compose.foundation.layout.Box
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberOverscrollEffect
@@ -17,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberUpdatedState
@@ -25,6 +28,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -32,6 +36,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import app.n_zik.android.components.glass.GlassFloatingActions
+import app.n_zik.android.components.glass.glassFloatingActionContent
+import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
 import app.it.fast4x.rimusic.utils.preferences
@@ -88,6 +95,8 @@ fun SettingsCategoryPage(
         }
     }
     val scroll = rememberLazyListState()
+    val floatingBackdrop = rememberGlassFloatingActionBackdrop()
+    var pinnedFooterHeightPx by remember(categoryId) { mutableIntStateOf(0) }
     var hasPinnedFooter by remember(categoryId) { mutableStateOf(false) }
     val overscroll = rememberOverscrollEffect()
     val showMessage = LocalSettingsSearchMessage.current
@@ -99,7 +108,8 @@ fun SettingsCategoryPage(
         history.value = SearchHistoryStore.record(context.preferences, historyPage, query)
     }
     val cards = remember(categoryId) { cardsForCategory(categoryId) }
-    val matches = if (search.inputValue.isBlank()) cards else searchSettingsCards(context, search.inputValue).filter { it.categoryId() == categoryId }
+    val isSearching = search.inputValue.isNotBlank()
+    val matches = searchSettingsCardResults(context, search.inputValue).filter { it.categoryId() == categoryId }
     val entryMatches = searchSettingsEntries(context, search.inputValue)
         .filter { it.parentCard().categoryId() == categoryId }
     val sourceTabs = remember(categoryId) {
@@ -112,8 +122,8 @@ fun SettingsCategoryPage(
         preferred.filter { tab -> cards.any { it.tab == tab } }
     }
     val slots = remember(categoryId) { sourceTabs.associateWith { SettingsCardSlots() } }
-    val rows = sourceTabs.flatMap { tab ->
-        val selected = matches.filter { it.tab == tab && it.titleRes != R.string.settings_reset }.map { it.titleRes }.toSet()
+    val rows = if (isSearching) emptyList() else sourceTabs.flatMap { tab ->
+        val selected = cards.filter { it.tab == tab && it.titleRes != R.string.settings_reset }.map { it.titleRes }.toSet()
         val titles = slots.getValue(tab).titles
         val ordered = if (titles.isEmpty()) {
             cards.filter { it.tab == tab && it.titleRes != R.string.settings_reset }.map { it.titleRes } +
@@ -122,7 +132,7 @@ fun SettingsCategoryPage(
         ordered.filter { it in selected }.map { tab to it }
     }
     val latestRows by rememberUpdatedState(rows)
-    val resetScopes = matches.filter { it.titleRes == R.string.settings_reset }.map { it.tab }
+    val resetScopes = if (isSearching) emptyList() else cards.filter { it.titleRes == R.string.settings_reset }.map { it.tab }
     SettingsSearchEmptyFeedback(search.inputValue, matches.isEmpty() && entryMatches.isEmpty())
     LaunchedEffect(target, parentTarget) {
         if (target.isBlank()) return@LaunchedEffect
@@ -185,110 +195,130 @@ fun SettingsCategoryPage(
         }
     }
     CompositionLocalProvider(LocalSettingsTargets provides registry) {
-        Column(Modifier.testTag("settings.category.$categoryId").background(colorPalette().background0).fillMaxWidth().fillMaxHeight()) {
-            // One source composition owns shared restart state and singleton dialogs.
-            sourceTabs.forEach { tab ->
-                val selection = cards.filter { it.tab == tab }.map { it.titleRes }.toSet() - R.string.settings_reset
-                if (selection.isEmpty()) return@forEach
-                CompositionLocalProvider(
-                    LocalSettingsCardSlots provides slots.getValue(tab),
-                    LocalSettingsResetScope provides (SettingsCategories.firstOrNull { it.tab == tab }?.labelRes ?: R.string.settings_category_privacy),
-                ) {
-                    SettingsSourceContent(
-                        tab, contentSearch, navController, selection,
-                        { title -> Modifier.settingsSearchTarget(settingsCardTargetId(context, tab, title)) },
-                        normalizePreferences = target.isBlank(),
-                    )
-                }
-            }
-            LazyColumn(
-                state = scroll,
-                contentPadding = rememberSettingsContentPadding(
-                    base = PaddingValues(bottom = Dimensions.bottomSpacer),
-                    bottomInsetHandledByFooter = hasPinnedFooter,
-                ),
-                overscrollEffect = if (scroll.canScrollForward || scroll.canScrollBackward) overscroll else null,
-                modifier = Modifier.weight(1f).fillMaxWidth().testTag("settings.category.list.$categoryId"),
-            ) {
-                item(key = "header", contentType = "header") {
-                    Column {
-                        settingsSearchTitle(searchFocus, category.labelRes, category.iconRes)
-                        settingsSearchDescription(searchFocus) {
-                            SettingsDescription(
-                                text = stringResource(category.descriptionRes),
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.Center,
-                            )
-                        }
-                        if (categoryId != "about") {
-                            search.SearchBar(this, barPadding = searchFocus.barPadding, onSearch = { recordQuery() })
-                            SearchHistorySection(
-                                visible = search.isFocused && filterSearchHistory(history.value, search.inputValue).isNotEmpty(),
-                                queries = filterSearchHistory(history.value, search.inputValue),
-                                onQueryClick = { search.input = TextFieldValue(it); recordQuery(it); search.isFocused = false },
-                                onQueryDelete = { history.value = SearchHistoryStore.delete(context.preferences, historyPage, it) },
-                                onQueryDeleteAll = { history.value = SearchHistoryStore.deleteAll(context.preferences, historyPage) },
-                            )
-                        }
+        Box {
+            Column(Modifier.glassFloatingActionContent(floatingBackdrop).testTag("settings.category.$categoryId").background(colorPalette().background0).fillMaxWidth().fillMaxHeight()) {
+                // One source composition owns shared restart state and singleton dialogs.
+                sourceTabs.forEach { tab ->
+                    val selection = cards.filter { it.tab == tab }.map { it.titleRes }.toSet() - R.string.settings_reset
+                    if (selection.isEmpty()) return@forEach
+                    CompositionLocalProvider(
+                        LocalSettingsCardSlots provides slots.getValue(tab),
+                        LocalSettingsResetScope provides (SettingsCategories.firstOrNull { it.tab == tab }?.labelRes ?: R.string.settings_category_privacy),
+                    ) {
+                        SettingsSourceContent(
+                            tab, contentSearch, navController, selection,
+                            { title -> Modifier.settingsSearchTarget(settingsCardTargetId(context, tab, title)) },
+                            normalizePreferences = target.isBlank(),
+                        )
                     }
                 }
-                items(entryMatches, key = { "entry:${it.id}" }, contentType = { "entry" }) { entry ->
-                    Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha)) {
-                        OtherSettingsEntry(
-                            title = entry.searchResultTitle(context),
-                            text = entry.locationDescription(context),
-                            icon = entry.parentCard().iconRes,
-                            modifier = Modifier.testTag("settings.category.entry.${entry.id}"),
+                LazyColumn(
+                    state = scroll,
+                    contentPadding = rememberSettingsContentPadding(
+                        base = PaddingValues(bottom = Dimensions.bottomSpacer),
+                        bottomInsetHandledByFooter = hasPinnedFooter,
+                    ),
+                    overscrollEffect = if (scroll.canScrollForward || scroll.canScrollBackward) overscroll else null,
+                    modifier = Modifier.weight(1f).fillMaxWidth().testTag("settings.category.list.$categoryId"),
+                ) {
+                    item(key = "header", contentType = "header") {
+                        Column {
+                            settingsSearchTitle(searchFocus, category.labelRes, category.iconRes)
+                            settingsSearchDescription(searchFocus) {
+                                SettingsDescription(
+                                    text = stringResource(category.descriptionRes),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
+                            if (categoryId != "about") {
+                                search.SearchBar(this, barPadding = searchFocus.barPadding, onSearch = { recordQuery() })
+                                SearchHistorySection(
+                                    visible = search.isFocused && filterSearchHistory(history.value, search.inputValue).isNotEmpty(),
+                                    queries = filterSearchHistory(history.value, search.inputValue),
+                                    onQueryClick = { search.input = TextFieldValue(it); recordQuery(it); search.isFocused = false },
+                                    onQueryDelete = { history.value = SearchHistoryStore.delete(context.preferences, historyPage, it) },
+                                    onQueryDeleteAll = { history.value = SearchHistoryStore.deleteAll(context.preferences, historyPage) },
+                                )
+                            }
+                        }
+                    }
+                    items(entryMatches, key = { "entry:${it.id}" }, contentType = { "entry" }) { entry ->
+                        SettingsEntryResultRow(
+                            result = entry,
+                            surfaceTag = "settings.category.result.entry.${entry.id}",
+                            rowTag = "settings.category.entry.${entry.id}",
                             onClick = {
                                 recordQuery()
                                 onSearchResultNavigate(entry.destinationRoute(context))
                             },
                         )
                     }
-                }
-                items(rows, key = { (tab, title) -> "$tab:$title" }, contentType = { "card" }) { (tab, title) ->
-                    CompositionLocalProvider(
-                        LocalSettingsResetScope provides (SettingsCategories.firstOrNull { it.tab == tab }?.labelRes ?: R.string.settings_category_privacy),
-                    ) {
-                        Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha)) {
-                            slots.getValue(tab).content[title]?.value?.invoke()
+                    items(matches, key = { "result:${it.tab}:${it.titleRes}" }, contentType = { "card_result" }) { card ->
+                        SettingsCardResultRow(
+                            card = card,
+                            surfaceTag = "settings.category.result.card.${card.tab}.${card.titleRes}",
+                            rowTag = "settings.category.card.${card.tab}.${card.titleRes}",
+                            onClick = {
+                                recordQuery()
+                                val cardTarget = Uri.encode(settingsCardTargetId(context, card.tab, card.titleRes))
+                                onSearchResultNavigate("settingsCategory/${card.categoryId()}?target=$cardTarget")
+                            },
+                        )
+                    }
+                    items(rows, key = { (tab, title) -> "$tab:$title" }, contentType = { "card" }) { (tab, title) ->
+                        CompositionLocalProvider(
+                            LocalSettingsResetScope provides (SettingsCategories.firstOrNull { it.tab == tab }?.labelRes ?: R.string.settings_category_privacy),
+                        ) {
+                            Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha)) {
+                                slots.getValue(tab).content[title]?.value?.invoke()
+                            }
                         }
                     }
-                }
-                if (resetScopes.isNotEmpty()) {
-                    item(key = "reset", contentType = "reset") {
-                        Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha)) {
-                            SettingsResetCard(resetScopes, target) { tab ->
-                                CompositionLocalProvider(
-                                    LocalSettingsCardSlots provides null,
-                                    LocalSettingsResetScope provides SettingsCategories.first { it.tab == tab }.labelRes,
-                                ) {
-                                    SettingsSourceContent(
-                                        tab, contentSearch, navController, setOf(R.string.settings_reset),
-                                        { title -> Modifier.settingsSearchTarget(settingsCardTargetId(context, tab, title)) },
-                                        normalizePreferences = false,
-                                    )
+                    if (resetScopes.isNotEmpty()) {
+                        item(key = "reset", contentType = "reset") {
+                            Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha)) {
+                                SettingsResetCard(resetScopes, target) { tab ->
+                                    CompositionLocalProvider(
+                                        LocalSettingsCardSlots provides null,
+                                        LocalSettingsResetScope provides SettingsCategories.first { it.tab == tab }.labelRes,
+                                    ) {
+                                        SettingsSourceContent(
+                                            tab, contentSearch, navController, setOf(R.string.settings_reset),
+                                            { title -> Modifier.settingsSearchTarget(settingsCardTargetId(context, tab, title)) },
+                                            normalizePreferences = false,
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            SettingsPinnedFooter(
-                bottomSpacer = Dimensions.bottomSpacer,
-                contentPadding = rememberPageChromeContentPadding(
-                    base = PaddingValues(bottom = Dimensions.bottomSpacer),
-                    topInsetProvider = { 0.dp },
-                ),
-                onVisibilityChanged = { hasPinnedFooter = it },
-            ) {
-                sourceTabs.forEach { tab ->
-                    CompositionLocalProvider(
-                        LocalSettingsResetScope provides (SettingsCategories.firstOrNull { it.tab == tab }?.labelRes ?: R.string.settings_category_privacy),
+                Box(Modifier.testTag("settings.category.footer").onSizeChanged { pinnedFooterHeightPx = it.height }) {
+                    SettingsPinnedFooter(
+                        bottomSpacer = Dimensions.bottomSpacer,
+                        contentPadding = rememberPageChromeContentPadding(
+                            base = PaddingValues(bottom = Dimensions.bottomSpacer),
+                            topInsetProvider = { 0.dp },
+                        ),
+                        onVisibilityChanged = { hasPinnedFooter = it },
                     ) {
-                        slots.getValue(tab).content[SettingsSourceFooter]?.value?.invoke()
+                        sourceTabs.forEach { tab ->
+                            CompositionLocalProvider(
+                                LocalSettingsResetScope provides (SettingsCategories.firstOrNull { it.tab == tab }?.labelRes ?: R.string.settings_category_privacy),
+                            ) {
+                                slots.getValue(tab).content[SettingsSourceFooter]?.value?.invoke()
+                            }
+                        }
                     }
                 }
+            }
+            GlassFloatingActions(floatingBackdrop) {
+                SettingsScrollToTop(
+                    lazyListState = scroll,
+                    pinnedFooterHeightPx = pinnedFooterHeightPx,
+                    modifier = Modifier.testTag("settings.category.scrollToTop"),
+                )
             }
         }
     }

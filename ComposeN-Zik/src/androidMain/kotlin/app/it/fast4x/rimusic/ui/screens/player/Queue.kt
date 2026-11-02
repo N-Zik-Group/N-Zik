@@ -6,6 +6,10 @@ import app.n_zik.android.components.glass.queueToolbarBottomInset
 import app.n_zik.android.components.glass.glassQueueListBackdrop
 import app.n_zik.android.components.glass.LocalQueueRowBackdrop
 import app.n_zik.android.components.glass.rememberQueueRowGlassBackdrop
+import app.n_zik.android.components.glass.glassQueueListBackground
+import app.n_zik.android.components.glass.queueContentBackground
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.GlassScope
 
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
@@ -38,7 +42,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -59,7 +62,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.glance.layout.Box
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.navigation.NavController
@@ -80,7 +82,6 @@ import app.it.fast4x.rimusic.enums.QueueType
 import app.it.fast4x.rimusic.models.Song
 import app.n_zik.android.playback.services.isLocal
 import app.it.fast4x.rimusic.ui.components.SwipeableQueueItem
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Dialog
 import app.it.fast4x.rimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
@@ -89,14 +90,10 @@ import app.it.fast4x.rimusic.ui.items.SongItemPlaceholder
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.DisposableListener
 import app.it.fast4x.rimusic.utils.asMediaItem
-import app.it.fast4x.rimusic.utils.asSong
 import app.it.fast4x.rimusic.utils.autoLoadSongsInQueueKey
 import app.it.fast4x.rimusic.utils.enqueue
-import app.it.fast4x.rimusic.utils.findMediaItemIndexById
 import app.it.fast4x.rimusic.utils.isDownloadedSong
-import app.it.fast4x.rimusic.utils.isNowPlaying
 import app.it.fast4x.rimusic.utils.manageDownload
-import app.it.fast4x.rimusic.utils.mediaItems
 import app.it.fast4x.rimusic.utils.queueTypeKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.rememberQueueScrollPositionKey
@@ -104,6 +101,9 @@ import app.it.fast4x.rimusic.utils.shouldBePlaying
 import app.it.fast4x.rimusic.utils.showButtonPlayerDiscoverKey
 import app.it.fast4x.rimusic.utils.windows
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.components.player.rememberPlayerQueueSnapshot
+import app.n_zik.android.components.player.playerQueueBulkSongs
+import app.n_zik.android.components.player.findPlayerQueueWindowIndex
 import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.tab.ItemSelector
@@ -160,12 +160,10 @@ fun Queue(
     val guestLockAlpha = guestLockedAlpha(listenTogetherGuestLock)
 
     Box( Modifier.fillMaxSize() ) {
-        var items by remember {
-            mutableStateOf(player.currentTimeline.mediaItems.map( MediaItem::asSong ))
-        }
         var windowsInQueue by remember {
             mutableStateOf(player.currentTimeline.windows)
         }
+        var pendingDragOrder by remember { mutableStateOf<List<Timeline.Window>?>(null) }
         var isDragging by remember { mutableStateOf(false) }
         var dragInfo by remember { mutableStateOf<Pair<Int, Int>?>(null) }
 
@@ -173,7 +171,6 @@ fun Queue(
             object : Player.Listener {
                 override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                     if (!isDragging) {
-                        items = timeline.mediaItems.map( MediaItem::asSong )
                         windowsInQueue = timeline.windows
                     }
                 }
@@ -208,6 +205,7 @@ fun Queue(
                     val item = removeAt(fromIndex)
                     add(toIndex, item)
                 }
+                pendingDragOrder = windowsInQueue
             }
         }
 
@@ -254,30 +252,24 @@ fun Queue(
             }
         }
 
-        fun getSongs() = itemSelector.ifEmpty { items }
-
         val search = Search(lazyListState)
         LaunchedEffect(search.isVisible) {
             if (search.isVisible) onSearchOpened()
         }
-        val windowsOnDisplay = remember(windowsInQueue, search.inputValue) {
-            if (search.inputValue.isEmpty()) {
-                windowsInQueue
-            } else {
-                windowsInQueue.filter {
-                    val song = it.mediaItem.asSong
-                    // Without cleaning, user can search explicit songs with "e:"
-                    // I kinda want this to be a feature, but it seems unnecessary
-                    val containsTitle = song.cleanTitle().contains( search.inputValue, true )
-                    val containsArtist = song.cleanArtistsText().contains( search.inputValue, true )
-
-                    containsTitle || containsArtist
-                }
+        val queueSnapshot = rememberPlayerQueueSnapshot(windowsInQueue, search.inputValue)
+        // Drag order must update synchronously; all metadata conversion/search stays on MEDIA.
+        val rowsOnDisplay = if ((isDragging || pendingDragOrder === windowsInQueue) && search.inputValue.isEmpty()) {
+            remember(windowsInQueue, queueSnapshot) {
+                windowsInQueue.mapNotNull { queueSnapshot.rowsByUid[it.uid] }
             }
-        }
+        } else queueSnapshot.rows
+        val queueSearchPending = queueSnapshot.source !== windowsInQueue ||
+            queueSnapshot.input != search.inputValue
+        fun getSongs() = playerQueueBulkSongs(queueSnapshot, windowsInQueue, itemSelector.toList())
+        fun currentQueueIndex(uid: Any): Int = findPlayerQueueWindowIndex(player.currentTimeline, uid)
 
-        LaunchedEffect(windowsOnDisplay) {
-            itemsOnDisplay = windowsOnDisplay.map { win -> win.mediaItem.asSong }
+        LaunchedEffect(queueSnapshot) {
+            itemsOnDisplay = queueSnapshot.songs
         }
 
         val plistName = remember { mutableStateOf("") }
@@ -372,10 +364,14 @@ fun Queue(
         Box(Modifier.fillMaxSize()) {
             val queueType by rememberPreference( queueTypeKey, QueueType.Modern )
             val backgroundAlpha = if( queueType == QueueType.Modern ) .5f else 1f
-            val itemBackground = if ( queueType == QueueType.Modern ) androidx.compose.ui.graphics.Color.Transparent else colorPalette().background0
+            val queueGlassSettings = rememberGlassSettings(GlassScope.Queue)
+            val itemBackground = queueContentBackground(
+                if (queueType == QueueType.Modern) androidx.compose.ui.graphics.Color.Transparent else colorPalette().background0,
+                queueGlassSettings,
+            )
             val queueBackground = colorPalette().background0.copy(alpha = backgroundAlpha)
 
-            val queueSongIds = remember(windowsOnDisplay) { windowsOnDisplay.map { it.mediaItem.asSong.id } }
+            val queueSongIds = queueSnapshot.songIds
             val likeStatesMap by remember(queueSongIds) {
                 LikeStateManager.getLikeStates(queueSongIds)
             }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
@@ -383,7 +379,7 @@ fun Queue(
                 PlaylistStateManager.getPlaylistStates(queueSongIds)
             }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
-            val queueSongs = remember(windowsOnDisplay) { windowsOnDisplay.map { it.mediaItem.asSong } }
+            val queueSongs = queueSnapshot.songs
 
             // Hoisted swipe action preferences
             val queueSwipeLeftAction by rememberPreference(queueSwipeLeftActionKey, QueueSwipeAction.RemoveFromQueue)
@@ -397,7 +393,7 @@ fun Queue(
                         .mapTo(HashSet()) { it.request.id }
                 }
             }
-            val downloadStatesMap by remember {
+            val downloadStatesMap by remember(queueSongs) {
                 derivedStateOf {
                     queueSongs.associate { song ->
                         song.id to if (song.id in downloadedIds) DownloadedStateMedia.DOWNLOADED else DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
@@ -405,10 +401,10 @@ fun Queue(
                 }
             }
 
-            SearchEmptyFeedback(search.inputValue, windowsOnDisplay.isEmpty())
+            SearchEmptyFeedback(search.inputValue, rowsOnDisplay.isEmpty(), loading = queueSearchPending)
             CompositionLocalProvider(
                 LocalDownloadStatesMap provides downloadStatesMap,
-                LocalQueueRowBackdrop provides rememberQueueRowGlassBackdrop(queueBackground),
+                LocalQueueRowBackdrop provides rememberQueueRowGlassBackdrop(queueBackground, queueGlassSettings),
             ) {
             LazyColumn(
                 state = lazyListState,
@@ -416,24 +412,22 @@ fun Queue(
                 contentPadding = WindowInsets(bottom = Dimensions.bottomSpacer + queueToolbarBottomInset()).asPaddingValues(),
                 modifier = Modifier.fillMaxSize()
                                    .glassQueueListBackdrop(lazyListState)
-                                   .background(
-                                       queueBackground
-                                   )
+                                   .glassQueueListBackground(queueBackground, queueGlassSettings)
 
             ) {
-                if (search.inputValue.isNotBlank() && windowsOnDisplay.isEmpty()) {
+                if (search.inputValue.isNotBlank() && !queueSearchPending && rowsOnDisplay.isEmpty()) {
                     item(key = "search_no_results") {
                         SearchEmptySpace(Modifier.fillParentMaxSize())
                     }
                 }
                 itemsIndexed(
-                    items = windowsOnDisplay,
-                    key = { _, window -> window.uid.toString() }
-                ) { _, window ->
-                    val song = window.mediaItem.asSong
-                    val index = windowsInQueue.indexOf(window)
+                    items = rowsOnDisplay,
+                    key = { _, row -> row.window.uid.toString() }
+                ) { _, row ->
+                    val window = row.window
+                    val song = row.song
 
-                    val isLocal by remember { derivedStateOf { song.isLocal } }
+                    val isLocal by remember(song) { derivedStateOf { song.isLocal } }
                     val isDownloaded = isLocal || isDownloadedSong(song.id)
 
                     val isLiked = likeStatesMap[song.id]
@@ -488,7 +482,8 @@ fun Queue(
                                 onPlayNext = {
                                     // "Play next" swipes reorder the queue: host-only in a
                                     // Listen Together room
-                                    if (!listenTogetherGuestLock) {
+                                    val index = currentQueueIndex(window.uid)
+                                    if (!listenTogetherGuestLock && index >= 0) {
                                         val currentIndex = binder.player.currentMediaItemIndex
                                         val targetIndex = currentIndex + 1
                                         // if the song is already after the current, do nothing
@@ -525,7 +520,7 @@ fun Queue(
                                      */
                                     // Removing from the queue is host-only in a Listen Together room
                                     if (!listenTogetherGuestLock) {
-                                        val actualIndex = player.findMediaItemIndexById( song.id )
+                                        val actualIndex = currentQueueIndex(window.uid)
                                         if (actualIndex >= 0 && actualIndex < player.mediaItemCount) {
                                             try {
                                                 player.removeMediaItem( actualIndex )
@@ -564,7 +559,9 @@ fun Queue(
                                             Box( Modifier.width( 24.dp ) )
                                     },
                                     onClick = {
-                                        if( player.isNowPlaying(song.id) ) {
+                                        val index = currentQueueIndex(window.uid)
+                                        if (index < 0) return@SongItem
+                                        if (player.currentMediaItemIndex == index) {
                                             if(player.shouldBePlaying)
                                                 player.pause()
                                             else

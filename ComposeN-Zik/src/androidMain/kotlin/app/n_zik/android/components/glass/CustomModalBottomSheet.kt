@@ -92,6 +92,7 @@ fun CustomModalBottomSheet(
             contentWindowInsets = contentWindowInsets,
         ) {
             if (glassSheet) GlassMaterialContainerColumn(modifier.fillMaxWidth(),
+                materialSource = LocalGlassBackdrop.current,
                 material = { exported -> Modifier.glassMaterial(
                     glass.forArea(GlassArea.Menus), shape, menu = true, filmColor = sheetContainerColor,
                     exportedBackdrop = exported,
@@ -105,6 +106,7 @@ fun CustomModalBottomSheet(
                 CompositionLocalProvider(
                     LocalContentColor provides contentColor,
                     LocalGlassContainerBackdrop provides LocalGlassBackdrop.current,
+                    LocalGlassMaterialSource provides LocalGlassBackdrop.current,
                 ) {
                     dragHandle?.invoke()
                     content()
@@ -127,7 +129,9 @@ fun CustomModalBottomSheet(
     if (isComposing) {
         val overlayId = remember { Any() }
         NativeGlassOverlayCoverage(host, overlayId)
-        val nativeBackdrop = rememberCanvasBackdrop { drawRect(sheetContainerColor) }
+        // A native window cannot capture the scene behind it. Glass children retain
+        // transparency instead of sampling an invented opaque copy of the native fill.
+        val nativeBackdrop = rememberCanvasBackdrop { if (!glassSheet) drawRect(sheetContainerColor) }
         ModalBottomSheet(
             onDismissRequest = onDismissRequest,
             modifier = if (glassSheet) modifier.glassMaterial(
@@ -200,6 +204,9 @@ fun CustomModalBottomSheet(
                     LocalGlassLiveFrame provides rememberGlassModalLiveFrameIfEnabled(covered = host != null && host.nativeOverlays.lastOrNull() !== overlayId),
                     LocalGlassUnderlayCovered provides (host != null && host.nativeOverlays.lastOrNull() !== overlayId),
                     LocalGlassContainerBackdrop provides nativeBackdrop,
+                    LocalGlassMaterialSource provides nativeBackdrop,
+                    LocalGlassBackdrop provides null,
+                    LocalGlassOverlayBackdrop provides null,
                 ) {
                     GlassRippleProvider(glass) { content() }
                 }

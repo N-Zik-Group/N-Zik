@@ -1,13 +1,11 @@
 package app.n_zik.android.components.glass
 
 import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
+import app.n_zik.android.components.glass.backdrop.Backdrop
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 
 /** Uses the navigation material, with a safe independent backdrop for inline cards. */
 @Composable
@@ -17,13 +15,10 @@ internal fun Modifier.glassSettingsCardBackground(
     shape: Shape,
     settings: GlassSettings,
     exportedBackdrop: LayerBackdrop? = null,
+    sourceBackdrop: Backdrop? = null,
 ): Modifier {
     if (!settings.usesGlassMaterial(GlassArea.SettingsCards)) return this
-    // The page capture contains this card, so reproduce its flat backdrop independently.
-    val drawBackground: DrawScope.() -> Unit = remember(backgroundColor) {
-        { drawRect(backgroundColor) }
-    }
-    val backdrop = rememberCanvasBackdrop(drawBackground)
+    val backdrop = sourceBackdrop ?: rememberInlineGlassBackdrop(backgroundColor)
     return glassMaterial(
         settings = settings.forArea(GlassArea.SettingsCards),
         shape = shape,

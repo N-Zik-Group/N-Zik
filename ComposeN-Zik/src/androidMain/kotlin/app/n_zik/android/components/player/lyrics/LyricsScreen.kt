@@ -48,6 +48,7 @@ import app.n_zik.android.components.glass.GlassOverlayIconButton as IconButton
 import app.n_zik.android.components.glass.glassOverlayCanvasViewport
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.GlassOverlayControls
+import app.n_zik.android.components.glass.OverlayFade
 import app.n_zik.android.components.glass.GlassOverlayScene
 import app.it.fast4x.rimusic.utils.lyricsTypeKey
 import app.n_zik.android.components.dialog.common.LyricsSizeDialog
@@ -71,8 +72,6 @@ import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.ui.saveable.TolerantStringStateSaver
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import com.valentinilk.shimmer.shimmer
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlin.Float.Companion.POSITIVE_INFINITY
 import app.n_zik.android.components.menu.lyrics.LyricsSettingsMenu
@@ -107,12 +106,10 @@ fun LyricsScreen(
     clickLyricsText: Boolean,
     trailingContent: (@Composable () -> Unit)? = null,
     isLandscape: Boolean,
+    onCover: Boolean? = null,
+    fadeHosted: Boolean = false,
 ) {
-    AnimatedVisibility(
-        visible = isDisplayed,
-        enter = fadeIn(),
-        exit = fadeOut(),
-    ) {
+    OverlayFade(active = isDisplayed, hosted = fadeHosted) {
         val coroutineScope = rememberCoroutineScope()
         val context = LocalContext.current
         val menuState = LocalMenuState.current
@@ -120,7 +117,7 @@ fun LyricsScreen(
         val binder = LocalPlayerServiceBinder.current
 
         val savedLyricsOnCover by rememberPreference(showlyricsthumbnailKey, true)
-        val showlyricsthumbnail = LocalPlayerCoverOverlay.current || savedLyricsOnCover
+        val showlyricsthumbnail = onCover ?: (LocalPlayerCoverOverlay.current || savedLyricsOnCover)
         var lyricsType by rememberPreference(lyricsTypeKey, LyricsType.Auto)
         var invalidLrc by remember(mediaId, lyricsType) { mutableStateOf(false) }
         var isPicking by remember(mediaId, lyricsType) { mutableStateOf(false) }
@@ -389,7 +386,8 @@ fun LyricsScreen(
                                 clickLyricsText = clickLyricsText,
                                 karaokeRespectAgentPosition = karaokeRespectAgentPosition,
                                 thumbnailSize = thumbnailSize,
-                                isDisplayed = isDisplayed,
+                                // The host retains the whole scene until its exit fade completes.
+                                isDisplayed = true,
                                 onDismiss = onDismiss,
                                 onInvalidLrc = { invalidLrc = it },
                                 showIntervalIndicator = showIntervalIndicator,
@@ -426,7 +424,7 @@ fun LyricsScreen(
                                 lyricsHighlight = lyricsHighlight,
                                 clickLyricsText = clickLyricsText,
                                 thumbnailSize = thumbnailSize,
-                                isDisplayed = isDisplayed,
+                                isDisplayed = true,
                                 onDismiss = onDismiss,
                                 onInvalidLrc = { invalidLrc = it },
                                 showIntervalIndicator = showIntervalIndicator,
@@ -437,7 +435,7 @@ fun LyricsScreen(
                             UnsyncedLyricsView(
                                 text = text,
                                 showlyricsthumbnail = showlyricsthumbnail,
-                                isDisplayed = isDisplayed,
+                                isDisplayed = true,
                                 showSecondLine = showSecondLine,
                                 translateEnabled = translateEnabled,
                                 romanizationEnabled = romanizationEnabled,
@@ -553,7 +551,7 @@ fun LyricsScreen(
 
 
             }
-            if (!showlyricsthumbnail && isDisplayed && isLandscape && landscapeControls) {
+            if (!showlyricsthumbnail && isLandscape && landscapeControls) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,

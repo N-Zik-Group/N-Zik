@@ -7,6 +7,19 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class GlassNavigationTabsTest {
+    @Test fun `global clear and zero refraction remain zero throughout selector motion`() {
+        val settings = app.n_zik.android.components.glass.GlassSettings(blur = 0f, vibrancy = 0f, depth = 0f, amount = 0f)
+        for (press in listOf(0f, .5f, 1f)) for (exposure in listOf(0f, .5f, 1f)) {
+            assertEquals(GlassTabOptics(0f, 1f, 0f, 0f), glassTabOptics(settings, press, exposure))
+        }
+    }
+
+    @Test fun `selector retains press choreography at configured strengths`() {
+        val settings = app.n_zik.android.components.glass.GlassSettings(blur = 12f, vibrancy = 2f, depth = .25f, amount = .5f)
+        assertEquals(GlassTabOptics(12f, 2f, 0f, 0f), glassTabOptics(settings, 0f, 1f))
+        assertEquals(GlassTabOptics(0f, 2f, 12f, 24f), glassTabOptics(settings, 1f, 1f))
+        assertEquals(GlassTabOptics(3f, 1.5f, 3f, 6f), glassTabOptics(settings, .5f, .5f))
+    }
     @Test
     fun `mini player clearance accommodates the expanded glass selector`() {
         val pressedHeight = (GlassNavigationBarHeight.value - 8f) * (78f / 56f)

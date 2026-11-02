@@ -372,4 +372,31 @@ class CoverPaletteExtractorTest {
             m3eCoverForegroundArgb(dominant, lightTheme = false),
         )
     }
+    @Test
+    fun `bundle quantizes once on MEDIA while preserving colored and neutral policies`() = runBlocking {
+        // JUnit's synchronous test API needs a blocking bridge; extraction dispatches to MEDIA.
+        val callerThread = Thread.currentThread()
+        for (rgb in listOf(
+            android.graphics.Color.rgb(30, 120, 200),
+            android.graphics.Color.rgb(58, 56, 54),
+            android.graphics.Color.rgb(235, 233, 228),
+        )) {
+            val bitmap = Bitmap.createBitmap(32, 32, Bitmap.Config.ARGB_8888).apply { eraseColor(rgb) }
+            for (isDark in listOf(false, true)) {
+                var calls = 0
+                var workerThread: Thread? = null
+                val bundle = requireNotNull(extractCoverPalette(bitmap, isDark) {
+                    calls++
+                    workerThread = Thread.currentThread()
+                    Palette.from(it).maximumColorCount(8).generate()
+                })
+                assertEquals("one quantization per complete bundle", 1, calls)
+                assertTrue("quantization must leave the caller thread", workerThread !== callerThread)
+                assertTrue("quantization must use MEDIA", workerThread?.name?.startsWith("nzik-media-") == true)
+                assertEquals(extractM3ECoverColors(bitmap, isDark), bundle.colors)
+                assertEquals(m3eDominantDynamicPaletteOf(bundle.colors, bitmap, isDark), bundle.palette)
+            }
+        }
+    }
+
 }

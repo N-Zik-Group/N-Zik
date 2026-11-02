@@ -2,8 +2,13 @@ package app.n_zik.android.components.ui.screens.find
 
 import app.n_zik.android.components.searchOverlayAction
 import app.n_zik.android.components.searchOverlaySurface
+import app.n_zik.android.components.rememberSearchOverlayMaterialSource
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.LocalGlassMaterialSource
+import app.n_zik.android.components.glass.GlassScope
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.runtime.CompositionLocalProvider
 
@@ -406,6 +411,8 @@ private fun RecognizedTrackCard(
     onSearch: () -> Unit
 ) {
     val cardBackdrop = rememberLayerBackdrop()
+    val cardSource = rememberSearchOverlayMaterialSource()
+    val glassCard = rememberGlassSettings(GlassScope.Search).usesGlassMaterial(GlassArea.SettingsCards)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -456,7 +463,8 @@ private fun RecognizedTrackCard(
                 Text(genre, style = typography().xxs, color = colorPalette().accent)
             }
             Spacer(Modifier.height(4.dp))
-            CompositionLocalProvider(LocalGlassContainerBackdrop provides cardBackdrop) {
+            CompositionLocalProvider(LocalGlassContainerBackdrop provides cardBackdrop,
+                LocalGlassMaterialSource provides if (glassCard) cardSource else cardBackdrop) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically

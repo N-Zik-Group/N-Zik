@@ -5,7 +5,6 @@ import app.n_zik.android.components.glass.glassGlobalIndication
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.TargetedFlingBehavior
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.aspectRatio
@@ -15,7 +14,9 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -32,26 +33,28 @@ import app.it.fast4x.rimusic.enums.ThumbnailType
 import app.n_zik.android.enums.PlayerSwipeSensitivity
 import app.it.fast4x.rimusic.utils.doubleShadowDrop
 import app.n_zik.android.components.glass.glassImageRim
+import app.n_zik.android.components.player.PlayerArtworkShadowOverflow
+import app.n_zik.android.components.player.registerPlayerArtworkShadow
 import app.n_zik.android.thumbnailShape
 import kotlin.math.absoluteValue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import app.n_zik.android.BuildConfig
+import timber.log.Timber
 
 
-/**
- * Carousel pager snap threshold (fraction of a page drag needed to switch the
- * track) derived from the player's finger-sensitivity setting. Landscape pages
- * are wider, so every level needs a longer deliberate drag there.
- */
-fun PlayerSwipeSensitivity.carouselSnapThreshold(landscape: Boolean): Float = when (this) {
-    PlayerSwipeSensitivity.VeryHigh -> if (landscape) 0.75f else 0.15f
-    PlayerSwipeSensitivity.High -> if (landscape) 0.80f else 0.20f
-    PlayerSwipeSensitivity.Medium -> if (landscape) 0.85f else 0.25f
-    PlayerSwipeSensitivity.Low -> if (landscape) 0.90f else 0.35f
+/** Use the same release sensitivity in either orientation. */
+fun PlayerSwipeSensitivity.carouselSnapThreshold(): Float = when (this) {
+    PlayerSwipeSensitivity.VeryHigh -> 0.15f
+    PlayerSwipeSensitivity.High -> 0.20f
+    PlayerSwipeSensitivity.Medium -> 0.25f
+    PlayerSwipeSensitivity.Low -> 0.35f
 }
 
 /** Duration used for player pager settle animations. */
-const val SLIDE_SETTLE_DURATION_MS = 700
+const val SLIDE_SETTLE_DURATION_MS = 250
 
 /** Keep tightly stacked pages from travelling several tracks during a small drag. */
 internal class CarouselDragConnection(
@@ -78,66 +81,22 @@ fun Modifier.landscapeCarouselDrag(
     )
 })
 
-internal fun carouselDragDisplacement(current: Int, settled: Int, offset: Float): Float =
-    ((current - settled) + offset).absoluteValue
-
-/**
- * Wide landscape pages make the default pager fling switch the track on almost any
- * motion — even a light flick snaps past the default velocity range. This behavior
- * ignores velocity entirely: only a drag that covers at least [minDragFraction]
- * of a page moves to a neighbor track, anything weaker settles back on the
- * current page.
- */
-private class GuardedPagerFlingBehavior(
-    private val state: PagerState,
-    private val minDragFraction: Float,
-) : TargetedFlingBehavior {
-
-    override suspend fun ScrollScope.performFling(
-        initialVelocity: Float,
-        onRemainingDistanceUpdated: (Float) -> Unit,
-    ): Float {
-        val settled = state.settledPage
-        val current = state.currentPage
-        val offset = state.currentPageOffsetFraction
-        // The offset fraction wraps at half a page (it stays within [-0.5, 0.5]),
-        // so the displacement from the pre-gesture page is only unambiguous when
-        // combined with the page change itself.
-        val displacement = carouselDragDisplacement(current, settled, offset)
-        val targetPage = when {
-            // Past the threshold, settle on the page the drag crossed into
-            // (also the nearest page for multi-page drags).
-            current != settled && displacement >= minDragFraction -> current
-            else -> settled
-        }
-        state.animateScrollToPage(
-            page = targetPage,
-            animationSpec = tween(SLIDE_SETTLE_DURATION_MS, easing = FastOutSlowInEasing),
-        )
-        return 0f
-    }
-}
-
 /** Single source for the player pager fling behavior. */
 @Composable
 @OptIn(UnstableApi::class)
 fun flingBehaviorFor(
     state: PagerState,
-    landscape: Boolean = false,
     sensitivity: PlayerSwipeSensitivity = PlayerSwipeSensitivity.Medium,
 ): TargetedFlingBehavior {
-    val threshold = sensitivity.carouselSnapThreshold(landscape)
-    if (!landscape) return PagerDefaults.flingBehavior(
-        state = state,
-        snapAnimationSpec = tween(SLIDE_SETTLE_DURATION_MS, easing = FastOutSlowInEasing),
-        snapPositionalThreshold = threshold,
-    )
-    // Wide landscape pages: only a drag covering most of a page may switch the
-    // track, whatever the page size (the stacked pages are small).
-    return GuardedPagerFlingBehavior(
-        state = state,
-        minDragFraction = threshold,
-    )
+    // PagerDefaults remembers its provider without keying snapPositionalThreshold.
+    // Recreate only that provider when the user's sensitivity changes.
+    return key(sensitivity) {
+        PagerDefaults.flingBehavior(
+            state = state,
+            snapAnimationSpec = tween(SLIDE_SETTLE_DURATION_MS, easing = FastOutSlowInEasing),
+            snapPositionalThreshold = sensitivity.carouselSnapThreshold(),
+        )
+    }
 }
 
 /**
@@ -158,16 +117,47 @@ fun PagerState.slideSettledPageEffect(
     playAtIndex: (Int) -> Unit,
     delayMillis: Long = 0L,
 ) {
-    LaunchedEffect(this) {
-        var previousPage = settledPage
-        snapshotFlow { settledPage }.distinctUntilChanged().collect {
-            if (previousPage != it) {
-                if (delayMillis > 0L) delay(delayMillis)
-                if (shouldPlaySettledPage(previousPage, it, currentMediaItemIndex())) {
-                    playAtIndex(it)
-                }
+    val currentIndex = rememberUpdatedState(currentMediaItemIndex)
+    val play = rememberUpdatedState(playAtIndex)
+    LaunchedEffect(this, delayMillis) {
+        observeSettledPlayerPages(snapshotFlow {
+            // Drag and fling can be separate scroll mutations. An idle fractional
+            // offset between them must not start playback and interrupt snapping.
+            if (BuildConfig.DEBUG && !isScrollInProgress) {
+                Timber.tag("PlayerPager").d(
+                    "Idle current=%d settled=%d offset=%f size=%d spacing=%d forward=%s backward=%s",
+                    currentPage, settledPage, currentPageOffsetFraction,
+                    layoutInfo.pageSize, layoutInfo.pageSpacing, canScrollForward, canScrollBackward,
+                )
             }
-            previousPage = it
+            settledPage to (isScrollInProgress || currentPageOffsetFraction.absoluteValue > 0.001f)
+        },
+            initialPage = settledPage, currentMediaItemIndex = { currentIndex.value() },
+            playAtIndex = { play.value(it) }, delayMillis = delayMillis)
+    }
+}
+
+/** Cancels obsolete settle requests before they can change playback. */
+internal suspend fun observeSettledPlayerPages(
+    pages: Flow<Pair<Int, Boolean>>,
+    initialPage: Int,
+    currentMediaItemIndex: () -> Int,
+    playAtIndex: (Int) -> Unit,
+    delayMillis: Long,
+) {
+    var previousPage = initialPage
+    pages.distinctUntilChanged().collectLatest { (page, scrolling) ->
+        if (scrolling) return@collectLatest
+        val previous = previousPage
+        val playing = currentMediaItemIndex()
+        if (!shouldPlaySettledPage(previous, page, playing)) {
+            previousPage = page
+            return@collectLatest
+        }
+        if (delayMillis > 0L) delay(delayMillis)
+        if (currentMediaItemIndex() == playing) {
+            playAtIndex(page)
+            previousPage = page
         }
     }
 }
@@ -224,6 +214,7 @@ fun Modifier.playerThumbnailCover(
     showCoverThumbnailAnimation: Boolean,
     onTap: (Int) -> Unit,
     onLongClick: (Int) -> Unit,
+    shadowOverflow: PlayerArtworkShadowOverflow? = null,
 ): Modifier = this
     .aspectRatio(1f)
     .padding(all = padding)
@@ -247,6 +238,21 @@ fun Modifier.playerThumbnailCover(
             8.dp,
         )
     }
+    .registerPlayerArtworkShadow(
+        overflow = shadowOverflow,
+        shape = if (showCoverThumbnailAnimation) CircleShape else thumbnailShape(),
+        alpha = {
+            if (scaleAlways || carousel) thumbnailCoverTransform(
+                ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue,
+                alphaStart,
+                scaleStart,
+            ).first else 1f
+        },
+        zIndex = { itemZIndexFor(page, pagerState.currentPage) },
+        isVisible = { carousel || pagerState.layoutInfo.visiblePagesInfo.any { it.index == page } },
+        shadow = thumbnailType == ThumbnailType.Modern,
+        imageOverflow = carousel,
+    )
     .clip(thumbnailShape())
     .glassImageRim(if (showCoverThumbnailAnimation) CircleShape else thumbnailShape())
     .combinedClickable(

@@ -185,8 +185,11 @@ class DialogFrameBandsTest {
 
     private fun verifyColors(pitchBlack: Boolean) {
         content {
-            DialogFrame(onDismiss = {}, title = "Title", footer = { BasicText("Action") }) {
-                Box(Modifier.fillMaxWidth().height(60.dp))
+            CompositionLocalProvider(app.n_zik.android.components.glass.LocalGlassPreviewSettings provides
+                app.n_zik.android.components.glass.GlassSettings(enabled = false)) {
+                DialogFrame(onDismiss = {}, title = "Title", footer = { BasicText("Action") }) {
+                    Box(Modifier.fillMaxWidth().height(60.dp))
+                }
             }
         }
         val alternate = if (pitchBlack) Color(0xFF1A1A1A) else palette.background1

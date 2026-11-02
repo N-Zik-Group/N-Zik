@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -14,6 +15,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -21,6 +25,7 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -37,6 +42,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.FontType
+import app.it.fast4x.rimusic.enums.BackgroundProgress
 import app.it.fast4x.rimusic.ui.screens.player.MiniPlayer
 import app.it.fast4x.rimusic.ui.screens.player.PlayerSheetState
 import app.it.fast4x.rimusic.ui.styling.Appearance
@@ -44,6 +50,7 @@ import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
+import app.it.fast4x.rimusic.utils.backgroundProgressKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.it.fast4x.rimusic.utils.showMiniPlayerAudioOutputKey
@@ -58,6 +65,11 @@ import app.n_zik.android.LocalPlayerSheetState
 import app.n_zik.android.MainApplication
 import app.n_zik.android.R
 import app.n_zik.android.components.glass.QueueEmbeddedMini
+import app.n_zik.android.components.glass.GlassMenuHostState
+import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.LocalGlassMenuHost
+import app.n_zik.android.components.glass.LocalGlassPreviewSettings
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgress
 import app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgressProvider
@@ -82,6 +94,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 
 /** Production compact controls retain the same handlers and queue ownership as the expanded mini. */
 @RunWith(RobolectricTestRunner::class)
@@ -131,6 +144,32 @@ class CompactMiniPlayerInteractionTest {
     }
 
     @After fun tearDown() = unmockkAll()
+
+    @Test
+    @Config(sdk = [32])
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun collapsedMiniPlayButtonAppliesFilmOnceToTheLiveNavigationSource() {
+        progress = 0f
+        context.preferences.edit().putString(backgroundProgressKey, BackgroundProgress.Disabled.name).commit()
+        var sourceColor by mutableStateOf(Color.Blue)
+        val host = GlassMenuHostState()
+        val settings = GlassSettings(film = .5f, blur = 0f, vibrancy = 0f,
+            tintStrength = 0f, depth = 0f, amount = 0f, rim = 0f)
+        renderMini(glassHost = host, glassSettings = settings, sourceColor = { sourceColor })
+        fun assertSingleFilm() {
+            val pixels = compose.onNodeWithContentDescription(context.getString(R.string.play))
+                .captureToImage().toPixelMap()
+            // Stay inside the rounded pane and outside the central play glyph.
+            val actual = pixels[(pixels.width * .2f).toInt(), (pixels.height * .2f).toInt()]
+            val expected = DefaultDarkColorPalette.background2.copy(alpha = settings.film).compositeOver(sourceColor)
+            assertEquals("red from a single film", expected.red, actual.red, .03f)
+            assertEquals("green from a single film", expected.green, actual.green, .03f)
+            assertEquals("blue from a single film", expected.blue, actual.blue, .03f)
+        }
+        assertSingleFilm()
+        compose.runOnIdle { sourceColor = Color.Red }
+        assertSingleFilm()
+    }
 
     @Test fun defaultsPlayAndNextUseExistingPlaybackHandlers() {
         renderMini()
@@ -271,10 +310,16 @@ class CompactMiniPlayerInteractionTest {
             .putBoolean(showMiniPlayerAudioOutputKey, false).commit()
     }
 
-    private fun renderMini(embedded: Boolean = false, dockProvider: Boolean = false) {
+    private fun renderMini(embedded: Boolean = false, dockProvider: Boolean = false,
+        glassHost: GlassMenuHostState? = null, glassSettings: GlassSettings? = null,
+        sourceColor: (() -> Color)? = null) {
         val sheet = mockk<PlayerSheetState> { every { progress } returns 0f }
         val pending = mutableStateOf<PendingMiniPlayerAction?>(null)
         compose.setContent {
+            if (glassHost != null && sourceColor != null) {
+                val source = rememberCanvasBackdrop { drawRect(sourceColor()) }
+                SideEffect { glassHost.miniPlayerBackdrop = source }
+            }
             navigation = rememberNavController()
             val shape = RoundedCornerShape(12.dp)
             val palette = DefaultDarkColorPalette
@@ -290,6 +335,8 @@ class CompactMiniPlayerInteractionTest {
                 LocalPlayerServiceBinder provides binder,
                 LocalPlayerSheetState provides sheet,
                 LocalPendingMiniPlayerAction provides pending,
+                LocalGlassMenuHost provides glassHost,
+                LocalGlassPreviewSettings provides glassSettings,
                 LocalMiniPlayerQueueRequest provides { queueOpens++ },
             ) {
                 NavHost(navigation, startDestination = "home") {

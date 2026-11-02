@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +38,7 @@ import app.n_zik.android.components.glass.glassPlayerSceneSource
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.LocalGlassOpticsTransitionProgress
 import app.n_zik.android.components.glass.LocalGlassUnderlayCovered
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
 import app.n_zik.android.components.glass.glassMaterial
@@ -69,6 +71,8 @@ class PlayerSheetGlassIntegrationTest {
         val covered = mutableStateOf(false)
         compose.setContent {
             val shape = RoundedCornerShape(16.dp)
+            val applicationBackdrop = rememberCanvasBackdrop { drawRect(Color.Red) }
+            SideEffect { host.backdrop = applicationBackdrop }
             CompositionLocalProvider(LocalGlassMenuHost provides host,
                 LocalAppearance provides Appearance(DefaultDarkColorPalette,
                 Typography.fallback, shape, shape, shape)) {
@@ -83,8 +87,7 @@ class PlayerSheetGlassIntegrationTest {
                         val livePlayer = rememberLayerBackdrop(onDraw = recording)
                         val completedPlayer = rememberLayerBackdrop()
                         val capture = playerGlassSourceCaptureActive(GlassSettings(), transition, true)
-                        val source = rememberPlayerControlsGlassSource(LocalGlassContainerBackdrop.current,
-                            livePlayer, transition)
+                        val source = rememberPlayerControlsGlassSource(livePlayer)
                         Box(Modifier.size(200.dp)
                             .glassPlayerSceneSource(completedPlayer, capture, sheet.isExpanded)
                             .background(Color.Black)) {
@@ -123,7 +126,11 @@ class PlayerSheetGlassIntegrationTest {
         assertTrue("Endpoint must not swap in the full blue reflection", abs(endpoint.blue - before.blue) < .2f)
         advance(16)
         val first = transitionValue
-        advance(48)
+        repeat(3) {
+            advance(16)
+            assertTrue("Opening optics must never reflect the red application behind the player",
+                pixel("pane").red < .05f)
+        }
         assertTrue(transitionValue > first && transitionValue < 1f)
         compose.runOnIdle { scene.value = Color.Green }
         advance(16)
@@ -139,7 +146,11 @@ class PlayerSheetGlassIntegrationTest {
             assertTrue("Control capture survives leaving the endpoint", transitionValue > 0f)
             assertNull("A translated sheet cannot replace the full scene", host.foregroundBackdrop)
         }
-        advance(48)
+        repeat(3) {
+            advance(16)
+            assertTrue("Closing optics must never reflect the red application behind the player",
+                pixel("pane").red < .05f)
+        }
         val reversing = transitionValue
         assertTrue(reversing in 0f..1f && reversing < 1f)
         position(1f)

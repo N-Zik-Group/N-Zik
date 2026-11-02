@@ -29,11 +29,13 @@ import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.key
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
@@ -46,6 +48,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.platform.testTag
@@ -82,6 +85,7 @@ import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.inScope
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.glass.usesGlassContour
 import app.n_zik.android.uiRoundnessShape
 
 /** A slot is added only after the original visibility and offline conditions pass. */
@@ -100,20 +104,31 @@ val PlayerActionToolbarHeight = 56.dp
 
 /** Adds only the toolbar's new footprint, retaining the native container's breathing room. */
 class PlayerActionToolbarLayout {
-    private var extraHeight by mutableStateOf(PlayerActionToolbarHeight - 24.dp)
+    private var nativeHeight by mutableStateOf<Dp?>(24.dp)
+    private var surfaceEnabled by mutableStateOf(false)
 
-    fun reconcile(actions: List<PlayerActionSlot>) {
-        extraHeight = actions.maxOfOrNull { it.nativeHeight }?.let {
-            (PlayerActionToolbarHeight - it).coerceAtLeast(0.dp)
-        } ?: 0.dp
+    fun configure(settings: GlassSettings) {
+        val scoped = settings.inScope(GlassScope.PlayerActions)
+        surfaceEnabled = scoped.usesGlassMaterial(GlassArea.ActionButtons) ||
+            scoped.usesGlassContour(GlassArea.ActionButtons)
     }
 
-    fun hostHeight(nativeHeight: Dp): Dp = nativeHeight + extraHeight
+    fun reconcile(actions: List<PlayerActionSlot>) {
+        nativeHeight = actions.maxOfOrNull { it.nativeHeight }
+    }
+
+    fun hostHeight(nativeHeight: Dp): Dp = nativeHeight + if (surfaceEnabled)
+        this.nativeHeight?.let { (PlayerActionToolbarHeight - it).coerceAtLeast(0.dp) } ?: 0.dp
+    else 0.dp
+
+    fun toolbarHeight(): Dp = nativeHeight?.let { if (surfaceEnabled) PlayerActionToolbarHeight else it } ?: 0.dp
 }
 
 /** Shares the resolved toolbar footprint with its legacy outer container. */
 @Composable
-fun rememberPlayerActionToolbarLayout(): PlayerActionToolbarLayout = remember { PlayerActionToolbarLayout() }
+fun rememberPlayerActionToolbarLayout(
+    settings: GlassSettings = rememberGlassSettings(GlassScope.PlayerActions),
+): PlayerActionToolbarLayout = remember { PlayerActionToolbarLayout() }.also { it.configure(settings) }
 
 /** Empty toolbar space opens the queue without painting over the individual action canvases. */
 @Composable
@@ -130,10 +145,32 @@ private data class PlayerToolbarStyle(
     val actions: List<PlayerActionSlot>,
     val bounds: Map<Int, Rect>,
     val nativeBackground: Color,
+    val placementMotions: Map<String, PlayerReflowPlacement>,
     val onBounds: (Int, Rect) -> Unit,
-)
+) {
+    val surfaceEnabled: Boolean get() = settings.usesGlassMaterial(GlassArea.ActionButtons) ||
+        settings.usesGlassContour(GlassArea.ActionButtons)
+    val height: Dp get() = if (surfaceEnabled) PlayerActionToolbarHeight else actions.maxOf { it.nativeHeight }
+}
 private val LocalPlayerToolbar = staticCompositionLocalOf<PlayerToolbarStyle?> { null }
 private val LocalPlayerSlotIndex = staticCompositionLocalOf { 0 }
+
+@Composable
+private fun Modifier.playerVisibleToolbarBounds(settings: GlassSettings, background: Color, nativeHeight: Dp): Modifier {
+    val geometry = LocalPlayerTransportGeometry.current
+    val surface = settings.usesGlassMaterial(GlassArea.ActionButtons) ||
+        settings.usesGlassContour(GlassArea.ActionButtons) || background.alpha > 0f
+    val nativePixels = with(LocalDensity.current) { nativeHeight.toPx() }
+    DisposableEffect(geometry) { onDispose { geometry?.toolbar = null; geometry?.visibleToolbar = null } }
+    return onPlaced { coordinates ->
+        val frame = geometry?.bounds(coordinates)
+        geometry?.toolbar = frame
+        geometry?.visibleToolbar = frame?.let {
+            val inset = if (surface) 0f else ((it.height - nativePixels) / 2).coerceAtLeast(0f)
+            Rect(it.left, it.top + inset, it.right, it.bottom - inset)
+        }
+    }
+}
 
 /** Upper controls use the player's existing live container backdrop. */
 @Composable
@@ -170,13 +207,19 @@ fun PlayerActionToolbar(
     nativeBackground: Color = Color.Transparent,
 ) {
     val settings = settings.inScope(GlassScope.PlayerActions)
+    layout?.configure(settings)
     SideEffect { layout?.reconcile(actions) }
+    val motionScope = rememberCoroutineScope()
+    val placementMotions = remember(motionScope) { mutableMapOf<String, PlayerReflowPlacement>() }
+    val activeMotions = actions.associate { action ->
+        action.id to placementMotions.getOrPut(action.id) { PlayerReflowPlacement(motionScope) }
+    }
+    SideEffect { placementMotions.keys.retainAll(activeMotions.keys) }
     if (actions.isEmpty()) return
     val glass = settings.usesGlassMaterial(GlassArea.ActionButtons)
-    val geometry = LocalPlayerTransportGeometry.current
     val arrangement = if (spaceEvenly) Arrangement.SpaceEvenly else Arrangement.SpaceBetween
     val content: @Composable () -> Unit = {
-        actions.forEachIndexed { index, action -> key(action.id, index) {
+        actions.forEachIndexed { index, action -> key(action.id) {
             CompositionLocalProvider(LocalPlayerSlotIndex provides index,
                 app.n_zik.android.components.glass.LocalGlassScope provides GlassScope.PlayerActions) { action.content() }
         } }
@@ -186,16 +229,18 @@ fun PlayerActionToolbar(
         start = ((48.dp - actions.first().nativeHeight) / 2).coerceAtLeast(0.dp),
         end = ((48.dp - actions.last().nativeHeight) / 2).coerceAtLeast(0.dp)) else Modifier
     val bounds = remember(actions.map { it.id }) { mutableStateMapOf<Int, Rect>() }
-    val style = PlayerToolbarStyle(settings, actions.size == 1, actions, bounds, nativeBackground) { index, rect -> bounds[index] = rect }
+    val style = PlayerToolbarStyle(settings, actions.size == 1, actions, bounds, nativeBackground, activeMotions) { index, rect -> bounds[index] = rect }
+    val toolbarHeight = style.height
     if (!glass) {
         Box(modifier.fillMaxWidth().windowInsetsPadding(horizontalInsets), contentAlignment = Alignment.Center) {
             CompositionLocalProvider(LocalPlayerToolbar provides style) {
-                Box(glassRowModifier.height(PlayerActionToolbarHeight)) {
+                Box(glassRowModifier.height(toolbarHeight)) {
                     if (actions.size > 1) Box(Modifier.matchParentSize()
-                        .onGloballyPositioned { geometry?.toolbar = geometry?.bounds(it) }.testTag("player.actionToolbar.native")
+                        .playerVisibleToolbarBounds(settings, nativeBackground, actions.maxOf { it.nativeHeight })
+                        .testTag("player.actionToolbar.native")
                         .background(nativeBackground, uiRoundnessShape())
                         .glassAreaContour(settings, GlassArea.ActionButtons, uiRoundnessShape()))
-                    Row(Modifier.fillMaxWidth().height(PlayerActionToolbarHeight).then(cellPadding).testTag("player.actionToolbar.row"),
+                    Row(Modifier.fillMaxWidth().height(toolbarHeight).then(cellPadding).testTag("player.actionToolbar.row"),
                         horizontalArrangement = arrangement, verticalAlignment = Alignment.CenterVertically) { content() }
                 }
             }
@@ -215,7 +260,8 @@ fun PlayerActionToolbar(
                         ((48.dp - actions.first().nativeHeight) / 2).coerceAtLeast(0.dp) else 0.dp
                 GlassActionGroupMotionHost(glass && isGlassMotionAllowed(), glassRowModifier.height(PlayerActionToolbarHeight)) {
                     Box(Modifier.matchParentSize().requiredHeight(PlayerActionToolbarHeight)
-                        .onGloballyPositioned { geometry?.toolbar = geometry?.bounds(it) }.testTag("player.actionToolbar.material")
+                        .playerVisibleToolbarBounds(settings, nativeBackground, actions.maxOf { it.nativeHeight })
+                        .testTag("player.actionToolbar.material")
                         .glassMaterial(settings.forArea(GlassArea.ActionButtons), uiRoundnessShape(),
                             ownBackdrop = LocalGlassContainerBackdrop.current)
                         .glassActionGroupSeparators(settings, GlassArea.ActionButtons, boundary, separatorBefore = setOf(1)))
@@ -259,17 +305,17 @@ private fun PlayerActionCell(
     content: @Composable () -> Unit,
 ) {
     val style = LocalPlayerToolbar.current ?: return
-    val geometry = LocalPlayerTransportGeometry.current
     val index = LocalPlayerSlotIndex.current
     val glass = style.settings.usesGlassMaterial(GlassArea.ActionButtons)
     val interaction = remember { MutableInteractionSource() }
     val shape = uiRoundnessShape()
     val nativeSize = style.actions[index].nativeHeight
+    val placementMotion = requireNotNull(style.placementMotions[style.actions[index].id])
     val density = LocalDensity.current
     val own = style.bounds[index]
     val previous = style.bounds[index - 1]
     val next = style.bounds[index + 1]
-    val requested = if (style.single) PlayerActionToolbarHeight else 48.dp
+    val requested = if (style.surfaceEnabled && style.single) PlayerActionToolbarHeight else 48.dp
     val width = with(density) {
         val leftSpace = if (own != null && previous != null) (own.center.x - previous.center.x) else Float.POSITIVE_INFINITY
         val rightSpace = if (own != null && next != null) (next.center.x - own.center.x) else Float.POSITIVE_INFINITY
@@ -280,13 +326,17 @@ private fun PlayerActionCell(
         // canvas fills the free space around them, keeping every glyph center fixed.
         Box(Modifier.testTag("player.actionSlot.$index").onGloballyPositioned {
             style.onBounds(index, it.boundsInParent())
-        }) {
+        }.then(if (style.single) Modifier else Modifier.playerReflowPlacement(placementMotion, style.settings))) {
         Box(Modifier.layout { measurable, constraints ->
-            val slot = if (style.single) PlayerActionToolbarHeight.roundToPx() else nativeSize.roundToPx()
+            val slot = if (style.single) style.height.roundToPx() else nativeSize.roundToPx()
             val canvas = measurable.measure(Constraints.fixed(width.roundToPx(), requested.roundToPx()))
             val slotWidth = slot.coerceIn(constraints.minWidth, constraints.maxWidth)
             val slotHeight = slot.coerceIn(constraints.minHeight, constraints.maxHeight)
-            layout(slotWidth, slotHeight) { canvas.place((slotWidth - canvas.width) / 2, (slotHeight - canvas.height) / 2) }
+            layout(slotWidth, slotHeight) {
+                // Center alignment rounds a half pixel toward the positive side. Its
+                // inverse must round down, including for an odd, larger touch canvas.
+                canvas.place(Math.floorDiv(slotWidth - canvas.width, 2), Math.floorDiv(slotHeight - canvas.height, 2))
+            }
         }.clip(shape).retainGlassButtonGesture(enabled && glass)
             .glassGroupPressMotion(interaction, enabled = enabled && glass)
             .combinedClickable(interactionSource = interaction,
@@ -299,10 +349,17 @@ private fun PlayerActionCell(
         }
     }
     if (style.single) {
-        GlassActionGroupMotionHost(glass && isGlassMotionAllowed(), Modifier.size(PlayerActionToolbarHeight)) {
+        GlassActionGroupMotionHost(glass && isGlassMotionAllowed(), Modifier.playerReflowPlacement(placementMotion, style.settings).layout { measurable, constraints ->
+            val surface = style.height.roundToPx()
+            val nativeWidth = nativeSize.roundToPx().coerceIn(constraints.minWidth, constraints.maxWidth)
+            val child = measurable.measure(Constraints.fixed(surface, surface))
+            // SpaceBetween anchors the native glyph slot, including a lone action.
+            // Its larger optical canvas grows around that original center.
+            layout(nativeWidth, surface) { child.place(Math.floorDiv(nativeWidth - surface, 2), 0) }
+        }) {
             // The single action shares the toolbar height and its interaction treatment.
-            Box(Modifier.matchParentSize().requiredSize(PlayerActionToolbarHeight)
-                .onGloballyPositioned { geometry?.toolbar = geometry?.bounds(it) }
+            Box(Modifier.matchParentSize().requiredSize(style.height)
+                .playerVisibleToolbarBounds(style.settings, style.nativeBackground, nativeSize)
                 .testTag(if (glass) "player.actionToolbar.material" else "player.actionToolbar.native")
                 .then(if (glass) Modifier.glassMaterial(style.settings.forArea(GlassArea.ActionButtons), uiRoundnessShape(),
                     ownBackdrop = LocalGlassContainerBackdrop.current) else Modifier.background(style.nativeBackground, uiRoundnessShape())

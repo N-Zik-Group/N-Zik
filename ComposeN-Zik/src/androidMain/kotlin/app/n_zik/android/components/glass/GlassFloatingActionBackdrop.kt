@@ -36,6 +36,7 @@ fun Modifier.glassFloatingActionContent(backdrop: LayerBackdrop?): Modifier =
 fun GlassFloatingActions(backdrop: Backdrop?, content: @Composable () -> Unit) {
     CompositionLocalProvider(
         LocalGlassContainerBackdrop provides (backdrop ?: LocalGlassContainerBackdrop.current),
+        LocalGlassMaterialSource provides (backdrop ?: LocalGlassMaterialSource.current),
         content = content,
     )
 }

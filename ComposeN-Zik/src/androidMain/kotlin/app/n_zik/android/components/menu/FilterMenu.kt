@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
+import app.n_zik.android.components.glass.explicitBadgeIconId
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
@@ -43,7 +44,7 @@ fun FilterMenu(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = painterResource(icon),
+                painter = painterResource(if (icon == R.drawable.explicit) explicitBadgeIconId() else icon),
                 tint = colorPalette().accent,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)

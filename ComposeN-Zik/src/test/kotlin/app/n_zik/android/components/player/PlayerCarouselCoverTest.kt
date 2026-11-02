@@ -2,6 +2,10 @@ package app.n_zik.android.components.player
 
 import android.app.Application
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -13,6 +17,12 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
+import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.LocalGlassPreviewSettings
+import app.n_zik.android.components.glass.LocalGlassOverlayArtworkBackdrop
+import app.n_zik.android.components.glass.backdrop.Backdrop
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
@@ -36,6 +46,8 @@ import app.it.fast4x.rimusic.enums.PlayerType
 import app.it.fast4x.rimusic.enums.ThumbnailType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertSame
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -48,6 +60,71 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class PlayerCarouselCoverTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `cover overlay fades retain expensive content only until exit in either orientation`() {
+        val active = mutableStateOf(false)
+        val landscape = mutableStateOf(false)
+        val glass = mutableStateOf(false)
+        var backdrop: Backdrop? = null
+        var mounts = 0
+        var disposals = 0
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            CompositionLocalProvider(LocalGlassPreviewSettings provides GlassSettings(enabled = glass.value)) {
+                Box(Modifier.size(if (landscape.value) 180.dp else 120.dp, 120.dp)) {
+                    PlayerCoverOverlayHost(
+                        visibility = PlayerCoverOverlayVisibility(active.value, false),
+                        modifier = Modifier.fillMaxSize().testTag("cover.fade"),
+                        artwork = { Box(Modifier.fillMaxSize().background(Color.Blue)) },
+                        lyrics = {
+                            val currentBackdrop = LocalGlassOverlayArtworkBackdrop.current
+                            SideEffect { backdrop = currentBackdrop }
+                            DisposableEffect(Unit) { mounts++; onDispose { disposals++ } }
+                            Box(Modifier.fillMaxSize().background(Color.Red))
+                        },
+                        visualizer = {},
+                    )
+                }
+            }
+        }
+        fun red() = compose.onNodeWithTag("cover.fade").captureToImage().toPixelMap()
+            .let { it[it.width / 2, it.height / 2].red }
+        compose.runOnIdle { assertEquals(0, mounts) }
+        for (horizontal in listOf(false, true)) for (optical in listOf(false, true)) {
+            compose.runOnIdle { landscape.value = horizontal; glass.value = optical; active.value = true }
+            compose.waitForIdle()
+            compose.mainClock.advanceTimeByFrame()
+            compose.mainClock.advanceTimeBy(150)
+            assertTrue("Artwork remains visible through entrance", red() in .1f.. .9f)
+            compose.mainClock.advanceTimeBy(600)
+            assertTrue(red() > .95f)
+            val openedBackdrop = backdrop
+            if (optical) assertNotNull("Optical controls capture artwork while open", openedBackdrop)
+            compose.runOnIdle { active.value = false }
+            compose.waitForIdle()
+            compose.mainClock.advanceTimeByFrame()
+            compose.mainClock.advanceTimeBy(150)
+            assertTrue("Artwork is revealed progressively during exit", red() in .1f.. .9f)
+            compose.runOnIdle {
+                assertEquals(mounts - 1, disposals)
+                if (optical) assertSame("The same capture survives every exit frame", openedBackdrop, backdrop)
+            }
+            compose.mainClock.advanceTimeBy(600)
+            compose.runOnIdle { assertEquals(mounts, disposals) }
+            assertTrue(red() < .05f)
+        }
+        compose.runOnIdle { assertEquals(4, mounts) }
+    }
+
+    @Test fun `player lyrics decision falls back without artwork and preserves saved placement`() {
+        val savedPlacement = playerCoverOverlayPolicy(true, true)
+        assertTrue(playerStandaloneLyricsVisible(false, true, savedPlacement.lyricsOnCover))
+        assertTrue(playerStandaloneLyricsVisible(false, true, false))
+        assertTrue(playerStandaloneLyricsVisible(true, true, false))
+        assertEquals(false, playerStandaloneLyricsVisible(true, true, savedPlacement.lyricsOnCover))
+        assertEquals(false, playerStandaloneLyricsVisible(false, false, savedPlacement.lyricsOnCover))
+        assertTrue(savedPlacement.lyricsOnCover)
+    }
 
     @Test fun `full cover landscape keeps controls full width inside the same system safe area`() {
         assertEquals(false, playerLandscapeArtworkColumnVisible(PlayerType.Modern, ThumbnailType.Essential, false))

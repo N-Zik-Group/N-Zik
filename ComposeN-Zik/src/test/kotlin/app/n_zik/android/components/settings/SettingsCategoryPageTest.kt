@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Looper
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsNotDisplayed
@@ -17,7 +18,11 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.performScrollToKey
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -40,6 +45,12 @@ import app.n_zik.android.R
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.components.settings.common.SettingsCategoryPage
+import app.n_zik.android.components.settings.common.SettingsGlobalPage
+import app.n_zik.android.components.settings.common.SettingsCards
+import app.n_zik.android.components.settings.common.cardsForCategory
+import app.n_zik.android.components.settings.common.categoryId
+import app.n_zik.android.components.settings.common.searchSettingsEntries
+import app.n_zik.android.components.settings.common.parentCard
 import app.n_zik.android.components.settings.common.SettingsResetCard
 import app.n_zik.android.components.settings.common.resetScopeForTarget
 import app.n_zik.android.components.settings.common.AllSettingsEntryTargets
@@ -107,7 +118,7 @@ class SettingsCategoryPageTest {
         composeRule.onAllNodes(hasSetTextAction()).assertCountEquals(0)
     }
 
-    @Test fun emptyFocusedSearchFadesLazyCardsAndTypingRestoresMatchingCards() {
+    @Test fun emptyFocusedSearchFadesCardsAndTypingShowsOnlyCompactNavigationRows() {
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
             CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
@@ -123,8 +134,19 @@ class SettingsCategoryPageTest {
             runCatching { composeRule.onNodeWithTag(targetTag, useUnmergedTree = true).assertIsNotDisplayed() }.isSuccess
         }
         composeRule.onNode(hasSetTextAction()).performTextInput(context.getString(R.string.app_behavior))
-        pumpUntil("matching category card restored") {
-            runCatching { composeRule.onNodeWithTag(targetTag, useUnmergedTree = true).assertIsDisplayed() }.isSuccess
+        settleSearch()
+        val resultTag = "settings.category.card.0.${R.string.app_behavior}"
+        composeRule.onNodeWithTag("settings.category.list.behavior").performScrollToKey("result:0:${R.string.app_behavior}")
+        pumpUntil("matching compact navigation row displayed") {
+            runCatching { composeRule.onNodeWithTag(resultTag).assertIsDisplayed() }.isSuccess
+        }
+        composeRule.onNodeWithTag(targetTag, useUnmergedTree = true).assertDoesNotExist()
+        composeRule.onNodeWithTag("settings.category.list.behavior").performScrollToKey("header")
+        composeRule.onNode(hasSetTextAction()).performSemanticsAction(SemanticsActions.SetText) {
+            it(androidx.compose.ui.text.AnnotatedString(""))
+        }
+        pumpUntil("clearing search restores the original category card") {
+            runCatching { composeRule.onNodeWithTag(targetTag, useUnmergedTree = true).assertExists() }.isSuccess
         }
     }
 
@@ -141,6 +163,7 @@ class SettingsCategoryPageTest {
             runCatching { composeRule.onNode(hasSetTextAction()).fetchSemanticsNode() }.isSuccess
         }
         composeRule.onNode(hasSetTextAction()).performTextInput(context.getString(R.string.skip_silent_parts_during_playback))
+        settleSearch()
         val tag = "settings.category.entry.${target.id}"
         pumpUntil("description finds exact audio option") {
             runCatching { composeRule.onNodeWithTag(tag).assertIsDisplayed() }.isSuccess
@@ -171,19 +194,196 @@ class SettingsCategoryPageTest {
         input.performClick()
         pumpUntil("blank focused content releases its scroll range") { categoryCannotScroll("privacy") }
         input.performTextInput("zzz_no_match")
+        settleSearch()
         pumpUntil("unmatched content has no scroll range") { categoryCannotScroll("privacy") }
         input.performSemanticsAction(SemanticsActions.SetText) {
             it(androidx.compose.ui.text.AnnotatedString(context.getString(R.string.privacy_screen_protection)))
         }
         pumpUntil("short matching card fits the viewport") {
             runCatching {
-                composeRule.onNodeWithTag("settings.target.card.9.privacy_screen_protection", useUnmergedTree = true).assertIsDisplayed()
+                composeRule.onNodeWithTag("settings.category.card.9.${R.string.privacy_screen_protection}").assertIsDisplayed()
                 categoryCannotScroll("privacy")
             }.getOrDefault(false)
         }
         composeRule.onNodeWithTag("settings.category.list.privacy")
             .performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 1000f) }
         pumpUntil("short matching content cannot move") { categoryCannotScroll("privacy") }
+    }
+
+    @Test fun `audio short query renders exact global result geometry without full cards`() {
+        val global = mutableStateOf(true)
+        val target = searchSettingsEntries(context, "th").first { it.parentCard().categoryId() == "audio" }
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
+                if (global.value) SettingsGlobalPage(onItemSelected = {}, onCardSelected = { _, _ -> })
+                else SettingsCategoryPage(categoryId = "audio", navController = mockk(relaxed = true))
+            }
+        }
+        pumpUntil("global search ready") { runCatching { composeRule.onNode(hasSetTextAction()).assertExists() }.isSuccess }
+        composeRule.onNode(hasSetTextAction()).performTextInput("th")
+        settleSearch()
+        composeRule.onNodeWithTag("settings_global_list").performScrollToKey("entry_${target.id}")
+        val globalBounds = composeRule.onNodeWithTag("settings_result_entry_${target.id}", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+        global.value = false
+        pumpUntil("audio search ready") { runCatching { composeRule.onNodeWithTag("settings.category.audio").assertExists() }.isSuccess }
+        composeRule.onNode(hasSetTextAction()).performTextInput("th")
+        settleSearch()
+        composeRule.onNodeWithTag("settings.category.list.audio").performScrollToKey("entry:${target.id}")
+        val categoryBounds = composeRule.onNodeWithTag("settings.category.result.entry.${target.id}", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+        assertEquals(globalBounds.width, categoryBounds.width, 1f)
+        assertEquals(globalBounds.height, categoryBounds.height, 1f)
+        cardsForCategory("audio").forEach { card ->
+            val name = context.resources.getResourceEntryName(card.titleRes)
+            composeRule.onNodeWithTag("settings.target.card.${card.tab}.$name", useUnmergedTree = true).assertDoesNotExist()
+        }
+        composeRule.onNodeWithTag("settings.reset.card", useUnmergedTree = true).assertDoesNotExist()
+        composeRule.onNodeWithTag("settings.category.entry.${target.id}").assertTextContains(target.locationDescription(context))
+    }
+
+    @Test fun `theme title search is a compact link and navigates to the original card`() {
+        val navigation = mockk<NavController>(relaxed = true)
+        val theme = SettingsCards.single { it.tab == 1 && it.titleRes == R.string.theme }
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
+                SettingsCategoryPage(categoryId = theme.categoryId(), navController = navigation)
+            }
+        }
+        pumpUntil("theme search ready") { runCatching { composeRule.onNode(hasSetTextAction()).assertExists() }.isSuccess }
+        composeRule.onNode(hasSetTextAction()).performTextInput(context.getString(R.string.theme))
+        settleSearch()
+        composeRule.onNodeWithTag("settings.category.list.${theme.categoryId()}").performScrollToKey("result:1:${R.string.theme}")
+        composeRule.onNodeWithTag("settings.target.card.1.theme", useUnmergedTree = true).assertDoesNotExist()
+        composeRule.onNodeWithTag("settings.category.card.1.${R.string.theme}").performClick()
+        verify { navigation.navigate("settingsCategory/${theme.categoryId()}?target=${Uri.encode("card.1.theme")}") }
+    }
+
+    @Test fun `category search floating arrow appears on upward scroll and returns to search controls`() {
+        verifySearchScrollArrow(global = false)
+    }
+
+    @Test fun `global search floating arrow appears on upward scroll and returns to search controls`() {
+        verifySearchScrollArrow(global = true)
+    }
+
+    private fun verifySearchScrollArrow(global: Boolean) {
+        // This preference controls the separate action menu, not the return-to-top arrow.
+        context.preferences.edit().putBoolean("showFloatingIcon", false).commit()
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
+                if (global) SettingsGlobalPage(onItemSelected = {}, onCardSelected = { _, _ -> })
+                else SettingsCategoryPage(categoryId = "audio", navController = mockk(relaxed = true))
+            }
+        }
+        pumpUntil("search ready") { runCatching { composeRule.onNode(hasSetTextAction()).assertExists() }.isSuccess }
+        composeRule.onNode(hasSetTextAction()).performTextInput("a")
+        settleSearch()
+        val listTag = if (global) "settings_global_list" else "settings.category.list.audio"
+        val arrowTag = if (global) "settings.global.scrollToTop" else "settings.category.scrollToTop"
+        val arrow = hasAnyAncestor(hasTestTag(arrowTag)) and hasClickAction()
+        composeRule.onAllNodes(arrow).assertCountEquals(0)
+        val results = searchSettingsEntries(context, "a").filter { global || it.parentCard().categoryId() == "audio" }
+        assertTrue("enough results to leave the search header behind", results.size > 5)
+        val distantResult = results[results.lastIndex - 2]
+        val key = if (global) "entry_${distantResult.id}" else "entry:${distantResult.id}"
+        composeRule.onNodeWithTag(listTag).performScrollToKey(key)
+        composeRule.mainClock.advanceTimeBy(600)
+        composeRule.onNodeWithTag(listTag).performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, -150f) }
+        pumpUntil("existing app arrow appears when scrolling up far from top") {
+            runCatching { composeRule.onNode(arrow).assertIsDisplayed() }.isSuccess
+        }
+        composeRule.onNode(arrow).performClick()
+        pumpUntil("arrow returns to search controls") {
+            val range = composeRule.onNodeWithTag(listTag).fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange]
+            range.value() == 0f
+        }
+        composeRule.onNode(hasSetTextAction()).assertIsDisplayed()
+        pumpUntil("arrow disappears at the top") { composeRule.onAllNodes(arrow).fetchSemanticsNodes().isEmpty() }
+    }
+
+    private fun settleSearch() {
+        composeRule.mainClock.advanceTimeBy(500)
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(500))
+    }
+
+    @Test fun `blank global groups support scroll arrow while still inside one tall item`() {
+        verifyBlankScrollArrow(global = true)
+    }
+
+    @Test fun `blank audio page supports scroll arrow while still inside one tall card`() {
+        verifyBlankScrollArrow(global = false)
+    }
+
+    private fun verifyBlankScrollArrow(global: Boolean) {
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
+                if (global) SettingsGlobalPage(onItemSelected = {}, onCardSelected = { _, _ -> })
+                else SettingsCategoryPage(categoryId = "audio", navController = mockk(relaxed = true))
+            }
+        }
+        val listTag = if (global) "settings_global_list" else "settings.category.list.audio"
+        val arrowTag = if (global) "settings.global.scrollToTop" else "settings.category.scrollToTop"
+        pumpUntil("blank page ready") { runCatching { composeRule.onNodeWithTag(listTag).assertExists() }.isSuccess }
+        composeRule.onNodeWithTag(listTag).performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 1600f) }
+        settleSearch()
+        composeRule.onNodeWithTag(listTag).performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, -60f) }
+        val arrow = hasAnyAncestor(hasTestTag(arrowTag)) and hasClickAction()
+        pumpUntil("tall item exposes arrow on upward movement") { runCatching { composeRule.onNode(arrow).assertIsDisplayed() }.isSuccess }
+        composeRule.onNode(arrow).performClick()
+        pumpUntil("blank page returns to its header") {
+            composeRule.onNodeWithTag(listTag).fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange].value() == 0f
+        }
+    }
+
+    @Test fun `pending restart footer and mini player remain below the category arrow`() {
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(bottom = 140.dp), LocalAppearance provides appearance) {
+                SettingsCategoryPage(categoryId = "behavior", navController = mockk(relaxed = true))
+            }
+        }
+        val toggle = "settings.target.general.app_behavior.close_background_player"
+        pumpUntil("restart option ready") { runCatching { composeRule.onNodeWithTag(toggle).assertExists() }.isSuccess }
+        composeRule.onNodeWithTag(toggle).performScrollTo().performClick()
+        pumpUntil("restart is pending") { runCatching { composeRule.onNodeWithText(context.getString(R.string.restart_service)).assertIsDisplayed() }.isSuccess }
+        val list = composeRule.onNodeWithTag("settings.category.list.behavior")
+        list.performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 1600f) }
+        settleSearch()
+        list.performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, -60f) }
+        val arrow = hasAnyAncestor(hasTestTag("settings.category.scrollToTop")) and hasClickAction()
+        pumpUntil("arrow clears pending footer") {
+            runCatching {
+                composeRule.onNode(arrow).assertIsDisplayed()
+                val arrowBounds = composeRule.onNode(arrow).fetchSemanticsNode().boundsInRoot
+                val footerBounds = composeRule.onNodeWithTag("settings.category.footer", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+                arrowBounds.bottom <= footerBounds.top
+            }.getOrDefault(false)
+        }
+    }
+
+    @Test fun `keyword only visualizer card remains a compact destination on both hosts`() {
+        val global = mutableStateOf(true)
+        val card = SettingsCards.single { R.string.require_mic_permission in it.keywordRes }
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
+                if (global.value) SettingsGlobalPage(onItemSelected = {}, onCardSelected = { _, _ -> })
+                else SettingsCategoryPage(categoryId = "player", navController = mockk(relaxed = true))
+            }
+        }
+        pumpUntil("global keyword search ready") { runCatching { composeRule.onNode(hasSetTextAction()).assertExists() }.isSuccess }
+        composeRule.onNode(hasSetTextAction()).performTextInput("mic permission")
+        settleSearch()
+        composeRule.onNodeWithTag("settings_global_result_${card.tab}_${card.titleRes}").assertIsDisplayed()
+        global.value = false
+        pumpUntil("page keyword search ready") { runCatching { composeRule.onNodeWithTag("settings.category.player").assertExists() }.isSuccess }
+        composeRule.onNode(hasSetTextAction()).performTextInput("mic permission")
+        settleSearch()
+        composeRule.onNodeWithTag("settings.category.card.${card.tab}.${card.titleRes}").assertIsDisplayed()
+        composeRule.onNodeWithTag("settings.target.card.${card.tab}.${context.resources.getResourceEntryName(card.titleRes)}", useUnmergedTree = true).assertDoesNotExist()
     }
 
     private fun categoryCannotScroll(category: String): Boolean {

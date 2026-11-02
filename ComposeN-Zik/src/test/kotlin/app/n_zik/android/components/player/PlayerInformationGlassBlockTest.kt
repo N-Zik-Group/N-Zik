@@ -13,6 +13,7 @@ import app.it.fast4x.rimusic.utils.playerTimelineTypeKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.LocalPlayerSheetState
+import app.n_zik.android.R
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.playback.services.PlayerServiceModern
 import io.mockk.every
@@ -38,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasTestTag
@@ -288,7 +290,10 @@ class PlayerInformationGlassBlockTest {
             assertEquals(seekBounds, compose.onNodeWithTag("seek").fetchSemanticsNode().boundsInRoot)
         }
         compose.runOnIdle { mode.value = GlassAreaMode.GlassAndContour; seek.value = false }
-        compose.onNodeWithTag("player.informationBlock.surface").assertDoesNotExist()
+        val emptySurface = compose.onNodeWithTag("player.informationBlock.surface")
+        emptySurface.assertIsNotDisplayed()
+        assertEquals(0f, emptySurface.fetchSemanticsNode().boundsInRoot.width, 0f)
+        assertEquals(0f, emptySurface.fetchSemanticsNode().boundsInRoot.height, 0f)
     }
 
     @Test fun `plate samples child free player source with global optics and modal gates`() {
@@ -319,6 +324,64 @@ class PlayerInformationGlassBlockTest {
         assertTrue(gated.blue < blue.blue)
         compose.runOnIdle { optical.value = true; covered.value = true }
         assertEquals(gated, pixel())
+    }
+
+    @Test fun `information children apply their material once regardless of the surrounding plate film`() {
+        val headerEnabled = mutableStateOf(false)
+        val headerFilm = mutableStateOf(.5f)
+        compose.setContent { AppearanceProvider {
+            val source = rememberCanvasBackdrop { drawRect(Color.Blue) }
+            val child = GlassSettings(enabled = true, blur = 0f, film = .5f, rim = 0f,
+                amount = 0f, depth = 0f, vibrancy = 1f)
+            CompositionLocalProvider(LocalGlassContainerBackdrop provides source, LocalGlassBackdrop provides source) {
+                Box(Modifier.size(300.dp).background(Color.Blue)) {
+                    PlayerInformationGlassBlock(
+                        Modifier.padding(30.dp),
+                        settings = child.copy(enabled = headerEnabled.value, film = headerFilm.value),
+                    ) {
+                        PlayerInformationGlassRegion("material.regression") {
+                            Column(Modifier.size(220.dp, 240.dp)) {
+                                PlayerQueueDurationGlass(child) { Box(Modifier.size(60.dp, 20.dp)) }
+                                Spacer(Modifier.height(16.dp))
+                                PlayerSkipTimeGlass(child) { Box(Modifier.size(20.dp)) }
+                                Spacer(Modifier.height(16.dp))
+                                PlayerInfoGlassRail(true, child) {
+                                    Box(Modifier.size(60.dp, 40.dp)) {
+                                        Box(Modifier.size(8.dp).albumIconBounds())
+                                        Box(Modifier.offset(y = 32.dp).size(8.dp).artistIconBounds())
+                                    }
+                                }
+                                Spacer(Modifier.height(24.dp))
+                                PlayerInformationFavoriteBackdrop(true, child) { title, favoriteSource ->
+                                    Box(Modifier.size(100.dp, 60.dp), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                                        Box(Modifier.size(100.dp, 20.dp).then(title).background(Color.Red.copy(alpha = .5f)))
+                                        PlayerInformationFavoriteAction(R.drawable.heart, Color.Transparent, {}, child,
+                                            ownBackdrop = favoriteSource)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } }
+        val tags = listOf("player.queueDuration.material", "player.skipTime.material",
+            "player.infoRail.surface", "player.informationFavorite.surface")
+        fun centers() = tags.map { tag ->
+            compose.onNodeWithTag(tag, useUnmergedTree = true).captureToImage().toPixelMap().let {
+                it[it.width / 2, it.height / 2]
+            }
+        }
+        val withoutPlate = centers()
+        for (film in listOf(.5f, .9f)) {
+            compose.runOnIdle { headerEnabled.value = true; headerFilm.value = film }
+            compose.onNodeWithTag("player.informationBlock.surface").assertExists()
+            centers().zip(withoutPlate).forEachIndexed { index, (actual, expected) ->
+                assertEquals("${tags[index]} red with header film=$film", expected.red, actual.red, .015f)
+                assertEquals("${tags[index]} green with header film=$film", expected.green, actual.green, .015f)
+                assertEquals("${tags[index]} blue with header film=$film", expected.blue, actual.blue, .015f)
+            }
+        }
     }
 
     @Test @Config(qualifiers = "w800dp-h1200dp")

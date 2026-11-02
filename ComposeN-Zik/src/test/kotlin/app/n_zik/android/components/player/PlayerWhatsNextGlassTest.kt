@@ -80,7 +80,7 @@ class PlayerWhatsNextGlassTest {
             AppearanceProvider {
                 val settings = GlassSettings(areaModes = mapOf(GlassArea.ActionButtons to mode.value))
                 val geometry = remember { PlayerTransportGeometry() }
-                val toolbarLayout = rememberPlayerActionToolbarLayout()
+                val toolbarLayout = rememberPlayerActionToolbarLayout(settings)
                 CompositionLocalProvider(LocalPlayerTransportGeometry provides geometry) {
                     Box(Modifier.requiredWidth(640.dp).requiredHeight(height.value)
                         .playerTransportGeometryHost().testTag("art.background")) {
@@ -163,7 +163,7 @@ class PlayerWhatsNextGlassTest {
                         GlassContextArea(GlassScope.PlayerInformation, GlassArea.ActionButtons) to railMode.value,
                     ))
                 val geometry = remember { PlayerTransportGeometry() }
-                val layout = rememberPlayerActionToolbarLayout()
+                val layout = rememberPlayerActionToolbarLayout(settings)
                 CompositionLocalProvider(LocalPlayerTransportGeometry provides geometry) {
                     Box(Modifier.requiredWidth(640.dp).requiredHeight(360.dp).playerTransportGeometryHost().testTag("margin.background")) {
                         PlayerLandscapeColumns(contentInsets = WindowInsets(left = 8, top = 24, right = 16, bottom = 12),
@@ -229,7 +229,7 @@ class PlayerWhatsNextGlassTest {
         compose.setContent {
             AppearanceProvider {
                 val settings = GlassSettings(areaModes = mapOf(GlassArea.ActionButtons to mode.value))
-                val layout = rememberPlayerActionToolbarLayout()
+                val layout = rememberPlayerActionToolbarLayout(settings)
                 Box(Modifier.requiredWidth(320.dp).requiredHeight(240.dp)) {
                     Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth().requiredHeight(
                         layout.hostHeight(if (upcoming.value) 90.dp + playerWhatsNextGlassExtraHeight(settings) else 50.dp)

@@ -23,6 +23,7 @@ import app.n_zik.android.components.glass.GlassMaterialContainerScope
 import app.n_zik.android.components.glass.glassSettingsCardBackground
 import app.n_zik.android.components.glass.glassSettingsCardRim
 import app.n_zik.android.components.glass.glassTint
+import app.n_zik.android.components.glass.rememberInlineGlassBackdrop
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.surfaceColor
@@ -42,6 +43,7 @@ internal fun ProfileCardSurface(
     val shape = uiRoundnessShape()
     val fill = surfaceColor(palette.background1)
     val material = settings.usesGlassMaterial(GlassArea.SettingsCards)
+    val sourceBackdrop = rememberInlineGlassBackdrop(palette.background0)
     val interaction = if (onClick != null) Modifier.clip(shape).clickable(enabled = enabled, onClick = onClick)
         else interactionModifier
     // Opaque legacy modifiers retain their original card semantics/mask. Real profile
@@ -56,9 +58,10 @@ internal fun ProfileCardSurface(
         } else Modifier
         GlassMaterialContainerScope(
             modifier = Modifier,
+            materialSource = sourceBackdrop.takeIf { material },
             sectionFilm = if (material) null else fill.compositeOver(palette.background0),
             material = if (material) { exported ->
-                Modifier.clip(shape).glassSettingsCardBackground(palette.background0, fill, shape, settings, exported)
+                Modifier.clip(shape).glassSettingsCardBackground(palette.background0, fill, shape, settings, exported, sourceBackdrop)
             } else null,
         ) { exportedMaterial ->
             val surfaceModifier = if (material) exportedMaterial else
@@ -78,7 +81,7 @@ internal fun ProfileCardSurface(
         return
     }
     val surfaceModifier = if (material) {
-        Modifier.clip(shape).glassSettingsCardBackground(palette.background0, fill, shape, settings)
+        Modifier.clip(shape).glassSettingsCardBackground(palette.background0, fill, shape, settings, sourceBackdrop = sourceBackdrop)
     } else {
         Modifier.shadow(4.dp, shape, spotColor = palette.accent.copy(alpha = 0.2f))
             .glassSettingsCardRim(settings, shape, glassTint(settings))

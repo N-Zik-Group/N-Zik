@@ -14,6 +14,7 @@ enum class GlassScope(val areas: Set<GlassArea>) {
     Onboarding(setOf(GlassArea.ActionButtons, GlassArea.SettingsCards)),
     PlayerHeader(setOf(GlassArea.ActionButtons)),
     PlayerInformation(setOf(GlassArea.ActionButtons)),
+    PlayerFavorite(setOf(GlassArea.ActionButtons)),
     PlayerTime(setOf(GlassArea.ActionButtons)),
     PlayerSeek(setOf(GlassArea.ActionButtons)),
     PlayerTransport(setOf(GlassArea.ActionButtons)),

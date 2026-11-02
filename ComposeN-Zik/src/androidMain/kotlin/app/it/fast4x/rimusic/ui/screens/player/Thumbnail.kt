@@ -46,6 +46,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -115,7 +116,8 @@ fun Thumbnail(
     onMaximize: () -> Unit,
     onDoubleTap: () -> Unit,
     showthumbnail: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    verticalPadding: Dp = 8.dp,
 ) {
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
@@ -247,13 +249,13 @@ fun Thumbnail(
 
         val coverPressFeedback = rememberGlassRawPressFeedback()
         val overlayArtworkBackdrop = rememberLayerBackdrop()
-        var modifierUiType by remember { mutableStateOf(modifier) }
+        var modifierUiType = modifier
 
         if (showthumbnail)
             if ((!isShowingLyrics && !isShowingVisualizer) || (isShowingVisualizer && showvisthumbnail) || (isShowingLyrics && showlyricsthumbnail))
                 if (thumbnailType == ThumbnailType.Modern)
                     modifierUiType = modifier
-                        .padding(vertical = 8.dp)
+                        .padding(vertical = verticalPadding)
                         .aspectRatio(1f)
                         //.size(thumbnailSizeDp)
                         .fillMaxSize()

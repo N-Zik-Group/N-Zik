@@ -57,8 +57,9 @@ internal fun Modifier.glassChipBackground(
     shape: Shape,
     settings: GlassSettings = rememberGlassSettings(),
     filmColor: Color? = color,
+    allowInNativeQueue: Boolean = false,
 ): Modifier {
-    if (LocalNativeQueueRows.current) return background(color, shape)
+    if (LocalNativeQueueRows.current && !allowInNativeQueue) return background(color, shape)
     if (!settings.usesGlassMaterial(GlassArea.ActionButtons)) {
         return background(color, shape).glassAreaContour(settings, GlassArea.ActionButtons, shape)
     }

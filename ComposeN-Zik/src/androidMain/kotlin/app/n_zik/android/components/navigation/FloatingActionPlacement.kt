@@ -64,7 +64,11 @@ private class FloatingActionDragPosition(var offset: Offset = Offset.Zero)
 
 /** Clamp rendering after resize without changing the user's stored position. */
 @Composable
-fun Modifier.movableFloatingAction(offsetX: MutableState<Float>, offsetY: MutableState<Float>): Modifier {
+fun Modifier.movableFloatingAction(
+    offsetX: MutableState<Float>,
+    offsetY: MutableState<Float>,
+    onRestingBounds: ((Rect) -> Unit)? = null,
+): Modifier {
     val density = LocalDensity.current
     val direction = LocalLayoutDirection.current
     val view = LocalView.current
@@ -94,6 +98,7 @@ fun Modifier.movableFloatingAction(offsetX: MutableState<Float>, offsetY: Mutabl
                     reachableFloatingActionOffset(requested, anchor, safe)
                 } ?: requested
                 dragPosition.offset = displayed
+                geometry?.first?.let { onRestingBounds?.invoke(it.translate(displayed)) }
                 placeable.place(displayed.x.roundToInt(), displayed.y.roundToInt())
             }
         }

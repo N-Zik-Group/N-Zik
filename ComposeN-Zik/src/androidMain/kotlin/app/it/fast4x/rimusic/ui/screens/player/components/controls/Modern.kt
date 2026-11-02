@@ -63,7 +63,6 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.listentogether.guestLockedAlpha
 import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
 import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.enums.PlayerBackgroundColors
 import app.it.fast4x.rimusic.enums.PlayerControlsType
 import app.it.fast4x.rimusic.enums.PlayerPlayButtonType
 import app.it.fast4x.rimusic.models.Info
@@ -79,11 +78,8 @@ import app.it.fast4x.rimusic.utils.doubleShadowDrop
 import app.it.fast4x.rimusic.utils.dropShadow
 import app.it.fast4x.rimusic.utils.effectRotationKey
 import app.it.fast4x.rimusic.utils.getLikeState
-import app.it.fast4x.rimusic.utils.getUnlikedIcon
 import app.it.fast4x.rimusic.utils.jumpPreviousKey
-import app.it.fast4x.rimusic.utils.playNext
 import app.it.fast4x.rimusic.utils.playPrevious
-import app.it.fast4x.rimusic.utils.playerBackgroundColorsKey
 import app.it.fast4x.rimusic.utils.playerControlsTypeKey
 import app.it.fast4x.rimusic.utils.playerInfoShowIconsKey
 import app.it.fast4x.rimusic.utils.rememberPreference
@@ -105,6 +101,8 @@ import app.n_zik.android.playback.utils.playNextIfAvailable
 import app.n_zik.android.components.player.playerTransportIndication
 import app.n_zik.android.components.player.PlayerTransportControlMotion
 import app.n_zik.android.components.player.PlayerInfoIconButton
+import app.n_zik.android.components.player.PlayerInformationFavoriteAction
+import app.n_zik.android.components.player.PlayerInformationFavoriteBackdrop
 import app.n_zik.android.components.player.PlayerInfoGlassRail
 import app.n_zik.android.components.player.PlayerTransportRibbedSurface
 import app.n_zik.android.components.player.playerTransportPlayShape
@@ -112,6 +110,8 @@ import app.n_zik.android.components.player.playerTransportNativeFill
 import app.n_zik.android.components.player.playerTransportSurface
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.GlassScope
+import app.n_zik.android.components.glass.inScope
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.player.monochromeControlsColor
 import app.n_zik.android.components.player.placeholderCompositeBase
@@ -138,15 +138,12 @@ fun InfoAlbumAndArtistModern(
     val glassTextFeedback = rememberGlassSettings().enabled
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     var showthumbnail by rememberPreference(showthumbnailKey, true)
-    var effectRotationEnabled by rememberPreference(effectRotationKey, false)
-    // Issue #881 (gh-881): tolerant saver (spec M5).
-    var isRotated by rememberSaveable(saver = TolerantBoolStateSaver("modern.infoAlbumArtist.isRotated")) { mutableStateOf(false) }
     var showSelectDialog by remember { mutableStateOf(false) }
-    val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey,PlayerBackgroundColors.AnimatedGradient)
     val playerInfoShowIcon by rememberPreference(playerInfoShowIconsKey, true)
     val currentMediaItem = binder.player.currentMediaItem
 
     PlayerInfoGlassRail(iconsVisible = playerInfoShowIcon) {
+    PlayerInformationFavoriteBackdrop(playerControlsType == PlayerControlsType.Modern) { titleBackdrop, favoriteBackdrop ->
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -209,6 +206,7 @@ fun InfoAlbumAndArtistModern(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                  .weight(1f)
+                 .then(titleBackdrop)
             ) {
                 if ( isExplicit )
                     IconButton(
@@ -255,44 +253,26 @@ fun InfoAlbumAndArtistModern(
                 )
                 }
             }
-            //}
-            if (playerControlsType == PlayerControlsType.Modern)
-                Box(
-                    modifier = Modifier
-                        .weight(0.1f)
-                ){
-                    IconButton(
-                        color = if(likedAt == -1L) colorPalette().red else colorPalette().favoritesIcon,
-                        icon = getLikeState(mediaId),
-                        onClick = {
-                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                currentMediaItem?.let {
-                                    YouTubeSync.rotateSongLikeState( appContext(), it )
-                                }
+            if (playerControlsType == PlayerControlsType.Modern) {
+                PlayerInformationFavoriteAction(
+                    ownBackdrop = favoriteBackdrop,
+                    color = if (likedAt == -1L) colorPalette().red else colorPalette().favoritesIcon,
+                    icon = getLikeState(mediaId),
+                    onClick = {
+                        NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                            currentMediaItem?.let {
+                                YouTubeSync.rotateSongLikeState(appContext(), it)
                             }
-
-                            if (effectRotationEnabled) isRotated = !isRotated
-                        },
-                        modifier = Modifier
-                            .padding(start = 5.dp)
-                            .size(24.dp)
-                    )
-                    if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) {
-                        Icon(
-                            painter = painterResource(id = getUnlikedIcon()),
-                            tint = colorPalette().text,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .padding(start = 5.dp)
-                                .size(24.dp)
-                        )
-                    }
-                }
+                        }
+                    },
+                )
+            }
         }
 
 
     }
 
+    }
 
     Spacer(
         modifier = Modifier
@@ -428,7 +408,7 @@ fun ControlsModern(
     val previousInteraction = remember { MutableInteractionSource() }
     val playInteraction = remember { MutableInteractionSource() }
     val nextInteraction = remember { MutableInteractionSource() }
-    val transportSettings = rememberGlassSettings()
+    val transportSettings = rememberGlassSettings(GlassScope.PlayerTransport).inScope(GlassScope.PlayerTransport)
     val transportGlass = transportSettings.usesGlassMaterial(GlassArea.ActionButtons)
     val transportFilm = colorPalette().background2.copy(0.95f)
     val playerControlsColors by rememberPreference(playerControlsColorsKey, PlayerControlsColors.Monochrome)

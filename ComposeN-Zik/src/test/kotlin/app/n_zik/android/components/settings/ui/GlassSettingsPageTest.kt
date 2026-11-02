@@ -326,6 +326,19 @@ class GlassSettingsPageTest {
         assertEquals(GlassAreaMode.ContourOnly, store.read().contextMode(GlassScope.PlayerTransport, GlassArea.ActionButtons))
     }
 
+    @Test fun `title favorite selector changes its own policy while panel and transport stay independent`() {
+        showPage(target = "glass.destination.PlayerFavorite.ActionButtons")
+        val selector = composeRule.onNodeWithTag("settings.glass.mode.PlayerFavorite.ActionButtons")
+        selector.performScrollTo().performClick()
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_mode_disabled)).onLast().performClick()
+        composeRule.waitForIdle()
+        val reloaded = GlassStore(context).read()
+        assertEquals(GlassAreaMode.Disabled, reloaded.contextMode(GlassScope.PlayerFavorite, GlassArea.ActionButtons))
+        assertEquals(GlassAreaMode.GlassAndContour, reloaded.contextMode(GlassScope.PlayerHeader, GlassArea.ActionButtons))
+        assertEquals(GlassAreaMode.GlassAndContour, reloaded.contextMode(GlassScope.PlayerInformation, GlassArea.ActionButtons))
+        assertEquals(GlassAreaMode.GlassAndContour, reloaded.contextMode(GlassScope.PlayerTransport, GlassArea.ActionButtons))
+    }
+
     private fun showPage(onboarding: Boolean = false, headerInset: Dp = 0.dp, target: String = "") {
         composeRule.setContent {
             CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance, LocalGlassArtworkColor provides Color.Magenta, LocalAppHeaderContentInset provides { headerInset }, LocalAppHeaderOverlayInset provides { headerInset }) {

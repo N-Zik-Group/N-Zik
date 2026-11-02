@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.compositeOver
 import app.n_zik.android.components.glass.glassSettingsCardBackground
 import app.n_zik.android.components.glass.glassSettingsCardRim
 import app.n_zik.android.components.glass.glassTint
+import app.n_zik.android.components.glass.rememberInlineGlassBackdrop
 import app.n_zik.android.components.glass.rememberGlassSettings
 
 /** Uses one Glass surface, retaining the original native card when its material is disabled. */
@@ -37,14 +38,16 @@ internal fun SettingsCardSurface(
     settings: GlassSettings = rememberGlassSettings(),
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val sourceBackdrop = rememberInlineGlassBackdrop(backgroundColor)
     if (settings.usesGlassMaterial(GlassArea.ActionButtons)) {
         val glassCard = settings.usesGlassMaterial(GlassArea.SettingsCards)
         GlassMaterialContainerScope(
             modifier = Modifier,
+            materialSource = sourceBackdrop.takeIf { glassCard },
             sectionFilm = if (glassCard) null else containerColor.compositeOver(backgroundColor),
             material = if (glassCard) { exported ->
                 Modifier.clip(shape).glassSettingsCardBackground(
-                    backgroundColor, containerColor, shape, settings, exported)
+                    backgroundColor, containerColor, shape, settings, exported, sourceBackdrop)
             } else null,
         ) { material ->
             GlassControlOverflowSurface(modifier, shape, surface = {
@@ -67,7 +70,7 @@ internal fun SettingsCardSurface(
         Column(
             modifier = modifier
                 .clip(shape)
-                .glassSettingsCardBackground(backgroundColor, containerColor, shape, settings),
+                .glassSettingsCardBackground(backgroundColor, containerColor, shape, settings, sourceBackdrop = sourceBackdrop),
             content = content,
         )
     } else {

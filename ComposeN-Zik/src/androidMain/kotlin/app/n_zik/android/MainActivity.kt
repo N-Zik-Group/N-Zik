@@ -2366,6 +2366,7 @@ class MainActivity :
                                 when (phase) {
                                     null -> app.n_zik.android.components.player.PlayerCoveredPage(
                                         covered = playerSheetState.isExpanded,
+                                        reduceGlassEffects = playerSheetState.progress > 0f,
                                     ) {
                                         AppNavigation(
                                             navController = navController,

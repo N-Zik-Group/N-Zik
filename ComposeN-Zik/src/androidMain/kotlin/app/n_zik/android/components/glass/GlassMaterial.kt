@@ -147,6 +147,12 @@ internal fun glassNativeSurfaceTint(settings: GlassSettings, base: Color): Color
     return blendGlassTint(base, glassTint(settings), settings.tintStrength).copy(alpha = base.alpha)
 }
 
+/** Native alpha describes native rendering; the Glass film slider alone owns material coverage. */
+@Composable
+internal fun glassRoleFilmTint(settings: GlassSettings, role: Color?): Color =
+    if (role == null || !role.isSpecified || role.alpha == 0f) glassSurfaceTint(settings)
+    else glassNativeSurfaceTint(settings, role.copy(alpha = 1f))
+
 @Composable
 private fun glassRimTint(settings: GlassSettings): Color {
     return blendGlassTint(Color.White, glassTint(settings), settings.tintStrength)
@@ -177,7 +183,8 @@ fun Modifier.glassMaterial(
     excludeBottomRim: Boolean = menu,
 ): Modifier {
     if (!settings.enabled) return this
-    val backdrop = ownBackdrop ?: LocalGlassBackdrop.current
+    val backdrop = if (ownBackdrop != null && ownBackdrop === LocalGlassContainerBackdrop.current)
+        LocalGlassMaterialSource.current ?: ownBackdrop else ownBackdrop ?: LocalGlassBackdrop.current
     val liveFrame = LocalGlassLiveFrame.current
     val opticsState = glassOpticsProgressState(glassOpticsEnabled())
     val opticsProgress = opticsState.value
@@ -186,7 +193,7 @@ fun Modifier.glassMaterial(
     // processed layer fades; rebuilding the material here also discards exports.
     val renderer = if (separateWindow || backdrop == null) GlassRenderer.Tint else glassRenderer(settings)
     val baseFilm = glassSurfaceTint(settings)
-    val nativeFilm = filmColor?.let { glassNativeSurfaceTint(settings, it) }
+    val nativeFilm = filmColor?.let { glassRoleFilmTint(settings, it) }
     val film = if (menu && nativeFilm != null) lerp(baseFilm, nativeFilm, menuFilmProgress.coerceIn(0f, 1f))
         else nativeFilm ?: baseFilm
     val rimColor = glassRimTint(settings)

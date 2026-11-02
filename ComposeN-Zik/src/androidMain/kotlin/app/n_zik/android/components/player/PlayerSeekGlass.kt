@@ -24,10 +24,10 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
@@ -45,10 +45,8 @@ import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.backdrop.drawBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
-import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
-import app.n_zik.android.components.glass.backdrop.backdrops.rememberBackdrop
-import app.n_zik.android.components.glass.backdrop.backdrops.rememberCombinedBackdrop
 import app.n_zik.android.components.glass.backdrop.effects.blur
+import app.n_zik.android.components.glass.backdrop.effects.colorControls
 import app.n_zik.android.components.glass.backdrop.effects.lens
 import app.n_zik.android.components.glass.backdrop.highlight.Highlight
 import app.n_zik.android.components.glass.backdrop.shadow.InnerShadow
@@ -61,12 +59,24 @@ import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.usesGlassContour
 import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.glass.glassSaturation
 import kotlin.math.roundToInt
 import kotlin.time.Clock
 
 internal fun playerSeekLensX(width: Float, inset: Float, fraction: Float): Float =
     inset.coerceAtMost(width / 2f) + (width - 2f * inset).coerceAtLeast(0f) *
         (if (fraction.isFinite()) fraction.coerceIn(0f, 1f) else 0f)
+
+internal data class PlayerSeekOptics(val blurDp: Float, val saturation: Float, val depthDp: Float, val amountDp: Float)
+
+/** Press motion modulates the saved optics without introducing a nonzero minimum. */
+internal fun playerSeekOptics(settings: GlassSettings, pressProgress: Float, opticsProgress: Float): PlayerSeekOptics {
+    val press = pressProgress.coerceIn(0f, 1f)
+    val optics = opticsProgress.coerceIn(0f, 1f)
+    return PlayerSeekOptics(settings.blur * (1f - press) * optics,
+        1f + (glassSaturation(settings.vibrancy) - 1f) * optics,
+        settings.depth * 48f * press * optics, settings.amount * 48f * press * optics)
+}
 
 @Stable
 class PlayerSeekGlassThumb(val motion: PlayerSeekGlassMotion,
@@ -76,12 +86,12 @@ class PlayerSeekGlassThumb(val motion: PlayerSeekGlassMotion,
     val opticsProgress: Float = 1f,
     val renderer: GlassRenderer = GlassRenderer.Refraction)
 
-/** Capture the native track and cursor sibling, never the optical overlay. No capture at rest. */
+/** Optional native-only recording; the optical pane never samples this foreground layer. */
 fun Modifier.playerSeekTrack(thumb: PlayerSeekGlassThumb?): Modifier =
     thumb?.takeIf { it.opticsEnabled && it.renderer != GlassRenderer.Tint && it.motion.pressProgress > .001f }
         ?.trackBackdrop?.let { layerBackdrop(it) } ?: this
 
-/** Add Square optics above the unchanged native track and cursor. */
+/** Center Square optics on the unchanged native track and cursor. */
 @Composable
 fun BoxScope.PlayerSeekOpticalThumb(
     thumb: PlayerSeekGlassThumb?,
@@ -94,15 +104,15 @@ fun BoxScope.PlayerSeekOpticalThumb(
     }
     if (!thumb.opticsEnabled) return
     val density = LocalDensity.current
-    val playerBackdrop = LocalGlassContainerBackdrop.current
+    // The native track already paints above this pane. Replaying it inside the lens
+    // creates a second, independently distorted stroke beside the real cursor.
+    val backdrop = LocalGlassContainerBackdrop.current
     var trackWidth by remember { mutableFloatStateOf(0f) }
     val progress = animation.pressProgress.coerceIn(0f, 1f)
-    val backdrop = if (thumb.renderer != GlassRenderer.Tint && playerBackdrop != null && thumb.trackBackdrop != null && progress > .001f) {
-        rememberCombinedBackdrop(playerBackdrop, rememberBackdrop(thumb.trackBackdrop) { drawBackdrop ->
-            scale(2f / 3f + progress / 3f, progress) { drawBackdrop() }
-        })
-    } else playerBackdrop
-    Box(Modifier.matchParentSize().onSizeChanged {
+    val visibility = progress * thumb.opticsProgress
+    val samplesBackdrop = thumb.settings.usesGlassMaterial(GlassArea.ActionButtons) &&
+        backdrop != null && thumb.renderer != GlassRenderer.Tint
+    Box(Modifier.matchParentSize().zIndex(-1f).onSizeChanged {
         trackWidth = it.width.toFloat()
     }) {
         val thumbWidth = with(density) { PLAYER_SEEK_OPTICAL_PANE_SIZE.toPx() }
@@ -112,10 +122,14 @@ fun BoxScope.PlayerSeekOpticalThumb(
         val motion: GraphicsLayerScope.() -> Unit = {
             scaleX = animation.opticalScaleX
             scaleY = animation.opticalScaleY
-            alpha = progress * thumb.opticsProgress
+            // CenterLeft already anchors the pane to the native cursor's vertical center.
+            // Scaling must expand around that center, without a floating bubble offset.
+            // The pane overflows the native track's thin slot. Alpha on this outer
+            // layer creates an implicit offscreen clip during entry/exit. Composite
+            // the sampled pixels inside their actual optical bounds instead.
+            alpha = if (samplesBackdrop) 1f else visibility
         }
-        // A clear resting ball must leave native track pixels untouched. Sampling the
-        // player alone here would paint over that track with an opaque scene-colored disc.
+        // At rest there is no visible optical layer; the native track remains unchanged.
         val optics = if (progress <= .001f) Modifier.graphicsLayer(motion)
             else if (!thumb.settings.usesGlassMaterial(GlassArea.ActionButtons))
                 Modifier.graphicsLayer(motion).glassAreaContour(thumb.settings, GlassArea.ActionButtons, CircleShape)
@@ -126,23 +140,27 @@ fun BoxScope.PlayerSeekOpticalThumb(
                 backdrop = backdrop,
                 shape = { CircleShape },
                 effects = {
-                    blur(8.dp.toPx() * (1f - progress) * thumb.opticsProgress)
-                    // Render at Square's full 36dp size, then scale down at rest. Both
-                    // lens reaches remain safely below half this actual optical pane.
+                    val configured = playerSeekOptics(thumb.settings, progress, thumb.opticsProgress)
+                    if (configured.saturation != 1f) colorControls(saturation = configured.saturation)
+                    if (configured.blurDp > 0f) blur(configured.blurDp.dp.toPx())
+                    // Keep the configured reaches inside the actual optical pane.
                     if (thumb.renderer == GlassRenderer.Refraction) {
-                        lens(10.dp.toPx() * progress * thumb.opticsProgress,
-                            14.dp.toPx() * progress * thumb.opticsProgress,
+                        val reach = size.minDimension * .45f
+                        lens(configured.depthDp.dp.toPx().coerceAtMost(reach),
+                            configured.amountDp.dp.toPx().coerceAtMost(reach),
+                            depthEffect = thumb.settings.depthEffect,
                             dispersion = thumb.settings.dispersionAmount())
                     }
                 },
                 highlight = if (thumb.settings.forArea(GlassArea.ActionButtons).rim > 0f) {
                     { Highlight.Ambient.copy(width = Highlight.Ambient.width / 1.5f,
                         blurRadius = Highlight.Ambient.blurRadius / 1.5f,
-                        alpha = progress * (thumb.settings.forArea(GlassArea.ActionButtons).rim / .55f).coerceIn(0f, 1f)) }
+                        alpha = visibility * progress * (thumb.settings.forArea(GlassArea.ActionButtons).rim / .55f).coerceIn(0f, 1f)) }
                 } else null,
-                shadow = { Shadow(radius = 4.dp, color = Color.Black.copy(alpha = .05f)) },
-                innerShadow = { InnerShadow(radius = 4.dp * progress, alpha = progress) },
+                shadow = { Shadow(radius = 4.dp, color = Color.Black.copy(alpha = .05f), alpha = visibility) },
+                innerShadow = { InnerShadow(radius = 4.dp * progress, alpha = visibility * progress) },
                 layerBlock = motion,
+                opticsAlpha = visibility,
             )
         Box(Modifier.align(AbsoluteAlignment.CenterLeft)
             .absoluteOffset { IntOffset(offset.roundToInt(), 0) }
@@ -168,13 +186,13 @@ fun PlayerSeekGlass(
     val opticsProgress = glassOpticsProgress()
     val opticsEnabled = opticsProgress > 0f
     val renderer = glassRenderer(settings)
-    val trackBackdrop = rememberLayerBackdrop()
     val scope = rememberCoroutineScope()
     val latestFraction by rememberUpdatedState(fraction)
     val animation = remember(scope, type) { PlayerSeekGlassMotion(scope, fraction(), timeMillis) }
     LaunchedEffect(animation, material, enabled, opticsEnabled) { animation.reset(latestFraction()) }
-    val thumb = remember(animation, trackBackdrop, settings, opticsEnabled, opticsProgress, renderer) {
-        PlayerSeekGlassThumb(animation, trackBackdrop.takeIf { material }, settings, opticsEnabled, opticsProgress, renderer)
+    val thumb = remember(animation, settings, opticsEnabled, opticsProgress, renderer) {
+        PlayerSeekGlassThumb(animation, settings = settings, opticsEnabled = opticsEnabled,
+            opticsProgress = opticsProgress, renderer = renderer)
     }
     Box(Modifier.fillMaxWidth().pointerInput(material, contour, enabled, opticsEnabled, animation) {
         if (!(material || contour) || !enabled || !opticsEnabled) return@pointerInput

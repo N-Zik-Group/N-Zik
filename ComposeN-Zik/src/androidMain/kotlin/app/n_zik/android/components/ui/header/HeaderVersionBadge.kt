@@ -1,6 +1,5 @@
 package app.n_zik.android.components.ui.header
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -30,6 +29,7 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.typography
 import app.n_zik.android.updater.services.Updater
 import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.ui.iconBadgeBackground
 
 /** Reference label for the header badges: the rendered width of this title at the badge style caps the width of EVERY header badge (version + debug) — no badge may be wider than the "DEBUG" badge; longer labels scroll in a marquee instead. */
@@ -77,15 +77,14 @@ internal fun HeaderBadgeBox(
     color: Color,
     onToggle: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
-    glassSettings: GlassSettings? = null,
+    glassSettings: GlassSettings = rememberGlassSettings(),
 ) {
     val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
     val style = headerBadgeStyle().copy(color = color)
     val maxWidth = clampedLabelMaxWidth(HEADER_BADGE_REF_TITLE, style)
     val shape = uiRoundnessShape()
     val fill = color.copy(alpha = 0.2f)
-    val background = if (glassSettings == null) Modifier.background(fill, shape)
-        else Modifier.iconBadgeBackground(fill, shape, glassSettings)
+    val background = Modifier.iconBadgeBackground(fill, shape, glassSettings)
 
     Box(
         modifier = modifier

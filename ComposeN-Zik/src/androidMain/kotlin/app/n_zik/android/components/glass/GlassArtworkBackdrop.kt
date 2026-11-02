@@ -35,6 +35,7 @@ fun GlassArtworkBackdrop(
     CompositionLocalProvider(
         LocalGlassBackdrop provides source,
         LocalGlassContainerBackdrop provides source,
+        LocalGlassMaterialSource provides source,
     ) {
         content(if (hasArtwork) Modifier.layerBackdrop(artwork) else Modifier)
     }

@@ -7,8 +7,69 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
 
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class SlideHelpersTest {
+
+    @Test
+    fun `rapid swipes cancel the old delayed playback request`() = runTest {
+        val pages = MutableStateFlow(0 to false)
+        val requests = mutableListOf<Int>()
+        val observer = launch { observeSettledPlayerPages(pages, 0, { 0 }, { requests.add(it) }, 400) }
+        runCurrent()
+        pages.value = 1 to false
+        runCurrent()
+        advanceTimeBy(200)
+        pages.value = 1 to true
+        runCurrent()
+        pages.value = 2 to false
+        runCurrent()
+        advanceTimeBy(400)
+        runCurrent()
+        assertEquals(listOf(2), requests)
+        observer.cancel()
+    }
+
+    @Test
+    fun `external track changes invalidate delayed swipe playback`() = runTest {
+        val pages = MutableStateFlow(0 to false)
+        var playing = 0
+        val requests = mutableListOf<Int>()
+        val observer = launch { observeSettledPlayerPages(pages, 0, { playing }, { requests.add(it) }, 400) }
+        runCurrent()
+        pages.value = 1 to false
+        runCurrent()
+        advanceTimeBy(200)
+        playing = 3
+        advanceTimeBy(400)
+        runCurrent()
+        assertTrue(requests.isEmpty())
+        observer.cancel()
+    }
+
+    @Test
+    fun `settling back on a page after canceling its delay still starts that track`() = runTest {
+        val pages = MutableStateFlow(0 to false)
+        val requests = mutableListOf<Int>()
+        val observer = launch { observeSettledPlayerPages(pages, 0, { 0 }, { requests.add(it) }, 400) }
+        runCurrent()
+        pages.value = 1 to false
+        runCurrent()
+        advanceTimeBy(200)
+        pages.value = 1 to true
+        runCurrent()
+        pages.value = 1 to false
+        runCurrent()
+        advanceTimeBy(400)
+        runCurrent()
+        assertEquals(listOf(1), requests)
+        observer.cancel()
+    }
 
     @Test
     fun `stacked drag uses the selected finger sensitivity in both directions`() {
@@ -35,11 +96,11 @@ class SlideHelpersTest {
     }
 
     @Test
-    fun `crossing the midpoint does not falsely satisfy the release threshold`() {
-        assertEquals(0.6f, carouselDragDisplacement(11, 10, -0.4f), 0.0001f)
-        assertEquals(0.6f, carouselDragDisplacement(9, 10, 0.4f), 0.0001f)
-        assertEquals(0.9f, carouselDragDisplacement(11, 10, -0.1f), 0.0001f)
-        assertEquals(0.2f, carouselDragDisplacement(10, 10, -0.2f), 0.0001f)
+    fun `shared release thresholds preserve the four sensitivity settings`() {
+        assertEquals(.15f, PlayerSwipeSensitivity.VeryHigh.carouselSnapThreshold())
+        assertEquals(.20f, PlayerSwipeSensitivity.High.carouselSnapThreshold())
+        assertEquals(.25f, PlayerSwipeSensitivity.Medium.carouselSnapThreshold())
+        assertEquals(.35f, PlayerSwipeSensitivity.Low.carouselSnapThreshold())
     }
 
     @Test

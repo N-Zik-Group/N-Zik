@@ -66,6 +66,7 @@ class GlassOverlayIconButtonTest {
                 // The source owner and its buttons share the same explicit optical configuration.
                 LocalGlassPreviewSettings provides optics,
                 LocalGlassBackdrop provides unrelatedPlayer,
+                LocalGlassMaterialSource provides unrelatedPlayer,
                 LocalGlassContainerBackdrop provides unrelatedPlayer) {
                 Box(Modifier.size(160.dp, 100.dp).background(playerColor.value)) {
                     Box(Modifier.matchParentSize().layerBackdrop(artwork).background(Color.Cyan))

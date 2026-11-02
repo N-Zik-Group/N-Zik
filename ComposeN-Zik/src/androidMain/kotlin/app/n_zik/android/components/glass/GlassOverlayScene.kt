@@ -40,6 +40,10 @@ fun GlassOverlayScene(
         Box(Modifier.matchParentSize().then(sceneModifier)
             .then(if (capture) Modifier.layerBackdrop(localScene) else Modifier)
             .background(background).testTag("glass.overlay.scene.background"), content = scene)
-        CompositionLocalProvider(LocalGlassContainerBackdrop provides backdrop, LocalGlassScope provides scope) { content() }
+        CompositionLocalProvider(
+            LocalGlassContainerBackdrop provides backdrop,
+            LocalGlassMaterialSource provides backdrop,
+            LocalGlassScope provides scope,
+        ) { content() }
     }
 }

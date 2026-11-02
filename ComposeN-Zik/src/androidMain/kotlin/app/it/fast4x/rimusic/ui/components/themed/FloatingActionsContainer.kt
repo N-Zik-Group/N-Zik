@@ -39,6 +39,7 @@ import app.it.fast4x.rimusic.utils.smoothScrollToTop
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.R
 import app.n_zik.android.components.glass.glassFloatingActionsBottomPadding
+import app.n_zik.android.components.navigation.ScreenEdgeFloatingAction
 import app.n_zik.android.components.navigation.FloatingActionGap
 import app.n_zik.android.components.navigation.floatingActionsHorizontalPadding
 import app.n_zik.android.components.navigation.movableFloatingAction
@@ -207,11 +208,12 @@ fun BoxScope.FloatingActions(
             .padding(end = reservedEndSpace, bottom = bottomPadding + FloatingActionGap)
     ) {
         onScrollToTop?.let {
-            transition.AnimatedVisibility(
-                visible = { it?.isScrollingDown == false && it.isFar },
-                enter = slideInVertically(tween(500, if (iconId == null) 0 else 100)) { it },
-                exit = slideOutVertically(tween(500, 0)) { it },
-            ) {
+            ScreenEdgeFloatingAction(
+                visible = transition.targetState?.isScrollingDown == false && transition.targetState?.isFar == true,
+                offsetX = offsetX,
+                offsetY = offsetY,
+                enterDelayMillis = if (iconId == null) 0 else 100,
+            ) { motionModifier ->
                 val coroutineScope = rememberCoroutineScope()
                 PrimaryButton(
                     iconId = R.drawable.chevron_up,
@@ -221,7 +223,7 @@ fun BoxScope.FloatingActions(
                         }
                     },
                     enabled = transition.targetState?.isScrollingDown == false && transition.targetState?.isFar == true,
-                    modifier = Modifier.movableFloatingAction(offsetX, offsetY)
+                    modifier = motionModifier
                 )
             }
         }

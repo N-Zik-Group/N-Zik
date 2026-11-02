@@ -26,6 +26,7 @@ import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.Typography
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
@@ -41,6 +42,40 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassMiniPlayerBackgroundTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test @Config(sdk = [32], qualifiers = "w360dp-h800dp-mdpi")
+    fun `mini progress and body match shared material film for native alpha and transparent role colors`() {
+        var base by mutableStateOf(Color.Blue)
+        var film by mutableStateOf(.5f)
+        var quality by mutableStateOf(GlassQuality.Balanced)
+        val progress = Color.Red.copy(alpha = .4f)
+        compose.setContent {
+            val shape = RoundedCornerShape(0.dp)
+            val source = rememberCanvasBackdrop { drawRect(Color.White) }
+            val settings = GlassSettings(quality = quality, film = film, rim = 0f, blur = 0f,
+                vibrancy = 0f, depth = 0f, amount = 0f, tintStrength = 0f)
+            CompositionLocalProvider(LocalAppearance provides Appearance(ColorPalette.fallback,
+                Typography.fallback, shape, shape, shape)) {
+                Box(Modifier.size(180.dp, 60.dp).background(Color.White).testTag("mini.sharedFilm")) {
+                    Box(Modifier.size(100.dp, 60.dp).glassMiniPlayerBackground(settings, shape, source, base,
+                        progressColor = progress, progressFraction = { .5f }))
+                    Box(Modifier.offset(x = 100.dp).size(40.dp, 60.dp)
+                        .glassMaterial(settings, shape, ownBackdrop = source, filmColor = base))
+                    Box(Modifier.offset(x = 140.dp).size(40.dp, 60.dp)
+                        .glassMaterial(settings, shape, ownBackdrop = source,
+                            filmColor = progress.compositeOver(base)))
+                }
+            }
+        }
+        for (renderer in listOf(GlassQuality.Balanced, GlassQuality.Performance))
+            for (native in listOf(Color.Blue, Color.Blue.copy(alpha = .25f), Color.Transparent))
+                for (opacity in listOf(0f, .25f, .5f, 1f)) {
+                    compose.runOnIdle { quality = renderer; base = native; film = opacity }
+                    val pixels = compose.onNodeWithTag("mini.sharedFilm").captureToImage().toPixelMap()
+                    assertColor(pixels[120, 30], pixels[75, 30])
+                    assertColor(pixels[160, 30], pixels[25, 30])
+                }
+    }
 
     @Test @Config(sdk = [32])
     fun `native mini body exports its actual progress fill while action badges stay Glass`() {
@@ -176,13 +211,13 @@ class GlassMiniPlayerBackgroundTest {
                 val pixels = capture()
                 listOf(.25f, .75f).forEach { horizontal ->
                     val film = if (horizontal < position) progressed else base
-                    val alpha = if (horizontal < position) .7f else .5f
+                    val alpha = .5f
                     val expected = if (mode.hasMaterial) film.copy(alpha = alpha).compositeOver(Color.Black) else film
                     assertColor(expected, pixels[(pixels.width * horizontal).toInt(), pixels.height / 2])
                 }
                 val edge = pixels[0, pixels.height / 2]
                 val film = if (position > 0f) progressed else base
-                val alpha = if (position > 0f) .7f else .5f
+                val alpha = .5f
                 val expectedEdge = if (mode.hasMaterial) film.copy(alpha = alpha).compositeOver(Color.Black) else film
                 if (mode.hasContour) assertNotEquals(expectedEdge, edge) else assertColor(expectedEdge, edge)
             }
@@ -201,7 +236,7 @@ class GlassMiniPlayerBackgroundTest {
         assertEquals(Color.Black, native[0, 0])
     }
 
-    @Test fun `fully applied global tint retains visible played fraction without a hue change`() {
+    @Test fun `fully applied global tint obeys the same film coverage on both sides of progress`() {
         var fraction by mutableStateOf(.5f)
         var film by mutableStateOf(.5f)
         compose.setContent {
@@ -225,14 +260,12 @@ class GlassMiniPlayerBackgroundTest {
             compose.runOnIdle { fraction = position }
             val pixels = capture()
             listOf(.25f, .75f).forEach { horizontal ->
-                val alpha = if (horizontal < position) .7f else .5f
+                val alpha = .5f
                 assertColor(Color.Green.copy(alpha = alpha).compositeOver(Color.Black),
                     pixels[(pixels.width * horizontal).toInt(), pixels.height / 2])
             }
-            if (position == .5f) {
-                assertTrue(pixels[pixels.width / 4, pixels.height / 2].green -
-                    pixels[pixels.width * 3 / 4, pixels.height / 2].green > .15f)
-            }
+            assertColor(pixels[pixels.width / 4, pixels.height / 2],
+                pixels[pixels.width * 3 / 4, pixels.height / 2])
             assertEquals(Color.Black, pixels[0, 0])
         }
         compose.runOnIdle { film = 0f; fraction = .5f }

@@ -7,6 +7,7 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -52,7 +53,6 @@ class AppearanceSettingsPreferencesTest {
         "visualizerLineThickness" to 6f,
         "playerTimelineType" to "Wavy",
         "thumbnailSizeDpKey" to 90f,
-        "thumbnailSizeLDpKey" to 0f,
         "playerTimelineSize" to "Biggest",
         "effectRotation" to false,
         "thumbnailTapEnabled" to true,
@@ -152,12 +152,13 @@ class AppearanceSettingsPreferencesTest {
                 is String -> editor.putString(key, "different")
             }
         }
-        editor.putString("unrelated", "keep").commit()
+        editor.putFloat("thumbnailSizeLDpKey", 0f).putString("unrelated", "keep").commit()
         store("preferences_untouched").edit().putString("colorPaletteMode", "Light").commit()
         val globalBefore = store("app_settings").all.toMap()
         applyAppearanceDefaults(context)
         baselineDefaults.forEach { (key, expected) -> assertEquals(key, expected, context.preferences.all[key]) }
-        assertEquals(110, baselineDefaults.size)
+        assertEquals(109, baselineDefaults.size)
+        assertFalse(context.preferences.contains("thumbnailSizeLDpKey"))
         assertEquals("keep", context.preferences.getString("unrelated", null))
         assertEquals("Light", store("preferences_untouched").getString("colorPaletteMode", null))
         assertEquals(globalBefore, store("app_settings").all)

@@ -5,6 +5,7 @@ import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.usesGlassContour
 import app.n_zik.android.components.glass.glassAreaContour
 import androidx.compose.foundation.background
+import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.GlassMaterialContainerColumn
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,6 +43,7 @@ internal fun SongMenuSurface(
     GlassMaterialContainerColumn(modifier.fillMaxWidth().then(
         if (useGlass) Modifier else Modifier.background(bodyColor).glassAreaContour(glass, GlassArea.Menus, topUiRoundnessShape())
     ), sectionFilm = if (useGlass) null else bodyColor,
+        materialSource = if (useGlass) LocalGlassBackdrop.current else null,
         material = if (useGlass) ({ exported -> Modifier.menuSheetMaterial(
             glass, topUiRoundnessShape(), drawFilm = false, exportedBackdrop = exported,
         ) }) else null,
@@ -49,6 +51,7 @@ internal fun SongMenuSurface(
         GlassMaterialContainerColumn(
             includeParent = true,
             sectionFilm = headerColor.copy(alpha = headerColor.alpha * filmOpacity),
+            sectionFilmIsMaterial = useGlass,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth().background(headerColor.copy(alpha = headerColor.alpha * filmOpacity)),
         ) {
@@ -59,6 +62,7 @@ internal fun SongMenuSurface(
             Modifier.fillMaxWidth().background(bodyColor.copy(alpha = bodyColor.alpha * filmOpacity)),
             includeParent = true,
             sectionFilm = bodyColor.copy(alpha = bodyColor.alpha * filmOpacity),
+            sectionFilmIsMaterial = useGlass,
         ) {
             CompositionLocalProvider(LocalMenuSheetSurface provides (useGlass || glass.usesGlassContour(GlassArea.Menus))) { content() }
         }

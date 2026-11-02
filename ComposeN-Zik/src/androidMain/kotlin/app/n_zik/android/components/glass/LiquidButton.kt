@@ -56,7 +56,7 @@ fun LiquidButton(
     flat: Boolean = false,
     menuTrigger: GlassMenuTriggerState? = null,
     shape: Shape = uiRoundnessShape(),
-    backdropScale: Float = 0.4f,
+    backdropScale: Float? = null,
     enabled: Boolean = true,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     content: @Composable RowScope.() -> Unit

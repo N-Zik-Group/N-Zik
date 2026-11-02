@@ -166,7 +166,7 @@ internal fun applyAppearanceDefaults(context: Context) {
         putFloat(visualizerLineThicknessKey, 6f)
         putEnum(playerTimelineTypeKey, PlayerTimelineType.Wavy)
         putFloat(thumbnailSizeDpKey, 90f)
-        putFloat(thumbnailSizeLDpKey, 0f)
+        remove(thumbnailSizeLDpKey)
         putEnum(playerTimelineSizeKey, PlayerTimelineSize.Biggest)
         putBoolean(effectRotationKey, false)
         putBoolean(thumbnailTapEnabledKey, true)
