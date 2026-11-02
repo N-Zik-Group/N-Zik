@@ -218,7 +218,7 @@ fun InfoAlbumAndArtistEssential(
                     .conditional(playerControlsType == PlayerControlsType.Modern) { padding(start = GlassStandaloneActionSize) }
                 ) {
                     if (isExplicit) {
-                        app.n_zik.android.components.glass.ExplicitBadge(
+                        app.n_zik.android.components.ExplicitBadge(
                             color = colorPalette().text, modifier = Modifier.size(18.dp),
                         )
                         Spacer(modifier = Modifier

@@ -123,7 +123,7 @@ private interface SongIndicator: Icon {
     @Composable
     override fun ToolBarButton() {
         if (iconId == R.drawable.explicit) {
-            app.n_zik.android.components.glass.ExplicitBadge(
+            app.n_zik.android.components.ExplicitBadge(
                 color = if (isEnabled) color else color.copy(alpha = 0.5f),
                 modifier = this.modifier.size(sizeDp),
             )

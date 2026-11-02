@@ -59,19 +59,9 @@ fun GlassDescriptionExpansion(
     }
 }
 
-/** One explicit badge renderer; callers supply the original placement and size. */
+/** Glass implementation only; the common ExplicitBadge selects the renderer. */
 @Composable
-fun ExplicitBadge(color: Color, modifier: Modifier = Modifier, settings: GlassSettings = rememberGlassSettings()) {
-    val glass = settings.usesGlassMaterial(GlassArea.ActionButtons) || settings.usesGlassContour(GlassArea.ActionButtons)
-    if (!glass) {
-        app.it.fast4x.rimusic.ui.components.themed.IconButton(
-            icon = R.drawable.explicit,
-            color = color,
-            onClick = {},
-            modifier = modifier,
-        )
-        return
-    }
+internal fun GlassExplicitBadge(modifier: Modifier, settings: GlassSettings) {
     // Rows can expose both a raw scene and their processed surface. The mini-player's
     // original badge samples the processed surface; keep that same source everywhere.
     val container = LocalGlassContainerBackdrop.current

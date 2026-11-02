@@ -36,7 +36,7 @@ fun FilterMenu(
     fun SettingIcon(@DrawableRes icon: Int) {
         if (icon == R.drawable.explicit && explicitBadgeIconId() == R.drawable.explicit_glass_glyph) {
             Box(Modifier.size(32.dp), contentAlignment = Alignment.Center) {
-                app.n_zik.android.components.glass.ExplicitBadge(
+                app.n_zik.android.components.ExplicitBadge(
                     color = colorPalette().accent, modifier = Modifier.size(18.dp),
                 )
             }
