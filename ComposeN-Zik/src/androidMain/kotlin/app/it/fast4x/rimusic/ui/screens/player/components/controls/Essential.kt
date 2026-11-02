@@ -168,8 +168,10 @@ fun InfoAlbumAndArtistEssential(
         ) {
 
 
+            val badgeOverflow = glassTextFeedback && isExplicit
             var modifierTitle = Modifier
-                .clip(uiRoundnessShape()).combinedClickable (
+                .then(if (badgeOverflow) Modifier else Modifier.clip(uiRoundnessShape()))
+                .combinedClickable (
                     indication = if (glassTextFeedback) LocalIndication.current else ripple(bounded = true),
                     interactionSource = remember { MutableInteractionSource() },
                     onClick = {
@@ -183,7 +185,7 @@ fun InfoAlbumAndArtistEssential(
                     }
                 )
 
-            if (!disableScrollingText) modifierTitle = modifierTitle.basicMarquee()
+            if (!disableScrollingText && !badgeOverflow) modifierTitle = modifierTitle.basicMarquee()
 
             /*if (isExplicit || playerControlsType == PlayerControlsType.Modern ) {
                 Box(
@@ -206,8 +208,8 @@ fun InfoAlbumAndArtistEssential(
             BoxWithConstraints(
                 modifier = Modifier
                     .weight(1f)
-                    .then(titleBackdrop)
-                    .conditional(!disableScrollingText){HorizontalfadingEdge2(0.025f)},
+                    .then(if (badgeOverflow) Modifier else titleBackdrop)
+                    .conditional(!disableScrollingText && !badgeOverflow){HorizontalfadingEdge2(0.025f)},
                 contentAlignment = Alignment.Center
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically,
@@ -223,7 +225,13 @@ fun InfoAlbumAndArtistEssential(
                                .width(5.dp)
                         )
                     }
-                    Box {
+                    // The badge must stay outside the text's clip, marquee and offscreen fade canvas.
+                    Box(modifier = if (badgeOverflow) Modifier
+                        .weight(1f, fill = false)
+                        .then(titleBackdrop)
+                        .clip(uiRoundnessShape())
+                        .conditional(!disableScrollingText) { HorizontalfadingEdge2(0.025f).basicMarquee() }
+                        else Modifier) {
                         BasicText(
                             text = cleanPrefix(title ?: ""),
                             style = TextStyle(

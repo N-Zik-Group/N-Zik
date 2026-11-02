@@ -14,6 +14,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
@@ -287,6 +288,65 @@ class PlayerInformationFavoriteActionTest {
     }
 
     @Test @Config(qualifiers = "w800dp-h1200dp")
+    fun `actual explicit badge remains painted outside title clip with marquee enabled and disabled`() {
+        val essential = mutableStateOf(true)
+        val scrolling = mutableStateOf(false)
+        compose.mainClock.autoAdvance = false
+        compose.setContent { AppearanceProvider {
+            CompositionLocalProvider(LocalGlassPreviewSettings provides GlassSettings(enabled = true,
+                blur = 0f, film = 0f, rim = 0f, depth = 0f, amount = 0f)) {
+                // Leave the complete physical drag inside the Android root, otherwise the
+                // window cancels the pointer and the spring has already returned at capture.
+                Column(Modifier.requiredWidth(400.dp).height(800.dp).background(Color.Black)
+                    .testTag("badge.viewport").padding(start = 40.dp, top = 500.dp, end = 40.dp)) {
+                    ActualInformation(essential.value, explicit = true, scrolling = scrolling.value) { }
+                }
+            }
+        } }
+        for (centered in listOf(true, false)) for (marquee in listOf(false, true)) {
+            compose.runOnIdle { essential.value = centered; scrolling.value = marquee }
+            compose.mainClock.advanceTimeBy(100)
+            // Switching layouts posts a native placement pass; establish the new seat before touch.
+            repeat(2) {
+                compose.mainClock.advanceTimeByFrame()
+                compose.waitForIdle()
+                compose.onNodeWithTag("badge.viewport").captureToImage()
+            }
+            val glyph = compose.onNodeWithTag("glass.explicit.glyph", useUnmergedTree = true)
+            val coordinates = glyph.fetchSemanticsNode().layoutInfo.coordinates
+            val idle = coordinates.localToRoot(Offset.Zero)
+            val titleTop = compose.onAllNodesWithText("Title", useUnmergedTree = true)
+                .fetchSemanticsNodes().first().boundsInRoot.top
+            glyph.performTouchInput { down(center) }
+            compose.mainClock.advanceTimeBy(300)
+            // Shared jelly physics damp pointer travel by 0.05; a short drag moves only the
+            // transparent drawable padding past the title. Cross the canvas with actual E ink.
+            glyph.performTouchInput { moveTo(center + Offset(-45f, -480f), 100) }
+            compose.mainClock.advanceTimeBy(600)
+            val moved = glyph.fetchSemanticsNode().layoutInfo.coordinates
+            val center = moved.localToRoot(Offset(moved.size.width / 2f, moved.size.height / 2f))
+            assertTrue("The passive E moves above its native seat: essential=$centered marquee=$marquee idle=$idle held=${moved.localToRoot(Offset.Zero)}",
+                moved.localToRoot(Offset.Zero).y < idle.y)
+            val viewport = compose.onNodeWithTag("badge.viewport")
+            val bounds = viewport.fetchSemanticsNode().boundsInRoot
+            val pixels = viewport.captureToImage().toPixelMap()
+            var painted = 0
+            val half = moved.size.width / 2f
+            for (y in 0 until pixels.height) for (x in 0 until pixels.width) {
+                val point = Offset(x + .5f, y + .5f) + bounds.topLeft
+                if (point.y >= titleTop || kotlin.math.abs(point.x - center.x) > half ||
+                    kotlin.math.abs(point.y - center.y) > half) continue
+                val pixel = pixels[x, y]
+                if (pixel.red > .5f && pixel.green > .5f && pixel.blue > .5f) painted++
+            }
+            assertTrue("The real E glyph paints beyond the title canvas: essential=$centered marquee=$marquee pixels=$painted",
+                painted > 2)
+            glyph.performTouchInput { cancel() }
+            compose.mainClock.advanceTimeBy(1800)
+        }
+    }
+
+    @Test @Config(qualifiers = "w800dp-h1200dp")
     fun `Essential short title stays centered beside the compact favorite`() {
         compose.setContent { AppearanceProvider {
             CompositionLocalProvider(LocalGlassPreviewSettings provides GlassSettings(enabled = false)) {
@@ -539,12 +599,12 @@ class PlayerInformationFavoriteActionTest {
         }
     }
 
-    @Composable private fun ActualInformation(essential: Boolean, onCollapse: () -> Unit) {
+    @Composable private fun ActualInformation(essential: Boolean, explicit: Boolean = false, scrolling: Boolean = false, onCollapse: () -> Unit) {
         val media = UiMedia("information-favorite", "Title", "Artist", 120_000L, true)
         if (essential) InfoAlbumAndArtistEssential(binder, nav, "album", media, media.id, media.title,
-            null, null, "Artist", false, onCollapse, disableScrollingText = true)
+            null, null, "Artist", explicit, onCollapse, disableScrollingText = !scrolling)
         else InfoAlbumAndArtistModern(binder, nav, "album", media, media.id, media.title,
-            null, null, false, "Artist", onCollapse, disableScrollingText = true)
+            null, null, explicit, "Artist", onCollapse, disableScrollingText = !scrolling)
     }
 
     @Composable private fun AppearanceProvider(content: @Composable () -> Unit) {

@@ -206,13 +206,13 @@ fun InfoAlbumAndArtistModern(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                  .weight(1f)
-                 .then(titleBackdrop)
             ) {
                 if ( isExplicit )
                     app.n_zik.android.components.glass.GlassExplicitBadge(
                             color = colorPalette().text, modifier = Modifier.size(18.dp),
                         )
-             Box(modifier = if (glassTextFeedback) modifierTitle else Modifier) {
+             // Capture text separately so the passive badge can deform beyond the title canvas.
+             Box(modifier = titleBackdrop.then(if (glassTextFeedback) modifierTitle else Modifier)) {
                 BasicText(
                     text = cleanPrefix(title ?: ""),
                     style = TextStyle(
