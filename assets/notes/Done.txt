@@ -52,6 +52,7 @@ Fixed:
   - Clip overflowing lower controls for both rendering and input while allowing native shadows and jelly to overflow when content fits.
 
 - fix(glass): align player optics and isolate settings by app profile
+  - Validate 587 passing targeted regressions and Debug assembly; complete a fresh blind Glass review and verify emulator installation/startup.
   - Separate raw scene sources from material exports across headers, rows, overlays and sheets to prevent repeated film and blur; include navigation in mini-player and opening-card sources.
   - Keep full-player controls on their own scene during quality transitions, animate seek exit, and retain configured Toast material in Performance mode without enabling capture.
   - Give each profile its own Glass store with retryable legacy migration, profile-targeted import/backup, reset and deletion handling.
