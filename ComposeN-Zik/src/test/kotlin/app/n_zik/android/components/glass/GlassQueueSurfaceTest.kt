@@ -1,44 +1,53 @@
 package app.n_zik.android.components.glass
 
 import android.app.Application
+import android.view.View
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasClickAction
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.styling.Appearance
-import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
-import app.it.fast4x.rimusic.ui.styling.LocalAppearance
-import app.it.fast4x.rimusic.ui.styling.Typography
-import app.it.fast4x.rimusic.utils.preferences
-import app.n_zik.android.R
-import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
-import app.n_zik.android.components.glass.backdrop.Backdrop
-import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -49,10 +58,19 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.launch
+import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
+import app.it.fast4x.rimusic.ui.components.tab.toolbar.Icon
+import app.it.fast4x.rimusic.ui.screens.player.QueueToolBar
+import app.it.fast4x.rimusic.ui.screens.player.QueueToolBarState
+import app.it.fast4x.rimusic.ui.styling.Appearance
+import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
+import app.it.fast4x.rimusic.ui.styling.LocalAppearance
+import app.it.fast4x.rimusic.ui.styling.Typography
+import app.it.fast4x.rimusic.utils.preferences
+import app.n_zik.android.R
+import app.n_zik.android.components.glass.backdrop.Backdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [32], application = Application::class)
@@ -60,7 +78,7 @@ import kotlinx.coroutines.launch
 class GlassQueueSurfaceTest {
     @get:Rule val compose = createComposeRule()
 
-    private fun setAppearanceContent(content: @androidx.compose.runtime.Composable () -> Unit) {
+    private fun setAppearanceContent(content: @Composable () -> Unit) {
         compose.setContent {
             val shape = RoundedCornerShape(8.dp)
             CompositionLocalProvider(LocalAppearance provides Appearance(
@@ -231,46 +249,95 @@ class GlassQueueSurfaceTest {
         assertMiniPainted()
     }
 
-    @Test fun `clear queue film removes native fill and restores exact native pixels when disabled`() {
+    @Test fun `queue backgrounds preserve exact native fills across Glass film and live palettes`() {
         val enabled = mutableStateOf(false)
-        val original = Color.Red.copy(alpha = .5f)
-        setAppearanceContent {
-            val settings = GlassSettings(enabled = enabled.value, source = GlassTintSource.Custom,
-                customColor = 0xFFFFFFFF.toInt(), rim = 1f, film = 0f, blur = 24f)
-            Box(Modifier.background(Color.Blue)) {
-                Box(Modifier.size(80.dp).testTag("panel").glassQueuePanelBackground(
-                    original, RoundedCornerShape(0.dp), settings))
+        val film = mutableStateOf(0f)
+        val fill = mutableStateOf(Color.Transparent)
+        val palettes = listOf(
+            DefaultDarkColorPalette.copy(background0 = Color(0xFF184838), background2 = Color(0xFF684028)),
+            DefaultDarkColorPalette.copy(background0 = Color(0xFFE0D8F0), background2 = Color(0xFFB8D8E8), isDark = false),
+        )
+        val palette = mutableStateOf(palettes.first())
+        compose.setContent {
+            val shape = RoundedCornerShape(0.dp)
+            val settings = GlassSettings(enabled = enabled.value, quality = GlassQuality.Performance,
+                film = film.value, rim = 1f, source = GlassTintSource.Custom,
+                customColor = 0xFFFF00FF.toInt(), tintStrength = 1f)
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                palette.value, Typography.fallback, shape, shape, shape,
+            )) {
+                Column(Modifier.background(Color.Blue).testTag("native.backgrounds")) {
+                    Box(Modifier.size(64.dp).glassQueuePanelBackground(fill.value, shape, settings))
+                    Box(Modifier.size(64.dp).glassQueueListBackground(fill.value, settings))
+                    Box(Modifier.size(64.dp).background(queueContentBackground(fill.value, settings)))
+                }
             }
         }
-        val off = compose.onNodeWithTag("panel").captureToImage().toPixelMap()
-        assertColorClose(original.compositeOver(Color.Blue), off[off.width / 2, off.height / 2])
-        compose.runOnIdle { enabled.value = true }
-        val on = compose.onNodeWithTag("panel").captureToImage().toPixelMap()
-        assertColorClose(Color.Blue, on[on.width / 2, on.height / 2])
-        assertNotEquals(on[on.width / 2, on.height / 2], on[on.width / 2, 0])
-        compose.runOnIdle { enabled.value = false }
-        val restored = compose.onNodeWithTag("panel").captureToImage().toPixelMap()
-        for (y in 0 until off.height) for (x in 0 until off.width) assertEquals(off[x, y], restored[x, y])
+        for (theme in palettes) {
+            compose.runOnIdle { palette.value = theme }
+            for (nativeFill in listOf(Color.Transparent, theme.background2.copy(alpha = .5f), theme.background2)) {
+                for (glassEnabled in listOf(false, true)) for (opacity in listOf(0f, .5f, 1f)) {
+                    compose.runOnIdle { fill.value = nativeFill; enabled.value = glassEnabled; film.value = opacity }
+                    val image = compose.onNodeWithTag("native.backgrounds").captureToImage().toPixelMap()
+                    val expected = nativeFill.compositeOver(Color.Blue)
+                    for (index in 0..2) {
+                        assertColorClose(expected, image[image.width / 2, image.height * (index * 2 + 1) / 6])
+                    }
+                    assertEquals(nativeFill, queueContentBackground(nativeFill,
+                        GlassSettings(enabled = glassEnabled, film = opacity)))
+                }
+            }
+        }
     }
 
-    @Test fun `queue film endpoints and middle match shared material regardless of native queue type`() {
-        val fill = mutableStateOf(Color.Transparent)
+    @Test fun `Modern transparency and Essential opaque native fills survive Glass over contrasting underlays`() {
+        val enabled = mutableStateOf(false)
         val film = mutableStateOf(0f)
-        setAppearanceContent {
-            val settings = GlassSettings(quality = GlassQuality.Performance, rim = 0f, film = film.value)
-            Column(Modifier.background(Color.Blue)) {
-                Box(Modifier.size(64.dp).testTag("choice").glassQueuePanelBackground(
-                    fill.value, RoundedCornerShape(0.dp), settings))
-                Box(Modifier.size(64.dp).testTag("shared").glassMaterial(
-                    settings, RoundedCornerShape(0.dp), separateWindow = true))
+        val underlay = mutableStateOf(Color.Blue)
+        val modern = mutableStateOf(true)
+        val nativeList = Color(0xFF80B050)
+        compose.setContent {
+            val shape = RoundedCornerShape(0.dp)
+            val settings = GlassSettings(enabled = enabled.value, quality = GlassQuality.Balanced,
+                film = film.value, rim = 1f, source = GlassTintSource.Custom,
+                customColor = 0xFFFF00FF.toInt(), tintStrength = 1f,
+                blur = 0f, vibrancy = 0f, depth = 0f, amount = 0f)
+            val backdrop = rememberCanvasBackdrop { drawRect(underlay.value) }
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                    Typography.fallback, shape, shape, shape),
+                LocalGlassBackdrop provides backdrop,
+            ) {
+                Box(Modifier.background(underlay.value)) {
+                    GlassQueuePanel(Modifier.size(64.dp, 128.dp).testTag("modern.queue")
+                        .glassQueuePanelBackground(if (modern.value) Color.Transparent
+                            else DefaultDarkColorPalette.background2, shape, settings), settings) {
+                        Box(Modifier.size(64.dp).align(Alignment.BottomCenter)
+                            .glassQueueListBackground(nativeList.copy(alpha = if (modern.value) .5f else 1f), settings))
+                    }
+                }
             }
         }
-        for (nativeFill in listOf(Color.Transparent, Color.Red)) for (opacity in listOf(0f, .5f, 1f)) {
-            compose.runOnIdle { fill.value = nativeFill; film.value = opacity }
-            val panel = compose.onNodeWithTag("choice").captureToImage().toPixelMap()
-            val shared = compose.onNodeWithTag("shared").captureToImage().toPixelMap()
-            assertColorClose(shared[shared.width / 2, shared.height / 2], panel[panel.width / 2, panel.height / 2])
-            if (opacity == 0f) assertColorClose(Color.Blue, panel[panel.width / 2, panel.height / 2])
+        for (isModern in listOf(true, false)) for (background in listOf(Color.Blue, Color.Red)) {
+            compose.runOnIdle { enabled.value = false; underlay.value = background; modern.value = isModern }
+            val off = compose.onNodeWithTag("modern.queue").captureToImage().toPixelMap()
+            val x = off.width / 2
+            assertColorClose(if (isModern) background else DefaultDarkColorPalette.background2,
+                off[x, off.height / 4])
+            val expectedList = if (isModern) nativeList.copy(alpha = .5f).compositeOver(background) else nativeList
+            assertColorClose(expectedList, off[x, off.height * 3 / 4])
+            for (opacity in listOf(0f, .5f, 1f)) {
+                compose.runOnIdle { enabled.value = true; film.value = opacity }
+                val on = compose.onNodeWithTag("modern.queue").captureToImage().toPixelMap()
+                // Compare interiors only: Glass may add the requested outer contour.
+                for (y in off.height / 8 until off.height * 7 / 8)
+                    assertEquals("Native fill modern=$isModern film=$opacity y=$y", off[x, y], on[x, y])
+            }
+            compose.runOnIdle { enabled.value = false }
+            val restored = compose.onNodeWithTag("modern.queue").captureToImage().toPixelMap()
+            for (y in 0 until off.height) for (pixelX in 0 until off.width) {
+                assertEquals("Restored modern=$isModern at $pixelX,$y", off[pixelX, y], restored[pixelX, y])
+            }
         }
     }
 
@@ -338,49 +405,50 @@ class GlassQueueSurfaceTest {
         compose.runOnIdle { assertEquals(R.drawable.explicit, badge) }
     }
 
-    @Test fun `embedded and standalone queue draw one shared film and honor queue scope`() {
+    @Test fun `hosted and standalone queue preserve the same single native fill in every Menus mode`() {
         val mode = mutableStateOf(GlassAreaMode.GlassOnly)
         val enabled = mutableStateOf(true)
         val film = mutableStateOf(.5f)
+        val fill = mutableStateOf(Color.Red)
         setAppearanceContent {
             val settings = GlassSettings(enabled = enabled.value, quality = GlassQuality.Performance,
-                film = film.value, rim = 0f,
+                film = film.value, rim = 1f,
                 areaModes = mapOf(GlassArea.Menus to GlassAreaMode.Disabled),
                 contextModes = mapOf(GlassContextArea(GlassScope.Queue, GlassArea.Menus) to mode.value))
             val shape = RoundedCornerShape(0.dp)
             Column(Modifier.background(Color.Blue)) {
-                GlassQueuePanel(Modifier.size(64.dp).testTag("embedded.film")
-                    .glassQueuePanelBackground(Color.Red, shape, settings), settings) {
-                    Box(Modifier.size(64.dp).glassQueueListBackground(Color.Red, settings)
-                        .background(queueContentBackground(Color.Red, settings)))
+                // A Modern host is transparent; its list owns the one native fill.
+                GlassQueuePanel(Modifier.size(64.dp).testTag("hosted.native")
+                    .glassQueuePanelBackground(Color.Transparent, shape, settings), settings) {
+                    Box(Modifier.size(64.dp).glassQueueListBackground(fill.value, settings))
                 }
-                Box(Modifier.size(64.dp).testTag("standalone.film")
-                    .glassQueueListBackground(Color.Red, settings))
-                Box(Modifier.size(64.dp).testTag("reference.film")
-                    .glassMaterial(settings.copy(enabled = true), shape, separateWindow = true))
+                Box(Modifier.size(64.dp).testTag("standalone.native")
+                    .glassQueueListBackground(fill.value, settings))
             }
         }
-        fun center(tag: String): Color {
-            val image = compose.onNodeWithTag(tag).captureToImage().toPixelMap()
-            return image[image.width / 2, image.height / 2]
+        for (nativeFill in listOf(Color.Red, Color.Red.copy(alpha = .5f), Color.Transparent)) {
+            for (glassEnabled in listOf(false, true)) for (value in GlassAreaMode.entries) {
+                for (opacity in listOf(0f, .5f, 1f)) {
+                    compose.runOnIdle {
+                        fill.value = nativeFill; enabled.value = glassEnabled; mode.value = value; film.value = opacity
+                    }
+                    val expected = nativeFill.compositeOver(Color.Blue)
+                    val hosted = compose.onNodeWithTag("hosted.native").captureToImage().toPixelMap()
+                    val standalone = compose.onNodeWithTag("standalone.native").captureToImage().toPixelMap()
+                    assertColorClose(expected, hosted[hosted.width / 2, hosted.height / 2])
+                    assertColorClose(expected, standalone[standalone.width / 2, standalone.height / 2])
+                    assertEquals(hosted.width, standalone.width)
+                    assertEquals(hosted.height, standalone.height)
+                    for (y in 0 until hosted.height) for (x in 0 until hosted.width) {
+                        assertEquals("Single contour $value fill=$nativeFill at $x,$y", hosted[x, y], standalone[x, y])
+                    }
+                }
+            }
         }
-        for (opacity in listOf(0f, .5f, 1f)) {
-            compose.runOnIdle { film.value = opacity }
-            assertColorClose(center("reference.film"), center("embedded.film"))
-            assertColorClose(center("reference.film"), center("standalone.film"))
-        }
-        for (nativeMode in listOf(GlassAreaMode.Disabled, GlassAreaMode.ContourOnly)) {
-            compose.runOnIdle { mode.value = nativeMode }
-            assertColorClose(Color.Red, center("embedded.film"))
-            assertColorClose(Color.Red, center("standalone.film"))
-        }
-        compose.runOnIdle { mode.value = GlassAreaMode.GlassOnly; enabled.value = false }
-        assertColorClose(Color.Red, center("embedded.film"))
-        assertColorClose(Color.Red, center("standalone.film"))
     }
 
     @Test fun `master changes retain queue state and row policy does not disable menu settings or fixed siblings`() {
-        androidx.test.core.app.ApplicationProvider.getApplicationContext<Application>()
+        ApplicationProvider.getApplicationContext<Application>()
             .preferences.edit().putBoolean(glassEnabledKey, true).commit()
         val enabled = mutableStateOf(false)
         var creations = 0
@@ -502,28 +570,78 @@ class GlassQueueSurfaceTest {
         }
     }
 
-    @Test fun `queue backing hands off the bottom inset independently of action button policy`() {
+    @Test fun `native queue toolbar leaves bottom inset ownership with its host in every policy`() {
         val modes = GlassAreaMode.entries
         for (menuMode in modes) for (actionMode in modes) {
             val settings = GlassSettings(areaModes = mapOf(GlassArea.Menus to menuMode,
                 GlassArea.ActionButtons to actionMode))
-            assertEquals(menuMode.hasMaterial, queueToolbarUsesGlassMaterial(settings))
+            assertFalse(queueToolbarUsesGlassMaterial(settings))
         }
         assertFalse(queueToolbarUsesGlassMaterial(GlassSettings(enabled = false)))
     }
 
-    @Test fun `toolbar backing fills navigation inset while content and mini stay above it`() {
+    @Test
+    @Config(qualifiers = "land")
+    fun `real queue toolbar stays sixty dp above system navigation without adding a second inset`() {
+        val settings = mutableStateOf(GlassSettings(quality = GlassQuality.Performance))
+        lateinit var view: View
+        var observedNavigationInset = -1
+        var extraToolbarInset = (-1).dp
+        var materialOwnsInset = true
+        var nativeHeightPx = 0f
+        QueueToolBarState.reset()
+        setAppearanceContent {
+            view = LocalView.current
+            val density = LocalDensity.current
+            observedNavigationInset = WindowInsets.navigationBars.getBottom(density)
+            extraToolbarInset = queueToolbarBottomInset()
+            materialOwnsInset = usesQueueToolbarGlass(settings.value)
+            nativeHeightPx = with(density) { 60.dp.toPx() }
+            CompositionLocalProvider(LocalGlassPreviewSettings provides settings.value) {
+                Box(Modifier.size(300.dp, 160.dp).testTag("native.queue.viewport")) {
+                    GlassQueuePanel(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.navigationBars), settings.value) {
+                        QueueToolBar(Modifier.align(Alignment.BottomCenter).testTag("native.queue.toolbar"))
+                    }
+                }
+            }
+        }
+        for (enabled in listOf(false, true)) for (mode in GlassAreaMode.entries) {
+            for (insetPx in listOf(48, 24, 0)) {
+                compose.runOnIdle {
+                    settings.value = settings.value.copy(enabled = enabled, areaModes = mapOf(GlassArea.Menus to mode))
+                    ViewCompat.dispatchApplyWindowInsets(view, WindowInsetsCompat.Builder()
+                        .setInsets(WindowInsetsCompat.Type.navigationBars(), Insets.of(0, 0, 0, insetPx))
+                        .setVisible(WindowInsetsCompat.Type.navigationBars(), insetPx > 0)
+                        .build())
+                }
+                compose.runOnIdle {
+                    assertEquals(insetPx, observedNavigationInset)
+                    assertEquals(0.dp, extraToolbarInset)
+                    assertFalse(materialOwnsInset)
+                }
+                val viewport = compose.onNodeWithTag("native.queue.viewport").fetchSemanticsNode().boundsInRoot
+                val toolbar = compose.onNodeWithTag("native.queue.toolbar").fetchSemanticsNode().boundsInRoot
+                assertEquals("Native toolbar height for $mode", nativeHeightPx, toolbar.height, .5f)
+                assertEquals("Host reserves the inset once for $mode", viewport.bottom - insetPx, toolbar.bottom, .5f)
+            }
+        }
+        QueueToolBarState.reset()
+    }
+
+    @Test fun `native toolbar applies no inner navigation inset and retains live palette backing`() {
+        val palette = mutableStateOf(DefaultDarkColorPalette)
         compose.setContent {
             val shape = RoundedCornerShape(8.dp)
             val settings = GlassSettings(film = 1f, rim = 1f,
                 areaModes = mapOf(GlassArea.ActionButtons to GlassAreaMode.Disabled))
             CompositionLocalProvider(LocalAppearance provides Appearance(
-                DefaultDarkColorPalette, Typography.fallback, shape, shape, shape,
+                palette.value, Typography.fallback, shape, shape, shape,
             )) {
                 GlassQueuePanel(Modifier.size(120.dp).background(Color.Blue), settings) {
                     GlassQueueToolbar(Modifier.fillMaxWidth().height(64.dp).align(Alignment.BottomCenter)
                         .testTag("inset_toolbar"), settings, systemBottomInset = 24.dp) {
-                        Box(Modifier.fillMaxWidth().height(40.dp).background(Color.Red))
+                        Box(Modifier.fillMaxWidth().height(16.dp).align(Alignment.BottomEnd)
+                            .background(Color.Red))
                         QueueEmbeddedMini {
                             Box(Modifier.fillMaxWidth().height(16.dp).offset(y = (-20).dp).background(Color.Green))
                         }
@@ -532,23 +650,25 @@ class GlassQueueSurfaceTest {
             }
         }
         val pixels = compose.onNodeWithTag("inset_toolbar").captureToImage().toPixelMap()
-        assertColorClose(Color.Red, pixels[pixels.width / 2, pixels.height / 4])
-        val bottom = pixels[pixels.width / 2, pixels.height - 1]
-        assertColorClose(Color(0xFF4A4A4E), bottom)
-        // Seamless backing has no second bright rim at the system navigation edge.
-        assertColorClose(bottom, pixels[pixels.width / 2, pixels.height - 4])
+        assertColorClose(DefaultDarkColorPalette.background1, pixels[pixels.width / 2, pixels.height / 2])
+        assertColorClose(Color.Red, pixels[pixels.width / 2, pixels.height - 1])
+        val updated = DefaultDarkColorPalette.copy(background1 = Color(0xFFB8D8E8), isDark = false)
+        compose.runOnIdle { palette.value = updated }
+        val themed = compose.onNodeWithTag("inset_toolbar").captureToImage().toPixelMap()
+        assertColorClose(updated.background1, themed[themed.width / 2, themed.height / 2])
+        assertColorClose(Color.Red, themed[themed.width / 2, themed.height - 1])
     }
 
-    @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalFoundationApi::class)
     @Test fun `queue uses Home action capsule with native total outside and separate arrow bubble`() {
         val enabled = mutableStateOf(true)
         val clicks = IntArray(3)
-        val controls = List(3) { index -> object : app.it.fast4x.rimusic.ui.components.tab.toolbar.Icon {
+        val controls = List(3) { index -> object : Icon {
             override val iconId = R.drawable.musical_notes
             override fun onShortClick() { clicks[index]++ }
-            @androidx.compose.runtime.Composable
+            @Composable
             override fun ToolBarButton() {
-                app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar.Icon(
+                TabToolBar.Icon(
                     iconId = iconId, modifier = Modifier.testTag("queue_control_$index"),
                     onShortClick = this::onShortClick, onLongClick = {},
                 )
@@ -559,7 +679,7 @@ class GlassQueueSurfaceTest {
             CompositionLocalProvider(LocalAppearance provides Appearance(
                 DefaultDarkColorPalette, Typography.fallback, shape, shape, shape,
             )) {
-                androidx.compose.foundation.layout.Row(Modifier.fillMaxWidth(),
+                Row(Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically) {
                     // Represents the existing musical note and total: no Glass wrapper owns it.
                     Box(Modifier.size(32.dp).background(Color.Magenta).testTag("queue_native_total"))

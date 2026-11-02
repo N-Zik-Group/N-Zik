@@ -43,6 +43,13 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(glass): preserve native queue transparency and align supported settings
+  - Keep Modern and Essential queue backgrounds and opacity unchanged; apply only the configured frost contour to the panel, list and native toolbar.
+  - Restore native navigation-inset ownership while preserving independent Glass controls, current-track effects and the embedded mini-player.
+  - Limit the queue-surface selector to Disabled and ContourOnly without rewriting inherited settings or changing shared menus and action controls.
+  - Hide SystemAccent below Android 12 and display restored unsupported choices as untinted without modifying stored preferences.
+  - Verify inherited choices, preference isolation, full-image Glass restoration, single contours and the real queue toolbar with nonzero navigation insets through focused regression tests and Debug assembly.
+
 - fix(menus): keep sheet bottoms square and center shared drag handles
   - Normalize lower corners in shared and native bottom sheets, navigation sheets and dropdowns through MenuSheetShape; retain the configured upper corners and top/side glass contour.
   - Centralize menu and queue handle geometry in components/menu/MenuSheetDragHandle; preserve theme colors, queue gestures and native expand/collapse/dismiss accessibility actions.

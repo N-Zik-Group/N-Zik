@@ -1,27 +1,28 @@
 package app.n_zik.android.components.settings.ui
 
-import app.n_zik.android.components.settings.common.rememberSettingsContentPadding
+import kotlin.math.roundToInt
 
-// Effect controls adapted from Square GlassSettings (Convx Project, GPL-3.0); see NOTICE-square.txt.
+import android.graphics.Color as AndroidColor
+import android.os.Build
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -30,56 +31,56 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.withFrameNanos
-import androidx.compose.runtime.snapshotFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withTimeoutOrNull
-import app.n_zik.android.components.settings.common.LocalSettingsTargets
-import app.n_zik.android.components.settings.common.LocalSettingsSearchMessage
-import app.n_zik.android.components.settings.common.SettingsTargetRegistry
-import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
-import app.it.fast4x.rimusic.ui.styling.Dimensions
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
+
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
+import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import app.n_zik.android.typography
-import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.components.dialog.common.DialogColorPicker
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.glass.GlassQuality
 import app.n_zik.android.components.glass.GlassRenderer
+import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassTintSource
 import app.n_zik.android.components.glass.LocalGlassArtworkColor
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.LocalGlassMenuHost
+import app.n_zik.android.components.glass.LocalGlassPreviewSettings
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import app.n_zik.android.components.glass.glassAmountKey
 import app.n_zik.android.components.glass.glassBlurKey
 import app.n_zik.android.components.glass.glassDepthEffectKey
 import app.n_zik.android.components.glass.glassDepthKey
+import app.n_zik.android.components.glass.glassDialogDimmingKey
 import app.n_zik.android.components.glass.glassDispersionKey
 import app.n_zik.android.components.glass.glassFilmKey
 import app.n_zik.android.components.glass.glassIndicatorOpacityKey
-import app.n_zik.android.components.glass.glassDialogDimmingKey
 import app.n_zik.android.components.glass.glassMenuDimmingKey
 import app.n_zik.android.components.glass.glassRenderer
 import app.n_zik.android.components.glass.glassRimKey
@@ -87,19 +88,24 @@ import app.n_zik.android.components.glass.glassTint
 import app.n_zik.android.components.glass.glassTintStrengthKey
 import app.n_zik.android.components.glass.glassVibrancyKey
 import app.n_zik.android.components.glass.rememberGlassSettings
-import app.n_zik.android.components.glass.LocalGlassPreviewSettings
 import app.n_zik.android.components.glass.rememberGlassStore
-import app.n_zik.android.components.dialog.common.DialogColorPicker
-import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.components.settings.common.OtherSettingsEntry
-import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
-import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettingsEntry
-import app.n_zik.android.components.settings.common.SettingsSectionCard
-import app.n_zik.android.components.settings.common.SliderSettingsEntry
 import app.n_zik.android.components.navigation.nav.GlassNavigationPlayerGap
 import app.n_zik.android.components.pullrefresh.rememberPullRefreshOverlayInsetProvider
-import kotlin.math.roundToInt
+import app.n_zik.android.components.settings.common.LocalSettingsSearchMessage
+import app.n_zik.android.components.settings.common.LocalSettingsTargets
+import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettingsEntry
+import app.n_zik.android.components.settings.common.OtherSettingsEntry
+import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsTargetRegistry
+import app.n_zik.android.components.settings.common.SliderSettingsEntry
+import app.n_zik.android.components.settings.common.rememberSettingsContentPadding
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import app.n_zik.android.typography
+import app.n_zik.android.uiRoundnessShape
 
+// Effect controls adapted from Square GlassSettings (Convx Project, GPL-3.0); see NOTICE-square.txt.
 /** Dedicated native settings page with a live preview independent of the master switch. */
 @Composable
 fun GlassSettingsPage(target: String = "") {
@@ -147,7 +153,7 @@ internal fun GlassSettingsContent(
         }
     }
     val store = rememberGlassStore()
-    val config = rememberGlassSettings(app.n_zik.android.components.glass.GlassScope.Shared)
+    val config = rememberGlassSettings(GlassScope.Shared)
     val preview = config.copy(enabled = true)
     val renderer = glassRenderer(preview)
     val liquid = renderer != GlassRenderer.Tint
@@ -176,10 +182,7 @@ internal fun GlassSettingsContent(
         BoxWithConstraints(modifier.fillMaxSize().background(colorPalette().background0).testTag("settings.glass").padding(topPadding)) {
             // Keep both panes readable while leaving room for controls in short landscape windows.
             val previewHeight = (maxHeight * .28f).coerceIn(24.dp, 166.dp)
-            // Hiding chrome increases the list viewport. At its end LazyColumn would otherwise
-            // clamp the scroll position backwards, moving the user's last visible controls.
-            // Extend the tail by that exact gain; the adaptive preview consumes part of it
-            // in short landscape windows. Both the item anchor and offset then stay stable.
+            // Reserve hidden chrome space so the list end does not clamp the scroll position.
             val hiddenChrome = if (pinPreview)
                 (pagePadding.calculateTopPadding() - visibleChromeInset()).coerceAtLeast(0.dp) else 0.dp
             val expandedPreviewHeight = ((maxHeight - hiddenChrome).coerceAtLeast(0.dp) * .28f)
@@ -212,10 +215,10 @@ internal fun GlassSettingsContent(
                                 modifier = Modifier,
                                 onClick = {},
                             )
-                            app.n_zik.android.components.settings.common.SettingsDescription(
+                            SettingsDescription(
                                 text = stringResource(R.string.page_glass_summary),
                                 modifier = Modifier.fillMaxWidth(),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                textAlign = TextAlign.Center,
                             )
                             if (!pinPreview) GlassPreview(config)
                         }
@@ -342,16 +345,24 @@ private fun GlassPreviewPane(config: GlassSettings, maxPaneHeight: Dp) {
 }
 
 @Composable
-private fun TintRow(config: GlassSettings, onTint: (GlassTintSource) -> Unit, onColor: (Int) -> Unit, onStrength: (Float) -> Unit) {
+internal fun TintRow(config: GlassSettings, onTint: (GlassTintSource) -> Unit, onColor: (Int) -> Unit, onStrength: (Float) -> Unit) {
+    val sources = remember {
+        GlassTintSource.entries.filter {
+            it != GlassTintSource.SystemAccent || Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        }
+    }
+    // Preserve a restored system choice for supported devices while reflecting its untinted fallback here.
+    val selectedSource = config.source.takeIf { it in sources } ?: GlassTintSource.None
     val chosen = glassTint(config)
     var showColorPicker by remember(config.source) { mutableStateOf(false) }
     val hsv = FloatArray(3)
-    if (chosen.isSpecified) android.graphics.Color.colorToHSV(chosen.toArgb(), hsv)
+    if (chosen.isSpecified) AndroidColor.colorToHSV(chosen.toArgb(), hsv)
     OtherEnumValueSelectorSettingsEntry(
         title = stringResource(R.string.liquid_glass_tint_source),
         icon = R.drawable.color_palette,
-        selectedValue = config.source,
+        selectedValue = selectedSource,
         onValueSelected = onTint,
+        values = sources,
         modifier = Modifier.testTag("settings.glass.tintSource").settingsSearchTarget("glass.tintSource"),
         valueText = { value -> stringResource(when (value) {
             GlassTintSource.None -> R.string.glass_tint_none
@@ -361,7 +372,7 @@ private fun TintRow(config: GlassSettings, onTint: (GlassTintSource) -> Unit, on
             GlassTintSource.Custom -> R.string.liquid_glass_custom
         }) },
     )
-    if (config.source == GlassTintSource.Custom) {
+    if (selectedSource == GlassTintSource.Custom) {
         OtherSettingsEntry(
             title = stringResource(R.string.glass_tint),
             text = stringResource(R.string.liquid_glass_color),

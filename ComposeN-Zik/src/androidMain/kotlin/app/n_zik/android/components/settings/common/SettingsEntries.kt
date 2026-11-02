@@ -26,24 +26,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import app.it.fast4x.rimusic.enums.ValidationType
-import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
-import app.it.fast4x.rimusic.ui.components.themed.IDialog
-import app.it.fast4x.rimusic.utils.secondary
-import app.it.fast4x.rimusic.utils.semiBold
-import app.kreate.android.me.knighthat.utils.Toaster
-import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.R
-import app.n_zik.android.components.ui.iconBadgeBackground
-import app.n_zik.android.colorPalette
-import app.n_zik.android.components.dialog.common.DialogColorPicker
-import app.n_zik.android.components.dialog.common.StringListDialog
-import app.n_zik.android.components.dialog.common.ValueSelectorDialog
-import app.n_zik.android.components.dialog.settings.SettingsInputDialog
-import app.n_zik.android.components.ui.sliders.Slider
-import app.n_zik.android.components.ui.toggles.Switch
-import app.n_zik.android.typography
-import app.n_zik.android.uiRoundnessShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -60,6 +42,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+
+import app.it.fast4x.rimusic.enums.ValidationType
+import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
+import app.it.fast4x.rimusic.ui.components.themed.IDialog
+import app.it.fast4x.rimusic.utils.secondary
+import app.it.fast4x.rimusic.utils.semiBold
+import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.R
+import app.n_zik.android.colorPalette
+import app.n_zik.android.components.dialog.common.DialogColorPicker
+import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.dialog.common.StringListDialog
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
+import app.n_zik.android.components.dialog.settings.SettingsInputDialog
+import app.n_zik.android.components.ui.iconBadgeBackground
+import app.n_zik.android.components.ui.sliders.Slider
+import app.n_zik.android.components.ui.toggles.Switch
+import app.n_zik.android.typography
+import app.n_zik.android.uiRoundnessShape
 
 /** Entry row that opens a dialog to add/remove items of a string list. */
 @Composable
@@ -222,7 +223,6 @@ fun OtherSwitchSettingEntry(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Icon
                 Box(
                     modifier = Modifier
                         .size(32.dp)
@@ -240,7 +240,6 @@ fun OtherSwitchSettingEntry(
                     )
                 }
 
-                // Content
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
@@ -261,7 +260,6 @@ fun OtherSwitchSettingEntry(
                     }
                 }
 
-                // Switch fake Material 3 with theme colors
                 Switch(
                     checked = isChecked,
                     onCheckedChange = onCheckedChange,
@@ -455,9 +453,7 @@ fun ButtonBarSettingEntry(
 
 }
 
-/**
- * Slider entry with a manual value entry dialog; renders an icon row plus the slider.
- */
+/** Slider entry with a manual value entry dialog. */
 @Composable
 fun SliderSettingsEntry(
     title: String,
@@ -580,7 +576,6 @@ fun OtherSettingsEntry(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Icon
                 Box(
                     modifier = Modifier
                         .size(32.dp)
@@ -598,7 +593,6 @@ fun OtherSettingsEntry(
                     )
                 }
 
-                // Content
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
@@ -627,7 +621,6 @@ fun OtherSettingsEntry(
                     trailingContent()
                 }
 
-                // Arrow indicator
                 Icon(
                     painter = painterResource(R.drawable.chevron_forward),
                     tint = colorPalette().textSecondary,
@@ -649,6 +642,7 @@ inline fun <reified T : Enum<T>> OtherEnumValueSelectorSettingsEntry(
     noinline onValueSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
     noinline trailingContent: (@Composable () -> Unit)? = null,
+    values: List<T> = enumValues<T>().toList(),
     noinline valueText: @Composable (T) -> String  = { it.name }
 ) {
     var isShowingDialog by remember {
@@ -660,7 +654,7 @@ inline fun <reified T : Enum<T>> OtherEnumValueSelectorSettingsEntry(
             onDismiss = { isShowingDialog = false },
             title = title,
             selectedValue = selectedValue,
-            values = enumValues<T>().toList(),
+            values = values,
             onValueSelected = {
                 onValueSelected(it)
                 isShowingDialog = false
@@ -708,7 +702,6 @@ fun OtherInfoSettingsEntry(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Icon
                 Box(
                     modifier = Modifier
                         .size(32.dp)
@@ -726,7 +719,6 @@ fun OtherInfoSettingsEntry(
                     )
                 }
 
-                // Content
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
@@ -782,7 +774,6 @@ fun CacheSettingsEntry(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Icon
                 Box(
                     modifier = Modifier
                         .size(32.dp)
@@ -800,7 +791,6 @@ fun CacheSettingsEntry(
                     )
                 }
 
-                // Content
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
@@ -822,7 +812,6 @@ fun CacheSettingsEntry(
                     SelectedSettingValue(selectedValueText)
                 }
 
-                // Trash button
                 HeaderIconButton(
                     icon = R.drawable.trash,
                     enabled = true,
@@ -830,7 +819,6 @@ fun CacheSettingsEntry(
                     onClick = onTrashClick
                 )
 
-                // Arrow indicator
                 Icon(
                     painter = painterResource(R.drawable.chevron_forward),
                     tint = colorPalette().textSecondary,
@@ -862,7 +850,6 @@ fun ModernSettingsEntry(
             .clickable(onClick = onClick)
             .padding(12.dp)
             ) {
-                // Icon
                 Box(
                     modifier = Modifier
                         .size(32.dp)
@@ -880,7 +867,6 @@ fun ModernSettingsEntry(
                     )
                 }
 
-                // Content
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
@@ -897,7 +883,6 @@ fun ModernSettingsEntry(
                     }
                 }
 
-                // Arrow indicator
                 Icon(
                     painter = painterResource(R.drawable.chevron_forward),
                     tint = colorPalette().textSecondary,

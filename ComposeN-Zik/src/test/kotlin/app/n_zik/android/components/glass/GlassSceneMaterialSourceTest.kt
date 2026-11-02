@@ -66,7 +66,7 @@ class GlassSceneMaterialSourceTest {
         assertEquals("$tag alpha", expected.alpha, actual.alpha, .03f)
     }
 
-    @Test fun `queue mini and toolbar children use live list instead of inherited player and apply film once`() {
+    @Test fun `queue toolbar children sample native fill while mini uses live list`() {
         val listColor = mutableStateOf(Color.Blue)
         val film = mutableStateOf(0f)
         compose.setContent {
@@ -91,7 +91,8 @@ class GlassSceneMaterialSourceTest {
         for (scene in listOf(Color.Blue, Color.Green)) for (opacity in listOf(0f, .5f)) {
             compose.runOnIdle { listColor.value = scene; film.value = opacity }
             val expected = Color.Yellow.copy(alpha = opacity).compositeOver(scene)
-            assertColor("toolbar", expected)
+            val toolbarExpected = Color.Yellow.copy(alpha = opacity).compositeOver(DefaultDarkColorPalette.background1)
+            assertColor("toolbar", toolbarExpected)
             assertColor("mini", expected)
         }
     }

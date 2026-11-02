@@ -5,16 +5,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
-import app.n_zik.android.components.glass.*
-import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassAreaMode
+import app.n_zik.android.components.glass.GlassImageMode
+import app.n_zik.android.components.glass.GlassScope
+import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.GlassStore
+import app.n_zik.android.components.glass.contextMode
 import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettingsEntry
+import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 internal enum class GlassDestinationGroup(@StringRes val title: Int, val icon: Int, @StringRes val summary: Int) {
@@ -140,7 +146,12 @@ internal fun GlassDestinationCard(group: GlassDestinationGroup, config: GlassSet
 @Composable
 private fun GlassPolicySelector(row: GlassPolicyRow, config: GlassSettings, store: GlassStore) {
     val contextual = row.scope != GlassScope.Shared
-    val selected = config.contextMode(row.scope, row.area)
+    val contourOnly = row.scope == GlassScope.Queue && row.area == GlassArea.Menus
+    val storedMode = config.contextMode(row.scope, row.area)
+    val selected = if (contourOnly) {
+        if (storedMode.hasContour) GlassAreaMode.ContourOnly else GlassAreaMode.Disabled
+    } else storedMode
+    // Queue modals can inherit shared material, so only identical saved modes clear an override.
     val sharedMode = config.contextMode(GlassScope.Shared, row.area)
     val tag = if (contextual) "${row.scope.name}.${row.area.name}" else row.area.name
     Column(Modifier.testTag("settings.glass.area.$tag").settingsSearchTarget(row.searchId)) {
@@ -163,6 +174,7 @@ private fun GlassPolicySelector(row: GlassPolicyRow, config: GlassSettings, stor
                     else store.setAreaMode(row.area, it)
                 },
                 modifier = Modifier.testTag("settings.glass.mode.$tag"),
+                values = if (contourOnly) listOf(GlassAreaMode.Disabled, GlassAreaMode.ContourOnly) else GlassAreaMode.entries,
                 valueText = { mode -> stringResource(when (mode) {
                     GlassAreaMode.Disabled -> R.string.glass_mode_disabled
                     GlassAreaMode.ContourOnly -> R.string.glass_mode_contour_only

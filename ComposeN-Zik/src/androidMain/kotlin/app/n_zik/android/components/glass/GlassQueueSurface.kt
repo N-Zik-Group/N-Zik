@@ -1,39 +1,36 @@
 package app.n_zik.android.components.glass
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Row
-import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
+import app.it.fast4x.rimusic.ui.components.tab.toolbar.Icon
 import app.n_zik.android.colorPalette
-import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.topUiRoundnessShape
-import app.n_zik.android.utils.toast.trackToastObstruction
-import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
 import app.n_zik.android.components.glass.backdrop.Backdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCombinedBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
-import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.core.navigation.LocalMiniPlayerQueueRequest
+import app.n_zik.android.topUiRoundnessShape
+import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.utils.toast.trackToastObstruction
 
 /** Only row decorations consult this scope; menus continue using their normal Glass policy. */
 internal val LocalNativeQueueRows = staticCompositionLocalOf { false }
@@ -87,61 +84,51 @@ fun Modifier.glassQueueListBackdrop(state: LazyListState): Modifier {
     return layerBackdrop(source)
 }
 
-/** Owns the fixed toolbar material while preserving the native Box and fill when disabled. */
+/**
+ * Keeps the native fill and contour; the host reserves system insets.
+ * @param systemBottomInset Ignored; retained for source compatibility.
+ */
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun GlassQueueToolbar(
     modifier: Modifier = Modifier,
     settings: GlassSettings = rememberGlassSettings(),
-    systemBottomInset: Dp = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
+    systemBottomInset: Dp = 0.dp,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val settings = settings.inScope(GlassScope.Queue)
-    val list = LocalQueueGlassBackdrop.current
     val shape = topUiRoundnessShape()
     val nativeColor = colorPalette().background1
-    val material = queueToolbarUsesGlassMaterial(settings)
-    val fallback = rememberCanvasBackdrop { drawRect(nativeColor) }
-    val bottomInset = if (material) systemBottomInset else 0.dp
     Box(modifier) {
         GlassMaterialContainerScope(
             modifier = Modifier.matchParentSize(),
-            sectionFilm = if (material) null else nativeColor,
-            materialSource = if (material) list ?: fallback else null,
-            material = if (material) ({ exported ->
-                Modifier.glassMaterial(settings.forArea(GlassArea.Menus).copy(rim = 0f), shape,
-                    ownBackdrop = list ?: fallback, exportedBackdrop = exported,
-                    applyEdgeEffects = false, highlightAlpha = 0f, drawShadow = false)
-            }) else null,
+            sectionFilm = nativeColor,
         ) { surface ->
-            // The fixed optical pane deliberately omits lens edges; draw its one
-            // contour through the same Menus policy as the native-fill branch.
-            val native = (if (material) surface else surface.background(nativeColor, shape))
+            val native = surface.background(nativeColor, shape)
                 .glassAreaContour(settings, GlassArea.Menus, shape)
-            // The mini is offset above the toolbar. Clip only the material, never its content.
             Box(native)
-            Box(Modifier.fillMaxSize().padding(bottom = bottomInset)) { content(this) }
+            Box(Modifier.fillMaxSize()) { content(this) }
         }
     }
 }
 
-/** The panel hosts use the same gate when handing the system bottom inset to this toolbar. */
+/** Keeps inset ownership in the native queue hosts, independent of Glass settings. */
 @Composable
 fun usesQueueToolbarGlass(settings: GlassSettings = rememberGlassSettings()): Boolean =
     queueToolbarUsesGlassMaterial(settings)
 
-/** Content keeps its original safe position while the backing reaches the screen edge. */
+/** Native queue owners already account for the system bottom inset. */
 @Composable
-fun queueToolbarBottomInset(): Dp = if (usesQueueToolbarGlass())
-    WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() else 0.dp
+fun queueToolbarBottomInset(): Dp = 0.dp
 
-internal fun queueToolbarUsesGlassMaterial(settings: GlassSettings): Boolean =
-    settings.inScope(GlassScope.Queue).usesGlassMaterial(GlassArea.Menus)
+@Suppress("UNUSED_PARAMETER") // Keep existing callers while queue backgrounds remain contour-only.
+internal fun queueToolbarUsesGlassMaterial(settings: GlassSettings): Boolean = false
 
 /** Uses the Home toolbar verbatim; the native total stays outside and the arrow has its own bubble. */
 @Composable
 fun RowScope.GlassQueueToolbarActions(
-    buttons: List<app.it.fast4x.rimusic.ui.components.tab.toolbar.Button>,
-    arrow: app.it.fast4x.rimusic.ui.components.tab.toolbar.Icon?,
+    buttons: List<Button>,
+    arrow: Icon?,
     settings: GlassSettings = rememberGlassSettings(),
 ) {
     val settings = settings.inScope(GlassScope.Queue)
@@ -178,7 +165,7 @@ fun QueueEmbeddedMini(content: @Composable () -> Unit) {
     }
 }
 
-/** The shared material replaces the native queue fill only in material modes. */
+/** Preserves the theme's exact opacity; Glass decorates only the panel contour. */
 @Composable
 fun Modifier.glassQueuePanelBackground(
     originalColor: Color,
@@ -186,29 +173,19 @@ fun Modifier.glassQueuePanelBackground(
     settings: GlassSettings = rememberGlassSettings(),
 ): Modifier {
     val settings = settings.inScope(GlassScope.Queue)
-    if (settings.usesGlassMaterial(GlassArea.Menus)) {
-        val underlay = LocalGlassBackdrop.current
-        return glassMaterial(settings.forArea(GlassArea.Menus).copy(rim = 0f), shape, menu = true,
-            ownBackdrop = underlay, separateWindow = underlay == null,
-            applyEdgeEffects = false, drawShadow = false)
-            .glassAreaContour(settings, GlassArea.Menus, shape)
-    }
-    val filled = background(originalColor)
-    // Queue sheets meet the physical bottom edge, just like the other Menus panes.
-    return filled.glassAreaContour(settings, GlassArea.Menus, shape)
+    return background(originalColor).glassAreaContour(settings, GlassArea.Menus, shape)
 }
 
-/** The panel owns one film; a standalone queue owns its film on the list instead. */
+/** The list keeps its native fill and leaves the contour to its panel when hosted. */
 @Composable
 fun Modifier.glassQueueListBackground(originalColor: Color, settings: GlassSettings = rememberGlassSettings()): Modifier {
-    if (!queueToolbarUsesGlassMaterial(settings)) return background(originalColor)
-    return if (LocalQueuePanelHosted.current) this
+    return if (LocalQueuePanelHosted.current) background(originalColor)
         else glassQueuePanelBackground(originalColor, RoundedCornerShape(0.dp), settings)
 }
 
-/** Native queue-type colours remain exact when the queue material is disabled. */
-internal fun queueContentBackground(originalColor: Color, settings: GlassSettings): Color =
-    if (queueToolbarUsesGlassMaterial(settings)) Color.Transparent else originalColor
+/** Glass contours never replace a queue row's native fill. */
+@Suppress("UNUSED_PARAMETER") // Legacy queue owners still pass their scoped settings.
+internal fun queueContentBackground(originalColor: Color, settings: GlassSettings): Color = originalColor
 
 /** Always keep the same content group when toggling Glass so queue state is retained. */
 @Composable
