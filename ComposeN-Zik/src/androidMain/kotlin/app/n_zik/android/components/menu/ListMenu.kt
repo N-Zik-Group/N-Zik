@@ -1,19 +1,9 @@
 package app.n_zik.android.components.menu
 
-import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.glass.usesGlassMaterial
-import app.n_zik.android.components.glass.usesGlassContour
-import app.n_zik.android.components.glass.glassAreaContour
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-
-import app.n_zik.android.uiRoundnessShape
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -23,41 +13,41 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import app.n_zik.android.components.glass.GlassHorizontalSeparator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import app.n_zik.android.components.glass.LocalGlassBackdrop
-import app.n_zik.android.components.glass.GlassMaterialContainerColumn
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import app.n_zik.android.components.glass.rememberGlassSettings
-import app.n_zik.android.components.glass.glassNativeSurfaceTint
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.colorPalette
-import app.n_zik.android.recessedSurfaceColor
-import app.n_zik.android.surfaceColor
+
 import app.it.fast4x.rimusic.utils.conditional
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
-import app.n_zik.android.typography
+import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassHorizontalSeparator
+import app.n_zik.android.components.glass.GlassMaterialContainerColumn
+import app.n_zik.android.components.glass.LocalGlassBackdrop
+import app.n_zik.android.components.glass.glassAreaContour
+import app.n_zik.android.components.glass.glassNativeSurfaceTint
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.menu.MenuConstants.CONTENT_HEIGHT_FRACTION
-import app.n_zik.android.components.menu.MenuConstants.DRAG_HANDLE_BOTTOM_PADDING
-import app.n_zik.android.components.menu.MenuConstants.DRAG_HANDLE_CORNER_RADIUS
-import app.n_zik.android.components.menu.MenuConstants.DRAG_HANDLE_HEIGHT
-import app.n_zik.android.components.menu.MenuConstants.DRAG_HANDLE_TOP_PADDING
-import app.n_zik.android.components.menu.MenuConstants.DRAG_HANDLE_WIDTH
+import app.n_zik.android.recessedSurfaceColor
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.topUiRoundnessShape
+import app.n_zik.android.typography
+import app.n_zik.android.uiRoundnessShape
 
 object ListMenu {
 
@@ -106,13 +96,7 @@ object ListMenu {
                             .background(headerFilm)
                     ) {
                         if (showDragHandle) {
-                            Box(
-                                modifier = Modifier
-                                    .padding(top = DRAG_HANDLE_TOP_PADDING.dp, bottom = DRAG_HANDLE_BOTTOM_PADDING.dp)
-                                    .size(width = DRAG_HANDLE_WIDTH.dp, height = DRAG_HANDLE_HEIGHT.dp)
-                                    .clip(RoundedCornerShape(DRAG_HANDLE_CORNER_RADIUS.dp))
-                                    .background(colorPalette().text)
-                            )
+                            MenuSheetDragHandle(color = colorPalette().text)
                         }
 
                         if (headerTrailing != null) {

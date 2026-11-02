@@ -1,34 +1,53 @@
 package app.n_zik.android.components.menu.playlist
 
-import app.n_zik.android.components.menu.MenuSheetSurface
-import app.n_zik.android.components.menu.menuSheetSectionColor
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import app.n_zik.android.components.glass.GlassHorizontalSeparator
-import androidx.compose.material3.Icon
-import androidx.compose.runtime.*
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import it.fast4x.innertube.Innertube
+import it.fast4x.innertube.YtMusic
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import timber.log.Timber
+
+import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.enums.MenuStyle
+import app.it.fast4x.rimusic.enums.NavRoutes
+import app.it.fast4x.rimusic.models.Playlist
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.MenuState
@@ -37,50 +56,49 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Clickable
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Menu
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
+import app.it.fast4x.rimusic.ui.components.themed.Enqueue
+import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
+import app.it.fast4x.rimusic.ui.components.themed.PlayNext
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
 import app.it.fast4x.rimusic.ui.styling.Dimensions
-import app.it.fast4x.rimusic.utils.*
-import app.n_zik.android.components.menu.GridMenu
-import app.n_zik.android.components.menu.ListMenu
+import app.it.fast4x.rimusic.ui.styling.favoritesIcon
+import app.it.fast4x.rimusic.utils.asMediaItem
+import app.it.fast4x.rimusic.utils.conditional
+import app.it.fast4x.rimusic.utils.disableScrollingTextKey
+import app.it.fast4x.rimusic.utils.menuStyleKey
+import app.it.fast4x.rimusic.utils.rememberPreference
+import app.it.fast4x.rimusic.utils.secondary
+import app.it.fast4x.rimusic.utils.semiBold
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
-import app.n_zik.android.surfaceColor
-import app.n_zik.android.thumbnailShape
-import app.n_zik.android.typography
-import app.it.fast4x.rimusic.ui.styling.favoritesIcon
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.YtMusic
-import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.n_zik.android.utils.player.addNextOffMain
-import app.n_zik.android.utils.player.enqueueOffMain
-import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.models.Playlist
-import app.it.fast4x.rimusic.ui.components.themed.Enqueue
-import app.it.fast4x.rimusic.ui.components.themed.PlayNext
-import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
 import app.n_zik.android.components.dialog.playlist.ChangePlaylistBrowseIdDialog
+import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
+import app.n_zik.android.components.glass.GlassHorizontalSeparator
+import app.n_zik.android.components.menu.GridMenu
+import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.MenuSheetDragHandle
+import app.n_zik.android.components.menu.MenuSheetSurface
+import app.n_zik.android.components.menu.menuSheetSectionColor
+import app.n_zik.android.components.podcast.PodcastBookmarkOperation
+import app.n_zik.android.components.podcast.togglePodcastBookmark
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
+import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.isPlaylistBookmarked
 import app.n_zik.android.core.database.isPodcastBrowseId
-import app.n_zik.android.components.podcast.PodcastBookmarkOperation
-import app.n_zik.android.components.podcast.togglePodcastBookmark
-import kotlinx.coroutines.CancellationException
-import timber.log.Timber
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.n_zik.android.components.tab.SongShuffler
-import android.net.Uri
-import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
+import app.n_zik.android.surfaceColor
+import app.n_zik.android.thumbnailShape
+import app.n_zik.android.typography
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.player.addNextOffMain
+import app.n_zik.android.utils.player.enqueueOffMain
 
 @UnstableApi
 @OptIn(ExperimentalFoundationApi::class)
@@ -179,13 +197,7 @@ class OnlinePlaylistItemMenu private constructor(
                 .fillMaxWidth()
                 .background(menuSheetSectionColor(surfaceColor(colorPalette().background1)))
         ) {
-            Box(
-                modifier = Modifier
-                    .padding(top = 18.dp, bottom = 6.dp)
-                    .size(width = 40.dp, height = 4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(Color.White)
-            )
+            MenuSheetDragHandle()
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,

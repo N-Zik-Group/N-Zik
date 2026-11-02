@@ -26,8 +26,6 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,15 +59,11 @@ import app.n_zik.android.components.glass.NativeQueueRows
 import app.n_zik.android.components.glass.usesQueueToolbarGlass
 import app.n_zik.android.components.glass.GlassQueuePanel
 import app.n_zik.android.components.glass.glassQueuePanelBackground
+import app.n_zik.android.components.menu.MenuDragHandleBar
 import app.n_zik.android.topUiRoundnessShape
 import kotlinx.coroutines.launch
 
-/**
- * Exact copy of the player's inline queue panel (Player.kt:2315-2482).
- *
- * Shows [Queue] as a resizable panel on top of the current page,
- * with drag-to-resize, scrim, toolbar animation, and nav bar strip.
- */
+/** Shows the resizable queue above the page with its scrim and toolbar. */
 @SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalTextApi::class, ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 @UnstableApi
@@ -223,13 +217,7 @@ fun MiniPlayerQueueOverlay(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .width(40.dp)
-                        .height(4.dp)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(Color.White)
-                )
+                MenuDragHandleBar()
             }
 
             // QueueToolBar at bottom of panel — slides down and fades out when closing

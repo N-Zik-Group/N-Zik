@@ -1,7 +1,5 @@
 package app.n_zik.android.components.settings.accounts
 
-import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.components.settings.common.settingsSearchTarget
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -60,9 +58,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+
 import app.it.fast4x.rimusic.cleanPrefix
-import app.n_zik.android.components.glass.CustomModalBottomSheet
-import app.n_zik.android.components.glass.GlassCustomChip
 import app.it.fast4x.rimusic.utils.discordAvatarKey
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
 import app.it.fast4x.rimusic.utils.discordUsernameKey
@@ -76,19 +75,24 @@ import app.it.fast4x.rimusic.utils.semiBold
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
-import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DefaultDialog
 import app.n_zik.android.components.dialog.common.DialogButton
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
+import app.n_zik.android.components.glass.CustomModalBottomSheet
+import app.n_zik.android.components.glass.GlassCustomChip
+import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.components.tab.Search
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.components.ui.toggles.Switch
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.extensions.discord.DiscordActivityBuilder
@@ -129,8 +133,6 @@ import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.albumTitleWithFallback
 import app.n_zik.android.utils.artistTextWithFallback
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
@@ -460,13 +462,7 @@ internal fun AccountsDiscordCard(search: Search) {
                                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                                 shape = uiRoundnessShape(),
                                 dragHandle = {
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(top = 18.dp, bottom = 6.dp)
-                                            .size(width = 40.dp, height = 4.dp)
-                                            .clip(RoundedCornerShape(2.dp))
-                                            .background(Color.White)
-                                    )
+                                    MenuSheetDragHandle()
                                 }
                             ) {
                                 DiscordLoginAndGetToken(

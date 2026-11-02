@@ -244,6 +244,7 @@ import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.themed.NowPlayingSongIndicator
 import app.n_zik.android.extensions.nextvisualizer.views.NextVisualizer
 import app.n_zik.android.components.menu.player.PlayerMenu
+import app.n_zik.android.components.menu.MenuDragHandleBar
 import app.n_zik.android.components.player.m3eCoverBackgroundColor
 import app.it.fast4x.rimusic.ui.components.themed.RotateThumbnailCoverAnimationModern
 import app.n_zik.android.components.dialog.common.ThumbnailOffsetDialog
@@ -2762,14 +2763,7 @@ fun Player(
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .width(40.dp)
-                                .height(4.dp)
-                                .clip(RoundedCornerShape(2.dp))
-                                // Keyed on the effective tone, not a hardcoded white (spec-achromatic-ramp-luminance-cap)
-                                .background(colorPalette().textSecondary)
-                        )
+                        MenuDragHandleBar(color = colorPalette().textSecondary)
                     }
 
                     // QueueToolBar at bottom of panel — slides down and fades out when closing

@@ -1,14 +1,8 @@
 package app.n_zik.android.components.menu.video
 
-import app.n_zik.android.components.menu.MenuSheetSurface
-import app.n_zik.android.components.menu.menuSheetSectionColor
-import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.core.database.*
-
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,56 +11,41 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import app.n_zik.android.components.glass.GlassHorizontalSeparator
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
-import app.n_zik.android.R
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.nextPage
-import app.n_zik.android.core.database.Database
-import app.n_zik.android.core.network.OfflineMode
-import app.n_zik.android.LocalPlayerServiceBinder
-import app.n_zik.android.appContext
-import app.n_zik.android.colorPalette
-import app.n_zik.android.surfaceColor
-import app.n_zik.android.typography
-import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
-import app.n_zik.android.extensions.audiobar.utils.WaveformResult
-import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherMenu
-import app.n_zik.android.download.utils.MyDownloadHelper
-import app.n_zik.android.listentogether.ListenTogetherManager
-import app.n_zik.android.listentogether.TrackInfo
-import app.it.fast4x.rimusic.utils.durationTextToMillis
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.media3.exoplayer.offline.Download
-import app.kreate.android.me.knighthat.utils.Toaster
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.withTimeoutOrNull
-import androidx.compose.runtime.rememberUpdatedState
-import app.it.fast4x.rimusic.utils.getDownloadStateMedia
-import app.it.fast4x.rimusic.utils.splitArtistNames
-import app.it.fast4x.rimusic.utils.playerTimelineTypeKey
-import androidx.compose.ui.draw.alpha
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import timber.log.Timber
+
+import app.it.fast4x.rimusic.enums.DownloadedStateMedia
 import app.it.fast4x.rimusic.enums.MenuStyle
+import app.it.fast4x.rimusic.enums.NavRoutes
+import app.it.fast4x.rimusic.enums.PlayerTimelineType
 import app.it.fast4x.rimusic.models.Info
 import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
@@ -81,44 +60,58 @@ import app.it.fast4x.rimusic.ui.components.themed.Enqueue
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.it.fast4x.rimusic.ui.components.themed.PlayNext
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
-import app.n_zik.android.components.dialog.common.ListenOnDialog
+import app.it.fast4x.rimusic.ui.screens.info.VideoOrSongInfoScreen
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
-import app.n_zik.android.utils.player.addNextOffMain
 import app.it.fast4x.rimusic.utils.asMediaItem
-import app.n_zik.android.utils.player.enqueueOffMain
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.withContext
+import app.it.fast4x.rimusic.utils.durationTextToMillis
 import app.it.fast4x.rimusic.utils.forcePlay
+import app.it.fast4x.rimusic.utils.getDownloadStateMedia
 import app.it.fast4x.rimusic.utils.menuStyleKey
+import app.it.fast4x.rimusic.utils.playerTimelineTypeKey
+import app.it.fast4x.rimusic.utils.rememberEncryptedPreference
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.semiBold
-import app.it.fast4x.rimusic.utils.rememberEncryptedPreference
+import app.it.fast4x.rimusic.utils.splitArtistNames
+import app.kreate.android.me.knighthat.sync.YouTubeSync
+import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.BuildConfig
-import app.n_zik.android.extensions.lastfm.isLastfmScrobblingEnabledKey
-import app.n_zik.android.extensions.lastfm.lastfmSessionKey
-import app.n_zik.android.extensions.lastfm.LastFmActions
-import app.n_zik.android.playback.services.isLocal
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
+import app.n_zik.android.LocalPlayerServiceBinder
+import app.n_zik.android.R
+import app.n_zik.android.appContext
+import app.n_zik.android.colorPalette
 import app.n_zik.android.components.SongItem
-import app.n_zik.android.components.menu.GridMenu
-import app.n_zik.android.components.menu.ListMenu
-import app.n_zik.android.components.dialog.song.ChangeCoverDialog
-import app.n_zik.android.components.dialog.song.RenameSongDialog
-import app.n_zik.android.components.dialog.song.ChangeAuthorDialog
 import app.n_zik.android.components.dialog.album.ChangeAlbumBrowseIdDialog
 import app.n_zik.android.components.dialog.artist.ChangeArtistBrowseIdDialog
-import app.n_zik.android.components.tab.Radio
-import app.kreate.android.me.knighthat.sync.YouTubeSync
-import timber.log.Timber
-import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.ui.screens.info.VideoOrSongInfoScreen
+import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.dialog.common.ListenOnDialog
+import app.n_zik.android.components.dialog.song.ChangeAuthorDialog
+import app.n_zik.android.components.dialog.song.ChangeCoverDialog
+import app.n_zik.android.components.dialog.song.RenameSongDialog
+import app.n_zik.android.components.glass.GlassHorizontalSeparator
+import app.n_zik.android.components.menu.GridMenu
+import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.MenuSheetDragHandle
+import app.n_zik.android.components.menu.MenuSheetSurface
+import app.n_zik.android.components.menu.menuSheetSectionColor
 import app.n_zik.android.components.song.GoToArtist
-import app.it.fast4x.rimusic.enums.PlayerTimelineType
-import app.it.fast4x.rimusic.enums.DownloadedStateMedia
-import androidx.compose.foundation.text.BasicText
+import app.n_zik.android.components.tab.Radio
+import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherMenu
+import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
+import app.n_zik.android.extensions.audiobar.utils.WaveformResult
+import app.n_zik.android.extensions.lastfm.LastFmActions
+import app.n_zik.android.extensions.lastfm.isLastfmScrobblingEnabledKey
+import app.n_zik.android.extensions.lastfm.lastfmSessionKey
+import app.n_zik.android.listentogether.ListenTogetherManager
+import app.n_zik.android.listentogether.TrackInfo
+import app.n_zik.android.playback.services.isLocal
+import app.n_zik.android.surfaceColor
+import app.n_zik.android.typography
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.player.addNextOffMain
+import app.n_zik.android.utils.player.enqueueOffMain
 
 @UnstableApi
 @ExperimentalFoundationApi
@@ -598,13 +591,7 @@ class VideoItemMenu private constructor(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.background( menuSheetSectionColor(surfaceColor(colorPalette().background1)) )
             ) {
-                Box(
-                    modifier = Modifier
-                        .padding(top = 18.dp, bottom = 6.dp)
-                        .size(width = 40.dp, height = 4.dp)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(Color.White)
-                )
+                MenuSheetDragHandle()
 
                 SongItem(
                     song = song,

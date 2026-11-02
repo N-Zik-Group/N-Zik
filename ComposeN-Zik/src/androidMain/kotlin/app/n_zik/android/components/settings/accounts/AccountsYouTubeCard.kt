@@ -1,27 +1,17 @@
 package app.n_zik.android.components.settings.accounts
 
-import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.components.settings.common.settingsSearchTarget
 import android.webkit.CookieManager
 import android.webkit.WebStorage
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -36,7 +26,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -44,8 +33,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.media3.common.util.UnstableApi
+import it.fast4x.innertube.Innertube
+import it.fast4x.innertube.utils.parseCookieString
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
 import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
-import app.n_zik.android.components.glass.CustomModalBottomSheet
 import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.it.fast4x.rimusic.utils.autosyncAlbumsKey
 import app.it.fast4x.rimusic.utils.autosyncArtistsKey
@@ -87,16 +80,20 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DefaultDialog
 import app.n_zik.android.components.dialog.common.DialogButton
-import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.settings.clearAudioCache
+import app.n_zik.android.components.glass.CustomModalBottomSheet
+import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.settings.YtSearchAccountToggle
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.playback.services.clearStreamCaches
@@ -104,10 +101,6 @@ import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import it.fast4x.innertube.Innertube
-import it.fast4x.innertube.utils.parseCookieString
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
@@ -376,13 +369,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                             shape = uiRoundnessShape(),
                             dragHandle = {
-                                Box(
-                                    modifier = Modifier
-                                        .padding(top = 18.dp, bottom = 6.dp)
-                                        .size(width = 40.dp, height = 4.dp)
-                                        .clip(RoundedCornerShape(2.dp))
-                                        .background(Color.White)
-                                )
+                                MenuSheetDragHandle()
                             }
                         ) {
                             YouTubeLogin(

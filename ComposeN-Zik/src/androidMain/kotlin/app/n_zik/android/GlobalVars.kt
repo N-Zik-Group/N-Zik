@@ -25,7 +25,7 @@ import app.it.fast4x.rimusic.utils.showSearchTabKey
 import app.it.fast4x.rimusic.utils.showStatsInNavbarKey
 import app.it.fast4x.rimusic.utils.ytAccountNameKey
 import app.it.fast4x.rimusic.utils.ytAccountThumbnailKey
-import androidx.compose.foundation.shape.CornerSize
+import app.n_zik.android.components.menu.straightBottomMenuShape
 
 @Composable
 fun typography() = LocalAppearance.current.typography
@@ -93,20 +93,7 @@ fun searchBubbleShape(): Shape {
 }
 
 @Composable
-fun topUiRoundnessShape(): Shape {
-    val appearance = LocalAppearance.current
-    val shape = appearance.uiRoundnessShape
-    return if (shape is RoundedCornerShape) {
-        RoundedCornerShape(
-            topStart = shape.topStart,
-            topEnd = shape.topEnd,
-            bottomEnd = CornerSize(0),
-            bottomStart = CornerSize(0)
-        )
-    } else {
-        shape
-    }
-}
+fun topUiRoundnessShape(): Shape = straightBottomMenuShape(LocalAppearance.current.uiRoundnessShape)
 
 @Composable
 fun showSearchIconInNav() = rememberPreference( showSearchTabKey, false ).value

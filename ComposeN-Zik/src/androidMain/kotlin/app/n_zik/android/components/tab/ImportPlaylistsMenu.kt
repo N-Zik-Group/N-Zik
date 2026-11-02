@@ -1,42 +1,41 @@
 package app.n_zik.android.components.tab
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.stringResource
-import app.n_zik.android.R
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.background
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.Alignment
-import app.it.fast4x.rimusic.ui.components.tab.toolbar.Clickable
-import app.n_zik.android.typography
-import app.n_zik.android.colorPalette
-import app.it.fast4x.rimusic.utils.semiBold
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.MenuState
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
+import app.it.fast4x.rimusic.ui.components.tab.toolbar.Clickable
+import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Menu
+import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
+import app.it.fast4x.rimusic.utils.menuStyleKey
+import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.R
+import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
-import app.it.fast4x.rimusic.utils.menuStyleKey
-import androidx.compose.runtime.remember
-import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.components.menu.MenuSheetDragHandle
+import app.n_zik.android.typography
 
 class ImportPlaylistsMenu(
     private val onImportNzik: () -> Unit,
@@ -156,13 +155,7 @@ class ImportPlaylistsMenu(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.background( colorPalette().background1 )
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .padding(top = 18.dp, bottom = 6.dp)
-                                    .size(width = 40.dp, height = 4.dp)
-                                    .clip(RoundedCornerShape(2.dp))
-                                    .background(Color.White)
-                            )
+                            MenuSheetDragHandle()
 
                             BasicText(
                                 text = stringResource(R.string.import_playlist),

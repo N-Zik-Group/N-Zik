@@ -43,6 +43,13 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(menus): keep sheet bottoms square and center shared drag handles
+  - Normalize lower corners in shared and native bottom sheets, navigation sheets and dropdowns through MenuSheetShape; retain the configured upper corners and top/side glass contour.
+  - Centralize menu and queue handle geometry in components/menu/MenuSheetDragHandle; preserve theme colors, queue gestures and native expand/collapse/dismiss accessibility actions.
+  - Paint native glass inside the moving sheet so its clip cannot hide translated content; include requested keyboard/content insets inside the material to avoid an unpainted lower strip.
+  - Add native/shared, LTR/RTL, transparent/opaque and visible film/rim regressions, including changing lower insets; validate 66 targeted tests and assembleDebug.
+  - Complete BMAD review and follow-up review; retain the independent player/miniplayer surface geometry and expanded-player handoff.
+
 - fix(player): stabilize artwork layout, carousel gestures and orientation changes
   - Recreate artwork pager state at orientation boundaries so portrait Lookahead measurements cannot freeze landscape scrolling; keep release selection and manual skip synchronized with playback.
   - Bound compact carousel stride and measured pages, retain overflow behind the active cover, and discard stale shadow geometry during resize.

@@ -1,53 +1,53 @@
 package app.n_zik.android.components.glass
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import android.os.Build
+import android.view.View
+import android.view.WindowManager
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowProvider
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+
+import app.it.fast4x.rimusic.utils.hideStatusBarKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.colorPalette
-import app.n_zik.android.surfaceColor
-import app.it.fast4x.rimusic.utils.hideStatusBarKey
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.graphics.ColorUtils
-import androidx.compose.runtime.DisposableEffect
-import androidx.core.view.WindowInsetsControllerCompat
-import android.view.View
-import android.view.WindowManager
-import android.os.Build
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.components.menu.CenteredMenuSheetDragHandle
+import app.n_zik.android.components.menu.MenuSheetDragHandle
+import app.n_zik.android.components.menu.NativeMenuSheetDragHandle
+import app.n_zik.android.components.menu.straightBottomMenuShape
+import app.n_zik.android.surfaceColor
 
+/** Hosts menu content with straight lower corners in native and shared windows. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomModalBottomSheet(
@@ -63,17 +63,12 @@ fun CustomModalBottomSheet(
     tonalElevation: Dp = BottomSheetDefaults.Elevation,
     scrimColor: Color = Color.Unspecified,
     dragHandle: @Composable (() -> Unit)? = {
-        Box(
-            modifier = Modifier
-                .padding(top = 18.dp, bottom = 6.dp)
-                .size(width = 40.dp, height = 4.dp)
-                .clip(RoundedCornerShape(2.dp))
-                .background(Color.White)
-        )
+        MenuSheetDragHandle()
     },
     contentWindowInsets: @Composable () -> WindowInsets = { WindowInsets.ime },
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val sheetShape = remember(shape) { straightBottomMenuShape(shape) }
     // Resolve the owner before the sheet content moves into the shared overlay host.
     val sheetContainerColor =
         if (containerColor == Color.Transparent) containerColor else surfaceColor(containerColor)
@@ -88,18 +83,18 @@ fun CustomModalBottomSheet(
             onDismissRequest = onDismissRequest,
             sheetState = sheetState,
             scrimColor = scrimColor,
-            shape = shape,
+            shape = sheetShape,
             contentWindowInsets = contentWindowInsets,
         ) {
             if (glassSheet) GlassMaterialContainerColumn(modifier.fillMaxWidth(),
                 materialSource = LocalGlassBackdrop.current,
                 material = { exported -> Modifier.glassMaterial(
-                    glass.forArea(GlassArea.Menus), shape, menu = true, filmColor = sheetContainerColor,
+                    glass.forArea(GlassArea.Menus), sheetShape, menu = true, filmColor = sheetContainerColor,
                     exportedBackdrop = exported,
                 ) },
             ) {
                 CompositionLocalProvider(LocalContentColor provides contentColor) {
-                    dragHandle?.invoke()
+                    dragHandle?.let { CenteredMenuSheetDragHandle(it) }
                     content()
                 }
             } else Column(modifier.fillMaxWidth()) {
@@ -108,7 +103,7 @@ fun CustomModalBottomSheet(
                     LocalGlassContainerBackdrop provides LocalGlassBackdrop.current,
                     LocalGlassMaterialSource provides LocalGlassBackdrop.current,
                 ) {
-                    dragHandle?.invoke()
+                    dragHandle?.let { CenteredMenuSheetDragHandle(it) }
                     content()
                 }
             }
@@ -129,26 +124,30 @@ fun CustomModalBottomSheet(
     if (isComposing) {
         val overlayId = remember { Any() }
         NativeGlassOverlayCoverage(host, overlayId)
-        // A native window cannot capture the scene behind it. Glass children retain
-        // transparency instead of sampling an invented opaque copy of the native fill.
+        // Native windows retain transparent glass children because they cannot sample the page.
         val nativeBackdrop = rememberCanvasBackdrop { if (!glassSheet) drawRect(sheetContainerColor) }
         ModalBottomSheet(
             onDismissRequest = onDismissRequest,
-            modifier = if (glassSheet) modifier.glassMaterial(
-                glass.forArea(GlassArea.Menus), shape, separateWindow = true, menu = true,
-                filmColor = sheetContainerColor,
-            )
-                else if (containerColor != Color.Transparent) modifier.glassAreaContour(glass, GlassArea.Menus, shape) else modifier,
+            modifier = modifier,
             sheetState = sheetState,
-            shape = shape,
+            shape = sheetShape,
             containerColor = if (glassSheet) Color.Transparent else sheetContainerColor,
             contentColor = contentColor,
             tonalElevation = tonalElevation,
             scrimColor = nativeGlassSheetScrimColor(glass, scrimColor, BottomSheetDefaults.ScrimColor),
-            dragHandle = dragHandle,
-            contentWindowInsets = contentWindowInsets
+            dragHandle = null,
+            contentWindowInsets = { WindowInsets(0) },
         ) {
-            Column {
+            // The native host translates its content after the caller's modifier.
+            // Keep the material inside that translation and outside its content insets.
+            Column(Modifier.fillMaxWidth().then(
+                if (glassSheet) Modifier.glassMaterial(
+                    glass.forArea(GlassArea.Menus), sheetShape, separateWindow = true, menu = true,
+                    filmColor = sheetContainerColor,
+                ) else if (containerColor != Color.Transparent) Modifier.glassAreaContour(glass, GlassArea.Menus, sheetShape)
+                else Modifier,
+            ).windowInsetsPadding(contentWindowInsets())) {
+                dragHandle?.let { NativeMenuSheetDragHandle(sheetState, onDismissRequest, it) }
 
                 val view = LocalView.current
                 val colorPalette = colorPalette()
@@ -156,7 +155,7 @@ fun CustomModalBottomSheet(
                     val hideStatusBar by rememberPreference(hideStatusBarKey, false)
                     DisposableEffect(window, sheetContainerColor, colorPalette, hideStatusBar) {
                         val luminance = ColorUtils.calculateLuminance(sheetContainerColor.toArgb())
-                        val isLightBackground = luminance > 0.5 
+                        val isLightBackground = luminance > 0.5
 
                         val applyInsets = {
                             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
@@ -168,7 +167,7 @@ fun CustomModalBottomSheet(
                             val insetsController = WindowCompat.getInsetsController(window, view)
                             insetsController.isAppearanceLightNavigationBars = isLightBackground
                             insetsController.isAppearanceLightStatusBars = isLightBackground
-                            
+
                             if (hideStatusBar) {
                                 insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                                 insetsController.hide(WindowInsetsCompat.Type.statusBars())

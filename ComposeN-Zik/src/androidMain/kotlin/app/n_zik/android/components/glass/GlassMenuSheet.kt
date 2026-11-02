@@ -3,11 +3,11 @@ package app.n_zik.android.components.glass
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -28,12 +28,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.window.DialogProperties
-import app.n_zik.android.colorPalette
-import app.n_zik.android.topUiRoundnessShape
 import kotlinx.coroutines.flow.first
+
+import app.n_zik.android.colorPalette
+import app.n_zik.android.components.menu.CenteredMenuSheetDragHandle
+import app.n_zik.android.components.menu.straightBottomMenuShape
+import app.n_zik.android.topUiRoundnessShape
 
 /** Retains the sheet's anchors and drag handling inside the shared glass window. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,6 +66,7 @@ internal fun SharedGlassMenuSheet(
     contentWindowInsets: @Composable () -> WindowInsets = { WindowInsets(0) },
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val sheetShape = remember(shape) { straightBottomMenuShape(shape) }
     var composing by remember { mutableStateOf(showSheet) }
     var dismissRequested by remember { mutableStateOf(false) }
     var awaitingShow by remember { mutableStateOf(showSheet) }
@@ -121,17 +125,18 @@ internal fun SharedGlassMenuSheet(
                 scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState),
                 // A fully expanded short form must retain its content height as IME insets change.
                 sheetPeekHeight = if (partiallyExpanded) maxHeight / 2 else 0.dp,
-                sheetShape = shape,
+                sheetShape = sheetShape,
                 sheetContainerColor = Color.Transparent,
                 sheetContentColor = colorPalette().text,
                 sheetShadowElevation = 0.dp,
                 sheetTonalElevation = 0.dp,
-                sheetDragHandle = if (maxSheetHeight.isSpecified) null else dragHandle,
+                sheetDragHandle = if (maxSheetHeight.isSpecified || dragHandle == null) null
+                    else ({ CenteredMenuSheetDragHandle(dragHandle) }),
                 containerColor = Color.Transparent,
                 sheetContent = {
                     if (maxSheetHeight.isSpecified) {
                         Column(Modifier.heightIn(max = maxSheetHeight)) {
-                            dragHandle?.invoke()
+                            dragHandle?.let { CenteredMenuSheetDragHandle(it) }
                             content()
                         }
                     } else content()

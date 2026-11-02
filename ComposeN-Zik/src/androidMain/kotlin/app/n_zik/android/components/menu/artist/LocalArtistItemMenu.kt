@@ -1,31 +1,44 @@
 package app.n_zik.android.components.menu.artist
 
-import app.n_zik.android.components.menu.MenuSheetSurface
-import app.n_zik.android.components.menu.menuSheetSectionColor
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import app.n_zik.android.components.glass.GlassHorizontalSeparator
-import androidx.compose.runtime.*
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
-import androidx.navigation.NavController
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
+
 import app.it.fast4x.rimusic.cleanPrefix
+import app.it.fast4x.rimusic.enums.DislikeMode
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
@@ -35,42 +48,39 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Clickable
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Menu
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
-import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
-
+import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
+import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.conditional
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
+import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
+import app.it.fast4x.rimusic.utils.forcePlayAtIndex
 import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.rememberPreference
-import app.it.fast4x.rimusic.utils.showDislikedArtistKey
-import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
-import app.it.fast4x.rimusic.enums.DislikeMode
-import app.it.fast4x.rimusic.utils.semiBold
-import app.n_zik.android.components.menu.GridMenu
-import app.n_zik.android.components.menu.ListMenu
-import app.n_zik.android.R
-import app.n_zik.android.colorPalette
-import app.n_zik.android.surfaceColor
-import app.n_zik.android.core.coil.ImageCacheFactory
-import app.n_zik.android.core.database.Database
-import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.thumbnailShape
-import app.n_zik.android.artistThumbnailShape
-import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.secondary
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
-import app.it.fast4x.rimusic.utils.asMediaItem
-import app.it.fast4x.rimusic.utils.forcePlayAtIndex
-import app.n_zik.android.components.dialog.artist.ChangeArtistTitleDialog
-import app.n_zik.android.components.dialog.artist.ChangeArtistCoverDialog
-import app.n_zik.android.components.dialog.artist.ChangeArtistBrowseIdDialog
+import app.it.fast4x.rimusic.utils.semiBold
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
+import app.n_zik.android.R
+import app.n_zik.android.artistThumbnailShape
+import app.n_zik.android.colorPalette
+import app.n_zik.android.components.dialog.artist.ChangeArtistBrowseIdDialog
+import app.n_zik.android.components.dialog.artist.ChangeArtistCoverDialog
+import app.n_zik.android.components.dialog.artist.ChangeArtistTitleDialog
+import app.n_zik.android.components.glass.GlassHorizontalSeparator
+import app.n_zik.android.components.menu.GridMenu
+import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.MenuSheetDragHandle
+import app.n_zik.android.components.menu.MenuSheetSurface
+import app.n_zik.android.components.menu.menuSheetSectionColor
 import app.n_zik.android.components.tab.SongShuffler
+import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.database.Database
+import app.n_zik.android.surfaceColor
+import app.n_zik.android.typography
+import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 @UnstableApi
 @OptIn(ExperimentalFoundationApi::class)
@@ -143,13 +153,7 @@ class LocalArtistItemMenu private constructor(
                 .fillMaxWidth()
                 .background(menuSheetSectionColor(surfaceColor(colorPalette().background1)))
         ) {
-            Box(
-                modifier = Modifier
-                    .padding(top = 18.dp, bottom = 6.dp)
-                    .size(width = 40.dp, height = 4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(Color.White)
-            )
+            MenuSheetDragHandle()
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,

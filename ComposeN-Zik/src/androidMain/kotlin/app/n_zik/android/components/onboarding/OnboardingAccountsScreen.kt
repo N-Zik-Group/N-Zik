@@ -14,13 +14,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,19 +31,19 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.navigation.compose.rememberNavController
+import it.fast4x.innertube.Innertube
+import it.fast4x.lastfm.LastFm
+import kotlinx.coroutines.launch
+import timber.log.Timber
+
 import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
-import app.n_zik.android.components.glass.CustomModalBottomSheet
-import app.n_zik.android.components.glass.SampledMenuSheet
-import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.it.fast4x.rimusic.utils.discordAvatarKey
 import app.it.fast4x.rimusic.utils.discordPersonalAccessTokenKey
 import app.it.fast4x.rimusic.utils.discordUsernameKey
@@ -66,8 +67,12 @@ import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.RestartAppDialog
+import app.n_zik.android.components.glass.CustomModalBottomSheet
+import app.n_zik.android.components.menu.MenuSheetDragHandle
+import app.n_zik.android.components.glass.SampledMenuSheet
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.settings.LastFmLoginContent
+import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.n_zik.android.extensions.discord.DiscordLoginAndGetToken
 import app.n_zik.android.extensions.lastfm.lastfmAvatarUrlKey
 import app.n_zik.android.extensions.lastfm.lastfmSessionKey
@@ -75,10 +80,6 @@ import app.n_zik.android.extensions.lastfm.lastfmUsernameKey
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.ytAccountName
-import it.fast4x.innertube.Innertube
-import it.fast4x.lastfm.LastFm
-import kotlinx.coroutines.launch
-import timber.log.Timber
 
 /** First-composition behavior of the accounts step, as a pure mapping (unit-tested in [OnboardingAccountsStepActionTest]). */
 enum class OnboardingAccountsStepAction {
@@ -375,13 +376,7 @@ fun OnboardingAccountsScreen(
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         shape = uiRoundnessShape(),
         dragHandle = {
-            Box(
-                modifier = Modifier
-                    .padding(top = 18.dp, bottom = 6.dp)
-                    .size(width = 40.dp, height = 4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(Color.White)
-            )
+            MenuSheetDragHandle()
         }
     ) {
         YouTubeLogin(
@@ -479,13 +474,7 @@ fun OnboardingAccountsScreen(
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         shape = uiRoundnessShape(),
         dragHandle = {
-            Box(
-                modifier = Modifier
-                    .padding(top = 18.dp, bottom = 6.dp)
-                    .size(width = 40.dp, height = 4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(Color.White)
-            )
+            MenuSheetDragHandle()
         }
     ) {
         DiscordLoginAndGetToken(
