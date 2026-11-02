@@ -712,6 +712,7 @@ fun AlbumDetails(
 
                         item("action_buttons") {
                             CollectionButtonToolbar(
+                                modifier = Modifier.padding(top = 8.dp),
                                 bookmark = { bookmark.ToolBarButton() },
                                 originalNativeBookmarkWidth = 48.dp,
                                 buttons = listOf(
