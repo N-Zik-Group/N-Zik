@@ -172,15 +172,13 @@ Join the N-Zik Discord:
 Glass is optional and **disabled on fresh installations**. Enable it in Settings, then choose native, contour-only or Glass presentation by category and adjust the rendering quality. Glass can increase rendering work and battery use; lower the quality or disable it to suit your device.
 
 <div align="center">
+  <img alt="Glass demonstration in the existing phone frame" src="assets/design/preview/framed_videos/glass-demo.gif" height="300px" />
+  <br><br>
   <img alt="Glass settings and quality controls" src="assets/design/preview/img/04.png" height="300px" />
   <img alt="Home with Glass enabled" src="assets/design/preview/img/05.png" height="300px" />
   <img alt="Player with Glass enabled" src="assets/design/preview/img/06.png" height="300px" />
   <img alt="Carousel player with Glass enabled" src="assets/design/preview/img/07.png" height="300px" />
-  <br><br>
-  <img alt="Glass demonstration in the existing phone frame" src="assets/design/preview/framed_videos/glass-demo.gif" height="300px" />
 </div>
-
-[Preview media guide](assets/design/preview/MEDIA-PREVIEWS.md).
 
 Glass builds on [Square / Convx Project](https://github.com/Lelonio/Square) (GPL-3.0) and [Kyant0 AndroidLiquidGlass / Backdrop](https://github.com/Kyant0/AndroidLiquidGlass) (Apache-2.0). Full attribution and license notices appear under [Glass credits](#glass-credits).
 
