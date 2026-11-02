@@ -765,7 +765,7 @@ private fun MiniPlayerContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if ( mediaItem.isExplicit )
-                        app.n_zik.android.components.glass.GlassExplicitBadge(
+                        app.n_zik.android.components.glass.ExplicitBadge(
                             color = colorPalette().text,
                             modifier = Modifier.size(14.dp),
                         )

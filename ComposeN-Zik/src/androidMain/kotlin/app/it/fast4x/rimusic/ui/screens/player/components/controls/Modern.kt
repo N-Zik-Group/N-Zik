@@ -208,7 +208,7 @@ fun InfoAlbumAndArtistModern(
                  .weight(1f)
             ) {
                 if ( isExplicit )
-                    app.n_zik.android.components.glass.GlassExplicitBadge(
+                    app.n_zik.android.components.glass.ExplicitBadge(
                             color = colorPalette().text, modifier = Modifier.size(18.dp),
                         )
              // Capture text separately so the passive badge can deform beyond the title canvas.

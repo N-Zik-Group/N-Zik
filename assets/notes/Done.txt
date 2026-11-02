@@ -43,6 +43,11 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(ui): route all explicit indicators through one ExplicitBadge renderer
+  - Select the original mini-player Glass appearance or native Material badge centrally; callers retain their original dimensions.
+  - Match original mini-player pixels at rest and put retained motion outside the clipped badge pane.
+  - Validate 17 focused tests, including original-composition pixel equality and player glyph overflow, plus Debug assembly.
+
 - fix(glass): adapt only SongItem badge inputs while preserving mini-player rendering
   - Sample the child-free rendered row surface through a row-only handoff.
   - Allow player E motion outside title clips, marquee and text capture without changing badge sizes.

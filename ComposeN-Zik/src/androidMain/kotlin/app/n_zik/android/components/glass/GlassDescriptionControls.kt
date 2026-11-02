@@ -5,13 +5,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.Image
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.colorPalette
 
 /** Glass keeps the transparent mini-player glyph; Material retains its filled native badge. */
 @Composable
@@ -55,40 +59,44 @@ fun GlassDescriptionExpansion(
     }
 }
 
-/** Every Glass caller renders the complete mini-player badge, not a recolored/resized icon. */
+/** One explicit badge renderer; callers supply the original placement and size. */
 @Composable
-fun GlassExplicitBadge(color: Color, modifier: Modifier = Modifier, settings: GlassSettings = rememberGlassSettings()) {
+fun ExplicitBadge(color: Color, modifier: Modifier = Modifier, settings: GlassSettings = rememberGlassSettings()) {
     val glass = settings.usesGlassMaterial(GlassArea.ActionButtons) || settings.usesGlassContour(GlassArea.ActionButtons)
-    Box(modifier, contentAlignment = androidx.compose.ui.Alignment.Center) {
-        if (glass) MiniPlayerGlassExplicitBadge(settings, Modifier.matchParentSize())
-        else androidx.compose.foundation.Image(
-            painter = painterResource(R.drawable.explicit), contentDescription = null,
-            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(color),
-            modifier = Modifier.matchParentSize(),
+    if (!glass) {
+        app.it.fast4x.rimusic.ui.components.themed.IconButton(
+            icon = R.drawable.explicit,
+            color = color,
+            onClick = {},
+            modifier = modifier,
         )
+        return
     }
-}
-
-/** Mini-player material and glyph adapt to each caller's original badge dimensions. */
-@Composable
-private fun MiniPlayerGlassExplicitBadge(settings: GlassSettings, modifier: Modifier) {
-    Box(modifier.glassExplicitBadgeBackground(settings)) {
-        androidx.compose.foundation.Image(
-            painter = painterResource(R.drawable.explicit_glass_glyph), contentDescription = null,
-            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(app.n_zik.android.colorPalette().text),
-            modifier = Modifier.matchParentSize().testTag("glass.explicit.glyph"),
-        )
-    }
-}
-
-/** Row-only source handoff: preserve the mini-player renderer and leave its source untouched. */
-@Composable
-fun GlassSongExplicitBadge(color: Color, modifier: Modifier = Modifier, settings: GlassSettings = rememberGlassSettings()) {
+    // Rows can expose both a raw scene and their processed surface. The mini-player's
+    // original badge samples the processed surface; keep that same source everywhere.
     val container = LocalGlassContainerBackdrop.current
-    val rendered = container?.let { remember(it) { RenderedMaterialBackdrop(it) } }
-    androidx.compose.runtime.CompositionLocalProvider(
-        LocalGlassContainerBackdrop provides (rendered ?: container),
-    ) { GlassExplicitBadge(color, modifier, settings) }
+    val rendered = container?.let {
+        if (it is RenderedMaterialBackdrop) it else remember(it) { RenderedMaterialBackdrop(it) }
+    }
+    val interaction = remember { MutableInteractionSource() }
+    val shape = uiRoundnessShape()
+    CompositionLocalProvider(LocalGlassContainerBackdrop provides rendered) {
+        // The spring surrounds the clipped pane, so the complete badge can move.
+        // A native IconButton clips outside its modifier and would cut off this motion.
+        Box(modifier.retainGlassButtonGesture().glassButtonFeedback(
+            interaction, shape, enabled = isGlassMotionAllowed(), retainPressUntilUp = true,
+            drawHighlight = false, settings = settings,
+        )) {
+            Image(
+                painter = painterResource(R.drawable.explicit_glass_glyph), contentDescription = null,
+                colorFilter = ColorFilter.tint(colorPalette().text),
+                modifier = Modifier.matchParentSize().clip(shape)
+                    .glassChipBackground(Color.Transparent, shape, settings, filmColor = null,
+                        allowInNativeQueue = true)
+                    .clip(shape).testTag("glass.explicit.glyph"),
+            )
+        }
+    }
 }
 
 /** A passive badge surface: the icon remains sharp and gains no new input action. */

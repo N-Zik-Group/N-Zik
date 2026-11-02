@@ -26,6 +26,7 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performClick
@@ -120,7 +121,7 @@ class GlassDescriptionControlsTest {
         compose.setContent {
             AppearanceProvider {
                 Box(Modifier.size(100.dp)) {
-                    GlassExplicitBadge(
+                    ExplicitBadge(
                         if (otherLocation.value) Color.Red else Color.Green,
                         Modifier.size(if (otherLocation.value) 18.dp else 14.dp),
                         settings = GlassSettings(),
@@ -135,6 +136,63 @@ class GlassDescriptionControlsTest {
 
     }
 
+    @Test fun `generic 14dp Glass badge matches the original mini-player IconButton pixels at rest`() {
+        compose.setContent {
+            AppearanceProvider {
+                val settings = GlassSettings()
+                val surface = rememberCanvasBackdrop { drawRect(Color(0xff294b72)) }
+                val rendered = remember(surface) { RenderedMaterialBackdrop(surface) }
+                val raw = rememberCanvasBackdrop { drawRect(Color.Red) }
+                CompositionLocalProvider(LocalGlassContainerBackdrop provides rendered,
+                    LocalGlassMaterialSource provides raw) {
+                    Row {
+                        // The original mini-player composition: same icon, tint, size,
+                        // processed container and background modifier, including native clips.
+                        app.it.fast4x.rimusic.ui.components.themed.IconButton(
+                            icon = explicitBadgeIconId(settings),
+                            color = DefaultDarkColorPalette.text,
+                            onClick = {},
+                            modifier = Modifier.size(14.dp).glassExplicitBadgeBackground(settings)
+                                .testTag("original.mini.badge"),
+                        )
+                        ExplicitBadge(Color.Red, Modifier.size(14.dp).testTag("generic.badge"), settings)
+                    }
+                }
+            }
+        }
+        val original = compose.onNodeWithTag("original.mini.badge").captureToImage().toPixelMap()
+        val generic = compose.onNodeWithTag("generic.badge").captureToImage().toPixelMap()
+        assertEquals(original.width, generic.width)
+        assertEquals(original.height, generic.height)
+        var visibleGlyphPixels = 0
+        for (y in 0 until original.height) for (x in 0 until original.width) {
+            val expected = original[x, y]
+            val actual = generic[x, y]
+            assertEquals("red at $x,$y", expected.red, actual.red, 1f / 255f)
+            assertEquals("green at $x,$y", expected.green, actual.green, 1f / 255f)
+            assertEquals("blue at $x,$y", expected.blue, actual.blue, 1f / 255f)
+            assertEquals("alpha at $x,$y", expected.alpha, actual.alpha, 1f / 255f)
+            if (actual.red > .7f && actual.green > .7f && actual.blue > .7f) visibleGlyphPixels++
+        }
+        assertTrue("Comparison must include the visible E glyph", visibleGlyphPixels > 0)
+    }
+
+    @Test fun `generic badge uses native action and caller bounds when action Glass is disabled`() {
+        val settings = mutableStateOf(GlassSettings(enabled = false))
+        compose.setContent {
+            AppearanceProvider {
+                ExplicitBadge(Color.Red, Modifier.size(18.dp).testTag("badge"), settings.value)
+            }
+        }
+        listOf(GlassSettings(enabled = false),
+            GlassSettings(areaModes = mapOf(GlassArea.ActionButtons to GlassAreaMode.Disabled))).forEach {
+            compose.runOnIdle { settings.value = it }
+            compose.onNodeWithTag("badge").assertWidthIsEqualTo(18.dp).assertHeightIsEqualTo(18.dp)
+            compose.onAllNodes(hasClickAction()).assertCountEquals(1)
+            compose.onAllNodesWithTag("glass.explicit.glyph", useUnmergedTree = true).assertCountEquals(0)
+        }
+    }
+
     @Test fun `row badge samples the same rendered surface as mini-player instead of raw scene`() {
         compose.setContent {
             AppearanceProvider {
@@ -142,7 +200,7 @@ class GlassDescriptionControlsTest {
                 val raw = rememberCanvasBackdrop { drawRect(Color.Red) }
                 CompositionLocalProvider(LocalGlassContainerBackdrop provides rendered,
                     LocalGlassMaterialSource provides raw) {
-                    GlassSongExplicitBadge(Color.White, Modifier.size(18.dp).testTag("rendered.badge"),
+                    ExplicitBadge(Color.White, Modifier.size(18.dp).testTag("rendered.badge"),
                         GlassSettings(film = 0f, rim = 0f, blur = 0f, vibrancy = 0f))
                 }
             }
@@ -156,7 +214,7 @@ class GlassDescriptionControlsTest {
         compose.setContent {
             AppearanceProvider {
                 Box(Modifier.size(120.dp).background(Color.Black)) {
-                    GlassExplicitBadge(Color.White, Modifier.size(18.dp).testTag("badge.hit"), settings = GlassSettings())
+                    ExplicitBadge(Color.White, Modifier.size(18.dp).testTag("badge.hit"), settings = GlassSettings())
                 }
             }
         }
