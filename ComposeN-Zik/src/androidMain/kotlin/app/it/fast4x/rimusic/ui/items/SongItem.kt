@@ -484,14 +484,8 @@ fun SongItem(
                     }
 
                     if ( mediaItem.isExplicit )
-                        IconButton(
-                            icon = explicitBadgeIconId(),
-                            color = colorPalette().text,
-                            enabled = true,
-                            onClick = {},
-                            modifier = Modifier
-                                .size(18.dp)
-                                .glassExplicitBadgeBackground()
+                        app.n_zik.android.components.glass.GlassExplicitBadge(
+                            color = colorPalette().text, modifier = Modifier.size(18.dp),
                         )
 
                     BasicText(
@@ -546,14 +540,8 @@ fun SongItem(
                         )
 
                     if ( mediaItem.isExplicit )
-                        IconButton(
-                            icon = explicitBadgeIconId(),
-                            color = colorPalette().text,
-                            enabled = true,
-                            onClick = {},
-                            modifier = Modifier
-                                .size(18.dp)
-                                .glassExplicitBadgeBackground()
+                        app.n_zik.android.components.glass.GlassExplicitBadge(
+                            color = colorPalette().text, modifier = Modifier.size(18.dp),
                         )
                     BasicText(
                         text = cleanPrefix(title),

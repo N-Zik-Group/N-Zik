@@ -765,14 +765,9 @@ private fun MiniPlayerContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if ( mediaItem.isExplicit )
-                        IconButton(
-                            icon = explicitBadgeIconId(),
+                        app.n_zik.android.components.glass.GlassExplicitBadge(
                             color = colorPalette().text,
-                            enabled = true,
-                            onClick = {},
-                            modifier = Modifier
-                                .size(14.dp)
-                                .glassExplicitBadgeBackground()
+                            modifier = Modifier.size(14.dp),
                         )
                     BasicText(
                         text = cleanPrefix( mediaItem.titleWithFallback() ),

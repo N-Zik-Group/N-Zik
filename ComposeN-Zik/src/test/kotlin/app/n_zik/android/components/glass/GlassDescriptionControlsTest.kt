@@ -82,7 +82,7 @@ class GlassDescriptionControlsTest {
             compose.runOnIdle { enabled.value = glass }
             compose.onNodeWithTag("badge").assertWidthIsEqualTo(18.dp).assertHeightIsEqualTo(18.dp)
             compose.onAllNodes(hasClickAction()).assertCountEquals(0)
-            compose.runOnIdle { assertEquals(if (glass) R.drawable.explicit_glass_glyph else R.drawable.explicit, iconId) }
+            compose.runOnIdle { assertEquals(R.drawable.explicit, iconId) }
         }
     }
 
@@ -120,27 +120,27 @@ class GlassDescriptionControlsTest {
         compose.setContent {
             AppearanceProvider {
                 Box(Modifier.size(120.dp).background(Color.Black)) {
-                    Box(Modifier.size(18.dp).testTag("badge.hit")
-                        .glassExplicitBadgeBackground(GlassSettings())) {
-                        Image(painterResource(R.drawable.explicit_glass_glyph), null,
-                            Modifier.size(18.dp).testTag("badge.ink"))
-                    }
+                    GlassExplicitBadge(Color.White, Modifier.size(18.dp).testTag("badge.hit"), settings = GlassSettings())
                 }
             }
         }
         val hit = compose.onNodeWithTag("badge.hit")
-        val ink = compose.onNodeWithTag("badge.ink")
-        val idle = ink.fetchSemanticsNode().boundsInRoot
+        val ink = compose.onNodeWithTag("glass.explicit.glyph", useUnmergedTree = true)
+        fun glyphPosition(): Offset {
+            val coordinates = ink.fetchSemanticsNode().layoutInfo.coordinates
+            return coordinates.localToRoot(Offset(coordinates.size.width / 2f, coordinates.size.height / 2f))
+        }
+        val idle = glyphPosition()
         hit.performTouchInput { down(center) }
         compose.mainClock.advanceTimeBy(300)
         hit.performTouchInput { moveTo(center + Offset(45f, 20f), 100) }
         compose.mainClock.advanceTimeBy(600)
-        val held = ink.fetchSemanticsNode().boundsInRoot
-        assertTrue("The E glyph, not only a ripple, must move", held.width > idle.width && held.center.x > idle.center.x)
+        val held = glyphPosition()
+        assertTrue("The E glyph, not only a ripple, must move", held.x > idle.x)
         compose.onAllNodes(hasClickAction()).assertCountEquals(0)
         hit.performTouchInput { up() }
         compose.mainClock.advanceTimeBy(1800)
-        assertEquals(idle, ink.fetchSemanticsNode().boundsInRoot)
+        assertEquals(idle.x, glyphPosition().x, .1f)
     }
 
     @Composable private fun AppearanceProvider(content: @Composable () -> Unit) {

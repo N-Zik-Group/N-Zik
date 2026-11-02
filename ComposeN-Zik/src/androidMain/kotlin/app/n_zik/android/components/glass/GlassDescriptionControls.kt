@@ -3,6 +3,7 @@ package app.n_zik.android.components.glass
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.graphics.Color
@@ -11,11 +12,9 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.uiRoundnessShape
 
-/** Native badges keep their filled icon; Glass draws only the sharp E over its own surface. */
+/** Use the mini-player's filled explicit symbol consistently in every renderer. */
 @Composable
-fun explicitBadgeIconId(settings: GlassSettings = rememberGlassSettings()): Int =
-    if (settings.usesGlassMaterial(GlassArea.ActionButtons) || settings.usesGlassContour(GlassArea.ActionButtons))
-        R.drawable.explicit_glass_glyph else R.drawable.explicit
+fun explicitBadgeIconId(settings: GlassSettings = rememberGlassSettings()): Int = R.drawable.explicit
 
 /** Shared translation bubble with the original active tint and both native callbacks. */
 @Composable
@@ -50,6 +49,18 @@ fun GlassDescriptionExpansion(
         }
     } else {
         content()
+    }
+}
+
+/** Passive glyph and surface share one motion layer, without a nested clickable indication. */
+@Composable
+fun GlassExplicitBadge(color: Color, modifier: Modifier = Modifier, settings: GlassSettings = rememberGlassSettings()) {
+    Box(modifier.glassExplicitBadgeBackground(settings)) {
+        androidx.compose.foundation.Image(
+            painter = painterResource(explicitBadgeIconId(settings)), contentDescription = null,
+            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(color),
+            modifier = Modifier.matchParentSize().testTag("glass.explicit.glyph"),
+        )
     }
 }
 

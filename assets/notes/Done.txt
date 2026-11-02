@@ -43,6 +43,11 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(glass): unify explicit badges and move glyphs with jelly feedback
+  - Use the mini-player filled E throughout Glass song rows, player variants and filter menus.
+  - Replace empty badge buttons with one passive surface and glyph motion layer; preserve native size and tint.
+  - Validate four badge regressions including held glyph motion and Debug assembly.
+
 
 - fix(glass): synchronize layered materials with their visible parent surfaces
   - Rebuild Queue current-song materials from the player, native panel, preceding row materials and swipe-action backgrounds while excluding each row's own foreground and frontmost siblings.

@@ -122,6 +122,14 @@ private interface SongIndicator: Icon {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     override fun ToolBarButton() {
+        if (iconId == R.drawable.explicit) {
+            app.n_zik.android.components.glass.GlassExplicitBadge(
+                color = if (isEnabled) color else color.copy(alpha = 0.5f),
+                modifier = this.modifier.size(sizeDp),
+            )
+            Spacer(Modifier.padding(horizontal = 3.dp))
+            return
+        }
         val interactionSource = remember { MutableInteractionSource() }
         Box(
             modifier = this.modifier
