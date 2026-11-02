@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,6 +16,8 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.OfflineAwareLoader
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.ui.screens.CollectionPageStatus
 
 /** Displays terminal failures and empty feeds separately from an active request. */
@@ -41,9 +42,15 @@ internal fun PodcastLoadingStatus(status: PodcastPageStatus, isOnline: Boolean, 
                     color = colorPalette().text,
                     textAlign = TextAlign.Center,
                 )
-                TextButton(onClick = onRetry) {
-                    Text(stringResource(R.string.retry), color = colorPalette().text)
-                }
+                ButtonRow(
+                    buttons = listOf(
+                        DialogButton(
+                            text = stringResource(R.string.retry),
+                            onClick = onRetry,
+                            primary = true,
+                        )
+                    ),
+                )
             }
             PodcastPageStatus.Content -> Unit
         }

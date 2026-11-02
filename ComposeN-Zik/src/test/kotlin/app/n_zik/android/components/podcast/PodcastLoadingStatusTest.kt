@@ -17,6 +17,11 @@ import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.Typography
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.R
+import app.n_zik.android.components.glass.GlassQuality
+import app.n_zik.android.components.glass.GlassScope
+import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.LocalGlassPreviewSettings
+import app.n_zik.android.components.glass.LocalGlassScope
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -29,6 +34,35 @@ import org.robolectric.annotation.Config
 @Config(sdk = [33], application = Application::class)
 class PodcastLoadingStatusTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `retry pill remains visible and invokes one action in Material and Glass`() {
+        val glassEnabled = mutableStateOf(false)
+        var retries = 0
+        val context = RuntimeEnvironment.getApplication()
+        compose.setContent {
+            val shape = RoundedCornerShape(8.dp)
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(
+                    DefaultDarkColorPalette, Typography.fallback, shape, shape, shape,
+                ),
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+                LocalGlassScope provides GlassScope.Details,
+                LocalGlassPreviewSettings provides GlassSettings(
+                    enabled = glassEnabled.value,
+                    quality = GlassQuality.Performance,
+                ),
+            ) {
+                PodcastLoadingStatus(PodcastPageStatus.Error, isOnline = false) { retries++ }
+            }
+        }
+        for (enabled in listOf(false, true)) {
+            compose.runOnIdle { glassEnabled.value = enabled }
+            compose.onNodeWithText(context.getString(R.string.error_no_internet)).assertIsDisplayed()
+            compose.onNodeWithTag("podcast-loading").assertDoesNotExist()
+            compose.onNodeWithText(context.getString(R.string.retry)).assertIsDisplayed().performClick()
+            compose.runOnIdle { assertEquals(if (enabled) 2 else 1, retries) }
+        }
+    }
 
     @Test fun `error removes spinner and retry starts loading while empty feed stays terminal`() {
         val status = mutableStateOf(PodcastPageStatus.Loading)
