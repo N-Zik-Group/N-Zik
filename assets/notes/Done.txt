@@ -43,6 +43,11 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(glass): adapt only SongItem badge inputs while preserving mini-player rendering
+  - Sample the child-free rendered row surface through a row-only handoff.
+  - Allow player E motion outside title clips, marquee and text capture without changing badge sizes.
+  - Validate 15 targeted tests, including real glyph overflow pixels, and Debug assembly.
+
 - fix(album): add 8dp between album metadata and the action toolbar in both styles
 
 - fix(collections): center collection and artist actions in Material and Glass
