@@ -43,6 +43,35 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(player): stabilize artwork layout, carousel gestures and orientation changes
+  - Recreate artwork pager state at orientation boundaries so portrait Lookahead measurements cannot freeze landscape scrolling; keep release selection and manual skip synchronized with playback.
+  - Bound compact carousel stride and measured pages, retain overflow behind the active cover, and discard stale shadow geometry during resize.
+  - Preserve preset layouts, configurable artwork size and effects; use size 85 and roundness 20 for preset 5, size 80 and roundness 20 for preset 6.
+  - Keep buffering from changing timeline height, center transport controls between visible neighbors, and animate artwork/lyrics/visualizer and control reflow.
+  - Move queue search/metadata processing off the UI thread and reconcile retained bulk actions with the current queue.
+  - Clip overflowing lower controls for both rendering and input while allowing native shadows and jelly to overflow when content fits.
+
+- fix(glass): align player optics and isolate settings by app profile
+  - Separate raw scene sources from material exports across headers, rows, overlays and sheets to prevent repeated film and blur; include navigation in mini-player and opening-card sources.
+  - Keep full-player controls on their own scene during quality transitions, animate seek exit, and retain configured Toast material in Performance mode without enabling capture.
+  - Give each profile its own Glass store with retryable legacy migration, profile-targeted import/backup, reset and deletion handling.
+  - Add independent favorite scope and consistent explicit badges, compact favorite geometry and centered Material feedback.
+  - Capture the title behind the information favorite without recording the heart itself; keep seek optics centered on the native cursor for every timeline style.
+  - Preserve native spacing when an area's Glass effect is disabled, and retain mini-player jelly outside its rounded background.
+
+- fix(settings): align reset values with first-use defaults
+  - Restore inherited landscape artwork size on category reset; align loudness with 5, proxy port with 1080 and custom image-cache fallback with 32 MB.
+  - Seed absent video/back-button/rotation preferences consistently while preserving saved overrides and profile isolation.
+  - Reset playback speed, pitch, app volume, duration and backdrop overrides without changing physical device volume; correct the rotating-cover reset action.
+
+- fix(settings): align page search with global compact results
+  - Show compact navigable matches instead of full settings cards while a query is active; restore normal cards when cleared.
+  - Share result styling and preserve explicit search keywords, navigation, history and empty-result behavior.
+  - Restore the floating scroll-to-top action on global and category pages, including tall cards and clearance above the pinned restart footer.
+
+- fix(strings): rename the waveform option without stale fake labels
+  - Replace the obsolete fake_audio_bar resource with audio_waveform and remove its old locale entries so untranslated locales use the accurate source label.
+
 - fix(glass): keep foreground modals live and reduce covered optics
   - Give each foreground Glass menu/dialog its own display-frame clock and bypass retained capture, frozen holds and loop buckets; retain full configured foreground optics.
   - Keep frame updates independent of Android animation scale and prevent nested overlays from inheriting a disposed parent clock.
