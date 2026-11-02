@@ -81,6 +81,16 @@ private fun MiniPlayerGlassExplicitBadge(settings: GlassSettings, modifier: Modi
     }
 }
 
+/** Row-only source handoff: preserve the mini-player renderer and leave its source untouched. */
+@Composable
+fun GlassSongExplicitBadge(color: Color, modifier: Modifier = Modifier, settings: GlassSettings = rememberGlassSettings()) {
+    val container = LocalGlassContainerBackdrop.current
+    val rendered = container?.let { remember(it) { RenderedMaterialBackdrop(it) } }
+    androidx.compose.runtime.CompositionLocalProvider(
+        LocalGlassContainerBackdrop provides (rendered ?: container),
+    ) { GlassExplicitBadge(color, modifier, settings) }
+}
+
 /** A passive badge surface: the icon remains sharp and gains no new input action. */
 @Composable
 fun Modifier.glassExplicitBadgeBackground(

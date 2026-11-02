@@ -135,6 +135,22 @@ class GlassDescriptionControlsTest {
 
     }
 
+    @Test fun `row badge samples the same rendered surface as mini-player instead of raw scene`() {
+        compose.setContent {
+            AppearanceProvider {
+                val rendered = rememberCanvasBackdrop { drawRect(Color.Blue) }
+                val raw = rememberCanvasBackdrop { drawRect(Color.Red) }
+                CompositionLocalProvider(LocalGlassContainerBackdrop provides rendered,
+                    LocalGlassMaterialSource provides raw) {
+                    GlassSongExplicitBadge(Color.White, Modifier.size(18.dp).testTag("rendered.badge"),
+                        GlassSettings(film = 0f, rim = 0f, blur = 0f, vibrancy = 0f))
+                }
+            }
+        }
+        val pixels = compose.onNodeWithTag("rendered.badge").captureToImage().toPixelMap()
+        assertEquals(Color.Blue, pixels[2, pixels.height / 2])
+    }
+
     @Test fun `explicit glyph follows held motion without acquiring a click action`() {
         compose.mainClock.autoAdvance = false
         compose.setContent {

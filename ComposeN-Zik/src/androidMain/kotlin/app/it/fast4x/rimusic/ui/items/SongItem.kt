@@ -484,7 +484,7 @@ fun SongItem(
                     }
 
                     if ( mediaItem.isExplicit )
-                        app.n_zik.android.components.glass.GlassExplicitBadge(
+                        app.n_zik.android.components.glass.GlassSongExplicitBadge(
                             color = colorPalette().text, modifier = Modifier.size(18.dp),
                         )
 
@@ -540,7 +540,7 @@ fun SongItem(
                         )
 
                     if ( mediaItem.isExplicit )
-                        app.n_zik.android.components.glass.GlassExplicitBadge(
+                        app.n_zik.android.components.glass.GlassSongExplicitBadge(
                             color = colorPalette().text, modifier = Modifier.size(18.dp),
                         )
                     BasicText(
