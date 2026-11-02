@@ -43,6 +43,13 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(settings): expose every supported Queue Glass surface mode
+  - Show the real inherited mode and permit re-enabling material after disabling it; preserve other scopes and master state.
+  - Audit all 13 shared areas and 24 contextual pairs; retain intentional nested surface accumulation.
+  - Validate 75 focused Glass settings/rendering/lifecycle tests and Debug assembly.
+- refactor(ui): move the common ExplicitBadge selector outside the Glass package
+  - Keep only the internal Glass renderer under glass; preserve rendering and original badge dimensions.
+
 - fix(ui): route all explicit indicators through one ExplicitBadge renderer
   - Select the original mini-player Glass appearance or native Material badge centrally; callers retain their original dimensions.
   - Match original mini-player pixels at rest and put retained motion outside the clipped badge pane.
