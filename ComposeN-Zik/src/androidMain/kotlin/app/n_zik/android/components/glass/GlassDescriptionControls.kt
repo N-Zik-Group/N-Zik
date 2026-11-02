@@ -77,5 +77,7 @@ fun Modifier.glassExplicitBadgeBackground(
     // Keep a drag that starts on the badge without adding any click action.
     return retainGlassButtonGesture().glassButtonFeedback(interaction, uiRoundnessShape(),
         enabled = isGlassMotionAllowed(), retainPressUntilUp = true, drawHighlight = false)
+        .glassChipBackground(Color.Transparent, uiRoundnessShape(), settings, filmColor = null,
+            allowInNativeQueue = true)
 
 }
