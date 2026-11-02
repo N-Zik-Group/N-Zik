@@ -52,7 +52,8 @@ Fixed:
   - Validate 36 targeted regressions and Debug assembly.
 
 - fix(glass): unify explicit badges and move glyphs with jelly feedback
-  - Reuse the original mini-player Glass E glyph with its shared material and contour everywhere, including filter menus; retain the filled Material symbol.
+  - Render the same complete 14dp mini-player Glass badge in every location, including filter menus, with its text tint, material, contour and glyph motion; retain the filled Material symbol.
+  - Verify pixel equality between mini-player and other Glass placements despite different caller slot sizes and tints (five passing badge tests).
   - Replace empty badge buttons with one passive surface and glyph motion layer; preserve native size and tint.
   - Validate four badge regressions including held glyph motion and Debug assembly.
 

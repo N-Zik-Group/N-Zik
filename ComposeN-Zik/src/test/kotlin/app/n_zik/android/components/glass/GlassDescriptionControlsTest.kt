@@ -115,6 +115,29 @@ class GlassDescriptionControlsTest {
         assertEquals(expected.blue, actual.blue, 1f / 255f)
     }
 
+    @Test fun `other Glass locations use the complete mini-player component regardless of caller tint and slot`() {
+        val otherLocation = mutableStateOf(false)
+        compose.setContent {
+            AppearanceProvider {
+                Box(Modifier.size(100.dp)) {
+                    GlassExplicitBadge(
+                        if (otherLocation.value) Color.Red else Color.Green,
+                        Modifier.size(if (otherLocation.value) 18.dp else 14.dp),
+                        settings = GlassSettings(),
+                    )
+                }
+            }
+        }
+        val glyph = compose.onNodeWithTag("glass.explicit.glyph", useUnmergedTree = true)
+        glyph.assertWidthIsEqualTo(14.dp).assertHeightIsEqualTo(14.dp)
+        val mini = glyph.captureToImage().toPixelMap()
+        compose.runOnIdle { otherLocation.value = true }
+        glyph.assertWidthIsEqualTo(14.dp).assertHeightIsEqualTo(14.dp)
+        val other = glyph.captureToImage().toPixelMap()
+        for (x in 0 until mini.width) for (y in 0 until mini.height)
+            assertEquals(mini[x, y], other[x, y])
+    }
+
     @Test fun `explicit glyph follows held motion without acquiring a click action`() {
         compose.mainClock.autoAdvance = false
         compose.setContent {

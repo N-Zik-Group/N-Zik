@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -54,13 +55,27 @@ fun GlassDescriptionExpansion(
     }
 }
 
-/** Passive glyph and surface share one motion layer, without a nested clickable indication. */
+/** Every Glass caller renders the complete mini-player badge, not a recolored/resized icon. */
 @Composable
 fun GlassExplicitBadge(color: Color, modifier: Modifier = Modifier, settings: GlassSettings = rememberGlassSettings()) {
-    Box(modifier.glassExplicitBadgeBackground(settings)) {
-        androidx.compose.foundation.Image(
-            painter = painterResource(explicitBadgeIconId(settings)), contentDescription = null,
+    val glass = settings.usesGlassMaterial(GlassArea.ActionButtons) || settings.usesGlassContour(GlassArea.ActionButtons)
+    Box(modifier, contentAlignment = androidx.compose.ui.Alignment.Center) {
+        if (glass) MiniPlayerGlassExplicitBadge(settings)
+        else androidx.compose.foundation.Image(
+            painter = painterResource(R.drawable.explicit), contentDescription = null,
             colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(color),
+            modifier = Modifier.matchParentSize(),
+        )
+    }
+}
+
+/** Canonical 14dp mini-player component shared by all Glass explicit indicators. */
+@Composable
+private fun MiniPlayerGlassExplicitBadge(settings: GlassSettings) {
+    Box(Modifier.size(14.dp).glassExplicitBadgeBackground(settings)) {
+        androidx.compose.foundation.Image(
+            painter = painterResource(R.drawable.explicit_glass_glyph), contentDescription = null,
+            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(app.n_zik.android.colorPalette().text),
             modifier = Modifier.matchParentSize().testTag("glass.explicit.glyph"),
         )
     }
