@@ -466,7 +466,6 @@
 <string name="debug">调试</string>
 <string name="enable_log_debug">启用调试日志</string>
 <string name="if_enabled_create_a_log_file_to_highlight_errors">如果启用，将会创建一个日志文件来突出显示错误</string>
-<string name="fake_audio_bar">伪频谱图</string>
 <string name="title_backup_and_restore">备份和恢复</string>
 <string name="message_excluded_s_songs">排除 %s 歌曲</string>
 <string name="show_thumbnail">显示缩略图</string>

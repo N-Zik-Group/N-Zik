@@ -684,7 +684,6 @@
     <string name="enable_log_debug">Enable debug logs</string>
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">If enabled, create a log file to highlight errors</string>
-    <string name="fake_audio_bar">Fake Waveform</string>
     <string name="title_backup_and_restore">Backup and restore</string>
     <string name="message_excluded_s_songs">Excluded %s songs</string>
     <string name="show_thumbnail">Show thumbnail</string>

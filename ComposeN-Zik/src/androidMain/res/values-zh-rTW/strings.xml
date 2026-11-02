@@ -466,7 +466,6 @@
 <string name="debug">除錯</string>
 <string name="enable_log_debug">啟用除錯記錄</string>
 <string name="if_enabled_create_a_log_file_to_highlight_errors">啟用時會建立記錄檔突顯錯誤</string>
-<string name="fake_audio_bar">Fake Audio Bar</string>
 <string name="title_backup_and_restore">備份與還原</string>
 <string name="message_excluded_s_songs">排除 %s 歌曲</string>
 <string name="show_thumbnail">顯示縮圖</string>

@@ -684,7 +684,6 @@
     <string name="enable_log_debug">Hata ayıklama günlüklerini etkinleştir</string>
     <string name="disable_log_debug">Hata ayıklama günlüklerini devre dışı bırak</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">Etkinleştirilirse, hataları vurgulamak için bir günlük dosyası oluştur</string>
-    <string name="fake_audio_bar">Sahte Ses Dalgası (Waveform)</string>
     <string name="title_backup_and_restore">Yedekle ve geri yükle</string>
     <string name="message_excluded_s_songs">%s şarkı hariç tutuldu</string>
     <string name="show_thumbnail">Küçük resmi göster</string>

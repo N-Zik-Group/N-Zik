@@ -684,7 +684,6 @@
     <string name="enable_log_debug">Activer les journaux de débogage</string>
     <string name="disable_log_debug">Désactiver les journaux de débogage</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">Si activé, créez un fichier journal pour mettre en surbrillance les erreurs</string>
-    <string name="fake_audio_bar">Fausse barre audio</string>
     <string name="title_backup_and_restore">Sauvegarde et Restauration</string>
     <string name="message_excluded_s_songs">Titres %s exclus</string>
     <string name="show_thumbnail">Afficher la miniature</string>

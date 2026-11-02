@@ -684,7 +684,6 @@
     <string name="enable_log_debug">Omogući zapis otklanjanja grešaka</string>
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">Ako je omogućeno, kreirajte datoteku zapisa da biste istakli greške</string>
-    <string name="fake_audio_bar">Lažni Audio Bar</string>
     <string name="title_backup_and_restore">COPIA DE SEGURIDAD Y RESTAURAR</string>
     <string name="message_excluded_s_songs">Excluida %s canciones</string>
     <string name="show_thumbnail">Prikaži Sličicu</string>

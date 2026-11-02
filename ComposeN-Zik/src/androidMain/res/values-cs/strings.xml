@@ -684,7 +684,6 @@
     <string name="enable_log_debug">Vytvářet debugovací log</string>
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">Vytvořit log soubor pro zvýraznění chyb</string>
-    <string name="fake_audio_bar">Falešná lišta zvuku</string>
     <string name="title_backup_and_restore">Zálohování a obnovení</string>
     <string name="message_excluded_s_songs">Vyloučeno %s skladeb</string>
     <string name="show_thumbnail">Zobrazit miniaturu</string>

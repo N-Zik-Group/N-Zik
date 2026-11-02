@@ -16,7 +16,7 @@ enum class PlayerTimelineType(
 
     BodiedBar( R.string.bodied_bar ),
 
-    AudioWaves( R.string.fake_audio_bar ),
+    AudioWaves( R.string.audio_waveform ),
 
     ThinBar( R.string.thin_bar ),
 
