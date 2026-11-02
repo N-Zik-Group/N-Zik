@@ -14,7 +14,6 @@
 <string name="related_albums">Povezani albumi</string>
 <string name="similar_artists">Slični izvođači</string>
 <string name="playlists_you_might_like">Plejliste koje bi vam se mogle svideti</string>
-<string name="an_error_has_occurred">Došlo je do greške</string>
 <string name="albums">Albumi</string>
 <string name="artists">Izvođači</string>
 <string name="enter_the_playlist_name">Unesite ime za plejlistu</string>
@@ -151,7 +150,6 @@
 <string name="download">Prеuzimanjе</string>
 <string name="_default">Podrazumevano</string>
 <string name="dynamic">Dinamično</string>
-<string name="discovery">Otkriće</string>
 <string name="mood">Raspoloženje</string>
 <string name="new_albums">Novi albumi</string>
 <string name="moods_and_genres">Raspoloženja i žanrovi</string>

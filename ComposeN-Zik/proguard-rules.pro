@@ -87,9 +87,6 @@
 -dontwarn sun.misc.**
 -keep class com.google.gson.stream.** { *; }
 
-# Application classes that will be serialized/deserialized over Gson
--keep class com.google.gson.examples.android.model.** { <fields>; }
-
 # Prevent proguard from stripping interface information from TypeAdapter, TypeAdapterFactory,
 # JsonSerializer, JsonDeserializer instances (so they can be used in @JsonAdapter)
 -keep class * extends com.google.gson.TypeAdapter
@@ -107,14 +104,8 @@
 -keep,allowobfuscation,allowshrinking class * extends com.google.gson.reflect.TypeToken
 -keep public class * implements java.lang.reflect.Type
 
--keep class * implements com.google.gson.TypeAdapterFactory
--keep class * implements com.google.gson.JsonSerializer
--keep class * implements com.google.gson.JsonDeserializer
-
 # Keep classes with @JsonAdapter annotation
 -keep,allowobfuscation,allowoptimization @com.google.gson.annotations.JsonAdapter class *
-
--dontwarn lombok.Generated
 
 ##---------------End: proguard configuration for Gson  ----------
 

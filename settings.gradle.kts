@@ -6,9 +6,6 @@ pluginManagement {
         gradlePluginPortal()
         mavenCentral()
     }
-    plugins {
-        kotlin("plugin.lombok") version "2.4.21"
-    }
 }
 
 dependencyResolutionManagement {

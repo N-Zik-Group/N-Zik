@@ -13,12 +13,6 @@ import android.graphics.RectF
 import android.graphics.Shader
 import android.os.Bundle
 import android.widget.RemoteViews
-import coil3.ImageLoader
-import coil3.request.ImageRequest
-import coil3.request.allowHardware
-import coil3.request.crossfade
-import coil3.toBitmap
-import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.MainActivity
 import app.n_zik.android.R
 import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
@@ -37,8 +31,6 @@ import android.os.Build
 import android.util.TypedValue
 
 object NZikWidgetManager {
-
-    private fun getImageLoader(context: Context): ImageLoader = ImageCacheFactory.LOADER
 
     // Cache for album art to avoid reloading
     private var cachedArtworkUri: String? = null
@@ -293,23 +285,6 @@ object NZikWidgetManager {
         return views
     }
 
-    private suspend fun loadAlbumArt(context: Context, artworkUri: String, size: Int = 200): Bitmap? {
-        return withContext(NzikDispatchers.DATA) {
-            try {
-                val request = ImageRequest.Builder(context)
-                    .data(artworkUri)
-                    .size(size, size)
-                    .allowHardware(false)
-                    .crossfade(300)
-                    .build()
-                val result = getImageLoader(context).execute(request)
-                result.image?.toBitmap()
-            } catch (e: Exception) {
-                null
-            }
-        }
-    }
-
     private fun getRoundedCornerBitmap(bitmap: Bitmap, cornerRadius: Float): Bitmap {
         val size = minOf(bitmap.width, bitmap.height)
         val xOffset = (bitmap.width - size) / 2
@@ -467,26 +442,6 @@ object NZikWidgetManager {
         return views
     }
 
-    private fun isBitmapLight(bitmap: Bitmap): Boolean {
-        val size = minOf(bitmap.width, bitmap.height)
-        val xOffset = (bitmap.width - size) / 2
-        val yOffset = (bitmap.height - size) / 2
-        val scaled = Bitmap.createScaledBitmap(bitmap, 50, 50, true)
-        var totalLuminance = 0L
-        val pixelCount = scaled.width * scaled.height
-        val pixels = IntArray(pixelCount)
-        scaled.getPixels(pixels, 0, scaled.width, 0, 0, scaled.width, scaled.height)
-        for (pixel in pixels) {
-            val r = android.graphics.Color.red(pixel)
-            val g = android.graphics.Color.green(pixel)
-            val b = android.graphics.Color.blue(pixel)
-            totalLuminance += (0.299 * r + 0.587 * g + 0.114 * b).toLong()
-        }
-        if (scaled != bitmap) scaled.recycle()
-        val averageLuminance = totalLuminance.toDouble() / pixelCount
-        return averageLuminance > 128
-    }
-    
     private fun getCircularDefaultIcon(context: Context): Bitmap {
         val drawable = context.packageManager.getApplicationIcon(context.packageName)
         val size = 300

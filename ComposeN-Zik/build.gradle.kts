@@ -27,7 +27,6 @@ plugins {
 
     // Protobuf (Listen Together wire format — Metrolist port)
     alias(libs.plugins.protobuf)
-    kotlin("plugin.lombok")
 }
 
 repositories {
@@ -531,8 +530,6 @@ dependencies {
     testImplementation(libs.ktor.server.test.host)
     testRuntimeOnly(libs.junit.platform)
     testRuntimeOnly(libs.junit.vintage.engine)
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
     implementation(libs.jetbrains.annotations)
     implementation(libs.okhttp3.okhttp)
     implementation(libs.protobuf.java)

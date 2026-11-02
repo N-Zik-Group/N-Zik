@@ -14,7 +14,6 @@
 <string name="related_albums">相關的專輯</string>
 <string name="similar_artists">類似的藝人</string>
 <string name="playlists_you_might_like">你可能喜歡的播放清單</string>
-<string name="an_error_has_occurred">發生了一個錯誤</string>
 <string name="albums">專輯</string>
 <string name="artists">藝人</string>
 <string name="enter_the_playlist_name">輸入播放清單名稱</string>
@@ -151,7 +150,6 @@
 <string name="download">下載</string>
 <string name="_default">預設</string>
 <string name="dynamic">動態</string>
-<string name="discovery">搜索</string>
 <string name="mood">情境</string>
 <string name="new_albums">新推出的專輯</string>
 <string name="moods_and_genres">氣氛與類型</string>

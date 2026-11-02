@@ -122,7 +122,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -363,10 +362,8 @@ import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.extensions.discord.DiscordUiState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.navigation.NavController
-import androidx.lifecycle.Lifecycle
 import app.n_zik.android.enums.PendingMiniPlayerAction
 import app.n_zik.android.core.backup.BackupManager
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.core.view.WindowInsetsCompat
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -989,43 +986,6 @@ class MainActivity :
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         pipState.value = isInPictureInPictureMode
         Timber.tag("MainActivity").d("onPictureInPictureModeChanged: $isInPictureInPictureMode")
-    }
-
-    @Composable
-    fun ThemeApp(
-        isDark: Boolean = false,
-        content: @Composable () -> Unit
-    ) {
-        val view = LocalView.current
-        if (!view.isInEditMode) {
-            SideEffect {
-                (view.context as Activity).window.let { window ->
-                    WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
-                        !isDark
-                    WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars =
-                        !isDark
-                }
-            }
-            
-            val lifecycleOwner = LocalLifecycleOwner.current
-            DisposableEffect(lifecycleOwner, isDark) {
-                val observer = LifecycleEventObserver { _, event ->
-                    if (event == Lifecycle.Event.ON_RESUME) {
-                        (view.context as Activity).window.let { window ->
-                            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
-                                !isDark
-                            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars =
-                                !isDark
-                        }
-                    }
-                }
-                lifecycleOwner.lifecycle.addObserver(observer)
-                onDispose {
-                    lifecycleOwner.lifecycle.removeObserver(observer)
-                }
-            }
-        }
-        content()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

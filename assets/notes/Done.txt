@@ -321,6 +321,12 @@ Fixed:
   - Assemble Debug and pass 29 focused search/Settings tests; complete independent reviews and keep real IME routing and deeper playlist/podcast host fixtures as separate verification follow-ups.
 
 Removed:
+- remove(cleanup): retire confirmed unused code, assets and build tooling
+  - Remove four unused Kotlin files, eleven unused declarations and 23 imports; preserve all icons, legacy namespaces and database contracts.
+  - Retire four obsolete extractor assets and 24 unused string identities across 50 files; keep DASH/HLS and GIF transitive capabilities.
+  - Remove unused catalogue entries, Lombok configuration, duplicate ProGuard rules and one tracked Kotlin cache artifact.
+  - Validate Debug and Minified64 builds, 148 tests with zero failures/errors/skips, exact locale integrity and independent code review.
+
 - remove(settings): drop preset value buttons from Cover card sliders
   - Remove the portrait/landscape size Min/25/50/75/Max rows and the thumbnail, artist and UI roundness button rows; the sliders keep their track value dots.
 

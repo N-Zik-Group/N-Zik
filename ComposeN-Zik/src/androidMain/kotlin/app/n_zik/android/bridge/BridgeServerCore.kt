@@ -16,7 +16,6 @@ import app.n_zik.android.bridge.command.ListCommandResult
 import app.n_zik.android.bridge.command.LocateResponse
 import app.n_zik.android.bridge.command.ParsedCommand
 import app.n_zik.android.bridge.library.ArtworkResult
-import app.n_zik.android.bridge.library.CollectionFilter
 import app.n_zik.android.bridge.library.LibraryLists
 import app.n_zik.android.bridge.library.LibraryMapping
 import app.n_zik.android.bridge.library.LibraryProvider

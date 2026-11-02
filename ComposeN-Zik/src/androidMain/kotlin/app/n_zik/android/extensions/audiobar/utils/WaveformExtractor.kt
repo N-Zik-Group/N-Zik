@@ -24,8 +24,6 @@ import java.io.File
 import java.io.FileOutputStream
 import timber.log.Timber
 import kotlin.math.abs
-import kotlin.math.pow
-import java.nio.ByteBuffer
 import java.io.IOException
 import java.util.UUID
 
@@ -364,71 +362,6 @@ object WaveformExtractor {
                 codec?.stop()
                 codec?.release()
             } catch (e: Exception) {}
-            extractor.release()
-        }
-
-        return amplitudes
-    }
-
-    /**
-     * Ultra-fast waveform extraction that uses the size of the compressed audio frames 
-     * as a heuristic for amplitude. Works very well for VBR formats like Opus and AAC 
-     * (which are used by YouTube/Piped). Avoids the massive overhead of MediaCodec.
-     */
-    private fun extractAmplitudesFast(filePath: String): MutableList<Int> {
-        val amplitudes = mutableListOf<Int>()
-        val extractor = MediaExtractor()
-
-        try {
-            extractor.setDataSource(filePath)
-
-            var audioTrackIndex = -1
-            var format: MediaFormat? = null
-            for (i in 0 until extractor.trackCount) {
-                val trackFormat = extractor.getTrackFormat(i)
-                val trackMime = trackFormat.getString(MediaFormat.KEY_MIME)
-                if (trackMime != null && trackMime.startsWith("audio/")) {
-                    audioTrackIndex = i
-                    format = trackFormat
-                    break
-                }
-            }
-
-            if (audioTrackIndex == -1 || format == null) return mutableListOf()
-
-            extractor.selectTrack(audioTrackIndex)
-            val durationUs = format.getLong(MediaFormat.KEY_DURATION)
-            if (durationUs <= 0) return mutableListOf()
-
-            // Count total frames approximately or just seek through
-            val buffer = ByteBuffer.allocate(1024 * 64)
-            val intervalUs = durationUs / TARGET_SAMPLES
-
-            for (i in 0 until TARGET_SAMPLES) {
-                val targetUs = i * intervalUs
-                extractor.seekTo(targetUs, MediaExtractor.SEEK_TO_CLOSEST_SYNC)
-                
-                var maxFrameSize = 0
-                // Read a few frames around this position to get an average/max energy
-                for (j in 0 until 10) {
-                    val size = extractor.readSampleData(buffer, 0)
-                    if (size < 0) break // EOF
-                    if (size > maxFrameSize) maxFrameSize = size
-                    extractor.advance()
-                }
-                
-                // Frame sizes usually range from 100 to 1000 bytes.
-                // Because compressed audio frames don't map linearly to visual amplitude (they look like a fat block),
-//
-                // we apply an exponential curve (power of 2.5). Since the UI normalizes to the maximum value,
-                // this mathematically perfectly squashes the quiet parts (S/M)^2.5 and makes it look incredibly dynamic!
-                val aestheticAmp = kotlin.math.max(0.0, maxFrameSize.toDouble()).pow(2.5)
-                amplitudes.add(aestheticAmp.toInt())
-            }
-
-        } catch (e: Exception) {
-            Timber.tag("NZik_AudioBar").e(e, "Error during fast native waveform extraction")
-        } finally {
             extractor.release()
         }
 

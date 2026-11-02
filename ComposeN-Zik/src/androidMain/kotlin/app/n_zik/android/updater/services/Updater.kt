@@ -415,13 +415,6 @@ object Updater {
     }
 
     /**
-     * Turns `v1.0.0` to `1.0.0`, `1.0.0-m64` to `1.0.0`
-     */
-    private fun trimVersion(versionStr: String): String {
-        return versionStr.removePrefix(UpdaterConstants.PREFIX_VERSION).substringBefore("-")
-    }
-
-    /**
      * Sends out requests to Github for latest version.
      *
      * Results are downloaded, filtered, and saved to [build]

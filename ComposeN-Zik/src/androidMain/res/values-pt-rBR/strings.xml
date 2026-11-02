@@ -14,7 +14,6 @@
 <string name="related_albums">Álbuns relacionados</string>
 <string name="similar_artists">Artistas similares</string>
 <string name="playlists_you_might_like">Listas de reprodução que você pode gostar</string>
-<string name="an_error_has_occurred">Ocorreu um erro</string>
 <string name="albums">Álbuns</string>
 <string name="artists">Artistas</string>
 <string name="enter_the_playlist_name">Digite o nome da lista de reprodução</string>
@@ -151,7 +150,6 @@
 <string name="download">Baixar</string>
 <string name="_default">Predefinição</string>
 <string name="dynamic">Dinâmico</string>
-<string name="discovery">Descobrir</string>
 <string name="mood">Humor</string>
 <string name="new_albums">Novos álbuns</string>
 <string name="moods_and_genres">Humor e gêneros</string>

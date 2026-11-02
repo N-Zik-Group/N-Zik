@@ -14,7 +14,6 @@
 <string name="related_albums">相关专辑</string>
 <string name="similar_artists">类似的艺术家</string>
 <string name="playlists_you_might_like">您可能喜欢的播放列表</string>
-<string name="an_error_has_occurred">发生了一个错误</string>
 <string name="albums">专辑</string>
 <string name="artists">艺术家</string>
 <string name="enter_the_playlist_name">输入播放列表名称</string>
@@ -151,7 +150,6 @@
 <string name="download">下载</string>
 <string name="_default">默认</string>
 <string name="dynamic">动态</string>
-<string name="discovery">发现</string>
 <string name="mood">情绪</string>
 <string name="new_albums">新专辑</string>
 <string name="moods_and_genres">情绪和流派</string>

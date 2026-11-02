@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -50,7 +49,6 @@ import app.n_zik.android.playback.services.PlayerServiceModern
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.it.fast4x.rimusic.utils.addSongToYtPlaylist
-import app.it.fast4x.rimusic.utils.addToYtPlaylist
 import app.it.fast4x.rimusic.utils.asSong
 import app.it.fast4x.rimusic.utils.isNetworkConnected
 import app.it.fast4x.rimusic.utils.menuStyleKey
@@ -220,53 +218,6 @@ fun AddToPlaylistPlayerMenu(
         onDismiss = onDismiss,
     )
 }
-
-@ExperimentalTextApi
-@ExperimentalAnimationApi
-@UnstableApi
-@Composable
-fun AddToPlaylistArtistSongs(
-    navController: NavController,
-    mediaItems: List<MediaItem>,
-    onDismiss: () -> Unit,
-    onClosePlayer: () -> Unit,
-) {
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-    var position by remember {
-        mutableIntStateOf(0)
-    }
-    AddToPlaylistArtistSongsMenu(
-        navController = navController,
-        onGoToPlaylist = {
-            onClosePlayer()
-        },
-        onAddToPlaylist = add@{ playlistPreview ->
-            if (!canEditPlaylistMembership(playlistPreview.playlist)) return@add
-            position = playlistPreview.songCount.minus(1)
-            if (position > 0) position++ else position = 0
-
-            Database.asyncTransaction {
-                if (!canEditStoredPlaylistMembership(playlistPreview.playlist.id)) return@asyncTransaction
-                if ( !isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist )
-                    mapIgnore( playlistPreview.playlist, *mediaItems.toTypedArray() )
-                else
-                    coroutineScope.launch(NzikDispatchers.DATA) {
-                        if (!canEditStoredPlaylistMembership(playlistPreview.playlist.id)) return@launch
-                        addToYtPlaylist(playlistPreview.playlist.id, position, playlistPreview.playlist.browseId ?: "", mediaItems)
-                    }
-
-
-            }
-
-            onDismiss()
-        },
-        onDismiss = onDismiss,
-    )
-}
-
-
-
 
 @UnstableApi
 @ExperimentalAnimationApi

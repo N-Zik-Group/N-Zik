@@ -24,10 +24,8 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import app.n_zik.android.components.ui.UiIconButton as IconButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -45,7 +43,6 @@ import coil3.compose.AsyncImage
 import java.io.File
 import java.io.IOException
 import java.util.Date
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 import it.fast4x.innertube.utils.parseCookieString
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
@@ -57,9 +54,7 @@ import app.it.fast4x.rimusic.utils.faceAvatarSourceKey
 import app.it.fast4x.rimusic.utils.faceNameSourceKey
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.profileDisplayName
-import app.it.fast4x.rimusic.utils.profileLastUsed
 import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
-import app.it.fast4x.rimusic.utils.encryptedPreferencesUpdateTrigger
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.ytAccountNameKey
 import app.it.fast4x.rimusic.utils.ytAccountThumbnailKey
@@ -73,15 +68,12 @@ import app.n_zik.android.components.glass.glassChipBackground
 import app.n_zik.android.components.glass.GlassSectionAction
 import app.n_zik.android.components.glass.GlassSectionActions
 import app.n_zik.android.core.coil.ImageCacheFactory
-import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.core.profiles.clearProfileShareFlags
 import app.n_zik.android.core.profiles.coilImageCacheDir
 import app.n_zik.android.core.profiles.coversDir
 import app.n_zik.android.core.profiles.downloadsDir
 import app.n_zik.android.core.profiles.mediaCacheDir
-import app.n_zik.android.core.profiles.profileSharedItems
-import app.n_zik.android.core.profiles.setProfileShares
 import app.n_zik.android.core.profiles.totalDirectorySize
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.extensions.lastfm.lastfmAvatarUrlKey
@@ -100,7 +92,6 @@ import app.n_zik.android.utils.faceInitialsColorIndex
 import app.n_zik.android.utils.relativeTime
 import app.n_zik.android.utils.resolveFaceAvatar
 import app.n_zik.android.utils.resolveFaceName
-import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 /** Directory of a profile's own files (its custom face photo lives at `<dir>/avatar.jpg`). */
 fun profileDataDir(context: Context, profileId: String): File =
@@ -641,89 +632,5 @@ private fun ProfileCardInfoRow(icon: Int, label: String, value: String) {
             text = value,
             style = typography().xs.copy(color = palette.text),
         )
-    }
-}
-
-/** One-shot reading of the active profile for the Accounts card. */
-private data class ActiveProfileSnapshot(
-    val id: String,
-    val face: ProfileFace?,
-    val lastUsed: Long?,
-    val dbSizeBytes: Long?,
-    val settingsSizeBytes: Long?,
-    val imagesSizeBytes: Long?,
-    val songCacheSizeBytes: Long?,
-    val downloadsSizeBytes: Long?,
-    val sharedItems: Set<ProfileDataItem>,
-)
-
-/**
- * The profile card of the Accounts tab: the active profile's face, its state
- * (active + separate/shared) and its database size — no actions, the face card right
- * above owns the edit entries. Carries a 16dp trailing margin: the section cards
- * around it (the face card above, the account sections below) each carry a 16dp
- * bottom spacer, without which this card would touch the card below it.
- */
-@Composable
-fun ProfileAccountCard(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    val defaultName = stringResource(R.string.profile_base_name)
-    var snapshot by remember { mutableStateOf<ActiveProfileSnapshot?>(null) }
-    // Bumped after a sharing toggle: the sizes re-resolve against the (new) dirs
-    // the profile will use at the next boot (spec-profile-data-separation).
-    var shareRefreshTick by remember { mutableIntStateOf(0) }
-
-    // Re-resolve the snapshot whenever the face state changes: a face edit on the
-    // face card above (photo pick / remove, source change, rename) bumps
-//
-    // [profileFaceUpdateTrigger], and an account login can change a face sourced
-    // from that account — the same trigger pair the always-composed header keys on.
-    val faceTrigger = encryptedPreferencesUpdateTrigger + profileFaceUpdateTrigger + shareRefreshTick
-    LaunchedEffect(faceTrigger) {
-        snapshot = withContext(NzikDispatchers.DATA) {
-            val id = getActiveProfile(context)
-            val sizes = profileDataSizes(context, id)
-            ActiveProfileSnapshot(
-                id = id,
-                face = runCatching { loadProfileFace(context, id, defaultName) }.getOrNull(),
-                lastUsed = runCatching { context.profileLastUsed(id) }.getOrNull(),
-                // File.length() returns 0 for a missing file — null renders
-                // "No data" instead of a misleading "0 B".
-                dbSizeBytes = runCatching {
-                    context.getDatabasePath(Database.fileNameForProfile(id)).length().takeIf { it > 0L }
-                }.getOrNull(),
-                settingsSizeBytes = runCatching { profilePrefsFile(context, id).length().takeIf { it > 0L } }.getOrNull(),
-                imagesSizeBytes = sizes.imagesBytes,
-                songCacheSizeBytes = sizes.songCacheBytes,
-                downloadsSizeBytes = sizes.downloadsBytes,
-                sharedItems = context.profileSharedItems(id),
-            )
-        }
-    }
-
-    val snap = snapshot ?: return
-    val fallbackName = resolveProfileDisplayName(snap.id, null, defaultName)
-    Column(modifier = modifier) {
-        ProfileCard(
-            face = snap.face ?: ProfileFace(fallbackName, FaceAvatar.Initials(fallbackName)),
-            lastUsed = snap.lastUsed,
-            dbSizeBytes = snap.dbSizeBytes,
-            settingsSizeBytes = snap.settingsSizeBytes,
-            imagesSizeBytes = snap.imagesSizeBytes,
-            songCacheSizeBytes = snap.songCacheSizeBytes,
-            downloadsSizeBytes = snap.downloadsSizeBytes,
-            sharedItems = snap.sharedItems,
-            isActive = true,
-            onSwitch = null,
-            onRename = null,
-            onDelete = null,
-            // The base is the base — its data is never "shared" or "separate", so
-            // the toggles are only offered on user profiles.
-            onToggleShare = if (snap.id == DEFAULT_PROFILE_ID) null else { item, value ->
-                context.setProfileShares(item, snap.id, value)
-                shareRefreshTick++
-            },
-        )
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }
