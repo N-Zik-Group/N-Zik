@@ -146,12 +146,7 @@ internal fun GlassDestinationCard(group: GlassDestinationGroup, config: GlassSet
 @Composable
 private fun GlassPolicySelector(row: GlassPolicyRow, config: GlassSettings, store: GlassStore) {
     val contextual = row.scope != GlassScope.Shared
-    val contourOnly = row.scope == GlassScope.Queue && row.area == GlassArea.Menus
-    val storedMode = config.contextMode(row.scope, row.area)
-    val selected = if (contourOnly) {
-        if (storedMode.hasContour) GlassAreaMode.ContourOnly else GlassAreaMode.Disabled
-    } else storedMode
-    // Queue modals can inherit shared material, so only identical saved modes clear an override.
+    val selected = config.contextMode(row.scope, row.area)
     val sharedMode = config.contextMode(GlassScope.Shared, row.area)
     val tag = if (contextual) "${row.scope.name}.${row.area.name}" else row.area.name
     Column(Modifier.testTag("settings.glass.area.$tag").settingsSearchTarget(row.searchId)) {
@@ -174,7 +169,7 @@ private fun GlassPolicySelector(row: GlassPolicyRow, config: GlassSettings, stor
                     else store.setAreaMode(row.area, it)
                 },
                 modifier = Modifier.testTag("settings.glass.mode.$tag"),
-                values = if (contourOnly) listOf(GlassAreaMode.Disabled, GlassAreaMode.ContourOnly) else GlassAreaMode.entries,
+                values = GlassAreaMode.entries,
                 valueText = { mode -> stringResource(when (mode) {
                     GlassAreaMode.Disabled -> R.string.glass_mode_disabled
                     GlassAreaMode.ContourOnly -> R.string.glass_mode_contour_only

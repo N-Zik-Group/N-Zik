@@ -326,6 +326,33 @@ class GlassSettingsPageTest {
         assertEquals(GlassAreaMode.ContourOnly, store.read().contextMode(GlassScope.PlayerTransport, GlassArea.ActionButtons))
     }
 
+    @Test fun `queue surface offers every material mode and restores Glass after disabling`() {
+        store.setAreaMode(GlassArea.Menus, GlassAreaMode.GlassOnly)
+        showPage()
+        composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("destination.Playback")
+        composeRule.onNodeWithTag("settings.glass.group.Playback.toggle").performClick()
+        val selector = composeRule.onNodeWithTag("settings.glass.mode.Queue.Menus")
+        val modes = listOf(
+            R.string.glass_mode_disabled to GlassAreaMode.Disabled,
+            R.string.glass_mode_glass_and_contour to GlassAreaMode.GlassAndContour,
+            R.string.glass_mode_contour_only to GlassAreaMode.ContourOnly,
+            R.string.glass_mode_glass_only to GlassAreaMode.GlassOnly,
+        )
+        modes.forEach { (label, mode) ->
+            selector.performScrollTo().performClick()
+            modes.forEach { (choice, _) ->
+                composeRule.onAllNodesWithText(context.getString(choice)).onLast().assertIsDisplayed()
+            }
+            composeRule.onAllNodesWithText(context.getString(label)).onLast().performClick()
+            composeRule.waitForIdle()
+            val reloaded = GlassStore(context).read()
+            assertEquals(mode, reloaded.contextMode(GlassScope.Queue, GlassArea.Menus))
+            assertEquals(GlassAreaMode.GlassOnly, reloaded.mode(GlassArea.Menus))
+            assertEquals(GlassAreaMode.GlassAndContour, reloaded.contextMode(GlassScope.Queue, GlassArea.ActionButtons))
+            assertFalse(context.preferences.getBoolean(glassEnabledKey, false))
+        }
+    }
+
     @Test fun `title favorite selector changes its own policy while panel and transport stay independent`() {
         showPage(target = "glass.destination.PlayerFavorite.ActionButtons")
         val selector = composeRule.onNodeWithTag("settings.glass.mode.PlayerFavorite.ActionButtons")
