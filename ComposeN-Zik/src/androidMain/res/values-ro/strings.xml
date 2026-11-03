@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <!-- About -->
     <string name="about_action_report_issue">Raportează o problemă</string>
     <string name="about_action_request_feature">Solicită o funcționalitate sau sugerează o idee</string>
@@ -18,7 +17,6 @@
     <string name="about_title">Despre</string>
     <string name="about_translators_description">Show or hide the people who translated the app.</string>
     <string name="about_translators_title">Traducători</string>
-
     <!-- Accessibility -->
     <string name="accessibility_app_icon">Pictograma aplicaţiei</string>
     <string name="accessibility_app_icon_in_player">pictograma aplicatiei in player</string>
@@ -39,18 +37,15 @@
     <string name="accessibility_song_album_cover">copertă de album cântec</string>
     <string name="accessibility_switch_mode">Mod Comutare</string>
     <string name="accessibility_youtube_playlist">Playlist YouTube</string>
-
     <!-- Account -->
     <string name="account_action_login">Log in</string>
     <string name="account_action_logout">Log off</string>
     <string name="account_youtube_login_description">Connect your YouTube account or sign out of the current session.</string>
     <string name="account_youtube_login_enabled_description">Allow YouTube account sign-in for personalized browsing and synchronization.</string>
-
     <!-- Account Youtube -->
     <string name="account_youtube_cookie_invalid">YouTube cookie is invalid, please log in again</string>
     <string name="account_youtube_login_success">Autentificare pe YouTube cu succes</string>
     <string name="account_youtube_session_expired">YouTube session expired, please sign in again</string>
-
     <!-- Album -->
     <string name="album_action_bookmark">Marchează albumul</string>
     <string name="album_action_open">Accesează albumul</string>
@@ -65,7 +60,6 @@
     <string name="album_not_found">Albumul nu a fost găsit</string>
     <string name="album_related_title">Albume asemănătoare</string>
     <string name="album_right_swipe">Glisare la dreapta în playlist</string>
-
     <!-- Artist -->
     <string name="artist_action_follow">Urmărește</string>
     <string name="artist_action_play_local_songs">Redă toate melodiile locale</string>
@@ -82,7 +76,6 @@
     <string name="artist_songs_count_duration">%1$d melodii • %2$s</string>
     <string name="artist_songs_unavailable_message">Nu sunt melodii disponibile</string>
     <string name="artist_title">Artist</string>
-
     <!-- Audio -->
     <string name="audio_bass_boost_description">Enhance low frequencies during playback.</string>
     <string name="audio_bass_boost_level_description">Adjust the strength of the low-frequency boost.</string>
@@ -114,7 +107,6 @@
     <string name="audio_waveform_updated_message">Waveform updated successfully</string>
     <string name="audio_waveform_updating_message">Updating waveform in progress…</string>
     <string name="audio_waveform_waiting_for_download_message">Waveform will be updated as soon as the download finishes</string>
-
     <!-- Audio Reverb -->
     <string name="audio_reverb_large_hall">Sală mare</string>
     <string name="audio_reverb_large_room">Cameră mare</string>
@@ -123,12 +115,10 @@
     <string name="audio_reverb_none">Niciunul</string>
     <string name="audio_reverb_plate">Placă</string>
     <string name="audio_reverb_small_room">Cameră mică</string>
-
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">Mă simt norocos</string>
     <string name="automotive_action_play_all">Play All</string>
     <string name="automotive_title">Android auto</string>
-
     <!-- Backup -->
     <string name="backup_action_export">Export backup</string>
     <string name="backup_action_import">Import backup</string>
@@ -161,7 +151,6 @@
     <string name="backup_restore_overwrite_and_restart_warning">Datele existente vor fi suprascrise. %1$s se va închide automat după restaurarea bazei de date.</string>
     <string name="backup_target_database_and_settings_label">Database + Settings</string>
     <string name="backup_target_database_label">Bază de date</string>
-
     <!-- Backup Auto -->
     <string name="backup_auto_custom_interval_unit">Custom Interval Unit</string>
     <string name="backup_auto_custom_interval_value">Custom Interval Value</string>
@@ -188,7 +177,6 @@
     <string name="backup_auto_unit_minutes">Minutes</string>
     <string name="backup_auto_unit_months">Months</string>
     <string name="backup_auto_unit_weeks">Weeks</string>
-
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Export the profile list and the face photos in a single .txt file</string>
     <string name="backup_export_all">Export all</string>
@@ -197,7 +185,6 @@
     <string name="backup_export_database_description">Export database with songs, playlists, and history</string>
     <string name="backup_export_profile_state_failed">Profile state export failed</string>
     <string name="backup_export_settings_description">Export app settings and preferences</string>
-
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Import the profile list and the face photos from a .txt file</string>
     <string name="backup_import_all">Import all</string>
@@ -211,7 +198,6 @@
     <string name="backup_import_settings_description">Import app settings and preferences</string>
     <string name="backup_import_target_from_file">From the file</string>
     <string name="backup_import_target_profile_title">Import into which profile?</string>
-
     <!-- Bridge -->
     <string name="bridge_audio_output_pc_subtitle">Sound on the PC (N-Zik Desktop Compagnon)</string>
     <string name="bridge_audio_output_pc_unavailable">This PC is not available</string>
@@ -271,7 +257,6 @@
     <string name="bridge_server_stopped_user">Stopped from the phone</string>
     <string name="bridge_server_stopped_wifi">No Wi-Fi network or hotspot</string>
     <string name="bridge_server_via_hotspot">Through this phone\'s hotspot</string>
-
     <!-- Cache -->
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Clear song cache</string>
@@ -281,7 +266,6 @@
     <string name="cache_location_private">Privat</string>
     <string name="cache_location_system">Sistem</string>
     <string name="cache_streaming_max_size_description">Limit disk space used to cache streamed songs. The trash button clears this playback cache.</string>
-
     <!-- Calendar -->
     <string name="calendar_days_ago">%d days ago</string>
     <string name="calendar_last_week">Săptămâna trecută</string>
@@ -306,7 +290,6 @@
     <string name="calendar_this_month">Luna aceasta</string>
     <string name="calendar_today">Astăzi</string>
     <string name="calendar_yesterday">Ieri</string>
-
     <!-- Common -->
     <string name="common_action_apply">Apply</string>
     <string name="common_action_cancel">Anulează</string>
@@ -391,7 +374,6 @@
     <string name="common_validation_minimum_value">"Valoarea trebuie să fie mai mare decât "</string>
     <string name="common_validation_name_in_use">Name already in use</string>
     <string name="common_value_input_hint">Introdu valoarea</string>
-
     <!-- Discord -->
     <string name="discord_activity_competing">Competing</string>
     <string name="discord_activity_listening">Listening</string>
@@ -469,7 +451,6 @@
     <string name="discord_state_template_description">Set the secondary activity line using track information placeholders.</string>
     <string name="discord_template_unknown_album">Unknown Album</string>
     <string name="discord_token_text_invalid">Token-ul tău Discord este invalid, te rugăm să te autentifici din nou</string>
-
     <!-- Downloads -->
     <string name="downloads_action_download_all">Descarcă toate melodiile</string>
     <string name="downloads_action_refresh_quality">Update downloads</string>
@@ -500,7 +481,6 @@
     <string name="downloads_stale_removed">%1$s download data is missing and was removed. Please download it again.</string>
     <string name="downloads_stale_startup_removed">%1$d downloaded song(s) are missing their files and were removed. Please download them again.</string>
     <string name="downloads_title">Descarcă</string>
-
     <!-- Export -->
     <string name="export_cached_song_action">Export cached or downloaded song</string>
     <string name="export_cached_songs_action">Export cached</string>
@@ -510,7 +490,6 @@
     <string name="export_file_name_dialog_title">Name your export</string>
     <string name="export_running_status">Exporting…</string>
     <string name="export_song_unavailable_message">Song must be cached or downloaded to export</string>
-
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Choose the action performed by swiping an album track left.</string>
     <string name="gestures_album_track_swipe_right_description">Choose the action performed by swiping an album track right.</string>
@@ -518,7 +497,6 @@
     <string name="gestures_playlist_track_swipe_right_description">Choose the action performed by swiping a playlist track right.</string>
     <string name="gestures_queue_item_swipe_left_description">Choose the action performed by swiping a queue item left.</string>
     <string name="gestures_queue_item_swipe_right_description">Choose the action performed by swiping a queue item right.</string>
-
     <!-- Glass -->
     <string name="glass_effect_active_tab_indicator">Active tab</string>
     <string name="glass_effect_color_vibrancy">Colour</string>
@@ -535,7 +513,6 @@
     <string name="glass_effect_tint_source_custom">Personalizat</string>
     <string name="glass_effect_tint_source_system_accent">System accent</string>
     <string name="glass_effect_where_bottom_bar">Glass on the bottom bar</string>
-
     <!-- Glass Effect -->
     <string name="glass_effect_action_play_all">Play all quick picks</string>
     <string name="glass_effect_action_shuffle">Shuffle quick picks</string>
@@ -668,11 +645,9 @@
     <string name="glass_effect_where_search_bars">Glass on search bars</string>
     <string name="glass_effect_where_search_bars_description">The boxes where you type a search, including settings searches.</string>
     <string name="glass_effect_windows_summary">Change menus, pop-up windows and short messages.</string>
-
     <!-- History -->
     <string name="history_clear_listen_history_description">Delete saved playback events from listening history.</string>
     <string name="history_clear_search_history_description">Delete saved searches from every search-history page without changing history preferences.</string>
-
     <!-- Home -->
     <string name="home_albums_settings">Home Albums</string>
     <string name="home_artists_settings">Home Artists</string>
@@ -691,16 +666,13 @@
     <string name="home_tabs_settings_description">Reorder and show/hide tabs</string>
     <string name="home_title">Acasă</string>
     <string name="home_youtube_login_description">Conectează-te la contul tău YTM pentru mai mult conținut</string>
-
     <!-- Home Easter Egg -->
     <string name="home_easter_egg_click_message">Îți place să dai click pe el? Apoi continuă...</string>
     <string name="home_easter_egg_keep_going">Ok, tu cauți ceva, păstrează...</string>
     <string name="home_easter_egg_last">Ești numărul unu, fă click lung și bucură-te de surpriză</string>
     <string name="home_easter_egg_number_one">Ești numărul unu, fă clic și bucură-te de surpriză</string>
-
     <!-- Image -->
     <string name="image_error_unknown">Eroare necunoscută</string>
-
     <!-- Interface -->
     <string name="interface_artist_image_roundness_description">Adjust the corner rounding of artist images.</string>
     <string name="interface_corner_roundness_description">Adjust the rounding of interface cards and controls.</string>
@@ -713,7 +685,6 @@
     <string name="interface_player_position_description">Choose where the player is placed in the interface.</string>
     <string name="interface_show_floating_icon_description">Display a floating shortcut that opens search.</string>
     <string name="interface_transition_effect_description">Choose the animation used when moving between screens.</string>
-
     <!-- Language -->
     <string name="language_app_selection_description">Choose the language used for app labels and messages.</string>
     <string name="language_name_afrikaans">Afrikană (Afrikaans)</string>
@@ -765,7 +736,6 @@
     <string name="language_name_ukrainian">Ucraineană (Українська)</string>
     <string name="language_name_vietnamese">Vietnameză (Tiếng Việt)</string>
     <string name="language_system_default">Limba sistemului</string>
-
     <!-- Lastfm -->
     <string name="lastfm_action_failed">Last.fm request failed</string>
     <string name="lastfm_auth_failed">Login failed, check your Last.fm credentials</string>
@@ -791,7 +761,6 @@
     <string name="lastfm_unlove">Unlove on Last.fm</string>
     <string name="lastfm_unloved">Removed from loved tracks</string>
     <string name="lastfm_username">Nume de utilizator</string>
-
     <!-- Library -->
     <string name="library_action_bookmark">Marchează</string>
     <string name="library_action_randomize">Randomizer</string>
@@ -839,14 +808,12 @@
     <string name="library_title">Bibliotecă</string>
     <string name="library_youtube_music_title">Biblioteca YTM</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
-
     <!-- Library Favorites -->
     <string name="library_dislikes_added">Disliked %s</string>
     <string name="library_dislikes_removed">Removed %s from dislikes</string>
     <string name="library_favorites_action_add">Adaugă la favorite</string>
     <string name="library_favorites_added">Adăugat la favorite</string>
     <string name="library_favorites_removed">Eliminat din favorite</string>
-
     <!-- Library Sort -->
     <string name="library_sort_album">Album</string>
     <string name="library_sort_album_year">Anul albumului</string>
@@ -863,7 +830,6 @@
     <string name="library_sort_play_count">Play Count</string>
     <string name="library_sort_songs_number">Număr de melodii</string>
     <string name="library_sort_title">Titlu</string>
-
     <!-- Listen -->
     <string name="listen_together_auto_approval_joins_description">Automatically approve join requests without reviewing them manually</string>
     <string name="listen_together_auto_approval_suggestions_description">Automatically approve and queue song suggestions from guests</string>
@@ -880,7 +846,6 @@
     <string name="listen_together_transfer_ownership_description">Make this person the host of the room</string>
     <string name="listen_together_username_description">Set the name other participants see in shared listening rooms.</string>
     <string name="listen_together_view_logs_description">Debug connection events and messages</string>
-
     <!-- Listen Together -->
     <string name="listen_together_action_approve">Approve</string>
     <string name="listen_together_action_reject">Reject</string>
@@ -960,7 +925,6 @@
     <string name="listen_together_you_are_guest">You are a guest</string>
     <string name="listen_together_you_are_host">You are the host</string>
     <string name="listen_together_you_label">You</string>
-
     <!-- Logs -->
     <string name="logs_action_export">Export logs</string>
     <string name="logs_action_export_both">Export both logs</string>
@@ -969,7 +933,6 @@
     <string name="logs_export_both_description">Export debug and crash logs to a file</string>
     <string name="logs_export_crash_description">Export crash log to a file</string>
     <string name="logs_export_debug_description">Export debug log to a file</string>
-
     <!-- Lyrics -->
     <string name="lyrics_action_choose_translation_language">Tradu într-o altă limbă</string>
     <string name="lyrics_action_copy">Copiază versurile</string>
@@ -1048,7 +1011,6 @@
     <string name="lyrics_translation_section_title">Traducere</string>
     <string name="lyrics_translation_success_message">Traducere reușită</string>
     <string name="lyrics_unsynced">Plain text</string>
-
     <!-- Maintenance -->
     <string name="maintenance_all_systems_ok">All systems operational</string>
     <string name="maintenance_auto_update">Auto update</string>
@@ -1174,7 +1136,6 @@
     <string name="maintenance_yt_invalid">Invalid</string>
     <string name="maintenance_yt_session">YouTube session</string>
     <string name="maintenance_yt_valid">Valid</string>
-
     <!-- Metadata -->
     <string name="metadata_action_change_artists">Change Authors</string>
     <string name="metadata_action_change_cover">Schimbă coperta</string>
@@ -1222,7 +1183,6 @@
     <string name="metadata_video_views_label">Vizualizări</string>
     <string name="metadata_wikipedia_attribution">De pe Wikipedia sub licența Creative Commons Attribution CC-BY-SA 3.0</string>
     <string name="metadata_year">An</string>
-
     <!-- Metadata Musicbrainz -->
     <string name="metadata_musicbrainz_insights">Insights</string>
     <string name="metadata_musicbrainz_insights_biography">Biography</string>
@@ -1253,7 +1213,6 @@
     <string name="metadata_musicbrainz_stat_songs">Melodii</string>
     <string name="metadata_musicbrainz_stat_time">Total time</string>
     <string name="metadata_musicbrainz_wikipedia">Wikipedia</string>
-
     <!-- Modules -->
     <string name="modules_abi">ABI</string>
     <string name="modules_already_installed">Already installed</string>
@@ -1288,7 +1247,6 @@
     <string name="modules_update_available_body">Version %1$s is installed. The app now ships %2$s.</string>
     <string name="modules_updating">Updating module</string>
     <string name="modules_version">Version</string>
-
     <!-- Navigation -->
     <string name="navigation_action_picture_in_picture">PiP</string>
     <string name="navigation_back_again_to_exit_message">Apasă încă o dată pentru a ieși</string>
@@ -1297,7 +1255,6 @@
     <string name="navigation_position_top_label">Sus</string>
     <string name="navigation_style_icon_and_text_label">Iconițe și text</string>
     <string name="navigation_style_icon_only_label">Doar iconițe</string>
-
     <!-- Network -->
     <string name="network_action_disable_offline_mode">Disable full offline mode</string>
     <string name="network_action_enable_offline_mode">Enable full offline mode</string>
@@ -1332,10 +1289,8 @@
     <string name="network_stream_client_web_creator_description">Web creator client.</string>
     <string name="network_stream_client_web_description">Standard web client.</string>
     <string name="network_stream_client_youtube_music_web_description">Slower but supports premium formats. Uses JavaScript signature decryption (~5-10s delay). Recommended for premium users.</string>
-
     <!-- Network Proxy -->
     <string name="network_proxy_invalid_hostname">Numele tău de gazdă Proxy nu este valid, te rugăm verifică-l</string>
-
     <!-- Network Stream -->
     <string name="network_stream_client">Stream Client</string>
     <string name="network_stream_client_android">Android</string>
@@ -1355,7 +1310,6 @@
     <string name="network_stream_error_retrying">Reîncercare: %1$s</string>
     <string name="network_stream_still_retrying">Încă se încarcă… Încercarea %1$s</string>
     <string name="network_stream_unexpected_skip">Modificare neașteptată a traseului detectată</string>
-
     <!-- Onboarding -->
     <string name="onboarding_accounts_discord_description">Show what you are listening to in Discord (beta)</string>
     <string name="onboarding_accounts_done">I\'m done</string>
@@ -1392,11 +1346,9 @@
     <string name="onboarding_restore_skip_description">You can restore a backup later from the app settings</string>
     <string name="onboarding_restore_title">Restore a backup</string>
     <string name="onboarding_start">Start</string>
-
     <!-- Parental -->
     <string name="parental_control">Control parental</string>
     <string name="parental_control_is_enabled">Controlul parental este activat</string>
-
     <!-- Permissions -->
     <string name="permissions_event_denied">Permission denied</string>
     <string name="permissions_event_granted">Permission granted</string>
@@ -1432,7 +1384,6 @@
     <string name="permissions_label_microphone">Microphone / audio capture</string>
     <string name="permissions_label_notifications">Notifications</string>
     <string name="permissions_usage_journal">Permission activity</string>
-
     <!-- Player -->
     <string name="common_action_stop">Oprește</string>
     <string name="player_action_bar_buttons">Button visibility</string>
@@ -1620,7 +1571,6 @@
     <string name="player_top_spacing_description">Keep empty space at the top when the top actions bar is hidden.</string>
     <string name="player_track_swipe_sensitivity_description">Adjust how easily a swipe changes tracks in the player.</string>
     <string name="player_type">Tipul playerului</string>
-
     <!-- Player Appearance -->
     <string name="player_controls_style_essential">Simplu</string>
     <string name="player_controls_style_modern">Modern</string>
@@ -1636,7 +1586,6 @@
     <string name="player_progress_both">Ambele</string>
     <string name="player_progress_mini_player">Player minimizat</string>
     <string name="settings_action_bar_show_lyrics_button">Butonul „Versuri”</string>
-
     <!-- Player Background -->
     <string name="player_background_black_cherry_cosmos">Cosmos de cireșe negre</string>
     <string name="player_background_glossy_gradient">Gradient lucios</string>
@@ -1650,7 +1599,6 @@
     <string name="player_background_oil_flow">Fluxul de ulei</string>
     <string name="player_background_purple_liquid">Lichid mov</string>
     <string name="player_background_stage">Scenă</string>
-
     <!-- Player Mini -->
     <string name="player_mini_button_audio_output">Audio output</string>
     <string name="player_mini_button_discover">Descoperă</string>
@@ -1666,10 +1614,8 @@
     <string name="player_mini_button_visualizer">Vizualizator</string>
     <string name="player_mini_buttons_config">MiniPlayer buttons</string>
     <string name="player_mini_buttons_config_description">Configure the 4 buttons in the miniplayer</string>
-
     <!-- Player Notification -->
     <string name="player_notification_pause">Întrerupeți</string>
-
     <!-- Player Sleep Timer -->
     <string name="player_sleep_timer_action_set">Setează temporizatorul de somn</string>
     <string name="player_sleep_timer_end_of_song">(sfârșitul melodiei)</string>
@@ -1677,7 +1623,6 @@
     <string name="player_sleep_timer_set_to">Setează la</string>
     <string name="player_sleep_timer_stop_confirmation">Vrei să oprești temporizatorul de somn?</string>
     <string name="player_sleep_timer_title">Temporizator de somn</string>
-
     <!-- Playlist -->
     <string name="playlist_action_add">Adaugă la playlist</string>
     <string name="playlist_action_add_hint">Adaugă la playlist</string>
@@ -1738,17 +1683,14 @@
     <string name="playlist_top_maximum_items_description">Limit how many songs are included in your top-played playlist.</string>
     <string name="playlist_top_show_description">Show your top-played playlist in Quick Picks.</string>
     <string name="playlist_youtube_song_limit_message">Youtube Playlists are Limited to 5000 songs</string>
-    <string name="playlist_youtube_title">Playlist YouTube</string>
-
+    <string name="playlist_youtube_title">YouTube Playlist</string>
     <!-- Podcast -->
-    <string name="podcast_episodes_title">Episoade</string>
-    <string name="podcast_title">Podcasturi</string>
-
+    <string name="podcast_episodes_title">Episodes</string>
+    <string name="podcast_title">Podcasts</string>
     <!-- Privacy -->
     <string name="privacy_block_screenshots">Block screenshots</string>
     <string name="privacy_block_screenshots_description">Prevent screenshots and screen recordings of N-Zik, and hide its content on non-secure displays. Applies immediately for this profile.</string>
     <string name="privacy_screen_protection">Screen protection</string>
-
     <!-- Profile -->
     <string name="profile_action_add">Add profile</string>
     <string name="profile_action_export">Export profiles</string>
@@ -1813,17 +1755,15 @@
     <string name="profile_share_waveforms_description">Use the base profile\'s waveforms folder instead of this profile\'s own. Applies at the next app restart; data already written in this profile\'s own folder stays there</string>
     <string name="profile_switch_dialog_title">Switch profile</string>
     <string name="profile_title">Profiles</string>
-
     <!-- Queue -->
-    <string name="queue_discover_description">Elimină melodiile din coadă dacă sunt incluse în favorite sau playlisturi</string>
+    <string name="queue_discover_description">Remove songs from the queue if included in favorites or playlists</string>
     <string name="queue_discover_title">Descoperă</string>
     <string name="queue_max_songs_in_queue_android_auto_description">Limit the number of tracks exposed to the Android Auto queue.</string>
     <string name="queue_max_songs_in_queue_description">Limit the number of tracks added to the play queue.</string>
     <string name="queue_now_playing_indicator_description">Choose the indicator displayed beside the currently playing track.</string>
-
     <!-- Radio -->
-    <string name="radio_action_start">Începe radio</string>
-    <string name="radio_action_start_hint">Pornește radioul</string>
+    <string name="radio_action_start">Start radio</string>
+    <string name="radio_action_start_hint">Start radio</string>
     <string name="radio_action_stop">Stop radio</string>
     <string name="radio_classic_started_message">Radio started (Includes known songs and new discoveries)</string>
     <string name="radio_discover_started_message">Radio started (Filters known songs and add new discoveries)</string>
@@ -1833,7 +1773,6 @@
     <string name="radio_discovery_requires_radio_or_autofill_message">Turn on Radio or Auto-fill to use Discover</string>
     <string name="radio_fetch_empty_queue_preserved_message">Radio: no songs loaded (Queue kept)</string>
     <string name="radio_stopped_message">Radio stopped (Return to normal)</string>
-
     <!-- Recognition -->
     <string name="recognition_action_more_details">More details</string>
     <string name="recognition_audio_hint">Play some music for the analysis to work</string>
@@ -1841,57 +1780,55 @@
     <string name="recognition_error_no_match">Couldn\'t identify that song. Try a louder or cleaner sample.</string>
     <string name="recognition_listening_duration">Analysing %1$ds of audio</string>
     <string name="recognition_ready_message">Hold your phone near the music</string>
-
     <!-- Recommendations -->
-    <string name="recommendations_action_reset_quick_picks">Resetează selecțiile rapide</string>
-    <string name="recommendations_adaptive">Adaptiv</string>
-    <string name="recommendations_adaptive_description">Adaptive: scări cu dimensiunea listei de redare (10-150 recomandări)</string>
+    <string name="recommendations_action_reset_quick_picks">Reset Quick Picks</string>
+    <string name="recommendations_adaptive">Adaptive</string>
+    <string name="recommendations_adaptive_description">Adaptive: Scales with playlist size (10-120 recommendations)</string>
     <string name="recommendations_albums_for_you_title">Albums for you</string>
     <string name="recommendations_all_hits_title">All hits</string>
-    <string name="recommendations_charts_title">Topuri</string>
+    <string name="recommendations_charts_title">Charts</string>
     <string name="recommendations_community_title">From the community</string>
     <string name="recommendations_content">Quick Picks sections</string>
     <string name="recommendations_content_description">Choose which sections appear on the home page</string>
     <string name="recommendations_covers_and_remixes_title">Cover and remixes</string>
     <string name="recommendations_daily_discover_title">Your daily discover</string>
-    <string name="recommendations_description">Secţiunea de alegere rapidă conţine setări pentru pagina de alegere rapidă şi recomandări alimentate de AI</string>
+    <string name="recommendations_description">The quick picks section contains settings for the quick picks page and AI powered recommendations</string>
     <string name="recommendations_featured_playlists_title">Featured playlists for you</string>
-    <string name="recommendations_followed_artists_new_albums_title">Albume noi ale artiștilor tăi</string>
-    <string name="recommendations_followed_artists_no_new_releases">Nu există noi lansări pentru artiștii tăi preferați</string>
-    <string name="recommendations_for_you_title">Recomandări</string>
+    <string name="recommendations_followed_artists_new_albums_title">New albums from your artists</string>
+    <string name="recommendations_followed_artists_no_new_releases">There are no new releases for your favorite artists</string>
+    <string name="recommendations_for_you_title">For You</string>
     <string name="recommendations_forgotten_favorites_title">Forgotten favorites</string>
     <string name="recommendations_fresh_finds_old_favorites_title">Fresh finds, old favorites</string>
     <string name="recommendations_fresh_new_music_title">Fresh new music</string>
     <string name="recommendations_history_source_description">Choose which listening events are used to build Quick Picks recommendations.</string>
     <string name="recommendations_live_performances_title">Live performances</string>
-    <string name="recommendations_load_failed_message">Nu s-a putut încărca pagina, trage în jos pentru a reîmprospăta.</string>
+    <string name="recommendations_load_failed_message">Unable to load the page, swipe down to refresh.</string>
     <string name="recommendations_local_song_count_description">Set how many locally recommended songs appear in Quick Picks.</string>
-    <string name="recommendations_minimum_listening_time_description">Durata minimă de redare a unei melodii pentru a fi sugerată în „Selecții rapide”</string>
-    <string name="recommendations_minimum_playback_duration_label">Durata minimă de redare</string>
+    <string name="recommendations_minimum_listening_time_description">Minimum playback duration for a song to be suggested in Quick Picks</string>
+    <string name="recommendations_minimum_playback_duration_label">Min playback duration</string>
     <string name="recommendations_mixed_for_you_title">Mixed for you</string>
-    <string name="recommendations_moods_and_genres_title">Stări și genuri</string>
+    <string name="recommendations_moods_and_genres_title">Moods and genres</string>
     <string name="recommendations_moods_title">Moods</string>
     <string name="recommendations_music_videos_title">Music videos for you</string>
-    <string name="recommendations_new_albums_title">Albume noi</string>
+    <string name="recommendations_new_albums_title">New albums</string>
     <string name="recommendations_new_releases_title">New releases</string>
-    <string name="recommendations_number">Număr de recomandări</string>
+    <string name="recommendations_number">Number of recommendations</string>
     <string name="recommendations_page_enabled_description">Show the Quick Picks page with recommendations based on your listening activity.</string>
-    <string name="recommendations_personal_top_title">Topul meu</string>
-    <string name="recommendations_playlists_title">Playlisturi sugerate</string>
-    <string name="recommendations_reset_complete">Selecțiile rapide au fost șterse</string>
+    <string name="recommendations_personal_top_title">My Top</string>
+    <string name="recommendations_playlists_title">Playlists you might like</string>
+    <string name="recommendations_reset_complete">Quick picks are cleared</string>
     <string name="recommendations_reset_description">Delete the playback events used to generate local Quick Picks recommendations.</string>
     <string name="recommendations_section_other_youtube_title">Other sections</string>
-    <string name="recommendations_section_personal_top_title">Topul meu</string>
-    <string name="recommendations_section_visibility_description">Dezactivează dacă nu dorești să vezi</string>
-    <string name="recommendations_show_section_label">Arată</string>
+    <string name="recommendations_section_personal_top_title">My Top</string>
+    <string name="recommendations_section_visibility_description">Disable if you do not want to see</string>
+    <string name="recommendations_show_section_label">Show</string>
     <string name="recommendations_smart_song_count_description">Set the number of smart recommendations, or let the app adjust it automatically.</string>
-    <string name="recommendations_title">Selecții rapide</string>
+    <string name="recommendations_title">Quick Picks</string>
     <string name="recommendations_todays_biggest_hits_title">Today\'s biggest hits</string>
     <string name="recommendations_top_music_videos_title">Top music videos</string>
     <string name="recommendations_trending_community_playlists_title">Trending community playlists</string>
     <string name="recommendations_trending_shorts_title">Trending in Shorts</string>
     <string name="recommendations_trending_songs_title">Trending songs for you</string>
-
     <!-- Recovery -->
     <string name="recovery_accounts_exported">Profile state exported</string>
     <string name="recovery_accounts_imported_base">Profile state imported: base profile</string>
@@ -1914,14 +1851,14 @@
     <string name="recovery_confirm_reset_database">Reset the database? A backup will be kept for restoration.</string>
     <string name="recovery_confirm_reset_database_replace_backup">Reset the database? The backup from your previous reset will be replaced and can no longer be restored. Only the database being reset is kept.</string>
     <string name="recovery_confirm_reset_profiles">Reset the selected profiles? Their database, settings, custom name and photo are deleted permanently. The profiles stay in the list, starting empty. This cannot be undone.</string>
-    <string name="recovery_confirm_reset_settings">Reset all settings and credentials? This cannot be undone.</string>
+    <string name="recovery_confirm_reset_settings">Reset all settings and credentials? A backup is kept so you can restore it from the Rescue Center.</string>
     <string name="recovery_confirm_reset_settings_replace_backup">Reset all settings and credentials? The settings backup from your previous reset will be replaced and can no longer be restored. Only the settings being reset are kept.</string>
     <string name="recovery_confirm_restore_database">Restore the backed-up database? The current one will become the new backup.</string>
     <string name="recovery_confirm_restore_profiles">Restore the selected profiles from their last reset? Their current state is replaced by the backup.</string>
     <string name="recovery_confirm_restore_settings">Are you sure you want to restore settings? The app will overwrite current settings and use the restored settings on next launch. The Rescue Center will close once they are restored.</string>
     <string name="recovery_cross_profile_confirm">This file was created for the profile \"%1$s\", but the target is \"%2$s\". Import it anyway?</string>
     <string name="recovery_delete_backups">Delete backups</string>
-    <string name="recovery_delete_backups_description">Delete the saved database and settings backups from cache to free space</string>
+    <string name="recovery_delete_backups_description">Delete the saved database and settings backups to free space. They can no longer be restored.</string>
     <string name="recovery_delete_downloads">Delete downloads</string>
     <string name="recovery_delete_downloads_description">Delete all downloaded media to free up space</string>
     <string name="recovery_delete_logs">Delete logs</string>
@@ -1930,7 +1867,7 @@
     <string name="recovery_delete_profiles_description">Delete user profiles with their database, settings, name and photo</string>
     <string name="recovery_encrypted_unavailable_warning">Saved credentials could not be accessed (keystore unavailable). Only regular settings were processed.</string>
     <string name="recovery_error">An error occurred: %s</string>
-    <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
+    <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. The app must be stopped first: tap \"Kill the app\" in the Danger Zone, then wait for the status to show that the app is stopped.</string>
     <string name="recovery_export_database">Export database</string>
     <string name="recovery_export_database_description">Save your library, playlists and history</string>
     <string name="recovery_export_logs">Export logs</string>
@@ -1954,7 +1891,7 @@
     <string name="recovery_include_youtube_credentials">Include YouTube credentials</string>
     <string name="recovery_kill_app">Kill the app</string>
     <string name="recovery_kill_app_description">Force the app process to end if the automatic stop did not work</string>
-    <string name="recovery_main_process_running">Close the main app before performing this action</string>
+    <string name="recovery_main_process_running">The app is still running, so this action is blocked. Tap \"Kill the app\" in the Danger Zone to retry the shutdown, then wait for the status to show that the app is stopped.</string>
     <string name="recovery_no_backup">No backup available</string>
     <string name="recovery_no_backups_to_delete">No backups found</string>
     <string name="recovery_no_logs">No log files found</string>
@@ -1965,29 +1902,28 @@
     <string name="recovery_profile_active">Active</string>
     <string name="recovery_profile_base">Base</string>
     <string name="recovery_profile_target_description">Data actions below operate on the selected profile</string>
-    <string name="recovery_profiles_deleted_active_restart">The current profile was deleted: the base profile is now active — relaunch the app</string>
+    <string name="recovery_profiles_deleted_active_restart">The current profile was deleted: the base profile is now active. Relaunch the app</string>
     <string name="recovery_profiles_deleted_count">Deleted %1$d profile(s)</string>
-    <string name="recovery_profiles_reset_count">Reset %1$d profile(s) — relaunch the app</string>
-    <string name="recovery_profiles_restored_count">Restored %1$d profile(s) — relaunch the app</string>
+    <string name="recovery_profiles_reset_count">Reset %1$d profile(s). Relaunch the app</string>
+    <string name="recovery_profiles_restored_count">Restored %1$d profile(s): relaunch the app</string>
     <string name="recovery_profiles_to_delete">Profiles to delete</string>
     <string name="recovery_profiles_to_reset">Profiles to reset</string>
     <string name="recovery_profiles_to_restore">Profiles to restore</string>
     <string name="recovery_reset_database">Reset database</string>
     <string name="recovery_reset_database_description">Set aside the current database and start fresh</string>
     <string name="recovery_reset_profiles">Reset profiles</string>
-    <string name="recovery_reset_profiles_description">Factory-reset user profiles: their database, settings, name and photo are deleted — they stay in the list</string>
+    <string name="recovery_reset_profiles_description">Factory-reset the profiles (base included): their database, settings, name and photo are deleted they stay in the list</string>
     <string name="recovery_reset_settings">Reset settings</string>
     <string name="recovery_reset_settings_description">Clear all preferences and credentials</string>
     <string name="recovery_restore_database">Restore database</string>
     <string name="recovery_restore_database_description">Swap back to the database from the last reset</string>
     <string name="recovery_restore_profiles">Restore profiles</string>
-    <string name="recovery_restore_profiles_description">Restore user profiles reset earlier: their database, settings, name and photo come back from the last reset</string>
+    <string name="recovery_restore_profiles_description">Restore the profiles reset earlier (base included): their database, settings, name and photo come back from the last reset</string>
     <string name="recovery_restore_settings">Restore settings</string>
     <string name="recovery_restore_settings_description">Restore app settings from the last reset</string>
-    <string name="recovery_status_main_process_stopped">The app is stopped — no kill action needed</string>
+    <string name="recovery_status_main_process_stopped">The app is stopped: no kill action needed</string>
     <string name="recovery_status_main_process_stopping">The app is shutting down…</string>
     <string name="recovery_success">Finalizat</string>
-
     <!-- Rewind -->
     <string name="rewind_albums_empty_body">Your top albums will appear here once there is enough listening history.</string>
     <string name="rewind_albums_empty_title">YOUR ALBUM STACK IS EMPTY</string>
@@ -2011,13 +1947,13 @@
     <string name="rewind_badge_tier_0_name">CURIOUS</string>
     <string name="rewind_badge_tier_0_sub">Still finding your sound.</string>
     <string name="rewind_badge_tier_1_name">EXPLORER</string>
-    <string name="rewind_badge_tier_1_sub">You tried a lot this year.</string>
+    <string name="rewind_badge_tier_1_sub">You tried a lot.</string>
     <string name="rewind_badge_tier_2_name">IN ROTATION</string>
     <string name="rewind_badge_tier_2_sub">Music, most days.</string>
     <string name="rewind_badge_tier_3_name">DEDICATED</string>
     <string name="rewind_badge_tier_3_sub">You kept coming back.</string>
     <string name="rewind_badge_tier_4_name">HEAVY ROTATION</string>
-    <string name="rewind_badge_tier_4_sub">Music ran through your whole year.</string>
+    <string name="rewind_badge_tier_4_sub">Music ran through the whole period.</string>
     <string name="rewind_badge_tier_5_name">RELENTLESS</string>
     <string name="rewind_badge_tier_5_sub">You barely hit pause.</string>
     <string name="rewind_badge_tier_6_name">SOUND MACHINE</string>
@@ -2033,11 +1969,11 @@
     <string name="rewind_days_peak_day">PEAK DAY</string>
     <string name="rewind_days_peak_minutes">PEAK MINUTES</string>
     <string name="rewind_days_peak_sub">DAY %1$s HIT THE HARDEST.</string>
-    <string name="rewind_deep_cuts_empty_body">Songs ranked 6–10 will appear here once there is enough listening history.</string>
-    <string name="rewind_deep_cuts_empty_title">YOUR TOP TEN IS STILL FORMING</string>
-    <string name="rewind_deep_cuts_heading">SONGS 6–10.</string>
+    <string name="rewind_deep_cuts_empty_body">The next most-played songs will appear here once there is enough listening history.</string>
+    <string name="rewind_deep_cuts_empty_title">DEEP CUTS ARE FORMING</string>
+    <string name="rewind_deep_cuts_heading">SONGS 6–%1$d.</string>
     <string name="rewind_deep_cuts_kicker">DEEP CUTS • %1$s</string>
-    <string name="rewind_deep_cuts_sub">Your next five most-played songs.</string>
+    <string name="rewind_deep_cuts_sub">Your next most-played songs.</string>
     <string name="rewind_discovery_heading">HOW MUCH YOU\nDISCOVERED.</string>
     <string name="rewind_discovery_kicker">DISCOVERY • %1$s</string>
     <string name="rewind_empty_state_kicker">REWIND</string>
@@ -2055,7 +1991,7 @@
     <string name="rewind_finale_listener_level">LISTENER LEVEL</string>
     <string name="rewind_finale_play_again">PLAY AGAIN</string>
     <string name="rewind_finale_playlist_updated">PLAYLIST UPDATED</string>
-    <string name="rewind_finale_share">SHARE REWIND</string>
+    <string name="rewind_finale_share">EXPORT ALL PAGES</string>
     <string name="rewind_finale_top_album">TOP ALBUM</string>
     <string name="rewind_finale_top_artist">TOP ARTIST</string>
     <string name="rewind_finale_top_playlist">TOP PLAYLIST</string>
@@ -2176,7 +2112,7 @@
     <string name="rewind_playlist_notification_description">Tap to open your Rewind playlists.</string>
     <string name="rewind_playlist_notification_title">Your %1$s rewind playlist is ready</string>
     <string name="rewind_settings_enabled">Enable Rewind</string>
-    <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_enabled_description">Enable or disable the whole rewind feature: menu item, reminders and playlists.</string>
     <string name="rewind_settings_global">All-time rewind</string>
     <string name="rewind_settings_global_description">Show the all-time recap on the Rewind home.</string>
     <string name="rewind_settings_monthly">Monthly rewind</string>
@@ -2224,7 +2160,7 @@
     <string name="rewind_top_songs_empty_body">Your top five will appear here once there is enough listening history.</string>
     <string name="rewind_top_songs_empty_title">NO TRACK CHART YET</string>
     <string name="rewind_top_songs_heading">YOUR TOP 5\nSONGS.</string>
-    <string name="rewind_top_songs_next">Next: songs 6–10.</string>
+    <string name="rewind_top_songs_next">Next: songs 6–%1$d.</string>
     <string name="rewind_top_sort">Rewind Top</string>
     <string name="rewind_totals_heading">YOU LISTENED FOR</string>
     <string name="rewind_totals_kicker">YOUR LISTENING TIME • %1$s</string>
@@ -2237,99 +2173,97 @@
     <string name="rewind_years_kicker">YOUR YEARS • %1$s</string>
     <string name="rewind_years_peak_sub">%1$s HIT THE HARDEST.</string>
     <string name="rewind_years_peak_year">PEAK YEAR</string>
-
     <!-- Search -->
     <string name="search_content_type_all">Total</string>
-    <string name="search_content_type_official">Oficial</string>
-    <string name="search_content_type_user_generated">Utilizator generat</string>
+    <string name="search_content_type_official">Official</string>
+    <string name="search_content_type_user_generated">User Generated</string>
     <string name="search_display_order">Ordine afișare căutare online</string>
     <string name="search_display_order_description">Alegeți care apare prima dată în rezultatele căutării</string>
     <string name="search_display_order_saved_searches_first">Căutările salvate mai întâi</string>
     <string name="search_display_order_suggestions_first">Sugestii mai întâi</string>
-    <string name="search_featured_title">Populare</string>
-    <string name="search_history_action_clear">Șterge istoricul căutărilor</string>
+    <string name="search_featured_title">Featured</string>
+    <string name="search_history_action_clear">Clear search history</string>
     <string name="search_history_close">Close</string>
-    <string name="search_history_empty_message">Istoricul este gol</string>
+    <string name="search_history_empty_message">History is empty</string>
     <string name="search_history_local">Local search</string>
     <string name="search_history_online">Online search</string>
     <string name="search_history_pages">Search history by page</string>
     <string name="search_history_pages_description">Choose which pages can display and save searches you submit</string>
-    <string name="search_history_pause_description">Nu salva noile căutări și nu afișa istoricul</string>
-    <string name="search_history_pause_label">Întrerupe istoricul căutărilor</string>
+    <string name="search_history_pause_description">Neither save new searched queries nor show history</string>
+    <string name="search_history_pause_label">Pause search history</string>
     <string name="search_history_settings_page">Settings › %1$s</string>
-    <string name="search_items_empty_message">Niciun element găsit</string>
+    <string name="search_items_empty_message">No items found</string>
     <string name="search_lyrics_online">Căută versurile online</string>
-    <string name="search_mood_title">Stare</string>
+    <string name="search_mood_title">Mood</string>
     <string name="search_music_action_start">Music search</string>
-    <string name="search_no_results_message">Nu s-au găsit rezultate. Încearcă o altă căutare sau categorie</string>
+    <string name="search_no_results_message">No results found. Please try a different query or category</string>
     <string name="search_online">Online</string>
     <string name="search_queries">" căutări"</string>
     <string name="search_results_for">Rezultatele căutării pentru:</string>
-    <string name="search_saved_history_title">Istoricul căutărilor</string>
-    <string name="search_suggestions_empty_message">Fără sugestii</string>
-    <string name="search_suggestions_title">Sugestii</string>
-    <string name="search_title">Căutare</string>
-    <string name="search_video_download_unsupported_message">Descărcarea videoclipurilor nu este suportată</string>
-    <string name="search_videos_title">Videoclipuri</string>
+    <string name="search_saved_history_title">Search history</string>
+    <string name="search_suggestions_empty_message">No suggestions</string>
+    <string name="search_suggestions_title">Suggestions</string>
+    <string name="search_title">Search</string>
+    <string name="search_video_download_unsupported_message">Downloading videos not supported</string>
+    <string name="search_videos_title">Videos</string>
     <string name="search_voice_action_start">Voice search</string>
-    <string name="search_voice_microphone_permission_error">Este necesară permisiunea microfonului</string>
-    <string name="search_voice_no_match_message">Nu am înțeles. Încercați din nou</string>
-    <string name="search_youtube_action_open_url">Accesează linkul</string>
-    <string name="search_youtube_url_input_hint">Lipește un Url valid</string>
-    <string name="search_youtube_url_supported_types_description">Poți adăuga linkul complet al unui playlist, album, profil sau melodie de pe YouTube sau YouTube Music</string>
+    <string name="search_voice_microphone_permission_error">Microphone permission required</string>
+    <string name="search_voice_no_match_message">I didn\'t understand, try again</string>
+    <string name="search_youtube_action_open_url">Go to link</string>
+    <string name="search_youtube_url_input_hint">Paste or type a valid url</string>
+    <string name="search_youtube_url_supported_types_description">You can put a complete link of a playlist, an album, a channel or a single song on YouTube or YouTube Music</string>
     <string name="voice_search_listening">Ascultare...</string>
     <string name="voice_search_retry">Reîncercați</string>
     <string name="voice_search_speak_now">Vorbește acum</string>
-
     <!-- Settings -->
-    <string name="audio_loudness_boost_level">Nivel de stimulare a puterii</string>
-    <string name="common_error_no_document_handler">Nu s-a găsit o aplicație pentru a deschide documente</string>
+    <string name="audio_loudness_boost_level">Loudness boost level</string>
+    <string name="common_error_no_document_handler">Couldn\'t find an application to open documents</string>
     <string name="common_translation_title">Traducere</string>
-    <string name="library_action_toggle_hidden_songs">Afișează/ascunde melodiile ascunse</string>
-    <string name="library_sort_order_title">Ordinea sortării</string>
-    <string name="maintenance_debug_logging_title">Activează jurnalele de depanare</string>
-    <string name="player_action_enqueue_songs">Adaugă melodiile în coadă</string>
-    <string name="recommendations_action_smart_shuffle">Recomandări inteligente</string>
-    <string name="recommendations_quick_picks_count">%s a recomandat melodia</string>
-    <string name="settings_about_page_description">Secțiunea despre despre aplicație arată opțiunile de depanare și actualizare</string>
-    <string name="settings_account_information_label">Informații cont</string>
-    <string name="settings_accounts_page_description">Secțiunea conturilor conține setările de sincronizare Youtube pentru sincronizare, Setări Piped pentru streaming și Setări Discord Rpc</string>
-    <string name="settings_accounts_title">Conturi</string>
-    <string name="settings_app_behavior_title">Comportament aplicație</string>
-    <string name="settings_app_language_label">Limba aplicației</string>
+    <string name="library_action_toggle_hidden_songs">Show/hide hidden songs</string>
+    <string name="library_sort_order_title">Sorting order</string>
+    <string name="maintenance_debug_logging_title">Enable debug logs</string>
+    <string name="player_action_enqueue_songs">Enqueue songs</string>
+    <string name="recommendations_action_smart_shuffle">Smart recommendations</string>
+    <string name="recommendations_quick_picks_count">%s recommended song</string>
+    <string name="settings_about_page_description">The about section shows information about the app, the developers, troubleshooting and update options</string>
+    <string name="settings_account_information_label">Account info</string>
+    <string name="settings_accounts_page_description">The accounts section contains Youtube sync settings, Piped streaming settings and Discord Rpc settings</string>
+    <string name="settings_accounts_title">Accounts</string>
+    <string name="settings_app_behavior_title">App Behavior</string>
+    <string name="settings_app_language_label">App language</string>
     <string name="settings_audio_bass_boost">Audio bass boost</string>
-    <string name="settings_audio_crossfade_album_gapless_description">Nu estompa traseele din acelaşi album</string>
-    <string name="settings_audio_crossfade_album_gapless_label">Argument rudimentar</string>
-    <string name="settings_audio_crossfade_description">Activează tranziţia lină între melodii</string>
-    <string name="settings_audio_crossfade_duration_label">Durată estompare</string>
+    <string name="settings_audio_crossfade_album_gapless_description">Do not crossfade tracks from the same album</string>
+    <string name="settings_audio_crossfade_album_gapless_label">Gapless Crossfade</string>
+    <string name="settings_audio_crossfade_description">Enable smooth transition between songs</string>
+    <string name="settings_audio_crossfade_duration_label">Crossfade duration</string>
     <string name="settings_audio_crossfade_label">Crossfade</string>
-    <string name="settings_audio_equalizer_description">Interacționează cu egalizatorul sistemului</string>
-    <string name="settings_audio_equalizer_label">Egalizator</string>
+    <string name="settings_audio_equalizer_description">Interact with the system equalizer</string>
+    <string name="settings_audio_equalizer_label">Equalizer</string>
     <string name="settings_audio_focus">Audio focus</string>
     <string name="settings_audio_focus_info">Allows automatic pause and resume playback after a call for example</string>
-    <string name="settings_audio_loudness_boost_warning">Nivel suplimentar de lucire, care poate fi utilizat fără depășirea lui, poate deteriora dispozitivul</string>
-    <string name="settings_audio_loudness_normalization_description">Ajustează volumul la un nivel fix</string>
-    <string name="settings_audio_loudness_normalization_label">Normalizarea volumului</string>
-    <string name="settings_audio_minimum_silence_duration_description">Durata minimă a sunetului silențios care poate fi sărit</string>
-    <string name="settings_audio_minimum_silence_duration_label">Durata minimă de liniște</string>
+    <string name="settings_audio_loudness_boost_warning">Additional loudness level, to be used without overdoing it, may damage the device</string>
+    <string name="settings_audio_loudness_normalization_description">Adjust the volume to a fixed level</string>
+    <string name="settings_audio_loudness_normalization_label">Loudness normalization</string>
+    <string name="settings_audio_minimum_silence_duration_description">Minimum duration of silent audio that can be skipped</string>
+    <string name="settings_audio_minimum_silence_duration_label">Min silence duration</string>
     <string name="settings_audio_reverb">Audio reverb</string>
     <string name="settings_audio_reverb_info_apply_a_depth_effect_to_the_audio">Apply a depth effect to the audio</string>
-    <string name="settings_audio_skip_silence_description">Treci peste părțile silențioase în timpul redării</string>
-    <string name="settings_audio_skip_silence_label">Trece peste liniște</string>
+    <string name="settings_audio_skip_silence_description">Skip silent parts during playback</string>
+    <string name="settings_audio_skip_silence_label">Skip silence</string>
     <string name="settings_automotive_queue_size_limit_label">Max songs in queue (Android Auto)</string>
     <string name="settings_backup_before_install_label">Backup before install</string>
     <string name="settings_bass_boost_level">Bass boost level</string>
-    <string name="settings_behavior_back_button_exits_description">Când folosești butonul „Înapoi” de pe pagina principală</string>
-    <string name="settings_behavior_back_button_exits_label">Închide aplicația cu gestul / butonul „Înapoi”</string>
-    <string name="settings_cache_action_set_custom_size">Setează cache personalizat</string>
+    <string name="settings_behavior_back_button_exits_description">When you use the back button from the home page</string>
+    <string name="settings_behavior_back_button_exits_label">Close app with Back Button</string>
+    <string name="settings_cache_action_set_custom_size">Set custom cache</string>
     <string name="settings_cache_clear_images_dialog_title">Clear image cache</string>
-    <string name="settings_cache_custom_size_input_hint">Introdu valoarea în MB</string>
-    <string name="settings_cache_delete_confirmation">Ești sigur că vrei să ștergi cache-ul?</string>
-    <string name="settings_cache_eviction_description">Când memoria cache se umple, resursele care nu au fost accesate de ceva timp sunt șterse</string>
-    <string name="settings_cache_image_size_limit_label">Dimensiunea maximă a cache-ului de imagini</string>
-    <string name="settings_cache_location_label">Locație cache</string>
-    <string name="settings_cache_private_location_description">Locație cache privată, nu poate fi curățată de sistem</string>
-    <string name="settings_cache_song_size_limit_label">Dimensiunea maximă a cache-ului de melodii</string>
+    <string name="settings_cache_custom_size_input_hint">Enter value in MB</string>
+    <string name="settings_cache_delete_confirmation">Do you really want to delete cache?</string>
+    <string name="settings_cache_eviction_description">When the cache runs out of space, the resources that haven\'t been accessed for the longest time are cleared</string>
+    <string name="settings_cache_image_size_limit_label">Image cache max size</string>
+    <string name="settings_cache_location_label">Cache location</string>
+    <string name="settings_cache_private_location_description">Private cache location, can\'t be cleaned by the system</string>
+    <string name="settings_cache_song_size_limit_label">Song cache max size</string>
     <string name="settings_cache_title">Cache</string>
     <string name="settings_category_ai">AI / Quick Picks</string>
     <string name="settings_category_audio">Audio</string>
@@ -2341,8 +2275,8 @@
     <string name="settings_category_services">Services</string>
     <string name="settings_category_system">Sistem</string>
     <string name="settings_current_value">Current value: %1$s</string>
-    <string name="settings_data_page_description">Secțiunea de date conține setări care modifică modul în care aplicația gestionează datele local și de la distanță</string>
-    <string name="settings_data_title">Date</string>
+    <string name="settings_data_page_description">The data section contains settings that modify how the app handles data locally and remotely</string>
+    <string name="settings_data_title">Data</string>
     <string name="settings_debug_title">Setări</string>
     <string name="settings_debug_updater_preview_description">Allow opening Update from Global settings in this debug build. Automatic updates remain disabled.</string>
     <string name="settings_debug_updater_preview_label">Preview updater layout</string>
@@ -2359,93 +2293,93 @@
     <string name="settings_dock_title">Floating dock</string>
     <string name="settings_download_quality">Download quality</string>
     <string name="settings_download_status">Quality status</string>
-    <string name="settings_downloads_automatic_description">Descarcă melodiile automat în funcție de preferințele tale</string>
-    <string name="settings_downloads_on_album_bookmark_description">Descarcă automat melodiile atunci când marci un album</string>
-    <string name="settings_downloads_on_like_description">Descarcă automat melodiile când îți plac</string>
-    <string name="settings_downloads_storage_limit_label">Dimensiunea maximă a descărcărilor de melodii</string>
+    <string name="settings_downloads_automatic_description">Automatically download songs based on your preferences</string>
+    <string name="settings_downloads_on_album_bookmark_description">Automatically download songs when you bookmark an album</string>
+    <string name="settings_downloads_on_like_description">Automatically download songs when you like them</string>
+    <string name="settings_downloads_storage_limit_label">Song download max size</string>
     <string name="settings_enable_autodownload_song">Activează descărcarea automată a melodiilor</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Descarcă automat melodia când albumul este marcat</string>
     <string name="settings_enable_autodownload_song_when_liked">Descarcă automat melodia când este apreciată</string>
     <string name="settings_enable_pip">Activează Picture-in-Picture</string>
     <string name="settings_enable_pip_auto">Activează automat Picture-in-Picture</string>
-    <string name="settings_font_include_padding_description">Adaugă spațiu în jurul textelor</string>
-    <string name="settings_font_include_padding_label">Aplică umplutura fontului</string>
-    <string name="settings_font_use_system_description">Folosește fontul aplicat de sistem</string>
-    <string name="settings_font_use_system_label">Folosește fontul sistemului</string>
-    <string name="settings_general_page_description">Secțiunea generală conține setări pentru funcționalitatea generală a aplicației</string>
+    <string name="settings_font_include_padding_description">Add spacing around texts</string>
+    <string name="settings_font_include_padding_label">Apply font padding</string>
+    <string name="settings_font_use_system_description">Use the font applied by the system</string>
+    <string name="settings_font_use_system_label">Use system font</string>
+    <string name="settings_general_page_description">The general section contains settings for the general functionality of the app</string>
     <string name="settings_general_title">General</string>
-    <string name="settings_gestures_title">Gesturi &amp; Evenimente</string>
-    <string name="settings_gestures_volume_keys_skip_description">Volum sus: melodia următoare, volum jos: melodia anterioară</string>
-    <string name="settings_gestures_volume_keys_skip_label">Tastele de volum pentru a schimba melodia</string>
+    <string name="settings_gestures_title">Gestures &amp; Events</string>
+    <string name="settings_gestures_volume_keys_skip_description">Volume UP next and volume DOWN previous song</string>
+    <string name="settings_gestures_volume_keys_skip_label">Volume keys to change song</string>
     <string name="settings_global_search_hint">Search settings</string>
     <string name="settings_global_title">Setări</string>
     <string name="settings_global_update_description">Check for a new version of the app</string>
-    <string name="settings_history_action_clear_listening">Curăță istoricul ascultării</string>
+    <string name="settings_history_action_clear_listening">Clear listen history</string>
     <string name="settings_history_open_description">Open the History screen</string>
-    <string name="settings_home_default_page_label">Pagina implicită</string>
-    <string name="settings_interface_corner_radius_label">Rotunjire UI</string>
-    <string name="settings_interface_hide_status_bar_label">Ascunde bara de stare</string>
-    <string name="settings_interface_page_description">Secțiunea interfață utilizator conține setări pentru a modifica interfața globală și navigația</string>
-    <string name="settings_interface_page_title">Interfață</string>
-    <string name="settings_interface_title">Interfața utilizatorului</string>
-    <string name="settings_languages_title">Limbi</string>
+    <string name="settings_home_default_page_label">Default page</string>
+    <string name="settings_interface_corner_radius_label">UI Roundness</string>
+    <string name="settings_interface_hide_status_bar_label">Hide status bar</string>
+    <string name="settings_interface_page_description">The user interface section contains settings to modify the global interface and navigation</string>
+    <string name="settings_interface_page_title">User Interface</string>
+    <string name="settings_interface_title">User interface</string>
+    <string name="settings_languages_title">Languages</string>
     <string name="settings_lastfm_scrobbling_description">Scrobble your music to Last.fm</string>
     <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_launcher_shortcuts_description">Choose and reorder launcher shortcuts</string>
-    <string name="settings_launcher_shortcuts_limit_message">Maximum of 4 active shortcuts reached</string>
+    <string name="settings_launcher_shortcuts_limit_message">Maximum of %1$d active shortcuts reached</string>
     <string name="settings_launcher_shortcuts_recovery_required_message">Rescue cannot be disabled</string>
     <string name="settings_launcher_shortcuts_title">App shortcuts</string>
-    <string name="settings_library_now_playing_indicator_label">Indicator de „Se redă acum”</string>
-    <string name="settings_library_playlist_indicator_description">Marchează melodiile care au fost adăugate în un playlist</string>
-    <string name="settings_library_playlist_indicator_label">Indicator de „În playlist”</string>
-    <string name="settings_library_queue_playlist_swipe_left_label">Glisare la stânga în coada si local</string>
-    <string name="settings_library_queue_playlist_swipe_right_label">Glisare la dreapta în coada si local</string>
+    <string name="settings_library_now_playing_indicator_label">Now Playing Indicator</string>
+    <string name="settings_library_playlist_indicator_description">Mark songs that had been added to your Playlist</string>
+    <string name="settings_library_playlist_indicator_label">Playlist indicator</string>
+    <string name="settings_library_queue_playlist_swipe_left_label">Queue and Local Playlists Left Swipe</string>
+    <string name="settings_library_queue_playlist_swipe_right_label">Queue and Local Playlists Right Swipe</string>
     <string name="settings_library_sections_visibility_description">Choose which sections appear in the library</string>
     <string name="settings_library_sort_options_description">Customize sort options</string>
     <string name="settings_library_toolbar_customization_description">Customize the toolbar</string>
     <string name="settings_library_toolbar_title">Toolbar</string>
-    <string name="settings_local_music_action_add_blocked_folder">Adaugă un dosar</string>
-    <string name="settings_local_music_blocked_folder_exists_message">Acest dosar există deja.</string>
-    <string name="settings_local_music_blocked_folders_description">Editează lista neagră pentru melodiile de pe dispozitiv.</string>
-    <string name="settings_local_music_blocked_folders_title">Dosare pe lista neagră</string>
-    <string name="settings_local_music_folders_description">Afișează dosarele în pagina „Pe dispozitiv”</string>
-    <string name="settings_local_music_folders_label">Dosare</string>
-    <string name="settings_local_music_initial_folder_description">Dosar afișat pentru melodiile de pe dispozitiv.</string>
-    <string name="settings_local_music_remove_blocked_folder_confirmation">Ești sigur că vrei să elimini acest dosar din lista neagră?</string>
+    <string name="settings_local_music_action_add_blocked_folder">Add folder</string>
+    <string name="settings_local_music_blocked_folder_exists_message">This folder already exists</string>
+    <string name="settings_local_music_blocked_folders_description">Edit blacklist for on device songs</string>
+    <string name="settings_local_music_blocked_folders_title">Blacklisted folders</string>
+    <string name="settings_local_music_folders_description">Show folders in \"On Device\" page</string>
+    <string name="settings_local_music_folders_label">Folders</string>
+    <string name="settings_local_music_initial_folder_description">Folder shown for on device songs</string>
+    <string name="settings_local_music_remove_blocked_folder_confirmation">Are you sure you want to remove this folder from the blacklist?</string>
     <string name="settings_local_playlist_title">Local Playlist</string>
     <string name="settings_logging_disabled_label">Disable debug logs</string>
-    <string name="settings_logging_error_file_description">Dacă este activat, creează un fișier jurnal pentru a evidenția erorile</string>
+    <string name="settings_logging_error_file_description">If enabled, create a log file to highlight errors</string>
     <string name="settings_loudness_base_gain">Amplificare de bază a intensității sonore</string>
-    <string name="settings_lyrics_action_bar_visible_label">Bara de acțiuni</string>
-    <string name="settings_lyrics_artwork_visible_label">Afișează miniatura pentru versuri</string>
-    <string name="settings_lyrics_controls_visible_label">Controale</string>
-    <string name="settings_lyrics_match_player_background_label">Afișează culoarea fundalului versurilor în versuri</string>
-    <string name="settings_lyrics_next_queue_visible_label">Coada melodiei următoare</string>
-    <string name="settings_lyrics_remember_state_description">Păstrați starea versurilor între sesiuni</string>
-    <string name="settings_lyrics_remember_state_label">Salvează starea versurilor</string>
-    <string name="settings_lyrics_seek_on_line_press_label">Treci la versuri apăsând pe text</string>
-    <string name="settings_lyrics_title_artist_visible_label">Titlu și Artiști</string>
-    <string name="settings_lyrics_top_spacing_label">Spațiu gol în sus</string>
-    <string name="settings_menu_style_label">Stilul meniului</string>
-    <string name="settings_miscellaneous_page_description">Secţiunea diverse conţine diverse setări opţionale şi utilităţi</string>
-    <string name="settings_miscellaneous_title">Diverse</string>
-    <string name="settings_navigation_back_to_home_description">Când este activată, apăsați Înapoi sare paginile intermediare și reveniți direct pe ecranul de pornire</string>
-    <string name="settings_navigation_back_to_home_label">Întoarce-te direct la pagina principală</string>
+    <string name="settings_lyrics_action_bar_visible_label">Action Bar</string>
+    <string name="settings_lyrics_artwork_visible_label">Show thumbnail for lyrics</string>
+    <string name="settings_lyrics_controls_visible_label">Controls</string>
+    <string name="settings_lyrics_match_player_background_label">Match Lyrics background color with Player</string>
+    <string name="settings_lyrics_next_queue_visible_label">Next song queue</string>
+    <string name="settings_lyrics_remember_state_description">Keep lyrics state between sessions</string>
+    <string name="settings_lyrics_remember_state_label">Save lyrics state</string>
+    <string name="settings_lyrics_seek_on_line_press_label">Jump to lyrics by pressing the line</string>
+    <string name="settings_lyrics_title_artist_visible_label">Title and Artists</string>
+    <string name="settings_lyrics_top_spacing_label">Blank Space at Top</string>
+    <string name="settings_menu_style_label">Menu style</string>
+    <string name="settings_miscellaneous_page_description">The miscellaneous section contains various optional settings and utilities</string>
+    <string name="settings_miscellaneous_title">Misc</string>
+    <string name="settings_navigation_back_to_home_description">When enabled, pressing Back skips intermediate pages and returns directly to the home screen</string>
+    <string name="settings_navigation_back_to_home_label">Go back directly to home</string>
     <string name="settings_navigation_menu_action_add_separator">Add separator</string>
     <string name="settings_navigation_menu_customization_description">Customize the burger menu</string>
     <string name="settings_navigation_menu_separator_instance_format">Separator (%1$d)</string>
     <string name="settings_navigation_menu_separator_label">Separator</string>
     <string name="settings_navigation_menu_title">Burger menu</string>
-    <string name="settings_navigation_position_label">Poziția barei de navigare</string>
-    <string name="settings_navigation_style_label">Stilul barei de navigare</string>
-    <string name="settings_navigation_transition_effect_label">Efect de tranziție</string>
-    <string name="settings_network_data_saver_description">Economisirea de date scade calitatea, utilizați numai dacă aveți o conexiune cu date limitate</string>
-    <string name="settings_network_data_saver_label">Utilizați conexiunea contorizată pentru a salva datele</string>
+    <string name="settings_navigation_position_label">Navigation bar position</string>
+    <string name="settings_navigation_style_label">Navigation bar style</string>
+    <string name="settings_navigation_transition_effect_label">Transition effect</string>
+    <string name="settings_network_data_saver_description">Data saving decreases quality, use only if you have a connection with limited data</string>
+    <string name="settings_network_data_saver_label">Use metered connection to save data</string>
     <string name="settings_network_image_quality_label">Image Quality</string>
     <string name="settings_network_offline_mode_description">Simulates a network failure for this profile: online features are hidden or disabled as if offline</string>
     <string name="settings_network_offline_mode_label">Full offline mode</string>
     <string name="settings_network_quality_title">Calitate</string>
-    <string name="settings_network_title">Rețea</string>
+    <string name="settings_network_title">Network</string>
     <string name="settings_page_about_description">Learn about N-Zik, its contributors and ways to support the project.</string>
     <string name="settings_page_ai_description">Personalize recommendations, Quick Picks and listening insights.</string>
     <string name="settings_page_audio_description">Adjust sound processing and audio effects.</string>
@@ -2463,258 +2397,258 @@
     <string name="settings_page_services_description">Connect external services and listen together with others.</string>
     <string name="settings_page_system_description">Configure language, device integration and settings resets.</string>
     <string name="settings_page_youtube_description">Manage your YouTube Music connection and synchronization.</string>
-    <string name="settings_parental_age_restriction_description">Previne redarea melodiilor cu limită de vârstă</string>
-    <string name="settings_picture_in_picture_android_12_auto_description">Începând cu Android 12, modul PiP poate fi activat automat</string>
-    <string name="settings_picture_in_picture_artwork_module_label">Copertă</string>
-    <string name="settings_picture_in_picture_title">Imagine în imagine</string>
+    <string name="settings_parental_age_restriction_description">Prevent play songs with age limitation</string>
+    <string name="settings_picture_in_picture_android_12_auto_description">From Android 12 pip can be automatically enabled</string>
+    <string name="settings_picture_in_picture_artwork_module_label">Cover</string>
+    <string name="settings_picture_in_picture_title">Picture in Picture</string>
     <string name="settings_pip_module">Modul PiP</string>
-    <string name="settings_playback_duration_limit_description">Melodiile care depășesc limita de durată vor fi excluse din „Topul meu” și din coada de redare</string>
-    <string name="settings_playback_duration_limit_label">Exclude melodiile cu limită de durată</string>
+    <string name="settings_playback_duration_limit_description">Songs with duration exceeding the limit will be excluded from the Top songs and playback queue</string>
+    <string name="settings_playback_duration_limit_label">Exclude songs with duration limit</string>
     <string name="settings_playback_exclude_disliked_albums_label">Exclude disliked albums</string>
     <string name="settings_playback_exclude_disliked_artists_label">Exclude disliked artists</string>
     <string name="settings_playback_exclude_disliked_songs_label">Exclude disliked songs</string>
-    <string name="settings_playback_pause_at_zero_volume_description">Pune melodia pe pauză când volumul ajunge la 0 și reia redarea când volumul este mai mare de 0</string>
-    <string name="settings_playback_pause_between_songs_description">Adaugă o pauză între melodii</string>
-    <string name="settings_playback_pause_between_songs_label">Pauză între melodii</string>
+    <string name="settings_playback_pause_at_zero_volume_description">Pause the song when the volume reaches 0 and resume it when the volume is greater than 0</string>
+    <string name="settings_playback_pause_between_songs_description">Add a pause between songs</string>
+    <string name="settings_playback_pause_between_songs_label">Pause between songs</string>
     <string name="settings_playback_pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
     <string name="settings_playback_pause_on_headphone_disconnect_label">Pause on headphone disconnect</string>
-    <string name="settings_playback_previous_restart_threshold_description">Lasă-l gol sau setează-l la 0 pentru ca butonul precedent să redea mereu melodia anterioară</string>
-    <string name="settings_playback_previous_restart_threshold_label">Interval pentru reluarea melodiei la apăsarea butonului precedent</string>
-    <string name="settings_playback_resume_on_connection_description">Când un dispozitiv cablat sau Bluetooth este conectat</string>
-    <string name="settings_playback_resume_on_connection_label">Reia redarea</string>
-    <string name="settings_playback_resume_on_start_description">Reia redarea automat când aplicația este deschisă</string>
-    <string name="settings_playback_resume_on_start_label">Reia redarea la pornire</string>
-    <string name="settings_playback_skip_on_error_description">Dacă apare o eroare, treci la melodia următoare</string>
-    <string name="settings_playback_skip_on_error_label">Treci peste melodie la eroare</string>
-    <string name="settings_player_action_bar_discover_visible_label">Butonul „Descoperă”</string>
-    <string name="settings_player_action_bar_download_visible_label">Butonul „Descarcă”</string>
-    <string name="settings_player_action_bar_equalizer_visible_label">Butonul „Egalizator”</string>
-    <string name="settings_player_action_bar_gradient_label">Activează gradientul barei de acțiuni</string>
-    <string name="settings_player_action_bar_loop_visible_label">Butonul „Buclă”</string>
-    <string name="settings_player_action_bar_menu_visible_label">Butonul „Meniu”</string>
-    <string name="settings_player_action_bar_playlist_add_visible_label">Butonul „Adaugă la playlist”</string>
-    <string name="settings_player_action_bar_queue_arrow_visible_label">Butonul „Coadă”</string>
-    <string name="settings_player_action_bar_radio_visible_label">Butonul de pornire radio</string>
-    <string name="settings_player_action_bar_shuffle_visible_label">Butonul „Amestecă”</string>
-    <string name="settings_player_action_bar_sleep_timer_visible_label">Butonul „Temporizator de somn”</string>
-    <string name="settings_player_action_bar_transparent_background_label">Fundal transparent</string>
-    <string name="settings_player_action_bar_video_visible_label">Butonul „Video”</string>
+    <string name="settings_playback_previous_restart_threshold_description">Leave empty or with 0 to always jump to previous song on queue</string>
+    <string name="settings_playback_previous_restart_threshold_label">Previous song maximum elapsed duration</string>
+    <string name="settings_playback_resume_on_connection_description">When a wired or bluetooth device is connected</string>
+    <string name="settings_playback_resume_on_connection_label">Resume playback</string>
+    <string name="settings_playback_resume_on_start_description">Resume playback automatically when the app is opened</string>
+    <string name="settings_playback_resume_on_start_label">Resume Playback On Start</string>
+    <string name="settings_playback_skip_on_error_description">If an error occurs, skip to the next song</string>
+    <string name="settings_playback_skip_on_error_label">Skip song on error</string>
+    <string name="settings_player_action_bar_discover_visible_label">Discover button</string>
+    <string name="settings_player_action_bar_download_visible_label">Download button</string>
+    <string name="settings_player_action_bar_equalizer_visible_label">Equalizer button</string>
+    <string name="settings_player_action_bar_gradient_label">Enable action bar gradient</string>
+    <string name="settings_player_action_bar_loop_visible_label">Loop button</string>
+    <string name="settings_player_action_bar_menu_visible_label">Menu button</string>
+    <string name="settings_player_action_bar_playlist_add_visible_label">Add to playlist button</string>
+    <string name="settings_player_action_bar_queue_arrow_visible_label">Arrow button</string>
+    <string name="settings_player_action_bar_radio_visible_label">Start radio button</string>
+    <string name="settings_player_action_bar_shuffle_visible_label">Shuffle button</string>
+    <string name="settings_player_action_bar_sleep_timer_visible_label">Sleep Timer button</string>
+    <string name="settings_player_action_bar_transparent_background_label">Transparent background</string>
+    <string name="settings_player_action_bar_video_visible_label">Show video button</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Visualizer button</string>
-    <string name="settings_player_action_restart_service">Repornește playerul</string>
-    <string name="settings_player_actions_spaced_evenly_label">Distanță uniform</string>
-    <string name="settings_player_album_cover_visible_label">Afișează coperta albumului</string>
-    <string name="settings_player_appearance_page_description">Secțiunea de aspect conține setări pentru aspectul vizual al jucătorului</string>
-    <string name="settings_player_appearance_presets_preview_description">Previzualizările vor fi de slabă calitate</string>
-    <string name="settings_player_appearance_presets_title">Presetări de aspect</string>
-    <string name="settings_player_artwork_animation_enabled_label">Afișează animația miniaturii</string>
-    <string name="settings_player_artwork_animation_style_label">Tip animație copertă</string>
-    <string name="settings_player_artwork_carousel_label">Vizualizare carusel</string>
-    <string name="settings_player_artwork_corner_radius_label">Rotunjirea miniaturilor</string>
-    <string name="settings_player_artwork_fading_edge_label">Margine estompată</string>
-    <string name="settings_player_artwork_section_title">Copertă &amp; Miniatură</string>
-    <string name="settings_player_artwork_shrink_when_paused_label">Micșorează miniatura când este pus pe pauză</string>
-    <string name="settings_player_artwork_style_label">Tip miniatură</string>
-    <string name="settings_player_artwork_visible_label">Afișează miniatura</string>
-    <string name="settings_player_background_blur_disabled_without_lyrics_label">Elimină estomparea fundalului când versurile sunt dezactivate</string>
-    <string name="settings_player_background_colors_label">Culori de fundal</string>
-    <string name="settings_player_background_progress_label">Bara de progres în fundal</string>
-    <string name="settings_player_background_section_title">Culori &amp; Fundal</string>
-    <string name="settings_player_bottom_black_gradient_label">Gradient negru în partea de jos</string>
-    <string name="settings_player_button_zoom_out_animation_label">Animație de micșorare a butonului</string>
-    <string name="settings_player_controls_style_label">Stil de control</string>
+    <string name="settings_player_action_restart_service">Restart player</string>
+    <string name="settings_player_actions_spaced_evenly_label">Spaced evenly</string>
+    <string name="settings_player_album_cover_visible_label">Show album cover</string>
+    <string name="settings_player_appearance_page_description">The appearance section contains settings for the player\'s visual appearance</string>
+    <string name="settings_player_appearance_presets_preview_description">Previews will be in low quality</string>
+    <string name="settings_player_appearance_presets_title">Appearance Presets</string>
+    <string name="settings_player_artwork_animation_enabled_label">Show cover thumbnail animation</string>
+    <string name="settings_player_artwork_animation_style_label">Cover animation type</string>
+    <string name="settings_player_artwork_carousel_label">Carousel view</string>
+    <string name="settings_player_artwork_corner_radius_label">Thumbnail roundness</string>
+    <string name="settings_player_artwork_fading_edge_label">Fading edge</string>
+    <string name="settings_player_artwork_section_title">Cover &amp; Thumbnail</string>
+    <string name="settings_player_artwork_shrink_when_paused_label">Shrink thumbnail when paused</string>
+    <string name="settings_player_artwork_style_label">Thumbnail type</string>
+    <string name="settings_player_artwork_visible_label">Show thumbnail</string>
+    <string name="settings_player_background_blur_disabled_without_lyrics_label">Remove background blur when lyrics is disabled</string>
+    <string name="settings_player_background_colors_label">Background colors</string>
+    <string name="settings_player_background_progress_label">Background progress bar</string>
+    <string name="settings_player_background_section_title">Colors &amp; Background</string>
+    <string name="settings_player_bottom_black_gradient_label">Black Gradient at Bottom</string>
+    <string name="settings_player_button_zoom_out_animation_label">Button zoom-out animation</string>
+    <string name="settings_player_controls_style_label">Control style</string>
     <string name="settings_player_crop_video_artwork_label">Crop video thumbnails</string>
-    <string name="settings_player_disable_horizontal_swipe_label">Dezactivează glisarea orizontală</string>
-    <string name="settings_player_disable_song_swipe_label">Dezactivează schimbarea melodiei prin glisare</string>
-    <string name="settings_player_disable_text_marquee_description">Textul derulant este folosit pentru texte lungi</string>
-    <string name="settings_player_disable_text_marquee_label">Dezactivează textul derulant</string>
-    <string name="settings_player_disable_vertical_song_swipe_label">Dezactivează trecerea melodiilor prin glisare verticală</string>
-    <string name="settings_player_expanded_artwork_size_label">Dimensiunea miniaturii în modul extins</string>
-    <string name="settings_player_expanded_label">Butonul „Player extins”</string>
-    <string name="settings_player_favorite_button_style_label">Butonul de favorite</string>
-    <string name="settings_player_gradient_style_label">Tip gradient</string>
-    <string name="settings_player_header_album_artist_description">Antet album și artist</string>
-    <string name="settings_player_header_icons_visible_label">Afișează informațiile cu iconițe</string>
-    <string name="settings_player_header_style_label">Stil antet</string>
+    <string name="settings_player_disable_horizontal_swipe_label">Disable horizontal swipe</string>
+    <string name="settings_player_disable_song_swipe_label">Disable song switching via swipe</string>
+    <string name="settings_player_disable_text_marquee_description">Scrolling text is used for long texts</string>
+    <string name="settings_player_disable_text_marquee_label">Disable scrolling text</string>
+    <string name="settings_player_disable_vertical_song_swipe_label">Disable song switching via Vertical swipe</string>
+    <string name="settings_player_expanded_artwork_size_label">Thumbnail Size in Expanded Mode</string>
+    <string name="settings_player_expanded_label">Expanded Player</string>
+    <string name="settings_player_favorite_button_style_label">Favorite button</string>
+    <string name="settings_player_gradient_style_label">Gradient Type</string>
+    <string name="settings_player_header_album_artist_description">Album and Artist header</string>
+    <string name="settings_player_header_icons_visible_label">Show info with icons</string>
+    <string name="settings_player_header_style_label">Header style</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Theme Shake Sensitivity</string>
-    <string name="settings_player_mini_style_label">Tip mini-player</string>
-    <string name="settings_player_next_queue_visible_label">Afișează următoarele melodii în player</string>
-    <string name="settings_player_next_two_songs_visible_label">Afișează următoarele două melodii din coadă</string>
-    <string name="settings_player_persistent_queue_description">Salvează și restaurează melodiile redate</string>
-    <string name="settings_player_persistent_queue_label">Jucător persistent</string>
-    <string name="settings_player_play_button_label">Butonul de redare</string>
-    <string name="settings_player_prevent_collapsed_dismissal_description">Evită închiderea playerului și curățarea cozii prin glisarea în jos când este minimizat</string>
-    <string name="settings_player_queue_duration_visible_label">Afișează durata totală a cozii</string>
-    <string name="settings_player_queue_remember_scroll_description">Păstrați poziția de derulare la închidere și redeschiderea cozii de jucători</string>
-    <string name="settings_player_queue_remember_scroll_label">Amintește-ți poziția derulării în coadă</string>
-    <string name="settings_player_queue_size_limit_label">Numărul maxim de melodii în coadă</string>
-    <string name="settings_player_queue_style_label">Tipul cozii</string>
-    <string name="settings_player_queue_swipe_up_label">Glisează în sus pentru a deschide coada</string>
-    <string name="settings_player_queue_tap_to_open_label">Atinge pentru a deschide coada</string>
-    <string name="settings_player_queue_visible_count_label">Melodii afișate</string>
-    <string name="settings_player_remaining_duration_visible_label">Afișează durata rămasă a melodiei</string>
+    <string name="settings_player_mini_style_label">Mini Player Type</string>
+    <string name="settings_player_next_queue_visible_label">Show next song queue</string>
+    <string name="settings_player_next_two_songs_visible_label">Show Next two Songs in Queue</string>
+    <string name="settings_player_persistent_queue_description">Save and restore playing songs</string>
+    <string name="settings_player_persistent_queue_label">Persistent player</string>
+    <string name="settings_player_play_button_label">Play button</string>
+    <string name="settings_player_prevent_collapsed_dismissal_description">Avoid closing the player and cleaning the queue by swiping down while it is minimized</string>
+    <string name="settings_player_queue_duration_visible_label">Show total queue duration</string>
+    <string name="settings_player_queue_remember_scroll_description">Keep the scroll position when closing and reopening the player queue</string>
+    <string name="settings_player_queue_remember_scroll_label">Remember queue scroll position</string>
+    <string name="settings_player_queue_size_limit_label">Max songs in queue</string>
+    <string name="settings_player_queue_style_label">Queue type</string>
+    <string name="settings_player_queue_swipe_up_label">Swipe up to open queue</string>
+    <string name="settings_player_queue_tap_to_open_label">Tap to open queue</string>
+    <string name="settings_player_queue_visible_count_label">Songs displayed</string>
+    <string name="settings_player_remaining_duration_visible_label">Show remaining song duration</string>
     <string name="settings_player_rotating_artwork_title">Rotating album cover</string>
-    <string name="settings_player_seek_time_buttons_label">Omitere butoane timp</string>
-    <string name="settings_player_start_minimized_description">Când dai click pe o melodie, playerul pornește minimizat</string>
-    <string name="settings_player_stop_on_task_removal_description">Când aplicația este închisă din fundal</string>
-    <string name="settings_player_stop_on_task_removal_label">Închide playerul de fundal</string>
-    <string name="settings_player_tap_artwork_toggle_lyrics_description">Prin atingerea miniaturii</string>
-    <string name="settings_player_tap_artwork_toggle_lyrics_label">Arată versurile</string>
-    <string name="settings_player_text_outline_label">Activează conturul textului</string>
-    <string name="settings_player_timeline_controls_section_title">Cronologie &amp; Controale</string>
-    <string name="settings_player_timeline_label">Cronologie</string>
-    <string name="settings_player_timeline_size_label">Dimensiune bară cronologică player</string>
-    <string name="settings_player_timeline_transparent_label">Bară cronologică transparentă</string>
-    <string name="settings_player_top_action_bar_visible_label">Afișează bara de acțiuni de sus</string>
-    <string name="settings_player_vertical_swipe_expansion_description">Afectează doar când \"Player-ul extins\" este oprit</string>
-    <string name="settings_preference_saved_message">Preferințe salvate</string>
-    <string name="settings_proxy_enabled_label">Activează Proxy</string>
-    <string name="settings_proxy_host_label">Gazdă Proxy</string>
-    <string name="settings_proxy_mode_label">Mod Proxy</string>
+    <string name="settings_player_seek_time_buttons_label">Skip time buttons</string>
+    <string name="settings_player_start_minimized_description">When clicking on a song, player start minimized</string>
+    <string name="settings_player_stop_on_task_removal_description">When app swipe out from task manager</string>
+    <string name="settings_player_stop_on_task_removal_label">Close background player</string>
+    <string name="settings_player_tap_artwork_toggle_lyrics_description">By tapping on the thumbnail</string>
+    <string name="settings_player_tap_artwork_toggle_lyrics_label">Toggle lyrics</string>
+    <string name="settings_player_text_outline_label">Enable Text Outline</string>
+    <string name="settings_player_timeline_controls_section_title">Timeline &amp; Controls</string>
+    <string name="settings_player_timeline_label">Timeline</string>
+    <string name="settings_player_timeline_size_label">Player Timeline Size</string>
+    <string name="settings_player_timeline_transparent_label">Transparent Timeline Bar</string>
+    <string name="settings_player_top_action_bar_visible_label">Show top actions bar</string>
+    <string name="settings_player_vertical_swipe_expansion_description">It affects only when the Expanded Player is off</string>
+    <string name="settings_preference_saved_message">Preference Saved</string>
+    <string name="settings_proxy_enabled_label">Enable Proxy</string>
+    <string name="settings_proxy_host_label">Proxy Host</string>
+    <string name="settings_proxy_mode_label">Proxy Mode</string>
     <string name="settings_proxy_password">Proxy Password</string>
-    <string name="settings_proxy_port_label">Port Proxy</string>
+    <string name="settings_proxy_port_label">Proxy Port</string>
     <string name="settings_proxy_username">Proxy Username</string>
-    <string name="settings_queue_management_title">Gestionare coadă</string>
-    <string name="settings_recommendations_quick_picks_enabled_label">Activează pagina „Selecții rapide”</string>
-    <string name="settings_recommendations_song_count_description">Alegeți câte melodii recomandate să fie afișate în Liste Rapide</string>
-    <string name="settings_recommendations_title">Recomandări AI</string>
+    <string name="settings_queue_management_title">Queue Management</string>
+    <string name="settings_recommendations_quick_picks_enabled_label">Enable Quick Picks page</string>
+    <string name="settings_recommendations_song_count_description">Choose how many recommended songs to show in Quick Picks</string>
+    <string name="settings_recommendations_title">AI Recommendations</string>
     <string name="settings_region_override">Region Override</string>
     <string name="settings_reset">Resetează</string>
+    <string name="settings_reset_all">Reset all settings</string>
+    <string name="settings_reset_all_confirm">Reset all</string>
+    <string name="settings_reset_all_confirmation">Reset all application settings? Saved accounts, credentials, profiles, playlists, downloads and files will be kept.</string>
+    <string name="settings_reset_all_description">Restore all application settings to their defaults.</string>
     <string name="settings_reset_choose_scope">Choose which settings to restore</string>
     <string name="settings_reset_choose_scope_description">Select a settings section, then restore its defaults.</string>
     <string name="settings_reset_scope">Reset all %1$s settings (across categories)</string>
     <string name="settings_reset_scope_back">Back</string>
-    <string name="settings_restart_required_message">O repornire este necesară</string>
+    <string name="settings_restart_required_message">Restarting is required</string>
     <string name="settings_restore_default_settings">Restabilește setările implicite</string>
-    <string name="settings_search_floating_button_visible_label">Afișează iconița plutitoare pentru căutare</string>
-    <string name="settings_section_backup_and_restore_title">Backup și restaurare</string>
-    <string name="settings_section_contributors_title">Colaboratori</string>
-    <string name="settings_section_fullscreen_lyrics_title">Componentele versurilor pe tot ecranul</string>
-    <string name="settings_section_notification_player_title">Jucător notificări</string>
-    <string name="settings_section_player_action_bar_title">Bara de acțiune a jucătorului</string>
+    <string name="settings_search_floating_button_visible_label">Show floating search icon</string>
+    <string name="settings_section_backup_and_restore_title">Backup and restore</string>
+    <string name="settings_section_contributors_title">Contributors</string>
+    <string name="settings_section_fullscreen_lyrics_title">Fullscreen lyrics components</string>
+    <string name="settings_section_notification_player_title">Notification player</string>
+    <string name="settings_section_player_action_bar_title">Player action bar</string>
     <string name="settings_section_proxy_title">Proxy</string>
-    <string name="settings_section_service_lifetime_title">Durata duratei de viață</string>
-    <string name="settings_section_smart_recommendations_title">Recomandări inteligente</string>
-    <string name="settings_section_troubleshooting_title">Depanare</string>
-    <string name="settings_service_action_disable_background_restrictions">Dezactivează restricțiile în fundal</string>
-    <string name="settings_service_android_12_requirement_description">Începând cu Android 12, dezactivarea optimizărilor bateriei este necesară pentru ca opțiunea „Serviciul invincibil” să aibă efect.</string>
-    <string name="settings_service_battery_optimizations_warning">Dacă sunt aplicate optimizările bateriei, notificarea de redare poate dispărea brusc atunci când este pusă pe pauză.</string>
-    <string name="settings_service_battery_settings_unavailable_message">Nu s-au găsit setările de optimizare a bateriei, te rugăm să le adaugi manual în lista albă</string>
+    <string name="settings_section_service_lifetime_title">Service lifetime</string>
+    <string name="settings_section_smart_recommendations_title">Smart recommendations</string>
+    <string name="settings_section_troubleshooting_title">Troubleshooting</string>
+    <string name="settings_service_action_disable_background_restrictions">Disable background restrictions</string>
+    <string name="settings_service_android_12_requirement_description">Since Android 12, disabling battery optimizations is required for the \"Invisible service\" option to take effect.</string>
+    <string name="settings_service_battery_optimizations_warning">If battery optimizations are applied, the playback notification can suddenly disappear when paused.</string>
+    <string name="settings_service_battery_settings_unavailable_message">Couldn\'t find battery optimization settings, please whitelist manually</string>
     <string name="settings_service_battery_status_message_format">%1$s %2$s</string>
-    <string name="settings_service_battery_unrestricted_status">Deja nereștricționat</string>
-    <string name="settings_service_ignore_battery_optimizations_label">Ignoră optimizările bateriei</string>
-    <string name="settings_service_keep_screen_on_description">Previne oprirea automată a ecranului</string>
-    <string name="settings_service_keep_screen_on_label">Menține ecranul aprins</string>
+    <string name="settings_service_battery_unrestricted_status">Already unrestricted</string>
+    <string name="settings_service_ignore_battery_optimizations_label">Ignore battery optimizations</string>
+    <string name="settings_service_keep_screen_on_description">Prevents screen timeout</string>
+    <string name="settings_service_keep_screen_on_label">Keep screen on</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Allow unrestricted background operation so the system is less likely to interrupt playback.</string>
     <string name="settings_stream_disabled_clients_title">Disabled Stream Clients</string>
     <string name="settings_stream_preferred_client_changed_message">Preferred client changed. Will apply on next track.</string>
     <string name="settings_stream_preferred_client_title">Preferred Stream Client</string>
-    <string name="settings_swipe_actions_description">Efectuează acțiuni glisând la stânga sau la dreapta pe o melodie</string>
-    <string name="settings_swipe_actions_title">Glisează pentru acțiune</string>
+    <string name="settings_swipe_actions_description">Perform actions by swiping left or right on a song within vertical list of songs</string>
+    <string name="settings_swipe_actions_title">Swipe for action</string>
     <string name="settings_target_gain_loudness_info">Amplificare țintă pentru normalizarea intensității sonore</string>
     <string name="settings_target_unavailable">This setting is unavailable with the current configuration. Its section is shown instead.</string>
-    <string name="settings_theme_accent_color_label">Accent de culoare</string>
-    <string name="settings_theme_background_1_color_label">Fundal 1</string>
-    <string name="settings_theme_background_2_color_label">Fundal 2</string>
-    <string name="settings_theme_background_3_color_label">Fundal 3</string>
-    <string name="settings_theme_background_4_color_label">Fundal 4</string>
-    <string name="settings_theme_background_5_color_label">Fundal 5</string>
-    <string name="settings_theme_color_applied_format">Culoarea %s aplicată</string>
+    <string name="settings_theme_accent_color_label">Color accent</string>
+    <string name="settings_theme_background_1_color_label">Background 1</string>
+    <string name="settings_theme_background_2_color_label">Background 2</string>
+    <string name="settings_theme_background_3_color_label">Background 3</string>
+    <string name="settings_theme_background_4_color_label">Background 4</string>
+    <string name="settings_theme_background_5_color_label">Background 5</string>
+    <string name="settings_theme_color_applied_format">Color %s applied</string>
     <string name="settings_theme_custom_colors_label">Culoare personalizată</string>
-    <string name="settings_theme_dark_colors_reset_confirmation">Ești sigur că vrei să resetezi culorile personalizate ale temei întunecate?</string>
-    <string name="settings_theme_dark_colors_reset_description">Apasă pentru a reseta culorile implicite ale temei întunecate</string>
-    <string name="settings_theme_dark_colors_reset_title">Resetează culorile personalizate ale temei întunecate</string>
-    <string name="settings_theme_dark_mode_label">Întunecat</string>
-    <string name="settings_theme_disabled_text_color_label">Text dezactivat</string>
-    <string name="settings_theme_light_colors_reset_confirmation">Ești sigur că vrei să resetezi culorile personalizate ale temei luminoase?</string>
-    <string name="settings_theme_light_colors_reset_description">Apasă pentru a reseta culorile implicite ale temei luminoase</string>
-    <string name="settings_theme_light_colors_reset_title">Resetează culorile personalizate ale temei luminoase</string>
-    <string name="settings_theme_light_mode_label">Luminos</string>
-    <string name="settings_theme_mode_label">Mod tematic</string>
-    <string name="settings_theme_player_button_icon_color_label">Iconița butonului de player</string>
+    <string name="settings_theme_dark_colors_reset_confirmation">Do you really want to reset the custom dark theme colors?</string>
+    <string name="settings_theme_dark_colors_reset_description">Click to reset default dark colors</string>
+    <string name="settings_theme_dark_colors_reset_title">Reset customized dark colors</string>
+    <string name="settings_theme_dark_mode_label">Dark</string>
+    <string name="settings_theme_disabled_text_color_label">Text disabled</string>
+    <string name="settings_theme_keep_dark_mode_description">Disable monochrome luminance adaptation in both dark and light modes to avoid bright flashes from light covers.</string>
+    <string name="settings_theme_keep_dark_mode_label">Keep dark mode</string>
+    <string name="settings_theme_light_colors_reset_confirmation">Do you really want to reset the custom light theme colors?</string>
+    <string name="settings_theme_light_colors_reset_description">Click to reset default light colors</string>
+    <string name="settings_theme_light_colors_reset_title">Reset customized light colors</string>
+    <string name="settings_theme_light_mode_label">Light</string>
+    <string name="settings_theme_mode_label">Theme mode</string>
+    <string name="settings_theme_player_button_icon_color_label">Player button icon</string>
     <string name="settings_theme_primary_text_color_label">Text</string>
-    <string name="settings_theme_secondary_text_color_label">Text secundar</string>
+    <string name="settings_theme_secondary_text_color_label">Text Secondary</string>
     <string name="settings_title">Setări</string>
-    <string name="settings_transition_expand">Extinde</string>
-    <string name="settings_transition_fade">Estompare</string>
-    <string name="settings_transition_scale">Redimensionare</string>
-    <string name="settings_transition_slide_horizontal">Glisare orizontală</string>
-    <string name="settings_transition_slide_vertical">Glisare verticală</string>
+    <string name="settings_transition_expand">Expand</string>
+    <string name="settings_transition_fade">Fade</string>
+    <string name="settings_transition_scale">Scale</string>
+    <string name="settings_transition_slide_horizontal">Slide Horizontal</string>
+    <string name="settings_transition_slide_vertical">Slide Vertical</string>
     <string name="settings_use_font_type">Tip font</string>
-    <string name="settings_visualizer_artwork_visible_label">Afișează miniatura pentru vizualizator</string>
-    <string name="settings_visualizer_remember_state_description">Păstrați starea vizualizatorului între sesiuni</string>
-    <string name="settings_visualizer_remember_state_label">Salvează starea vizualizatorului</string>
+    <string name="settings_visualizer_artwork_visible_label">Show thumbnail for visualizer</string>
+    <string name="settings_visualizer_remember_state_description">Keep visualizer state between sessions</string>
+    <string name="settings_visualizer_remember_state_label">Save visualizer state</string>
     <string name="settings_youtube_authenticated_browsing_description">Use login for browse requests (home, explore, etc.)</string>
     <string name="settings_youtube_authenticated_browsing_label">Login for Browse</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest without your account, so they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Use account for searches</string>
     <string name="settings_youtube_clear_synced_data_confirmation">Clear all data synced from YouTube? This will remove liked songs, albums, artists, and playlists imported from YouTube.</string>
     <string name="settings_youtube_clear_synced_data_dialog_title">Clear YouTube synced data</string>
     <string name="settings_youtube_connection_required_description">Connect to YouTube first to enable this option</string>
-    <string name="settings_youtube_library_sync_content_description">Liste de redare, albume, artiști, istorie, lucruri similare etc.</string>
-    <string name="settings_youtube_login_enabled_label">Activează conectarea la YouTube Music</string>
-    <string name="settings_youtube_music_title">Muzică YouTube</string>
-
+    <string name="settings_youtube_library_sync_content_description">Playlists, albums, artists, history, like, etc.</string>
+    <string name="settings_youtube_login_enabled_label">Enable YouTube Music login</string>
+    <string name="settings_youtube_music_title">YouTube Music</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Doriți să ștergeți toate descărcările (%d melodii)?</string>
-    <string name="library_cleanup_all_favorites_confirmation">Doriți să eliminați toate favoritele %d?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Doriți să resetați istoricul de ascultare pentru piesele %d?</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ ATENŢIE: Aceasta va şterge definitiv toate melodiile %d şi le va şterge din toate listele de redare. Această acţiune nu poate fi anulată!</string>
-    <string name="library_cleanup_entire_cache_confirmation">Vrei să ştergi întreaga geocutie (%d melodii)?</string>
-    <string name="library_cleanup_selected_cache_confirmation">Vrei să elimini aceste melodii %d din cache?</string>
-    <string name="library_cleanup_selected_downloads_confirmation">Doriți să ștergeți aceste descărcări %d?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Doriți să eliminați aceste melodii %d din favorite?</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Vrei să resetezi istoricul de ascultare pentru aceste melodii %d?</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ ATENŢIE: Aceasta va şterge definitiv aceste melodii %d şi le va şterge din toate listele de redare. Această acţiune nu poate fi anulată!</string>
-    <string name="library_cleanup_title">Gunoi inteligent</string>
+    <string name="library_cleanup_all_downloads_confirmation">Do you want to delete all downloads (%d songs)?</string>
+    <string name="library_cleanup_all_favorites_confirmation">Do you want to remove all %d favorites?</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Do you want to reset listening history for %d songs?</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ WARNING: This will PERMANENTLY DELETE all %d songs AND remove them from ALL playlists. This action cannot be undone!</string>
+    <string name="library_cleanup_entire_cache_confirmation">Do you want to clear the entire cache (%d songs)?</string>
+    <string name="library_cleanup_selected_cache_confirmation">Do you want to remove these %d songs from cache?</string>
+    <string name="library_cleanup_selected_downloads_confirmation">Do you want to delete these %d downloads?</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Do you want to remove these %d songs from favorites?</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Do you want to reset listening history for these %d songs?</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ WARNING: This will PERMANENTLY DELETE these %d songs AND remove them from ALL playlists. This action cannot be undone!</string>
+    <string name="library_cleanup_title">Smart trash</string>
     <string name="library_favorites_remove_dialog_title">Remove from favorites</string>
     <string name="library_listening_history_reset_dialog_title">Reset listening history</string>
-
     <!-- Song -->
     <string name="song_delete_confirmation">Do you really want to delete this song? It will be deleted from database.\nThis action is irreversible.</string>
     <string name="song_delete_dialog_title">Delete songs</string>
     <string name="song_metadata_update_action_open">Open update dialog</string>
     <string name="song_metadata_updated_count">Updated %1$d songs</string>
     <string name="song_play_time_action_reset">Reset total play time</string>
-
     <!-- Song Matching -->
-    <string name="song_matching_action_open">Potrivire versiune Album/Audio</string>
-    <string name="song_matching_all_confirmation">Doriți să potriviți melodiile nepotrivite %d?</string>
+    <string name="song_matching_action_open">Match Album/Audio version</string>
+    <string name="song_matching_all_confirmation">Do you want to match %d unmatched songs?</string>
     <string name="song_matching_dialog_title">Match songs</string>
     <string name="song_matching_progress_title">Matching songs</string>
-    <string name="song_matching_running_message">Se potrivesc piesele. Vă rugăm să așteptați. Nu minimizați sau ieșiți din aplicație</string>
-    <string name="song_matching_unmatched_label">Melodie neadecvată</string>
-
+    <string name="song_matching_running_message">Matching Songs. Please Wait. Do not Minimize or Exit the App</string>
+    <string name="song_matching_unmatched_label">Unmatched song</string>
     <!-- Statistics -->
-    <string name="statistics_action_delete_playback_events_count">Șterge %1$s evenimente de redare</string>
-    <string name="statistics_delete_playback_events_confirmation">Vrei cu adevărat să ștergi toate evenimentele de redare?</string>
+    <string name="statistics_action_delete_playback_events_count">Delete %1$s playback events</string>
+    <string name="statistics_delete_playback_events_confirmation">Do you really want to delete all playback events?</string>
     <string name="statistics_delete_playback_events_dialog_title">Delete playback events</string>
     <string name="statistics_items_limit_custom">Personalizat</string>
     <string name="statistics_items_limit_custom_value">Custom (%1$d)</string>
     <string name="statistics_items_limit_unlimited">Nelimitat</string>
-    <string name="statistics_listening_totals_description">Afișează numărul total de melodii ascultate și durata redării</string>
+    <string name="statistics_listening_totals_description">Show total number of songs heard and playback duration</string>
     <string name="statistics_max_number_of_items">Numărul maxim de elemente</string>
     <string name="statistics_maximum_items_description">Limit the number of entries shown in listening statistics.</string>
     <string name="statistics_of_time_taken">timp petrecut</string>
     <string name="statistics_open_desc">Open the Statistics screen</string>
-    <string name="statistics_playback_duration_label">Durata redării</string>
+    <string name="statistics_playback_duration_label">Playback duration</string>
     <string name="statistics_songs_heard">melodii ascultate</string>
-    <string name="statistics_title">Statistici</string>
-    <string name="statistics_top_period_title">Top %s din …</string>
-
+    <string name="statistics_title">Statistics</string>
+    <string name="statistics_top_period_title">Top %s of …</string>
     <!-- Storage -->
     <string name="storage_samsung_action_keep_system">Keep system storage</string>
     <string name="storage_samsung_action_use_private">Use private storage</string>
     <string name="storage_samsung_advice_message">Samsung\'s automatic memory management can delete N-Zik\'s downloads and cache files, even when you did not ask for it. To keep your downloads safe, use the private (app) storage location instead of system storage.</string>
     <string name="storage_samsung_advice_title">Samsung storage advice</string>
     <string name="storage_samsung_system_usage_message">You currently have %1$s of downloads and cache on system storage.</string>
-
     <!-- Sync -->
-    <string name="sync_action_sync">Sincronizează</string>
-    <string name="sync_albums">Sincronizare automată a albumelor salvate</string>
+    <string name="sync_action_sync">Sync</string>
+    <string name="sync_albums">Auto Sync Saved Albums</string>
     <string name="sync_albums_description">Auto-import liked albums from YouTube Music</string>
     <string name="sync_background_guard">Background Guard</string>
     <string name="sync_background_guard_description">Pause auto-sync when app is in background</string>
-    <string name="sync_channels">Sincronizare automată a canale-rol abonate</string>
+    <string name="sync_channels">Auto Sync Subscribed Channels</string>
     <string name="sync_channels_description">Auto-import subscribed artists from YouTube Music</string>
     <string name="sync_completed_with_errors">Sync completed with errors</string>
     <string name="sync_cooldown">Sync Cooldown</string>
@@ -2740,7 +2674,7 @@
     <string name="sync_import_uploaded_albums_description">Import albums you uploaded to YouTube Music</string>
     <string name="sync_import_uploaded_songs">Import Uploaded Songs</string>
     <string name="sync_import_uploaded_songs_description">Import songs you uploaded to YouTube Music</string>
-    <string name="sync_imported_playlists_automatic_title">Sincronizare automată a listelor de redare importate</string>
+    <string name="sync_imported_playlists_automatic_title">Auto Sync Imported Playlists</string>
     <string name="sync_likes">Auto Sync Liked Songs</string>
     <string name="sync_likes_description">Auto-import liked songs from YouTube Music</string>
     <string name="sync_no_items">No items to sync</string>
@@ -2779,11 +2713,10 @@
     <string name="sync_success_notification_artists">Successfully synchronized all artists.</string>
     <string name="sync_success_notification_playlists">Successfully synchronized all playlists.</string>
     <string name="sync_successful">Sync successful</string>
-
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">Do you want to retry syncing the %1$d failed items?</string>
-    <string name="sync_running_status">Sincronizare...</string>
-    <string name="sync_youtube_history_title">Istoricul YTM</string>
+    <string name="sync_running_status">Syncing...</string>
+    <string name="sync_youtube_history_title">YTM History</string>
     <string name="sync_youtube_like_failed">Failed to like the song in YouTube</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
     <string name="sync_youtube_like_success">Song(s) are Liked in YouTube</string>
@@ -2792,11 +2725,10 @@
     <string name="sync_youtube_playlist_batch_failed">Error occurred for the next 50 songs. Adding songs to the playlist one by one</string>
     <string name="sync_youtube_playlist_songs_added_suffix">songs are added in the YouTube Playlist. Repeat the process if there are any Missing Songs</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">songs will be added in the YTM playlist</string>
-    <string name="sync_youtube_playlists_title">Playlist-uri YTM</string>
-    <string name="sync_youtube_songs_remaining">%1$s melodii ramase</string>
+    <string name="sync_youtube_playlists_title">YTM Playlists</string>
+    <string name="sync_youtube_songs_remaining">%1$s Songs Remaining</string>
     <string name="sync_youtube_unlike_failed">Failed to unlike the song in YouTube</string>
     <string name="sync_youtube_unlike_success">Song is Unliked in YouTube</string>
-
     <!-- Theme -->
     <string name="theme_custom_accent_description">Choose the custom accent color used by this theme.</string>
     <string name="theme_dark_palette_accent_description">Choose the color for accented controls and highlights in the dark palette.</string>
@@ -2821,108 +2753,104 @@
     <string name="theme_light_palette_text_secondary_description">Choose the color for secondary text in the light palette.</string>
     <string name="theme_mode_description">Choose when the app uses its light or dark palette.</string>
     <string name="theme_mode_pitch_black">Negru complet</string>
-    <string name="theme_palette_custom">Personalizat</string>
+    <string name="theme_palette_custom">Customized</string>
     <string name="theme_palette_description">Choose the color palette used throughout the app.</string>
-    <string name="theme_palette_dynamic">Dinamic</string>
+    <string name="theme_palette_dynamic">Dynamic</string>
     <string name="theme_palette_material_you">Material You</string>
-    <string name="theme_palette_modern_black">Negru modern</string>
-    <string name="theme_palette_pure_black">Negru pur</string>
+    <string name="theme_palette_modern_black">Modern Black</string>
+    <string name="theme_palette_pure_black">Pure Black</string>
     <string name="theme_shake_sensitivity_disabled">Dezactivat</string>
     <string name="theme_shake_sensitivity_high">High (2.2G)</string>
     <string name="theme_shake_sensitivity_low">Low (5.0G)</string>
     <string name="theme_shake_sensitivity_medium">Medium (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Very High (1.0G)</string>
-
     <!-- Thumbnail -->
-    <string name="thumbnail_action_edit">Editează miniatura</string>
+    <string name="thumbnail_action_edit">Edit Thumbnail</string>
     <string name="thumbnail_action_pick_from_gallery">Pick from gallery</string>
-    <string name="thumbnail_action_reset">Resetează miniatura</string>
-    <string name="thumbnail_empty">Nicio miniatură prezentă</string>
+    <string name="thumbnail_action_reset">Reset Thumbnail</string>
+    <string name="thumbnail_empty">No Thumbnail Present</string>
     <string name="thumbnail_layout_dialog_title">Thumbnail layout</string>
     <string name="thumbnail_not_selected">Miniatură neselectată</string>
-    <string name="thumbnail_remove_failed">Eliminarea miniaturii a eșuat</string>
-    <string name="thumbnail_remove_success">Miniatura a fost eliminată</string>
-
+    <string name="thumbnail_remove_failed">Failed to Remove Thumbnail</string>
+    <string name="thumbnail_remove_success">Removed Thumbnail</string>
     <!-- Updates -->
-    <string name="updates_action_check">Verifică actualizarea</string>
-    <string name="updates_action_check_now">Verifică acum</string>
-    <string name="updates_action_download_current_version">Descărcați din nou ultima actualizare</string>
-    <string name="updates_action_install">Instalează</string>
-    <string name="updates_action_open_download">Du-te la descărcare</string>
-    <string name="updates_automatic_check_description">Afișează notificare pentru a solicita actualizarea aplicației când o nouă versiune este disponibilă.</string>
-    <string name="updates_automatic_check_title">Activează verificarea automată a actualizărilor</string>
-    <string name="updates_available">Actualizare disponibilă</string>
-    <string name="updates_available_download_size">Dimensiunea fişierului este %s</string>
-    <string name="updates_available_version_message">Noua versiune %s poate fi descărcată!</string>
-    <string name="updates_beta_enabled_label">Actualizări beta</string>
-    <string name="updates_beta_to_stable_warning_message">Tu treci înapoi la o construcție stabilă. Deoarece ai folosit o versiune Beta, este foarte recomandat să vă salvați datele și să resetați complet aplicația (ștergeți datele sau reinstalați) pentru a asigura stabilitatea înainte de a raporta orice problemă.</string>
-    <string name="updates_beta_to_stable_warning_title">Trecerea înapoi la Stable Build</string>
+    <string name="updates_action_check">Check Update</string>
+    <string name="updates_action_check_now">Check now</string>
+    <string name="updates_action_download_current_version">Download again last update</string>
+    <string name="updates_action_install">Install</string>
+    <string name="updates_action_open_download">Go to download</string>
+    <string name="updates_automatic_check_description">Show notification to prompt app update when new version is available.</string>
+    <string name="updates_automatic_check_title">Enable automatic update check</string>
+    <string name="updates_available">Update available</string>
+    <string name="updates_available_download_size">The file size is %s</string>
+    <string name="updates_available_version_message">The new version %s can be downloaded!</string>
+    <string name="updates_beta_enabled_label">Beta Updates</string>
+    <string name="updates_beta_to_stable_warning_message">You are switching back to a Stable build. Since you were using a Beta build, it is highly recommended to backup your data and completely reset the app (clear data or reinstall) to ensure stability before reporting any issue.</string>
+    <string name="updates_beta_to_stable_warning_title">Switching back to Stable Build</string>
     <string name="updates_build_beta_label">BETA</string>
     <string name="updates_build_debug_label">DEBUG</string>
     <string name="updates_build_dev_label">DEV</string>
-    <string name="updates_build_minified_label">MINIFAT</string>
+    <string name="updates_build_minified_label">MINIFIED</string>
     <string name="updates_build_release_label">RELEASE</string>
-    <string name="updates_cache_cleared">Geocutie ştearsă</string>
-    <string name="updates_changelog_title">Ce este nou în %s</string>
-    <string name="updates_channel_name">Actualizări aplicație</string>
-    <string name="updates_check_mode_ask">Întreabă</string>
-    <string name="updates_check_mode_ask_status">Întreabă</string>
-    <string name="updates_check_mode_disabled_status">Dezactivat</string>
-    <string name="updates_check_mode_enabled_status">Activat</string>
-    <string name="updates_check_permission_description">Când o actualizare este disponibilă, vei fi întrebat dacă vrei să o instalezi. Nu vor exista instalări automate, fără știrea ta.</string>
-    <string name="updates_check_permission_message">Verifică pe Github pentru actualizări?</string>
-    <string name="updates_check_permission_screening_note">Dar aceste actualizări nu vor trece prin filtrul suplimentar efectuat, de exemplu, la IzzyOnDroid sau F-Droid.</string>
-    <string name="updates_check_permission_settings_note">Poți să-l activezi/dezactivezi din setări.</string>
-    <string name="updates_checking_status">Se caută actualizări…</string>
-    <string name="updates_download_completed">Actualizare descărcată</string>
-    <string name="updates_download_empty_response">Corp de răspuns gol</string>
-    <string name="updates_download_failed">Actualizarea descărcării a eșuat</string>
-    <string name="updates_download_server_error">Eroare de server: %1$s %2$s</string>
-    <string name="updates_downloading_status">Descărcare actualizare</string>
-    <string name="updates_file_size">Dimensiune fişier: %s</string>
-    <string name="updates_install_cancel_for_backup">Nu, mă voi întoarce mai întâi</string>
-    <string name="updates_install_confirm">Da, instalează</string>
-    <string name="updates_install_confirmation_message">Vă rugăm să reţineţi că vă salvaţi setările şi baza de date muzicală. Este posibil ca o actualizare să fie coruptă sau stricată în cazul în care schema bazei de date este editată, deci este foarte recomandată.</string>
+    <string name="updates_cache_cleared">Cache cleared</string>
+    <string name="updates_changelog_title">What\'s new in %s</string>
+    <string name="updates_channel_name">App Updates</string>
+    <string name="updates_check_mode_ask">Ask</string>
+    <string name="updates_check_mode_ask_status">Ask user</string>
+    <string name="updates_check_mode_disabled_status">Update disabled</string>
+    <string name="updates_check_mode_enabled_status">Update enabled</string>
+    <string name="updates_check_permission_description">When an update is available, you will be asked if you want to install it. There won\'t be automated installs, behind your back.</string>
+    <string name="updates_check_permission_message">Check at Github for updates?</string>
+    <string name="updates_check_permission_screening_note">But these updates would not go through the additional screening performed at e.g. IzzyOnDroid or F-Droid.</string>
+    <string name="updates_check_permission_settings_note">You can still turn it ON/OFF from the settings.</string>
+    <string name="updates_checking_status">Checking for updates…</string>
+    <string name="updates_download_completed">Update downloaded</string>
+    <string name="updates_download_empty_response">Empty response body</string>
+    <string name="updates_download_failed">Update download failed</string>
+    <string name="updates_download_server_error">Server error: %1$s %2$s</string>
+    <string name="updates_downloading_status">Downloading update</string>
+    <string name="updates_file_size">File size: %s</string>
+    <string name="updates_install_cancel_for_backup">No, I will back up first</string>
+    <string name="updates_install_confirm">Yes, install</string>
+    <string name="updates_install_confirmation_message">Please remember to back up your settings and music database. An update might possibly corrupt or break it if the database schema is edited, so this is highly recommended.</string>
     <string name="updates_install_dialog_title">Install update</string>
-    <string name="updates_install_failed">Instalare eșuată: %s</string>
-    <string name="updates_last_check_format">Ultima verificare: %s</string>
-    <string name="updates_major_warning_message">Această versiune aduce schimbări importante. Este foarte recomandat să vă salvați datele și să resetați complet aplicația curățând toate datele sau reinstalând-o, înainte de a raporta orice problemă.</string>
-    <string name="updates_major_warning_title">Actualizare majoră (%1$s)</string>
-    <string name="updates_never_checked">Niciodată verificat</string>
-    <string name="updates_no_update_available">Nu sunt actualizări disponibile</string>
-    <string name="updates_not_available_yet">Actualizarea nu este încă disponibilă sau nu a fost găsită</string>
-    <string name="updates_notification_install_action">Apasă pentru instalare</string>
-    <string name="updates_reinstalling_status">Reinstalare actualizare</string>
-    <string name="updates_reinstalling_version_progress">Reinstalare: %1$s (%2$s)</string>
-    <string name="updates_stable_to_beta_warning_message">Vă comutați la un build Beta. Această versiune poate conține erori sau poate fi instabilă. Este foarte recomandat să vă salvați datele înainte de a continua sau de a raporta orice problemă.</string>
-    <string name="updates_stable_to_beta_warning_title">Trecerea la versiunea Beta</string>
-    <string name="updates_starting_status">Pornire…</string>
-    <string name="updates_unavailable_build_description">Dacă vedeți acest mesaj, înseamnă că construcția dvs. are activată actualizarea automată, vă permite să actualizați aplicația manual de la github</string>
-    <string name="updates_up_to_date">Actualizare actualizată</string>
-    <string name="updates_warning_acknowledge">Am înțeles</string>
-
+    <string name="updates_install_failed">Failed to install: %s</string>
+    <string name="updates_last_check_format">Last check: %s</string>
+    <string name="updates_major_warning_message">This version brings important changes. It is highly recommended to backup your data and completely reset the app by clearing all data or re-installing it, before reporting any issue.</string>
+    <string name="updates_major_warning_title">Major update (%1$s)</string>
+    <string name="updates_never_checked">Never checked</string>
+    <string name="updates_no_update_available">No updates available</string>
+    <string name="updates_not_available_yet">Update not available yet or build not found</string>
+    <string name="updates_notification_install_action">Tap to install</string>
+    <string name="updates_reinstalling_status">Reinstalling update</string>
+    <string name="updates_reinstalling_version_progress">Reinstalling: %1$s (%2$s)</string>
+    <string name="updates_stable_to_beta_warning_message">You are switching to a Beta build. This version may contain bugs or be unstable. It is highly recommended to backup your data before proceeding or reporting any issue.</string>
+    <string name="updates_stable_to_beta_warning_title">Switching to Beta Build</string>
+    <string name="updates_starting_status">Starting…</string>
+    <string name="updates_unavailable_build_description">If you see this message it means that your build doesnt have auto update enabled, pls update the app manually from github</string>
+    <string name="updates_up_to_date">Up to date</string>
+    <string name="updates_warning_acknowledge">I understand</string>
     <!-- Visualizer -->
-    <string name="visualizer_action_open_permission_settings">Deschide setările de permisiuni</string>
-    <string name="visualizer_animation_bars">Bare</string>
-    <string name="visualizer_animation_bubbles">Bule</string>
-    <string name="visualizer_animation_crazy_bars">Bare haotice</string>
-    <string name="visualizer_animation_crazy_points">Puncte haotice</string>
+    <string name="visualizer_action_open_permission_settings">Open permission settings</string>
+    <string name="visualizer_animation_bars">Bars</string>
+    <string name="visualizer_animation_bubbles">Bubbles</string>
+    <string name="visualizer_animation_crazy_bars">Crazy bars</string>
+    <string name="visualizer_animation_crazy_points">Crazy points</string>
     <string name="visualizer_artwork_visible_description">Keep album artwork visible with the audio visualization.</string>
     <string name="visualizer_auto_hide_buttons_description">Display the controls for the audio visualization in the player.</string>
-    <string name="visualizer_auto_hide_buttons_title">Ascunde automat butoanele vizualizatorului</string>
+    <string name="visualizer_auto_hide_buttons_title">Auto-hide visualizer buttons</string>
     <string name="visualizer_bar">Bară de vizualizare</string>
-    <string name="visualizer_color_source">Culoare vizualizatori</string>
+    <string name="visualizer_color_source">Visualizers Color</string>
     <string name="visualizer_color_source_description">Choose the color source used for the audio visualization.</string>
     <string name="visualizer_custom_color_description">Choose the custom color used by this component.</string>
     <string name="visualizer_dark_background_description">Use a black background behind the audio visualization.</string>
-    <string name="visualizer_dark_background_title">Fundal întunecat pentru vizualizator</string>
-    <string name="visualizer_debug_background">VisualizerFundal</string>
+    <string name="visualizer_dark_background_title">Dark background for visualizer</string>
+    <string name="visualizer_debug_background">VisualizerBackground</string>
     <string name="visualizer_enabled_description">Display an animated visualization that responds to the audio.</string>
     <string name="visualizer_line_thickness">Grosime linie vizualizator</string>
     <string name="visualizer_line_thickness_description">Adjust the width of the lines in the audio visualization.</string>
-    <string name="visualizer_microphone_permission_message">Vizualizatorul necesită permisiunea microfonului, acordă te rog.</string>
+    <string name="visualizer_microphone_permission_message">Visualizer effect require mic permission, grant please.</string>
     <string name="visualizer_title">Vizualizator</string>
-
     <!-- Widget -->
     <string name="widget_action_play_pause">Play / Pause</string>
     <string name="widget_action_tap_to_play">Tap to play</string>
