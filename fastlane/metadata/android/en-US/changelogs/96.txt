@@ -1,0 +1,12 @@
+Added:
+- Optional Glass styling with customizable switches and a floating dock.
+- Listen Together invite links.
+- YouTube playlist and podcast filters, including in Android Auto.
+- Refresh linked playlists when opened.
+
+Improved:
+- Shared artwork colors across the player, themes and widgets.
+
+Fixed:
+- Crossfade timing, external EQ and playback notifications.
+- Player layout in landscape, queue controls and Back gestures.

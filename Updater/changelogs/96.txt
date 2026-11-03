@@ -1,0 +1,32 @@
+Added:
+- Enable optional Glass styling across navigation, playback, your library, search, profiles, Rewind, onboarding and the updater. Customize the floating dock, liquid switches, surface effects and touch feedback.
+- Keep Glass preferences separate for each profile and include them in settings backups.
+- Open Listen Together invitation links directly in the app. The room code is filled in automatically, and the app can request to join if you already saved a username (issue https://github.com/N-Zik-Group/N-Zik/issues/923).
+- Filter saved YouTube playlists and podcasts separately on your phone and in Android Auto (issue https://github.com/N-Zik-Group/N-Zik/issues/938).
+- Choose whether linked playlists refresh when opened. Locked playlists keep your local track order where possible and retain their saved tracks if a refresh fails.
+
+Improved:
+- Share artwork colors across the theme, player, lyrics, visualizer and widgets. Keep dark tones when using monochrome artwork colors.
+- Make Glass mini-player controls more compact, align collection actions and keep explicit badges consistent.
+- Reduce rendering work behind covered Glass surfaces while keeping the active menu or dialog responsive.
+- Show compact results in Settings search and jump directly to matching options. Category resets now restore the same defaults used on first launch.
+- Update translations and organize shared text resources.
+
+Fixed:
+- Keep playback progress and track information current in notifications and Android Auto during buffering (issue https://github.com/N-Zik-Group/N-Zik/issues/938).
+- Restore external EQ through crossfades, honor the configured fade duration and stop outgoing audio from playing twice (issues https://github.com/N-Zik-Group/N-Zik/issues/939, https://github.com/N-Zik-Group/N-Zik/issues/921#issuecomment-6477252405, https://github.com/N-Zik-Group/N-Zik/issues/756).
+- Play the selected Android Auto search result and improve search paging, offline browsing and artwork (issue https://github.com/N-Zik-Group/N-Zik/issues/938).
+- Improve podcast loading and retry behavior, including responses with new decorative icons or translated playback labels.
+- Keep artwork and controls stable during rotation, carousel swipes and player expansion. Restore seekbar updates after scrubbing or using external controls.
+- Make Previous restart the first track when it has no previous track, and keep transport controls in sync with the queue.
+- Respect animation settings during predictive Back and dismiss an active search before leaving the page.
+- Improve queue transparency, menu edges, dialog outlines and refresh indicator contrast in Pitch Black.
+- Keep Quick Picks loading in sync with the active account and validate Glass preferences before restoring them.
+
+Removed:
+- Retire the ViMusic layout and the old toast style selector.
+- Remove preset buttons from Cover sliders and retire legacy full/full32 APK names in the updater.
+
+Other:
+- Build release variants from one pinned source revision and compile the native loader with the project toolchain to support reproducible F-Droid builds (issue https://github.com/N-Zik-Group/N-Zik/issues/937).
+- Update the Android Gradle Plugin, cap Kotlin compiler memory and remove unused code and resources.
