@@ -44,7 +44,7 @@
 
 [![Launched on DevGlobe](https://devglobe.app/badges/launched-on-devglobe-dark.svg)](https://devglobe.app/projects/n-zik?utm_source=badge&utm_medium=embed)
 
-[![Localization Progress](https://badges.crowdin.net/N-Zik/localized.svg)](https://crowdin.com/project/N-Zik) [![License: GPL v3](https://img.shields.io/github/license/N-Zik-Group/N-Zik?color=blue)](https://www.gnu.org/licenses/gpl-3.0)
+[![License: GPL v3](https://img.shields.io/github/license/N-Zik-Group/N-Zik?color=blue)](https://www.gnu.org/licenses/gpl-3.0)
 [![CodeFactor](https://www.codefactor.io/repository/github/N-Zik-Group/n-zik/badge)](https://www.codefactor.io/repository/github/N-Zik-Group/n-zik)
 
 </div>
@@ -262,53 +262,19 @@ Glass builds on [Square / Convx Project](https://github.com/Lelonio/Square) (GPL
     <img width="180" src="https://github.com/user-attachments/assets/d24f97d0-5e9c-45a7-9f44-1ee5be61e22a" alt="Playlist Widget Preview 2"/>
 </div>
 
-# 🌐 Supported Languages
+# 🌐 Translations
 
-Thanks to all our amazing contributors!  
-Here are the languages currently supported:
+## Overall
 
-- 🇿🇦 **Afrikaans**: [HelloZebra1133](https://crowdin.com/profile/HelloZebra1133)
-- 🇸🇦 **Arabic**: [ABS zarzis](https://crowdin.com/profile/abszar), [Ahmad Al Juwaisri](https://crowdin.com/profile/juwaisri)
-- 🇦🇿 **Azerbaijani**: [Nizami Səmidov](https://crowdin.com/profile/nizamismidov4), [Notesuree](https://github.com/Notesuree)
-- 🇧🇩 **Bangla**: [Ann Naser Nabil](https://github.com/AnnNaserNabil)
-- 🇷🇺 **Bashkir**: [Shilave malay](https://crowdin.com/profile/Bash.boy)
-- 🇪🇸 **Catalan**: [Adrià Martínez](https://crowdin.com/profile/marxally), [Aniol](https://crowdin.com/profile/aniol), [EMC_Translator](https://crowdin.com/profile/EMC_Translator)
-- 🇨🇳 **Chinese (Simplified)**: [benhaotang](https://crowdin.com/profile/benhaotang), [SharkChan0622](https://github.com/SharkChan0622)
-- 🇹🇼 **Chinese (Traditional)**: [YeeTW](https://github.com/yjcTW), [SharkChan0622](https://github.com/SharkChan0622)
-- 🇨🇿 **Czech**: [ikanakova](https://github.com/ikanakova), [JZITNIK-github](https://github.com/JZITNIK-github)
-- 🇩🇰 **Danish**: [cultcats](https://crowdin.com/profile/cultcats)
-- 🇳🇱 **Dutch**: [BabyBenefactor](https://crowdin.com/profile/BabyBenefactor)
-- 🇺🇸 **English**: [Alejandro Moctezuma](https://crowdin.com/profile/alejandromoc), [twistios](https://crowdin.com/profile/twistios), [Smk90](https://crowdin.com/profile/smk90), [CanIn](https://crowdin.com/profile/canin), [koliwan](https://crowdin.com/profile/koliwan), [Glich440](https://github.com/Glich440), [fast4x](https://github.com/fast4x)
-- 🌍 **Esperanto**: [kefiiris](https://github.com/kefiiris)
-- 🇪🇪 **Estonian**: [beez276](https://crowdin.com/profile/beez276)
-- 🇵🇭 **Filipino**: [Clyde-Timonera](https://github.com/Clyde-Timonera)
-- 🇫🇮 **Finnish**: [Smk90](https://crowdin.com/profile/smk90), [rikalaj](https://crowdin.com/profile/rikalaj)
-- 🇫🇷 **French**: [Mickael81](https://crowdin.com/profile/mickael81), [esophagusdecency](https://crowdin.com/profile/esophagusdecency), [NEVARLeVrai](https://github.com/NEVARLeVrai)
-- 🇪🇸 **Galician**: [zordor](https://crowdin.com/profile/zordor), [ninjum](https://crowdin.com/profile/ninjum)
-- 🇩🇪 **German**: [twistqj](https://crowdin.com/profile/twistqj), [nitro4542](https://crowdin.com/profile/nitro4542), [twistios](https://crowdin.com/profile/twistios), [Eddisch](https://crowdin.com/profile/eddisch2010), and more...
-- 🇬🇷 **Greek**: [Marinkas](https://github.com/Marinkas)
-- 🇮🇱 **Hebrew**: [opcitgv](https://crowdin.com/profile/opcitgv), [TheCreeperDuck](https://crowdin.com/profile/thecreeperduck)
-- 🇮🇳 **Hindi**: [NikunjKhangwal](https://crowdin.com/profile/nikunjkhangwal), [Sharunkumar](https://crowdin.com/profile/sharunkumar), [Th3-C0der](https://github.com/Th3-C0der)
-- 🇭🇺 **Hungarian**: [Zan1456](https://crowdin.com/profile/Zan1456), [Ndvok](https://crowdin.com/profile/ndvok)
-- 🇮🇹 **Italian**: [Fabio Iotti](https://crowdin.com/profile/bruce965), [CiccioDerole](https://crowdin.com/profile/CiccioDerole), [fast4x](https://github.com/fast4x)
-- 🇮🇩 **Indonesian**: [luthfialfarabi](https://crowdin.com/profile/luthfialfarabi), [teddysulaimanGL](https://github.com/teddysulaimanGL)
-- 🌐 **Interlingua**: [softinterlingua](https://github.com/softinterlingua)
-- 🇯🇵 **Japanese**: [maboroshin](https://crowdin.com/profile/maboroshin), [Mid_Vur_Shaan](https://crowdin.com/profile/Mid_Vur_Shaan)
-- 🇰🇷 **Korean**: [ZeroZero00](https://crowdin.com/profile/ZeroZero00), [TsyQax](https://crowdin.com/profile/TsyQax)
-- 🇳🇴 **Norwegian**: [Xyrcon](https://crowdin.com/profile/xyrcon)
-- 🇮🇷 **Persian**: [CUMOON](https://github.com/CUMOON)
-- 🇵🇱 **Polish**: [Krzysztof](https://crowdin.com/profile/scrummybingus), [AntoniNowak](https://crowdin.com/profile/AntoniNowak), and more...
-- 🇵🇹 **Portuguese (Portugal)**: [ManuelCoimbra](https://crowdin.com/profile/ManuelCoimbra)
-- 🇧🇷 **Portuguese (Brazil)**: [vs-machado](https://crowdin.com/profile/vs-machado), [xSyntheticWave](https://crowdin.com/profile/xSyntheticWave), [NEVARLeVrai](https://github.com/NEVARLeVrai)
-- 🇷🇴 **Romanian**: [OrangeZXZ](https://github.com/OrangeZxZ)
-- 🇷🇺 **Russian**: [Eddisch](https://crowdin.com/profile/eddisch2010), [Alnoer](https://crowdin.com/profile/Alnoer), [siggi1984](https://github.com/siggi1984), and more...
-- 🇷🇸 **Serbian (Cyrillic & Latin)**: [IvanMaksimovic77](https://github.com/IvanMaksimovic77)
-- 🇪🇸 **Spanish**: [Alejandro Moctezuma](https://crowdin.com/profile/alejandromoc), [DanielSevillano](https://github.com/DanielSevillano), and more...
-- 🇱🇰 **Sinhala**: [VINULA2007](https://crowdin.com/profile/VINULA2007)
-- 🇸🇪 **Swedish**: [sebbe.ekman](https://crowdin.com/profile/sebbe.ekman)
-- 🇹🇷 **Turkish**: [abfreeman](https://github.com/abfreeman), [mikropsoft](https://github.com/mikropsoft), and more...
-- 🇺🇦 **Ukrainian**: [Avin](https://crowdin.com/profile/avinateachip), [Crayz310](https://github.com/Crayz310), and more...
-- 🇻🇳 **Vietnamese**: [teaminh](https://crowdin.com/profile/teaminh)
+[![Overall](https://crowdin-stats.rewake.org/embed/29f72ed2-fc01-4570-8c8f-3e6e9acbaf0c/overall.svg?unit=strings&theme=dark&bg=transparent&text=f4efff&muted=b8a9ca&accent=8d5cff&border=transparent)](https://crowdin.com/project/N-Zik)
+
+## Translation Progress
+
+[![Translation Progress](https://crowdin-stats.rewake.org/embed/29f72ed2-fc01-4570-8c8f-3e6e9acbaf0c/table.svg?theme=dark&bg=transparent&text=f4efff&muted=b8a9ca&accent=8d5cff&border=transparent)](https://crowdin.com/project/N-Zik)
+
+## Contributors
+
+[![Contributors](https://crowdin-stats.rewake.org/embed/29f72ed2-fc01-4570-8c8f-3e6e9acbaf0c/contributors.svg?limit=100&unit=strings&avatarSize=35&theme=dark&bg=transparent&text=f4efff&muted=b8a9ca&accent=8d5cff&border=transparent)](https://crowdin.com/project/N-Zik)
 
 ## 🌍 Help Translate
 
@@ -323,6 +289,7 @@ Join us on Crowdin!
 > ❓ Don't see your language?
 
 [![Translated with Crowdin](https://badges.crowdin.net/badge/light/crowdin-on-dark.png)](https://crowdin.com/project/N-Zik)
+
 
 ---
 
@@ -424,7 +391,7 @@ New:
 ### 🌍 Platform & Ecosystem:
 
 - [**Kotlin**](https://kotlinlang.org/) / [**JetBrains Compose Multiplatform**](https://www.jetbrains.com/compose-multiplatform/): Language and UI framework.
-- [**Crowdin**](https://crowdin.com/): Community translation platform powering 30+ languages.
+- [**Crowdin**](https://crowdin.com/): Community translation platform.
 - [**Android Open Source Project (AOSP)**](https://source.android.com/): The foundation of it all.
 
 # 👀 Status
