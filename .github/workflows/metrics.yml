@@ -345,9 +345,9 @@ jobs:
           render_chart(
               [(datetime.strptime(point["time"], "%Y-%m-%d %H:%M").replace(tzinfo=history_zone).timestamp(),
                 point["downloads"]) for point in downloads],
-              "📈 Download Growth", "chart.svg", "Downloads",
+              "📈 Download Growth", "download-growth.svg", "Downloads",
           )
-          render_chart(star_history(), "⭐ Star Growth", "star-chart.svg", "GitHub Stars")
+          render_chart(star_history(), "⭐ Star Growth", "star-growth.svg", "GitHub Stars")
           PYEOF
 
           python3 plot_chart.py
@@ -356,4 +356,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "chore: update stats and chart [skip ci]"
-          file_pattern: assets/stats/download-card.svg assets/stats/chart.svg assets/stats/star-chart.svg assets/stats/history.json
+          file_pattern: assets/stats/download-card.svg assets/stats/download-growth.svg assets/stats/star-growth.svg assets/stats/history.json
