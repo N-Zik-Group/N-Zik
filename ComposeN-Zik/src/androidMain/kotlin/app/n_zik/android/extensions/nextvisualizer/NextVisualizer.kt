@@ -23,6 +23,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import app.it.fast4x.rimusic.enums.ColorPaletteMode
+import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,7 +41,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,7 +55,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
@@ -97,18 +98,15 @@ import app.n_zik.android.components.glass.overlayViewportShape
 import app.n_zik.android.thumbnailShape
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import app.n_zik.android.components.menu.visualizer.VisualizerSettingsMenu
-import app.n_zik.android.components.player.extractM3ECoverColors
-import app.n_zik.android.components.player.m3eCoverForegroundArgb
+import app.n_zik.android.components.player.rememberArtworkDisplayColors
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import androidx.compose.foundation.shape.CircleShape
 import app.it.fast4x.rimusic.utils.visualizerLineThicknessKey
 import app.it.fast4x.rimusic.utils.visualizerWhiteColorOptionKey
 import app.it.fast4x.rimusic.utils.visualizerCustomColorKey
-import androidx.palette.graphics.Palette
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -184,29 +182,29 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
             var circleBitmap by remember { mutableStateOf(Icon.getCircledBitmap(APP_ICON_BITMAP)) }
             val visualizerWhiteColorOption by rememberPreference(visualizerWhiteColorOptionKey, enums.VisualizerWhiteColorOption.White)
             val visualizerCustomColor by rememberPreference(visualizerCustomColorKey, android.graphics.Color.WHITE)
-            var dominantColor by remember { mutableStateOf(android.graphics.Color.WHITE) }
-            
-            val isDarkTheme = colorPalette().isDark
-            LaunchedEffect(bitmapCover, isDarkTheme) {
-                kotlinx.coroutines.withContext(NzikDispatchers.MEDIA) {
-                    try {
-                        val coverColors = extractM3ECoverColors(bitmapCover, isDarkTheme)
-                        if (coverColors != null) {
-                            // OQ2=B (spec `spec-fix-palette-extractor-riplay-reference`): the "cover"
-                            // color renders the dominant swatch, the same hue the app's dynamic
-//
-                            // accent is built from (RiPlay reference).
-                            dominantColor = m3eCoverForegroundArgb(coverColors.dominant, !isDarkTheme)
-                        } else {
-                            val palette = Palette.from(bitmapCover).generate()
-                            dominantColor = palette.getDominantColor(android.graphics.Color.WHITE)
+            val artworkPlayer = binder?.player
+            var currentArtworkUri by remember(artworkPlayer) {
+                mutableStateOf(artworkPlayer?.mediaMetadata?.artworkUri
+                    ?: artworkPlayer?.currentMediaItem?.mediaMetadata?.artworkUri)
+            }
+            artworkPlayer?.DisposableListener {
+                object : Player.Listener {
+                    override fun onEvents(player: Player, events: Player.Events) {
+                        if (events.containsAny(Player.EVENT_MEDIA_ITEM_TRANSITION,
+                                Player.EVENT_MEDIA_METADATA_CHANGED, Player.EVENT_TIMELINE_CHANGED)) {
+                            currentArtworkUri = player.mediaMetadata.artworkUri
+                                ?: player.currentMediaItem?.mediaMetadata?.artworkUri
                         }
-                    } catch (e: Exception) {
-                        dominantColor = android.graphics.Color.WHITE
                     }
                 }
             }
-            
+            val paletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
+            val requestedDark = paletteMode == ColorPaletteMode.Dark || paletteMode == ColorPaletteMode.PitchBlack ||
+                (paletteMode == ColorPaletteMode.System && isSystemInDarkTheme())
+            val coverDisplay = rememberArtworkDisplayColors(currentArtworkUri?.toString(), requestedDark)
+            val dominantColor = if (coverDisplay?.colors != null || coverDisplay?.forceDark == true)
+                coverDisplay.foreground?.toArgb() ?: android.graphics.Color.WHITE else android.graphics.Color.WHITE
+
             val accentColor = colorPalette().accent
             val color = remember(visualizerWhiteColorOption, visualizerCustomColor, accentColor, dominantColor) {
                 when (visualizerWhiteColorOption) {
@@ -217,9 +215,8 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
                 }
             }
 
-            val coroutineScope = rememberCoroutineScope()
-            val currentArtworkUri = binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri
 
+            // These bitmaps supply actual artwork pixels to the painters, never color extraction.
             LaunchedEffect(currentArtworkUri) {
                 withContext(NzikDispatchers.DATA) {
                     try {
@@ -245,36 +242,6 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
                 }
             }
 
-            binder?.player?.DisposableListener {
-                object : Player.Listener {
-                    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                        coroutineScope.launch(NzikDispatchers.DATA) {
-                            try {
-                                val bitmap = getBitmapFromUrl(
-                                    context,
-                                    mediaItem?.mediaMetadata?.artworkUri.toString()
-                                        .resize(1000, 1000)
-                                ) ?: throw Exception("Bitmap is null")
-                                val circled = withContext(NzikDispatchers.MEDIA) { Icon.getCircledBitmap(bitmap) }
-                                withContext(NzikDispatchers.UI) {
-                                    bitmapCover = bitmap
-                                    circleBitmap = circled
-                                }
-                            } catch (e: CancellationException) {
-                                throw e
-                            } catch (e: Exception) {
-                                val circled = withContext(NzikDispatchers.MEDIA) { Icon.getCircledBitmap(APP_ICON_BITMAP) }
-                                withContext(NzikDispatchers.UI) {
-                                    bitmapCover = APP_ICON_BITMAP
-                                    circleBitmap = circled
-                                }
-                                Timber.tag("NextVisualizer").e("Failed to get bitmap in NextVisualizer ${e.stackTraceToString()}")
-                            }
-                        }
-                    }
-                }
-            }
-            
             val visualizerLineThickness by rememberPreference(visualizerLineThicknessKey, 6f)
             
             val visualizersList = remember(bitmapCover, circleBitmap, color, visualizerLineThickness) {

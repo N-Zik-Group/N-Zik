@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">新たな検索語句の保存も履歴の表示もしない</string>
     <string name="clear_search_history">検索履歴を削除</string>
     <string name="history_is_empty">履歴なし</string>
-    <string name="service_lifetime">サービス有効期間</string>
     <string name="battery_optimizations_applied">充電最適化を使用中、一時停止時に再生通知が突然消えることがあります。</string>
     <string name="is_android12">Android 12 以降では、「不可視サービス」オプションを有効にするには、バッテリーの最適化を無効にする必要があります。</string>
     <string name="ignore_battery_optimizations">充電最適化を無視</string>
@@ -193,8 +192,6 @@
     <string name="languages">言語</string>
     <string name="app_language">アプリ言語</string>
     <string name="in_alphabetical_order">アルファベット順:</string>
-    <string name="contributors">貢献者</string>
-    <string name="troubleshooting">トラブルシューティング</string>
     <string name="english">英語</string>
     <string name="italian">イタリア語 (Italiano)</string>
     <string name="czech">チェコ語 (Čeština)</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">すべてダウンロードしてもよろしいですか？</string>
     <string name="import_playlist">プレイリストをインポート</string>
     <string name="lang_ukrainian">ウクライナ語 (&lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; )</string>
-    <string name="proxy">プロキシ</string>
     <string name="enable_proxy">プロキシを有効にする</string>
     <string name="proxy_mode">プロキシの種類</string>
     <string name="proxy_host">プロキシホスト</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">このフォルダは既に存在します</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">このフォルダをブラックリストから除去しますか？</string>
     <string name="player_appearance">プレイヤーの外観</string>
-    <string name="player_action_bar">プレイヤーアクションバー</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
     <string name="quick_picks_content">Quick Picks sections</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">その他</string>
     <string name="swipe_to_action">スワイプしてアクション</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">曲の垂直リスト内の曲を左右にスワイプして操作を実行</string>
-    <string name="smart_recommendations">スマートレコメンデーション</string>
     <string name="player_collapsed_disable_swiping_down">下スワイプを無効化</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">最小化されている間、下スワイプでプレイヤーを閉じること、キューの除去をしない</string>
     <string name="sort_date_liked">お気に入り日時</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">有効なら、エラーに焦点を当てたログファイルを作成します</string>
     <string name="audio_waveform">Audio waveform</string>
-    <string name="title_backup_and_restore">バックアップと復元</string>
     <string name="message_excluded_s_songs">%s 曲を除外しました</string>
     <string name="show_thumbnail">サムネイルを表示</string>
     <string name="show_lyrics_thumbnail">歌詞のサムネイルを表示</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">ラウドネスブースト</string>
     <string name="loudness_boost_level_info">過度に使用せずにラウドネスを追加すると、デバイスが損傷する可能性があります</string>
     <string name="settings_target_gain_loudness_info">ラウドネスノーマライゼーションの目標ゲイン</string>
-    <string name="full_screen_lyrics_components">全画面歌詞のコンポーネント</string>
     <string name="titleartist">タイトルとアーティスト</string>
     <string name="miniqueue">次の曲のキュー</string>
     <string name="controls">操作</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">アプリを開いたときに再生を自動的に再開</string>
     <string name="notificationPlayerFirstIcon">最初のボタン</string>
     <string name="notificationPlayerSecondIcon">2番目のボタン</string>
-    <string name="notification_player">通知プレーヤー</string>
     <string name="repeat">繰り返す</string>
     <string name="views">ビュー</string>
     <string name="subscribers">Subscribers</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigation</string>
     <string name="player_controls">プレイヤーコントロール</string>
     <string name="player_controls_colors">プレイヤーが色を制御します</string>
-    <string name="theme_color">テーマの色</string>
-    <string name="cover_color">カバーの色</string>
     <string name="monochrome">モノクローム</string>
     <string name="queue_management">キュー管理</string>
     <string name="app_behavior">アプリの動作</string>
@@ -2635,8 +2624,6 @@
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">カスタム</string>
     <string name="glass_performance">Fastest</string>
@@ -2784,4 +2771,14 @@
     <string name="playlist_refresh_on_open">Refresh on opening</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="settings_section_troubleshooting_title">トラブルシューティング</string>
+    <string name="settings_section_proxy_title">プロキシ</string>
+    <string name="settings_section_contributors_title">貢献者</string>
+    <string name="settings_section_player_action_bar_title">プレイヤーアクションバー</string>
+    <string name="settings_section_smart_recommendations_title">スマートレコメンデーション</string>
+    <string name="settings_section_service_lifetime_title">サービス有効期間</string>
+    <string name="settings_section_notification_player_title">通知プレーヤー</string>
+    <string name="settings_section_backup_and_restore_title">バックアップと復元</string>
+    <string name="settings_section_fullscreen_lyrics_title">全画面歌詞のコンポーネント</string>
+    <string name="artwork">カバーの色</string>
 </resources>

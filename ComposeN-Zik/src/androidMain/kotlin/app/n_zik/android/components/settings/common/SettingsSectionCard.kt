@@ -222,14 +222,14 @@ fun SettingsGroupSpacer(
     )
 }
 
-/** Uppercased section label used above a group of entries. */
+/** Section label used above a group of entries, preserving its localized casing. */
 @Composable
 fun SettingsEntryGroupText(
     title: String,
     modifier: Modifier = Modifier,
 ) {
     BasicText(
-        text = title.uppercase(),
+        text = title,
         style = typography().xs.semiBold.copy(colorPalette().accent),
         modifier = modifier
             .padding(start = 12.dp)

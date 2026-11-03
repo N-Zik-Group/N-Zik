@@ -1,6 +1,10 @@
 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.it.fast4x.rimusic.ui.screens.player
 
+import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
+
+import android.graphics.Bitmap
+
 import app.n_zik.android.core.database.*
 import app.n_zik.android.components.discoverButtonIconRes
 import app.n_zik.android.components.radioButtonIcon
@@ -179,7 +183,6 @@ import app.kreate.android.me.knighthat.sync.YouTubeSync
 import app.kreate.android.me.knighthat.utils.Toaster
 import kotlin.math.absoluteValue
 import androidx.compose.runtime.LaunchedEffect
-import app.it.fast4x.rimusic.utils.getBitmapFromUrl
 import app.n_zik.android.core.coil.thumbnail
 import app.n_zik.android.components.player.MiniPlayerSwipeAction
 import app.n_zik.android.components.player.GlassMiniPlayerIconButton
@@ -191,7 +194,6 @@ import app.n_zik.android.components.player.SwipeActionLatch
 import app.n_zik.android.components.player.WithDoubledTouchSlop
 import app.n_zik.android.components.player.rememberMiniPlayerSheetGestureState
 import app.n_zik.android.components.player.miniPlayerSwipeAction
-import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
 import app.n_zik.android.components.player.monochromeControlsColor
 import androidx.compose.foundation.isSystemInDarkTheme
 import app.it.fast4x.rimusic.enums.ColorPaletteMode
@@ -217,10 +219,9 @@ import android.media.AudioManager
 import android.os.Build
 import org.json.JSONArray
 import android.content.Context
-import android.graphics.Bitmap
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.withContext
+import app.n_zik.android.components.player.rememberArtworkDisplayColors
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -417,28 +418,15 @@ private fun MiniPlayerContent(
     val activeButtons = expandedButtons
 
     val color = colorPalette()
-    var dynamicColorPalette by remember { mutableStateOf( color ) }
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     val lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
 
-    LaunchedEffect(mediaItem.mediaId) {
-        try {
-            val imageUrl = mediaItem.mediaMetadata.artworkUri.thumbnail(1000).toString()
-            val bitmap = getBitmapFromUrl(
-                context,
-                imageUrl
-            ) ?: throw Exception("Bitmap is null")
-            dynamicColorPalette = withContext(NzikDispatchers.MEDIA) {
-                computeMiniPlayerPalette(bitmap, !lightTheme)
-            } ?: color
-        } catch (e: Exception) {
-            dynamicColorPalette = color
-        }
-    }
+    val coverDisplay = rememberArtworkDisplayColors(mediaItem.mediaMetadata.artworkUri?.toString(), !lightTheme)
 
     val playerControlsColors by rememberPreference(playerControlsColorsKey, PlayerControlsColors.Monochrome)
     val controlsColorText = when (playerControlsColors) {
-        PlayerControlsColors.Cover -> dynamicColorPalette.accent
+        PlayerControlsColors.Cover -> if (coverDisplay?.forceDark == true)
+            coverDisplay.foreground ?: color.accent else coverDisplay?.palette?.accent ?: color.accent
         // Monochrome follows the effective palette tone, not a hardcoded white
         // (spec-achromatic-ramp-luminance-cap)
         PlayerControlsColors.Monochrome -> monochromeControlsColor(colorPalette())
@@ -1276,19 +1264,6 @@ private fun MiniPlayerSlotButton(
     }
 }
 
-/**
- * Issue #606 H10 -- `MiniPlayer`'s `LaunchedEffect(mediaItem.mediaId)` used to run
- * `dynamicColorPaletteOf` (CPU-bound `Palette` extraction, `app.it.fast4x.rimusic.ui.styling
- * .ColorPalette.kt`, legacy read-only) inline, on whatever dispatcher that `LaunchedEffect` resumes
- * on -- Main, since it follows `getBitmapFromUrl`'s suspension. Extracted here, unchanged, so the
- * composable can dispatch it via `withContext(NzikDispatchers.MEDIA)` and so it is unit-testable
- * without instantiating the composable. The palette is built from the dominant swatch via
- * `m3eDynamicColorPaletteOf` (shared M3E cover extraction, RiPlay-based: capped 8 palette,
- * dominant swatch, achromatic neutralization -- spec
- * `spec-fix-palette-extractor-riplay-reference`). `internal` (not `private`) purely so
- * `MiniPlayerPaletteOffMainTest` can call it directly -- it adds no new public legacy API.
- */
+/** Pure compatibility seam for extraction regression tests; production uses the shared artwork facade. */
 internal suspend fun computeMiniPlayerPalette(bitmap: Bitmap, dark: Boolean): ColorPalette? =
     m3eDynamicColorPaletteOf(bitmap, dark)
-
-

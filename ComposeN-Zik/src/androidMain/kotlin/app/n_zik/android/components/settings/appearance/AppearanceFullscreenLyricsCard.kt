@@ -76,7 +76,7 @@ internal fun AppearanceFullscreenLyricsCard(search: Search) {
     var statsExpanded by rememberPreference(statsExpandedKey, true)
     var actionExpanded by rememberPreference(actionExpandedKey, true)
     var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, true)
-    val searchCtx_2 = search.inputValue.isBlank() || stringResource(R.string.full_screen_lyrics_components).contains(search.inputValue, true) || stringResource(R.string.show_total_time_of_queue).contains(search.inputValue, true) || stringResource(R.string.titleartist).contains(search.inputValue, true) || stringResource(R.string.timeline).contains(search.inputValue, true) || stringResource(R.string.controls).contains(search.inputValue, true) || stringResource(R.string.statsfornerds).contains(search.inputValue, true) || stringResource(R.string.actionbar).contains(search.inputValue, true) || stringResource(R.string.miniqueue).contains(search.inputValue, true)
+    val searchCtx_2 = search.inputValue.isBlank() || stringResource(R.string.settings_section_fullscreen_lyrics_title).contains(search.inputValue, true) || stringResource(R.string.show_total_time_of_queue).contains(search.inputValue, true) || stringResource(R.string.titleartist).contains(search.inputValue, true) || stringResource(R.string.timeline).contains(search.inputValue, true) || stringResource(R.string.controls).contains(search.inputValue, true) || stringResource(R.string.statsfornerds).contains(search.inputValue, true) || stringResource(R.string.actionbar).contains(search.inputValue, true) || stringResource(R.string.miniqueue).contains(search.inputValue, true)
     if (!showlyricsthumbnail) {
 AnimatedVisibility(
                     visible = searchCtx_2,
@@ -85,7 +85,7 @@ AnimatedVisibility(
                 ) {
                     SettingsSectionCard(
                     modifier = Modifier.testTag("appearance.card.fullscreenLyrics"),
-                        title = stringResource(R.string.full_screen_lyrics_components),
+                        title = stringResource(R.string.settings_section_fullscreen_lyrics_title),
                         icon = R.drawable.song_lyrics,
                         content = {
 

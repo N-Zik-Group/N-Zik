@@ -1,4 +1,9 @@
 Added:
+- feat(theme): share artwork colors across dynamic surfaces
+  - Share cached artwork analysis from the high-quality source across the theme, player, mini player, lyrics, Glass, visualizer and widgets.
+  - Add Keep dark mode to darken monochrome colors in both light and dark themes; update derived colors immediately when the option or active profile changes.
+  - Bound concurrent extraction, share in-flight requests and invalidate artwork colors after clearing the image cache.
+
 - feat(android-auto): add saved podcast filters and align library ordering (issue https://github.com/N-Zik-Group/N-Zik/issues/938)
   - Add All, Playlists and Podcasts under YouTube using the same source classification and filter preferences as the phone library.
   - Align Rewind visibility, playlist sort order, completed-download grouping and scoped playback actions with the phone; preserve browse snapshots, offline eligibility and queue limits.
@@ -43,6 +48,12 @@ Changed:
   - Run the actual inline labeling script through 28 passing mock-API regression tests and a narrow read-only CI check; validate all 17 workflow YAML files and keep close-stale-tickets.yaml unchanged as requested.
 
 Fixed:
+- fix(settings): align reset actions with effective application defaults
+  - Restore the Extra Large lyrics default and include missing menu, sorting, history, bridge, language, layout and per-playlist settings in their category resets.
+  - Preserve saved content and credentials while restoring context-dependent defaults.
+  - Unify Artwork and Theme source labels and replace uppercase section titles while moving existing translations to their replacement keys.
+  - Validate with 226 targeted tests and a successful Debug build; physical-device fluidity remains unverified.
+
 - fix(settings): expose every supported Queue Glass surface mode
   - Show the real inherited mode and permit re-enabling material after disabling it; preserve other scopes and master state.
   - Audit all 13 shared areas and 24 contextual pairs; retain intentional nested surface accumulation.

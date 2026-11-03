@@ -64,7 +64,7 @@ internal fun GlassDialogIconButton(
             onClick = onClick, modifier = feedback.then(modifier), enabled = enabled,
             colors = colors, interactionSource = source, shape = shape,
         ) {
-            content()
+            GlassArtworkContent(settings, settings.usesGlassDialogButtonMaterial()) { content() }
             NativeButtonSurfaceProbe(nativeBounds)
         }
     }
@@ -88,7 +88,7 @@ internal fun GlassDialogIconButton(
     }
     val shape = uiRoundnessShape()
     GlassDialogButtonFeedback(enabled, shape, settings) { feedback, source ->
-        Image(painterResource(icon), contentDescription = null, colorFilter = ColorFilter.tint(color),
+        Image(painterResource(icon), contentDescription = null, colorFilter = ColorFilter.tint(glassArtworkForeground(settings, color)),
             modifier = feedback.then(modifier.reservedIconActionCanvas(shape,
                 interactionSource = source, indication = null, enabled = enabled, onClick = onClick, role = Role.Button)))
     }
@@ -115,7 +115,7 @@ internal fun GlassDialogOutlinedButton(
         OutlinedButton(onClick = onClick, modifier = feedback.then(modifier), enabled = enabled,
             shape = shape, colors = colors, elevation = elevation, border = border,
             contentPadding = contentPadding, interactionSource = source) {
-            content()
+            GlassArtworkContent(settings, settings.usesGlassDialogButtonMaterial()) { content() }
             NativeButtonSurfaceProbe(nativeBounds, contentRows = 1)
         }
     }

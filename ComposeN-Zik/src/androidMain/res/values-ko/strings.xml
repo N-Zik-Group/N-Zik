@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">검색어 및 검색 기록을 표시하지 않습니다</string>
     <string name="clear_search_history">검색기록 지우기</string>
     <string name="history_is_empty">기록이 없습니다</string>
-    <string name="service_lifetime">Service lifetime</string>
     <string name="battery_optimizations_applied">배터리 최적화가 적용되면 일시정지 시 재생 알림이 갑자기 사라질 수 있습니다.</string>
     <string name="is_android12">Since Android 12, disabling battery optimizations is required for the \"Invisible service\" option to take effect.</string>
     <string name="ignore_battery_optimizations">배터리 최적화 무시</string>
@@ -193,8 +192,6 @@
     <string name="languages">언어</string>
     <string name="app_language">앱 언어</string>
     <string name="in_alphabetical_order">알파벳 순:</string>
-    <string name="contributors">Contributors</string>
-    <string name="troubleshooting">Troubleshooting</string>
     <string name="english">영어 (English)</string>
     <string name="italian">이탈리아어 (Italiano)</string>
     <string name="czech">체코어 (Čeština)</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">정말로 모든 곡을 다운로드하실 건가요?</string>
     <string name="import_playlist">재생목록 가져오기</string>
     <string name="lang_ukrainian">Ukrainian (Українська)</string>
-    <string name="proxy">Proxy</string>
     <string name="enable_proxy">프록시 활성화</string>
     <string name="proxy_mode">프록시 모드</string>
     <string name="proxy_host">프록시 호스트</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">This folder already exists</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">이 폴더를 차단 목록에서 삭제하시겠나요?</string>
     <string name="player_appearance">Player Appearance</string>
-    <string name="player_action_bar">Player action bar</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
     <string name="quick_picks_content">Quick Picks sections</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">Misc</string>
     <string name="swipe_to_action">Swipe for action</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">Perform actions by swiping left or right on a song within vertical list of songs</string>
-    <string name="smart_recommendations">Smart recommendations</string>
     <string name="player_collapsed_disable_swiping_down">아래로 스와이프 비활성화</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">플레이어가 최소화된 상태에서 아래로 스와이프하여 플레이어를 닫고 재생목록을 정리하지 마세요.</string>
     <string name="sort_date_liked">Date Favorited</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">활성화시, 오류를 강조하는 로그 파일이 생성됩니다</string>
     <string name="audio_waveform">Audio waveform</string>
-    <string name="title_backup_and_restore">Backup and restore</string>
     <string name="message_excluded_s_songs">%s개의 곡 제외됨</string>
     <string name="show_thumbnail">썸네일 표시</string>
     <string name="show_lyrics_thumbnail">가사 썸네일 표시</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">Loudness boost level</string>
     <string name="loudness_boost_level_info">Additional loudness level, to be used without overdoing it, may damage the device</string>
     <string name="settings_target_gain_loudness_info">소리 크기 정규화를 위한 목표 증폭</string>
-    <string name="full_screen_lyrics_components">Fullscreen lyrics components</string>
     <string name="titleartist">제목과 아티스트</string>
     <string name="miniqueue">Next song queue</string>
     <string name="controls">제어</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">Resume playback automatically when the app is opened</string>
     <string name="notificationPlayerFirstIcon">첫 번째 버튼</string>
     <string name="notificationPlayerSecondIcon">두 번째 버튼</string>
-    <string name="notification_player">Notification Player</string>
     <string name="repeat">반복</string>
     <string name="views">Views</string>
     <string name="subscribers">Subscribers</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigation</string>
     <string name="player_controls">Player Controls</string>
     <string name="player_controls_colors">Player controls colors</string>
-    <string name="theme_color">Theme color</string>
-    <string name="cover_color">Cover color</string>
     <string name="monochrome">Monochrome</string>
     <string name="queue_management">Queue Management</string>
     <string name="app_behavior">App Behavior</string>
@@ -2635,8 +2624,6 @@
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">맞춤 설정</string>
     <string name="glass_performance">Fastest</string>
@@ -2784,4 +2771,14 @@
     <string name="playlist_refresh_on_open">Refresh on opening</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="settings_section_troubleshooting_title">Troubleshooting</string>
+    <string name="settings_section_proxy_title">Proxy</string>
+    <string name="settings_section_contributors_title">Contributors</string>
+    <string name="settings_section_player_action_bar_title">Player action bar</string>
+    <string name="settings_section_smart_recommendations_title">Smart recommendations</string>
+    <string name="settings_section_service_lifetime_title">Service lifetime</string>
+    <string name="settings_section_notification_player_title">Notification Player</string>
+    <string name="settings_section_backup_and_restore_title">Backup and restore</string>
+    <string name="settings_section_fullscreen_lyrics_title">Fullscreen lyrics components</string>
+    <string name="artwork">Cover color</string>
 </resources>

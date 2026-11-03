@@ -93,8 +93,8 @@ internal fun settingsEntryChoiceLabels(
         "appearance.player_behavior_and_visuals.player_swipe_sensitivity" to
             PlayerSwipeSensitivity.entries.map { resolveString(it.textId) },
         "appearance.player_behavior_and_visuals.background_progress_bar" to BackgroundProgress.entries.map { resolveString(it.textId) },
-        "appearance.colors_and_background.background_colors" to PlayerBackgroundColors.entries.map { resolveString(it.textId) },
-        "appearance.colors_and_background.gradienttype" to AnimatedGradient.entries.map { resolveString(it.textId) },
+        "appearance.colors_and_background.background_colors" to PlayerBackgroundColors.entries.map { playerBackgroundColorLabel(it, resolveString) },
+        "appearance.colors_and_background.gradienttype" to AnimatedGradient.entries.map { animatedGradientLabel(it, resolveString) },
         "appearance.colors_and_background.shake_sensitivity_theme" to ShakeSensitivityTheme.entries.map { resolveString(it.textId) },
         "appearance.cover_and_thumbnail.carouselsize" to CarouselSize.entries.map { resolveString(it.textId) },
         "appearance.cover_and_thumbnail.cover_thumbnail_animation_type" to ThumbnailCoverType.entries.map { resolveString(it.textId) },
@@ -127,9 +127,9 @@ internal fun settingsEntryChoiceLabels(
         "ui.user_interface.search_display_order" to
             resources(R.string.search_display_order_suggestions_first, R.string.search_display_order_saved_searches_first),
         "appearance.player_behavior_and_visuals.visualizer_white_color_option" to
-            resources(R.string.color_white, R.string.bg_colors_background_from_theme, R.string.bg_colors_background_from_cover, R.string.color_custom),
+            resources(R.string.color_white, R.string.theme, R.string.artwork, R.string.color_custom),
         "appearance.txt_lyrics.lyricscolor" to
-            resources(R.string.color_white, R.string.bg_colors_background_from_theme, R.string.bg_colors_background_from_cover, R.string.color_custom),
+            resources(R.string.color_white, R.string.theme, R.string.artwork, R.string.color_custom),
         "appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail" to
             resources(R.string.te_slide_vertical, R.string.te_fade, R.string.te_scale, R.string.carousel, R.string.vt_circular),
         "general.playback.exclude_disliked_songs" to resources(R.string.on, R.string.off),

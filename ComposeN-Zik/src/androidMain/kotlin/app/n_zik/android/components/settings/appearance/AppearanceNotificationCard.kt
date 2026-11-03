@@ -30,7 +30,7 @@ internal fun AppearanceNotificationCard(search: Search, restartState: MutableSta
     var notificationPlayerFirstIcon by rememberPreference(notificationPlayerFirstIconKey, NotificationButtons.Download)
     var notificationPlayerSecondIcon by rememberPreference(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
     var restartService by restartState
-    val searchCtx_3 = search.inputValue.isBlank() || stringResource(R.string.notification_player).contains(search.inputValue, true) || stringResource(R.string.notificationPlayerFirstIcon).contains(search.inputValue, true) || stringResource(R.string.notificationPlayerSecondIcon).contains(search.inputValue, true)
+    val searchCtx_3 = search.inputValue.isBlank() || stringResource(R.string.settings_section_notification_player_title).contains(search.inputValue, true) || stringResource(R.string.notificationPlayerFirstIcon).contains(search.inputValue, true) || stringResource(R.string.notificationPlayerSecondIcon).contains(search.inputValue, true)
     AnimatedVisibility(
                 visible = searchCtx_3,
                 enter = settingsCardEnter,
@@ -38,11 +38,11 @@ internal fun AppearanceNotificationCard(search: Search, restartState: MutableSta
             ) {
                 SettingsSectionCard(
                     modifier = Modifier.testTag("appearance.card.notification"),
-                    title = stringResource(R.string.notification_player),
+                    title = stringResource(R.string.settings_section_notification_player_title),
                     icon = R.drawable.notification1,
                     content = {
 
-            if (search.inputValue.isBlank() || stringResource(R.string.notification_player).contains(
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_section_notification_player_title).contains(
                     search.inputValue,
                     true
                 )

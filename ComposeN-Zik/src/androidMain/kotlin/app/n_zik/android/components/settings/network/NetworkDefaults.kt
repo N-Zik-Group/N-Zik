@@ -15,6 +15,8 @@ import app.it.fast4x.rimusic.utils.putEnum
 import app.it.fast4x.rimusic.utils.streamClientAndroidVrEnabledKey
 import app.it.fast4x.rimusic.utils.streamClientRestartNeededKey
 import app.it.fast4x.rimusic.utils.streamClientWebRemixEnabledKey
+import app.n_zik.android.bridge.AutoStopSettings
+import app.n_zik.android.bridge.BridgeServerController
 import app.n_zik.android.components.dialog.settings.PreferredStreamClientDialog
 import app.n_zik.android.components.dialog.settings.StreamClientsSettingsDialog
 import app.n_zik.android.core.network.fullOfflineModeKey
@@ -22,6 +24,8 @@ import app.n_zik.android.enums.DownloadQualityFormat
 import app.n_zik.android.enums.downloadQualityFormatKey
 
 internal fun applyNetworkDefaults(context: Context) {
+    BridgeServerController.setAutoStopNoClient(context, AutoStopSettings.DEFAULT_NO_CLIENT_MINUTES)
+    BridgeServerController.setAutoStopInactivity(context, AutoStopSettings.DEFAULT_INACTIVITY_MINUTES)
     PreferredStreamClientDialog.reset(context)
     StreamClientsSettingsDialog.reset(context)
     context.preferences.edit {

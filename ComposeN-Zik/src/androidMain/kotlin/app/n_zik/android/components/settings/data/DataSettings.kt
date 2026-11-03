@@ -147,8 +147,8 @@ internal fun DataSettingsContent(
         if (selectedCards == null || R.string.cache in selectedCards) {
             SettingsCardSlot(R.string.cache, modifier = { cardModifier(R.string.cache) }) { DataCacheCard(search, restartState) }
         }
-        if (selectedCards == null || R.string.title_backup_and_restore in selectedCards) {
-            SettingsCardSlot(R.string.title_backup_and_restore, modifier = { cardModifier(R.string.title_backup_and_restore) }) { DataBackupCard(search) }
+        if (selectedCards == null || R.string.settings_section_backup_and_restore_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_section_backup_and_restore_title, modifier = { cardModifier(R.string.settings_section_backup_and_restore_title) }) { DataBackupCard(search) }
         }
         if (selectedCards == null || R.string.auto_backup_title in selectedCards) {
             SettingsCardSlot(R.string.auto_backup_title, modifier = { cardModifier(R.string.auto_backup_title) }) { DataAutoBackupCard() }

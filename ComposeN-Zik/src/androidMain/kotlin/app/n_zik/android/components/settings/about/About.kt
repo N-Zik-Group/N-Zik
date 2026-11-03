@@ -59,10 +59,10 @@ internal fun AboutSettingsContent(
     if (selectedCards == null || R.string.about in selectedCards) {
         SettingsCardSlot(R.string.about, modifier = { cardModifier(R.string.about) }) { AboutAppCard() }
     }
-    if (selectedCards == null || R.string.troubleshooting in selectedCards) {
-        SettingsCardSlot(R.string.troubleshooting, modifier = { cardModifier(R.string.troubleshooting) }) { AboutSupportCard() }
+    if (selectedCards == null || R.string.settings_section_troubleshooting_title in selectedCards) {
+        SettingsCardSlot(R.string.settings_section_troubleshooting_title, modifier = { cardModifier(R.string.settings_section_troubleshooting_title) }) { AboutSupportCard() }
     }
-    if (selectedCards == null || R.string.contributors in selectedCards) {
-        SettingsCardSlot(R.string.contributors, modifier = { cardModifier(R.string.contributors) }) { AboutContributorsCard() }
+    if (selectedCards == null || R.string.settings_section_contributors_title in selectedCards) {
+        SettingsCardSlot(R.string.settings_section_contributors_title, modifier = { cardModifier(R.string.settings_section_contributors_title) }) { AboutContributorsCard() }
     }
 }

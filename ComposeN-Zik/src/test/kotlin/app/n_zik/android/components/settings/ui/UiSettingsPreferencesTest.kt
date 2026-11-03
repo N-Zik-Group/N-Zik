@@ -11,6 +11,7 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.settings.common.SettingsEntryTargets
+import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -61,6 +62,7 @@ class UiSettingsPreferencesTest {
         "lastPlayerPlayButtonType" to "Rectangular",
         "colorPaletteName" to "Dynamic",
         "colorPaletteMode" to "System",
+        dynamicThemeRespectBrightnessKey to false,
         "indexNavigationTab" to "Default",
         "fontType" to "Rubik",
         "useSystemFont" to false,
@@ -170,8 +172,10 @@ class UiSettingsPreferencesTest {
         assertEquals(fullReset + mapOf("unrelated" to "keep", "playerSwipeSensitivity" to "High"), context.preferences.all)
         assertEquals(mapOf("UiType" to "ViMusic"), store("preferences_untouched").all)
         assertEquals("global", store("preferences").getString("unrelated", null))
-        assertEquals("history-sentinel", store("preferences").getString("historySortMenuOrder", null))
-        assertFalse(store("preferences").getBoolean("hist_sort_DATE_visible", true))
+        assertEquals("[\"DATE\",\"ALPHABETICAL\",\"ARTIST\"]", store("preferences").getString("historySortMenuOrder", null))
+        listOf("DATE", "ALPHABETICAL", "ARTIST").forEach { id ->
+            assertTrue(store("preferences").getBoolean("hist_sort_${id}_visible", false))
+        }
         assertTrue(store("preferences").getBoolean("hometab_songs_enabled", false))
         assertEquals("[\"quickpicks\",\"songs\",\"artists\",\"albums\",\"playlists\"]", store("preferences").getString("homeTabsOrder", null))
         assertEquals("app", store("app_settings").getString("unrelated", null))
@@ -220,7 +224,7 @@ class UiSettingsPreferencesTest {
 
     @Test fun `target inventory covers ten cards and stable unique setting and action identities`() {
         assertEquals(listOf("theme", "interface", "font", "swipe", "home-tabs", "sort-menus", "floating-dock", "toolbars", "burger", "reset"), UiSettingTargets.cards.map { it.id.removePrefix("ui.card.") })
-        assertEquals(listOf(23, 10, 4, 7, 0, 0, 1, 0, 0, 0), UiSettingTargets.cards.map { it.preferenceKeys.size })
+        assertEquals(listOf(24, 10, 4, 7, 0, 0, 1, 0, 0, 0), UiSettingTargets.cards.map { it.preferenceKeys.size })
         assertEquals(listOf(2, 2, 0, 0, 5, 6, 1, 5, 1, 1), UiSettingTargets.cards.map { it.actions.size })
         assertEquals(UiSettingTargets.ids.size, UiSettingTargets.ids.toSet().size)
         assertTrue(UiSettingTargets.ids.none { it.contains(' ') })

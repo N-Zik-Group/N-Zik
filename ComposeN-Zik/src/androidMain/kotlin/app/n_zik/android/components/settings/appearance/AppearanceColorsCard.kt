@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
@@ -33,11 +34,14 @@ import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettin
 import androidx.compose.ui.platform.testTag
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
+import app.n_zik.android.components.settings.common.playerBackgroundColorLabel
+import app.n_zik.android.components.settings.common.animatedGradientLabel
 
 @OptIn(ExperimentalAnimationApi::class)
 @UnstableApi
 @Composable
 internal fun AppearanceColorsCard(search: Search) {
+    val context = LocalContext.current
     var blackgradient by rememberPreference(blackgradientKey, false)
     var bottomgradient by rememberPreference(bottomgradientKey, false)
     var textoutline by rememberPreference(textoutlineKey, false)
@@ -70,7 +74,7 @@ internal fun AppearanceColorsCard(search: Search) {
             )
                 if (search.inputValue.isBlank() || stringResource(R.string.background_colors).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_colors_and_background_background_colors), playerBackgroundColors.text),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_colors_and_background_background_colors), playerBackgroundColorLabel(playerBackgroundColors, context::getString)),
                         modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.background_colors"),
                         icon = R.drawable.droplet,
                         title = stringResource(R.string.background_colors),
@@ -78,7 +82,7 @@ internal fun AppearanceColorsCard(search: Search) {
                         onValueSelected = {
                             playerBackgroundColors = it
                         },
-                        valueText = { it.text }
+                        valueText = { playerBackgroundColorLabel(it, context::getString) }
                     )
                 }
 
@@ -90,14 +94,14 @@ internal fun AppearanceColorsCard(search: Search) {
                 )
                     if (search.inputValue.isBlank() || stringResource(R.string.gradienttype).contains(search.inputValue, true)) {
                         OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_colors_and_background_gradienttype), animatedGradient.text),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_colors_and_background_gradienttype), animatedGradientLabel(animatedGradient, context::getString)),
                         icon = R.drawable.color_palette,
                             title = stringResource(R.string.gradienttype),
                             selectedValue = animatedGradient,
                             onValueSelected = {
                                 animatedGradient = it
                             },
-                            valueText = { it.text },
+                            valueText = { animatedGradientLabel(it, context::getString) },
                             modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) 25.dp else 0.dp)).settingsSearchTarget("appearance.colors_and_background.gradienttype")
                         )
                     }

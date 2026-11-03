@@ -118,12 +118,12 @@ internal fun AppearanceLyricsCard(search: Search) {
 
                 if (search.inputValue.isBlank() || stringResource(R.string.lyricscolor).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_txt_lyrics_lyricscolor), stringResource(when(lyricsColor) { LyricsColor.White -> R.string.color_white; LyricsColor.Thememode -> R.string.bg_colors_background_from_theme; LyricsColor.Cover -> R.string.bg_colors_background_from_cover; LyricsColor.Custom -> R.string.color_custom })),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_txt_lyrics_lyricscolor), stringResource(when(lyricsColor) { LyricsColor.White -> R.string.color_white; LyricsColor.Thememode -> R.string.theme; LyricsColor.Cover -> R.string.artwork; LyricsColor.Custom -> R.string.color_custom })),
                         modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.lyricscolor"),
                         title = stringResource(R.string.lyricscolor),
                         selectedValue = lyricsColor,
                         onValueSelected = { lyricsColor = it },
-                        valueText = { stringResource(when(it) { LyricsColor.White -> R.string.color_white; LyricsColor.Thememode -> R.string.bg_colors_background_from_theme; LyricsColor.Cover -> R.string.bg_colors_background_from_cover; LyricsColor.Custom -> R.string.color_custom }) },
+                        valueText = { stringResource(when(it) { LyricsColor.White -> R.string.color_white; LyricsColor.Thememode -> R.string.theme; LyricsColor.Cover -> R.string.artwork; LyricsColor.Custom -> R.string.color_custom }) },
                         icon = R.drawable.color_palette
                     )
                 }

@@ -54,7 +54,7 @@ fun SettingsCardRegistryEntry.categoryId(): String = when {
     tab == 7 -> when (titleRes) {
         R.string.parental_control -> "playback"
         R.string.on_device -> "data"
-        R.string.proxy -> "network"
+        R.string.settings_section_proxy_title -> "network"
         R.string.maintenance, R.string.modules_title, R.string.rescue_center -> "maintenance"
         else -> "system"
     }

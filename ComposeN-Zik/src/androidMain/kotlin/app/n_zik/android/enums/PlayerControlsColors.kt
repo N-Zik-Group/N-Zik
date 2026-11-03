@@ -7,7 +7,7 @@ import app.kreate.android.me.knighthat.enums.TextView
 enum class PlayerControlsColors(
     @field:StringRes override val textId: Int
 ): TextView {
-    Theme(R.string.theme_color),
-    Cover(R.string.cover_color),
+    Theme(R.string.theme),
+    Cover(R.string.artwork),
     Monochrome(R.string.monochrome);
 }

@@ -170,8 +170,8 @@ internal fun AIRecommendationSettingsContent(
                 RewindSettingsCard(onOpenRewind = { navController.navigate(NavRoutes.rewindHome.name) })
             }
         }
-        if (selectedCards == null || R.string.smart_recommendations in selectedCards) {
-            SettingsCardSlot(R.string.smart_recommendations, modifier = { cardModifier(R.string.smart_recommendations) }) {
+        if (selectedCards == null || R.string.settings_section_smart_recommendations_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_section_smart_recommendations_title, modifier = { cardModifier(R.string.settings_section_smart_recommendations_title) }) {
                 AiRecommendationsCard(search)
             }
         }

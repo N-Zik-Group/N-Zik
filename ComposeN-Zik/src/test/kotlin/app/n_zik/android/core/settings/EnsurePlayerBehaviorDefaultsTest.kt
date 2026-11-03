@@ -8,6 +8,7 @@ import app.it.fast4x.rimusic.utils.effectRotationKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.it.fast4x.rimusic.utils.showButtonPlayerVideoKey
+import app.it.fast4x.rimusic.utils.thumbnailSizeDpKey
 import app.n_zik.android.components.settings.appearance.applyAppearanceDefaults
 import app.n_zik.android.components.settings.general.applyGeneralDefaults
 import org.junit.After
@@ -44,17 +45,19 @@ class EnsurePlayerBehaviorDefaultsTest {
         assertTrue(context.preferences.getBoolean(showButtonPlayerVideoKey, false))
         assertTrue(context.preferences.getBoolean(closeWithBackButtonKey, false))
         assertFalse(context.preferences.getBoolean(effectRotationKey, true))
+        assertEquals(90f, context.preferences.getFloat(thumbnailSizeDpKey, 85f), 0f)
         assertEquals("keep", context.preferences.getString("unrelated", null))
         assertEquals(mapOf(showButtonPlayerVideoKey to false), other.all)
     }
 
     @Test fun `explicit opt outs survive startup while a separately missing default is filled`() {
         context.preferences.edit().putBoolean(showButtonPlayerVideoKey, false)
-            .putBoolean(effectRotationKey, true).commit()
+            .putBoolean(effectRotationKey, true).putFloat(thumbnailSizeDpKey, 63f).commit()
         ensurePlayerBehaviorDefaults(context.preferences)
         assertFalse(context.preferences.getBoolean(showButtonPlayerVideoKey, true))
         assertTrue(context.preferences.getBoolean(closeWithBackButtonKey, false))
         assertTrue(context.preferences.getBoolean(effectRotationKey, false))
+        assertEquals(63f, context.preferences.getFloat(thumbnailSizeDpKey, 90f), 0f)
 
         context.preferences.edit().putBoolean(closeWithBackButtonKey, false).commit()
         val before = context.preferences.all.toMap()

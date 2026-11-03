@@ -1,5 +1,9 @@
 package app.it.fast4x.rimusic.ui.screens.player
 
+import app.n_zik.android.components.player.extractCoverPalette
+
+import android.graphics.Bitmap
+
 import app.n_zik.android.components.player.playerQueueUnderlayCovered
 import app.n_zik.android.components.player.queuePanelAtExpandedEndpoint
 import app.n_zik.android.components.player.rememberPlayerQueueBackdrop
@@ -198,7 +202,6 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.zIndex
-import androidx.core.graphics.ColorUtils.colorToHSL
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -249,14 +252,12 @@ import app.it.fast4x.rimusic.ui.components.themed.NowPlayingSongIndicator
 import app.n_zik.android.extensions.nextvisualizer.views.NextVisualizer
 import app.n_zik.android.components.menu.player.PlayerMenu
 import app.n_zik.android.components.menu.MenuDragHandleBar
-import app.n_zik.android.components.player.m3eCoverBackgroundColor
 import app.it.fast4x.rimusic.ui.components.themed.RotateThumbnailCoverAnimationModern
 import app.n_zik.android.components.dialog.common.ThumbnailOffsetDialog
 import app.n_zik.android.components.player.animatePlayerBrushRotation
 import app.n_zik.android.components.player.rememberPlayerDecorationsActive
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.collapsedPlayerProgressBar
-import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
 import app.it.fast4x.rimusic.ui.styling.favoritesOverlay
 import app.it.fast4x.rimusic.utils.DisposableListener
 import app.it.fast4x.rimusic.utils.SearchYoutubeEntity
@@ -282,7 +283,6 @@ import app.it.fast4x.rimusic.utils.effectRotationKey
 import app.it.fast4x.rimusic.utils.expandedplayerKey
 import app.it.fast4x.rimusic.utils.fadingedgeKey
 import app.it.fast4x.rimusic.utils.formatAsTime
-import app.it.fast4x.rimusic.utils.getBitmapFromUrl
 import app.it.fast4x.rimusic.utils.isExplicit
 import app.it.fast4x.rimusic.utils.isLandscape
 import app.it.fast4x.rimusic.utils.mediaItems
@@ -329,12 +329,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import android.graphics.Bitmap
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.player.PlayerCurrentCover
+import app.n_zik.android.components.player.rememberArtworkDisplayColors
 import app.n_zik.android.components.player.BlurAdjuster
-import app.n_zik.android.components.player.extractCoverPalette
 import app.n_zik.android.components.player.m3eDarkenBy
 import app.n_zik.android.components.player.textOutlineColor
 import app.n_zik.android.components.player.m3eSaturate
@@ -358,7 +357,8 @@ import android.content.ContextWrapper
 import androidx.compose.ui.layout.layout
 import app.kreate.android.me.knighthat.sync.YouTubeSync
 
-/** Issue #606 H10 — result bundle for [computePlayerDynamicPalette], mirroring the 8 Compose state variables (`dynamicColorPalette`, `dominant`, `vibrant`, `lightVibrant`, `darkVibrant`, `muted`, `lightMuted`, `darkMuted`) that `Player`'s `LaunchedEffect` used to assign one-by-one, inline, on whatever dispatcher that effect resumes on. */
+
+/** Pure compatibility seam for extraction regression tests; production uses the shared artwork facade. */
 internal data class PlayerDynamicPaletteResult(
     val palette: ColorPalette,
     val dominant: Int,
@@ -794,12 +794,6 @@ fun Player(
 
     val windowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
 
-    var updateBrush by remember { mutableStateOf(false) }
-
-    LaunchedEffect(mediaItem.mediaId) {
-        updateBrush = true
-    }
-
     val artistInfos = mediaItem.artistIdsWithFallback()
     val albumId = mediaItem.albumIdWithFallback()
 
@@ -823,41 +817,8 @@ fun Player(
     }
 
     val color = colorPalette()
-    var dynamicColorPalette by remember { mutableStateOf( color ) }
-    var dominant by remember{ mutableStateOf(0) }
-    var vibrant by remember{ mutableStateOf(0) }
-    var lightVibrant by remember{ mutableStateOf(0) }
-    var darkVibrant by remember{ mutableStateOf(0) }
-    var muted by remember{ mutableStateOf(0) }
-    var lightMuted by remember{ mutableStateOf(0) }
-    var darkMuted by remember{ mutableStateOf(0) }
-    // True once the cover swatches above have been extracted; false until then and after an
-    // artwork failure -- the cover backgrounds fall back to the local dynamic palette until loaded.
-    var coverSwatchesLoaded by remember{ mutableStateOf(false) }
-
-
-    @Composable
-    fun saturate(color : Int): Color {
-        val colorHSL by remember { mutableStateOf(floatArrayOf(0f, 0f, 0f)) }
-        val lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
-        colorToHSL(color,colorHSL)
-        colorHSL[1] = (colorHSL[1] + if (lightTheme || colorHSL[1] < 0.1f) 0f else 0.35f).coerceIn(0f,1f)
-        colorHSL[2] = if (lightTheme) {colorHSL[2].coerceIn(0.5f,1f)} else colorHSL[2]
-        return Color.hsl(colorHSL[0],colorHSL[1],colorHSL[2])
-    }
-
-    var lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
-    var ratio = if (lightTheme) 1f else 0.5f
-
-    fun Color.darkenBy(): Color {
-        return copy(
-            red = red * ratio,
-            green = green * ratio,
-            blue = blue * ratio,
-            alpha = alpha
-        )
-    }
-
+    val lightTheme = colorPaletteMode == ColorPaletteMode.Light ||
+        (colorPaletteMode == ColorPaletteMode.System && !isSystemInDarkTheme())
 
     val isGradientBackgroundEnabled =
         playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient ||
@@ -866,41 +827,26 @@ fun Player(
 
     val fullCoverPresentation = !playerLandscapeArtworkColumnVisible(playerType, thumbnailType, expandedplayer, showthumbnail)
     val currentSwipedMediaItem = if (fullCoverPresentation) mediaItem else mediaItems.getOrNull(if (!showthumbnail || albumCoverRotation) pagerStateFS.currentPage else if (playerType == PlayerType.Modern) pagerState.currentPage else binder.player.currentMediaItemIndex) ?: mediaItem
-    LaunchedEffect(currentSwipedMediaItem.mediaId, currentSwipedMediaItem.mediaMetadata.artworkUri, updateBrush) {
-        if (playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient ||
-            playerBackgroundColors == PlayerBackgroundColors.CoverColor ||
-            playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient ||
-            playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient || updateBrush
-        ) {
-            try {
-                val imageUrl = currentSwipedMediaItem.mediaMetadata.artworkUri.thumbnail(1000).toString()
-                val bitmap = getBitmapFromUrl(
-                    context,
-                    imageUrl
-                ) ?: throw Exception("Bitmap is null")
+    val coverDisplay = rememberArtworkDisplayColors(
+        currentSwipedMediaItem.mediaMetadata.artworkUri?.toString(), !lightTheme,
+    )
+    val dynamicColorPalette = coverDisplay?.palette?.let { palette ->
+        if (coverDisplay.forceDark) palette.copy(accent = coverDisplay.foreground ?: palette.text) else palette
+    } ?: color
+    val coverColors = coverDisplay?.colors
+    val dominant = coverColors?.dominant ?: dynamicColorPalette.accent.toArgb()
+    val vibrant = coverColors?.vibrant ?: dominant
+    val lightVibrant = coverColors?.lightVibrant ?: dominant
+    val darkVibrant = coverColors?.darkVibrant ?: dominant
+    val muted = coverColors?.muted ?: dominant
+    val lightMuted = coverColors?.lightMuted ?: dominant
+    val darkMuted = coverColors?.darkMuted ?: dominant
+    val coverBackground = if (coverColors != null || coverDisplay?.forceDark == true)
+        coverDisplay?.background ?: dynamicColorPalette.background1 else dynamicColorPalette.background1
 
-                val paletteResult = withContext(NzikDispatchers.MEDIA) {
-                    computePlayerDynamicPalette(bitmap, !lightTheme, color)
-                }
-
-                dynamicColorPalette = paletteResult.palette
-                dominant = paletteResult.dominant
-                vibrant = paletteResult.vibrant
-                lightVibrant = paletteResult.lightVibrant
-                darkVibrant = paletteResult.darkVibrant
-                muted = paletteResult.muted
-                lightMuted = paletteResult.lightMuted
-                darkMuted = paletteResult.darkMuted
-                coverSwatchesLoaded = true
-
-            } catch (e: Exception) {
-                if (e is CancellationException) throw e
-                dynamicColorPalette = dynamicColorPaletteOf(Color(0.54509807f, 0.36078432f, 0.9647059f), !lightTheme)
-                coverSwatchesLoaded = false
-
-            }
-        }
-    }
+    fun coverGradientColor(swatch: Int): Color =
+        if (coverDisplay?.forceDark == true) coverBackground
+        else m3eSaturate(swatch, lightTheme).m3eDarkenBy(lightTheme)
 
     val view = LocalView.current
     val globalIsDark = color.isDark
@@ -1104,18 +1050,7 @@ fun Player(
                     }
                 }
         } else if (playerBackgroundColors == PlayerBackgroundColors.CoverColor){
-            // Dominant swatch: the flat background renders the same hue the app's dynamic
-            // accent is built from (RiPlay reference, spec
-
-            // `spec-fix-palette-extractor-riplay-reference` OQ2=B). Until the swatches load (or
-            // when the artwork failed) it falls back to the local dynamic palette's background,
-
-            // exactly like the pre-M3E-alignment code did.
-            containerModifier = containerModifier
-                .background(
-                    if (coverSwatchesLoaded) m3eCoverBackgroundColor(dominant, lightTheme)
-                    else dynamicColorPalette.background1
-                )
+            containerModifier = containerModifier.background(coverBackground)
         } else if (playerBackgroundColors == PlayerBackgroundColors.ThemeColor){
             containerModifier = containerModifier
                 .background(color.background1)
@@ -1142,16 +1077,19 @@ fun Player(
                 when( type ) {
                     AnimatedGradient.FluidThemeColorGradient, AnimatedGradient.FluidCoverColorGradient,
                     AnimatedGradient.M3EMorphingTheme, AnimatedGradient.M3EMorphingCover -> {
+                        val isThemeGradient = type == AnimatedGradient.FluidThemeColorGradient ||
+                            type == AnimatedGradient.M3EMorphingTheme
+                        val gradientPalette = if (isThemeGradient) color else dynamicColorPalette
                         val shaderA = rememberPlayerFluidShader(sizeShader,
-                            dynamicColorPalette.background2, colorPalette().background2)
+                            gradientPalette.background0, gradientPalette.background2)
                         val brushA by animatePlayerBrushRotation(shaderA, sizeShader, 20_000, true, decorationsActive)
 
                         val shaderB = rememberPlayerFluidShader(sizeShader,
-                            colorPalette().background1, dynamicColorPalette.accent)
+                            gradientPalette.background1, if (isThemeGradient) gradientPalette.accent else coverBackground)
                         val brushB by animatePlayerBrushRotation(shaderB, sizeShader, 12_000, false, decorationsActive)
 
                         val shaderMask = rememberPlayerFluidShader(sizeShader,
-                            colorPalette().background2, Color.Transparent)
+                            gradientPalette.background2, Color.Transparent)
                         val brushMask by animatePlayerBrushRotation(shaderMask, sizeShader, 15_000, true, decorationsActive)
 
                         containerModifier = containerModifier
@@ -1166,13 +1104,13 @@ fun Player(
                             containerModifier = containerModifier.animatedM3EBackground(
                                 animating = isActuallyPlaying,
                                 active = decorationsActive,
-                                D = if (isTheme) colorPalette().background1 else saturate(dominant).darkenBy(),
-                                V = if (isTheme) colorPalette().background2 else saturate(vibrant).darkenBy(),
-                                LV = if (isTheme) dynamicColorPalette.background2 else saturate(lightVibrant).darkenBy(),
-                                DV = if (isTheme) colorPalette().background1 else saturate(darkVibrant).darkenBy(),
-                                M = if (isTheme) dynamicColorPalette.background1 else saturate(muted).darkenBy(),
-                                LM = if (isTheme) dynamicColorPalette.accent else saturate(lightMuted).darkenBy(),
-                                DM = if (isTheme) colorPalette().background2 else saturate(darkMuted).darkenBy(),
+                                D = if (isTheme) colorPalette().background1 else coverGradientColor(dominant),
+                                V = if (isTheme) colorPalette().background2 else coverGradientColor(vibrant),
+                                LV = if (isTheme) color.background2 else coverGradientColor(lightVibrant),
+                                DV = if (isTheme) colorPalette().background1 else coverGradientColor(darkVibrant),
+                                M = if (isTheme) color.background1 else coverGradientColor(muted),
+                                LM = if (isTheme) color.accent else coverGradientColor(lightMuted),
+                                DM = if (isTheme) colorPalette().background2 else coverGradientColor(darkMuted),
                                 skipToken = binder.player.currentMediaItem?.mediaId
                             )
                         }
@@ -1180,26 +1118,26 @@ fun Player(
                     AnimatedGradient.Linear -> {
                         containerModifier = containerModifier.animatedGradient(
                             isActuallyPlaying,
-                            saturate(dominant).darkenBy(),
-                            saturate(vibrant).darkenBy(),
-                            saturate(lightVibrant).darkenBy(),
-                            saturate(darkVibrant).darkenBy(),
-                            saturate(muted).darkenBy(),
-                            saturate(lightMuted).darkenBy(),
-                            saturate(darkMuted).darkenBy()
+                            coverGradientColor(dominant),
+                            coverGradientColor(vibrant),
+                            coverGradientColor(lightVibrant),
+                            coverGradientColor(darkVibrant),
+                            coverGradientColor(muted),
+                            coverGradientColor(lightMuted),
+                            coverGradientColor(darkMuted)
                         )
                     }
                     AnimatedGradient.Mesh -> {
                         shaderCondition = !appRunningInBackground
                         shader = MeshGradient(
                             colors = arrayOf(
-                                saturate(vibrant).darkenBy(),
-                                saturate(lightVibrant).darkenBy(),
-                                saturate(darkVibrant).darkenBy(),
-                                saturate(muted).darkenBy(),
-                                saturate(lightMuted).darkenBy(),
-                                saturate(darkMuted).darkenBy(),
-                                saturate(dominant).darkenBy()
+                                coverGradientColor(vibrant),
+                                coverGradientColor(lightVibrant),
+                                coverGradientColor(darkVibrant),
+                                coverGradientColor(muted),
+                                coverGradientColor(lightMuted),
+                                coverGradientColor(darkMuted),
+                                coverGradientColor(dominant)
                             ),
                             scale = 1f
                         )
@@ -1265,12 +1203,12 @@ fun Player(
                     .background(
                         Brush.verticalGradient(
                             0.5f to if (playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient)
-                                (if (coverSwatchesLoaded) m3eSaturate(dominant, lightTheme).m3eDarkenBy(lightTheme) else surfaceColor(dynamicColorPalette.background1))
+                                coverBackground
                             else surfaceColor(colorPalette().background1),
                             // OQ2=B: the whole "cover color" gradient renders the dominant swatch,
                             // the same hue the app's dynamic accent is built from (RiPlay reference).
                             1.0f to if (blackgradient) Color.Black else if (playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient)
-                                (if (coverSwatchesLoaded) m3eSaturate(dominant, lightTheme).m3eDarkenBy(lightTheme) else surfaceColor(dynamicColorPalette.background2))
+                                coverBackground
                             else surfaceColor(colorPalette().background2),
                             startY = 0.0f,
                             endY = 1500.0f

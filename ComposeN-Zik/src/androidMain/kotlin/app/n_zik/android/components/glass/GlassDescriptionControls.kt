@@ -79,7 +79,8 @@ internal fun GlassExplicitBadge(modifier: Modifier, settings: GlassSettings) {
         )) {
             Image(
                 painter = painterResource(R.drawable.explicit_glass_glyph), contentDescription = null,
-                colorFilter = ColorFilter.tint(colorPalette().text),
+                colorFilter = ColorFilter.tint(glassArtworkForeground(settings, colorPalette().text,
+                    settings.usesGlassMaterial(GlassArea.ActionButtons))),
                 modifier = Modifier.matchParentSize().clip(shape)
                     .glassChipBackground(Color.Transparent, shape, settings, filmColor = null,
                         allowInNativeQueue = true)

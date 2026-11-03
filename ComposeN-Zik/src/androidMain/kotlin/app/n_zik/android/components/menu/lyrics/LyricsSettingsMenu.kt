@@ -307,7 +307,7 @@ class LyricsSettingsMenu private constructor(
                     when (value) {
                         LyricsColor.White -> stringResource(R.string.white)
                         LyricsColor.Thememode -> stringResource(R.string.theme)
-                        LyricsColor.Cover -> stringResource(R.string.bg_colors_background_from_cover)
+                        LyricsColor.Cover -> stringResource(R.string.artwork)
                         LyricsColor.Custom -> stringResource(R.string.color_custom)
                     }
                 },
@@ -743,7 +743,7 @@ class LyricsSettingsMenu private constructor(
                         when (value) {
                             LyricsColor.White -> stringResource(R.string.white)
                             LyricsColor.Thememode -> stringResource(R.string.theme)
-                            LyricsColor.Cover -> stringResource(R.string.bg_colors_background_from_cover)
+                            LyricsColor.Cover -> stringResource(R.string.artwork)
                             LyricsColor.Custom -> stringResource(R.string.color_custom)
                         }
                     },

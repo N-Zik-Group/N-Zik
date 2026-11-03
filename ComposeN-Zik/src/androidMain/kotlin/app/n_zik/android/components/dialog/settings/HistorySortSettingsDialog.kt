@@ -13,7 +13,7 @@ import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
-import app.it.fast4x.rimusic.utils.*
+import app.it.fast4x.rimusic.utils.historySortMenuOrderKey
 import app.kreate.android.me.knighthat.utils.Toaster
 import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -102,5 +102,13 @@ object HistorySortSettingsDialog : ContentFramedDialog {
                 edit.apply(); Toaster.s(R.string.toast_preference_saved); hideDialog()
             }
         )
+    }
+
+    /** Restores the same order and visibility as a fresh history sort menu. */
+    fun reset(context: Context) {
+        context.getSharedPreferences("preferences", Context.MODE_PRIVATE).edit().apply {
+            putString(historySortMenuOrderKey, serializeOrder(sortIds))
+            sortIds.forEach { id -> putBoolean("hist_sort_${id}_visible", true) }
+        }.apply()
     }
 }

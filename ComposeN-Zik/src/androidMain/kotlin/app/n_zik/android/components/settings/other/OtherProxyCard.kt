@@ -68,7 +68,7 @@ internal fun OtherProxyCard(search: Search) {
     var regionOverride by rememberPreference(regionOverrideKey, "")
 
     SettingsSectionCard(
-        title = stringResource(R.string.proxy),
+        title = stringResource(R.string.settings_section_proxy_title),
         icon = R.drawable.network,
         content = {
             SettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))

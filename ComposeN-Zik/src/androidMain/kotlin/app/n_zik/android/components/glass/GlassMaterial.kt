@@ -50,7 +50,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.toSize
-import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.backdrop.BackdropEffectScope
 import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
@@ -206,10 +205,9 @@ internal fun glassFilmOpacity(configured: Float, overlay: Boolean, progress: Flo
 
 @Composable
 fun glassSurfaceTint(settings: GlassSettings): Color {
-    val palette = colorPalette()
     val brightness = LocalGlassMenuHost.current?.backdropLuminance
         ?: LocalGlassArtworkColor.current?.luminance() ?: 0f
-    val base = if (!palette.isDark) Color(0xFFFAFAFA) else {
+    val base = if (!glassSurfaceIsDark(settings)) Color(0xFFFAFAFA) else {
         lerp(Color(0xFF4A4A4E), Color(0xFF23232A), ((brightness - 0.42f) / 0.3f).coerceIn(0f, 1f))
     }
     return blendGlassTint(base, glassTint(settings), settings.tintStrength)
@@ -230,7 +228,9 @@ internal fun blendGlassTint(base: Color, tint: Color, strength: Float): Color {
 @Composable
 internal fun glassNativeSurfaceTint(settings: GlassSettings, base: Color): Color {
     if (!base.isSpecified || base.alpha == 0f) return base
-    return blendGlassTint(base, glassTint(settings), settings.tintStrength).copy(alpha = base.alpha)
+    val sourceBase = if (glassArtworkForcesDark(settings))
+        (LocalGlassArtworkColor.current ?: LocalGlassMenuHost.current?.artworkColor)?.copy(alpha = base.alpha) ?: base else base
+    return blendGlassTint(sourceBase, glassTint(settings), settings.tintStrength).copy(alpha = base.alpha)
 }
 
 /** Native alpha describes native rendering; the Glass film slider alone owns material coverage. */
@@ -290,7 +290,7 @@ fun Modifier.glassMaterial(
     val rimAlpha = (highlightAlpha * settings.rim / 0.55f).coerceIn(0f, 1f)
     val cornerShape = glassOpticalShape(shape)
     val menuOpacity = menuFilmProgress.coerceIn(0f, 1f)
-    val dark = colorPalette().isDark
+    val dark = glassSurfaceIsDark(settings)
     val fallback = renderer == GlassRenderer.Tint || (cornerShape == null && customLens == null) || backdrop == null
     val opacity = glassFilmOpacity(settings.film, menu, menuOpacity, fallback, dark)
     if (fallback) {

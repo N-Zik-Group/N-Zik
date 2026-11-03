@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">নতুন খোঁজা কুয়েরি সেভ করবেন না সাথে হিস্টোরি দেখবেন না</string>
     <string name="clear_search_history">অনুসন্ধানের ইতিহাস মুছে ফেলুন</string>
     <string name="history_is_empty">ইতিহাস খালি</string>
-    <string name="service_lifetime">আজীবন সেবা</string>
     <string name="battery_optimizations_applied">যদি ব্যাটারি অপটিমাইজেশন চালু করা হয় তাহলে পজ করার সময় প্লেব্যাক নোটিফিকেশন চলে যেতে পারে</string>
     <string name="is_android12">এন্ড্রোয়েড ১২ থেকে ইনভিনসিবল সার্ভিস চালাতে ব্যাটারি অপ্টিমাইজেশন অফ করতে হবে</string>
     <string name="ignore_battery_optimizations">ব্যাটারি অপ্টিমাইজেশান উপেক্ষা করুন</string>
@@ -193,8 +192,6 @@
     <string name="languages">ভাষা গুলো</string>
     <string name="app_language">এপের ভাষা</string>
     <string name="in_alphabetical_order">বর্ণক্রম অনুযায়ী</string>
-    <string name="contributors">সহযোগী</string>
-    <string name="troubleshooting">ভুলভ্রান্তি</string>
     <string name="english">ইংরেজি</string>
     <string name="italian">ইতালীয় (ইতালীয়)</string>
     <string name="czech">চেক</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">আপনি কি সত্যি সবগুলো ডাওনলোড করতে চান?</string>
     <string name="import_playlist">প্লেলিস্ট আমদানি করুন</string>
     <string name="lang_ukrainian">ইউক্রেনিয়ান</string>
-    <string name="proxy">প্রক্সি</string>
     <string name="enable_proxy">প্রক্সি সচল করুন</string>
     <string name="proxy_mode">প্রক্সি মোড</string>
     <string name="proxy_host">প্রক্সি হোস্ট</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">এই ফোল্ডার আগে থেকেই আছে</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">আপনি কি ব্ল্যাক লিস্ট থেকে এই ফোল্ডার বাদ দিতে চান?</string>
     <string name="player_appearance">প্লেয়ারের চেহারা</string>
-    <string name="player_action_bar">প্লেয়ার একশন বার</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
     <string name="quick_picks_content">Quick Picks sections</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">বিবিধ</string>
     <string name="swipe_to_action">সোয়াইপ অ্যাকশন</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">গানের ডান বামে সোয়াইপ করে একশন মেনু চালু করুন</string>
-    <string name="smart_recommendations">স্মার্ট রেকমেন্ডেশন</string>
     <string name="player_collapsed_disable_swiping_down">নিচে সোয়াইপ করা বাতিল করুন</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">প্লেয়ার মিনিমাইজড থাকা অবস্থায় নিচে সোয়াইপ করে প্লেয়ার ক্লোজ করা ও কিউ মোছা থেকে বিরত থাকুন</string>
     <string name="sort_date_liked">লাইক করার ডেট</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">চালু করলে, ত্রুটি হাইলাইট করে লগ ফাইল বানানো হবে</string>
     <string name="audio_waveform">Audio waveform</string>
-    <string name="title_backup_and_restore">ব্যাকআপ ও রিস্টোর</string>
     <string name="message_excluded_s_songs">%s গান গুলা এক্সক্লুড করা হয়েছে</string>
     <string name="show_thumbnail">Show Thumbnail</string>
     <string name="show_lyrics_thumbnail">Show Thumbnail for Lyrics</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">Loudness boost level</string>
     <string name="loudness_boost_level_info">Additional loudness level, to be used without overdoing it, may damage the device</string>
     <string name="settings_target_gain_loudness_info">Target gain for the loudness normalization</string>
-    <string name="full_screen_lyrics_components">Full Screen Lyrics Components</string>
     <string name="titleartist">Title and Artists</string>
     <string name="miniqueue">Mini Queue</string>
     <string name="controls">Controls</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">Resume Playback automatically when the app is opened</string>
     <string name="notificationPlayerFirstIcon">First button</string>
     <string name="notificationPlayerSecondIcon">Second button</string>
-    <string name="notification_player">NOTIFICATION PLAYER</string>
     <string name="repeat">Repeat</string>
     <string name="views">Views</string>
     <string name="subscribers">Subscribers</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigation</string>
     <string name="player_controls">Player Controls</string>
     <string name="player_controls_colors">Player controls colors</string>
-    <string name="theme_color">Theme color</string>
-    <string name="cover_color">Cover color</string>
     <string name="monochrome">Monochrome</string>
     <string name="queue_management">Queue Management</string>
     <string name="app_behavior">App Behavior</string>
@@ -2636,8 +2625,6 @@
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">কাস্টম</string>
     <string name="glass_performance">Fastest</string>
@@ -2785,4 +2772,14 @@
     <string name="playlist_refresh_on_open">Refresh on opening</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="settings_section_troubleshooting_title">ভুলভ্রান্তি</string>
+    <string name="settings_section_proxy_title">প্রক্সি</string>
+    <string name="settings_section_contributors_title">সহযোগী</string>
+    <string name="settings_section_player_action_bar_title">প্লেয়ার একশন বার</string>
+    <string name="settings_section_smart_recommendations_title">স্মার্ট রেকমেন্ডেশন</string>
+    <string name="settings_section_service_lifetime_title">আজীবন সেবা</string>
+    <string name="settings_section_notification_player_title">Notification player</string>
+    <string name="settings_section_backup_and_restore_title">ব্যাকআপ ও রিস্টোর</string>
+    <string name="settings_section_fullscreen_lyrics_title">Full Screen Lyrics Components</string>
+    <string name="artwork">Cover color</string>
 </resources>

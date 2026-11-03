@@ -43,10 +43,10 @@ internal fun GlassCustomChip(
 ) {
     val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
     GlassChipFeedback(material, enabled, shape, settings) { feedback, source ->
-        content(modifier.then(if (material) Modifier else Modifier.clip(shape)).then(feedback)
+        GlassArtworkContent(settings, material) { content(modifier.then(if (material) Modifier else Modifier.clip(shape)).then(feedback)
             .glassChipBackground(color, shape, settings)
             .clickable(interactionSource = source, indication = if (source == null) LocalIndication.current else null,
-                enabled = enabled, onClick = onClick))
+                enabled = enabled, onClick = onClick)) }
     }
 }
 

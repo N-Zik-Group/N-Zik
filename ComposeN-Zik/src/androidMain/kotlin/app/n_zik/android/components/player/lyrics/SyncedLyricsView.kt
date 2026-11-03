@@ -146,7 +146,8 @@ fun SyncedLyricsView(
     onDismiss: () -> Unit,
     onInvalidLrc: (Boolean) -> Unit,
     showIntervalIndicator: Boolean = true,
-    karaokeRespectAgentPosition: Boolean = true
+    karaokeRespectAgentPosition: Boolean = true,
+    forcedCoverBackground: Color? = null
 ) {
     val density = LocalDensity.current
 
@@ -395,7 +396,7 @@ fun SyncedLyricsView(
 
     var modifierBG = Modifier.verticalFadingEdge()
 if (showBackgroundLyrics && showlyricsthumbnail) modifierBG =
-        modifierBG.background(colorPalette().accent)
+        modifierBG.background(if (lyricsColor == LyricsColor.Cover) forcedCoverBackground ?: colorPalette().accent else colorPalette().accent)
 
     val accentColor = when (lyricsColor) {
         LyricsColor.White -> Color.White

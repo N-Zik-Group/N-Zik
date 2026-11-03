@@ -138,6 +138,7 @@ import app.it.fast4x.rimusic.utils.transparentBackgroundPlayerActionBarKey
 import app.it.fast4x.rimusic.utils.useSystemFontKey
 import app.it.fast4x.rimusic.utils.visualizerEnabledKey
 import app.n_zik.android.components.dialog.settings.BurgerMenuSettingsDialog
+import app.n_zik.android.components.dialog.settings.HistorySortSettingsDialog
 import app.n_zik.android.components.dialog.settings.HomeAlbumsSettingsDialog
 import app.n_zik.android.components.dialog.settings.HomeAlbumsSortSettingsDialog
 import app.n_zik.android.components.dialog.settings.HomeAlbumsToolbarSettingsDialog
@@ -156,9 +157,14 @@ import app.n_zik.android.components.dialog.settings.LocalPlaylistToolbarSettings
 import app.n_zik.android.components.dialog.settings.MiniPlayerButtonsSettingsDialog
 import app.n_zik.android.components.dialog.settings.PlayerActionBarSettingsDialog
 import app.n_zik.android.components.dialog.settings.QuickPicksContentSettingsDialog
+import app.n_zik.android.components.settings.common.resetInterfaceReaderDefaults
+import app.n_zik.android.components.theme.DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT
+import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
+import app.n_zik.android.core.settings.DEFAULT_THUMBNAIL_SIZE_DP
 
 /** Applies the legacy Interface reset once to the active profile and dialog stores. */
 internal fun applyUiDefaults(context: Context) {
+    resetInterfaceReaderDefaults(context.preferences)
     context.preferences.edit().remove(app.n_zik.android.components.navigation.dock.DockToolbarPreferences.orderKey).apply()
     context.preferences.edit {
         putBoolean(hideStatusBarKey, false)
@@ -169,6 +175,7 @@ internal fun applyUiDefaults(context: Context) {
         putBoolean(disablePlayerHorizontalSwipeKey, false)
         putEnum(lastPlayerPlayButtonTypeKey, PlayerPlayButtonType.Rectangular)
         putEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
+        putBoolean(dynamicThemeRespectBrightnessKey, DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT)
         putEnum(colorPaletteModeKey, ColorPaletteMode.System)
         putEnum(indexNavigationTabKey, HomeScreenTabs.Default)
         putEnum(fontTypeKey, FontType.Rubik)
@@ -217,7 +224,7 @@ internal fun applyUiDefaults(context: Context) {
         putEnum(carouselSizeKey, CarouselSize.Biggest)
         putEnum(thumbnailTypeKey, ThumbnailType.Modern)
         putEnum(playerTimelineTypeKey, PlayerTimelineType.Wavy)
-        putFloat(thumbnailSizeDpKey, 90f)
+        putFloat(thumbnailSizeDpKey, DEFAULT_THUMBNAIL_SIZE_DP)
         remove(thumbnailSizeLDpKey)
         putEnum(playerTimelineSizeKey, PlayerTimelineSize.Biggest)
         putBoolean(playerInfoShowIconsKey, true)
@@ -285,6 +292,7 @@ internal fun applyUiDefaults(context: Context) {
     HomeArtistsSortSettingsDialog.reset(context)
     HomeLibrarySortSettingsDialog.reset(context)
     LocalPlaylistSortSettingsDialog.reset(context)
+    HistorySortSettingsDialog.reset(context)
 }
 
 /** Restores only the selected custom palette in the active profile. */

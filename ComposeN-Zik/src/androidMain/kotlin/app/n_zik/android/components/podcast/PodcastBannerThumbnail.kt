@@ -15,6 +15,7 @@ import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.thumbnailSizeDpKey
 import app.n_zik.android.colorPalette
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.settings.DEFAULT_THUMBNAIL_SIZE_DP
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.uiRoundnessShape
 import com.valentinilk.shimmer.shimmer
@@ -22,7 +23,7 @@ import com.valentinilk.shimmer.shimmer
 /** The large landscape banner keeps its native clips without an image contour. */
 @Composable
 fun PodcastBannerThumbnail(isLoading: Boolean, url: String?) {
-    val horizontalPadding by rememberPreference(thumbnailSizeDpKey, 85f)
+    val horizontalPadding by rememberPreference(thumbnailSizeDpKey, DEFAULT_THUMBNAIL_SIZE_DP)
     val modifier = Modifier.padding(horizontal = horizontalPadding.dp).padding(top = 16.dp)
         .clip(thumbnailShape()).clip(uiRoundnessShape())
     Box(contentAlignment = Alignment.Center) {

@@ -25,7 +25,7 @@ internal fun DataBackupCard(search: Search) {
     val binder = LocalPlayerServiceBinder.current
     SettingsSectionCard(
         modifier = Modifier.testTag("data.card.backup"),
-        title = stringResource(R.string.title_backup_and_restore),
+        title = stringResource(R.string.settings_section_backup_and_restore_title),
         icon = R.drawable.server,
         content = {
 

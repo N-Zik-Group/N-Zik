@@ -201,6 +201,7 @@ internal val SettingsEntryDescriptions = mapOf(
     "ui.theme.color_text_secondary.dark" to R.string.settings_desc_ui_theme_color_text_secondary_dark,
     "ui.theme.customcolor" to R.string.settings_desc_ui_theme_customcolor,
     "ui.theme.theme" to R.string.settings_desc_ui_theme_theme,
+    "ui.theme.respect_brightness" to R.string.dynamic_theme_respect_brightness_description,
     "ui.theme.theme_mode" to R.string.settings_desc_ui_theme_theme_mode,
     "ui.user_interface.default_page" to R.string.settings_desc_ui_user_interface_default_page,
     "ui.user_interface.menu_style" to R.string.settings_desc_ui_user_interface_menu_style,

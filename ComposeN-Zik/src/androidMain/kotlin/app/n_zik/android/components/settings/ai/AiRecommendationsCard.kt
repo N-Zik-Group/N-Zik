@@ -24,9 +24,9 @@ import app.n_zik.android.components.tab.Search
 @Composable
 internal fun AiRecommendationsCard(search: Search) {
     var recommendationsNumber by rememberPreference(recommendationsNumberKey, RecommendationsNumber.Adaptive)
-    val searchCtx_4 = search.inputValue.isBlank() || stringResource(R.string.smart_recommendations).contains(search.inputValue, true) || stringResource(R.string.smart_recommendations_number).contains(search.inputValue, true)
+    val searchCtx_4 = search.inputValue.isBlank() || stringResource(R.string.settings_section_smart_recommendations_title).contains(search.inputValue, true) || stringResource(R.string.smart_recommendations_number).contains(search.inputValue, true)
     SettingsSectionCard(
-        title = stringResource(R.string.smart_recommendations),
+        title = stringResource(R.string.settings_section_smart_recommendations_title),
         icon = R.drawable.smart_shuffle,
         visible = searchCtx_4,
         content = {

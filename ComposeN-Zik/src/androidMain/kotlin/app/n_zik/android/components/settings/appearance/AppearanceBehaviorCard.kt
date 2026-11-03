@@ -307,11 +307,11 @@ internal fun AppearanceBehaviorCard(search: Search) {
 
                         if (search.inputValue.isBlank() || stringResource(R.string.visualizer_white_color_option).contains(search.inputValue, true)) {
                             OtherEnumValueSelectorSettingsEntry(
-                                text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_player_behavior_and_visuals_visualizer_white_color_option), stringResource(when(visualizerWhiteColorOption) { enums.VisualizerWhiteColorOption.White -> R.string.color_white; enums.VisualizerWhiteColorOption.Theme -> R.string.bg_colors_background_from_theme; enums.VisualizerWhiteColorOption.Cover -> R.string.bg_colors_background_from_cover; enums.VisualizerWhiteColorOption.Custom -> R.string.color_custom })),
+                                text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_player_behavior_and_visuals_visualizer_white_color_option), stringResource(when(visualizerWhiteColorOption) { enums.VisualizerWhiteColorOption.White -> R.string.color_white; enums.VisualizerWhiteColorOption.Theme -> R.string.theme; enums.VisualizerWhiteColorOption.Cover -> R.string.artwork; enums.VisualizerWhiteColorOption.Custom -> R.string.color_custom })),
                                 title = stringResource(R.string.visualizer_white_color_option),
                                 selectedValue = visualizerWhiteColorOption,
                                 onValueSelected = { visualizerWhiteColorOption = it },
-                                valueText = { stringResource(when(it) { enums.VisualizerWhiteColorOption.White -> R.string.color_white; enums.VisualizerWhiteColorOption.Theme -> R.string.bg_colors_background_from_theme; enums.VisualizerWhiteColorOption.Cover -> R.string.bg_colors_background_from_cover; enums.VisualizerWhiteColorOption.Custom -> R.string.color_custom }) },
+                                valueText = { stringResource(when(it) { enums.VisualizerWhiteColorOption.White -> R.string.color_white; enums.VisualizerWhiteColorOption.Theme -> R.string.theme; enums.VisualizerWhiteColorOption.Cover -> R.string.artwork; enums.VisualizerWhiteColorOption.Custom -> R.string.color_custom }) },
                                 modifier = (Modifier.padding(start = 25.dp)).settingsSearchTarget("appearance.player_behavior_and_visuals.visualizer_white_color_option"),
                                 icon = R.drawable.color_palette
                             )

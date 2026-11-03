@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">No deseu les consultes de cerca noves ni mostreu l\'historial</string>
     <string name="clear_search_history">Esborra l\'historial de cerques</string>
     <string name="history_is_empty">L\'historial de cerques és buit</string>
-    <string name="service_lifetime">Service lifetime</string>
     <string name="battery_optimizations_applied">Si s\'apliquen optimitzacions de la bateria, la notificació de reproducció pot desaparèixer de sobte quan es posa en pausa.</string>
     <string name="is_android12">Des d\'Android 12, cal desactivar l\'optimització de la bateria perquè l\'opció \"Servei invencible\" tingui efecte.</string>
     <string name="ignore_battery_optimizations">Ignora les optimitzacions de la bateria</string>
@@ -193,8 +192,6 @@
     <string name="languages">Idiomes</string>
     <string name="app_language">Idioma de l\'aplicació</string>
     <string name="in_alphabetical_order">Per ordre alfabètic:</string>
-    <string name="contributors">Contributors</string>
-    <string name="troubleshooting">Troubleshooting</string>
     <string name="english">Anglès</string>
     <string name="italian">Italià (Italiano)</string>
     <string name="czech">Txec (Čeština)</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">De veritat vols descarregar-ho tot?</string>
     <string name="import_playlist">Importa la llista de reproducció</string>
     <string name="lang_ukrainian">Ucraïnès</string>
-    <string name="proxy">Proxy</string>
     <string name="enable_proxy">Habilita el servidor intermediari</string>
     <string name="proxy_mode">Mode del servidor intermediari</string>
     <string name="proxy_host">Amfitrió del servidor intermediari</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">La carpeta ja existeix.</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">Esteu segur que voleu eliminar aquesta carpeta de la llista negra?</string>
     <string name="player_appearance">Aparença</string>
-    <string name="player_action_bar">Player action bar</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
     <string name="quick_picks_content">Quick Picks sections</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">Miscel·lània</string>
     <string name="swipe_to_action">Acció en lliscar</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">Activa el menú d\'acció fent lliscar la cançó cap a l\'esquerra o cap a la dreta</string>
-    <string name="smart_recommendations">Recomanació intel·ligent</string>
     <string name="player_collapsed_disable_swiping_down">Desactiva el lliscament cap avall</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Eviteu tancar el reproductor i netejar la cua fent lliscar cap avall mentre estigui minimitzat</string>
     <string name="sort_date_liked">Data de quan et va agradar</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">Si està activat, creeu un fitxer de registre per destacar els errors</string>
     <string name="audio_waveform">Audio waveform</string>
-    <string name="title_backup_and_restore">Backup and restore</string>
     <string name="message_excluded_s_songs">S\'han exclòs %s cançons</string>
     <string name="show_thumbnail">Mostra la miniatura</string>
     <string name="show_lyrics_thumbnail">Mostra la miniatura de la lletra</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">Loudness boost level</string>
     <string name="loudness_boost_level_info">Additional loudness level, to be used without overdoing it, may damage the device</string>
     <string name="settings_target_gain_loudness_info">Guany objectiu per a la normalització de la sonoritat</string>
-    <string name="full_screen_lyrics_components">Components de Lletres a pantalla completa</string>
     <string name="titleartist">Títol i Artistes</string>
     <string name="miniqueue">Mini cua</string>
     <string name="controls">Controls</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">Reprèn la reproducció automàticament quan s\'obre l\'aplicació</string>
     <string name="notificationPlayerFirstIcon">Primer botó</string>
     <string name="notificationPlayerSecondIcon">Segon botó</string>
-    <string name="notification_player">Notification Player</string>
     <string name="repeat">Repeteix</string>
     <string name="views">Views</string>
     <string name="subscribers">Subscribers</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigation</string>
     <string name="player_controls">Player Controls</string>
     <string name="player_controls_colors">Player controls colors</string>
-    <string name="theme_color">Theme color</string>
-    <string name="cover_color">Cover color</string>
     <string name="monochrome">Monochrome</string>
     <string name="queue_management">Queue Management</string>
     <string name="app_behavior">App Behavior</string>
@@ -2636,8 +2625,6 @@
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">Personalitzat</string>
     <string name="glass_performance">Fastest</string>
@@ -2785,4 +2772,14 @@
     <string name="playlist_refresh_on_open">Refresh on opening</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="settings_section_troubleshooting_title">Troubleshooting</string>
+    <string name="settings_section_proxy_title">Proxy</string>
+    <string name="settings_section_contributors_title">Contributors</string>
+    <string name="settings_section_player_action_bar_title">Player action bar</string>
+    <string name="settings_section_smart_recommendations_title">Recomanació intel·ligent</string>
+    <string name="settings_section_service_lifetime_title">Service lifetime</string>
+    <string name="settings_section_notification_player_title">Notification Player</string>
+    <string name="settings_section_backup_and_restore_title">Backup and restore</string>
+    <string name="settings_section_fullscreen_lyrics_title">Components de Lletres a pantalla completa</string>
+    <string name="artwork">Cover color</string>
 </resources>

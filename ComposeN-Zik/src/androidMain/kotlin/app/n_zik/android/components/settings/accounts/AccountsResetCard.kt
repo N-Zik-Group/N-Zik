@@ -1,12 +1,11 @@
 package app.n_zik.android.components.settings.accounts
 
-import app.n_zik.android.components.settings.common.settingsSearchTarget
-import androidx.compose.ui.Modifier
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.edit
@@ -21,8 +20,10 @@ import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.resetPlaylistRefreshDefaults
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.extensions.discord.discordAdvancedActivityTypeKey
 import app.n_zik.android.extensions.discord.discordAdvancedButton1EnabledKey
@@ -40,6 +41,7 @@ import app.n_zik.android.extensions.discord.isDiscordAdvancedModeKey
 
 /** Applies only the existing Accounts reset set; saved credentials remain intact. */
 internal fun applyAccountsDefaults(context: Context) {
+    resetPlaylistRefreshDefaults(context.preferences)
     context.preferences.edit {
         putBoolean(restartActivityKey, false)
     }

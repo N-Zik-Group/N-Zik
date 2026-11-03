@@ -19,7 +19,7 @@ internal fun AboutSupportCard() {
     val uriHandler = LocalUriHandler.current
     AnimatedVisibility(visible = true, enter = settingsCardEnter, exit = settingsCardExit) {
             SettingsSectionCard(
-                title = stringResource(R.string.troubleshooting),
+                title = stringResource(R.string.settings_section_troubleshooting_title),
                 icon = R.drawable.information,
                 content = {
 

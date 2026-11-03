@@ -132,8 +132,8 @@ class VisualizerSettingsMenu private constructor(
                 valueText = { value ->
                     stringResource(when(value) { 
                         VisualizerWhiteColorOption.White -> R.string.color_white
-                        VisualizerWhiteColorOption.Theme -> R.string.bg_colors_background_from_theme
-                        VisualizerWhiteColorOption.Cover -> R.string.bg_colors_background_from_cover
+                        VisualizerWhiteColorOption.Theme -> R.string.theme
+                        VisualizerWhiteColorOption.Cover -> R.string.artwork
                         VisualizerWhiteColorOption.Custom -> R.string.color_custom
                     })
                 },
@@ -225,8 +225,8 @@ class VisualizerSettingsMenu private constructor(
                     valueText = { value ->
                         stringResource(when(value) { 
                             VisualizerWhiteColorOption.White -> R.string.color_white
-                            VisualizerWhiteColorOption.Theme -> R.string.bg_colors_background_from_theme
-                            VisualizerWhiteColorOption.Cover -> R.string.bg_colors_background_from_cover
+                            VisualizerWhiteColorOption.Theme -> R.string.theme
+                            VisualizerWhiteColorOption.Cover -> R.string.artwork
                             VisualizerWhiteColorOption.Custom -> R.string.color_custom
                         })
                     },

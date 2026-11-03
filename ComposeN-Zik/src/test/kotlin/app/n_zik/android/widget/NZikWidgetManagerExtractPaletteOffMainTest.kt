@@ -156,6 +156,8 @@ class NZikWidgetManagerExtractPaletteOffMainTest {
      */
     @Test
     fun `extractPalette fallback equals the app m3eDynamicColorPaletteOf for the same bitmap`() = runBlocking {
+        context.getSharedPreferences("preferences", Context.MODE_PRIVATE).edit()
+            .putString("colorPaletteMode", "System").commit()
         val bitmap = solidBitmap(Color.rgb(30, 120, 200))
         val isSystemInDarkMode =
             context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==

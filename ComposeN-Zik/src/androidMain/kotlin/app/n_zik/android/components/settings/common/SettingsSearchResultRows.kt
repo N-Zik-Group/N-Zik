@@ -21,7 +21,7 @@ import app.n_zik.android.uiRoundnessShape
 internal fun searchSettingsCardResults(context: Context, query: String): List<SettingsCardRegistryEntry> =
     if (query.isBlank()) emptyList() else
         SettingsCards.filter { card ->
-            context.getString(card.titleRes).contains(query.trim(), true) ||
+            card.displayTitle(context).contains(query.trim(), true) ||
                 card.keywordRes.any { context.getString(it).contains(query.trim(), true) }
         }
 

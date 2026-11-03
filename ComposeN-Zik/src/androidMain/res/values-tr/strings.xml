@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">Ne yeni aranan sorguları kaydet ne de geçmişi göster</string>
     <string name="clear_search_history">Arama geçmişini temizle</string>
     <string name="history_is_empty">Geçmiş boş</string>
-    <string name="service_lifetime">Hizmet ömrü</string>
     <string name="battery_optimizations_applied">Pil optimizasyonları uygulanırsa, duraklatıldığında çalma bildirimi aniden kaybolabilir.</string>
     <string name="is_android12">Android 12\'den itibaren, \"Yenilmez hizmet\" seçeneğinin etkili olması için pil optimizasyonlarının devre dışı bırakılması gereklidir.</string>
     <string name="ignore_battery_optimizations">Pil optimizasyonlarını yoksay</string>
@@ -193,8 +192,6 @@
     <string name="languages">Diller</string>
     <string name="app_language">Uygulama dili</string>
     <string name="in_alphabetical_order">Alfabetik sırada:</string>
-    <string name="contributors">Katkıda bulunanlar</string>
-    <string name="troubleshooting">Sorun giderme</string>
     <string name="english">İngilizce</string>
     <string name="italian">İtalyanca (Italiano)</string>
     <string name="czech">Çekçe (Čeština)</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">Tümünü gerçekten indirmek istiyor musunuz?</string>
     <string name="import_playlist">Çalma listesini içe aktar</string>
     <string name="lang_ukrainian">Ukraynaca (Українська)</string>
-    <string name="proxy">Proxy</string>
     <string name="enable_proxy">Proxy\'i etkinleştir</string>
     <string name="proxy_mode">Proxy Modu</string>
     <string name="proxy_host">Proxy Sunucusu</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">Bu klasör zaten var</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">Bu klasörü kara listeden çıkarmak istediğinizden emin misiniz?</string>
     <string name="player_appearance">Oynatıcı Görünümü</string>
-    <string name="player_action_bar">Oyuncu eylem çubuğu</string>
     <string name="player_action_bar_buttons">Düğmenin görünürlüğü</string>
     <string name="player_action_bar_buttons_description">Oynatıcı eylem çubuğunda hangi düğmelerin görüneceğini ayarlayın</string>
     <string name="quick_picks_content">Hızlı Seçimler bölümleri</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">Çeşitli</string>
     <string name="swipe_to_action">İşlem için kaydır</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">Dikey şarkı listesinde bir şarkıyı sola veya sağa kaydırarak işlemleri gerçekleştirin</string>
-    <string name="smart_recommendations">Akıllı öneriler</string>
     <string name="player_collapsed_disable_swiping_down">Aşağı kaydırmayı devre dışı bırak</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Küçültülmüşken aşağı kaydırarak oynatıcıyı kapatmaktan ve sırayı temizlemekten kaçının</string>
     <string name="sort_date_liked">Eklenme Tarihi</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Hata ayıklama günlüklerini devre dışı bırak</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">Etkinleştirilirse, hataları vurgulamak için bir günlük dosyası oluştur</string>
     <string name="audio_waveform">Ses waveform\'u</string>
-    <string name="title_backup_and_restore">Yedekle ve geri yükle</string>
     <string name="message_excluded_s_songs">%s şarkı hariç tutuldu</string>
     <string name="show_thumbnail">Küçük resmi göster</string>
     <string name="show_lyrics_thumbnail">Şarkı sözleri için küçük resmi göster</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">Bas güçlendirme seviyesi</string>
     <string name="loudness_boost_level_info">Ekstra ses seviyesi, aşırıya kaçılmadan kullanılmalıdır aksi takdirde cihaz zarar görebilir</string>
     <string name="settings_target_gain_loudness_info">Ses yüksekliği normalizasyonu için hedef kazanç</string>
-    <string name="full_screen_lyrics_components">Tam ekran şarkı sözleri bileşenleri</string>
     <string name="titleartist">Başlık ve Sanatçılar</string>
     <string name="miniqueue">Sıradaki şarkı kuyruğu</string>
     <string name="controls">Kontroller</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">Uygulama açıldığında oynatmaya otomatik olarak devam et</string>
     <string name="notificationPlayerFirstIcon">İlk düğme</string>
     <string name="notificationPlayerSecondIcon">İkinci düğme</string>
-    <string name="notification_player">Bildirim Oynatıcı</string>
     <string name="repeat">Tekrarla</string>
     <string name="views">Görüntülemeler</string>
     <string name="subscribers">Aboneler</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigasyon</string>
     <string name="player_controls">Oynatıcı Kontrolleri</string>
     <string name="player_controls_colors">Oynatıcı kontrolü renkleri</string>
-    <string name="theme_color">Tema rengi</string>
-    <string name="cover_color">Kapak rengi</string>
     <string name="monochrome">Tek renkli</string>
     <string name="queue_management">Kuyruk Sırası Yönetimi</string>
     <string name="app_behavior">Uygulama Davranışı</string>
@@ -2636,8 +2625,6 @@
     <string name="liquid_glass_material">Cam materyal</string>
     <string name="liquid_glass_color">Özel cam rengi</string>
     <string name="liquid_glass_frost">Don gücü</string>
-    <string name="liquid_glass_theme_accent">Tema vurgusu</string>
-    <string name="liquid_glass_artwork">Görsel / dinamik</string>
     <string name="liquid_glass_system_accent">Sistem vurgusu</string>
     <string name="liquid_glass_custom">Özel</string>
     <string name="glass_performance">En hızlı</string>
@@ -2785,4 +2772,14 @@
     <string name="playlist_refresh_on_open">Açıldığında yenile</string>
     <string name="playlist_refresh_on_open_disable">Açıldığında yenilemeyi devre dışı bırak</string>
     <string name="playlist_refresh_on_open_enable">Açıldığında yenilemeyi etkinleştir</string>
+    <string name="settings_section_troubleshooting_title">Sorun giderme</string>
+    <string name="settings_section_proxy_title">Proxy</string>
+    <string name="settings_section_contributors_title">Katkıda bulunanlar</string>
+    <string name="settings_section_player_action_bar_title">Oyuncu eylem çubuğu</string>
+    <string name="settings_section_smart_recommendations_title">Akıllı öneriler</string>
+    <string name="settings_section_service_lifetime_title">Hizmet ömrü</string>
+    <string name="settings_section_notification_player_title">Bildirim Oynatıcı</string>
+    <string name="settings_section_backup_and_restore_title">Yedekle ve geri yükle</string>
+    <string name="settings_section_fullscreen_lyrics_title">Tam ekran şarkı sözleri bileşenleri</string>
+    <string name="artwork">Kapak rengi</string>
 </resources>

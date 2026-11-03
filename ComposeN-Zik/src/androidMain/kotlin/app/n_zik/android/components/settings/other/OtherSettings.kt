@@ -161,13 +161,13 @@ internal fun OtherSettingsContent(
                 OtherOnDeviceCard(search)
             }
         }
-        if (selectedCards == null || R.string.service_lifetime in selectedCards) {
-            SettingsCardSlot(R.string.service_lifetime, modifier = { cardModifier(R.string.service_lifetime) }) {
+        if (selectedCards == null || R.string.settings_section_service_lifetime_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_section_service_lifetime_title, modifier = { cardModifier(R.string.settings_section_service_lifetime_title) }) {
                 OtherServiceLifetimeCard(search)
             }
         }
-        if (selectedCards == null || R.string.proxy in selectedCards) {
-            SettingsCardSlot(R.string.proxy, modifier = { cardModifier(R.string.proxy) }) {
+        if (selectedCards == null || R.string.settings_section_proxy_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_section_proxy_title, modifier = { cardModifier(R.string.settings_section_proxy_title) }) {
                 OtherProxyCard(search)
             }
         }

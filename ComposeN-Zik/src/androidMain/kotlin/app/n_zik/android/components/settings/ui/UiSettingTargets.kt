@@ -44,6 +44,7 @@ import app.it.fast4x.rimusic.utils.searchDisplayOrderKey
 import app.it.fast4x.rimusic.utils.showFloatingIconKey
 import app.it.fast4x.rimusic.utils.transitionEffectKey
 import app.it.fast4x.rimusic.utils.useSystemFontKey
+import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 
 /** Local inventory only; it does not activate global search or change navigation. */
 internal object UiSettingTargets {
@@ -51,6 +52,7 @@ internal object UiSettingTargets {
         UiCardTargets("ui.card.theme",
             preferenceKeys = listOf(
                 colorPaletteNameKey,
+                dynamicThemeRespectBrightnessKey,
                 customColorKey,
                 customThemeLight_Background0Key,
                 customThemeLight_Background1Key,

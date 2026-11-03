@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">Nieuwe gezochte query\'s opslaan noch geschiedenis tonen</string>
     <string name="clear_search_history">Zoekgeschiedenis wissen</string>
     <string name="history_is_empty">Geschiedenis is leeg</string>
-    <string name="service_lifetime">Levensduur service</string>
     <string name="battery_optimizations_applied">Als batterij optimalisaties worden toegepast, kan de afspeelmelding plotseling verdwijnen na onderbreking.</string>
     <string name="is_android12">Sinds Android 12, is het uitschakelen van accuoptimalisaties vereist voor de \"onzichtbare service\" optie.</string>
     <string name="ignore_battery_optimizations">Negeer batterij-optimalisatie</string>
@@ -193,8 +192,6 @@
     <string name="languages">Talen</string>
     <string name="app_language">App-taal</string>
     <string name="in_alphabetical_order">In alfabetische volgorde:</string>
-    <string name="contributors">Bijdragers</string>
-    <string name="troubleshooting">Probleemoplossing</string>
     <string name="english">Engels</string>
     <string name="italian">Italiaans (Italiano)</string>
     <string name="czech">Tsjechisch (Čeština)</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">Wil je echt alles downloaden?</string>
     <string name="import_playlist">Afspeellijst importeren</string>
     <string name="lang_ukrainian">Oekraïnes (½ ľľItëρρρρρ)</string>
-    <string name="proxy">Proxy</string>
     <string name="enable_proxy">Proxy inschakelen</string>
     <string name="proxy_mode">Proxymodus</string>
     <string name="proxy_host">Proxyhost</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">Deze map bestaat al</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">Weet je zeker dat je deze map af de blacklist wil halen?</string>
     <string name="player_appearance">Speler uiterlijk</string>
-    <string name="player_action_bar">Speler actiebalk</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
     <string name="quick_picks_content">Quick Picks sections</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">Diversen</string>
     <string name="swipe_to_action">Veeg voor actie</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">Voer acties uit door naar links of rechts te vegen over een nummer binnen een verticale lijst van nummers</string>
-    <string name="smart_recommendations">Slimme aanbevelingen</string>
     <string name="player_collapsed_disable_swiping_down">Omlaag vegen uitschakelen</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Vermijd de speler te sluiten en de wachtrij op te ruimen terwijl het geminimaliseerd is</string>
     <string name="sort_date_liked">Favoriete datum</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">If enabled, create a log file to highlight errors</string>
     <string name="audio_waveform">Audio waveform</string>
-    <string name="title_backup_and_restore">Back-up maken en herstellen</string>
     <string name="message_excluded_s_songs">Excluded %s songs</string>
     <string name="show_thumbnail">Show thumbnail</string>
     <string name="show_lyrics_thumbnail">Show thumbnail for lyrics</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">Luidruchtige boost level</string>
     <string name="loudness_boost_level_info">Extra geluidsniveau, om te gebruiken zonder het te overdrijven, kan het apparaat beschadigen</string>
     <string name="settings_target_gain_loudness_info">Target gain for the loudness normalization</string>
-    <string name="full_screen_lyrics_components">Volledig scherm songteksten componenten</string>
     <string name="titleartist">Title and Artists</string>
     <string name="miniqueue">Volgende afspeellijst</string>
     <string name="controls">Controls</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">Afspelen automatisch hervatten wanneer de app wordt geopend</string>
     <string name="notificationPlayerFirstIcon">First button</string>
     <string name="notificationPlayerSecondIcon">Second button</string>
-    <string name="notification_player">Notificatie speler</string>
     <string name="repeat">Repeat</string>
     <string name="views">Weergaven</string>
     <string name="subscribers">Ontvangers</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigation</string>
     <string name="player_controls">Speler Besturing</string>
     <string name="player_controls_colors">Speler controleert kleuren</string>
-    <string name="theme_color">Thema kleur</string>
-    <string name="cover_color">Omslag kleur</string>
     <string name="monochrome">Monochroom</string>
     <string name="queue_management">Wachtrij beheer</string>
     <string name="app_behavior">App gedrag</string>
@@ -2636,8 +2625,6 @@
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">Aangepast</string>
     <string name="glass_performance">Fastest</string>
@@ -2785,4 +2772,14 @@
     <string name="playlist_refresh_on_open">Refresh on opening</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="settings_section_troubleshooting_title">Probleemoplossing</string>
+    <string name="settings_section_proxy_title">Proxy</string>
+    <string name="settings_section_contributors_title">Bijdragers</string>
+    <string name="settings_section_player_action_bar_title">Speler actiebalk</string>
+    <string name="settings_section_smart_recommendations_title">Slimme aanbevelingen</string>
+    <string name="settings_section_service_lifetime_title">Levensduur service</string>
+    <string name="settings_section_notification_player_title">Notificatie speler</string>
+    <string name="settings_section_backup_and_restore_title">Back-up maken en herstellen</string>
+    <string name="settings_section_fullscreen_lyrics_title">Volledig scherm songteksten componenten</string>
+    <string name="artwork">Omslag kleur</string>
 </resources>

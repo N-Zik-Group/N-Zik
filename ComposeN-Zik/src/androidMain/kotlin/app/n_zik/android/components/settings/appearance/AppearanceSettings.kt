@@ -180,8 +180,8 @@ internal fun AppearanceSettingsContent(
                 AppearanceTimelineCard(search)
             }
         }
-        if (selectedCards == null || R.string.player_action_bar in selectedCards) {
-            SettingsCardSlot(R.string.player_action_bar, modifier = { cardModifier(R.string.player_action_bar) }) {
+        if (selectedCards == null || R.string.settings_section_player_action_bar_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_section_player_action_bar_title, modifier = { cardModifier(R.string.settings_section_player_action_bar_title) }) {
                 AppearanceActionBarCard(search)
             }
         }
@@ -195,13 +195,13 @@ internal fun AppearanceSettingsContent(
                 AppearanceLyricsCard(search)
             }
         }
-        if (selectedCards == null || R.string.full_screen_lyrics_components in selectedCards) {
-            SettingsCardSlot(R.string.full_screen_lyrics_components, modifier = { cardModifier(R.string.full_screen_lyrics_components) }) {
+        if (selectedCards == null || R.string.settings_section_fullscreen_lyrics_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_section_fullscreen_lyrics_title, modifier = { cardModifier(R.string.settings_section_fullscreen_lyrics_title) }) {
                 AppearanceFullscreenLyricsCard(search)
             }
         }
-        if (selectedCards == null || R.string.notification_player in selectedCards) {
-            SettingsCardSlot(R.string.notification_player, modifier = { cardModifier(R.string.notification_player) }) {
+        if (selectedCards == null || R.string.settings_section_notification_player_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_section_notification_player_title, modifier = { cardModifier(R.string.settings_section_notification_player_title) }) {
                 AppearanceNotificationCard(search, restartState)
             }
         }

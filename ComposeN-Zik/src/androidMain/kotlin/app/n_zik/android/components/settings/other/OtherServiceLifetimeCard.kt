@@ -49,7 +49,7 @@ internal fun OtherServiceLifetimeCard(search: Search) {
     var isKeepScreenOnEnabled by rememberPreference(isKeepScreenOnEnabledKey, false)
 
     SettingsSectionCard(
-        title = stringResource(R.string.service_lifetime),
+        title = stringResource(R.string.settings_section_service_lifetime_title),
         icon = R.drawable.battery,
         content = {
             if (search.inputValue.isBlank() || stringResource(R.string.keep_screen_on).contains(search.inputValue, true) || stringResource(R.string.prevents_screen_timeout).contains(search.inputValue, true)) {

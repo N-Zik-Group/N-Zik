@@ -120,6 +120,7 @@ class GlassMenuHostState {
         internal set
     val modalBackdrop: Backdrop? get() = foregroundBackdrop ?: sceneBackdrop ?: overlayBackdrop ?: backdrop
     var artworkColor by mutableStateOf<Color?>(null)
+    var artworkForceDark by mutableStateOf(false)
     var backdropLuminance by mutableStateOf(0f)
     var standaloneSettings by mutableStateOf(false)
     val dialogs = GlassDialogHostState()
@@ -427,7 +428,8 @@ private fun GlassOverlayEntry(host: GlassMenuHostState, entry: GlassMenuEntry) {
                             // that visible plate without redirecting the pane to its own export.
                             CompositionLocalProvider(LocalGlassMaterialSource provides
                                 if (glassEnabled) menuMaterial else nativeMaterial) {
-                                entry.content(this)
+                                val column = this
+                                GlassArtworkContent(settings, glassEnabled) { entry.content(column) }
                             }
                         },
                     )

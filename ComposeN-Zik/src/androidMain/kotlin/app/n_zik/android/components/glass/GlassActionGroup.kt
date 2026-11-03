@@ -212,7 +212,10 @@ fun GlassActionGroup(
             // whole-group motion host, so the complete capsule can still overdraw its slot.
             // Detached menu cells retain their individual masks and moving seats.
             Row(modifier = if (settings.usesGlassMaterial(area) && !separated && !transferred) Modifier.clip(joinShape) else Modifier,
-                verticalAlignment = Alignment.CenterVertically, content = content)
+                verticalAlignment = Alignment.CenterVertically, content = {
+                    val row = this
+                    GlassArtworkContent(settings, settings.usesGlassMaterial(area)) { content(row) }
+                })
         }
     }
 }

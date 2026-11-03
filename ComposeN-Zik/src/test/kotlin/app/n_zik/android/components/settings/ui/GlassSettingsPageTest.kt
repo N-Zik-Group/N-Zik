@@ -894,7 +894,7 @@ class GlassSettingsPageTest {
         showPage()
         composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("colour")
         composeRule.onNodeWithTag("settings.glass.tintSource").performClick()
-        composeRule.onNodeWithText(context.getString(R.string.liquid_glass_artwork)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.artwork)).performClick()
         assertEquals(GlassTintSource.Artwork, store.read().source)
         assertEquals(.263f, store.read().film)
         assertFalse(context.preferences.getBoolean(glassEnabledKey, false))

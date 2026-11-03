@@ -77,7 +77,12 @@ internal suspend fun extractCoverPalette(
     generatePalette: (Bitmap) -> Palette = { Palette.from(it).maximumColorCount(8).generate() },
 ): ExtractedCoverPalette? = withContext(NzikDispatchers.MEDIA) {
     val swatchPalette = generatePalette(bitmap)
-    val palette = dynamicPaletteFromSwatches(swatchPalette, isDark) ?: return@withContext null
+    coverPaletteFromSwatches(swatchPalette, isDark)
+}
+
+/** Derivation is cheap and never quantizes a bitmap. */
+internal fun coverPaletteFromSwatches(swatchPalette: Palette, isDark: Boolean): ExtractedCoverPalette? {
+    val palette = dynamicPaletteFromSwatches(swatchPalette, isDark) ?: return null
     val fallback = palette.accent.toArgb()
     val colors = M3ECoverColors(
         dominant = swatchPalette.getDominantColor(fallback),
@@ -88,7 +93,7 @@ internal suspend fun extractCoverPalette(
         lightMuted = swatchPalette.getLightMutedColor(fallback),
         darkMuted = swatchPalette.getDarkMutedColor(fallback),
     ).m3eNeutralizeIfAchromatic(swatchPalette, fallback)
-    ExtractedCoverPalette(colors, dominantDynamicPaletteOf(colors, isDark) { palette })
+    return ExtractedCoverPalette(colors, dominantDynamicPaletteOf(colors, isDark) { palette })
 }
 
 private fun dynamicPaletteFromSwatches(palette: Palette, isDark: Boolean): ColorPalette? {

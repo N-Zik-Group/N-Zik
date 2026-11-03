@@ -236,9 +236,9 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.save_lyrics_state, R.string.show_background_in_lyrics,
             R.string.player_enable_lyrics_popup_message,
         )),
-    SettingsCardRegistryEntry(2, R.string.player_action_bar, R.drawable.ellipsis_vertical,
+    SettingsCardRegistryEntry(2, R.string.settings_section_player_action_bar_title, R.drawable.ellipsis_vertical,
         keywordRes = listOf(
-            R.string.player_action_bar, R.string.action_bar_transparent_background,
+            R.string.settings_section_player_action_bar_title, R.string.action_bar_transparent_background,
             R.string.actionspacedevenly, R.string.tapqueue, R.string.swipe_up_to_open_the_queue,
             R.string.action_bar_show_video_button, R.string.action_bar_show_discover_button,
             R.string.action_bar_show_download_button, R.string.action_bar_show_add_to_playlist_button,
@@ -248,15 +248,15 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.action_bar_show_arrow_button_to_open_queue,
             R.string.action_bar_show_start_radio_button, R.string.action_bar_show_menu_button,
         )),
-    SettingsCardRegistryEntry(2, R.string.full_screen_lyrics_components, R.drawable.song_lyrics,
+    SettingsCardRegistryEntry(2, R.string.settings_section_fullscreen_lyrics_title, R.drawable.song_lyrics,
         keywordRes = listOf(
-            R.string.full_screen_lyrics_components, R.string.show_total_time_of_queue,
+            R.string.settings_section_fullscreen_lyrics_title, R.string.show_total_time_of_queue,
             R.string.titleartist, R.string.timeline, R.string.controls, R.string.statsfornerds,
             R.string.actionbar, R.string.miniqueue,
         )),
-    SettingsCardRegistryEntry(2, R.string.notification_player, R.drawable.notification1,
+    SettingsCardRegistryEntry(2, R.string.settings_section_notification_player_title, R.drawable.notification1,
         keywordRes = listOf(
-            R.string.notification_player, R.string.notificationPlayerFirstIcon,
+            R.string.settings_section_notification_player_title, R.string.notificationPlayerFirstIcon,
             R.string.notificationPlayerSecondIcon,
         )),
     SettingsCardRegistryEntry(2, R.string.settings_reset, R.drawable.refresh,
@@ -283,8 +283,8 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.rw_settings_monthly_notification, R.string.rw_settings_playlists_monthly_notification,
             R.string.rw_settings_playlists_yearly_notification, R.string.rw_settings_playlists_title,
         )),
-    SettingsCardRegistryEntry(3, R.string.smart_recommendations, R.drawable.smart_shuffle,
-        keywordRes = listOf(R.string.smart_recommendations, R.string.smart_recommendations_number)),
+    SettingsCardRegistryEntry(3, R.string.settings_section_smart_recommendations_title, R.drawable.smart_shuffle,
+        keywordRes = listOf(R.string.settings_section_smart_recommendations_title, R.string.smart_recommendations_number)),
     SettingsCardRegistryEntry(3, R.string.statistics, R.drawable.trending, focusId = "statistics",
         keywordRes = listOf(R.string.statistics, R.string.statistics_max_number_of_items, R.string.listening_time)),
     SettingsCardRegistryEntry(3, R.string.playlist_top, R.drawable.playlist,
@@ -300,9 +300,9 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.set_custom_cache, R.string.song_cache_max_size, R.string.song_download_max_size,
             R.string.set_cache_location,
         )),
-    SettingsCardRegistryEntry(4, R.string.title_backup_and_restore, R.drawable.server,
+    SettingsCardRegistryEntry(4, R.string.settings_section_backup_and_restore_title, R.drawable.server,
         keywordRes = listOf(
-            R.string.title_backup_and_restore, R.string.export_backup, R.string.import_backup,
+            R.string.settings_section_backup_and_restore_title, R.string.export_backup, R.string.import_backup,
             R.string.title_import_settings_migration,
         )),
     SettingsCardRegistryEntry(4, R.string.auto_backup_title, R.drawable.history,
@@ -405,11 +405,11 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.edit_blacklist_for_on_device_songs, R.string.folders,
             R.string.folder_that_will_show_when_you_open_on_device_page,
         )),
-    SettingsCardRegistryEntry(7, R.string.service_lifetime, R.drawable.battery,
-        keywordRes = listOf(R.string.service_lifetime, R.string.keep_screen_on, R.string.prevents_screen_timeout, R.string.ignore_battery_optimizations)),
-    SettingsCardRegistryEntry(7, R.string.proxy, R.drawable.network,
+    SettingsCardRegistryEntry(7, R.string.settings_section_service_lifetime_title, R.drawable.battery,
+        keywordRes = listOf(R.string.settings_section_service_lifetime_title, R.string.keep_screen_on, R.string.prevents_screen_timeout, R.string.ignore_battery_optimizations)),
+    SettingsCardRegistryEntry(7, R.string.settings_section_proxy_title, R.drawable.network,
         keywordRes = listOf(
-            R.string.proxy, R.string.enable_proxy, R.string.proxy_mode, R.string.proxy_host,
+            R.string.settings_section_proxy_title, R.string.enable_proxy, R.string.proxy_mode, R.string.proxy_host,
             R.string.proxy_port, R.string.restarting_rimusic_is_required,
         )),
     SettingsCardRegistryEntry(7, R.string.parental_control, R.drawable.shield_checkmark,
@@ -432,14 +432,14 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(9, R.string.rw_settings_master, R.drawable.sparkles),
     // Tab 8 - About
     SettingsCardRegistryEntry(8, R.string.about, R.drawable.information),
-    SettingsCardRegistryEntry(8, R.string.troubleshooting, R.drawable.information,
+    SettingsCardRegistryEntry(8, R.string.settings_section_troubleshooting_title, R.drawable.information,
         keywordRes = listOf(
-            R.string.troubleshooting, R.string.view_the_source_code,
+            R.string.settings_section_troubleshooting_title, R.string.view_the_source_code,
             R.string.you_will_be_redirected_to_github, R.string.report_an_issue,
             R.string.request_a_feature_or_suggest_an_idea,
         )),
-    SettingsCardRegistryEntry(8, R.string.contributors, R.drawable.people,
-        keywordRes = listOf(R.string.contributors)),
+    SettingsCardRegistryEntry(8, R.string.settings_section_contributors_title, R.drawable.people,
+        keywordRes = listOf(R.string.settings_section_contributors_title)),
 )
 
 /**
@@ -452,7 +452,7 @@ fun searchSettingsCards(context: Context, query: String): List<SettingsCardRegis
     val entryMatches = searchSettingsEntries(context, query).map { it.tab to it.cardTitleRes }.toSet()
     return SettingsCards.filter { card ->
         val queryLower = query.lowercase()
-        (card.tab to card.titleRes) in entryMatches || context.getString(card.titleRes).contains(queryLower, true) ||
+        (card.tab to card.titleRes) in entryMatches || card.displayTitle(context).contains(queryLower, true) ||
             card.keywordRes.any { context.getString(it).contains(queryLower, true) }
     }
 }

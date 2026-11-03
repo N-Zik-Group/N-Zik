@@ -50,6 +50,7 @@ import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.common.ButtonBarSettingEntry
 import app.n_zik.android.components.settings.common.ColorSettingEntry
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
+import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
 import app.n_zik.android.components.settings.common.settingsEntryEnter
@@ -57,6 +58,8 @@ import app.n_zik.android.components.settings.common.settingsEntryExit
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.R
+import app.n_zik.android.components.theme.DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT
+import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 
 /** Owns appearance preferences and palette confirmations. */
 @Composable
@@ -64,6 +67,7 @@ internal fun UiThemeCard(search: Search) {
     val context = LocalContext.current
     var colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
     var colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
+    var respectThemeBrightness by rememberPreference(dynamicThemeRespectBrightnessKey, DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT)
     var customThemeLight_Background0 by rememberPreference(customThemeLight_Background0Key, DefaultLightColorPalette.background0.hashCode())
     var customThemeLight_Background1 by rememberPreference(customThemeLight_Background1Key, DefaultLightColorPalette.background1.hashCode())
     var customThemeLight_Background2 by rememberPreference(customThemeLight_Background2Key, DefaultLightColorPalette.background2.hashCode())
@@ -113,9 +117,16 @@ internal fun UiThemeCard(search: Search) {
         )
     }
 
+    val brightnessTitle = stringResource(R.string.dynamic_theme_respect_brightness)
+    val brightnessDescription = stringResource(R.string.dynamic_theme_respect_brightness_description)
+    val brightnessSearchMatch = search.inputValue.isBlank() ||
+        brightnessTitle.contains(search.inputValue, true) ||
+        brightnessDescription.contains(search.inputValue, true) ||
+        stringResource(R.string.theme).contains(search.inputValue, true)
     val uiSearchContextMatch = search.inputValue.isBlank() ||
         stringResource(R.string.theme).contains(search.inputValue, true) ||
-        stringResource(R.string.theme_mode).contains(search.inputValue, true)
+        stringResource(R.string.theme_mode).contains(search.inputValue, true) ||
+        (colorPaletteName == ColorPaletteName.Dynamic && brightnessSearchMatch)
 
     AnimatedVisibility(
         visible = uiSearchContextMatch,
@@ -378,6 +389,21 @@ internal fun UiThemeCard(search: Search) {
                         }
 
                     }
+                }
+
+                AnimatedVisibility(
+                    visible = colorPaletteName == ColorPaletteName.Dynamic && brightnessSearchMatch,
+                    enter = settingsEntryEnter,
+                    exit = settingsEntryExit,
+                ) {
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.padding(start = 25.dp).settingsSearchTarget("ui.theme.respect_brightness"),
+                        title = brightnessTitle,
+                        text = brightnessDescription,
+                        isChecked = respectThemeBrightness,
+                        onCheckedChange = { respectThemeBrightness = it },
+                        icon = R.drawable.theme_brightness,
+                    )
                 }
 
                 var showThemeModeDialog by remember { mutableStateOf(false) }

@@ -11,14 +11,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.media3.common.Player
-import androidx.palette.graphics.Palette
-import app.n_zik.android.components.player.extractM3ECoverColors
-import app.n_zik.android.core.coil.ImageCacheFactory
-import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.components.player.ArtworkDisplayColors
+import app.n_zik.android.components.player.SharedArtworkColors
+import app.n_zik.android.components.player.rememberArtworkDisplayColors
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 internal data class GlassArtwork(val mediaId: String?, val uri: String?)
@@ -56,22 +54,18 @@ internal fun rememberGlassArtwork(player: Player?): GlassArtwork? {
 
 /** Uses NZik's shared dominant-cover extraction rather than an unrelated vibrant accent. */
 internal suspend fun extractGlassArtworkColor(bitmap: Bitmap, isDark: Boolean): Color? =
-    extractM3ECoverColors(bitmap, isDark)?.dominant?.let(::Color)
-        ?: withContext(NzikDispatchers.MEDIA) {
-            // Palette's default filter excludes pure white/black covers entirely.
-            Palette.from(bitmap).clearFilters().maximumColorCount(8).generate()
-                .dominantSwatch?.rgb?.let(::Color)
-        }
+    SharedArtworkColors.fromBitmap(bitmap)?.display(isDark, keepDark = false)?.dominant
 
 /** Clears the preceding song's tint immediately while loading the current cover. */
 @Composable
 fun rememberGlassArtworkColor(player: Player?, enabled: Boolean, isDark: Boolean): Color? {
+    return rememberGlassArtworkDisplayColors(player, enabled, isDark)?.dominant
+}
+
+@Composable
+internal fun rememberGlassArtworkDisplayColors(player: Player?, enabled: Boolean, isDark: Boolean): ArtworkDisplayColors? {
     val artwork = rememberGlassArtwork(player)
-    return rememberGlassArtworkColor(artwork, enabled, isDark) { current, dark ->
-        ImageCacheFactory.loadBitmap(current.uri, allowHardware = false)?.let {
-            extractGlassArtworkColor(it, dark)
-        }
-    }
+    return rememberArtworkDisplayColors(artwork?.uri.takeIf { enabled }, isDark)
 }
 
 @Composable

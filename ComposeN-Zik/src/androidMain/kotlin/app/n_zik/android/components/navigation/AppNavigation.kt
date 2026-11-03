@@ -26,7 +26,7 @@ import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.GlassNavigationContent
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.colorPalette
-import app.n_zik.android.components.glass.rememberGlassArtworkColor
+import app.n_zik.android.components.glass.rememberGlassArtworkDisplayColors
 import app.n_zik.android.LocalPlayerServiceBinder
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.luminance
@@ -232,15 +232,17 @@ fun AppNavigation(
         ?: remember { mutableStateOf(0) }
     // Crossfade replaces the player facade without replacing the service binder.
     val player = remember(binder, playerGeneration) { binder?.player }
-    val artworkColor = rememberGlassArtworkColor(
+    val artworkDisplay = rememberGlassArtworkDisplayColors(
         player, glassSettings.enabled || glassMenuHost.standaloneSettings, colorPalette().isDark,
     )
+    val artworkColor = artworkDisplay?.dominant
     val artworkLuminance by animateFloatAsState(
         targetValue = artworkColor?.luminance() ?: 0f,
         animationSpec = tween(600), label = "glassBackdropLuminance",
     )
     SideEffect {
         glassMenuHost.artworkColor = artworkColor
+        glassMenuHost.artworkForceDark = artworkDisplay?.forceDark == true
         glassMenuHost.backdropLuminance = artworkLuminance
     }
     val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Fade)

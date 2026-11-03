@@ -27,6 +27,15 @@ import app.it.fast4x.rimusic.utils.profilePreferences
 import app.n_zik.android.colorPalette
 
 val LocalGlassArtworkColor = staticCompositionLocalOf<Color?> { null }
+
+@Composable
+internal fun glassSurfaceIsDark(settings: GlassSettings): Boolean =
+    colorPalette().isDark || glassArtworkForcesDark(settings)
+
+@Composable
+internal fun glassArtworkForcesDark(settings: GlassSettings): Boolean =
+    settings.source == GlassTintSource.Artwork &&
+        LocalGlassMenuHost.current?.artworkForceDark == true
 const val glassEnabledKey = "liquidGlassEnabled"
 
 /** Fresh installations opt in explicitly; persisted choices remain authoritative. */

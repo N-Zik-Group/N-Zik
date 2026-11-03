@@ -80,10 +80,10 @@ class GlassTintSourceAvailabilityTest {
         supportedLabels.forEach { label ->
             composeRule.onAllNodesWithText(context.getString(label)).onLast().performScrollTo().assertIsDisplayed()
         }
-        composeRule.onNodeWithText(context.getString(R.string.liquid_glass_artwork)).performScrollTo().performClick()
+        composeRule.onNodeWithText(context.getString(R.string.artwork)).performScrollTo().performClick()
         composeRule.waitForIdle()
         assertEquals(before.copy(source = GlassTintSource.Artwork), store.read())
-        composeRule.onNodeWithText(context.getString(R.string.settings_current_value, context.getString(R.string.liquid_glass_artwork))).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.settings_current_value, context.getString(R.string.artwork))).assertIsDisplayed()
     }
 
     @Test
@@ -119,8 +119,8 @@ class GlassTintSourceAvailabilityTest {
 
     private val supportedLabels = listOf(
         R.string.glass_tint_none,
-        R.string.liquid_glass_theme_accent,
-        R.string.liquid_glass_artwork,
+        R.string.theme,
+        R.string.artwork,
         R.string.liquid_glass_custom,
     )
 }

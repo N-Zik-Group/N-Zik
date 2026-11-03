@@ -32,7 +32,7 @@ internal val GlassSearchOptions: List<GlassSearchOption> = buildList {
     option("vibrancy", R.string.glass_vibrancy, "material", R.string.glass_group_material, fallback = "glass.quality")
     option("blur", R.string.glass_blur, "material", R.string.glass_group_material, fallback = "glass.quality")
     option("tintSource", R.string.liquid_glass_tint_source, "colour", R.string.glass_group_colour,
-        choices = listOf(R.string.glass_tint_none, R.string.liquid_glass_theme_accent, R.string.liquid_glass_artwork,
+        choices = listOf(R.string.glass_tint_none, R.string.theme, R.string.artwork,
             R.string.liquid_glass_system_accent, R.string.liquid_glass_custom))
     option("tint", R.string.liquid_glass_color, "colour", R.string.glass_group_colour, fallback = "glass.tintSource")
     option("hue", R.string.glass_tint, "colour", R.string.glass_group_colour, fallback = "glass.tintSource")

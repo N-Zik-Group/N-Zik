@@ -16,6 +16,7 @@ import app.it.fast4x.rimusic.utils.playEventsTypeKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.putEnum
 import app.it.fast4x.rimusic.utils.recommendationsNumberKey
+import app.it.fast4x.rimusic.utils.selectedCountryCodeKey
 import app.it.fast4x.rimusic.utils.showChartsKey
 import app.it.fast4x.rimusic.utils.showMonthlyPlaylistInQuickPicksKey
 import app.it.fast4x.rimusic.utils.showMoodsAndGenresKey
@@ -52,5 +53,6 @@ internal fun applyAiDefaults(context: Context) {
         putInt(maxStatisticsItemsCustomValueKey, 10)
         putEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`)
         putInt(MaxTopPlaylistItemsCustomValueKey, 10)
+        remove(selectedCountryCodeKey)
     }
 }

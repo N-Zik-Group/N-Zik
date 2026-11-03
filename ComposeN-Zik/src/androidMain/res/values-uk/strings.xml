@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">Не зберігати нові пошукові запити та не показувати історію</string>
     <string name="clear_search_history">Очистити історію пошуку</string>
     <string name="history_is_empty">Історія порожня</string>
-    <string name="service_lifetime">Час експлуатації</string>
     <string name="battery_optimizations_applied">Якщо застосовано оптимізацію заряду акумулятора, сповіщення про відтворення може раптово зникати під час паузи.</string>
     <string name="is_android12">Починаючи з Android 12, для набуття чинності параметра \"Невидимий сервіс\" потрібна підтримка оптимізації.</string>
     <string name="ignore_battery_optimizations">Ігноруйте оптимізацію акумулятора</string>
@@ -193,8 +192,6 @@
     <string name="languages">Мови</string>
     <string name="app_language">Мова програми</string>
     <string name="in_alphabetical_order">В алфавітному порядку:</string>
-    <string name="contributors">Учасники проекту</string>
-    <string name="troubleshooting">Виправлення несправностей</string>
     <string name="english">Англійська (English)</string>
     <string name="italian">Італійська (Italiano)</string>
     <string name="czech">Чеська (Чеська)</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">Ви дійсно хочете завантажити все?</string>
     <string name="import_playlist">Імпортувати плейлист</string>
     <string name="lang_ukrainian">Українська (Україна)</string>
-    <string name="proxy">Проксі</string>
     <string name="enable_proxy">Використовувати Проксі</string>
     <string name="proxy_mode">Режим проксі</string>
     <string name="proxy_host">Хост</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">Ця папка вже існує</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">Ви впевнені, що хочете видалити цю теку з чорного списку?</string>
     <string name="player_appearance">Вигляд гравця</string>
-    <string name="player_action_bar">Панель дій гравця</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
     <string name="quick_picks_content">Quick Picks sections</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">Інше</string>
     <string name="swipe_to_action">Свайп для дії</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">Виконайте дії проводячи пальцем вліво або вправо, пісні у вертикальному списку пісень</string>
-    <string name="smart_recommendations">Розумні рекомендації</string>
     <string name="player_collapsed_disable_swiping_down">Вимкнути проведення пальцем вниз</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Уникайте закриття плеєра та очищення черги, проводячи вниз, коли він згорнутий</string>
     <string name="sort_date_liked">Дата уподобання</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">Якщо увімкнено, створіть файл журналу щоб виділити помилки</string>
     <string name="audio_waveform">Audio waveform</string>
-    <string name="title_backup_and_restore">Резервне копіювання і відновлення</string>
     <string name="message_excluded_s_songs">Виключено %s пісень</string>
     <string name="show_thumbnail">Показати мініатюри</string>
     <string name="show_lyrics_thumbnail">Показати мініатюри для тексту</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">Рівень гучності</string>
     <string name="loudness_boost_level_info">Додатковий рівень гучності, який буде використовуватися без перевиконання його, може пошкодити пристрій</string>
     <string name="settings_target_gain_loudness_info">Цільова гучність для нормалізації гучності</string>
-    <string name="full_screen_lyrics_components">Компоненти Повноекранних текстів</string>
     <string name="titleartist">Назва та Виконавці</string>
     <string name="miniqueue">У черзі наступної пісні</string>
     <string name="controls">Управління</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">Відновити відтворення автоматично при відкритті програми</string>
     <string name="notificationPlayerFirstIcon">Перша кнопка</string>
     <string name="notificationPlayerSecondIcon">Друга кнопка</string>
-    <string name="notification_player">Гравець сповіщень</string>
     <string name="repeat">Повторити</string>
     <string name="views">Перегляди</string>
     <string name="subscribers">Підписники</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigation</string>
     <string name="player_controls">Керування гравцем</string>
     <string name="player_controls_colors">Гравець керує кольорами</string>
-    <string name="theme_color">Колір теми</string>
-    <string name="cover_color">Колір обкладинки</string>
     <string name="monochrome">Монотонні</string>
     <string name="queue_management">Керування чергою</string>
     <string name="app_behavior">Поведінка застосунку</string>
@@ -2638,8 +2627,6 @@
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">Користувальницькі</string>
     <string name="glass_performance">Fastest</string>
@@ -2787,4 +2774,14 @@
     <string name="playlist_refresh_on_open">Refresh on opening</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="settings_section_troubleshooting_title">Виправлення несправностей</string>
+    <string name="settings_section_proxy_title">Проксі</string>
+    <string name="settings_section_contributors_title">Учасники проекту</string>
+    <string name="settings_section_player_action_bar_title">Панель дій гравця</string>
+    <string name="settings_section_smart_recommendations_title">Розумні рекомендації</string>
+    <string name="settings_section_service_lifetime_title">Час експлуатації</string>
+    <string name="settings_section_notification_player_title">Гравець сповіщень</string>
+    <string name="settings_section_backup_and_restore_title">Резервне копіювання і відновлення</string>
+    <string name="settings_section_fullscreen_lyrics_title">Компоненти Повноекранних текстів</string>
+    <string name="artwork">Колір обкладинки</string>
 </resources>

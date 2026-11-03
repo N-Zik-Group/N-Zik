@@ -55,6 +55,15 @@ class SettingsDetailedSearchTest {
         assertTrue(searchSettingsEntries(french, french.getString(embedded.labelRes)).contains(embedded))
     }
 
+    @Test fun dynamicBrightnessTitleAndDescriptionFindTheThemeControl() {
+        val target = AllSettingsEntryTargets.single { it.id == "ui.theme.respect_brightness" }
+        assertEquals(R.string.theme, target.cardTitleRes)
+        listOf(R.string.dynamic_theme_respect_brightness, R.string.dynamic_theme_respect_brightness_description)
+            .forEach { resource ->
+                assertTrue(searchSettingsEntries(context, context.getString(resource)).contains(target))
+            }
+    }
+
     @Test fun everyRegisteredOptionIsSearchableInEnglishAndFrenchInItsOrganizedSection() {
         listOf(Locale.ENGLISH, Locale.FRENCH).forEach { locale ->
             val localized = localized(locale)
@@ -109,6 +118,69 @@ class SettingsDetailedSearchTest {
             }
         }
         assertFalse(searchSettingsEntries(english, "reverb small large").contains(target))
+    }
+
+    @Test fun sectionTitlesAvoidStaleUppercaseTranslationsWithoutChangingCardTargets() {
+        val stableNames = mapOf(
+            R.string.settings_section_troubleshooting_title to "troubleshooting",
+            R.string.settings_section_proxy_title to "proxy",
+            R.string.settings_section_contributors_title to "contributors",
+            R.string.settings_section_player_action_bar_title to "player_action_bar",
+            R.string.settings_section_smart_recommendations_title to "smart_recommendations",
+            R.string.settings_section_service_lifetime_title to "service_lifetime",
+            R.string.settings_section_notification_player_title to "notification_player",
+            R.string.settings_section_backup_and_restore_title to "title_backup_and_restore",
+            R.string.settings_section_fullscreen_lyrics_title to "full_screen_lyrics_components",
+        )
+        listOf(Locale.ENGLISH, Locale.FRENCH, Locale.forLanguageTag("pt")).forEach { locale ->
+            val localized = localized(locale)
+            stableNames.forEach { (titleResource, stableName) ->
+                val card = SettingsCards.single { it.titleRes == titleResource }
+                val translatedTitle = localized.getString(titleResource)
+                assertEquals(translatedTitle, card.displayTitle(localized))
+                assertFalse(translatedTitle.any(Char::isLetter) && translatedTitle == translatedTitle.uppercase(locale))
+                assertTrue(searchSettingsCards(localized, translatedTitle).contains(card))
+                assertTrue(searchSettingsCardResults(localized, translatedTitle).contains(card))
+                assertEquals("card.${card.tab}.$stableName", settingsCardTargetId(localized, card.tab, card.titleRes))
+            }
+        }
+        assertEquals(null, settingsSectionNavigationName(R.string.playback))
+    }
+
+    @Test fun artworkAndThemeSourcesFindEverySelectorAndKeepBackgroundStylesDistinct() {
+        val english = localized(Locale.ENGLISH)
+        val expectedTargets = setOf(
+            "glass.tintSource",
+            "appearance.colors_and_background.background_colors",
+            "appearance.timeline_and_controls.player_controls_colors",
+            "appearance.player_behavior_and_visuals.visualizer_white_color_option",
+            "appearance.txt_lyrics.lyricscolor",
+        )
+        listOf(english.getString(R.string.artwork), english.getString(R.string.theme)).forEach { source ->
+            val actualTargets = searchSettingsEntries(english, source).map { it.id }.toSet()
+            assertTrue("Missing $source selectors: ${expectedTargets - actualTargets}", actualTargets.containsAll(expectedTargets))
+        }
+        mapOf(
+            R.string.artwork to "Artwork",
+            R.string.theme to "Theme",
+            R.string.bg_colors_gradient_background_from_cover to "Artwork gradient",
+            R.string.bg_colors_gradient_background_from_theme to "Theme gradient",
+            R.string.bg_colors_blurred_cover_background to "Artwork blurred",
+            R.string.bg_colors_fluid_gradient_background_from_cover to "Artwork Fluid gradient",
+            R.string.bg_colors_fluid_gradient_background_from_theme to "Theme Fluid gradient",
+            R.string.bg_colors_m3e_morphing_cover to "Artwork M3E morphing shapes",
+            R.string.bg_colors_m3e_morphing_theme to "Theme M3E morphing shapes",
+        ).forEach { (resource, label) -> assertEquals(label, english.getString(resource)) }
+        val catalog = settingsEntryChoiceLabels(english::getString, Locale.ENGLISH)
+        val backgrounds = catalog.getValue("appearance.colors_and_background.background_colors")
+        assertTrue(backgrounds.containsAll(listOf(R.string.artwork, R.string.theme, R.string.bg_colors_gradient_background_from_cover, R.string.bg_colors_gradient_background_from_theme, R.string.bg_colors_blurred_cover_background).map(english::getString)))
+        assertEquals(backgrounds.size, backgrounds.distinct().size)
+        val animations = catalog.getValue("appearance.colors_and_background.gradienttype")
+        assertTrue(animations.containsAll(listOf(R.string.bg_colors_fluid_gradient_background_from_cover, R.string.bg_colors_fluid_gradient_background_from_theme, R.string.bg_colors_m3e_morphing_cover, R.string.bg_colors_m3e_morphing_theme).map(english::getString)))
+        assertEquals(animations.size, animations.distinct().size)
+        animations.forEach { choice ->
+            assertTrue(searchSettingsEntries(english, choice).any { it.id == "appearance.colors_and_background.gradienttype" })
+        }
     }
 
     @Test fun choiceCatalogUsesExistingStableTargetsAndFiniteLocalizedNativeAndNumericLabels() {

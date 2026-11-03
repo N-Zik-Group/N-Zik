@@ -240,7 +240,7 @@ fun GlassToolbarLoading(): Boolean {
     val style = LocalToolbarStyle.current ?: return false
     Box(Modifier.size(if (style.count == 1) GlassStandaloneActionSize else style.cellWidth, GlassActionCellHeight),
         contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(Modifier.size(GlassActionIconSize), color = colorPalette().text, strokeWidth = 2.dp)
+        CircularProgressIndicator(Modifier.size(GlassActionIconSize), color = glassArtworkForeground(style.settings, colorPalette().text, style.settings.usesGlassMaterial(GlassArea.ActionButtons)), strokeWidth = 2.dp)
     }
     return true
 }
@@ -264,10 +264,11 @@ fun GlassToolbarIcon(
     val fallbackBackdrop = rememberCanvasBackdrop(drawBackground)
     val backdrop = LocalGlassContainerBackdrop.current ?: LocalGlassBackdrop.current ?: fallbackBackdrop
     val itemShape = toolbarItemShape(style.itemShape)
+    val foreground = glassArtworkForeground(style.settings, tint, style.settings.usesGlassMaterial(GlassArea.ActionButtons))
     val glyph: @Composable () -> Unit = {
         val iconSize = if (style.wide && !style.compact) (size - 8.dp).coerceIn(GlassActionIconSize, 24.dp) else GlassActionIconSize
         Icon(icon, contentDescription, Modifier.size(iconSize).then(if (modifierOnContainer || style.compact) Modifier else modifier),
-            tint = if (enabled) tint else tint.copy(alpha = .5f))
+            tint = if (enabled) foreground else foreground.copy(alpha = .5f))
     }
     // Collection rows own the complete cell. Legacy per-icon padding must not
     // enlarge a cell after the row has divided its available width.

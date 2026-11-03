@@ -154,13 +154,15 @@ private fun PageButtonFeedbackImpl(
     val source = interactionSource ?: remember { MutableInteractionSource() }
     val active = enabled && (global || isGlassMotionAllowed())
     if (!active) {
-        content(Modifier, source)
+        GlassArtworkContent(settings, material) { content(Modifier, source) }
         return
     }
     if (material) {
         val feedback = Modifier.retainGlassButtonGesture().glassButtonFeedback(source, shape,
             drawMotionOnly = true, retainPressUntilUp = true, settings = settings)
-        CompositionLocalProvider(LocalRippleConfiguration provides null) { content(feedback, source) }
+        CompositionLocalProvider(LocalRippleConfiguration provides null) {
+            GlassArtworkContent(settings, material) { content(feedback, source) }
+        }
         return
     }
     val tracker = remember { GlassHighlightPointerTracker() }

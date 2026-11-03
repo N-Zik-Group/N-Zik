@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
+
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -69,6 +70,7 @@ import app.n_zik.android.components.settings.common.SliderSettingsEntry
 import androidx.compose.ui.platform.testTag
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
+import app.n_zik.android.core.settings.DEFAULT_THUMBNAIL_SIZE_DP
 
 @OptIn(ExperimentalAnimationApi::class)
 @UnstableApi
@@ -76,7 +78,7 @@ import app.n_zik.android.components.settings.common.settingsCardExit
 internal fun AppearanceCoverCard(search: Search) {
     var showthumbnail by rememberPreference(showthumbnailKey, true)
     var expandedplayer by rememberPreference(expandedplayerKey, false)
-    var thumbnailSizeDp by rememberPreference(thumbnailSizeDpKey, 90f)
+    var thumbnailSizeDp by rememberPreference(thumbnailSizeDpKey, DEFAULT_THUMBNAIL_SIZE_DP)
     var thumbnailSizeLDp by rememberPlayerLandscapeArtworkSize()
     var expandedplayertoggle by rememberPreference(expandedplayertoggleKey, false)
     var thumbnailRoundnessDp by rememberPreference(thumbnailRoundnessDpKey, 12f)
@@ -319,7 +321,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                         state = thumbnailSizeDp,
                                         range = 0f..100f,
                                         stepSize = 0f,
-                                        defaultValue = 90f,
+                                        defaultValue = DEFAULT_THUMBNAIL_SIZE_DP,
                                         drawValuePoints = true,
                                         isIntegerOnly = true,
                                         onSlide = { thumbnailSizeDp = kotlin.math.round(it) },

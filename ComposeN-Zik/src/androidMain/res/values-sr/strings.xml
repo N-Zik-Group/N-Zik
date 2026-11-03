@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">Ne čuvajte nove tražene upite niti prikazujte istoriju</string>
     <string name="clear_search_history">Obriši istoriju pretrage</string>
     <string name="history_is_empty">Istorija je prazna</string>
-    <string name="service_lifetime">ŽIVOTNI VEK SERVISA</string>
     <string name="battery_optimizations_applied">Ako se primeni optimizacija baterije, obaveštenje o reprodukciji može iznenada nestati kada se pauzira.</string>
     <string name="is_android12">Od Android 12, onemogućavanje optimizacije baterije je potrebno da bi opcija „Nepobedivi servis“ stupila na snagu.</string>
     <string name="ignore_battery_optimizations">Ignoriši optimizaciju baterije</string>
@@ -193,8 +192,6 @@
     <string name="languages">Jezici</string>
     <string name="app_language">Jezik aplikacije</string>
     <string name="in_alphabetical_order">Po abecednom redu:</string>
-    <string name="contributors">SARADNICI</string>
-    <string name="troubleshooting">REŠAVANJE PROBLEMA</string>
     <string name="english">Engleski</string>
     <string name="italian">Italijanski (Italian)</string>
     <string name="czech">Češki (Čeština)</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">Da li zaista želite da preuzmete sve?</string>
     <string name="import_playlist">Uvezi plejlistu</string>
     <string name="lang_ukrainian">Ukrajinski</string>
-    <string name="proxy">Proksi</string>
     <string name="enable_proxy">Omogući proxy</string>
     <string name="proxy_mode">Proxy Mod</string>
     <string name="proxy_host">Proksi host</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">Ova fascikla već postoji.</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">Da li ste sigurni da želite da uklonite ovu fasciklu sa crne liste?</string>
     <string name="player_appearance">Izgled</string>
-    <string name="player_action_bar">AKCIONA TRAKA PLEJERA</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
     <string name="quick_picks_content">Quick Picks sections</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">Razno</string>
     <string name="swipe_to_action">Prevucite prstom do akcije</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">Aktivirajte meni radnji prevlačenjem pesme ulevo ili udesno</string>
-    <string name="smart_recommendations">PAMETNE PREPORUKE</string>
     <string name="player_collapsed_disable_swiping_down">Onemogući prevlačenje nadole</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Izbegavajte zatvaranje plejera i čišćenje redosleda prevlačenjem nadole dok je minimiziran</string>
     <string name="sort_date_liked">Datum Sviđanja</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">Ako je omogućeno, kreirajte datoteku zapisa da biste istakli greške</string>
     <string name="audio_waveform">Audio waveform</string>
-    <string name="title_backup_and_restore">COPIA DE SEGURIDAD Y RESTAURAR</string>
     <string name="message_excluded_s_songs">Excluida %s canciones</string>
     <string name="show_thumbnail">Prikaži Sličicu</string>
     <string name="show_lyrics_thumbnail">Prikaži Sličicu za Stihove</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">Loudness boost level</string>
     <string name="loudness_boost_level_info">Additional loudness level, to be used without overdoing it, may damage the device</string>
     <string name="settings_target_gain_loudness_info">Појачање циља за нормализацију гласноће</string>
-    <string name="full_screen_lyrics_components">Full Screen Lyrics Components</string>
     <string name="titleartist">Наслов и Уметници</string>
     <string name="miniqueue">Mini Queue</string>
     <string name="controls">Контроле</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">Resume Playback automatically when the app is opened</string>
     <string name="notificationPlayerFirstIcon">First button</string>
     <string name="notificationPlayerSecondIcon">Second button</string>
-    <string name="notification_player">NOTIFICATION PLAYER</string>
     <string name="repeat">Repeat</string>
     <string name="views">Views</string>
     <string name="subscribers">Subscribers</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigation</string>
     <string name="player_controls">Player Controls</string>
     <string name="player_controls_colors">Player controls colors</string>
-    <string name="theme_color">Theme color</string>
-    <string name="cover_color">Cover color</string>
     <string name="monochrome">Monochrome</string>
     <string name="queue_management">Queue Management</string>
     <string name="app_behavior">App Behavior</string>
@@ -2637,8 +2626,6 @@
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">Prilagođeno</string>
     <string name="glass_performance">Fastest</string>
@@ -2786,4 +2773,14 @@
     <string name="playlist_refresh_on_open">Refresh on opening</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="settings_section_troubleshooting_title">Rešavanje problema</string>
+    <string name="settings_section_proxy_title">Proksi</string>
+    <string name="settings_section_contributors_title">Saradnici</string>
+    <string name="settings_section_player_action_bar_title">Akciona traka plejera</string>
+    <string name="settings_section_smart_recommendations_title">Pametne preporuke</string>
+    <string name="settings_section_service_lifetime_title">Životni vek servisa</string>
+    <string name="settings_section_notification_player_title">Notification player</string>
+    <string name="settings_section_backup_and_restore_title">Copia de seguridad y restaurar</string>
+    <string name="settings_section_fullscreen_lyrics_title">Full Screen Lyrics Components</string>
+    <string name="artwork">Cover color</string>
 </resources>

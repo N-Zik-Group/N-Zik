@@ -72,7 +72,7 @@ fun LiquidButton(
                         Modifier.fillMaxSize(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                         verticalAlignment = Alignment.CenterVertically,
-                    ) { latestContent.value(this) }
+                    ) { val row = this; GlassArtworkContent(settings) { latestContent.value(row) } }
                 }
             }
         }
@@ -155,6 +155,6 @@ fun LiquidButton(
             .padding(horizontal = contentPadding),
         horizontalArrangement = Arrangement.spacedBy(8f.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
-        content = content
+        content = { val row = this; GlassArtworkContent(settings) { content(row) } }
     )
 }

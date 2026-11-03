@@ -781,7 +781,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                                 )
                             }
 
-                            val exoPlayerDiskCacheMaxSize by rememberPreference(app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey, app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize.`512MB`)
+                            val exoPlayerDiskCacheMaxSize by rememberPreference(app.it.fast4x.rimusic.utils.exoPlayerDiskCacheMaxSizeKey, app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize.`2GB`)
                             val exoPlayerDiskDownloadCacheMaxSize by rememberPreference(app.it.fast4x.rimusic.utils.exoPlayerDiskDownloadCacheMaxSizeKey, app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize.`2GB`)
 
                             val showCacheIndicator = when (builtInPlaylist) {

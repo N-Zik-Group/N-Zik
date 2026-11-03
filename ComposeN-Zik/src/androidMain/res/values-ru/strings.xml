@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">Не сохранять новые поисковые запросы и историю просмотров</string>
     <string name="clear_search_history">Удалить историю поиска</string>
     <string name="history_is_empty">История пуста</string>
-    <string name="service_lifetime">Время службы</string>
     <string name="battery_optimizations_applied">Если включена экономия батареи, уведомление плеера может внезапно исчезнуть.</string>
     <string name="is_android12">Начиная с Android 12, отключение оптимизации заряда батареи требуется для опции «Невидимый сервис».</string>
     <string name="ignore_battery_optimizations">Игнор. экономии батареи</string>
@@ -193,8 +192,6 @@
     <string name="languages">Языки</string>
     <string name="app_language">Язык приложения</string>
     <string name="in_alphabetical_order">В алфавитном порядке:</string>
-    <string name="contributors">Авторы</string>
-    <string name="troubleshooting">Устранение проблем</string>
     <string name="english">Английский (English)</string>
     <string name="italian">Итальянский (Italiano)</string>
     <string name="czech">Чешский (Čeština)</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">Вы действительно хотите загрузить все?</string>
     <string name="import_playlist">Импортировать плейлист</string>
     <string name="lang_ukrainian">Украинский (Украинский)</string>
-    <string name="proxy">Прокси</string>
     <string name="enable_proxy">Использовать Прокси</string>
     <string name="proxy_mode">Режим прокси</string>
     <string name="proxy_host">Хост</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">Эта папка уже существует</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">Вы уверены, что хотите убрать эту папку из чёрного списка?</string>
     <string name="player_appearance">Внешний вид игрока</string>
-    <string name="player_action_bar">Панель действий игрока</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
     <string name="quick_picks_content">Quick Picks sections</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">Прочие</string>
     <string name="swipe_to_action">Свайп для действия</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">Выполнять действия, свайпом влево или вправо на песню из вертикального списка песен</string>
-    <string name="smart_recommendations">Умные рекомендации</string>
     <string name="player_collapsed_disable_swiping_down">Отключить свайп вниз</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Избежать закрытия плеера и очистки очереди свайпом вниз, пока он свёрнут</string>
     <string name="sort_date_liked">Дата избранного</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">Если включено, создается файл логов для выявления ошибок</string>
     <string name="audio_waveform">Audio waveform</string>
-    <string name="title_backup_and_restore">Резервное копирование и восстановление</string>
     <string name="message_excluded_s_songs">Исключено %s песен</string>
     <string name="show_thumbnail">Показывать превью</string>
     <string name="show_lyrics_thumbnail">Показывать превью текстов песен</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">Уровень громкости</string>
     <string name="loudness_boost_level_info">Дополнительный уровень громкости, который будет использоваться без переполнения, может повредить устройство</string>
     <string name="settings_target_gain_loudness_info">Целевая громкость для нормализации громкости</string>
-    <string name="full_screen_lyrics_components">Компоненты полноэкранных текстов</string>
     <string name="titleartist">Название и Исполнители</string>
     <string name="miniqueue">Следующая очередь песен</string>
     <string name="controls">Управление</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">Возобновить воспроизведение при открытии приложения</string>
     <string name="notificationPlayerFirstIcon">Первая кнопка</string>
     <string name="notificationPlayerSecondIcon">Вторая кнопка</string>
-    <string name="notification_player">Плеер уведомлений</string>
     <string name="repeat">Повторить</string>
     <string name="views">Просмотров</string>
     <string name="subscribers">Подписчики</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigation</string>
     <string name="player_controls">Управление игроками</string>
     <string name="player_controls_colors">Цвета плеера</string>
-    <string name="theme_color">Цвет темы</string>
-    <string name="cover_color">Цвет обложки</string>
     <string name="monochrome">Монохромный</string>
     <string name="queue_management">Управление очередью</string>
     <string name="app_behavior">Поведение приложения</string>
@@ -2638,8 +2627,6 @@
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">Пользовательский</string>
     <string name="glass_performance">Fastest</string>
@@ -2787,4 +2774,14 @@
     <string name="playlist_refresh_on_open">Refresh on opening</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="settings_section_troubleshooting_title">Устранение проблем</string>
+    <string name="settings_section_proxy_title">Прокси</string>
+    <string name="settings_section_contributors_title">Авторы</string>
+    <string name="settings_section_player_action_bar_title">Панель действий игрока</string>
+    <string name="settings_section_smart_recommendations_title">Умные рекомендации</string>
+    <string name="settings_section_service_lifetime_title">Время службы</string>
+    <string name="settings_section_notification_player_title">Плеер уведомлений</string>
+    <string name="settings_section_backup_and_restore_title">Резервное копирование и восстановление</string>
+    <string name="settings_section_fullscreen_lyrics_title">Компоненты полноэкранных текстов</string>
+    <string name="artwork">Цвет обложки</string>
 </resources>

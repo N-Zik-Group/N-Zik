@@ -16,6 +16,7 @@ import app.it.fast4x.rimusic.utils.pauseListenHistoryKey
 import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.putEnum
+import app.n_zik.android.components.search.SearchHistoryStore
 
 /** Restores the original eight Data defaults once for the active profile. */
 internal fun applyDataDefaults(context: Context) {
@@ -28,5 +29,6 @@ internal fun applyDataDefaults(context: Context) {
         putInt(coilCustomDiskCacheKey, 32)
         putBoolean(pauseSearchHistoryKey, false)
         putBoolean(pauseListenHistoryKey, false)
+        SearchHistoryStore.pages.forEach { page -> remove(SearchHistoryStore.enabledKey(page)) }
     }
 }

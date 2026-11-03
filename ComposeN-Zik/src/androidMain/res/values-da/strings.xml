@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">Hverken gem nye søgninger eller vis historik</string>
     <string name="clear_search_history">Ryd søgehistorik</string>
     <string name="history_is_empty">Historik er tom</string>
-    <string name="service_lifetime">Service levetid</string>
     <string name="battery_optimizations_applied">Hvis batterioptimeringer er aktiveret, kan afspilningsnotifikationen forsvinde, når den er på pause.</string>
     <string name="is_android12">Siden Android 12 er det nødvendigt at deaktivere batterioptimeringer for, at indstillingen \"Uovervindelig tjeneste\" kan træde i kraft.</string>
     <string name="ignore_battery_optimizations">Ignorér batterioptimeringer</string>
@@ -193,8 +192,6 @@
     <string name="languages">Sprog</string>
     <string name="app_language">Appsprog</string>
     <string name="in_alphabetical_order">I alfabetisk orden:</string>
-    <string name="contributors">Bidragydere</string>
-    <string name="troubleshooting">Fejlfinding</string>
     <string name="english">Engelsk</string>
     <string name="italian">Italiensk (Italiano)</string>
     <string name="czech">Tjekkisk (Čeština)</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">Vil du virkelig hente alle?</string>
     <string name="import_playlist">Importér playliste</string>
     <string name="lang_ukrainian">Ukrainsk</string>
-    <string name="proxy">Proxy</string>
     <string name="enable_proxy">Aktivér proxy</string>
     <string name="proxy_mode">Proxytilstand</string>
     <string name="proxy_host">Proxyvært</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">Denne mappe findes allerede.</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">Er du sikker på, at du vil fjerne denne mappe fra sortlisten?</string>
     <string name="player_appearance">Udseende</string>
-    <string name="player_action_bar">Spiller handlingsbjælke</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
     <string name="quick_picks_content">Quick Picks sections</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">Diverse</string>
     <string name="swipe_to_action">Stryg for handling</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">Aktivér handlingsmenuen ved at stryge sangen til venstre eller højre</string>
-    <string name="smart_recommendations">Smart anbefaling</string>
     <string name="player_collapsed_disable_swiping_down">Deaktivér stryge ned</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Undgå at lukke afspilleren og rydde køen ved at stryge ned, når den er minimeret</string>
     <string name="sort_date_liked">\'Kan lide\'-dato</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">Hvis aktiveret, oprettes en logfil for at fremhæve fejl</string>
     <string name="audio_waveform">Audio waveform</string>
-    <string name="title_backup_and_restore">Sikkerhedskopiér og gendan</string>
     <string name="message_excluded_s_songs">Ekskluderede %s sange</string>
     <string name="show_thumbnail">Vis miniaturebillede</string>
     <string name="show_lyrics_thumbnail">Vis miniaturebillede for sangtekster</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">Højttaler boost niveau</string>
     <string name="loudness_boost_level_info">Yderligere loudness niveau, der skal bruges uden at overdrive det, kan beskadige enheden</string>
     <string name="settings_target_gain_loudness_info">Målforstærkning for lydstyrkenormalisering</string>
-    <string name="full_screen_lyrics_components">Sangtekstkomponenter i fuldskærm</string>
     <string name="titleartist">Titel og kunstnere</string>
     <string name="miniqueue">Mini-kø</string>
     <string name="controls">Kontrolelementer</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">Genoptag afspilning automatisk, når appen åbnes</string>
     <string name="notificationPlayerFirstIcon">Første knap</string>
     <string name="notificationPlayerSecondIcon">Anden knap</string>
-    <string name="notification_player">Notifikation Spiller</string>
     <string name="repeat">Gentag</string>
     <string name="views">Visninger</string>
     <string name="subscribers">Abonnenter</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigation</string>
     <string name="player_controls">Afspiller Styring</string>
     <string name="player_controls_colors">Afspiller styrer farver</string>
-    <string name="theme_color">Tema farve</string>
-    <string name="cover_color">Omslagsfarve</string>
     <string name="monochrome">Monokrom</string>
     <string name="queue_management">Håndtering Af Kø</string>
     <string name="app_behavior">App Opførsel</string>
@@ -2636,8 +2625,6 @@
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">Tilpasset</string>
     <string name="glass_performance">Fastest</string>
@@ -2785,4 +2772,14 @@
     <string name="playlist_refresh_on_open">Refresh on opening</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="settings_section_troubleshooting_title">Fejlfinding</string>
+    <string name="settings_section_proxy_title">Proxy</string>
+    <string name="settings_section_contributors_title">Bidragydere</string>
+    <string name="settings_section_player_action_bar_title">Spiller handlingsbjælke</string>
+    <string name="settings_section_smart_recommendations_title">Smart anbefaling</string>
+    <string name="settings_section_service_lifetime_title">Service levetid</string>
+    <string name="settings_section_notification_player_title">Notifikation Spiller</string>
+    <string name="settings_section_backup_and_restore_title">Sikkerhedskopiér og gendan</string>
+    <string name="settings_section_fullscreen_lyrics_title">Sangtekstkomponenter i fuldskærm</string>
+    <string name="artwork">Omslagsfarve</string>
 </resources>

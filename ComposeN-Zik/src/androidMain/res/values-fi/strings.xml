@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">Ei tallenna uusia hakuja eikä näytä hakuhistoriaa</string>
     <string name="clear_search_history">Tyhjennä hakuhistoria</string>
     <string name="history_is_empty">Historia on tyhjä</string>
-    <string name="service_lifetime">Käyttöiän kesto</string>
     <string name="battery_optimizations_applied">Jos akun optimointia käytetään, soittoilmoitus voidaan yhtäkkiä poistaa, kun soitto on keskeytetty.</string>
     <string name="is_android12">Koska Android 12, akun optimoinnin poistaminen käytöstä on tarpeen, jotta \"Näkymätön palvelu\" voi astua voimaan.</string>
     <string name="ignore_battery_optimizations">Ohita akun optimointi</string>
@@ -193,8 +192,6 @@
     <string name="languages">Kielet</string>
     <string name="app_language">Sovelluksen kieli</string>
     <string name="in_alphabetical_order">Aakkosjärjestyksessä:</string>
-    <string name="contributors">Avustajat</string>
-    <string name="troubleshooting">Vianmääritys</string>
     <string name="english">englanti</string>
     <string name="italian">italia</string>
     <string name="czech">tšekki</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">Haluatko varmasti ladata kaikki?</string>
     <string name="import_playlist">Tuo soittolista</string>
     <string name="lang_ukrainian">Ukraina (- VVVVVVVV)</string>
-    <string name="proxy">Välityspalvelin</string>
     <string name="enable_proxy">Ota välityspalvelin käyttöön</string>
     <string name="proxy_mode">Välityspalvelimen protokolla</string>
     <string name="proxy_host">Välityspalvelimen isäntänimi</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">Tämä kansio on jo olemassa</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">Oletko varma, että haluat poistaa tämän kansion mustalta listalta?</string>
     <string name="player_appearance">Soittimen Ulkonäkö</string>
-    <string name="player_action_bar">Soittimen toimintopalkki</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
     <string name="quick_picks_content">Quick Picks sections</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">Sekalaiset</string>
     <string name="swipe_to_action">Pyyhkäise toimintoa varten</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">Suorita toiminnot pyyhkäisemällä kappale vasemmalle tai oikealle pystysuoran kappaleiden listan sisällä</string>
-    <string name="smart_recommendations">Älykkäät suositukset</string>
     <string name="player_collapsed_disable_swiping_down">Poista pyyhkäisy alas -toiminto</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Vältä soittimen sulkeminen ja jonon puhdistaminen pyyhkäisemällä alaspäin, kun se on pienennettynä</string>
     <string name="sort_date_liked">Pvm Suosikki</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">Jos käytössä, luo lokitiedoston virheiden löytämiseksi</string>
     <string name="audio_waveform">Audio waveform</string>
-    <string name="title_backup_and_restore">Varmuuskopioi ja palauta</string>
     <string name="message_excluded_s_songs">Poisjätetty %s kappale(tta)</string>
     <string name="show_thumbnail">Näytä pienoiskuva</string>
     <string name="show_lyrics_thumbnail">Näytä pienoiskuva sanoituksille</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">Äänenvoimakkuuden korostuksen taso</string>
     <string name="loudness_boost_level_info">Toinen äänenvoimakkuuden taso, jota voidaan käyttää ilman ylitöitä, voi vahingoittaa laitetta</string>
     <string name="settings_target_gain_loudness_info">Tavoitevahvistus äänenvoimakkuuden normalisoimiseksi</string>
-    <string name="full_screen_lyrics_components">Kokonäytön sanoitusten komponentit</string>
     <string name="titleartist">Otsikko ja artistit</string>
     <string name="miniqueue">Seuraava kappaleen jono</string>
     <string name="controls">Säätimet</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">Jatka toistoa automaattisesti, kun sovellus avataan</string>
     <string name="notificationPlayerFirstIcon">Ensimmäinen painike</string>
     <string name="notificationPlayerSecondIcon">Toinen painike</string>
-    <string name="notification_player">Ilmoitusten Pelaaja</string>
     <string name="repeat">Uudelleentoisto</string>
     <string name="views">Näkymät</string>
     <string name="subscribers">Tilaajat</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigation</string>
     <string name="player_controls">Pelaajien Ohjaukset</string>
     <string name="player_controls_colors">Pelaaja ohjaa värejä</string>
-    <string name="theme_color">Teeman väri</string>
-    <string name="cover_color">Kansikuvien väri</string>
     <string name="monochrome">Yksivärinen</string>
     <string name="queue_management">Jonon Hallinta</string>
     <string name="app_behavior">Sovelluksen Käyttäytyminen</string>
@@ -2636,8 +2625,6 @@
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">Mukautettu</string>
     <string name="glass_performance">Fastest</string>
@@ -2785,4 +2772,14 @@
     <string name="playlist_refresh_on_open">Refresh on opening</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="settings_section_troubleshooting_title">Vianmääritys</string>
+    <string name="settings_section_proxy_title">Välityspalvelin</string>
+    <string name="settings_section_contributors_title">Avustajat</string>
+    <string name="settings_section_player_action_bar_title">Soittimen toimintopalkki</string>
+    <string name="settings_section_smart_recommendations_title">Älykkäät suositukset</string>
+    <string name="settings_section_service_lifetime_title">Käyttöiän kesto</string>
+    <string name="settings_section_notification_player_title">Ilmoitusten Pelaaja</string>
+    <string name="settings_section_backup_and_restore_title">Varmuuskopioi ja palauta</string>
+    <string name="settings_section_fullscreen_lyrics_title">Kokonäytön sanoitusten komponentit</string>
+    <string name="artwork">Kansikuvien väri</string>
 </resources>

@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">Không lưu tìm kiếm mới và cũng không hiển thị lịch sử tìm kiếm.</string>
     <string name="clear_search_history">Xóa lịch sử tìm kiếm</string>
     <string name="history_is_empty">Lịch sử trống</string>
-    <string name="service_lifetime">Service lifetime</string>
     <string name="battery_optimizations_applied">Nếu bật tối ưu hóa pin, thông báo trình phát có thể sẽ bị xóa khi đang ngưng phát nhạc.</string>
     <string name="is_android12">Since Android 12, disabling battery optimizations is required for the \"Invisible service\" option to take effect.</string>
     <string name="ignore_battery_optimizations">Bỏ qua tối ưu hóa pin</string>
@@ -193,8 +192,6 @@
     <string name="languages">Ngôn ngữ</string>
     <string name="app_language">Ngôn ngữ ứng dụng</string>
     <string name="in_alphabetical_order">Theo thứ tự bảng chữ cái:</string>
-    <string name="contributors">Contributors</string>
-    <string name="troubleshooting">Troubleshooting</string>
     <string name="english">Tiếng Anh</string>
     <string name="italian">Italiano (Tiếng Ý)</string>
     <string name="czech">Czech (Čeština)</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">Do you really want to download all?</string>
     <string name="import_playlist">Import playlist</string>
     <string name="lang_ukrainian">Ukrainian (Українська)</string>
-    <string name="proxy">Proxy</string>
     <string name="enable_proxy">Enable Proxy</string>
     <string name="proxy_mode">Proxy Mode</string>
     <string name="proxy_host">Proxy Host</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">This folder already exists</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">Are you sure you want to remove this folder from the blacklist?</string>
     <string name="player_appearance">Player Appearance</string>
-    <string name="player_action_bar">Player action bar</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
     <string name="quick_picks_content">Quick Picks sections</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">Misc</string>
     <string name="swipe_to_action">Swipe for action</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">Perform actions by swiping left or right on a song within vertical list of songs</string>
-    <string name="smart_recommendations">Smart recommendations</string>
     <string name="player_collapsed_disable_swiping_down">Disable swiping down</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Avoid closing the player and cleaning the queue by swiping down while it is minimized</string>
     <string name="sort_date_liked">Date Favorited</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">If enabled, create a log file to highlight errors</string>
     <string name="audio_waveform">Audio waveform</string>
-    <string name="title_backup_and_restore">Backup and restore</string>
     <string name="message_excluded_s_songs">Excluded %s songs</string>
     <string name="show_thumbnail">Show thumbnail</string>
     <string name="show_lyrics_thumbnail">Show thumbnail for lyrics</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">Loudness boost level</string>
     <string name="loudness_boost_level_info">Additional loudness level, to be used without overdoing it, may damage the device</string>
     <string name="settings_target_gain_loudness_info">Target gain for the loudness normalization</string>
-    <string name="full_screen_lyrics_components">Fullscreen lyrics components</string>
     <string name="titleartist">Title and Artists</string>
     <string name="miniqueue">Next song queue</string>
     <string name="controls">Controls</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">Resume playback automatically when the app is opened</string>
     <string name="notificationPlayerFirstIcon">First button</string>
     <string name="notificationPlayerSecondIcon">Second button</string>
-    <string name="notification_player">Notification Player</string>
     <string name="repeat">Repeat</string>
     <string name="views">Views</string>
     <string name="subscribers">Subscribers</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigation</string>
     <string name="player_controls">Player Controls</string>
     <string name="player_controls_colors">Player controls colors</string>
-    <string name="theme_color">Theme color</string>
-    <string name="cover_color">Cover color</string>
     <string name="monochrome">Monochrome</string>
     <string name="queue_management">Queue Management</string>
     <string name="app_behavior">App Behavior</string>
@@ -2635,8 +2624,6 @@
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">Custom</string>
     <string name="glass_performance">Fastest</string>
@@ -2784,4 +2771,14 @@
     <string name="playlist_refresh_on_open">Refresh on opening</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="settings_section_troubleshooting_title">Troubleshooting</string>
+    <string name="settings_section_proxy_title">Proxy</string>
+    <string name="settings_section_contributors_title">Contributors</string>
+    <string name="settings_section_player_action_bar_title">Player action bar</string>
+    <string name="settings_section_smart_recommendations_title">Smart recommendations</string>
+    <string name="settings_section_service_lifetime_title">Service lifetime</string>
+    <string name="settings_section_notification_player_title">Notification Player</string>
+    <string name="settings_section_backup_and_restore_title">Backup and restore</string>
+    <string name="settings_section_fullscreen_lyrics_title">Fullscreen lyrics components</string>
+    <string name="artwork">Cover color</string>
 </resources>

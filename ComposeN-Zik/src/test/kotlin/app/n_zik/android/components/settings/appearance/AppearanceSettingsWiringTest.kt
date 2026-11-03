@@ -94,7 +94,7 @@ class AppearanceSettingsWiringTest {
                     AppearanceSettingsContent(
                         search = Search(initialVisible = true),
                         navController = mockk(relaxed = true),
-                        selectedCards = setOf(R.string.notification_player),
+                        selectedCards = setOf(R.string.settings_section_notification_player_title),
                         cardModifier = { Modifier.testTag("appearance.selected") },
                     )
                 }

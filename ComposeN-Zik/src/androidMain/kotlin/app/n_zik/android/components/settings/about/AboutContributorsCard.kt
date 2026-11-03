@@ -49,7 +49,7 @@ import app.n_zik.android.uiRoundnessShape
 internal fun AboutContributorsCard() {
     AnimatedVisibility(visible = true, enter = settingsCardEnter, exit = settingsCardExit) {
             SettingsSectionCard(
-                title = stringResource(R.string.contributors),
+                title = stringResource(R.string.settings_section_contributors_title),
                 icon = R.drawable.people,
                 content = {
 

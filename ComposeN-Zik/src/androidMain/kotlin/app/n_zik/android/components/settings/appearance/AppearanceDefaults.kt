@@ -44,6 +44,7 @@ import app.it.fast4x.rimusic.utils.colorPaletteNameKey
 import app.it.fast4x.rimusic.utils.controlsExpandedKey
 import app.it.fast4x.rimusic.utils.coverThumbnailAnimationKey
 import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
+import app.it.fast4x.rimusic.utils.currentVisualizerKey
 import app.it.fast4x.rimusic.utils.disablePlayerHorizontalSwipeKey
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.effectRotationKey
@@ -56,6 +57,7 @@ import app.it.fast4x.rimusic.utils.keepPlayerMinimizedKey
 import app.it.fast4x.rimusic.utils.lastPlayerPlayButtonTypeKey
 import app.it.fast4x.rimusic.utils.lyricsColorKey
 import app.it.fast4x.rimusic.utils.lyricsCustomColorKey
+import app.it.fast4x.rimusic.utils.lyricsFontSizeKey
 import app.it.fast4x.rimusic.utils.miniPlayerTypeKey
 import app.it.fast4x.rimusic.utils.miniQueueExpandedKey
 import app.it.fast4x.rimusic.utils.noblurKey
@@ -136,14 +138,17 @@ import app.it.fast4x.rimusic.utils.visualizerCustomColorKey
 import app.it.fast4x.rimusic.utils.visualizerEnabledKey
 import app.it.fast4x.rimusic.utils.visualizerLineThicknessKey
 import app.it.fast4x.rimusic.utils.visualizerWhiteColorOptionKey
+import app.n_zik.android.core.settings.DEFAULT_THUMBNAIL_SIZE_DP
 import app.n_zik.android.enums.PlayerControlsColors
 import app.n_zik.android.enums.PlayerSwipeSensitivity
 import app.n_zik.android.enums.ShakeSensitivityTheme
 import app.n_zik.android.enums.lyrics.LyricsColor
+import app.n_zik.android.enums.lyrics.LyricsFontSize
 
 /** Applies the original Appearance reset once to the active profile. */
 internal fun applyAppearanceDefaults(context: Context) {
     context.preferences.edit {
+        resetLyricsMenuDefaults()
         putBoolean(isShowingThumbnailInLockscreenKey, true)
         putBoolean(showthumbnailKey, true)
         putBoolean(transparentbarKey, true)
@@ -165,7 +170,7 @@ internal fun applyAppearanceDefaults(context: Context) {
         putEnum(playerVisualizerTypeKey, PlayerVisualizerType.Disabled)
         putFloat(visualizerLineThicknessKey, 6f)
         putEnum(playerTimelineTypeKey, PlayerTimelineType.Wavy)
-        putFloat(thumbnailSizeDpKey, 90f)
+        putFloat(thumbnailSizeDpKey, DEFAULT_THUMBNAIL_SIZE_DP)
         remove(thumbnailSizeLDpKey)
         putEnum(playerTimelineSizeKey, PlayerTimelineSize.Biggest)
         putBoolean(effectRotationKey, false)
@@ -191,6 +196,7 @@ internal fun applyAppearanceDefaults(context: Context) {
         putBoolean(clickOnLyricsTextKey, true)
         putEnum(lyricsColorKey, LyricsColor.White)
         putInt(lyricsCustomColorKey, android.graphics.Color.WHITE)
+        putEnum(lyricsFontSizeKey, LyricsFontSize.DEFAULT)
         putBoolean(showBackgroundLyricsKey, false)
         putFloat(thumbnailRoundnessDpKey, 12f)
         putFloat(artistThumbnailRoundnessDpKey, 48f)
@@ -254,5 +260,6 @@ internal fun applyAppearanceDefaults(context: Context) {
         putEnum(colorPaletteModeKey, ColorPaletteMode.System)
         putEnum(swipeAnimationsNoThumbnailKey, SwipeAnimationNoThumbnail.Sliding)
         putBoolean(rotatingAlbumCoverKey, false)
+        remove(currentVisualizerKey)
     }
 }

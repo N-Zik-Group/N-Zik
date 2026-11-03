@@ -52,9 +52,10 @@ fun GlassFloatingActionIcon(
     val drawBackground: DrawScope.() -> Unit = remember(background) { { drawRect(background) } }
     // Pages export a live content sibling here; never sample a page containing this action.
     val backdrop = LocalGlassContainerBackdrop.current ?: rememberCanvasBackdrop(drawBackground)
+    val foreground = glassArtworkForeground(settings, tint)
     val glyph: @Composable () -> Unit = {
         Icon(icon, contentDescription, Modifier.size(iconSize).then(iconModifier),
-            tint = if (enabled) tint else tint.copy(alpha = tint.alpha * .5f))
+            tint = if (enabled) foreground else foreground.copy(alpha = foreground.alpha * .5f))
     }
     if (enabled) {
         LiquidButton(

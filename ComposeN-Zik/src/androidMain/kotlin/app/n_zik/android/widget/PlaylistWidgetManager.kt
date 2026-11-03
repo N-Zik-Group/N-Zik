@@ -15,20 +15,17 @@ import android.graphics.Shader
 import android.os.Bundle
 import android.view.View
 import android.widget.RemoteViews
+import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.components.player.ArtworkColorSnapshot
 import app.n_zik.android.R
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.toBitmap
 import app.n_zik.android.core.coil.ImageCacheFactory
-import app.it.fast4x.rimusic.ui.styling.colorPaletteOf
-import app.it.fast4x.rimusic.enums.ColorPaletteName
-import app.it.fast4x.rimusic.enums.ColorPaletteMode
 import androidx.compose.ui.graphics.toArgb
-import android.content.res.Configuration
 import app.n_zik.android.MainActivity
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
@@ -202,7 +199,9 @@ object PlaylistWidgetManager {
         withContext(NzikDispatchers.MEDIA) {
             val appWidgetManager = AppWidgetManager.getInstance(context)
             val albumArt = state.artworkBitmap
-            val palette = extractPalette(context, albumArt)
+            val snapshot = if (state.profileId == getActiveProfile(context)) state.artworkColors
+                else loadWidgetArtworkColors(context, state.artworkUri, null)
+            val palette = widgetArtworkPalette(context, snapshot)
             val views = createRemoteViews(
                 context = context,
                 options = options,
@@ -229,7 +228,16 @@ object PlaylistWidgetManager {
         duration: Long = 0,
         currentPosition: Long = 0,
         palette: ColorPalette? = null,
+        artworkUri: String? = null,
+        artworkColors: ArtworkColorSnapshot? = null,
+        artworkColorsResolved: Boolean = false,
     ) {
+        val (snapshot, profileId) = withContext(NzikDispatchers.MEDIA) {
+            val profile = getActiveProfile(context)
+            val source = if (artworkColorsResolved) artworkColors
+                else artworkColors ?: loadWidgetArtworkColors(context, artworkUri, artworkBitmap)
+            source to profile
+        }
         lastWidgetState = WidgetState(
             title = title,
             artist = artist,
@@ -238,6 +246,9 @@ object PlaylistWidgetManager {
             isLiked = isLiked,
             duration = duration,
             currentPosition = currentPosition,
+            artworkColors = snapshot,
+            artworkUri = artworkUri,
+            profileId = profileId,
         )
 
         val appWidgetManager = AppWidgetManager.getInstance(context)
@@ -246,7 +257,7 @@ object PlaylistWidgetManager {
         if (widgetIds.isEmpty()) return
 
         withContext(NzikDispatchers.MEDIA) {
-            val resolvedPalette = palette ?: extractPalette(context, artworkBitmap)
+            val resolvedPalette = palette ?: widgetArtworkPalette(context, snapshot)
 
             widgetIds.forEach { widgetId ->
                 val options = appWidgetManager.getAppWidgetOptions(widgetId)
@@ -267,55 +278,8 @@ object PlaylistWidgetManager {
         }
     }
 
-    /**
-     * Resolves the palette the playlist widget renders for [bitmap]: the palette saved by the
-     * app (same bitmap = same colors) when the system theme matches it, otherwise the shared M3E
-     * extraction `m3eDynamicColorPaletteOf` — the app's single source of cover-color extraction
-     * (RiPlay-based: capped 8 palette, dominant swatch, achromatic neutralization) — so the
-     * widget stays in full parity with what the app displays, including the `NEUTRAL_COVER`
-     * case. Suspend: the extraction is CPU-bound, and every call site already runs inside
-     * `withContext(NzikDispatchers.MEDIA)`.
-     */
-    internal suspend fun extractPalette(context: Context, bitmap: Bitmap?): ColorPalette {
-        val isSystemInDarkMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
-        val defaultPalette = colorPaletteOf(
-            ColorPaletteName.Dynamic,
-            if (isSystemInDarkMode) ColorPaletteMode.Dark else ColorPaletteMode.Light,
-            isSystemInDarkMode
-        )
-
-        // Try to read palette saved by the app (same bitmap = same colors)
-        val prefs = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-        val timestamp = prefs.getLong("widget_palette_timestamp", 0)
-        if (timestamp > 0) {
-            val savedIsDark = prefs.getBoolean("widget_palette_isDark", isSystemInDarkMode)
-            if (savedIsDark == isSystemInDarkMode) {
-                return ColorPalette(
-                    background0 = defaultPalette.background0,
-                    background1 = androidx.compose.ui.graphics.Color(prefs.getInt("widget_palette_background1", defaultPalette.background1.toArgb())),
-                    background2 = androidx.compose.ui.graphics.Color(prefs.getInt("widget_palette_background2", defaultPalette.background2.toArgb())),
-                    background3 = defaultPalette.background3,
-                    background4 = defaultPalette.background4,
-                    accent = androidx.compose.ui.graphics.Color(prefs.getInt("widget_palette_accent", defaultPalette.accent.toArgb())),
-                    onAccent = defaultPalette.onAccent,
-                    text = androidx.compose.ui.graphics.Color(prefs.getInt("widget_palette_text", defaultPalette.text.toArgb())),
-                    textSecondary = androidx.compose.ui.graphics.Color(prefs.getInt("widget_palette_textSecondary", defaultPalette.textSecondary.toArgb())),
-                    textDisabled = defaultPalette.textDisabled,
-                    isDark = savedIsDark,
-                    iconButtonPlayer = defaultPalette.iconButtonPlayer,
-                )
-            }
-        }
-
-        // Fallback: extract from bitmap with the app's shared M3E extraction (RiPlay-based,
-        // achromatic neutralization included) — same result as the app for the same cover.
-        return if (bitmap != null) {
-            m3eDynamicColorPaletteOf(bitmap, isSystemInDarkMode)
-                ?: defaultPalette
-        } else {
-            defaultPalette
-        }
-    }
+    internal suspend fun extractPalette(context: Context, bitmap: Bitmap?): ColorPalette =
+        widgetArtworkPalette(context, loadWidgetArtworkColors(context, null, bitmap))
 
     private suspend fun createRemoteViews(
         context: Context,
@@ -558,6 +522,9 @@ object PlaylistWidgetManager {
         val isLiked: Boolean,
         val duration: Long,
         val currentPosition: Long,
+        val artworkColors: ArtworkColorSnapshot? = null,
+        val artworkUri: String? = null,
+        val profileId: String? = null,
     )
 
     private fun applyWidgetTheme(views: RemoteViews, palette: ColorPalette, titleIds: List<Int>, cardIds: List<Int>) {

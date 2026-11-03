@@ -237,13 +237,15 @@ object ImageCacheFactory {
         }
     }
 
-    fun clearCacheForKey(url: String?, quality: NetworkQuality) {
+    fun clearCacheForKey(url: String?, quality: NetworkQuality, invalidateColors: Boolean = true) {
         if (url == null) return
         val key = generateCacheKeySync(url, quality)
         try {
             LOADER.memoryCache?.remove(MemoryCache.Key(key))
             DISK_CACHE.remove(key)
         } catch (e: Exception) {}
+        // Publish only after pixel eviction, so new-generation readers cannot see old cache entries.
+        if (invalidateColors) app.n_zik.android.components.player.SharedArtworkColors.invalidate(url)
     }
 
     fun getNetworkQuality(): NetworkQuality {
@@ -372,7 +374,7 @@ object ImageCacheFactory {
                     if (currentUrl != validUrl && id != null &&
                         (currentUrl?.contains("i.ytimg.com/pl_c/") == true || currentUrl?.contains("podcasts") == true)) {
                         
-                        clearCacheForKey(currentUrl, decision.quality)
+                        clearCacheForKey(currentUrl, decision.quality, invalidateColors = false)
                         PlaylistThumbnailStore.clear(id)
                         currentUrl = validUrl
                         return@listener
@@ -463,7 +465,7 @@ object ImageCacheFactory {
                     if (currentUrl != validUrl && id != null &&
                         (currentUrl?.contains("i.ytimg.com/pl_c/") == true || currentUrl?.contains("podcasts") == true)) {
                         
-                        clearCacheForKey(currentUrl, decision.quality)
+                        clearCacheForKey(currentUrl, decision.quality, invalidateColors = false)
                         PlaylistThumbnailStore.clear(id)
                         currentUrl = validUrl
                         return@listener
@@ -549,7 +551,7 @@ object ImageCacheFactory {
                     val id = currentUrl?.getYouTubeId()
                     if (currentUrl != validUrl && id != null &&
                         (currentUrl?.contains("i.ytimg.com/pl_c/") == true || currentUrl?.contains("podcasts") == true)) {
-                        clearCacheForKey(currentUrl, decision.quality)
+                        clearCacheForKey(currentUrl, decision.quality, invalidateColors = false)
                         PlaylistThumbnailStore.clear(id)
                         currentUrl = validUrl
                         return@listener
@@ -645,7 +647,7 @@ object ImageCacheFactory {
                     if (currentUrl != validUrl && id != null &&
                         (currentUrl?.contains("i.ytimg.com/pl_c/") == true || currentUrl?.contains("podcasts") == true)) {
                         
-                        clearCacheForKey(currentUrl, decision.quality)
+                        clearCacheForKey(currentUrl, decision.quality, invalidateColors = false)
                         PlaylistThumbnailStore.clear(id)
                         currentUrl = validUrl
                         return@listener
@@ -816,7 +818,7 @@ object ImageCacheFactory {
             if (currentUrl != url && id != null && (currentUrl.contains("pl_c") || currentUrl.contains("podcasts"))) {
                 
                 if (!cacheOnly) {
-                    clearCacheForKey(currentUrl, decision.quality)
+                    clearCacheForKey(currentUrl, decision.quality, invalidateColors = false)
                     PlaylistThumbnailStore.clear(id)
                 }
                 currentUrl = url
@@ -897,6 +899,8 @@ object ImageCacheFactory {
             
         } catch (e: Exception) {
         }
+        // Signal observers after all pixel and URL-metadata caches have been cleared.
+        app.n_zik.android.components.player.SharedArtworkColors.invalidate()
     }
 
     fun getCacheSize(): Long = try { DISK_CACHE.size } catch (e: Exception) { 0L }

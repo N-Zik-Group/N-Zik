@@ -94,7 +94,7 @@ fun CustomModalBottomSheet(
                     exportedBackdrop = exported,
                 ) },
             ) {
-                CompositionLocalProvider(LocalContentColor provides contentColor) {
+                CompositionLocalProvider(LocalContentColor provides glassArtworkForeground(glass, contentColor)) {
                     dragHandle?.let { CenteredMenuSheetDragHandle(it) }
                     content()
                 }

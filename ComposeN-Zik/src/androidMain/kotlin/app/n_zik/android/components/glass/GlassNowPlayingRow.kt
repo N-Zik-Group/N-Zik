@@ -131,5 +131,7 @@ internal fun GlassSongRowSurface(
         else -> queueCapture.modifier.then(surface)
     }
     CompositionLocalProvider(LocalGlassContainerBackdrop provides backdrop,
-        LocalGlassMaterialSource provides materialSource) { content(capturedSurface) }
+        LocalGlassMaterialSource provides materialSource) {
+        GlassArtworkContent(settings, material) { content(capturedSurface) }
+    }
 }

@@ -290,7 +290,8 @@ fun KaraokeLyricsView(
     onDismiss: () -> Unit,
     onInvalidLrc: (Boolean) -> Unit,
     showIntervalIndicator: Boolean = true,
-    showClipRectsDebug: Boolean = false
+    showClipRectsDebug: Boolean = false,
+    forcedCoverBackground: Color? = null
 ) {
     val density = LocalDensity.current
 
@@ -650,7 +651,7 @@ fun KaraokeLyricsView(
     }
 
     var modifierBG = Modifier.verticalFadingEdge()
-    if (showBackgroundLyrics && showlyricsthumbnail) modifierBG = modifierBG.background(colorPalette().accent)
+    if (showBackgroundLyrics && showlyricsthumbnail) modifierBG = modifierBG.background(if (lyricsColor == LyricsColor.Cover) forcedCoverBackground ?: colorPalette().accent else colorPalette().accent)
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(

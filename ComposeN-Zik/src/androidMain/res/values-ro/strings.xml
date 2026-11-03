@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">Nu salva noile căutări și nu afișa istoricul</string>
     <string name="clear_search_history">Șterge istoricul căutărilor</string>
     <string name="history_is_empty">Istoricul este gol</string>
-    <string name="service_lifetime">Durata duratei de viață</string>
     <string name="battery_optimizations_applied">Dacă sunt aplicate optimizările bateriei, notificarea de redare poate dispărea brusc atunci când este pusă pe pauză.</string>
     <string name="is_android12">Începând cu Android 12, dezactivarea optimizărilor bateriei este necesară pentru ca opțiunea „Serviciul invincibil” să aibă efect.</string>
     <string name="ignore_battery_optimizations">Ignoră optimizările bateriei</string>
@@ -193,8 +192,6 @@
     <string name="languages">Limbi</string>
     <string name="app_language">Limba aplicației</string>
     <string name="in_alphabetical_order">În ordine alfabetică:</string>
-    <string name="contributors">Colaboratori</string>
-    <string name="troubleshooting">Depanare</string>
     <string name="english">Engleză (English)</string>
     <string name="italian">Italiană (Italiano)</string>
     <string name="czech">Cehă (Čeština)</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">Vrei cu adevărat să descarci toate melodiile?</string>
     <string name="import_playlist">Importă playlist-ul</string>
     <string name="lang_ukrainian">Ucraineană (Українська)</string>
-    <string name="proxy">Proxy</string>
     <string name="enable_proxy">Activează Proxy</string>
     <string name="proxy_mode">Mod Proxy</string>
     <string name="proxy_host">Gazdă Proxy</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">Acest dosar există deja.</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">Ești sigur că vrei să elimini acest dosar din lista neagră?</string>
     <string name="player_appearance">Aspectul playerului</string>
-    <string name="player_action_bar">Bara de acțiune a jucătorului</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
     <string name="quick_picks_content">Quick Picks sections</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">Diverse</string>
     <string name="swipe_to_action">Glisează pentru acțiune</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">Efectuează acțiuni glisând la stânga sau la dreapta pe o melodie</string>
-    <string name="smart_recommendations">Recomandări inteligente</string>
     <string name="player_collapsed_disable_swiping_down">Dezactivează glisarea în jos</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Evită închiderea playerului și curățarea cozii prin glisarea în jos când este minimizat</string>
     <string name="sort_date_liked">Data aprecierii</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">Dacă este activat, creează un fișier jurnal pentru a evidenția erorile</string>
     <string name="audio_waveform">Audio waveform</string>
-    <string name="title_backup_and_restore">Backup și restaurare</string>
     <string name="message_excluded_s_songs">%s melodii excluse</string>
     <string name="show_thumbnail">Afișează miniatura</string>
     <string name="show_lyrics_thumbnail">Afișează miniatura pentru versuri</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">Nivel de stimulare a puterii</string>
     <string name="loudness_boost_level_info">Nivel suplimentar de lucire, care poate fi utilizat fără depășirea lui, poate deteriora dispozitivul</string>
     <string name="settings_target_gain_loudness_info">Amplificare țintă pentru normalizarea intensității sonore</string>
-    <string name="full_screen_lyrics_components">Componentele versurilor pe tot ecranul</string>
     <string name="titleartist">Titlu și Artiști</string>
     <string name="miniqueue">Coada melodiei următoare</string>
     <string name="controls">Controale</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">Reia redarea automat când aplicația este deschisă</string>
     <string name="notificationPlayerFirstIcon">Primul buton</string>
     <string name="notificationPlayerSecondIcon">Al doilea buton</string>
-    <string name="notification_player">Jucător notificări</string>
     <string name="repeat">Repetă</string>
     <string name="views">Vizualizări</string>
     <string name="subscribers">Abonați</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigation</string>
     <string name="player_controls">Controale jucător</string>
     <string name="player_controls_colors">Culori pentru controlul jucătorului</string>
-    <string name="theme_color">Culoarea temei</string>
-    <string name="cover_color">Culoare copertă</string>
     <string name="monochrome">Monocrom</string>
     <string name="queue_management">Gestionare coadă</string>
     <string name="app_behavior">Comportament aplicație</string>
@@ -2637,8 +2626,6 @@
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">Personalizat</string>
     <string name="glass_performance">Fastest</string>
@@ -2786,4 +2773,14 @@
     <string name="playlist_refresh_on_open">Refresh on opening</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="settings_section_troubleshooting_title">Depanare</string>
+    <string name="settings_section_proxy_title">Proxy</string>
+    <string name="settings_section_contributors_title">Colaboratori</string>
+    <string name="settings_section_player_action_bar_title">Bara de acțiune a jucătorului</string>
+    <string name="settings_section_smart_recommendations_title">Recomandări inteligente</string>
+    <string name="settings_section_service_lifetime_title">Durata duratei de viață</string>
+    <string name="settings_section_notification_player_title">Jucător notificări</string>
+    <string name="settings_section_backup_and_restore_title">Backup și restaurare</string>
+    <string name="settings_section_fullscreen_lyrics_title">Componentele versurilor pe tot ecranul</string>
+    <string name="artwork">Culoare copertă</string>
 </resources>

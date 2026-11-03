@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">لا تقم بحفظ سجلات البحث الجديدة التي تم البحث عنها ولا إظهار السجل</string>
     <string name="clear_search_history">حذف سجل البحث</string>
     <string name="history_is_empty">السجل فارغ</string>
-    <string name="service_lifetime">مدة الخدمة</string>
     <string name="battery_optimizations_applied">إذا تم تفعيل خيار تحسينات البطارية، يمكن أن يختفي إشعار التشغيل فجأة عند الإيقاف مؤقتاً.</string>
     <string name="is_android12">منذ نظام Android 12، أصبح تعطيل تحسينات البطارية مطلوباً حتى يصبح خيار \"الخدمة التي لا تقهر\" ساري المفعول.</string>
     <string name="ignore_battery_optimizations">Ignore battery optimizations</string>
@@ -193,8 +192,6 @@
     <string name="languages">اللغات</string>
     <string name="app_language">لغة التطبيق</string>
     <string name="in_alphabetical_order">حسب الترتيب الأبجدي:</string>
-    <string name="contributors">المساهمون</string>
-    <string name="troubleshooting">استكشاف الأخطاء</string>
     <string name="english">الإنجليزية</string>
     <string name="italian">الإيطالية (الإيطاليان)</string>
     <string name="czech">Czech (Čeština)</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">Do you really want to download all?</string>
     <string name="import_playlist">Import playlist</string>
     <string name="lang_ukrainian">Ukrainian</string>
-    <string name="proxy">الوكيل</string>
     <string name="enable_proxy">Enable Proxy</string>
     <string name="proxy_mode">Proxy Mode</string>
     <string name="proxy_host">Proxy Host</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">This folder already exists.</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">Are you sure you want to remove this folder from the blacklist?</string>
     <string name="player_appearance">مظهر اللاعب</string>
-    <string name="player_action_bar">شريط إجراءات اللاعب</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
     <string name="quick_picks_content">Quick Picks sections</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">Miscellaneous</string>
     <string name="swipe_to_action">Swipe to action</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">Activate the action menu by swiping the song left or right</string>
-    <string name="smart_recommendations">Smart recommendation</string>
     <string name="player_collapsed_disable_swiping_down">Disable swiping down</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Avoid closing the player and cleaning the queue by swiping down while it is minimized</string>
     <string name="sort_date_liked">Date Liked</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">If enabled, create a log file to highlight errors</string>
     <string name="audio_waveform">Audio waveform</string>
-    <string name="title_backup_and_restore">النسخ الاحتياطي والاستعادة</string>
     <string name="message_excluded_s_songs">Excluded %s songs</string>
     <string name="show_thumbnail">Show thumbnail</string>
     <string name="show_lyrics_thumbnail">Show thumbnail for lyrics</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">مستوى تعزيز اللمس</string>
     <string name="loudness_boost_level_info">مستوى ارتفاع اضافي يمكن استخدامه دون المبالغة فيه يمكن ان يضر الجهاز</string>
     <string name="settings_target_gain_loudness_info">Target gain for the loudness normalization</string>
-    <string name="full_screen_lyrics_components">Full Screen Lyrics Components</string>
     <string name="titleartist">Title and Artists</string>
     <string name="miniqueue">Mini Queue</string>
     <string name="controls">Controls</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">Resume Playback automatically when the app is opened</string>
     <string name="notificationPlayerFirstIcon">First button</string>
     <string name="notificationPlayerSecondIcon">Second button</string>
-    <string name="notification_player">مشغل الإشعارات</string>
     <string name="repeat">Repeat</string>
     <string name="views">المشاهدات</string>
     <string name="subscribers">المشتركون</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigation</string>
     <string name="player_controls">التحكم في اللاعب</string>
     <string name="player_controls_colors">ألوان التحكم في اللاعب</string>
-    <string name="theme_color">لون السمة</string>
-    <string name="cover_color">لون الغلاف</string>
     <string name="monochrome">أحادية</string>
     <string name="queue_management">إدارة قائمة الانتظار</string>
     <string name="app_behavior">سلوك التطبيق</string>
@@ -2640,8 +2629,6 @@
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">Custom</string>
     <string name="glass_performance">Fastest</string>
@@ -2789,4 +2776,14 @@
     <string name="playlist_refresh_on_open">Refresh on opening</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="settings_section_troubleshooting_title">استكشاف الأخطاء</string>
+    <string name="settings_section_proxy_title">الوكيل</string>
+    <string name="settings_section_contributors_title">المساهمون</string>
+    <string name="settings_section_player_action_bar_title">شريط إجراءات اللاعب</string>
+    <string name="settings_section_smart_recommendations_title">Smart recommendation</string>
+    <string name="settings_section_service_lifetime_title">مدة الخدمة</string>
+    <string name="settings_section_notification_player_title">مشغل الإشعارات</string>
+    <string name="settings_section_backup_and_restore_title">النسخ الاحتياطي والاستعادة</string>
+    <string name="settings_section_fullscreen_lyrics_title">Full Screen Lyrics Components</string>
+    <string name="artwork">لون الغلاف</string>
 </resources>

@@ -4,6 +4,7 @@ import app.n_zik.android.playback.utils.playNextIfAvailable
 import app.n_zik.android.playback.utils.playPreviousIfAvailable
 import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import app.it.fast4x.rimusic.utils.activeProfileKey
 import app.it.fast4x.rimusic.utils.profilePreferences
 import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
@@ -256,6 +257,7 @@ import app.it.fast4x.rimusic.utils.crossfadeGaplessKey
 import app.it.fast4x.rimusic.utils.crossfadeDurationKey
 import androidx.compose.runtime.Stable
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
+import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.widget.NZikWidgetManager
 import app.it.fast4x.rimusic.utils.crossfadeEnabledKey
 import java.net.UnknownHostException
@@ -1237,6 +1239,7 @@ class PlayerServiceModern : MediaLibraryService(),
             boundSessionPreferences = preferences
             boundSessionPreferences?.registerOnSharedPreferenceChangeListener(this)
             refreshSessionAccess()
+            refreshArtworkWidgets()
         }
     }
 
@@ -1252,6 +1255,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         when (key) {
+            dynamicThemeRespectBrightnessKey, colorPaletteModeKey, null -> refreshArtworkWidgets()
             cropVideoThumbnailsKey -> coroutineScope.launch(NzikDispatchers.UI) {
                 (mediaSession.player as? SessionArtworkPlayer)?.refreshArtwork()
                 mediaLibrarySessionCallback.refreshArtwork(mediaSession)
@@ -2384,6 +2388,7 @@ class PlayerServiceModern : MediaLibraryService(),
     private fun showSmartMessage( message: String ) = Toaster.i(message)
 
     private var widgetUpdateJob: Job? = null
+    private var widgetRenderJob: Job? = null
 
     private fun startWidgetUpdates() {
         widgetUpdateJob?.cancel()
@@ -2401,11 +2406,17 @@ class PlayerServiceModern : MediaLibraryService(),
         widgetUpdateJob?.cancel()
     }
 
+    /** Re-render paused widgets without starting playback or waking a stopped service. */
+    private fun refreshArtworkWidgets() {
+        coroutineScope.launch(NzikDispatchers.UI) { updateWidgets() }
+    }
+
     @MainThread
     fun updateWidgets() {
+        widgetRenderJob?.cancel()
         val currentMediaId = binder.player.currentMediaItem?.mediaId
         if (currentMediaId == null) {
-            coroutineScope.launch(NzikDispatchers.DATA) {
+            widgetRenderJob = coroutineScope.launch(NzikDispatchers.DATA) {
                 NZikWidgetManager.updateIdleWidgets(applicationContext)
             }
             return
@@ -2426,8 +2437,10 @@ class PlayerServiceModern : MediaLibraryService(),
         val playerDuration = binder.player.duration.coerceAtLeast(0)
         val playerPosition = binder.player.currentPosition.coerceAtLeast(0)
         val currentBitmap = bitmapProvider.bitmap
+        val artworkUri = (binder.player.mediaMetadata.artworkUri
+            ?: binder.player.currentMediaItem?.mediaMetadata?.artworkUri)?.toString()
 
-        coroutineScope.launch(NzikDispatchers.DATA) {
+        widgetRenderJob = coroutineScope.launch(NzikDispatchers.DATA) {
             // Save bitmap to file for backward compatibility or other widgets
             val file = File( cacheDir, "widget_thumbnail.png" )
             FileOutputStream(file).use { outStream ->
@@ -2447,7 +2460,8 @@ class PlayerServiceModern : MediaLibraryService(),
                 isPlaying = status.third,
                 isLiked = isLiked,
                 duration = playerDuration,
-                currentPosition = playerPosition
+                currentPosition = playerPosition,
+                artworkUri = artworkUri,
             )
 
             // Remove old widget update calls when deleting old widgets.
@@ -2897,6 +2911,8 @@ class PlayerServiceModern : MediaLibraryService(),
 
     @Stable
     open inner class Binder : AndroidBinder() {
+        fun refreshArtworkWidgets() = this@PlayerServiceModern.refreshArtworkWidgets()
+
         val service: PlayerServiceModern
             get() = this@PlayerServiceModern
 

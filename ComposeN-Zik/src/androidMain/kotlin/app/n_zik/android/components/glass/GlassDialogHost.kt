@@ -136,7 +136,7 @@ internal fun GlassDialogWindow(
                 if (presentation == null || (useSharedHost && host != null && properties.securePolicy != SecureFlagPolicy.Inherit)) {
                     NativeDialogDimming(presentation, area, scrimColor, scrimVisible)
                 }
-                GlassRippleProvider(settings) { content() }
+                GlassRippleProvider(settings) { GlassArtworkContent(settings, settings.usesGlassMaterial(area)) { content() } }
             }
         }
         return
@@ -157,7 +157,9 @@ internal fun GlassDialogWindow(
         presentation?.motion?.value ?: scrimMotion.value
     }
     val locals = currentCompositionLocalContext
-    val currentContent = rememberUpdatedState(content)
+    val currentContent = rememberUpdatedState<@Composable () -> Unit> {
+        GlassArtworkContent(settings, settings.usesGlassMaterial(area)) { content() }
+    }
     val currentDismiss = rememberUpdatedState(onDismissRequest)
     val currentProperties = rememberUpdatedState(properties)
     val currentEdgeToEdge = rememberUpdatedState(edgeToEdge)

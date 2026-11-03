@@ -1,6 +1,7 @@
 package app.n_zik.android
 
 import app.n_zik.android.core.settings.ensurePlayerBehaviorDefaults
+import app.n_zik.android.core.settings.ensureDefaultColorPaletteMode
 import app.n_zik.android.core.settings.readProxyPort
 
 import app.n_zik.android.components.glass.GlassArea
@@ -138,7 +139,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
-import android.graphics.Bitmap
 import androidx.annotation.RequiresApi
 import com.kieronquinn.monetcompat.core.MonetActivityAccessException
 import com.kieronquinn.monetcompat.core.MonetCompat
@@ -165,7 +165,6 @@ import app.it.fast4x.rimusic.enums.HomeScreenTabs
 import app.it.fast4x.rimusic.enums.Languages
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.PipModule
-import app.it.fast4x.rimusic.enums.PlayerBackgroundColors
 import app.it.fast4x.rimusic.extensions.pip.PipModuleContainer
 import app.it.fast4x.rimusic.extensions.pip.PipModuleCover
 import app.n_zik.android.components.onboarding.OnboardingAccountsScreen
@@ -235,7 +234,6 @@ import app.n_zik.android.components.player.miniPlayerTopPaddingPx
 import app.n_zik.android.components.player.TOP_NAV_BAR_HEIGHT
 import app.n_zik.android.components.player.showMiniplayerIfDismissed
 import app.n_zik.android.components.player.PaletteFade
-import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
 import app.n_zik.android.components.player.presentMiniplayerThenExpand
 import app.n_zik.android.components.player.presentMiniplayerCollapsed
 import app.n_zik.android.components.player.MINIPLAYER_APPEAR_FADE_MS
@@ -243,9 +241,12 @@ import app.n_zik.android.components.player.MINIPLAYER_APPEAR_FADE_SKIPPED_FRAMES
 import app.n_zik.android.components.theme.AppearanceMenuSheet
 import app.n_zik.android.components.theme.AppearanceVideoSheet
 import app.n_zik.android.components.theme.ProvideAnimatedAppearance
+import app.n_zik.android.components.theme.DynamicAppearanceOwner
 import app.n_zik.android.components.theme.DynamicPaletteArtworkListener
 import app.n_zik.android.components.theme.appearanceBackground
 import app.n_zik.android.components.theme.startupAppearance
+import app.n_zik.android.components.theme.DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT
+import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.components.theme.withColor
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.Dimensions
@@ -331,7 +332,6 @@ import app.it.fast4x.rimusic.utils.setDefaultPalette
 import app.it.fast4x.rimusic.utils.showButtonPlayerVideoKey
 import app.it.fast4x.rimusic.utils.showSearchTabKey
 import app.it.fast4x.rimusic.utils.showTotalTimeQueueKey
-import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.resize
 import app.n_zik.android.core.coil.thumbnail
 import app.it.fast4x.rimusic.utils.thumbnailRoundnessDpKey
@@ -376,7 +376,6 @@ import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.n_zik.android.core.database.Database
 import android.Manifest
 import app.it.fast4x.rimusic.enums.NavigationBarPosition
-import kotlinx.coroutines.Job
 import androidx.compose.foundation.layout.offset
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
@@ -997,6 +996,7 @@ class MainActivity :
     )
     fun startApp(isRestoredInstance: Boolean) {
         // A cold profile shortcut can change the active store after Application startup.
+        ensureDefaultColorPaletteMode(preferences)
         ensurePlayerBehaviorDefaults(preferences)
 
         // Check YouTube cookie status on startup — warn user if expired/invalid
@@ -1104,8 +1104,7 @@ class MainActivity :
             //TODO: Check internet connection
 
             val coroutineScope = rememberCoroutineScope()
-            val paletteJob = remember { mutableStateOf<Job?>(null) }
-            val isSystemInDarkTheme = isSystemInDarkTheme()
+            val isSystemInDarkTheme by rememberUpdatedState(isSystemInDarkTheme())
             val navController = rememberNavController()
             DisposableEffect(navController) {
                 val listener = NavController.OnDestinationChangedListener { _, destination, _ ->
@@ -1205,6 +1204,10 @@ class MainActivity :
                             paletteName = preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic),
                             paletteMode = preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark),
                             systemIsDark = isSystemInDarkTheme,
+                            respectThemeBrightness = preferences.getBoolean(
+                                dynamicThemeRespectBrightnessKey,
+                                DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT,
+                            ),
                         )
                     },
                 ),
@@ -1219,137 +1222,41 @@ class MainActivity :
                 appearance = newAppearance.forPaletteMode(preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark))
             }
 
-            fun setDynamicPalette(url: String?, animateTheme: Boolean = false) {
-                val playerBackgroundColors = preferences.getEnum(
-                    playerBackgroundColorsKey,
-                    PlayerBackgroundColors.BlurredCoverColor
-                )
-                val colorPaletteName =
-                    preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
-                val isDynamicPalette = colorPaletteName == ColorPaletteName.Dynamic
-                val isCoverColor =
-                    playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient ||
-                            playerBackgroundColors == PlayerBackgroundColors.CoverColor ||
-                            animatedGradient == AnimatedGradient.FluidCoverColorGradient
-
-                paletteJob.value?.cancel()
-                if (!isDynamicPalette) {
-                    return
-                }
-
-                // If the URL is null, empty, or the default fallback icon, use violet accent
-                if (url.isNullOrEmpty() || url.contains("ic_launcher_box")) {
-                    val colorPaletteMode = preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
-                    val isPicthBlack = colorPaletteMode == ColorPaletteMode.PitchBlack
-                    val isDark = colorPaletteMode == ColorPaletteMode.Dark || isPicthBlack || (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
-                    
-                    val violetAccent = Color(0.54509807f, 0.36078432f, 0.9647059f)
-                    val defaultColorPalette = dynamicColorPaletteOf(violetAccent, isDark)
-                    val targetPalette = if (!isPicthBlack) defaultColorPalette else defaultColorPalette.copy(
-                        background0 = Color.Black,
-                        background1 = Color.Black,
-                        background2 = Color.Black,
-                        background3 = Color.Black,
-                        background4 = Color.Black,
-                    )
-                    setSystemBarAppearance(defaultColorPalette.isDark)
-                    val oldPalette = appearance.colorPalette
-                    if (oldPalette == targetPalette) return
-                    // Single global mutation (the perceived fade happens locally
-                    // in the player scope, see PaletteFade) — mutating the
-//
-                    // global palette N times per track invalidated the whole UI
-                    updateAppearance(
-                        appearance.copy(
-                            colorPalette = targetPalette,
-                            typography = appearance.typography.withColor(targetPalette.text)
-                        ),
-                        animateTheme
-                    )
-                    return
-                }
-
-                val colorPaletteMode =
-                    preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
-                paletteJob.value = coroutineScope.launch(NzikDispatchers.DATA) {
-                    try {
-                        val bitmap: Bitmap? = ImageCacheFactory.loadBitmap(url, allowHardware = false)
-
-                        
-                        val isPicthBlack = colorPaletteMode == ColorPaletteMode.PitchBlack
-                        val isDark =
-                            colorPaletteMode == ColorPaletteMode.Dark || isPicthBlack || (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
-
-                        if (bitmap != null) {
-                            val paletteResult = m3eDynamicColorPaletteOf(bitmap, isDark)
-                            if (paletteResult != null) {
-                                val finalPalette = if (!isPicthBlack) paletteResult else paletteResult.copy(
-                                    isDark = true,
-                                    background0 = Color.Black,
-                                    background1 = Color.Black,
-                                    background2 = Color.Black,
-                                    background3 = Color.Black,
-                                    background4 = Color.Black,
-                                    text = Color.White
-                                )
-                                val oldPalette = appearance.colorPalette
-                                if (oldPalette == finalPalette) {
-                                    savePaletteForWidget(finalPalette)
-                                    return@launch
-                                }
-                                withContext(NzikDispatchers.UI) {
-                                    setSystemBarAppearance(finalPalette.isDark)
-                                    Timber.tag("GlassTintFlow").d("Theme cover palette ready: accent=%08x", finalPalette.accent.toArgb())
-                                    updateAppearance(
-                                        appearance.copy(
-                                            colorPalette = finalPalette,
-                                            typography = appearance.typography.withColor(finalPalette.text)
-                                        ),
-                                        animateTheme
-                                    )
-                                    savePaletteForWidget(finalPalette)
-                                }
-                            } else {
-                                val defaultColorPalette = dynamicColorPaletteOf(Color(0.54509807f, 0.36078432f, 0.9647059f), isDark)
-                                val targetPalette = if (!isPicthBlack) defaultColorPalette else defaultColorPalette.copy(
-                                    background0 = Color.Black, background1 = Color.Black,
-                                    background2 = Color.Black, background3 = Color.Black, background4 = Color.Black,
-                                )
-                                withContext(NzikDispatchers.UI) {
-                                    setSystemBarAppearance(defaultColorPalette.isDark)
-                                    updateAppearance(
-                                        appearance.copy(
-                                            colorPalette = targetPalette,
-                                            typography = appearance.typography.withColor(targetPalette.text)
-                                        ),
-                                        animateTheme
-                                    )
-                                }
-                            }
-                        } else {
-                            val violetAccent = Color(0.54509807f, 0.36078432f, 0.9647059f)
-                            val defaultColorPalette = dynamicColorPaletteOf(violetAccent, isDark)
-                            val targetPalette = if (!isPicthBlack) defaultColorPalette else defaultColorPalette.copy(
-                                background0 = Color.Black,
-                                background1 = Color.Black,
-                                background2 = Color.Black,
-                                background3 = Color.Black,
-                                background4 = Color.Black,
-                            )
-                            withContext(NzikDispatchers.UI) {
-                                setSystemBarAppearance(defaultColorPalette.isDark)
-                                updateAppearance(
-                                    appearance.copy(
-                                        colorPalette = targetPalette,
-                                        typography = appearance.typography.withColor(targetPalette.text)
-                                    ),
-                                    animateTheme
-                                )
-                            }
+            val dynamicAppearanceOwner = remember(preferences, coroutineScope) {
+                DynamicAppearanceOwner(
+                    preferences = preferences,
+                    scope = coroutineScope,
+                    systemIsDark = { isSystemInDarkTheme },
+                    loadPalette = { _, _ -> null },
+                    loadArtwork = { url ->
+                        app.n_zik.android.components.player.SharedArtworkColors.load(this@MainActivity, url)
+                    },
+                    appearance = { appearance },
+                    publish = { next, animate -> updateAppearance(next, animate) },
+                    systemBars = ::setSystemBarAppearance,
+                    saveWidget = { palette ->
+                        savePaletteForWidget(palette)
+                        val service = binder
+                        if (service != null) service.refreshArtworkWidgets()
+                        else coroutineScope.launch(NzikDispatchers.DATA) {
+                            app.n_zik.android.widget.NZikWidgetManager.updateIdleWidgets(this@MainActivity)
                         }
-                    } catch (e: Exception) {
-                        Timber.tag("MainActivity").e(e, "Error loading appearance")
-                    }
+                    },
+                )
+            }
+            DisposableEffect(dynamicAppearanceOwner) {
+                dynamicAppearanceOwner.start()
+                onDispose { dynamicAppearanceOwner.close() }
+            }
+
+            fun setDynamicPalette(url: String?, animateTheme: Boolean = false) {
+                dynamicAppearanceOwner.refresh(url, animateTheme)
+            }
+
+            val artworkColorGeneration by app.n_zik.android.components.player.SharedArtworkColors.generation.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
+            LaunchedEffect(artworkColorGeneration) {
+                if (artworkColorGeneration > 0) binder?.player?.let { player ->
+                    setDynamicPalette(player.currentMediaItem?.mediaMetadata?.artworkUri?.toString(), true)
                 }
             }
 
@@ -1369,7 +1276,7 @@ class MainActivity :
                 if (colorPaletteName == ColorPaletteName.Dynamic) {
                     binder?.player?.let { player ->
                         setDynamicPalette(
-                            player.currentMediaItem?.mediaMetadata?.artworkUri?.thumbnail(1000)?.toString(),
+                            player.currentMediaItem?.mediaMetadata?.artworkUri?.toString(),
                             animateTheme = true
                         )
                     }
@@ -1449,6 +1356,14 @@ class MainActivity :
                                 Innertube.proxy = proxy
                             }
 
+                            dynamicThemeRespectBrightnessKey -> {
+                                if (binder == null && preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic) != ColorPaletteName.Dynamic) {
+                                    coroutineScope.launch(NzikDispatchers.DATA) {
+                                        app.n_zik.android.widget.NZikWidgetManager.updateIdleWidgets(this@MainActivity)
+                                    }
+                                }
+                            }
+
                             colorPaletteNameKey, colorPaletteModeKey, customColorKey,
                             customThemeLight_Background0Key,
                             customThemeLight_Background1Key,
@@ -1496,12 +1411,10 @@ class MainActivity :
 
                                 if (colorPaletteName == ColorPaletteName.Dynamic) {
                                     // Always call setDynamicPalette when switching to the dynamic theme
-                                    val currentArtworkUri = binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri?.thumbnail(1000)?.toString()
+                                    val currentArtworkUri = binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri?.toString()
                                     setDynamicPalette(currentArtworkUri, animateTheme = true)
                                 } else {
-                                    //bitmapListenerJob?.cancel()
-                                    paletteJob.value?.cancel()
-                                    //binder?.setBitmapListener(null)
+                                    dynamicAppearanceOwner.cancel()
 
                                     if (colorPaletteName == ColorPaletteName.MaterialYou) {
                                         colorPalette = dynamicColorPaletteOf(
@@ -1597,7 +1510,7 @@ class MainActivity :
                     if (colorPaletteName == ColorPaletteName.Dynamic) {
                         // A disconnected service has unknown artwork, not an empty queue.
                         binder?.player?.let { player ->
-                            setDynamicPalette(player.currentMediaItem?.mediaMetadata?.artworkUri?.thumbnail(1000)?.toString())
+                            setDynamicPalette(player.currentMediaItem?.mediaMetadata?.artworkUri?.toString())
                         }
                     }
 
@@ -2719,7 +2632,7 @@ class MainActivity :
                     val player = currentBinder.player
 
                     val paletteArtworkListener = DynamicPaletteArtworkListener(player) { artworkUri ->
-                        setDynamicPalette(artworkUri?.thumbnail(1000)?.toString())
+                        setDynamicPalette(artworkUri?.toString())
                     }
                     player.addListener(paletteArtworkListener)
                     paletteArtworkListener.publishCurrentArtwork()

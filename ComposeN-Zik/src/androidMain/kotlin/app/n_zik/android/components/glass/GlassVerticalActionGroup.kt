@@ -86,7 +86,7 @@ fun GlassVerticalActionGroup(
                 }
             },
             horizontalAlignment = Alignment.CenterHorizontally,
-            content = content,
+            content = { val column = this; GlassArtworkContent(settings, settings.usesGlassMaterial(area)) { content(column) } },
         )
     }
 }

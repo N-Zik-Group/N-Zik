@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">Ne pas enregistrer de nouvelles recherches ainsi que l’historique</string>
     <string name="clear_search_history">Effacer l’historique de recherche</string>
     <string name="history_is_empty">L’historique est vide</string>
-    <string name="service_lifetime">Durée de vie du service</string>
     <string name="battery_optimizations_applied">Si des optimisations de la batterie sont appliquées, la notification de lecture peut soudainement disparaître en cas de pause.</string>
     <string name="is_android12">Depuis Android 12, la désactivation des optimisations de la batterie est nécessaire pour que l’option \"Service protégé\" prenne effet.</string>
     <string name="ignore_battery_optimizations">Ignorer les optimisations de la batterie</string>
@@ -193,8 +192,6 @@
     <string name="languages">Langues</string>
     <string name="app_language">Langues de l\'application</string>
     <string name="in_alphabetical_order">Dans l\'ordre alphabétique :</string>
-    <string name="contributors">Contributeurs</string>
-    <string name="troubleshooting">Dépannage</string>
     <string name="english">Anglais (English)</string>
     <string name="italian">Italien (Italiano)</string>
     <string name="czech">Tchèque (Čeština)</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">Voulez-vous vraiment tout télécharger ?</string>
     <string name="import_playlist">Importer une playlist</string>
     <string name="lang_ukrainian">Ukrainien (українська)</string>
-    <string name="proxy">Proxy</string>
     <string name="enable_proxy">Activer le proxy</string>
     <string name="proxy_mode">Mode du proxy</string>
     <string name="proxy_host">Hôte du proxy</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">Ce dossier existe déjà.</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">Êtes-vous sûr de vouloir supprimer ce dossier de la liste noire ?</string>
     <string name="player_appearance">Apparence du Lecteur</string>
-    <string name="player_action_bar">Barre d\'action du lecteur</string>
     <string name="player_action_bar_buttons">Visibilité des boutons</string>
     <string name="player_action_bar_buttons_description">Configurer les boutons qui s\'affichent dans la barre d\'actions du lecteur</string>
     <string name="quick_picks_content">Rubriques « Sélection Rapide »</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">Divers</string>
     <string name="swipe_to_action">Action associée au balayage</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">Activer le menu d\'action en faisant glisser le titre vers la gauche ou la droite</string>
-    <string name="smart_recommendations">Recommandations Intelligentes</string>
     <string name="player_collapsed_disable_swiping_down">Désactiver le balayage vers le bas</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Éviter de fermer le lecteur et de nettoyer la file en glissant vers le bas pendant qu\'il est minimisé</string>
     <string name="sort_date_liked">Date de mise en favoris</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Désactiver les journaux de débogage</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">Si activé, créez un fichier journal pour mettre en surbrillance les erreurs</string>
     <string name="audio_waveform">Forme d\'onde audio</string>
-    <string name="title_backup_and_restore">Sauvegarde et Restauration</string>
     <string name="message_excluded_s_songs">Titres %s exclus</string>
     <string name="show_thumbnail">Afficher la miniature</string>
     <string name="show_lyrics_thumbnail">Afficher la miniature pour les paroles</string>
@@ -868,7 +861,6 @@ Volume BAS : titre précédent</string>
     <string name="loudness_boost_level">Niveau d\'amplification de la sonorité</string>
     <string name="loudness_boost_level_info">Niveau de bruit supplémentaire, à utiliser sans exagérer, peut endommager l\'appareil</string>
     <string name="settings_target_gain_loudness_info">Gain cible pour la normalisation du volume sonore</string>
-    <string name="full_screen_lyrics_components">Composants des paroles en plein écran</string>
     <string name="titleartist">Titre et Artistes</string>
     <string name="miniqueue">Petite file d\'attente</string>
     <string name="controls">Commandes</string>
@@ -913,7 +905,6 @@ Volume BAS : titre précédent</string>
     <string name="resume_automatically_when_app_opens">Reprendre la lecture automatiquement lorsque l\'application est ouverte</string>
     <string name="notificationPlayerFirstIcon">Premier bouton</string>
     <string name="notificationPlayerSecondIcon">Deuxième bouton</string>
-    <string name="notification_player">Lecteur de notification</string>
     <string name="repeat">Répéter</string>
     <string name="views">Vues</string>
     <string name="subscribers">Abonnés</string>
@@ -1212,8 +1203,6 @@ Volume BAS : titre précédent</string>
     <string name="navigation">Navigation</string>
     <string name="player_controls">Commandes du lecteur</string>
     <string name="player_controls_colors">Le lecteur choisit les couleurs</string>
-    <string name="theme_color">Couleur du thème</string>
-    <string name="cover_color">Couleur de couverture</string>
     <string name="monochrome">Monochrome</string>
     <string name="queue_management">Gestion de la file d\'attente</string>
     <string name="app_behavior">Comportement de l\'application</string>
@@ -2637,8 +2626,6 @@ Volume BAS : titre précédent</string>
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">Personnalisé</string>
     <string name="glass_performance">Fastest</string>
@@ -2786,4 +2773,14 @@ Volume BAS : titre précédent</string>
     <string name="playlist_refresh_on_open">Actualiser à l\'ouverture</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Activer l\'actualisation à l\'ouverture</string>
+    <string name="settings_section_troubleshooting_title">Dépannage</string>
+    <string name="settings_section_proxy_title">Proxy</string>
+    <string name="settings_section_contributors_title">Contributeurs</string>
+    <string name="settings_section_player_action_bar_title">Barre d\'action du lecteur</string>
+    <string name="settings_section_smart_recommendations_title">Recommandations Intelligentes</string>
+    <string name="settings_section_service_lifetime_title">Durée de vie du service</string>
+    <string name="settings_section_notification_player_title">Lecteur de notification</string>
+    <string name="settings_section_backup_and_restore_title">Sauvegarde et Restauration</string>
+    <string name="settings_section_fullscreen_lyrics_title">Composants des paroles en plein écran</string>
+    <string name="artwork">Couleur de couverture</string>
 </resources>

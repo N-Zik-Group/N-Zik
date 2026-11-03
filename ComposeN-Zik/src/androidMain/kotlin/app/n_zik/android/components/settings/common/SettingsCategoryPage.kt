@@ -66,7 +66,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 
 fun settingsCardTargetId(context: android.content.Context, tab: Int, titleRes: Int): String =
-    "card.$tab.${context.resources.getResourceEntryName(titleRes)}"
+    "card.$tab.${settingsSectionNavigationName(titleRes) ?: context.resources.getResourceEntryName(titleRes)}"
 
 /** Detailed search uses the settings host graph; source content retains app-level navigation. */
 @OptIn(ExperimentalAnimationApi::class)

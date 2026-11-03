@@ -158,4 +158,118 @@ class AllSettingsDefaultsTest {
         assertEquals("cookie", secure.getString("ytCookie", null))
         assertEquals("token", secure.getString("discordPersonalAccessToken", null))
     }
+
+    @Test fun `global reset covers every concrete reverse audited control and scoped playlist pattern`() {
+        val resetKeys = listOf(
+            "AristItemSizeEnum",
+            "AlbumItemSizeEnum",
+            "LibraryItemSizeEnum",
+            "HomeSongsTopPlaylistPeriod",
+            "HomeSongsSortBy",
+            "HomeSongsFavoritesSortBy",
+            "HomeSongsOfflineSortBy",
+            "HomeSongsDownloadedSortBy",
+            "HomeSongsTopSortBy",
+            "HomeSongsDislikedSortBy",
+            "HomeOnDeviceSongsSortBy",
+            "HomeArtistsFavoritesSortBy",
+            "HomeArtistsLibrarySortBy",
+            "HomeArtistsDislikedSortBy",
+            "HomeAlbumsFavoritesSortBy",
+            "HomeAlbumsLibrarySortBy",
+            "HomeAlbumsDislikedSortBy",
+            "HomeLibraryPlaylistSortBy",
+            "HomeLibraryYTPlaylistSortBy",
+            "HomeLibraryPinnedPlaylistSortBy",
+            "HomeLibraryMonthlyPlaylistSortBy",
+            "HistorySortBy",
+            "HomeSongsSortOrder",
+            "HomeSongsFavoritesSortOrder",
+            "HomeSongsOfflineSortOrder",
+            "HomeSongsDownloadedSortOrder",
+            "HomeSongsTopSortOrder",
+            "HomeSongsDislikedSortOrder",
+            "HomeOnDeviceSongsSortOrder",
+            "HomeArtistsFavoritesSortOrder",
+            "HomeArtistsLibrarySortOrder",
+            "HomeArtistsDislikedSortOrder",
+            "HomeAlbumsFavoritesSortOrder",
+            "HomeAlbumsLibrarySortOrder",
+            "HomeAlbumsDislikedSortOrder",
+            "HomeLibraryPlaylistSortOrder",
+            "HomeLibraryYTPlaylistSortOrder",
+            "HomeLibraryPinnedPlaylistSortOrder",
+            "HomeLibraryMonthlyPlaylistSortOrder",
+            "HistorySortOrder",
+            "searchResultGridStates",
+            "currentVisualizer",
+            "otherLanguageAppAlbum",
+            "otherLanguageAppArtist",
+            "otherLanguageAppPlaylist",
+            "selectedCountryCode",
+            "filterContentType",
+            "bridgeAutoStopNoClientMinutes",
+            "bridgeAutoStopInactivityMinutes",
+            "searchHistoryEnabled_history",
+            "searchHistoryEnabled_local",
+            "searchHistoryEnabled_online",
+            "searchHistoryEnabled_settings_global",
+            "searchHistoryEnabled_settings_general",
+            "searchHistoryEnabled_settings_ui",
+            "searchHistoryEnabled_settings_appearance",
+            "searchHistoryEnabled_settings_ai",
+            "searchHistoryEnabled_settings_data",
+            "searchHistoryEnabled_settings_accounts",
+            "searchHistoryEnabled_settings_network",
+            "searchHistoryEnabled_settings_other",
+            "searchHistoryEnabled_settings_category_about",
+            "searchHistoryEnabled_settings_category_playback",
+            "searchHistoryEnabled_settings_category_audio",
+            "searchHistoryEnabled_settings_category_behavior",
+            "searchHistoryEnabled_settings_category_interface",
+            "searchHistoryEnabled_settings_category_player",
+            "searchHistoryEnabled_settings_category_privacy",
+            "searchHistoryEnabled_settings_category_data",
+            "searchHistoryEnabled_settings_category_downloads",
+            "searchHistoryEnabled_settings_category_network",
+            "searchHistoryEnabled_settings_category_youtube",
+            "searchHistoryEnabled_settings_category_profiles",
+            "searchHistoryEnabled_settings_category_services",
+            "searchHistoryEnabled_settings_category_ai",
+            "searchHistoryEnabled_settings_category_rewind",
+            "searchHistoryEnabled_settings_category_maintenance",
+            "searchHistoryEnabled_settings_category_system",
+            "floatActionIconOffsetX",
+            "floatActionIconOffsetY",
+            "multiFloatActionIconOffsetX",
+            "multiFloatActionIconOffsetY",
+        )
+        val editor = context.preferences.edit()
+        resetKeys.filterNot { it.startsWith("bridgeAutoStop") }.forEach { editor.putString(it, "changed") }
+        editor.putInt("bridgeAutoStopNoClientMinutes", 60).putInt("bridgeAutoStopInactivityMinutes", 30)
+        listOf("PlaylistSongsSortBy_17", "PlaylistSongsSortOrder_17", "playlist_insertion_position_17")
+            .forEach { editor.putString(it, "changed") }
+        editor.putBoolean("playlist_refresh_on_open_17", true)
+            .putString("searchHistory_settings_general", "[\"saved query\"]")
+            .putString("playlist_refresh_on_open_17_notes", "keep notes")
+            .putString("HomeArtistsSortBy", "retired preference").commit()
+        repeat(2) {
+            applyAllSettingsDefaults(context)
+            resetKeys.filterNot { it.startsWith("bridgeAutoStop") }.forEach {
+                assertFalse(it, context.preferences.contains(it))
+            }
+            assertEquals(15, context.preferences.getInt("bridgeAutoStopNoClientMinutes", -1))
+            assertEquals(0, context.preferences.getInt("bridgeAutoStopInactivityMinutes", -1))
+            listOf("PlaylistSongsSortBy_17", "PlaylistSongsSortOrder_17", "playlist_insertion_position_17", "playlist_refresh_on_open_17")
+                .forEach { assertFalse(it, context.preferences.contains(it)) }
+            assertEquals("[\"saved query\"]", context.preferences.getString("searchHistory_settings_general", null))
+            assertEquals("keep notes", context.preferences.getString("playlist_refresh_on_open_17_notes", null))
+            assertEquals("retired preference", context.preferences.getString("HomeArtistsSortBy", null))
+            assertEquals("saved queue", context.preferences.getString("queue", null))
+            assertEquals("saved playlists", context.preferences.getString("playlist-data", null))
+            assertEquals("cookie", secure.getString("ytCookie", null))
+            assertEquals("token", secure.getString("discordPersonalAccessToken", null))
+            assertEquals("session", secure.getString("lastfm_session_key", null))
+        }
+    }
 }

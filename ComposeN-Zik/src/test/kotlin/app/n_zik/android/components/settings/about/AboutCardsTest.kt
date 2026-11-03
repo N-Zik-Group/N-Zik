@@ -49,13 +49,13 @@ class AboutCardsTest {
         val registry = SettingsTargetRegistry()
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance, LocalUriHandler provides handler, LocalSettingsTargets provides registry) {
-                AboutSettingsContent(selectedCards = setOf(R.string.troubleshooting))
+                AboutSettingsContent(selectedCards = setOf(R.string.settings_section_troubleshooting_title))
             }
         }
-        AboutSettingsEntryTargets.filter { it.cardTitleRes == R.string.troubleshooting }.forEach { entry ->
+        AboutSettingsEntryTargets.filter { it.cardTitleRes == R.string.settings_section_troubleshooting_title }.forEach { entry ->
             composeRule.onNodeWithTag("settings.target.${entry.id}", useUnmergedTree = true).assertExists()
         }
-        composeRule.onNodeWithText(context.getString(R.string.contributors)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.settings_section_contributors_title)).assertDoesNotExist()
         assertEquals("Rendering a search destination must not open a browser", emptyList<String>(), opened)
         composeRule.onNodeWithText(context.getString(R.string.view_the_source_code)).performClick()
         composeRule.onNodeWithText(context.getString(R.string.report_an_issue)).performClick()

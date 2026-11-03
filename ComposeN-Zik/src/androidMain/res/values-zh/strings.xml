@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">不顯示和保存搜尋紀錄</string>
     <string name="clear_search_history">移除搜尋紀錄</string>
     <string name="history_is_empty">搜尋紀錄空空如也</string>
-    <string name="service_lifetime">系統播放</string>
     <string name="battery_optimizations_applied">如果啟用了電池優化, 暫停音樂時的撥放通知可能會消失.</string>
     <string name="is_android12">從安卓12開始, \"強制背景播放\"選項需要禁用電池優化才能運作.</string>
     <string name="ignore_battery_optimizations">忽略電池優化</string>
@@ -193,8 +192,6 @@
     <string name="languages">語言</string>
     <string name="app_language">App 語言</string>
     <string name="in_alphabetical_order">依照字母排序:</string>
-    <string name="contributors">貢獻者</string>
-    <string name="troubleshooting">故障排除</string>
     <string name="english">英語 (English)</string>
     <string name="italian">義大利語 (Italiano)</string>
     <string name="czech">捷克語 (Čeština)</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">你真的要全部下載嗎?</string>
     <string name="import_playlist">匯入播放清單</string>
     <string name="lang_ukrainian">烏克蘭語 (українська)</string>
-    <string name="proxy">PROXY</string>
     <string name="enable_proxy">啟用 Proxy</string>
     <string name="proxy_mode">代理模式</string>
     <string name="proxy_host">代理主機</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">此資料夾已經存在.</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">你確定要從黑名單中移除此資料夾嗎?</string>
     <string name="player_appearance">播放器外觀</string>
-    <string name="player_action_bar">播放器控制列</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
     <string name="quick_picks_content">Quick Picks sections</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">其他設定</string>
     <string name="swipe_to_action">滑動操作</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">透過左､右滑切換歌曲</string>
-    <string name="smart_recommendations">智慧推薦</string>
     <string name="player_collapsed_disable_swiping_down">關閉下滑操作</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">避免在最小化時下滑關閉播放器或清除佇列</string>
     <string name="sort_date_liked">按讚日期</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">啟用時會建立記錄檔突顯錯誤</string>
     <string name="audio_waveform">Audio waveform</string>
-    <string name="title_backup_and_restore">備份與還原</string>
     <string name="message_excluded_s_songs">排除 %s 歌曲</string>
     <string name="show_thumbnail">顯示縮圖</string>
     <string name="show_lyrics_thumbnail">在歌詞中顯示縮圖</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">亮度提升水平</string>
     <string name="loudness_boost_level_info">额外的亮度等级，可以在不超负荷的情况下使用，可能损坏设备</string>
     <string name="settings_target_gain_loudness_info">标准化响度的目标增益</string>
-    <string name="full_screen_lyrics_components">Full Screen Lyrics Components</string>
     <string name="titleartist">标题和艺人</string>
     <string name="miniqueue">Mini Queue</string>
     <string name="controls">控制</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">Resume Playback automatically when the app is opened</string>
     <string name="notificationPlayerFirstIcon">第一個按鈕</string>
     <string name="notificationPlayerSecondIcon">第二個按鈕</string>
-    <string name="notification_player">NOTIFICATION PLAYER</string>
     <string name="repeat">重複</string>
     <string name="views">视图</string>
     <string name="subscribers">订阅者</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigation</string>
     <string name="player_controls">玩家控制</string>
     <string name="player_controls_colors">玩家控制颜色</string>
-    <string name="theme_color">主题颜色</string>
-    <string name="cover_color">封面颜色</string>
     <string name="monochrome">单色</string>
     <string name="queue_management">队列管理</string>
     <string name="app_behavior">应用行为</string>
@@ -2635,8 +2624,6 @@
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">自定義</string>
     <string name="glass_performance">Fastest</string>
@@ -2784,4 +2771,14 @@
     <string name="playlist_refresh_on_open">Refresh on opening</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="settings_section_troubleshooting_title">故障排除</string>
+    <string name="settings_section_proxy_title">Proxy</string>
+    <string name="settings_section_contributors_title">貢獻者</string>
+    <string name="settings_section_player_action_bar_title">播放器控制列</string>
+    <string name="settings_section_smart_recommendations_title">智慧推薦</string>
+    <string name="settings_section_service_lifetime_title">系統播放</string>
+    <string name="settings_section_notification_player_title">Notification player</string>
+    <string name="settings_section_backup_and_restore_title">備份與還原</string>
+    <string name="settings_section_fullscreen_lyrics_title">Full Screen Lyrics Components</string>
+    <string name="artwork">封面颜色</string>
 </resources>

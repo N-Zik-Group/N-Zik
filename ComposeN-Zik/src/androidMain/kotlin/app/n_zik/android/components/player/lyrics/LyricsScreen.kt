@@ -76,8 +76,7 @@ import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.menu.lyrics.LyricsSettingsMenu
 import app.n_zik.android.components.dialog.player.ShowOffsetDialog
-import app.n_zik.android.components.player.extractM3ECoverColors
-import app.n_zik.android.components.player.m3eCoverForegroundArgb
+import app.n_zik.android.components.player.rememberArtworkDisplayColors
 import dev.rebelonion.translator.Translator
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.shape.CircleShape
@@ -85,11 +84,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.animation.AnimatedVisibility
-import app.it.fast4x.rimusic.utils.getBitmapFromUrl
 import androidx.compose.animation.scaleIn
 import dev.rebelonion.translator.Language
 import java.util.Locale
-import android.graphics.Bitmap
 
 
 @UnstableApi
@@ -239,34 +236,9 @@ fun LyricsScreen(
         }
 
         var lyricsCustomColor by rememberPreference(lyricsCustomColorKey, android.graphics.Color.WHITE)
-        var bitmapCover by remember { mutableStateOf<Bitmap?>(null) }
-        var dominantColor by remember { mutableStateOf(android.graphics.Color.DKGRAY) }
-
-        LaunchedEffect(mediaMetadata.artworkUri) {
-            withContext(NzikDispatchers.DATA) {
-                bitmapCover = try {
-                    getBitmapFromUrl(context, mediaMetadata.artworkUri.toString())
-                } catch (_: Exception) {
-                    // Custom cover (content:// URI) or network failure – fall back to no bitmap
-                    null
-                }
-            }
-        }
-        LaunchedEffect(bitmapCover, lightTheme) {
-            val coverColors = withContext(NzikDispatchers.MEDIA) {
-                try {
-                    bitmapCover?.let { extractM3ECoverColors(it, !lightTheme) }
-                } catch (_: Exception) {
-                    null
-                }
-            }
-            // OQ2=B (spec `spec-fix-palette-extractor-riplay-reference`): the "cover" color renders
-            // the dominant swatch, the same hue the app's dynamic accent is built from
-//
-            // (RiPlay reference).
-            dominantColor = coverColors?.let { m3eCoverForegroundArgb(it.dominant, lightTheme) }
-                ?: android.graphics.Color.DKGRAY
-        }
+        val coverDisplay = rememberArtworkDisplayColors(mediaMetadata.artworkUri?.toString(), !lightTheme)
+        val dominantColor = if (coverDisplay?.colors != null || coverDisplay?.forceDark == true)
+            coverDisplay.foreground?.toArgb() ?: android.graphics.Color.DKGRAY else android.graphics.Color.DKGRAY
 
         LyricsFetcher(
             mediaId = mediaId,
@@ -367,6 +339,7 @@ fun LyricsScreen(
                                 isLandscape = isLandscape,
                                 trailingContent = trailingContent,
                                 showBackgroundLyrics = showBackgroundLyrics,
+                                forcedCoverBackground = coverDisplay?.takeIf { it.forceDark }?.background,
                                 lyricsBackground = lyricsBackground,
                                 showSecondLine = showSecondLine,
                                 translateEnabled = translateEnabled,
@@ -406,6 +379,7 @@ fun LyricsScreen(
                                 isLandscape = isLandscape,
                                 trailingContent = trailingContent,
                                 showBackgroundLyrics = showBackgroundLyrics,
+                                forcedCoverBackground = coverDisplay?.takeIf { it.forceDark }?.background,
                                 lyricsBackground = lyricsBackground,
                                 showSecondLine = showSecondLine,
                                 translateEnabled = translateEnabled,

@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">Neukládat nové vyhledané dotazy ani zobrazovat historii</string>
     <string name="clear_search_history">Vymazat historii vyhledávání</string>
     <string name="history_is_empty">Historie je prázdná</string>
-    <string name="service_lifetime">Životnost služby</string>
     <string name="battery_optimizations_applied">Pokud je použita optimalizace baterie, může oznámení o přehrávání při pozastavení náhle zmizet.</string>
     <string name="is_android12">Od Androidu 12 je k tomu, aby se možnost \"Nezničitelná služba\" projevila, nutné vypnout optimalizace baterie.</string>
     <string name="ignore_battery_optimizations">Ignorovat optimalizace baterie</string>
@@ -193,8 +192,6 @@
     <string name="languages">Jazyky</string>
     <string name="app_language">Jazyk aplikace</string>
     <string name="in_alphabetical_order">V abecedním pořadí:</string>
-    <string name="contributors">Přispěvatelé</string>
-    <string name="troubleshooting">Řešení problémů</string>
     <string name="english">Angličtina (English)</string>
     <string name="italian">Italština (Italiano)</string>
     <string name="czech">Čeština</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">Opravdu chcete stahovat vše?</string>
     <string name="import_playlist">Importovat playlist</string>
     <string name="lang_ukrainian">Ukrajinština (Украї́нська)</string>
-    <string name="proxy">Proxy server</string>
     <string name="enable_proxy">Povolit Proxy</string>
     <string name="proxy_mode">Režim proxy</string>
     <string name="proxy_host">Hostitel proxy</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">Tato složka již existuje.</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">Opravdu chcete tuto složku odstranit z blacklistu?</string>
     <string name="player_appearance">Vzhled přehrávače</string>
-    <string name="player_action_bar">Panel akcí hráče</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
     <string name="quick_picks_content">Quick Picks sections</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">Různé</string>
     <string name="swipe_to_action">Akce přejetím</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">Přejetím prstem po skladbě doleva nebo doprava aktivujete nabídku akcí</string>
-    <string name="smart_recommendations">Chytré doporučení</string>
     <string name="player_collapsed_disable_swiping_down">Zakázat přejetí dolů</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Vyhněte se zavírání přehrávače a vyčištění fronty přejetím prstem dolů, když je minimalizovaný</string>
     <string name="sort_date_liked">Datum oblíbení</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">Vytvořit log soubor pro zvýraznění chyb</string>
     <string name="audio_waveform">Audio waveform</string>
-    <string name="title_backup_and_restore">Zálohování a obnovení</string>
     <string name="message_excluded_s_songs">Vyloučeno %s skladeb</string>
     <string name="show_thumbnail">Zobrazit miniaturu</string>
     <string name="show_lyrics_thumbnail">Zobrazit miniaturu pro písňový text</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">Úroveň zvýšení hlasitosti</string>
     <string name="loudness_boost_level_info">Dodatečná úroveň hlasitosti, která se použije, aniž by byla překročena, může poškodit zařízení</string>
     <string name="settings_target_gain_loudness_info">Cílové zesílení pro normalizaci hlasitosti</string>
-    <string name="full_screen_lyrics_components">Komponenty písňových textů na celou obrazovku</string>
     <string name="titleartist">Název a interpreti</string>
     <string name="miniqueue">Mini fronta</string>
     <string name="controls">Ovládací prvky</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">Automatické obnovení přehrávání po otevření aplikace</string>
     <string name="notificationPlayerFirstIcon">První tlačítko</string>
     <string name="notificationPlayerSecondIcon">Druhé tlačítko</string>
-    <string name="notification_player">Přehrávač oznámení</string>
     <string name="repeat">Opakovat</string>
     <string name="views">Zobrazení</string>
     <string name="subscribers">Odběratelé</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigation</string>
     <string name="player_controls">Ovládání přehrávače</string>
     <string name="player_controls_colors">Barvy ovládání přehrávače</string>
-    <string name="theme_color">Barva motivu</string>
-    <string name="cover_color">Barva obalu</string>
     <string name="monochrome">Monochromní</string>
     <string name="queue_management">Správa fronty</string>
     <string name="app_behavior">Chování aplikace</string>
@@ -2638,8 +2627,6 @@
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">Vlastní</string>
     <string name="glass_performance">Fastest</string>
@@ -2787,4 +2774,14 @@
     <string name="playlist_refresh_on_open">Refresh on opening</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="settings_section_troubleshooting_title">Řešení problémů</string>
+    <string name="settings_section_proxy_title">Proxy server</string>
+    <string name="settings_section_contributors_title">Přispěvatelé</string>
+    <string name="settings_section_player_action_bar_title">Panel akcí hráče</string>
+    <string name="settings_section_smart_recommendations_title">Chytré doporučení</string>
+    <string name="settings_section_service_lifetime_title">Životnost služby</string>
+    <string name="settings_section_notification_player_title">Přehrávač oznámení</string>
+    <string name="settings_section_backup_and_restore_title">Zálohování a obnovení</string>
+    <string name="settings_section_fullscreen_lyrics_title">Komponenty písňových textů na celou obrazovku</string>
+    <string name="artwork">Barva obalu</string>
 </resources>

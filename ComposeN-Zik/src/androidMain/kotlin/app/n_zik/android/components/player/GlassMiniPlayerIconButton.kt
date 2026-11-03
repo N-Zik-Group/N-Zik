@@ -26,6 +26,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.glassArtworkForeground
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LiquidButton
@@ -66,7 +67,7 @@ fun GlassMiniPlayerIconButton(
         Image(
             painter = painterResource(icon),
             contentDescription = null,
-            colorFilter = ColorFilter.tint(color),
+            colorFilter = ColorFilter.tint(glassArtworkForeground(settings, color, settings.usesGlassMaterial(GlassArea.MiniPlayer))),
             modifier = Modifier.size(it).testTag("mini.player.glyph"),
         )
     }
@@ -95,7 +96,7 @@ fun GlassMiniPlayerIconButton(
         Image(
             imageVector = icon,
             contentDescription = null,
-            colorFilter = ColorFilter.tint(color),
+            colorFilter = ColorFilter.tint(glassArtworkForeground(settings, color, settings.usesGlassMaterial(GlassArea.MiniPlayer))),
             modifier = Modifier.size(it).testTag("mini.player.glyph"),
         )
     }

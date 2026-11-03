@@ -126,7 +126,6 @@
     <string name="neither_save_new_searched_query">Non salvare nuove ricerche né mostrare la cronologia</string>
     <string name="clear_search_history">Pulisci cronologia ricerche</string>
     <string name="history_is_empty">La cronologia è vuota</string>
-    <string name="service_lifetime">Durata di servizio</string>
     <string name="battery_optimizations_applied">Se vengono applicate le ottimizzazioni della batteria, la notifica di riproduzione può scomparire improvvisamente quando viene messa in pausa.</string>
     <string name="is_android12">Dal momento che Android 12, è necessario disabilitare l\'ottimizzazione della batteria per l\'opzione \"Servizio invisibile\" per avere effetto.</string>
     <string name="ignore_battery_optimizations">Ignora ottimizzazione batteria</string>
@@ -193,8 +192,6 @@
     <string name="languages">Lingue</string>
     <string name="app_language">Lingua principale</string>
     <string name="in_alphabetical_order">In ordine alfabetico:</string>
-    <string name="contributors">Collaboratori</string>
-    <string name="troubleshooting">Risoluzione Dei Problemi</string>
     <string name="english">Inglese</string>
     <string name="italian">Italiano</string>
     <string name="czech">Ceco</string>
@@ -311,7 +308,6 @@
     <string name="do_you_really_want_to_download_all">Vuoi veramente scaricare tutto?</string>
     <string name="import_playlist">Importa playlist</string>
     <string name="lang_ukrainian">Ucraino (&lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; )</string>
-    <string name="proxy">Proxy</string>
     <string name="enable_proxy">Attiva Proxy</string>
     <string name="proxy_mode">Modalità Proxy</string>
     <string name="proxy_host">Server Proxy</string>
@@ -411,7 +407,6 @@
     <string name="this_folder_already_exists">Questa cartella esiste già</string>
     <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">Sei sicuro di voler rimuovere questa voce dalla scaletta?</string>
     <string name="player_appearance">Aspetto Del Giocatore</string>
-    <string name="player_action_bar">Barra delle azioni del giocatore</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
     <string name="quick_picks_content">Quick Picks sections</string>
@@ -473,7 +468,6 @@
     <string name="tab_miscellaneous">Varie</string>
     <string name="swipe_to_action">Scorri per l\'azione</string>
     <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">Esegue azioni scorrendo a sinistra o a destra su un brano all\'interno di un elenco verticale di canzoni</string>
-    <string name="smart_recommendations">Raccomandazioni intelligenti</string>
     <string name="player_collapsed_disable_swiping_down">Disattiva scorrimento verso il basso</string>
     <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Impedisci lo scorrimento verso il basso quando il player è minimizzato per chiudere il player e svuotare la coda</string>
     <string name="sort_date_liked">Data Preferita</string>
@@ -686,7 +680,6 @@
     <string name="disable_log_debug">Disable debug logs</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">Se abilitato, crea un file di registro per evidenziare gli errori</string>
     <string name="audio_waveform">Audio waveform</string>
-    <string name="title_backup_and_restore">Backup e ripristino</string>
     <string name="message_excluded_s_songs">Esclusi %s brani</string>
     <string name="show_thumbnail">Mostra miniatura</string>
     <string name="show_lyrics_thumbnail">Mostra miniatura per le lyrics</string>
@@ -867,7 +860,6 @@
     <string name="loudness_boost_level">Livello di aumento della Loudness</string>
     <string name="loudness_boost_level_info">Il livello di rumorosità aggiuntivo, da utilizzare senza superarlo, può danneggiare il dispositivo</string>
     <string name="settings_target_gain_loudness_info">Valore di riferimento per la normalizzazione del volume</string>
-    <string name="full_screen_lyrics_components">Componenti dei testi a schermo intero</string>
     <string name="titleartist">Titolo e Artisti</string>
     <string name="miniqueue">Prossima coda del brano</string>
     <string name="controls">Controlli</string>
@@ -912,7 +904,6 @@
     <string name="resume_automatically_when_app_opens">Riprendi automaticamente la riproduzione quando l\'app viene aperta</string>
     <string name="notificationPlayerFirstIcon">Primo tasto</string>
     <string name="notificationPlayerSecondIcon">Secondo tasto</string>
-    <string name="notification_player">Giocatore Di Notifiche</string>
     <string name="repeat">Ripeti</string>
     <string name="views">Viste</string>
     <string name="subscribers">Iscritti</string>
@@ -1211,8 +1202,6 @@
     <string name="navigation">Navigation</string>
     <string name="player_controls">Controlli Giocatore</string>
     <string name="player_controls_colors">Il giocatore controlla i colori</string>
-    <string name="theme_color">Colore tema</string>
-    <string name="cover_color">Colore copertina</string>
     <string name="monochrome">Monocromatico</string>
     <string name="queue_management">Gestione Coda</string>
     <string name="app_behavior">Comportamento App</string>
@@ -2636,8 +2625,6 @@
     <string name="liquid_glass_material">Glass material</string>
     <string name="liquid_glass_color">Custom glass color</string>
     <string name="liquid_glass_frost">Frost strength</string>
-    <string name="liquid_glass_theme_accent">Theme accent</string>
-    <string name="liquid_glass_artwork">Artwork / dynamic</string>
     <string name="liquid_glass_system_accent">System accent</string>
     <string name="liquid_glass_custom">Personalizzata</string>
     <string name="glass_performance">Fastest</string>
@@ -2785,4 +2772,14 @@
     <string name="playlist_refresh_on_open">Refresh on opening</string>
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
+    <string name="settings_section_troubleshooting_title">Risoluzione Dei Problemi</string>
+    <string name="settings_section_proxy_title">Proxy</string>
+    <string name="settings_section_contributors_title">Collaboratori</string>
+    <string name="settings_section_player_action_bar_title">Barra delle azioni del giocatore</string>
+    <string name="settings_section_smart_recommendations_title">Raccomandazioni intelligenti</string>
+    <string name="settings_section_service_lifetime_title">Durata di servizio</string>
+    <string name="settings_section_notification_player_title">Giocatore Di Notifiche</string>
+    <string name="settings_section_backup_and_restore_title">Backup e ripristino</string>
+    <string name="settings_section_fullscreen_lyrics_title">Componenti dei testi a schermo intero</string>
+    <string name="artwork">Colore copertina</string>
 </resources>

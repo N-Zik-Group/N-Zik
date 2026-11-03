@@ -17,6 +17,9 @@ import android.content.Context
 import android.os.Looper
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -39,6 +42,7 @@ import io.mockk.every
 import io.mockk.mockk
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -53,6 +57,7 @@ import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.it.fast4x.rimusic.utils.hideStatusBarKey
+import app.it.fast4x.rimusic.utils.colorPaletteNameKey
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.glass.glassEnabledKey
@@ -61,6 +66,13 @@ import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.R
+import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
+import app.n_zik.android.components.theme.DynamicAppearanceOwner
+import app.it.fast4x.rimusic.ui.styling.dynamicColorPaletteOf
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 
 /** Behavioral wiring for the migrated Interface page, using semantic selectors. */
 @RunWith(RobolectricTestRunner::class)
@@ -97,9 +109,9 @@ class UiSettingsWiringTest {
         RestartAppDialog.isActive = false
     }
 
-    private fun show(focus: String = "") {
+    private fun show(focus: String = "", appearanceProvider: () -> Appearance = { appearance }) {
         composeRule.setContent {
-            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance, LocalSettingsSearchMessage provides { searchMessages += it }) {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearanceProvider(), LocalSettingsSearchMessage provides { searchMessages += it }) {
                 UiSettings(navController = mockk(relaxed = true), focus = focus)
             }
         }
@@ -160,6 +172,52 @@ class UiSettingsWiringTest {
         composeRule.onNode(hasText(context.getString(R.string.default_page)) and !isEditable()).performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithTag("ui.card.interface", useUnmergedTree = true).assertExists()
         composeRule.onNodeWithTag("ui.card.theme", useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test fun `dynamic brightness switch is searchable defaults off and updates live appearance`() {
+        val preferences = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val title = context.getString(R.string.dynamic_theme_respect_brightness)
+        val description = context.getString(R.string.dynamic_theme_respect_brightness_description)
+        val raw = dynamicColorPaletteOf(Color(0xffaaaaaa), false)
+        var liveAppearance by mutableStateOf(appearance.copy(colorPalette = raw))
+        var systemBarsDark = false
+        var loads = 0
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val owner = DynamicAppearanceOwner(
+            preferences, scope, { true }, { _, _ -> loads++; raw },
+            { liveAppearance }, { next, _ -> liveAppearance = next },
+            { systemBarsDark = it }, {}, Dispatchers.Unconfined,
+        )
+        owner.start()
+        owner.refresh("current-cover")
+        try {
+            show(appearanceProvider = { liveAppearance })
+            composeRule.onNode(isEditable()).performTextInput(title)
+            composeRule.waitForIdle()
+            assertFalse(preferences.getBoolean(dynamicThemeRespectBrightnessKey, false))
+            composeRule.onNode(hasText(title) and !isEditable()).performScrollTo().performClick()
+            composeRule.waitForIdle()
+            assertTrue(preferences.getBoolean(dynamicThemeRespectBrightnessKey, false))
+            assertTrue(liveAppearance.colorPalette.isDark)
+            assertEquals(liveAppearance.colorPalette.text, liveAppearance.typography.s.color)
+            assertTrue(systemBarsDark)
+            composeRule.onNode(hasText(title) and !isEditable()).performClick()
+            composeRule.waitForIdle()
+            assertEquals(raw, liveAppearance.colorPalette)
+            assertEquals(raw.text, liveAppearance.typography.s.color)
+            assertFalse(systemBarsDark)
+            assertEquals(1, loads)
+            composeRule.onNode(isEditable()).performTextReplacement(description)
+            composeRule.waitForIdle()
+            composeRule.onNode(hasText(title) and !isEditable()).performScrollTo().assertIsDisplayed()
+
+            composeRule.runOnIdle { preferences.edit().putString(colorPaletteNameKey, "Default").commit() }
+            composeRule.waitForIdle()
+            composeRule.onNode(hasText(title) and !isEditable()).assertDoesNotExist()
+        } finally {
+            owner.close()
+            scope.cancel()
+        }
     }
 
     @Test fun `unknown query shows empty state and clearing restores cards`() {

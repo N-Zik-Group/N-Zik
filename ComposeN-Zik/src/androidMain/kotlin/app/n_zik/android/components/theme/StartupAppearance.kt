@@ -12,6 +12,7 @@ internal fun startupAppearance(
     paletteName: ColorPaletteName,
     paletteMode: ColorPaletteMode,
     systemIsDark: Boolean,
+    respectThemeBrightness: Boolean = DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT,
 ): Appearance {
     if (paletteName != ColorPaletteName.Dynamic) return configured.forPaletteMode(paletteMode)
 
@@ -19,6 +20,7 @@ internal fun startupAppearance(
         paletteMode == ColorPaletteMode.PitchBlack ||
         (paletteMode == ColorPaletteMode.System && systemIsDark)
     val palette = restored.colorPalette.m3eRecapRestoredDynamicPalette(paletteName, themeIsDark)
+        .keepMonochromeColorsDark(respectThemeBrightness)
     return configured.copy(
         colorPalette = palette,
         typography = configured.typography.withColor(palette.text),

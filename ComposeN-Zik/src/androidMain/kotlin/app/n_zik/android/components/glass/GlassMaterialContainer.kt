@@ -68,6 +68,8 @@ fun GlassMaterialContainerScope(
     }
     CompositionLocalProvider(LocalGlassContainerBackdrop provides backdrop,
         LocalGlassMaterialSource provides source) {
-        content(modifier.then(materialModifier))
+        GlassArtworkContent(rememberGlassSettings(), active = material != null || sectionFilmIsMaterial) {
+            content(modifier.then(materialModifier))
+        }
     }
 }

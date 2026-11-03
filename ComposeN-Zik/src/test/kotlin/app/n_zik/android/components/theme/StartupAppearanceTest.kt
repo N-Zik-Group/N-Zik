@@ -46,10 +46,11 @@ class StartupAppearanceTest {
         name: ColorPaletteName,
         mode: ColorPaletteMode = ColorPaletteMode.Dark,
         systemIsDark: Boolean = true,
+        respectThemeBrightness: Boolean = false,
     ): Appearance {
         val saver = TolerantAppearanceStateSaver(
             fallback = { configured },
-            normalizeRestored = { startupAppearance(it, configured, name, mode, systemIsDark) },
+            normalizeRestored = { startupAppearance(it, configured, name, mode, systemIsDark, respectThemeBrightness) },
         )
         val payload = with(saver) { scope.save(mutableStateOf(saved)) }
         return saver.restore(payload).value
@@ -103,6 +104,35 @@ class StartupAppearanceTest {
             val expected = restoredPalette(saved).m3eRecapRestoredDynamicPalette(ColorPaletteName.Dynamic, systemIsDark)
             assertEquals(expected, restored.colorPalette)
             assertEquals(expected.text, restored.typography.s.color)
+        }
+    }
+
+    @Test
+    fun `restored monochrome colors are dark in every selected mode and system tone`() {
+        for (mode in ColorPaletteMode.entries) {
+            for (systemIsDark in listOf(true, false)) {
+                for (coverIsDark in listOf(true, false)) {
+                    val saved = original.copy(colorPalette = dynamicColorPaletteOf(Color.Gray, coverIsDark))
+                    val restored = roundTrip(saved, ColorPaletteName.Dynamic, mode, systemIsDark, true)
+                    val expected = original.copy(colorPalette = dynamicColorPaletteOf(Color.Gray, true))
+                        .forPaletteMode(mode).colorPalette
+                    assertEquals("$mode with system dark=$systemIsDark, cover dark=$coverIsDark", expected, restored.colorPalette)
+                    assertEquals(expected.text, restored.typography.s.color)
+                    assertEquals(configured.thumbnailShape, restored.thumbnailShape)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `enabled preference preserves colored dynamic and non dynamic restoration`() {
+        val saved = original.copy(colorPalette = dynamicColorPaletteOf(Color.Blue, false))
+        assertEquals(
+            roundTrip(saved, ColorPaletteName.Dynamic),
+            roundTrip(saved, ColorPaletteName.Dynamic, respectThemeBrightness = true),
+        )
+        for (name in ColorPaletteName.entries.filter { it != ColorPaletteName.Dynamic }) {
+            assertEquals(configured, roundTrip(saved, name, respectThemeBrightness = true))
         }
     }
 }

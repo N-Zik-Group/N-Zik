@@ -4,12 +4,14 @@ import android.app.Application
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.FontType
 import app.it.fast4x.rimusic.ui.styling.Appearance
+import app.it.fast4x.rimusic.ui.styling.DefaultLightColorPalette
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
@@ -79,4 +81,48 @@ class GlassTintTest {
             assertEquals(Color(context.getColor(android.R.color.system_accent1_400)), observed)
         }
     }
+    @Test fun `dark artwork policy reaches native glass roles in light theme without changing custom sources`() {
+        val source = mutableStateOf(GlassTintSource.Artwork)
+        val forced = mutableStateOf(true)
+        val effectiveArtwork = Color(0xFF242424)
+        var surface = Color.Unspecified
+        var native = Color.Unspecified
+        var dark = false
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(
+                    colorPalette = DefaultLightColorPalette,
+                    typography = typographyOf(Color.Black, true, false, FontType.Rubik),
+                    thumbnailShape = RoundedCornerShape(12.dp),
+                    uiRoundnessShape = RoundedCornerShape(12.dp),
+                    artistThumbnailShape = RoundedCornerShape(12.dp),
+                ),
+                LocalGlassArtworkColor provides effectiveArtwork,
+                LocalGlassMenuHost provides androidx.compose.runtime.remember { GlassMenuHostState() }.also {
+                    it.artworkColor = effectiveArtwork
+                    it.artworkForceDark = forced.value
+                },
+            ) {
+                val settings = GlassSettings(source = source.value, customColor = Color.Red.toArgb(), tintStrength = .5f)
+                surface = glassSurfaceTint(settings)
+                native = glassNativeSurfaceTint(settings, Color.White.copy(alpha = .7f))
+                dark = glassSurfaceIsDark(settings)
+            }
+        }
+        compose.runOnIdle {
+            org.junit.Assert.assertTrue(dark)
+            org.junit.Assert.assertTrue(surface.red < .5f)
+            org.junit.Assert.assertTrue(native.red < .5f)
+            assertEquals(.7f, native.alpha, .01f)
+            source.value = GlassTintSource.Custom
+        }
+        compose.runOnIdle {
+            org.junit.Assert.assertFalse(dark)
+            forced.value = false
+        }
+        compose.runOnIdle {
+            assertEquals(blendGlassTint(Color.White.copy(alpha = .7f), Color.Red, .5f).copy(alpha = .7f), native)
+        }
+    }
+
 }

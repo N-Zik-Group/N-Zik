@@ -5,6 +5,11 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.Dependencies
+import app.n_zik.android.MainApplication
+import app.n_zik.android.isConnectionMeteredEnabled
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -42,6 +47,20 @@ class NetworkSettingsPreferencesTest {
         "stream_client_web_remix" to true,
         "stream_client_android_vr" to true,
     )
+
+    @Test fun `metered connection getter agrees before and after network reset`() {
+        val application = mockk<MainApplication>()
+        every { application.applicationContext } returns context
+        Dependencies.init(application)
+        val firstRun = isConnectionMeteredEnabled()
+        assertEquals(false, firstRun)
+        context.preferences.edit().putBoolean("isConnectionMeteredEnabled", true).commit()
+        assertTrue(isConnectionMeteredEnabled())
+
+        applyNetworkDefaults(context)
+
+        assertEquals(firstRun, isConnectionMeteredEnabled())
+    }
 
     @Test fun `reset preserves the original profile and legacy client store split`() {
         val editor = context.preferences.edit()

@@ -69,7 +69,6 @@
 <string name="neither_save_new_searched_query">Não salvar novas consultas pesquisadas nem mostrar histórico</string>
 <string name="clear_search_history">Limpar o histórico de pesquisa</string>
 <string name="history_is_empty">O histórico está vazio</string>
-<string name="service_lifetime">Vida útil do serviço</string>
 <string name="battery_optimizations_applied">Se as otimizações da bateria forem aplicadas, a notificação de reprodução pode desaparecer repentinamente quando pausada.</string>
 <string name="is_android12">Desde o Android 12, desativar otimizações de bateria é necessário para a opção \"Serviço Invencível\" ter efeito.</string>
 <string name="ignore_battery_optimizations">Ignorar otimizações de bateria</string>
@@ -130,8 +129,6 @@
 <string name="languages">Idiomas</string>
 <string name="app_language">Idioma do aplicativo</string>
 <string name="in_alphabetical_order">Em ordem alfabética:</string>
-<string name="contributors">CONTRIBUIDORES</string>
-<string name="troubleshooting">TROUBBLESHOOTING</string>
 <string name="english">Inglês (English)</string>
 <string name="italian">Italiano (Italiano)</string>
 <string name="czech">Tcheco (Čeština)</string>
@@ -226,7 +223,6 @@
 <string name="do_you_really_want_to_download_all">Você realmente quer baixar tudo?</string>
 <string name="import_playlist">Importar playlist</string>
 <string name="lang_ukrainian">Ucraniano</string>
-<string name="proxy">PROXY</string>
 <string name="enable_proxy">Habilitar Proxy</string>
 <string name="proxy_mode">Modo Proxy</string>
 <string name="proxy_host">Servidor Proxy</string>
@@ -293,7 +289,6 @@
 <string name="this_folder_already_exists">Essa pasta já existe.</string>
 <string name="are_you_sure_you_want_to_remove_this_folder_from_the_blacklist">Você tem certeza que deseja remover essa pasta da lista de bloqueio?</string>
 <string name="player_appearance">Aparência do Player</string>
-<string name="player_action_bar">BARRA DE AÇÃO DO REPRODUTOR</string>
 <string name="tab_data">Data</string>
 <string name="image_cache_max_size">Tamanho máximo do cache de imagens</string>
 <string name="song_cache_max_size">Tamanho máximo do cache de músicas</string>
@@ -301,7 +296,6 @@
 <string name="tab_miscellaneous">Outros</string>
 <string name="swipe_to_action">Deslizar para ação</string>
 <string name="activate_the_action_menu_by_swiping_the_song_left_or_right">Ativar o menu de ação deslizando a música para esquerda ou direita</string>
-<string name="smart_recommendations">RECOMENDAÇÕES INTELIGENTES</string>
 <string name="player_collapsed_disable_swiping_down">Desativar deslize para baixo</string>
 <string name="avoid_closing_the_player_cleaning_queue_by_swiping_down">Evite fechar o player e limpar a fila deslizando para baixo enquanto ele estiver minimizado</string>
 <string name="sort_date_liked">Data da Curtida</string>
@@ -464,7 +458,6 @@
 <string name="debug">DEBUG</string>
 <string name="enable_log_debug">Ativar log de depuração</string>
 <string name="if_enabled_create_a_log_file_to_highlight_errors">Se habilitado, crie um arquivo de log para destacar erros</string>
-<string name="title_backup_and_restore">BACKUP E RESTAURAR</string>
 <string name="message_excluded_s_songs">%s Músicas excluídas</string>
 <string name="show_thumbnail">Mostrar miniatura</string>
 <string name="show_lyrics_thumbnail">Exibir miniatura para letras</string>
@@ -573,7 +566,6 @@
 <string name="create_new_playlist">Criar uma seleção musical</string>
 <string name="settings_loudness_base_gain">Estrutura de ganho</string>
 <string name="settings_target_gain_loudness_info">Alvo ganho para a normalização do ruído</string>
-<string name="full_screen_lyrics_components">COMPONENTES NAS LETRAS EM TELA CHEIA</string>
 <string name="titleartist">Título e Artistas</string>
 <string name="miniqueue">Mini Fila</string>
 <string name="controls">Controles</string>
@@ -611,7 +603,6 @@
 <string name="resume_automatically_when_app_opens">Retomar a reprodução automaticamente quando o aplicativo for aberto</string>
 <string name="notificationPlayerFirstIcon">Primeiro botão</string>
 <string name="notificationPlayerSecondIcon">Segundo botão</string>
-<string name="notification_player">REPRODUTOR DE NOTIFICAÇÃO</string>
 <string name="repeat">Repetir</string>
 <string name="press_once_again_to_exit">Pressione mais uma vez para sair</string>
 <string name="music_animations_bars">Barras</string>
@@ -761,4 +752,13 @@
     <string name="smart_recommendations_number">Number of recommendations</string>
     <string name="smart_recommendations_adaptive_description">Adaptive: Scales with playlist size (10-120 recommendations)</string>
     <string name="smart_recommendations_adaptive">Adaptive</string>
+    <string name="settings_section_troubleshooting_title">Troubbleshooting</string>
+    <string name="settings_section_proxy_title">Proxy</string>
+    <string name="settings_section_contributors_title">Contribuidores</string>
+    <string name="settings_section_player_action_bar_title">Barra de ação do reprodutor</string>
+    <string name="settings_section_smart_recommendations_title">Recomendações inteligentes</string>
+    <string name="settings_section_service_lifetime_title">Vida útil do serviço</string>
+    <string name="settings_section_notification_player_title">Reprodutor de notificação</string>
+    <string name="settings_section_backup_and_restore_title">Backup e restaurar</string>
+    <string name="settings_section_fullscreen_lyrics_title">Componentes nas letras em tela cheia</string>
 </resources>

@@ -366,8 +366,8 @@ internal fun TintRow(config: GlassSettings, onTint: (GlassTintSource) -> Unit, o
         modifier = Modifier.testTag("settings.glass.tintSource").settingsSearchTarget("glass.tintSource"),
         valueText = { value -> stringResource(when (value) {
             GlassTintSource.None -> R.string.glass_tint_none
-            GlassTintSource.ThemeAccent -> R.string.liquid_glass_theme_accent
-            GlassTintSource.Artwork -> R.string.liquid_glass_artwork
+            GlassTintSource.ThemeAccent -> R.string.theme
+            GlassTintSource.Artwork -> R.string.artwork
             GlassTintSource.SystemAccent -> R.string.liquid_glass_system_accent
             GlassTintSource.Custom -> R.string.liquid_glass_custom
         }) },

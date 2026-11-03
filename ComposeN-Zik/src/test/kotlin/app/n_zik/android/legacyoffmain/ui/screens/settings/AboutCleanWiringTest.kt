@@ -118,10 +118,10 @@ class AboutCleanWiringTest {
             .fetchSemanticsNode()
         // Troubleshooting and contributors cards keep their headers.
         composeRule
-            .onNodeWithText(context.getString(R.string.troubleshooting), substring = false, useUnmergedTree = true)
+            .onNodeWithText(context.getString(R.string.settings_section_troubleshooting_title), substring = false, useUnmergedTree = true)
             .fetchSemanticsNode()
         composeRule
-            .onNodeWithText(context.getString(R.string.contributors), substring = false, useUnmergedTree = true)
+            .onNodeWithText(context.getString(R.string.settings_section_contributors_title), substring = false, useUnmergedTree = true)
             .fetchSemanticsNode()
     }
 }
