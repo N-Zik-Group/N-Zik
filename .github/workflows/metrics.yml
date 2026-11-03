@@ -197,9 +197,9 @@ jobs:
                       for total, time in enumerate(sorted(stars.values()), 1)] or [(releases[-1][0] if releases else datetime.now(timezone.utc).timestamp(), 0)]
 
           def render_chart(data, title, filename, unit):
-              width, height, padding = 600, 200, 72
+              width, height, padding = 600, 280, 72
               chart_w = width - padding - 32
-              top, bottom = 86, 170
+              top, bottom = 86, 250
               chart_h = bottom - top
 
               times, values = zip(*data)
@@ -240,7 +240,7 @@ jobs:
                   if not dates:
                       dates.append((time_x(min_t), start.strftime("%d %b %y")))
               date_labels = "".join(
-                  f'<text x="{x:.1f}" y="188" text-anchor="middle">{label}</text>'
+                  f'<text x="{x:.1f}" y="{bottom + 18}" text-anchor="middle">{label}</text>'
                   for x, label in dates
               )
 
@@ -294,7 +294,7 @@ jobs:
                   for value in levels
               )
 
-              svg = f'''<svg width="750" height="250" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">
+              svg = f'''<svg width="750" height="350" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">
                 <style>
                   .bg {{ fill: #ffffff; stroke: #e1e4e8; }}
                   .text-title {{ fill: #2b3137; font-weight: 600; font-size: 15px; }}
@@ -349,7 +349,7 @@ jobs:
                 <path fill="url(#fillGrad)" d="{polygon_d}" />
 
                 <g class="axis-label" font-family="Arial,sans-serif">
-                  <text transform="translate(19 128) rotate(-90)" text-anchor="middle">{unit}</text>
+                  <text transform="translate(19 {(top + bottom) / 2:g}) rotate(-90)" text-anchor="middle">{unit}</text>
                   {value_labels}
                   {date_labels}
                   {release_markers}
