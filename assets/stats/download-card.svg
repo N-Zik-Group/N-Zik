@@ -53,7 +53,7 @@
     <!-- Column 2 -->
     <g class="animated delay-2">
       <text x="245" y="65" class="text-label">LATEST RELEASE</text>
-      <text x="245" y="85" class="text-value-2">v8.5.0-dev-20261103</text>
+      <text x="245" y="85" class="text-value-2" textLength="160" lengthAdjust="spacingAndGlyphs">v8.5.0-dev-20261103</text>
       <text x="245" y="105" class="text-sub">📥 21 downloads</text>
     </g>
 

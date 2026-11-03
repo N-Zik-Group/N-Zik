@@ -37,8 +37,9 @@
 </div>
 
 <div align="center">
-  <img src="assets/stats/download-card.svg" alt="N-Zik Stats" />
-  <img src="assets/stats/chart.svg" alt="Download Growth" />
+  <img src="assets/stats/download-card.svg" alt="N-Zik Stats" /><br>
+  <img src="assets/stats/chart.svg" alt="Download Growth" /><br>
+  <img src="assets/stats/star-chart.svg" alt="Star Growth" />
   
  <br><br>
 
