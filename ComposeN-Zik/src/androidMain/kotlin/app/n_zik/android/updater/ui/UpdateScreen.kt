@@ -152,7 +152,7 @@ private fun UpdateScreenContent(navController: NavController) {
     // Handle back press during download - let download continue in background
     BackHandler(enabled = downloadState is UpdateDownloadManager.DownloadState.Downloading ||
             downloadState is UpdateDownloadManager.DownloadState.Starting) {
-        Toaster.i(R.string.download_cancelled)
+        Toaster.i(R.string.downloads_cancelled)
         UpdateDownloadManager.cancelDownload(context)
         navController.popBackStack()
     }
@@ -172,10 +172,10 @@ private fun UpdateScreenContent(navController: NavController) {
     val hasUpdate = Updater.githubRelease != null && Updater.isVersionNewer(Updater.githubRelease?.tagName ?: "", BuildConfig.VERSION_NAME)
     val currentVersion = BuildConfig.VERSION_NAME
     val isFoss = BuildConfig.BUILD_TYPE.equals("foss", ignoreCase = true)
-    val currentLabel = Updater.flavorLabel(currentVersion, isFoss) ?: Updater.FlavorLabel(R.string.release_title)
+    val currentLabel = Updater.flavorLabel(currentVersion, isFoss) ?: Updater.FlavorLabel(R.string.updates_build_release_label)
     val currentBuildTypeLabel = if (currentLabel.literal != null) currentLabel.literal
     else stringResource(currentLabel.resId) + if (currentLabel.append32) " 32" else ""
-    val updateLabel = Updater.flavorLabel(newVersion, isFoss) ?: Updater.FlavorLabel(R.string.release_title)
+    val updateLabel = Updater.flavorLabel(newVersion, isFoss) ?: Updater.FlavorLabel(R.string.updates_build_release_label)
     val updateBuildTypeLabel = if (updateLabel.literal != null) updateLabel.literal
     else stringResource(updateLabel.resId) + if (updateLabel.append32) " 32" else ""
     // Only shown while an update is actually selected — Updater.build may keep
@@ -219,10 +219,10 @@ private fun UpdateScreenContent(navController: NavController) {
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         val downloadStr = if (hasUpdate) {
-                                            stringResource(R.string.downloading_update)
+                                            stringResource(R.string.updates_downloading_status)
                                         } else {
                                             val extraInfo = if (fileSize.isNotEmpty()) "$currentBuildTypeLabel - $fileSize" else currentBuildTypeLabel
-                                            stringResource(R.string.downloading_actual_version, currentVersion, extraInfo)
+                                            stringResource(R.string.updates_reinstalling_version_progress, currentVersion, extraInfo)
                                         }
                                         Box(modifier = Modifier.weight(1f)) {
                                             BasicText(
@@ -255,13 +255,13 @@ private fun UpdateScreenContent(navController: NavController) {
                                     ) {
                                         UpdaterIconAction(
                                             onClick = {
-                                                Toaster.i(R.string.download_cancelled)
+                                                Toaster.i(R.string.downloads_cancelled)
                                                 UpdateDownloadManager.cancelDownload(context)
                                             },
                                         ) {
                                             Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                                             BasicText(
-                                                text = stringResource(R.string.cancel),
+                                                text = stringResource(R.string.common_action_cancel),
                                                 modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                                 maxLines = 1,
                                                 style = typography().s.semiBold.copy(color = colorPalette().red)
@@ -277,7 +277,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                     ) {
                                         Box(modifier = Modifier.weight(1f)) {
                                             BasicText(
-                                                text = stringResource(R.string.starting),
+                                                text = stringResource(R.string.updates_starting_status),
                                                 modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                                 maxLines = 1,
                                                 style = typography().s.bold.copy(color = colorPalette().text)
@@ -304,12 +304,12 @@ private fun UpdateScreenContent(navController: NavController) {
                                                             if (success) {
                                                                 UpdateDownloadManager.installApk(context, apkPath)
                                                             } else {
-                                                                Toaster.e(R.string.pre_install_backup_failed)
+                                                                Toaster.e(R.string.backup_before_update_failed)
                                                             }
                                                         } catch (e: Exception) {
                                                             Timber.tag("UpdateScreen").e(e, "Pre-install backup failed with exception")
                                                             isPreInstallBackupRunning = false
-                                                            Toaster.e(R.string.pre_install_backup_failed)
+                                                            Toaster.e(R.string.backup_before_update_failed)
                                                         }
                                                     }
                                                 } else if (!isPreInstallBackupRunning) {
@@ -338,7 +338,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                             )
                                             Spacer(modifier = Modifier.width(8.dp))
                                             BasicText(
-                                                text = stringResource(R.string.install),
+                                                text = stringResource(R.string.updates_action_install),
                                                 modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                                 maxLines = 1,
                                                 style = typography().s.bold.copy(color = Color.White)
@@ -393,9 +393,9 @@ private fun UpdateScreenContent(navController: NavController) {
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 BasicText(
                                                     text = if (state is UpdateDownloadManager.DownloadState.Failed)
-                                                        stringResource(R.string.retry)
+                                                        stringResource(R.string.common_action_retry)
                                                     else
-                                                        stringResource(R.string.download),
+                                                        stringResource(R.string.downloads_title),
                                                     modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                                     maxLines = 1,
                                                     style = typography().s.bold.copy(color = Color.White)
@@ -406,7 +406,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                 } else {
                                     UpdaterActionCard(
                                         onClick = {
-                                                Toaster.i(R.string.checking_for_updates)
+                                                Toaster.i(R.string.updates_checking_status)
                                                 Updater.checkForUpdate(true, effectiveCheckBeta, showDialog = false)
 
                                         },
@@ -431,7 +431,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 BasicText(
-                                                    text = stringResource(R.string.check_update),
+                                                    text = stringResource(R.string.updates_action_check),
                                                     modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                                     maxLines = 1,
                                                     style = typography().s.semiBold.copy(color = colorPalette().accent)
@@ -477,7 +477,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                             )
                                             Spacer(modifier = Modifier.width(8.dp))
                                             BasicText(
-                                                text = stringResource(R.string.github),
+                                                text = stringResource(R.string.common_brand_github),
                                                 modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                                 maxLines = 1,
                                                 style = typography().s.semiBold.copy(color = colorPalette().text)
@@ -535,7 +535,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                         ) {
                                             Icon(
                                                 painter = painterResource(R.drawable.ellipsis_vertical),
-                                                contentDescription = stringResource(R.string.menu),
+                                                contentDescription = stringResource(R.string.common_menu_label),
                                                 tint = colorPalette().text,
                                                 modifier = Modifier.size(24.dp)
                                             )
@@ -558,7 +558,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                         menu.add(
                                             DropdownMenu.Item(
                                                 iconId = R.drawable.shield_checkmark,
-                                                customText = "${stringResource(R.string.beta_updates)}: ${if (effectiveCheckBeta) stringResource(R.string.on) else stringResource(R.string.off)}",
+                                                customText = "${stringResource(R.string.updates_beta_enabled_label)}: ${if (effectiveCheckBeta) stringResource(R.string.common_state_on) else stringResource(R.string.common_state_off)}",
                                                 // Without auto-update the beta value is forced off above
                                                 enabled = BuildConfig.IS_AUTOUPDATE
                                             ) {
@@ -567,14 +567,14 @@ private fun UpdateScreenContent(navController: NavController) {
                                         )
                                     }
                                     val stateStr = when(effectiveCheckState) {
-                                        CheckUpdateState.Enabled -> stringResource(R.string.on)
-                                        CheckUpdateState.Ask -> stringResource(R.string.ask)
-                                        CheckUpdateState.Disabled -> stringResource(R.string.off)
+                                        CheckUpdateState.Enabled -> stringResource(R.string.common_state_on)
+                                        CheckUpdateState.Ask -> stringResource(R.string.updates_check_mode_ask)
+                                        CheckUpdateState.Disabled -> stringResource(R.string.common_state_off)
                                     }
                                     menu.add(
                                         DropdownMenu.Item(
                                             iconId = R.drawable.update,
-                                            customText = "${stringResource(R.string.enable_check_for_update)}: $stateStr",
+                                            customText = "${stringResource(R.string.updates_automatic_check_title)}: $stateStr",
                                             // Without auto-update the check state is forced off above
                                             enabled = BuildConfig.IS_AUTOUPDATE
                                         ) {
@@ -591,13 +591,13 @@ private fun UpdateScreenContent(navController: NavController) {
                                     menu.add(
                                         DropdownMenu.Item(
                                             iconId = R.drawable.translate,
-                                            customText = "${stringResource(R.string.info_translation)}: \n${otherLanguageApp.text}"
+                                            customText = "${stringResource(R.string.common_translation_title)}: \n${otherLanguageApp.text}"
                                         ) {
                                             showMenu = false
                                             showLanguageDialog = true
                                         }
                                     )
-                                    val downloadText = "${stringResource(R.string.redownload_update)} ($currentVersionStr)"
+                                    val downloadText = "${stringResource(R.string.updates_action_download_current_version)} ($currentVersionStr)"
                                     menu.add(
                                         DropdownMenu.Item(
                                             iconId = R.drawable.download,
@@ -614,20 +614,20 @@ private fun UpdateScreenContent(navController: NavController) {
                                                 Updater.fetchCurrentChangelog()
                                             } catch (e: Exception) {
                                                 Timber.tag("UpdateScreen").e(e, "Error fetching update")
-                                                Toaster.w(R.string.update_not_available_yet)
+                                                Toaster.w(R.string.updates_not_available_yet)
                                             }
                                         }
                                     )
                                     menu.add(
                                         DropdownMenu.Item(
                                             R.drawable.trash,
-                                            R.string.update_cache_cleared
+                                            R.string.updates_cache_cleared
                                         ) {
                                             showMenu = false
                                             NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                                                 clearUpdateCache(context)
                                                 withContext(NzikDispatchers.UI) {
-                                                    Toaster.s(R.string.update_cache_cleared)
+                                                    Toaster.s(R.string.updates_cache_cleared)
                                                 }
                                             }
                                         }
@@ -639,7 +639,7 @@ private fun UpdateScreenContent(navController: NavController) {
 
                                 DialogPresence(visible = showLanguageDialog) {
                                     ValueSelectorDialog(
-                                        title = stringResource(R.string.info_translation),
+                                        title = stringResource(R.string.common_translation_title),
                                         selectedValue = otherLanguageApp,
                                         onValueSelected = {
                                             otherLanguageApp = it
@@ -677,7 +677,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                         }
                                         Spacer(modifier = Modifier.height(16.dp))
                                         BasicText(
-                                            text = if (isReinstalling) stringResource(R.string.reinstalling_update) else "$updateBuildTypeLabel ${stringResource(R.string.update_available)}",
+                                            text = if (isReinstalling) stringResource(R.string.updates_reinstalling_status) else "$updateBuildTypeLabel ${stringResource(R.string.updates_available)}",
                                             modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                             maxLines = 1,
                                             style = typography().l.bold.copy(color = colorPalette().text, textAlign = TextAlign.Center)
@@ -692,7 +692,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                         if (fileSize.isNotEmpty()) {
                                             Spacer(modifier = Modifier.height(2.dp))
                                             BasicText(
-                                                text = stringResource(R.string.update_file_size, fileSize),
+                                                text = stringResource(R.string.updates_file_size, fileSize),
                                                 style = typography().xs.copy(color = colorPalette().textSecondary)
                                             )
                                         }
@@ -713,7 +713,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                         }
                                         Spacer(modifier = Modifier.height(16.dp))
                                         BasicText(
-                                            text = stringResource(R.string.up_to_date),
+                                            text = stringResource(R.string.updates_up_to_date),
                                             modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                             maxLines = 1,
                                             style = typography().l.bold.copy(color = colorPalette().text, textAlign = TextAlign.Center)
@@ -750,9 +750,9 @@ private fun UpdateScreenContent(navController: NavController) {
                                         )
                                         Spacer(modifier = Modifier.height(4.dp))
                                         val stateStr = when(effectiveCheckState) {
-                                            CheckUpdateState.Enabled -> stringResource(R.string.auto_update_enabled)
-                                            CheckUpdateState.Ask -> stringResource(R.string.auto_update_ask)
-                                            CheckUpdateState.Disabled -> stringResource(R.string.auto_update_disabled)
+                                            CheckUpdateState.Enabled -> stringResource(R.string.updates_check_mode_enabled_status)
+                                            CheckUpdateState.Ask -> stringResource(R.string.updates_check_mode_ask_status)
+                                            CheckUpdateState.Disabled -> stringResource(R.string.updates_check_mode_disabled_status)
                                         }
                                         BasicText(
                                             text = "${UpdaterConstants.PREFIX_VERSION}$currentVersion • $stateStr",
@@ -763,10 +763,10 @@ private fun UpdateScreenContent(navController: NavController) {
                                     }
                                     val lastCheckTime by rememberPreference(lastUpdateCheckKey, 0L)
                                     val sdf = SimpleDateFormat("dd MMM HH:mm", Locale.getDefault())
-                                    val lastCheckStr = if (lastCheckTime > 0) sdf.format(Date(lastCheckTime)) else stringResource(R.string.never_checked)
+                                    val lastCheckStr = if (lastCheckTime > 0) sdf.format(Date(lastCheckTime)) else stringResource(R.string.updates_never_checked)
                                     Spacer(modifier = Modifier.height(8.dp))
                                     BasicText(
-                                        text = if (lastCheckTime > 0) stringResource(R.string.last_check, lastCheckStr) else stringResource(R.string.never_checked),
+                                        text = if (lastCheckTime > 0) stringResource(R.string.updates_last_check_format, lastCheckStr) else stringResource(R.string.updates_never_checked),
                                         style = typography().xxs.secondary.copy(color = colorPalette().textSecondary.copy(alpha = 0.7f))
                                     )
                                 }
@@ -851,7 +851,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     BasicText(
-                                        text = stringResource(R.string.whats_new_in, if (hasUpdate && !isReinstalling) newVersion else "${UpdaterConstants.PREFIX_VERSION}$currentVersion"),
+                                        text = stringResource(R.string.updates_changelog_title, if (hasUpdate && !isReinstalling) newVersion else "${UpdaterConstants.PREFIX_VERSION}$currentVersion"),
                                         modifier = Modifier.weight(1f).padding(end = 8.dp).basicMarquee(iterations = Int.MAX_VALUE),
                                         maxLines = 1,
                                         style = typography().m.bold.copy(color = colorPalette().text)
@@ -863,7 +863,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                     ) {
                                         Icon(
                                             painter = painterResource(R.drawable.translate),
-                                            contentDescription = stringResource(R.string.translate),
+                                            contentDescription = stringResource(R.string.common_action_translate),
                                             tint = if (isTranslationActive) colorPalette().accent else colorPalette().textSecondary,
                                             modifier = Modifier.size(20.dp)
                                         )
@@ -897,8 +897,8 @@ private fun UpdateScreenContent(navController: NavController) {
 
         DialogPresence(target = apkPathToInstall.takeIf { showInstallWarningDialog }) { installationPath ->
             ConfirmationDialog(
-                title = stringResource(R.string.dialog_install_update),
-                text = stringResource(R.string.install_warning),
+                title = stringResource(R.string.updates_install_dialog_title),
+                text = stringResource(R.string.updates_install_confirmation_message),
                 onDismiss = { showInstallWarningDialog = false },
                 onConfirm = {
                     val apkPath = installationPath
@@ -907,21 +907,21 @@ private fun UpdateScreenContent(navController: NavController) {
                         UpdateDownloadManager.installApk(context, apkPath)
                     }
                 },
-                confirmText = stringResource(R.string.install_yes),
-                cancelText = stringResource(R.string.install_no_backup)
+                confirmText = stringResource(R.string.updates_install_confirm),
+                cancelText = stringResource(R.string.updates_install_cancel_for_backup)
             )
         }
 
         if (isPreInstallBackupRunning) {
             BackHandler {
                 isPreInstallBackupRunning = false
-                Toaster.w(R.string.download_cancelled)
+                Toaster.w(R.string.downloads_cancelled)
             }
         }
         DialogPresence(visible = isPreInstallBackupRunning) {
             DialogFrame(
                 onDismiss = { isPreInstallBackupRunning = false },
-                title = stringResource(R.string.pre_install_backup_running)
+                title = stringResource(R.string.backup_before_update_running_title)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -932,7 +932,7 @@ private fun UpdateScreenContent(navController: NavController) {
                         color = colorPalette().accent,
                     )
                     BasicText(
-                        text = stringResource(R.string.pre_install_backup_running_description),
+                        text = stringResource(R.string.backup_before_update_running_message),
                         style = typography().s.copy(color = colorPalette().textSecondary)
                     )
                 }
@@ -997,7 +997,7 @@ fun parseChangelogText(text: String): List<Pair<String, List<String>>> {
     packSection()
 
     if (sections.isEmpty() && currentChanges.isNotEmpty()) {
-        val otherTitle = appContext().getString(R.string.other)
+        val otherTitle = appContext().getString(R.string.common_other_section_title)
         sections.add(otherTitle to currentChanges.toList())
     }
 

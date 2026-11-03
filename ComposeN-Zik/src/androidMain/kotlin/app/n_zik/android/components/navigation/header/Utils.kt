@@ -56,9 +56,9 @@ internal fun HeaderIcon(
         Icon(
             imageVector = ImageVector.vectorResource(iconId),
             contentDescription = stringResource(when (iconId) {
-                R.drawable.search -> R.string.search
-                R.drawable.chevron_back -> R.string.glass_back
-                else -> R.string.menu
+                R.drawable.search -> R.string.search_title
+                R.drawable.chevron_back -> R.string.glass_effect_back
+                else -> R.string.common_menu_label
             }),
             modifier = Modifier.size(if (glass.usesGlassMaterial(GlassArea.Header)) GlassActionIconSize else size),
             tint = tint,

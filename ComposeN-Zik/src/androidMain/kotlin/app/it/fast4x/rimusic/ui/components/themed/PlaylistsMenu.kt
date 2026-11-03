@@ -95,7 +95,7 @@ class PlaylistsMenu private constructor(
     }
 
     override val iconId: Int = R.drawable.add_in_playlist
-    override val messageId: Int = R.string.add_to_playlist
+    override val messageId: Int = R.string.playlist_action_add
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -141,7 +141,7 @@ class PlaylistsMenu private constructor(
         ListMenu.Entry(
             text = playlist.name.substringAfter( PINNED_PREFIX ),
             icon = { SettingIcon(R.drawable.add_in_playlist) },
-            subtitle = "${playlistPreview.songCount} ${stringResource( R.string.songs )}",
+            subtitle = "${playlistPreview.songCount} ${stringResource( R.string.library_songs_title )}",
             onClick = {
                 onAdd( playlistPreview )
             },
@@ -207,7 +207,7 @@ class PlaylistsMenu private constructor(
         val newPlaylistButton = NewPlaylistDialog()
         newPlaylistButton.Render()
 
-        ListMenu.Menu(title = stringResource(R.string.playlists)) {
+        ListMenu.Menu(title = stringResource(R.string.library_playlists_title)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -231,7 +231,7 @@ class PlaylistsMenu private constructor(
                         .size(24.dp)
                 )
                 BasicText(
-                    text = stringResource(R.string.playlists),
+                    text = stringResource(R.string.library_playlists_title),
                     style = typography().m.semiBold,
                     modifier = Modifier.weight(1f).padding(start = 8.dp)
                 )
@@ -249,7 +249,7 @@ class PlaylistsMenu private constructor(
             }
             if (filteredPinnedPlaylists.isNotEmpty()) {
                 BasicText(
-                    text = stringResource(R.string.pinned_playlists),
+                    text = stringResource(R.string.playlist_pinned_title),
                     style = typography().xxs.semiBold.copy(
                         color = colorPalette().accent
                     ),
@@ -263,7 +263,7 @@ class PlaylistsMenu private constructor(
 
             if (filteredUnpinnedPlaylists.isNotEmpty()) {
                 BasicText(
-                    text = stringResource(R.string.playlists),
+                    text = stringResource(R.string.library_playlists_title),
                     style = typography().xxs.semiBold.copy(
                         color = colorPalette().accent
                     ),

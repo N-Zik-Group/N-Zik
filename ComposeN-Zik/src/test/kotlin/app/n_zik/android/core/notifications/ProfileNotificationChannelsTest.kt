@@ -140,36 +140,36 @@ class ProfileNotificationChannelsTest {
         assertFalse(player?.canShowBadge() == true)
         // No rename is stored in the test context, so the profile's display name falls back
         // to its ID ("work") — the label is "Player — work".
-        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.player), "work"), player?.name)
-        assertEquals(context.getString(R.string.player), player?.description)
+        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.player_title), "work"), player?.name)
+        assertEquals(context.getString(R.string.player_title), player?.description)
 
         val sleepTimer = nm.getNotificationChannel("sleep_timer_channel_id_work")
         assertNotNull(sleepTimer)
         assertEquals(NotificationManager.IMPORTANCE_DEFAULT, sleepTimer?.importance)
         assertFalse(sleepTimer?.canShowBadge() == true)
-        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.sleep_timer), "work"), sleepTimer?.name)
-        assertEquals(context.getString(R.string.sleep_timer), sleepTimer?.description)
+        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.player_sleep_timer_title), "work"), sleepTimer?.name)
+        assertEquals(context.getString(R.string.player_sleep_timer_title), sleepTimer?.description)
 
         val download = nm.getNotificationChannel("download_channel_work")
         assertNotNull(download)
         assertEquals(NotificationManager.IMPORTANCE_LOW, download?.importance)
         assertFalse(download?.canShowBadge() == true)
-        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.download), "work"), download?.name)
-        assertEquals(context.getString(R.string.download), download?.description)
+        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.downloads_title), "work"), download?.name)
+        assertEquals(context.getString(R.string.downloads_title), download?.description)
 
         val sync = nm.getNotificationChannel("sync_channel_id_work")
         assertNotNull(sync)
         assertEquals(NotificationManager.IMPORTANCE_LOW, sync?.importance)
         assertFalse(sync?.canShowBadge() == true)
-        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.sync), "work"), sync?.name)
+        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.sync_action_sync), "work"), sync?.name)
         assertEquals(context.getString(R.string.sync_notifications), sync?.description)
 
         val rewind = nm.getNotificationChannel("rewind_work")
         assertNotNull(rewind)
         assertEquals(NotificationManager.IMPORTANCE_LOW, rewind?.importance)
         assertFalse(rewind?.canShowBadge() == true)
-        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.rw_channel), "work"), rewind?.name)
-        assertEquals(context.getString(R.string.rw_channel), rewind?.description)
+        assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.rewind_channel), "work"), rewind?.name)
+        assertEquals(context.getString(R.string.rewind_channel), rewind?.description)
 
         val listenTogether = nm.getNotificationChannel("listen_together_channel_work")
         assertNotNull(listenTogether)
@@ -177,7 +177,7 @@ class ProfileNotificationChannelsTest {
         assertTrue(listenTogether?.canShowBadge() == true) // the badge is NOT disabled (default)
         assertEquals(context.getString(R.string.profile_channel_name, context.getString(R.string.listen_together_notification_channel_name), "work"), listenTogether?.name)
         assertEquals(
-            context.getString(R.string.listen_together_notification_channel_desc),
+            context.getString(R.string.listen_together_notification_channel_description),
             listenTogether?.description,
         )
     }
@@ -192,7 +192,7 @@ class ProfileNotificationChannelsTest {
         assertNotNull(player)
         // The stored display name ("Work") — not the ID — is used in the label.
         assertEquals(
-            context.getString(R.string.profile_channel_name, context.getString(R.string.player), "Work"),
+            context.getString(R.string.profile_channel_name, context.getString(R.string.player_title), "Work"),
             player?.name,
         )
     }
@@ -204,7 +204,7 @@ class ProfileNotificationChannelsTest {
         context.saveProfileDisplayName("work", "Work")
         ensureProfileChannels(context, "work")
         assertEquals(
-            context.getString(R.string.profile_channel_name, context.getString(R.string.player), "Work"),
+            context.getString(R.string.profile_channel_name, context.getString(R.string.player_title), "Work"),
             nm.getNotificationChannel("default_channel_id_work")?.name,
         )
 
@@ -214,7 +214,7 @@ class ProfileNotificationChannelsTest {
         recreateProfileChannels(context, "work")
 
         assertEquals(
-            context.getString(R.string.profile_channel_name, context.getString(R.string.player), "Travail"),
+            context.getString(R.string.profile_channel_name, context.getString(R.string.player_title), "Travail"),
             nm.getNotificationChannel("default_channel_id_work")?.name,
         )
     }

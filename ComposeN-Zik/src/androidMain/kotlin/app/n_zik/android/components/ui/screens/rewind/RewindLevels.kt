@@ -19,23 +19,23 @@ internal data class RewindLevel(
 internal fun rewindSongLevel(minutes: Long): RewindLevel = when {
     minutes in 0L..200L ->
         RewindLevel(
-            nameId = R.string.rw_level_song_obsession_name,
-            taglineId = R.string.rw_level_song_obsession_tagline
+            nameId = R.string.rewind_level_song_obsession_name,
+            taglineId = R.string.rewind_level_song_obsession_tagline
         )
     minutes in 201L..500L ->
         RewindLevel(
-            nameId = R.string.rw_level_song_anthem_name,
-            taglineId = R.string.rw_level_song_anthem_tagline
+            nameId = R.string.rewind_level_song_anthem_name,
+            taglineId = R.string.rewind_level_song_anthem_tagline
         )
     minutes in 501L..1000L ->
         RewindLevel(
-            nameId = R.string.rw_level_song_soundtrack_name,
-            taglineId = R.string.rw_level_song_soundtrack_tagline
+            nameId = R.string.rewind_level_song_soundtrack_name,
+            taglineId = R.string.rewind_level_song_soundtrack_tagline
         )
     else ->
         RewindLevel(
-            nameId = R.string.rw_level_song_eternal_flame_name,
-            taglineId = R.string.rw_level_song_eternal_flame_tagline
+            nameId = R.string.rewind_level_song_eternal_flame_name,
+            taglineId = R.string.rewind_level_song_eternal_flame_tagline
         )
 }
 
@@ -43,23 +43,23 @@ internal fun rewindSongLevel(minutes: Long): RewindLevel = when {
 internal fun rewindAlbumLevel(minutes: Long): RewindLevel = when {
     minutes in 0L..1000L ->
         RewindLevel(
-            nameId = R.string.rw_level_album_deep_dive_name,
-            taglineId = R.string.rw_level_album_deep_dive_tagline
+            nameId = R.string.rewind_level_album_deep_dive_name,
+            taglineId = R.string.rewind_level_album_deep_dive_tagline
         )
     minutes in 1001L..2500L ->
         RewindLevel(
-            nameId = R.string.rw_level_album_on_repeat_name,
-            taglineId = R.string.rw_level_album_on_repeat_tagline
+            nameId = R.string.rewind_level_album_on_repeat_name,
+            taglineId = R.string.rewind_level_album_on_repeat_tagline
         )
     minutes in 2501L..5000L ->
         RewindLevel(
-            nameId = R.string.rw_level_album_resident_name,
-            taglineId = R.string.rw_level_album_resident_tagline
+            nameId = R.string.rewind_level_album_resident_name,
+            taglineId = R.string.rewind_level_album_resident_tagline
         )
     else ->
         RewindLevel(
-            nameId = R.string.rw_level_album_sanctuary_name,
-            taglineId = R.string.rw_level_album_sanctuary_tagline
+            nameId = R.string.rewind_level_album_sanctuary_name,
+            taglineId = R.string.rewind_level_album_sanctuary_tagline
         )
 }
 
@@ -67,23 +67,23 @@ internal fun rewindAlbumLevel(minutes: Long): RewindLevel = when {
 internal fun rewindPlaylistLevel(minutes: Long): RewindLevel = when {
     minutes in 0L..500L ->
         RewindLevel(
-            nameId = R.string.rw_level_playlist_curator_name,
-            taglineId = R.string.rw_level_playlist_curator_tagline
+            nameId = R.string.rewind_level_playlist_curator_name,
+            taglineId = R.string.rewind_level_playlist_curator_tagline
         )
     minutes in 501L..1500L ->
         RewindLevel(
-            nameId = R.string.rw_level_playlist_mastermind_name,
-            taglineId = R.string.rw_level_playlist_mastermind_tagline
+            nameId = R.string.rewind_level_playlist_mastermind_name,
+            taglineId = R.string.rewind_level_playlist_mastermind_tagline
         )
     minutes in 1501L..3000L ->
         RewindLevel(
-            nameId = R.string.rw_level_playlist_phenomenon_name,
-            taglineId = R.string.rw_level_playlist_phenomenon_tagline
+            nameId = R.string.rewind_level_playlist_phenomenon_name,
+            taglineId = R.string.rewind_level_playlist_phenomenon_tagline
         )
     else ->
         RewindLevel(
-            nameId = R.string.rw_level_playlist_opus_name,
-            taglineId = R.string.rw_level_playlist_opus_tagline
+            nameId = R.string.rewind_level_playlist_opus_name,
+            taglineId = R.string.rewind_level_playlist_opus_tagline
         )
 }
 
@@ -91,22 +91,22 @@ internal fun rewindPlaylistLevel(minutes: Long): RewindLevel = when {
 internal fun rewindArtistLevel(minutes: Long): RewindLevel = when {
     minutes in 0L..2000L ->
         RewindLevel(
-            nameId = R.string.rw_level_artist_new_favorite_name,
-            taglineId = R.string.rw_level_artist_new_favorite_tagline
+            nameId = R.string.rewind_level_artist_new_favorite_name,
+            taglineId = R.string.rewind_level_artist_new_favorite_tagline
         )
     minutes in 2001L..5000L ->
         RewindLevel(
-            nameId = R.string.rw_level_artist_a_list_fan_name,
-            taglineId = R.string.rw_level_artist_a_list_fan_tagline
+            nameId = R.string.rewind_level_artist_a_list_fan_name,
+            taglineId = R.string.rewind_level_artist_a_list_fan_tagline
         )
     minutes in 5001L..10000L ->
         RewindLevel(
-            nameId = R.string.rw_level_artist_archivist_name,
-            taglineId = R.string.rw_level_artist_archivist_tagline
+            nameId = R.string.rewind_level_artist_archivist_name,
+            taglineId = R.string.rewind_level_artist_archivist_tagline
         )
     else ->
         RewindLevel(
-            nameId = R.string.rw_level_artist_devotee_name,
-            taglineId = R.string.rw_level_artist_devotee_tagline
+            nameId = R.string.rewind_level_artist_devotee_name,
+            taglineId = R.string.rewind_level_artist_devotee_tagline
         )
 }

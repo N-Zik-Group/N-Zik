@@ -80,13 +80,13 @@ class SongsBrowseHandler : BrowseHandler {
 //
                 // the Disliked category is always shown, never filtered).
                 val categoryItems = mapOf(
-                    "all" to browsableMediaItem(AutoSessionConstants.ID_SONGS_ALL, context.getString(R.string.all), allCount.toString(), drawableUri(context, R.drawable.musical_notes), MediaMetadata.MEDIA_TYPE_PLAYLIST),
-                    "favorites" to browsableMediaItem(AutoSessionConstants.ID_SONGS_FAVORITES, context.getString(R.string.favorites), favoritesCount.toString(), drawableUri(context, R.drawable.heart), MediaMetadata.MEDIA_TYPE_PLAYLIST),
-                    "disliked" to browsableMediaItem(AutoSessionConstants.ID_SONGS_DISLIKED, context.getString(R.string.disliked), dislikedCount.toString(), drawableUri(context, R.drawable.heart_dislike), MediaMetadata.MEDIA_TYPE_PLAYLIST),
-                    "cached" to browsableMediaItem(AutoSessionConstants.ID_SONGS_CACHED, context.getString(R.string.cached), cachedCount.toString(), drawableUri(context, R.drawable.download), MediaMetadata.MEDIA_TYPE_PLAYLIST),
-                    "downloaded" to browsableMediaItem(AutoSessionConstants.ID_SONGS_DOWNLOADED, context.getString(R.string.downloaded), downloadedCount.toString(), drawableUri(context, R.drawable.downloaded), MediaMetadata.MEDIA_TYPE_PLAYLIST),
+                    "all" to browsableMediaItem(AutoSessionConstants.ID_SONGS_ALL, context.getString(R.string.common_option_all), allCount.toString(), drawableUri(context, R.drawable.musical_notes), MediaMetadata.MEDIA_TYPE_PLAYLIST),
+                    "favorites" to browsableMediaItem(AutoSessionConstants.ID_SONGS_FAVORITES, context.getString(R.string.library_favorites_title), favoritesCount.toString(), drawableUri(context, R.drawable.heart), MediaMetadata.MEDIA_TYPE_PLAYLIST),
+                    "disliked" to browsableMediaItem(AutoSessionConstants.ID_SONGS_DISLIKED, context.getString(R.string.library_disliked_title), dislikedCount.toString(), drawableUri(context, R.drawable.heart_dislike), MediaMetadata.MEDIA_TYPE_PLAYLIST),
+                    "cached" to browsableMediaItem(AutoSessionConstants.ID_SONGS_CACHED, context.getString(R.string.library_cached_title), cachedCount.toString(), drawableUri(context, R.drawable.download), MediaMetadata.MEDIA_TYPE_PLAYLIST),
+                    "downloaded" to browsableMediaItem(AutoSessionConstants.ID_SONGS_DOWNLOADED, context.getString(R.string.library_downloaded_title), downloadedCount.toString(), drawableUri(context, R.drawable.downloaded), MediaMetadata.MEDIA_TYPE_PLAYLIST),
                     "top" to browsableMediaItem(AutoSessionConstants.ID_SONGS_TOP, context.getString(R.string.playlist_top), topCount.toString(), drawableUri(context, R.drawable.trending), MediaMetadata.MEDIA_TYPE_PLAYLIST),
-                    "on_device" to browsableMediaItem(AutoSessionConstants.ID_SONGS_ONDEVICE, context.getString(R.string.on_device), onDeviceCount.toString(), drawableUri(context, R.drawable.devices), MediaMetadata.MEDIA_TYPE_PLAYLIST)
+                    "on_device" to browsableMediaItem(AutoSessionConstants.ID_SONGS_ONDEVICE, context.getString(R.string.library_on_device_title), onDeviceCount.toString(), drawableUri(context, R.drawable.devices), MediaMetadata.MEDIA_TYPE_PLAYLIST)
                 )
                 homeCategoryOrder(context, homeSongsOrderKey, listOf("all", "favorites", "disliked", "cached", "downloaded", "top", "on_device"))
                     .mapNotNull { id ->

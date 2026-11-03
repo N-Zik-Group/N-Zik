@@ -130,9 +130,9 @@ class OnboardingScreenComposeTest {
         composeRule.waitForIdle()
         assertFalse(app.preferences.getBoolean(glassEnabledKey, true))
         choice.performClick()
-        composeRule.onNodeWithText(app.getString(R.string.glass_enable_warning_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(app.getString(R.string.glass_effect_enable_warning_title)).assertIsDisplayed()
         assertFalse("requesting enable must wait for confirmation", app.preferences.getBoolean(glassEnabledKey, true))
-        composeRule.onNodeWithText(app.getString(R.string.glass_enable_confirm)).performClick()
+        composeRule.onNodeWithText(app.getString(R.string.glass_effect_enable_confirm)).performClick()
         composeRule.waitForIdle()
         assertTrue(app.preferences.getBoolean(glassEnabledKey, false))
         // The CTA belongs to the scroll content so it does not paint an opaque footer.
@@ -149,14 +149,14 @@ class OnboardingScreenComposeTest {
         content { OnboardingScreen(onComplete = {}) }
 
         // The step header renders right away
-        composeRule.onNodeWithText(app.getString(R.string.onboard_greeting)).assertIsDisplayed()
+        composeRule.onNodeWithText(app.getString(R.string.onboarding_greeting)).assertIsDisplayed()
 
         // The CTA sits below the permission cards: scroll it into view (the step
         // scrolls instead of clipping) and assert it displays
         composeRule
-            .onNodeWithText(app.getString(R.string.onboard_start))
+            .onNodeWithText(app.getString(R.string.onboarding_start))
             .performScrollTo()
         composeRule.waitForIdle()
-        composeRule.onNodeWithText(app.getString(R.string.onboard_start)).assertIsDisplayed()
+        composeRule.onNodeWithText(app.getString(R.string.onboarding_start)).assertIsDisplayed()
     }
 }

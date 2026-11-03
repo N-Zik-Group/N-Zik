@@ -31,11 +31,11 @@ internal class DownloadProgressNotification(context: Context) {
         val downloadProgress = if (totalBytes > 0) (downloadedBytes * 100 / totalBytes).toInt() else 0
 
         val message = if (total > 0) {
-            context.getString(R.string.download_progress, completed, total)
+            context.getString(R.string.downloads_progress, completed, total)
         } else if (downloads.isNotEmpty()) {
-            context.getString(R.string.download_in_progress, downloads.size) + " ($downloadProgress%)"
+            context.getString(R.string.downloads_in_progress, downloads.size) + " ($downloadProgress%)"
         } else {
-            context.getString(R.string.download_in_progress, downloads.size)
+            context.getString(R.string.downloads_in_progress, downloads.size)
         }
 
         if (!isPaused) {
@@ -45,20 +45,20 @@ internal class DownloadProgressNotification(context: Context) {
         val pauseResumeAction = if (isPaused) {
             val intent = Intent(context, MyDownloadService::class.java).setAction(DownloadService.ACTION_RESUME_DOWNLOADS)
             val pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            NotificationCompat.Action(R.drawable.play, context.getString(R.string.snake_resume), pendingIntent)
+            NotificationCompat.Action(R.drawable.play, context.getString(R.string.downloads_action_resume), pendingIntent)
         } else {
             val intent = Intent(context, MyDownloadService::class.java).setAction(DownloadService.ACTION_PAUSE_DOWNLOADS)
             val pendingIntent = PendingIntent.getService(context, 3, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            NotificationCompat.Action(R.drawable.pause, context.getString(R.string.notification_pause), pendingIntent)
+            NotificationCompat.Action(R.drawable.pause, context.getString(R.string.player_notification_pause), pendingIntent)
         }
 
         val cancelOngoingIntent = Intent(context, MyDownloadService::class.java).setAction(MyDownloadService.ACTION_CANCEL_ONGOING)
         val cancelOngoingPendingIntent = PendingIntent.getService(context, 1, cancelOngoingIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        val cancelAction = NotificationCompat.Action(R.drawable.close, context.getString(R.string.cancel), cancelOngoingPendingIntent)
+        val cancelAction = NotificationCompat.Action(R.drawable.close, context.getString(R.string.common_action_cancel), cancelOngoingPendingIntent)
 
         val deleteAllIntent = Intent(context, MyDownloadService::class.java).setAction(DownloadService.ACTION_REMOVE_ALL_DOWNLOADS)
         val deleteAllPendingIntent = PendingIntent.getService(context, 2, deleteAllIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        val deleteAllAction = NotificationCompat.Action(R.drawable.trash, context.getString(R.string.delete), deleteAllPendingIntent)
+        val deleteAllAction = NotificationCompat.Action(R.drawable.trash, context.getString(R.string.common_action_delete), deleteAllPendingIntent)
 
         // Use batch progress if available, otherwise use download progress
         val progressMax = if (total > 0) total else 100
@@ -67,7 +67,7 @@ internal class DownloadProgressNotification(context: Context) {
 
         return NotificationCompat.Builder(context, channelId(DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(context)))
             .setSmallIcon(R.drawable.download_progress)
-            .setContentTitle(context.getString(R.string.download))
+            .setContentTitle(context.getString(R.string.downloads_title))
             .setContentText(currentDownloadName ?: message)
             .setSubText(message)
             .setProgress(progressMax, progressCurrent, indeterminate)

@@ -173,7 +173,7 @@ fun ProfileFaceCard(
                         photoVersion++
                         faceVersion++
                     } else {
-                        Toaster.e(R.string.face_photo_failed)
+                        Toaster.e(R.string.profile_photo_failed)
                     }
                 }
             }
@@ -193,7 +193,7 @@ fun ProfileFaceCard(
 
                 Column {
                     BasicText(
-                        text = stringResource(R.string.display_name_shown_as),
+                        text = stringResource(R.string.profile_display_name_preview_label),
                         style = typography().xxs.copy(color = palette.textSecondary)
                     )
                     Spacer(modifier = Modifier.height(2.dp))
@@ -211,8 +211,8 @@ fun ProfileFaceCard(
             onOpenProfiles?.let { onOpen ->
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("embedded.profile.module_open"),
-                    title = stringResource(R.string.module_open),
-                    text = stringResource(R.string.profiles_open_desc),
+                    title = stringResource(R.string.modules_open),
+                    text = stringResource(R.string.profile_open_desc),
                     icon = R.drawable.chevron_forward,
                     onClick = onOpen
                 )
@@ -220,8 +220,8 @@ fun ProfileFaceCard(
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.profile.face_name_source"),
-                title = stringResource(R.string.face_name_source),
-                text = stringResource(R.string.settings_desc_embedded_profile_face_name_source),
+                title = stringResource(R.string.profile_name_source),
+                text = stringResource(R.string.profile_display_name_source_description),
                 selectedValueText = faceSourceLabel(nameSource),
                 icon = faceSourceIcon(nameSource),
                 onClick = { showNameSourceDialog = true }
@@ -229,8 +229,8 @@ fun ProfileFaceCard(
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.profile.face_avatar_source"),
-                title = stringResource(R.string.face_avatar_source),
-                text = stringResource(R.string.settings_desc_embedded_profile_face_avatar_source),
+                title = stringResource(R.string.profile_avatar_source),
+                text = stringResource(R.string.profile_avatar_source_description),
                 selectedValueText = faceSourceLabel(avatarSource),
                 icon = faceSourceIcon(avatarSource),
                 onClick = { showAvatarSourceDialog = true }
@@ -238,8 +238,8 @@ fun ProfileFaceCard(
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.profile.face_profile_name"),
-                title = stringResource(R.string.face_profile_name),
-                text = stringResource(R.string.settings_desc_embedded_profile_face_profile_name),
+                title = stringResource(R.string.profile_local_name),
+                text = stringResource(R.string.profile_local_name_description),
                 selectedValueText = profileName,
                 icon = R.drawable.pencil,
                 onClick = { showRenameDialog = true }
@@ -247,10 +247,10 @@ fun ProfileFaceCard(
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.profile.face_photo"),
-                title = stringResource(R.string.face_photo),
-                text = stringResource(R.string.settings_desc_embedded_profile_face_photo),
+                title = stringResource(R.string.profile_photo),
+                text = stringResource(R.string.profile_photo_description),
                 selectedValueText = stringResource(
-                    if (hasPhoto) R.string.face_photo_set else R.string.face_photo_not_set
+                    if (hasPhoto) R.string.profile_photo_set else R.string.profile_photo_not_set
                 ),
                 icon = R.drawable.image,
                 onClick = {
@@ -279,7 +279,7 @@ fun ProfileFaceCard(
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.trash),
-                                contentDescription = stringResource(R.string.settings_desc_embedded_profile_face_photo_remove),
+                                contentDescription = stringResource(R.string.profile_photo_remove_description),
                                 tint = Color.Red,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -293,7 +293,7 @@ fun ProfileFaceCard(
             DialogPresence(visible = showNameSourceDialog) {
                 ValueSelectorDialog(
                     onDismiss = { showNameSourceDialog = false },
-                    title = stringResource(R.string.face_name_source),
+                    title = stringResource(R.string.profile_name_source),
                     selectedValue = nameSource,
                     values = listOf(
                         FACE_SOURCE_PROFILE,
@@ -303,7 +303,7 @@ fun ProfileFaceCard(
                     ),
                     valueText = { faceSourceLabel(it) },
                     lockedValues = lockedSources,
-                    lockedLabel = stringResource(R.string.face_source_locked),
+                    lockedLabel = stringResource(R.string.profile_identity_source_not_connected),
                     onValueSelected = { value ->
                         nameSource = value
                         app.saveFaceNameSource(value)
@@ -317,7 +317,7 @@ fun ProfileFaceCard(
             DialogPresence(visible = showAvatarSourceDialog) {
                 ValueSelectorDialog(
                     onDismiss = { showAvatarSourceDialog = false },
-                    title = stringResource(R.string.face_avatar_source),
+                    title = stringResource(R.string.profile_avatar_source),
                     selectedValue = avatarSource,
                     values = listOf(
                         FACE_SOURCE_PROFILE,
@@ -327,7 +327,7 @@ fun ProfileFaceCard(
                     ),
                     valueText = { faceSourceLabel(it) },
                     lockedValues = lockedSources,
-                    lockedLabel = stringResource(R.string.face_source_locked),
+                    lockedLabel = stringResource(R.string.profile_identity_source_not_connected),
                     onValueSelected = { value ->
                         avatarSource = value
                         app.saveFaceAvatarSource(value)
@@ -342,7 +342,7 @@ fun ProfileFaceCard(
                 SettingsInputDialog(
                     title = stringResource(R.string.profile_rename),
                     initialValue = profileName,
-                    placeholder = stringResource(R.string.enter_profile_name),
+                    placeholder = stringResource(R.string.profile_name_input_hint),
                     onDismiss = { showRenameDialog = false },
                     onSetValue = { name ->
                         // Same rules as the Profiles page: unique among every profile's
@@ -383,14 +383,14 @@ fun ProfileFaceCard(
 
             DialogPresence(visible = showErrorPopup) {
                 DefaultDialog(
-                    title = stringResource(R.string.dialog_profile_error),
+                    title = stringResource(R.string.profile_error_dialog_title),
                     onDismiss = { showErrorPopup = false },
                     modifier = Modifier,
                     footer = {
                         ButtonRow(
                             buttons = listOf(
                                 DialogButton(
-                                    text = stringResource(R.string.dialog_close),
+                                    text = stringResource(R.string.common_action_close),
                                     primary = true,
                                     onClick = {
                                         showErrorPopup = false

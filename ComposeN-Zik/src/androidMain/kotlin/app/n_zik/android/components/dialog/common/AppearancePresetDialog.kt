@@ -44,11 +44,11 @@ fun AppearancePresetDialog(
 
     DialogFrame(
         onDismiss = onDismiss,
-        title = stringResource(R.string.appearancepresets),
+        title = stringResource(R.string.settings_player_appearance_presets_title),
         footer = {
             ButtonRow(listOf(
-                DialogButton(stringResource(R.string.cancel), onClick = onDismiss),
-                DialogButton(stringResource(R.string.dialog_apply), primary = true, onClick = {
+                DialogButton(stringResource(R.string.common_action_cancel), onClick = onDismiss),
+                DialogButton(stringResource(R.string.common_action_apply), primary = true, onClick = {
                     when (pagerStateAppearance.currentPage) {
                         0 -> onClick0()
                         1 -> onClick1()

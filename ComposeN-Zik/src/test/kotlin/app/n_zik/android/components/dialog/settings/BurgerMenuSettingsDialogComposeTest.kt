@@ -120,9 +120,9 @@ class BurgerMenuSettingsDialogComposeTest {
         dataStore.edit().putBoolean(DataStoreUtils.burgerMenuToggleKey("rewind"), false).commit()
         BurgerMenuSettingsDialog.showDialog()
         content { BurgerMenuSettingsDialog.Render() }
-        composeRule.onNodeWithText(app.getString(R.string.reset)).assertIsDisplayed().performTouchInput { click() }
+        composeRule.onNodeWithText(app.getString(R.string.common_action_reset)).assertIsDisplayed().performTouchInput { click() }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText(app.getString(R.string.dialog_apply)).assertIsDisplayed().performTouchInput { click() }
+        composeRule.onNodeWithText(app.getString(R.string.common_action_apply)).assertIsDisplayed().performTouchInput { click() }
         composeRule.waitForIdle()
         assertFalse(BurgerMenuSettingsDialog.isActive)
         assertTrue(dataStore.getBoolean(DataStoreUtils.burgerMenuToggleKey("rewind"), false))
@@ -139,7 +139,7 @@ class BurgerMenuSettingsDialogComposeTest {
             ),
         ).commit()
         content { BurgerMenuSettingsDialog.DialogBody() }
-        val removeButtons = composeRule.onAllNodesWithContentDescription(app.getString(R.string.delete))
+        val removeButtons = composeRule.onAllNodesWithContentDescription(app.getString(R.string.common_action_delete))
         removeButtons.assertCountEquals(2)
         removeButtons[0].performClick()
         repeat(30) {
@@ -147,7 +147,7 @@ class BurgerMenuSettingsDialogComposeTest {
             composeRule.waitForIdle()
         }
         removeButtons.assertCountEquals(1)
-        composeRule.onNodeWithText(app.getString(R.string.dialog_apply)).performClick()
+        composeRule.onNodeWithText(app.getString(R.string.common_action_apply)).performClick()
         composeRule.waitForIdle()
         assertEquals(1, storedOrder().count { it == "separator" })
         assertTrue(storedOrder().containsAll(DataStoreUtils.DEFAULT_BURGER_MENU_ORDER))
@@ -157,10 +157,10 @@ class BurgerMenuSettingsDialogComposeTest {
     fun confirmPersistsTheToggleOffAndTheFullOrderToTheGlobalStore() {
         content { BurgerMenuSettingsDialog.DialogBody() }
 
-        composeRule.onNodeWithText(app.getString(R.string.rewind)).assertIsDisplayed()
-        composeRule.onNodeWithText(app.getString(R.string.rewind)).performClick()
+        composeRule.onNodeWithText(app.getString(R.string.rewind_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(app.getString(R.string.rewind_title)).performClick()
         composeRule.waitForIdle()
-        composeRule.onNodeWithText(app.getString(R.string.dialog_apply)).performClick()
+        composeRule.onNodeWithText(app.getString(R.string.common_action_apply)).performClick()
         composeRule.waitForIdle()
 
         assertFalse(
@@ -181,9 +181,9 @@ class BurgerMenuSettingsDialogComposeTest {
     fun cancelLeavesTheGlobalStoreUntouched() {
         content { BurgerMenuSettingsDialog.DialogBody() }
 
-        composeRule.onNodeWithText(app.getString(R.string.rewind)).performClick()
+        composeRule.onNodeWithText(app.getString(R.string.rewind_title)).performClick()
         composeRule.waitForIdle()
-        composeRule.onNodeWithText(app.getString(R.string.cancel)).performClick()
+        composeRule.onNodeWithText(app.getString(R.string.common_action_cancel)).performClick()
         composeRule.waitForIdle()
 
         assertFalse(dataStore.contains(DataStoreUtils.KEY_BURGER_MENU_ORDER))
@@ -194,10 +194,10 @@ class BurgerMenuSettingsDialogComposeTest {
     fun addSeparatorButtonPersistsAnExtraSeparatorInstance() {
         content { BurgerMenuSettingsDialog.DialogBody() }
 
-        composeRule.onNodeWithText(app.getString(R.string.add_separator)).assertIsDisplayed()
-        composeRule.onNodeWithText(app.getString(R.string.add_separator)).performClick()
+        composeRule.onNodeWithText(app.getString(R.string.settings_navigation_menu_action_add_separator)).assertIsDisplayed()
+        composeRule.onNodeWithText(app.getString(R.string.settings_navigation_menu_action_add_separator)).performClick()
         composeRule.waitForIdle()
-        composeRule.onNodeWithText(app.getString(R.string.dialog_apply)).performClick()
+        composeRule.onNodeWithText(app.getString(R.string.common_action_apply)).performClick()
         composeRule.waitForIdle()
 
         // G5 renegotiated: the default instance plus the one added through the footer button
@@ -218,11 +218,11 @@ class BurgerMenuSettingsDialogComposeTest {
         content { BurgerMenuSettingsDialog.DialogBody() }
 
         // The stored order is visible in the first row
-        composeRule.onNodeWithText(app.getString(R.string.rescue_center)).assertIsDisplayed()
+        composeRule.onNodeWithText(app.getString(R.string.recovery_center)).assertIsDisplayed()
 
-        composeRule.onNodeWithText(app.getString(R.string.reset)).performClick()
+        composeRule.onNodeWithText(app.getString(R.string.common_action_reset)).performClick()
         composeRule.waitForIdle()
-        composeRule.onNodeWithText(app.getString(R.string.dialog_apply)).performClick()
+        composeRule.onNodeWithText(app.getString(R.string.common_action_apply)).performClick()
         composeRule.waitForIdle()
 
         assertEquals(DataStoreUtils.DEFAULT_BURGER_MENU_ORDER, storedOrder())
@@ -249,8 +249,8 @@ class BurgerMenuSettingsDialogComposeTest {
 
         // The two separators sit at the top of the list, so their rows are composed
         // (rows past the LazyColumn viewport are not, see the class note).
-        composeRule.onNodeWithText(app.getString(R.string.burger_menu_separator_instance, 1)).assertIsDisplayed()
-        composeRule.onNodeWithText(app.getString(R.string.burger_menu_separator_instance, 2)).assertIsDisplayed()
+        composeRule.onNodeWithText(app.getString(R.string.settings_navigation_menu_separator_instance_format, 1)).assertIsDisplayed()
+        composeRule.onNodeWithText(app.getString(R.string.settings_navigation_menu_separator_instance_format, 2)).assertIsDisplayed()
     }
 
     @Test

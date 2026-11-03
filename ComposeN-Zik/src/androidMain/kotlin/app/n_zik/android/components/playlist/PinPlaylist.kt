@@ -22,7 +22,7 @@ class PinPlaylist(
     }
 
     override val iconId: Int = R.drawable.pin_filled
-    override val messageId: Int = R.string.info_pin_unpin_playlist
+    override val messageId: Int = R.string.playlist_action_toggle_pinned
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )

@@ -31,7 +31,7 @@ abstract class RenameDialog(
     override fun LeadingIcon() = Icon(
         painter = icon,
         tint = colorPalette().text,
-        contentDescription = stringResource(R.string.cd_rename_dialog_text_box_icon),
+        contentDescription = stringResource(R.string.accessibility_rename_dialog_text_box_icon),
         modifier = Modifier.size( 20.dp )
     )
 }

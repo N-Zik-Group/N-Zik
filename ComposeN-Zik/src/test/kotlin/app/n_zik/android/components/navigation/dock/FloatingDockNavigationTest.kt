@@ -102,9 +102,9 @@ class FloatingDockNavigationTest {
             assertTrue(bounds.height < expanded.height)
         }
         compose.onNodeWithText("Registered songs tab").assertDoesNotExist()
-        val home = compose.onNodeWithContentDescription(context.getString(R.string.home)).fetchSemanticsNode().boundsInRoot
+        val home = compose.onNodeWithContentDescription(context.getString(R.string.home_title)).fetchSemanticsNode().boundsInRoot
         assertEquals(expanded.center.x, home.center.x, 1f)
-        compose.onNodeWithContentDescription(context.getString(R.string.home)).performClick()
+        compose.onNodeWithContentDescription(context.getString(R.string.home_title)).performClick()
         compose.runOnIdle { assertEquals(0f, state.foldTarget) }
     }
 
@@ -112,14 +112,14 @@ class FloatingDockNavigationTest {
         render(bottomMini = true)
         compose.onNodeWithTag("dockHost").assertHeightIsEqualTo(61.dp)
         compose.onNodeWithText("Registered songs tab").assertIsDisplayed()
-        compose.onNodeWithContentDescription(context.getString(R.string.search)).performClick()
+        compose.onNodeWithContentDescription(context.getString(R.string.search_title)).performClick()
         compose.runOnIdle {
             clock.value = 1f
             state.foldTarget = 1f
         }
         compose.onNodeWithText("Registered songs tab").assertDoesNotExist()
-        compose.onNodeWithContentDescription(context.getString(R.string.search)).performClick()
-        compose.onNodeWithContentDescription(context.getString(R.string.home))
+        compose.onNodeWithContentDescription(context.getString(R.string.search_title)).performClick()
+        compose.onNodeWithContentDescription(context.getString(R.string.home_title))
             .assertWidthIsAtLeast(48.dp).assertHeightIsAtLeast(48.dp).performClick()
         compose.runOnIdle {
             assertEquals(2, searches)
@@ -135,7 +135,7 @@ class FloatingDockNavigationTest {
         compose.runOnIdle { clock.value = 1f }
         dockHost.assertHeightIsEqualTo(48.dp)
         compose.onNodeWithText("Tab 1").assertDoesNotExist()
-        val home = compose.onNodeWithContentDescription(context.getString(R.string.home))
+        val home = compose.onNodeWithContentDescription(context.getString(R.string.home_title))
         assertEquals(dockHost.fetchSemanticsNode().boundsInRoot.center.x,
             home.fetchSemanticsNode().boundsInRoot.center.x, 1f)
         home.performClick()
@@ -148,38 +148,38 @@ class FloatingDockNavigationTest {
         clock.value = 1f
         state.foldTarget = 1f
         render(bottomMini = true)
-        compose.onNodeWithContentDescription(context.getString(R.string.home))
+        compose.onNodeWithContentDescription(context.getString(R.string.home_title))
             .assertWidthIsEqualTo(48.dp).assertHeightIsEqualTo(48.dp)
-        compose.onNodeWithContentDescription(context.getString(R.string.search))
+        compose.onNodeWithContentDescription(context.getString(R.string.search_title))
             .assertWidthIsEqualTo(48.dp).assertHeightIsEqualTo(48.dp)
     }
 
     @Test fun `search page has no duplicate shortcut expanded or folded with a bottom mini`() {
         render(bottomMini = true, showSearch = false)
         compose.onNodeWithText("Registered songs tab").assertIsDisplayed()
-        compose.onNodeWithContentDescription(context.getString(R.string.search)).assertDoesNotExist()
+        compose.onNodeWithContentDescription(context.getString(R.string.search_title)).assertDoesNotExist()
         compose.runOnIdle { clock.value = 1f; state.foldTarget = 1f }
-        compose.onNodeWithContentDescription(context.getString(R.string.search)).assertDoesNotExist()
-        compose.onNodeWithContentDescription(context.getString(R.string.home))
+        compose.onNodeWithContentDescription(context.getString(R.string.search_title)).assertDoesNotExist()
+        compose.onNodeWithContentDescription(context.getString(R.string.home_title))
             .assertWidthIsEqualTo(48.dp).assertHeightIsEqualTo(48.dp).performClick()
         compose.runOnIdle { assertEquals(0f, state.foldTarget); assertEquals(0, searches) }
     }
 
     @Test fun `search page without bottom mini folds into Home without a redundant search control`() {
         render(bottomMini = false, showSearch = false)
-        compose.onNodeWithContentDescription(context.getString(R.string.search)).assertDoesNotExist()
+        compose.onNodeWithContentDescription(context.getString(R.string.search_title)).assertDoesNotExist()
         compose.runOnIdle { clock.value = 1f; state.foldTarget = 1f }
-        compose.onNodeWithContentDescription(context.getString(R.string.home)).assertWidthIsEqualTo(48.dp)
+        compose.onNodeWithContentDescription(context.getString(R.string.home_title)).assertWidthIsEqualTo(48.dp)
         compose.onNodeWithTag("dockHost").assertHeightIsEqualTo(48.dp)
         compose.onNodeWithText("Registered songs tab").assertDoesNotExist()
-        compose.onNodeWithContentDescription(context.getString(R.string.search)).assertDoesNotExist()
+        compose.onNodeWithContentDescription(context.getString(R.string.search_title)).assertDoesNotExist()
     }
 
     @Test fun `removing a bottom mini centers Home without resetting the shared fold clock`() {
         clock.value = 1f
         state.foldTarget = 1f
         render(bottomMini = true, showSearch = false)
-        val home = compose.onNodeWithContentDescription(context.getString(R.string.home))
+        val home = compose.onNodeWithContentDescription(context.getString(R.string.home_title))
         home.assertWidthIsEqualTo(48.dp)
         val attachedX = home.fetchSemanticsNode().boundsInRoot.center.x
         compose.runOnIdle { bottomMiniOverride.value = false }
@@ -354,7 +354,7 @@ class FloatingDockNavigationTest {
                             } else Row(modifier.onSizeChanged { measuredTabWidths += it.width }) {
                                 Text("Registered songs tab", Modifier.weight(1f))
                                 if (showSearch) Box(Modifier.width(61.dp).fillMaxHeight()
-                                    .semantics { contentDescription = context.getString(R.string.search) }
+                                    .semantics { contentDescription = context.getString(R.string.search_title) }
                                     .clickable { searches++ })
                             }
                         },

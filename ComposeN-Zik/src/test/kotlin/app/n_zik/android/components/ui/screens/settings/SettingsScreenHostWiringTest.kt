@@ -224,7 +224,7 @@ class SettingsScreenHostWiringTest {
     private fun tabIsComposed(): Boolean =
         composeRule
             .onAllNodesWithText(
-                context.getString(R.string.picture_in_picture),
+                context.getString(R.string.settings_picture_in_picture_title),
                 substring = false,
                 useUnmergedTree = true
             )
@@ -270,11 +270,11 @@ class SettingsScreenHostWiringTest {
     @Test
     fun glassSearchOpensDedicatedPageAndSystemBackRestoresQuery() {
         showHost()
-        val query = context.getString(R.string.liquid_glass)
+        val query = context.getString(R.string.glass_effect_title)
         composeRule.onNodeWithTag("settings_global_search").performTextInput(query)
         composeRule.mainClock.advanceTimeBy(500)
         Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(500))
-        composeRule.onNodeWithTag("settings_global_list").performScrollToKey("item_${R.string.liquid_glass}")
+        composeRule.onNodeWithTag("settings_global_list").performScrollToKey("item_${R.string.glass_effect_title}")
         pumpUntil("Glass search result", 30_000) {
             composeRule.onAllNodesWithTag("settings_global_result_settingsGlass").fetchSemanticsNodes().size == 1
         }
@@ -474,7 +474,7 @@ class SettingsScreenHostWiringTest {
         val searchField = composeRule.onNode(hasSetTextAction())
         searchField.assertIsNotFocused()
         composeRule.onNodeWithTag("unified_search_bar").performClick()
-        val query = context.getString(R.string.queue_management)
+        val query = context.getString(R.string.settings_queue_management_title)
         searchField.performTextInput(query)
         pumpUntil("category search focused", 30_000) {
             runCatching { searchField.assertIsFocused() }.isSuccess
@@ -677,8 +677,8 @@ class SettingsScreenHostWiringTest {
     fun theCardSearchResultOpensItsCategoryAndScrollsToTheCard() {
         showHost(initialTab = 0, focus = "")
         composeRule.onNodeWithTag("settings_global_search")
-            .performTextInput(context.getString(R.string.queue_management))
-        val result = composeRule.onNodeWithTag("settings_global_result_0_${R.string.queue_management}")
+            .performTextInput(context.getString(R.string.settings_queue_management_title))
+        val result = composeRule.onNodeWithTag("settings_global_result_0_${R.string.settings_queue_management_title}")
         pumpUntil("the card result is composed", 30_000) {
             runCatching { result.fetchSemanticsNode() }.isSuccess
         }

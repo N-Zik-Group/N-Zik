@@ -143,7 +143,7 @@ object SameNameArtistDedup {
         if (result.merged > 0) {
             withContext(NzikDispatchers.UI) {
                 runCatching {
-                    Toaster.s(context.getString(R.string.same_name_artists_dedup_toast, result.merged))
+                    Toaster.s(context.getString(R.string.artist_deduplication_result, result.merged))
                 }.onFailure { e ->
                     Timber.tag(TAG).w(e, "Dedup succeeded but toast failed")
                 }

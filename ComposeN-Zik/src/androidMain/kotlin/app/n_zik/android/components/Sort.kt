@@ -86,7 +86,7 @@ open class Sort<T: Enum<T>> (
     override val iconId: Int = R.drawable.arrow_up
     override val menuIconTitle: String
         @Composable
-        get() = stringResource( R.string.sorting_order )
+        get() = stringResource( R.string.library_sort_order_title )
 
     open var sortBy: T by sortByState
     open var sortOrder: SortOrder by sortOrderState

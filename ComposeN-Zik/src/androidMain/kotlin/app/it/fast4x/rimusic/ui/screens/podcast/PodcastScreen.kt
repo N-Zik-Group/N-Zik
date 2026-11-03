@@ -34,7 +34,7 @@ fun PodcastScreen(
                 miniPlayer = miniPlayer,
                 topInsetHandledByContent = true,
         navBarContent = { item ->
-                    item(0, stringResource(R.string.podcast_episodes), R.drawable.podcast)
+                    item(0, stringResource(R.string.podcast_episodes_title), R.drawable.podcast)
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {

@@ -8,19 +8,19 @@ enum class PlayerTimelineType(
     @field:StringRes override val textId: Int
 ): TextView {
 
-    Default( R.string._default ),
+    Default( R.string.common_option_default ),
 
-    Wavy( R.string.wavy_timeline ),
+    Wavy( R.string.player_timeline_wavy_label ),
 
-    PinBar( R.string.pin_bar ),
+    PinBar( R.string.player_timeline_pin_bar_label ),
 
-    BodiedBar( R.string.bodied_bar ),
+    BodiedBar( R.string.player_timeline_fat_bar_label ),
 
     AudioWaves( R.string.audio_waveform ),
 
-    ThinBar( R.string.thin_bar ),
+    ThinBar( R.string.player_timeline_thin_bar_label ),
 
-    ColoredBar( R.string.colored_bar ),
+    ColoredBar( R.string.player_timeline_colored_bar_label ),
 
     VisualizerBar( R.string.visualizer_bar );
 }

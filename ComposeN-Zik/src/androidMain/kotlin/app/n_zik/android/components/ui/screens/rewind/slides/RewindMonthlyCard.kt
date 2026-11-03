@@ -72,12 +72,12 @@ fun RewindMonthlyCard(
             val chartHeight = if (compact) 205.dp else 250.dp
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_monthly_kicker, data.periodLabel), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rewind_monthly_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
                     RewindAdaptiveTitle(
-                        text = stringResource(R.string.rw_monthly_heading),
+                        text = stringResource(R.string.rewind_monthly_heading),
                         color = onSlide,
                         fontSize = textScale.size(if (compact) 35.sp else 41.sp),
                         lineHeight = textScale.size(if (compact) 33.sp else 38.sp),
@@ -88,7 +88,7 @@ fun RewindMonthlyCard(
                 Spacer(Modifier.height(8.dp))
                 RewindReveal(active, 210) {
                     Text(
-                        text = peak?.let { stringResource(R.string.rw_monthly_peak_sub, it.month.uppercase()) } ?: stringResource(R.string.rw_monthly_default_sub),
+                        text = peak?.let { stringResource(R.string.rewind_monthly_peak_sub, it.month.uppercase()) } ?: stringResource(R.string.rewind_monthly_default_sub),
                         color = onSlide,
                         fontSize = textScale.size(11.sp),
                         fontWeight = FontWeight.Black,
@@ -160,14 +160,14 @@ fun RewindMonthlyCard(
                         horizontalArrangement = Arrangement.spacedBy(9.dp)
                     ) {
                         MonthMetric(
-                            label = stringResource(R.string.rw_monthly_peak_month),
+                            label = stringResource(R.string.rewind_monthly_peak_month),
                             value = peak?.month?.uppercase() ?: "—",
                             background = rewindColors.value.purple,
                             foreground = rewindColors.value.textOn(rewindColors.value.purple),
                             modifier = Modifier.weight(1f)
                         )
                         MonthMetric(
-                            label = stringResource(R.string.rw_monthly_peak_minutes),
+                            label = stringResource(R.string.rewind_monthly_peak_minutes),
                             value = formatRewindNumber(peak?.minutes ?: 0L),
                             background = rewindColors.value.pink,
                             foreground = rewindColors.value.textOn(rewindColors.value.pink),

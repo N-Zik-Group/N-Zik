@@ -61,7 +61,7 @@ internal fun AccountsSyncOverviewCard(isYouTubeSyncEnabled: Boolean, isSyncEnabl
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("accounts.sync_data_with_ytm_account.sync_data_with_ytm_account"),
                 title = stringResource(R.string.sync_data_with_ytm_account),
-                text = stringResource(R.string.playlists_albums_artists_history_like_etc),
+                text = stringResource(R.string.settings_youtube_library_sync_content_description),
                 isChecked = isYouTubeSyncEnabled,
                 enabled = BuildConfig.BUILD_TYPE in listOf("debug", "dev64", "dev32", "beta64", "beta32"),
                 onCheckedChange = {
@@ -135,7 +135,7 @@ internal fun AccountsSyncOverviewCard(isYouTubeSyncEnabled: Boolean, isSyncEnabl
                         }
                     )
                     OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_accounts_sync_data_with_ytm_account_sync_direction), stringResource(syncDirection.stringResource)),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.sync_direction_description), stringResource(syncDirection.stringResource)),
                         modifier = Modifier.settingsSearchTarget("accounts.sync_data_with_ytm_account.sync_direction"),
                         icon = R.drawable.sync,
                         title = stringResource(R.string.sync_direction),

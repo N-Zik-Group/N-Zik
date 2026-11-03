@@ -110,7 +110,7 @@ class EditMetadataDialog private constructor(
     private var pendingSong: Song? = null
 
     override val iconId: Int = R.drawable.cover_edit
-    override val messageId: Int = R.string.edit_metadata
+    override val messageId: Int = R.string.metadata_action_edit
     override val menuIconTitle: String
         @Composable
         get() = stringResource(messageId)
@@ -282,7 +282,7 @@ class EditMetadataDialog private constructor(
             val moduleState = FfmpegModule.ensureReady()
             if (moduleState !is ModuleState.READY) {
                 if (moduleState is ModuleState.FAILED) {
-                    Toaster.e(appContext().getString(R.string.module_edit_unavailable, moduleState.message))
+                    Toaster.e(appContext().getString(R.string.modules_edit_unavailable, moduleState.message))
                 }
                 hideDialog()
                 return@LaunchedEffect
@@ -399,7 +399,7 @@ class EditMetadataDialog private constructor(
                 border = glassDialogButtonBorder(BorderStroke(1.dp, colorPalette().accent)),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
             ) {
-                Text(stringResource(R.string.pick_from_gallery))
+                Text(stringResource(R.string.thumbnail_action_pick_from_gallery))
             }
         }
     }
@@ -421,12 +421,12 @@ class EditMetadataDialog private constructor(
     override fun Buttons() = ButtonRow(
         buttons = listOf(
             DialogButton(
-                text = stringResource(R.string.cancel),
+                text = stringResource(R.string.common_action_cancel),
                 onClick = ::hideDialog,
                 danger = true
             ),
             DialogButton(
-                text = stringResource(R.string.dialog_save),
+                text = stringResource(R.string.common_action_save),
                 onClick = { saveToFile() },
                 primary = true
             )
@@ -444,8 +444,8 @@ class EditMetadataDialog private constructor(
             if (moduleState !is ModuleState.READY) {
                 withContext(NzikDispatchers.UI) {
                     val reason = (moduleState as? ModuleState.FAILED)?.message
-                        ?: appContext().getString(R.string.module_not_available_arch)
-                    Toaster.e(appContext().getString(R.string.module_save_failed, reason))
+                        ?: appContext().getString(R.string.modules_not_available_arch)
+                    Toaster.e(appContext().getString(R.string.modules_save_failed, reason))
                 }
                 return@launch
             }

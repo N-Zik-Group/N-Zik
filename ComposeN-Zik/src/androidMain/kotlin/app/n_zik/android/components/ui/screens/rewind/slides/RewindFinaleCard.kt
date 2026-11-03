@@ -164,14 +164,14 @@ fun RewindFinaleCard(
             val statSize = textScale.size(if (compact) 14.sp else 17.sp)
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_finale_kicker, data.periodLabel), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rewind_finale_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(10.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
                     // Fixed 2-line closing headline ("YOUR %1$s\nREWIND.") — not variable user
                     // content, so no hero marquee despite the size.
                     Text(
-                        text = stringResource(R.string.rw_finale_heading, data.periodLabel),
+                        text = stringResource(R.string.rewind_finale_heading, data.periodLabel),
                         color = rewindColors.value.cream,
                         fontSize = textScale.size(if (compact) 34.sp else 42.sp),
                         lineHeight = textScale.size(if (compact) 32.sp else 38.sp),
@@ -217,7 +217,7 @@ fun RewindFinaleCard(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         FinaleStatTile(
-                            label = stringResource(R.string.rw_label_minutes),
+                            label = stringResource(R.string.rewind_label_minutes),
                             value = formatRewindMinutes(data.stats.totalMinutes),
                             background = rewindColors.value.lime,
                             foreground = onLime,
@@ -227,7 +227,7 @@ fun RewindFinaleCard(
                             modifier = Modifier.weight(1f)
                         )
                         FinaleStatTile(
-                            label = stringResource(R.string.rw_label_plays),
+                            label = stringResource(R.string.rewind_label_plays),
                             value = formatRewindNumber(data.stats.totalPlays.toLong()),
                             background = rewindColors.value.pink,
                             foreground = onPink,
@@ -244,7 +244,7 @@ fun RewindFinaleCard(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         FinaleStatTile(
-                            label = stringResource(R.string.rw_label_days),
+                            label = stringResource(R.string.rewind_label_days),
                             value = formatRewindNumber(data.daysWithMusic.toLong()),
                             background = rewindColors.value.blue,
                             foreground = onBlue,
@@ -254,7 +254,7 @@ fun RewindFinaleCard(
                             modifier = Modifier.weight(1f)
                         )
                         FinaleStatTile(
-                            label = stringResource(R.string.rw_label_unique_songs),
+                            label = stringResource(R.string.rewind_label_unique_songs),
                             value = formatRewindNumber(data.totalUniqueSongs.toLong()),
                             background = rewindColors.value.orange,
                             foreground = onOrange,
@@ -271,7 +271,7 @@ fun RewindFinaleCard(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         FinaleStatTile(
-                            label = stringResource(R.string.rw_label_unique_artists),
+                            label = stringResource(R.string.rewind_label_unique_artists),
                             value = formatRewindNumber(data.totalUniqueArtists.toLong()),
                             background = rewindColors.value.purple,
                             foreground = onPurple,
@@ -281,7 +281,7 @@ fun RewindFinaleCard(
                             modifier = Modifier.weight(1f)
                         )
                         FinaleStatTile(
-                            label = stringResource(R.string.rw_label_unique_albums),
+                            label = stringResource(R.string.rewind_label_unique_albums),
                             value = formatRewindNumber(data.totalUniqueAlbums.toLong()),
                             background = rewindColors.value.yellow,
                             foreground = onYellow,
@@ -309,7 +309,7 @@ fun RewindFinaleCard(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = stringResource(R.string.rw_finale_listener_level),
+                                        text = stringResource(R.string.rewind_finale_listener_level),
                                         color = rewindColors.value.ink.copy(alpha = 0.54f),
                                         fontSize = textScale.size(8.sp),
                                         fontWeight = FontWeight.Black,
@@ -353,9 +353,9 @@ fun RewindFinaleCard(
                         modifier = Modifier.weight(1f)
                     ) {
                         FinaleFeature(
-                            label = stringResource(R.string.rw_finale_top_artist),
+                            label = stringResource(R.string.rewind_finale_top_artist),
                             title = topArtist?.artist?.cleanName() ?: "—",
-                            subtitle = topArtist?.let { stringResource(R.string.rw_minutes_compact, formatRewindNumber(it.minutes)) } ?: "",
+                            subtitle = topArtist?.let { stringResource(R.string.rewind_minutes_compact, formatRewindNumber(it.minutes)) } ?: "",
                             imageUrl = topArtist?.artist?.thumbnailUrl,
                             circular = true,
                             artistName = topArtist?.artist?.cleanName(),
@@ -369,9 +369,9 @@ fun RewindFinaleCard(
                         modifier = Modifier.weight(1f)
                     ) {
                         FinaleFeature(
-                            label = stringResource(R.string.rw_finale_top_song),
+                            label = stringResource(R.string.rewind_finale_top_song),
                             title = topSong?.song?.cleanTitle() ?: "—",
-                            subtitle = topSong?.let { stringResource(R.string.rw_meta_plays, formatRewindNumber(it.playCount.toLong())) } ?: "",
+                            subtitle = topSong?.let { stringResource(R.string.rewind_play_count, formatRewindNumber(it.playCount.toLong())) } ?: "",
                             imageUrl = topSong?.song?.thumbnailUrl,
                             circular = false,
                             artistName = null,
@@ -392,9 +392,9 @@ fun RewindFinaleCard(
                     ) {
                         // Same yellow as the Album of the Year slide.
                         FinaleFeature(
-                            label = stringResource(R.string.rw_finale_top_album),
+                            label = stringResource(R.string.rewind_finale_top_album),
                             title = topAlbum?.album?.cleanTitle() ?: "—",
-                            subtitle = topAlbum?.let { stringResource(R.string.rw_minutes_compact, formatRewindNumber(it.minutes)) } ?: "",
+                            subtitle = topAlbum?.let { stringResource(R.string.rewind_minutes_compact, formatRewindNumber(it.minutes)) } ?: "",
                             imageUrl = topAlbum?.album?.thumbnailUrl,
                             circular = false,
                             artistName = null,
@@ -411,9 +411,9 @@ fun RewindFinaleCard(
                         // Same lime as the top playlists slide; no cover field in the DB, so the
                         // most-played track cover is used as the artwork.
                         FinaleFeature(
-                            label = stringResource(R.string.rw_finale_top_playlist),
+                            label = stringResource(R.string.rewind_finale_top_playlist),
                             title = topPlaylist?.playlist?.playlist?.cleanName() ?: "—",
-                            subtitle = topPlaylist?.let { stringResource(R.string.rw_meta_songs, formatRewindNumber(it.songCount.toLong())) } ?: "",
+                            subtitle = topPlaylist?.let { stringResource(R.string.rewind_meta_songs, formatRewindNumber(it.songCount.toLong())) } ?: "",
                             imageUrl = null,
                             circular = false,
                             artistName = null,
@@ -439,7 +439,7 @@ fun RewindFinaleCard(
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
-                                text = stringResource(R.string.rw_finale_brand, data.periodLabel),
+                                text = stringResource(R.string.rewind_finale_brand, data.periodLabel),
                                 color = rewindColors.value.lime,
                                 fontSize = textScale.size(10.sp),
                                 fontWeight = FontWeight.Black,
@@ -513,7 +513,7 @@ fun RewindFinaleCard(
                                 )
                                 Spacer(Modifier.width(6.dp))
                                 Text(
-                                    text = stringResource(R.string.rw_finale_export_options),
+                                    text = stringResource(R.string.rewind_finale_export_options),
                                     color = onLime,
                                     fontSize = textScale.size(11.sp),
                                     fontWeight = FontWeight.Black,
@@ -549,11 +549,11 @@ fun RewindFinaleCard(
         // The same style toggle as the song item menu (settings: list or grid) — the
         // entries are defined once and rendered in whichever layout the user picked.
         val menuStyle by rememberPreference(menuStyleKey, MenuStyle.List)
-        val exportTitle = stringResource(R.string.rw_finale_export_options)
+        val exportTitle = stringResource(R.string.rewind_finale_export_options)
         val regenLabel = stringResource(
-            if (regenConfirmed) R.string.rw_finale_regen_done
-            else if (onRegeneratePlaylist != null) R.string.rw_finale_regen_playlist
-            else R.string.rw_finale_regen_alltime
+            if (regenConfirmed) R.string.rewind_finale_playlist_updated
+            else if (onRegeneratePlaylist != null) R.string.rewind_finale_action_regenerate_playlist
+            else R.string.rewind_finale_action_regenerate_all_time
         )
         val onExportPage: (() -> Unit)? = onShareSlide?.let {
             {
@@ -577,7 +577,7 @@ fun RewindFinaleCard(
             ListMenu.Menu(title = exportTitle) {
                 if (onExportPage != null) {
                     ListMenu.Entry(
-                        text = stringResource(R.string.rw_finale_export_page),
+                        text = stringResource(R.string.rewind_finale_export_page),
                         icon = { ExportMenuIcon(R.drawable.share_social) },
                         onClick = onExportPage
                     )
@@ -590,7 +590,7 @@ fun RewindFinaleCard(
                     )
                 }
                 ListMenu.Entry(
-                    text = stringResource(R.string.rw_finale_share),
+                    text = stringResource(R.string.rewind_finale_share),
                     icon = { ExportMenuIcon(R.drawable.share_social) },
                     onClick = {
                         showExportMenu = false
@@ -598,7 +598,7 @@ fun RewindFinaleCard(
                     }
                 )
                 ListMenu.Entry(
-                    text = stringResource(R.string.rw_finale_play_again),
+                    text = stringResource(R.string.rewind_finale_play_again),
                     icon = { ExportMenuIcon(R.drawable.refresh) },
                     onClick = {
                         showExportMenu = false
@@ -612,7 +612,7 @@ fun RewindFinaleCard(
                     item {
                         GridMenu.Entry(
                             iconHasOwnBackground = true,
-                            text = stringResource(R.string.rw_finale_export_page),
+                            text = stringResource(R.string.rewind_finale_export_page),
                             icon = { ExportMenuIcon(R.drawable.share_social) },
                             onClick = onExportPage
                         )
@@ -631,7 +631,7 @@ fun RewindFinaleCard(
                 item {
                     GridMenu.Entry(
                         iconHasOwnBackground = true,
-                        text = stringResource(R.string.rw_finale_share),
+                        text = stringResource(R.string.rewind_finale_share),
                         icon = { ExportMenuIcon(R.drawable.share_social) },
                         onClick = {
                             showExportMenu = false
@@ -642,7 +642,7 @@ fun RewindFinaleCard(
                 item {
                     GridMenu.Entry(
                         iconHasOwnBackground = true,
-                        text = stringResource(R.string.rw_finale_play_again),
+                        text = stringResource(R.string.rewind_finale_play_again),
                         icon = { ExportMenuIcon(R.drawable.refresh) },
                         onClick = {
                             showExportMenu = false

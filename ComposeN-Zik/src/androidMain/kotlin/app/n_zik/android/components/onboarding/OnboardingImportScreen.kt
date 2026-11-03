@@ -258,12 +258,12 @@ fun OnboardingImportScreen(
     })
 
     val options = listOf(
-        Triple(0, stringResource(R.string.database), stringResource(R.string.import_database_description)),
-        Triple(1, stringResource(R.string.settings), stringResource(R.string.import_settings_description)),
-        Triple(2, stringResource(R.string.database_and_settings), stringResource(R.string.import_both_description)),
+        Triple(0, stringResource(R.string.backup_target_database_label), stringResource(R.string.backup_import_database_description)),
+        Triple(1, stringResource(R.string.settings_title), stringResource(R.string.backup_import_settings_description)),
+        Triple(2, stringResource(R.string.backup_target_database_and_settings_label), stringResource(R.string.backup_import_both_description)),
         // The profile state option (the list + every face) — "Profiles", not the login accounts
-        Triple(3, stringResource(R.string.profiles), stringResource(R.string.import_accounts_description)),
-        Triple(4, stringResource(R.string.import_all), stringResource(R.string.import_all_description))
+        Triple(3, stringResource(R.string.profile_title), stringResource(R.string.backup_import_accounts_description)),
+        Triple(4, stringResource(R.string.backup_import_all), stringResource(R.string.backup_import_all_description))
     )
 
     Column(
@@ -293,7 +293,7 @@ fun OnboardingImportScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = stringResource(R.string.onboard_restore_title),
+            text = stringResource(R.string.onboarding_restore_title),
             style = typography().l,
             fontWeight = FontWeight.SemiBold,
             color = colorPalette().text
@@ -302,7 +302,7 @@ fun OnboardingImportScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = stringResource(R.string.onboard_restore_desc),
+            text = stringResource(R.string.onboarding_restore_description),
             style = typography().s,
             color = colorPalette().textSecondary,
             textAlign = TextAlign.Center
@@ -312,8 +312,8 @@ fun OnboardingImportScreen(
 
         OnboardingActionCard(
             icon = R.drawable.server,
-            title = stringResource(R.string.import_backup),
-            description = stringResource(R.string.import_backup_description),
+            title = stringResource(R.string.backup_action_import),
+            description = stringResource(R.string.backup_import_description),
             extraContent = {
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -375,7 +375,7 @@ fun OnboardingImportScreen(
                         .fillMaxWidth()
                         .padding(top = 12.dp)
                 ) {
-                    Text(stringResource(R.string.import_button))
+                    Text(stringResource(R.string.common_action_import))
                 }
             }
         )
@@ -384,8 +384,8 @@ fun OnboardingImportScreen(
 
         OnboardingActionCard(
             icon = R.drawable.settings,
-            title = stringResource(R.string.onboard_restore_skip),
-            description = stringResource(R.string.onboard_restore_skip_desc),
+            title = stringResource(R.string.onboarding_restore_skip),
+            description = stringResource(R.string.onboarding_restore_skip_description),
             action = {
                 OnboardingPrimaryButton(
                     onClick = {
@@ -394,7 +394,7 @@ fun OnboardingImportScreen(
                     },
                 ) {
                     // Bounded label: never pushes the card off-screen on small screens / large fonts
-                    OnboardingActionLabel(stringResource(R.string.onboard_restore_skip_button))
+                    OnboardingActionLabel(stringResource(R.string.onboarding_restore_skip_button))
                 }
             }
         )
@@ -404,7 +404,7 @@ fun OnboardingImportScreen(
         // The note is the last child of the step: it re-applies the nav inset the column
         // dropped, so the final text stays clear of the system nav buttons
         Text(
-            text = stringResource(R.string.onboard_restore_restart_note),
+            text = stringResource(R.string.onboarding_restore_restart_note),
             style = typography().xxs,
             color = colorPalette().textSecondary,
             modifier = Modifier.navigationBarsPadding()
@@ -422,9 +422,9 @@ fun OnboardingImportScreen(
     // next attempt.
     DialogPresence(target = crossProfilePending) { (tag, targetId) ->
         ConfirmationDialog(
-            title = stringResource(R.string.dialog_import_backup),
+            title = stringResource(R.string.backup_action_import),
             text = stringResource(
-                R.string.rescue_cross_profile_confirm,
+                R.string.recovery_cross_profile_confirm,
                 tag,
                 resolveProfileDisplayName(
                     targetId,
@@ -432,7 +432,7 @@ fun OnboardingImportScreen(
                     stringResource(R.string.profile_base_name)
                 )
             ),
-            confirmText = stringResource(R.string.import_button),
+            confirmText = stringResource(R.string.common_action_import),
             onDismiss = {
                 crossProfilePending = null
                 abortChain()
@@ -452,9 +452,9 @@ fun OnboardingImportScreen(
     // is pending), so dismissing just drops the question.
     DialogPresence(target = stateCrossProfilePending) { (tag, targetId, proceed) ->
         ConfirmationDialog(
-            title = stringResource(R.string.dialog_import_backup),
+            title = stringResource(R.string.backup_action_import),
             text = stringResource(
-                R.string.rescue_cross_profile_confirm,
+                R.string.recovery_cross_profile_confirm,
                 tag,
                 resolveProfileDisplayName(
                     targetId,
@@ -462,7 +462,7 @@ fun OnboardingImportScreen(
                     stringResource(R.string.profile_base_name)
                 )
             ),
-            confirmText = stringResource(R.string.import_button),
+            confirmText = stringResource(R.string.common_action_import),
             onDismiss = {
                 stateCrossProfilePending = null
             },

@@ -317,7 +317,7 @@ fun ListenTogetherScreen(
 
     roomSwitchCode?.let { code ->
         ConfirmationDialog(
-            title = stringResource(R.string.listen_together),
+            title = stringResource(R.string.listen_together_title),
             text = stringResource(R.string.listen_together_switch_room_confirmation, code),
             confirmText = stringResource(R.string.listen_together_leave_room),
             onDismiss = { roomSwitchCode = null },
@@ -355,7 +355,7 @@ fun ListenTogetherScreen(
         topInsetHandledByContent = true,
         miniPlayer = miniPlayer,
         navBarContent = { item ->
-            item(0, stringResource(R.string.listen_together), R.drawable.people)
+            item(0, stringResource(R.string.listen_together_title), R.drawable.people)
         },
     ) { _ ->
         Box(modifier = Modifier.fillMaxSize()) {
@@ -379,7 +379,7 @@ fun ListenTogetherScreen(
                 // Page header — same as the app's settings pages
                 item {
                     HeaderWithIcon(
-                        title = stringResource(R.string.listen_together),
+                        title = stringResource(R.string.listen_together_title),
                         iconId = R.drawable.people,
                         enabled = false,
                         showIcon = true,
@@ -994,7 +994,7 @@ internal fun JoinCreateRoomSection(
     SettingsSectionCard(
         title = stringResource(R.string.listen_together_room),
         icon = R.drawable.people,
-        description = stringResource(R.string.listen_together_create_room_desc),
+        description = stringResource(R.string.listen_together_create_room_description),
         content = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -1085,7 +1085,7 @@ internal fun JoinCreateRoomSection(
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text(
-                                stringResource(R.string.cancel),
+                                stringResource(R.string.common_action_cancel),
                                 style = typography().s.semiBold,
                             )
                         }
@@ -1233,7 +1233,7 @@ internal fun UserActionMenu(
         // Kick
         ListMenu.Entry(
             text = stringResource(R.string.listen_together_kick_user),
-            subtitle = stringResource(R.string.listen_together_kick_user_desc),
+            subtitle = stringResource(R.string.listen_together_kick_user_description),
             icon = { SettingIcon(R.drawable.trash, palette.red) },
             onClick = {
                 onKick()
@@ -1244,7 +1244,7 @@ internal fun UserActionMenu(
         // Permanent block
         ListMenu.Entry(
             text = stringResource(R.string.listen_together_permanently_kick_user),
-            subtitle = stringResource(R.string.listen_together_permanently_kick_user_desc),
+            subtitle = stringResource(R.string.listen_together_permanently_kick_user_description),
             icon = { SettingIcon(R.drawable.close, palette.red) },
             onClick = {
                 onPermanentKick()
@@ -1255,7 +1255,7 @@ internal fun UserActionMenu(
         // Transfer ownership
         ListMenu.Entry(
             text = stringResource(R.string.listen_together_transfer_ownership),
-            subtitle = stringResource(R.string.listen_together_transfer_ownership_desc),
+            subtitle = stringResource(R.string.listen_together_transfer_ownership_description),
             icon = { SettingIcon(R.drawable.star_brilliant, palette.accent) },
             onClick = {
                 onTransferOwnership()
@@ -1329,7 +1329,7 @@ fun ListenTogetherLogsMenu(
             },
         )
         ListMenu.Entry(
-            text = stringResource(R.string.clear),
+            text = stringResource(R.string.common_action_clear),
             icon = { SettingIcon(R.drawable.trash, palette.red) },
             enabled = logs.isNotEmpty(),
             onClick = {

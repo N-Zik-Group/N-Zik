@@ -40,8 +40,8 @@ fun DownloadQualityEntry(automaticQualityText: String? = null, onQualityChanged:
 
     OtherSettingsEntry(
         modifier = Modifier.settingsSearchTarget("embedded.network.download_quality_format"),
-        title = stringResource(R.string.download_quality_format),
-        text = stringResource(R.string.settings_desc_embedded_network_download_quality_format),
+        title = stringResource(R.string.downloads_quality_format),
+        text = stringResource(R.string.downloads_audio_quality_description),
         selectedValueText = when (downloadQualityFormat) {
             DownloadQualityFormat.Auto -> automaticQualityText ?: stringResource(R.string.audio_quality_automatic)
             DownloadQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
@@ -53,7 +53,7 @@ fun DownloadQualityEntry(automaticQualityText: String? = null, onQualityChanged:
 
     DialogPresence(visible = dialogVisible) {
         ValueSelectorDialog(
-            title = stringResource(R.string.download_quality_format),
+            title = stringResource(R.string.downloads_quality_format),
             values = DownloadQualityFormat.values().toList(),
             selectedValue = downloadQualityFormat,
             onValueSelected = {
@@ -85,8 +85,8 @@ fun UpdateDownloadsButton() {
 
     OtherSettingsEntry(
         modifier = Modifier.settingsSearchTarget("embedded.network.update_downloads"),
-        title = stringResource(R.string.update_downloads),
-        text = stringResource(R.string.update_downloads_description),
+        title = stringResource(R.string.downloads_action_refresh_quality),
+        text = stringResource(R.string.downloads_refresh_quality_description),
         icon = R.drawable.download,
         onClick = {
             if (isChecking) return@OtherSettingsEntry
@@ -95,7 +95,7 @@ fun UpdateDownloadsButton() {
                 val count = runCatching { MyDownloadHelper.countNonCompliantDownloads() }.getOrDefault(0)
                 isChecking = false
                 if (count == 0) {
-                    Toaster.i(R.string.update_downloads_nothing)
+                    Toaster.i(R.string.downloads_refresh_quality_already_current)
                 } else {
                     dialogCount.value = count
                     dialogVisible.value = true
@@ -115,7 +115,7 @@ fun UpdateDownloadsButton() {
                             MyDownloadHelper.updateDownloads(context)
                         }.onFailure { e ->
                             Timber.tag("UpdateDownloads").e(e, "updateDownloads failed")
-                            Toaster.e(R.string.error_an_unknown_playback_error_has_occurred)
+                            Toaster.e(R.string.player_error_unknown)
                         }
                     }
                 }
@@ -137,10 +137,10 @@ private class UpdateDownloadsDialog(
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.update_downloads)
+        get() = stringResource(R.string.downloads_action_refresh_quality)
 
     override val confirmText: String
-        @Composable get() = stringResource(R.string.download)
+        @Composable get() = stringResource(R.string.downloads_title)
 
     override fun onConfirm() {
         onConfirmAction()
@@ -150,7 +150,7 @@ private class UpdateDownloadsDialog(
     @Composable
     override fun DialogBody() {
         BasicText(
-            text = stringResource(R.string.update_downloads_count, count) + "\n\n" + stringResource(R.string.update_downloads_description),
+            text = stringResource(R.string.downloads_refresh_quality_confirmation, count) + "\n\n" + stringResource(R.string.downloads_refresh_quality_description),
             style = typography().xs.copy(color = colorPalette().text),
         )
     }

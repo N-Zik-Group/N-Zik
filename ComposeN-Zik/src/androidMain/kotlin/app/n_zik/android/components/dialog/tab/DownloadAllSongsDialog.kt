@@ -37,24 +37,24 @@ class DownloadAllSongsDialog(
     }
 
     override val confirmationTitle: String
-        @Composable get() = stringResource(R.string.dialog_download_songs)
+        @Composable get() = stringResource(R.string.downloads_download_dialog_title)
     override val confirmationAction: String
-        @Composable get() = stringResource(R.string.download)
+        @Composable get() = stringResource(R.string.downloads_title)
 
-    override val messageId: Int = R.string.info_download_all_songs
+    override val messageId: Int = R.string.downloads_action_download_all
     override val iconId: Int = R.drawable.downloaded
     override val dialogTitle: String
         @Composable
         get() {
             val count = getSongs().count { song -> !MyDownloadHelper.downloads.value.containsKey(song.id) }
             return if( count > 0 )
-                stringResource( R.string.do_you_really_want_to_download_all_count, count )
+                stringResource( R.string.downloads_download_all_count_confirmation, count )
             else
-                stringResource( R.string.do_you_really_want_to_download_all )
+                stringResource( R.string.downloads_download_all_confirmation )
         }
     override val menuIconTitle: String
         @Composable
-        get() = stringResource( R.string.download )
+        get() = stringResource( R.string.downloads_title )
 
     override fun onShortClick() {
         val count = getSongs().count { song -> !MyDownloadHelper.downloads.value.containsKey(song.id) }
@@ -62,7 +62,7 @@ class DownloadAllSongsDialog(
             super.onShortClick()
         } else {
             app.kreate.android.me.knighthat.utils.Toaster.toast(
-                appContext().getString(R.string.nothing_to_download),
+                appContext().getString(R.string.downloads_empty_message),
                 type = app.kreate.android.me.knighthat.utils.Toaster.Type.INFO
             )
         }

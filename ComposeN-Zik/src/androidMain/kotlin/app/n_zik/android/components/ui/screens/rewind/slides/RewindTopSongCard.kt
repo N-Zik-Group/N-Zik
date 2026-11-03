@@ -140,7 +140,7 @@ internal fun RewindTopSongShow(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = if (phase == 0) stringResource(R.string.rw_top_song_teaser, contenders.size) else stringResource(R.string.rw_top_song_teaser_winner),
+                                text = if (phase == 0) stringResource(R.string.rewind_top_song_teaser, contenders.size) else stringResource(R.string.rewind_top_song_teaser_winner),
                                 color = onPink,
                                 fontSize = textScale.size(if (compact) 35.sp else 42.sp),
                                 lineHeight = textScale.size(if (compact) 33.sp else 39.sp),
@@ -180,7 +180,7 @@ internal fun RewindTopSongShow(
                                             )
                                             Spacer(Modifier.height(7.dp))
                                             Text(
-                                                text = firstNonBlank(contender.song.cleanArtistsText(), stringResource(R.string.rw_unknown_artist)),
+                                                text = firstNonBlank(contender.song.cleanArtistsText(), stringResource(R.string.rewind_unknown_artist)),
                                                 color = rewindColors.value.lime,
                                                 fontSize = textScale.size(11.sp),
                                                 fontWeight = FontWeight.Black,
@@ -267,7 +267,7 @@ internal fun RewindTopSongShow(
                             fontWeight = FontWeight.Black
                         )
                         Text(
-                            text = firstNonBlank(winner.song.cleanArtistsText(), stringResource(R.string.rw_unknown_artist)),
+                            text = firstNonBlank(winner.song.cleanArtistsText(), stringResource(R.string.rewind_unknown_artist)),
                             color = onPink.copy(alpha = 0.66f),
                             fontSize = textScale.size(12.sp),
                             fontWeight = FontWeight.Bold,
@@ -293,8 +293,8 @@ internal fun RewindTopSongShow(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(9.dp)
                     ) {
-                        TopSongStat(stringResource(R.string.rw_label_plays), formatRewindNumber(winner.playCount.toLong()), Modifier.weight(1f))
-                        TopSongStat(stringResource(R.string.rw_label_minutes), formatRewindMinutes(winner.minutes), Modifier.weight(1f))
+                        TopSongStat(stringResource(R.string.rewind_label_plays), formatRewindNumber(winner.playCount.toLong()), Modifier.weight(1f))
+                        TopSongStat(stringResource(R.string.rewind_label_minutes), formatRewindMinutes(winner.minutes), Modifier.weight(1f))
                     }
                 }
             }
@@ -320,10 +320,10 @@ fun RewindTopSongCard(
         active = active,
         onNext = onNext,
         onShareSlide = onShareSlide,
-        kickerId = R.string.rw_top_song_kicker,
-        headingId = R.string.rw_top_song_heading,
-        emptyTitleId = R.string.rw_top_song_empty_title,
-        emptyBodyId = R.string.rw_top_song_empty_body
+        kickerId = R.string.rewind_top_song_kicker,
+        headingId = R.string.rewind_top_song_heading,
+        emptyTitleId = R.string.rewind_top_song_empty_title,
+        emptyBodyId = R.string.rewind_top_song_empty_body
     )
 }
 
@@ -372,7 +372,7 @@ internal fun TopSongWallFrame(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = stringResource(R.string.rw_top_song_most_played),
+                        text = stringResource(R.string.rewind_top_song_most_played),
                         color = rewindColors.value.lime,
                         fontSize = textScale.size(8.sp),
                         fontWeight = FontWeight.Black,

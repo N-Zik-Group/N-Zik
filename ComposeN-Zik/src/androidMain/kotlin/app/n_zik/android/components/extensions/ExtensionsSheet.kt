@@ -132,7 +132,7 @@ fun ExtensionsSheet(
         } else {
             runCatching { FfmpegModule.fetchVersionInfo() }
                 .onFailure { Timber.tag(TAG).e(it, "Could not fetch the module version banner") }
-                .getOrElse { context.getString(R.string.module_load_failed) }
+                .getOrElse { context.getString(R.string.modules_load_failed) }
         }
     }
 
@@ -149,9 +149,9 @@ fun ExtensionsSheet(
 
     DialogPresence(target = uninstallTarget) { uninstallPayload ->
         ConfirmationDialog(
-            title = stringResource(R.string.module_uninstall),
-            confirmText = stringResource(R.string.module_uninstall),
-            text = stringResource(R.string.module_uninstall_confirm),
+            title = stringResource(R.string.modules_uninstall),
+            confirmText = stringResource(R.string.modules_uninstall),
+            text = stringResource(R.string.modules_uninstall_confirm),
             onDismiss = { uninstallTarget = null },
             onConfirm = {
                 val def = uninstallPayload
@@ -198,14 +198,14 @@ fun ExtensionsSheet(
                 Tab(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
-                    text = { Text(stringResource(R.string.module_tab_installed)) },
+                    text = { Text(stringResource(R.string.modules_tab_installed)) },
                     selectedContentColor = colorPalette().accent,
                     unselectedContentColor = colorPalette().textSecondary,
                 )
                 Tab(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
-                    text = { Text(stringResource(R.string.module_tab_marketplace)) },
+                    text = { Text(stringResource(R.string.modules_tab_marketplace)) },
                     selectedContentColor = colorPalette().accent,
                     unselectedContentColor = colorPalette().textSecondary,
                 )
@@ -258,7 +258,7 @@ private fun InstalledTab(
             contentAlignment = Alignment.Center,
         ) {
             BasicText(
-                text = stringResource(R.string.module_nothing_installed),
+                text = stringResource(R.string.modules_nothing_installed),
                 style = typography().xs.copy(color = palette.textSecondary),
             )
         }
@@ -285,13 +285,13 @@ private fun InstalledModuleCard(
         icon = R.drawable.extension,
         description = context.getString(def.descriptionRes),
         content = {
-            ModuleInfoRow(stringResource(R.string.module_version), def.version)
-            ModuleInfoRow(stringResource(R.string.module_size), module.sizeText)
+            ModuleInfoRow(stringResource(R.string.modules_version), def.version)
+            ModuleInfoRow(stringResource(R.string.modules_size), module.sizeText)
             (module.update as? ModuleUpdateStatus.UpdateAvailable)?.let { updateStatus ->
                 OtherSettingsEntry(
-                    title = stringResource(R.string.module_update),
+                    title = stringResource(R.string.modules_update),
                     text = stringResource(
-                        R.string.module_update_available_body,
+                        R.string.modules_update_available_body,
                         updateStatus.installedVersion,
                         def.version,
                     ),
@@ -300,13 +300,13 @@ private fun InstalledModuleCard(
                 )
             }
             OtherSettingsEntry(
-                title = stringResource(R.string.module_info),
+                title = stringResource(R.string.modules_info),
                 text = "",
                 icon = R.drawable.information,
                 onClick = { onInfo(def) },
             )
             OtherSettingsEntry(
-                title = stringResource(R.string.module_uninstall),
+                title = stringResource(R.string.modules_uninstall),
                 text = "",
                 icon = R.drawable.trash,
                 onClick = { onUninstall(def) },
@@ -354,11 +354,11 @@ private fun MarketplaceModuleCard(
         icon = R.drawable.extension,
         description = context.getString(def.descriptionRes),
         content = {
-            ModuleInfoRow(stringResource(R.string.module_version), def.version)
-            ModuleInfoRow(stringResource(R.string.module_size), formatBytes(context, remoteSize ?: def.downloadSizeBytes))
+            ModuleInfoRow(stringResource(R.string.modules_version), def.version)
+            ModuleInfoRow(stringResource(R.string.modules_size), formatBytes(context, remoteSize ?: def.downloadSizeBytes))
 
             OtherSettingsEntry(
-                title = stringResource(R.string.module_info),
+                title = stringResource(R.string.modules_info),
                 text = "",
                 icon = R.drawable.information,
                 onClick = { onInfo(def) },
@@ -366,33 +366,33 @@ private fun MarketplaceModuleCard(
 
             when (state) {
                 ModuleState.NOT_DOWNLOADED, null -> OtherSettingsEntry(
-                    title = stringResource(R.string.module_download),
-                    text = if (available) "" else stringResource(R.string.module_not_available_arch),
+                    title = stringResource(R.string.modules_download),
+                    text = if (available) "" else stringResource(R.string.modules_not_available_arch),
                     icon = R.drawable.download,
                     onClick = { scope.launch { manager.ensureReady(def) } },
                 )
 
                 is ModuleState.FAILED -> OtherSettingsEntry(
-                    title = stringResource(R.string.module_retry),
+                    title = stringResource(R.string.modules_retry),
                     text = state.message,
                     icon = R.drawable.refresh,
                     onClick = { scope.launch { manager.ensureReady(def) } },
                 )
 
                 ModuleState.READY -> DisabledSettingsEntry(
-                    title = stringResource(R.string.module_already_installed),
+                    title = stringResource(R.string.modules_already_installed),
                     text = "",
                     icon = R.drawable.download,
                 )
 
                 is ModuleState.DOWNLOADING -> DownloadingSettingsEntry(
-                    title = stringResource(R.string.module_downloading),
+                    title = stringResource(R.string.modules_downloading),
                     progress = state.progress,
                     onCancel = { manager.cancelDownload(def.id) },
                 )
 
                 ModuleState.UPDATING -> DownloadingSettingsEntry(
-                    title = stringResource(R.string.module_updating),
+                    title = stringResource(R.string.modules_updating),
                     progress = null,
                     onCancel = { manager.cancelDownload(def.id) },
                 )
@@ -590,13 +590,13 @@ private suspend fun remoteModuleInfo(context: Context, def: ModuleDefinition): S
     val abi = availableAbis.firstOrNull() ?: def.abis.first()
     val remoteSize = ModuleRemoteProbe.remoteSizeBytes(def.downloadUrl)
     return buildList {
-        add("${context.getString(R.string.module_version)}: ${def.version}")
-        add("${context.getString(R.string.module_size)}: ${formatBytes(context, remoteSize ?: def.downloadSizeBytes)}")
-        add("${context.getString(R.string.module_abi)}: ${def.abis.joinToString(", ")}")
+        add("${context.getString(R.string.modules_version)}: ${def.version}")
+        add("${context.getString(R.string.modules_size)}: ${formatBytes(context, remoteSize ?: def.downloadSizeBytes)}")
+        add("${context.getString(R.string.modules_abi)}: ${def.abis.joinToString(", ")}")
         if (availableAbis.isEmpty()) {
-            add(context.getString(R.string.module_not_available_arch))
+            add(context.getString(R.string.modules_not_available_arch))
         }
-        add(context.getString(R.string.module_bundled_libraries))
+        add(context.getString(R.string.modules_bundled_libraries))
         def.soFiles.getValue(abi).forEach { add("  $it") }
     }.joinToString("\n")
 }

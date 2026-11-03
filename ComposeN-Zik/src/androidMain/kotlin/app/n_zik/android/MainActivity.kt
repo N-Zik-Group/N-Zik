@@ -1004,13 +1004,13 @@ class MainActivity :
             MainApplication.CookieStatus.INVALID -> {
                 lifecycleScope.launch {
                     delay(3_000)
-                    Toaster.e(R.string.error_cookie_invalid)
+                    Toaster.e(R.string.account_youtube_cookie_invalid)
                 }
             }
             MainApplication.CookieStatus.EXPIRED -> {
                 lifecycleScope.launch {
                     delay(3_000)
-                    Toaster.e(R.string.error_session_expired)
+                    Toaster.e(R.string.account_youtube_session_expired)
                 }
             }
             MainApplication.CookieStatus.NOT_LOGGED_IN -> {
@@ -1343,7 +1343,7 @@ class MainActivity :
                                             proxy = ProxyPreferences.preference?.let { pref -> it.fast4x.innertube.utils.getProxy(pref) }
                                         }
                                     } else {
-                                        Toaster.e(R.string.invalid_proxy_hostname)
+                                        Toaster.e(R.string.network_proxy_invalid_hostname)
                                     }
                                 } else {
                                     ProxyPreferences.preference = null
@@ -2752,7 +2752,7 @@ class MainActivity :
                 }
 
                 Toaster.n(
-                    "${BuildConfig.APP_NAME} ${this@MainActivity.resources.getString( R.string.opening_url )}",
+                    "${BuildConfig.APP_NAME} ${this@MainActivity.resources.getString( R.string.common_external_link_loading_suffix )}",
                     duration = Toast.LENGTH_LONG
                 )
 
@@ -2919,7 +2919,7 @@ class MainActivity :
         if (count > 0 && hasWindowFocus) {
             MyDownloadHelper.pendingStaleStartupCount.value = 0
             Toaster.w(
-                R.string.download_stale_startup_removed,
+                R.string.downloads_stale_startup_removed,
                 count,
                 duration = Toast.LENGTH_LONG
             )

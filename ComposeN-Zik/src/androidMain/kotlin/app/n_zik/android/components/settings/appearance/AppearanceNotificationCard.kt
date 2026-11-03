@@ -30,7 +30,7 @@ internal fun AppearanceNotificationCard(search: Search, restartState: MutableSta
     var notificationPlayerFirstIcon by rememberPreference(notificationPlayerFirstIconKey, NotificationButtons.Download)
     var notificationPlayerSecondIcon by rememberPreference(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
     var restartService by restartState
-    val searchCtx_3 = search.inputValue.isBlank() || stringResource(R.string.settings_section_notification_player_title).contains(search.inputValue, true) || stringResource(R.string.notificationPlayerFirstIcon).contains(search.inputValue, true) || stringResource(R.string.notificationPlayerSecondIcon).contains(search.inputValue, true)
+    val searchCtx_3 = search.inputValue.isBlank() || stringResource(R.string.settings_section_notification_player_title).contains(search.inputValue, true) || stringResource(R.string.player_notification_first_action).contains(search.inputValue, true) || stringResource(R.string.player_notification_second_action).contains(search.inputValue, true)
     AnimatedVisibility(
                 visible = searchCtx_3,
                 enter = settingsCardEnter,
@@ -47,12 +47,12 @@ internal fun AppearanceNotificationCard(search: Search, restartState: MutableSta
                     true
                 )
             ) {
-                if (search.inputValue.isBlank() || stringResource(R.string.notificationPlayerFirstIcon).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.player_notification_first_action).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_notification_player_notificationplayerfirsticon), notificationPlayerFirstIcon.text),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_notification_first_action_description), notificationPlayerFirstIcon.text),
                         modifier = Modifier.settingsSearchTarget("appearance.notification_player.notificationPlayerFirstIcon"),
                         icon = R.drawable.notification2,
-                        title = stringResource(R.string.notificationPlayerFirstIcon),
+                        title = stringResource(R.string.player_notification_first_action),
                         selectedValue = notificationPlayerFirstIcon,
                         onValueSelected = {
                             notificationPlayerFirstIcon = it
@@ -61,12 +61,12 @@ internal fun AppearanceNotificationCard(search: Search, restartState: MutableSta
                         valueText = { it.text },
                     )
                 }
-                if (search.inputValue.isBlank() || stringResource(R.string.notificationPlayerSecondIcon).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.player_notification_second_action).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_notification_player_notificationplayersecondicon), notificationPlayerSecondIcon.text),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_notification_second_action_description), notificationPlayerSecondIcon.text),
                         modifier = Modifier.settingsSearchTarget("appearance.notification_player.notificationPlayerSecondIcon"),
                         icon = R.drawable.notification2,
-                        title = stringResource(R.string.notificationPlayerSecondIcon),
+                        title = stringResource(R.string.player_notification_second_action),
                         selectedValue = notificationPlayerSecondIcon,
                         onValueSelected = {
                             notificationPlayerSecondIcon = it

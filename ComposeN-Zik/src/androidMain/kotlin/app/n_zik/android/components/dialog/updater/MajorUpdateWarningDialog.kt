@@ -39,7 +39,7 @@ object MajorUpdateWarningDialog {
         DialogPresence(visible = isActive, inherit = true) {
 
         DialogFrame(
-            title = stringResource(R.string.major_update_warning_title, BuildConfig.VERSION_NAME),
+            title = stringResource(R.string.updates_major_warning_title, BuildConfig.VERSION_NAME),
             onDismiss = {
                 isActive = false
                 onConfirm()
@@ -49,7 +49,7 @@ object MajorUpdateWarningDialog {
                 ButtonRow(
                     buttons = listOf(
                         DialogButton(
-                            text = stringResource(R.string.major_update_warning_button),
+                            text = stringResource(R.string.updates_warning_acknowledge),
                             icon = R.drawable.checkmark,
                             onClick = {
                                 isActive = false
@@ -76,7 +76,7 @@ object MajorUpdateWarningDialog {
 
                 // Message
                 BasicText(
-                    text = stringResource(R.string.major_update_warning_message),
+                    text = stringResource(R.string.updates_major_warning_message),
                     style = typography().s.semiBold.copy(color = colorPalette().text),
                     modifier = Modifier.fillMaxWidth()
                 )

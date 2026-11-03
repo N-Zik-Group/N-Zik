@@ -46,13 +46,13 @@ object SyncStatusDialog : InteractiveDialog {
         var expandedItem by androidx.compose.runtime.remember { mutableStateOf<String?>(null) }
 
         val statusItems = listOf(
-            stringResource(R.string.autosync_likes) to status.likedSongs,
+            stringResource(R.string.sync_likes) to status.likedSongs,
             stringResource(R.string.sync_import_library_songs) to status.librarySongs,
             stringResource(R.string.sync_import_uploaded_songs) to status.uploadedSongs,
-            stringResource(R.string.autosync_albums) to status.likedAlbums,
+            stringResource(R.string.sync_albums) to status.likedAlbums,
             stringResource(R.string.sync_import_uploaded_albums) to status.uploadedAlbums,
-            stringResource(R.string.autosync_channels) to status.artists,
-            stringResource(R.string.autosync) to status.playlists,
+            stringResource(R.string.sync_channels) to status.artists,
+            stringResource(R.string.sync_imported_playlists_automatic_title) to status.playlists,
             stringResource(R.string.sync_import_episodes) to status.episodes,
             stringResource(R.string.sync_push_song_like) to status.pushLikedSongs,
             stringResource(R.string.sync_push_album_bookmark) to status.pushAlbumBookmarks,
@@ -134,7 +134,7 @@ object SyncStatusDialog : InteractiveDialog {
     override fun Buttons() = ButtonRow(
         buttons = listOf(
             DialogButton(
-                text = stringResource(R.string.dialog_close),
+                text = stringResource(R.string.common_action_close),
                 onClick = { hideDialog() },
                 primary = true
             )

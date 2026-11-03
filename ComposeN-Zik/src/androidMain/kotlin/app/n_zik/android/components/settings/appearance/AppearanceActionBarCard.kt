@@ -35,7 +35,7 @@ internal fun AppearanceActionBarCard(search: Search) {
     var actionspacedevenly by rememberPreference(actionspacedevenlyKey, true)
     var tapqueue by rememberPreference(tapqueueKey, true)
     var swipeUpQueue by rememberPreference(swipeUpQueueKey, true)
-    val searchCtx_1 = search.inputValue.isBlank() || stringResource(R.string.settings_section_player_action_bar_title).contains(search.inputValue, true) || stringResource(R.string.action_bar_transparent_background).contains(search.inputValue, true) || stringResource(R.string.actionspacedevenly).contains(search.inputValue, true) || stringResource(R.string.tapqueue).contains(search.inputValue, true) || stringResource(R.string.swipe_up_to_open_the_queue).contains(search.inputValue, true) || stringResource(R.string.action_bar_show_video_button).contains(search.inputValue, true) || stringResource(R.string.action_bar_show_discover_button).contains(search.inputValue, true) || stringResource(R.string.action_bar_show_download_button).contains(search.inputValue, true) || stringResource(R.string.action_bar_show_add_to_playlist_button).contains(search.inputValue, true) || stringResource(R.string.action_bar_show_loop_button).contains(search.inputValue, true) || stringResource(R.string.action_bar_show_shuffle_button).contains(search.inputValue, true) || stringResource(R.string.action_bar_show_lyrics_button).contains(search.inputValue, true) || stringResource(R.string.expandedplayer).contains(search.inputValue, true) || stringResource(R.string.action_bar_show_sleep_timer_button).contains(search.inputValue, true) || stringResource(R.string.show_equalizer).contains(search.inputValue, true) || stringResource(R.string.action_bar_show_arrow_button_to_open_queue).contains(search.inputValue, true) || stringResource(R.string.action_bar_show_start_radio_button).contains(search.inputValue, true) || stringResource(R.string.action_bar_show_menu_button).contains(search.inputValue, true)
+    val searchCtx_1 = search.inputValue.isBlank() || stringResource(R.string.settings_section_player_action_bar_title).contains(search.inputValue, true) || stringResource(R.string.settings_player_action_bar_transparent_background_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_actions_spaced_evenly_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_queue_tap_to_open_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_queue_swipe_up_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_action_bar_video_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_action_bar_discover_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_action_bar_download_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_action_bar_playlist_add_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_action_bar_loop_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_action_bar_shuffle_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_action_bar_show_lyrics_button).contains(search.inputValue, true) || stringResource(R.string.settings_player_expanded_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_action_bar_sleep_timer_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_action_bar_equalizer_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_action_bar_queue_arrow_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_action_bar_radio_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_action_bar_menu_visible_label).contains(search.inputValue, true)
     AnimatedVisibility(
                 visible = searchCtx_1,
                 enter = settingsCardEnter,
@@ -47,65 +47,65 @@ internal fun AppearanceActionBarCard(search: Search) {
                     icon = R.drawable.ellipsis_vertical,
                     content = {
 
-            if (search.inputValue.isBlank() || stringResource(R.string.action_bar_transparent_background).contains(
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_action_bar_transparent_background_label).contains(
                     search.inputValue,
                     true
                 )
             )
-                if (search.inputValue.isBlank() || stringResource(R.string.action_bar_transparent_background).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_action_bar_transparent_background_label).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.player_action_bar.action_bar_transparent_background"),
                         icon = R.drawable.eye,
-                        title = stringResource(R.string.action_bar_transparent_background),
-                        text = stringResource(R.string.settings_desc_appearance_player_action_bar_action_bar_transparent_background),
+                        title = stringResource(R.string.settings_player_action_bar_transparent_background_label),
+                        text = stringResource(R.string.player_action_bar_transparent_background_description),
                         isChecked = transparentBackgroundActionBarPlayer,
                         onCheckedChange = { transparentBackgroundActionBarPlayer = it }
                     )
                 }
 
-            if (search.inputValue.isBlank() || stringResource(R.string.actionspacedevenly).contains(
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_actions_spaced_evenly_label).contains(
                     search.inputValue,
                     true
                 )
             )
-                if (search.inputValue.isBlank() || stringResource(R.string.actionspacedevenly).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_actions_spaced_evenly_label).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.player_action_bar.actionspacedevenly"),
                         icon = R.drawable.horizontal_bold_line,
-                        title = stringResource(R.string.actionspacedevenly),
-                        text = stringResource(R.string.settings_desc_appearance_player_action_bar_actionspacedevenly),
+                        title = stringResource(R.string.settings_player_actions_spaced_evenly_label),
+                        text = stringResource(R.string.player_action_bar_even_button_spacing_description),
                         isChecked = actionspacedevenly,
                         onCheckedChange = { actionspacedevenly = it }
                     )
                 }
 
-            if (search.inputValue.isBlank() || stringResource(R.string.tapqueue).contains(
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_queue_tap_to_open_label).contains(
                     search.inputValue,
                     true
                 )
             )
-                if (search.inputValue.isBlank() || stringResource(R.string.tapqueue).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_queue_tap_to_open_label).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.player_action_bar.tapqueue"),
                         icon = R.drawable.gesture,
-                        title = stringResource(R.string.tapqueue),
-                        text = stringResource(R.string.settings_desc_appearance_player_action_bar_tapqueue),
+                        title = stringResource(R.string.settings_player_queue_tap_to_open_label),
+                        text = stringResource(R.string.player_action_bar_queue_preview_tap_description),
                         isChecked = tapqueue,
                         onCheckedChange = { tapqueue = it }
                     )
                 }
 
-            if (search.inputValue.isBlank() || stringResource(R.string.swipe_up_to_open_the_queue).contains(
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_queue_swipe_up_label).contains(
                     search.inputValue,
                     true
                 )
             )
-                if (search.inputValue.isBlank() || stringResource(R.string.swipe_up_to_open_the_queue).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_queue_swipe_up_label).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.player_action_bar.swipe_up_to_open_the_queue"),
                         icon = R.drawable.gesture,
-                        title = stringResource(R.string.swipe_up_to_open_the_queue),
-                        text = stringResource(R.string.settings_desc_appearance_player_action_bar_swipe_up_to_open_the_queue),
+                        title = stringResource(R.string.settings_player_queue_swipe_up_label),
+                        text = stringResource(R.string.player_action_bar_swipe_up_to_open_the_queue_description),
                         isChecked = swipeUpQueue,
                         onCheckedChange = { swipeUpQueue = it }
                     )

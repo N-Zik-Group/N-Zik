@@ -50,7 +50,7 @@ object Shuffler {
      */
     fun play(binder: PlayerServiceModern.Binder, mediaItems: List<MediaItem>, onComplete: () -> Unit = {}) {
         if (mediaItems.isEmpty()) {
-            ToastRelay.i(R.string.no_song_to_shuffle)
+            ToastRelay.i(R.string.player_shuffle_empty_message)
             onComplete()
             return
         }
@@ -95,7 +95,7 @@ object Shuffler {
 
                 if (filteredMediaItems.isEmpty()) {
                     withContext(NzikDispatchers.UI) {
-                        ToastRelay.i(R.string.no_song_to_shuffle)
+                        ToastRelay.i(R.string.player_shuffle_empty_message)
                         onComplete()
                     }
                     return@launch
@@ -109,9 +109,9 @@ object Shuffler {
                     try {
                         binder.stopRadio()
                         binder.player.forcePlayFromBeginning(toPlay)
-                        ToastRelay.s(R.string.songs_shuffled, toPlay.size)
+                        ToastRelay.s(R.string.player_shuffled_song_count_format, toPlay.size)
                     } catch (e: Exception) {
-                        ToastRelay.e(R.string.no_song_found)
+                        ToastRelay.e(R.string.player_no_song_found)
                     } finally {
                         onComplete()
                     }
@@ -129,7 +129,7 @@ object Shuffler {
 //
                 // failure a few lines below already does.
                 withContext(NzikDispatchers.UI) {
-                    ToastRelay.e(R.string.no_song_found)
+                    ToastRelay.e(R.string.player_no_song_found)
                     onComplete()
                 }
             }
@@ -155,10 +155,10 @@ object Shuffler {
                 if (current > 0) player.removeMediaItems(0, current)
                 if (current < player.mediaItemCount - 1) player.removeMediaItems(1, player.mediaItemCount)
                 player.addMediaItems(items.shuffled())
-                Toaster.s(R.string.queue_shuffled, formatArgs = *arrayOf(count))
+                Toaster.s(R.string.player_queue_shuffled_count_format, formatArgs = *arrayOf(count))
             }
         } catch (e: Exception) {
-            Toaster.e(R.string.no_song_found)
+            Toaster.e(R.string.player_no_song_found)
         }
     }
 
@@ -181,7 +181,7 @@ object Shuffler {
                 }
             } catch (e: Exception) {
                 withContext(NzikDispatchers.UI) {
-                    Toaster.e(R.string.no_song_found)
+                    Toaster.e(R.string.player_no_song_found)
                 }
             }
         }

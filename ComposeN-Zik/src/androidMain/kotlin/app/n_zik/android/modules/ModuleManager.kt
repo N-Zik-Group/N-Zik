@@ -29,10 +29,10 @@ interface ModuleFailureMessages {
 
 /** Production [ModuleFailureMessages] - resolved strings via the app context. */
 object AppModuleFailureMessages : ModuleFailureMessages {
-    override fun unavailable(): String = appContext().getString(R.string.module_not_available_arch)
-    override fun insufficientSpace(): String = appContext().getString(R.string.module_insufficient_space)
-    override fun downloadFailed(cause: Throwable): String = appContext().getString(R.string.module_download_failed)
-    override fun downloadNeeded(): String = appContext().getString(R.string.module_download_needed)
+    override fun unavailable(): String = appContext().getString(R.string.modules_not_available_arch)
+    override fun insufficientSpace(): String = appContext().getString(R.string.modules_insufficient_space)
+    override fun downloadFailed(cause: Throwable): String = appContext().getString(R.string.modules_download_failed)
+    override fun downloadNeeded(): String = appContext().getString(R.string.modules_download_needed)
 }
 
 /**

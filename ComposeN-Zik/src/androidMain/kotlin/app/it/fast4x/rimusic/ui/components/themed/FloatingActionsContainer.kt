@@ -79,7 +79,7 @@ fun BoxScope.MultiFloatingActionsContainer(
                 arrayListOf(
                     FabItem(
                         icon = painterResource(R.drawable.settings),
-                        label = stringResource(R.string.txt_settings),
+                        label = stringResource(R.string.settings_debug_title),
                         onFabItemClicked = {
                             if (onClickSettings != null) {
                                 onClickSettings()
@@ -88,7 +88,7 @@ fun BoxScope.MultiFloatingActionsContainer(
                     ),
                     FabItem(
                         icon = painterResource(R.drawable.search),
-                        label = stringResource(R.string.search),
+                        label = stringResource(R.string.search_title),
                         onFabItemClicked = {
                             if (onClickSearch != null) {
                                 onClickSearch()

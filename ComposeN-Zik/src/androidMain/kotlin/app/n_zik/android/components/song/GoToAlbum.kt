@@ -32,7 +32,7 @@ class GoToAlbum(
 ): MenuIcon, Descriptive {
 
     override val iconId: Int = R.drawable.album
-    override val messageId: Int = R.string.go_to_album
+    override val messageId: Int = R.string.album_action_open
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -55,7 +55,7 @@ class GoToAlbum(
                 if (isValid && id != null) {
                     NavRoutes.album.navigateHere( navController, id )
                 } else {
-                    Toaster.i( R.string.looking_up_album_from_the_internet )
+                    Toaster.i( R.string.album_lookup_running )
                     
                     NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                         try {
@@ -110,14 +110,14 @@ class GoToAlbum(
                                     }
                                 } else {
                                     kotlinx.coroutines.withContext(NzikDispatchers.UI) {
-                                        Toaster.e( R.string.failed_to_fetch_album )
+                                        Toaster.e( R.string.album_lookup_failed )
                                     }
                                 }
                             }
                         } catch (e: Exception) {
                             Timber.tag("go_to_album").e( e, "Failed to fetch album" )
                             kotlinx.coroutines.withContext(NzikDispatchers.UI) {
-                                Toaster.e( R.string.failed_to_fetch_album )
+                                Toaster.e( R.string.album_lookup_failed )
                             }
                         }
                     }

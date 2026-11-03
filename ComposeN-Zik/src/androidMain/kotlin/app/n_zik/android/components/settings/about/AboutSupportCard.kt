@@ -25,16 +25,16 @@ internal fun AboutSupportCard() {
 
                     ModernSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("about.troubleshooting.view_the_source_code"),
-                        title = stringResource(R.string.view_the_source_code),
-                        text = stringResource(R.string.settings_desc_about_troubleshooting_view_the_source_code),
+                        title = stringResource(R.string.about_action_view_source),
+                        text = stringResource(R.string.about_source_code_description),
                         icon = R.drawable.github_icon,
                         onClick = { uriHandler.openUri(UpdateEndpoints.REPO_URL) }
                     )
 
                     ModernSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("about.troubleshooting.report_an_issue"),
-                        title = stringResource(R.string.report_an_issue),
-                        text = stringResource(R.string.settings_desc_about_troubleshooting_report_an_issue),
+                        title = stringResource(R.string.about_action_report_issue),
+                        text = stringResource(R.string.about_report_issue_description),
                         icon = R.drawable.trending,
                         onClick = {
                             val issuePath = "/issues/new?assignees=&labels=bug&template=bug_report.yaml"
@@ -44,8 +44,8 @@ internal fun AboutSupportCard() {
 
                     ModernSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("about.troubleshooting.request_a_feature_or_suggest_an_idea"),
-                        title = stringResource(R.string.request_a_feature_or_suggest_an_idea),
-                        text = stringResource(R.string.settings_desc_about_troubleshooting_request_a_feature_or_suggest_an_idea),
+                        title = stringResource(R.string.about_action_request_feature),
+                        text = stringResource(R.string.about_request_feature_description),
                         icon = R.drawable.star_brilliant,
                         onClick = {
                             val issuePath = "/issues/new?assignees=&labels=feature_request&template=feature_request.yaml"

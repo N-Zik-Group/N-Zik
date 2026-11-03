@@ -9,14 +9,14 @@ internal fun playerBackgroundColorLabel(
     value: PlayerBackgroundColors,
     resolveString: (Int) -> String,
 ): String = when (value) {
-    PlayerBackgroundColors.CoverColor -> resolveString(R.string.artwork)
-    PlayerBackgroundColors.ThemeColor -> resolveString(R.string.theme)
+    PlayerBackgroundColors.CoverColor -> resolveString(R.string.common_color_source_artwork)
+    PlayerBackgroundColors.ThemeColor -> resolveString(R.string.common_color_source_theme)
     PlayerBackgroundColors.CoverColorGradient ->
-        resolveString(R.string.bg_colors_gradient_background_from_cover)
+        resolveString(R.string.player_background_artwork_gradient_label)
     PlayerBackgroundColors.ThemeColorGradient ->
-        resolveString(R.string.bg_colors_gradient_background_from_theme)
+        resolveString(R.string.player_background_theme_gradient_label)
     PlayerBackgroundColors.BlurredCoverColor ->
-        resolveString(R.string.bg_colors_blurred_cover_background)
+        resolveString(R.string.player_background_artwork_blurred_label)
     else -> resolveString(value.textId)
 }
 
@@ -26,12 +26,12 @@ internal fun animatedGradientLabel(
     resolveString: (Int) -> String,
 ): String = when (value) {
     AnimatedGradient.FluidThemeColorGradient ->
-        resolveString(R.string.bg_colors_fluid_gradient_background_from_theme)
+        resolveString(R.string.player_background_theme_fluid_gradient_label)
     AnimatedGradient.FluidCoverColorGradient ->
-        resolveString(R.string.bg_colors_fluid_gradient_background_from_cover)
+        resolveString(R.string.player_background_artwork_fluid_gradient_label)
     AnimatedGradient.M3EMorphingTheme ->
-        resolveString(R.string.bg_colors_m3e_morphing_theme)
+        resolveString(R.string.player_background_theme_m3e_morphing_label)
     AnimatedGradient.M3EMorphingCover ->
-        resolveString(R.string.bg_colors_m3e_morphing_cover)
+        resolveString(R.string.player_background_artwork_m3e_morphing_label)
     else -> resolveString(value.textId)
 }

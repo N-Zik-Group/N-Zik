@@ -148,7 +148,7 @@ class RescueScreenProcessStatusTest {
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
-        killTitle = context.getString(R.string.rescue_kill_app)
+        killTitle = context.getString(R.string.recovery_kill_app)
     }
 
     // Status polling
@@ -160,7 +160,7 @@ class RescueScreenProcessStatusTest {
         // the process alive): the trustworthy probe says dead, so the poll must discard it,
 
         // show "stopped", and leave the kill button disabled.
-        awaitStatus(context.getString(R.string.rescue_status_main_process_stopped))
+        awaitStatus(context.getString(R.string.recovery_status_main_process_stopped))
         assertFalse(
             "the trustworthy probe saw the main process dead: the pending flag must be " +
                 "discarded so the next healthy launch does not self-kill",
@@ -178,7 +178,7 @@ class RescueScreenProcessStatusTest {
             RescueProcess.hasKillRequest(context)
         )
 
-        awaitStatus(context.getString(R.string.rescue_status_main_process_stopping))
+        awaitStatus(context.getString(R.string.recovery_status_main_process_stopping))
         assertTrue(
             "from 31 on 'not running' is not proof of death: the flag must not be cancelled",
             RescueProcess.hasKillRequest(context)
@@ -187,7 +187,7 @@ class RescueScreenProcessStatusTest {
 
         // Simulate the kill landing: the main process receiver consumed the flag.
         RescueProcess.consumeKillRequest(context)
-        awaitStatus(context.getString(R.string.rescue_status_main_process_stopped))
+        awaitStatus(context.getString(R.string.recovery_status_main_process_stopped))
     }
 
     @Test
@@ -199,7 +199,7 @@ class RescueScreenProcessStatusTest {
             RescueProcess.hasKillRequest(context)
         )
 
-        awaitStatus(context.getString(R.string.rescue_status_main_process_stopping))
+        awaitStatus(context.getString(R.string.recovery_status_main_process_stopping))
         composeRule.onNodeWithText(killTitle).assertIsEnabled()
     }
 
@@ -211,7 +211,7 @@ class RescueScreenProcessStatusTest {
         // the dead state, discard the pending flag, and grey out the kill button.
         aliveMarker().delete()
 
-        awaitStatus(context.getString(R.string.rescue_status_main_process_stopped))
+        awaitStatus(context.getString(R.string.recovery_status_main_process_stopped))
         composeRule.onNodeWithText(killTitle).assertIsNotEnabled()
         assertFalse(
             "a dead main process has no pending kill: the flag must be discarded so the " +
@@ -229,7 +229,7 @@ class RescueScreenProcessStatusTest {
         // OS never deletes it).
         aliveMarker().setLastModified(System.currentTimeMillis() - 30_000)
 
-        awaitStatus(context.getString(R.string.rescue_status_main_process_stopped))
+        awaitStatus(context.getString(R.string.recovery_status_main_process_stopped))
         composeRule.onNodeWithText(killTitle).assertIsNotEnabled()
         assertFalse(
             "the orphan flag must be cancelled: a dead process has no pending kill",
@@ -243,7 +243,7 @@ class RescueScreenProcessStatusTest {
     fun `the kill the app action re-sends the kill request`() {
         // Let the poll establish the "alive" state first (the pre-seeded marker keeps the
         // process alive): the kill button is active only while the process is running.
-        awaitStatus(context.getString(R.string.rescue_status_main_process_stopping))
+        awaitStatus(context.getString(R.string.recovery_status_main_process_stopping))
         composeRule.onNodeWithText(killTitle).assertIsEnabled()
 
         // The request recorded by the activity's onCreate is still pending: remember its
@@ -315,8 +315,8 @@ class RescueScreenProcessStatusTest {
 
     @Test
     fun `the process guard refuses writes while alive and releases them when dead`() {
-        val clearCacheTitle = context.getString(R.string.rescue_clear_cache)
-        val confirmText = context.getString(R.string.rescue_confirm_clear_cache)
+        val clearCacheTitle = context.getString(R.string.recovery_clear_cache)
+        val confirmText = context.getString(R.string.recovery_confirm_clear_cache)
 
         // The pre-seeded fresh marker keeps the main process "alive": the guarded write
         // must be refused — the confirmation dialog never appears.

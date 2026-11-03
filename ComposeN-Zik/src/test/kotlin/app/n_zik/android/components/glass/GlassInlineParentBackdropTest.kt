@@ -112,7 +112,7 @@ class GlassInlineParentBackdropTest {
             CompositionLocalProvider(LocalAppearance provides Appearance(
                 DefaultDarkColorPalette.copy(background0 = Color(0xFF101010), accent = Color.Red),
                 Typography.fallback, shape, shape, shape), LocalGlassPreviewSettings provides settings) {
-                UnifiedSearchBar(TextFieldValue(""), {}, R.string.search,
+                UnifiedSearchBar(TextFieldValue(""), {}, R.string.search_title,
                     baseSurface = fill.value, onClear = {})
             }
         }
@@ -133,7 +133,7 @@ class GlassInlineParentBackdropTest {
                 compose.mainClock.advanceTimeByFrame()
                 compose.waitForIdle()
                 val barBounds = bar.fetchSemanticsNode().boundsInRoot
-                val searchLabel = ApplicationProvider.getApplicationContext<Application>().getString(R.string.search)
+                val searchLabel = ApplicationProvider.getApplicationContext<Application>().getString(R.string.search_title)
                 val glyph = compose.onNodeWithContentDescription(searchLabel, useUnmergedTree = true)
                     .fetchSemanticsNode().boundsInRoot
                 val pixels = bar.captureToImage().toPixelMap()

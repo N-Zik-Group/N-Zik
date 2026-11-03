@@ -214,7 +214,7 @@ fun ArtistPlaylists(
             },
             onFailure = {
                 Timber.tag("ArtistPlaylists").e("error ${it.message}")
-                Toaster.e(R.string.error_unknown)
+                Toaster.e(R.string.common_error_unknown)
             }
         )
         isLoading = false

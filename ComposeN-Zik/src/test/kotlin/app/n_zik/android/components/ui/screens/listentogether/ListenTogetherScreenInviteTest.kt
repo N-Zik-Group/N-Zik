@@ -182,7 +182,7 @@ class ListenTogetherScreenInviteTest {
     fun differentRoomDismissalKeepsCurrentRoomAndConfirmationLeavesBeforeJoin() {
         showScreen(username = "Alice", activeRoom = "12345678")
         deliver()
-        compose.onNodeWithText(context.getString(R.string.cancel)).performClick()
+        compose.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
         compose.waitForIdle()
         verify(exactly = 0) { manager.leaveRoom() }
         verify(exactly = 0) { manager.joinRoom(any(), any()) }

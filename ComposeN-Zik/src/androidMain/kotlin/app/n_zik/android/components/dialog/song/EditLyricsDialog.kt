@@ -71,7 +71,7 @@ class EditLyricsDialog private constructor(
     override val keyboardOption: KeyboardOptions = KeyboardOptions.Default
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.enter_the_lyrics)
+        get() = stringResource(R.string.lyrics_editor_title)
 
     fun onShortClick() = showDialog()
 
@@ -89,7 +89,7 @@ class EditLyricsDialog private constructor(
             onValueChange = { value = it },
             placeholder = { 
                 Text(
-                    text = stringResource(R.string.enter_the_lyrics),
+                    text = stringResource(R.string.lyrics_editor_title),
                     color = colorPalette().textDisabled
                 ) 
             },

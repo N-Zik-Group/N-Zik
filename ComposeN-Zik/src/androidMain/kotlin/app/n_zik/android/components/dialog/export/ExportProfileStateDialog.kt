@@ -46,7 +46,7 @@ class ExportProfileStateDialog private constructor(
                                     result.exceptionOrNull(),
                                     "Profile state export failed"
                                 )
-                                Toaster.e(context.getString(R.string.export_profile_state_failed))
+                                Toaster.e(context.getString(R.string.backup_export_profile_state_failed))
                             }
                         }
                     }

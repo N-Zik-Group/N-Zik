@@ -142,7 +142,7 @@ class HomeSyncService : Service() {
         Timber.tag("HomeSyncService").d("══════ ARTIST SYNC START ══════ Total: $totalArtists (YT: ${ytArtists.size}, Local/Fallback: ${localArtists.size})")
 
         withContext(NzikDispatchers.UI) {
-            if (totalArtists > 0) Toaster.i(appContext().getString(R.string.refreshing_artists, totalArtists))
+            if (totalArtists > 0) Toaster.i(appContext().getString(R.string.library_sync_artist_refresh_count_format, totalArtists))
             if (ids == null && totalArtists == 0) Toaster.w(appContext().getString(R.string.sync_no_items))
         }
         
@@ -306,7 +306,7 @@ class HomeSyncService : Service() {
                 HomeSyncState.showSyncNotification(appContext().getString(R.string.sync_failed), "Sync aborted due to network error.", resultNotificationId)
             } else if (failedCount > 0) {
                 HomeSyncState.failedArtistsList = failedList
-                val errorMessage = appContext().getString(R.string.failed_artists, failedCount)
+                val errorMessage = appContext().getString(R.string.library_sync_artist_retry_count_format, failedCount)
                 val notificationMessage = appContext().getString(R.string.sync_failed_notification_artists, failedCount)
                 Toaster.e(errorMessage)
                 HomeSyncState.showSyncNotification(
@@ -315,7 +315,7 @@ class HomeSyncService : Service() {
                     notificationId = resultNotificationId
                 )
             } else {
-                Toaster.s(appContext().getString(R.string.found_all_artists))
+                Toaster.s(appContext().getString(R.string.library_sync_artists_complete_message))
                 HomeSyncState.showSyncNotification(
                     title = appContext().getString(R.string.sync_successful),
                     message = appContext().getString(R.string.sync_success_notification_artists),
@@ -343,7 +343,7 @@ class HomeSyncService : Service() {
         Timber.tag("HomeSyncService").d("══════ ALBUM SYNC START ══════ Total: $totalAlbums (YT: ${ytAlbums.size}, Local/Fallback: ${localAlbums.size})")
 
         withContext(NzikDispatchers.UI) {
-            if (totalAlbums > 0) Toaster.i(appContext().getString(R.string.refreshing_albums, totalAlbums))
+            if (totalAlbums > 0) Toaster.i(appContext().getString(R.string.library_sync_album_refresh_count_format, totalAlbums))
             if (ids == null && totalAlbums == 0) Toaster.w(appContext().getString(R.string.sync_no_items))
         }
 
@@ -542,7 +542,7 @@ class HomeSyncService : Service() {
                 HomeSyncState.showSyncNotification(appContext().getString(R.string.sync_failed), "Sync aborted due to network error.", resultNotificationId)
             } else if (failedCount > 0) {
                 HomeSyncState.failedAlbumsList = failedList
-                val errorMessage = appContext().getString(R.string.failed_albums, failedCount)
+                val errorMessage = appContext().getString(R.string.library_sync_album_retry_count_format, failedCount)
                 val notificationMessage = appContext().getString(R.string.sync_failed_notification_albums, failedCount)
                 Toaster.e(errorMessage)
                 HomeSyncState.showSyncNotification(
@@ -551,7 +551,7 @@ class HomeSyncService : Service() {
                     notificationId = resultNotificationId
                 )
             } else {
-                Toaster.s(appContext().getString(R.string.found_all_albums))
+                Toaster.s(appContext().getString(R.string.library_sync_albums_complete_message))
                 HomeSyncState.showSyncNotification(
                     title = appContext().getString(R.string.sync_successful),
                     message = appContext().getString(R.string.sync_success_notification_albums),
@@ -579,7 +579,7 @@ class HomeSyncService : Service() {
         Timber.tag("HomeSyncService").d("══════ PLAYLIST SYNC START ══════ Total filtered: ${ytPlaylists.size}")
 
         withContext(NzikDispatchers.UI) {
-            if (ytPlaylists.isNotEmpty()) Toaster.i(appContext().getString(R.string.refreshing_playlists, ytPlaylists.size))
+            if (ytPlaylists.isNotEmpty()) Toaster.i(appContext().getString(R.string.library_sync_playlist_refresh_count_format, ytPlaylists.size))
         }
 
         if (ytPlaylists.isEmpty()) {
@@ -665,7 +665,7 @@ class HomeSyncService : Service() {
                 HomeSyncState.showSyncNotification(appContext().getString(R.string.sync_failed), "Sync aborted due to network error.", resultNotificationId)
             } else if (failedCount > 0) {
                 HomeSyncState.failedPlaylistsList = failedList
-                val errorMessage = appContext().getString(R.string.failed_playlists, failedCount)
+                val errorMessage = appContext().getString(R.string.library_sync_playlist_retry_count_format, failedCount)
                 val notificationMessage = appContext().getString(R.string.sync_failed_notification_playlists, failedCount)
                 Toaster.e(errorMessage)
                 HomeSyncState.showSyncNotification(
@@ -674,7 +674,7 @@ class HomeSyncService : Service() {
                     notificationId = resultNotificationId
                 )
             } else {
-                Toaster.s(appContext().getString(R.string.found_all_playlists))
+                Toaster.s(appContext().getString(R.string.library_sync_playlists_complete_message))
                 HomeSyncState.showSyncNotification(
                     title = appContext().getString(R.string.sync_successful),
                     message = appContext().getString(R.string.sync_success_notification_playlists),

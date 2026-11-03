@@ -447,7 +447,7 @@ internal fun downloadDetailLine(title: String?, state: Int): DownloadDetailLine 
         else -> RowColorKey.Blue
     }
     return DownloadDetailLine(
-        titleResId = if (title.isNullOrBlank()) R.string.unknown_title else null,
+        titleResId = if (title.isNullOrBlank()) R.string.metadata_unknown_title else null,
         stateResId = stateResId,
         color = color,
     )
@@ -496,9 +496,9 @@ internal fun updateRow(
     return when (updateState) {
         is UpdateDownloadManager.DownloadState.Idle ->
             if (newVersionAvailable) {
-                UpdateRow(R.string.update_available, color = RowColorKey.Accent)
+                UpdateRow(R.string.updates_available, color = RowColorKey.Accent)
             } else {
-                UpdateRow(R.string.up_to_date, color = RowColorKey.Secondary)
+                UpdateRow(R.string.updates_up_to_date, color = RowColorKey.Secondary)
             }
         UpdateDownloadManager.DownloadState.Starting,
         is UpdateDownloadManager.DownloadState.Downloading ->
@@ -678,9 +678,9 @@ internal fun lastRunLine(
 private fun cacheUsedStatusText(context: Context, usedBytes: Long, maxBytes: Long): String {
     val used = Formatter.formatShortFileSize(context, usedBytes)
     return if (maxBytes > 0L) {
-        "$used${stringResource(R.string.used)} (${usedBytes * 100 / maxBytes}%)"
+        "$used${stringResource(R.string.common_storage_used_suffix)} (${usedBytes * 100 / maxBytes}%)"
     } else {
-        "$used${stringResource(R.string.used)} (${stringResource(R.string.unlimited)})"
+        "$used${stringResource(R.string.common_storage_used_suffix)} (${stringResource(R.string.common_limit_unlimited_label)})"
     }
 }
 
@@ -1133,7 +1133,7 @@ fun MaintenanceSheet(
     val downloadsCache = snap?.downloadsCache
     val downloadsDisabled = snap?.downloadsCacheDisabled == true
     val downloadsCacheStatus = when {
-        downloadsDisabled -> stringResource(R.string.turn_off)
+        downloadsDisabled -> stringResource(R.string.common_action_turn_off)
         downloadsCache != null -> cacheUsedStatusText(context, downloadsCache.first, downloadsCache.second)
         else -> stringResource(R.string.maintenance_no_data)
     }
@@ -1148,7 +1148,7 @@ fun MaintenanceSheet(
     }
     val songCacheSize = LocalPlayerServiceBinder.current?.cache?.cacheSpace
     val songCacheStatus = when {
-        songCacheMaxPref == ExoPlayerDiskCacheMaxSize.Disabled -> stringResource(R.string.turn_off)
+        songCacheMaxPref == ExoPlayerDiskCacheMaxSize.Disabled -> stringResource(R.string.common_action_turn_off)
         songCacheSize == null -> stringResource(R.string.maintenance_no_data)
         else -> cacheUsedStatusText(context, songCacheSize, songCacheMax)
     }
@@ -1218,11 +1218,11 @@ fun MaintenanceSheet(
         parts.add(
             stringResource(
                 when (backupInterval) {
-                    BackupManager.INTERVAL_HOURLY -> R.string.auto_backup_interval_hourly
-                    BackupManager.INTERVAL_DAILY -> R.string.auto_backup_interval_daily
-                    BackupManager.INTERVAL_WEEKLY -> R.string.auto_backup_interval_weekly
-                    BackupManager.INTERVAL_MONTHLY -> R.string.auto_backup_interval_monthly
-                    BackupManager.INTERVAL_CUSTOM -> R.string.auto_backup_interval_custom
+                    BackupManager.INTERVAL_HOURLY -> R.string.backup_auto_interval_hourly
+                    BackupManager.INTERVAL_DAILY -> R.string.backup_auto_interval_daily
+                    BackupManager.INTERVAL_WEEKLY -> R.string.backup_auto_interval_weekly
+                    BackupManager.INTERVAL_MONTHLY -> R.string.backup_auto_interval_monthly
+                    BackupManager.INTERVAL_CUSTOM -> R.string.backup_auto_interval_custom
                     else -> R.string.maintenance_backup_disabled
                 },
             ),
@@ -1441,7 +1441,7 @@ fun MaintenanceSheet(
 //
         // is draggable to full screen. No background here — the menu draws its own.
         ListMenu.Menu(
-            title = stringResource(R.string.maintenance),
+            title = stringResource(R.string.maintenance_title),
             headerTrailing = refreshTrailing,
         ) {
             MaintenanceListContent(
@@ -2136,7 +2136,7 @@ private fun ColumnScope.MaintenanceListContent(
                     }
                     TextButton(onClick = content.onExportCrash) {
                         Text(
-                            text = stringResource(R.string.export_logs),
+                            text = stringResource(R.string.logs_action_export),
                             color = palette.accent,
                         )
                     }
@@ -2187,7 +2187,7 @@ private fun ColumnScope.MaintenanceListContent(
                     }
                     TextButton(onClick = content.onExportLogs) {
                         Text(
-                            text = stringResource(R.string.export_logs),
+                            text = stringResource(R.string.logs_action_export),
                             color = palette.accent,
                         )
                     }

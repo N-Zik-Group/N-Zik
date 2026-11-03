@@ -112,11 +112,11 @@ fun AccountsSettings(
             .settingsTopContentPadding()
     ) {
 
-        settingsSearchTitle(searchFocus, R.string.tab_accounts, R.drawable.person)
+        settingsSearchTitle(searchFocus, R.string.settings_accounts_title, R.drawable.person)
 
         settingsSearchDescription(searchFocus) {
             SettingsDescription(
-                text = stringResource(R.string.accounts_settings_description),
+                text = stringResource(R.string.settings_accounts_page_description),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
@@ -174,24 +174,24 @@ internal fun AccountsSettingsContent(
                 ProfileFaceCard(onOpenProfiles = { navController.navigate(NavRoutes.profiles.name) })
             }
         }
-        if (selectedCards == null || R.string.youtube_music in selectedCards) {
-            SettingsCardSlot(R.string.youtube_music, order = 1, modifier = { cardModifier(R.string.youtube_music) }) {
+        if (selectedCards == null || R.string.settings_youtube_music_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_youtube_music_title, order = 1, modifier = { cardModifier(R.string.settings_youtube_music_title) }) {
                 AccountsYouTubeCard(search)
             }
         }
         AccountsSyncCards(selectedCards, cardModifier)
-        if (selectedCards == null || R.string.social_lastfm in selectedCards) {
-            SettingsCardSlot(R.string.social_lastfm, order = 6, modifier = { cardModifier(R.string.social_lastfm) }) {
+        if (selectedCards == null || R.string.settings_lastfm_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_lastfm_title, order = 6, modifier = { cardModifier(R.string.settings_lastfm_title) }) {
                 LastFmSettingsCard()
             }
         }
-        if (selectedCards == null || R.string.social_discord in selectedCards) {
-            SettingsCardSlot(R.string.social_discord, order = 7, modifier = { cardModifier(R.string.social_discord) }) {
+        if (selectedCards == null || R.string.settings_discord_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_discord_title, order = 7, modifier = { cardModifier(R.string.settings_discord_title) }) {
                 AccountsDiscordCard(search)
             }
         }
-        if (selectedCards == null || R.string.listen_together in selectedCards) {
-            SettingsCardSlot(R.string.listen_together, order = 8, modifier = { cardModifier(R.string.listen_together).onGloballyPositioned { onCardPosition("listentogether", it.positionInRoot().y) } }) {
+        if (selectedCards == null || R.string.listen_together_title in selectedCards) {
+            SettingsCardSlot(R.string.listen_together_title, order = 8, modifier = { cardModifier(R.string.listen_together_title).onGloballyPositioned { onCardPosition("listentogether", it.positionInRoot().y) } }) {
                 ListenTogetherSettingsCard(onOpenScreen = { navController.navigate(NavRoutes.listenTogether.name) })
             }
         }

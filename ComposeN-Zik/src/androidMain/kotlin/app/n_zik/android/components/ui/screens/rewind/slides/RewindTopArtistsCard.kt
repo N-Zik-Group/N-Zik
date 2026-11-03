@@ -53,8 +53,8 @@ fun RewindTopArtistsCard(
                 verticalArrangement = Arrangement.Center
             ) {
                 RewindEmptyState(
-                    title = stringResource(R.string.rw_top_artists_empty_title),
-                    body = stringResource(R.string.rw_top_artists_empty_body),
+                    title = stringResource(R.string.rewind_top_artists_empty_title),
+                    body = stringResource(R.string.rewind_top_artists_empty_body),
                     foreground = onSlide,
                     accent = rewindColors.value.lime
                 )
@@ -68,12 +68,12 @@ fun RewindTopArtistsCard(
             val rowArt = if (compact) 38.dp else 44.dp
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_top_artists_kicker, periodLabel), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rewind_top_artists_kicker, periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(10.dp))
                 RewindReveal(active, 120, direction = RewindRevealDirection.Left) {
                     RewindAdaptiveTitle(
-                        text = stringResource(R.string.rw_top_artists_heading),
+                        text = stringResource(R.string.rewind_top_artists_heading),
                         color = onSlide,
                         fontSize = textScale.size(if (compact) 34.sp else 40.sp),
                         lineHeight = textScale.size(if (compact) 32.sp else 37.sp),
@@ -121,7 +121,7 @@ fun RewindTopArtistsCard(
                             )
                             Spacer(Modifier.height(7.dp))
                             Text(
-                                text = stringResource(R.string.rw_minutes_compact, formatRewindNumber(top.minutes)),
+                                text = stringResource(R.string.rewind_minutes_compact, formatRewindNumber(top.minutes)),
                                 color = rewindColors.value.cream.copy(alpha = 0.50f),
                                 fontSize = textScale.size(10.sp),
                                 fontWeight = FontWeight.Bold,
@@ -189,7 +189,7 @@ fun RewindTopArtistsCard(
                                         modifier = Modifier.rewindMarqueeOnly()
                                     )
                                     Text(
-                                        text = stringResource(R.string.rw_minutes_compact, formatRewindNumber(artist.minutes)),
+                                        text = stringResource(R.string.rewind_minutes_compact, formatRewindNumber(artist.minutes)),
                                         color = rowOn.copy(alpha = 0.42f),
                                         fontSize = textScale.size(9.sp),
                                         maxLines = 1,

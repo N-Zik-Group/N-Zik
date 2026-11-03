@@ -30,7 +30,7 @@ interface InputDialog: InteractiveDialog {
     }
 
     val submitText: String
-        @Composable get() = stringResource(R.string.dialog_save)
+        @Composable get() = stringResource(R.string.common_action_save)
 
     val keyboardOption: KeyboardOptions
 
@@ -54,7 +54,7 @@ interface InputDialog: InteractiveDialog {
     override fun Buttons() = ButtonRow(
         buttons = listOf(
             DialogButton(
-                text = stringResource(R.string.cancel),
+                text = stringResource(R.string.common_action_cancel),
                 onClick = ::hideDialog,
                 danger = true
             ),

@@ -278,7 +278,7 @@ class NZikRadioTest {
 
         nZikRadio.startRadio(createMediaItem(), isExplicit = true)
 
-        verify { Toaster.i(R.string.state_radio_on_discover) }
+        verify { Toaster.i(R.string.radio_discover_started_message) }
         assertTrue(nZikRadio.isRadioActive)
     }
 
@@ -291,7 +291,7 @@ class NZikRadioTest {
 
         nZikRadio.startRadio(createMediaItem(), isExplicit = true)
 
-        verify { Toaster.i(R.string.state_radio_on_classic) }
+        verify { Toaster.i(R.string.radio_classic_started_message) }
     }
 
     // 3: ON, OFF, ON -> Radio started (Discoveries only)
@@ -303,7 +303,7 @@ class NZikRadioTest {
 
         nZikRadio.startRadio(createMediaItem(), isExplicit = true)
 
-        verify { Toaster.i(R.string.state_radio_on_discover) }
+        verify { Toaster.i(R.string.radio_discover_started_message) }
     }
 
     // 4: ON, OFF, OFF -> Radio started (Includes known songs)
@@ -315,7 +315,7 @@ class NZikRadioTest {
 
         nZikRadio.startRadio(createMediaItem(), isExplicit = true)
 
-        verify { Toaster.i(R.string.state_radio_on_classic) }
+        verify { Toaster.i(R.string.radio_classic_started_message) }
     }
 
     // --- AUTO-CORRECTION AND ERROR CASES ---
@@ -326,7 +326,7 @@ class NZikRadioTest {
 
         nZikRadio.toggleDiscover()
 
-        verify { Toaster.e(R.string.state_discover_error) }
+        verify { Toaster.e(R.string.radio_discovery_requires_radio_or_autofill_message) }
         verify(exactly = 0) { editor.putBoolean(discoverKey, any()) } // State shouldn't change
     }
 
@@ -337,7 +337,7 @@ class NZikRadioTest {
         nZikRadio.toggleDiscover()
 
         verify { editor.putBoolean(discoverKey, true) }
-        verify { Toaster.i(R.string.state_discover_on) }
+        verify { Toaster.i(R.string.radio_discovery_enabled_message) }
     }
 
     // Reminder matrix: AutoPlay ON + Discover ON -> Reminder: Auto-play is ON
@@ -347,7 +347,7 @@ class NZikRadioTest {
 
         nZikRadio.showReminderIfNeeded()
 
-        verify { Toaster.i(R.string.state_reminder_discover) }
+        verify { Toaster.i(R.string.radio_discovery_active_reminder) }
     }
 
     // Reminder matrix: AutoPlay OFF + Discover ON -> Auto-correction (Option C)
@@ -467,7 +467,7 @@ class NZikRadioTest {
         nZikRadio.startRadio(mediaItem("B"), isExplicit = true)
 
         assertFalse(nZikRadio.isRadioActive, "the radio must stop on the very first tap")
-        verify { Toaster.i(R.string.state_radio_off) }
+        verify { Toaster.i(R.string.radio_stopped_message) }
         // No forcePlay for the tapped song...
         verify(exactly = 0) { mockPlayer.setMediaItem(any<MediaItem>(), any<Boolean>()) }
         // ...and no re-fetch: the initial start's seed + playlist calls exactly once, and NOT a
@@ -503,7 +503,7 @@ class NZikRadioTest {
         nZikRadio.startRadio(mediaItem("B"), isExplicit = true)
 
         assertFalse(nZikRadio.isRadioActive, "the radio must stop on the first tap even when currentMediaItem is null")
-        verify { Toaster.i(R.string.state_radio_off) }
+        verify { Toaster.i(R.string.radio_stopped_message) }
         // forcePlay happened exactly once (the initial start) — the stop tap did not (re)play
         verify(exactly = 1) { mockPlayer.setMediaItem(any<MediaItem>(), any<Boolean>()) }
         coVerify(exactly = 1) { Innertube.nextPage(videoId = "A") }
@@ -528,7 +528,7 @@ class NZikRadioTest {
         nZikRadio.startRadio(mediaItem("A"), isExplicit = true)
 
         assertFalse(nZikRadio.isRadioActive, "tapping the current song while the radio is active must stop it")
-        verify { Toaster.i(R.string.state_radio_off) }
+        verify { Toaster.i(R.string.radio_stopped_message) }
         verify(exactly = 0) { mockPlayer.setMediaItem(any<MediaItem>(), any<Boolean>()) }
         coVerify(exactly = 1) { Innertube.nextPage(videoId = "A") }
     }
@@ -579,7 +579,7 @@ class NZikRadioTest {
         assertEquals(listOf("Z"), queue.map { it.mediaId }, "the queue must stay exactly [tapped song]")
         assertTrue(nZikRadio.isRadioActive, "the radio stays ON after an empty fetch (a transition-driven retry only happens while the queue has >1 item)")
         assertFalse(nZikRadio.isLoading, "isLoading must be released after an empty fetch, or every future auto-fill is silently disabled")
-        verify { Toaster.e(R.string.state_radio_fetch_error) }
+        verify { Toaster.e(R.string.radio_fetch_empty_queue_preserved_message) }
         verify(exactly = 0) { mockPlayer.addMediaItems(any<List<MediaItem>>()) }
         verify(exactly = 0) { mockPlayer.removeMediaItems(any<Int>(), any<Int>()) }
         verify(exactly = 0) { mockPlayer.moveMediaItem(any(), any()) }
@@ -608,7 +608,7 @@ class NZikRadioTest {
         assertEquals(listOf("Z"), queue.map { it.mediaId }, "the queue must stay exactly [tapped song]")
         assertTrue(nZikRadio.isRadioActive, "the radio stays ON when the filters remove every song")
         assertFalse(nZikRadio.isLoading, "isLoading must be released when the filters empty the list, or every future auto-fill is silently disabled")
-        verify { Toaster.e(R.string.state_radio_fetch_error) }
+        verify { Toaster.e(R.string.radio_fetch_empty_queue_preserved_message) }
         verify(exactly = 0) { mockPlayer.addMediaItems(any<List<MediaItem>>()) }
         verify(exactly = 0) { mockPlayer.removeMediaItems(any<Int>(), any<Int>()) }
         verify(exactly = 0) { mockPlayer.moveMediaItem(any(), any()) }
@@ -638,7 +638,7 @@ class NZikRadioTest {
         assertEquals(3, queue.size)
         assertEquals(setOf("A", "r1", "r2"), queue.map { it.mediaId }.toSet(), "the retry must fill the queue")
         // Exactly one error toast (the explicit start) — the successful auto-fill stays silent
-        verify(exactly = 1) { Toaster.e(R.string.state_radio_fetch_error) }
+        verify(exactly = 1) { Toaster.e(R.string.radio_fetch_empty_queue_preserved_message) }
     }
 
     /** Implicit empty-fetch silence ("Silent fetch (No toast)"): an `autoFillQueue()` whose fetch comes back empty must NOT show `state_radio_fetch_error` — deleting the `if (isExplicit)` gate in `traceEmptyFetch` makes this test red. */
@@ -663,7 +663,7 @@ class NZikRadioTest {
         assertTrue(nZikRadio.isRadioActive, "the radio stays ON after a silent empty auto-fill")
         assertFalse(nZikRadio.isLoading, "isLoading must be released after the empty auto-fill")
         assertEquals(setOf("A", "r1", "r2"), queue.map { it.mediaId }.toSet(), "the queue must stay intact")
-        verify(exactly = 0) { Toaster.e(R.string.state_radio_fetch_error) }
+        verify(exactly = 0) { Toaster.e(R.string.radio_fetch_empty_queue_preserved_message) }
     }
 
     /** RETRY, empty again: when the second `autoFillQueue()` retry comes back empty again, the queue stays intact, the radio stays ON, `isLoading` is released (so the following transition can retry again), and the error toast fired exactly once in total — only for the explicit start, never for the implicit retry. */
@@ -689,7 +689,7 @@ class NZikRadioTest {
         assertFalse(nZikRadio.isLoading, "isLoading must be released, or the following transitions stop retrying")
         assertEquals(listOf("A"), queue.map { it.mediaId }, "the queue must stay intact after the empty retry")
         // Exactly one error toast in total (the explicit start) — the implicit retry is silent
-        verify(exactly = 1) { Toaster.e(R.string.state_radio_fetch_error) }
+        verify(exactly = 1) { Toaster.e(R.string.radio_fetch_empty_queue_preserved_message) }
     }
 
     /** FETCH_FAILED via the seed-success / playlist-null line: the seed call succeeds and returns a playlistId, but the playlist fetch comes back null — same pre-filter empty outcome as a fully null seed, reached through `if (!playlistId.isNullOrBlank())`. */
@@ -709,7 +709,7 @@ class NZikRadioTest {
         assertEquals(listOf("Z"), queue.map { it.mediaId }, "the queue must stay exactly [tapped song]")
         assertTrue(nZikRadio.isRadioActive, "the radio stays ON after an empty fetch")
         assertFalse(nZikRadio.isLoading)
-        verify { Toaster.e(R.string.state_radio_fetch_error) }
+        verify { Toaster.e(R.string.radio_fetch_empty_queue_preserved_message) }
         verify(exactly = 0) { mockPlayer.addMediaItems(any<List<MediaItem>>()) }
         verify(exactly = 0) { mockPlayer.removeMediaItems(any<Int>(), any<Int>()) }
         verify(exactly = 0) { mockPlayer.moveMediaItem(any(), any()) }
@@ -745,7 +745,7 @@ class NZikRadioTest {
         assertEquals(listOf("Z"), queue.map { it.mediaId }, "the queue must stay exactly [tapped song]")
         assertTrue(nZikRadio.isRadioActive, "the radio stays ON when the discover filter removes every song")
         assertFalse(nZikRadio.isLoading)
-        verify { Toaster.e(R.string.state_radio_fetch_error) }
+        verify { Toaster.e(R.string.radio_fetch_empty_queue_preserved_message) }
         verify(exactly = 0) { mockPlayer.addMediaItems(any<List<MediaItem>>()) }
         verify(exactly = 0) { mockPlayer.removeMediaItems(any<Int>(), any<Int>()) }
         verify(exactly = 0) { mockPlayer.moveMediaItem(any(), any()) }
@@ -795,9 +795,9 @@ class NZikRadioTest {
         assertFalse(nZikRadio.isRadioActive, "an implicit start never activates the radio (it stops it first)")
         assertFalse(nZikRadio.isLoading, "isLoading must be released after an implicit empty fetch")
         assertEquals(listOf("Z"), queue.map { it.mediaId }, "the queue must stay exactly [tapped song]")
-        verify(exactly = 0) { Toaster.i(R.string.state_radio_on_classic) }
-        verify(exactly = 0) { Toaster.i(R.string.state_radio_on_discover) }
-        verify(exactly = 0) { Toaster.e(R.string.state_radio_fetch_error) }
+        verify(exactly = 0) { Toaster.i(R.string.radio_classic_started_message) }
+        verify(exactly = 0) { Toaster.i(R.string.radio_discover_started_message) }
+        verify(exactly = 0) { Toaster.e(R.string.radio_fetch_empty_queue_preserved_message) }
     }
 
     /**
@@ -861,8 +861,8 @@ class NZikRadioTest {
             // Resume the stale job — it must be dropped at the liveness guard.
             gate.complete(Unit)
 
-            verify { Toaster.i(R.string.state_radio_off) }
-            verify(exactly = 0) { Toaster.e(R.string.state_radio_fetch_error) }
+            verify { Toaster.i(R.string.radio_stopped_message) }
+            verify(exactly = 0) { Toaster.e(R.string.radio_fetch_empty_queue_preserved_message) }
             verify(exactly = 0) { mockPlayer.addMediaItems(any<List<MediaItem>>()) }
             verify(exactly = 0) { mockPlayer.removeMediaItems(any<Int>(), any<Int>()) }
             verify(exactly = 0) { mockPlayer.moveMediaItem(any(), any()) }

@@ -10,9 +10,9 @@ enum class PlayEventsType(
     @field:DrawableRes override val iconId: Int
 ): TextView, Drawable {
 
-    MostPlayed( R.string.by_most_played_song, R.drawable.chevron_up ),
-    LastPlayed( R.string.by_last_played_song, R.drawable.chevron_down ),
-    CasualPlayed( R.string.by_casual_played_song, R.drawable.random );
+    MostPlayed( R.string.home_sort_most_played_song_label, R.drawable.chevron_up ),
+    LastPlayed( R.string.home_sort_last_played_song_label, R.drawable.chevron_down ),
+    CasualPlayed( R.string.home_sort_random_label, R.drawable.random );
 }
 
 

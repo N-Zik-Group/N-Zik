@@ -59,7 +59,7 @@ class Locator private constructor(
         get() = getSongs().map( Song::id ).indexOf( binder?.player?.currentMediaItem?.mediaId )
 
     override val iconId: Int = R.drawable.locate
-    override val messageId: Int = R.string.info_find_the_song_that_is_playing
+    override val messageId: Int = R.string.player_action_locate_current_song
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -76,7 +76,7 @@ class Locator private constructor(
             Timber.tag("locator").d("LocateComponent.onShortClick songs ${songs.size} -> mediaItem ${mediaItem?.mediaId}")
 
             if( position == -1 )      // Playing song isn't inside [songs()]
-                Toaster.i( R.string.playing_song_not_found_on_current_list )
+                Toaster.i( R.string.player_current_song_not_in_list )
             else
                 coroutineScope.launch {
                     when( scrollableState ) {
@@ -85,6 +85,6 @@ class Locator private constructor(
                     }
                 }
         } else
-            Toaster.i( R.string.no_songs_playing )
+            Toaster.i( R.string.player_no_current_song )
     }
 }

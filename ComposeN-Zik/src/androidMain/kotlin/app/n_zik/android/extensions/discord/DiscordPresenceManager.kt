@@ -708,7 +708,7 @@ class DiscordPresenceManager(
             wasPaused = false
         }
 
-        val cleanTitle = cleanPrefix(mediaItem.mediaMetadata.title?.toString() ?: "").takeIf { it.isNotBlank() } ?: context.getString(R.string.unknown_title)
+        val cleanTitle = cleanPrefix(mediaItem.mediaMetadata.title?.toString() ?: "").takeIf { it.isNotBlank() } ?: context.getString(R.string.metadata_unknown_title)
         // The explicit marker, exactly like the notification and the app widgets:
         // the marker is prepended when the app's MediaItem.isExplicit flags the track.
         val rawTitle = if (mediaItem.isExplicit) "\uD83C\uDD74 $cleanTitle" else cleanTitle
@@ -721,7 +721,7 @@ class DiscordPresenceManager(
         val settings = getAdvancedSettings()
         val info = DiscordMediaInfo(
             title = title,
-            artist = mediaItem.artistTextOrDb().takeIf { it.isNotBlank() } ?: context.getString(R.string.unknown_artist),
+            artist = mediaItem.artistTextOrDb().takeIf { it.isNotBlank() } ?: context.getString(R.string.metadata_unknown_artist),
             // Album resolved from metadata then DB (same path as LastFM/lyrics) — a
             // streaming MediaItem usually carries no albumTitle. Null → the renderer
 //
@@ -747,12 +747,12 @@ class DiscordPresenceManager(
      */
     private fun mediaInfo(mediaItem: MediaItem): DiscordMediaInfo {
         val cleanTitle = cleanPrefix(mediaItem.mediaMetadata.title?.toString() ?: "").takeIf { it.isNotBlank() }
-            ?: context.getString(R.string.unknown_title)
+            ?: context.getString(R.string.metadata_unknown_title)
         return DiscordMediaInfo(
             // Same explicit marker as the activity title above (the app's
             // MediaItem.isExplicit, like the notification).
             title = if (mediaItem.isExplicit) "\uD83C\uDD74 $cleanTitle" else cleanTitle,
-            artist = mediaItem.artistTextOrDb().takeIf { it.isNotBlank() } ?: context.getString(R.string.unknown_artist),
+            artist = mediaItem.artistTextOrDb().takeIf { it.isNotBlank() } ?: context.getString(R.string.metadata_unknown_artist),
             // Album resolved from metadata then DB (see sendPlayingPresence) — the image
             // tooltips render from this info, so they stay consistent with the activity lines.
             albumName = mediaItem.albumTitleOrDb().takeIf { it.isNotBlank() && it != "null" },

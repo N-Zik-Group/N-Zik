@@ -58,8 +58,8 @@ class DebugLogsMenuItemTest {
     private val prefs: SharedPreferences get() = context.preferences
     private val logsDir: File get() = File(context.filesDir, "logs")
 
-    private val enableLabel: String get() = context.getString(R.string.enable_log_debug)
-    private val disableLabel: String get() = context.getString(R.string.disable_log_debug)
+    private val enableLabel: String get() = context.getString(R.string.maintenance_debug_logging_title)
+    private val disableLabel: String get() = context.getString(R.string.settings_logging_disabled_label)
 
     private val appearance = Appearance(
         colorPalette = DefaultDarkColorPalette,

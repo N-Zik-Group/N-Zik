@@ -131,7 +131,7 @@ class DataSettingsWiringTest {
 
     @Test fun `history records only explicit submission on the Data page`() {
         show()
-        val query = context.getString(R.string.clear_search_history)
+        val query = context.getString(R.string.search_history_action_clear)
         val preferences = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         composeRule.onNode(isEditable()).performTextInput(query)
         composeRule.waitForIdle()
@@ -151,7 +151,7 @@ class DataSettingsWiringTest {
             Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(250))
         }
         composeRule.onNodeWithTag("search_no_results_text").assertDoesNotExist()
-        assertTrue(searchMessages.contains(context.getString(R.string.no_results_found)))
+        assertTrue(searchMessages.contains(context.getString(R.string.search_no_results_message)))
         composeRule.onNodeWithTag("data.card.cache", useUnmergedTree = true).assertDoesNotExist()
         composeRule.onNode(isEditable()).performTextReplacement("")
         composeRule.waitForIdle()
@@ -167,7 +167,7 @@ class DataSettingsWiringTest {
             composeRule.mainClock.advanceTimeBy(250)
             Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(250))
             visible = runCatching {
-                composeRule.onNodeWithText(context.getString(R.string.history_open_desc)).assertIsDisplayed()
+                composeRule.onNodeWithText(context.getString(R.string.settings_history_open_description)).assertIsDisplayed()
             }.isSuccess
         }
         assertTrue("History open control must be visible after measured scrolling", visible)
@@ -184,7 +184,7 @@ class DataSettingsWiringTest {
     }
     @Test fun `matching inner history term keeps its action available`() {
         show()
-        val query = context.getString(R.string.clear_search_history)
+        val query = context.getString(R.string.search_history_action_clear)
         composeRule.onNode(isEditable()).performTextInput(query)
         composeRule.waitForIdle()
         composeRule.onNode(hasText(query) and !isEditable()).performScrollTo().assertIsDisplayed()

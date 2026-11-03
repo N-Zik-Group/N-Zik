@@ -146,24 +146,24 @@ class VideoItemMenu private constructor(
     override fun ListMenu() = ListMenu.Menu(title = null, showDragHandle = false) {
         val lastFmSectionSize = if (showLastFmSection) 2 else 0
         // Section: Info
-        SectionTitle(stringResource(R.string.information))
+        SectionTitle(stringResource(R.string.common_information_title))
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Playback
-        SectionTitle(stringResource(R.string.playback))
+        SectionTitle(stringResource(R.string.common_playback_section_title))
         if (!offlineMode) buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(6)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Listen Together (room menu, then suggest-to-host for guests in a room)
         if (!offlineMode) {
-            SectionTitle(stringResource(R.string.listen_together))
+            SectionTitle(stringResource(R.string.listen_together_title))
             listenTogetherDialogBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
             listenTogetherBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
         }
 
         // Section: Management
-        SectionTitle(stringResource(R.string.management))
+        SectionTitle(stringResource(R.string.library_management_section_title))
         buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(3)?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -173,7 +173,7 @@ class VideoItemMenu private constructor(
         refreshBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Navigation
-        SectionTitle(stringResource(R.string.navigation))
+        SectionTitle(stringResource(R.string.common_navigation_section_title))
         for (i in 10 until buttons.size - lastFmSectionSize) {
             val btn = buttons.getOrNull(i)
             if (btn is ChangeAlbumBrowseIdDialog || btn is ChangeArtistBrowseIdDialog) continue
@@ -182,7 +182,7 @@ class VideoItemMenu private constructor(
 
         if (showLastFmSection && !offlineMode) {
             // Section: Last.fm
-            SectionTitle(stringResource(R.string.social_lastfm))
+            SectionTitle(stringResource(R.string.settings_lastfm_title))
             buttons.getOrNull(buttons.size - 2)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(buttons.size - 1)?.let { if (it is MenuIcon) it.ListMenuItem() }
         }
@@ -193,13 +193,13 @@ class VideoItemMenu private constructor(
         val lastFmSectionSize = if (showLastFmSection) 2 else 0
         // Section: Info
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.information))
+            SectionTitle(stringResource(R.string.common_information_title))
         }
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
         // Section: Playback
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.playback))
+            SectionTitle(stringResource(R.string.common_playback_section_title))
         }
         if (!offlineMode) buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -208,7 +208,7 @@ class VideoItemMenu private constructor(
         // Section: Listen Together (room menu, then suggest-to-host for guests in a room)
         if (!offlineMode) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.listen_together))
+                SectionTitle(stringResource(R.string.listen_together_title))
             }
             listenTogetherDialogBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             listenTogetherBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -216,7 +216,7 @@ class VideoItemMenu private constructor(
 
         // Section: Management
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.management))
+            SectionTitle(stringResource(R.string.library_management_section_title))
         }
         buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -228,7 +228,7 @@ class VideoItemMenu private constructor(
 
         // Section: Navigation
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.navigation))
+            SectionTitle(stringResource(R.string.common_navigation_section_title))
         }
         for (i in 10 until buttons.size - lastFmSectionSize) {
             val btn = buttons.getOrNull(i)
@@ -239,7 +239,7 @@ class VideoItemMenu private constructor(
         if (showLastFmSection && !offlineMode) {
             // Section: Last.fm
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.social_lastfm))
+                SectionTitle(stringResource(R.string.settings_lastfm_title))
             }
             buttons.getOrNull(buttons.size - 2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(buttons.size - 1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -272,9 +272,9 @@ class VideoItemMenu private constructor(
             remember {
                 object : MenuIcon, Descriptive, Clickable {
                     override val iconId: Int = R.drawable.playing_indicator
-                    override val messageId: Int = R.string.update_waveform
+                    override val messageId: Int = R.string.audio_waveform_action_refresh
                     @get:Composable
-                    override val menuIconTitle: String get() = stringResource(R.string.update_waveform)
+                    override val menuIconTitle: String get() = stringResource(R.string.audio_waveform_action_refresh)
 
                     override val modifier: Modifier
                         get() = Modifier.alpha(
@@ -287,15 +287,15 @@ class VideoItemMenu private constructor(
                         if (downloadStateMediaState.value == DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED ||
                             isDownloadInProgressState.value
                         ) {
-                            Toaster.w(R.string.error_music_not_fully_cached)
+                            Toaster.w(R.string.audio_waveform_complete_file_required_message)
                         } else {
-                            Toaster.i(R.string.updating_waveform_in_progress)
+                            Toaster.i(R.string.audio_waveform_updating_message)
                             val caches = listOfNotNull(binder?.cache, binder?.downloadCache)
                             WaveformExtractor.requestUpdateWaveform(appContext(), song.id, caches) { result ->
                                 when (result) {
-                                    is WaveformResult.Success -> Toaster.s(R.string.waveform_updated_successfully)
-                                    is WaveformResult.NotReady -> Toaster.i(R.string.waveform_update_after_download)
-                                    is WaveformResult.NoCache, is WaveformResult.Failed -> Toaster.e(R.string.error_updating_waveform)
+                                    is WaveformResult.Success -> Toaster.s(R.string.audio_waveform_updated_message)
+                                    is WaveformResult.NotReady -> Toaster.i(R.string.audio_waveform_waiting_for_download_message)
+                                    is WaveformResult.NoCache, is WaveformResult.Failed -> Toaster.e(R.string.audio_waveform_update_failed_message)
                                 }
                             }
                             menuState.hide()
@@ -346,7 +346,7 @@ class VideoItemMenu private constructor(
         val infoButton = remember {
             object : MenuIcon, Descriptive, Clickable {
                 override val iconId: Int = R.drawable.information
-                override val messageId: Int = R.string.information
+                override val messageId: Int = R.string.common_information_title
                 @get:Composable
                 override val menuIconTitle: String get() = stringResource(messageId)
 
@@ -380,7 +380,7 @@ class VideoItemMenu private constructor(
         val listenOnButton = remember {
             object : MenuIcon, Descriptive, Clickable {
                 override val iconId: Int = R.drawable.play
-                override val messageId: Int = R.string.listen_on
+                override val messageId: Int = R.string.player_listen_on_title
                 @get:Composable
                 override val menuIconTitle: String get() = stringResource(messageId)
                 override fun onShortClick() {
@@ -453,9 +453,9 @@ class VideoItemMenu private constructor(
         listenTogetherDialogBtn = remember {
             object : MenuIcon, Descriptive, Clickable {
                 override val iconId: Int = R.drawable.people
-                override val messageId: Int = R.string.listen_together
+                override val messageId: Int = R.string.listen_together_title
                 @get:Composable
-                override val menuIconTitle: String get() = stringResource(R.string.listen_together)
+                override val menuIconTitle: String get() = stringResource(R.string.listen_together_title)
 
                 override fun onShortClick() {
                     menuState.display {
@@ -488,9 +488,9 @@ class VideoItemMenu private constructor(
                     artistNames.forEach { artistName ->
                         add(object : MenuIcon, Descriptive, Clickable {
                             override val iconId: Int = R.drawable.people
-                            override val messageId: Int = R.string.artists
+                            override val messageId: Int = R.string.library_artists_title
                             @get:Composable
-                            override val menuIconTitle: String get() = stringResource(R.string.more_of) + " $artistName"
+                            override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " $artistName"
                             override fun onShortClick() {
                                 menuState.hide()
                                 coroutineScope.launch(NzikDispatchers.DATA) {
@@ -524,9 +524,9 @@ class VideoItemMenu private constructor(
                 artistsData.forEach { artist ->
                     add(object : MenuIcon, Descriptive, Clickable {
                         override val iconId: Int = R.drawable.people
-                        override val messageId: Int = R.string.artists
+                        override val messageId: Int = R.string.library_artists_title
                         @get:Composable
-                        override val menuIconTitle: String get() = stringResource(R.string.more_of) + " ${artist.name ?: ""}"
+                        override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " ${artist.name ?: ""}"
                         override fun onShortClick() {
                             menuState.hide()
                             navController.navigate("${app.it.fast4x.rimusic.enums.NavRoutes.artist.name}/${artist.id}")

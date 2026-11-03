@@ -8,8 +8,8 @@ enum class MenuStyle(
     @field:StringRes override val textId: Int
 ): TextView {
 
-    List( R.string.style_list ),
-    Grid( R.string.style_grid );
+    List( R.string.library_layout_list_label ),
+    Grid( R.string.library_layout_grid_label );
 }
 
 

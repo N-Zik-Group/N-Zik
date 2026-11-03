@@ -74,8 +74,8 @@ class SessionArtworkPlayerTest {
         stubAppContext()
         val metadata = SessionArtworkPlayer(upstreamWith("", "", "stream-abc")).getMediaMetadata()
 
-        assertEquals(app.getString(R.string.unknown_title), metadata.title.toString())
-        assertEquals(app.getString(R.string.unknown_artist), metadata.artist.toString())
+        assertEquals(app.getString(R.string.metadata_unknown_title), metadata.title.toString())
+        assertEquals(app.getString(R.string.metadata_unknown_artist), metadata.artist.toString())
     }
 
     @Test
@@ -83,8 +83,8 @@ class SessionArtworkPlayerTest {
         stubAppContext()
         val metadata = SessionArtworkPlayer(upstreamWith(null, null, "stream-abc")).getMediaMetadata()
 
-        assertEquals(app.getString(R.string.unknown_title), metadata.title.toString())
-        assertEquals(app.getString(R.string.unknown_artist), metadata.artist.toString())
+        assertEquals(app.getString(R.string.metadata_unknown_title), metadata.title.toString())
+        assertEquals(app.getString(R.string.metadata_unknown_artist), metadata.artist.toString())
     }
 
     @Test

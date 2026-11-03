@@ -47,7 +47,7 @@ object ImportTargetProfileDialog : InteractiveDialog {
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.import_target_profile_title)
+        get() = stringResource(R.string.backup_import_target_profile_title)
 
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -117,7 +117,7 @@ object ImportTargetProfileDialog : InteractiveDialog {
                         )
                         if (option.fromFileTag) {
                             Text(
-                                text = stringResource(R.string.import_target_from_file),
+                                text = stringResource(R.string.backup_import_target_from_file),
                                 style = typography().xxs,
                                 color = colorPalette().textSecondary
                             )
@@ -132,7 +132,7 @@ object ImportTargetProfileDialog : InteractiveDialog {
     override fun Buttons() = ButtonRow(
         buttons = listOf(
             DialogButton(
-                text = stringResource(R.string.import_button),
+                text = stringResource(R.string.common_action_import),
                 onClick = {
                     val id = selectedId
                     if (id != null) {

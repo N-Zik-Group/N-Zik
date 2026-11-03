@@ -353,7 +353,7 @@ fun MoodList(
                                         SwipeablePlaylistItem(
                                             mediaItem = childItem.asMediaItem,
                                             onPlayNext = { binder?.player?.addNext(childItem.asMediaItem) },
-                                            onDownload = { Toaster.w(R.string.downloading_videos_not_supported) },
+                                            onDownload = { Toaster.w(R.string.search_video_download_unsupported_message) },
                                             onEnqueue = { binder?.player?.enqueue(childItem.asMediaItem) },
                                             downloadStateParam = downloadsMapState[childItem.key]?.state ?: Download.STATE_STOPPED,
                                             downloadedStateMediaParam = downloadStatesMap[childItem.key] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
@@ -399,7 +399,7 @@ fun MoodList(
         } ?: CollectionPageStatus {
             if (moodPage?.exceptionOrNull() != null) {
                 BasicText(
-                    text = stringResource(R.string.page_not_been_loaded),
+                    text = stringResource(R.string.recommendations_load_failed_message),
                     style = typography().s.secondary.center,
                     modifier = Modifier.padding(all = 16.dp)
                 )

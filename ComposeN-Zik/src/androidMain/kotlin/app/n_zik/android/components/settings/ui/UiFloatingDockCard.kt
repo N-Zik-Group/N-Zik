@@ -17,9 +17,9 @@ import app.n_zik.android.components.tab.Search
 /** Dock preferences apply to Bottom Floating with either material mode. */
 @Composable
 internal fun UiFloatingDockCard(search: Search) {
-    val title = stringResource(R.string.floating_dock_settings)
-    val orderTitle = stringResource(R.string.floating_dock_toolbar_order)
-    val terms = listOf(title, orderTitle, stringResource(R.string.toolbar))
+    val title = stringResource(R.string.settings_dock_title)
+    val orderTitle = stringResource(R.string.settings_dock_expanded_tab_order_label)
+    val terms = listOf(title, orderTitle, stringResource(R.string.settings_library_toolbar_title))
     val showAll = search.inputValue.isBlank() || title.contains(search.inputValue, true)
     AnimatedVisibility(
         visible = showAll || terms.any { it.contains(search.inputValue, true) },
@@ -31,11 +31,11 @@ internal fun UiFloatingDockCard(search: Search) {
             title = title,
             icon = R.drawable.ellipsis_horizontal,
             content = {
-                if (showAll || orderTitle.contains(search.inputValue, true) || stringResource(R.string.toolbar).contains(search.inputValue, true)) {
+                if (showAll || orderTitle.contains(search.inputValue, true) || stringResource(R.string.settings_library_toolbar_title).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.floating_dock.toolbar_order"),
                         title = orderTitle,
-                        text = stringResource(R.string.floating_dock_toolbar_order_description),
+                        text = stringResource(R.string.settings_dock_expanded_tab_order_description),
                         icon = R.drawable.reorder,
                         onClick = { DockToolbarSettingsDialog.showDialog() },
                     )

@@ -18,7 +18,7 @@ abstract class ImportFromFile(
             launcher.launch( supportedMimes )
         } catch ( e: ActivityNotFoundException ) {
             Timber.tag("ImportFromFile").e(e, "No app found to handle file picker")
-            Toaster.e( R.string.info_not_find_app_open_doc )
+            Toaster.e( R.string.common_error_no_document_handler )
         }
     }
 }

@@ -287,13 +287,13 @@ class AutoSessionCallback(
         params: MediaLibraryService.LibraryParams?
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
         if (!accessPolicy().online) return Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.of(), params))
-        val results = listOf(            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_SONGS}/$query", context.getString(R.string.songs), null, AutoMediaItemMapper.drawableUri(context, R.drawable.musical_notes), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
-            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_ALBUMS}/$query", context.getString(R.string.albums), null, AutoMediaItemMapper.drawableUri(context, R.drawable.album), MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS),
-            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_ARTISTS}/$query", context.getString(R.string.artists), null, AutoMediaItemMapper.drawableUri(context, R.drawable.people), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
-            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_VIDEOS}/$query", context.getString(R.string.videos), null, AutoMediaItemMapper.drawableUri(context, R.drawable.video), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
-            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_PLAYLISTS}/$query", context.getString(R.string.playlists), null, AutoMediaItemMapper.drawableUri(context, R.drawable.library), MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS),
-            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_FEATURED}/$query", context.getString(R.string.featured), null, AutoMediaItemMapper.drawableUri(context, R.drawable.featured_playlist), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
-            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_PODCASTS}/$query", context.getString(R.string.podcasts), null, AutoMediaItemMapper.drawableUri(context, R.drawable.podcast), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
+        val results = listOf(            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_SONGS}/$query", context.getString(R.string.library_songs_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.musical_notes), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
+            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_ALBUMS}/$query", context.getString(R.string.library_albums_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.album), MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS),
+            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_ARTISTS}/$query", context.getString(R.string.library_artists_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.people), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
+            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_VIDEOS}/$query", context.getString(R.string.search_videos_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.video), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
+            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_PLAYLISTS}/$query", context.getString(R.string.library_playlists_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.library), MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS),
+            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_FEATURED}/$query", context.getString(R.string.search_featured_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.featured_playlist), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
+            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_PODCASTS}/$query", context.getString(R.string.podcast_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.podcast), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
         )
         return Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.copyOf(results), params))
     }

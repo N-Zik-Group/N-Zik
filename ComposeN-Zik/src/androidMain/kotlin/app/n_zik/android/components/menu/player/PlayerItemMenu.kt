@@ -175,7 +175,7 @@ class PlayerItemMenu private constructor(
         ListMenu.Menu(title = null, showDragHandle = false) {
             val lastFmSectionSize = if (showLastFmSection) 2 else 0
             // Section: Information
-            SectionTitle(stringResource(R.string.information))
+            SectionTitle(stringResource(R.string.common_information_title))
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         if (song.isLocal) {
@@ -183,10 +183,10 @@ class PlayerItemMenu private constructor(
             // The FFmpeg gate is gone (spec-ffmpeg-extension-module): the module is downloaded on
             // first use, so editMetadata (index 2) is always present and the indexes are fixed
             val playbackStart = LOCAL_PLAYER_PLAYBACK_START
-            SectionTitle(stringResource(R.string.management))
+            SectionTitle(stringResource(R.string.library_management_section_title))
             buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
-            SectionTitle(stringResource(R.string.playback))
+            SectionTitle(stringResource(R.string.common_playback_section_title))
             if (playerTimelineType == PlayerTimelineType.AudioWaves) {
                 buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
@@ -199,19 +199,19 @@ class PlayerItemMenu private constructor(
             }
         } else {
             // Remote songs: 0=info, 1=waves, 2=rename, 3=author, 4=cover, 5=radio, 6=equalizer, 7=sleep, 8=fav, 9=playlist, 10=refetch, 11+=nav
-            SectionTitle(stringResource(R.string.playback))
+            SectionTitle(stringResource(R.string.common_playback_section_title))
             if (!offlineMode) buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(6)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(7)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
             // Section: Listen Together (room menu, then suggest-to-host for guests in a room)
             if (!offlineMode) {
-                SectionTitle(stringResource(R.string.listen_together))
+                SectionTitle(stringResource(R.string.listen_together_title))
                 listenTogetherDialogBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
                 listenTogetherBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
 
-            SectionTitle(stringResource(R.string.management))
+            SectionTitle(stringResource(R.string.library_management_section_title))
             if (playerTimelineType == PlayerTimelineType.AudioWaves) {
                 buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
@@ -225,7 +225,7 @@ class PlayerItemMenu private constructor(
             buttons.getOrNull(12)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.filterIsInstance<DeleteSongDialog>().firstOrNull()?.let { it.ListMenuItem() }
 
-            SectionTitle(stringResource(R.string.navigation))
+            SectionTitle(stringResource(R.string.common_navigation_section_title))
             for (i in 13 until buttons.size - lastFmSectionSize) {
                 val btn = buttons.getOrNull(i)
                 if (btn is DeleteSongDialog) continue
@@ -233,7 +233,7 @@ class PlayerItemMenu private constructor(
             }
 
             if (showLastFmSection && !offlineMode) {
-                SectionTitle(stringResource(R.string.social_lastfm))
+                SectionTitle(stringResource(R.string.settings_lastfm_title))
                 lastFmLoveButton.ListMenuItem()
                 lastFmUnloveButton.ListMenuItem()
             }
@@ -249,7 +249,7 @@ class PlayerItemMenu private constructor(
             val lastFmSectionSize = if (showLastFmSection) 2 else 0
             // Section: Information
             item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.information))
+            SectionTitle(stringResource(R.string.common_information_title))
         }
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
@@ -258,12 +258,12 @@ class PlayerItemMenu private constructor(
             // first use (spec-ffmpeg-extension-module)
             val playbackStart = LOCAL_PLAYER_PLAYBACK_START
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.management))
+                SectionTitle(stringResource(R.string.library_management_section_title))
             }
             buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.playback))
+                SectionTitle(stringResource(R.string.common_playback_section_title))
             }
             if (playerTimelineType == PlayerTimelineType.AudioWaves) {
                 buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -277,7 +277,7 @@ class PlayerItemMenu private constructor(
             }
         } else {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.playback))
+                SectionTitle(stringResource(R.string.common_playback_section_title))
             }
             if (!offlineMode) buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(6)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -286,14 +286,14 @@ class PlayerItemMenu private constructor(
             // Section: Listen Together (room menu, then suggest-to-host for guests in a room)
             if (!offlineMode) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    SectionTitle(stringResource(R.string.listen_together))
+                    SectionTitle(stringResource(R.string.listen_together_title))
                 }
                 listenTogetherDialogBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
                 listenTogetherBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.management))
+                SectionTitle(stringResource(R.string.library_management_section_title))
             }
             if (playerTimelineType == PlayerTimelineType.AudioWaves) {
                 buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -309,7 +309,7 @@ class PlayerItemMenu private constructor(
             buttons.filterIsInstance<DeleteSongDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.navigation))
+                SectionTitle(stringResource(R.string.common_navigation_section_title))
             }
             for (i in 13 until buttons.size - lastFmSectionSize) {
                 val btn = buttons.getOrNull(i)
@@ -319,7 +319,7 @@ class PlayerItemMenu private constructor(
 
             if (showLastFmSection && !offlineMode) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    SectionTitle(stringResource(R.string.social_lastfm))
+                    SectionTitle(stringResource(R.string.settings_lastfm_title))
                 }
                 item { lastFmLoveButton.GridMenuItem() }
                 item { lastFmUnloveButton.GridMenuItem() }
@@ -366,7 +366,7 @@ class PlayerItemMenu private constructor(
         val equalizerButton = remember {
             object : MenuIcon, Descriptive, Clickable {
                 override val iconId: Int = R.drawable.equalizer
-                override val messageId: Int = R.string.equalizer
+                override val messageId: Int = R.string.settings_audio_equalizer_label
                 @get:Composable
                 override val menuIconTitle: String get() = stringResource(messageId)
 
@@ -389,7 +389,7 @@ class PlayerItemMenu private constructor(
                             }
                         )
                     } catch (e: ActivityNotFoundException) {
-                        Toaster.w(R.string.info_not_find_application_audio)
+                        Toaster.w(R.string.audio_equalizer_application_unavailable_message)
                     }
                     menuState.hide()
                 }
@@ -413,9 +413,9 @@ class PlayerItemMenu private constructor(
         val refreshAudioWavesButton = remember {
             object : MenuIcon, Descriptive, Clickable {
                 override val iconId: Int = R.drawable.playing_indicator
-                override val messageId: Int = R.string.update_waveform
+                override val messageId: Int = R.string.audio_waveform_action_refresh
                 @get:Composable
-                override val menuIconTitle: String get() = stringResource(R.string.update_waveform)
+                override val menuIconTitle: String get() = stringResource(R.string.audio_waveform_action_refresh)
 
                 override val modifier: Modifier
                     get() = Modifier.alpha(
@@ -429,17 +429,17 @@ class PlayerItemMenu private constructor(
                     if (downloadStateMediaState.value == DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED ||
                         isDownloadInProgressState.value
                     ) {
-                        Toaster.w(R.string.error_music_not_fully_cached)
+                        Toaster.w(R.string.audio_waveform_complete_file_required_message)
                     } else {
                         // Toast info refresh in progress
-                        Toaster.i(R.string.updating_waveform_in_progress)
+                        Toaster.i(R.string.audio_waveform_updating_message)
 
                         val caches = listOfNotNull(binder.cache, binder.downloadCache)
                         WaveformExtractor.requestUpdateWaveform(appContext(), mediaItem.mediaId, caches) { result ->
                             when (result) {
-                                is WaveformResult.Success -> Toaster.s(R.string.waveform_updated_successfully)
-                                is WaveformResult.NotReady -> Toaster.i(R.string.waveform_update_after_download)
-                                is WaveformResult.NoCache, is WaveformResult.Failed -> Toaster.e(R.string.error_updating_waveform)
+                                is WaveformResult.Success -> Toaster.s(R.string.audio_waveform_updated_message)
+                                is WaveformResult.NotReady -> Toaster.i(R.string.audio_waveform_waiting_for_download_message)
+                                is WaveformResult.NoCache, is WaveformResult.Failed -> Toaster.e(R.string.audio_waveform_update_failed_message)
                             }
                         }
                         menuState.hide()
@@ -453,7 +453,7 @@ class PlayerItemMenu private constructor(
         val sleepTimerButton = remember {
             object : MenuIcon, Descriptive, Clickable {
                 override val iconId: Int = R.drawable.sleep
-                override val messageId: Int = R.string.sleep_timer
+                override val messageId: Int = R.string.player_sleep_timer_title
                 @get:Composable
                 override val menuIconTitle: String get() = stringResource(messageId)
 
@@ -495,7 +495,7 @@ class PlayerItemMenu private constructor(
         val listenOnButton = remember {
             object : MenuIcon, Descriptive, Clickable {
                 override val iconId: Int = R.drawable.play
-                override val messageId: Int = R.string.listen_on
+                override val messageId: Int = R.string.player_listen_on_title
                 @get:Composable
                 override val menuIconTitle: String get() = stringResource(messageId)
 
@@ -510,7 +510,7 @@ class PlayerItemMenu private constructor(
         val infoButton = remember {
             object : MenuIcon, Descriptive, Clickable {
                 override val iconId: Int = R.drawable.information
-                override val messageId: Int = R.string.information
+                override val messageId: Int = R.string.common_information_title
                 @get:Composable
                 override val menuIconTitle: String get() = stringResource(messageId)
 
@@ -630,9 +630,9 @@ class PlayerItemMenu private constructor(
         listenTogetherDialogBtn = remember {
             object : MenuIcon, Descriptive, Clickable {
                 override val iconId: Int = R.drawable.people
-                override val messageId: Int = R.string.listen_together
+                override val messageId: Int = R.string.listen_together_title
                 @get:Composable
-                override val menuIconTitle: String get() = stringResource(R.string.listen_together)
+                override val menuIconTitle: String get() = stringResource(R.string.listen_together_title)
 
                 override fun onShortClick() {
                     menuState.display {
@@ -679,7 +679,7 @@ class PlayerItemMenu private constructor(
                     // Go to Album
                     add(object : MenuIcon, Descriptive, Clickable {
                         override val iconId: Int = R.drawable.album
-                        override val messageId: Int = R.string.go_to_album
+                        override val messageId: Int = R.string.album_action_open
                         @get:Composable
                         override val menuIconTitle: String get() = stringResource(messageId)
 
@@ -709,9 +709,9 @@ class PlayerItemMenu private constructor(
                         if (artistNames.size <= 1) {
                             add(object : MenuIcon, Descriptive, Clickable {
                                 override val iconId: Int = R.drawable.people
-                                override val messageId: Int = R.string.artists
+                                override val messageId: Int = R.string.library_artists_title
                                 @get:Composable
-                                override val menuIconTitle: String get() = stringResource(R.string.more_of) + " ${song.cleanArtistsText()}"
+                                override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " ${song.cleanArtistsText()}"
                                 override fun onShortClick() {
                                     menuState.hide()
                                     onClosePlayer()
@@ -723,9 +723,9 @@ class PlayerItemMenu private constructor(
                             artistNames.forEach { artistName ->
                                 add(object : MenuIcon, Descriptive, Clickable {
                                     override val iconId: Int = R.drawable.people
-                                    override val messageId: Int = R.string.artists
+                                    override val messageId: Int = R.string.library_artists_title
                                     @get:Composable
-                                    override val menuIconTitle: String get() = stringResource(R.string.more_of) + " $artistName"
+                                    override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " $artistName"
                                     override fun onShortClick() {
                                         menuState.hide()
                                         onClosePlayer()
@@ -751,9 +751,9 @@ class PlayerItemMenu private constructor(
                         artistsData.forEach { artist ->
                             add(object : MenuIcon, Descriptive, Clickable {
                                 override val iconId: Int = R.drawable.people
-                                override val messageId: Int = R.string.artists
+                                override val messageId: Int = R.string.library_artists_title
                                 @get:Composable
-                                override val menuIconTitle: String get() = stringResource(R.string.more_of) + " ${artist.name ?: ""}"
+                                override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " ${artist.name ?: ""}"
                                 override fun onShortClick() {
                                     menuState.hide()
                                     onClosePlayer()
@@ -785,7 +785,7 @@ class PlayerItemMenu private constructor(
                 InProgressDialog(
                     total = 0,
                     done = 0,
-                    text = stringResource(R.string.exporting),
+                    text = stringResource(R.string.export_running_status),
                     onDismiss = null
                 )
             }

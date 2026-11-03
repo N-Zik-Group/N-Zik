@@ -57,12 +57,12 @@ fun RewindTotalTimeCard(
             }
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 50, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_totals_kicker, data.periodLabel), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rewind_totals_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 130, direction = RewindRevealDirection.Left) {
                     RewindAdaptiveTitle(
-                        text = stringResource(R.string.rw_totals_heading),
+                        text = stringResource(R.string.rewind_totals_heading),
                         color = onOrange,
                         fontSize = textScale.size(if (compact) 33.sp else 39.sp),
                         lineHeight = textScale.size(if (compact) 31.sp else 36.sp),
@@ -73,7 +73,7 @@ fun RewindTotalTimeCard(
                 Spacer(Modifier.height(3.dp))
                 RewindReveal(active, 260) {
                     Text(
-                        text = stringResource(R.string.rw_totals_subheading),
+                        text = stringResource(R.string.rewind_totals_subheading),
                         color = onOrange.copy(alpha = 0.67f),
                         fontSize = textScale.size(12.sp),
                         fontWeight = FontWeight.Bold,
@@ -99,7 +99,7 @@ fun RewindTotalTimeCard(
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
-                                    text = stringResource(R.string.rw_totals_heading),
+                                    text = stringResource(R.string.rewind_totals_heading),
                                     color = rewindColors.value.cream.copy(alpha = 0.58f),
                                     fontSize = textScale.size(9.sp),
                                     fontWeight = FontWeight.Black,
@@ -117,7 +117,7 @@ fun RewindTotalTimeCard(
                                     durationMillis = 1_300
                                 )
                                 Text(
-                                    text = stringResource(R.string.rw_label_minutes),
+                                    text = stringResource(R.string.rewind_label_minutes),
                                     color = rewindColors.value.cream,
                                     fontSize = textScale.size(14.sp),
                                     fontWeight = FontWeight.Black,
@@ -135,21 +135,21 @@ fun RewindTotalTimeCard(
                         horizontalArrangement = Arrangement.spacedBy(9.dp)
                     ) {
                         TotalMetric(
-                            label = stringResource(R.string.rw_label_plays),
+                            label = stringResource(R.string.rewind_label_plays),
                             value = formatRewindNumber(data.stats.totalPlays.toLong()),
                             background = rewindColors.value.ink,
                             foreground = rewindColors.value.cream,
                             modifier = Modifier.weight(1f)
                         )
                         TotalMetric(
-                            label = stringResource(R.string.rw_label_days),
+                            label = stringResource(R.string.rewind_label_days),
                             value = formatRewindNumber(data.daysWithMusic.toLong()),
                             background = rewindColors.value.lime,
                             foreground = onLime,
                             modifier = Modifier.weight(1f)
                         )
                         TotalMetric(
-                            label = stringResource(R.string.rw_label_hours),
+                            label = stringResource(R.string.rewind_label_hours),
                             value = formatRewindNumber(data.stats.totalMinutes / 60L),
                             background = rewindColors.value.cream,
                             foreground = rewindColors.value.ink,

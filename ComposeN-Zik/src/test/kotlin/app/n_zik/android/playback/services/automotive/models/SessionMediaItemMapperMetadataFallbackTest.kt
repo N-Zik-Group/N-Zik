@@ -55,8 +55,8 @@ class SessionMediaItemMapperMetadataFallbackTest {
 
         val item = SessionMediaItemMapper.mapSongToMediaItem(song, path = "album", loadArtwork = false)
 
-        assertEquals(app.getString(R.string.unknown_title), item.mediaMetadata.title.toString())
-        assertEquals(app.getString(R.string.unknown_artist), item.mediaMetadata.artist.toString())
+        assertEquals(app.getString(R.string.metadata_unknown_title), item.mediaMetadata.title.toString())
+        assertEquals(app.getString(R.string.metadata_unknown_artist), item.mediaMetadata.artist.toString())
     }
 
     @Test
@@ -72,8 +72,8 @@ class SessionMediaItemMapperMetadataFallbackTest {
 
         val item = SessionMediaItemMapper.mapSongToMediaItem(song, isFromPersistentQueue = true, loadArtwork = false)
 
-        assertEquals(app.getString(R.string.unknown_title), item.mediaMetadata.title.toString())
-        assertEquals(app.getString(R.string.unknown_artist), item.mediaMetadata.artist.toString())
+        assertEquals(app.getString(R.string.metadata_unknown_title), item.mediaMetadata.title.toString())
+        assertEquals(app.getString(R.string.metadata_unknown_artist), item.mediaMetadata.artist.toString())
     }
 
     @Test
@@ -84,7 +84,7 @@ class SessionMediaItemMapperMetadataFallbackTest {
         val item = SessionMediaItemMapper.mapSongToMediaItem(song, isFromPersistentQueue = true, loadArtwork = false)
 
         assertEquals("Filename", item.mediaMetadata.title.toString())
-        assertEquals(app.getString(R.string.unknown_artist), item.mediaMetadata.artist.toString())
+        assertEquals(app.getString(R.string.metadata_unknown_artist), item.mediaMetadata.artist.toString())
     }
 
     @Test

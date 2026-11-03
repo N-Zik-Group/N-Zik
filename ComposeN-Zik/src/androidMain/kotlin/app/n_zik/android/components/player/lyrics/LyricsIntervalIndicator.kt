@@ -62,7 +62,7 @@ fun LyricsIntervalIndicator(
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
         animationSpec = tween(durationMillis = 100, easing = LinearEasing),
-        label = stringResource(R.string.txt_lyricsintervalprogress)
+        label = stringResource(R.string.lyrics_debug_interval_progress)
     )
 
     Box(

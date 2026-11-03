@@ -28,7 +28,7 @@ internal fun AccountsSyncCards(
     cardModifier: @Composable (Int) -> Modifier = { Modifier },
 ) {
     if (selectedCards != null && selectedCards.none {
-        it == R.string.sync_data_with_ytm_account || it == R.string.autosync ||
+        it == R.string.sync_data_with_ytm_account || it == R.string.sync_imported_playlists_automatic_title ||
             it == R.string.sync_import_from_youtube || it == R.string.sync_push_to_youtube
     }) return
 
@@ -59,8 +59,8 @@ internal fun AccountsSyncCards(
 
             AnimatedVisibility(visible = isSyncEnabled) {
                 Column {
-                    if (selectedCards == null || R.string.autosync in selectedCards) {
-                        SettingsCardSlot(R.string.autosync, order = 3, modifier = { cardModifier(R.string.autosync) }) {
+                    if (selectedCards == null || R.string.sync_imported_playlists_automatic_title in selectedCards) {
+                        SettingsCardSlot(R.string.sync_imported_playlists_automatic_title, order = 3, modifier = { cardModifier(R.string.sync_imported_playlists_automatic_title) }) {
                             AccountsAutoSyncCard()
                         }
                     }

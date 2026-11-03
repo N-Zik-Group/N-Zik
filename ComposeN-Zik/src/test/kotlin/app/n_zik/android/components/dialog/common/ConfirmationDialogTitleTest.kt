@@ -91,13 +91,13 @@ class ConfirmationDialogTitleTest {
         composeRule.waitForIdle()
         val header = composeRule.onNodeWithTag("dialogFrameHeader").getBoundsInRoot()
         val body = composeRule.onNodeWithTag("dialogFrameBody").getBoundsInRoot()
-        val title = composeRule.onNodeWithText(context.getString(R.string.dialog_download_songs)).assertIsDisplayed().getBoundsInRoot()
-        val question = composeRule.onNodeWithText(context.getString(R.string.do_you_really_want_to_download_all_count, 2)).assertIsDisplayed().getBoundsInRoot()
+        val title = composeRule.onNodeWithText(context.getString(R.string.downloads_download_dialog_title)).assertIsDisplayed().getBoundsInRoot()
+        val question = composeRule.onNodeWithText(context.getString(R.string.downloads_download_all_count_confirmation, 2)).assertIsDisplayed().getBoundsInRoot()
         assertTrue(title.top >= header.top && title.bottom <= header.bottom)
         assertTrue(question.top >= body.top && question.bottom <= body.bottom)
-        composeRule.onNodeWithText(context.getString(R.string.download)).assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.confirm)).assertDoesNotExist()
-        composeRule.onNodeWithText(context.getString(R.string.cancel)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.downloads_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_confirm)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
         composeRule.runOnIdle { assertEquals(false, visible.value) }
     }
 

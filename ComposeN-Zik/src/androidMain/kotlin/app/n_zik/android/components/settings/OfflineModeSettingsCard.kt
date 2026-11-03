@@ -23,14 +23,14 @@ fun OfflineModeSettingsCard(modifier: Modifier = Modifier) {
     var offlineMode by rememberPreference(fullOfflineModeKey, false)
 
     SettingsSectionCard(
-        title = stringResource(R.string.offline_mode),
+        title = stringResource(R.string.settings_network_offline_mode_label),
         icon = R.drawable.airplane,
         modifier = modifier,
         content = {
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.offline.offline_mode"),
-                title = stringResource(R.string.offline_mode),
-                text = stringResource(R.string.offline_mode_description),
+                title = stringResource(R.string.settings_network_offline_mode_label),
+                text = stringResource(R.string.settings_network_offline_mode_description),
                 isChecked = offlineMode,
                 onCheckedChange = { offlineMode = it },
                 icon = R.drawable.airplane

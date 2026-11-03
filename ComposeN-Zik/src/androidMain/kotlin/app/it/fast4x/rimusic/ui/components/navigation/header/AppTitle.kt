@@ -49,9 +49,9 @@ private fun appIconClickAction(
                 ""
             }
 
-            3 -> context.getString(R.string.easter_egg_click_message)
-            6 -> context.getString(R.string.easter_egg_keep_going)
-            9 -> context.getString(R.string.easter_egg_number_one)
+            3 -> context.getString(R.string.home_easter_egg_click_message)
+            6 -> context.getString(R.string.home_easter_egg_keep_going)
+            9 -> context.getString(R.string.home_easter_egg_number_one)
             else -> ""
         }
     if (message.isNotEmpty())
@@ -62,7 +62,7 @@ private fun appIconLongClickAction(
     navController: NavController,
     context: Context
 ) {
-    Toaster.n(context.getString(R.string.easter_egg_last), Toast.LENGTH_LONG)
+    Toaster.n(context.getString(R.string.home_easter_egg_last), Toast.LENGTH_LONG)
     navController.navigate(NavRoutes.easterTwo.name)
 }
 
@@ -82,7 +82,7 @@ private fun AppLogo(
 
     Image(
         bitmap = APP_ICON_IMAGE_BITMAP,
-        contentDescription = stringResource(R.string.cd_app_s_icon),
+        contentDescription = stringResource(R.string.accessibility_app_icon),
         modifier = modifier.size(36.dp)
     )
 }

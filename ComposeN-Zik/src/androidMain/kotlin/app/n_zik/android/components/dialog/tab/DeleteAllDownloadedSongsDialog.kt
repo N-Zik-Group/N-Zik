@@ -39,20 +39,20 @@ class DeleteAllDownloadedSongsDialog(
     }
 
     override val confirmationTitle: String
-        @Composable get() = stringResource(R.string.dialog_clear_downloads)
+        @Composable get() = stringResource(R.string.downloads_delete_dialog_title)
     override val confirmationAction: String
-        @Composable get() = stringResource(R.string.delete)
+        @Composable get() = stringResource(R.string.common_action_delete)
 
-    override val messageId: Int = R.string.info_remove_all_downloaded_songs
+    override val messageId: Int = R.string.downloads_action_remove_all
     override val iconId: Int = R.drawable.download
     override val dialogTitle: String
         @Composable
         get() {
             val count = getSongs().count { song -> MyDownloadHelper.downloads.value.containsKey(song.id) }
             return if( count > 0 )
-                stringResource( R.string.do_you_really_want_to_delete_download_count, count )
+                stringResource( R.string.downloads_delete_all_count_confirmation, count )
             else
-                stringResource( R.string.do_you_really_want_to_delete_download )
+                stringResource( R.string.downloads_delete_all_confirmation )
         }
     override val menuIconTitle: String
         @Composable
@@ -64,7 +64,7 @@ class DeleteAllDownloadedSongsDialog(
             super.onShortClick()
         } else {
             app.kreate.android.me.knighthat.utils.Toaster.toast(
-                appContext().getString(R.string.nothing_to_delete),
+                appContext().getString(R.string.downloads_nothing_to_delete),
                 type = app.kreate.android.me.knighthat.utils.Toaster.Type.INFO
             )
         }

@@ -75,7 +75,7 @@ fun HomeSearch(
             item(key = "header", contentType = 0, span = { GridItemSpan(maxLineSpan) }) {
 
                 HeaderWithIcon(
-                    title = stringResource(R.string.search),
+                    title = stringResource(R.string.search_title),
                     iconId = R.drawable.search,
                     enabled = false,
                     showIcon = false,
@@ -90,7 +90,7 @@ fun HomeSearch(
                     PlaylistItem(
                         icon = R.drawable.globe,
                         colorTint = colorPalette().favoritesIcon,
-                        name = "${stringResource(R.string.search)} ${stringResource(R.string.online)}",
+                        name = "${stringResource(R.string.search_title)} ${stringResource(R.string.search_online)}",
                         songCount = null,
                         thumbnailSizeDp = thumbnailSizeDp,
                         alternative = true,
@@ -106,7 +106,7 @@ fun HomeSearch(
                 PlaylistItem(
                     icon = R.drawable.library,
                     colorTint = colorPalette().favoritesIcon,
-                    name = "${stringResource(R.string.search)} ${stringResource(R.string.library)}",
+                    name = "${stringResource(R.string.search_title)} ${stringResource(R.string.library_title)}",
                     songCount = null,
                     thumbnailSizeDp = thumbnailSizeDp,
                     alternative = true,
@@ -126,7 +126,7 @@ fun HomeSearch(
                     PlaylistItem(
                         icon = R.drawable.query_stats,
                         colorTint = colorPalette().favoritesIcon,
-                        name = stringResource(R.string.go_to_link),
+                        name = stringResource(R.string.search_youtube_action_open_url),
                         songCount = null,
                         thumbnailSizeDp = thumbnailSizeDp,
                         alternative = true,

@@ -124,7 +124,7 @@ fun Playlist(
                             .background(colorPalette().text, CircleShape)
                             .padding(all = 5.dp)
                             .size(18.dp),
-                        contentDescription = stringResource(R.string.cd_background_image),
+                        contentDescription = stringResource(R.string.accessibility_background_image),
                         contentScale = ContentScale.Fit
                     )
                 }

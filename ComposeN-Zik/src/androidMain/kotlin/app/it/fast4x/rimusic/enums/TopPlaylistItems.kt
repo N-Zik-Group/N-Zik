@@ -36,15 +36,15 @@ enum class MaxTopPlaylistItems: TextView {
     /** Option label shown in value selector dialogs. */
     @Composable
     fun optionLabel(): String = when (this) {
-        Custom -> stringResource(R.string.max_items_custom)
-        Unlimited -> stringResource(R.string.max_items_unlimited)
+        Custom -> stringResource(R.string.statistics_items_limit_custom)
+        Unlimited -> stringResource(R.string.statistics_items_limit_unlimited)
         else -> this.name
     }
 
     /** Display name for settings entries (e.g. "Custom (25)"). */
     @Composable
     fun displayName(customValue: Int): String = when (this) {
-        Custom -> stringResource(R.string.max_items_custom_value, customValue)
+        Custom -> stringResource(R.string.statistics_items_limit_custom_value, customValue)
         else -> optionLabel()
     }
 }

@@ -39,27 +39,27 @@ internal fun AiQuickPicksCard(search: Search) {
         key = "LocalRecommandationsNumber",
         defaultValue = LocalRecommandationsNumber.SixQ
     )
-    val searchCtx_1 = search.inputValue.isBlank() || stringResource(R.string.quick_picks).contains(search.inputValue, true) || stringResource(R.string.quick_picks_content).contains(search.inputValue, true) || stringResource(R.string.show).contains(search.inputValue, true) || stringResource(R.string.tips).contains(search.inputValue, true) || stringResource(R.string.charts).contains(search.inputValue, true) || stringResource(R.string.related_albums).contains(search.inputValue, true) || stringResource(R.string.similar_artists).contains(search.inputValue, true) || stringResource(R.string.new_albums_of_your_artists).contains(search.inputValue, true) || stringResource(R.string.new_albums).contains(search.inputValue, true) || stringResource(R.string.playlists_you_might_like).contains(search.inputValue, true) || stringResource(R.string.moods_and_genres).contains(search.inputValue, true) || stringResource(R.string.quick_selection_type).contains(search.inputValue, true) || stringResource(R.string.disable_if_you_do_not_want_to_see).contains(search.inputValue, true)
+    val searchCtx_1 = search.inputValue.isBlank() || stringResource(R.string.recommendations_title).contains(search.inputValue, true) || stringResource(R.string.recommendations_content).contains(search.inputValue, true) || stringResource(R.string.recommendations_show_section_label).contains(search.inputValue, true) || stringResource(R.string.recommendations_for_you_title).contains(search.inputValue, true) || stringResource(R.string.recommendations_charts_title).contains(search.inputValue, true) || stringResource(R.string.album_related_title).contains(search.inputValue, true) || stringResource(R.string.artist_similar_title).contains(search.inputValue, true) || stringResource(R.string.recommendations_followed_artists_new_albums_title).contains(search.inputValue, true) || stringResource(R.string.recommendations_new_albums_title).contains(search.inputValue, true) || stringResource(R.string.recommendations_playlists_title).contains(search.inputValue, true) || stringResource(R.string.recommendations_moods_and_genres_title).contains(search.inputValue, true) || stringResource(R.string.settings_recommendations_song_count_description).contains(search.inputValue, true) || stringResource(R.string.recommendations_section_visibility_description).contains(search.inputValue, true)
     SettingsSectionCard(
-        title = stringResource(R.string.quick_picks),
+        title = stringResource(R.string.recommendations_title),
         icon = R.drawable.star_brilliant,
         visible = enableQuickPicksPage && searchCtx_1,
         content = {
-            if (search.inputValue.isBlank() || stringResource(R.string.quick_picks_content).contains(search.inputValue, true)) {
+            if (search.inputValue.isBlank() || stringResource(R.string.recommendations_content).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("ai.quick_picks.quick_picks_content"),
-                    title = stringResource(R.string.quick_picks_content),
-                    text = stringResource(R.string.quick_picks_content_description),
+                    title = stringResource(R.string.recommendations_content),
+                    text = stringResource(R.string.recommendations_content_description),
                     onClick = { QuickPicksContentSettingsDialog.showDialog() },
                     icon = R.drawable.star_brilliant
                 )
             }
 
-            if (showTips && (search.inputValue.isBlank() || stringResource(R.string.tips).contains(search.inputValue, true))) {
+            if (showTips && (search.inputValue.isBlank() || stringResource(R.string.recommendations_for_you_title).contains(search.inputValue, true))) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("ai.quick_picks.tips"),
-                    title = stringResource(R.string.tips),
-                    text = stringResource(R.string.settings_desc_ai_quick_picks_tips),
+                    title = stringResource(R.string.recommendations_for_you_title),
+                    text = stringResource(R.string.recommendations_history_source_description),
                     selectedValueText = playEventType.text,
                     icon = R.drawable.sort_vertical,
                     onClick = { showTipsDialog = true }
@@ -67,7 +67,7 @@ internal fun AiQuickPicksCard(search: Search) {
             }
             DialogPresence(visible = showTipsDialog) {
                 ValueSelectorDialog(
-                    title = stringResource(R.string.tips),
+                    title = stringResource(R.string.recommendations_for_you_title),
                     selectedValue = playEventType,
                     values = PlayEventsType.values().toList(),
                     onValueSelected = { playEventType = it },
@@ -76,24 +76,24 @@ internal fun AiQuickPicksCard(search: Search) {
                 )
             }
 
-            if (showTips && (search.inputValue.isBlank() || stringResource(R.string.quick_selection_type).contains(search.inputValue, true) || (stringResource(R.string.quick_selection, localRecommandationsNumber.value)).contains(search.inputValue, true))) {
+            if (showTips && (search.inputValue.isBlank() || stringResource(R.string.settings_recommendations_song_count_description).contains(search.inputValue, true) || (stringResource(R.string.recommendations_quick_picks_count, localRecommandationsNumber.value)).contains(search.inputValue, true))) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("ai.quick_picks.quick_selection_type"),
-                    title = stringResource(R.string.quick_selection_type),
-                    text = stringResource(R.string.settings_desc_ai_quick_picks_quick_selection_type),
-                    selectedValueText = stringResource(R.string.quick_selection, localRecommandationsNumber.value),
+                    title = stringResource(R.string.settings_recommendations_song_count_description),
+                    text = stringResource(R.string.recommendations_local_song_count_description),
+                    selectedValueText = stringResource(R.string.recommendations_quick_picks_count, localRecommandationsNumber.value),
                     icon = R.drawable.sparkles,
                     onClick = { showQuickSelectionDialog = true }
                 )
             }
             DialogPresence(visible = showQuickSelectionDialog) {
                 ValueSelectorDialog(
-                    title = stringResource(R.string.quick_selection_type),
+                    title = stringResource(R.string.settings_recommendations_song_count_description),
                     selectedValue = localRecommandationsNumber,
                     values = LocalRecommandationsNumber.values().toList(),
                     onValueSelected = { localRecommandationsNumber = it },
                     valueText = { option ->
-                        stringResource(R.string.quick_selection, option.value)
+                        stringResource(R.string.recommendations_quick_picks_count, option.value)
                     },
                     onDismiss = { showQuickSelectionDialog = false }
                 )

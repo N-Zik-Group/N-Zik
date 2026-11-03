@@ -107,9 +107,9 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
     DialogPresence(visible = cleanCacheOfflineSongs) {
         ConfirmationDialog(
-            title = stringResource(R.string.dialog_clear_song_cache),
-            confirmText = stringResource(R.string.clear),
-            text = stringResource(R.string.do_you_really_want_to_delete_cache),
+            title = stringResource(R.string.cache_clear_song_dialog_title),
+            confirmText = stringResource(R.string.common_action_clear),
+            text = stringResource(R.string.settings_cache_delete_confirmation),
             onDismiss = {
                 cleanCacheOfflineSongs = false
             },
@@ -132,9 +132,9 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
     DialogPresence(visible = cleanDownloadCache) {
         ConfirmationDialog(
-            title = stringResource(R.string.dialog_clear_downloads),
-            confirmText = stringResource(R.string.delete),
-            text = stringResource(R.string.do_you_really_want_to_delete_cache),
+            title = stringResource(R.string.downloads_delete_dialog_title),
+            confirmText = stringResource(R.string.common_action_delete),
+            text = stringResource(R.string.settings_cache_delete_confirmation),
             onDismiss = {
                 cleanDownloadCache = false
             },
@@ -166,9 +166,9 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
     DialogPresence(visible = cleanCacheImages) {
         ConfirmationDialog(
-            title = stringResource(R.string.dialog_clear_image_cache),
-            confirmText = stringResource(R.string.clear),
-            text = stringResource(R.string.do_you_really_want_to_delete_cache),
+            title = stringResource(R.string.settings_cache_clear_images_dialog_title),
+            confirmText = stringResource(R.string.common_action_clear),
+            text = stringResource(R.string.settings_cache_delete_confirmation),
             onDismiss = {
                 cleanCacheImages = false
             },
@@ -186,9 +186,9 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
     SettingsSectionCard(
         modifier = Modifier.testTag("data.card.cache"),
-        title = stringResource(R.string.cache),
+        title = stringResource(R.string.settings_cache_title),
         icon = R.drawable.server,
-        description = stringResource(R.string.cache_cleared),
+        description = stringResource(R.string.settings_cache_eviction_description),
         content = {
             ImageCacheFactory.getDiskCache()?.let { diskCache ->
                 val diskCacheSize = remember(diskCache.size, cleanCacheImages) {
@@ -200,10 +200,10 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
                 key(cacheCleanedCounter) {
                     CacheSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("data.cache.image_cache_max_size"),
-                        title = stringResource(R.string.image_cache_max_size),
-                        text = stringResource(R.string.settings_desc_data_cache_image_cache_max_size),
+                        title = stringResource(R.string.settings_cache_image_size_limit_label),
+                        text = stringResource(R.string.cache_image_max_size_description),
                         selectedValueText = when (coilDiskCacheMaxSize) {
-                            CoilDiskCacheMaxSize.Custom -> "${stringResource(R.string.custom)}: ${coilCustomDiskCache}MB"
+                            CoilDiskCacheMaxSize.Custom -> "${stringResource(R.string.common_option_custom)}: ${coilCustomDiskCache}MB"
                             else -> coilDiskCacheMaxSize.text
                         },
                         icon = R.drawable.image,
@@ -213,7 +213,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
                     DialogPresence(visible = showImageCacheDialog) {
                         ValueSelectorDialog(
-                            title = stringResource(R.string.image_cache_max_size),
+                            title = stringResource(R.string.settings_cache_image_size_limit_label),
                             selectedValue = coilDiskCacheMaxSize,
                             values = CoilDiskCacheMaxSize.values().toList(),
                             onValueSelected = {
@@ -231,8 +231,8 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
                     DialogPresence(visible = showCoilCustomDiskCacheDialog) {
                         InputNumericDialog(
-                            title = stringResource(R.string.set_custom_cache),
-                            placeholder = stringResource(R.string.enter_value_in_mb),
+                            title = stringResource(R.string.settings_cache_action_set_custom_size),
+                            placeholder = stringResource(R.string.settings_cache_custom_size_input_hint),
                             value = coilCustomDiskCache.toString(),
                             valueMin = "32",
                             valueMax = "10000",
@@ -247,7 +247,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
                     CacheSpaceIndicator(cacheType = CacheType.Images, horizontalPadding = 20.dp, showCacheInfo = false)
 
-                    SettingsDescription(text = "${Formatter.formatShortFileSize(context, diskCacheSize)} ${stringResource(R.string.used)} (${if (coilDiskCacheMaxSize.bytes > 0) "${diskCacheSize * 100 / coilDiskCacheMaxSize.bytes}%" else stringResource(R.string.unlimited)})")
+                    SettingsDescription(text = "${Formatter.formatShortFileSize(context, diskCacheSize)} ${stringResource(R.string.common_storage_used_suffix)} (${if (coilDiskCacheMaxSize.bytes > 0) "${diskCacheSize * 100 / coilDiskCacheMaxSize.bytes}%" else stringResource(R.string.common_limit_unlimited_label)})")
 
                 }
             }
@@ -262,11 +262,11 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
                 key(cacheCleanedCounter) {
                     CacheSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("data.cache.song_cache_max_size"),
-                        title = stringResource(R.string.song_cache_max_size),
-                        text = stringResource(R.string.settings_desc_data_cache_song_cache_max_size),
+                        title = stringResource(R.string.settings_cache_song_size_limit_label),
+                        text = stringResource(R.string.cache_streaming_max_size_description),
                         selectedValueText = when (exoPlayerDiskCacheMaxSize) {
-                            ExoPlayerDiskCacheMaxSize.Custom -> "${stringResource(R.string.custom)}: ${exoPlayerCustomCache}MB"
-                            ExoPlayerDiskCacheMaxSize.Disabled -> stringResource(R.string.turn_off)
+                            ExoPlayerDiskCacheMaxSize.Custom -> "${stringResource(R.string.common_option_custom)}: ${exoPlayerCustomCache}MB"
+                            ExoPlayerDiskCacheMaxSize.Disabled -> stringResource(R.string.common_action_turn_off)
                             else -> exoPlayerDiskCacheMaxSize.text
                         },
                         icon = R.drawable.music_file,
@@ -276,7 +276,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
                     DialogPresence(visible = showSongCacheDialog) {
                         ValueSelectorDialog(
-                            title = stringResource(R.string.song_cache_max_size),
+                            title = stringResource(R.string.settings_cache_song_size_limit_label),
                             selectedValue = exoPlayerDiskCacheMaxSize,
                             values = ExoPlayerDiskCacheMaxSize.values().toList(),
                             onValueSelected = {
@@ -294,8 +294,8 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
                     DialogPresence(visible = showExoPlayerCustomCacheDialog) {
                         InputNumericDialog(
-                            title = stringResource(R.string.set_custom_cache),
-                            placeholder = stringResource(R.string.enter_value_in_mb),
+                            title = stringResource(R.string.settings_cache_action_set_custom_size),
+                            placeholder = stringResource(R.string.settings_cache_custom_size_input_hint),
                             value = exoPlayerCustomCache.toString(),
                             valueMin = "32",
                             valueMax = "10000",
@@ -310,7 +310,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
                     CacheSpaceIndicator(cacheType = CacheType.CachedSongs, horizontalPadding = 20.dp, showCacheInfo = false)
 
-                    SettingsDescription(text = "${Formatter.formatShortFileSize(context, diskCacheSize)} ${stringResource(R.string.used)} (${if (exoPlayerDiskCacheMaxSize.bytes > 0) "${diskCacheSize * 100 / exoPlayerDiskCacheMaxSize.bytes}%" else stringResource(R.string.unlimited)})")
+                    SettingsDescription(text = "${Formatter.formatShortFileSize(context, diskCacheSize)} ${stringResource(R.string.common_storage_used_suffix)} (${if (exoPlayerDiskCacheMaxSize.bytes > 0) "${diskCacheSize * 100 / exoPlayerDiskCacheMaxSize.bytes}%" else stringResource(R.string.common_limit_unlimited_label)})")
                 }
             }
 
@@ -324,8 +324,8 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
                 key(cacheCleanedCounter) {
                     CacheSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("data.cache.song_download_max_size"),
-                        title = stringResource(R.string.song_download_max_size),
-                        text = stringResource(R.string.settings_desc_data_cache_song_download_max_size),
+                        title = stringResource(R.string.settings_downloads_storage_limit_label),
+                        text = stringResource(R.string.cache_downloads_max_size_description),
                         selectedValueText = exoPlayerDiskDownloadCacheMaxSize.text,
                         icon = R.drawable.download,
                         onClick = { showDownloadCacheDialog = true },
@@ -336,7 +336,7 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
                     DialogPresence(visible = showDownloadCacheDialog) {
                         ValueSelectorDialog(
-                            title = stringResource(R.string.song_download_max_size),
+                            title = stringResource(R.string.settings_downloads_storage_limit_label),
                             selectedValue = exoPlayerDiskDownloadCacheMaxSize,
                             values = ExoPlayerDiskDownloadCacheMaxSize.values().toList(),
                             onValueSelected = {
@@ -350,27 +350,27 @@ internal fun DataCacheCard(search: Search, restartState: MutableState<Boolean>) 
 
                     CacheSpaceIndicator(cacheType = CacheType.DownloadedSongs, horizontalPadding = 20.dp, showCacheInfo = false)
 
-                    SettingsDescription(text = "${Formatter.formatShortFileSize(context, diskDownloadCacheSize)} ${stringResource(R.string.used)} (${if (exoPlayerDiskDownloadCacheMaxSize.bytes > 0) "${diskDownloadCacheSize * 100 / exoPlayerDiskDownloadCacheMaxSize.bytes}%" else stringResource(R.string.unlimited)})")
+                    SettingsDescription(text = "${Formatter.formatShortFileSize(context, diskDownloadCacheSize)} ${stringResource(R.string.common_storage_used_suffix)} (${if (exoPlayerDiskDownloadCacheMaxSize.bytes > 0) "${diskDownloadCacheSize * 100 / exoPlayerDiskDownloadCacheMaxSize.bytes}%" else stringResource(R.string.common_limit_unlimited_label)})")
                 }
             }
 
             var showCacheLocationDialog by remember { mutableStateOf(false) }
-            if (search.inputValue.isBlank() || stringResource(R.string.set_cache_location).contains(search.inputValue, true)) {
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_cache_location_label).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("data.cache.set_cache_location"),
-                    title = stringResource(R.string.set_cache_location),
-                    text = stringResource(R.string.settings_desc_data_cache_set_cache_location),
+                    title = stringResource(R.string.settings_cache_location_label),
+                    text = stringResource(R.string.cache_location_description),
                     selectedValueText = exoPlayerCacheLocation.text,
                     icon = R.drawable.folder,
                     onClick = { showCacheLocationDialog = true }
                 )
             }
 
-            SettingsDescription(stringResource(R.string.info_private_cache_location_can_t_cleaned))
+            SettingsDescription(stringResource(R.string.settings_cache_private_location_description))
 
             DialogPresence(visible = showCacheLocationDialog) {
                 ValueSelectorDialog(
-                    title = stringResource(R.string.set_cache_location),
+                    title = stringResource(R.string.settings_cache_location_label),
                     selectedValue = exoPlayerCacheLocation,
                     values = ExoPlayerCacheLocation.values().toList(),
                     onValueSelected = {

@@ -58,10 +58,10 @@ fun SleepTimerDialog(
 ) {
     if (sleepTimerMillisLeft != null) {
         ConfirmationDialog(
-            title = stringResource(R.string.sleep_timer),
-            text = stringResource(R.string.stop_sleep_timer),
-            cancelText = stringResource(R.string.no),
-            confirmText = stringResource(R.string.stop),
+            title = stringResource(R.string.player_sleep_timer_title),
+            text = stringResource(R.string.player_sleep_timer_stop_confirmation),
+            cancelText = stringResource(R.string.common_answer_no),
+            confirmText = stringResource(R.string.common_action_stop),
             onDismiss = onDismiss,
             onConfirm = {
                 onCancelSleepTimer()
@@ -74,18 +74,18 @@ fun SleepTimerDialog(
         var amount by remember { mutableStateOf(1) }
         DialogFrame(
             onDismiss = onDismiss,
-            title = stringResource(R.string.set_sleep_timer),
+            title = stringResource(R.string.player_sleep_timer_action_set),
             bodyPadding = PaddingValues(0.dp),
         footer = {
                 ButtonRow(
                     buttons = listOf(
                         DialogButton(
-                            text = stringResource(R.string.cancel),
+                            text = stringResource(R.string.common_action_cancel),
                             onClick = onDismiss,
                             danger = true
                         ),
                         DialogButton(
-                            text = stringResource(R.string.set_sleep_timer),
+                            text = stringResource(R.string.player_sleep_timer_action_set),
                             enabled = amount > 0,
                             onClick = {
                                 onStartSleepTimer(amount * STEP_MINUTES * MINUTES_TO_MILLIS)
@@ -132,7 +132,7 @@ fun SleepTimerDialog(
                         Box(contentAlignment = Alignment.Center) {
                             BasicText(
                                 text = stringResource(
-                                    R.string.left,
+                                    R.string.player_sleep_timer_remaining,
                                     formatAsDuration(sleepTimeMillis)
                                 ),
                                 style = typography().s.semiBold.copy(color = palette.text),
@@ -179,9 +179,9 @@ fun SleepTimerDialog(
                     ButtonRow(
                         buttons = listOf(
                             DialogButton(
-                                text = stringResource(R.string.set_to) + " "
+                                text = stringResource(R.string.player_sleep_timer_set_to) + " "
                                         + formatAsDuration(timeRemaining)
-                                        + " " + stringResource(R.string.end_of_song),
+                                        + " " + stringResource(R.string.player_sleep_timer_end_of_song),
                                 onClick = {
                                     onStartSleepTimer(timeRemaining)
                                     onDismiss()

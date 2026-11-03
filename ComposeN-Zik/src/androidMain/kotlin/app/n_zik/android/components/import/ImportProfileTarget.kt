@@ -179,7 +179,7 @@ object ImportChainRunner {
             if (result.isFailure) {
                 withContext(NzikDispatchers.UI) {
                     Timber.tag("ImportChain").e(result.exceptionOrNull(), "Profile state import failed (target: $target)")
-                    Toaster.e(context.getString(R.string.import_profile_state_failed))
+                    Toaster.e(context.getString(R.string.backup_import_profile_state_failed))
                     if (isActive && (importDb || importSettingsPart)) {
                         RestartAppDialog.showDialog()
                     }
@@ -206,7 +206,7 @@ object ImportChainRunner {
                         context.profileDisplayName(target),
                         context.getString(R.string.profile_base_name)
                     )
-                    Toaster.i(context.getString(R.string.import_completed_profile, name))
+                    Toaster.i(context.getString(R.string.backup_import_completed_profile, name))
                 }
             }
         }

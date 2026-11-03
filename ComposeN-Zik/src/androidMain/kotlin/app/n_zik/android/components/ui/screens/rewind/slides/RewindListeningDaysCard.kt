@@ -67,12 +67,12 @@ fun RewindListeningDaysCard(
             val compact = maxHeight < 700.dp
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_listening_days_kicker, data.periodLabel), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rewind_listening_days_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
                     RewindAdaptiveTitle(
-                        text = stringResource(R.string.rw_listening_days_heading),
+                        text = stringResource(R.string.rewind_listening_days_heading),
                         color = rewindColors.value.cream,
                         fontSize = textScale.size(if (compact) 34.sp else 40.sp),
                         lineHeight = textScale.size(if (compact) 32.sp else 37.sp),
@@ -96,7 +96,7 @@ fun RewindListeningDaysCard(
                             durationMillis = 1_250
                         )
                         Text(
-                            text = stringResource(R.string.rw_label_days),
+                            text = stringResource(R.string.rewind_label_days),
                             color = rewindColors.value.lime,
                             fontSize = textScale.size(25.sp),
                             lineHeight = textScale.size(25.sp),
@@ -120,7 +120,7 @@ fun RewindListeningDaysCard(
                             verticalAlignment = Alignment.Bottom
                         ) {
                             Text(
-                                text = stringResource(R.string.rw_listening_days_heading),
+                                text = stringResource(R.string.rewind_listening_days_heading),
                                 color = rewindColors.value.cream.copy(alpha = 0.55f),
                                 fontSize = textScale.size(9.sp),
                                 fontWeight = FontWeight.Black,
@@ -129,7 +129,7 @@ fun RewindListeningDaysCard(
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = stringResource(R.string.rw_listening_days_percent_of_period, (ratio * 100f).roundToInt()),
+                                text = stringResource(R.string.rewind_listening_days_percent_of_period, (ratio * 100f).roundToInt()),
                                 color = rewindColors.value.lime,
                                 fontSize = textScale.size(12.sp),
                                 fontWeight = FontWeight.Black,
@@ -154,7 +154,7 @@ fun RewindListeningDaysCard(
                         }
                         Spacer(Modifier.height(10.dp))
                         RewindAdaptiveTitle(
-                            text = stringResource(R.string.rw_listening_days_without, formatRewindNumber((daysInPeriod - data.daysWithMusic).coerceAtLeast(0).toLong())),
+                            text = stringResource(R.string.rewind_listening_days_without, formatRewindNumber((daysInPeriod - data.daysWithMusic).coerceAtLeast(0).toLong())),
                             color = rewindColors.value.cream.copy(alpha = 0.52f),
                             fontSize = textScale.size(10.sp),
                             lineHeight = textScale.size(14.sp),

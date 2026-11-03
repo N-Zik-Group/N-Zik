@@ -147,12 +147,12 @@ class HomeSongsSortSettingsDialogTest {
         }
 
         // The first row of the active (All) tab is composed and visible
-        composeRule.onNodeWithText(app.getString(R.string.sort_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(app.getString(R.string.library_sort_title)).assertIsDisplayed()
 
         // The Favorites tab (the 2nd one — reachable without a horizontal scroll at this width):
         // the switch recomposes the rows, the dialog stays stable
         composeRule.onNodeWithText(app.getString(BuiltInPlaylist.Favorites.textId)).performClick()
         composeRule.waitForIdle()
-        composeRule.onNodeWithText(app.getString(R.string.sort_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(app.getString(R.string.library_sort_title)).assertIsDisplayed()
     }
 }

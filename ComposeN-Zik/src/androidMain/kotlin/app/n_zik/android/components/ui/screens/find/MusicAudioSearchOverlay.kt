@@ -166,7 +166,7 @@ fun MusicAudioSearchOverlay(
             } else {
                 Timber.tag("MusicAudioSearchOverlay").w("No song found for: $query")
                 isPlaying = false
-                state = FindUiState.Error(context.getString(R.string.find_error_could_not_identify))
+                state = FindUiState.Error(context.getString(R.string.recognition_error_no_match))
             }
         }
     }
@@ -174,7 +174,7 @@ fun MusicAudioSearchOverlay(
     fun startListening() {
         if (state is FindUiState.Listening) return
         if (!context.isNetworkConnected) {
-            state = FindUiState.Error(context.getString(R.string.error_no_internet))
+            state = FindUiState.Error(context.getString(R.string.common_error_no_internet))
             return
         }
 
@@ -185,7 +185,7 @@ fun MusicAudioSearchOverlay(
             delay(12_000L)
             if (state is FindUiState.Listening) {
                 recorder.stop(); isMatching = false
-                state = FindUiState.Error(context.getString(R.string.find_error_could_not_identify))
+                state = FindUiState.Error(context.getString(R.string.recognition_error_no_match))
             }
         }
     }
@@ -196,7 +196,7 @@ fun MusicAudioSearchOverlay(
         PermissionUsageJournal.record(context, PermissionFeature.MUSIC_RECOGNITION, JournalPermission.MICROPHONE,
             if (granted) PermissionEventKind.GRANTED else PermissionEventKind.DENIED)
         if (granted) startListening()
-        else state = FindUiState.Error(context.getString(R.string.find_error_microphone_permission))
+        else state = FindUiState.Error(context.getString(R.string.recognition_error_microphone_permission))
     }
 
     LaunchedEffect(duration, recordedBuffer, state) {
@@ -282,7 +282,7 @@ fun MusicAudioSearchOverlay(
                         .padding(horizontal = 32.dp, vertical = 12.dp)
                 ) {
                     BasicText(
-                        text = stringResource(R.string.cancel),
+                        text = stringResource(R.string.common_action_cancel),
                         style = TextStyle(
                             color = Color.White,
                             fontSize = 16.sp
@@ -306,7 +306,7 @@ fun MusicAudioSearchOverlay(
             }
         } else if (!isSuccess) {
             BasicText(
-                text = if (isListening) stringResource(R.string.find_status_listening_subtitle, duration) else stringResource(R.string.find_status_ready_subtitle),
+                text = if (isListening) stringResource(R.string.recognition_listening_duration, duration) else stringResource(R.string.recognition_ready_message),
                 style = TextStyle(
                     color = Color.White,
                     textAlign = TextAlign.Center,
@@ -329,7 +329,7 @@ fun MusicAudioSearchOverlay(
             Spacer(modifier = Modifier.height(16.dp))
 
             BasicText(
-                text = stringResource(R.string.find_music_hint),
+                text = stringResource(R.string.recognition_audio_hint),
                 style = TextStyle(
                     color = Color.White.copy(alpha = 0.5f),
                     textAlign = TextAlign.Center,
@@ -345,7 +345,7 @@ fun MusicAudioSearchOverlay(
                     .padding(horizontal = 32.dp, vertical = 12.dp)
             ) {
                 BasicText(
-                    text = stringResource(R.string.cancel),
+                    text = stringResource(R.string.common_action_cancel),
                     style = TextStyle(
                         color = Color.White,
                         fontSize = 16.sp
@@ -382,7 +382,7 @@ fun MusicAudioSearchOverlay(
                             .align(Alignment.CenterHorizontally)
                     ) {
                         BasicText(
-                            text = stringResource(R.string.cancel),
+                            text = stringResource(R.string.common_action_cancel),
                             style = TextStyle(
                                 color = Color.White,
                                 fontSize = 16.sp
@@ -476,7 +476,7 @@ private fun RecognizedTrackCard(
                         } else {
                             androidx.compose.material3.Icon(
                                 painter = painterResource(R.drawable.play),
-                                contentDescription = stringResource(R.string.play),
+                                contentDescription = stringResource(R.string.player_action_play),
                                 tint = colorPalette().onAccent,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -488,7 +488,7 @@ private fun RecognizedTrackCard(
                             .padding(horizontal = 14.dp, vertical = 7.dp)
                     ) {
                         Text(
-                            stringResource(R.string.find_more_details),
+                            stringResource(R.string.recognition_action_more_details),
                             style = typography().xxs,
                             color = colorPalette().onAccent,
                             fontWeight = FontWeight.SemiBold

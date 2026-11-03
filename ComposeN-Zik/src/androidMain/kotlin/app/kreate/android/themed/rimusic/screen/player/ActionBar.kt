@@ -347,7 +347,7 @@ fun BoxScope.ActionBar(
 
                                             // must not fire for a blocked attempt.
                                             binder.player.addNext( mediaItemAtIndex )
-                                            if ( !ltGuestLocked ) Toaster.s( R.string.addednext )
+                                            if ( !ltGuestLocked ) Toaster.s( R.string.player_queue_added_next_message )
                                         }
                                     }
                                 )
@@ -522,7 +522,7 @@ fun BoxScope.ActionBar(
                                     // host — blocked in NZikRadio.toggleDiscover + grayed here
                                     enabled = !ltGuestLocked,
                                     onClick = { binder.service.nzikRadio.toggleDiscover() },
-                                    onLongClick = { Toaster.i(R.string.discoverinfo) },
+                                    onLongClick = { Toaster.i(R.string.queue_discover_description) },
                                     modifier = Modifier
                                         .size(24.dp)
                                         .alpha(if (isDiscoverClickable) 1f else 0.4f)
@@ -746,7 +746,7 @@ fun BoxScope.ActionBar(
                                                 }
                                             )
                                         } catch (e: ActivityNotFoundException) {
-                                            Toaster.e( R.string.info_not_find_application_audio )
+                                            Toaster.e( R.string.audio_equalizer_application_unavailable_message )
                                         }
                                     },
                                     modifier = Modifier.size( 20.dp )

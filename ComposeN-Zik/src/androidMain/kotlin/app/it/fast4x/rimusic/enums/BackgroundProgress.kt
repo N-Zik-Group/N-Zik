@@ -8,13 +8,13 @@ enum class BackgroundProgress(
     @field:StringRes override val textId: Int
 ): TextView {
 
-    Player( R.string.player ),
+    Player( R.string.player_title ),
 
-    MiniPlayer( R.string.minimized_player ),
+    MiniPlayer( R.string.player_progress_mini_player ),
 
-    Both( R.string.both ),
+    Both( R.string.player_progress_both ),
 
-    Disabled( R.string.vt_disabled );
+    Disabled( R.string.common_option_disabled );
 }
 
 

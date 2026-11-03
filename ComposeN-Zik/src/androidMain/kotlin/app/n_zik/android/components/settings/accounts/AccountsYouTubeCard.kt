@@ -132,7 +132,7 @@ internal fun AccountsYouTubeCard(search: Search) {
         exit = settingsCardExit
     ) {
         SettingsSectionCard(
-            title = stringResource(R.string.youtube_music),
+            title = stringResource(R.string.settings_youtube_music_title),
             icon = R.drawable.ytmusic,
             content = {
                 // rememberEncryptedPreference only works correct with API 24 and up
@@ -147,11 +147,11 @@ internal fun AccountsYouTubeCard(search: Search) {
                     }
                 }
 
-                if (search.inputValue.isBlank() || stringResource(R.string.enable_youtube_music_login).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_youtube_login_enabled_label).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("accounts.youtube_music.enable_youtube_music_login"),
-                        title = stringResource(R.string.enable_youtube_music_login),
-                        text = stringResource(R.string.settings_desc_accounts_youtube_music_enable_youtube_music_login),
+                        title = stringResource(R.string.settings_youtube_login_enabled_label),
+                        text = stringResource(R.string.account_youtube_login_enabled_description),
                         isChecked = isYouTubeLoginEnabled,
                         onCheckedChange = {
                             isYouTubeLoginEnabled = it
@@ -220,8 +220,8 @@ internal fun AccountsYouTubeCard(search: Search) {
                             NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                                 clearAudioCache(binder?.cache)
                             }
-                            Toaster.i(R.string.preferred_stream_client_changed)
-                            Toaster.w(R.string.stream_client_redownload_recommendation)
+                            Toaster.i(R.string.settings_stream_preferred_client_changed_message)
+                            Toaster.w(R.string.network_stream_client_redownload_recommendation)
                         },
                         icon = R.drawable.ytmusic
                     )
@@ -249,7 +249,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                                         .padding(start = 8.dp)
                                 ) {
                                     Text(
-                                        text = stringResource(R.string.account_info),
+                                        text = stringResource(R.string.settings_account_information_label),
                                         color = colorPalette().text,
                                         fontWeight = FontWeight.Bold,
                                         modifier = Modifier.padding(start = 5.dp),
@@ -334,7 +334,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Text(
-                                    text = stringResource(R.string.error_cookie_invalid),
+                                    text = stringResource(R.string.account_youtube_cookie_invalid),
                                     color = colorPalette().textSecondary,
                                     modifier = Modifier.padding(start = 8.dp),
                                     style = typography().xs
@@ -345,8 +345,8 @@ internal fun AccountsYouTubeCard(search: Search) {
                         if (search.inputValue.isBlank() || true) {
                             OtherSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget(if (isLoggedIn) "accounts.youtube_music.account_logoff" else "accounts.youtube_music.account_login"),
-                                title = if (isLoggedIn) stringResource(R.string.account_logoff) else stringResource(R.string.account_login),
-                                text = stringResource(R.string.settings_desc_accounts_youtube_music_account_login),
+                                title = if (isLoggedIn) stringResource(R.string.account_action_logout) else stringResource(R.string.account_action_login),
+                                text = stringResource(R.string.account_youtube_login_description),
                                 icon = if (isLoggedIn) R.drawable.logout else R.drawable.person,
                                 onClick = {
                                     if (isLoggedIn) {
@@ -389,7 +389,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                                         accountEmail = ep.getString(ytAccountEmailKey, "") ?: ""
                                         accountChannelHandle = ep.getString(ytAccountChannelHandleKey, "") ?: ""
                                         accountThumbnail = ep.getString(ytAccountThumbnailKey, "") ?: ""
-                                        Toaster.i( context.getString(R.string.youtube_login_successful) )
+                                        Toaster.i( context.getString(R.string.account_youtube_login_success) )
                                     }
                                 }
                             )
@@ -398,11 +398,11 @@ internal fun AccountsYouTubeCard(search: Search) {
                         // Login for Browse option (must be enabled for sync to work)
                         if (isYouTubeLoginEnabled) {
                         var useLoginForBrowse by rememberPreference(useLoginForBrowseKey, true)
-                        if (search.inputValue.isBlank() || stringResource(R.string.login_for_browse).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.settings_youtube_authenticated_browsing_label).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
                                 modifier = Modifier.settingsSearchTarget("accounts.youtube_music.login_for_browse"),
-                                title = stringResource(R.string.login_for_browse),
-                                text = if (!isLoggedIn) stringResource(R.string.youtube_connect_first) else stringResource(R.string.login_for_browse_description),
+                                title = stringResource(R.string.settings_youtube_authenticated_browsing_label),
+                                text = if (!isLoggedIn) stringResource(R.string.settings_youtube_connection_required_description) else stringResource(R.string.settings_youtube_authenticated_browsing_description),
                                 isChecked = isLoggedIn && useLoginForBrowse,
                                 enabled = isLoggedIn,
                                 onCheckedChange = {
@@ -449,12 +449,12 @@ internal fun AccountsYouTubeCard(search: Search) {
     val dialogCoroutineScope = rememberCoroutineScope()
     DialogPresence(visible = showClearSyncDialog) {
         DefaultDialog(
-            title = stringResource(R.string.dialog_clear_synced_data),
+            title = stringResource(R.string.settings_youtube_clear_synced_data_dialog_title),
             onDismiss = { showClearSyncDialog = false },
             footer = {
                 ButtonRow(listOf(
-                    DialogButton(stringResource(R.string.cancel), { showClearSyncDialog = false }, danger = true),
-                    DialogButton(stringResource(R.string.clear), primary = true, onClick = {
+                    DialogButton(stringResource(R.string.common_action_cancel), { showClearSyncDialog = false }, danger = true),
+                    DialogButton(stringResource(R.string.common_action_clear), primary = true, onClick = {
                         showClearSyncDialog = false
                         dialogCoroutineScope.launch(NzikDispatchers.DATA) {
                             val cleared = runCatching { clearAllSyncedData() }.getOrElse { false }
@@ -489,9 +489,9 @@ internal fun AccountsYouTubeCard(search: Search) {
                                 cookieManager.flush()
                                 WebStorage.getInstance().deleteAllData()
                                 if (cleared) {
-                                    Toaster.s(R.string.account_logoff)
+                                    Toaster.s(R.string.account_action_logout)
                                 } else {
-                                    Toaster.w(R.string.account_logoff)
+                                    Toaster.w(R.string.account_action_logout)
                                 }
                             }
                         }
@@ -500,7 +500,7 @@ internal fun AccountsYouTubeCard(search: Search) {
             }
         ) {
             BasicText(
-                text = stringResource(R.string.clear_synced_data_confirm),
+                text = stringResource(R.string.settings_youtube_clear_synced_data_confirmation),
                 style = typography().s.copy(color = colorPalette().text)
             )
 

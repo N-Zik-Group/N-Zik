@@ -41,7 +41,7 @@ else resetScopeNames.indices.firstOrNull { tab ->
 
 private fun resetScopeLabel(scope: Int): Int = when (scope) {
     ALL_RESET_SCOPE -> R.string.settings_reset_all
-    GLASS_RESET_SCOPE -> R.string.liquid_glass
+    GLASS_RESET_SCOPE -> R.string.glass_effect_title
     else -> SettingsCategories.first { it.tab == scope }.labelRes
 }
 
@@ -103,7 +103,7 @@ internal fun SettingsResetCard(
                         ))
                     }
                     add(DialogButton(
-                        text = stringResource(R.string.cancel),
+                        text = stringResource(R.string.common_action_cancel),
                         onClick = { open = false },
                         danger = true,
                     ))

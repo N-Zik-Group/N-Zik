@@ -34,10 +34,10 @@ class GoToArtist(
 
     override val iconId: Int = R.drawable.people
     // TODO: Add string "About this artist"
-    override val messageId: Int = R.string.artists
+    override val messageId: Int = R.string.library_artists_title
     override val menuIconTitle: String
         @Composable
-        get() = stringResource(R.string.more_of) + " ${song.cleanArtistsText()}"
+        get() = stringResource(R.string.artist_more_from) + " ${song.cleanArtistsText()}"
 
 
 
@@ -57,7 +57,7 @@ class GoToArtist(
                 if (isValid && id != null) {
                     NavRoutes.artist.navigateHere( navController, id )
                 } else {
-                    Toaster.i( R.string.looking_up_artist_online, song.cleanArtistsText() )
+                    Toaster.i( R.string.artist_lookup_running, song.cleanArtistsText() )
                     
                     NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                         try {
@@ -124,14 +124,14 @@ class GoToArtist(
                                     }
                                 } else {
                                     kotlinx.coroutines.withContext(NzikDispatchers.UI) {
-                                        Toaster.e( R.string.failed_to_fetch_artist )
+                                        Toaster.e( R.string.artist_lookup_failed )
                                     }
                                 }
                             }
                         } catch (e: Exception) {
                             Timber.tag("go_to_artist").e( e, "Failed to fetch artist" )
                             kotlinx.coroutines.withContext(NzikDispatchers.UI) {
-                                Toaster.e( R.string.failed_to_fetch_artist )
+                                Toaster.e( R.string.artist_lookup_failed )
                             }
                         }
                     }

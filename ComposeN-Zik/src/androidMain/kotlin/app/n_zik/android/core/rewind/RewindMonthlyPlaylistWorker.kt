@@ -212,8 +212,8 @@ internal class RewindMonthlyPlaylistWorker(
             NOTIFICATION_ID,
             NotificationCompat.Builder(applicationContext, channelId(RewindReminderWorker.CHANNEL_ID, getActiveProfile(applicationContext)))
                 .setSmallIcon(R.drawable.ic_launcher_monochrome)
-                .setContentTitle(applicationContext.getString(R.string.rw_playlist_notif_title, finishedMonthName))
-                .setContentText(applicationContext.getString(R.string.rw_playlist_notif_body))
+                .setContentTitle(applicationContext.getString(R.string.rewind_playlist_notification_title, finishedMonthName))
+                .setContentText(applicationContext.getString(R.string.rewind_playlist_notification_description))
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setAutoCancel(true)
                 .setContentIntent(pending)

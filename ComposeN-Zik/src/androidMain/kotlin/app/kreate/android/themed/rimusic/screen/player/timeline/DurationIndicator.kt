@@ -206,7 +206,7 @@ fun DurationIndicator(
         val showSkipTimeButtons by rememberPreference( showSkipTimeButtonsKey, true )
         if (showSkipTimeButtons) {
             SkipTimeButton(
-                binder, seekBasePosition, position, Long::minus, ::maxOf, { 0L }, stringResource(R.string.rewind), stringResource(R.string.rewind_5_seconds), stringResource(R.string.rewind_30_seconds), Modifier.rotate( 180f ), onSeekIssued = onSeekIssued
+                binder, seekBasePosition, position, Long::minus, ::maxOf, { 0L }, stringResource(R.string.rewind_title), stringResource(R.string.player_seek_backward_five_seconds), stringResource(R.string.player_seek_backward_thirty_seconds), Modifier.rotate( 180f ), onSeekIssued = onSeekIssued
             )
 
             Spacer( Modifier.width( 5.dp ) )
@@ -312,7 +312,7 @@ fun DurationIndicator(
             Spacer( Modifier.width( 5.dp ) )
 
             SkipTimeButton(
-                binder, seekBasePosition, position, Long::plus, ::minOf, { binder.player.duration }, stringResource(R.string.forward), stringResource(R.string.forward_5_seconds), stringResource(R.string.forward_30_seconds), onSeekIssued = onSeekIssued
+                binder, seekBasePosition, position, Long::plus, ::minOf, { binder.player.duration }, stringResource(R.string.player_action_seek_forward), stringResource(R.string.player_action_seek_forward_5_seconds), stringResource(R.string.player_action_seek_forward_30_seconds), onSeekIssued = onSeekIssued
             )
         }
     }

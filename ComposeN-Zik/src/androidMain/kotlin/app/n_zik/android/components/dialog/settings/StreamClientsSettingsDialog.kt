@@ -62,26 +62,26 @@ private data class ClientDef(
 )
 
 private fun buildClientDefs(): Map<String, ClientDef> = mapOf(
-    "web_remix" to ClientDef("web_remix", streamClientWebRemixEnabledKey, R.drawable.ytmusic, R.string.stream_client_web_remix, true, R.string.client_youtube_music_web_desc),
-    "android_vr" to ClientDef("android_vr", streamClientAndroidVrEnabledKey, R.drawable.musical_notes, R.string.stream_client_android_vr, true, R.string.client_android_vr_desc),
-    "visionos" to ClientDef("visionos", streamClientVisionosEnabledKey, R.drawable.musical_notes, R.string.stream_client_visionos, true, R.string.client_visionos_desc),
-    "tv_embedded" to ClientDef("tv_embedded", streamClientTvEmbeddedEnabledKey, R.drawable.video, R.string.stream_client_tv_embedded, true, R.string.client_tv_embedded_desc),
-    "tv_simply" to ClientDef("tv_simply", streamClientTvSimplyEnabledKey, R.drawable.video, R.string.stream_client_tv_simply, true, R.string.client_tv_simply_desc),
-    "tv_html5" to ClientDef("tv_html5", streamClientTvHtml5EnabledKey, R.drawable.video, R.string.stream_client_tv_html5, true, R.string.client_tv_html5_desc),
-    "android_creator" to ClientDef("android_creator", streamClientAndroidCreatorEnabledKey, R.drawable.musical_notes, R.string.stream_client_android_creator, true, R.string.client_android_creator_desc),
-    "android" to ClientDef("android", streamClientAndroidEnabledKey, R.drawable.musical_notes, R.string.stream_client_android, true, R.string.client_android_desc),
-    "ios" to ClientDef("ios", streamClientIosEnabledKey, R.drawable.musical_notes, R.string.stream_client_ios, true, R.string.client_ios_desc),
-    "ipados" to ClientDef("ipados", streamClientIpadosEnabledKey, R.drawable.musical_notes, R.string.stream_client_ipados, true, R.string.client_ipados_desc),
-    "web" to ClientDef("web", streamClientWebEnabledKey, R.drawable.musical_notes, R.string.stream_client_web, true, R.string.client_web_desc),
-    "web_creator" to ClientDef("web_creator", streamClientWebCreatorEnabledKey, R.drawable.musical_notes, R.string.stream_client_web_creator, true, R.string.client_web_creator_desc),
-    "mobile" to ClientDef("mobile", streamClientMobileEnabledKey, R.drawable.musical_notes, R.string.stream_client_mobile, true, R.string.client_mobile_desc)
+    "web_remix" to ClientDef("web_remix", streamClientWebRemixEnabledKey, R.drawable.ytmusic, R.string.network_stream_client_web_remix, true, R.string.network_stream_client_youtube_music_web_description),
+    "android_vr" to ClientDef("android_vr", streamClientAndroidVrEnabledKey, R.drawable.musical_notes, R.string.network_stream_client_android_vr, true, R.string.network_stream_client_android_vr_description),
+    "visionos" to ClientDef("visionos", streamClientVisionosEnabledKey, R.drawable.musical_notes, R.string.network_stream_client_visionos, true, R.string.network_stream_client_visionos_description),
+    "tv_embedded" to ClientDef("tv_embedded", streamClientTvEmbeddedEnabledKey, R.drawable.video, R.string.network_stream_client_tv_embedded, true, R.string.network_stream_client_tv_embedded_description),
+    "tv_simply" to ClientDef("tv_simply", streamClientTvSimplyEnabledKey, R.drawable.video, R.string.network_stream_client_tv_simply, true, R.string.network_stream_client_tv_simply_description),
+    "tv_html5" to ClientDef("tv_html5", streamClientTvHtml5EnabledKey, R.drawable.video, R.string.network_stream_client_tv_html5, true, R.string.network_stream_client_tv_html5_description),
+    "android_creator" to ClientDef("android_creator", streamClientAndroidCreatorEnabledKey, R.drawable.musical_notes, R.string.network_stream_client_android_creator, true, R.string.network_stream_client_android_creator_description),
+    "android" to ClientDef("android", streamClientAndroidEnabledKey, R.drawable.musical_notes, R.string.network_stream_client_android, true, R.string.network_stream_client_android_description),
+    "ios" to ClientDef("ios", streamClientIosEnabledKey, R.drawable.musical_notes, R.string.network_stream_client_ios, true, R.string.network_stream_client_ios_description),
+    "ipados" to ClientDef("ipados", streamClientIpadosEnabledKey, R.drawable.musical_notes, R.string.network_stream_client_ipados, true, R.string.network_stream_client_ipados_description),
+    "web" to ClientDef("web", streamClientWebEnabledKey, R.drawable.musical_notes, R.string.network_stream_client_web, true, R.string.network_stream_client_web_description),
+    "web_creator" to ClientDef("web_creator", streamClientWebCreatorEnabledKey, R.drawable.musical_notes, R.string.network_stream_client_web_creator, true, R.string.network_stream_client_web_creator_description),
+    "mobile" to ClientDef("mobile", streamClientMobileEnabledKey, R.drawable.musical_notes, R.string.network_stream_client_mobile, true, R.string.network_stream_client_mobile_description)
 )
 
 object StreamClientsSettingsDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.disabled_stream_clients_title)
+        get() = stringResource(R.string.settings_stream_disabled_clients_title)
 
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -200,8 +200,8 @@ object StreamClientsSettingsDialog : ContentFramedDialog {
                     NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                         clearAudioCache(binder?.cache)
                     }
-                    Toaster.i(R.string.preferred_stream_client_changed)
-                    Toaster.w(R.string.stream_client_redownload_recommendation)
+                    Toaster.i(R.string.settings_stream_preferred_client_changed_message)
+                    Toaster.w(R.string.network_stream_client_redownload_recommendation)
                 }
                 editor.apply()
                 hideDialog()

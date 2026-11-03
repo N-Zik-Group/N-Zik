@@ -120,13 +120,13 @@ fun SearchResultScreen(
                     Box {
                         SearchResultHeaderIcon(
                             icon = R.drawable.discover,
-                            contentDescription = stringResource(R.string.cd_filter),
+                            contentDescription = stringResource(R.string.accessibility_filter),
                             onClick = { showFilterMenu.value = true },
                         ) {
                             IconButton(onClick = { showFilterMenu.value = true }) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.discover),
-                                    contentDescription = stringResource(R.string.cd_filter),
+                                    contentDescription = stringResource(R.string.accessibility_filter),
                                     tint = colorPalette().text
                                 )
                             }
@@ -158,13 +158,13 @@ fun SearchResultScreen(
                     if (showLayoutToggle) {
                         SearchResultHeaderIcon(
                             icon = if (useGrid) R.drawable.sort_vertical else R.drawable.sort_grid,
-                            contentDescription = stringResource(R.string.cd_switch_mode),
+                            contentDescription = stringResource(R.string.accessibility_switch_mode),
                             onClick = { setUseGrid(!useGrid) },
                         ) {
                             IconButton(onClick = { setUseGrid(!useGrid) }) {
                                 Icon(
                                     painter = painterResource(id = if (useGrid) R.drawable.sort_vertical else R.drawable.sort_grid),
-                                    contentDescription = stringResource(R.string.cd_switch_mode),
+                                    contentDescription = stringResource(R.string.accessibility_switch_mode),
                                     tint = colorPalette().text
                                 )
                             }
@@ -192,7 +192,7 @@ fun SearchResultScreen(
         Spacer(modifier = Modifier.height(24.dp))
     }
 
-    val emptyItemsText = stringResource(R.string.no_results_found)
+    val emptyItemsText = stringResource(R.string.search_no_results_message)
 
     val topContentInset = rememberTopContentInsetProvider(hasNavBar = !app.it.fast4x.rimusic.utils.hideBarsInLandscapeMobile())
 
@@ -204,13 +204,13 @@ fun SearchResultScreen(
         topInsetHandledByContent = true,
         topContentInsetProvider = topContentInset,
         navBarContent = { item ->
-            item(0, stringResource(R.string.songs), R.drawable.musical_notes)
-            item(1, stringResource(R.string.albums), R.drawable.album)
-            item(2, stringResource(R.string.artists), R.drawable.artist)
-            item(3, stringResource(R.string.videos), R.drawable.video)
-            item(4, stringResource(R.string.playlists), R.drawable.playlist)
-            item(5, stringResource(R.string.featured), R.drawable.featured_playlist)
-            item(6, stringResource(R.string.podcasts), R.drawable.podcast)
+            item(0, stringResource(R.string.library_songs_title), R.drawable.musical_notes)
+            item(1, stringResource(R.string.library_albums_title), R.drawable.album)
+            item(2, stringResource(R.string.library_artists_title), R.drawable.artist)
+            item(3, stringResource(R.string.search_videos_title), R.drawable.video)
+            item(4, stringResource(R.string.library_playlists_title), R.drawable.playlist)
+            item(5, stringResource(R.string.search_featured_title), R.drawable.featured_playlist)
+            item(6, stringResource(R.string.podcast_title), R.drawable.podcast)
         }
     ) { currentTabIndex ->
         saveableStateHolder.SaveableStateProvider(currentTabIndex) {

@@ -17,14 +17,14 @@ internal fun NetworkConnectionCard(query: String) {
     var isConnectionMeteredEnabled by rememberPreference(isConnectionMeteredEnabledKey, false)
 
     SettingsSectionCard(
-        title = stringResource(R.string.connection_settings),
+        title = stringResource(R.string.network_settings),
         icon = R.drawable.network,
         content = {
-            if (query.isBlank() || stringResource(R.string.enable_connection_metered).contains(query, true) || stringResource(R.string.info_enable_connection_metered).contains(query, true)) {
+            if (query.isBlank() || stringResource(R.string.settings_network_data_saver_label).contains(query, true) || stringResource(R.string.settings_network_data_saver_description).contains(query, true)) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("network.connection_settings.enable_connection_metered"),
-                    title = stringResource(R.string.enable_connection_metered),
-                    text = stringResource(R.string.info_enable_connection_metered),
+                    title = stringResource(R.string.settings_network_data_saver_label),
+                    text = stringResource(R.string.settings_network_data_saver_description),
                     isChecked = isConnectionMeteredEnabled,
                     onCheckedChange = {
                         isConnectionMeteredEnabled = it

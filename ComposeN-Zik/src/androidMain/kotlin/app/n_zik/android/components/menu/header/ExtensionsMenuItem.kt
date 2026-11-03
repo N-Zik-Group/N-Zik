@@ -42,7 +42,7 @@ fun ExtensionsMenuItem(
     // The "Rescue Center" label is the width reference of the burger menu: this
     // label is clamped to its rendered width and scrolls in a marquee when longer.
     val labelStyle = MaterialTheme.typography.labelLarge
-    val labelMaxWidth = clampedLabelMaxWidth(stringResource(R.string.rescue_center), labelStyle)
+    val labelMaxWidth = clampedLabelMaxWidth(stringResource(R.string.recovery_center), labelStyle)
 
     Row(
         modifier = modifier

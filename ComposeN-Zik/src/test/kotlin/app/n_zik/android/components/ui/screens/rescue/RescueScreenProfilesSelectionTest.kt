@@ -62,13 +62,13 @@ class RescueScreenProfilesSelectionTest {
 
         // Open the "Reset profiles" selection dialog (ALL category — the default).
         composeRule
-            .onNodeWithText(context.getString(R.string.rescue_reset_profiles))
+            .onNodeWithText(context.getString(R.string.recovery_reset_profiles))
             .performScrollTo()
             .performClick()
         composeRule.waitForIdle()
 
         val nextPill = composeRule.onNode(
-            hasText(context.getString(R.string.next)) and hasClickAction() and hasAnyAncestor(isDialog())
+            hasText(context.getString(R.string.common_action_next)) and hasClickAction() and hasAnyAncestor(isDialog())
         )
         val cancelPill = composeRule.onNodeWithText(context.getString(android.R.string.cancel))
 

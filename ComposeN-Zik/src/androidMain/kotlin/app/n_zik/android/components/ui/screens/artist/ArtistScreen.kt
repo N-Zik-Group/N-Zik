@@ -331,10 +331,10 @@ fun ArtistScreen(
         topContentInsetProvider = topContentInset,
         navBarContent = { item ->
             if (offlineMode)
-                item(1, stringResource(R.string.library), R.drawable.library)
+                item(1, stringResource(R.string.library_title), R.drawable.library)
             else {
-                item(0, stringResource(R.string.overview), R.drawable.artist)
-                item(1, stringResource(R.string.library), R.drawable.library)
+                item(0, stringResource(R.string.artist_overview_title), R.drawable.artist)
+                item(1, stringResource(R.string.library_title), R.drawable.library)
             }
         }
     ) { currentTabIndex ->
@@ -431,9 +431,9 @@ fun ArtistOverview(
         // Issue #866 (gh-866): app-wide shuffle confirmation flash — the icon follows the
         // binder's flash state (shuffle_ok ~1 s), triggered in onShortClick below.
         override val iconId: Int get() = shuffleButtonIconRes(binder)
-        override val messageId: Int = R.string.info_shuffle
+        override val messageId: Int = R.string.player_action_shuffle_hint
         override val menuIconTitle: String
-            @Composable get() = stringResource(R.string.shuffle)
+            @Composable get() = stringResource(R.string.player_action_shuffle)
 
         override fun onShortClick() {
             binder?.triggerShuffleOkFlash()
@@ -456,7 +456,7 @@ fun ArtistOverview(
                             Shuffler.play(b, allSongs, onComplete = { isGlobalLoading = false })
                         }
                     } else {
-                        Toaster.i(R.string.no_song_to_shuffle)
+                        Toaster.i(R.string.player_shuffle_empty_message)
                     }
                 } finally {
                     if (!shufflerWillClear) isGlobalLoading = false
@@ -511,7 +511,7 @@ fun ArtistOverview(
 
     DialogPresence(visible = showTranslateLanguageDialog) {
         ValueSelectorDialog(
-            title = stringResource(R.string.info_translation),
+            title = stringResource(R.string.common_translation_title),
             selectedValue = otherLanguageApp,
             onValueSelected = {
                 otherLanguageApp = it
@@ -691,11 +691,11 @@ fun ArtistOverview(
                                     val paused = MBMetadataHelper.Default.circuitOpenRemainingSeconds()
                                     onMbPausedSecondsChange(paused)
                                     when {
-                                        success -> Toaster.s(R.string.mb_resync_success)
+                                        success -> Toaster.s(R.string.metadata_musicbrainz_resync_success)
                                         paused > 0 -> Toaster.e(
-                                            appContext().getString(R.string.mb_resync_paused, (paused / 60).coerceAtLeast(1))
+                                            appContext().getString(R.string.metadata_musicbrainz_resync_paused, (paused / 60).coerceAtLeast(1))
                                         )
-                                        else -> Toaster.e(R.string.mb_resync_error)
+                                        else -> Toaster.e(R.string.metadata_musicbrainz_resync_error)
                                     }
                                 } finally {
                                     onMbSyncingChange(false)
@@ -726,8 +726,8 @@ fun ArtistOverview(
                         val sectionId = section.title
                         val canPlaySection = !section.items.fastAll { it is Innertube.ArtistItem }
                         val isSectionLoading = canPlaySection && sectionLoadingId == sectionId
-                        val shuffleDescription = stringResource(R.string.glass_action_shuffle)
-                        val playDescription = stringResource(R.string.glass_action_play_all)
+                        val shuffleDescription = stringResource(R.string.glass_effect_action_shuffle)
+                        val playDescription = stringResource(R.string.glass_effect_action_play_all)
                         if (isSectionLoading) {
                             val loadingModifier = if (rememberGlassSettings().usesGlassMaterial(GlassArea.ActionButtons))
                                 Modifier.padding(end = 12.dp).size(24.dp)
@@ -779,7 +779,7 @@ fun ArtistOverview(
                                                     }
                                                 } else {
                                                     withContext(NzikDispatchers.UI) {
-                                                        Toaster.e(R.string.no_song_found)
+                                                        Toaster.e(R.string.player_no_song_found)
                                                     }
                                                 }
                                             } finally {
@@ -820,7 +820,7 @@ fun ArtistOverview(
                                                     }
                                                 } else {
                                                     withContext(NzikDispatchers.UI) {
-                                                        Toaster.e(R.string.no_song_found)
+                                                        Toaster.e(R.string.player_no_song_found)
                                                     }
                                                 }
                                             } finally {

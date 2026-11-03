@@ -292,7 +292,7 @@ fun OnDeviceSong(
                         )
 
                         BasicText(
-                            text = stringResource( R.string.media_permission_required_please_grant ),
+                            text = stringResource( R.string.library_local_media_permission_message ),
                             style = typography().m.copy( color = colorPalette().textDisabled )
                         )
 
@@ -313,7 +313,7 @@ fun OnDeviceSong(
                             }
                         ) {
                             BasicText(
-                                text = stringResource( R.string.open_permission_settings ),
+                                text = stringResource( R.string.visualizer_action_open_permission_settings ),
                                 style = typography().l.bold.copy( color = colorPalette().accent )
                             )
                         }
@@ -348,7 +348,7 @@ fun OnDeviceSong(
                     modifier = Modifier.fillParentMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.no_items))
+                    if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.common_empty_items))
                 }
             }
         }

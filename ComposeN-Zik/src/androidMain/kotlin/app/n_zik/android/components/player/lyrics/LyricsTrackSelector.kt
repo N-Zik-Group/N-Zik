@@ -130,7 +130,7 @@ fun LyricsTrackSelector(
                 if (pickable.isNotEmpty() && playerEnableLyricsPopupMessage)
                     coroutineScope.launch {
                         Toaster.s(
-                            R.string.info_lyrics_tracks_found_on_s,
+                            R.string.lyrics_provider_tracks_found_format,
                             "LrcLib.net",
                             duration = Toast.LENGTH_LONG
                         )
@@ -139,16 +139,16 @@ fun LyricsTrackSelector(
                     if (playerEnableLyricsPopupMessage)
                         coroutineScope.launch {
                             Toaster.e(
-                                R.string.info_lyrics_not_found_on_s,
+                                R.string.lyrics_provider_missing_format,
                                 "LrcLib.net",
                                 duration = Toast.LENGTH_LONG
                             )
                         }
                 if (pickable.isEmpty()){
                         menuState.display {
-                        ListMenu.Menu(title = stringResource(R.string.txt_lyrics)) {
+                        ListMenu.Menu(title = stringResource(R.string.lyrics_title)) {
                             ListMenu.Entry(
-                                text = stringResource(R.string.cancel),
+                                text = stringResource(R.string.common_action_cancel),
                                 icon = { SettingIcon(R.drawable.chevron_back) },
                                 onClick = {
                                     menuState.hide()
@@ -208,7 +208,7 @@ fun LyricsTrackSelector(
                 if (playerEnableLyricsPopupMessage)
                     coroutineScope.launch {
                         Toaster.e(
-                            R.string.an_error_has_occurred_while_fetching_the_lyrics,
+                            R.string.lyrics_fetch_error_message,
                             "KuGou.com",
                             duration = Toast.LENGTH_LONG
                         )
@@ -224,7 +224,7 @@ fun LyricsTrackSelector(
 
     DialogPresence(visible = loading) {
         DefaultDialog(
-            title = stringResource(R.string.txt_lyrics),
+            title = stringResource(R.string.lyrics_title),
             onDismiss = {
                 onDismiss()
             }
@@ -236,9 +236,9 @@ fun LyricsTrackSelector(
     LaunchedEffect(tracks.size, title, artistName) {
         if (tracks.isNotEmpty()) {
             menuState.display {
-                ListMenu.Menu(title = stringResource(R.string.txt_lyrics)) {
+                ListMenu.Menu(title = stringResource(R.string.lyrics_title)) {
                     ListMenu.Entry(
-                        text = stringResource(R.string.cancel),
+                        text = stringResource(R.string.common_action_cancel),
                         icon = { SettingIcon(R.drawable.chevron_back) },
                         onClick = {
                             menuState.hide()
@@ -290,11 +290,11 @@ fun LyricsTrackSelector(
                         ListMenu.Entry(
                             text = "${it.artistName} - ${it.trackName}",
                             icon = { SettingIcon(R.drawable.text) },
-                            subtitle = "(${stringResource(R.string.sort_duration)} ${
+                            subtitle = "(${stringResource(R.string.library_sort_duration)} ${
                                 it.duration.seconds.toComponents { minutes, seconds, _ ->
                                     "$minutes:${seconds.toString().padStart(2, '0')}"
                                 }
-                            } ${stringResource(R.string.id)} ${it.id}) ",
+                            } ${stringResource(R.string.player_statistics_media_id_label)} ${it.id}) ",
                             onClick = {
                                 menuState.hide()
                                 onDismiss()
@@ -305,7 +305,7 @@ fun LyricsTrackSelector(
                         )
                     }
                     ListMenu.Entry(
-                        text = stringResource(R.string.cancel),
+                        text = stringResource(R.string.common_action_cancel),
                         icon = { SettingIcon(R.drawable.chevron_back) },
                         onClick = { 
                             menuState.hide() 

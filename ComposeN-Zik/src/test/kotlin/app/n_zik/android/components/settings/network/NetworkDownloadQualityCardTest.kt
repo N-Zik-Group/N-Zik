@@ -112,9 +112,9 @@ class NetworkDownloadQualityCardTest {
                 selectedCards = setOf(R.string.settings_reset))
         }
         composeRule.onNodeWithText(context.getString(R.string.settings_restore_default_settings)).performSemanticsAction(SemanticsActions.OnClick) { it() }
-        awaitTextCount(context.getString(R.string.restart_service))
+        awaitTextCount(context.getString(R.string.settings_player_action_restart_service))
         assertEquals(AudioQualityFormat.Auto.name, context.preferences.getString(audioQualityFormatKey, null))
-        composeRule.onAllNodesWithText(context.getString(R.string.restart_service)).assertCountEquals(1)
+        composeRule.onAllNodesWithText(context.getString(R.string.settings_player_action_restart_service)).assertCountEquals(1)
     }
 
     @Test fun `thematic network quality excludes download controls`() {
@@ -124,33 +124,33 @@ class NetworkDownloadQualityCardTest {
                 includeDownloadQuality = false) {}
         }
         composeRule.onNodeWithText(context.getString(R.string.audio_quality_format)).assertExists()
-        composeRule.onNodeWithText(context.getString(R.string.image_quality_format)).assertExists()
-        composeRule.onNodeWithText(context.getString(R.string.download_quality_format)).assertDoesNotExist()
-        composeRule.onNodeWithText(context.getString(R.string.update_downloads)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.settings_network_image_quality_label)).assertExists()
+        composeRule.onNodeWithText(context.getString(R.string.downloads_quality_format)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.downloads_action_refresh_quality)).assertDoesNotExist()
     }
 
     @OptIn(androidx.compose.animation.ExperimentalAnimationApi::class)
     @Test fun `thematic host never duplicates quality rows in separate status cards`() {
         content {
             NetworkSettingsContent(Search(initialVisible = false), rememberNavController(),
-                selectedCards = setOf(R.string.quality, R.string.settings_download_quality,
+                selectedCards = setOf(R.string.settings_network_quality_title, R.string.settings_download_quality,
                     R.string.network_status, R.string.settings_download_status))
         }
         composeRule.onAllNodesWithText(context.getString(R.string.audio_quality_format)).assertCountEquals(1)
-        composeRule.onAllNodesWithText(context.getString(R.string.image_quality_format)).assertCountEquals(1)
-        composeRule.onAllNodesWithText(context.getString(R.string.download_quality_format)).assertCountEquals(1)
+        composeRule.onAllNodesWithText(context.getString(R.string.settings_network_image_quality_label)).assertCountEquals(1)
+        composeRule.onAllNodesWithText(context.getString(R.string.downloads_quality_format)).assertCountEquals(1)
         composeRule.onNodeWithText(context.getString(R.string.network_status)).assertDoesNotExist()
         composeRule.onNodeWithText(context.getString(R.string.settings_download_status)).assertDoesNotExist()
     }
 
     @Test fun `legacy quality card retains both download controls`() {
         content {
-            NetworkQualityCard(context.getString(R.string.download_quality_format),
+            NetworkQualityCard(context.getString(R.string.downloads_quality_format),
                 remember { mutableStateOf(false) }, remember { mutableStateOf(false) },
                 ImageCacheFactory.NetworkQuality.LOW) {}
         }
-        composeRule.onNodeWithText(context.getString(R.string.download_quality_format)).assertExists()
-        composeRule.onNodeWithText(context.getString(R.string.update_downloads)).assertExists()
+        composeRule.onNodeWithText(context.getString(R.string.downloads_quality_format)).assertExists()
+        composeRule.onNodeWithText(context.getString(R.string.downloads_action_refresh_quality)).assertExists()
     }
 
     @Test fun `download quality card preserves settings while exposing both controls`() {
@@ -159,10 +159,10 @@ class NetworkDownloadQualityCardTest {
         content {
             NetworkDownloadQualityCard("", ImageCacheFactory.NetworkQuality.LOW) { restartRequests++ }
         }
-        composeRule.onNodeWithText(context.getString(R.string.download_quality_format)).assertExists()
-        composeRule.onNodeWithText(context.getString(R.string.update_downloads)).assertExists()
+        composeRule.onNodeWithText(context.getString(R.string.downloads_quality_format)).assertExists()
+        composeRule.onNodeWithText(context.getString(R.string.downloads_action_refresh_quality)).assertExists()
         composeRule.onNodeWithText(context.getString(R.string.audio_quality_format)).assertDoesNotExist()
-        composeRule.onNodeWithText(context.getString(R.string.image_quality_format)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.settings_network_image_quality_label)).assertDoesNotExist()
         assertEquals(before, context.preferences.all)
         assertEquals(0, restartRequests)
     }
@@ -207,7 +207,7 @@ class NetworkDownloadQualityCardTest {
         }
         composeRule.onNodeWithText(currentValue(context.getString(R.string.audio_quality_auto_fmt,
             context.getString(R.string.network_quality_medium)))).assertExists()
-        composeRule.onNodeWithText(context.getString(R.string.download_quality_format))
+        composeRule.onNodeWithText(context.getString(R.string.downloads_quality_format))
             .performSemanticsAction(SemanticsActions.OnClick) { it() }
         awaitTextCount(context.getString(R.string.audio_quality_automatic))
         composeRule.onNodeWithText(context.getString(R.string.audio_quality_automatic)).assertExists()

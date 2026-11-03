@@ -122,7 +122,7 @@ class ShufflerTest {
         fun `empty list shows info toast`() {
             Shuffler.play(binder, emptyList<MediaItem>())
 
-            verify { Toaster.i(R.string.no_song_to_shuffle) }
+            verify { Toaster.i(R.string.player_shuffle_empty_message) }
         }
 
         @Test
@@ -169,7 +169,7 @@ class ShufflerTest {
         @Test
         fun `onComplete fires only after the empty-list toast, not before`() {
             val events = mutableListOf<String>()
-            every { Toaster.i(R.string.no_song_to_shuffle) } answers { events.add("toast") }
+            every { Toaster.i(R.string.player_shuffle_empty_message) } answers { events.add("toast") }
 
             Shuffler.play(binder, emptyList<MediaItem>(), onComplete = { events.add("onComplete") })
 
@@ -266,7 +266,7 @@ class ShufflerTest {
             Shuffler.play(binder, mediaItems(5), onComplete = { completed = true })
 
             assertTrue(completed, "onComplete must still fire when filtering throws, or callers' loading flags stay stuck forever")
-            verify { Toaster.e(R.string.no_song_found) }
+            verify { Toaster.e(R.string.player_no_song_found) }
             verify(exactly = 0) { binder.stopRadio() }
         }
     }
@@ -278,7 +278,7 @@ class ShufflerTest {
         fun `empty song list shows info toast`() {
             Shuffler.play(binder, emptyList<MediaItem>())
 
-            verify { Toaster.i(R.string.no_song_to_shuffle) }
+            verify { Toaster.i(R.string.player_shuffle_empty_message) }
         }
 
         @Test
@@ -339,7 +339,7 @@ class ShufflerTest {
 
             Shuffler.queue(player)
 
-            verify { Toaster.e(R.string.no_song_found) }
+            verify { Toaster.e(R.string.player_no_song_found) }
         }
     }
 

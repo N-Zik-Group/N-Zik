@@ -151,13 +151,13 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 BasicText(
-                    text = stringResource(R.string.require_mic_permission),
+                    text = stringResource(R.string.visualizer_microphone_permission_message),
                     modifier = Modifier.fillMaxWidth(0.75f),
                     style = typography().xs.semiBold
                 )
                 Spacer(modifier = Modifier.height(20.dp))
                 SecondaryTextButton(
-                    text = stringResource(R.string.open_permission_settings),
+                    text = stringResource(R.string.visualizer_action_open_permission_settings),
                     onClick = {
                         context.startActivity(
                             Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {

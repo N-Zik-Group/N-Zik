@@ -92,10 +92,10 @@ object YouTubeSync {
                     removelikeVideoOrSong( mediaItem.mediaId )
 
             val ytMessageId = when {
-                likeState == true && response.isSuccess -> R.string.songs_liked_yt
-                likeState == true && response.isFailure -> R.string.songs_liked_yt_failed
-                likeState == null && response.isSuccess -> R.string.song_unliked_yt
-                else                                    -> R.string.songs_unliked_yt_failed
+                likeState == true && response.isSuccess -> R.string.sync_youtube_like_success
+                likeState == true && response.isFailure -> R.string.sync_youtube_like_failed
+                likeState == null && response.isSuccess -> R.string.sync_youtube_unlike_success
+                else                                    -> R.string.sync_youtube_unlike_failed
             }
             if( response.isSuccess )
                 Toaster.s( ytMessageId )
@@ -104,9 +104,9 @@ object YouTubeSync {
         } else {
             // Local only toast
             val messageId = when( likeState ) {
-                true -> R.string.added_to_favorites
-                false -> R.string.added_to_dislikes
-                null -> R.string.removed_from_dislikes
+                true -> R.string.library_favorites_added
+                false -> R.string.library_dislikes_added
+                null -> R.string.library_dislikes_removed
             }
             with( mediaItem.mediaMetadata ) {
                 if( title != null )
@@ -161,10 +161,10 @@ object YouTubeSync {
                     removelikeVideoOrSong( mediaItem.mediaId )
 
             val ytMessageId = when {
-                likeState == true && response.isSuccess -> R.string.songs_liked_yt
-                likeState == true && response.isFailure -> R.string.songs_liked_yt_failed
-                likeState == null && response.isSuccess -> R.string.song_unliked_yt
-                else                                    -> R.string.songs_unliked_yt_failed
+                likeState == true && response.isSuccess -> R.string.sync_youtube_like_success
+                likeState == true && response.isFailure -> R.string.sync_youtube_like_failed
+                likeState == null && response.isSuccess -> R.string.sync_youtube_unlike_success
+                else                                    -> R.string.sync_youtube_unlike_failed
             }
             if( response.isSuccess )
                 Toaster.s( ytMessageId )
@@ -172,9 +172,9 @@ object YouTubeSync {
                 Toaster.e( ytMessageId )
         } else {
             val messageId = when( likeState ) {
-                true -> R.string.added_to_favorites
-                null -> R.string.removed_from_favorites
-                else -> R.string.added_to_favorites
+                true -> R.string.library_favorites_added
+                null -> R.string.library_favorites_removed
+                else -> R.string.library_favorites_added
             }
             with( mediaItem.mediaMetadata ) {
                 if( title != null )

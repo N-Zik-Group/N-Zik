@@ -25,7 +25,7 @@ fun OnboardingGlassScreen(modifier: Modifier = Modifier, onComplete: () -> Unit)
                 modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(16.dp)
                     .testTag("onboarding.glass.continue"),
             ) {
-                Text(stringResource(R.string.onboard_profile_continue))
+                Text(stringResource(R.string.onboarding_profile_continue))
             }
         })
     }

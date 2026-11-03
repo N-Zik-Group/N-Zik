@@ -99,7 +99,7 @@ inline fun <T : Innertube.Item> ItemsList(
                 item(key = "empty") {
                     SearchNoResults(
                         modifier = Modifier.fillParentMaxSize(),
-                        text = emptyItemsText.ifEmpty { stringResource(R.string.no_items_found) },
+                        text = emptyItemsText.ifEmpty { stringResource(R.string.search_items_empty_message) },
                     )
                 }
             }

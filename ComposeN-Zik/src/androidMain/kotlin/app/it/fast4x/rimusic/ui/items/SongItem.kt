@@ -472,7 +472,7 @@ fun SongItem(
                                 }
                             },
                             onLongClick = {
-                                Toaster.i( R.string.playlistindicatorinfo2 )
+                                Toaster.i( R.string.playlist_song_already_present )
                             },
                             modifier = Modifier
                                 .size(14.dp)
@@ -517,7 +517,7 @@ fun SongItem(
                                 .background(colorPalette().accent, CircleShape)
                                 .padding(all = 3.dp)
                                 .clip(uiRoundnessShape()).combinedClickable(onClick = {}, onLongClick = {
-                                    SmartMessage(context.resources.getString(R.string.playlistindicatorinfo2), context = context)
+                                    SmartMessage(context.resources.getString(R.string.playlist_song_already_present), context = context)
                                 })
                         )
                     }
@@ -573,7 +573,7 @@ fun SongItem(
                             }
                         },
                         onLongClick = {
-                            Toaster.i( R.string.playlistindicatorinfo2 )
+                            Toaster.i( R.string.playlist_song_already_present )
                         },
                         modifier = Modifier
                             .size(18.dp)

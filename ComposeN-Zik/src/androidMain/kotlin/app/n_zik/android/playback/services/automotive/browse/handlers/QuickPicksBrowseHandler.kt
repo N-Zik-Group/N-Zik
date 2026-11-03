@@ -68,7 +68,7 @@ class QuickPicksBrowseHandler : BrowseHandler {
             .setMediaId(AutoSessionConstants.ID_LUCKY_SHUFFLE)
             .setMediaMetadata(
                 MediaMetadata.Builder()
-                    .setTitle(context.getString(R.string.lucky_shuffle))
+                    .setTitle(context.getString(R.string.automotive_action_lucky_shuffle))
                     .setArtworkUri(drawableUri(context, R.drawable.smart_shuffle))
                     .setIsPlayable(true)
                     .setIsBrowsable(false)

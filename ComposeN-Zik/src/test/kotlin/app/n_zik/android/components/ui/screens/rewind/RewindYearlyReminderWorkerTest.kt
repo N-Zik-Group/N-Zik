@@ -103,7 +103,7 @@ class RewindYearlyReminderWorkerTest {
         )
         assertEquals(
             "the yearly reminder must use the yearly body, not the monthly one",
-            RuntimeEnvironment.getApplication().getString(R.string.rw_yearly_notif_body),
+            RuntimeEnvironment.getApplication().getString(R.string.rewind_yearly_notification_description),
             notifications.first().extras.getCharSequence(Notification.EXTRA_TEXT).toString()
         )
         val notification = notifications.first()

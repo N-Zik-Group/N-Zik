@@ -172,10 +172,10 @@ class LyricsFetchWorker(
                         lrcResult?.let { r ->
                             r.onSuccess { lrc ->
                                 if (lrc?.text?.isNotEmpty() == true && playerEnableLyricsPopupMessage)
-                                    withUi { Toaster.s(R.string.info_lyrics_found_on_s, context.getString(R.string.source_lrclib_unsynced)) }
+                                    withUi { Toaster.s(R.string.lyrics_provider_found_format, context.getString(R.string.lyrics_provider_lrclib_unsynced_label)) }
                                 if (lrc?.text?.isNotEmpty() != true)
                                     if (playerEnableLyricsPopupMessage)
-                                        withUi { Toaster.e(R.string.info_lyrics_not_found_on_s, context.getString(R.string.source_lrclib_unsynced)) }
+                                        withUi { Toaster.e(R.string.lyrics_provider_missing_format, context.getString(R.string.lyrics_provider_lrclib_unsynced_label)) }
                                 withUi { onErrorUpdated(lrc?.text?.isNotEmpty() != true) }
                                 withUi { onCheckedLrcUpdated(true) }
                                 saveLyricsSafe(Lyrics(songId = mediaId, type = LyricsType.Unsynced.name, data = lrc?.text))
@@ -313,21 +313,21 @@ class LyricsFetchWorker(
                         val hasContent = lrc?.plainText?.isNotEmpty() == true
                         if (hasContent) {
                             if (playerEnableLyricsPopupMessage)
-                                withUi { Toaster.s(R.string.info_lyrics_found_on_s, context.getString(R.string.source_lrclib_unsynced)) }
+                                withUi { Toaster.s(R.string.lyrics_provider_found_format, context.getString(R.string.lyrics_provider_lrclib_unsynced_label)) }
                             foundUnsynced = true
                             saveLyricsSafe(Lyrics(songId = mediaId, type = LyricsType.Unsynced.name, data = lrc?.plainText.orEmpty()))
                         }
                     }
                     r.onFailure {
                         if (playerEnableLyricsPopupMessage)
-                            withUi { Toaster.e(R.string.info_lyrics_not_found_on_s_try_on_s, context.getString(R.string.source_lrclib_unsynced), context.getString(R.string.source_youtube_unsynced)) }
+                            withUi { Toaster.e(R.string.lyrics_provider_missing_try_another_format, context.getString(R.string.lyrics_provider_lrclib_unsynced_label), context.getString(R.string.lyrics_provider_youtube_unsynced_label)) }
                     }
                 }
             }.onFailure { e ->
                 if (e is CancellationException) throw e
                 Timber.tag(TAG).e("→ LrcLib(U) ERROR: ${e.stackTraceToString()}")
                 if (playerEnableLyricsPopupMessage)
-                    withUi { Toaster.e(R.string.info_lyrics_not_found_on_s_try_on_s, context.getString(R.string.source_lrclib_unsynced), context.getString(R.string.source_youtube_unsynced)) }
+                    withUi { Toaster.e(R.string.lyrics_provider_missing_try_another_format, context.getString(R.string.lyrics_provider_lrclib_unsynced_label), context.getString(R.string.lyrics_provider_youtube_unsynced_label)) }
             }
 
             if (!foundUnsynced) {
@@ -336,9 +336,9 @@ class LyricsFetchWorker(
                     youtubeResult?.let { r ->
                         r.onSuccess { fixedLyrics ->
                             if (fixedLyrics?.isNotEmpty() == true && playerEnableLyricsPopupMessage) {
-                                withUi { Toaster.s(R.string.info_lyrics_found_on_s, context.getString(R.string.source_youtube_unsynced)) }
+                                withUi { Toaster.s(R.string.lyrics_provider_found_format, context.getString(R.string.lyrics_provider_youtube_unsynced_label)) }
                             } else if (playerEnableLyricsPopupMessage) {
-                                withUi { Toaster.e(R.string.info_lyrics_not_found_on_s, context.getString(R.string.source_youtube_unsynced), duration = Toast.LENGTH_LONG) }
+                                withUi { Toaster.e(R.string.lyrics_provider_missing_format, context.getString(R.string.lyrics_provider_youtube_unsynced_label), duration = Toast.LENGTH_LONG) }
                             }
                             if (!fixedLyrics.isNullOrEmpty()) {
                                 saveLyricsSafe(Lyrics(songId = mediaId, type = LyricsType.Unsynced.name, data = fixedLyrics))
@@ -407,7 +407,7 @@ class LyricsFetchWorker(
                             fetchLrcLibAndKugou()
                         } else {
                             if (playerEnableLyricsPopupMessage) {
-                                withUi { Toaster.s(R.string.info_lyrics_found_on_s, context.getString(R.string.source_betterlyrics_karaoke)) }
+                                withUi { Toaster.s(R.string.lyrics_provider_found_format, context.getString(R.string.lyrics_provider_betterlyrics_karaoke_label)) }
                             }
                             withUi { onErrorUpdated(false) }
                             withUi { onCheckedLrcUpdated(true) }
@@ -417,14 +417,14 @@ class LyricsFetchWorker(
                         // BetterLyrics found synced lyrics (no word timings)
                         if (lyricsType == LyricsType.Synced) {
                             if (playerEnableLyricsPopupMessage) {
-                                withUi { Toaster.s(R.string.info_lyrics_found_on_s, context.getString(R.string.source_betterlyrics_synced)) }
+                                withUi { Toaster.s(R.string.lyrics_provider_found_format, context.getString(R.string.lyrics_provider_betterlyrics_synced_label)) }
                             }
                             withUi { onErrorUpdated(false) }
                             withUi { onCheckedLrcUpdated(true) }
                             saveLyricsSafe(Lyrics(songId = mediaId, type = LyricsType.Synced.name, data = lrcStr))
                         } else {
                             if (playerEnableLyricsPopupMessage) {
-                                withUi { Toaster.w(R.string.info_karaoke_not_found_showing_sync, context.getString(R.string.source_betterlyrics_karaoke), context.getString(R.string.source_betterlyrics_synced)) }
+                                withUi { Toaster.w(R.string.lyrics_karaoke_unavailable_synced_fallback_format, context.getString(R.string.lyrics_provider_betterlyrics_karaoke_label), context.getString(R.string.lyrics_provider_betterlyrics_synced_label)) }
                             }
                             withUi { onErrorUpdated(false) }
                             withUi { onCheckedLrcUpdated(true) }
@@ -433,7 +433,7 @@ class LyricsFetchWorker(
                     }
                 } else {
                     if (playerEnableLyricsPopupMessage) {
-                        withUi { Toaster.e(R.string.info_lyrics_not_found_on_s_try_on_s, context.getString(R.string.source_betterlyrics_karaoke), context.getString(R.string.source_betterlyrics_synced)) }
+                        withUi { Toaster.e(R.string.lyrics_provider_missing_try_another_format, context.getString(R.string.lyrics_provider_betterlyrics_karaoke_label), context.getString(R.string.lyrics_provider_betterlyrics_synced_label)) }
                     }
                     if (isAuto || lyricsType == LyricsType.Synced) {
                         fetchLrcLibAndKugou()
@@ -448,7 +448,7 @@ class LyricsFetchWorker(
                 }
             }.onFailure {
                 if (playerEnableLyricsPopupMessage) {
-                    withUi { Toaster.e(R.string.info_lyrics_not_found_on_s_try_on_s, context.getString(R.string.source_betterlyrics_karaoke), context.getString(R.string.source_betterlyrics_synced)) }
+                    withUi { Toaster.e(R.string.lyrics_provider_missing_try_another_format, context.getString(R.string.lyrics_provider_betterlyrics_karaoke_label), context.getString(R.string.lyrics_provider_betterlyrics_synced_label)) }
                 }
                 if (isAuto || lyricsType == LyricsType.Synced) {
                     fetchLrcLibAndKugou()
@@ -465,7 +465,7 @@ class LyricsFetchWorker(
             if (e is CancellationException) throw e
             Timber.tag(TAG).e("→ BetterLyrics KARAOKE ERROR: ${e.stackTraceToString()}")
             if (playerEnableLyricsPopupMessage) {
-                withUi { Toaster.e(R.string.info_lyrics_not_found_on_s_try_on_s, context.getString(R.string.source_betterlyrics_karaoke), context.getString(R.string.source_betterlyrics_synced)) }
+                withUi { Toaster.e(R.string.lyrics_provider_missing_try_another_format, context.getString(R.string.lyrics_provider_betterlyrics_karaoke_label), context.getString(R.string.lyrics_provider_betterlyrics_synced_label)) }
             }
             if (isAuto || lyricsType == LyricsType.Synced) {
                 fetchLrcLibAndKugou()
@@ -510,13 +510,13 @@ class LyricsFetchWorker(
                         if ((lrc?.text?.isNotEmpty() == true || lrc?.sentences?.isNotEmpty() == true)
                             && playerEnableLyricsPopupMessage
                         )
-                            withUi { Toaster.s(R.string.info_lyrics_found_on_s, context.getString(R.string.source_lrclib_synced)) }
+                            withUi { Toaster.s(R.string.lyrics_provider_found_format, context.getString(R.string.lyrics_provider_lrclib_synced_label)) }
                         else
                             if (playerEnableLyricsPopupMessage)
                                 withUi {
                                     Toaster.e(
-                                        R.string.info_lyrics_not_found_on_s,
-                                        context.getString(R.string.source_lrclib_synced),
+                                        R.string.lyrics_provider_missing_format,
+                                        context.getString(R.string.lyrics_provider_lrclib_synced_label),
                                         duration = Toast.LENGTH_LONG
                                     )
                                 }
@@ -530,8 +530,8 @@ class LyricsFetchWorker(
                         if (playerEnableLyricsPopupMessage)
                             withUi {
                                 Toaster.e(
-                                    R.string.info_lyrics_not_found_on_s_try_on_s,
-                                    context.getString(R.string.source_lrclib_synced), context.getString(R.string.source_kugou_synced),
+                                    R.string.lyrics_provider_missing_try_another_format,
+                                    context.getString(R.string.lyrics_provider_lrclib_synced_label), context.getString(R.string.lyrics_provider_kugou_synced_label),
                                     duration = Toast.LENGTH_LONG
                                 )
                             }
@@ -592,7 +592,7 @@ class LyricsFetchWorker(
                     val hasContent = kugou?.value?.isNotEmpty() == true || kugou?.sentences?.isNotEmpty() == true
                     if (hasContent) {
                         if (playerEnableLyricsPopupMessage)
-                            withUi { Toaster.s(R.string.info_lyrics_found_on_s, context.getString(R.string.source_kugou_synced)) }
+                            withUi { Toaster.s(R.string.lyrics_provider_found_format, context.getString(R.string.lyrics_provider_kugou_synced_label)) }
                         withUi { onErrorUpdated(false) }
                         withUi { onCheckedKugouUpdated(true) }
                         saveLyricsSafe(Lyrics(songId = mediaId, type = LyricsType.Synced.name, data = kugou?.value.orEmpty()))
@@ -600,9 +600,9 @@ class LyricsFetchWorker(
                         if (playerEnableLyricsPopupMessage)
                             withUi {
                                 Toaster.e(
-                                    R.string.info_lyrics_not_found_on_s_try_on_s,
-                                    context.getString(R.string.source_kugou_synced),
-                                    context.getString(R.string.source_lrclib_unsynced)
+                                    R.string.lyrics_provider_missing_try_another_format,
+                                    context.getString(R.string.lyrics_provider_kugou_synced_label),
+                                    context.getString(R.string.lyrics_provider_lrclib_unsynced_label)
                                 )
                             }
                         withUi { onCheckedKugouUpdated(true) }
@@ -627,9 +627,9 @@ class LyricsFetchWorker(
                     if (playerEnableLyricsPopupMessage)
                         withUi {
                             Toaster.e(
-                                R.string.info_lyrics_not_found_on_s_try_on_s,
-                                context.getString(R.string.source_kugou_synced),
-                                context.getString(R.string.source_lrclib_unsynced)
+                                R.string.lyrics_provider_missing_try_another_format,
+                                context.getString(R.string.lyrics_provider_kugou_synced_label),
+                                context.getString(R.string.lyrics_provider_lrclib_unsynced_label)
                             )
                         }
                     tryLrcLibUnsyncedThenYouTube(
@@ -686,7 +686,7 @@ class LyricsFetchWorker(
                     val hasContent = lrc?.plainText?.isNotEmpty() == true
                     if (hasContent) {
                         if (playerEnableLyricsPopupMessage)
-                            withUi { Toaster.s(R.string.info_lyrics_found_on_s, context.getString(R.string.source_lrclib_unsynced)) }
+                            withUi { Toaster.s(R.string.lyrics_provider_found_format, context.getString(R.string.lyrics_provider_lrclib_unsynced_label)) }
                         withUi { onErrorUpdated(false) }
                         withUi { onCheckedLrcUpdated(true) }
                         saveLyricsSafe(Lyrics(songId = mediaId, type = LyricsType.Unsynced.name, data = lrc?.plainText.orEmpty()))
@@ -707,9 +707,9 @@ class LyricsFetchWorker(
                     if (toastOnFailure && playerEnableLyricsPopupMessage)
                         withUi {
                             Toaster.e(
-                                R.string.info_lyrics_not_found_on_s_try_on_s,
-                                context.getString(R.string.source_lrclib_unsynced),
-                                context.getString(R.string.source_youtube_unsynced)
+                                R.string.lyrics_provider_missing_try_another_format,
+                                context.getString(R.string.lyrics_provider_lrclib_unsynced_label),
+                                context.getString(R.string.lyrics_provider_youtube_unsynced_label)
                             )
                         }
                     withUi { onCheckedLrcUpdated(true) }
@@ -730,9 +730,9 @@ class LyricsFetchWorker(
             if (toastOnFailure && playerEnableLyricsPopupMessage)
                 withUi {
                     Toaster.e(
-                        R.string.info_lyrics_not_found_on_s_try_on_s,
-                        context.getString(R.string.source_lrclib_unsynced),
-                        context.getString(R.string.source_youtube_unsynced)
+                        R.string.lyrics_provider_missing_try_another_format,
+                        context.getString(R.string.lyrics_provider_lrclib_unsynced_label),
+                        context.getString(R.string.lyrics_provider_youtube_unsynced_label)
                     )
                 }
             withUi { onCheckedLrcUpdated(true) }
@@ -762,9 +762,9 @@ class LyricsFetchWorker(
             youtubeResult?.let { r ->
                 r.onSuccess { fixedLyrics ->
                     if (fixedLyrics?.isNotEmpty() == true && playerEnableLyricsPopupMessage) {
-                        withUi { Toaster.s(R.string.info_lyrics_found_on_s, context.getString(R.string.source_youtube_unsynced)) }
+                        withUi { Toaster.s(R.string.lyrics_provider_found_format, context.getString(R.string.lyrics_provider_youtube_unsynced_label)) }
                     } else if (playerEnableLyricsPopupMessage) {
-                        withUi { Toaster.e(R.string.info_lyrics_not_found_on_s, context.getString(R.string.source_youtube_unsynced), duration = Toast.LENGTH_LONG) }
+                        withUi { Toaster.e(R.string.lyrics_provider_missing_format, context.getString(R.string.lyrics_provider_youtube_unsynced_label), duration = Toast.LENGTH_LONG) }
                     }
                     withUi { onCheckedInnertubeUpdated(true) }
                     if (!fixedLyrics.isNullOrEmpty()) {

@@ -114,21 +114,21 @@ class PermissionUsageDialogTest {
         composeRule.onNodeWithTag("settings.target.privacy.permissions.open", useUnmergedTree = true).performSemanticsAction(SemanticsActions.OnClick) { it() }
         pumpUntil("journal dialog") { runCatching { composeRule.onNodeWithTag("permission_journal_list").fetchSemanticsNode() }.isSuccess }
         composeRule.onAllNodes(isDialog()).assertCountEquals(1)
-        composeRule.onAllNodes(hasText(context.getString(R.string.permission_journal_pause)) and hasAnyAncestor(isDialog())).assertCountEquals(0)
-        composeRule.onNodeWithText(context.getString(R.string.permission_journal_description)).assertDoesNotExist()
-        composeRule.onNodeWithText(context.getString(R.string.permission_journal_clear_description)).assertDoesNotExist()
-        composeRule.onNodeWithText(context.getString(R.string.clear)).performClick()
-        pumpUntil("clear confirmation") { runCatching { composeRule.onNodeWithText(context.getString(R.string.permission_journal_clear_confirm)).fetchSemanticsNode() }.isSuccess }
-        composeRule.onNodeWithText(context.getString(R.string.cancel)).performClick()
+        composeRule.onAllNodes(hasText(context.getString(R.string.permissions_journal_pause)) and hasAnyAncestor(isDialog())).assertCountEquals(0)
+        composeRule.onNodeWithText(context.getString(R.string.permissions_journal_description)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.permissions_journal_clear_description)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_clear)).performClick()
+        pumpUntil("clear confirmation") { runCatching { composeRule.onNodeWithText(context.getString(R.string.permissions_journal_clear_confirm)).fetchSemanticsNode() }.isSuccess }
+        composeRule.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
         pumpUntil("cancelled confirmation dismissed") { composeRule.onAllNodes(isDialog()).fetchSemanticsNodes().size == 1 }
         assertEquals(1, PermissionUsageJournal.read(context.preferences).size)
-        composeRule.onNodeWithText(context.getString(R.string.clear)).performClick()
-        val confirmation = isDialog() and hasAnyDescendant(hasText(context.getString(R.string.permission_journal_clear_confirm)))
+        composeRule.onNodeWithText(context.getString(R.string.common_action_clear)).performClick()
+        val confirmation = isDialog() and hasAnyDescendant(hasText(context.getString(R.string.permissions_journal_clear_confirm)))
         pumpUntil("second clear confirmation") { runCatching { composeRule.onNode(confirmation).fetchSemanticsNode() }.isSuccess }
-        composeRule.onNode(hasText(context.getString(R.string.clear)) and hasAnyAncestor(confirmation)).performClick()
+        composeRule.onNode(hasText(context.getString(R.string.common_action_clear)) and hasAnyAncestor(confirmation)).performClick()
         pumpUntil("confirmed clear processed") { PermissionUsageJournal.read(context.preferences).isEmpty() }
         pumpUntil("accepted confirmation dismissed") { composeRule.onAllNodes(isDialog()).fetchSemanticsNodes().size == 1 }
-        composeRule.onNodeWithText(context.getString(R.string.dialog_close)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_close)).performClick()
         pumpUntil("dialog dismissed") { composeRule.onAllNodes(isDialog()).fetchSemanticsNodes().isEmpty() }
         assertTrue("clear must not resume paused recording", context.preferences.getBoolean(PermissionUsageJournal.PAUSED_KEY, false))
     }
@@ -147,13 +147,13 @@ class PermissionUsageDialogTest {
         val bounds = composeRule.onNodeWithTag("permission_journal_dialog").getBoundsInRoot()
         assertTrue(bounds.bottom - bounds.top <= 512.dp)
         assertTrue(bounds.right - bounds.left <= 342.dp)
-        val done = composeRule.onNodeWithText(context.getString(R.string.dialog_close)).assertIsDisplayed().getBoundsInRoot()
-        val clear = composeRule.onNodeWithText(context.getString(R.string.clear)).assertIsDisplayed().getBoundsInRoot()
+        val done = composeRule.onNodeWithText(context.getString(R.string.common_action_close)).assertIsDisplayed().getBoundsInRoot()
+        val clear = composeRule.onNodeWithText(context.getString(R.string.common_action_clear)).assertIsDisplayed().getBoundsInRoot()
         assertEquals("Footer actions share one bottom row", done.top, clear.top)
         assertTrue("Clear precedes Done", clear.right <= done.left)
-        composeRule.onNodeWithText(context.getString(R.string.clear)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_clear)).performClick()
         pumpUntil("clear footer remains reachable with a full journal") {
-            runCatching { composeRule.onNodeWithText(context.getString(R.string.permission_journal_clear_confirm)).assertIsDisplayed() }.isSuccess
+            runCatching { composeRule.onNodeWithText(context.getString(R.string.permissions_journal_clear_confirm)).assertIsDisplayed() }.isSuccess
         }
         assertFalse(context.preferences.getBoolean(PermissionUsageJournal.PAUSED_KEY, false))
     }
@@ -171,7 +171,7 @@ class PermissionUsageDialogTest {
         show()
         composeRule.onNodeWithTag("settings.target.privacy.permissions.open", useUnmergedTree = true)
             .performSemanticsAction(SemanticsActions.OnClick) { it() }
-        val firstText = if (eventCount == 0) context.getString(R.string.permission_journal_empty) else eventText(0)
+        val firstText = if (eventCount == 0) context.getString(R.string.permissions_journal_empty) else eventText(0)
         pumpUntil("journal contents composed") {
             runCatching { composeRule.onNodeWithText(firstText).assertIsDisplayed() }.isSuccess
         }
@@ -211,8 +211,8 @@ class PermissionUsageDialogTest {
         context.preferences.edit().putString(PermissionUsageJournal.EVENTS_KEY, array.toString()).commit()
     }
     private fun timestamp(index: Int) = 1_700_000_000_000L - index * 60_000L
-    private fun eventText(index: Int) = context.getString(R.string.permission_journal_event,
+    private fun eventText(index: Int) = context.getString(R.string.permissions_journal_event,
         DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM).format(Date(timestamp(index))),
-        context.getString(R.string.permission_feature_music_recognition), context.getString(R.string.permission_label_microphone),
-        context.getString(R.string.permission_event_used))
+        context.getString(R.string.permissions_feature_music_recognition), context.getString(R.string.permissions_label_microphone),
+        context.getString(R.string.permissions_event_used))
 }

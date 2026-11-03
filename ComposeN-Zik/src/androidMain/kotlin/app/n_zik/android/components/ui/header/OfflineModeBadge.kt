@@ -128,7 +128,7 @@ fun OfflineModeBadge(
     if (visible) {
         Image(
             painter = painterResource(R.drawable.airplane),
-            contentDescription = stringResource(R.string.offline_mode),
+            contentDescription = stringResource(R.string.settings_network_offline_mode_label),
             modifier = modifier
                 .padding(start = START_PADDING_DP.dp)
                 .size(ICON_SIZE_DP.dp)

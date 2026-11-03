@@ -339,7 +339,7 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
 
             val excludedSongs = mediaItems.size - filteredMediaItems.size
             if (excludedSongs > 0)
-                Toaster.n( R.string.message_excluded_s_songs, arrayOf( excludedSongs ) )
+                Toaster.n( R.string.player_excluded_song_count_format, arrayOf( excludedSongs ) )
         }
 
         // Filter disliked songs if setting is enabled
@@ -412,7 +412,7 @@ fun Player.excludeMediaItem(mediaItem: MediaItem, context: Context): Boolean {
                 }!! <= excludeSongWithDurationLimit.asMillis
 
             if (excludedSong)
-                Toaster.n( R.string.message_excluded_s_songs, arrayOf( 1 ) )
+                Toaster.n( R.string.player_excluded_song_count_format, arrayOf( 1 ) )
 
             return excludedSong
         }

@@ -425,7 +425,7 @@ internal fun RewindShareSlideButton(
         ) {
             Icon(
                 painter = painterResource(R.drawable.share_social),
-                contentDescription = stringResource(R.string.rw_share_slide),
+                contentDescription = stringResource(R.string.rewind_share_slide),
                 tint = tint,
                 modifier = Modifier
                     .align(Alignment.Center)
@@ -716,7 +716,7 @@ internal fun RewindPlaylistOriginIcon(
     }
     Icon(
         painter = painter,
-        contentDescription = stringResource(R.string.cd_origin_indicator),
+        contentDescription = stringResource(R.string.accessibility_origin_indicator),
         tint = tint,
         modifier = modifier.size(iconSize)
     )
@@ -1310,7 +1310,7 @@ internal fun RewindLevelBadge(
     val textScale = LocalRewindTextScale.current
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = stringResource(R.string.rw_label_your_level),
+            text = stringResource(R.string.rewind_label_your_level),
             color = foreground.copy(alpha = 0.62f),
             fontSize = textScale.size(8.sp),
             lineHeight = textScale.size(10.sp),
@@ -1358,7 +1358,7 @@ internal fun RewindEmptyState(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        RewindKicker(stringResource(R.string.rw_empty_state_kicker), accent)
+        RewindKicker(stringResource(R.string.rewind_empty_state_kicker), accent)
         RewindAdaptiveTitle(
             text = title,
             color = foreground,
@@ -1408,15 +1408,15 @@ internal fun calculateListenerBadge(data: RewindData): ListenerBadge {
         )
     val index = (intensity * 70.0).roundToInt().coerceIn(0, 170)
     return when {
-        index < 15 -> ListenerBadge(R.string.rw_badge_tier_0_name, R.string.rw_badge_tier_0_sub, index, 0)
-        index < 30 -> ListenerBadge(R.string.rw_badge_tier_1_name, R.string.rw_badge_tier_1_sub, index, 1)
-        index < 45 -> ListenerBadge(R.string.rw_badge_tier_2_name, R.string.rw_badge_tier_2_sub, index, 2)
-        index < 60 -> ListenerBadge(R.string.rw_badge_tier_3_name, R.string.rw_badge_tier_3_sub, index, 3)
-        index < 75 -> ListenerBadge(R.string.rw_badge_tier_4_name, R.string.rw_badge_tier_4_sub, index, 4)
-        index < 90 -> ListenerBadge(R.string.rw_badge_tier_5_name, R.string.rw_badge_tier_5_sub, index, 5)
-        index < 110 -> ListenerBadge(R.string.rw_badge_tier_6_name, R.string.rw_badge_tier_6_sub, index, 6)
-        index < 130 -> ListenerBadge(R.string.rw_badge_tier_7_name, R.string.rw_badge_tier_7_sub, index, 7)
-        else -> ListenerBadge(R.string.rw_badge_tier_8_name, R.string.rw_badge_tier_8_sub, index, 8)
+        index < 15 -> ListenerBadge(R.string.rewind_badge_tier_0_name, R.string.rewind_badge_tier_0_sub, index, 0)
+        index < 30 -> ListenerBadge(R.string.rewind_badge_tier_1_name, R.string.rewind_badge_tier_1_sub, index, 1)
+        index < 45 -> ListenerBadge(R.string.rewind_badge_tier_2_name, R.string.rewind_badge_tier_2_sub, index, 2)
+        index < 60 -> ListenerBadge(R.string.rewind_badge_tier_3_name, R.string.rewind_badge_tier_3_sub, index, 3)
+        index < 75 -> ListenerBadge(R.string.rewind_badge_tier_4_name, R.string.rewind_badge_tier_4_sub, index, 4)
+        index < 90 -> ListenerBadge(R.string.rewind_badge_tier_5_name, R.string.rewind_badge_tier_5_sub, index, 5)
+        index < 110 -> ListenerBadge(R.string.rewind_badge_tier_6_name, R.string.rewind_badge_tier_6_sub, index, 6)
+        index < 130 -> ListenerBadge(R.string.rewind_badge_tier_7_name, R.string.rewind_badge_tier_7_sub, index, 7)
+        else -> ListenerBadge(R.string.rewind_badge_tier_8_name, R.string.rewind_badge_tier_8_sub, index, 8)
     }
 }
 
@@ -1437,6 +1437,6 @@ internal fun formatHourLabel(hour: String?): String {
         raw > 12 -> raw - 12
         else -> raw
     }
-    val meridiem = if (raw < 12) stringResource(R.string.rw_hour_am) else stringResource(R.string.rw_hour_pm)
+    val meridiem = if (raw < 12) stringResource(R.string.rewind_hour_am) else stringResource(R.string.rewind_hour_pm)
     return "$normalized $meridiem"
 }

@@ -45,14 +45,14 @@ fun RawUrlImportDialog(
         onDismiss = onDismiss,
         footer = {
             ButtonRow(listOf(
-                DialogButton(stringResource(R.string.paste), { copyText = true }),
-                DialogButton(stringResource(R.string.clear), { text = "" }),
+                DialogButton(stringResource(R.string.common_action_paste), { copyText = true }),
+                DialogButton(stringResource(R.string.common_action_clear), { text = "" }),
             ))
             Spacer(Modifier.height(8.dp))
             ButtonRow(listOf(
-                DialogButton(stringResource(R.string.cancel), onDismiss, danger = true),
+                DialogButton(stringResource(R.string.common_action_cancel), onDismiss, danger = true),
                 DialogButton(
-                    text = stringResource(R.string.import_button),
+                    text = stringResource(R.string.common_action_import),
                     onClick = {
                         if (text.isEmpty()) error = true else onImport(text)
                     },

@@ -8,7 +8,7 @@ enum class PipModule(
     @field:StringRes override val textId: Int
 ): TextView {
 
-    Cover( R.string.pipmodule_cover )
+    Cover( R.string.settings_picture_in_picture_artwork_module_label )
 }
 
 

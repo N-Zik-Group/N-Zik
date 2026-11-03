@@ -85,7 +85,7 @@ class ShortcutIconSyncTest {
     fun `the generic profiles shortcut maps to the profiles icon and action`() {
         val (labelRes, drawableRes, action) = shortcutSpec(SHORTCUT_PROFILES_ID)
 
-        assertEquals(R.string.profiles, labelRes)
+        assertEquals(R.string.profile_title, labelRes)
         assertEquals(R.drawable.shortcut_profiles, drawableRes)
         assertEquals("app.it.fast4x.rimusic.action.profiles", action)
     }
@@ -523,8 +523,8 @@ class ShortcutIconRenderingTest {
 
     @Test
     fun `fixed shortcut labels still resolve their label resource`() {
-        assertEquals(context.getString(R.string.search), shortcutShortLabel(context, SHORTCUT_SEARCH_ID))
-        assertEquals(context.getString(R.string.profiles), shortcutShortLabel(context, SHORTCUT_PROFILES_ID))
+        assertEquals(context.getString(R.string.search_title), shortcutShortLabel(context, SHORTCUT_SEARCH_ID))
+        assertEquals(context.getString(R.string.profile_title), shortcutShortLabel(context, SHORTCUT_PROFILES_ID))
     }
 
     /**

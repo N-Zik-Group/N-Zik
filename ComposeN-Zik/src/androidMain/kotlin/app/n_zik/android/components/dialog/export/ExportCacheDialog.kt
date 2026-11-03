@@ -95,7 +95,7 @@ class ExportCacheDialog(
             if (moduleState !is ModuleState.READY) {
                 withContext(NzikDispatchers.UI) {
                     isExporting.value = false
-                    if (moduleState is ModuleState.FAILED) Toaster.e(R.string.export_error, moduleState.message)
+                    if (moduleState is ModuleState.FAILED) Toaster.e(R.string.export_cached_songs_error, moduleState.message)
                 }
                 try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (_: Exception) {}
                 return@launch
@@ -113,7 +113,7 @@ class ExportCacheDialog(
                 Timber.tag("ExportCache").i("isCached: $isCached, isDownloaded: $isDownloaded, contentLength: $contentLength")
 
                 if( !isCached && !isDownloaded ) {
-                    Toaster.i( R.string.song_must_be_cached_or_downloaded_to_export )
+                    Toaster.i( R.string.export_song_unavailable_message )
 
                     try {
                         // Attempt to delete created file
@@ -284,7 +284,7 @@ class ExportCacheDialog(
                         Timber.tag("ExportCache").e("FFmpeg failed with return code $returnCode. Logs: $logs")
                         kotlinx.coroutines.withContext(NzikDispatchers.UI) {
                             isExporting.value = false
-                            if (showResultToast) Toaster.e(R.string.export_failed, "FFmpeg error: $returnCode")
+                            if (showResultToast) Toaster.e(R.string.export_cached_songs_failed, "FFmpeg error: $returnCode")
                         }
                         try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (_: Exception) {}
                     }
@@ -293,7 +293,7 @@ class ExportCacheDialog(
                     Timber.tag("ExportCache").e(e, "Export overall error")
                     kotlinx.coroutines.withContext(NzikDispatchers.UI) {
                         isExporting.value = false
-                        if (showResultToast) Toaster.e(R.string.export_failed, e.message)
+                        if (showResultToast) Toaster.e(R.string.export_cached_songs_failed, e.message)
                     }
                     try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (_: Exception) {}
                 } finally {
@@ -306,7 +306,7 @@ class ExportCacheDialog(
                 Timber.tag("ExportCache").e(e, "Export init error")
                 kotlinx.coroutines.withContext(NzikDispatchers.UI) {
                     isExporting.value = false
-                    if (showResultToast) Toaster.e(R.string.export_error, e.message)
+                    if (showResultToast) Toaster.e(R.string.export_cached_songs_error, e.message)
                 }
                 try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (_: Exception) {}
             }
@@ -362,7 +362,7 @@ class ExportCacheDialog(
                         if (!isCached && !isDownloaded) {
                             kotlinx.coroutines.withContext(NzikDispatchers.UI) {
                                 isExporting.value = false
-                                Toaster.i(R.string.song_must_be_cached_or_downloaded_to_export)
+                                Toaster.i(R.string.export_song_unavailable_message)
                             }
                             return@launch
                         }
@@ -403,7 +403,7 @@ class ExportCacheDialog(
                         Timber.tag("ExportCache").e(e, "Single export failed")
                         kotlinx.coroutines.withContext(NzikDispatchers.UI) {
                             isExporting.value = false
-                            Toaster.e(R.string.export_failed, e.message)
+                            Toaster.e(R.string.export_cached_songs_failed, e.message)
                         }
                     }
                 }
@@ -434,7 +434,7 @@ class ExportCacheDialog(
             val moduleState = FfmpegModule.ensureReady()
             if (moduleState !is ModuleState.READY) {
                 withContext(NzikDispatchers.UI) {
-                    if (moduleState is ModuleState.FAILED) Toaster.e(R.string.export_failed, moduleState.message)
+                    if (moduleState is ModuleState.FAILED) Toaster.e(R.string.export_cached_songs_failed, moduleState.message)
                     onComplete(0, 0)
                 }
                 return@launch
@@ -703,13 +703,13 @@ class ExportCacheDialog(
     override fun DialogBody() {}
 
     override val iconId: Int = R.drawable.export_outline
-    override val messageId: Int = R.string.info_export_cached_or_downloaded_song
+    override val messageId: Int = R.string.export_cached_song_action
     override val dialogTitle: String
         @Composable
-        get() = stringResource( R.string.title_name_your_export )
+        get() = stringResource( R.string.export_file_name_dialog_title )
     override val menuIconTitle: String
         @Composable
-        get() = stringResource( R.string.export_cached )
+        get() = stringResource( R.string.export_cached_songs_action )
 
     override fun onShortClick() = showDialog()
 
@@ -718,14 +718,14 @@ class ExportCacheDialog(
         DialogPresence(visible = isActive, inherit = true) {
 
         val lyricsOptions = listOf(
-            null to appContext().getString(R.string.no_lyrics),
+            null to appContext().getString(R.string.lyrics_empty),
             LyricsType.Synced.name to appContext().getString(R.string.lyrics_synced),
             LyricsType.Unsynced.name to appContext().getString(R.string.lyrics_unsynced),
             LyricsType.Karaoke.name to appContext().getString(R.string.lyrics_karaoke)
         )
         ValueSelectorDialog(
             onDismiss = { hideDialog() },
-            title = appContext().getString(R.string.export_lyrics_choice),
+            title = appContext().getString(R.string.export_cached_songs_lyrics_confirmation),
             selectedValue = selectedLyricsType,
             values = lyricsOptions.map { it.first },
             onValueSelected = { type ->

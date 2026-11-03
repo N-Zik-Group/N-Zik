@@ -8,15 +8,15 @@ enum class SwipeAnimationNoThumbnail(
     @StringRes override val textId: Int
 ): TextView {
 
-    Sliding( R.string.te_slide_vertical ),
+    Sliding( R.string.settings_transition_slide_vertical ),
 
-    Fade( R.string.te_fade ),
+    Fade( R.string.settings_transition_fade ),
 
-    Scale( R.string.te_scale ),
+    Scale( R.string.settings_transition_scale ),
 
-    Carousel( R.string.carousel ),
+    Carousel( R.string.settings_player_artwork_carousel_label ),
 
-    Circle( R.string.vt_circular )
+    Circle( R.string.player_artwork_transition_circular )
 }
 
 

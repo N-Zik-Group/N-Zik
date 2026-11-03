@@ -37,7 +37,7 @@ internal fun PodcastLoadingStatus(status: PodcastPageStatus, isOnline: Boolean, 
             ) {
                 Text(
                     text = stringResource(
-                        if (isOnline) R.string.error else R.string.error_no_internet
+                        if (isOnline) R.string.common_error_title else R.string.common_error_no_internet
                     ),
                     color = colorPalette().text,
                     textAlign = TextAlign.Center,
@@ -45,7 +45,7 @@ internal fun PodcastLoadingStatus(status: PodcastPageStatus, isOnline: Boolean, 
                 ButtonRow(
                     buttons = listOf(
                         DialogButton(
-                            text = stringResource(R.string.retry),
+                            text = stringResource(R.string.common_action_retry),
                             onClick = onRetry,
                             primary = true,
                         )
@@ -61,7 +61,7 @@ internal fun PodcastLoadingStatus(status: PodcastPageStatus, isOnline: Boolean, 
 @Composable
 internal fun PodcastEmptyEpisodes() {
     Text(
-        text = stringResource(R.string.no_items),
+        text = stringResource(R.string.common_empty_items),
         modifier = Modifier.fillMaxWidth().padding(24.dp),
         color = colorPalette().text,
         textAlign = TextAlign.Center,

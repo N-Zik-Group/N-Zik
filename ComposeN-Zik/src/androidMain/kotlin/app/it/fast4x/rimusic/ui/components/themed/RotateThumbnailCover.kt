@@ -93,7 +93,7 @@ fun RotateThumbnailCover(
                     ThumbnailCoverType.Vinyl -> R.drawable.vinyl_background
                     ThumbnailCoverType.CD, ThumbnailCoverType.CDwithCover -> R.drawable.cd
                 }),
-                contentDescription = stringResource(R.string.cd_disc_background)
+                contentDescription = stringResource(R.string.accessibility_disc_background)
             )
 
         if (type in listOf(ThumbnailCoverType.Vinyl, ThumbnailCoverType.CDwithCover))
@@ -112,7 +112,7 @@ fun RotateThumbnailCover(
                     .align(Alignment.Center)
                     .clip(roundedShape),
                 painter = painter,
-                contentDescription = stringResource(R.string.cd_song_album_cover)
+                contentDescription = stringResource(R.string.accessibility_song_album_cover)
             )
 
         if (type == ThumbnailCoverType.CDwithCover) {

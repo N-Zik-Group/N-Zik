@@ -120,7 +120,7 @@ class UpdateSongDialog private constructor(
             override val id: String = TITLE_CHECKBOX_ID
             override val menuIconTitle: String
                 @Composable
-                get() = stringResource( R.string.update_title_from_ytm )
+                get() = stringResource( R.string.metadata_action_refresh_title_from_youtube )
         }
         items.add( updateTitle )
 
@@ -128,7 +128,7 @@ class UpdateSongDialog private constructor(
             override val id: String = AUTHORS_CHECKBOX_ID
             override val menuIconTitle: String
                 @Composable
-                get() = stringResource( R.string.update_authors_from_ytm )
+                get() = stringResource( R.string.metadata_action_refresh_artists_from_youtube )
         }
         items.add( updateAuthors )
 
@@ -136,7 +136,7 @@ class UpdateSongDialog private constructor(
             override val id: String = THUMBNAIL_CHECKBOX_ID
             override val menuIconTitle: String
                 @Composable
-                get() = stringResource( R.string.update_thumbnail_from_ytm )
+                get() = stringResource( R.string.metadata_action_refresh_cover_from_youtube )
         }
         items.add( updateThumbnail )
 
@@ -144,7 +144,7 @@ class UpdateSongDialog private constructor(
             override val id: String = PLAYTIME_CHECKBOX_ID
             override val menuIconTitle: String
                 @Composable
-                get() = stringResource( R.string.title_reset_total_play_time )
+                get() = stringResource( R.string.song_play_time_action_reset )
         }
         items.add( resetPlaytime )
 
@@ -152,7 +152,7 @@ class UpdateSongDialog private constructor(
             override val id: String = CACHE_CHECKBOX_ID
             override val menuIconTitle: String
                 @Composable
-                get() = stringResource( R.string.title_reset_cache )
+                get() = stringResource( R.string.cache_action_reset )
         }
         items.add( resetCache )
 
@@ -160,10 +160,10 @@ class UpdateSongDialog private constructor(
     }
 
     override val iconId: Int = R.drawable.refresh
-    override val messageId: Int = R.string.info_open_update_dialog
+    override val messageId: Int = R.string.song_metadata_update_action_open
     override val menuIconTitle: String
         @Composable
-        get() = stringResource( R.string.update )
+        get() = stringResource( R.string.common_action_update )
     override val dialogTitle: String
         @Composable
         get() = menuIconTitle
@@ -270,7 +270,7 @@ class UpdateSongDialog private constructor(
                 InProgressDialog(
                     total = total,
                     done = done,
-                    text = stringResource(R.string.update),
+                    text = stringResource(R.string.common_action_update),
                     onDismiss = ::onCancelBatch
                 )
             } else {
@@ -555,6 +555,6 @@ internal suspend fun runSongUpdateBatch(
     Timber.tag("Database").d( "update batch done processed=%d", songsToUpdate.size )
     // toLong() forces the vararg overload: a bare Int second argument would
     // bind to Toaster.s( messageId, duration ) and leave the count unformatted.
-    Toaster.s( R.string.updated_songs_count, songsToUpdate.size.toLong() )
+    Toaster.s( R.string.song_metadata_updated_count, songsToUpdate.size.toLong() )
     return songsToUpdate.size
 }

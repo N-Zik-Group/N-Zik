@@ -76,7 +76,7 @@ internal fun AppearanceFullscreenLyricsCard(search: Search) {
     var statsExpanded by rememberPreference(statsExpandedKey, true)
     var actionExpanded by rememberPreference(actionExpandedKey, true)
     var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, true)
-    val searchCtx_2 = search.inputValue.isBlank() || stringResource(R.string.settings_section_fullscreen_lyrics_title).contains(search.inputValue, true) || stringResource(R.string.show_total_time_of_queue).contains(search.inputValue, true) || stringResource(R.string.titleartist).contains(search.inputValue, true) || stringResource(R.string.timeline).contains(search.inputValue, true) || stringResource(R.string.controls).contains(search.inputValue, true) || stringResource(R.string.statsfornerds).contains(search.inputValue, true) || stringResource(R.string.actionbar).contains(search.inputValue, true) || stringResource(R.string.miniqueue).contains(search.inputValue, true)
+    val searchCtx_2 = search.inputValue.isBlank() || stringResource(R.string.settings_section_fullscreen_lyrics_title).contains(search.inputValue, true) || stringResource(R.string.settings_player_queue_duration_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_title_artist_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_timeline_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_controls_visible_label).contains(search.inputValue, true) || stringResource(R.string.lyrics_fullscreen_technical_info_title).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_action_bar_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_next_queue_visible_label).contains(search.inputValue, true)
     if (!showlyricsthumbnail) {
 AnimatedVisibility(
                     visible = searchCtx_2,
@@ -90,66 +90,66 @@ AnimatedVisibility(
                         content = {
 
                 if (showTotalTimeQueue) {
-                    if (search.inputValue.isBlank() || stringResource(R.string.show_total_time_of_queue).contains(
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_player_queue_duration_visible_label).contains(
                             search.inputValue,
                             true
                         )
                     )
-                        if (search.inputValue.isBlank() || stringResource(R.string.show_total_time_of_queue).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.settings_player_queue_duration_visible_label).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.show_total_time_of_queue"),
                         icon = R.drawable.time,
-                                title = stringResource(R.string.show_total_time_of_queue),
-                                text = stringResource(R.string.settings_desc_appearance_full_screen_lyrics_components_show_total_time_of_queue),
+                                title = stringResource(R.string.settings_player_queue_duration_visible_label),
+                                text = stringResource(R.string.lyrics_fullscreen_show_total_time_of_queue_description),
                                 isChecked = queueDurationExpanded,
                                 onCheckedChange = { queueDurationExpanded = it }
                             )
                         }
                 }
 
-                if (search.inputValue.isBlank() || stringResource(R.string.titleartist).contains(
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_title_artist_visible_label).contains(
                         search.inputValue,
                         true
                     )
                 )
-                    if (search.inputValue.isBlank() || stringResource(R.string.titleartist).contains(search.inputValue, true)) {
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_title_artist_visible_label).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.titleartist"),
                         icon = R.drawable.title_edit,
-                            title = stringResource(R.string.titleartist),
-                            text = stringResource(R.string.settings_desc_appearance_full_screen_lyrics_components_titleartist),
+                            title = stringResource(R.string.settings_lyrics_title_artist_visible_label),
+                            text = stringResource(R.string.lyrics_fullscreen_title_and_artist_description),
                             isChecked = titleExpanded,
                             onCheckedChange = { titleExpanded = it }
                         )
                     }
 
-                if (search.inputValue.isBlank() || stringResource(R.string.timeline).contains(
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_timeline_label).contains(
                         search.inputValue,
                         true
                     )
                 )
-                    if (search.inputValue.isBlank() || stringResource(R.string.timeline).contains(search.inputValue, true)) {
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_player_timeline_label).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.timeline"),
                         icon = R.drawable.ellipsis_horizontal,
-                            title = stringResource(R.string.timeline),
-                            text = stringResource(R.string.settings_desc_appearance_full_screen_lyrics_components_timeline),
+                            title = stringResource(R.string.settings_player_timeline_label),
+                            text = stringResource(R.string.lyrics_fullscreen_timeline_description),
                             isChecked = timelineExpanded,
                             onCheckedChange = { timelineExpanded = it }
                         )
                     }
 
-                if (search.inputValue.isBlank() || stringResource(R.string.controls).contains(
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_controls_visible_label).contains(
                         search.inputValue,
                         true
                     )
                 )
-                    if (search.inputValue.isBlank() || stringResource(R.string.controls).contains(search.inputValue, true)) {
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_controls_visible_label).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.controls"),
                         icon = R.drawable.ellipsis_horizontal,
-                            title = stringResource(R.string.controls),
-                            text = stringResource(R.string.settings_desc_appearance_full_screen_lyrics_components_controls),
+                            title = stringResource(R.string.settings_lyrics_controls_visible_label),
+                            text = stringResource(R.string.lyrics_fullscreen_controls_description),
                             isChecked = controlsExpanded,
                             onCheckedChange = { controlsExpanded = it }
                         )
@@ -157,17 +157,17 @@ AnimatedVisibility(
 
 
                 if (statsfornerds && (!(showthumbnail && playerType == PlayerType.Essential))){
-                    if (search.inputValue.isBlank() || stringResource(R.string.statsfornerds).contains(
+                    if (search.inputValue.isBlank() || stringResource(R.string.lyrics_fullscreen_technical_info_title).contains(
                             search.inputValue,
                             true
                         )
                     )
-                        if (search.inputValue.isBlank() || stringResource(R.string.statsfornerds).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.lyrics_fullscreen_technical_info_title).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.statsfornerds"),
                         icon = R.drawable.stats_chart,
-                                title = stringResource(R.string.statsfornerds),
-                                text = stringResource(R.string.settings_desc_appearance_full_screen_lyrics_components_statsfornerds),
+                                title = stringResource(R.string.lyrics_fullscreen_technical_info_title),
+                                text = stringResource(R.string.lyrics_fullscreen_technical_info_description),
                                 isChecked = statsExpanded,
                                 onCheckedChange = { statsExpanded = it }
                             )
@@ -188,17 +188,17 @@ AnimatedVisibility(
                     showButtonPlayerDiscover ||
                     showButtonPlayerVideo
                 ){
-                    if (search.inputValue.isBlank() || stringResource(R.string.actionbar).contains(
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_action_bar_visible_label).contains(
                             search.inputValue,
                             true
                         )
                     )
-                        if (search.inputValue.isBlank() || stringResource(R.string.actionbar).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_action_bar_visible_label).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.actionbar"),
                         icon = R.drawable.menu,
-                                title = stringResource(R.string.actionbar),
-                                text = stringResource(R.string.settings_desc_appearance_full_screen_lyrics_components_actionbar),
+                                title = stringResource(R.string.settings_lyrics_action_bar_visible_label),
+                                text = stringResource(R.string.lyrics_fullscreen_action_bar_description),
                                 isChecked = actionExpanded,
                                 onCheckedChange = {
                                     actionExpanded = it
@@ -207,17 +207,17 @@ AnimatedVisibility(
                         }
                 }
                 if (showNextSongsInPlayer && actionExpanded) {
-                    if (search.inputValue.isBlank() || stringResource(R.string.miniqueue).contains(
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_next_queue_visible_label).contains(
                             search.inputValue,
                             true
                         )
                     )
-                        if (search.inputValue.isBlank() || stringResource(R.string.miniqueue).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_next_queue_visible_label).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.miniqueue"),
                         icon = R.drawable.sort_vertical,
-                                title = stringResource(R.string.miniqueue),
-                                text = stringResource(R.string.settings_desc_appearance_full_screen_lyrics_components_miniqueue),
+                                title = stringResource(R.string.settings_lyrics_next_queue_visible_label),
+                                text = stringResource(R.string.lyrics_fullscreen_queue_preview_description),
                                 isChecked = miniQueueExpanded,
                                 onCheckedChange = { miniQueueExpanded = it }
                             )

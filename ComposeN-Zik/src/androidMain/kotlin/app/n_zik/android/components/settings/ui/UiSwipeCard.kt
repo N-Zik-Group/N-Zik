@@ -64,7 +64,7 @@ internal fun UiSwipeCard(search: Search) {
     )
 
     val swipeSearchContextMatch = search.inputValue.isBlank() ||
-        stringResource(R.string.swipe_to_action).contains(search.inputValue, true)
+        stringResource(R.string.settings_swipe_actions_title).contains(search.inputValue, true)
 
     AnimatedVisibility(
         visible = swipeSearchContextMatch,
@@ -73,14 +73,14 @@ internal fun UiSwipeCard(search: Search) {
     ) {
         SettingsSectionCard(
             modifier = Modifier.testTag("ui.card.swipe"),
-            title = stringResource(R.string.swipe_to_action),
+            title = stringResource(R.string.settings_swipe_actions_title),
             icon = R.drawable.arrow_forward,
             content = {
-                if (search.inputValue.isBlank() || stringResource(R.string.swipe_to_action).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_swipe_actions_title).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.swipe_to_action"),
-                        title = stringResource(R.string.swipe_to_action),
-                        text = stringResource(R.string.activate_the_action_menu_by_swiping_the_song_left_or_right),
+                        title = stringResource(R.string.settings_swipe_actions_title),
+                        text = stringResource(R.string.settings_swipe_actions_description),
                         isChecked = isSwipeToActionEnabled,
                         onCheckedChange = { isSwipeToActionEnabled = it },
                         icon = R.drawable.arrow_forward
@@ -90,11 +90,11 @@ internal fun UiSwipeCard(search: Search) {
                 AnimatedVisibility(visible = isSwipeToActionEnabled) {
                     Column(modifier = Modifier.padding(start = 25.dp)) {
                         var showQSLeftDialog by remember { mutableStateOf(false) }
-                        if (search.inputValue.isBlank() || stringResource(R.string.queue_and_local_playlists_left_swipe).contains(search.inputValue, true) || stringResource(R.string.swipe_to_action).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.settings_library_queue_playlist_swipe_left_label).contains(search.inputValue, true) || stringResource(R.string.settings_swipe_actions_title).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.queue_and_local_playlists_left_swipe"),
-                                title = stringResource(R.string.queue_and_local_playlists_left_swipe),
-                                text = stringResource(R.string.settings_desc_ui_swipe_to_action_queue_and_local_playlists_left_swipe),
+                                title = stringResource(R.string.settings_library_queue_playlist_swipe_left_label),
+                                text = stringResource(R.string.gestures_queue_item_swipe_left_description),
                                 selectedValueText = queueSwipeLeftAction.text,
                                 icon = R.drawable.arrow_left,
                                 onClick = { showQSLeftDialog = true }
@@ -102,7 +102,7 @@ internal fun UiSwipeCard(search: Search) {
                         }
                         DialogPresence(visible = showQSLeftDialog) {
                             ValueSelectorDialog(
-                                title = stringResource(R.string.queue_and_local_playlists_left_swipe),
+                                title = stringResource(R.string.settings_library_queue_playlist_swipe_left_label),
                                 selectedValue = queueSwipeLeftAction,
                                 onValueSelected = { queueSwipeLeftAction = it },
                                 valueText = { it.text },
@@ -112,11 +112,11 @@ internal fun UiSwipeCard(search: Search) {
                         }
 
                         var showPLLeftDialog by remember { mutableStateOf(false) }
-                        if (search.inputValue.isBlank() || stringResource(R.string.playlist_left_swipe).contains(search.inputValue, true) || stringResource(R.string.swipe_to_action).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.playlist_left_swipe).contains(search.inputValue, true) || stringResource(R.string.settings_swipe_actions_title).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.playlist_left_swipe"),
                                 title = stringResource(R.string.playlist_left_swipe),
-                                text = stringResource(R.string.settings_desc_ui_swipe_to_action_playlist_left_swipe),
+                                text = stringResource(R.string.gestures_playlist_track_swipe_left_description),
                                 selectedValueText = playlistSwipeLeftAction.text,
                                 icon = R.drawable.arrow_left,
                                 onClick = { showPLLeftDialog = true }
@@ -134,11 +134,11 @@ internal fun UiSwipeCard(search: Search) {
                         }
 
                         var showPLRightDialog by remember { mutableStateOf(false) }
-                        if (search.inputValue.isBlank() || stringResource(R.string.playlist_right_swipe).contains(search.inputValue, true) || stringResource(R.string.swipe_to_action).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.playlist_right_swipe).contains(search.inputValue, true) || stringResource(R.string.settings_swipe_actions_title).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.playlist_right_swipe"),
                                 title = stringResource(R.string.playlist_right_swipe),
-                                text = stringResource(R.string.settings_desc_ui_swipe_to_action_playlist_right_swipe),
+                                text = stringResource(R.string.gestures_playlist_track_swipe_right_description),
                                 selectedValueText = playlistSwipeRightAction.text,
                                 icon = R.drawable.arrow_right,
                                 onClick = { showPLRightDialog = true }
@@ -156,11 +156,11 @@ internal fun UiSwipeCard(search: Search) {
                         }
 
                         var showALeftDialog by remember { mutableStateOf(false) }
-                        if (search.inputValue.isBlank() || stringResource(R.string.album_left_swipe).contains(search.inputValue, true) || stringResource(R.string.swipe_to_action).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.album_left_swipe).contains(search.inputValue, true) || stringResource(R.string.settings_swipe_actions_title).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.album_left_swipe"),
                                 title = stringResource(R.string.album_left_swipe),
-                                text = stringResource(R.string.settings_desc_ui_swipe_to_action_album_left_swipe),
+                                text = stringResource(R.string.gestures_album_track_swipe_left_description),
                                 selectedValueText = albumSwipeLeftAction.text,
                                 icon = R.drawable.arrow_left,
                                 onClick = { showALeftDialog = true }
@@ -178,11 +178,11 @@ internal fun UiSwipeCard(search: Search) {
                         }
 
                         var showARightDialog by remember { mutableStateOf(false) }
-                        if (search.inputValue.isBlank() || stringResource(R.string.album_right_swipe).contains(search.inputValue, true) || stringResource(R.string.swipe_to_action).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.album_right_swipe).contains(search.inputValue, true) || stringResource(R.string.settings_swipe_actions_title).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.album_right_swipe"),
                                 title = stringResource(R.string.album_right_swipe),
-                                text = stringResource(R.string.settings_desc_ui_swipe_to_action_album_right_swipe),
+                                text = stringResource(R.string.gestures_album_track_swipe_right_description),
                                 selectedValueText = albumSwipeRightAction.text,
                                 icon = R.drawable.arrow_right,
                                 onClick = { showARightDialog = true }
@@ -200,11 +200,11 @@ internal fun UiSwipeCard(search: Search) {
                         }
 
                         var showQSRightDialog by remember { mutableStateOf(false) }
-                        if (search.inputValue.isBlank() || stringResource(R.string.queue_and_local_playlists_right_swipe).contains(search.inputValue, true) || stringResource(R.string.swipe_to_action).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.settings_library_queue_playlist_swipe_right_label).contains(search.inputValue, true) || stringResource(R.string.settings_swipe_actions_title).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.queue_and_local_playlists_right_swipe"),
-                                title = stringResource(R.string.queue_and_local_playlists_right_swipe),
-                                text = stringResource(R.string.settings_desc_ui_swipe_to_action_queue_and_local_playlists_right_swipe),
+                                title = stringResource(R.string.settings_library_queue_playlist_swipe_right_label),
+                                text = stringResource(R.string.gestures_queue_item_swipe_right_description),
                                 selectedValueText = queueSwipeRightAction.text,
                                 icon = R.drawable.arrow_right,
                                 onClick = { showQSRightDialog = true }
@@ -212,7 +212,7 @@ internal fun UiSwipeCard(search: Search) {
                         }
                         DialogPresence(visible = showQSRightDialog) {
                             ValueSelectorDialog(
-                                title = stringResource(R.string.queue_and_local_playlists_right_swipe),
+                                title = stringResource(R.string.settings_library_queue_playlist_swipe_right_label),
                                 selectedValue = queueSwipeRightAction,
                                 onValueSelected = { queueSwipeRightAction = it },
                                 valueText = { it.text },

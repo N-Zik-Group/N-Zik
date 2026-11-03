@@ -160,7 +160,7 @@ fun InfoAlbumAndArtistModern(
 
             if (playerInfoShowIcon) {
                 PlayerInfoIconButton(
-                    icon = if (title == stringResource(R.string.unknown_title) || title == "Unknown Title") R.drawable.unknown else if (albumId == null && !media.isLocal) R.drawable.logo_youtube else R.drawable.album,
+                    icon = if (title == stringResource(R.string.metadata_unknown_title) || title == "Unknown Title") R.drawable.unknown else if (albumId == null && !media.isLocal) R.drawable.logo_youtube else R.drawable.album,
                     color = if (albumId == null) colorPalette().textDisabled else colorPalette().text,
                     enabled = albumId != null,
                     onClick = {
@@ -283,7 +283,7 @@ fun InfoAlbumAndArtistModern(
 
         DialogPresence(visible = showSelectDialog) {
             SelectorArtistsDialog(
-                title = stringResource(R.string.artists),
+                title = stringResource(R.string.library_artists_title),
                 onDismiss = { showSelectDialog = false },
                 values = artistIds,
                 onValueSelected = {
@@ -299,7 +299,7 @@ fun InfoAlbumAndArtistModern(
 
         if (playerInfoShowIcon) {
             PlayerInfoIconButton(
-                icon = if (artist == stringResource(R.string.unknown_artist) || artist == "Unknown Artist") R.drawable.unknown else if (artistIds?.isEmpty() == true && !media.isLocal) R.drawable.logo_youtube else if (artistIds?.size == 1) R.drawable.person else R.drawable.people,
+                icon = if (artist == stringResource(R.string.metadata_unknown_artist) || artist == "Unknown Artist") R.drawable.unknown else if (artistIds?.isEmpty() == true && !media.isLocal) R.drawable.logo_youtube else if (artistIds?.size == 1) R.drawable.person else R.drawable.people,
                 color = if (artistIds?.isEmpty() == true) colorPalette().textDisabled else colorPalette().text,
                 onClick = {
                     if (artistIds?.isNotEmpty() == true && artistIds.size > 1)
@@ -529,7 +529,7 @@ fun ControlsModern(
                           0.dp
                       )
                       .size(100.dp),
-                  contentDescription = stringResource(R.string.cd_background_image),
+                  contentDescription = stringResource(R.string.accessibility_background_image),
                   contentScale = ContentScale.Fit
               )
 

@@ -39,10 +39,10 @@ class ItemSize private constructor(
     }
 
     override val iconId: Int = R.drawable.resize
-    override val messageId: Int = R.string.size
+    override val messageId: Int = R.string.common_size_label
     override val menuIconTitle: String
         @Composable
-        get() = stringResource( R.string.size )
+        get() = stringResource( R.string.common_size_label )
 
     val size: HomeItemSize
         get() = sizeState.value
@@ -81,7 +81,7 @@ class ItemSize private constructor(
 
     override fun onShortClick() {
         menuState.display {
-            ListMenu.Menu(title = stringResource(R.string.size)) {
+            ListMenu.Menu(title = stringResource(R.string.common_size_label)) {
                 HomeItemSize.entries.forEach { Entry(it) }
             }
         }

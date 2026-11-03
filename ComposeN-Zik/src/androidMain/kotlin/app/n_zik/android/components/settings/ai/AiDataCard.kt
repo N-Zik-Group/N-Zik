@@ -27,12 +27,12 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 internal fun AiDataCard(search: Search) {
     val context = LocalContext.current
     var clearEvents by remember { mutableStateOf(false) }
-    val searchCtx_7 = search.inputValue.isBlank() || stringResource(R.string.tab_data).contains(search.inputValue, true) || stringResource(R.string.reset_quick_picks).contains(search.inputValue, true)
+    val searchCtx_7 = search.inputValue.isBlank() || stringResource(R.string.settings_data_title).contains(search.inputValue, true) || stringResource(R.string.recommendations_action_reset_quick_picks).contains(search.inputValue, true)
     DialogPresence(visible = clearEvents) {
         ConfirmationDialog(
-            title = stringResource(R.string.dialog_delete_playback_events),
-            confirmText = stringResource(R.string.delete),
-            text = stringResource(R.string.do_you_really_want_to_delete_all_playback_events),
+            title = stringResource(R.string.statistics_delete_playback_events_dialog_title),
+            confirmText = stringResource(R.string.common_action_delete),
+            text = stringResource(R.string.statistics_delete_playback_events_confirmation),
             onDismiss = { clearEvents = false },
             onConfirm = {
                 Database.asyncTransaction {
@@ -44,7 +44,7 @@ internal fun AiDataCard(search: Search) {
     }
 
     SettingsSectionCard(
-        title = stringResource(R.string.tab_data),
+        title = stringResource(R.string.settings_data_title),
         icon = R.drawable.server,
         visible = searchCtx_7,
         content = {
@@ -53,15 +53,15 @@ internal fun AiDataCard(search: Search) {
                         .countAll()
             }.collectAsStateWithLifecycle(0L, context = NzikDispatchers.DATA)
 
-            if (search.inputValue.isBlank() || stringResource(R.string.reset_quick_picks).contains(search.inputValue, true)) {
+            if (search.inputValue.isBlank() || stringResource(R.string.recommendations_action_reset_quick_picks).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("ai.tab_data.reset_quick_picks"),
-                    title = stringResource(R.string.reset_quick_picks),
-                    text = stringResource(R.string.settings_desc_ai_tab_data_reset_quick_picks),
+                    title = stringResource(R.string.recommendations_action_reset_quick_picks),
+                    text = stringResource(R.string.recommendations_reset_description),
                     selectedValueText = if (eventsCount > 0) {
-                        stringResource(R.string.delete_playback_events, eventsCount)
+                        stringResource(R.string.statistics_action_delete_playback_events_count, eventsCount)
                     } else {
-                        stringResource(R.string.quick_picks_are_cleared)
+                        stringResource(R.string.recommendations_reset_complete)
                     },
                     icon = R.drawable.trash,
                     onClick = { clearEvents = true }

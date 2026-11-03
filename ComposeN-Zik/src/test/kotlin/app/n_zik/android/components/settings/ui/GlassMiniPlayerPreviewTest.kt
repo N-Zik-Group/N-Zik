@@ -140,8 +140,8 @@ class GlassMiniPlayerPreviewTest {
             }
         }
         fun checkRenderedParent() {
-            val labels = listOf(R.string.miniplayer_button_skip_back, R.string.play,
-                R.string.miniplayer_button_skip_forward, R.string.miniplayer_button_audio_output)
+            val labels = listOf(R.string.player_action_previous, R.string.player_action_play,
+                R.string.player_action_next, R.string.player_mini_button_audio_output)
             val controls = labels.map { label -> context.getString(label) to
                 composeRule.onNodeWithContentDescription(context.getString(label)).fetchSemanticsNode().boundsInRoot }
             val body = composeRule.onNodeWithTag("settings.glass.miniPlayer").fetchSemanticsNode().boundsInRoot
@@ -195,17 +195,17 @@ class GlassMiniPlayerPreviewTest {
         val before = context.preferences.all.toMap()
         showPreview()
 
-        val labels = listOf(R.string.miniplayer_button_like, R.string.miniplayer_button_skip_forward,
-            R.string.play, R.string.miniplayer_button_skip_back).map(context::getString)
+        val labels = listOf(R.string.player_action_like, R.string.player_action_next,
+            R.string.player_action_play, R.string.player_action_previous).map(context::getString)
         val controls = composeRule.onAllNodes(SemanticsMatcher("mini-player control") { node ->
             node.config.getOrNull(SemanticsProperties.ContentDescription)?.any { it in labels } == true
         }).fetchSemanticsNodes().sortedBy { it.positionInRoot.x }
         assertEquals(labels, controls.map { it.config[SemanticsProperties.ContentDescription].single() })
-        composeRule.onNodeWithContentDescription(context.getString(R.string.miniplayer_button_audio_output)).assertDoesNotExist()
-        composeRule.onNodeWithText(context.getString(R.string.unknown_title)).assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.unknown_artist)).assertIsDisplayed()
-        composeRule.onNodeWithContentDescription(context.getString(R.string.play)).performClick()
-        composeRule.onNodeWithContentDescription(context.getString(R.string.notification_pause)).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(context.getString(R.string.player_mini_button_audio_output)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.metadata_unknown_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.metadata_unknown_artist)).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(context.getString(R.string.player_action_play)).performClick()
+        composeRule.onNodeWithContentDescription(context.getString(R.string.player_notification_pause)).assertIsDisplayed()
         assertEquals(before, context.preferences.all)
     }
 
@@ -232,9 +232,9 @@ class GlassMiniPlayerPreviewTest {
         }
         composeRule.onNodeWithText("Updated title").assertIsDisplayed()
         composeRule.onNodeWithText("Updated artist").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription(context.getString(R.string.play)).performClick()
-        composeRule.onNodeWithContentDescription(context.getString(R.string.notification_pause)).performClick()
-        composeRule.onNodeWithContentDescription(context.getString(R.string.miniplayer_button_skip_forward)).performClick()
+        composeRule.onNodeWithContentDescription(context.getString(R.string.player_action_play)).performClick()
+        composeRule.onNodeWithContentDescription(context.getString(R.string.player_notification_pause)).performClick()
+        composeRule.onNodeWithContentDescription(context.getString(R.string.player_action_next)).performClick()
         verify(exactly = 0) { first.play(); first.pause(); next.play(); next.pause(); next.seekToNextMediaItem() }
     }
 }

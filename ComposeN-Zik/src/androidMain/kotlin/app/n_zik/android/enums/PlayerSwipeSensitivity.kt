@@ -9,8 +9,8 @@ enum class PlayerSwipeSensitivity(
     val threshold: Float
 ): TextView {
 
-    Low(R.string.ps_low, 150f),
-    Medium(R.string.ps_medium, 75f),
-    High(R.string.ps_high, 40f),
-    VeryHigh(R.string.ps_very_high, 15f);
+    Low(R.string.player_swipe_sensitivity_low_label, 150f),
+    Medium(R.string.player_swipe_sensitivity_medium_label, 75f),
+    High(R.string.player_swipe_sensitivity_high_label, 40f),
+    VeryHigh(R.string.player_swipe_sensitivity_very_high_label, 15f);
 }

@@ -67,13 +67,13 @@ class BackupDialogFooterTest {
         }
         composeRule.onAllNodes(isDialog()).assertCountEquals(1)
         composeRule.onAllNodes(
-            hasText(context.getString(R.string.export)) and
+            hasText(context.getString(R.string.common_action_export)) and
                 hasAnyAncestor(hasTestTag("dialogFrameFooter")),
             useUnmergedTree = true,
         ).assertCountEquals(1)
-        composeRule.onNodeWithText(context.getString(R.string.settings)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.settings_title)).performClick()
         composeRule.onNode(
-            hasText(context.getString(R.string.include_youtube_credentials)) and
+            hasText(context.getString(R.string.backup_include_youtube_credentials)) and
                 hasAnyAncestor(hasTestTag("dialogFrameBody")),
             useUnmergedTree = true,
         ).assertIsDisplayed()

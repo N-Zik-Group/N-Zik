@@ -38,7 +38,7 @@ class ChangeArtistTitleDialog private constructor(
 
     override val keyboardOption: KeyboardOptions = KeyboardOptions.Default
     override val iconId: Int = R.drawable.title_edit
-    override val messageId: Int = R.string.update_title
+    override val messageId: Int = R.string.metadata_action_change_title
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )

@@ -47,10 +47,10 @@ class SettingsNestedEntryIndexTest {
         assertFalse(sort.any { it.itemId == "off_Downloaded" || it.itemId == "dl_Downloaded" })
         val toolbar = HomeSongsToolbarSettingsDialog.searchOptions()
         assertFalse(toolbar.any { it.itemId == "dev_download_all" })
-        assertTrue(toolbar.any { it.itemId == "top_sort" && it.labelRes == R.string.statistics })
+        assertTrue(toolbar.any { it.itemId == "top_sort" && it.labelRes == R.string.statistics_title })
         val combined = LocalPlaylistSortSettingsDialog.searchOptions().single { it.itemId == "pl_ArtistAndAlbum" }
-        assertEquals(R.string.sort_artist, combined.labelRes)
-        assertEquals(R.string.sort_album, combined.descriptionRes)
+        assertEquals(R.string.library_sort_artist, combined.labelRes)
+        assertEquals(R.string.library_sort_album, combined.descriptionRes)
         val shortcutEntries = SettingsNestedEntryTargets.filter { it.nestedDestination?.dialogId == "AppShortcutsSettingsDialog" }
         assertEquals(buildShortcutDefs().keys, shortcutEntries.map { requireNotNull(it.nestedDestination).itemId }.toSet())
         val homeEntries = SettingsNestedEntryTargets.filter { it.nestedDestination?.dialogId == "HomeTabsSettingsDialog" }

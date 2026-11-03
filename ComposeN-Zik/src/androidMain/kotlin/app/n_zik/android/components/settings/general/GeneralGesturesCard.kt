@@ -21,14 +21,14 @@ fun GeneralGesturesCard(
     var useVolumeKeysToChangeSong by rememberPreference(useVolumeKeysToChangeSongKey, false)
 
     SettingsSectionCard(
-        title = stringResource(R.string.gestures_events),
+        title = stringResource(R.string.settings_gestures_title),
         icon = R.drawable.gesture,
         visible = visible,
         content = {
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.gestures_events.event_volumekeys"),
-                title = stringResource(R.string.event_volumekeys),
-                text = stringResource(R.string.event_volumekeysinfo),
+                title = stringResource(R.string.settings_gestures_volume_keys_skip_label),
+                text = stringResource(R.string.settings_gestures_volume_keys_skip_description),
                 isChecked = useVolumeKeysToChangeSong,
                 onCheckedChange = {
                     useVolumeKeysToChangeSong = it

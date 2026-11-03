@@ -34,7 +34,7 @@ fun LocalPlaylistScreen(
         miniPlayer = miniPlayer,
         topInsetHandledByContent = true,
         navBarContent = { item ->
-            item(0, stringResource(R.string.songs), R.drawable.musical_notes)
+            item(0, stringResource(R.string.library_songs_title), R.drawable.musical_notes)
         }
     ) { currentTabIndex ->
         saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {

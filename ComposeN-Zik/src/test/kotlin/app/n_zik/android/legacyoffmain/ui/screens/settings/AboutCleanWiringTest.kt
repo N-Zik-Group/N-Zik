@@ -90,15 +90,15 @@ class AboutCleanWiringTest {
 
         assertTrue(
             "the check-for-update button must be gone",
-            noNodeWithTextExactly(context.getString(R.string.check_update))
+            noNodeWithTextExactly(context.getString(R.string.updates_action_check))
         )
         assertTrue(
             "the last-check status must be gone",
-            noNodeWithTextExactly(context.getString(R.string.never_checked))
+            noNodeWithTextExactly(context.getString(R.string.updates_never_checked))
         )
         assertTrue(
             "the update card title must be gone",
-            noNodeWithTextExactly(context.getString(R.string.update))
+            noNodeWithTextExactly(context.getString(R.string.common_action_update))
         )
     }
 
@@ -114,7 +114,7 @@ class AboutCleanWiringTest {
         // App info: the author line (app name + icon are drawn above it in the
         // same card).
         composeRule
-            .onNodeWithText(context.getString(R.string.by_string), substring = false, useUnmergedTree = true)
+            .onNodeWithText(context.getString(R.string.about_authorship_preposition), substring = false, useUnmergedTree = true)
             .fetchSemanticsNode()
         // Troubleshooting and contributors cards keep their headers.
         composeRule

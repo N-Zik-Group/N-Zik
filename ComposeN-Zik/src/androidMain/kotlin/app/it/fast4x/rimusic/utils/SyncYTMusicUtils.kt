@@ -132,7 +132,7 @@ suspend fun importYTMSubscribedChannels(force: Boolean = false, showDetails: Boo
     if (!autosyncArtists && !force) return@withContext false
     if (!force && isBackgroundGuardActive()) return@withContext false
 
-        if (showDetails) Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
+        if (showDetails) Toaster.i( R.string.sync_running_status, Toast.LENGTH_LONG )
 
         val page = Innertube.library("FEmusic_library_corpus_artists").completed().getOrThrowRetriable()
         if (page == null) {
@@ -192,7 +192,7 @@ suspend fun importYTMLikedAlbums(force: Boolean = false, showDetails: Boolean = 
     if (!autosyncAlbums && !force) return@withContext false
     if (!force && isBackgroundGuardActive()) return@withContext false
 
-        if (showDetails) Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
+        if (showDetails) Toaster.i( R.string.sync_running_status, Toast.LENGTH_LONG )
 
         val page = Innertube.library("FEmusic_liked_albums").completed().getOrThrowRetriable()
         if (page == null) {
@@ -278,7 +278,7 @@ suspend fun importYTMLikedSongs(force: Boolean = false, showDetails: Boolean = t
     if (!autosyncLikes && !force) return@withContext false
     if (!force && isBackgroundGuardActive()) return@withContext false
 
-    if (showDetails) Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
+    if (showDetails) Toaster.i( R.string.sync_running_status, Toast.LENGTH_LONG )
 
     val page = YtMusic.getPlaylist(playlistId = "LM").completed().getOrThrowRetriable()
     if (page == null) {
@@ -313,7 +313,7 @@ suspend fun removeYTMLikedSongs(): Boolean = withContext(NzikDispatchers.DATA) {
     Timber.tag("SyncYTMusicUtils").d("removeYTMLikedSongs called")
     if (!isYouTubeSyncEnabled()) return@withContext false
 
-    Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
+    Toaster.i( R.string.sync_running_status, Toast.LENGTH_LONG )
 
     runCatching {
         // Fetch current YTM liked songs to get their IDs
@@ -348,7 +348,7 @@ suspend fun importYTMPlaylists(force: Boolean = false, showDetails: Boolean = tr
     if (!autosyncPlaylists && !force) return@withContext false
     if (!force && isBackgroundGuardActive()) return@withContext false
 
-    if (showDetails) Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
+    if (showDetails) Toaster.i( R.string.sync_running_status, Toast.LENGTH_LONG )
 
     val page = Innertube.library("FEmusic_liked_playlists").completed().getOrThrowRetriable()
     if (page == null) {
@@ -435,7 +435,7 @@ suspend fun importYTMLibrarySongs(force: Boolean = false, showDetails: Boolean =
     if (!syncLibrarySongs && !force) return@withContext false
     if (!force && isBackgroundGuardActive()) return@withContext false
 
-    if (showDetails) Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
+    if (showDetails) Toaster.i( R.string.sync_running_status, Toast.LENGTH_LONG )
 
     val page = Innertube.library("FEmusic_liked_videos").completed().getOrThrowRetriable()
     if (page == null) {
@@ -469,7 +469,7 @@ suspend fun importYTMUploadedSongs(force: Boolean = false, showDetails: Boolean 
     if (!syncUploadedSongs && !force) return@withContext false
     if (!force && isBackgroundGuardActive()) return@withContext false
 
-    if (showDetails) Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
+    if (showDetails) Toaster.i( R.string.sync_running_status, Toast.LENGTH_LONG )
 
     val page = Innertube.library("FEmusic_library_privately_owned_tracks").completed().getOrThrowRetriable()
     if (page == null) {
@@ -503,7 +503,7 @@ suspend fun importYTMUploadedAlbums(force: Boolean = false, showDetails: Boolean
     if (!syncUploadedAlbums && !force) return@withContext false
     if (!force && isBackgroundGuardActive()) return@withContext false
 
-    if (showDetails) Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
+    if (showDetails) Toaster.i( R.string.sync_running_status, Toast.LENGTH_LONG )
 
     val page = Innertube.library("FEmusic_library_privately_owned_releases").completed().getOrThrowRetriable()
     if (page == null) {
@@ -563,7 +563,7 @@ suspend fun importYTMEpisodesForLater(force: Boolean = false, showDetails: Boole
     if (!syncEpisodes && !force) return@withContext false
     if (!force && isBackgroundGuardActive()) return@withContext false
 
-    if (showDetails) Toaster.i( R.string.syncing, Toast.LENGTH_LONG )
+    if (showDetails) Toaster.i( R.string.sync_running_status, Toast.LENGTH_LONG )
 
     val page = YtMusic.getPlaylist(playlistId = "SE").completed().getOrThrowRetriable()
     if (page == null) {
@@ -874,7 +874,7 @@ suspend fun savePodcast(podcastId: String): Boolean = withContext(NzikDispatcher
     val result = runCatching {
         YtMusic.likePlaylistOrAlbum(podcastId)
     }
-    if (result.isSuccess) Toaster.s( R.string.added_to_favorites )
+    if (result.isSuccess) Toaster.s( R.string.library_favorites_added )
     else Toaster.e( R.string.sync_failed )
     result.isSuccess
 }
@@ -884,7 +884,7 @@ suspend fun unsavePodcast(podcastId: String): Boolean = withContext(NzikDispatch
     val result = runCatching {
         YtMusic.removelikePlaylistOrAlbum(podcastId)
     }
-    if (result.isSuccess) Toaster.s( R.string.removed_from_favorites )
+    if (result.isSuccess) Toaster.s( R.string.library_favorites_removed )
     else Toaster.e( R.string.sync_failed )
     result.isSuccess
 }
@@ -895,7 +895,7 @@ suspend fun addEpisodeToSavedEpisodes(videoId: String): Boolean = withContext(Nz
         PlaylistEditThrottle.throttle("SE")
         YtMusic.addToPlaylist("SE", videoId)
     }
-    if (result.isSuccess) Toaster.s( R.string.added_to_favorites )
+    if (result.isSuccess) Toaster.s( R.string.library_favorites_added )
     else Toaster.e( R.string.sync_failed )
     result.isSuccess
 }
@@ -906,7 +906,7 @@ suspend fun removeEpisodeFromSavedEpisodes(videoId: String, setVideoId: String? 
         PlaylistEditThrottle.throttle("SE")
         YtMusic.removeFromPlaylist("SE", videoId, setVideoId)
     }
-    if (result.isSuccess) Toaster.s( R.string.removed_from_favorites )
+    if (result.isSuccess) Toaster.s( R.string.library_favorites_removed )
     else Toaster.e( R.string.sync_failed )
     result.isSuccess
 }

@@ -62,10 +62,10 @@ fun SearchYoutubeEntity (
     //val context = LocalContext.current
     val thumbnailHeightDp = 72.dp
     val thumbnailWidthDp = 128.dp
-    val emptyItemsText = stringResource(R.string.no_results_found)
+    val emptyItemsText = stringResource(R.string.search_no_results_message)
     val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = {
         Title(
-            title = stringResource(id = R.string.videos),
+            title = stringResource(id = R.string.search_videos_title),
             modifier = Modifier.padding(bottom = 12.dp)
         )
     }
@@ -107,7 +107,7 @@ fun SearchYoutubeEntity (
                             binder?.player?.addNext(video.asMediaItem)
                         },
                         onDownload = {
-                            Toaster.w( R.string.downloading_videos_not_supported )
+                            Toaster.w( R.string.search_video_download_unsupported_message )
                         },
                         onEnqueue = {
                             binder?.player?.enqueue(video.asMediaItem)

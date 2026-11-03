@@ -62,11 +62,12 @@ import app.n_zik.android.components.settings.privacy.PrivacyRewindCard
 import app.n_zik.android.components.settings.privacy.PrivacyScreenCaptureCard
 import app.n_zik.android.components.settings.ui.UiSettingsContent
 import app.n_zik.android.components.tab.Search
+import app.n_zik.android.utils.StringResourceIdentity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 
 fun settingsCardTargetId(context: android.content.Context, tab: Int, titleRes: Int): String =
-    "card.$tab.${settingsSectionNavigationName(titleRes) ?: context.resources.getResourceEntryName(titleRes)}"
+    "card.$tab.${settingsSectionNavigationName(titleRes) ?: StringResourceIdentity.legacyName(context.resources.getResourceEntryName(titleRes))}"
 
 /** Detailed search uses the settings host graph; source content retains app-level navigation. */
 @OptIn(ExperimentalAnimationApi::class)
@@ -348,8 +349,8 @@ private fun SettingsSourceContent(
         8 -> AboutSettingsContent(selectedCards = selection, cardModifier = decorate)
         9 -> {
             if (R.string.privacy_screen_protection in selection) SettingsCardSlot(R.string.privacy_screen_protection, modifier = { decorate(R.string.privacy_screen_protection) }) { PrivacyScreenCaptureCard() }
-            if (R.string.permission_usage_journal in selection) SettingsCardSlot(R.string.permission_usage_journal, modifier = { decorate(R.string.permission_usage_journal) }) { PermissionUsageSettingsCard() }
-            if (R.string.rw_settings_master in selection) SettingsCardSlot(R.string.rw_settings_master, modifier = { decorate(R.string.rw_settings_master) }) { PrivacyRewindCard() }
+            if (R.string.permissions_usage_journal in selection) SettingsCardSlot(R.string.permissions_usage_journal, modifier = { decorate(R.string.permissions_usage_journal) }) { PermissionUsageSettingsCard() }
+            if (R.string.rewind_settings_enabled in selection) SettingsCardSlot(R.string.rewind_settings_enabled, modifier = { decorate(R.string.rewind_settings_enabled) }) { PrivacyRewindCard() }
         }
     }
 }

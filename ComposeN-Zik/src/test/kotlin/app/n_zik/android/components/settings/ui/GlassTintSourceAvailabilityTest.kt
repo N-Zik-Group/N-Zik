@@ -71,19 +71,19 @@ class GlassTintSourceAvailabilityTest {
         store.setTint(GlassTintSource.SystemAccent)
         val before = store.read()
         showTintRow()
-        composeRule.onNodeWithText(context.getString(R.string.settings_current_value, context.getString(R.string.glass_tint_none))).assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.liquid_glass_system_accent)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.settings_current_value, context.getString(R.string.glass_effect_tint_none))).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.glass_effect_tint_source_system_accent)).assertDoesNotExist()
         assertEquals(before, store.read())
 
         openSelector()
-        composeRule.onNodeWithText(context.getString(R.string.liquid_glass_system_accent)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.glass_effect_tint_source_system_accent)).assertDoesNotExist()
         supportedLabels.forEach { label ->
             composeRule.onAllNodesWithText(context.getString(label)).onLast().performScrollTo().assertIsDisplayed()
         }
-        composeRule.onNodeWithText(context.getString(R.string.artwork)).performScrollTo().performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_color_source_artwork)).performScrollTo().performClick()
         composeRule.waitForIdle()
         assertEquals(before.copy(source = GlassTintSource.Artwork), store.read())
-        composeRule.onNodeWithText(context.getString(R.string.settings_current_value, context.getString(R.string.artwork))).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.settings_current_value, context.getString(R.string.common_color_source_artwork))).assertIsDisplayed()
     }
 
     @Test
@@ -92,13 +92,13 @@ class GlassTintSourceAvailabilityTest {
         val before = store.read()
         showTintRow()
         openSelector()
-        (supportedLabels + R.string.liquid_glass_system_accent).forEach { label ->
+        (supportedLabels + R.string.glass_effect_tint_source_system_accent).forEach { label ->
             composeRule.onAllNodesWithText(context.getString(label)).onLast().performScrollTo().assertIsDisplayed()
         }
-        composeRule.onNodeWithText(context.getString(R.string.liquid_glass_system_accent)).performScrollTo().performClick()
+        composeRule.onNodeWithText(context.getString(R.string.glass_effect_tint_source_system_accent)).performScrollTo().performClick()
         composeRule.waitForIdle()
         assertEquals(before.copy(source = GlassTintSource.SystemAccent), store.read())
-        composeRule.onNodeWithText(context.getString(R.string.settings_current_value, context.getString(R.string.liquid_glass_system_accent))).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.settings_current_value, context.getString(R.string.glass_effect_tint_source_system_accent))).assertIsDisplayed()
     }
 
     private fun showTintRow() {
@@ -118,9 +118,9 @@ class GlassTintSourceAvailabilityTest {
     }
 
     private val supportedLabels = listOf(
-        R.string.glass_tint_none,
-        R.string.theme,
-        R.string.artwork,
-        R.string.liquid_glass_custom,
+        R.string.glass_effect_tint_none,
+        R.string.common_color_source_theme,
+        R.string.common_color_source_artwork,
+        R.string.glass_effect_tint_source_custom,
     )
 }

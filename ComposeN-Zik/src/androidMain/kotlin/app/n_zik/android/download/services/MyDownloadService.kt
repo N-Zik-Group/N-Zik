@@ -52,7 +52,7 @@ class MyDownloadService : DownloadService(
     // (`this` is not usable in a super-constructor call — appContext() is already set by
     // the time any service can be constructed.)
     channelId(DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(appContext())),
-    R.string.download, 0
+    R.string.downloads_title, 0
 ) {
 
     companion object {
@@ -168,14 +168,14 @@ class MyDownloadService : DownloadService(
 
             if (hadCompletedOrFailed) {
                 val title = if (failedCount > 0) {
-                    context.getString(R.string.download_completed_with_failed, completedCount, failedCount)
+                    context.getString(R.string.downloads_completed_with_failed, completedCount, failedCount)
                 } else {
-                    context.getString(R.string.download_completed, completedCount)
+                    context.getString(R.string.downloads_completed, completedCount)
                 }
 
                 val notification = NotificationCompat.Builder(context, channelId(DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(context)))
                     .setSmallIcon(if (failedCount == 0) R.drawable.downloaded else R.drawable.alert_circle_not_filled)
-                    .setContentTitle(context.getString(R.string.download))
+                    .setContentTitle(context.getString(R.string.downloads_title))
                     .setContentText(title)
                     .setSubText(lastName)
                     .setAutoCancel(true)
@@ -231,18 +231,18 @@ internal fun findSpecificDownloadCause(finalException: Exception?): Throwable? =
 
 /** S5/A5b (offline gate, 2026-10-22): the toast resource for a failed download — network-down causes (offline fast-fail marker, raw socket timeouts/resets, DNS) map to their specific string; the fallback is download-domain (`download_failed`, P11 review 2026-10-23). */
 internal fun downloadFailureToastRes(httpCode: Int?, specificCause: Throwable?): Int =
-    if (httpCode == 403) R.string.error_this_song_cannot_be_played_due_to_server_restrictions
+    if (httpCode == 403) R.string.downloads_error_server_restriction
     else when (specificCause) {
-        is UnresolvedAddressException, is UnknownHostException -> R.string.error_a_network_error_has_occurred
-        is PlayableFormatNotFoundException -> R.string.error_couldn_t_find_a_playable_audio_format
-        is UnplayableException -> R.string.error_the_original_video_source_of_this_song_has_been_deleted
-        is LoginRequiredException -> R.string.error_this_song_cannot_be_played_due_to_server_restrictions
-        is VideoIdMismatchException -> R.string.error_the_returned_video_id_doesn_t_match_the_requested_one
-        is PlayableFormatNonSupported -> R.string.error_file_unsupported_format
-        is NoInternetException, is StreamResolutionOfflineException -> R.string.error_no_internet
-        is TimeoutException -> R.string.error_timeout
-        is InterruptedIOException, is SocketException -> R.string.error_a_network_error_has_occurred
+        is UnresolvedAddressException, is UnknownHostException -> R.string.downloads_error_network
+        is PlayableFormatNotFoundException -> R.string.player_error_no_playable_format
+        is UnplayableException -> R.string.player_error_source_deleted
+        is LoginRequiredException -> R.string.downloads_error_server_restriction
+        is VideoIdMismatchException -> R.string.player_error_video_id_mismatch
+        is PlayableFormatNonSupported -> R.string.player_error_unsupported_format
+        is NoInternetException, is StreamResolutionOfflineException -> R.string.common_error_no_internet
+        is TimeoutException -> R.string.common_error_connection_timeout
+        is InterruptedIOException, is SocketException -> R.string.downloads_error_network
         // P11 (review, 2026-10-23): download-domain fallback — the playback-domain
         // unknown-error string was misleading for a failed download.
-        else -> R.string.download_failed
+        else -> R.string.downloads_failed
     }

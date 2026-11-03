@@ -52,7 +52,7 @@ fun RatingBar(
 ) {
     if (rating == null) {
         Text(
-            text = stringResource(R.string.mb_no_rating),
+            text = stringResource(R.string.metadata_musicbrainz_no_rating),
             style = typography().xxs,
             color = colorPalette().textSecondary,
             modifier = modifier
@@ -89,7 +89,7 @@ fun RatingBar(
         }
         if (votes != null && votes > 0) {
             Text(
-                text = stringResource(R.string.mb_rating_votes_mb, votes),
+                text = stringResource(R.string.metadata_musicbrainz_rating_votes_attribution, votes),
                 style = typography().xxs,
                 color = colorPalette().textSecondary
             )

@@ -68,9 +68,9 @@ class DialogBodyOuterPaddingTest {
             SamsungStorageAdviceDialog.storageBytes = storageBytes
             showBody { SamsungStorageAdviceDialog.DialogBody() }
             val context = ApplicationProvider.getApplicationContext<Application>()
-            val message = context.getString(R.string.samsung_storage_advice_message)
+            val message = context.getString(R.string.storage_samsung_advice_message)
             val summary = if (storageBytes == 0L) null else context.getString(
-                R.string.samsung_storage_advice_storage,
+                R.string.storage_samsung_system_usage_message,
                 formatBytes(storageBytes),
             )
             val textHeight = textHeight(message) + (summary?.let(::textHeight) ?: 0f)

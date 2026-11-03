@@ -76,23 +76,23 @@ private data class MiniPlayerButtonDef(
 )
 
 private fun buildButtonDefs(): Map<String, MiniPlayerButtonDef> = mapOf(
-    "skip_back" to MiniPlayerButtonDef("skip_back", showMiniPlayerSkipBackKey, R.drawable.play_skip_back, R.string.miniplayer_button_skip_back, true),
-    "play_pause" to MiniPlayerButtonDef("play_pause", showMiniPlayerPlayPauseKey, R.drawable.play, R.string.miniplayer_button_play_pause, true),
-    "skip_forward" to MiniPlayerButtonDef("skip_forward", showMiniPlayerSkipForwardKey, R.drawable.play_skip_forward, R.string.miniplayer_button_skip_forward, true),
-    "like" to MiniPlayerButtonDef("like", showMiniPlayerLikeKey, R.drawable.heart, R.string.miniplayer_button_like, false),
-    "download" to MiniPlayerButtonDef("download", showMiniPlayerDownloadKey, R.drawable.download, R.string.miniplayer_button_download, false),
-    "audio_output" to MiniPlayerButtonDef("audio_output", showMiniPlayerAudioOutputKey, R.drawable.devices, R.string.miniplayer_button_audio_output, true),
-    "shuffle" to MiniPlayerButtonDef("shuffle", showMiniPlayerShuffleKey, R.drawable.shuffle, R.string.miniplayer_button_shuffle, false),
-    "repeat" to MiniPlayerButtonDef("repeat", showMiniPlayerRepeatKey, R.drawable.repeat, R.string.miniplayer_button_repeat, false),
-    "add_to_playlist" to MiniPlayerButtonDef("add_to_playlist", showMiniPlayerAddToPlaylistKey, R.drawable.add_in_playlist, R.string.miniplayer_button_add_to_playlist, false),
-    "queue" to MiniPlayerButtonDef("queue", showMiniPlayerQueueKey, R.drawable.reorder, R.string.miniplayer_button_queue, false),
-    "video" to MiniPlayerButtonDef("video", showMiniPlayerVideoKey, R.drawable.video, R.string.miniplayer_button_video, false),
-    "share" to MiniPlayerButtonDef("share", showMiniPlayerShareKey, R.drawable.share_social, R.string.miniplayer_button_share, false),
-    "radio" to MiniPlayerButtonDef("radio", showMiniPlayerRadioKey, R.drawable.radio, R.string.miniplayer_button_radio, false),
-    "discover" to MiniPlayerButtonDef("discover", showMiniPlayerDiscoverKey, R.drawable.discover, R.string.miniplayer_button_discover, false),
-    "sleep_timer" to MiniPlayerButtonDef("sleep_timer", showMiniPlayerSleepTimerKey, R.drawable.sleep, R.string.miniplayer_button_sleep_timer, false),
-    "lyrics" to MiniPlayerButtonDef("lyrics", showMiniPlayerLyricsKey, R.drawable.song_lyrics, R.string.miniplayer_button_lyrics, false),
-    "visualizer" to MiniPlayerButtonDef("visualizer", showMiniPlayerVisualizerKey, R.drawable.sound_effect, R.string.miniplayer_button_visualizer, false)
+    "skip_back" to MiniPlayerButtonDef("skip_back", showMiniPlayerSkipBackKey, R.drawable.play_skip_back, R.string.player_action_previous, true),
+    "play_pause" to MiniPlayerButtonDef("play_pause", showMiniPlayerPlayPauseKey, R.drawable.play, R.string.player_mini_button_play_pause, true),
+    "skip_forward" to MiniPlayerButtonDef("skip_forward", showMiniPlayerSkipForwardKey, R.drawable.play_skip_forward, R.string.player_action_next, true),
+    "like" to MiniPlayerButtonDef("like", showMiniPlayerLikeKey, R.drawable.heart, R.string.player_action_like, false),
+    "download" to MiniPlayerButtonDef("download", showMiniPlayerDownloadKey, R.drawable.download, R.string.player_mini_button_download, false),
+    "audio_output" to MiniPlayerButtonDef("audio_output", showMiniPlayerAudioOutputKey, R.drawable.devices, R.string.player_mini_button_audio_output, true),
+    "shuffle" to MiniPlayerButtonDef("shuffle", showMiniPlayerShuffleKey, R.drawable.shuffle, R.string.player_mini_action_shuffle, false),
+    "repeat" to MiniPlayerButtonDef("repeat", showMiniPlayerRepeatKey, R.drawable.repeat, R.string.player_mini_button_repeat, false),
+    "add_to_playlist" to MiniPlayerButtonDef("add_to_playlist", showMiniPlayerAddToPlaylistKey, R.drawable.add_in_playlist, R.string.player_mini_action_add_to_playlist, false),
+    "queue" to MiniPlayerButtonDef("queue", showMiniPlayerQueueKey, R.drawable.reorder, R.string.player_mini_button_queue, false),
+    "video" to MiniPlayerButtonDef("video", showMiniPlayerVideoKey, R.drawable.video, R.string.player_mini_button_video, false),
+    "share" to MiniPlayerButtonDef("share", showMiniPlayerShareKey, R.drawable.share_social, R.string.player_mini_button_share, false),
+    "radio" to MiniPlayerButtonDef("radio", showMiniPlayerRadioKey, R.drawable.radio, R.string.player_mini_button_radio, false),
+    "discover" to MiniPlayerButtonDef("discover", showMiniPlayerDiscoverKey, R.drawable.discover, R.string.player_mini_button_discover, false),
+    "sleep_timer" to MiniPlayerButtonDef("sleep_timer", showMiniPlayerSleepTimerKey, R.drawable.sleep, R.string.player_mini_button_sleep_timer, false),
+    "lyrics" to MiniPlayerButtonDef("lyrics", showMiniPlayerLyricsKey, R.drawable.song_lyrics, R.string.player_mini_button_lyrics, false),
+    "visualizer" to MiniPlayerButtonDef("visualizer", showMiniPlayerVisualizerKey, R.drawable.sound_effect, R.string.player_mini_button_visualizer, false)
 )
 
 object MiniPlayerButtonsSettingsDialog : ContentFramedDialog {
@@ -103,7 +103,7 @@ object MiniPlayerButtonsSettingsDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.miniplayer_buttons_config)
+        get() = stringResource(R.string.player_mini_buttons_config)
 
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -227,7 +227,7 @@ object MiniPlayerButtonsSettingsDialog : ContentFramedDialog {
                     toggleMap[id] = workingToggles[index]
                 }
                 savePrefs(prefs, workingOrder, toggleMap)
-                Toaster.s(R.string.toast_preference_saved)
+                Toaster.s(R.string.settings_preference_saved_message)
                 hideDialog()
             }
         )

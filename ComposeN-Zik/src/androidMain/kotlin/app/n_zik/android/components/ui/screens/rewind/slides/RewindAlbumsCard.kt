@@ -53,8 +53,8 @@ fun RewindAlbumsCard(
                 verticalArrangement = Arrangement.Center
             ) {
                 RewindEmptyState(
-                    title = stringResource(R.string.rw_albums_empty_title),
-                    body = stringResource(R.string.rw_albums_empty_body),
+                    title = stringResource(R.string.rewind_albums_empty_title),
+                    body = stringResource(R.string.rewind_albums_empty_body),
                     foreground = rewindColors.value.cream,
                     accent = rewindColors.value.lime
                 )
@@ -67,12 +67,12 @@ fun RewindAlbumsCard(
             val topCover = if (compact) 116.dp else 140.dp
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_albums_kicker, periodLabel), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rewind_albums_kicker, periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(9.dp))
                 RewindReveal(active, 100, direction = RewindRevealDirection.Left) {
                     RewindAdaptiveTitle(
-                        text = stringResource(R.string.rw_albums_heading),
+                        text = stringResource(R.string.rewind_albums_heading),
                         color = rewindColors.value.cream,
                         fontSize = textScale.size(if (compact) 31.sp else 37.sp),
                         lineHeight = textScale.size(if (compact) 29.sp else 34.sp),
@@ -180,7 +180,7 @@ fun RewindAlbumsCard(
                         Column(modifier = Modifier.weight(1f)) {
                             DropCapAlbumTitle(numberOne.album.cleanTitle(), compact)
                             Text(
-                                text = firstNonBlank(numberOne.album.cleanAuthorsText(), stringResource(R.string.rw_unknown_artist)),
+                                text = firstNonBlank(numberOne.album.cleanAuthorsText(), stringResource(R.string.rewind_unknown_artist)),
                                 color = rewindColors.value.cream.copy(alpha = 0.48f),
                                 fontSize = textScale.size(9.sp),
                                 maxLines = 1,
@@ -189,7 +189,7 @@ fun RewindAlbumsCard(
                             )
                         }
                         Text(
-                            text = stringResource(R.string.rw_minutes_compact, formatRewindNumber(numberOne.minutes)),
+                            text = stringResource(R.string.rewind_minutes_compact, formatRewindNumber(numberOne.minutes)),
                             color = rewindColors.value.cream.copy(alpha = 0.65f),
                             fontSize = textScale.size(9.sp),
                             fontWeight = FontWeight.Bold,
@@ -255,7 +255,7 @@ fun RewindAlbumsCard(
                                         modifier = Modifier.rewindMarqueeOnly()
                                     )
                                     Text(
-                                        text = firstNonBlank(album.album.cleanAuthorsText(), stringResource(R.string.rw_unknown_artist)),
+                                        text = firstNonBlank(album.album.cleanAuthorsText(), stringResource(R.string.rewind_unknown_artist)),
                                         color = rowOn.copy(alpha = 0.40f),
                                         fontSize = textScale.size(8.sp),
                                         maxLines = 1,
@@ -264,7 +264,7 @@ fun RewindAlbumsCard(
                                     )
                                 }
                                 Text(
-                                    text = stringResource(R.string.rw_minutes_compact, formatRewindNumber(album.minutes)),
+                                    text = stringResource(R.string.rewind_minutes_compact, formatRewindNumber(album.minutes)),
                                     color = rowOn.copy(alpha = 0.62f),
                                     fontSize = textScale.size(9.sp),
                                     fontWeight = FontWeight.Bold,
@@ -287,7 +287,7 @@ private fun DropCapAlbumTitle(
     compact: Boolean
 ) {
     val textScale = LocalRewindTextScale.current
-    val untitled = stringResource(R.string.rw_untitled)
+    val untitled = stringResource(R.string.rewind_untitled)
     val clean = title.trim().ifBlank { untitled }
     val first = clean.take(1).uppercase()
     val rest = clean.drop(1)

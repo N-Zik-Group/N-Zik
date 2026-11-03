@@ -29,7 +29,7 @@ fun GeneralPlayerControlsCard(
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.player_controls.player_keep_minimized"),
                 title = stringResource(R.string.player_keep_minimized),
-                text = stringResource(R.string.when_click_on_a_song_player_start_minimized),
+                text = stringResource(R.string.settings_player_start_minimized_description),
                 isChecked = keepPlayerMinimized,
                 onCheckedChange = { keepPlayerMinimized = it },
                 icon = R.drawable.maximize
@@ -38,7 +38,7 @@ fun GeneralPlayerControlsCard(
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.player_controls.player_collapsed_disable_swiping_down"),
                 title = stringResource(R.string.player_collapsed_disable_swiping_down),
-                text = stringResource(R.string.avoid_closing_the_player_cleaning_queue_by_swiping_down),
+                text = stringResource(R.string.settings_player_prevent_collapsed_dismissal_description),
                 isChecked = disableClosingPlayerSwipingDown,
                 onCheckedChange = { disableClosingPlayerSwipingDown = it },
                 icon = R.drawable.reorder

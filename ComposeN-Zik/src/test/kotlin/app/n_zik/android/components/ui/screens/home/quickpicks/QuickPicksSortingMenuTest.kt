@@ -66,8 +66,8 @@ class QuickPicksSortingMenuTest {
                 }
             }
         }
-        compose.onNodeWithContentDescription(context.getString(R.string.sorting_order)).performClick()
-        for (label in listOf(R.string.by_most_played_song, R.string.by_last_played_song, R.string.by_casual_played_song)) {
+        compose.onNodeWithContentDescription(context.getString(R.string.library_sort_order_title)).performClick()
+        for (label in listOf(R.string.home_sort_most_played_song_label, R.string.home_sort_last_played_song_label, R.string.home_sort_random_label)) {
             val pixels = compose.onNodeWithText(context.getString(label), useUnmergedTree = true).onParent().captureToImage().toPixelMap()
             // Entry height is 32dp support plus 10dp padding on either side.
             val badge = pixels.height * 32 / 52

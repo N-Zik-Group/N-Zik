@@ -110,8 +110,8 @@ class RewindPlaylistGenerationTest {
     @Test
     fun rewindDisplayNameFormatsMonthlyWithTheLocalizedMonth() {
         val app = ApplicationProvider.getApplicationContext<RewindGenerationTestApplication>()
-        val expected = app.getString(R.string.rewind) + " " +
-            String.format(app.getString(R.string.month_february_s), "2026")
+        val expected = app.getString(R.string.rewind_title) + " " +
+            String.format(app.getString(R.string.calendar_month_february_with_year), "2026")
         assertEquals(expected, app.rewindDisplayName("rewind-monthly:202602"))
     }
 
@@ -119,7 +119,7 @@ class RewindPlaylistGenerationTest {
     fun rewindDisplayNameFormatsYearlyWithTheYear() {
         val app = ApplicationProvider.getApplicationContext<RewindGenerationTestApplication>()
         assertEquals(
-            app.getString(R.string.rewind) + " 2026",
+            app.getString(R.string.rewind_title) + " 2026",
             app.rewindDisplayName("rewind-yearly:2026")
         )
     }
@@ -128,7 +128,7 @@ class RewindPlaylistGenerationTest {
     fun rewindDisplayNameFormatsAlltime() {
         val app = ApplicationProvider.getApplicationContext<RewindGenerationTestApplication>()
         assertEquals(
-            app.getString(R.string.rewind) + " " + app.getString(R.string.rewind_alltime_name),
+            app.getString(R.string.rewind_title) + " " + app.getString(R.string.rewind_alltime_name),
             app.rewindDisplayName("rewind-alltime")
         )
     }

@@ -7,7 +7,7 @@ import app.n_zik.android.R
 interface ConfirmDialog: InteractiveDialog {
 
     val confirmText: String
-        @Composable get() = stringResource(R.string.dialog_apply)
+        @Composable get() = stringResource(R.string.common_action_apply)
 
     fun onConfirm()
 
@@ -15,7 +15,7 @@ interface ConfirmDialog: InteractiveDialog {
     override fun Buttons() = ButtonRow(
         buttons = listOf(
             DialogButton(
-                text = stringResource(R.string.cancel),
+                text = stringResource(R.string.common_action_cancel),
                 onClick = ::hideDialog,
                 danger = true
             ),

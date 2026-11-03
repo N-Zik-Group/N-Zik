@@ -371,7 +371,7 @@ internal fun shareImageFile(context: Context, file: File) {
         putExtra(Intent.EXTRA_STREAM, uri)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
-    val chooser = Intent.createChooser(share, context.getString(R.string.rw_share_slide))
+    val chooser = Intent.createChooser(share, context.getString(R.string.rewind_share_slide))
     if (context !is Activity) {
         chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }

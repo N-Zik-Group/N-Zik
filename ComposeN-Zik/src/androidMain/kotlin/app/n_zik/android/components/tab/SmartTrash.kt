@@ -55,28 +55,28 @@ class SmartTrash private constructor(
     }
 
     override val iconId: Int = R.drawable.trash
-    override val messageId: Int = R.string.smart_trash
+    override val messageId: Int = R.string.library_cleanup_title
     override val menuIconTitle: String
         @Composable
-        get() = stringResource( R.string.smart_trash )
+        get() = stringResource( R.string.library_cleanup_title )
 
     private val hasSelection get() = getSongs().size != itemsOnDisplay().size
     private val songCount get() = getSongs().size
 
     override val confirmationTitle: String
         @Composable get() = stringResource(when (builtInPlaylist()) {
-            BuiltInPlaylist.Favorites, BuiltInPlaylist.Disliked -> R.string.dialog_remove_favorites
-            BuiltInPlaylist.Offline -> R.string.dialog_clear_song_cache
-            BuiltInPlaylist.Downloaded -> R.string.dialog_clear_downloads
-            BuiltInPlaylist.Top -> R.string.dialog_reset_listening_history
-            else -> R.string.dialog_delete_songs
+            BuiltInPlaylist.Favorites, BuiltInPlaylist.Disliked -> R.string.library_favorites_remove_dialog_title
+            BuiltInPlaylist.Offline -> R.string.cache_clear_song_dialog_title
+            BuiltInPlaylist.Downloaded -> R.string.downloads_delete_dialog_title
+            BuiltInPlaylist.Top -> R.string.library_listening_history_reset_dialog_title
+            else -> R.string.song_delete_dialog_title
         })
     override val confirmationAction: String
         @Composable get() = stringResource(when (builtInPlaylist()) {
-            BuiltInPlaylist.Favorites, BuiltInPlaylist.Disliked -> R.string.dialog_remove
-            BuiltInPlaylist.Offline -> R.string.clear
-            BuiltInPlaylist.Top -> R.string.reset
-            else -> R.string.delete
+            BuiltInPlaylist.Favorites, BuiltInPlaylist.Disliked -> R.string.common_action_remove
+            BuiltInPlaylist.Offline -> R.string.common_action_clear
+            BuiltInPlaylist.Top -> R.string.common_action_reset
+            else -> R.string.common_action_delete
         })
 
     override val dialogTitle: String
@@ -86,40 +86,40 @@ class SmartTrash private constructor(
             return when( builtInPlaylist() ) {
                 BuiltInPlaylist.All -> {
                     if( hasSelection )
-                        stringResource( R.string.smart_trash_all_delete, count )
+                        stringResource( R.string.library_cleanup_selected_songs_confirmation, count )
                     else
-                        stringResource( R.string.smart_trash_all_clear, count )
+                        stringResource( R.string.library_cleanup_all_songs_confirmation, count )
                 }
                 BuiltInPlaylist.Favorites -> {
                     if( hasSelection )
-                        stringResource( R.string.smart_trash_favorites_delete, count )
+                        stringResource( R.string.library_cleanup_selected_favorites_confirmation, count )
                     else
-                        stringResource( R.string.smart_trash_favorites_clear, count )
+                        stringResource( R.string.library_cleanup_all_favorites_confirmation, count )
                 }
                 BuiltInPlaylist.Offline -> {
                     if( hasSelection )
-                        stringResource( R.string.smart_trash_cached_delete, count )
+                        stringResource( R.string.library_cleanup_selected_cache_confirmation, count )
                     else
-                        stringResource( R.string.smart_trash_cached_clear, count )
+                        stringResource( R.string.library_cleanup_entire_cache_confirmation, count )
                 }
                 BuiltInPlaylist.Downloaded -> {
                     if( hasSelection )
-                        stringResource( R.string.smart_trash_downloaded_delete, count )
+                        stringResource( R.string.library_cleanup_selected_downloads_confirmation, count )
                     else
-                        stringResource( R.string.smart_trash_downloaded_clear, count )
+                        stringResource( R.string.library_cleanup_all_downloads_confirmation, count )
                 }
                 BuiltInPlaylist.Top -> {
                     if( hasSelection )
-                        stringResource( R.string.smart_trash_top_delete, count )
+                        stringResource( R.string.library_cleanup_selected_listening_history_confirmation, count )
                     else
-                        stringResource( R.string.smart_trash_top_clear, count )
+                        stringResource( R.string.library_cleanup_all_listening_history_confirmation, count )
                 }
                 BuiltInPlaylist.OnDevice -> ""
                 BuiltInPlaylist.Disliked -> {
                     if( hasSelection )
-                        stringResource( R.string.smart_trash_all_delete, count )
+                        stringResource( R.string.library_cleanup_selected_songs_confirmation, count )
                     else
-                        stringResource( R.string.smart_trash_all_clear, count )
+                        stringResource( R.string.library_cleanup_all_songs_confirmation, count )
                 }
             }
         }

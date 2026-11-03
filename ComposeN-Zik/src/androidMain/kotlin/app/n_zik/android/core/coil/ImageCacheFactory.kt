@@ -810,7 +810,7 @@ object ImageCacheFactory {
                 }
             }
             
-            lastError = (result as? ErrorResult)?.throwable?.message ?: appContext().resources.getString(R.string.unknown_error)
+            lastError = (result as? ErrorResult)?.throwable?.message ?: appContext().resources.getString(R.string.image_error_unknown)
             //Timber.tag("ImageCache").e("Error (loadBitmap): original=%s, modified=%s, error=%s", url, currentUrl, lastError)
             
             // Un-swap fallback for loadBitmap

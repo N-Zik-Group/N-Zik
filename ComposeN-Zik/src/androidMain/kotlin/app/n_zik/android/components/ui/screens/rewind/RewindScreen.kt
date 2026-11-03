@@ -276,9 +276,9 @@ fun RewindScreen(
                 Toaster.done()
             } else if (written > 0) {
                 // Partial export: the user gets the pages that landed, told how many
-                Toaster.e(R.string.rw_error_export_partial, written, RewindDeckPageCount)
+                Toaster.e(R.string.rewind_error_export_partial, written, RewindDeckPageCount)
             } else {
-                Toaster.e(R.string.rw_error_export)
+                Toaster.e(R.string.rewind_error_export)
             }
         }
     }
@@ -626,7 +626,7 @@ fun RewindScreen(
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.volume_up),
-                            contentDescription = stringResource(R.string.rw_bgmusic_mute_cd),
+                            contentDescription = stringResource(R.string.rewind_background_music_toggle_accessibility),
                             tint = rewindColors.value.cream.copy(alpha = if (bgmOff) 0.35f else 0.85f),
                             modifier = Modifier.size(24.dp)
                         )
@@ -819,16 +819,16 @@ private fun RewindLoadingScreen(
                         .graphicsLayer { alpha = wordsOut },
                     verticalArrangement = Arrangement.spacedBy(7.dp)
                 ) {
-                    LoadingWord(stringResource(R.string.rw_loader_word_your), lime, ink, segment(p, 0.11f, 0.22f), fromRight = false)
+                    LoadingWord(stringResource(R.string.rewind_loader_word_your), lime, ink, segment(p, 0.11f, 0.22f), fromRight = false)
                     LoadingWord(
-                        stringResource(if (isMonthly) R.string.rw_loader_word_month else R.string.rw_loader_word_year),
+                        stringResource(if (isMonthly) R.string.rewind_loader_word_month else R.string.rewind_loader_word_year),
                         pink,
                         ink,
                         segment(p, 0.19f, 0.30f),
                         fromRight = true
                     )
-                    LoadingWord(stringResource(R.string.rw_loader_word_in), orange, ink, segment(p, 0.27f, 0.38f), fromRight = false)
-                    LoadingWord(stringResource(R.string.rw_loader_word_music), cream, ink, segment(p, 0.35f, 0.46f), fromRight = true)
+                    LoadingWord(stringResource(R.string.rewind_loader_word_in), orange, ink, segment(p, 0.27f, 0.38f), fromRight = false)
+                    LoadingWord(stringResource(R.string.rewind_loader_word_music), cream, ink, segment(p, 0.35f, 0.46f), fromRight = true)
                 }
                 RewindLoaderLockup(
                     periodLabel = periodLabel,
@@ -846,12 +846,12 @@ private fun RewindLoadingScreen(
             // Keep the understated status language: it worked better than the old giant
             // "READY, username" message.
             val finalMessage = when {
-                p < 0.68f -> stringResource(R.string.rw_loader_status_building)
-                p < 0.76f -> data?.let { stringResource(R.string.rw_loader_status_plays, formatRewindNumber(it.stats.totalPlays.toLong())) } ?: stringResource(R.string.rw_loader_status_counting_plays)
-                p < 0.84f -> data?.let { stringResource(R.string.rw_loader_status_songs, formatRewindNumber(it.totalUniqueSongs.toLong())) } ?: stringResource(R.string.rw_loader_status_counting_songs)
-                p < 0.91f -> data?.let { stringResource(R.string.rw_loader_status_minutes, formatRewindNumber(it.stats.totalMinutes)) } ?: stringResource(R.string.rw_loader_status_counting_minutes)
-                p < 0.97f -> data?.let { stringResource(R.string.rw_loader_status_days, formatRewindNumber(it.daysWithMusic.toLong())) } ?: stringResource(R.string.rw_loader_status_counting_days)
-                else -> stringResource(R.string.rw_loader_status_ready)
+                p < 0.68f -> stringResource(R.string.rewind_loader_status_building)
+                p < 0.76f -> data?.let { stringResource(R.string.rewind_loader_status_plays, formatRewindNumber(it.stats.totalPlays.toLong())) } ?: stringResource(R.string.rewind_loader_status_counting_plays)
+                p < 0.84f -> data?.let { stringResource(R.string.rewind_loader_status_songs, formatRewindNumber(it.totalUniqueSongs.toLong())) } ?: stringResource(R.string.rewind_loader_status_counting_songs)
+                p < 0.91f -> data?.let { stringResource(R.string.rewind_loader_status_minutes, formatRewindNumber(it.stats.totalMinutes)) } ?: stringResource(R.string.rewind_loader_status_counting_minutes)
+                p < 0.97f -> data?.let { stringResource(R.string.rewind_loader_status_days, formatRewindNumber(it.daysWithMusic.toLong())) } ?: stringResource(R.string.rewind_loader_status_counting_days)
+                else -> stringResource(R.string.rewind_loader_status_ready)
             }
             Text(
                 text = finalMessage,
@@ -919,7 +919,7 @@ private fun RewindLoaderLockup(
         // Colored shadow + compressed foreground makes a custom display lockup without requiring
         // a bundled font file or a project-specific font resource.
         Text(
-            text = stringResource(R.string.rw_loader_lockup),
+            text = stringResource(R.string.rewind_loader_lockup),
             color = pink,
             fontSize = 72.sp,
             lineHeight = 68.sp,
@@ -935,7 +935,7 @@ private fun RewindLoaderLockup(
             }
         )
         Text(
-            text = stringResource(R.string.rw_loader_lockup),
+            text = stringResource(R.string.rewind_loader_lockup),
             color = cream,
             fontSize = 72.sp,
             lineHeight = 68.sp,
@@ -995,7 +995,7 @@ private fun RewindBgmVolumeSlider(
     var live by remember { mutableFloatStateOf(volume) }
     LaunchedEffect(volume) { live = volume }
     // Hoisted out of the semantics lambda, which is not a composable context
-    val volumeCd = stringResource(R.string.rw_bgmusic_volume_cd)
+    val volumeCd = stringResource(R.string.rewind_background_music_volume_accessibility)
     // Track geometry: 56 dp tall, centered in the 80 dp control (12 dp above and below)
     val trackTopPx = with(LocalDensity.current) { 12.dp.toPx() }
     val trackBottomPx = with(LocalDensity.current) { 68.dp.toPx() }

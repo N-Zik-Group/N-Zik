@@ -53,17 +53,17 @@ object CheckForUpdateDialog {
         val checkBetaUpdates by rememberPreference(checkBetaUpdatesKey, Updater.isBetaFamily(BuildConfig.VERSION_NAME))
 
         DialogFrame(
-            title = stringResource(R.string.check_update),
+            title = stringResource(R.string.updates_action_check),
             onDismiss = { onDismiss() },
             bodyPadding = PaddingValues(0.dp),
         footer = {
                 ButtonRow(listOf(
-                    DialogButton(stringResource(R.string.check_update), {
+                    DialogButton(stringResource(R.string.updates_action_check), {
                         onDismiss()
                         Updater.checkForUpdate(checkBetaUpdates = checkBetaUpdates)
                     }, primary = true, icon = R.drawable.update),
-                    DialogButton(stringResource(R.string.cancel), { onDismiss() }, danger = true, icon = R.drawable.arrow_left),
-                    DialogButton(stringResource(R.string.turn_off), {
+                    DialogButton(stringResource(R.string.common_action_cancel), { onDismiss() }, danger = true, icon = R.drawable.arrow_left),
+                    DialogButton(stringResource(R.string.common_action_turn_off), {
                         checkUpdateState = CheckUpdateState.Disabled
                         onDismiss()
                     }, icon = R.drawable.close)
@@ -83,20 +83,20 @@ object CheckForUpdateDialog {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 BasicText(
-                    text = stringResource(R.string.check_at_github_for_updates),
+                    text = stringResource(R.string.updates_check_permission_message),
                     style = typography().s.copy(color = colorPalette().text)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 BasicText(
-                    text = stringResource(R.string.when_an_update_is_available_you_will_be_asked_if_you_want_to_install_info),
+                    text = stringResource(R.string.updates_check_permission_description),
                     style = typography().xs.copy(color = colorPalette().textSecondary)
                 )
                 BasicText(
-                    text = stringResource(R.string.but_these_updates_would_not_go_through),
+                    text = stringResource(R.string.updates_check_permission_screening_note),
                     style = typography().xs.copy(color = colorPalette().textSecondary)
                 )
                 BasicText(
-                    text = stringResource(R.string.you_can_still_turn_it_on_or_off_from_the_settings),
+                    text = stringResource(R.string.updates_check_permission_settings_note),
                     style = typography().xs.copy(color = colorPalette().textSecondary)
                 )
             }

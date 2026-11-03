@@ -116,7 +116,7 @@ class SettingsNewCardsWiringTest {
         composeRule.waitForIdle()
 
         composeRule
-            .onNodeWithText(context.getString(R.string.offline_mode_description))
+            .onNodeWithText(context.getString(R.string.settings_network_offline_mode_description))
             .performClick()
         composeRule.waitForIdle()
 
@@ -132,7 +132,7 @@ class SettingsNewCardsWiringTest {
         composeRule.waitForIdle()
 
         composeRule
-            .onNodeWithText(context.getString(R.string.rescue_center_description))
+            .onNodeWithText(context.getString(R.string.recovery_center_description))
             .performClick()
         composeRule.waitForIdle()
 
@@ -157,7 +157,7 @@ class SettingsNewCardsWiringTest {
         composeRule.waitForIdle()
 
         composeRule
-            .onNodeWithText(context.getString(R.string.burger_menu_customize))
+            .onNodeWithText(context.getString(R.string.settings_navigation_menu_customization_description))
             .performClick()
         composeRule.waitForIdle()
         assertTrue("the card entry must open the customizer dialog", BurgerMenuSettingsDialog.isActive)

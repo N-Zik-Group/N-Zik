@@ -32,7 +32,7 @@ fun OfflineContent(
         contentAlignment = Alignment.Center
     ) {
         BasicText(
-            text = stringResource(R.string.unable_to_load_no_connection),
+            text = stringResource(R.string.common_load_failed_no_connection),
             style = typography().m.secondary.center,
             modifier = Modifier.padding(horizontal = 32.dp)
         )

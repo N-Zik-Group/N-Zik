@@ -156,35 +156,35 @@ class UpdaterReleaseTagTest {
     @Test
     fun `flavorLabel maps the 64-bit flavors to their labels without the 32 marker`() {
         val r64 = Updater.flavorLabel("8.4.0-r64")
-        assertEquals(R.string.release_title, r64?.resId)
+        assertEquals(R.string.updates_build_release_label, r64?.resId)
         assertFalse(r64?.append32 == true)
         assertNull(r64?.literal)
-        assertEquals(R.string.minified_title, Updater.flavorLabel("8.4.0-m64")?.resId)
-        assertEquals(R.string.beta_title, Updater.flavorLabel("8.4.0-beta64")?.resId)
-        assertEquals(R.string.dev_title, Updater.flavorLabel("8.4.0-dev64-20261013")?.resId)
-        assertEquals(R.string.debug_title, Updater.flavorLabel("8.4.0-debug")?.resId)
+        assertEquals(R.string.updates_build_minified_label, Updater.flavorLabel("8.4.0-m64")?.resId)
+        assertEquals(R.string.updates_build_beta_label, Updater.flavorLabel("8.4.0-beta64")?.resId)
+        assertEquals(R.string.updates_build_dev_label, Updater.flavorLabel("8.4.0-dev64-20261013")?.resId)
+        assertEquals(R.string.updates_build_debug_label, Updater.flavorLabel("8.4.0-debug")?.resId)
     }
 
     @Test
     fun `flavorLabel maps the 32-bit flavors to their label plus the 32 marker`() {
         val r32 = Updater.flavorLabel("8.4.0-r32")
-        assertEquals(R.string.release_title, r32?.resId)
+        assertEquals(R.string.updates_build_release_label, r32?.resId)
         assertTrue(r32?.append32 == true)
-        assertEquals(R.string.minified_title, Updater.flavorLabel("8.4.0-m32")?.resId)
+        assertEquals(R.string.updates_build_minified_label, Updater.flavorLabel("8.4.0-m32")?.resId)
         assertTrue(Updater.flavorLabel("8.4.0-m32")?.append32 == true)
-        assertEquals(R.string.beta_title, Updater.flavorLabel("8.4.0-beta32")?.resId)
+        assertEquals(R.string.updates_build_beta_label, Updater.flavorLabel("8.4.0-beta32")?.resId)
         assertTrue(Updater.flavorLabel("8.4.0-beta32")?.append32 == true)
-        assertEquals(R.string.dev_title, Updater.flavorLabel("8.4.0-dev32-20261013")?.resId)
+        assertEquals(R.string.updates_build_dev_label, Updater.flavorLabel("8.4.0-dev32-20261013")?.resId)
         assertTrue(Updater.flavorLabel("8.4.0-dev32-20261013")?.append32 == true)
     }
 
     @Test
     fun `flavorLabel works on the display versions used by the updater screen and popup`() {
-        assertEquals(R.string.release_title, Updater.flavorLabel("v8.5.0-r64")?.resId)
+        assertEquals(R.string.updates_build_release_label, Updater.flavorLabel("v8.5.0-r64")?.resId)
         assertTrue(Updater.flavorLabel("v8.5.0-r32")?.append32 == true)
         assertTrue(Updater.flavorLabel("v8.5.0-beta32")?.append32 == true)
-        assertEquals(R.string.dev_title, Updater.flavorLabel("v8.5.0-dev32-20261013")?.resId)
-        assertEquals(R.string.beta_title, Updater.flavorLabel("v8.5.0-beta64")?.resId)
+        assertEquals(R.string.updates_build_dev_label, Updater.flavorLabel("v8.5.0-dev32-20261013")?.resId)
+        assertEquals(R.string.updates_build_beta_label, Updater.flavorLabel("v8.5.0-beta64")?.resId)
     }
 
     @Test

@@ -33,9 +33,9 @@ internal fun AiStatisticsCard(search: Search, navController: NavController, modi
     var showStatsListeningTime by rememberPreference(showStatsListeningTimeKey, true)
     var maxStatisticsItems by rememberPreference(maxStatisticsItemsKey, MaxStatisticsItems.`10`)
     var maxStatisticsItemsCustomValue by rememberPreference(maxStatisticsItemsCustomValueKey, 10)
-    val searchCtx_5 = search.inputValue.isBlank() || stringResource(R.string.statistics).contains(search.inputValue, true) || stringResource(R.string.statistics_max_number_of_items).contains(search.inputValue, true) || stringResource(R.string.listening_time).contains(search.inputValue, true)
+    val searchCtx_5 = search.inputValue.isBlank() || stringResource(R.string.statistics_title).contains(search.inputValue, true) || stringResource(R.string.statistics_max_number_of_items).contains(search.inputValue, true) || stringResource(R.string.statistics_playback_duration_label).contains(search.inputValue, true)
     SettingsSectionCard(
-        title = stringResource(R.string.statistics),
+        title = stringResource(R.string.statistics_title),
         icon = R.drawable.trending,
         modifier = modifier,
         visible = searchCtx_5,
@@ -44,7 +44,7 @@ internal fun AiStatisticsCard(search: Search, navController: NavController, modi
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("ai.statistics.module_open"),
-                title = stringResource(R.string.module_open),
+                title = stringResource(R.string.modules_open),
                 text = stringResource(R.string.statistics_open_desc),
                 icon = R.drawable.chevron_forward,
                 onClick = { navController.navigate(NavRoutes.statistics.name) }
@@ -55,7 +55,7 @@ internal fun AiStatisticsCard(search: Search, navController: NavController, modi
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("ai.statistics.statistics_max_number_of_items"),
                     title = stringResource(R.string.statistics_max_number_of_items),
-                    text = stringResource(R.string.settings_desc_ai_statistics_statistics_max_number_of_items),
+                    text = stringResource(R.string.statistics_maximum_items_description),
                     selectedValueText = maxStatisticsItems.displayName(maxStatisticsItemsCustomValue),
                     icon = R.drawable.musical_notes,
                     onClick = { showStatisticsDialog = true }
@@ -92,11 +92,11 @@ internal fun AiStatisticsCard(search: Search, navController: NavController, modi
                 }
             }
 
-            if (search.inputValue.isBlank() || stringResource(R.string.listening_time).contains(search.inputValue, true) || (stringResource(R.string.shows_the_number_of_songs_heard_and_their_listening_time)).contains(search.inputValue, true)) {
+            if (search.inputValue.isBlank() || stringResource(R.string.statistics_playback_duration_label).contains(search.inputValue, true) || (stringResource(R.string.statistics_listening_totals_description)).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("ai.statistics.listening_time"),
-                    title = stringResource(R.string.listening_time),
-                    text = stringResource(R.string.shows_the_number_of_songs_heard_and_their_listening_time),
+                    title = stringResource(R.string.statistics_playback_duration_label),
+                    text = stringResource(R.string.statistics_listening_totals_description),
                     isChecked = showStatsListeningTime,
                     onCheckedChange = {
                         showStatsListeningTime = it

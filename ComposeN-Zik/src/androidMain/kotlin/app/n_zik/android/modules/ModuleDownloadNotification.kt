@@ -72,7 +72,7 @@ object AndroidModuleDownloadListener : ModuleDownloadListener {
             def,
             NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.extension)
-                .setContentTitle(context.getString(R.string.module_download_completed))
+                .setContentTitle(context.getString(R.string.modules_download_completed))
                 .setContentText(context.getString(def.displayNameRes) + " " + def.version)
                 .setOngoing(false)
                 .setAutoCancel(true)
@@ -92,7 +92,7 @@ object AndroidModuleDownloadListener : ModuleDownloadListener {
             def,
             NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.extension)
-                .setContentTitle(context.getString(R.string.module_download_failed_notif))
+                .setContentTitle(context.getString(R.string.modules_download_failed))
                 .setContentText(context.getString(def.displayNameRes))
                 .setOngoing(false)
                 .setAutoCancel(true)
@@ -108,7 +108,7 @@ object AndroidModuleDownloadListener : ModuleDownloadListener {
             def,
             NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.extension)
-                .setContentTitle(context.getString(R.string.module_uninstalled))
+                .setContentTitle(context.getString(R.string.modules_uninstalled))
                 .setContentText(context.getString(def.displayNameRes) + " " + def.version)
                 .setOngoing(false)
                 .setAutoCancel(true)
@@ -133,13 +133,13 @@ object AndroidModuleDownloadListener : ModuleDownloadListener {
             NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.extension)
                 .setContentTitle(
-                    context.getString(if (indeterminate) R.string.module_updating else R.string.module_downloading),
+                    context.getString(if (indeterminate) R.string.modules_updating else R.string.modules_downloading),
                 )
                 .setContentText(def.version)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setProgress(100, percent, indeterminate)
-                .addAction(0, context.getString(R.string.module_cancel), cancelPendingIntent(context, def))
+                .addAction(0, context.getString(R.string.common_action_cancel), cancelPendingIntent(context, def))
                 .build(),
         )
     }
@@ -164,7 +164,7 @@ object AndroidModuleDownloadListener : ModuleDownloadListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                context.getString(R.string.module_download_channel),
+                context.getString(R.string.modules_download_channel),
                 NotificationManager.IMPORTANCE_DEFAULT,
             )
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

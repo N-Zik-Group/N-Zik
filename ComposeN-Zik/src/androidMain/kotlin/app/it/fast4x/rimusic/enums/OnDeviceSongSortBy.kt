@@ -14,15 +14,15 @@ enum class OnDeviceSongSortBy(
     @field:DrawableRes override val iconId: Int,
 ): TextView, Drawable {
 
-    Title( MediaStore.Audio.Media.TITLE, R.string.sort_title, R.drawable.text ),
+    Title( MediaStore.Audio.Media.TITLE, R.string.library_sort_title, R.drawable.text ),
 
-    DateAdded( MediaStore.Audio.Media.DATE_ADDED, R.string.sort_date_added, R.drawable.calendar ),
+    DateAdded( MediaStore.Audio.Media.DATE_ADDED, R.string.library_sort_date_added, R.drawable.calendar ),
 
-    Artist( MediaStore.Audio.Media.ARTIST, R.string.sort_artist, R.drawable.artist ),
+    Artist( MediaStore.Audio.Media.ARTIST, R.string.library_sort_artist, R.drawable.artist ),
 
-    Duration( MediaStore.Audio.Media.DURATION, R.string.sort_duration, R.drawable.time ),
+    Duration( MediaStore.Audio.Media.DURATION, R.string.library_sort_duration, R.drawable.time ),
 
-    Album( MediaStore.Audio.Media.ALBUM, R.string.sort_album, R.drawable.album );
+    Album( MediaStore.Audio.Media.ALBUM, R.string.library_sort_album, R.drawable.album );
 }
 
 

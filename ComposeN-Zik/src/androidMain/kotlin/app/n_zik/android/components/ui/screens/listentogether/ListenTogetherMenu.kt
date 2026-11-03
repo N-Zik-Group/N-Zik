@@ -369,7 +369,7 @@ fun ListenTogetherMenu() {
     val palette = colorPalette()
 
     if (menuStyle == MenuStyle.List) {
-        ListMenu.Menu(title = stringResource(R.string.listen_together)) {
+        ListMenu.Menu(title = stringResource(R.string.listen_together_title)) {
             ListLtMenuContent(content)
         }
     } else {
@@ -378,7 +378,7 @@ fun ListenTogetherMenu() {
 //
         // so the items are emitted by a plain function; composable calls only happen
         // inside the `item { }` lambdas, which are composable.
-        GridMenu.Menu(title = stringResource(R.string.listen_together)) {
+        GridMenu.Menu(title = stringResource(R.string.listen_together_title)) {
             GridLtMenuContent(content, palette)
         }
     }
@@ -618,14 +618,14 @@ private fun ListLtMenuContent(content: LtMenuContent) {
         if (content.waiting) {
             WaitingApprovalRow(waitingForApprovalText)
             ListMenu.Entry(
-                text = stringResource(R.string.cancel),
+                text = stringResource(R.string.common_action_cancel),
                 icon = { SettingIcon(R.drawable.close, palette.red) },
                 onClick = content.onCancelWaiting,
             )
         } else {
             ListMenu.Entry(
                 text = stringResource(R.string.listen_together_create_room),
-                subtitle = stringResource(R.string.listen_together_create_room_desc),
+                subtitle = stringResource(R.string.listen_together_create_room_description),
                 icon = { SettingIcon(R.drawable.people, palette.accent) },
                 onClick = content.onCreateRoom,
             )
@@ -640,7 +640,7 @@ private fun ListLtMenuContent(content: LtMenuContent) {
     }
 
     // ── Settings (full room-page configuration) ────────────────────────────
-    MenuSectionTitle(stringResource(R.string.settings))
+    MenuSectionTitle(stringResource(R.string.settings_title))
     ListMenu.Entry(
         text = stringResource(R.string.listen_together_server_url),
         subtitle = content.serverLabel,
@@ -655,7 +655,7 @@ private fun ListLtMenuContent(content: LtMenuContent) {
     )
     ListMenu.Entry(
         text = stringResource(R.string.listen_together_auto_approval_joins),
-        subtitle = stringResource(R.string.listen_together_auto_approval_joins_desc),
+        subtitle = stringResource(R.string.listen_together_auto_approval_joins_description),
         icon = { SettingIcon(R.drawable.checkmark, palette.accent) },
         enabled = content.canEditApprovals,
         trailingContent = { ToggleSwitch(content.autoApprovalJoins) },
@@ -663,7 +663,7 @@ private fun ListLtMenuContent(content: LtMenuContent) {
     )
     ListMenu.Entry(
         text = stringResource(R.string.listen_together_auto_approval_suggestions),
-        subtitle = stringResource(R.string.listen_together_auto_approval_suggestions_desc),
+        subtitle = stringResource(R.string.listen_together_auto_approval_suggestions_description),
         icon = { SettingIcon(R.drawable.musical_notes, palette.accent) },
         enabled = content.canEditApprovals,
         trailingContent = { ToggleSwitch(content.autoApproveSuggestions) },
@@ -671,21 +671,21 @@ private fun ListLtMenuContent(content: LtMenuContent) {
     )
     ListMenu.Entry(
         text = stringResource(R.string.listen_together_sync_volume),
-        subtitle = stringResource(R.string.listen_together_sync_volume_desc),
+        subtitle = stringResource(R.string.listen_together_sync_volume_description),
         icon = { SettingIcon(R.drawable.volume_up, palette.accent) },
         trailingContent = { ToggleSwitch(content.syncHostVolume) },
         onClick = content.onToggleSyncVolume,
     )
     ListMenu.Entry(
         text = stringResource(R.string.listen_together_history),
-        subtitle = stringResource(R.string.listen_together_history_desc),
+        subtitle = stringResource(R.string.listen_together_history_description),
         icon = { SettingIcon(R.drawable.history, palette.accent) },
         trailingContent = { ToggleSwitch(content.historyEnabled) },
         onClick = content.onToggleHistory,
     )
     ListMenu.Entry(
         text = stringResource(R.string.listen_together_view_logs),
-        subtitle = stringResource(R.string.listen_together_view_logs_desc),
+        subtitle = stringResource(R.string.listen_together_view_logs_description),
         icon = { SettingIcon(R.drawable.bugs, palette.accent) },
         onClick = content.onOpenLogs,
     )
@@ -881,7 +881,7 @@ private fun LazyGridScope.GridLtMenuContent(content: LtMenuContent, palette: Col
             }
             item {
                 GridMenu.Entry(
-                    text = stringResource(R.string.cancel),
+                    text = stringResource(R.string.common_action_cancel),
                     icon = { GridEntryIcon(R.drawable.close, palette.red) },
                     onClick = content.onCancelWaiting,
                 )
@@ -890,7 +890,7 @@ private fun LazyGridScope.GridLtMenuContent(content: LtMenuContent, palette: Col
             item {
                 GridMenu.Entry(
                     text = stringResource(R.string.listen_together_create_room),
-                    subtitle = stringResource(R.string.listen_together_create_room_desc),
+                    subtitle = stringResource(R.string.listen_together_create_room_description),
                     icon = { GridEntryIcon(R.drawable.people, palette.accent) },
                     onClick = content.onCreateRoom,
                 )
@@ -913,7 +913,7 @@ private fun LazyGridScope.GridLtMenuContent(content: LtMenuContent, palette: Col
 
     // ── Settings (full room-page configuration) ────────────────────────────
     item(span = { GridItemSpan(maxLineSpan) }) {
-        MenuSectionTitle(stringResource(R.string.settings))
+        MenuSectionTitle(stringResource(R.string.settings_title))
     }
     item {
         GridMenu.Entry(
@@ -1207,7 +1207,7 @@ private fun CreateRoomSheet(
                                 IconButton(onClick = { tempUsername = "" }) {
                                     Icon(
                                         painter = painterResource(R.drawable.close),
-                                        contentDescription = stringResource(R.string.clear),
+                                        contentDescription = stringResource(R.string.common_action_clear),
                                         tint = palette.textSecondary,
                                         modifier = Modifier.size(20.dp),
                                     )
@@ -1317,7 +1317,7 @@ private fun JoinRoomSheet(
                                 IconButton(onClick = { tempCode = "" }) {
                                     Icon(
                                         painter = painterResource(R.drawable.close),
-                                        contentDescription = stringResource(R.string.clear),
+                                        contentDescription = stringResource(R.string.common_action_clear),
                                         tint = palette.textSecondary,
                                         modifier = Modifier.size(20.dp),
                                     )
@@ -1341,7 +1341,7 @@ private fun JoinRoomSheet(
                                 IconButton(onClick = { tempUsername = "" }) {
                                     Icon(
                                         painter = painterResource(R.drawable.close),
-                                        contentDescription = stringResource(R.string.clear),
+                                        contentDescription = stringResource(R.string.common_action_clear),
                                         tint = palette.textSecondary,
                                         modifier = Modifier.size(20.dp),
                                     )

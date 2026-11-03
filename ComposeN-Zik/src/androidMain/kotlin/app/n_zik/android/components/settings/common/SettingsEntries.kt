@@ -416,7 +416,7 @@ fun ColorSettingEntry(
         DialogColorPicker(onDismiss = { showColorPicker = false }) {
             onColorSelected(it)
             showColorPicker = false
-            Toaster.n( R.string.info_color_s_applied, title )
+            Toaster.n( R.string.settings_theme_color_applied_format, title )
         }
     }
 
@@ -481,7 +481,7 @@ fun SliderSettingsEntry(
 
         override val dialogTitle: String
             @Composable
-            get() = stringResource( R.string.enter_the_value )
+            get() = stringResource( R.string.common_value_input_hint )
 
         override var isActive: Boolean by rememberSaveable { mutableStateOf(false) }
         override var value: String by remember( valueFloat ) {

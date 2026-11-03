@@ -63,8 +63,8 @@ class YtSearchAccountToggleTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
 
-    private val title = context.getString(R.string.use_account_for_searches)
-    private val connectFirst = context.getString(R.string.youtube_connect_first)
+    private val title = context.getString(R.string.settings_youtube_authenticated_search_label)
+    private val connectFirst = context.getString(R.string.settings_youtube_connection_required_description)
 
     private val appearance = Appearance(
         colorPalette = DefaultDarkColorPalette,

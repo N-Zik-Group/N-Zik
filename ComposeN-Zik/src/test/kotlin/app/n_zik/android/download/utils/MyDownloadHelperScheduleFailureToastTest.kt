@@ -84,7 +84,7 @@ class MyDownloadHelperScheduleFailureToastTest {
                         .build()
                 )
             }
-            verify(exactly = 1) { Toaster.e(R.string.download_failed) }
+            verify(exactly = 1) { Toaster.e(R.string.downloads_failed) }
         } finally {
             MyDownloadHelper.scheduleDownloadRequest = original
         }

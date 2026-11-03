@@ -75,7 +75,7 @@ class PersistentSideHeaderMaterialSourceTest {
                 rim = 0f, tintStrength = 0f, vibrancy = 0f, depth = 0f, amount = 0f)
             val raw = rememberCanvasBackdrop { drawRect(scene.value) }
             val controller = rememberNavController()
-            searchLabel = stringResource(R.string.search)
+            searchLabel = stringResource(R.string.search_title)
             CompositionLocalProvider(
                 LocalAppearance provides Appearance(DefaultDarkColorPalette.copy(
                     background1 = panel.value, text = Color.Transparent), Typography.fallback, shape, shape, shape),

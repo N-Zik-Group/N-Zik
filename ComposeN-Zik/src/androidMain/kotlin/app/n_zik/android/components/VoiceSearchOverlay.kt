@@ -99,7 +99,7 @@ fun VoiceSearchOverlay(
                                 .padding(horizontal = 32.dp, vertical = 12.dp)
                         ) {
                             BasicText(
-                                text = stringResource(R.string.cancel),
+                                text = stringResource(R.string.common_action_cancel),
                                 style = TextStyle(
                                     color = Color.White,
                                     fontSize = 16.sp
@@ -152,7 +152,7 @@ fun VoiceSearchOverlay(
                             .padding(horizontal = 32.dp, vertical = 12.dp)
                     ) {
                         BasicText(
-                            text = stringResource(R.string.cancel),
+                            text = stringResource(R.string.common_action_cancel),
                             style = TextStyle(
                                 color = Color.White,
                                 fontSize = 16.sp

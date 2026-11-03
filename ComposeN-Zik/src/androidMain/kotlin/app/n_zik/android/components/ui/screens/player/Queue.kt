@@ -46,11 +46,11 @@ fun Discover(
 ): MenuIcon = object: MenuIcon, Descriptive, DynamicColor {
     override val menuIconTitle: String
         @Composable
-        get() = stringResource( R.string.discover )
+        get() = stringResource( R.string.queue_discover_title )
     // Issue #866 (gh-866): state icon — discover_stop while discover mode is ON (the state
     // change is the feedback), mapped from the same reactive state as the accent color.
     override val iconId: Int get() = discoverButtonIconRes(isFirstColor)
-    override val messageId: Int = R.string.discoverinfo
+    override val messageId: Int = R.string.queue_discover_description
 
     // Active state of this button
     override var isFirstColor: Boolean by rememberPreference(discoverKey, false)
@@ -97,7 +97,7 @@ class Repeat private constructor(
         }
 
     override val iconId: Int = -1   // Unused
-    override val messageId: Int = R.string.repeat
+    override val messageId: Int = R.string.player_action_repeat
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -135,7 +135,7 @@ fun ShuffleQueue(
     // flash state (shuffle_ok ~1 s), triggered on click below.
     private val serviceBinder = LocalPlayerServiceBinder.current
     override val iconId: Int get() = shuffleButtonIconRes( serviceBinder )
-    override val messageId: Int = R.string.shuffle
+    override val messageId: Int = R.string.player_action_shuffle
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -164,14 +164,14 @@ fun ShuffleQueue(
                         // Insert shuffled items at the first selected position
                         val insertAt = selectedIndex.min()
                         selected.forEachIndexed { i, item -> player.addMediaItem(insertAt + i, item) }
-                        Toaster.s(R.string.queue_shuffled, formatArgs = *arrayOf(selectedIndex.size))
+                        Toaster.s(R.string.player_queue_shuffled_count_format, formatArgs = *arrayOf(selectedIndex.size))
                     }
                 } else {
                     player.shuffleQueue()
                 }
             } catch (e: Exception) {
                 Timber.tag("ShuffleQueue").e(e, "Failed to shuffle queue")
-                Toaster.e(R.string.no_song_found)
+                Toaster.e(R.string.player_no_song_found)
             }
         }
     }
@@ -184,12 +184,12 @@ fun DeleteFromQueue(
     onDeleteConfirm: ConfirmDialog.() -> Unit
 ): MenuIcon = object: MenuIcon, Descriptive, ConfirmDialog {
     override val confirmationTitle: String
-        @Composable get() = stringResource(R.string.remove_from_queue)
+        @Composable get() = stringResource(R.string.player_queue_action_remove)
     override val confirmationAction: String
-        @Composable get() = stringResource(R.string.dialog_remove)
+        @Composable get() = stringResource(R.string.common_action_remove)
 
     override val iconId: Int = R.drawable.trash
-    override val messageId: Int = R.string.remove_from_queue
+    override val messageId: Int = R.string.player_queue_action_remove
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -198,9 +198,9 @@ fun DeleteFromQueue(
         get() {
             val count = itemSelector.size
             return if( count > 0 )
-                stringResource( R.string.clean_queue_confirm_selected, count )
+                stringResource( R.string.player_queue_remove_selected_confirmation_format, count )
             else
-                stringResource( R.string.clean_queue_confirm )
+                stringResource( R.string.player_queue_clear_confirmation )
         }
 
     // Deleting from the queue is a playback control: host-only in a Listen Together room

@@ -97,38 +97,38 @@ private data class QuickPicksSectionDef(
 )
 
 private fun buildSectionDefs(): Map<String, QuickPicksSectionDef> = mapOf(
-    "tips" to QuickPicksSectionDef("tips", showTipsKey, R.drawable.person, R.string.tips, true),
-    "charts" to QuickPicksSectionDef("charts", showChartsKey, R.drawable.trending, R.string.charts, true),
-    "related_albums" to QuickPicksSectionDef("related_albums", showRelatedAlbumsKey, R.drawable.album, R.string.related_albums, true),
-    "similar_artists" to QuickPicksSectionDef("similar_artists", showSimilarArtistsKey, R.drawable.people, R.string.similar_artists, true),
-    "new_albums_artists" to QuickPicksSectionDef("new_albums_artists", showNewAlbumsArtistsKey, R.drawable.alternative_version, R.string.new_albums_of_your_artists, true),
-    "new_albums" to QuickPicksSectionDef("new_albums", showNewAlbumsKey, R.drawable.album, R.string.new_albums, true),
-    "playlists_might_like" to QuickPicksSectionDef("playlists_might_like", showPlaylistMightLikeKey, R.drawable.playlist, R.string.playlists_you_might_like, true),
-    "moods_genres" to QuickPicksSectionDef("moods_genres", showMoodsAndGenresKey, R.drawable.moods, R.string.moods_and_genres, true),
-    "my_top" to QuickPicksSectionDef("my_top", showMyTopPlaylistKey, R.drawable.person, R.string.my_top, true),
+    "tips" to QuickPicksSectionDef("tips", showTipsKey, R.drawable.person, R.string.recommendations_for_you_title, true),
+    "charts" to QuickPicksSectionDef("charts", showChartsKey, R.drawable.trending, R.string.recommendations_charts_title, true),
+    "related_albums" to QuickPicksSectionDef("related_albums", showRelatedAlbumsKey, R.drawable.album, R.string.album_related_title, true),
+    "similar_artists" to QuickPicksSectionDef("similar_artists", showSimilarArtistsKey, R.drawable.people, R.string.artist_similar_title, true),
+    "new_albums_artists" to QuickPicksSectionDef("new_albums_artists", showNewAlbumsArtistsKey, R.drawable.alternative_version, R.string.recommendations_followed_artists_new_albums_title, true),
+    "new_albums" to QuickPicksSectionDef("new_albums", showNewAlbumsKey, R.drawable.album, R.string.recommendations_new_albums_title, true),
+    "playlists_might_like" to QuickPicksSectionDef("playlists_might_like", showPlaylistMightLikeKey, R.drawable.playlist, R.string.recommendations_playlists_title, true),
+    "moods_genres" to QuickPicksSectionDef("moods_genres", showMoodsAndGenresKey, R.drawable.moods, R.string.recommendations_moods_and_genres_title, true),
+    "my_top" to QuickPicksSectionDef("my_top", showMyTopPlaylistKey, R.drawable.person, R.string.recommendations_section_personal_top_title, true),
     // Spec 2: restored "Rewind" section — reuses the legacy showMonthlyPlaylistsKey so the
     // existing user preference (kept by spec 1) is preserved, zero new DataStore key.
-    "rewind" to QuickPicksSectionDef("rewind", showMonthlyPlaylistsKey, R.drawable.musical_notes, R.string.rewind, true),
-    "fresh_finds_old_favorites" to QuickPicksSectionDef("fresh_finds_old_favorites", showFreshFindsOldFavoritesKey, R.drawable.trending, R.string.fresh_finds_old_favorites, true),
-    "mixed_for_you" to QuickPicksSectionDef("mixed_for_you", showMixedForYouKey, R.drawable.playlist, R.string.mixed_for_you, true),
-    "forgotten_favorites" to QuickPicksSectionDef("forgotten_favorites", showForgottenFavoritesKey, R.drawable.person, R.string.forgotten_favorites, true),
-    "your_daily_discover" to QuickPicksSectionDef("your_daily_discover", showYourDailyDiscoverKey, R.drawable.discover, R.string.your_daily_discover, true),
-    "fresh_new_music" to QuickPicksSectionDef("fresh_new_music", showFreshNewMusicKey, R.drawable.trending, R.string.fresh_new_music, true),
-    "new_releases" to QuickPicksSectionDef("new_releases", showNewReleasesKey, R.drawable.album, R.string.new_releases, true),
-    "albums_for_you" to QuickPicksSectionDef("albums_for_you", showAlbumsForYouKey, R.drawable.album, R.string.albums_for_you, true),
-    "todays_biggest_hits" to QuickPicksSectionDef("todays_biggest_hits", showTodaysBiggestHitsKey, R.drawable.trending, R.string.todays_biggest_hits, true),
-    "all_hits" to QuickPicksSectionDef("all_hits", showAllHitsKey, R.drawable.trending, R.string.all_hits, true),
-    "featured_playlists" to QuickPicksSectionDef("featured_playlists", showFeaturedPlaylistsKey, R.drawable.featured_playlist, R.string.featured_playlists_for_you, true),
-    "trending_community_playlists" to QuickPicksSectionDef("trending_community_playlists", showTrendingCommunityPlaylistsKey, R.drawable.playlist, R.string.trending_community_playlists, true),
-    "from_the_community" to QuickPicksSectionDef("from_the_community", showFromTheCommunityKey, R.drawable.people, R.string.from_the_community, true),
-    "trending_songs_for_you" to QuickPicksSectionDef("trending_songs_for_you", showTrendingSongsForYouKey, R.drawable.trending, R.string.trending_songs_for_you, true),
-    "top_music_videos" to QuickPicksSectionDef("top_music_videos", showTopMusicVideosKey, R.drawable.video, R.string.top_music_videos, true),
-    "cover_and_remixes" to QuickPicksSectionDef("cover_and_remixes", showCoverAndRemixesKey, R.drawable.musical_notes, R.string.cover_and_remixes, true),
-    "trending_in_shorts" to QuickPicksSectionDef("trending_in_shorts", showTrendingInShortsKey, R.drawable.trending, R.string.trending_in_shorts, true),
-    "music_videos_for_you" to QuickPicksSectionDef("music_videos_for_you", showMusicVideosForYouKey, R.drawable.video, R.string.music_videos_for_you, true),
-    "live_performances" to QuickPicksSectionDef("live_performances", showLivePerformancesKey, R.drawable.person, R.string.live_performances, true),
-    "moods" to QuickPicksSectionDef("moods", showMoodsKey, R.drawable.moods, R.string.moods, true),
-    "generic_ytm_sections" to QuickPicksSectionDef("generic_ytm_sections", showGenericYtmSectionsKey, R.drawable.trending, R.string.generic_ytm_sections, true)
+    "rewind" to QuickPicksSectionDef("rewind", showMonthlyPlaylistsKey, R.drawable.musical_notes, R.string.rewind_title, true),
+    "fresh_finds_old_favorites" to QuickPicksSectionDef("fresh_finds_old_favorites", showFreshFindsOldFavoritesKey, R.drawable.trending, R.string.recommendations_fresh_finds_old_favorites_title, true),
+    "mixed_for_you" to QuickPicksSectionDef("mixed_for_you", showMixedForYouKey, R.drawable.playlist, R.string.recommendations_mixed_for_you_title, true),
+    "forgotten_favorites" to QuickPicksSectionDef("forgotten_favorites", showForgottenFavoritesKey, R.drawable.person, R.string.recommendations_forgotten_favorites_title, true),
+    "your_daily_discover" to QuickPicksSectionDef("your_daily_discover", showYourDailyDiscoverKey, R.drawable.discover, R.string.recommendations_daily_discover_title, true),
+    "fresh_new_music" to QuickPicksSectionDef("fresh_new_music", showFreshNewMusicKey, R.drawable.trending, R.string.recommendations_fresh_new_music_title, true),
+    "new_releases" to QuickPicksSectionDef("new_releases", showNewReleasesKey, R.drawable.album, R.string.recommendations_new_releases_title, true),
+    "albums_for_you" to QuickPicksSectionDef("albums_for_you", showAlbumsForYouKey, R.drawable.album, R.string.recommendations_albums_for_you_title, true),
+    "todays_biggest_hits" to QuickPicksSectionDef("todays_biggest_hits", showTodaysBiggestHitsKey, R.drawable.trending, R.string.recommendations_todays_biggest_hits_title, true),
+    "all_hits" to QuickPicksSectionDef("all_hits", showAllHitsKey, R.drawable.trending, R.string.recommendations_all_hits_title, true),
+    "featured_playlists" to QuickPicksSectionDef("featured_playlists", showFeaturedPlaylistsKey, R.drawable.featured_playlist, R.string.recommendations_featured_playlists_title, true),
+    "trending_community_playlists" to QuickPicksSectionDef("trending_community_playlists", showTrendingCommunityPlaylistsKey, R.drawable.playlist, R.string.recommendations_trending_community_playlists_title, true),
+    "from_the_community" to QuickPicksSectionDef("from_the_community", showFromTheCommunityKey, R.drawable.people, R.string.recommendations_community_title, true),
+    "trending_songs_for_you" to QuickPicksSectionDef("trending_songs_for_you", showTrendingSongsForYouKey, R.drawable.trending, R.string.recommendations_trending_songs_title, true),
+    "top_music_videos" to QuickPicksSectionDef("top_music_videos", showTopMusicVideosKey, R.drawable.video, R.string.recommendations_top_music_videos_title, true),
+    "cover_and_remixes" to QuickPicksSectionDef("cover_and_remixes", showCoverAndRemixesKey, R.drawable.musical_notes, R.string.recommendations_covers_and_remixes_title, true),
+    "trending_in_shorts" to QuickPicksSectionDef("trending_in_shorts", showTrendingInShortsKey, R.drawable.trending, R.string.recommendations_trending_shorts_title, true),
+    "music_videos_for_you" to QuickPicksSectionDef("music_videos_for_you", showMusicVideosForYouKey, R.drawable.video, R.string.recommendations_music_videos_title, true),
+    "live_performances" to QuickPicksSectionDef("live_performances", showLivePerformancesKey, R.drawable.person, R.string.recommendations_live_performances_title, true),
+    "moods" to QuickPicksSectionDef("moods", showMoodsKey, R.drawable.moods, R.string.recommendations_moods_title, true),
+    "generic_ytm_sections" to QuickPicksSectionDef("generic_ytm_sections", showGenericYtmSectionsKey, R.drawable.trending, R.string.recommendations_section_other_youtube_title, true)
 )
 
 object QuickPicksContentSettingsDialog : ContentFramedDialog {
@@ -139,7 +139,7 @@ object QuickPicksContentSettingsDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.quick_picks_content)
+        get() = stringResource(R.string.recommendations_content)
 
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -257,7 +257,7 @@ object QuickPicksContentSettingsDialog : ContentFramedDialog {
                     toggleMap[id] = workingToggles[index]
                 }
                 savePrefs(prefs, workingOrder, toggleMap)
-                Toaster.s(R.string.toast_preference_saved)
+                Toaster.s(R.string.settings_preference_saved_message)
                 hideDialog()
             }
         )

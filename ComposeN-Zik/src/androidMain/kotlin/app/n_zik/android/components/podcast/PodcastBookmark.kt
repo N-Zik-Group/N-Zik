@@ -103,7 +103,7 @@ fun PodcastBookmarkAction(
                     }
                 }
             },
-            onLongClick = { Toaster.i(R.string.bookmark) },
+            onLongClick = { Toaster.i(R.string.library_action_bookmark) },
         )
     }
 }

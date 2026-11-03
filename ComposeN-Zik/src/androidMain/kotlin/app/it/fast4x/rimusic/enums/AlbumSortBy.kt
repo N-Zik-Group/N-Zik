@@ -10,23 +10,23 @@ enum class AlbumSortBy(
     @field:DrawableRes override val iconId: Int
 ): Drawable, TextView {
 
-    Title( R.string.sort_name, R.drawable.text ),
+    Title( R.string.library_sort_name, R.drawable.text ),
 
-    Artist( R.string.sort_artist, R.drawable.artist ),
+    Artist( R.string.library_sort_artist, R.drawable.artist ),
 
-    Songs( R.string.sort_songs_number, R.drawable.medical ),
+    Songs( R.string.library_sort_songs_number, R.drawable.medical ),
 
-    Duration( R.string.sort_duration, R.drawable.time ),
+    Duration( R.string.library_sort_duration, R.drawable.time ),
 
-    PlayCount( R.string.sort_play_count, R.drawable.play ),
+    PlayCount( R.string.library_sort_play_count, R.drawable.play ),
 
-    ListeningTime( R.string.sort_listening_time, R.drawable.trending ),
+    ListeningTime( R.string.library_sort_listening_time, R.drawable.trending ),
 
-    DateAdded( R.string.sort_date_added, R.drawable.time ),
+    DateAdded( R.string.library_sort_date_added, R.drawable.time ),
 
-    Year( R.string.sort_album_year, R.drawable.calendar ),
+    Year( R.string.library_sort_album_year, R.drawable.calendar ),
 
-    Custom( R.string.sort_custom_order, R.drawable.position );
+    Custom( R.string.library_sort_custom_order, R.drawable.position );
 }
 
 

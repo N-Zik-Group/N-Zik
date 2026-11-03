@@ -44,6 +44,7 @@ import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.n_zik.android.R
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
+import app.n_zik.android.components.settings.common.settingsCardTargetId
 import app.n_zik.android.components.settings.common.SettingsCategoryPage
 import app.n_zik.android.components.settings.common.SettingsGlobalPage
 import app.n_zik.android.components.settings.common.SettingsCards
@@ -133,10 +134,10 @@ class SettingsCategoryPageTest {
         pumpUntil("focused category card hidden after fade") {
             runCatching { composeRule.onNodeWithTag(targetTag, useUnmergedTree = true).assertIsNotDisplayed() }.isSuccess
         }
-        composeRule.onNode(hasSetTextAction()).performTextInput(context.getString(R.string.app_behavior))
+        composeRule.onNode(hasSetTextAction()).performTextInput(context.getString(R.string.settings_app_behavior_title))
         settleSearch()
-        val resultTag = "settings.category.card.0.${R.string.app_behavior}"
-        composeRule.onNodeWithTag("settings.category.list.behavior").performScrollToKey("result:0:${R.string.app_behavior}")
+        val resultTag = "settings.category.card.0.${R.string.settings_app_behavior_title}"
+        composeRule.onNodeWithTag("settings.category.list.behavior").performScrollToKey("result:0:${R.string.settings_app_behavior_title}")
         pumpUntil("matching compact navigation row displayed") {
             runCatching { composeRule.onNodeWithTag(resultTag).assertIsDisplayed() }.isSuccess
         }
@@ -162,7 +163,7 @@ class SettingsCategoryPageTest {
         pumpUntil("section search composed") {
             runCatching { composeRule.onNode(hasSetTextAction()).fetchSemanticsNode() }.isSuccess
         }
-        composeRule.onNode(hasSetTextAction()).performTextInput(context.getString(R.string.skip_silent_parts_during_playback))
+        composeRule.onNode(hasSetTextAction()).performTextInput(context.getString(R.string.settings_audio_skip_silence_description))
         settleSearch()
         val tag = "settings.category.entry.${target.id}"
         pumpUntil("description finds exact audio option") {
@@ -243,7 +244,7 @@ class SettingsCategoryPageTest {
 
     @Test fun `theme title search is a compact link and navigates to the original card`() {
         val navigation = mockk<NavController>(relaxed = true)
-        val theme = SettingsCards.single { it.tab == 1 && it.titleRes == R.string.theme }
+        val theme = SettingsCards.single { it.tab == 1 && it.titleRes == R.string.common_color_source_theme }
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
             CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
@@ -251,11 +252,11 @@ class SettingsCategoryPageTest {
             }
         }
         pumpUntil("theme search ready") { runCatching { composeRule.onNode(hasSetTextAction()).assertExists() }.isSuccess }
-        composeRule.onNode(hasSetTextAction()).performTextInput(context.getString(R.string.theme))
+        composeRule.onNode(hasSetTextAction()).performTextInput(context.getString(R.string.common_color_source_theme))
         settleSearch()
-        composeRule.onNodeWithTag("settings.category.list.${theme.categoryId()}").performScrollToKey("result:1:${R.string.theme}")
+        composeRule.onNodeWithTag("settings.category.list.${theme.categoryId()}").performScrollToKey("result:1:${R.string.common_color_source_theme}")
         composeRule.onNodeWithTag("settings.target.card.1.theme", useUnmergedTree = true).assertDoesNotExist()
-        composeRule.onNodeWithTag("settings.category.card.1.${R.string.theme}").performClick()
+        composeRule.onNodeWithTag("settings.category.card.1.${R.string.common_color_source_theme}").performClick()
         verify { navigation.navigate("settingsCategory/${theme.categoryId()}?target=${Uri.encode("card.1.theme")}") }
     }
 
@@ -348,7 +349,7 @@ class SettingsCategoryPageTest {
         val toggle = "settings.target.general.app_behavior.close_background_player"
         pumpUntil("restart option ready") { runCatching { composeRule.onNodeWithTag(toggle).assertExists() }.isSuccess }
         composeRule.onNodeWithTag(toggle).performScrollTo().performClick()
-        pumpUntil("restart is pending") { runCatching { composeRule.onNodeWithText(context.getString(R.string.restart_service)).assertIsDisplayed() }.isSuccess }
+        pumpUntil("restart is pending") { runCatching { composeRule.onNodeWithText(context.getString(R.string.settings_player_action_restart_service)).assertIsDisplayed() }.isSuccess }
         val list = composeRule.onNodeWithTag("settings.category.list.behavior")
         list.performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 1600f) }
         settleSearch()
@@ -366,7 +367,7 @@ class SettingsCategoryPageTest {
 
     @Test fun `keyword only visualizer card remains a compact destination on both hosts`() {
         val global = mutableStateOf(true)
-        val card = SettingsCards.single { R.string.require_mic_permission in it.keywordRes }
+        val card = SettingsCards.single { R.string.visualizer_microphone_permission_message in it.keywordRes }
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
             CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
@@ -383,7 +384,7 @@ class SettingsCategoryPageTest {
         composeRule.onNode(hasSetTextAction()).performTextInput("mic permission")
         settleSearch()
         composeRule.onNodeWithTag("settings.category.card.${card.tab}.${card.titleRes}").assertIsDisplayed()
-        composeRule.onNodeWithTag("settings.target.card.${card.tab}.${context.resources.getResourceEntryName(card.titleRes)}", useUnmergedTree = true).assertDoesNotExist()
+        composeRule.onNodeWithTag("settings.target.${settingsCardTargetId(context, card.tab, card.titleRes)}", useUnmergedTree = true).assertDoesNotExist()
     }
 
     private fun categoryCannotScroll(category: String): Boolean {
@@ -412,8 +413,8 @@ class SettingsCategoryPageTest {
             }.isSuccess
         }
         composeRule.onAllNodes(hasScrollAction()).assertCountEquals(1)
-        listOf(0 to R.string.app_behavior, 0 to R.string.gestures_events, 1 to R.string.swipe_to_action).forEach { (tab, title) ->
-            val card = "card.$tab.${context.resources.getResourceEntryName(title)}"
+        listOf(0 to R.string.settings_app_behavior_title, 0 to R.string.settings_gestures_title, 1 to R.string.settings_swipe_actions_title).forEach { (tab, title) ->
+            val card = settingsCardTargetId(context, tab, title)
             composeRule.onNodeWithTag("settings.category.list.behavior").performScrollToKey("$tab:$title")
             composeRule.mainClock.advanceTimeBy(250)
             Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(250))

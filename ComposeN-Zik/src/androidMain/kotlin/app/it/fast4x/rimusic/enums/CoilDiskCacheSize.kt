@@ -25,7 +25,7 @@ enum class CoilDiskCacheMaxSize(
     override val text: String
         @Composable
         get() = when ( this ) {
-            Custom -> stringResource( R.string.custom )
+            Custom -> stringResource( R.string.common_option_custom )
             else -> this.name
         }
 }

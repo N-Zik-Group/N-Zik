@@ -149,8 +149,8 @@ object SessionMediaItemMapper {
         val needsArtist = SessionMetadataFallbacks.needsFallback(metadata.artist)
         if (!needsTitle && !needsArtist) return
         val context = appContext()
-        if (needsTitle) metadataBuilder.setTitle(context.getString(R.string.unknown_title))
-        if (needsArtist) metadataBuilder.setArtist(context.getString(R.string.unknown_artist))
+        if (needsTitle) metadataBuilder.setTitle(context.getString(R.string.metadata_unknown_title))
+        if (needsArtist) metadataBuilder.setArtist(context.getString(R.string.metadata_unknown_artist))
     }
 
     fun mapArtistToMediaItem(

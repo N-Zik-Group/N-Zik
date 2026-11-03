@@ -49,9 +49,9 @@ class LocalPlaylistSortSettingsDialogTest {
             }
         }
 
-        composeRule.onNodeWithText(context.getString(R.string.local_playlist_sort) + " - Sort")
+        composeRule.onNodeWithText(context.getString(R.string.settings_local_playlist_title) + " - Sort")
             .assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.playlists) + " - Sort")
+        composeRule.onNodeWithText(context.getString(R.string.library_playlists_title) + " - Sort")
             .assertDoesNotExist()
     }
 }

@@ -313,7 +313,7 @@ fun LyricsScreen(
                     modifier = Modifier.align(Alignment.TopCenter)
                 ) {
                     BasicText(
-                        text = stringResource(R.string.an_error_has_occurred_while_fetching_the_lyrics),
+                        text = stringResource(R.string.lyrics_fetch_error_message),
                         style = typography().xs.center.medium.color(PureBlackColorPalette.text),
                         modifier = Modifier
                             .background(if (!showlyricsthumbnail) Color.Transparent else Color.Black.copy(0.4f))
@@ -630,7 +630,7 @@ fun LyricsScreen(
                         IconButton(
                             icon = R.drawable.locate,
                             color = DefaultDarkColorPalette.text,
-                            contentDescription = stringResource(R.string.cd_recenter),
+                            contentDescription = stringResource(R.string.accessibility_recenter),
                             modifier = Modifier.padding(all = 4.dp),
                             iconSize = 24.dp,
                             contentPadding = 6.dp,
@@ -670,7 +670,7 @@ fun LyricsScreen(
                                                     }
                                                 )
                                             } catch (e: ActivityNotFoundException) {
-                                                Toaster.e( R.string.info_not_find_app_browse_internet )
+                                                Toaster.e( R.string.lyrics_browser_application_unavailable_message )
                                             }
                                         },
                                         onFetchLyricsAgain = {

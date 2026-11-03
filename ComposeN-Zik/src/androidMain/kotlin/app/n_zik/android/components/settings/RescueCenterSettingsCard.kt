@@ -23,14 +23,14 @@ fun RescueCenterSettingsCard(modifier: Modifier = Modifier) {
     val context = LocalContext.current
 
     SettingsSectionCard(
-        title = stringResource(R.string.rescue_center),
+        title = stringResource(R.string.recovery_center),
         icon = R.drawable.shortcut_rescue,
         modifier = modifier,
         content = {
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.rescue.rescue_center"),
-                title = stringResource(R.string.rescue_center),
-                text = stringResource(R.string.rescue_center_description),
+                title = stringResource(R.string.recovery_center),
+                text = stringResource(R.string.recovery_center_description),
                 icon = R.drawable.chevron_forward,
                 onClick = {
                     context.startActivity(

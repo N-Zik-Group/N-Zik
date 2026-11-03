@@ -200,7 +200,7 @@ fun SyncedLyricsView(
 
         if (translateEnabled) {
             withContext(NzikDispatchers.UI) {
-                Toaster.i(R.string.translation_in_progress)
+                Toaster.i(R.string.lyrics_translation_in_progress_message)
             }
         }
 
@@ -273,14 +273,14 @@ fun SyncedLyricsView(
 
                 if (translateEnabled) {
                     withContext(NzikDispatchers.UI) {
-                        Toaster.s(R.string.translation_successful)
+                        Toaster.s(R.string.lyrics_translation_success_message)
                     }
                 }
             } catch (e: Exception) {
                 Timber.tag("SyncedLyricsView").e("sync translation error: ${e.message}")
                 if (translateEnabled) {
                     withContext(NzikDispatchers.UI) {
-                        Toaster.e(R.string.translation_failed)
+                        Toaster.e(R.string.lyrics_translation_failed_message)
                     }
                 }
             }

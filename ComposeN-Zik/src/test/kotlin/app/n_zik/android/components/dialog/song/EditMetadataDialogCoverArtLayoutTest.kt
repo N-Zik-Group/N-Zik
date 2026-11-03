@@ -74,7 +74,7 @@ class EditMetadataDialogCoverArtLayoutTest {
         var label = ""
         composeRule.setContent {
             val density = LocalDensity.current
-            label = LocalContext.current.getString(R.string.pick_from_gallery)
+            label = LocalContext.current.getString(R.string.thumbnail_action_pick_from_gallery)
             CompositionLocalProvider(
                 LocalAppearance provides appearance,
                 LocalDensity provides Density(density.density, fontScale),

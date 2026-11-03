@@ -293,9 +293,9 @@ fun HomeArtists(
     val showDislikedArtist by rememberPreference(excludeDislikedArtistsKey, DislikeMode.Enabled)
     val homeArtistsOrderPref by rememberPreference(homeArtistsOrderKey, "")
 
-    val favoritesLabel = stringResource(R.string.favorites)
-    val allLabel = stringResource(R.string.all)
-    val dislikedLabel = stringResource(R.string.disliked)
+    val favoritesLabel = stringResource(R.string.library_favorites_title)
+    val allLabel = stringResource(R.string.common_option_all)
+    val dislikedLabel = stringResource(R.string.library_disliked_title)
     val artistsDefaultOrder = listOf("all", "favorites", "disliked")
     val labelMap = mapOf("favorites" to favoritesLabel, "all" to allLabel, "disliked" to dislikedLabel)
     val typeMap = mapOf("favorites" to ArtistsType.Favorites, "all" to ArtistsType.Library, "disliked" to ArtistsType.Disliked)
@@ -376,7 +376,7 @@ fun HomeArtists(
         }
     }
 
-    val sync = autoSyncToolbutton(R.string.autosync_channels, autosyncArtistsKey) { coroutineScope.launch { importYTMSubscribedChannels(force = true) } }
+    val sync = autoSyncToolbutton(R.string.sync_channels, autosyncArtistsKey) { coroutineScope.launch { importYTMSubscribedChannels(force = true) } }
 
     // Full offline mode (spec-full-offline-mode): the network sync action is removed.
     val offlineMode by OfflineMode.rememberEnabled()
@@ -389,7 +389,7 @@ fun HomeArtists(
 
     fun refresh(itemsToRefresh: List<Artist>? = null) {
         if (refreshing || HomeSyncState.isSyncingArtists) {
-            Toaster.e(appContext().getString(R.string.already_syncing))
+            Toaster.e(appContext().getString(R.string.library_sync_already_running_message))
             return
         }
         val targetItems = itemsToRefresh ?: itemsOnDisplay
@@ -507,7 +507,7 @@ fun HomeArtists(
                     Column {
                         Column {
                             CollapsibleTitleRow( titleOffsetState, titleHeightState ) {
-                                TabHeader( R.string.artists ) {
+                                TabHeader( R.string.library_artists_title ) {
                                     HeaderInfo(items.size.toString(), R.drawable.people)
                                 }
                             }
@@ -549,9 +549,9 @@ fun HomeArtists(
                                 label = {
                                     Text(
                                         text = when (filterBy) {
-                                            FilterBy.All -> stringResource(R.string.all)
-                                            FilterBy.Local -> stringResource(R.string.on_device)
-                                            FilterBy.YoutubeLibrary -> stringResource(R.string.ytm_library)
+                                            FilterBy.All -> stringResource(R.string.common_option_all)
+                                            FilterBy.Local -> stringResource(R.string.library_on_device_title)
+                                            FilterBy.YoutubeLibrary -> stringResource(R.string.library_youtube_music_title)
                                         }
                                     )
                                 },
@@ -566,7 +566,7 @@ fun HomeArtists(
                                 onClick = {
                                     menuState.display {
                                         FilterMenu(
-                                            title = stringResource(R.string.filter_by),
+                                            title = stringResource(R.string.library_filter_by_title),
                                             onDismiss = menuState::hide,
                                             onAll = { filterBy = FilterBy.All },
                                             onYoutubeLibrary = { filterBy = FilterBy.YoutubeLibrary },
@@ -581,19 +581,19 @@ fun HomeArtists(
                         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 BasicText(
-                                    text = stringResource(R.string.syncing_item, HomeSyncState.artistSyncCurrentName),
+                                    text = stringResource(R.string.library_sync_current_item_format, HomeSyncState.artistSyncCurrentName),
                                     style = typography.xxs.semiBold.copy(color = colorPalette.textSecondary),
                                     maxLines = 1,
                                     modifier = Modifier.weight(1f).padding(end = 8.dp).basicMarquee(iterations = Int.MAX_VALUE)
                                 )
                                 Row {
                                     BasicText(
-                                        text = stringResource(R.string.syncing_progress, HomeSyncState.artistSyncCurrentIndex, HomeSyncState.artistSyncTotal),
+                                        text = stringResource(R.string.library_sync_progress_format, HomeSyncState.artistSyncCurrentIndex, HomeSyncState.artistSyncTotal),
                                         style = typography.xxs.semiBold.copy(color = colorPalette.textSecondary)
                                     )
                                     if (HomeSyncState.artistSyncFailed > 0) {
                                         BasicText(
-                                            text = " " + stringResource(R.string.syncing_failed, HomeSyncState.artistSyncFailed),
+                                            text = " " + stringResource(R.string.library_sync_failed_count_suffix, HomeSyncState.artistSyncFailed),
                                             style = typography.xxs.semiBold.copy(color = colorPalette.red)
                                         )
                                     }
@@ -763,7 +763,7 @@ fun HomeArtists(
                         modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding(topInsetProvider = scrollContentInsetProvider, base = PaddingValues(top = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() }, bottom = Dimensions.bottomSpacer))),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.no_items))
+                        if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.common_empty_items))
                     }
                 }
                     }

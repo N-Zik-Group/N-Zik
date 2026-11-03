@@ -21,10 +21,10 @@ class Radio private constructor(
     songs: () -> List<Song>
 ): StatefulMenuIcon(
     menuState = menuState,
-    messageId = R.string.start_radio,
+    messageId = R.string.radio_action_start,
     readActive = { binder?.isRadioActive == true },
     readIcon = { radioButtonIconRes(binder) },
-    readTitle = { binder?.radioActionTextRes ?: R.string.start_radio },
+    readTitle = { binder?.radioActionTextRes ?: R.string.radio_action_start },
     performAction = { binder?.startRadio(songs().random(), false, null, true) },
     closeMenuAfterAction = true,
 ) {

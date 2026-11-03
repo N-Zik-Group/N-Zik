@@ -126,12 +126,12 @@ class OnlinePlaylistItemMenu private constructor(
     @Composable
     override fun ListMenu() = ListMenu.Menu(title = null, showDragHandle = false) {
         // Section: Playback
-        SectionTitle(stringResource(R.string.playback))
+        SectionTitle(stringResource(R.string.common_playback_section_title))
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Management
-        SectionTitle(stringResource(R.string.management))
+        SectionTitle(stringResource(R.string.library_management_section_title))
         buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(3)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -141,7 +141,7 @@ class OnlinePlaylistItemMenu private constructor(
 
         // Section: Navigation
         if (buttons.size > 8) {
-            SectionTitle(stringResource(R.string.navigation))
+            SectionTitle(stringResource(R.string.common_navigation_section_title))
             for (i in 8 until buttons.size) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
@@ -152,14 +152,14 @@ class OnlinePlaylistItemMenu private constructor(
     override fun GridMenu() = GridMenu.Menu(title = null, showDragHandle = false) {
         // Section: Playback
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.playback))
+            SectionTitle(stringResource(R.string.common_playback_section_title))
         }
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
         // Section: Management
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.management))
+            SectionTitle(stringResource(R.string.library_management_section_title))
         }
         buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(3)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -171,7 +171,7 @@ class OnlinePlaylistItemMenu private constructor(
         // Section: Navigation
         if (buttons.size > 8) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.navigation))
+                SectionTitle(stringResource(R.string.common_navigation_section_title))
             }
             for (i in 8 until buttons.size) {
                 buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -287,7 +287,7 @@ class OnlinePlaylistItemMenu private constructor(
                             if (bookmarkBusy) return@IconButton
                             if (isPodcastBrowseId(playlist.key)) {
                                 if (localPlaylist == null && !contentLoaded) {
-                                    Toaster.w(if (songs == null) R.string.opening_url else R.string.no_song_found)
+                                    Toaster.w(if (songs == null) R.string.common_external_link_loading_suffix else R.string.player_no_song_found)
                                     return@IconButton
                                 }
                                 bookmarkBusy = true
@@ -334,7 +334,7 @@ class OnlinePlaylistItemMenu private constructor(
                                         )
                                     )
                                 }
-                                Toaster.s( if (isBookmarked) R.string.removed_from_favorites else R.string.added_to_favorites )
+                                Toaster.s( if (isBookmarked) R.string.library_favorites_removed else R.string.library_favorites_added )
                             }
                         },
                         modifier = Modifier
@@ -400,7 +400,7 @@ class OnlinePlaylistItemMenu private constructor(
         val playNext = PlayNext {
             val currentSongs = songs
             if (currentSongs == null) {
-                Toaster.w(R.string.opening_url)
+                Toaster.w(R.string.common_external_link_loading_suffix)
             } else if (currentSongs.isNotEmpty()) {
                 // Launch on a scope independent of the popup menu's lifecycle: MenuComponent.kt hides the menu
                 // (cancelling its rememberCoroutineScope()) right after onShortClick() returns, so a scope owned
@@ -412,14 +412,14 @@ class OnlinePlaylistItemMenu private constructor(
                 }
                 menuState.hide()
             } else {
-                Toaster.e(R.string.no_song_found)
+                Toaster.e(R.string.player_no_song_found)
             }
         }
 
         val enqueue = Enqueue {
             val currentSongs = songs
             if (currentSongs == null) {
-                Toaster.w(R.string.opening_url)
+                Toaster.w(R.string.common_external_link_loading_suffix)
             } else if (currentSongs.isNotEmpty()) {
                 NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                     val mediaItems = withContext(NzikDispatchers.DATA) { currentSongs.map { it.asMediaItem } }
@@ -427,7 +427,7 @@ class OnlinePlaylistItemMenu private constructor(
                 }
                 menuState.hide()
             } else {
-                Toaster.e(R.string.no_song_found)
+                Toaster.e(R.string.player_no_song_found)
             }
         }
 
@@ -443,11 +443,11 @@ class OnlinePlaylistItemMenu private constructor(
             override fun onShortClick() {
                 val currentSongs = songs
                 if (currentSongs == null) {
-                    Toaster.w(R.string.opening_url)
+                    Toaster.w(R.string.common_external_link_loading_suffix)
                 } else if (currentSongs.isNotEmpty()) {
                     playlistsMenu.onShortClick()
                 } else {
-                    Toaster.e(R.string.no_song_found)
+                    Toaster.e(R.string.player_no_song_found)
                 }
             }
             override fun onLongClick() {}
@@ -458,11 +458,11 @@ class OnlinePlaylistItemMenu private constructor(
             override fun onShortClick() {
                 val currentSongs = songs
                 if (currentSongs == null) {
-                    Toaster.w(R.string.opening_url)
+                    Toaster.w(R.string.common_external_link_loading_suffix)
                 } else if (currentSongs.isNotEmpty()) {
                     downloadAllDialog.onShortClick()
                 } else {
-                    Toaster.e(R.string.no_song_found)
+                    Toaster.e(R.string.player_no_song_found)
                 }
             }
             override fun onLongClick() {}
@@ -473,11 +473,11 @@ class OnlinePlaylistItemMenu private constructor(
             override fun onShortClick() {
                 val currentSongs = songs
                 if (currentSongs == null) {
-                    Toaster.w(R.string.opening_url)
+                    Toaster.w(R.string.common_external_link_loading_suffix)
                 } else if (currentSongs.isNotEmpty()) {
                     deleteAllDialog.onShortClick()
                 } else {
-                    Toaster.e(R.string.no_song_found)
+                    Toaster.e(R.string.player_no_song_found)
                 }
             }
             override fun onLongClick() {}
@@ -503,15 +503,15 @@ class OnlinePlaylistItemMenu private constructor(
 
         val importPlaylist = object : MenuIcon, Descriptive, Clickable {
             override val iconId: Int = R.drawable.add_in_playlist
-            override val messageId: Int = R.string.import_playlist
+            override val messageId: Int = R.string.playlist_action_import
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() {
                 if (songs == null) {
-                    Toaster.w(R.string.opening_url)
+                    Toaster.w(R.string.common_external_link_loading_suffix)
                 } else if (songs?.isNotEmpty() == true) {
                     importDialog.onShortClick()
                 } else {
-                    Toaster.e(R.string.no_song_found)
+                    Toaster.e(R.string.player_no_song_found)
                 }
             }
             override fun onLongClick() {}
@@ -537,8 +537,8 @@ class OnlinePlaylistItemMenu private constructor(
 
             add(object : MenuIcon, Descriptive, Clickable {
                     override val iconId: Int = R.drawable.people
-                    override val messageId: Int = R.string.artists
-                    @get:Composable override val menuIconTitle: String get() = stringResource(R.string.more_of) + " $artistName"
+                    override val messageId: Int = R.string.library_artists_title
+                    @get:Composable override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " $artistName"
                     override fun onShortClick() {
                         menuState.hide()
                         val path = "$browseId?params=${playlist.channel?.endpoint?.params.orEmpty()}"
@@ -550,7 +550,7 @@ class OnlinePlaylistItemMenu private constructor(
             
             add(object : MenuIcon, Descriptive, Clickable {
                 override val iconId: Int = R.drawable.ytmusic
-                override val messageId: Int = R.string.listen_on_youtube
+                override val messageId: Int = R.string.player_action_listen_on_youtube
                 @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
                 override fun onShortClick() {
                     menuState.hide()

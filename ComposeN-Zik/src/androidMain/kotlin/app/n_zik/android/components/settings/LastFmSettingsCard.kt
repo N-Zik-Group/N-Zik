@@ -87,7 +87,7 @@ fun LastFmSettingsCard() {
     if (BuildConfig.LASTFM_API_KEY.isEmpty() || BuildConfig.LASTFM_API_SECRET.isEmpty()) return
 
     SettingsSectionCard(
-        title = stringResource(R.string.social_lastfm),
+        title = stringResource(R.string.settings_lastfm_title),
         icon = R.drawable.logo_lastfm,
         content = {
             var isLastfmScrobblingEnabled by rememberEncryptedPreference(isLastfmScrobblingEnabledKey, false)
@@ -112,7 +112,7 @@ fun LastFmSettingsCard() {
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.lastfm.lastfm_enable_scrobbling"),
                 title = stringResource(R.string.lastfm_enable_scrobbling),
-                text = stringResource(R.string.social_lastfm_info),
+                text = stringResource(R.string.settings_lastfm_scrobbling_description),
                 isChecked = isLastfmScrobblingEnabled,
                 onCheckedChange = { isLastfmScrobblingEnabled = it },
                 icon = R.drawable.musical_notes
@@ -168,9 +168,9 @@ fun LastFmSettingsCard() {
 
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.lastfm.account_login"),
-                        title = if (lastfmSession.isNotEmpty()) stringResource(R.string.account_logoff) else stringResource(R.string.account_login),
-                        text = stringResource(R.string.settings_desc_embedded_lastfm_account_login),
-                        selectedValueText = if (lastfmSession.isNotEmpty()) stringResource(R.string.lastfm_connected) else stringResource(R.string.social_lastfm_info),
+                        title = if (lastfmSession.isNotEmpty()) stringResource(R.string.account_action_logout) else stringResource(R.string.account_action_login),
+                        text = stringResource(R.string.lastfm_login_description),
+                        selectedValueText = if (lastfmSession.isNotEmpty()) stringResource(R.string.lastfm_connected) else stringResource(R.string.settings_lastfm_scrobbling_description),
                         icon = R.drawable.logout,
                         onClick = {
                             if (lastfmSession.isNotEmpty()) {
@@ -187,7 +187,7 @@ fun LastFmSettingsCard() {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.lastfm.lastfm_now_playing"),
                         title = stringResource(R.string.lastfm_now_playing),
-                        text = stringResource(R.string.lastfm_now_playing_info),
+                        text = stringResource(R.string.lastfm_now_playing_description),
                         isChecked = isLastfmNowPlayingEnabled,
                         onCheckedChange = { isLastfmNowPlayingEnabled = it },
                         icon = R.drawable.play
@@ -196,7 +196,7 @@ fun LastFmSettingsCard() {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.lastfm.lastfm_scrobble"),
                         title = stringResource(R.string.lastfm_scrobble),
-                        text = stringResource(R.string.lastfm_scrobble_info),
+                        text = stringResource(R.string.lastfm_scrobble_description),
                         isChecked = isLastfmScrobbleEnabled,
                         onCheckedChange = { isLastfmScrobbleEnabled = it },
                         icon = R.drawable.history
@@ -206,7 +206,7 @@ fun LastFmSettingsCard() {
                     SliderSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.lastfm.lastfm_min_track_duration"),
                         title = stringResource(R.string.lastfm_min_track_duration),
-                        text = stringResource(R.string.lastfm_min_track_duration_info),
+                        text = stringResource(R.string.lastfm_min_track_duration_description),
                         state = minDurationUi,
                         range = 10f..60f,
                         stepSize = 5f,
@@ -222,7 +222,7 @@ fun LastFmSettingsCard() {
                             SliderSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("embedded.lastfm.lastfm_scrobble_threshold"),
                                 title = stringResource(R.string.lastfm_scrobble_threshold),
-                                text = stringResource(R.string.lastfm_scrobble_threshold_info),
+                                text = stringResource(R.string.lastfm_scrobble_threshold_description),
                                 state = thresholdUi,
                                 range = 30f..95f,
                                 stepSize = 5f,
@@ -235,7 +235,7 @@ fun LastFmSettingsCard() {
                             SliderSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("embedded.lastfm.lastfm_max_scrobble_delay"),
                                 title = stringResource(R.string.lastfm_max_scrobble_delay),
-                                text = stringResource(R.string.lastfm_max_scrobble_delay_info),
+                                text = stringResource(R.string.lastfm_max_scrobble_delay_description),
                                 state = maxDelayUi,
                                 range = 30f..360f,
                                 stepSize = 30f,
@@ -291,7 +291,7 @@ fun LastFmSettingsCard() {
                                 .fillMaxWidth()
                                 .heightIn(max = (screenHeightDp * 0.5f).dp)
                         ) {
-                            ListMenu.Menu(title = stringResource(R.string.social_lastfm)) {
+                            ListMenu.Menu(title = stringResource(R.string.settings_lastfm_title)) {
                                 LastFmLoginContent(
                                     onConnected = { sessionKey, username ->
                                         loginLastfm = false

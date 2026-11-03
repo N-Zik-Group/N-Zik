@@ -137,7 +137,7 @@ fun NewAlbumsFromArtists(
                     span = { GridItemSpan(maxLineSpan) }
                 ) {
                     HeaderWithIcon(
-                        title = stringResource(R.string.new_albums_of_your_artists),
+                        title = stringResource(R.string.recommendations_followed_artists_new_albums_title),
                         iconId = R.drawable.search,
                         enabled = true,
                         showIcon = !showSearchTab,
@@ -169,7 +169,7 @@ fun NewAlbumsFromArtists(
                         contentType = 0,
                     ) {
                         BasicText(
-                            text = stringResource(R.string.no_new_releases),
+                            text = stringResource(R.string.recommendations_followed_artists_no_new_releases),
                             style = typography().s.secondary.center,
                             modifier = Modifier
                                 .padding(all = 16.dp)

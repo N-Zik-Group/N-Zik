@@ -49,9 +49,9 @@ fun SearchResultHeaderActions(
             modifier = if (glass) Modifier.width(GlassActionCellWidth * count) else Modifier,
             trailingTrigger = trigger, menuActionCount = count, menuTriggerIndex = 1,
             drawSurface = glass || settings.usesGlassContour(GlassArea.ActionButtons), separatorBefore = emptySet()) {
-            SearchResultHeaderIcon(R.drawable.pencil, stringResource(R.string.search), onEditQuery) {
+            SearchResultHeaderIcon(R.drawable.pencil, stringResource(R.string.search_title), onEditQuery) {
                 IconButton(onClick = onEditQuery) {
-                    Icon(painterResource(R.drawable.pencil), stringResource(R.string.search), tint = colorPalette().text)
+                    Icon(painterResource(R.drawable.pencil), stringResource(R.string.search_title), tint = colorPalette().text)
                 }
             }
             content()

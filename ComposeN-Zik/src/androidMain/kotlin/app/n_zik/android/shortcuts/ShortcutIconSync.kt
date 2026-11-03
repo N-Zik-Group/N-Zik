@@ -225,12 +225,12 @@ internal fun registerAppShortcuts(context: Context) {
  * [shortcutSpec] only ever sees the fixed ids (a profile id would throw — by design).
  */
 internal fun shortcutSpec(shortcutId: String): Triple<Int, Int, String> = when (shortcutId) {
-    SHORTCUT_SEARCH_ID -> Triple(R.string.search, R.drawable.shortcut_search, MainActivity.action_search)
-    SHORTCUT_ALBUMS_ID -> Triple(R.string.albums, R.drawable.shortcut_albums, MainActivity.action_albums)
-    SHORTCUT_ARTISTS_ID -> Triple(R.string.artists, R.drawable.shortcut_artists, MainActivity.actions_artists)
-    SHORTCUT_LIBRARY_ID -> Triple(R.string.playlists, R.drawable.shortcut_library, MainActivity.action_library)
-    SHORTCUT_PROFILES_ID -> Triple(R.string.profiles, R.drawable.shortcut_profiles, MainActivity.action_profiles)
-    SHORTCUT_RESCUE_ID -> Triple(R.string.rescue_center, R.drawable.shortcut_rescue, ACTION_RESCUE)
+    SHORTCUT_SEARCH_ID -> Triple(R.string.search_title, R.drawable.shortcut_search, MainActivity.action_search)
+    SHORTCUT_ALBUMS_ID -> Triple(R.string.library_albums_title, R.drawable.shortcut_albums, MainActivity.action_albums)
+    SHORTCUT_ARTISTS_ID -> Triple(R.string.library_artists_title, R.drawable.shortcut_artists, MainActivity.actions_artists)
+    SHORTCUT_LIBRARY_ID -> Triple(R.string.library_playlists_title, R.drawable.shortcut_library, MainActivity.action_library)
+    SHORTCUT_PROFILES_ID -> Triple(R.string.profile_title, R.drawable.shortcut_profiles, MainActivity.action_profiles)
+    SHORTCUT_RESCUE_ID -> Triple(R.string.recovery_center, R.drawable.shortcut_rescue, ACTION_RESCUE)
     else -> error("Unknown shortcut id $shortcutId")
 }
 

@@ -145,7 +145,7 @@ class DownloadNotificationLifecycleTest {
 
         val terminal = shadowOf(notifications).getNotification(8990)
         assertNotNull(terminal)
-        assertEquals(context.getString(R.string.download_completed, 1),
+        assertEquals(context.getString(R.string.downloads_completed, 1),
             terminal.extras.getString(Notification.EXTRA_TEXT))
         verify(exactly = 1) { WaveformExtractor.deleteWaveform(context.applicationContext, "track") }
         notifications.cancel(8990)

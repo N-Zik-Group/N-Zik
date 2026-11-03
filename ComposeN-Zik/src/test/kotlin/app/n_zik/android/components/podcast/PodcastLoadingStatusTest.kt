@@ -57,9 +57,9 @@ class PodcastLoadingStatusTest {
         }
         for (enabled in listOf(false, true)) {
             compose.runOnIdle { glassEnabled.value = enabled }
-            compose.onNodeWithText(context.getString(R.string.error_no_internet)).assertIsDisplayed()
+            compose.onNodeWithText(context.getString(R.string.common_error_no_internet)).assertIsDisplayed()
             compose.onNodeWithTag("podcast-loading").assertDoesNotExist()
-            compose.onNodeWithText(context.getString(R.string.retry)).assertIsDisplayed().performClick()
+            compose.onNodeWithText(context.getString(R.string.common_action_retry)).assertIsDisplayed().performClick()
             compose.runOnIdle { assertEquals(if (enabled) 2 else 1, retries) }
         }
     }
@@ -85,14 +85,14 @@ class PodcastLoadingStatusTest {
         compose.onNodeWithTag("podcast-loading").assertIsDisplayed()
         compose.runOnIdle { status.value = PodcastPageStatus.Error }
         compose.onNodeWithTag("podcast-loading").assertDoesNotExist()
-        compose.onNodeWithText(context.getString(R.string.error)).assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.retry)).assertIsDisplayed().performClick()
+        compose.onNodeWithText(context.getString(R.string.common_error_title)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.common_action_retry)).assertIsDisplayed().performClick()
         compose.runOnIdle { assertEquals(1, retries) }
         compose.onNodeWithTag("podcast-loading").assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.retry)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.common_action_retry)).assertDoesNotExist()
         compose.runOnIdle { status.value = PodcastPageStatus.Empty }
-        compose.onNodeWithText(context.getString(R.string.no_items)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.common_empty_items)).assertIsDisplayed()
         compose.onNodeWithTag("podcast-loading").assertDoesNotExist()
-        compose.onNodeWithText(context.getString(R.string.retry)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.common_action_retry)).assertDoesNotExist()
     }
 }

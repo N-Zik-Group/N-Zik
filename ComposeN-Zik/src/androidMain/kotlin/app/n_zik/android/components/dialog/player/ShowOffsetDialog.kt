@@ -170,7 +170,7 @@ class ShowOffsetDialog private constructor(
                     NativeSectionIconAction(
                         icon = R.drawable.refresh,
                         color = palette.accent,
-                        contentDescription = stringResource(R.string.cd_reset),
+                        contentDescription = stringResource(R.string.accessibility_reset),
                         onClick = {
                             lyricsOffset = 0
                             textFieldValue = "0"
@@ -264,7 +264,7 @@ class ShowOffsetDialog private constructor(
     override fun Buttons() = ButtonRow(
         buttons = listOf(
             DialogButton(
-                text = stringResource(R.string.dialog_close),
+                text = stringResource(R.string.common_action_close),
                 onClick = ::hideDialog,
                 primary = true
             )

@@ -96,8 +96,8 @@ class NotificationButtonsStateIconOffMainTest {
     @Test
     fun `radio command button label follows radio state`() {
         // gh-866: the radio button's display name flips start_radio → stop_radio.
-        assertEquals(R.string.start_radio, radioCommandButtonLabelRes(isRadioActive = false))
-        assertEquals(R.string.stop_radio, radioCommandButtonLabelRes(isRadioActive = true))
+        assertEquals(R.string.radio_action_start, radioCommandButtonLabelRes(isRadioActive = false))
+        assertEquals(R.string.radio_action_stop, radioCommandButtonLabelRes(isRadioActive = true))
     }
 
     @Test

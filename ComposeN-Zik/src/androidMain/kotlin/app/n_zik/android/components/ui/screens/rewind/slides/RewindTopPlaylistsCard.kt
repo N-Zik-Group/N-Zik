@@ -52,8 +52,8 @@ fun RewindTopPlaylistsCard(
                 verticalArrangement = Arrangement.Center
             ) {
                 RewindEmptyState(
-                    title = stringResource(R.string.rw_top_playlists_empty_title),
-                    body = stringResource(R.string.rw_top_playlists_empty_body),
+                    title = stringResource(R.string.rewind_top_playlists_empty_title),
+                    body = stringResource(R.string.rewind_top_playlists_empty_body),
                     foreground = onSlide,
                     accent = rewindColors.value.purple
                 )
@@ -62,12 +62,12 @@ fun RewindTopPlaylistsCard(
         }
         Column(modifier = Modifier.fillMaxSize()) {
             RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                RewindKicker(stringResource(R.string.rw_top_five_kicker, periodLabel), rewindColors.value.lime)
+                RewindKicker(stringResource(R.string.rewind_top_five_kicker, periodLabel), rewindColors.value.lime)
             }
             Spacer(Modifier.height(11.dp))
             RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
                 RewindAdaptiveTitle(
-                    text = stringResource(R.string.rw_top_playlists_heading),
+                    text = stringResource(R.string.rewind_top_playlists_heading),
                     color = onSlide,
                     fontSize = textScale.size(34.sp),
                     lineHeight = textScale.size(32.sp),
@@ -142,7 +142,7 @@ fun RewindTopPlaylistsCard(
                                     modifier = Modifier.rewindMarqueeOnly()
                                 )
                                 Text(
-                                    text = stringResource(R.string.rw_meta_songs, formatRewindNumber(entry.songCount.toLong())),
+                                    text = stringResource(R.string.rewind_meta_songs, formatRewindNumber(entry.songCount.toLong())),
                                     color = rowOn.copy(alpha = 0.58f),
                                     fontSize = textScale.size(9.sp),
                                     maxLines = 1,
@@ -151,7 +151,7 @@ fun RewindTopPlaylistsCard(
                                 )
                             }
                             Text(
-                                text = stringResource(R.string.rw_minutes_compact, formatRewindNumber(entry.minutes)),
+                                text = stringResource(R.string.rewind_minutes_compact, formatRewindNumber(entry.minutes)),
                                 color = rowOn.copy(alpha = 0.76f),
                                 fontSize = textScale.size(10.sp),
                                 fontWeight = FontWeight.Black,
@@ -166,7 +166,7 @@ fun RewindTopPlaylistsCard(
             Spacer(Modifier.weight(1f))
             RewindReveal(active, 980) {
                 RewindAdaptiveTitle(
-                    text = stringResource(R.string.rw_top_playlists_sub),
+                    text = stringResource(R.string.rewind_top_playlists_sub),
                     color = onSlide.copy(alpha = 0.60f),
                     fontSize = textScale.size(11.sp),
                     lineHeight = textScale.size(15.sp),

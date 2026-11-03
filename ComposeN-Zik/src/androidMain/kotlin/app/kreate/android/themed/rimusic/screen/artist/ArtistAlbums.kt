@@ -98,7 +98,7 @@ fun ArtistAlbums(
                                   albums.addAll( albumItem.filterNot { it in listingAlbums } )
                               }
             },
-            onFailure = { Toaster.e( R.string.failed_to_fetch_album ) }
+            onFailure = { Toaster.e( R.string.album_lookup_failed ) }
         )
     }
     LaunchedEffect( Unit ) {

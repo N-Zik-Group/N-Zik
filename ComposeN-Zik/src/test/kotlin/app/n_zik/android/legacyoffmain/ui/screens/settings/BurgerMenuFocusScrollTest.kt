@@ -118,7 +118,7 @@ class BurgerMenuFocusScrollTest {
     /** The card title is the only node with exactly "History" (the Open row says "Open the History screen"). */
     private val historyCardTitle: androidx.compose.ui.test.SemanticsNodeInteraction
         get() = composeRule.onNodeWithText(
-            context.getString(R.string.history),
+            context.getString(R.string.library_history_title),
             substring = false,
             useUnmergedTree = true
         )
@@ -130,7 +130,7 @@ class BurgerMenuFocusScrollTest {
      */
     private fun openRowClickable(): androidx.compose.ui.test.SemanticsNodeInteraction {
         val textBounds = composeRule
-            .onNodeWithText(context.getString(R.string.history_open_desc), substring = false, useUnmergedTree = true)
+            .onNodeWithText(context.getString(R.string.settings_history_open_description), substring = false, useUnmergedTree = true)
             .fetchSemanticsNode()
             .boundsInRoot
         return composeRule.onNode(
@@ -155,7 +155,7 @@ class BurgerMenuFocusScrollTest {
         showDataSettings(focus = "")
 
         val top = composeRule
-            .onNodeWithText(context.getString(R.string.data_settings_description))
+            .onNodeWithText(context.getString(R.string.settings_data_page_description))
             .fetchSemanticsNode()
             .boundsInRoot
             .top
@@ -200,7 +200,7 @@ class BurgerMenuFocusScrollTest {
         pumpUntil("the History Open row is laid out", 30_000) {
             try {
                 composeRule
-                    .onNodeWithText(context.getString(R.string.history_open_desc), substring = false)
+                    .onNodeWithText(context.getString(R.string.settings_history_open_description), substring = false)
                     .fetchSemanticsNode()
                     .boundsInRoot
                     .height > 0f

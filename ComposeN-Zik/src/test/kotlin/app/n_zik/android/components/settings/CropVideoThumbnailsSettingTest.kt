@@ -95,7 +95,7 @@ class CropVideoThumbnailsSettingTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
 
-    private val cropLabel: String = context.getString(R.string.crop_video_thumbnails)
+    private val cropLabel: String = context.getString(R.string.settings_player_crop_video_artwork_label)
 
 
 

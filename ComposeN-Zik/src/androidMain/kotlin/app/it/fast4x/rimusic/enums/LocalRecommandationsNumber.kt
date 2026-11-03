@@ -8,12 +8,12 @@ enum class LocalRecommandationsNumber(
     @field:StringRes override val textId: Int,
     val value: Int
 ) : TextView {
-    OneQ(R.string.quick_selection, 1),
-    TwoQ(R.string.quick_selection, 2),
-    ThreeQ(R.string.quick_selection, 3),
-    FourQ(R.string.quick_selection, 4),
-    FiveQ(R.string.quick_selection, 5),
-    SixQ(R.string.quick_selection, 6);
+    OneQ(R.string.recommendations_quick_picks_count, 1),
+    TwoQ(R.string.recommendations_quick_picks_count, 2),
+    ThreeQ(R.string.recommendations_quick_picks_count, 3),
+    FourQ(R.string.recommendations_quick_picks_count, 4),
+    FiveQ(R.string.recommendations_quick_picks_count, 5),
+    SixQ(R.string.recommendations_quick_picks_count, 6);
 }
 
 

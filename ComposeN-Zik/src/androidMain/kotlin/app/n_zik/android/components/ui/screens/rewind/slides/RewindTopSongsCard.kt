@@ -55,8 +55,8 @@ fun RewindTopSongsCard(
                 verticalArrangement = Arrangement.Center
             ) {
                 RewindEmptyState(
-                    title = stringResource(R.string.rw_top_songs_empty_title),
-                    body = stringResource(R.string.rw_top_songs_empty_body),
+                    title = stringResource(R.string.rewind_top_songs_empty_title),
+                    body = stringResource(R.string.rewind_top_songs_empty_body),
                     foreground = onAccent,
                     accent = rewindColors.value.pink
                 )
@@ -65,12 +65,12 @@ fun RewindTopSongsCard(
         }
         Column(modifier = Modifier.fillMaxSize()) {
             RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                RewindKicker(stringResource(R.string.rw_top_five_kicker, periodLabel), rewindColors.value.lime)
+                RewindKicker(stringResource(R.string.rewind_top_five_kicker, periodLabel), rewindColors.value.lime)
             }
             Spacer(Modifier.height(11.dp))
             RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
                 RewindAdaptiveTitle(
-                    text = stringResource(R.string.rw_top_songs_heading),
+                    text = stringResource(R.string.rewind_top_songs_heading),
                     color = onAccent,
                     fontSize = textScale.size(35.sp),
                     lineHeight = textScale.size(33.sp),
@@ -90,8 +90,8 @@ fun RewindTopSongsCard(
                     RewindRankRow(
                         rank = index + 1,
                         title = song.song.cleanTitle(),
-                        subtitle = firstNonBlank(song.song.cleanArtistsText(), stringResource(R.string.rw_unknown_artist)),
-                        meta = stringResource(R.string.rw_meta_plays, formatRewindNumber(song.playCount.toLong())),
+                        subtitle = firstNonBlank(song.song.cleanArtistsText(), stringResource(R.string.rewind_unknown_artist)),
+                        meta = stringResource(R.string.rewind_play_count, formatRewindNumber(song.playCount.toLong())),
                         imageUrl = song.song.thumbnailUrl,
                         foreground = rowOn,
                         accent = if (index == 0) rewindColors.value.pink else rowOn,
@@ -107,7 +107,7 @@ fun RewindTopSongsCard(
             if (songs.size > 5) {
                 RewindReveal(active, 980) {
                     Text(
-                        text = stringResource(R.string.rw_top_songs_next, minOf(songs.size, 10)),
+                        text = stringResource(R.string.rewind_top_songs_next, minOf(songs.size, 10)),
                         color = onAccent.copy(alpha = 0.62f),
                         fontSize = textScale.size(11.sp),
                         lineHeight = textScale.size(15.sp),

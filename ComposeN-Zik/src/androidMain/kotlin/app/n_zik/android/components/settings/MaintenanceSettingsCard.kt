@@ -136,7 +136,7 @@ fun MaintenanceSettingsCard(
     val downloadSelfHeal = snapshot?.downloadSelfHeal
 
     SettingsSectionCard(
-        title = stringResource(R.string.maintenance),
+        title = stringResource(R.string.maintenance_title),
         icon = R.drawable.shield_checkmark,
         modifier = modifier,
         content = {
@@ -204,13 +204,13 @@ fun MaintenanceSettingsCard(
             // + the restart note + the ALWAYS-visible export entry (the dialog greys out
 //
             // the debug-dependent options while the switch is off)
-            CardCategoryLabel(stringResource(R.string.debug))
+            CardCategoryLabel(stringResource(R.string.common_debug_title))
             if (BuildConfig.DEBUG) {
                 var updaterLayoutAccess by rememberPreference(DEBUG_UPDATER_ACCESS_KEY, false)
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("embedded.maintenance.debug_updater_layout_access"),
-                    title = stringResource(R.string.debug_updater_layout_access),
-                    text = stringResource(R.string.debug_updater_layout_access_description),
+                    title = stringResource(R.string.settings_debug_updater_preview_label),
+                    text = stringResource(R.string.settings_debug_updater_preview_description),
                     isChecked = updaterLayoutAccess,
                     onCheckedChange = { updaterLayoutAccess = it },
                     icon = R.drawable.refresh,
@@ -218,8 +218,8 @@ fun MaintenanceSettingsCard(
             }
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.maintenance.enable_log_debug"),
-                title = stringResource(R.string.enable_log_debug),
-                text = stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors),
+                title = stringResource(R.string.maintenance_debug_logging_title),
+                text = stringResource(R.string.settings_logging_error_file_description),
                 isChecked = logDebugEnabled,
                 onCheckedChange = {
                     logDebugEnabled = it
@@ -230,16 +230,16 @@ fun MaintenanceSettingsCard(
                         // and wipes itself after two clean boots (CrashLogAutoWipe)
                         purgeDebugLogs(context.filesDir.resolve("logs"))
                     } else {
-                        Toaster.i(R.string.restarting_rimusic_is_required)
+                        Toaster.i(R.string.settings_restart_required_message)
                     }
                 },
                 icon = R.drawable.information,
             )
-            ImportantSettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
+            ImportantSettingsDescription(text = stringResource(R.string.settings_restart_required_message))
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.maintenance.export_logs"),
-                title = stringResource(R.string.export_logs),
-                text = stringResource(R.string.export_debug_log_description),
+                title = stringResource(R.string.logs_action_export),
+                text = stringResource(R.string.logs_export_debug_description),
                 icon = R.drawable.copy,
                 onClick = { CopyLogsDialog.showDialog() },
             )

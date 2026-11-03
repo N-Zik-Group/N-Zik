@@ -74,7 +74,7 @@ class ChangeArtistBrowseIdDialog private constructor(
     }
 
     override val iconId: Int = R.drawable.title_edit
-    override val messageId: Int = R.string.update_artist_browse_id
+    override val messageId: Int = R.string.metadata_artist_action_change_browse_id
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -133,7 +133,7 @@ class ChangeArtistBrowseIdDialog private constructor(
                 TextField(
                     value = query,
                     onValueChange = { query = it },
-                    placeholder = { Text(stringResource(R.string.search)) },
+                    placeholder = { Text(stringResource(R.string.search_title)) },
                     modifier = Modifier.weight(1f),
                     colors = InputDialog.defaultTextFieldColors(),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -153,7 +153,7 @@ class ChangeArtistBrowseIdDialog private constructor(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.search),
-                        contentDescription = stringResource(R.string.search),
+                        contentDescription = stringResource(R.string.search_title),
                         tint = colorPalette().text,
                         modifier = Modifier.size(24.dp)
                     )
@@ -221,7 +221,7 @@ class ChangeArtistBrowseIdDialog private constructor(
             buttons = buildList {
                 add(
                     DialogButton(
-                        text = stringResource(R.string.cancel),
+                        text = stringResource(R.string.common_action_cancel),
                         onClick = ::hideDialog,
                         danger = true
                     )
@@ -230,7 +230,7 @@ class ChangeArtistBrowseIdDialog private constructor(
                 if (artist.id.startsWith(MODIFIED_PREFIX) || artist.id.startsWith("LOCAL_ARTIST_")) {
                     add(
                         DialogButton(
-                            text = stringResource(R.string.reset),
+                            text = stringResource(R.string.common_action_reset),
                             onClick = {
                                 val prefs = appContext().preferences
                                 val oldId = prefs.getString("old_browse_id_${artist.id}", null)
@@ -247,7 +247,7 @@ class ChangeArtistBrowseIdDialog private constructor(
                 // Unlink Button
                 add(
                     DialogButton(
-                        text = stringResource(R.string.unlink),
+                        text = stringResource(R.string.common_action_unlink),
                         onClick = {
                             Database.updateArtistId(artist.id, "LOCAL_ARTIST_${UUID.randomUUID()}")
                             Toaster.done()

@@ -140,13 +140,13 @@ class AlbumItemMenu private constructor(
     @Composable
     override fun ListMenu() = ListMenu.Menu(title = null, showDragHandle = false) {
         // Section: Playback
-        SectionTitle(stringResource(R.string.playback))
+        SectionTitle(stringResource(R.string.common_playback_section_title))
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Management
-        SectionTitle(stringResource(R.string.management))
+        SectionTitle(stringResource(R.string.library_management_section_title))
         buttons.getOrNull(3)?.let { if (it is MenuIcon) it.ListMenuItem() }
         if (!offlineMode) buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -157,7 +157,7 @@ class AlbumItemMenu private constructor(
         // Section: Navigation
         val navRange = 6 until (buttons.size - 4)
         if (!navRange.isEmpty()) {
-            SectionTitle(stringResource(R.string.navigation))
+            SectionTitle(stringResource(R.string.common_navigation_section_title))
             for (i in navRange) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
@@ -168,7 +168,7 @@ class AlbumItemMenu private constructor(
     override fun GridMenu() = GridMenu.Menu(title = null, showDragHandle = false) {
         // Section: Playback
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.playback))
+            SectionTitle(stringResource(R.string.common_playback_section_title))
         }
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -176,7 +176,7 @@ class AlbumItemMenu private constructor(
 
         // Section: Management
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.management))
+            SectionTitle(stringResource(R.string.library_management_section_title))
         }
         buttons.getOrNull(3)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         if (!offlineMode) buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -189,7 +189,7 @@ class AlbumItemMenu private constructor(
         val navRange = 6 until (buttons.size - 4)
         if (!navRange.isEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.navigation))
+                SectionTitle(stringResource(R.string.common_navigation_section_title))
             }
             for (i in navRange) {
                 buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -367,15 +367,15 @@ class AlbumItemMenu private constructor(
                             }
                             val messageId = if (showDisliked.isEnabled) {
                                 when(newState) {
-                                    true -> R.string.added_to_favorites
-                                    false -> R.string.added_to_dislikes
-                                    null -> R.string.removed_from_favorites
+                                    true -> R.string.library_favorites_added
+                                    false -> R.string.library_dislikes_added
+                                    null -> R.string.library_favorites_removed
                                 }
                             } else {
                                 when(newState) {
-                                    true -> R.string.added_to_favorites
-                                    null -> R.string.removed_from_favorites
-                                    else -> R.string.added_to_favorites
+                                    true -> R.string.library_favorites_added
+                                    null -> R.string.library_favorites_removed
+                                    else -> R.string.library_favorites_added
                                 }
                             }
                             with( album ) {
@@ -495,9 +495,9 @@ class AlbumItemMenu private constructor(
                         artistNames.forEach { artistName ->
                             add(object : MenuIcon, Descriptive, Clickable {
                                 override val iconId: Int = R.drawable.people
-                                override val messageId: Int = R.string.artists
+                                override val messageId: Int = R.string.library_artists_title
                                 @get:Composable
-                                override val menuIconTitle: String get() = stringResource(R.string.more_of) + " $artistName"
+                                override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " $artistName"
                                 override fun onShortClick() {
                                     menuState.hide()
                                     coroutineScope.launch(NzikDispatchers.DATA) {
@@ -523,9 +523,9 @@ class AlbumItemMenu private constructor(
                 artistsData.forEach { artist ->
                     add(object : MenuIcon, Descriptive, Clickable {
                         override val iconId: Int = R.drawable.people
-                        override val messageId: Int = R.string.artists
+                        override val messageId: Int = R.string.library_artists_title
                         @get:Composable
-                        override val menuIconTitle: String get() = stringResource(R.string.more_of) + " ${artist.name ?: ""}"
+                        override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " ${artist.name ?: ""}"
                         override fun onShortClick() {
                             menuState.hide()
                             navController.navigate("${NavRoutes.artist.name}/${artist.id}")

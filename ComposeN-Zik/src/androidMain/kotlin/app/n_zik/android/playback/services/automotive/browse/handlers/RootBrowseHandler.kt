@@ -24,13 +24,13 @@ class RootBrowseHandler : BrowseHandler {
     ): List<MediaItem> {
         return buildList {
             if (AutoAccessPolicy(context, database, downloadHelper, binder).online) {
-                add(browsableMediaItem(AutoSessionConstants.ID_QUICK_PICKS, context.getString(R.string.quick_picks), null, drawableUri(context, R.drawable.sparkles), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED))
+                add(browsableMediaItem(AutoSessionConstants.ID_QUICK_PICKS, context.getString(R.string.recommendations_title), null, drawableUri(context, R.drawable.sparkles), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED))
             }
             addAll(listOf(
-                browsableMediaItem(PlayerServiceModern.SONG, context.getString(R.string.songs), null, drawableUri(context, R.drawable.musical_notes), MediaMetadata.MEDIA_TYPE_PLAYLIST),
-                browsableMediaItem(PlayerServiceModern.ARTIST, context.getString(R.string.artists), null, drawableUri(context, R.drawable.people), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
-                browsableMediaItem(PlayerServiceModern.ALBUM, context.getString(R.string.albums), null, drawableUri(context, R.drawable.album), MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS),
-                browsableMediaItem(PlayerServiceModern.PLAYLIST, context.getString(R.string.library), null, drawableUri(context, R.drawable.library), MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS)
+                browsableMediaItem(PlayerServiceModern.SONG, context.getString(R.string.library_songs_title), null, drawableUri(context, R.drawable.musical_notes), MediaMetadata.MEDIA_TYPE_PLAYLIST),
+                browsableMediaItem(PlayerServiceModern.ARTIST, context.getString(R.string.library_artists_title), null, drawableUri(context, R.drawable.people), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
+                browsableMediaItem(PlayerServiceModern.ALBUM, context.getString(R.string.library_albums_title), null, drawableUri(context, R.drawable.album), MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS),
+                browsableMediaItem(PlayerServiceModern.PLAYLIST, context.getString(R.string.library_title), null, drawableUri(context, R.drawable.library), MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS)
             ))
         }
     }

@@ -10,13 +10,13 @@ enum class AlbumSwipeAction(
     @field:StringRes override val textId: Int,
 ): Drawable, TextView {
 
-    NoAction( R.drawable.close, R.string.none ),
+    NoAction( R.drawable.close, R.string.common_option_none ),
 
-    PlayNext( R.drawable.play_skip_forward, R.string.play_next ),
+    PlayNext( R.drawable.play_skip_forward, R.string.player_action_play_next ),
 
-    Bookmark( R.drawable.bookmark_outline, R.string.bookmark ),
+    Bookmark( R.drawable.bookmark_outline, R.string.library_action_bookmark ),
 
-    Enqueue( R.drawable.enqueue, R.string.enqueue );
+    Enqueue( R.drawable.enqueue, R.string.player_action_enqueue );
 
     fun getStateIcon(bookmarkedState: Long?): Int? {
         return when (this) {

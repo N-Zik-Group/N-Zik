@@ -112,14 +112,14 @@ internal fun FloatingDockNavigation(
             // The user chose Home as NZik's folded control; its source is the active tab slot.
             Box(Modifier.graphicsLayer { alpha = dock.navigationProgress }
                 .then(if (!folded) Modifier.clearAndSetSemantics {} else Modifier)) {
-                DockAction(R.drawable.floating_dock_home, stringResource(R.string.home), folded, dock.state::expand)
+                DockAction(R.drawable.floating_dock_home, stringResource(R.string.home_title), folded, dock.state::expand)
             }
             // Search belongs to the last tab at rest and becomes a square detached control.
             if (showSearch) {
                 Box(Modifier.graphicsLayer { alpha = bottomMiniFraction * dock.navigationProgress }.then(surface))
                 Box(Modifier.graphicsLayer { alpha = dock.navigationProgress }
                     .then(if (!folded) Modifier.clearAndSetSemantics {} else Modifier)) {
-                    DockAction(R.drawable.search, stringResource(R.string.search), folded, onSearch)
+                    DockAction(R.drawable.search, stringResource(R.string.search_title), folded, onSearch)
                 }
             }
         },

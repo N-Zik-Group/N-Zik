@@ -71,13 +71,13 @@ internal fun OtherProxyCard(search: Search) {
         title = stringResource(R.string.settings_section_proxy_title),
         icon = R.drawable.network,
         content = {
-            SettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
+            SettingsDescription(text = stringResource(R.string.settings_restart_required_message))
 
-            if (search.inputValue.isBlank() || stringResource(R.string.enable_proxy).contains(search.inputValue, true)) {
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_proxy_enabled_label).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("other.proxy.enable_proxy"),
-                    title = stringResource(R.string.enable_proxy),
-                    text = stringResource(R.string.settings_desc_other_proxy_enable_proxy),
+                    title = stringResource(R.string.settings_proxy_enabled_label),
+                    text = stringResource(R.string.network_proxy_enabled_description),
                     isChecked = isProxyEnabled,
                     onCheckedChange = {
                         isProxyEnabled = it
@@ -96,11 +96,11 @@ internal fun OtherProxyCard(search: Search) {
                 Column {
 
                     var showProxyModeDialog by remember { mutableStateOf(false) }
-                    if (search.inputValue.isBlank() || stringResource(R.string.proxy_mode).contains(search.inputValue, true)) {
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_proxy_mode_label).contains(search.inputValue, true)) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.proxy_mode"),
-                            title = stringResource(R.string.proxy_mode),
-                            text = stringResource(R.string.settings_desc_other_proxy_proxy_mode),
+                            title = stringResource(R.string.settings_proxy_mode_label),
+                            text = stringResource(R.string.network_proxy_mode_description),
                             selectedValueText = proxyMode.name,
                             icon = R.drawable.server,
                             onClick = { showProxyModeDialog = true }
@@ -109,7 +109,7 @@ internal fun OtherProxyCard(search: Search) {
 
                     DialogPresence(visible = showProxyModeDialog) {
                         ValueSelectorDialog(
-                            title = stringResource(R.string.proxy_mode),
+                            title = stringResource(R.string.settings_proxy_mode_label),
                             selectedValue = proxyMode,
                             values = Proxy.Type.values().toList(),
                             onValueSelected = { proxyMode = it },
@@ -119,11 +119,11 @@ internal fun OtherProxyCard(search: Search) {
                     }
 
                     var showProxyHostDialog by remember { mutableStateOf(false) }
-                    if (search.inputValue.isBlank() || stringResource(R.string.proxy_host).contains(search.inputValue, true)) {
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_proxy_host_label).contains(search.inputValue, true)) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.proxy_host"),
-                            title = stringResource(R.string.proxy_host),
-                            text = stringResource(R.string.settings_desc_other_proxy_proxy_host),
+                            title = stringResource(R.string.settings_proxy_host_label),
+                            text = stringResource(R.string.network_proxy_host_description),
                             selectedValueText = proxyHost,
                             icon = R.drawable.server,
                             onClick = { showProxyHostDialog = true }
@@ -132,9 +132,9 @@ internal fun OtherProxyCard(search: Search) {
 
                     DialogPresence(visible = showProxyHostDialog) {
                         SettingsInputDialog(
-                            title = stringResource(R.string.proxy_host),
+                            title = stringResource(R.string.settings_proxy_host_label),
                             initialValue = proxyHost,
-                            placeholder = stringResource(R.string.proxy_host),
+                            placeholder = stringResource(R.string.settings_proxy_host_label),
                             onDismiss = { showProxyHostDialog = false },
                             onSetValue = { proxyHost = it }
                         ).apply {
@@ -144,11 +144,11 @@ internal fun OtherProxyCard(search: Search) {
                     }
 
                     var showProxyPortDialog by remember { mutableStateOf(false) }
-                    if (search.inputValue.isBlank() || stringResource(R.string.proxy_port).contains(search.inputValue, true)) {
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_proxy_port_label).contains(search.inputValue, true)) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.proxy_port"),
-                            title = stringResource(R.string.proxy_port),
-                            text = stringResource(R.string.settings_desc_other_proxy_proxy_port),
+                            title = stringResource(R.string.settings_proxy_port_label),
+                            text = stringResource(R.string.network_proxy_port_description),
                             selectedValueText = proxyPort.toString(),
                             icon = R.drawable.server,
                             onClick = { showProxyPortDialog = true }
@@ -157,9 +157,9 @@ internal fun OtherProxyCard(search: Search) {
 
                     DialogPresence(visible = showProxyPortDialog) {
                         SettingsInputDialog(
-                            title = stringResource(R.string.proxy_port),
+                            title = stringResource(R.string.settings_proxy_port_label),
                             initialValue = proxyPort.toString(),
-                            placeholder = stringResource(R.string.proxy_port),
+                            placeholder = stringResource(R.string.settings_proxy_port_label),
                             onDismiss = { showProxyPortDialog = false },
                             onSetValue = { proxyPort = it.toIntOrNull() ?: defaultProxyPort }
                         ).apply {
@@ -173,7 +173,7 @@ internal fun OtherProxyCard(search: Search) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.settings_proxy_username"),
                             title = stringResource(R.string.settings_proxy_username),
-                            text = stringResource(R.string.settings_desc_other_proxy_settings_proxy_username),
+                            text = stringResource(R.string.network_proxy_username_description),
                             selectedValueText = if (proxyUsername.isBlank()) "None" else proxyUsername,
                             icon = R.drawable.server,
                             onClick = { showProxyUsernameDialog = true }
@@ -198,7 +198,7 @@ internal fun OtherProxyCard(search: Search) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.settings_proxy_password"),
                             title = stringResource(R.string.settings_proxy_password),
-                            text = stringResource(R.string.settings_desc_other_proxy_settings_proxy_password),
+                            text = stringResource(R.string.network_proxy_password_description),
                             selectedValueText = if (proxyPassword.isBlank()) "None" else "••••••",
                             icon = R.drawable.server,
                             onClick = { showProxyPasswordDialog = true }
@@ -224,7 +224,7 @@ internal fun OtherProxyCard(search: Search) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.settings_region_override"),
                             title = stringResource(R.string.settings_region_override),
-                            text = stringResource(R.string.settings_desc_other_proxy_settings_region_override),
+                            text = stringResource(R.string.network_region_override_description),
                             selectedValueText = if (regionOverride.isBlank()) "Auto (from phone)" else regionOverride,
                             icon = R.drawable.server,
                             onClick = { showRegionOverrideDialog = true }

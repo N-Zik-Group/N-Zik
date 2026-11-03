@@ -28,14 +28,14 @@ fun BurgerMenuSettingsCard(modifier: Modifier = Modifier) {
         onDispose { BurgerMenuSettingsDialog.hideDialog() }
     }
     SettingsSectionCard(
-        title = stringResource(R.string.burger_menu),
+        title = stringResource(R.string.settings_navigation_menu_title),
         icon = R.drawable.burger,
         modifier = modifier,
         content = {
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.burger.burger_menu"),
-                title = stringResource(R.string.burger_menu),
-                text = stringResource(R.string.burger_menu_customize),
+                title = stringResource(R.string.settings_navigation_menu_title),
+                text = stringResource(R.string.settings_navigation_menu_customization_description),
                 icon = R.drawable.burger,
                 onClick = { BurgerMenuSettingsDialog.showDialog() },
             )

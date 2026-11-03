@@ -32,9 +32,9 @@ object HomeAlbumsSettingsDialog : ContentFramedDialog {
     internal fun searchOptions(): List<SettingsNestedOption> = albumsDefaultOrder.map { SettingsNestedOption(it, searchLabelResources.getValue(it)) }
 
     private val searchLabelResources = mapOf(
-        "all" to R.string.all,
-        "favorites" to R.string.favorites,
-        "disliked" to R.string.disliked,
+        "all" to R.string.common_option_all,
+        "favorites" to R.string.library_favorites_title,
+        "disliked" to R.string.library_disliked_title,
     )
     override val dialogTitle: String @Composable get() = stringResource(R.string.home_albums_settings)
     override var isActive: Boolean by mutableStateOf(false)
@@ -119,7 +119,7 @@ object HomeAlbumsSettingsDialog : ContentFramedDialog {
                 if (workingToggles["disliked"] == false) {
                     Database.albumTable.clearAllDisliked()
                 }
-                Toaster.s(R.string.toast_preference_saved); hideDialog()
+                Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }
         )
     }

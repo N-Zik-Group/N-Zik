@@ -74,7 +74,7 @@ class RewindSettingsCardLayoutTest {
         composeRule.waitForIdle()
 
         composeRule
-            .onNodeWithText(context.getString(R.string.rw_settings_yearly))
+            .onNodeWithText(context.getString(R.string.rewind_settings_yearly))
             .performClick()
         composeRule.waitForIdle()
 
@@ -97,13 +97,13 @@ class RewindSettingsCardLayoutTest {
             }
         }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText(context.getString(R.string.module_open)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.modules_open)).assertDoesNotExist()
 
         callback.value = { opens++ }
         composeRule.waitForIdle()
         composeRule.onNodeWithText(context.getString(R.string.rewind_open_desc)).assertIsDisplayed()
         composeRule
-            .onNodeWithText(context.getString(R.string.module_open))
+            .onNodeWithText(context.getString(R.string.modules_open))
             .performClick()
         composeRule.waitForIdle()
 
@@ -125,8 +125,8 @@ class RewindSettingsCardLayoutTest {
         }
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText(context.getString(R.string.rw_settings_title)).assertDoesNotExist()
-        composeRule.onNodeWithText(context.getString(R.string.rw_settings_notifications)).assertDoesNotExist()
-        composeRule.onNodeWithText(context.getString(R.string.rw_settings_playlists_title)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_title)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_notifications)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_playlists_title)).assertDoesNotExist()
     }
 }

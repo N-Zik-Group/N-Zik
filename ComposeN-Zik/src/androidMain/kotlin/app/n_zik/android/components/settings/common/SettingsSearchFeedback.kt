@@ -14,7 +14,7 @@ internal val LocalSettingsSearchMessage = staticCompositionLocalOf<(String) -> U
 /** Wait for typing to settle; recomposition and intermediate keystrokes never enqueue more toasts. */
 @Composable
 fun SettingsSearchEmptyFeedback(query: String, empty: Boolean) {
-    val message = stringResource(R.string.no_results_found)
+    val message = stringResource(R.string.search_no_results_message)
     val showMessage = rememberUpdatedState(LocalSettingsSearchMessage.current)
     LaunchedEffect(query, empty) {
         if (query.isNotBlank() && empty) {

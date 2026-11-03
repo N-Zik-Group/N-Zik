@@ -41,15 +41,15 @@ class Reposition private constructor(
     }
 
     override val confirmationTitle: String
-        @Composable get() = stringResource(R.string.renumber_songs_positions)
+        @Composable get() = stringResource(R.string.playlist_action_shuffle_positions)
     override val confirmationAction: String
-        @Composable get() = stringResource(R.string.shuffle)
+        @Composable get() = stringResource(R.string.player_action_shuffle)
 
-    override val messageId: Int = R.string.renumber_songs_positions
+    override val messageId: Int = R.string.playlist_action_shuffle_positions
     override val iconId: Int = R.drawable.position
     override val dialogTitle: String
         @Composable
-        get() = stringResource( R.string.do_you_really_want_to_renumbering_positions_in_this_playlist )
+        get() = stringResource( R.string.playlist_shuffle_positions_confirmation )
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )

@@ -406,14 +406,14 @@ class AppearancePresetsPlayerRegressionTest {
     }
 
     private fun applyPresetWithTouch(index: Int) {
-        compose.onNodeWithText(context.getString(R.string.appearancepresets)).performClick()
+        compose.onNodeWithText(context.getString(R.string.settings_player_appearance_presets_title)).performClick()
         compose.mainClock.advanceTimeBy(300)
         compose.waitForIdle()
         compose.onNode(hasAnyAncestor(isDialog()) and hasScrollToIndexAction()).performScrollToIndex(index)
         compose.mainClock.advanceTimeBy(300)
         compose.waitForIdle()
         val apply = compose.onNode(hasAnyAncestor(isDialog()) and hasClickAction() and
-            hasText(context.getString(R.string.dialog_apply))).assertIsEnabled()
+            hasText(context.getString(R.string.common_action_apply))).assertIsEnabled()
         val cardBounds = compose.onNodeWithTag("dialogFrameCard").fetchSemanticsNode().boundsInRoot
         val applyBounds = apply.fetchSemanticsNode().boundsInRoot
         assertTrue("Preset ${index + 1}: Apply must be inside the visible dialog", cardBounds.contains(applyBounds.center))

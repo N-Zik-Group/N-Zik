@@ -137,24 +137,24 @@ fun Thumbnail(
         mutableStateOf<PlaybackException?>(player.playerError)
     }
 
-    val localMusicFileNotFoundError = stringResource(R.string.error_local_music_not_found)
-    val networkerror = stringResource(R.string.error_a_network_error_has_occurred)
+    val localMusicFileNotFoundError = stringResource(R.string.player_error_local_file_not_found)
+    val networkerror = stringResource(R.string.downloads_error_network)
     val notfindplayableaudioformaterror =
-        stringResource(R.string.error_couldn_t_find_a_playable_audio_format)
+        stringResource(R.string.player_error_no_playable_format)
     val originalvideodeletederror =
-        stringResource(R.string.error_the_original_video_source_of_this_song_has_been_deleted)
+        stringResource(R.string.player_error_source_deleted)
     val songnotplayabledueserverrestrictionerror =
-        stringResource(R.string.error_this_song_cannot_be_played_due_to_server_restrictions)
+        stringResource(R.string.downloads_error_server_restriction)
     val videoidmismatcherror =
-        stringResource(R.string.error_the_returned_video_id_doesn_t_match_the_requested_one)
+        stringResource(R.string.player_error_video_id_mismatch)
     val unknownplaybackerror =
-        stringResource(R.string.error_an_unknown_playback_error_has_occurred)
+        stringResource(R.string.player_error_unknown)
 
-    val unknownerror = stringResource(R.string.error_unknown)
-    val nointerneterror = stringResource(R.string.error_no_internet)
-    val timeouterror = stringResource(R.string.error_timeout)
+    val unknownerror = stringResource(R.string.common_error_unknown)
+    val nointerneterror = stringResource(R.string.common_error_no_internet)
+    val timeouterror = stringResource(R.string.common_error_connection_timeout)
     val explicterror = stringResource(R.string.parental_control_is_enabled)
-    val formatUnsupported = stringResource(R.string.error_file_unsupported_format)
+    val formatUnsupported = stringResource(R.string.player_error_unsupported_format)
 
 
 
@@ -354,7 +354,7 @@ fun Thumbnail(
                                 .fillMaxSize()
                                 .clip(thumbnailShape())
                                 .glassImageRim(if (showCoverThumbnailAnimation) CircleShape else thumbnailShape()),
-                            contentDescription = stringResource(R.string.cd_background_image),
+                            contentDescription = stringResource(R.string.accessibility_background_image),
                             contentScale = if (cropVideoThumbnails) ContentScale.Crop else ContentScale.Fit
                         )
                     }

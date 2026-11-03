@@ -76,7 +76,7 @@ class SearchBrowseQueryTest {
             val rows = handler.getChildren("$category/AC/DC", context, Database, downloadHelper, null)
             org.junit.Assert.assertEquals(1, rows.size)
             val next = rows.single()
-            assertEquals("${context.getString(app.n_zik.android.R.string.next)} (2)", next.mediaMetadata.title.toString())
+            assertEquals("${context.getString(app.n_zik.android.R.string.common_action_next)} (2)", next.mediaMetadata.title.toString())
             assertTrue(next.mediaMetadata.isBrowsable == true)
             assertTrue(next.mediaMetadata.isPlayable != true)
             assertTrue(handler.getChildren(next.mediaId, context, Database, downloadHelper, null).isEmpty())

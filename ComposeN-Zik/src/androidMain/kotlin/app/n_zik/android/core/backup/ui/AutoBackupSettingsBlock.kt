@@ -73,28 +73,28 @@ fun AutoBackupSettingsBlock() {
 
     OtherSettingsEntry(
         modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_location"),
-        title = stringResource(R.string.auto_backup_location),
-        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_embedded_auto_backup_auto_backup_location), if (autoBackupUri.isEmpty()) stringResource(R.string.auto_backup_location_not_set) else decodedUri),
+        title = stringResource(R.string.backup_auto_location),
+        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.backup_auto_location_description), if (autoBackupUri.isEmpty()) stringResource(R.string.backup_auto_location_not_set) else decodedUri),
         icon = R.drawable.folder,
         onClick = { documentTreeLauncher.launch(null) }
     )
 
     if (autoBackupUri.isEmpty()) {
-        ImportantSettingsDescription(text = stringResource(R.string.auto_backup_location_warning))
+        ImportantSettingsDescription(text = stringResource(R.string.backup_auto_location_warning))
     }
 
     OtherSettingsEntry(
         modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_target"),
-        title = stringResource(R.string.auto_backup_target),
-        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_embedded_auto_backup_auto_backup_target), when (autoBackupTarget) {
-            BackupManager.TARGET_DATABASE -> stringResource(R.string.database)
-            BackupManager.TARGET_SETTINGS -> stringResource(R.string.settings)
-            BackupManager.TARGET_BOTH -> stringResource(R.string.database_and_settings)
+        title = stringResource(R.string.backup_auto_target),
+        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.backup_auto_target_description), when (autoBackupTarget) {
+            BackupManager.TARGET_DATABASE -> stringResource(R.string.backup_target_database_label)
+            BackupManager.TARGET_SETTINGS -> stringResource(R.string.settings_title)
+            BackupManager.TARGET_BOTH -> stringResource(R.string.backup_target_database_and_settings_label)
             // The profile-state target — labeled "Profiles" like everywhere else
             // (the import/export dialogs, the Profiles page).
-            BackupManager.TARGET_ACCOUNTS -> stringResource(R.string.profiles)
-            BackupManager.TARGET_ALL -> stringResource(R.string.export_all)
-            else -> stringResource(R.string.database)
+            BackupManager.TARGET_ACCOUNTS -> stringResource(R.string.profile_title)
+            BackupManager.TARGET_ALL -> stringResource(R.string.backup_export_all)
+            else -> stringResource(R.string.backup_target_database_label)
         }),
         icon = R.drawable.server,
         onClick = { showTargetDialog = true }
@@ -103,32 +103,32 @@ fun AutoBackupSettingsBlock() {
     AnimatedVisibility(visible = autoBackupTarget == BackupManager.TARGET_SETTINGS || autoBackupTarget == BackupManager.TARGET_BOTH || autoBackupTarget == BackupManager.TARGET_ALL) {
         Column {
             OtherSwitchSettingEntry(
-                title = stringResource(R.string.include_youtube_credentials),
-                text = stringResource(R.string.settings_desc_embedded_auto_backup_include_youtube_credentials),
+                title = stringResource(R.string.backup_include_youtube_credentials),
+                text = stringResource(R.string.backup_auto_include_youtube_credentials_description),
                 isChecked = autoBackupIncludeYtb,
                 onCheckedChange = { autoBackupIncludeYtb = it },
                 icon = R.drawable.logo_youtube,
                 modifier = Modifier.settingsSearchTarget("embedded.auto_backup.include_youtube_credentials").padding(start = 24.dp)
             )
             OtherSwitchSettingEntry(
-                title = stringResource(R.string.include_discord_credentials),
-                text = stringResource(R.string.settings_desc_embedded_auto_backup_include_discord_credentials),
+                title = stringResource(R.string.backup_include_discord_credentials),
+                text = stringResource(R.string.backup_auto_include_discord_credentials_description),
                 isChecked = autoBackupIncludeDiscord,
                 onCheckedChange = { autoBackupIncludeDiscord = it },
                 icon = R.drawable.logo_discord,
                 modifier = Modifier.settingsSearchTarget("embedded.auto_backup.include_discord_credentials").padding(start = 24.dp)
             )
             OtherSwitchSettingEntry(
-                title = stringResource(R.string.include_lastfm_credentials),
-                text = stringResource(R.string.settings_desc_embedded_auto_backup_include_lastfm_credentials),
+                title = stringResource(R.string.backup_include_lastfm_credentials),
+                text = stringResource(R.string.backup_auto_include_lastfm_credentials_description),
                 isChecked = autoBackupIncludeLastfm,
                 onCheckedChange = { autoBackupIncludeLastfm = it },
                 icon = R.drawable.logo_lastfm,
                 modifier = Modifier.settingsSearchTarget("embedded.auto_backup.include_lastfm_credentials").padding(start = 24.dp)
             )
             OtherSwitchSettingEntry(
-                title = stringResource(R.string.include_proxy_credentials),
-                text = stringResource(R.string.settings_desc_embedded_auto_backup_include_proxy_credentials),
+                title = stringResource(R.string.backup_include_proxy_password),
+                text = stringResource(R.string.backup_auto_include_proxy_credentials_description),
                 isChecked = autoBackupIncludeProxy,
                 onCheckedChange = { autoBackupIncludeProxy = it },
                 icon = R.drawable.shield_checkmark,
@@ -139,16 +139,16 @@ fun AutoBackupSettingsBlock() {
 
     OtherSettingsEntry(
         modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_max_backups"),
-        title = stringResource(R.string.auto_backup_max_backups),
-        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_embedded_auto_backup_auto_backup_max_backups), if (autoBackupMaxBackups == -1) stringResource(R.string.unlimited) else autoBackupMaxBackups.toString()),
+        title = stringResource(R.string.backup_auto_max_backups),
+        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.backup_auto_maximum_backups_description), if (autoBackupMaxBackups == -1) stringResource(R.string.common_limit_unlimited_label) else autoBackupMaxBackups.toString()),
         icon = R.drawable.server,
         onClick = { showMaxBackupsDialog = true }
     )
 
     OtherSwitchSettingEntry(
         modifier = Modifier.settingsSearchTarget("embedded.auto_backup.pre_install_backup"),
-        title = stringResource(R.string.pre_install_backup),
-        text = stringResource(R.string.pre_install_backup_description),
+        title = stringResource(R.string.settings_backup_before_install_label),
+        text = stringResource(R.string.backup_before_update_description),
         isChecked = autoBackupPreInstall,
         onCheckedChange = {
             autoBackupPreInstall = it
@@ -158,14 +158,14 @@ fun AutoBackupSettingsBlock() {
 
     OtherSettingsEntry(
         modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_interval"),
-        title = stringResource(R.string.auto_backup_interval),
-        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_embedded_auto_backup_auto_backup_interval), when (autoBackupInterval) {
-            BackupManager.INTERVAL_HOURLY -> stringResource(R.string.auto_backup_interval_hourly)
-            BackupManager.INTERVAL_DAILY -> stringResource(R.string.auto_backup_interval_daily)
-            BackupManager.INTERVAL_WEEKLY -> stringResource(R.string.auto_backup_interval_weekly)
-            BackupManager.INTERVAL_MONTHLY -> stringResource(R.string.auto_backup_interval_monthly)
-            BackupManager.INTERVAL_CUSTOM -> stringResource(R.string.auto_backup_interval_custom)
-            else -> stringResource(R.string.auto_backup_interval_none)
+        title = stringResource(R.string.backup_auto_interval),
+        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.backup_auto_interval_description), when (autoBackupInterval) {
+            BackupManager.INTERVAL_HOURLY -> stringResource(R.string.backup_auto_interval_hourly)
+            BackupManager.INTERVAL_DAILY -> stringResource(R.string.backup_auto_interval_daily)
+            BackupManager.INTERVAL_WEEKLY -> stringResource(R.string.backup_auto_interval_weekly)
+            BackupManager.INTERVAL_MONTHLY -> stringResource(R.string.backup_auto_interval_monthly)
+            BackupManager.INTERVAL_CUSTOM -> stringResource(R.string.backup_auto_interval_custom)
+            else -> stringResource(R.string.backup_auto_interval_none)
         }),
         icon = R.drawable.history,
         onClick = { showIntervalDialog = true }
@@ -173,7 +173,7 @@ fun AutoBackupSettingsBlock() {
 
     DialogPresence(visible = showIntervalDialog) {
         ValueSelectorDialog(
-            title = stringResource(R.string.auto_backup_interval),
+            title = stringResource(R.string.backup_auto_interval),
             selectedValue = autoBackupInterval,
             values = listOf(
                 BackupManager.INTERVAL_NONE,
@@ -190,12 +190,12 @@ fun AutoBackupSettingsBlock() {
             },
             valueText = {
                 when (it) {
-                    BackupManager.INTERVAL_HOURLY -> stringResource(R.string.auto_backup_interval_hourly)
-                    BackupManager.INTERVAL_DAILY -> stringResource(R.string.auto_backup_interval_daily)
-                    BackupManager.INTERVAL_WEEKLY -> stringResource(R.string.auto_backup_interval_weekly)
-                    BackupManager.INTERVAL_MONTHLY -> stringResource(R.string.auto_backup_interval_monthly)
-                    BackupManager.INTERVAL_CUSTOM -> stringResource(R.string.auto_backup_interval_custom)
-                    else -> stringResource(R.string.auto_backup_interval_none)
+                    BackupManager.INTERVAL_HOURLY -> stringResource(R.string.backup_auto_interval_hourly)
+                    BackupManager.INTERVAL_DAILY -> stringResource(R.string.backup_auto_interval_daily)
+                    BackupManager.INTERVAL_WEEKLY -> stringResource(R.string.backup_auto_interval_weekly)
+                    BackupManager.INTERVAL_MONTHLY -> stringResource(R.string.backup_auto_interval_monthly)
+                    BackupManager.INTERVAL_CUSTOM -> stringResource(R.string.backup_auto_interval_custom)
+                    else -> stringResource(R.string.backup_auto_interval_none)
                 }
             },
             onDismiss = { showIntervalDialog = false }
@@ -205,21 +205,21 @@ fun AutoBackupSettingsBlock() {
     AnimatedVisibility(visible = autoBackupInterval == BackupManager.INTERVAL_CUSTOM) {
         Column {
             OtherSettingsEntry(
-                title = stringResource(R.string.auto_backup_custom_interval_value),
-                text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_embedded_auto_backup_auto_backup_custom_interval_value), autoBackupCustomIntervalValue.toString()),
+                title = stringResource(R.string.backup_auto_custom_interval_value),
+                text = stringResource(R.string.settings_description_with_value, stringResource(R.string.backup_auto_custom_interval_value_description), autoBackupCustomIntervalValue.toString()),
                 icon = R.drawable.time,
                 onClick = { showCustomValueDialog = true },
                 modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_custom_interval_value").padding(start = 24.dp)
             )
             OtherSettingsEntry(
-                title = stringResource(R.string.auto_backup_custom_interval_unit),
-                text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_embedded_auto_backup_auto_backup_custom_interval_unit), when (autoBackupCustomIntervalUnit) {
-                    BackupManager.UNIT_MINUTES -> stringResource(R.string.auto_backup_unit_minutes)
-                    BackupManager.UNIT_HOURS -> stringResource(R.string.auto_backup_unit_hours)
-                    BackupManager.UNIT_DAYS -> stringResource(R.string.auto_backup_unit_days)
-                    BackupManager.UNIT_WEEKS -> stringResource(R.string.auto_backup_unit_weeks)
-                    BackupManager.UNIT_MONTHS -> stringResource(R.string.auto_backup_unit_months)
-                    else -> stringResource(R.string.auto_backup_unit_hours)
+                title = stringResource(R.string.backup_auto_custom_interval_unit),
+                text = stringResource(R.string.settings_description_with_value, stringResource(R.string.backup_auto_custom_interval_unit_description), when (autoBackupCustomIntervalUnit) {
+                    BackupManager.UNIT_MINUTES -> stringResource(R.string.backup_auto_unit_minutes)
+                    BackupManager.UNIT_HOURS -> stringResource(R.string.backup_auto_unit_hours)
+                    BackupManager.UNIT_DAYS -> stringResource(R.string.backup_auto_unit_days)
+                    BackupManager.UNIT_WEEKS -> stringResource(R.string.backup_auto_unit_weeks)
+                    BackupManager.UNIT_MONTHS -> stringResource(R.string.backup_auto_unit_months)
+                    else -> stringResource(R.string.backup_auto_unit_hours)
                 }),
                 icon = R.drawable.calendar,
                 onClick = { showCustomUnitDialog = true },
@@ -230,7 +230,7 @@ fun AutoBackupSettingsBlock() {
 
     DialogPresence(visible = showCustomValueDialog) {
         ValueSelectorDialog(
-            title = stringResource(R.string.auto_backup_custom_interval_value),
+            title = stringResource(R.string.backup_auto_custom_interval_value),
             selectedValue = autoBackupCustomIntervalValue,
             values = (1..60).toList(),
             onValueSelected = {
@@ -245,7 +245,7 @@ fun AutoBackupSettingsBlock() {
 
     DialogPresence(visible = showCustomUnitDialog) {
         ValueSelectorDialog(
-            title = stringResource(R.string.auto_backup_custom_interval_unit),
+            title = stringResource(R.string.backup_auto_custom_interval_unit),
             selectedValue = autoBackupCustomIntervalUnit,
             values = listOf(
                 BackupManager.UNIT_MINUTES,
@@ -261,12 +261,12 @@ fun AutoBackupSettingsBlock() {
             },
             valueText = {
                 when (it) {
-                    BackupManager.UNIT_MINUTES -> stringResource(R.string.auto_backup_unit_minutes)
-                    BackupManager.UNIT_HOURS -> stringResource(R.string.auto_backup_unit_hours)
-                    BackupManager.UNIT_DAYS -> stringResource(R.string.auto_backup_unit_days)
-                    BackupManager.UNIT_WEEKS -> stringResource(R.string.auto_backup_unit_weeks)
-                    BackupManager.UNIT_MONTHS -> stringResource(R.string.auto_backup_unit_months)
-                    else -> stringResource(R.string.auto_backup_unit_hours)
+                    BackupManager.UNIT_MINUTES -> stringResource(R.string.backup_auto_unit_minutes)
+                    BackupManager.UNIT_HOURS -> stringResource(R.string.backup_auto_unit_hours)
+                    BackupManager.UNIT_DAYS -> stringResource(R.string.backup_auto_unit_days)
+                    BackupManager.UNIT_WEEKS -> stringResource(R.string.backup_auto_unit_weeks)
+                    BackupManager.UNIT_MONTHS -> stringResource(R.string.backup_auto_unit_months)
+                    else -> stringResource(R.string.backup_auto_unit_hours)
                 }
             },
             onDismiss = { showCustomUnitDialog = false }
@@ -276,8 +276,8 @@ fun AutoBackupSettingsBlock() {
     AnimatedVisibility(visible = autoBackupInterval in listOf(BackupManager.INTERVAL_DAILY, BackupManager.INTERVAL_WEEKLY, BackupManager.INTERVAL_MONTHLY)) {
         Column {
             OtherSettingsEntry(
-                title = stringResource(R.string.auto_backup_schedule_time),
-                text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_embedded_auto_backup_auto_backup_schedule_time), "${autoBackupScheduleHour.toString().padStart(2, '0')}:00"),
+                title = stringResource(R.string.backup_auto_schedule_time),
+                text = stringResource(R.string.settings_description_with_value, stringResource(R.string.backup_auto_schedule_time_description), "${autoBackupScheduleHour.toString().padStart(2, '0')}:00"),
                 icon = R.drawable.time,
                 onClick = { showScheduleHourDialog = true },
                 modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_schedule_time").padding(start = 24.dp)
@@ -287,7 +287,7 @@ fun AutoBackupSettingsBlock() {
 
     DialogPresence(visible = showScheduleHourDialog) {
         ValueSelectorDialog(
-            title = stringResource(R.string.auto_backup_schedule_time),
+            title = stringResource(R.string.backup_auto_schedule_time),
             selectedValue = autoBackupScheduleHour,
             values = (0..23).toList(),
             onValueSelected = {
@@ -303,8 +303,8 @@ fun AutoBackupSettingsBlock() {
     AnimatedVisibility(visible = autoBackupInterval == BackupManager.INTERVAL_WEEKLY) {
         Column {
             OtherSettingsEntry(
-                title = stringResource(R.string.auto_backup_schedule_day_of_week),
-                text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_embedded_auto_backup_auto_backup_schedule_day_of_week), when (autoBackupScheduleDayOfWeek) {
+                title = stringResource(R.string.backup_auto_schedule_day_of_week),
+                text = stringResource(R.string.settings_description_with_value, stringResource(R.string.backup_auto_schedule_day_of_week_description), when (autoBackupScheduleDayOfWeek) {
                     1 -> "Monday"
                     2 -> "Tuesday"
                     3 -> "Wednesday"
@@ -323,7 +323,7 @@ fun AutoBackupSettingsBlock() {
 
     DialogPresence(visible = showScheduleDayOfWeekDialog) {
         ValueSelectorDialog(
-            title = stringResource(R.string.auto_backup_schedule_day_of_week),
+            title = stringResource(R.string.backup_auto_schedule_day_of_week),
             selectedValue = autoBackupScheduleDayOfWeek,
             values = (1..7).toList(),
             onValueSelected = {
@@ -344,8 +344,8 @@ fun AutoBackupSettingsBlock() {
     AnimatedVisibility(visible = autoBackupInterval == BackupManager.INTERVAL_MONTHLY) {
         Column {
             OtherSettingsEntry(
-                title = stringResource(R.string.auto_backup_schedule_day_of_month),
-                text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_embedded_auto_backup_auto_backup_schedule_day_of_month), autoBackupScheduleDayOfMonth.toString()),
+                title = stringResource(R.string.backup_auto_schedule_day_of_month),
+                text = stringResource(R.string.settings_description_with_value, stringResource(R.string.backup_auto_schedule_day_of_month_description), autoBackupScheduleDayOfMonth.toString()),
                 icon = R.drawable.calendar_clear,
                 onClick = { showScheduleDayOfMonthDialog = true },
                 modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_schedule_day_of_month").padding(start = 24.dp)
@@ -355,7 +355,7 @@ fun AutoBackupSettingsBlock() {
 
     DialogPresence(visible = showScheduleDayOfMonthDialog) {
         ValueSelectorDialog(
-            title = stringResource(R.string.auto_backup_schedule_day_of_month),
+            title = stringResource(R.string.backup_auto_schedule_day_of_month),
             selectedValue = autoBackupScheduleDayOfMonth,
             values = (1..28).toList(),
             onValueSelected = {
@@ -372,8 +372,8 @@ fun AutoBackupSettingsBlock() {
         Column {
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_on_change"),
-                title = stringResource(R.string.auto_backup_on_change),
-                text = stringResource(R.string.auto_backup_on_change_description),
+                title = stringResource(R.string.backup_auto_on_change),
+                text = stringResource(R.string.backup_auto_on_change_description),
                 isChecked = autoBackupOnDbChange,
                 onCheckedChange = {
                     autoBackupOnDbChange = it
@@ -385,7 +385,7 @@ fun AutoBackupSettingsBlock() {
 
     DialogPresence(visible = showTargetDialog) {
         ValueSelectorDialog(
-            title = stringResource(R.string.auto_backup_target),
+            title = stringResource(R.string.backup_auto_target),
             selectedValue = autoBackupTarget,
             values = listOf(
                 BackupManager.TARGET_DATABASE,
@@ -400,14 +400,14 @@ fun AutoBackupSettingsBlock() {
             },
             valueText = {
                 when (it) {
-                    BackupManager.TARGET_DATABASE -> stringResource(R.string.database)
-                    BackupManager.TARGET_SETTINGS -> stringResource(R.string.settings)
-                    BackupManager.TARGET_BOTH -> stringResource(R.string.database_and_settings)
+                    BackupManager.TARGET_DATABASE -> stringResource(R.string.backup_target_database_label)
+                    BackupManager.TARGET_SETTINGS -> stringResource(R.string.settings_title)
+                    BackupManager.TARGET_BOTH -> stringResource(R.string.backup_target_database_and_settings_label)
                     // The profile-state target — labeled "Profiles" like everywhere else
             // (the import/export dialogs, the Profiles page).
-            BackupManager.TARGET_ACCOUNTS -> stringResource(R.string.profiles)
-                    BackupManager.TARGET_ALL -> stringResource(R.string.export_all)
-                    else -> stringResource(R.string.database)
+            BackupManager.TARGET_ACCOUNTS -> stringResource(R.string.profile_title)
+                    BackupManager.TARGET_ALL -> stringResource(R.string.backup_export_all)
+                    else -> stringResource(R.string.backup_target_database_label)
                 }
             },
             onDismiss = { showTargetDialog = false }
@@ -416,14 +416,14 @@ fun AutoBackupSettingsBlock() {
 
     DialogPresence(visible = showMaxBackupsDialog) {
         ValueSelectorDialog(
-            title = stringResource(R.string.auto_backup_max_backups),
+            title = stringResource(R.string.backup_auto_max_backups),
             selectedValue = autoBackupMaxBackups,
             values = listOf(1, 3, 5, 10, 20, -1),
             onValueSelected = {
                 autoBackupMaxBackups = it
                 showMaxBackupsDialog = false
             },
-            valueText = { if (it == -1) stringResource(R.string.unlimited) else it.toString() },
+            valueText = { if (it == -1) stringResource(R.string.common_limit_unlimited_label) else it.toString() },
             onDismiss = { showMaxBackupsDialog = false }
         )
     }

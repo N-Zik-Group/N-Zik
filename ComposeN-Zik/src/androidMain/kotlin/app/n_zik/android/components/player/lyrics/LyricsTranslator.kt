@@ -27,7 +27,7 @@ fun TranslateLyricsWithRomanization(
     LaunchedEffect(showSecondLine, romanizationEnabled, textToTranslate, destinationLanguage, translateEnabled){
         if (translateEnabled && textToTranslate.isNotEmpty()) {
             withContext(NzikDispatchers.UI) {
-                Toaster.i(R.string.translation_in_progress)
+                Toaster.i(R.string.lyrics_translation_in_progress_message)
             }
         }
         var destLanguage = destinationLanguage
@@ -126,9 +126,9 @@ fun TranslateLyricsWithRomanization(
         withContext(NzikDispatchers.UI) {
             if (textToTranslate.isNotEmpty()) {
                 if (translatedText.isNotEmpty() && translateEnabled) {
-                    Toaster.s(R.string.translation_successful)
+                    Toaster.s(R.string.lyrics_translation_success_message)
                 } else if (translateEnabled) {
-                    Toaster.e(R.string.translation_failed)
+                    Toaster.e(R.string.lyrics_translation_failed_message)
                 }
             }
         }

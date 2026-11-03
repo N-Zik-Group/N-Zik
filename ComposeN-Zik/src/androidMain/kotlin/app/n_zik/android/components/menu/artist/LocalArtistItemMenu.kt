@@ -106,12 +106,12 @@ class LocalArtistItemMenu private constructor(
     @Composable
     override fun ListMenu() = ListMenu.Menu(title = null, showDragHandle = false) {
         // Section: Playback
-        SectionTitle(stringResource(R.string.playback))
+        SectionTitle(stringResource(R.string.common_playback_section_title))
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Management
-        SectionTitle(stringResource(R.string.management))
+        SectionTitle(stringResource(R.string.library_management_section_title))
         buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(3)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -121,14 +121,14 @@ class LocalArtistItemMenu private constructor(
     override fun GridMenu() = GridMenu.Menu(title = null, showDragHandle = false) {
         // Section: Playback
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.playback))
+            SectionTitle(stringResource(R.string.common_playback_section_title))
         }
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
         // Section: Management
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.management))
+            SectionTitle(stringResource(R.string.library_management_section_title))
         }
         buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(3)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -281,15 +281,15 @@ class LocalArtistItemMenu private constructor(
                             }
                             val messageId = if (showDisliked.isEnabled) {
                                 when(newState) {
-                                    true -> R.string.added_to_favorites
-                                    false -> R.string.added_to_dislikes
-                                    null -> R.string.removed_from_favorites
+                                    true -> R.string.library_favorites_added
+                                    false -> R.string.library_dislikes_added
+                                    null -> R.string.library_favorites_removed
                                 }
                             } else {
                                 when(newState) {
-                                    true -> R.string.added_to_favorites
-                                    null -> R.string.removed_from_favorites
-                                    else -> R.string.added_to_favorites
+                                    true -> R.string.library_favorites_added
+                                    null -> R.string.library_favorites_removed
+                                    else -> R.string.library_favorites_added
                                 }
                             }
                             with( artist ) {
@@ -348,7 +348,7 @@ class LocalArtistItemMenu private constructor(
 
         val playAll = object : MenuIcon, Descriptive, Clickable {
             override val iconId: Int = R.drawable.play
-            override val messageId: Int = R.string.play_all_local_songs
+            override val messageId: Int = R.string.artist_action_play_local_songs
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() {
                 if (songs.isNotEmpty()) {
@@ -356,7 +356,7 @@ class LocalArtistItemMenu private constructor(
                     binder?.player?.forcePlayAtIndex(songs.map { it.asMediaItem }, 0)
                     menuState.hide()
                 } else {
-                    Toaster.e(R.string.no_song_found)
+                    Toaster.e(R.string.player_no_song_found)
                 }
             }
             override fun onLongClick() {}
@@ -379,7 +379,7 @@ class LocalArtistItemMenu private constructor(
             ArtistItemDisplay(
                 title = displayTitle,
                 thumbnailUrl = displayThumbnailUrl,
-                subscribersCount = "${songs.size} ${stringResource(R.string.songs)}"
+                subscribersCount = "${songs.size} ${stringResource(R.string.library_songs_title)}"
             )
 
             if (menuStyle == MenuStyle.List)

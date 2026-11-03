@@ -122,7 +122,7 @@ class PlaybackSettingsMenuDefaultsTest {
         show(MenuStyle.Grid)
         scrollGridToGain()
         compose.onNodeWithText(title).performClick()
-        compose.onNodeWithText(context.getString(R.string.reset)).performClick()
+        compose.onNodeWithText(context.getString(R.string.common_action_reset)).performClick()
         assertReset()
     }
 

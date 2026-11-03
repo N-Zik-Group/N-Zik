@@ -150,7 +150,7 @@ class PlayerLiveArtworkLayoutTest {
                 context.preferences.edit().putFloat(thumbnailSpacingKey, spacing)
                     .putFloat(thumbnailFadeExKey, fade).commit()
             }
-            compose.onNodeWithText(context.getString(R.string.dialog_close)).performClick()
+            compose.onNodeWithText(context.getString(R.string.common_action_close)).performClick()
             compose.waitForIdle()
             verifyForeground()
         }

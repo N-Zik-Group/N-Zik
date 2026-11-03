@@ -23,13 +23,13 @@ internal fun UiGlassCard() {
     val store = rememberGlassStore()
     var enabled by rememberGlassEnabled(store)
     var showPerformanceWarning by rememberSaveable(store.profileId) { mutableStateOf(false) }
-    val label = stringResource(R.string.liquid_glass)
-    val enabledLabel = stringResource(R.string.liquid_glass_enable)
+    val label = stringResource(R.string.glass_effect_title)
+    val enabledLabel = stringResource(R.string.glass_effect_enabled_title)
     SettingsSectionCard(title = label, icon = R.drawable.color_palette, content = {
         OtherSwitchSettingEntry(
             title = enabledLabel,
             modifier = Modifier.testTag("settings.glass.master").settingsSearchTarget("glass.master"),
-            text = stringResource(R.string.liquid_glass_enable_desc),
+            text = stringResource(R.string.glass_effect_enabled_description),
             isChecked = enabled,
             onCheckedChange = { requested ->
                 if (requested) showPerformanceWarning = true else enabled = false
@@ -39,9 +39,9 @@ internal fun UiGlassCard() {
     })
     DialogPresence(showPerformanceWarning) {
         ConfirmationDialog(
-            title = stringResource(R.string.glass_enable_warning_title),
-            text = stringResource(R.string.glass_enable_warning_description),
-            confirmText = stringResource(R.string.glass_enable_confirm),
+            title = stringResource(R.string.glass_effect_enable_warning_title),
+            text = stringResource(R.string.glass_effect_enable_warning_description),
+            confirmText = stringResource(R.string.glass_effect_enable_confirm),
             onDismiss = { showPerformanceWarning = false },
             onConfirm = { enabled = true },
         )

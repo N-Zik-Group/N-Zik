@@ -24,11 +24,11 @@ import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 internal enum class GlassDestinationGroup(@StringRes val title: Int, val icon: Int, @StringRes val summary: Int) {
-    Navigation(R.string.glass_destination_navigation, R.drawable.menu, R.string.glass_navigation_summary),
-    Playback(R.string.glass_destination_playback, R.drawable.musical_notes, R.string.glass_playback_summary),
-    Pages(R.string.glass_destination_pages, R.drawable.search, R.string.glass_pages_summary),
-    Windows(R.string.glass_destination_windows, R.drawable.sort_grid, R.string.glass_windows_summary),
-    Shared(R.string.glass_destination_shared, R.drawable.color_palette, R.string.glass_shared_summary),
+    Navigation(R.string.glass_effect_destination_navigation, R.drawable.menu, R.string.glass_effect_navigation_summary),
+    Playback(R.string.glass_effect_destination_playback, R.drawable.musical_notes, R.string.glass_effect_playback_summary),
+    Pages(R.string.glass_effect_destination_pages, R.drawable.search, R.string.glass_effect_pages_summary),
+    Windows(R.string.glass_effect_destination_windows, R.drawable.sort_grid, R.string.glass_effect_windows_summary),
+    Shared(R.string.glass_effect_destination_shared, R.drawable.color_palette, R.string.glass_effect_shared_summary),
 }
 
 internal data class GlassPolicyRow(
@@ -40,47 +40,47 @@ internal data class GlassPolicyRow(
 
 internal fun glassDestinationRows(group: GlassDestinationGroup): List<GlassPolicyRow> = when (group) {
     GlassDestinationGroup.Navigation -> listOf(
-        GlassPolicyRow(R.string.glass_navigation_bars, GlassArea.Nav, description = R.string.glass_navigation_bars_description),
-        GlassPolicyRow(R.string.glass_navigation_header, GlassArea.Header, description = R.string.glass_navigation_header_description))
+        GlassPolicyRow(R.string.glass_effect_navigation_bars, GlassArea.Nav, description = R.string.glass_effect_navigation_bars_description),
+        GlassPolicyRow(R.string.glass_effect_navigation_header, GlassArea.Header, description = R.string.glass_effect_navigation_header_description))
     GlassDestinationGroup.Playback -> listOf(
-        GlassPolicyRow(R.string.glass_mini_player, GlassArea.MiniPlayer, description = R.string.glass_mini_player_description),
-        GlassPolicyRow(R.string.glass_role_player_header, GlassArea.ActionButtons, GlassScope.PlayerHeader, description = R.string.glass_role_player_header_description),
-        GlassPolicyRow(R.string.glass_role_player_information, GlassArea.ActionButtons, GlassScope.PlayerInformation, description = R.string.glass_role_player_information_description),
-        GlassPolicyRow(R.string.glass_role_player_favorite, GlassArea.ActionButtons, GlassScope.PlayerFavorite, description = R.string.glass_role_player_favorite_description),
-        GlassPolicyRow(R.string.glass_role_player_time, GlassArea.ActionButtons, GlassScope.PlayerTime, description = R.string.glass_role_player_time_description),
-        GlassPolicyRow(R.string.glass_role_player_seek, GlassArea.ActionButtons, GlassScope.PlayerSeek, description = R.string.glass_role_player_seek_description),
-        GlassPolicyRow(R.string.glass_role_player_transport, GlassArea.ActionButtons, GlassScope.PlayerTransport, description = R.string.glass_role_player_transport_description),
-        GlassPolicyRow(R.string.glass_role_player_actions, GlassArea.ActionButtons, GlassScope.PlayerActions, description = R.string.glass_role_player_actions_description),
-        GlassPolicyRow(R.string.glass_role_lyrics, GlassArea.ActionButtons, GlassScope.Lyrics, description = R.string.glass_role_lyrics_description),
-        GlassPolicyRow(R.string.glass_role_visualizer, GlassArea.ActionButtons, GlassScope.Visualizer, description = R.string.glass_role_visualizer_description),
-        GlassPolicyRow(R.string.glass_role_queue_surface, GlassArea.Menus, GlassScope.Queue, description = R.string.glass_role_queue_surface_description),
-        GlassPolicyRow(R.string.glass_role_queue_actions, GlassArea.ActionButtons, GlassScope.Queue, description = R.string.glass_role_queue_actions_description))
+        GlassPolicyRow(R.string.glass_effect_mini_player, GlassArea.MiniPlayer, description = R.string.glass_effect_mini_player_description),
+        GlassPolicyRow(R.string.glass_effect_role_player_header, GlassArea.ActionButtons, GlassScope.PlayerHeader, description = R.string.glass_effect_role_player_header_description),
+        GlassPolicyRow(R.string.glass_effect_role_player_information, GlassArea.ActionButtons, GlassScope.PlayerInformation, description = R.string.glass_effect_role_player_information_description),
+        GlassPolicyRow(R.string.glass_effect_role_player_favorite, GlassArea.ActionButtons, GlassScope.PlayerFavorite, description = R.string.glass_effect_role_player_favorite_description),
+        GlassPolicyRow(R.string.glass_effect_role_player_time, GlassArea.ActionButtons, GlassScope.PlayerTime, description = R.string.glass_effect_role_player_time_description),
+        GlassPolicyRow(R.string.glass_effect_role_player_seek, GlassArea.ActionButtons, GlassScope.PlayerSeek, description = R.string.glass_effect_role_player_seek_description),
+        GlassPolicyRow(R.string.glass_effect_role_player_transport, GlassArea.ActionButtons, GlassScope.PlayerTransport, description = R.string.glass_effect_role_player_transport_description),
+        GlassPolicyRow(R.string.glass_effect_role_player_actions, GlassArea.ActionButtons, GlassScope.PlayerActions, description = R.string.glass_effect_role_player_actions_description),
+        GlassPolicyRow(R.string.glass_effect_role_lyrics, GlassArea.ActionButtons, GlassScope.Lyrics, description = R.string.glass_effect_role_lyrics_description),
+        GlassPolicyRow(R.string.glass_effect_role_visualizer, GlassArea.ActionButtons, GlassScope.Visualizer, description = R.string.glass_effect_role_visualizer_description),
+        GlassPolicyRow(R.string.glass_effect_role_queue_surface, GlassArea.Menus, GlassScope.Queue, description = R.string.glass_effect_role_queue_surface_description),
+        GlassPolicyRow(R.string.glass_effect_role_queue_actions, GlassArea.ActionButtons, GlassScope.Queue, description = R.string.glass_effect_role_queue_actions_description))
     GlassDestinationGroup.Pages -> listOf(
-        GlassPolicyRow(R.string.glass_role_home_actions, GlassArea.ActionButtons, GlassScope.Home, description = R.string.glass_role_home_actions_description),
-        GlassPolicyRow(R.string.glass_role_home_cards, GlassArea.MoodCards, GlassScope.Home, description = R.string.glass_role_home_cards_description),
-        GlassPolicyRow(R.string.glass_role_library_actions, GlassArea.ActionButtons, GlassScope.Library, description = R.string.glass_role_library_actions_description),
-        GlassPolicyRow(R.string.glass_role_search_actions, GlassArea.ActionButtons, GlassScope.Search, description = R.string.glass_role_search_actions_description),
-        GlassPolicyRow(R.string.glass_role_details_actions, GlassArea.ActionButtons, GlassScope.Details, description = R.string.glass_role_details_actions_description),
-        GlassPolicyRow(R.string.glass_role_details_cards, GlassArea.SettingsCards, GlassScope.Details, description = R.string.glass_role_details_cards_description),
-        GlassPolicyRow(R.string.glass_role_settings_actions, GlassArea.ActionButtons, GlassScope.SettingsProfiles, description = R.string.glass_role_settings_actions_description),
-        GlassPolicyRow(R.string.glass_role_settings_cards, GlassArea.SettingsCards, GlassScope.SettingsProfiles, description = R.string.glass_role_settings_cards_description),
-        GlassPolicyRow(R.string.glass_role_rewind_actions, GlassArea.ActionButtons, GlassScope.Rewind, description = R.string.glass_role_rewind_actions_description),
-        GlassPolicyRow(R.string.glass_role_rewind_cards, GlassArea.MoodCards, GlassScope.Rewind, description = R.string.glass_role_rewind_cards_description),
-        GlassPolicyRow(R.string.glass_role_onboarding_actions, GlassArea.ActionButtons, GlassScope.Onboarding, description = R.string.glass_role_onboarding_actions_description),
-        GlassPolicyRow(R.string.glass_role_onboarding_cards, GlassArea.SettingsCards, GlassScope.Onboarding, description = R.string.glass_role_onboarding_cards_description))
+        GlassPolicyRow(R.string.glass_effect_role_home_actions, GlassArea.ActionButtons, GlassScope.Home, description = R.string.glass_effect_role_home_actions_description),
+        GlassPolicyRow(R.string.glass_effect_role_home_cards, GlassArea.MoodCards, GlassScope.Home, description = R.string.glass_effect_role_home_cards_description),
+        GlassPolicyRow(R.string.glass_effect_role_library_actions, GlassArea.ActionButtons, GlassScope.Library, description = R.string.glass_effect_role_library_actions_description),
+        GlassPolicyRow(R.string.glass_effect_role_search_actions, GlassArea.ActionButtons, GlassScope.Search, description = R.string.glass_effect_role_search_actions_description),
+        GlassPolicyRow(R.string.glass_effect_role_details_actions, GlassArea.ActionButtons, GlassScope.Details, description = R.string.glass_effect_role_details_actions_description),
+        GlassPolicyRow(R.string.glass_effect_role_details_cards, GlassArea.SettingsCards, GlassScope.Details, description = R.string.glass_effect_role_details_cards_description),
+        GlassPolicyRow(R.string.glass_effect_role_settings_actions, GlassArea.ActionButtons, GlassScope.SettingsProfiles, description = R.string.glass_effect_role_settings_actions_description),
+        GlassPolicyRow(R.string.glass_effect_role_settings_cards, GlassArea.SettingsCards, GlassScope.SettingsProfiles, description = R.string.glass_effect_role_settings_cards_description),
+        GlassPolicyRow(R.string.glass_effect_role_rewind_actions, GlassArea.ActionButtons, GlassScope.Rewind, description = R.string.glass_effect_role_rewind_actions_description),
+        GlassPolicyRow(R.string.glass_effect_role_rewind_cards, GlassArea.MoodCards, GlassScope.Rewind, description = R.string.glass_effect_role_rewind_cards_description),
+        GlassPolicyRow(R.string.glass_effect_role_onboarding_actions, GlassArea.ActionButtons, GlassScope.Onboarding, description = R.string.glass_effect_role_onboarding_actions_description),
+        GlassPolicyRow(R.string.glass_effect_role_onboarding_cards, GlassArea.SettingsCards, GlassScope.Onboarding, description = R.string.glass_effect_role_onboarding_cards_description))
     GlassDestinationGroup.Windows -> listOf(
-        GlassPolicyRow(R.string.glass_where_menus, GlassArea.Menus, description = R.string.glass_where_menus_description),
-        GlassPolicyRow(R.string.glass_where_dropdowns, GlassArea.Dropdowns, description = R.string.glass_where_dropdowns_description),
-        GlassPolicyRow(R.string.glass_where_dialogs, GlassArea.Dialogs, description = R.string.glass_where_dialogs_description),
-        GlassPolicyRow(R.string.glass_where_dialog_buttons, GlassArea.DialogButtons, description = R.string.glass_where_dialog_buttons_description),
-        GlassPolicyRow(R.string.glass_role_messages, GlassArea.Menus, GlassScope.Toast, description = R.string.glass_role_messages_description))
+        GlassPolicyRow(R.string.glass_effect_where_menus, GlassArea.Menus, description = R.string.glass_effect_where_menus_description),
+        GlassPolicyRow(R.string.glass_effect_where_dropdowns, GlassArea.Dropdowns, description = R.string.glass_effect_where_dropdowns_description),
+        GlassPolicyRow(R.string.glass_effect_where_dialogs, GlassArea.Dialogs, description = R.string.glass_effect_where_dialogs_description),
+        GlassPolicyRow(R.string.glass_effect_where_dialog_buttons, GlassArea.DialogButtons, description = R.string.glass_effect_where_dialog_buttons_description),
+        GlassPolicyRow(R.string.glass_effect_role_messages, GlassArea.Menus, GlassScope.Toast, description = R.string.glass_effect_role_messages_description))
     GlassDestinationGroup.Shared -> listOf(
-        GlassPolicyRow(R.string.glass_where_action_buttons, GlassArea.ActionButtons, description = R.string.glass_where_action_buttons_description),
-        GlassPolicyRow(R.string.glass_common_cards, GlassArea.SettingsCards, description = R.string.glass_common_cards_description),
-        GlassPolicyRow(R.string.glass_common_discovery_cards, GlassArea.MoodCards, description = R.string.glass_common_discovery_cards_description),
-        GlassPolicyRow(R.string.glass_where_search_bars, GlassArea.SearchBars, description = R.string.glass_where_search_bars_description),
-        GlassPolicyRow(R.string.glass_common_current_track, GlassArea.NowPlaying, description = R.string.glass_common_current_track_description),
-        GlassPolicyRow(R.string.glass_where_image_rims, GlassArea.Images, description = R.string.glass_where_image_rims_description))
+        GlassPolicyRow(R.string.glass_effect_where_action_buttons, GlassArea.ActionButtons, description = R.string.glass_effect_where_action_buttons_description),
+        GlassPolicyRow(R.string.glass_effect_common_cards, GlassArea.SettingsCards, description = R.string.glass_effect_common_cards_description),
+        GlassPolicyRow(R.string.glass_effect_common_discovery_cards, GlassArea.MoodCards, description = R.string.glass_effect_common_discovery_cards_description),
+        GlassPolicyRow(R.string.glass_effect_where_search_bars, GlassArea.SearchBars, description = R.string.glass_effect_where_search_bars_description),
+        GlassPolicyRow(R.string.glass_effect_common_current_track, GlassArea.NowPlaying, description = R.string.glass_effect_common_current_track_description),
+        GlassPolicyRow(R.string.glass_effect_where_image_rims, GlassArea.Images, description = R.string.glass_effect_where_image_rims_description))
 }
 
 /** Match the destination instead of repeating the palette for every selector. */
@@ -157,7 +157,7 @@ private fun GlassPolicySelector(row: GlassPolicyRow, config: GlassSettings, stor
                 selectedValue = if (selected == GlassAreaMode.Disabled) GlassImageMode.Disabled else GlassImageMode.ContourOnly,
                 onValueSelected = { store.setAreaMode(row.area, if (it == GlassImageMode.Disabled) GlassAreaMode.Disabled else GlassAreaMode.ContourOnly) },
                 modifier = Modifier.testTag("settings.glass.mode.$tag"),
-                valueText = { stringResource(if (it == GlassImageMode.Disabled) R.string.glass_mode_disabled else R.string.glass_mode_contour_only) },
+                valueText = { stringResource(if (it == GlassImageMode.Disabled) R.string.glass_effect_mode_disabled else R.string.glass_effect_mode_contour_only) },
             )
         } else {
             OtherEnumValueSelectorSettingsEntry(
@@ -171,10 +171,10 @@ private fun GlassPolicySelector(row: GlassPolicyRow, config: GlassSettings, stor
                 modifier = Modifier.testTag("settings.glass.mode.$tag"),
                 values = GlassAreaMode.entries,
                 valueText = { mode -> stringResource(when (mode) {
-                    GlassAreaMode.Disabled -> R.string.glass_mode_disabled
-                    GlassAreaMode.ContourOnly -> R.string.glass_mode_contour_only
-                    GlassAreaMode.GlassOnly -> R.string.glass_mode_glass_only
-                    GlassAreaMode.GlassAndContour -> R.string.glass_mode_glass_and_contour
+                    GlassAreaMode.Disabled -> R.string.glass_effect_mode_disabled
+                    GlassAreaMode.ContourOnly -> R.string.glass_effect_mode_contour_only
+                    GlassAreaMode.GlassOnly -> R.string.glass_effect_mode_glass_only
+                    GlassAreaMode.GlassAndContour -> R.string.glass_effect_mode_glass_and_contour
                 }) },
             )
         }

@@ -106,11 +106,11 @@ fun GeneralSettings(
             .onGloballyPositioned { containerTopY = it.positionInRoot().y }
             .settingsTopContentPadding()
     ) {
-        settingsSearchTitle(searchFocus, R.string.tab_general, R.drawable.ic_launcher_monochrome)
+        settingsSearchTitle(searchFocus, R.string.settings_general_title, R.drawable.ic_launcher_monochrome)
 
         settingsSearchDescription(searchFocus) {
             SettingsDescription(
-                text = stringResource(R.string.general_settings_description),
+                text = stringResource(R.string.settings_general_page_description),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
@@ -161,15 +161,15 @@ internal fun GeneralSettingsContent(
     var restartService by rememberSaveable { mutableStateOf(false) }
     var restartActivity by rememberSaveable { mutableStateOf(false) }
     cardsContainer {
-        if (selectedCards == null || R.string.languages in selectedCards) {
-            SettingsCardSlot(R.string.languages, modifier = { cardModifier(R.string.languages) }) {
-                GeneralLanguageCard(visible = visibleCards.contains(R.string.languages))
+        if (selectedCards == null || R.string.settings_languages_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_languages_title, modifier = { cardModifier(R.string.settings_languages_title) }) {
+                GeneralLanguageCard(visible = visibleCards.contains(R.string.settings_languages_title))
             }
         }
-        if (selectedCards == null || R.string.playback in selectedCards) {
-            SettingsCardSlot(R.string.playback, modifier = { cardModifier(R.string.playback) }) {
+        if (selectedCards == null || R.string.common_playback_section_title in selectedCards) {
+            SettingsCardSlot(R.string.common_playback_section_title, modifier = { cardModifier(R.string.common_playback_section_title) }) {
                 GeneralPlaybackCard(
-                    visible = visibleCards.contains(R.string.playback),
+                    visible = visibleCards.contains(R.string.common_playback_section_title),
                     onRestartServiceSet = { restartService = true },
                 )
             }
@@ -179,18 +179,18 @@ internal fun GeneralSettingsContent(
                 GeneralPlayerControlsCard(visible = visibleCards.contains(R.string.player_controls))
             }
         }
-        if (selectedCards == null || R.string.queue_management in selectedCards) {
-            SettingsCardSlot(R.string.queue_management, modifier = { cardModifier(R.string.queue_management) }) {
+        if (selectedCards == null || R.string.settings_queue_management_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_queue_management_title, modifier = { cardModifier(R.string.settings_queue_management_title) }) {
                 GeneralQueueManagementCard(
-                    visible = visibleCards.contains(R.string.queue_management),
+                    visible = visibleCards.contains(R.string.settings_queue_management_title),
                     onRestartServiceSet = { restartService = true },
                 )
             }
         }
-        if (selectedCards == null || R.string.app_behavior in selectedCards) {
-            SettingsCardSlot(R.string.app_behavior, modifier = { cardModifier(R.string.app_behavior) }) {
+        if (selectedCards == null || R.string.settings_app_behavior_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_app_behavior_title, modifier = { cardModifier(R.string.settings_app_behavior_title) }) {
                 GeneralAppBehaviorCard(
-                    visible = visibleCards.contains(R.string.app_behavior),
+                    visible = visibleCards.contains(R.string.settings_app_behavior_title),
                     onRestartServiceSet = { restartService = true },
                     restartActivity = restartActivity,
                     onRestartActivitySet = { restartActivity = true },
@@ -206,18 +206,18 @@ internal fun GeneralSettingsContent(
                 )
             }
         }
-        if (selectedCards == null || R.string.gestures_events in selectedCards) {
-            SettingsCardSlot(R.string.gestures_events, modifier = { cardModifier(R.string.gestures_events) }) {
+        if (selectedCards == null || R.string.settings_gestures_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_gestures_title, modifier = { cardModifier(R.string.settings_gestures_title) }) {
                 GeneralGesturesCard(
-                    visible = visibleCards.contains(R.string.gestures_events),
+                    visible = visibleCards.contains(R.string.settings_gestures_title),
                     onRestartServiceSet = { restartService = true },
                 )
             }
         }
-        if (selectedCards == null || R.string.picture_in_picture in selectedCards) {
-            SettingsCardSlot(R.string.picture_in_picture, modifier = { cardModifier(R.string.picture_in_picture) }) {
+        if (selectedCards == null || R.string.settings_picture_in_picture_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_picture_in_picture_title, modifier = { cardModifier(R.string.settings_picture_in_picture_title) }) {
                 GeneralPipCard(
-                    visible = visibleCards.contains(R.string.picture_in_picture),
+                    visible = visibleCards.contains(R.string.settings_picture_in_picture_title),
                     restartActivity = restartActivity,
                     onRestartActivitySet = { restartActivity = true },
                     onRestartActivityClear = { restartActivity = false },
@@ -226,9 +226,9 @@ internal fun GeneralSettingsContent(
             }
         }
 
-        if (selectedCards == null || R.string.app_shortcuts_settings in selectedCards) {
-            SettingsCardSlot(R.string.app_shortcuts_settings, modifier = { cardModifier(R.string.app_shortcuts_settings) }) {
-                GeneralAppShortcutsCard(visible = visibleCards.contains(R.string.app_shortcuts_settings))
+        if (selectedCards == null || R.string.settings_launcher_shortcuts_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_launcher_shortcuts_title, modifier = { cardModifier(R.string.settings_launcher_shortcuts_title) }) {
+                GeneralAppShortcutsCard(visible = visibleCards.contains(R.string.settings_launcher_shortcuts_title))
             }
         }
 

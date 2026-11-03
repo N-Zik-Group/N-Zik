@@ -221,7 +221,7 @@ class RunSongUpdateBatchTest {
         assertEquals( 3, updatedRows.size )
         updatedRows.forEach { assertEquals( "Fetched title", it.title ) }
         // one summary toast with the processed count - never per-song done toasts
-        verify( exactly = 1 ) { Toaster.s( R.string.updated_songs_count, 3L ) }
+        verify( exactly = 1 ) { Toaster.s( R.string.song_metadata_updated_count, 3L ) }
         verify( exactly = 0 ) { Toaster.done() }
         assertEquals( 3, progressCalls.size )
     }
@@ -246,7 +246,7 @@ class RunSongUpdateBatchTest {
             val stored = if ( row.id == "video_1" ) stored1 else stored2
             assertEquals( stored.title, row.title )
         }
-        verify( exactly = 1 ) { Toaster.s( R.string.updated_songs_count, 3L ) }
+        verify( exactly = 1 ) { Toaster.s( R.string.song_metadata_updated_count, 3L ) }
         assertEquals( 3, progressCalls.size )
     }
 
@@ -266,7 +266,7 @@ class RunSongUpdateBatchTest {
         coVerify( exactly = 0 ) { Innertube.song( "local:track_1" ) }
         verify( exactly = 2 ) { songTable.updateReplace( any() ) }
         assertEquals( setOf( "video_1", "video_2" ), updatedRows.map { it.id }.toSet() )
-        verify( exactly = 1 ) { Toaster.s( R.string.updated_songs_count, 2L ) }
+        verify( exactly = 1 ) { Toaster.s( R.string.song_metadata_updated_count, 2L ) }
         // progress counts the remote targets only
         assertEquals( 2, progressCalls.size )
     }
@@ -328,7 +328,7 @@ class RunSongUpdateBatchTest {
         verify( exactly = 0 ) { mapTable.deleteBySongId( any() ) }
         verify( exactly = 0 ) { mapTable.insertIgnore( any<SongArtistMap>() ) }
         // parity with the single action: the count reflects processed targets
-        verify( exactly = 1 ) { Toaster.s( R.string.updated_songs_count, 2L ) }
+        verify( exactly = 1 ) { Toaster.s( R.string.song_metadata_updated_count, 2L ) }
         assertEquals( 2, progressCalls.size )
     }
 

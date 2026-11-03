@@ -10,12 +10,12 @@ class OnboardingAccountButtonTest {
 
     @Test
     fun notConnectedMapsToLogin() {
-        assertEquals(R.string.account_login, onboardingAccountButtonResId(isConnected = false))
+        assertEquals(R.string.account_action_login, onboardingAccountButtonResId(isConnected = false))
     }
 
     @Test
     fun connectedMapsToLogoff() {
-        assertEquals(R.string.account_logoff, onboardingAccountButtonResId(isConnected = true))
+        assertEquals(R.string.account_action_logout, onboardingAccountButtonResId(isConnected = true))
     }
 
     @Test

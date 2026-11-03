@@ -67,7 +67,7 @@ inline fun StringListDialog(
                 buttons = listOf(
                     DialogButton(text = addTitle, onClick = { showStringAddDialog = true }, primary = true),
                     DialogButton(
-                        text = stringResource(R.string.dialog_close),
+                        text = stringResource(R.string.common_action_close),
                         onClick = onDismiss,
                         danger = true
                     )
@@ -113,7 +113,7 @@ inline fun StringListDialog(
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.trash),
-                                    contentDescription = stringResource(R.string.delete),
+                                    contentDescription = stringResource(R.string.common_action_delete),
                                     tint = colorPalette().red,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -128,7 +128,7 @@ inline fun StringListDialog(
                     contentAlignment = Alignment.Center
                 ) {
                     BasicText(
-                        text = stringResource(R.string.no_items),
+                        text = stringResource(R.string.common_empty_items),
                         style = typography().s.copy(
                             color = colorPalette().textSecondary
                         )
@@ -159,8 +159,8 @@ inline fun StringListDialog(
 
     DialogPresence(visible = showStringRemoveDialog) {
         ConfirmationDialog(
-            title = stringResource(R.string.dialog_remove_item),
-            confirmText = stringResource(R.string.dialog_remove),
+            title = stringResource(R.string.common_remove_item_dialog_title),
+            confirmText = stringResource(R.string.common_action_remove),
             text = removeTitle,
             onDismiss = { showStringRemoveDialog = false },
             onConfirm = {
@@ -171,10 +171,10 @@ inline fun StringListDialog(
 
     DialogPresence(visible = errorDialog) {
         DefaultDialog(
-            title = stringResource(R.string.dialog_name_conflict),
+            title = stringResource(R.string.common_validation_name_in_use),
             onDismiss = { errorDialog = false },
             footer = {
-                ButtonRow(listOf(DialogButton(stringResource(R.string.dialog_close), onClick = { errorDialog = false })))
+                ButtonRow(listOf(DialogButton(stringResource(R.string.common_action_close), onClick = { errorDialog = false })))
             }
         ) {
             BasicText(text = conflictTitle, style = typography().s.copy(color = colorPalette().text))

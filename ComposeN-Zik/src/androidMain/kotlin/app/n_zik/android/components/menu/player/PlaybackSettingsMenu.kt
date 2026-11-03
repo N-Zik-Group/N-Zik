@@ -130,14 +130,14 @@ class PlaybackSettingsMenu private constructor(
         var loudnessBaseGain by rememberPreference(loudnessBaseGainKey, 5f)
         var volumeBoostLevel by rememberPreference(volumeBoostLevelKey, 0f)
 
-        ListMenu.Menu(title = stringResource(R.string.controls_header_customize)) {
+        ListMenu.Menu(title = stringResource(R.string.player_controls_action_customize)) {
             // Section: Playback
-            SectionTitle(stringResource(R.string.playback))
+            SectionTitle(stringResource(R.string.common_playback_section_title))
 
             // Speed
             ListSliderMenuItem(
                 icon = R.drawable.slow_motion,
-                title = stringResource(R.string.controls_title_playback_speed),
+                title = stringResource(R.string.player_controls_speed_title),
                 value = playbackSpeed,
                 onValueChange = {
                     val rounded = kotlin.math.round(it * 10f) / 10f
@@ -160,7 +160,7 @@ class PlaybackSettingsMenu private constructor(
             // Pitch
             ListSliderMenuItem(
                 icon = R.drawable.equalizer,
-                title = stringResource(R.string.controls_title_playback_pitch),
+                title = stringResource(R.string.player_controls_pitch_title),
                 value = playbackPitch,
                 onValueChange = {
                     val rounded = kotlin.math.round(it * 10f) / 10f
@@ -183,7 +183,7 @@ class PlaybackSettingsMenu private constructor(
             // Medley Duration
             ListSliderMenuItem(
                 icon = R.drawable.playbackduration,
-                title = stringResource(R.string.controls_title_medley_duration),
+                title = stringResource(R.string.player_controls_medley_duration_title),
                 value = playbackDuration,
                 onValueChange = { playbackDuration = kotlin.math.round(it) },
                 valueRange = 0f..60f,
@@ -195,12 +195,12 @@ class PlaybackSettingsMenu private constructor(
             )
 
             // Section: Volume
-            SectionTitle(stringResource(R.string.volume))
+            SectionTitle(stringResource(R.string.player_statistics_volume_label))
 
             // Playback Volume
             ListSliderMenuItem(
                 icon = R.drawable.volume_up,
-                title = stringResource(R.string.controls_title_playback_volume),
+                title = stringResource(R.string.player_controls_playback_volume_title),
                 value = playbackVolume,
                 onValueChange = {
                     val rounded = kotlin.math.round(it * 100f) / 100f
@@ -223,7 +223,7 @@ class PlaybackSettingsMenu private constructor(
             // Device Volume
             ListSliderMenuItem(
                 icon = R.drawable.master_volume,
-                title = stringResource(R.string.controls_title_device_volume),
+                title = stringResource(R.string.player_controls_device_volume_title),
                 value = playbackDeviceVolume,
                 onValueChange = {
                     val rounded = kotlin.math.round(it * 100f) / 100f
@@ -245,7 +245,7 @@ class PlaybackSettingsMenu private constructor(
             // Blur Effect
             ListSliderMenuItem(
                 icon = R.drawable.droplet,
-                title = stringResource(R.string.controls_title_blur_effect),
+                title = stringResource(R.string.player_controls_blur_effect_title),
                 value = blurStrength,
                 onValueChange = {
                     blurStrength = kotlin.math.round(it)
@@ -301,7 +301,7 @@ class PlaybackSettingsMenu private constructor(
             var tempVolumeBoost by remember { mutableFloatStateOf(volumeBoostLevel) }
             ListSliderMenuItem(
                 icon = R.drawable.volume_up,
-                title = stringResource(R.string.loudness_boost_level),
+                title = stringResource(R.string.audio_loudness_boost_level),
                 value = tempVolumeBoost,
                 onValueChange = { tempVolumeBoost = it },
                 onSlideComplete = { volumeBoostLevel = tempVolumeBoost },
@@ -349,13 +349,13 @@ class PlaybackSettingsMenu private constructor(
         var tempLoudnessGain by remember { mutableFloatStateOf(loudnessBaseGain) }
         var tempVolumeBoost by remember { mutableFloatStateOf(volumeBoostLevel) }
 
-        GridMenu.Menu(title = stringResource(R.string.controls_header_customize), showDragHandle = true) {
+        GridMenu.Menu(title = stringResource(R.string.player_controls_action_customize), showDragHandle = true) {
             // Section: Playback
-            item(span = { GridItemSpan(maxLineSpan) }) { SectionTitle(stringResource(R.string.playback)) }
+            item(span = { GridItemSpan(maxLineSpan) }) { SectionTitle(stringResource(R.string.common_playback_section_title)) }
 
             item {
                 SliderGridEntry(
-                    title = stringResource(R.string.controls_title_playback_speed),
+                    title = stringResource(R.string.player_controls_speed_title),
                     icon = R.drawable.slow_motion,
                     value = playbackSpeed,
                     toDisplay = { "%.1fx".format(it).replace(",", ".") },
@@ -379,7 +379,7 @@ class PlaybackSettingsMenu private constructor(
 
             item {
                 SliderGridEntry(
-                    title = stringResource(R.string.controls_title_playback_pitch),
+                    title = stringResource(R.string.player_controls_pitch_title),
                     icon = R.drawable.equalizer,
                     value = playbackPitch,
                     toDisplay = { "%.1fx".format(it).replace(",", ".") },
@@ -403,7 +403,7 @@ class PlaybackSettingsMenu private constructor(
 
             item {
                 SliderGridEntry(
-                    title = stringResource(R.string.controls_title_medley_duration),
+                    title = stringResource(R.string.player_controls_medley_duration_title),
                     icon = R.drawable.playbackduration,
                     value = playbackDuration,
                     toDisplay = { "${it.toInt()}" },
@@ -416,11 +416,11 @@ class PlaybackSettingsMenu private constructor(
                 )
             }
 
-            item(span = { GridItemSpan(maxLineSpan) }) { SectionTitle(stringResource(R.string.volume)) }
+            item(span = { GridItemSpan(maxLineSpan) }) { SectionTitle(stringResource(R.string.player_statistics_volume_label)) }
 
             item {
                 SliderGridEntry(
-                    title = stringResource(R.string.controls_title_playback_volume),
+                    title = stringResource(R.string.player_controls_playback_volume_title),
                     icon = R.drawable.volume_up,
                     value = playbackVolume,
                     toDisplay = { "${(it * 100).toInt()}%" },
@@ -444,7 +444,7 @@ class PlaybackSettingsMenu private constructor(
 
             item {
                 SliderGridEntry(
-                    title = stringResource(R.string.controls_title_device_volume),
+                    title = stringResource(R.string.player_controls_device_volume_title),
                     icon = R.drawable.master_volume,
                     value = playbackDeviceVolume,
                     toDisplay = { "${(it * 100).toInt()}%" },
@@ -466,7 +466,7 @@ class PlaybackSettingsMenu private constructor(
 
             item {
                 SliderGridEntry(
-                    title = stringResource(R.string.controls_title_blur_effect),
+                    title = stringResource(R.string.player_controls_blur_effect_title),
                     icon = R.drawable.droplet,
                     value = blurStrength,
                     toDisplay = { "${it.toInt()}" },
@@ -522,7 +522,7 @@ class PlaybackSettingsMenu private constructor(
 
             item {
                 SliderGridEntry(
-                    title = stringResource(R.string.loudness_boost_level),
+                    title = stringResource(R.string.audio_loudness_boost_level),
                     icon = R.drawable.volume_up,
                     value = tempVolumeBoost,
                     toDisplay = { "%.2f dB".format(it).replace(",", ".") },
@@ -740,7 +740,7 @@ class PlaybackSettingsMenu private constructor(
                 ButtonRow(
                     buttons = listOf(
                         DialogButton(
-                            text = stringResource(R.string.reset),
+                            text = stringResource(R.string.common_action_reset),
                             icon = R.drawable.refresh,
                             textColor = colorPalette().textSecondary,
                             onClick = {
@@ -749,7 +749,7 @@ class PlaybackSettingsMenu private constructor(
                             }
                         ),
                         DialogButton(
-                            text = stringResource(R.string.dialog_close),
+                            text = stringResource(R.string.common_action_close),
                             icon = R.drawable.checkmark,
                             textColor = colorPalette().accent,
                             onClick = onDismiss

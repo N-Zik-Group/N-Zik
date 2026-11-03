@@ -65,7 +65,7 @@ class GlassInlineSourceTest {
                     SettingsCardSurface(Modifier.size(64.dp).testTag("card"), shape, Color.Blue, Color.Black, Color.Transparent, settings = settings) { }
                     Box(Modifier.size(64.dp).testTag("search").glassSearchBarBackground(Color.Black, Color.Blue, shape, Color.Transparent, settings = settings))
                     Box(Modifier.size(64.dp).testTag("mood").glassMoodCardBackground(Color.Black, Color.Blue, shape, settings))
-                    SearchBarBubbleButton(SearchBarBubble(R.drawable.close, R.string.clear, onClick = {}), settings)
+                    SearchBarBubbleButton(SearchBarBubble(R.drawable.close, R.string.common_action_clear, onClick = {}), settings)
                 }
             }
         }

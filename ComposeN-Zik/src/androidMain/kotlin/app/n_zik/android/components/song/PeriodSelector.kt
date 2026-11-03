@@ -70,7 +70,7 @@ class PeriodSelector private constructor(
     var period: StatisticsType by periodState
 
     override val iconId: Int = period.iconId
-    override val messageId: Int = R.string.statistics
+    override val messageId: Int = R.string.statistics_title
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -169,12 +169,12 @@ class PeriodSelector private constructor(
         val size by rememberPreference( MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10` )
         val sizeCustomValue by rememberPreference( MaxTopPlaylistItemsCustomValueKey, 10 )
         val sizeLabel = when (size) {
-            MaxTopPlaylistItems.Unlimited -> stringResource(R.string.max_items_unlimited)
+            MaxTopPlaylistItems.Unlimited -> stringResource(R.string.statistics_items_limit_unlimited)
             else -> size.toInt(sizeCustomValue).toString()
         }
         val sortedEntries = readSortedEntries()
 
-        ListMenu.Menu(title = stringResource( R.string.header_view_top_of, sizeLabel )) {
+        ListMenu.Menu(title = stringResource( R.string.statistics_top_period_title, sizeLabel )) {
             sortedEntries.forEach {
                 ListMenu.Entry(
                     text = it.text,

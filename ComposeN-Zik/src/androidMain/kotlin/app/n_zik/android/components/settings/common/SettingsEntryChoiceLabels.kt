@@ -61,14 +61,14 @@ internal fun settingsEntryChoiceLabels(
 ): Map<String, List<String>> {
     fun resources(vararg ids: Int) = ids.map(resolveString)
     fun cacheLabel(name: String): String = when (name) {
-        "Custom" -> resolveString(R.string.custom)
-        "Disabled" -> resolveString(R.string.turn_off)
-        "Unlimited" -> resolveString(R.string.unlimited)
+        "Custom" -> resolveString(R.string.common_option_custom)
+        "Disabled" -> resolveString(R.string.common_action_turn_off)
+        "Unlimited" -> resolveString(R.string.common_limit_unlimited_label)
         else -> name
     }
     fun itemCountLabel(name: String): String = when (name) {
-        "Custom" -> resolveString(R.string.max_items_custom)
-        "Unlimited" -> resolveString(R.string.max_items_unlimited)
+        "Custom" -> resolveString(R.string.statistics_items_limit_custom)
+        "Unlimited" -> resolveString(R.string.statistics_items_limit_unlimited)
         else -> name
     }
     // Arbitrary text, custom numbers, credentials, folders and runtime-loaded lists are excluded.
@@ -127,36 +127,36 @@ internal fun settingsEntryChoiceLabels(
         "ui.user_interface.search_display_order" to
             resources(R.string.search_display_order_suggestions_first, R.string.search_display_order_saved_searches_first),
         "appearance.player_behavior_and_visuals.visualizer_white_color_option" to
-            resources(R.string.color_white, R.string.theme, R.string.artwork, R.string.color_custom),
+            resources(R.string.common_color_white, R.string.common_color_source_theme, R.string.common_color_source_artwork, R.string.common_color_custom),
         "appearance.txt_lyrics.lyricscolor" to
-            resources(R.string.color_white, R.string.theme, R.string.artwork, R.string.color_custom),
+            resources(R.string.common_color_white, R.string.common_color_source_theme, R.string.common_color_source_artwork, R.string.common_color_custom),
         "appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail" to
-            resources(R.string.te_slide_vertical, R.string.te_fade, R.string.te_scale, R.string.carousel, R.string.vt_circular),
-        "general.playback.exclude_disliked_songs" to resources(R.string.on, R.string.off),
-        "general.playback.exclude_disliked_artists" to resources(R.string.on, R.string.off),
-        "general.playback.exclude_disliked_albums" to resources(R.string.on, R.string.off),
+            resources(R.string.settings_transition_slide_vertical, R.string.settings_transition_fade, R.string.settings_transition_scale, R.string.settings_player_artwork_carousel_label, R.string.player_artwork_transition_circular),
+        "general.playback.exclude_disliked_songs" to resources(R.string.common_state_on, R.string.common_state_off),
+        "general.playback.exclude_disliked_artists" to resources(R.string.common_state_on, R.string.common_state_off),
+        "general.playback.exclude_disliked_albums" to resources(R.string.common_state_on, R.string.common_state_off),
         "accounts.social_discord.discord_activity_type" to
             resources(R.string.discord_activity_listening, R.string.discord_activity_playing, R.string.discord_activity_watching, R.string.discord_activity_competing),
         "embedded.profile.face_name_source" to
-            resources(R.string.face_source_profile, R.string.display_name_source_youtube, R.string.face_source_discord, R.string.face_source_lastfm),
+            resources(R.string.profile_name_source_local, R.string.profile_display_name_source_youtube, R.string.profile_identity_source_discord, R.string.profile_identity_source_lastfm),
         "embedded.profile.face_avatar_source" to
-            resources(R.string.face_source_profile, R.string.display_name_source_youtube, R.string.face_source_discord, R.string.face_source_lastfm),
+            resources(R.string.profile_name_source_local, R.string.profile_display_name_source_youtube, R.string.profile_identity_source_discord, R.string.profile_identity_source_lastfm),
         "general.playback.pause_between_songs" to PauseBetweenSongs.entries.map { "${it.name}s" },
         "general.playback.exclude_songs_with_duration_limit" to
-            DurationInMinutes.entries.map { if (it == DurationInMinutes.Disabled) resolveString(R.string.vt_disabled) else "${it.name}m" },
+            DurationInMinutes.entries.map { if (it == DurationInMinutes.Disabled) resolveString(R.string.common_option_disabled) else "${it.name}m" },
         "general.playback.crossfade_duration" to listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20).map { "${it}s" },
         "general.queue_management.max_songs_in_queue" to
-            MaxSongs.entries.map { if (it == MaxSongs.Unlimited) resolveString(R.string.unlimited) else it.name },
+            MaxSongs.entries.map { if (it == MaxSongs.Unlimited) resolveString(R.string.common_limit_unlimited_label) else it.name },
         "general.queue_management.max_songs_in_queue_android_auto" to
-            MaxSongs.entries.map { if (it == MaxSongs.Unlimited) resolveString(R.string.unlimited) else it.name },
+            MaxSongs.entries.map { if (it == MaxSongs.Unlimited) resolveString(R.string.common_limit_unlimited_label) else it.name },
         "data.cache.image_cache_max_size" to CoilDiskCacheMaxSize.entries.map { cacheLabel(it.name) },
         "data.cache.song_cache_max_size" to ExoPlayerDiskCacheMaxSize.entries.map { cacheLabel(it.name) },
         "data.cache.song_download_max_size" to ExoPlayerDiskDownloadCacheMaxSize.entries.map { cacheLabel(it.name) },
         "ai.statistics.statistics_max_number_of_items" to MaxStatisticsItems.entries.map { itemCountLabel(it.name) },
         "ai.playlist_top.statistics_max_number_of_items" to MaxTopPlaylistItems.entries.map { itemCountLabel(it.name) },
         "ai.smart_recommendations.smart_recommendations_number" to
-            RecommendationsNumber.entries.map { if (it == RecommendationsNumber.Adaptive) resolveString(R.string.smart_recommendations_adaptive) else it.name },
+            RecommendationsNumber.entries.map { if (it == RecommendationsNumber.Adaptive) resolveString(R.string.recommendations_adaptive) else it.name },
         "ai.quick_picks.quick_selection_type" to
-            LocalRecommandationsNumber.entries.map { String.format(locale, resolveString(R.string.quick_selection), it.value) },
+            LocalRecommandationsNumber.entries.map { String.format(locale, resolveString(R.string.recommendations_quick_picks_count), it.value) },
     )
 }

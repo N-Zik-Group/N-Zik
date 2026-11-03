@@ -48,7 +48,7 @@ fun GeneralPipCard(
 
     // The burger long press (focus=pip) scrolls to this card.
     SettingsSectionCard(
-        title = stringResource(R.string.picture_in_picture),
+        title = stringResource(R.string.settings_picture_in_picture_title),
         icon = R.drawable.video,
         modifier = Modifier.onGloballyPositioned { onCardTopYChanged(it.positionInRoot().y) },
         visible = visible,
@@ -56,7 +56,7 @@ fun GeneralPipCard(
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.picture_in_picture.settings_enable_pip"),
                 title = stringResource(R.string.settings_enable_pip),
-                text = stringResource(R.string.settings_desc_general_picture_in_picture_settings_enable_pip),
+                text = stringResource(R.string.player_picture_in_picture_enabled_description),
                 isChecked = enablePictureInPicture,
                 onCheckedChange = {
                     enablePictureInPicture = it
@@ -72,9 +72,9 @@ fun GeneralPipCard(
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("general.picture_in_picture.settings_pip_module"),
                         title = stringResource(R.string.settings_pip_module),
-                        text = stringResource(R.string.settings_desc_general_picture_in_picture_settings_pip_module),
+                        text = stringResource(R.string.player_picture_in_picture_content_description),
                         selectedValueText = when (pipModule) {
-                            PipModule.Cover -> stringResource(R.string.pipmodule_cover)
+                            PipModule.Cover -> stringResource(R.string.settings_picture_in_picture_artwork_module_label)
                         },
                         onClick = { showPipModuleDialog = true },
                         icon = R.drawable.logo_youtube
@@ -90,7 +90,7 @@ fun GeneralPipCard(
                             },
                             valueText = {
                                 when (it) {
-                                    PipModule.Cover -> stringResource(R.string.pipmodule_cover)
+                                    PipModule.Cover -> stringResource(R.string.settings_picture_in_picture_artwork_module_label)
                                 }
                             },
                             values = PipModule.values().toList(),
@@ -102,7 +102,7 @@ fun GeneralPipCard(
                         OtherSwitchSettingEntry(
                             modifier = Modifier.settingsSearchTarget("general.picture_in_picture.settings_enable_pip_auto"),
                             title = stringResource(R.string.settings_enable_pip_auto),
-                            text = stringResource(R.string.pip_info_from_android_12_pip_can_be_automatically_enabled),
+                            text = stringResource(R.string.settings_picture_in_picture_android_12_auto_description),
                             isChecked = enablePictureInPictureAuto,
                             onCheckedChange = {
                                 enablePictureInPictureAuto = it

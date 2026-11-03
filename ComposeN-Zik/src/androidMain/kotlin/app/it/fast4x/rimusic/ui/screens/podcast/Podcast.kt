@@ -291,7 +291,7 @@ fun Podcast(
                                 ImageCacheFactory.AsyncImage(
                                     shape = null,
                                     thumbnailUrl = podcastPage?.thumbnail?.firstOrNull()?.url?.resize(1000, 1000),
-                                    contentDescription = stringResource(R.string.cd_loading),
+                                    contentDescription = stringResource(R.string.accessibility_loading),
                                     modifier = Modifier.then(artworkBackdrop)
                                         .fillMaxWidth()
                                         .align(Alignment.Center)
@@ -321,7 +321,7 @@ fun Podcast(
 
                             BasicText(
                                 text = podcastPage?.listEpisode.orEmpty().size.toString() + " "
-                                        + stringResource(R.string.songs)
+                                        + stringResource(R.string.library_songs_title)
                                         + " - " + formatAsTime(totalPlayTimes),
                                 style = typography().xs.medium,
                                 maxLines = 1,
@@ -405,15 +405,15 @@ fun Podcast(
                                                     showConfirmDownloadAllDialog = true
                                                 },
                                                 onLongClick = {
-                                                    Toaster.i( R.string.info_download_all_songs )
+                                                    Toaster.i( R.string.downloads_action_download_all )
                                                 }
                                     )
 
                                     DialogPresence(visible = showConfirmDownloadAllDialog) {
                                         ConfirmationDialog(
-                                            title = stringResource(R.string.info_download_all_songs),
-                                            confirmText = stringResource(R.string.download),
-                                            text = stringResource(R.string.do_you_really_want_to_download_all),
+                                            title = stringResource(R.string.downloads_action_download_all),
+                                            confirmText = stringResource(R.string.downloads_title),
+                                            text = stringResource(R.string.downloads_download_all_confirmation),
                                             onDismiss = { showConfirmDownloadAllDialog = false },
                                             onConfirm = {
                                                 showConfirmDownloadAllDialog = false
@@ -447,15 +447,15 @@ fun Podcast(
                                                     showConfirmDeleteDownloadDialog = true
                                                 },
                                                 onLongClick = {
-                                                    Toaster.i( R.string.info_remove_all_downloaded_songs )
+                                                    Toaster.i( R.string.downloads_action_remove_all )
                                                 }
                                     )
 
                                     DialogPresence(visible = showConfirmDeleteDownloadDialog) {
                                         ConfirmationDialog(
-                                            title = stringResource(R.string.dialog_clear_downloads),
-                                            confirmText = stringResource(R.string.delete),
-                                            text = stringResource(R.string.do_you_really_want_to_delete_download),
+                                            title = stringResource(R.string.downloads_delete_dialog_title),
+                                            confirmText = stringResource(R.string.common_action_delete),
+                                            text = stringResource(R.string.downloads_delete_all_confirmation),
                                             onDismiss = { showConfirmDeleteDownloadDialog = false },
                                             onConfirm = {
                                                 showConfirmDeleteDownloadDialog = false
@@ -501,7 +501,7 @@ fun Podcast(
                                                     }
                                                 },
                                                 onLongClick = {
-                                                    Toaster.i( R.string.info_enqueue_songs )
+                                                    Toaster.i( R.string.player_action_enqueue_songs )
                                                 }
                                     )
 
@@ -525,7 +525,7 @@ fun Podcast(
                                                     }
                                                 },
                                                 onLongClick = {
-                                                    Toaster.i( R.string.info_shuffle )
+                                                    Toaster.i( R.string.player_action_shuffle_hint )
                                                 }
                                     )
 
@@ -545,7 +545,7 @@ fun Podcast(
                                                     mediaItem?.let { binder?.startRadio( it, false, null, true ) }
                                                 },
                                                 onLongClick = {
-                                                    Toaster.i( binder?.radioActionTextRes ?: R.string.info_start_radio )
+                                                    Toaster.i( binder?.radioActionTextRes ?: R.string.radio_action_start_hint )
                                                 }
                                     )
 
@@ -605,7 +605,7 @@ fun Podcast(
                                                     }
                                                 },
                                                 onLongClick = {
-                                                    Toaster.i( R.string.info_add_in_playlist )
+                                                    Toaster.i( R.string.playlist_action_add_hint )
                                                 }
                                     )
                                 },
@@ -643,7 +643,7 @@ fun Podcast(
                             UnifiedSearchBar(
                                 input = TextFieldValue(filter ?: ""),
                                 onInputChanged = { filter = it.text },
-                                placeholderRes = R.string.search,
+                                placeholderRes = R.string.search_title,
                                 baseSurface = colorPalette().background4,
                                 onClear = { filter = "" },
                                 onSearch = {

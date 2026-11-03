@@ -28,15 +28,15 @@ fun GeneralAppBehaviorCard(
     var closebackgroundPlayer by rememberPreference(closebackgroundPlayerKey, false)
 
     SettingsSectionCard(
-        title = stringResource(R.string.app_behavior),
+        title = stringResource(R.string.settings_app_behavior_title),
         icon = R.drawable.settings,
         visible = visible,
         content = {
             if (Build.VERSION.SDK_INT >= 33) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("general.app_behavior.close_app_with_back_button"),
-                    title = stringResource(R.string.close_app_with_back_button),
-                    text = stringResource(R.string.when_you_use_the_back_button_from_the_home_page),
+                    title = stringResource(R.string.settings_behavior_back_button_exits_label),
+                    text = stringResource(R.string.settings_behavior_back_button_exits_description),
                     isChecked = closeWithBackButton,
                     onCheckedChange = {
                         closeWithBackButton = it
@@ -49,8 +49,8 @@ fun GeneralAppBehaviorCard(
 
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.app_behavior.close_background_player"),
-                title = stringResource(R.string.close_background_player),
-                text = stringResource(R.string.when_app_swipe_out_from_task_manager),
+                title = stringResource(R.string.settings_player_stop_on_task_removal_label),
+                text = stringResource(R.string.settings_player_stop_on_task_removal_description),
                 isChecked = closebackgroundPlayer,
                 onCheckedChange = {
                     closebackgroundPlayer = it

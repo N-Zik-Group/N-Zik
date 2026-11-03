@@ -8,19 +8,19 @@ enum class ColorPaletteName(
     @field:StringRes override val textId: Int
 ): TextView {
 
-    Default( R.string._default ),
+    Default( R.string.common_option_default ),
 
-    Dynamic( R.string.dynamic ),
+    Dynamic( R.string.theme_palette_dynamic ),
 
-    PureBlack( R.string.theme_pure_black ),
+    PureBlack( R.string.theme_palette_pure_black ),
 
-    ModernBlack( R.string.theme_modern_black ),
+    ModernBlack( R.string.theme_palette_modern_black ),
 
-    MaterialYou( R.string.theme_material_you ),
+    MaterialYou( R.string.theme_palette_material_you ),
 
-    Customized( R.string.theme_customized ),
+    Customized( R.string.theme_palette_custom ),
 
-    CustomColor( R.string.customcolor);
+    CustomColor( R.string.settings_theme_custom_colors_label);
 }
 
 

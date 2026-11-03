@@ -82,13 +82,13 @@ fun launchSavedPodcastRefresh(playlist: Playlist?, scope: CoroutineScope): Boole
             if (refreshPodcastPlaylist(playlist.id, browseId)) Toaster.done()
             else {
                 Timber.tag("PodcastRefresh").w("Podcast snapshot refresh did not complete")
-                Toaster.e(R.string.error)
+                Toaster.e(R.string.common_error_title)
             }
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
             Timber.tag("PodcastRefresh").e(error, "Unable to refresh saved podcast episodes")
-            Toaster.e(R.string.error)
+            Toaster.e(R.string.common_error_title)
         }
     }
     return true

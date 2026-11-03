@@ -383,7 +383,7 @@ fun LocalPlaylistSongs(
                 onExistingImport = { playlist?.browseId?.let { NavRoutes.podcast.navigateHere(navController, it) } },
             )) return@Bookmark
         if (isSpecialPlaylist) {
-            Toaster.e(R.string.cannot_bookmark_special_playlist)
+            Toaster.e(R.string.playlist_bookmark_unsupported_message)
             return@Bookmark
         }
         val wasBookmarked = isBookmarked
@@ -409,7 +409,7 @@ fun LocalPlaylistSongs(
             withContext(NzikDispatchers.UI) {
                 isBookmarked = !wasBookmarked
             }
-            Toaster.s( if (!wasBookmarked) R.string.added_to_favorites else R.string.removed_from_favorites )
+            Toaster.s( if (!wasBookmarked) R.string.library_favorites_added else R.string.library_favorites_removed )
         }
     }
 
@@ -417,8 +417,8 @@ fun LocalPlaylistSongs(
         InProgressDialog(
             total = totalSongsToMatch,
             done = songsMatched,
-            text = stringResource(R.string.dialog_matching_songs),
-            message = stringResource(R.string.matching_songs),
+            text = stringResource(R.string.song_matching_progress_title),
+            message = stringResource(R.string.song_matching_running_message),
             onDismiss = {
                 showGetAlbumVersionDialogue = false
                 cancelMatchExt = true
@@ -431,8 +431,8 @@ fun LocalPlaylistSongs(
         InProgressDialog(
             total = totalSongsToMatch,
             done = songsMatched,
-            text = stringResource(R.string.dialog_matching_songs),
-            message = stringResource(R.string.matching_songs),
+            text = stringResource(R.string.song_matching_progress_title),
+            message = stringResource(R.string.song_matching_running_message),
             onDismiss = {
                 showGetAlbumVersionDialogueExt = false
                 cancelMatchExt = true
@@ -445,9 +445,9 @@ fun LocalPlaylistSongs(
 
     DialogPresence(visible = showConfirmMatchAllDialog) {
         ConfirmationDialog(
-            title = stringResource(R.string.dialog_match_songs),
-            confirmText = stringResource(R.string.dialog_match_songs),
-            text = stringResource(R.string.match_all_confirmation, items.count { it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L) }),
+            title = stringResource(R.string.song_matching_dialog_title),
+            confirmText = stringResource(R.string.song_matching_dialog_title),
+            text = stringResource(R.string.song_matching_all_confirmation, items.count { it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L) }),
             onDismiss = {
                 showConfirmMatchAllDialog = false
             },onConfirm = {
@@ -724,7 +724,7 @@ fun LocalPlaylistSongs(
     var showYouTubeLinkDialog by remember { mutableStateOf(false) }
     DialogPresence(visible = showYouTubeLinkDialog) {
         RawUrlImportDialog(
-            title = stringResource(R.string.import_via_youtube_link),
+            title = stringResource(R.string.playlist_import_youtube_link),
             onDismiss = { showYouTubeLinkDialog = false },
             placeholder = "https://youtube.com/playlist?list=...",
             onImport = { url ->
@@ -766,7 +766,7 @@ fun LocalPlaylistSongs(
     val matchAlbumButton = remember {
         object : MenuIcon, Descriptive {
             override val iconId: Int = R.drawable.alert
-            override val messageId: Int = R.string.match_album_audio_version
+            override val messageId: Int = R.string.song_matching_action_open
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() { showConfirmMatchAllDialog = true }
             override fun onLongClick() {}
@@ -776,7 +776,7 @@ fun LocalPlaylistSongs(
     val deleteDialog = remember {
         object : MenuIcon, Descriptive, Dialog {
             override val iconId: Int = R.drawable.trash
-            override val messageId: Int = R.string.delete
+            override val messageId: Int = R.string.common_action_delete
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             @get:Composable override val dialogTitle: String get() = stringResource(messageId)
             override fun onShortClick() {
@@ -796,13 +796,13 @@ fun LocalPlaylistSongs(
                     val selectedSongs = itemSelector.toList()
                     val hasSelection = itemSelector.isActive && selectedSongs.isNotEmpty()
                     val text = if (hasSelection) {
-                        stringResource(R.string.remove_songs_from_playlist_confirm, selectedSongs.size)
+                        stringResource(R.string.playlist_remove_songs_confirmation, selectedSongs.size)
                     } else {
-                        stringResource(R.string.delete_playlist)
+                        stringResource(R.string.playlist_delete_confirmation)
                     }
                     ConfirmationDialog(
-                        title = stringResource(if (hasSelection) R.string.remove_from_playlist else R.string.dialog_delete_playlist),
-                        confirmText = stringResource(if (hasSelection) R.string.dialog_remove else R.string.delete),
+                        title = stringResource(if (hasSelection) R.string.playlist_action_remove_songs else R.string.playlist_delete_dialog_title),
+                        confirmText = stringResource(if (hasSelection) R.string.common_action_remove else R.string.common_action_delete),
                         text = text,
                         onDismiss = { showDeleteConfirmDialog = false },
                         onConfirm = {
@@ -816,7 +816,7 @@ fun LocalPlaylistSongs(
                                         }
                                     }
                                     if (removed) withContext(NzikDispatchers.UI) {
-                                        Toaster.s("${context.resources.getString(R.string.deleted)} ${selectedSongs.size}")
+                                        Toaster.s("${context.resources.getString(R.string.common_delete_success)} ${selectedSongs.size}")
                                         itemSelector.isActive = false
                                     }
                                 }
@@ -939,16 +939,16 @@ fun LocalPlaylistSongs(
 
     fun resetThumbnail() {
         if(thumbnailUrl.value == "") {
-            Toaster.w( R.string.no_thumbnail_present )
+            Toaster.w( R.string.thumbnail_empty )
             return
         }
         val thumbnailName = "thumbnail/playlist_${playlist?.id}"
         val retVal = deleteFileIfExists(context, thumbnailName)
         if(retVal == true){
-            Toaster.s( R.string.removed_thumbnail )
+            Toaster.s( R.string.thumbnail_remove_success )
             thumbnailUrl.value = ""
         } else
-            Toaster.e( R.string.failed_to_remove_thumbnail )
+            Toaster.e( R.string.thumbnail_remove_failed )
     }
     val resetThumbnail = ResetThumbnail { resetThumbnail() }
 
@@ -1312,7 +1312,7 @@ fun LocalPlaylistSongs(
                                             isRecommendationEnabled = !isRecommendationEnabled
                                         },
                                         onLongClick = {
-                                            Toaster.i( R.string.info_smart_recommendation )
+                                            Toaster.i( R.string.recommendations_action_smart_shuffle )
                                         }
                             )
                         }
@@ -1501,7 +1501,7 @@ fun LocalPlaylistSongs(
                                         songPlaylistMapTable.deleteBySongId(song.id, playlistId)
                                     }) {
                                         Toaster.s(
-                                            "${context.resources.getString(R.string.deleted)} \"${song.title}\""
+                                            "${context.resources.getString(R.string.common_delete_success)} \"${song.title}\""
                                         )
                                     }
                                 }
@@ -1545,7 +1545,7 @@ fun LocalPlaylistSongs(
                                 if ((song.id.length != 11 || (song.durationText == "00:00" && song.totalPlayTimeMs == 1L)) && !song.id.startsWith(LOCAL_KEY_PREFIX)) {
                                     Icon(
                                         painter = painterResource(R.drawable.alert),
-                                        contentDescription = stringResource(R.string.unmatched_song),
+                                        contentDescription = stringResource(R.string.song_matching_unmatched_label),
                                         tint = Color(0xFFFF9800),
                                         modifier = Modifier.padding(start = 8.dp).size(18.dp)
                                     )
@@ -1588,7 +1588,7 @@ fun LocalPlaylistSongs(
                                     return@SongItem
                                 }
                                 if (song.isUnmatched) {
-                                    Toaster.w(R.string.playback_blocked_match_first)
+                                    Toaster.w(R.string.player_matching_required_message)
                                 } else {
                                     binder?.stopRadio()
                                     binder?.player?.forcePlayAtIndex(
@@ -1625,7 +1625,7 @@ fun LocalPlaylistSongs(
                                 Shuffler.play(it, playableSongs)
                             }
                         } else {
-                            Toaster.w(R.string.playback_blocked_match_first)
+                            Toaster.w(R.string.player_matching_required_message)
                         }
                     }
                 }

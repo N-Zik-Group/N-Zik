@@ -50,10 +50,10 @@ class RewindExportButtonTest {
             }
         }
         compose.waitForIdle()
-        compose.onNode(hasText(context.getString(R.string.rw_finale_export_options)) and hasClickAction())
+        compose.onNode(hasText(context.getString(R.string.rewind_finale_export_options)) and hasClickAction())
             .performClick()
         compose.waitForIdle()
-        compose.onNodeWithText(context.getString(R.string.rw_finale_export_page))
+        compose.onNodeWithText(context.getString(R.string.rewind_finale_export_page))
             .assertIsDisplayed().performClick()
         compose.waitForIdle()
         compose.runOnIdle { assertEquals(1, shares) }

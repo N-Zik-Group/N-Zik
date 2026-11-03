@@ -39,7 +39,7 @@ fun DiscordRefreshIntervalEntry(modifier: Modifier = Modifier) {
 
     SliderSettingsEntry(
         title = stringResource(R.string.discord_advanced_refresh_interval),
-        text = stringResource(R.string.discord_advanced_refresh_interval_text),
+        text = stringResource(R.string.discord_advanced_refresh_interval_description),
         state = secondsUi,
         range = DiscordAdvancedSettings.MIN_REFRESH_INTERVAL_MS / 1000f
             ..DiscordAdvancedSettings.MAX_REFRESH_INTERVAL_MS / 1000f,

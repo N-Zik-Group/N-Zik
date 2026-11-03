@@ -71,8 +71,8 @@ class NextVisualizerPermissionLifecycleTest {
         val registryOwner = object : ActivityResultRegistryOwner {
             override val activityResultRegistry = registry
         }
-        val message = application.getString(R.string.require_mic_permission)
-        val settingsLabel = application.getString(R.string.open_permission_settings)
+        val message = application.getString(R.string.visualizer_microphone_permission_message)
+        val settingsLabel = application.getString(R.string.visualizer_action_open_permission_settings)
         compose.mainClock.autoAdvance = false
         compose.setContent {
             val shape = RoundedCornerShape(12.dp)

@@ -33,24 +33,24 @@ import app.n_zik.android.components.settings.common.SettingsNestedOption
 object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
 
     /** Exact searchable options from the same definitions used by this dialog. */
-    internal fun searchOptions(): List<SettingsNestedOption> = listOf("lib" to R.string.all, "favs" to R.string.favorites, "disliked" to R.string.disliked)
+    internal fun searchOptions(): List<SettingsNestedOption> = listOf("lib" to R.string.common_option_all, "favs" to R.string.library_favorites_title, "disliked" to R.string.library_disliked_title)
         .flatMapIndexed { index, (tab, label) -> allButtonIds.map { id ->
             SettingsNestedOption("${getTabPrefix(tab)}_$id", searchLabelResources.getValue(id), index, label)
         } }
 
     private val searchLabelResources = mapOf(
-        "sort" to R.string.sorting_order,
-        "position_lock" to R.string.info_lock_unlock_reorder_songs,
-        "search" to R.string.search,
-        "sync" to R.string.autosync_channels,
-        "randomizer" to R.string.randomizer,
-        "shuffle" to R.string.info_shuffle,
-        "item_selector" to R.string.item_select,
-        "play_next" to R.string.play_next,
-        "enqueue" to R.string.enqueue,
-        "add_to_playlist" to R.string.add_to_playlist,
-        "export_dialog" to R.string.export_playlist,
-        "item_size" to R.string.size,
+        "sort" to R.string.library_sort_order_title,
+        "position_lock" to R.string.playlist_reorder_lock_toggle_label,
+        "search" to R.string.search_title,
+        "sync" to R.string.sync_channels,
+        "randomizer" to R.string.library_action_randomize,
+        "shuffle" to R.string.player_action_shuffle_hint,
+        "item_selector" to R.string.common_action_select,
+        "play_next" to R.string.player_action_play_next,
+        "enqueue" to R.string.player_action_enqueue,
+        "add_to_playlist" to R.string.playlist_action_add,
+        "export_dialog" to R.string.playlist_action_export,
+        "item_size" to R.string.common_size_label,
     )
 
 
@@ -67,7 +67,7 @@ object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
         else -> "all"
     }
 
-    override val dialogTitle: String @Composable get() = stringResource(R.string.artists) + " - Toolbar"
+    override val dialogTitle: String @Composable get() = stringResource(R.string.library_artists_title) + " - Toolbar"
     override var isActive: Boolean by mutableStateOf(false)
 
     private fun parseOrder(s: String): List<String> {
@@ -180,7 +180,7 @@ object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
             onDismiss = ::hideDialog,
             bodyHeader = {
                 SettingsDialogTabRow(
-                    labels = tabs.map { tab -> stringResource(when (tab.first) { "favs" -> R.string.favorites; "disliked" -> R.string.disliked; else -> R.string.all }) },
+                    labels = tabs.map { tab -> stringResource(when (tab.first) { "favs" -> R.string.library_favorites_title; "disliked" -> R.string.library_disliked_title; else -> R.string.common_option_all }) },
                     selectedTabIndex = selectedTabIndex,
                     onTabSelected = { selectedTabIndex = it },
                 )
@@ -219,7 +219,7 @@ object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
                     edit.putString(key, serializeOrder(finalOrder))
                 }
                 edit.apply()
-                Toaster.s(R.string.toast_preference_saved); hideDialog()
+                Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }
         )
     }

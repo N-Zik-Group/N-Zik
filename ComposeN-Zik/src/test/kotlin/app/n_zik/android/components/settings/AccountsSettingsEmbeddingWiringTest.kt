@@ -156,9 +156,9 @@ class AccountsSettingsEmbeddingWiringTest {
 
 
 
-    private val title = context.getString(R.string.use_account_for_searches)
+    private val title = context.getString(R.string.settings_youtube_authenticated_search_label)
 
-    private val connectFirst = context.getString(R.string.youtube_connect_first)
+    private val connectFirst = context.getString(R.string.settings_youtube_connection_required_description)
 
 
 
@@ -413,7 +413,7 @@ class AccountsSettingsEmbeddingWiringTest {
 
         every { navController.navigate(any<String>()) } just runs
         composeRule
-            .onNodeWithText(context.getString(R.string.profiles_open_desc))
+            .onNodeWithText(context.getString(R.string.profile_open_desc))
             .performScrollTo()
             .performClick()
         composeRule.waitForIdle()
@@ -430,7 +430,7 @@ class AccountsSettingsEmbeddingWiringTest {
 
         every { navController.navigate(any<String>()) } just runs
         composeRule
-            .onNodeWithText(context.getString(R.string.listen_together_open_desc))
+            .onNodeWithText(context.getString(R.string.listen_together_open_description))
             .performScrollTo()
             .performClick()
         composeRule.waitForIdle()

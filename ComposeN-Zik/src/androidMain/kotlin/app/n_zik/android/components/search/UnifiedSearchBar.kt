@@ -185,7 +185,7 @@ fun UnifiedSearchBar(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         LeadingIconBadge(
                             iconRes = R.drawable.search,
-                            contentDescription = stringResource(R.string.search),
+                            contentDescription = stringResource(R.string.search_title),
                             modifier = Modifier.size(20.dp),
                         )
 
@@ -260,7 +260,7 @@ fun UnifiedSearchBar(
                 SearchBarBubbleButton(
                     SearchBarBubble(
                         iconRes = R.drawable.close,
-                        contentDescriptionRes = R.string.clear,
+                        contentDescriptionRes = R.string.common_action_clear,
                         onClick = {
                             onClear()
                             keyboardController?.hide()

@@ -42,8 +42,8 @@ class MainActivityStaleStartupWarningTest {
     @Before
     fun setUp() {
         mockkObject(Toaster)
-        every { Toaster.w(R.string.download_stale_startup_removed, 2, duration = Toast.LENGTH_LONG) } just Runs
-        every { Toaster.w(R.string.download_stale_startup_removed, 1, duration = Toast.LENGTH_LONG) } just Runs
+        every { Toaster.w(R.string.downloads_stale_startup_removed, 2, duration = Toast.LENGTH_LONG) } just Runs
+        every { Toaster.w(R.string.downloads_stale_startup_removed, 1, duration = Toast.LENGTH_LONG) } just Runs
     }
 
     @After
@@ -60,13 +60,13 @@ class MainActivityStaleStartupWarningTest {
 
         activity.onWindowFocusChanged(true)
 
-        verify(exactly = 1) { Toaster.w(R.string.download_stale_startup_removed, 2, duration = Toast.LENGTH_LONG) }
+        verify(exactly = 1) { Toaster.w(R.string.downloads_stale_startup_removed, 2, duration = Toast.LENGTH_LONG) }
         assertEquals(0, MyDownloadHelper.pendingStaleStartupCount.value)
 
         // A second focus cycle with an empty parking lot adds no toast.
         activity.onWindowFocusChanged(false)
         activity.onWindowFocusChanged(true)
-        verify(exactly = 1) { Toaster.w(R.string.download_stale_startup_removed, 2, duration = Toast.LENGTH_LONG) }
+        verify(exactly = 1) { Toaster.w(R.string.downloads_stale_startup_removed, 2, duration = Toast.LENGTH_LONG) }
     }
 
     @Test
@@ -76,11 +76,11 @@ class MainActivityStaleStartupWarningTest {
 
         MyDownloadHelper.pendingStaleStartupCount.value = 1
 
-        verify(exactly = 0) { Toaster.w(R.string.download_stale_startup_removed, 1, duration = Toast.LENGTH_LONG) }
+        verify(exactly = 0) { Toaster.w(R.string.downloads_stale_startup_removed, 1, duration = Toast.LENGTH_LONG) }
         assertEquals(1, MyDownloadHelper.pendingStaleStartupCount.value)
 
         activity.onWindowFocusChanged(true)
-        verify(exactly = 1) { Toaster.w(R.string.download_stale_startup_removed, 1, duration = Toast.LENGTH_LONG) }
+        verify(exactly = 1) { Toaster.w(R.string.downloads_stale_startup_removed, 1, duration = Toast.LENGTH_LONG) }
         assertEquals(0, MyDownloadHelper.pendingStaleStartupCount.value)
     }
 }

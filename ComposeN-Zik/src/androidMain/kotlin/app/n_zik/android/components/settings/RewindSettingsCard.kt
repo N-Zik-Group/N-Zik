@@ -62,7 +62,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
     Column {
         // "Rewind" card: recap type toggles, only relevant while the feature is on
         SettingsSectionCard(
-            title = stringResource(R.string.rw_settings_title),
+            title = stringResource(R.string.rewind_settings_title),
             icon = R.drawable.sparkles,
             visible = rewindEnabled,
             content = {
@@ -71,7 +71,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                 onOpenRewind?.let { onOpen ->
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.rewind.module_open"),
-                        title = stringResource(R.string.module_open),
+                        title = stringResource(R.string.modules_open),
                         text = stringResource(R.string.rewind_open_desc),
                         icon = R.drawable.chevron_forward,
                         onClick = onOpen
@@ -79,8 +79,8 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                 }
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_yearly"),
-                    title = stringResource(R.string.rw_settings_yearly),
-                    text = stringResource(R.string.rw_settings_yearly_description),
+                    title = stringResource(R.string.rewind_settings_yearly),
+                    text = stringResource(R.string.rewind_settings_yearly_description),
                     isChecked = yearlyEnabled,
                     onCheckedChange = {
                         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, it)
@@ -90,8 +90,8 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                 )
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_monthly"),
-                    title = stringResource(R.string.rw_settings_monthly),
-                    text = stringResource(R.string.rw_settings_monthly_description),
+                    title = stringResource(R.string.rewind_settings_monthly),
+                    text = stringResource(R.string.rewind_settings_monthly_description),
                     isChecked = monthlyEnabled,
                     onCheckedChange = {
                         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, it)
@@ -101,8 +101,8 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                 )
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_global"),
-                    title = stringResource(R.string.rw_settings_global),
-                    text = stringResource(R.string.rw_settings_global_description),
+                    title = stringResource(R.string.rewind_settings_global),
+                    text = stringResource(R.string.rewind_settings_global_description),
                     isChecked = globalEnabled,
                     onCheckedChange = {
                         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_GLOBAL_ENABLED, it)
@@ -115,8 +115,8 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                 // when the deck opens.
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_bgmusic_settings"),
-                    title = stringResource(R.string.rw_bgmusic_settings),
-                    text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_embedded_rewind_rw_bgmusic_settings), stringResource(R.string.rw_bgmusic_mute_cd)),
+                    title = stringResource(R.string.rewind_background_music_title),
+                    text = stringResource(R.string.settings_description_with_value, stringResource(R.string.rewind_background_music_description), stringResource(R.string.rewind_background_music_toggle_accessibility)),
                     isChecked = bgmEnabled,
                     onCheckedChange = {
                         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_BGM_ENABLED, it)
@@ -130,15 +130,15 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
         // "Rewind notifications" card: every notification toggle together. Each entry hides
         // with its parent type (off type = off notification).
         SettingsSectionCard(
-            title = stringResource(R.string.rw_settings_notifications),
+            title = stringResource(R.string.rewind_settings_notifications),
             icon = R.drawable.notification2,
             visible = rewindEnabled,
             content = {
                 AnimatedVisibility(visible = rewindEnabled && yearlyEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_yearly_notification"),
-                        title = stringResource(R.string.rw_settings_yearly_notification),
-                        text = stringResource(R.string.rw_settings_yearly_notification_description),
+                        title = stringResource(R.string.rewind_settings_yearly_notification),
+                        text = stringResource(R.string.rewind_settings_yearly_notification_description),
                         isChecked = yearlyNotifEnabled,
                         onCheckedChange = {
                             DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_NOTIF_ENABLED, it)
@@ -150,8 +150,8 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                 AnimatedVisibility(visible = rewindEnabled && monthlyEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_monthly_notification"),
-                        title = stringResource(R.string.rw_settings_monthly_notification),
-                        text = stringResource(R.string.rw_settings_monthly_notification_description),
+                        title = stringResource(R.string.rewind_settings_monthly_notification),
+                        text = stringResource(R.string.rewind_settings_monthly_notification_description),
                         isChecked = monthlyNotifEnabled,
                         onCheckedChange = {
                             DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_NOTIF_ENABLED, it)
@@ -163,8 +163,8 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                 AnimatedVisibility(visible = monthlyPlaylistEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_playlists_monthly_notification"),
-                        title = stringResource(R.string.rw_settings_playlists_monthly_notification),
-                        text = stringResource(R.string.rw_settings_playlists_monthly_notification_description),
+                        title = stringResource(R.string.rewind_settings_playlists_monthly_notification),
+                        text = stringResource(R.string.rewind_settings_playlists_monthly_notification_description),
                         isChecked = monthlyPlaylistNotifEnabled,
                         onCheckedChange = {
                             DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_NOTIF_ENABLED, it)
@@ -176,8 +176,8 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                 AnimatedVisibility(visible = yearlyPlaylistEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_playlists_yearly_notification"),
-                        title = stringResource(R.string.rw_settings_playlists_yearly_notification),
-                        text = stringResource(R.string.rw_settings_playlists_yearly_notification_description),
+                        title = stringResource(R.string.rewind_settings_playlists_yearly_notification),
+                        text = stringResource(R.string.rewind_settings_playlists_yearly_notification_description),
                         isChecked = yearlyPlaylistNotifEnabled,
                         onCheckedChange = {
                             DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_NOTIF_ENABLED, it)
@@ -192,14 +192,14 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
         // "Rewind playlists" card: the two creation toggles, hidden with the section while
         // the master is off (user decision, 2026-10-25: master off stops every feature).
         SettingsSectionCard(
-            title = stringResource(R.string.rw_settings_playlists_title),
+            title = stringResource(R.string.rewind_settings_playlists_title),
             icon = R.drawable.calendar,
             visible = rewindEnabled,
             content = {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_playlists_monthly"),
-                    title = stringResource(R.string.rw_settings_playlists_monthly),
-                    text = stringResource(R.string.rw_settings_playlists_monthly_description),
+                    title = stringResource(R.string.rewind_settings_playlists_monthly),
+                    text = stringResource(R.string.rewind_settings_playlists_monthly_description),
                     isChecked = monthlyPlaylistEnabled,
                     onCheckedChange = {
                         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, it)
@@ -209,8 +209,8 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                 )
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_playlists_yearly"),
-                    title = stringResource(R.string.rw_settings_playlists_yearly),
-                    text = stringResource(R.string.rw_settings_playlists_yearly_description),
+                    title = stringResource(R.string.rewind_settings_playlists_yearly),
+                    text = stringResource(R.string.rewind_settings_playlists_yearly_description),
                     isChecked = yearlyPlaylistEnabled,
                     onCheckedChange = {
                         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, it)

@@ -10,19 +10,19 @@ enum class BuiltInPlaylist(
     @field:StringRes override val textId: Int
 ): Drawable, TextView {
 
-    All( R.drawable.musical_notes, R.string.all ),
+    All( R.drawable.musical_notes, R.string.common_option_all ),
 
-    Favorites( R.drawable.heart, R.string.favorites ),
+    Favorites( R.drawable.heart, R.string.library_favorites_title ),
 
-    Offline( R.drawable.sync, R.string.cached ),
+    Offline( R.drawable.sync, R.string.library_cached_title ),
 
-    Downloaded( R.drawable.downloaded, R.string.downloaded ),
+    Downloaded( R.drawable.downloaded, R.string.library_downloaded_title ),
 
     Top( R.drawable.trending, R.string.playlist_top ),
 
-    OnDevice( R.drawable.musical_notes, R.string.on_device ),
+    OnDevice( R.drawable.musical_notes, R.string.library_on_device_title ),
 
-    Disliked( R.drawable.heart_dislike, R.string.disliked )
+    Disliked( R.drawable.heart_dislike, R.string.library_disliked_title )
 }
 
 

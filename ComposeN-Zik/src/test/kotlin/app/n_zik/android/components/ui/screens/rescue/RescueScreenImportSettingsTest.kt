@@ -59,8 +59,8 @@ class RescueScreenImportSettingsTest {
 
     @Test
     fun `import settings launches the document picker with the app's mime filter`() {
-        val importTitle = context.getString(R.string.rescue_import_settings)
-        val confirmText = context.getString(R.string.rescue_confirm_import_settings)
+        val importTitle = context.getString(R.string.recovery_import_settings)
+        val confirmText = context.getString(R.string.recovery_confirm_import_settings)
 
         // No alive marker on disk: the process guard is released, so the click surfaces the
         // confirmation dialog (if the guard were still active, the dialog would never appear).
@@ -68,7 +68,7 @@ class RescueScreenImportSettingsTest {
         // The screen opens on the All category and "Import settings" lives in the Per-profile
         // category: switch to it first, then let the 400 ms enter transition finish.
         composeRule
-            .onNodeWithText(context.getString(R.string.rescue_category_profile))
+            .onNodeWithText(context.getString(R.string.recovery_category_profile))
             .performClick()
         composeRule.mainClock.advanceTimeBy(500)
         composeRule.waitForIdle()

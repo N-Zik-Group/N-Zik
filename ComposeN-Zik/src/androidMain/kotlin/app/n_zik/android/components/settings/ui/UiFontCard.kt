@@ -34,8 +34,8 @@ internal fun UiFontCard(search: Search) {
 
     val typoSearchContextMatch = search.inputValue.isBlank() ||
         stringResource(R.string.settings_use_font_type).contains(search.inputValue, true) ||
-        stringResource(R.string.use_system_font).contains(search.inputValue, true) ||
-        stringResource(R.string.apply_font_padding).contains(search.inputValue, true)
+        stringResource(R.string.settings_font_use_system_label).contains(search.inputValue, true) ||
+        stringResource(R.string.settings_font_include_padding_label).contains(search.inputValue, true)
 
     AnimatedVisibility(
         visible = typoSearchContextMatch,
@@ -52,7 +52,7 @@ internal fun UiFontCard(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.settings_use_font_type"),
                         title = stringResource(R.string.settings_use_font_type),
-                        text = stringResource(R.string.settings_desc_ui_settings_use_font_type_settings_use_font_type),
+                        text = stringResource(R.string.interface_font_type_description),
                         selectedValueText = fontType.name,
                         icon = R.drawable.text,
                         onClick = { showFontDialog = true }
@@ -69,22 +69,22 @@ internal fun UiFontCard(search: Search) {
                     )
                 }
 
-                if (search.inputValue.isBlank() || stringResource(R.string.use_system_font).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_font_use_system_label).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.use_system_font"),
-                        title = stringResource(R.string.use_system_font),
-                        text = stringResource(R.string.use_font_by_the_system),
+                        title = stringResource(R.string.settings_font_use_system_label),
+                        text = stringResource(R.string.settings_font_use_system_description),
                         isChecked = useSystemFont,
                         onCheckedChange = { useSystemFont = it },
                         icon = R.drawable.settings
                     )
                 }
 
-                if (search.inputValue.isBlank() || stringResource(R.string.apply_font_padding).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_font_include_padding_label).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.apply_font_padding"),
-                        title = stringResource(R.string.apply_font_padding),
-                        text = stringResource(R.string.add_spacing_around_texts),
+                        title = stringResource(R.string.settings_font_include_padding_label),
+                        text = stringResource(R.string.settings_font_include_padding_description),
                         isChecked = applyFontPadding,
                         onCheckedChange = { applyFontPadding = it },
                         icon = R.drawable.resize

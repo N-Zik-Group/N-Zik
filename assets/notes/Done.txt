@@ -34,6 +34,11 @@ Added:
   - Keep the separately observed connection-abort/stale-approval problem outside this change; a complete live host approval was not validated. Android web-link defaults still require domain approval.
 
 Changed:
+- refactor(strings): organize resource keys by semantic domain
+  - Rename 2,166 keys, merge eight equivalent alias groups and consolidate reset strings; move existing translations across all 50 resource files without changing their values.
+  - Use Glass effect naming and preserve published toast keys and settings-card targets through a compatibility adapter.
+  - Verify 154 toast identities, 74 card targets, 291 passing tests and a successful Debug build; align stale Queue Glass test expectations with the existing four-mode behavior.
+
 - chore(build): cap Kotlin compiler daemon heap at 8 GB
   - Limit kotlin.daemon.jvmargs to -Xmx8g instead of the machine-dependent default that can reserve roughly a quarter of physical memory.
   - Keep the compiler setting used during successful Debug assembly and player/header regression validation; application runtime behavior is unchanged.

@@ -59,24 +59,24 @@ object NewUpdateAvailableDialog {
         DialogPresence(visible = isActive && !isCancelled, inherit = true) {
 
         val updateVersion = Updater.getDisplayVersion()
-        val updateLabelModel = Updater.flavorLabel(updateVersion) ?: Updater.FlavorLabel(R.string.release_title)
+        val updateLabelModel = Updater.flavorLabel(updateVersion) ?: Updater.FlavorLabel(R.string.updates_build_release_label)
         val updateLabel = if (updateLabelModel.literal != null) updateLabelModel.literal
         else stringResource(updateLabelModel.resId) + if (updateLabelModel.append32) " 32" else ""
 
         DialogFrame(onDismiss = { onDismiss() },
-            title = "$updateLabel ${stringResource(R.string.update_available)}",
+            title = "$updateLabel ${stringResource(R.string.updates_available)}",
             bodyPadding = PaddingValues(0.dp),
         footer = {
                 ButtonRow(
                     buttons = listOf(
                         DialogButton(
-                            text = stringResource(R.string.cancel),
+                            text = stringResource(R.string.common_action_cancel),
                             icon = R.drawable.close,
                             onClick = { onDismiss() },
                             danger = true
                         ),
                         DialogButton(
-                            text = stringResource(R.string.go_to_download),
+                            text = stringResource(R.string.updates_action_open_download),
                             icon = R.drawable.chevron_forward,
                             onClick = {
                                 onDismiss()
@@ -107,11 +107,11 @@ object NewUpdateAvailableDialog {
                     Spacer(modifier = Modifier.height(8.dp))
 
                     BasicText(
-                        text = stringResource(R.string.app_update_dialog_version, updateVersion),
+                        text = stringResource(R.string.updates_available_version_message, updateVersion),
                         style = typography().xs.copy(color = colorPalette().textSecondary)
                     )
                     BasicText(
-                        text = stringResource(R.string.app_update_dialog_size, Updater.build.readableSize.ifEmpty { "?" }),
+                        text = stringResource(R.string.updates_available_download_size, Updater.build.readableSize.ifEmpty { "?" }),
                         style = typography().xs.copy(color = colorPalette().textSecondary)
                     )
                 }

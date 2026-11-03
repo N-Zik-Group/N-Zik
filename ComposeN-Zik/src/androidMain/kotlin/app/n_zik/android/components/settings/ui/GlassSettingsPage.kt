@@ -208,7 +208,7 @@ internal fun GlassSettingsContent(
                     item("header", contentType = "header") {
                         Column {
                             HeaderWithIcon(
-                                title = stringResource(R.string.liquid_glass),
+                                title = stringResource(R.string.glass_effect_title),
                                 iconId = R.drawable.color_palette,
                                 enabled = false,
                                 showIcon = true,
@@ -216,7 +216,7 @@ internal fun GlassSettingsContent(
                                 onClick = {},
                             )
                             SettingsDescription(
-                                text = stringResource(R.string.page_glass_summary),
+                                text = stringResource(R.string.glass_effect_summary),
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Center,
                             )
@@ -226,50 +226,50 @@ internal fun GlassSettingsContent(
                     item("master", contentType = "group") { UiGlassCard() }
                     item("interactions", contentType = "group") { GlassInteractionSettingsCard(config, store, target) }
                     item("material", contentType = "group") {
-                        GlassSection(R.string.glass_group_material) {
+                        GlassSection(R.string.glass_effect_group_material) {
                             OtherEnumValueSelectorSettingsEntry(
-                                title = stringResource(R.string.quality),
+                                title = stringResource(R.string.settings_network_quality_title),
                                 icon = R.drawable.settings,
                                 selectedValue = config.quality,
                                 onValueSelected = store::setProfile,
                                 modifier = Modifier.testTag("settings.glass.quality").settingsSearchTarget("glass.quality"),
                                 valueText = { value -> stringResource(when (value) {
-                                    GlassQuality.Performance -> R.string.glass_performance
-                                    GlassQuality.Balanced -> R.string.glass_balanced
-                                    GlassQuality.Quality -> R.string.glass_quality
+                                    GlassQuality.Performance -> R.string.glass_effect_quality_fastest
+                                    GlassQuality.Balanced -> R.string.glass_effect_quality_balanced
+                                    GlassQuality.Quality -> R.string.glass_effect_quality_high
                                 }) },
                             )
                             if (liquid) {
-                                GlassSlider("vibrancy", stringResource(R.string.glass_vibrancy), config.vibrancy, 0f..2f, "${(config.vibrancy * 50).roundToInt()}%", R.drawable.eye) { store.setFloat(glassVibrancyKey, it) }
-                                GlassSlider("blur", stringResource(R.string.glass_blur), config.blur, 0f..24f, "${config.blur.roundToInt()} dp", R.drawable.drop_blur) { store.setFloat(glassBlurKey, it) }
+                                GlassSlider("vibrancy", stringResource(R.string.glass_effect_color_vibrancy), config.vibrancy, 0f..2f, "${(config.vibrancy * 50).roundToInt()}%", R.drawable.eye) { store.setFloat(glassVibrancyKey, it) }
+                                GlassSlider("blur", stringResource(R.string.glass_effect_frost), config.blur, 0f..24f, "${config.blur.roundToInt()} dp", R.drawable.drop_blur) { store.setFloat(glassBlurKey, it) }
                             } else {
-                                Text(stringResource(if (config.quality == GlassQuality.Performance) R.string.glass_performance_note else R.string.glass_unsupported), color = ink.copy(alpha = .66f), style = typography().xxs, modifier = Modifier.padding(18.dp))
+                                Text(stringResource(if (config.quality == GlassQuality.Performance) R.string.glass_effect_quality_fastest_description else R.string.glass_effect_unsupported), color = ink.copy(alpha = .66f), style = typography().xxs, modifier = Modifier.padding(18.dp))
                             }
                         }
                     }
                     item("colour", contentType = "group") {
-                        GlassSection(R.string.glass_group_colour) {
+                        GlassSection(R.string.glass_effect_group_color) {
                             TintRow(config, onTint = store::setTint, onColor = store::setColor, onStrength = { store.setFloat(glassTintStrengthKey, it) })
-                            GlassSlider("film", stringResource(R.string.glass_film), config.film, 0f..1f, "${(config.film * 100).roundToInt()}%", R.drawable.droplet) { store.setFloat(glassFilmKey, it) }
-                            GlassSlider("indicator", stringResource(R.string.glass_indicator), config.indicatorOpacity, 0f..1f, "${(config.indicatorOpacity * 100).roundToInt()}%", R.drawable.checkmark) { store.setFloat(glassIndicatorOpacityKey, it) }
+                            GlassSlider("film", stringResource(R.string.glass_effect_film), config.film, 0f..1f, "${(config.film * 100).roundToInt()}%", R.drawable.droplet) { store.setFloat(glassFilmKey, it) }
+                            GlassSlider("indicator", stringResource(R.string.glass_effect_active_tab_indicator), config.indicatorOpacity, 0f..1f, "${(config.indicatorOpacity * 100).roundToInt()}%", R.drawable.checkmark) { store.setFloat(glassIndicatorOpacityKey, it) }
                         }
                     }
                     item("readability", contentType = "group") {
-                        GlassSection(R.string.glass_group_readability) {
-                            GlassSlider("dialogDimming", stringResource(R.string.glass_dialog_dimming), config.dialogDimming, 0f..1f, "${(config.dialogDimming * 100).roundToInt()}%", R.drawable.eye_off) { store.setFloat(glassDialogDimmingKey, it) }
-                            GlassSlider("menuDimming", stringResource(R.string.glass_menu_dimming), config.menuDimming, 0f..1f, "${(config.menuDimming * 100).roundToInt()}%", R.drawable.menu) { store.setFloat(glassMenuDimmingKey, it) }
+                        GlassSection(R.string.glass_effect_group_readability) {
+                            GlassSlider("dialogDimming", stringResource(R.string.glass_effect_dialog_dimming), config.dialogDimming, 0f..1f, "${(config.dialogDimming * 100).roundToInt()}%", R.drawable.eye_off) { store.setFloat(glassDialogDimmingKey, it) }
+                            GlassSlider("menuDimming", stringResource(R.string.glass_effect_menu_dimming), config.menuDimming, 0f..1f, "${(config.menuDimming * 100).roundToInt()}%", R.drawable.menu) { store.setFloat(glassMenuDimmingKey, it) }
                         }
                     }
                     item("edges", contentType = "group") {
-                        GlassSection(R.string.glass_group_edges) {
-                            GlassSlider("rim", stringResource(R.string.glass_rim), config.rim, 0f..1f, "${(config.rim * 100).roundToInt()}%", R.drawable.sparkles) { store.setFloat(glassRimKey, it) }
+                        GlassSection(R.string.glass_effect_group_edges) {
+                            GlassSlider("rim", stringResource(R.string.glass_effect_rim), config.rim, 0f..1f, "${(config.rim * 100).roundToInt()}%", R.drawable.sparkles) { store.setFloat(glassRimKey, it) }
                             if (refractive) {
-                                GlassSlider("refractionDepth", stringResource(R.string.glass_refraction_depth), config.depth, 0f..1f, "${(config.depth * 48).roundToInt()} dp", R.drawable.sound_effect) { store.setFloat(glassDepthKey, it) }
-                                GlassSlider("refractionAmount", stringResource(R.string.glass_refraction_amount), config.amount, 0f..1f, "${(config.amount * 48).roundToInt()} dp", R.drawable.resize) { store.setFloat(glassAmountKey, it) }
-                                GlassSwitch("dispersion", R.string.glass_dispersion, config.dispersion, R.drawable.color_palette) { store.setBoolean(glassDispersionKey, it) }
-                                GlassSwitch("depth", R.string.glass_depth, config.depthEffect, R.drawable.sort_grid) { store.setBoolean(glassDepthEffectKey, it) }
+                                GlassSlider("refractionDepth", stringResource(R.string.glass_effect_refraction_depth), config.depth, 0f..1f, "${(config.depth * 48).roundToInt()} dp", R.drawable.sound_effect) { store.setFloat(glassDepthKey, it) }
+                                GlassSlider("refractionAmount", stringResource(R.string.glass_effect_refraction_amount), config.amount, 0f..1f, "${(config.amount * 48).roundToInt()} dp", R.drawable.resize) { store.setFloat(glassAmountKey, it) }
+                                GlassSwitch("dispersion", R.string.glass_effect_dispersion, config.dispersion, R.drawable.color_palette) { store.setBoolean(glassDispersionKey, it) }
+                                GlassSwitch("depth", R.string.glass_effect_depth_enabled, config.depthEffect, R.drawable.sort_grid) { store.setBoolean(glassDepthEffectKey, it) }
                             } else if (liquid) {
-                                Text(stringResource(R.string.glass_refraction_unsupported), color = ink.copy(alpha = .66f), style = typography().xxs, modifier = Modifier.padding(18.dp))
+                                Text(stringResource(R.string.glass_effect_refraction_unsupported), color = ink.copy(alpha = .66f), style = typography().xxs, modifier = Modifier.padding(18.dp))
                             }
                         }
                     }
@@ -296,7 +296,7 @@ internal fun GlassPreview(config: GlassSettings, maxPaneHeight: Dp = 166.dp) {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         listOf(true, false).forEach { enabled ->
-            val label = stringResource(if (enabled) R.string.on else R.string.off)
+            val label = stringResource(if (enabled) R.string.common_state_on else R.string.common_state_off)
             Column(
                 Modifier.weight(1f).testTag("settings.glass.preview.$enabled")
                     .semantics { stateDescription = label },
@@ -358,24 +358,24 @@ internal fun TintRow(config: GlassSettings, onTint: (GlassTintSource) -> Unit, o
     val hsv = FloatArray(3)
     if (chosen.isSpecified) AndroidColor.colorToHSV(chosen.toArgb(), hsv)
     OtherEnumValueSelectorSettingsEntry(
-        title = stringResource(R.string.liquid_glass_tint_source),
+        title = stringResource(R.string.glass_effect_tint_source),
         icon = R.drawable.color_palette,
         selectedValue = selectedSource,
         onValueSelected = onTint,
         values = sources,
         modifier = Modifier.testTag("settings.glass.tintSource").settingsSearchTarget("glass.tintSource"),
         valueText = { value -> stringResource(when (value) {
-            GlassTintSource.None -> R.string.glass_tint_none
-            GlassTintSource.ThemeAccent -> R.string.theme
-            GlassTintSource.Artwork -> R.string.artwork
-            GlassTintSource.SystemAccent -> R.string.liquid_glass_system_accent
-            GlassTintSource.Custom -> R.string.liquid_glass_custom
+            GlassTintSource.None -> R.string.glass_effect_tint_none
+            GlassTintSource.ThemeAccent -> R.string.common_color_source_theme
+            GlassTintSource.Artwork -> R.string.common_color_source_artwork
+            GlassTintSource.SystemAccent -> R.string.glass_effect_tint_source_system_accent
+            GlassTintSource.Custom -> R.string.glass_effect_tint_source_custom
         }) },
     )
     if (selectedSource == GlassTintSource.Custom) {
         OtherSettingsEntry(
-            title = stringResource(R.string.glass_tint),
-            text = stringResource(R.string.liquid_glass_color),
+            title = stringResource(R.string.glass_effect_tint),
+            text = stringResource(R.string.glass_effect_custom_color),
             icon = R.drawable.color_palette,
             modifier = Modifier.testTag("settings.glass.tint").settingsSearchTarget("glass.tint"),
             onClick = { showColorPicker = true },
@@ -390,14 +390,14 @@ internal fun TintRow(config: GlassSettings, onTint: (GlassTintSource) -> Unit, o
             }
         }
         SliderSettingsEntry(
-            title = stringResource(R.string.glass_tint), text = "", state = hsv[0], range = 0f..360f,
+            title = stringResource(R.string.glass_effect_tint), text = "", state = hsv[0], range = 0f..360f,
             stepSize = 0f, icon = R.drawable.color_palette, inputValueText = Float::toString,
-            toDisplay = { stringResource(R.string.glass_hue, it.roundToInt()) },
+            toDisplay = { stringResource(R.string.glass_effect_hue, it.roundToInt()) },
             onSlide = { onColor(Color.hsv(it, hsv[1], hsv[2]).toArgb()) },
             modifier = Modifier.testTag("settings.glass.hue").settingsSearchTarget("glass.hue"),
         )
     }
-    if (chosen.isSpecified) GlassSlider("tintStrength", stringResource(R.string.glass_tint_strength), config.tintStrength, 0f..1f, "${(config.tintStrength * 100).roundToInt()}%", R.drawable.drop_half_fill, onChange = onStrength)
+    if (chosen.isSpecified) GlassSlider("tintStrength", stringResource(R.string.glass_effect_tint_strength), config.tintStrength, 0f..1f, "${(config.tintStrength * 100).roundToInt()}%", R.drawable.drop_half_fill, onChange = onStrength)
 }
 
 @Composable
@@ -405,9 +405,9 @@ private fun GlassSection(@StringRes title: Int, content: @Composable () -> Unit)
     SettingsSectionCard(
         title = stringResource(title),
         icon = when (title) {
-            R.string.glass_group_material -> R.drawable.settings
-            R.string.glass_group_edges -> R.drawable.resize
-            R.string.glass_group_readability -> R.drawable.eye_off
+            R.string.glass_effect_group_material -> R.drawable.settings
+            R.string.glass_effect_group_edges -> R.drawable.resize
+            R.string.glass_effect_group_readability -> R.drawable.eye_off
             else -> R.drawable.color_palette
         },
         content = content,

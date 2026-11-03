@@ -207,13 +207,13 @@ fun HistoryList(
                                     .toLocalDate()
                                 val daysBetween = ChronoUnit.DAYS.between(eventDate, today)
                                 when {
-                                    eventDate.isEqual(today) -> context.getString(R.string.today)
-                                    eventDate.isEqual(yesterday) -> context.getString(R.string.yesterday)
-                                    daysBetween in 2..7 -> context.getString(R.string.x_days_ago, daysBetween.toInt())
-                                    daysBetween in 8..14 -> context.getString(R.string.last_week)
-                                    eventDate.year == today.year && eventDate.monthValue == today.monthValue -> context.getString(R.string.this_month)
+                                    eventDate.isEqual(today) -> context.getString(R.string.calendar_today)
+                                    eventDate.isEqual(yesterday) -> context.getString(R.string.calendar_yesterday)
+                                    daysBetween in 2..7 -> context.getString(R.string.calendar_days_ago, daysBetween.toInt())
+                                    daysBetween in 8..14 -> context.getString(R.string.calendar_last_week)
+                                    eventDate.year == today.year && eventDate.monthValue == today.monthValue -> context.getString(R.string.calendar_this_month)
                                     eventDate.year == today.year -> SimpleDateFormat("MMMM", Locale.getDefault()).format(Date(event.event.timestamp)).replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-                                    eventDate.year == today.year - 1 -> context.getString(R.string.last_year)
+                                    eventDate.year == today.year - 1 -> context.getString(R.string.calendar_last_year)
                                     else -> SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(Date(event.event.timestamp)).replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
                                 }
                             }
@@ -229,10 +229,10 @@ fun HistoryList(
     }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
     val events = loadedEvents.orEmpty()
 
-    val buttonsList = mutableListOf(HistoryType.History to stringResource(R.string.history))
+    val buttonsList = mutableListOf(HistoryType.History to stringResource(R.string.library_history_title))
     val syncImportHistory by rememberPreference(syncImportHistoryKey, false)
     if (isCoreSyncEnabled && syncImportHistory) {
-        buttonsList += HistoryType.YTMHistory to stringResource(R.string.yt_history)
+        buttonsList += HistoryType.YTMHistory to stringResource(R.string.sync_youtube_history_title)
     }
 
     var historyType by rememberPreference(historyTypeKey, HistoryType.History)
@@ -300,7 +300,7 @@ fun HistoryList(
                 exit = shrinkVertically(tween(250)) + fadeOut(tween(250)),
             ) {
                 HeaderWithIcon(
-                    title = stringResource(R.string.history),
+                    title = stringResource(R.string.library_history_title),
                     iconId = R.drawable.history,
                     enabled = false,
                     showIcon = false,
@@ -396,7 +396,7 @@ fun HistoryList(
                     contentAlignment = Alignment.Center
                 ) {
                     BasicText(
-                        text = stringResource(R.string.no_items),
+                        text = stringResource(R.string.common_empty_items),
                         style = typography().m.semiBold.copy(
                             color = colorPalette().textSecondary
                         )

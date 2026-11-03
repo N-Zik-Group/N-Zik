@@ -122,7 +122,7 @@ fun ArtistInsightsScreen(
                 contentAlignment = Alignment.Center
             ) {
                 BasicText(
-                    text = stringResource(R.string.unable_to_load),
+                    text = stringResource(R.string.common_load_failed),
                     style = typography().m.secondary.center
                 )
             }
@@ -142,7 +142,7 @@ fun ArtistInsightsScreen(
             val bio = artist.wikipediaBio ?: artist.description
             if (!bio.isNullOrBlank()) {
                 item(key = "bio") {
-                    InfoCard(title = stringResource(R.string.mb_insights_biography), icon = R.drawable.information) {
+                    InfoCard(title = stringResource(R.string.metadata_musicbrainz_insights_biography), icon = R.drawable.information) {
                         Text(
                             text = bio,
                             style = typography().xs
@@ -153,7 +153,7 @@ fun ArtistInsightsScreen(
 
             if (state.relations.isNotEmpty()) {
                 item(key = "relations") {
-                    InfoCard(title = stringResource(R.string.mb_insights_members_collabs), icon = R.drawable.people) {
+                    InfoCard(title = stringResource(R.string.metadata_musicbrainz_insights_members_collabs), icon = R.drawable.people) {
                         state.relations.forEach { rel ->
                             RelatedArtistRow(
                                 artist = rel.artist,
@@ -179,7 +179,7 @@ fun ArtistInsightsScreen(
             val keywords = artist.keywords
             if (keywords.isNotEmpty()) {
                 item(key = "keywords") {
-                    InfoCard(title = stringResource(R.string.mb_insights_tags_genres), icon = R.drawable.sparkles) {
+                    InfoCard(title = stringResource(R.string.metadata_musicbrainz_insights_tags_genres), icon = R.drawable.sparkles) {
                         KeywordChips(keywords)
                     }
                 }
@@ -187,7 +187,7 @@ fun ArtistInsightsScreen(
 
             if (artist.rating != null) {
                 item(key = "rating") {
-                    InfoCard(title = stringResource(R.string.mb_insights_popularity), icon = R.drawable.star_brilliant) {
+                    InfoCard(title = stringResource(R.string.metadata_musicbrainz_insights_popularity), icon = R.drawable.star_brilliant) {
                         RatingBar(rating = artist.rating, votes = artist.ratingVotes)
                     }
                 }
@@ -195,7 +195,7 @@ fun ArtistInsightsScreen(
 
             state.stats?.let { stats ->
                 item(key = "stats") {
-                    InfoCard(title = stringResource(R.string.mb_insights_your_listening), icon = R.drawable.equalizer) {
+                    InfoCard(title = stringResource(R.string.metadata_musicbrainz_insights_your_listening), icon = R.drawable.equalizer) {
                         ArtistStatsRow(stats)
                     }
                 }
@@ -203,7 +203,7 @@ fun ArtistInsightsScreen(
 
             if (state.topTracks.isNotEmpty()) {
                 item(key = "top_songs") {
-                    InfoCard(title = stringResource(R.string.mb_insights_top_songs), icon = R.drawable.musical_notes) {
+                    InfoCard(title = stringResource(R.string.metadata_musicbrainz_insights_top_songs), icon = R.drawable.musical_notes) {
                         state.topTracks.forEachIndexed { index, song ->
                             InsightsSwipeableSongItem(
                                 mediaItem = song.asMediaItem,
@@ -247,7 +247,7 @@ fun ArtistInsightsScreen(
 
             if (state.topAlbums.isNotEmpty()) {
                 item(key = "top_albums") {
-                    InfoCard(title = stringResource(R.string.mb_insights_top_albums), icon = R.drawable.album) {
+                    InfoCard(title = stringResource(R.string.metadata_musicbrainz_insights_top_albums), icon = R.drawable.album) {
                         state.topAlbums.forEachIndexed { index, album ->
                             AlbumItem(
                                 album = album,
@@ -298,7 +298,7 @@ fun ArtistInsightsScreen(
 
             if (state.albums.isNotEmpty()) {
                 item(key = "albums") {
-                    InfoCard(title = stringResource(R.string.mb_insights_local_library), icon = R.drawable.library) {
+                    InfoCard(title = stringResource(R.string.metadata_musicbrainz_insights_local_library), icon = R.drawable.library) {
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             contentPadding = PaddingValues(horizontal = 4.dp)
@@ -364,17 +364,17 @@ fun ArtistInsightsScreen(
 
             if (state.externalLinks.isNotEmpty() || artist.wikipediaUrl != null || artist.mbId != null) {
                 item(key = "links") {
-                    InfoCard(title = stringResource(R.string.mb_insights_links), icon = R.drawable.link) {
+                    InfoCard(title = stringResource(R.string.metadata_musicbrainz_insights_links), icon = R.drawable.link) {
                         artist.wikipediaUrl?.let {
                             ExternalLinkRow(
-                                stringResource(R.string.mb_wikipedia),
+                                stringResource(R.string.metadata_musicbrainz_wikipedia),
                                 it,
                                 R.drawable.globe
                             )
                         }
                         artist.mbId?.let {
                             ExternalLinkRow(
-                                stringResource(R.string.mb_musicbrainz),
+                                stringResource(R.string.metadata_musicbrainz_title),
                                 "https://musicbrainz.org/artist/$it",
                                 R.drawable.globe
                             )
@@ -442,11 +442,11 @@ private fun ArtistHeader(artist: Artist) {
 @Composable
 private fun ArtistStatsRow(stats: ArtistStats) {
     Row(modifier = Modifier.fillMaxWidth()) {
-        StatItem(stringResource(R.string.mb_stat_listens), stats.playCount.toString(), modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
-        StatItem(stringResource(R.string.mb_stat_albums), stats.distinctAlbumsCount.toString(), modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
-        StatItem(stringResource(R.string.mb_stat_liked_songs), stats.likedSongsCount.toString(), modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
-        StatItem(stringResource(R.string.mb_stat_bookmarked_albums), stats.bookmarkedAlbumsCount.toString(), modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
-        StatItem(stringResource(R.string.mb_stat_time), formatPlayTime(stats.totalPlayTimeMs), modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
+        StatItem(stringResource(R.string.metadata_musicbrainz_stat_listens), stats.playCount.toString(), modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
+        StatItem(stringResource(R.string.metadata_musicbrainz_stat_albums), stats.distinctAlbumsCount.toString(), modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
+        StatItem(stringResource(R.string.metadata_musicbrainz_stat_liked_songs), stats.likedSongsCount.toString(), modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
+        StatItem(stringResource(R.string.metadata_musicbrainz_stat_bookmarked_albums), stats.bookmarkedAlbumsCount.toString(), modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
+        StatItem(stringResource(R.string.metadata_musicbrainz_stat_time), formatPlayTime(stats.totalPlayTimeMs), modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
     }
 }
 

@@ -58,7 +58,7 @@ object ImportBackupDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.import_backup)
+        get() = stringResource(R.string.backup_action_import)
 
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -234,18 +234,18 @@ object ImportBackupDialog : ContentFramedDialog {
             }
         })
 
-        val databaseLabel = stringResource(R.string.database)
-        val databaseDescription = stringResource(R.string.import_database_description)
-        val settingsLabel = stringResource(R.string.settings)
-        val settingsDescription = stringResource(R.string.import_settings_description)
-        val bothLabel = stringResource(R.string.database_and_settings)
-        val bothDescription = stringResource(R.string.import_both_description)
+        val databaseLabel = stringResource(R.string.backup_target_database_label)
+        val databaseDescription = stringResource(R.string.backup_import_database_description)
+        val settingsLabel = stringResource(R.string.settings_title)
+        val settingsDescription = stringResource(R.string.backup_import_settings_description)
+        val bothLabel = stringResource(R.string.backup_target_database_and_settings_label)
+        val bothDescription = stringResource(R.string.backup_import_both_description)
         // The option is the profile state (the list + every face), not the login
         // accounts: labeled "Profiles" like everywhere else in the app.
-        val profilesLabel = stringResource(R.string.profiles)
-        val profilesDescription = stringResource(R.string.import_accounts_description)
-        val allLabel = stringResource(R.string.import_all)
-        val allDescription = stringResource(R.string.import_all_description)
+        val profilesLabel = stringResource(R.string.profile_title)
+        val profilesDescription = stringResource(R.string.backup_import_accounts_description)
+        val allLabel = stringResource(R.string.backup_import_all)
+        val allDescription = stringResource(R.string.backup_import_all_description)
 
         val options = listOf(
             Triple(R.drawable.server, databaseLabel, databaseDescription),
@@ -263,7 +263,7 @@ object ImportBackupDialog : ContentFramedDialog {
                 ButtonRow(
                     buttons = listOf(
                         DialogButton(
-                            text = stringResource(R.string.import_button),
+                            text = stringResource(R.string.common_action_import),
                             primary = true,
                             textColor = colorPalette().textSecondary,
                             onClick = {
@@ -349,9 +349,9 @@ object ImportBackupDialog : ContentFramedDialog {
             // next attempt.
             DialogPresence(target = crossProfilePending) { (tag, targetId) ->
                 ConfirmationDialog(
-                    title = stringResource(R.string.dialog_import_backup),
+                    title = stringResource(R.string.backup_action_import),
                     text = stringResource(
-                        R.string.rescue_cross_profile_confirm,
+                        R.string.recovery_cross_profile_confirm,
                         tag,
                         resolveProfileDisplayName(
                             targetId,
@@ -359,7 +359,7 @@ object ImportBackupDialog : ContentFramedDialog {
                             stringResource(R.string.profile_base_name)
                         )
                     ),
-                    confirmText = stringResource(R.string.import_button),
+                    confirmText = stringResource(R.string.common_action_import),
                     onDismiss = {
                         crossProfilePending = null
                         abortChain()
@@ -379,9 +379,9 @@ object ImportBackupDialog : ContentFramedDialog {
             // (nothing is pending), so dismissing just drops the question.
             DialogPresence(target = stateCrossProfilePending) { (tag, targetId, proceed) ->
                 ConfirmationDialog(
-                    title = stringResource(R.string.dialog_import_backup),
+                    title = stringResource(R.string.backup_action_import),
                     text = stringResource(
-                        R.string.rescue_cross_profile_confirm,
+                        R.string.recovery_cross_profile_confirm,
                         tag,
                         resolveProfileDisplayName(
                             targetId,
@@ -389,7 +389,7 @@ object ImportBackupDialog : ContentFramedDialog {
                             stringResource(R.string.profile_base_name)
                         )
                     ),
-                    confirmText = stringResource(R.string.import_button),
+                    confirmText = stringResource(R.string.common_action_import),
                     onDismiss = {
                         stateCrossProfilePending = null
                     },

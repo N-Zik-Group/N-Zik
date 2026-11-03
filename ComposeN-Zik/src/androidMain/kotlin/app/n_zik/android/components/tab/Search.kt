@@ -106,7 +106,7 @@ class Search private constructor(
     val inputValue: String
         get() = input.text
     override val iconId: Int = R.drawable.search_circle
-    override val messageId: Int = R.string.search
+    override val messageId: Int = R.string.search_title
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -189,7 +189,7 @@ class Search private constructor(
                         UnifiedSearchBar(
                             input = input,
                             onInputChanged = { input = it },
-                            placeholderRes = R.string.search,
+                            placeholderRes = R.string.search_title,
                             baseSurface = colorPalette().background1,
                             onClear = {
                                 input = TextFieldValue("")

@@ -97,22 +97,22 @@ class ImportProfileState private constructor(
                         val names = applied?.names ?: 0
                         val message = when {
                             profiles > 0 ->
-                                context.getString(R.string.import_profile_state_complete, profiles)
+                                context.getString(R.string.backup_import_profile_state_complete, profiles)
                             // A base-only archive (empty list + base face and/or name) imports
                             // 0 profiles: say the base profile was restored instead of
 //
                             // "0 profiles".
                             faces > 0 || names > 0 ->
-                                context.getString(R.string.import_profile_state_complete_base)
+                                context.getString(R.string.backup_import_profile_state_complete_base)
                             else ->
-                                context.getString(R.string.import_profile_state_complete, 0)
+                                context.getString(R.string.backup_import_profile_state_complete, 0)
                         }
                         Toaster.i(message)
                         onDone()
                     } else {
                         // A failed import leaves the dialog open so the user can retry.
                         Timber.tag("ImportProfileState").e(result.exceptionOrNull(), "Profile state import failed")
-                        Toaster.e(context.getString(R.string.import_profile_state_failed))
+                        Toaster.e(context.getString(R.string.backup_import_profile_state_failed))
                     }
                 }
             }

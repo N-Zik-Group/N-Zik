@@ -15,7 +15,7 @@ abstract class DeleteDialog protected constructor(
 ): ConfirmDialog, MenuIcon, Descriptive {
 
     override val iconId: Int = R.drawable.trash
-    override val messageId: Int = R.string.delete
+    override val messageId: Int = R.string.common_action_delete
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )

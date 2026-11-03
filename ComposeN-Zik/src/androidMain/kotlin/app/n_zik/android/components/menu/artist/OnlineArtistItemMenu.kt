@@ -120,12 +120,12 @@ class OnlineArtistItemMenu private constructor(
     @Composable
     override fun ListMenu() = ListMenu.Menu(title = null, showDragHandle = false) {
         // Section: Playback
-        SectionTitle(stringResource(R.string.playback))
+        SectionTitle(stringResource(R.string.common_playback_section_title))
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Management
-        SectionTitle(stringResource(R.string.management))
+        SectionTitle(stringResource(R.string.library_management_section_title))
         buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(3)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -135,14 +135,14 @@ class OnlineArtistItemMenu private constructor(
     override fun GridMenu() = GridMenu.Menu(title = null, showDragHandle = false) {
         // Section: Playback
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.playback))
+            SectionTitle(stringResource(R.string.common_playback_section_title))
         }
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
         // Section: Management
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.management))
+            SectionTitle(stringResource(R.string.library_management_section_title))
         }
         buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(3)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -308,15 +308,15 @@ class OnlineArtistItemMenu private constructor(
                             }
                             val messageId = if (showDisliked.isEnabled) {
                                 when(newState) {
-                                    true -> R.string.added_to_favorites
-                                    false -> R.string.added_to_dislikes
-                                    null -> R.string.removed_from_favorites
+                                    true -> R.string.library_favorites_added
+                                    false -> R.string.library_dislikes_added
+                                    null -> R.string.library_favorites_removed
                                 }
                             } else {
                                 when(newState) {
-                                    true -> R.string.added_to_favorites
-                                    null -> R.string.removed_from_favorites
-                                    else -> R.string.added_to_favorites
+                                    true -> R.string.library_favorites_added
+                                    null -> R.string.library_favorites_removed
+                                    else -> R.string.library_favorites_added
                                 }
                             }
                             val artistName = artist.info?.name
@@ -400,11 +400,11 @@ class OnlineArtistItemMenu private constructor(
             override val color: androidx.compose.ui.graphics.Color
                 @Composable
                 get() = if (binder?.isRadioActive == true) colorPalette().accent else colorPalette().text
-            override val messageId: Int = R.string.start_radio
+            override val messageId: Int = R.string.radio_action_start
             @get:Composable override val menuIconTitle: String get() = stringResource(binder?.radioActionTextRes ?: messageId)
             override fun onShortClick() {
                 if (isFetching) {
-                    Toaster.w(R.string.opening_url)
+                    Toaster.w(R.string.common_external_link_loading_suffix)
                 } else {
                     val allMediaItems = mutableListOf<MediaItem>()
                     artistPage?.sections?.forEach { section ->
@@ -421,7 +421,7 @@ class OnlineArtistItemMenu private constructor(
                         binder?.player?.forcePlayAtIndex(allMediaItems, 0)
                         menuState.hide()
                     } else {
-                        Toaster.e(R.string.no_song_found)
+                        Toaster.e(R.string.player_no_song_found)
                     }
                 }
             }
@@ -435,11 +435,11 @@ class OnlineArtistItemMenu private constructor(
             override val color: androidx.compose.ui.graphics.Color
                 @Composable
                 get() = colorPalette().text
-            override val messageId: Int = R.string.shuffle
+            override val messageId: Int = R.string.player_action_shuffle
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() {
                 if (isFetching) {
-                    Toaster.w(R.string.opening_url)
+                    Toaster.w(R.string.common_external_link_loading_suffix)
                 } else {
                     val allMediaItems = mutableListOf<MediaItem>()
                     artistPage?.sections?.forEach { section ->
@@ -456,7 +456,7 @@ class OnlineArtistItemMenu private constructor(
                         binder?.triggerShuffleOkFlash()
                         menuState.hide()
                     } else {
-                        Toaster.e(R.string.no_song_found)
+                        Toaster.e(R.string.player_no_song_found)
                     }
                 }
             }

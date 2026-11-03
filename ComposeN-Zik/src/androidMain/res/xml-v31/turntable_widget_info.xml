@@ -7,6 +7,6 @@
     android:updatePeriodMillis="1800000"
     android:previewImage="@drawable/widget_turntable_preview"
     android:initialLayout="@layout/widget_turntable"
-    android:description="@string/turntable_widget_description"
+    android:description="@string/widget_turntable_description"
     android:widgetCategory="home_screen"
     android:resizeMode="none" />

@@ -218,7 +218,7 @@ fun LocalSongSearch(
                         UnifiedSearchBar(
                             input = textFieldValue,
                             onInputChanged = onTextFieldValueChanged,
-                            placeholderRes = R.string.search,
+                            placeholderRes = R.string.search_title,
                             actionBubbles = actionBubbles,
                             onClear = { onTextFieldValueChanged(TextFieldValue("")) },
                             onSearch = { recordSearchQuery() },

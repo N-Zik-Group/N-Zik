@@ -157,7 +157,7 @@ fun rememberEqualizerLauncher(
                 }
             )
         } catch (e: ActivityNotFoundException) {
-            Toaster.w( R.string.info_not_find_application_audio )
+            Toaster.w( R.string.audio_equalizer_application_unavailable_message )
         }
     }
 }

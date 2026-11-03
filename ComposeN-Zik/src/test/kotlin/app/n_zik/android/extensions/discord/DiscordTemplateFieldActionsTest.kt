@@ -37,7 +37,7 @@ class DiscordTemplateFieldActionsTest {
         actions.reset()
 
         assertEquals("", state.value, "reset empties the field so the default template applies again")
-        verify(exactly = 0) { Toaster.s(R.string.toast_preference_saved) }
+        verify(exactly = 0) { Toaster.s(R.string.settings_preference_saved_message) }
     }
 
     @Test
@@ -52,7 +52,7 @@ class DiscordTemplateFieldActionsTest {
 
         assertEquals(listOf("my template"), saved, "OK persists the current draft")
         assertTrue(dismissed, "OK closes the dialog")
-        verify(exactly = 1) { Toaster.s(R.string.toast_preference_saved) }
+        verify(exactly = 1) { Toaster.s(R.string.settings_preference_saved_message) }
     }
 
     @Test
@@ -79,6 +79,6 @@ class DiscordTemplateFieldActionsTest {
 
         assertTrue(dismissed, "Cancel closes the dialog")
         assertEquals("my template", state.value, "the draft is discarded with the dialog, nothing is saved")
-        verify(exactly = 0) { Toaster.s(R.string.toast_preference_saved) }
+        verify(exactly = 0) { Toaster.s(R.string.settings_preference_saved_message) }
     }
 }

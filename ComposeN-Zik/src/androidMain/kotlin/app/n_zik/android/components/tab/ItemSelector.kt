@@ -53,7 +53,7 @@ class ItemSelector<E> private constructor(
     override val iconId: Int
         get() = if( isActive ) R.drawable.checked_filled else R.drawable.unchecked_outline
     override val messageId: Int
-        get() = if ( isActive ) R.string.item_deselect else R.string.item_select
+        get() = if ( isActive ) R.string.playlist_selection_action_deselect else R.string.common_action_select
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )

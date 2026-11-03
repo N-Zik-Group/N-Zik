@@ -48,10 +48,10 @@ class SmartShuffle private constructor(
     }
 
     override val iconId: Int = R.drawable.smart_shuffle
-    override val messageId: Int = R.string.info_smart_recommendation
+    override val messageId: Int = R.string.recommendations_action_smart_shuffle
     override val menuIconTitle: String
         @Composable
-        get() = stringResource(R.string.info_smart_recommendation)
+        get() = stringResource(R.string.recommendations_action_smart_shuffle)
 
     override fun onShortClick() {
         onToggleRecommendation()
@@ -80,7 +80,7 @@ class SmartShuffle private constructor(
                 IconButton(onClick = { onToggleRecommendation() }, shape = uiRoundnessShape()) {
                     Icon(
                         painter = painterResource(R.drawable.smart_shuffle),
-                        contentDescription = stringResource(R.string.info_smart_recommendation),
+                        contentDescription = stringResource(R.string.recommendations_action_smart_shuffle),
                         tint = if (isRecommendationEnabled()) colorPalette().text else colorPalette().textDisabled
                     )
                 }

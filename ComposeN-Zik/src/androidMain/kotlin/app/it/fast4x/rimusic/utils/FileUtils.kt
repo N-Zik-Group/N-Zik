@@ -163,10 +163,10 @@ fun loadAppLog(context: Context, type: LogType): String? {
         }
     )
     if (file.exists()) {
-        Toaster.s( R.string.value_copied )
+        Toaster.s( R.string.common_clipboard_copy_success )
         return file.readText()
     } else
-        Toaster.w( R.string.no_log_available )
+        Toaster.w( R.string.common_log_unavailable )
     return null
 }
 

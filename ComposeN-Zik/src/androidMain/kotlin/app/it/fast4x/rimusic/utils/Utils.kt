@@ -630,7 +630,7 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
         if (mediaItems.size <= 50) {}
         else if (index == 0) {
             Toaster.i(
-                "${mediaItems.size} "+appContext().resources.getString(R.string.songs_adding_in_yt)
+                "${mediaItems.size} "+appContext().resources.getString(R.string.sync_youtube_playlist_songs_adding_suffix)
             )
         } else {
             delay(2000)
@@ -645,19 +645,19 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
                             Database.mapIgnore( it, *items.toTypedArray() )
                         }
                 if (items.size == 50)
-                    Toaster.i(R.string.songs_remaining, formatArgs = arrayOf((mediaItems.size - (index + 1) * 50).toString()))
+                    Toaster.i(R.string.sync_youtube_songs_remaining, formatArgs = arrayOf((mediaItems.size - (index + 1) * 50).toString()))
             }
             .onFailure {
                 Timber.tag("Utils").e("YtMusic addToPlaylist (list of size ${items.size}) error: ${it.stackTraceToString()}")
                 if(it is ClientRequestException && it.response.status == HttpStatusCode.BadRequest) {
-                    Toaster.w( R.string.adding_yt_to_pl_failed )
+                    Toaster.w( R.string.sync_youtube_playlist_batch_failed )
                     items.forEach { item ->
                         delay(500)
                         PlaylistEditThrottle.throttle(ytplaylistId)
                         addToPlaylist(ytplaylistId, item.mediaId).onFailure {
                             Timber.tag("Utils").e("YtMusic addToPlaylist (list insert backup) error: ${it.stackTraceToString()}")
                                 Toaster.e(
-                                    appContext().resources.getString(R.string.songs_add_yt_failed)+"${item.mediaMetadata.title} - ${item.mediaMetadata.artist}"
+                                    appContext().resources.getString(R.string.sync_youtube_playlist_add_failed)+"${item.mediaMetadata.title} - ${item.mediaMetadata.artist}"
                                 )
                         }.onSuccess {
                             Database.playlistTable
@@ -666,7 +666,7 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
                                     ?.let { playlist ->
                                         Database.mapIgnore( playlist, *items.toTypedArray() )
                                     }
-                            Toaster.n( appContext().resources.getString(R.string.songs_remaining, items.size - (index + 1)) )
+                            Toaster.n( appContext().resources.getString(R.string.sync_youtube_songs_remaining, items.size - (index + 1)) )
                         }
                     }
                 }
@@ -674,7 +674,7 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
     }
 
     Toaster.n(
-        "${mediaItems.size} "+ appContext().resources.getString(R.string.songs_added_in_yt)
+        "${mediaItems.size} "+ appContext().resources.getString(R.string.sync_youtube_playlist_songs_added_suffix)
     )
 }
 
@@ -686,10 +686,10 @@ suspend fun addSongToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylist
                 Database.playlistTable.findById( localPlaylistId ).first()?.let {
                     Database.mapIgnore( it, mediaItem )
                 }
-                Toaster.s( R.string.songs_add_yt_success )
+                Toaster.s( R.string.sync_youtube_playlist_add_success )
             }
             .onFailure {
-                Toaster.e( R.string.songs_add_yt_failed )
+                Toaster.e( R.string.sync_youtube_playlist_add_failed )
             }
 
     }
@@ -716,12 +716,12 @@ suspend fun addToYtLikedSongs(mediaItems: List<MediaItem>){
                     )
 
                     Toaster.s(
-                        "${index + 1}/${mediaItems.size} " + appContext().resources.getString(R.string.songs_liked_yt)
+                        "${index + 1}/${mediaItems.size} " + appContext().resources.getString(R.string.sync_youtube_like_success)
                     )
                 }
             }
             .onFailure {
-                Toaster.e(R.string.songs_liked_yt_failed_with_index, formatArgs = arrayOf("${index + 1}/${mediaItems.size}", appContext().resources.getString(R.string.songs_liked_yt_failed)))
+                Toaster.e(R.string.sync_youtube_like_failed_with_index, formatArgs = arrayOf("${index + 1}/${mediaItems.size}", appContext().resources.getString(R.string.sync_youtube_like_failed)))
             }
     }
 }

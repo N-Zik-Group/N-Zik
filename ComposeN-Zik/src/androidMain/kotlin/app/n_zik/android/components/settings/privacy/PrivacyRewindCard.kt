@@ -17,11 +17,11 @@ fun PrivacyRewindCard() {
     val context = LocalContext.current
     val enabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_ENABLED, true)
     SettingsSectionCard(
-        title = stringResource(R.string.rw_settings_master), icon = R.drawable.sparkles,
+        title = stringResource(R.string.rewind_settings_enabled), icon = R.drawable.sparkles,
         content = {
             OtherSwitchSettingEntry(
-                title = stringResource(R.string.rw_settings_master),
-                text = stringResource(R.string.rw_settings_master_description),
+                title = stringResource(R.string.rewind_settings_enabled),
+                text = stringResource(R.string.rewind_settings_enabled_description),
                 isChecked = enabled,
                 onCheckedChange = {
                     DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, it)

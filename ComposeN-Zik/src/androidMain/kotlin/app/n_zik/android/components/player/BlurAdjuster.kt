@@ -49,7 +49,7 @@ class BlurAdjuster private constructor(
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource( R.string.controls_title_blur_effect )
+        get() = stringResource( R.string.player_controls_blur_effect_title )
 
     var strength: Float by strengthState
     var backdrop: Float by backdropState
@@ -125,7 +125,7 @@ class BlurAdjuster private constructor(
                 )
 
                 SwitchSettingEntry(
-                    title = stringResource( R.string.rotating_cover_title ),
+                    title = stringResource( R.string.settings_player_rotating_artwork_title ),
                     text = "",
                     isChecked = isCoverRotating,
                     onCheckedChange = { isCoverRotating = it }

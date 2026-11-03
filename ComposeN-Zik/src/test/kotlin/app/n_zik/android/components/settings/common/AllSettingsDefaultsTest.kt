@@ -141,7 +141,7 @@ class AllSettingsDefaultsTest {
         ) { it(textLayouts) }
         assertEquals(DefaultDarkColorPalette.text, textLayouts.single().layoutInput.style.color)
         assertEquals(before, context.preferences.all)
-        compose.onNodeWithText(context.getString(R.string.cancel)).performClick()
+        compose.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
         compose.waitForIdle()
         assertEquals(before, context.preferences.all)
         assertEquals(secureBefore, secure.all)

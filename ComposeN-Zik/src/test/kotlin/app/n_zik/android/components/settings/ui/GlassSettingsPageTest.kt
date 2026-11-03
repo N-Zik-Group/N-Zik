@@ -176,9 +176,9 @@ class GlassSettingsPageTest {
             val results = app.n_zik.android.components.settings.common.searchSettingsEntries(context, context.getString(option.target.labelRes))
             assertTrue("Missing ${option.target.id}", results.any { it.id == option.target.id })
             val location = option.target.locationDescription(context)
-            assertTrue(location.startsWith("${context.getString(R.string.settings)} › ${context.getString(R.string.liquid_glass)}"))
+            assertTrue(location.startsWith("${context.getString(R.string.settings_title)} › ${context.getString(R.string.glass_effect_title)}"))
             assertFalse(location.contains(context.getString(R.string.settings_category_interface)))
-            assertTrue(location.contains(context.getString(R.string.liquid_glass)))
+            assertTrue(location.contains(context.getString(R.string.glass_effect_title)))
             assertTrue(location.contains(context.getString(option.sectionTitle)))
         }
         GlassDestinationGroup.entries.forEach { group ->
@@ -293,13 +293,13 @@ class GlassSettingsPageTest {
         showPage()
         composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("destination.Pages")
         composeRule.onNodeWithTag("settings.glass.group.Pages.toggle").performClick()
-        val description = context.getString(R.string.glass_role_home_actions_description)
+        val description = context.getString(R.string.glass_effect_role_home_actions_description)
         val row = composeRule.onNodeWithTag("settings.glass.area.Home.ActionButtons")
         row.performScrollTo()
         composeRule.onNode(hasText(description) and hasAnyAncestor(hasTestTag("settings.glass.area.Home.ActionButtons")))
             .assertIsDisplayed()
-        composeRule.onAllNodesWithText(context.getString(R.string.glass_inheritance_note)).assertCountEquals(0)
-        composeRule.onAllNodesWithText(context.getString(R.string.glass_mode_inherited)).assertCountEquals(0)
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_inheritance_note)).assertCountEquals(0)
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_mode_inherited)).assertCountEquals(0)
         composeRule.runOnIdle { store.setContextMode(GlassScope.Home, GlassArea.ActionButtons, GlassAreaMode.Disabled) }
         row.performScrollTo()
         composeRule.onNode(hasText(description) and hasAnyAncestor(hasTestTag("settings.glass.area.Home.ActionButtons")))
@@ -312,13 +312,13 @@ class GlassSettingsPageTest {
         composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("destination.Playback")
         composeRule.onNodeWithTag("settings.glass.group.Playback.toggle").performClick()
         composeRule.onNodeWithTag("settings.glass.mode.PlayerTransport.ActionButtons").performScrollTo().performClick()
-        composeRule.onAllNodesWithText(context.getString(R.string.glass_mode_disabled)).onLast().performClick()
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_mode_disabled)).onLast().performClick()
         composeRule.waitForIdle()
         assertEquals(GlassAreaMode.Disabled, store.read().contextMode(GlassScope.PlayerTransport, GlassArea.ActionButtons))
         assertEquals(GlassAreaMode.GlassAndContour, store.read().contextMode(GlassScope.PlayerSeek, GlassArea.ActionButtons))
         composeRule.onAllNodesWithTag("settings.glass.inherit.PlayerTransport.ActionButtons").assertCountEquals(0)
         composeRule.onNodeWithTag("settings.glass.mode.PlayerTransport.ActionButtons").performScrollTo().performClick()
-        composeRule.onAllNodesWithText(context.getString(R.string.glass_mode_glass_and_contour)).onLast().performClick()
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_mode_glass_and_contour)).onLast().performClick()
         composeRule.waitForIdle()
         assertTrue(store.read().contextModes.isEmpty())
         composeRule.runOnIdle { store.setAreaMode(GlassArea.ActionButtons, GlassAreaMode.ContourOnly) }
@@ -333,10 +333,10 @@ class GlassSettingsPageTest {
         composeRule.onNodeWithTag("settings.glass.group.Playback.toggle").performClick()
         val selector = composeRule.onNodeWithTag("settings.glass.mode.Queue.Menus")
         val modes = listOf(
-            R.string.glass_mode_disabled to GlassAreaMode.Disabled,
-            R.string.glass_mode_glass_and_contour to GlassAreaMode.GlassAndContour,
-            R.string.glass_mode_contour_only to GlassAreaMode.ContourOnly,
-            R.string.glass_mode_glass_only to GlassAreaMode.GlassOnly,
+            R.string.glass_effect_mode_disabled to GlassAreaMode.Disabled,
+            R.string.glass_effect_mode_glass_and_contour to GlassAreaMode.GlassAndContour,
+            R.string.glass_effect_mode_contour_only to GlassAreaMode.ContourOnly,
+            R.string.glass_effect_mode_glass_only to GlassAreaMode.GlassOnly,
         )
         modes.forEach { (label, mode) ->
             selector.performScrollTo().performClick()
@@ -357,7 +357,7 @@ class GlassSettingsPageTest {
         showPage(target = "glass.destination.PlayerFavorite.ActionButtons")
         val selector = composeRule.onNodeWithTag("settings.glass.mode.PlayerFavorite.ActionButtons")
         selector.performScrollTo().performClick()
-        composeRule.onAllNodesWithText(context.getString(R.string.glass_mode_disabled)).onLast().performClick()
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_mode_disabled)).onLast().performClick()
         composeRule.waitForIdle()
         val reloaded = GlassStore(context).read()
         assertEquals(GlassAreaMode.Disabled, reloaded.contextMode(GlassScope.PlayerFavorite, GlassArea.ActionButtons))
@@ -402,13 +402,13 @@ class GlassSettingsPageTest {
         composeRule.onNodeWithTag("settings.glass.quality").performClick()
         composeRule.onNodeWithTag("glassDialogOverlay").assertIsDisplayed()
         assertTrue(host.dialogs.hasDialogs)
-        composeRule.onAllNodesWithText(context.getString(R.string.glass_quality)).onLast().performClick()
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_quality_high)).onLast().performClick()
         composeRule.waitForIdle()
         assertEquals(GlassQuality.Quality, GlassStore(context).read().quality)
         composeRule.onNodeWithTag("settings.glass.quality").performClick()
         composeRule.onNodeWithTag("glassDialogOverlay").assertIsDisplayed()
-        assertSelectedChoice(R.string.glass_quality)
-        composeRule.onAllNodesWithText(context.getString(R.string.glass_balanced)).onLast().performClick()
+        assertSelectedChoice(R.string.glass_effect_quality_high)
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_quality_balanced)).onLast().performClick()
         composeRule.waitForIdle()
         assertEquals(GlassQuality.Balanced, GlassStore(context).read().quality)
     }
@@ -418,17 +418,17 @@ class GlassSettingsPageTest {
         store.setProfile(GlassQuality.Balanced)
         showOnboardingInActivityScene()
         composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("colour")
-        val label = context.getString(R.string.glass_film)
+        val label = context.getString(R.string.glass_effect_film)
         scrollControlsToText(label)
         composeRule.onNodeWithText(label).performClick()
         composeRule.onNodeWithTag("glassDialogOverlay").assertIsDisplayed()
         composeRule.onNode(hasSetTextAction()).performTextReplacement("0.263")
-        composeRule.onNodeWithText(context.getString(R.string.dialog_save)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_save)).performClick()
         composeRule.waitForIdle()
         assertEquals(.263f, GlassStore(context).read().film, .0001f)
         composeRule.onNodeWithText(label).performClick()
         composeRule.onNode(hasSetTextAction()).assertTextEquals("0.263")
-        composeRule.onNodeWithText(context.getString(R.string.cancel)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
         composeRule.waitForIdle()
         composeRule.runOnIdle { GlassStore(context).setFloat(glassFilmKey, .418f) }
         composeRule.waitForIdle()
@@ -443,21 +443,21 @@ class GlassSettingsPageTest {
         scrollToArea(GlassArea.Nav)
         composeRule.onNodeWithTag("settings.glass.mode.Nav").performClick()
         composeRule.onNodeWithTag("glassDialogOverlay").assertIsDisplayed()
-        composeRule.onAllNodesWithText(context.getString(R.string.glass_mode_contour_only)).onLast().performClick()
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_mode_contour_only)).onLast().performClick()
         composeRule.waitForIdle()
         assertEquals(GlassAreaMode.ContourOnly, GlassStore(context).read().mode(GlassArea.Nav))
         assertEquals(GlassAreaMode.GlassAndContour, GlassStore(context).read().mode(GlassArea.Header))
         composeRule.onNodeWithTag("settings.glass.mode.Nav")
             .assert(SemanticsMatcher("Saved mode is shown") { node ->
                 node.config.getOrElse(SemanticsProperties.Text) { emptyList() }
-                    .any { it.text.contains(context.getString(R.string.glass_mode_contour_only)) }
+                    .any { it.text.contains(context.getString(R.string.glass_effect_mode_contour_only)) }
             })
         composeRule.runOnIdle { GlassStore(context).setAreaMode(GlassArea.Nav, GlassAreaMode.GlassOnly) }
         composeRule.waitForIdle()
         composeRule.onNodeWithTag("settings.glass.mode.Nav").performClick()
         composeRule.onNodeWithTag("glassDialogOverlay").assertIsDisplayed()
-        assertSelectedChoice(R.string.glass_mode_glass_only)
-        composeRule.onAllNodesWithText(context.getString(R.string.glass_mode_disabled)).onLast().performClick()
+        assertSelectedChoice(R.string.glass_effect_mode_glass_only)
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_mode_disabled)).onLast().performClick()
         composeRule.waitForIdle()
         assertEquals(GlassAreaMode.Disabled, GlassStore(context).read().mode(GlassArea.Nav))
     }
@@ -475,13 +475,13 @@ class GlassSettingsPageTest {
         composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("material")
         composeRule.onNodeWithTag("settings.glass.quality").performClick()
         composeRule.onNodeWithTag("glassDialogOverlay").assertDoesNotExist()
-        composeRule.onAllNodesWithText(context.getString(R.string.glass_quality)).onLast().performClick()
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_quality_high)).onLast().performClick()
         composeRule.waitForIdle()
         assertEquals(GlassQuality.Quality, GlassStore(context).read().quality)
         assertFalse(context.preferences.getBoolean(glassEnabledKey, true))
         composeRule.onNodeWithTag("settings.glass.quality").performClick()
         composeRule.onNodeWithTag("glassDialogOverlay").assertDoesNotExist()
-        assertSelectedChoice(R.string.glass_quality)
+        assertSelectedChoice(R.string.glass_effect_quality_high)
     }
 
     @Test fun `settings provides simultaneous local ON and OFF previews and every Glass group`() {
@@ -542,7 +542,7 @@ class GlassSettingsPageTest {
             assertEquals(initialBounds, preview.fetchSemanticsNode().boundsInRoot)
             assertTrue("Controls stay below the comparison", controls.fetchSemanticsNode().boundsInRoot.top >= initialBounds.bottom)
         }
-        composeRule.onNodeWithText(context.getString(R.string.page_glass_summary)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.glass_effect_summary)).assertDoesNotExist()
     }
 
     @Test
@@ -552,7 +552,7 @@ class GlassSettingsPageTest {
         val controls = composeRule.onNodeWithTag("settings.glass.controls")
         scrollToArea(GlassArea.SearchBars)
         composeRule.onNodeWithTag("settings.glass.mode.SearchBars").assertIsDisplayed().performClick()
-        composeRule.onAllNodesWithText(context.getString(R.string.glass_mode_contour_only)).onLast().performClick()
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_mode_contour_only)).onLast().performClick()
         assertEquals(GlassAreaMode.ContourOnly, store.read().mode(GlassArea.SearchBars))
         listOf(true, false).forEach { enabled ->
             composeRule.onNodeWithTag("settings.glass.preview.$enabled").assertIsDisplayed()
@@ -579,15 +579,15 @@ class GlassSettingsPageTest {
                 .assertIsDisplayed()
                 .assert(SemanticsMatcher.expectValue(
                     SemanticsProperties.StateDescription,
-                    context.getString(if (enabled) R.string.on else R.string.off),
+                    context.getString(if (enabled) R.string.common_state_on else R.string.common_state_off),
                 ))
         }
         val controls = composeRule.onNodeWithTag("settings.glass.controls")
         val groups = listOf(
-            "material" to R.string.glass_group_material,
-            "colour" to R.string.glass_group_colour,
-            "readability" to R.string.glass_group_readability,
-            "edges" to R.string.glass_group_edges,
+            "material" to R.string.glass_effect_group_material,
+            "colour" to R.string.glass_effect_group_color,
+            "readability" to R.string.glass_effect_group_readability,
+            "edges" to R.string.glass_effect_group_edges,
         )
         groups.forEach { (key, label) ->
             controls.performScrollToKey(key)
@@ -625,11 +625,11 @@ class GlassSettingsPageTest {
 
         val initialBounds = composeRule.onNodeWithTag("settings.glass.preview").fetchSemanticsNode().boundsInRoot
         composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("colour")
-        val filmLabel = context.getString(R.string.glass_film)
+        val filmLabel = context.getString(R.string.glass_effect_film)
         scrollControlsToText(filmLabel)
         composeRule.onNodeWithText(filmLabel).performClick()
         composeRule.onNode(hasSetTextAction()).performTextReplacement("0.85")
-        composeRule.onNodeWithText(context.getString(R.string.dialog_save)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_save)).performClick()
         composeRule.waitForIdle()
         val updated = pixels(true)
         val updatedDifferences = (0 until on.width).sumOf { x ->
@@ -644,22 +644,22 @@ class GlassSettingsPageTest {
 
     @Test fun `Glass page shows its description below the title`() {
         showPage()
-        composeRule.onNodeWithText(context.getString(R.string.page_glass_summary)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.glass_effect_summary)).assertIsDisplayed()
     }
 
     @Test fun `readability sliders save dialog and menu dimming independently while master is off`() {
         showPage()
-        val dialogLabel = context.getString(R.string.glass_dialog_dimming)
-        val menuLabel = context.getString(R.string.glass_menu_dimming)
+        val dialogLabel = context.getString(R.string.glass_effect_dialog_dimming)
+        val menuLabel = context.getString(R.string.glass_effect_menu_dimming)
         composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("readability")
         scrollControlsToText(dialogLabel)
         composeRule.onNodeWithText(dialogLabel).performClick()
         composeRule.onNode(hasSetTextAction()).performTextReplacement("0.2")
-        composeRule.onNodeWithText(context.getString(R.string.dialog_save)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_save)).performClick()
         scrollControlsToText(menuLabel)
         composeRule.onNodeWithText(menuLabel).performClick()
         composeRule.onNode(hasSetTextAction()).performTextReplacement("0.8")
-        composeRule.onNodeWithText(context.getString(R.string.dialog_save)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_save)).performClick()
         composeRule.waitForIdle()
         assertEquals(.2f, store.read().dialogDimming, .001f)
         assertEquals(.8f, store.read().menuDimming, .001f)
@@ -784,9 +784,9 @@ class GlassSettingsPageTest {
     }
 
     private fun confirmEnableWarning() {
-        composeRule.onNodeWithText(context.getString(R.string.glass_enable_warning_description)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.glass_effect_enable_warning_description)).assertIsDisplayed()
         assertFalse(context.preferences.getBoolean(glassEnabledKey, false))
-        composeRule.onNodeWithText(context.getString(R.string.glass_enable_confirm)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.glass_effect_enable_confirm)).performClick()
         composeRule.waitForIdle()
     }
 
@@ -794,9 +794,9 @@ class GlassSettingsPageTest {
         showPage()
         val before = store.read()
         composeRule.onNodeWithTag("settings.glass.master").performClick()
-        composeRule.onNodeWithText(context.getString(R.string.glass_enable_warning_description)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.glass_effect_enable_warning_description)).assertIsDisplayed()
         assertFalse(context.preferences.getBoolean(glassEnabledKey, false))
-        composeRule.onNodeWithText(context.getString(R.string.cancel)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
         composeRule.waitForIdle()
         assertFalse(context.preferences.getBoolean(glassEnabledKey, false))
         assertEquals(before, store.read())
@@ -810,10 +810,10 @@ class GlassSettingsPageTest {
         store.setFloat(glassFilmKey, .263f)
         showPage()
         composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("colour")
-        scrollControlsToText(context.getString(R.string.glass_film))
-        composeRule.onNodeWithText(context.getString(R.string.glass_film)).performClick()
+        scrollControlsToText(context.getString(R.string.glass_effect_film))
+        composeRule.onNodeWithText(context.getString(R.string.glass_effect_film)).performClick()
         composeRule.onNode(hasSetTextAction()).assertTextEquals("0.263")
-        composeRule.onNodeWithText(context.getString(R.string.dialog_save)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_save)).performClick()
         assertEquals(.263f, store.read().film)
         assertFalse(context.preferences.getBoolean(glassEnabledKey, false))
     }
@@ -823,10 +823,10 @@ class GlassSettingsPageTest {
         showPage()
         scrollToArea(GlassArea.Nav)
         val modes = listOf(
-            R.string.glass_mode_disabled to GlassAreaMode.Disabled,
-            R.string.glass_mode_contour_only to GlassAreaMode.ContourOnly,
-            R.string.glass_mode_glass_only to GlassAreaMode.GlassOnly,
-            R.string.glass_mode_glass_and_contour to GlassAreaMode.GlassAndContour,
+            R.string.glass_effect_mode_disabled to GlassAreaMode.Disabled,
+            R.string.glass_effect_mode_contour_only to GlassAreaMode.ContourOnly,
+            R.string.glass_effect_mode_glass_only to GlassAreaMode.GlassOnly,
+            R.string.glass_effect_mode_glass_and_contour to GlassAreaMode.GlassAndContour,
         )
         modes.forEach { (label, mode) ->
             composeRule.onNodeWithTag("settings.glass.mode.Nav").performClick()
@@ -849,7 +849,7 @@ class GlassSettingsPageTest {
         showPage()
         composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("material")
         composeRule.onNodeWithTag("settings.glass.quality").performClick()
-        composeRule.onAllNodesWithText(context.getString(R.string.glass_quality)).onLast().performClick()
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_quality_high)).onLast().performClick()
         assertEquals(glassProfileDefaults(GlassQuality.Quality).copy(nav = false), store.read())
         assertFalse(context.preferences.getBoolean(glassEnabledKey, false))
         composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("header")
@@ -863,7 +863,7 @@ class GlassSettingsPageTest {
             scrollToArea(area)
             composeRule.onNodeWithTag("settings.glass.area.${area.name}").assertExists()
             composeRule.onNodeWithTag("settings.glass.mode.${area.name}").performClick()
-            composeRule.onAllNodesWithText(context.getString(R.string.glass_mode_contour_only)).onLast().performClick()
+            composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_mode_contour_only)).onLast().performClick()
             val after = store.read()
             assertEquals(GlassAreaMode.ContourOnly, after.mode(area))
             GlassArea.entries.dropWhile { it != area }.drop(1).forEach { other ->
@@ -877,15 +877,15 @@ class GlassSettingsPageTest {
         showPage()
         scrollToArea(GlassArea.Images)
         composeRule.onNodeWithTag("settings.glass.mode.Images").performClick()
-        composeRule.onAllNodesWithText(context.getString(R.string.glass_mode_disabled)).onLast().assertIsDisplayed()
-        composeRule.onAllNodesWithText(context.getString(R.string.glass_mode_contour_only)).onLast().assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.glass_mode_glass_only)).assertDoesNotExist()
-        composeRule.onNodeWithText(context.getString(R.string.glass_mode_glass_and_contour)).assertDoesNotExist()
-        composeRule.onAllNodesWithText(context.getString(R.string.glass_mode_disabled)).onLast().performClick()
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_mode_disabled)).onLast().assertIsDisplayed()
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_mode_contour_only)).onLast().assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.glass_effect_mode_glass_only)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.glass_effect_mode_glass_and_contour)).assertDoesNotExist()
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_mode_disabled)).onLast().performClick()
         assertEquals(GlassAreaMode.Disabled, store.read().mode(GlassArea.Images))
-        composeRule.onNodeWithText(context.getString(R.string.glass_where_image_rims_description)).assertExists()
+        composeRule.onNodeWithText(context.getString(R.string.glass_effect_where_image_rims_description)).assertExists()
         composeRule.onNodeWithTag("settings.glass.mode.Images").performClick()
-        composeRule.onAllNodesWithText(context.getString(R.string.glass_mode_contour_only)).onLast().performClick()
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_mode_contour_only)).onLast().performClick()
         assertEquals(GlassAreaMode.ContourOnly, store.read().mode(GlassArea.Images))
     }
 
@@ -894,7 +894,7 @@ class GlassSettingsPageTest {
         showPage()
         composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("colour")
         composeRule.onNodeWithTag("settings.glass.tintSource").performClick()
-        composeRule.onNodeWithText(context.getString(R.string.artwork)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_color_source_artwork)).performClick()
         assertEquals(GlassTintSource.Artwork, store.read().source)
         assertEquals(.263f, store.read().film)
         assertFalse(context.preferences.getBoolean(glassEnabledKey, false))

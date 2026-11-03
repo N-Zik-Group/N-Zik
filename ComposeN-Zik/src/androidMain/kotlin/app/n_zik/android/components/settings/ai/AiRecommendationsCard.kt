@@ -24,20 +24,20 @@ import app.n_zik.android.components.tab.Search
 @Composable
 internal fun AiRecommendationsCard(search: Search) {
     var recommendationsNumber by rememberPreference(recommendationsNumberKey, RecommendationsNumber.Adaptive)
-    val searchCtx_4 = search.inputValue.isBlank() || stringResource(R.string.settings_section_smart_recommendations_title).contains(search.inputValue, true) || stringResource(R.string.smart_recommendations_number).contains(search.inputValue, true)
+    val searchCtx_4 = search.inputValue.isBlank() || stringResource(R.string.settings_section_smart_recommendations_title).contains(search.inputValue, true) || stringResource(R.string.recommendations_number).contains(search.inputValue, true)
     SettingsSectionCard(
         title = stringResource(R.string.settings_section_smart_recommendations_title),
         icon = R.drawable.smart_shuffle,
         visible = searchCtx_4,
         content = {
             var showRecommendationsDialog by remember { mutableStateOf(false) }
-            if (search.inputValue.isBlank() || stringResource(R.string.smart_recommendations_number).contains(search.inputValue, true)) {
+            if (search.inputValue.isBlank() || stringResource(R.string.recommendations_number).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("ai.smart_recommendations.smart_recommendations_number"),
-                    title = stringResource(R.string.smart_recommendations_number),
-                    text = stringResource(R.string.settings_desc_ai_smart_recommendations_smart_recommendations_number),
+                    title = stringResource(R.string.recommendations_number),
+                    text = stringResource(R.string.recommendations_smart_song_count_description),
                     selectedValueText = if (recommendationsNumber == RecommendationsNumber.Adaptive)
-                        stringResource(R.string.smart_recommendations_adaptive_description) else recommendationsNumber.text,
+                        stringResource(R.string.recommendations_adaptive_description) else recommendationsNumber.text,
                     icon = R.drawable.shuffle,
                     onClick = { showRecommendationsDialog = true }
                 )
@@ -45,13 +45,13 @@ internal fun AiRecommendationsCard(search: Search) {
 
             DialogPresence(visible = showRecommendationsDialog) {
                 ValueSelectorDialog(
-                    title = stringResource(R.string.smart_recommendations_number),
+                    title = stringResource(R.string.recommendations_number),
                     selectedValue = recommendationsNumber,
                     values = RecommendationsNumber.values().toList(),
                     onValueSelected = { recommendationsNumber = it },
                     valueText = {
                         when (it) {
-                            RecommendationsNumber.Adaptive -> stringResource(R.string.smart_recommendations_adaptive)
+                            RecommendationsNumber.Adaptive -> stringResource(R.string.recommendations_adaptive)
                             else -> it.text
                         }
                     },

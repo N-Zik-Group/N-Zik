@@ -56,7 +56,7 @@ internal fun AppearanceColorsCard(search: Search) {
     )
     var shakeSensitivityTheme by rememberPreference(shakeSensitivityThemeKey, ShakeSensitivityTheme.Disabled)
     var albumCoverRotation by rememberPreference(albumCoverRotationKey, false)
-    val searchCtx_0_4 = search.inputValue.isBlank() || stringResource(R.string.colors_and_background).contains(search.inputValue, true) || stringResource(R.string.background_colors).contains(search.inputValue, true) || stringResource(R.string.gradienttype).contains(search.inputValue, true) || stringResource(R.string.blackgradient).contains(search.inputValue, true) || stringResource(R.string.albumCoverRotation).contains(search.inputValue, true) || stringResource(R.string.bottomgradient).contains(search.inputValue, true) || stringResource(R.string.textoutline).contains(search.inputValue, true) || stringResource(R.string.shake_sensitivity_theme).contains(search.inputValue, true)
+    val searchCtx_0_4 = search.inputValue.isBlank() || stringResource(R.string.settings_player_background_section_title).contains(search.inputValue, true) || stringResource(R.string.settings_player_background_colors_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_gradient_style_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_bottom_black_gradient_label).contains(search.inputValue, true) || stringResource(R.string.player_artwork_rotation).contains(search.inputValue, true) || stringResource(R.string.settings_player_action_bar_gradient_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_text_outline_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_m3e_motion_sensitivity_label).contains(search.inputValue, true)
     AnimatedVisibility(
                 visible = searchCtx_0_4,
                 enter = settingsCardEnter,
@@ -64,20 +64,20 @@ internal fun AppearanceColorsCard(search: Search) {
             ) {
         SettingsSectionCard(
                     modifier = Modifier.testTag("appearance.card.colors"),
-            title = stringResource(R.string.colors_and_background),
+            title = stringResource(R.string.settings_player_background_section_title),
             icon = R.drawable.color_palette,
             content = {
-            if (search.inputValue.isBlank() || stringResource(R.string.background_colors).contains(
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_background_colors_label).contains(
                     search.inputValue,
                     true
                 )
             )
-                if (search.inputValue.isBlank() || stringResource(R.string.background_colors).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_background_colors_label).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_colors_and_background_background_colors), playerBackgroundColorLabel(playerBackgroundColors, context::getString)),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_background_style_description), playerBackgroundColorLabel(playerBackgroundColors, context::getString)),
                         modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.background_colors"),
                         icon = R.drawable.droplet,
-                        title = stringResource(R.string.background_colors),
+                        title = stringResource(R.string.settings_player_background_colors_label),
                         selectedValue = playerBackgroundColors,
                         onValueSelected = {
                             playerBackgroundColors = it
@@ -87,16 +87,16 @@ internal fun AppearanceColorsCard(search: Search) {
                 }
 
             AnimatedVisibility(visible = playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) {
-                if (search.inputValue.isBlank() || stringResource(R.string.gradienttype).contains(
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_gradient_style_label).contains(
                         search.inputValue,
                         true
                     )
                 )
-                    if (search.inputValue.isBlank() || stringResource(R.string.gradienttype).contains(search.inputValue, true)) {
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_player_gradient_style_label).contains(search.inputValue, true)) {
                         OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_colors_and_background_gradienttype), animatedGradientLabel(animatedGradient, context::getString)),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_background_animation_description), animatedGradientLabel(animatedGradient, context::getString)),
                         icon = R.drawable.color_palette,
-                            title = stringResource(R.string.gradienttype),
+                            title = stringResource(R.string.settings_player_gradient_style_label),
                             selectedValue = animatedGradient,
                             onValueSelected = {
                                 animatedGradient = it
@@ -109,11 +109,11 @@ internal fun AppearanceColorsCard(search: Search) {
 
             val isM3E = animatedGradient == AnimatedGradient.M3EMorphingTheme || animatedGradient == AnimatedGradient.M3EMorphingCover
             AnimatedVisibility(visible = playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient && isM3E) {
-                if (search.inputValue.isBlank() || stringResource(R.string.shake_sensitivity_theme).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_m3e_motion_sensitivity_label).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_colors_and_background_shake_sensitivity_theme), shakeSensitivityTheme.text),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_background_shake_sensitivity_description), shakeSensitivityTheme.text),
                         icon = R.drawable.shake_gesture,
-                        title = stringResource(R.string.shake_sensitivity_theme),
+                        title = stringResource(R.string.settings_player_m3e_motion_sensitivity_label),
                         selectedValue = shakeSensitivityTheme,
                         onValueSelected = { shakeSensitivityTheme = it },
                         valueText = { it.text },
@@ -123,12 +123,12 @@ internal fun AppearanceColorsCard(search: Search) {
             }
             var isRotatingCoverEnabled by rememberPreference( rotatingAlbumCoverKey, false )
             AnimatedVisibility( playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor ) {
-                if ( search.inputValue.isBlank() || stringResource( R.string.rotating_cover_title ).contains(search.inputValue, true) )
-                    if (search.inputValue.isBlank() || stringResource( R.string.rotating_cover_title ).contains(search.inputValue, true)) {
+                if ( search.inputValue.isBlank() || stringResource( R.string.settings_player_rotating_artwork_title ).contains(search.inputValue, true) )
+                    if (search.inputValue.isBlank() || stringResource( R.string.settings_player_rotating_artwork_title ).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
                         icon = R.drawable.sync,
-                            title = stringResource( R.string.rotating_cover_title ),
-                            text = stringResource(R.string.settings_desc_appearance_colors_and_background_rotating_cover_title),
+                            title = stringResource( R.string.settings_player_rotating_artwork_title ),
+                            text = stringResource(R.string.player_background_rotating_cover_description),
                             isChecked = isRotatingCoverEnabled,
                             onCheckedChange = { isRotatingCoverEnabled = it },
                             modifier = (Modifier.padding( start = 25.dp )).settingsSearchTarget("appearance.colors_and_background.rotating_cover_title")
@@ -138,33 +138,33 @@ internal fun AppearanceColorsCard(search: Search) {
 
 
             if ((playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient) || (playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient))
-                if (search.inputValue.isBlank() || stringResource(R.string.blackgradient).contains(
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_bottom_black_gradient_label).contains(
                         search.inputValue,
                         true
                     )
                 )
-                    if (search.inputValue.isBlank() || stringResource(R.string.blackgradient).contains(search.inputValue, true)) {
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_player_bottom_black_gradient_label).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.blackgradient"),
                         icon = R.drawable.drop_half_fill,
-                            title = stringResource(R.string.blackgradient),
-                            text = stringResource(R.string.settings_desc_appearance_colors_and_background_blackgradient),
+                            title = stringResource(R.string.settings_player_bottom_black_gradient_label),
+                            text = stringResource(R.string.player_background_dark_gradient_description),
                             isChecked = blackgradient,
                             onCheckedChange = { blackgradient = it }
                         )
                     }
 
             if ((playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) && (playerType == PlayerType.Modern))
-                if (search.inputValue.isBlank() || stringResource(R.string.albumCoverRotation).contains(
+                if (search.inputValue.isBlank() || stringResource(R.string.player_artwork_rotation).contains(
                         search.inputValue,
                         true
                     )
                 )
-                    if (search.inputValue.isBlank() || stringResource(R.string.albumCoverRotation).contains(search.inputValue, true)) {
+                    if (search.inputValue.isBlank() || stringResource(R.string.player_artwork_rotation).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
                         icon = R.drawable.sync,
-                            title = stringResource(R.string.albumCoverRotation),
-                            text = stringResource(R.string.settings_desc_appearance_colors_and_background_albumcoverrotation),
+                            title = stringResource(R.string.player_artwork_rotation),
+                            text = stringResource(R.string.player_background_artwork_rotation_description),
                             isChecked = albumCoverRotation,
                             onCheckedChange = { albumCoverRotation = it },
                             modifier = (Modifier
@@ -173,32 +173,32 @@ internal fun AppearanceColorsCard(search: Search) {
                     }
 
             if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor)
-                if (search.inputValue.isBlank() || stringResource(R.string.bottomgradient).contains(
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_action_bar_gradient_label).contains(
                         search.inputValue,
                         true
                     )
                 )
-                    if (search.inputValue.isBlank() || stringResource(R.string.bottomgradient).contains(search.inputValue, true)) {
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_player_action_bar_gradient_label).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.bottomgradient"),
                         icon = R.drawable.droplet,
-                            title = stringResource(R.string.bottomgradient),
-                            text = stringResource(R.string.settings_desc_appearance_colors_and_background_bottomgradient),
+                            title = stringResource(R.string.settings_player_action_bar_gradient_label),
+                            text = stringResource(R.string.player_background_action_bar_gradient_description),
                             isChecked = bottomgradient,
                             onCheckedChange = { bottomgradient = it }
                         )
                     }
-            if (search.inputValue.isBlank() || stringResource(R.string.textoutline).contains(
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_text_outline_label).contains(
                   search.inputValue,
                   true
                   )
              )
-                 if (search.inputValue.isBlank() || stringResource(R.string.textoutline).contains(search.inputValue, true)) {
+                 if (search.inputValue.isBlank() || stringResource(R.string.settings_player_text_outline_label).contains(search.inputValue, true)) {
                      OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.textoutline"),
                         icon = R.drawable.text,
-                         title = stringResource(R.string.textoutline),
-                         text = stringResource(R.string.settings_desc_appearance_colors_and_background_textoutline),
+                         title = stringResource(R.string.settings_player_text_outline_label),
+                         text = stringResource(R.string.player_background_text_outline_description),
                          isChecked = textoutline,
                          onCheckedChange = { textoutline = it }
                      )

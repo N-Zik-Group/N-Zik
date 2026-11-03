@@ -41,17 +41,17 @@ fun YouTubeLinkImportDialog(
 
     DialogFrame(
         onDismiss = onDismiss,
-        title = stringResource(R.string.import_via_youtube_link),
+        title = stringResource(R.string.playlist_import_youtube_link),
         footer = {
             ButtonRow(
                 buttons = listOf(
                     DialogButton(
-                        text = stringResource(R.string.cancel),
+                        text = stringResource(R.string.common_action_cancel),
                         onClick = onDismiss,
                         danger = true
                     ),
                     DialogButton(
-                        text = stringResource(R.string.import_button),
+                        text = stringResource(R.string.common_action_import),
                         onClick = {
                             val playlistId = extractYouTubePlaylistId(youTubeUrl)
                             if (playlistId != null) {

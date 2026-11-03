@@ -44,7 +44,7 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
     var pauseSearchHistory by rememberPreference(pauseSearchHistoryKey, false)
     var pauseListenHistory by rememberPreference(pauseListenHistoryKey, false)
     SettingsSectionCard(
-        title = stringResource(R.string.history),
+        title = stringResource(R.string.library_history_title),
         icon = R.drawable.history,
         modifier = modifier.testTag("data.card.history"),
         content = {
@@ -52,15 +52,15 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
             // row (spec-customizable-burger-menu goal B) opens the full History screen.
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("data.history.module_open"),
-                title = stringResource(R.string.module_open),
-                text = stringResource(R.string.history_open_desc),
+                title = stringResource(R.string.modules_open),
+                text = stringResource(R.string.settings_history_open_description),
                 icon = R.drawable.chevron_forward,
                 onClick = { navController.navigate(NavRoutes.history.name) }
             )
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("data.history.pause_search_history"),
-                title = stringResource(R.string.pause_search_history),
-                text = stringResource(R.string.neither_save_new_searched_query),
+                title = stringResource(R.string.search_history_pause_label),
+                text = stringResource(R.string.search_history_pause_description),
                 isChecked = pauseSearchHistory,
                 onCheckedChange = {
                     pauseSearchHistory = it
@@ -86,15 +86,15 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
                 Database.eventTable.countAll()
             }.collectAsStateWithLifecycle(0L, context = NzikDispatchers.DATA)
 
-            if (search.inputValue.isBlank() || stringResource(R.string.clear_search_history).contains(search.inputValue, true)) {
+            if (search.inputValue.isBlank() || stringResource(R.string.search_history_action_clear).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("data.history.clear_search_history"),
-                    title = stringResource(R.string.clear_search_history),
-                    text = stringResource(R.string.settings_desc_data_history_clear_search_history),
+                    title = stringResource(R.string.search_history_action_clear),
+                    text = stringResource(R.string.history_clear_search_history_description),
                     selectedValueText = if (queriesCount > 0) {
-                        "${stringResource(R.string.delete)} " + queriesCount + stringResource(R.string.search_queries)
+                        "${stringResource(R.string.common_action_delete)} " + queriesCount + stringResource(R.string.search_queries)
                     } else {
-                        stringResource(R.string.history_is_empty)
+                        stringResource(R.string.search_history_empty_message)
                     },
                     icon = R.drawable.trash,
                     onClick = {
@@ -104,15 +104,15 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
                 )
             }
 
-            if (search.inputValue.isBlank() || stringResource(R.string.clear_listen_history).contains(search.inputValue, true)) {
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_history_action_clear_listening).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("data.history.clear_listen_history"),
-                    title = stringResource(R.string.clear_listen_history),
-                    text = stringResource(R.string.settings_desc_data_history_clear_listen_history),
+                    title = stringResource(R.string.settings_history_action_clear_listening),
+                    text = stringResource(R.string.history_clear_listen_history_description),
                     selectedValueText = if (eventsCount > 0) {
-                        stringResource(R.string.delete_playback_events, eventsCount.toString())
+                        stringResource(R.string.statistics_action_delete_playback_events_count, eventsCount.toString())
                     } else {
-                        stringResource(R.string.history_is_empty)
+                        stringResource(R.string.search_history_empty_message)
                     },
                     icon = R.drawable.trash,
                     onClick = {

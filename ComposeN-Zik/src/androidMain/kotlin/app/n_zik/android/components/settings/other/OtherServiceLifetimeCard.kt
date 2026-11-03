@@ -52,34 +52,34 @@ internal fun OtherServiceLifetimeCard(search: Search) {
         title = stringResource(R.string.settings_section_service_lifetime_title),
         icon = R.drawable.battery,
         content = {
-            if (search.inputValue.isBlank() || stringResource(R.string.keep_screen_on).contains(search.inputValue, true) || stringResource(R.string.prevents_screen_timeout).contains(search.inputValue, true)) {
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_service_keep_screen_on_label).contains(search.inputValue, true) || stringResource(R.string.settings_service_keep_screen_on_description).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("other.service_lifetime.keep_screen_on"),
-                    title = stringResource(R.string.keep_screen_on),
-                    text = stringResource(R.string.prevents_screen_timeout),
+                    title = stringResource(R.string.settings_service_keep_screen_on_label),
+                    text = stringResource(R.string.settings_service_keep_screen_on_description),
                     isChecked = isKeepScreenOnEnabled,
                     onCheckedChange = { isKeepScreenOnEnabled = it },
                     icon = R.drawable.devices
                 )
             }
 
-            ImportantSettingsDescription(text = stringResource(R.string.battery_optimizations_applied))
+            ImportantSettingsDescription(text = stringResource(R.string.settings_service_battery_optimizations_warning))
 
             if (isAtLeastAndroid12) {
-                SettingsDescription(text = stringResource(R.string.is_android12))
+                SettingsDescription(text = stringResource(R.string.settings_service_android_12_requirement_description))
             }
 
-            val msgNoBatteryOptim = stringResource(R.string.not_find_battery_optimization_settings)
+            val msgNoBatteryOptim = stringResource(R.string.settings_service_battery_settings_unavailable_message)
 
-            if (search.inputValue.isBlank() || stringResource(R.string.ignore_battery_optimizations).contains(search.inputValue, true)) {
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_service_ignore_battery_optimizations_label).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("other.service_lifetime.ignore_battery_optimizations"),
-                    title = stringResource(R.string.ignore_battery_optimizations),
-                    text = stringResource(R.string.settings_desc_other_service_lifetime_ignore_battery_optimizations),
+                    title = stringResource(R.string.settings_service_ignore_battery_optimizations_label),
+                    text = stringResource(R.string.settings_service_lifetime_battery_optimization_exemption_description),
                     selectedValueText = if (isIgnoringBatteryOptimizations) {
-                        stringResource(R.string.already_unrestricted)
+                        stringResource(R.string.settings_service_battery_unrestricted_status)
                     } else {
-                        stringResource(R.string.disable_background_restrictions)
+                        stringResource(R.string.settings_service_action_disable_background_restrictions)
                     },
                     icon = R.drawable.battery_opti,
                     onClick = {
@@ -96,7 +96,7 @@ internal fun OtherServiceLifetimeCard(search: Search) {
                                     Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
                                 )
                             } catch (e: ActivityNotFoundException) {
-                                Toaster.i(R.string.battery_optimization_msg, formatArgs = arrayOf(msgNoBatteryOptim, BuildConfig.APP_NAME))
+                                Toaster.i(R.string.settings_service_battery_status_message_format, formatArgs = arrayOf(msgNoBatteryOptim, BuildConfig.APP_NAME))
                             }
                         }
                     }

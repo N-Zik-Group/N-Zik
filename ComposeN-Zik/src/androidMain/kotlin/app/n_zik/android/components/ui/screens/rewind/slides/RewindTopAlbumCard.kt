@@ -127,7 +127,7 @@ internal fun RewindTopAlbumShow(
                         modifier = Modifier.align(Alignment.BottomEnd)
                     ) {
                         Text(
-                            text = stringResource(R.string.rw_top_album_aoty),
+                            text = stringResource(R.string.rewind_top_album_aoty),
                             color = onPink,
                             fontSize = textScale.size(18.sp),
                             fontWeight = FontWeight.Black,
@@ -149,7 +149,7 @@ internal fun RewindTopAlbumShow(
                 Spacer(Modifier.height(6.dp))
                 RewindReveal(active, 1_920) {
                     Text(
-                        text = firstNonBlank(topAlbum.album.cleanAuthorsText(), stringResource(R.string.rw_unknown_artist)),
+                        text = firstNonBlank(topAlbum.album.cleanAuthorsText(), stringResource(R.string.rewind_unknown_artist)),
                         color = onYellow.copy(alpha = 0.62f),
                         fontSize = textScale.size(12.sp),
                         fontWeight = FontWeight.Bold,
@@ -174,8 +174,8 @@ internal fun RewindTopAlbumShow(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(9.dp)
                     ) {
-                        AlbumMetric(stringResource(R.string.rw_label_minutes), formatRewindMinutes(topAlbum.minutes), Modifier.weight(1f))
-                        AlbumMetric(stringResource(R.string.rw_label_songs), formatRewindNumber(topAlbum.songCount.toLong()), Modifier.weight(1f))
+                        AlbumMetric(stringResource(R.string.rewind_label_minutes), formatRewindMinutes(topAlbum.minutes), Modifier.weight(1f))
+                        AlbumMetric(stringResource(R.string.rewind_label_songs), formatRewindNumber(topAlbum.songCount.toLong()), Modifier.weight(1f))
                     }
                 }
             }
@@ -201,10 +201,10 @@ fun RewindTopAlbumCard(
         active = active,
         onNext = onNext,
         onShareSlide = onShareSlide,
-        kickerId = R.string.rw_top_album_kicker,
-        headingId = R.string.rw_top_album_heading,
-        emptyTitleId = R.string.rw_top_album_empty_title,
-        emptyBodyId = R.string.rw_top_album_empty_body
+        kickerId = R.string.rewind_top_album_kicker,
+        headingId = R.string.rewind_top_album_heading,
+        emptyTitleId = R.string.rewind_top_album_empty_title,
+        emptyBodyId = R.string.rewind_top_album_empty_body
     )
 }
 

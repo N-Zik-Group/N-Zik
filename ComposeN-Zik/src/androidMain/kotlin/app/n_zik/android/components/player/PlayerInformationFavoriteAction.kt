@@ -99,7 +99,7 @@ fun PlayerInformationFavoriteAction(
             .clickable(interactionSource = interaction,
                 indication = if (optical) null else ripple(),
                 role = Role.Button, onClick = onClick), contentAlignment = Alignment.Center) {
-            Image(painterResource(icon), stringResource(R.string.icon_like_button), colorFilter = ColorFilter.tint(color),
+            Image(painterResource(icon), stringResource(R.string.settings_player_favorite_button_style_label), colorFilter = ColorFilter.tint(color),
                 modifier = Modifier.size(24.dp).testTag("player.informationFavorite.glyph"))
         }
     }

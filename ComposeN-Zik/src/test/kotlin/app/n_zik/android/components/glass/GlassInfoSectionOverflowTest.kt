@@ -59,7 +59,7 @@ class GlassInfoSectionOverflowTest {
             val shape = RoundedCornerShape(24.dp)
             val palette = DefaultDarkColorPalette.copy(textSecondary = Color.Blue)
             val settings = GlassSettings(enabled = enabled.value, quality = GlassQuality.Performance)
-            refresh = stringResource(R.string.mb_resync)
+            refresh = stringResource(R.string.metadata_musicbrainz_resync)
             val translate = Translate.init()
             CompositionLocalProvider(LocalAppearance provides Appearance(
                 palette, Typography.fallback, shape, shape, shape,

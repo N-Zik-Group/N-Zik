@@ -50,14 +50,14 @@ fun GeneralQueueManagementCard(
     var showNowPlayingIndicatorDialog by remember { mutableStateOf(false) }
 
     SettingsSectionCard(
-        title = stringResource(R.string.queue_management),
+        title = stringResource(R.string.settings_queue_management_title),
         icon = R.drawable.playlist,
         visible = visible,
         content = {
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.app_behavior.persistent_queue"),
-                title = stringResource(R.string.persistent_queue),
-                text = stringResource(R.string.save_and_restore_playing_songs),
+                title = stringResource(R.string.settings_player_persistent_queue_label),
+                text = stringResource(R.string.settings_player_persistent_queue_description),
                 isChecked = persistentQueue,
                 onCheckedChange = {
                     persistentQueue = it
@@ -72,8 +72,8 @@ fun GeneralQueueManagementCard(
                 ) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("general.app_behavior.resume_playback_on_start"),
-                        title = stringResource(R.string.resume_playback_on_start),
-                        text = stringResource(R.string.resume_automatically_when_app_opens),
+                        title = stringResource(R.string.settings_playback_resume_on_start_label),
+                        text = stringResource(R.string.settings_playback_resume_on_start_description),
                         isChecked = resumePlaybackOnStart,
                         onCheckedChange = {
                             resumePlaybackOnStart = it
@@ -98,10 +98,10 @@ fun GeneralQueueManagementCard(
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.queue_management.max_songs_in_queue"),
-                title = stringResource(R.string.max_songs_in_queue),
-                text = stringResource(R.string.settings_desc_general_queue_management_max_songs_in_queue),
+                title = stringResource(R.string.settings_player_queue_size_limit_label),
+                text = stringResource(R.string.queue_max_songs_in_queue_description),
                 selectedValueText = when (maxSongsInQueue) {
-                    MaxSongs.Unlimited -> stringResource(R.string.unlimited)
+                    MaxSongs.Unlimited -> stringResource(R.string.common_limit_unlimited_label)
                     MaxSongs.`50` -> MaxSongs.`50`.name
                     MaxSongs.`100` -> MaxSongs.`100`.name
                     MaxSongs.`200` -> MaxSongs.`200`.name
@@ -117,10 +117,10 @@ fun GeneralQueueManagementCard(
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.queue_management.max_songs_in_queue_android_auto"),
-                title = stringResource(R.string.max_songs_in_queue_android_auto),
-                text = stringResource(R.string.settings_desc_general_queue_management_max_songs_in_queue_android_auto),
+                title = stringResource(R.string.settings_automotive_queue_size_limit_label),
+                text = stringResource(R.string.queue_max_songs_in_queue_android_auto_description),
                 selectedValueText = when (maxSongsInQueueAndroidAuto) {
-                    MaxSongs.Unlimited -> stringResource(R.string.unlimited)
+                    MaxSongs.Unlimited -> stringResource(R.string.common_limit_unlimited_label)
                     MaxSongs.`50` -> MaxSongs.`50`.name
                     MaxSongs.`100` -> MaxSongs.`100`.name
                     MaxSongs.`200` -> MaxSongs.`200`.name
@@ -136,12 +136,12 @@ fun GeneralQueueManagementCard(
 
             DialogPresence(visible = showMaxSongsDialog) {
                 ValueSelectorDialog(
-                    title = stringResource(R.string.max_songs_in_queue),
+                    title = stringResource(R.string.settings_player_queue_size_limit_label),
                     selectedValue = maxSongsInQueue,
                     onValueSelected = { maxSongsInQueue = it },
                     valueText = {
                         when (it) {
-                            MaxSongs.Unlimited -> stringResource(R.string.unlimited)
+                            MaxSongs.Unlimited -> stringResource(R.string.common_limit_unlimited_label)
                             MaxSongs.`50` -> MaxSongs.`50`.name
                             MaxSongs.`100` -> MaxSongs.`100`.name
                             MaxSongs.`200` -> MaxSongs.`200`.name
@@ -159,12 +159,12 @@ fun GeneralQueueManagementCard(
 
             DialogPresence(visible = showMaxSongsAndroidAutoDialog) {
                 ValueSelectorDialog(
-                    title = stringResource(R.string.max_songs_in_queue_android_auto),
+                    title = stringResource(R.string.settings_automotive_queue_size_limit_label),
                     selectedValue = maxSongsInQueueAndroidAuto,
                     onValueSelected = { maxSongsInQueueAndroidAuto = it },
                     valueText = {
                         when (it) {
-                            MaxSongs.Unlimited -> stringResource(R.string.unlimited)
+                            MaxSongs.Unlimited -> stringResource(R.string.common_limit_unlimited_label)
                             MaxSongs.`50` -> MaxSongs.`50`.name
                             MaxSongs.`100` -> MaxSongs.`100`.name
                             MaxSongs.`200` -> MaxSongs.`200`.name
@@ -182,8 +182,8 @@ fun GeneralQueueManagementCard(
 
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.queue_management.discover"),
-                title = stringResource(R.string.discover),
-                text = stringResource(R.string.discoverinfo),
+                title = stringResource(R.string.queue_discover_title),
+                text = stringResource(R.string.queue_discover_description),
                 isChecked = discoverIsEnabled,
                 onCheckedChange = { discoverIsEnabled = it },
                 icon = R.drawable.search
@@ -191,8 +191,8 @@ fun GeneralQueueManagementCard(
 
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.queue_management.playlistindicator"),
-                title = stringResource(R.string.playlistindicator),
-                text = stringResource(R.string.playlistindicatorinfo),
+                title = stringResource(R.string.settings_library_playlist_indicator_label),
+                text = stringResource(R.string.settings_library_playlist_indicator_description),
                 isChecked = playlistindicator,
                 onCheckedChange = { playlistindicator = it },
                 icon = R.drawable.playlist
@@ -200,8 +200,8 @@ fun GeneralQueueManagementCard(
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.queue_management.now_playing_indicator"),
-                title = stringResource(R.string.now_playing_indicator),
-                text = stringResource(R.string.settings_desc_general_queue_management_now_playing_indicator),
+                title = stringResource(R.string.settings_library_now_playing_indicator_label),
+                text = stringResource(R.string.queue_now_playing_indicator_description),
                 selectedValueText = nowPlayingIndicator.text,
                 onClick = { showNowPlayingIndicatorDialog = true },
                 icon = R.drawable.playing_indicator
@@ -209,7 +209,7 @@ fun GeneralQueueManagementCard(
 
             DialogPresence(visible = showNowPlayingIndicatorDialog) {
                 ValueSelectorDialog(
-                    title = stringResource(R.string.now_playing_indicator),
+                    title = stringResource(R.string.settings_library_now_playing_indicator_label),
                     selectedValue = nowPlayingIndicator,
                     onValueSelected = { nowPlayingIndicator = it },
                     valueText = { it.text },

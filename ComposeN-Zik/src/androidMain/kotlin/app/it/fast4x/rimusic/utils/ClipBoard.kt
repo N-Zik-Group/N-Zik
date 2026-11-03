@@ -21,11 +21,11 @@ fun textCopyToClipboard(textCopied:String, context: Context) {
         clipboardManager.setPrimaryClip(ClipData.newPlainText("", textCopied))
     }.onFailure {
         Timber.tag("ClipBoard").e(it.stackTraceToString())
-        Toaster.e( R.string.failed_to_copy_clipboard )
+        Toaster.e( R.string.common_clipboard_copy_failed )
     }
     // Only show a toast for Android 12 and lower.
     if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2)
-        Toaster.s( R.string.value_copied )
+        Toaster.s( R.string.common_clipboard_copy_success )
 }
 
 @Composable
@@ -40,16 +40,16 @@ fun textCopyFromClipboard(context: Context): String {
                 textCopied = item.text.toString()
             } else {
                 Timber.tag("ClipBoard").w("Failed to copy text to clipboard, try again")
-                Toaster.e(R.string.failed_to_copy_clipboard)
+                Toaster.e(R.string.common_clipboard_copy_failed)
             }
         }
     }.onFailure {
         Timber.tag("ClipBoard").e(it.stackTraceToString())
-        Toaster.e( R.string.failed_to_copy_clipboard )
+        Toaster.e( R.string.common_clipboard_copy_failed )
     }
     // Only show a toast for Android 12 and lower.
     if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2 && textCopied.isNotEmpty())
-        Toaster.i( R.string.value_copied )
+        Toaster.i( R.string.common_clipboard_copy_success )
 
     return textCopied
 }

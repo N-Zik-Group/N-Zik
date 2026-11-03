@@ -45,7 +45,7 @@ object SamsungStorageAdviceDialog : ConfirmDialog {
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.samsung_storage_advice_title)
+        get() = stringResource(R.string.storage_samsung_advice_title)
 
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -99,11 +99,11 @@ object SamsungStorageAdviceDialog : ConfirmDialog {
         return ButtonRow(
             buttons = listOf(
                 DialogButton(
-                    text = stringResource(R.string.samsung_storage_advice_secondary_button),
+                    text = stringResource(R.string.storage_samsung_action_keep_system),
                     onClick = ::hideDialog
                 ),
                 DialogButton(
-                    text = stringResource(R.string.samsung_storage_advice_primary_button),
+                    text = stringResource(R.string.storage_samsung_action_use_private),
                     onClick = { onConfirm(binder) },
                     primary = true
                 )
@@ -115,13 +115,13 @@ object SamsungStorageAdviceDialog : ConfirmDialog {
     override fun DialogBody() {
         val palette = colorPalette()
         BasicText(
-            text = stringResource(R.string.samsung_storage_advice_message),
+            text = stringResource(R.string.storage_samsung_advice_message),
             style = typography().xs.copy(color = palette.text),
             modifier = Modifier.padding(bottom = if (storageBytes >= SUMMARY_MIN_BYTES) 20.dp else 0.dp)
         )
         if (storageBytes >= SUMMARY_MIN_BYTES) {
             BasicText(
-                text = stringResource(R.string.samsung_storage_advice_storage, formatBytes(storageBytes)),
+                text = stringResource(R.string.storage_samsung_system_usage_message, formatBytes(storageBytes)),
                 style = typography().xs.copy(color = palette.textSecondary)
             )
         }

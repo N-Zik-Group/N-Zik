@@ -88,7 +88,7 @@ fun ArtistVideos(
             tag = "artist/$browseId/videos",
             headerContent = {
                 Title(
-                    title = itemsPage?.title?.takeIf { it.isNotBlank() } ?: stringResource(R.string.videos),
+                    title = itemsPage?.title?.takeIf { it.isNotBlank() } ?: stringResource(R.string.search_videos_title),
                     verticalPadding = 4.dp,
                 )
             },
@@ -166,7 +166,7 @@ fun ArtistVideos(
                     }
                 }
             },
-            emptyItemsText = stringResource(R.string.no_results_found)
+            emptyItemsText = stringResource(R.string.search_no_results_message)
         )
     }
 }

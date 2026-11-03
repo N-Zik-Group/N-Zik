@@ -35,8 +35,8 @@ object NZikWidgetManager {
     suspend fun updateIdleWidgets(context: Context) {
         updateWidgets(
             context = context,
-            title = context.getString(R.string.not_playing),
-            artist = context.getString(R.string.tap_to_play),
+            title = context.getString(R.string.widget_not_playing_status),
+            artist = context.getString(R.string.widget_action_tap_to_play),
             artworkBitmap = null,
             isPlaying = false,
             isLiked = false,
@@ -122,7 +122,7 @@ object NZikWidgetManager {
         PlaylistWidgetManager.updateWidgets(
             context = context,
             title = title,
-            artist = if (artworkBitmap == null) context.getString(R.string.choose_something_below) else artist,
+            artist = if (artworkBitmap == null) context.getString(R.string.widget_configuration_choose_item_hint) else artist,
             artworkBitmap = albumArt,
             isPlaying = isPlaying,
             isLiked = isLiked,

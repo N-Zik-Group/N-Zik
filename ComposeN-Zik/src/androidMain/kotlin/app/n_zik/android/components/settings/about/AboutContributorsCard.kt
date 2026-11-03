@@ -57,7 +57,7 @@ internal fun AboutContributorsCard() {
                     val translatorsRotation by animateFloatAsState(
                         targetValue = if (translatorsExpanded) 90f else 0f,
                         animationSpec = tween(300),
-                        label = stringResource(R.string.txt_translators_rotation)
+                        label = stringResource(R.string.about_debug_translators_rotation)
                     )
 
                     Row(
@@ -80,7 +80,7 @@ internal fun AboutContributorsCard() {
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             BasicText(
-                                text = "${countTranslators()} " + stringResource(R.string.translators),
+                                text = "${countTranslators()} " + stringResource(R.string.about_translators_title),
                                 style = typography().xs.semiBold.copy(color = colorPalette().textSecondary)
                             )
                         }
@@ -100,7 +100,7 @@ internal fun AboutContributorsCard() {
                         Column(
                             modifier = Modifier.padding(start = 24.dp, top = 8.dp)
                         ) {
-                            SettingsDescription(text = stringResource(R.string.in_alphabetical_order))
+                            SettingsDescription(text = stringResource(R.string.about_contributors_alphabetical_order_label))
                             ShowTranslators()
                         }
                     }
@@ -111,7 +111,7 @@ internal fun AboutContributorsCard() {
                     val developersRotation by animateFloatAsState(
                         targetValue = if (developersExpanded) 90f else 0f,
                         animationSpec = tween(300),
-                        label = stringResource(R.string.txt_developers_rotation)
+                        label = stringResource(R.string.about_debug_developers_rotation)
                     )
 
                     Row(
@@ -134,7 +134,7 @@ internal fun AboutContributorsCard() {
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             BasicText(
-                                text = "${countDevelopers()} ${stringResource(R.string.about_developers_designers)}",
+                                text = "${countDevelopers()} ${stringResource(R.string.about_developers_designers_title)}",
                                 style = typography().xs.semiBold.copy(color = colorPalette().textSecondary)
                             )
                         }
@@ -154,7 +154,7 @@ internal fun AboutContributorsCard() {
                         Column(
                             modifier = Modifier.padding(start = 24.dp, top = 8.dp)
                         ) {
-                            SettingsDescription(text = stringResource(R.string.in_alphabetical_order))
+                            SettingsDescription(text = stringResource(R.string.about_contributors_alphabetical_order_label))
                             ShowDevelopers()
                         }
                     }

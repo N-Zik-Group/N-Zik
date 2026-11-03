@@ -81,7 +81,7 @@ class ChangeAlbumCoverDialog private constructor(
 
     override val keyboardOption: KeyboardOptions = KeyboardOptions.Default
     override val iconId: Int = R.drawable.cover_edit
-    override val messageId: Int = R.string.update_cover
+    override val messageId: Int = R.string.metadata_action_change_cover
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -163,7 +163,7 @@ class ChangeAlbumCoverDialog private constructor(
                     contentDescription = null,
                     modifier = Modifier.size(24.dp).padding(end = 8.dp)
                 )
-                Text(stringResource(R.string.pick_from_gallery))
+                Text(stringResource(R.string.thumbnail_action_pick_from_gallery))
             }
         }
     }

@@ -46,7 +46,7 @@ class ImportPlaylistsMenu(
     // the dialog only offers the local NZik/CSV import — network sources are pruned.
     private val networkOptionsEnabled: () -> Boolean = { true }
 ) : Descriptive, MenuIcon {
-    override val messageId: Int = R.string.import_playlist
+    override val messageId: Int = R.string.playlist_action_import
     override val iconId: Int = R.drawable.import_outline
     override val menuIconTitle: String
         @Composable get() = stringResource(messageId)
@@ -89,7 +89,7 @@ class ImportPlaylistsMenu(
                     add(
                         object : MenuIcon, Descriptive, Clickable {
                             override val iconId: Int = R.drawable.ic_launcher
-                            override val messageId: Int = R.string.import_playlist_nzik
+                            override val messageId: Int = R.string.playlist_import_format_nzik_csv
                             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
                             @get:Composable override val color: androidx.compose.ui.graphics.Color get() = androidx.compose.ui.graphics.Color.Unspecified
                             override fun onShortClick() { menuState.hide(); onImportNzik() }
@@ -100,7 +100,7 @@ class ImportPlaylistsMenu(
                         add(
                             object : MenuIcon, Descriptive, Clickable {
                                 override val iconId: Int = R.drawable.spotify
-                                override val messageId: Int = R.string.import_playlist_exportify_net
+                                override val messageId: Int = R.string.playlist_import_format_exportify_csv
                                 @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
                                 @get:Composable override val color: androidx.compose.ui.graphics.Color get() = androidx.compose.ui.graphics.Color.Unspecified
                                 override fun onShortClick() { menuState.hide(); onImportSpotify() }
@@ -110,7 +110,7 @@ class ImportPlaylistsMenu(
                         add(
                             object : MenuIcon, Descriptive, Clickable {
                                 override val iconId: Int = R.drawable.riplay
-                                override val messageId: Int = R.string.import_playlist_riplay
+                                override val messageId: Int = R.string.playlist_import_format_riplay_csv
                                 @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
                                 @get:Composable override val color: androidx.compose.ui.graphics.Color get() = androidx.compose.ui.graphics.Color.Unspecified
                                 override fun onShortClick() { menuState.hide(); onImportRiplay() }
@@ -120,7 +120,7 @@ class ImportPlaylistsMenu(
                         add(
                             object : MenuIcon, Descriptive, Clickable {
                                 override val iconId: Int = R.drawable.ytmusic
-                                override val messageId: Int = R.string.youtube_music
+                                override val messageId: Int = R.string.settings_youtube_music_title
                                 @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
                                 @get:Composable override val color: androidx.compose.ui.graphics.Color get() = androidx.compose.ui.graphics.Color.Unspecified
                                 override fun onShortClick() { menuState.hide(); onImportYoutubeLink() }
@@ -158,7 +158,7 @@ class ImportPlaylistsMenu(
                             MenuSheetDragHandle()
 
                             BasicText(
-                                text = stringResource(R.string.import_playlist),
+                                text = stringResource(R.string.playlist_action_import),
                                 style = typography().m.copy(color = colorPalette().text),
                                 modifier = Modifier.padding(top = 5.dp, bottom = 10.dp)
                             )

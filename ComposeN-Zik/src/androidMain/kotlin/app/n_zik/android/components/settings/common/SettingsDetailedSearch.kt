@@ -118,7 +118,7 @@ fun SettingsEntryTarget.locationDescription(context: Context): String {
     val category = OrganizedSettingsCategories.first { it.id == card.categoryId() }
     val nested = nestedDestination
     val opener = nested?.let { destination -> AllSettingsEntryTargets.firstOrNull { it.id == destination.openerId } }
-    return listOfNotNull(context.getString(R.string.settings), context.getString(category.labelRes).takeUnless { id.startsWith("glass.") }, card.displayTitle(context),
+    return listOfNotNull(context.getString(R.string.settings_title), context.getString(category.labelRes).takeUnless { id.startsWith("glass.") }, card.displayTitle(context),
         glassSearchOption(id)?.let { context.getString(it.sectionTitle) },
         opener?.let { context.getString(it.labelRes) },
         nested?.sectionTitleRes?.let(context::getString))
@@ -136,5 +136,5 @@ fun SettingsEntryTarget.destinationRoute(context: Context): String {
 /** Distinguishes appearance policies from functional options with the same destination label. */
 fun SettingsEntryTarget.searchResultTitle(context: Context): String {
     val label = context.getString(labelRes)
-    return if (id.startsWith("glass.")) "${context.getString(R.string.liquid_glass)} › $label" else label
+    return if (id.startsWith("glass.")) "${context.getString(R.string.glass_effect_title)} › $label" else label
 }

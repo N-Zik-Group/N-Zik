@@ -81,8 +81,8 @@ fun GeneralAudioEffectsCard(
         content = {
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.audio_effects.skip_silence"),
-                title = stringResource(R.string.skip_silence),
-                text = stringResource(R.string.skip_silent_parts_during_playback),
+                title = stringResource(R.string.settings_audio_skip_silence_label),
+                text = stringResource(R.string.settings_audio_skip_silence_description),
                 isChecked = skipSilence,
                 onCheckedChange = { skipSilence = it },
                 icon = R.drawable.pause
@@ -97,8 +97,8 @@ fun GeneralAudioEffectsCard(
                 ) {
                     SliderSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("general.audio_effects.minimum_silence_length"),
-                        title = stringResource(R.string.minimum_silence_length),
-                        text = stringResource(R.string.minimum_silence_length_description),
+                        title = stringResource(R.string.settings_audio_minimum_silence_duration_label),
+                        text = stringResource(R.string.settings_audio_minimum_silence_duration_description),
                         state = newValue,
                         onSlide = { newValue = it },
                         onSlideComplete = {
@@ -106,7 +106,7 @@ fun GeneralAudioEffectsCard(
                             onRestartServiceSet()
                         },
                         isIntegerOnly = true,
-                        toDisplay = { stringResource(R.string.format_ms, it.toLong()) },
+                        toDisplay = { stringResource(R.string.common_duration_milliseconds_format, it.toLong()) },
                         range = 1.00f..2000.000f,
                         stepSize = 0f,
                         defaultValue = 2000f,
@@ -119,8 +119,8 @@ fun GeneralAudioEffectsCard(
 
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.audio_effects.loudness_normalization"),
-                title = stringResource(R.string.loudness_normalization),
-                text = stringResource(R.string.autoadjust_the_volume),
+                title = stringResource(R.string.settings_audio_loudness_normalization_label),
+                text = stringResource(R.string.settings_audio_loudness_normalization_description),
                 isChecked = volumeNormalization,
                 onCheckedChange = { volumeNormalization = it },
                 icon = R.drawable.volume_up
@@ -175,8 +175,8 @@ fun GeneralAudioEffectsCard(
 
                     SliderSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("general.audio_effects.loudness_boost_level"),
-                        title = stringResource(R.string.loudness_boost_level),
-                        text = stringResource(R.string.loudness_boost_level_info),
+                        title = stringResource(R.string.audio_loudness_boost_level),
+                        text = stringResource(R.string.settings_audio_loudness_boost_warning),
                         state = newValueVolume,
                         onSlide = { newValueVolume = kotlin.math.round(it * 100f) / 100f },
                         onSlideComplete = {
@@ -216,7 +216,7 @@ fun GeneralAudioEffectsCard(
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.audio_effects.settings_audio_bass_boost"),
                 title = stringResource(R.string.settings_audio_bass_boost),
-                text = stringResource(R.string.settings_desc_general_audio_effects_settings_audio_bass_boost),
+                text = stringResource(R.string.audio_bass_boost_description),
                 isChecked = bassboostEnabled,
                 onCheckedChange = { bassboostEnabled = it },
                 icon = R.drawable.equalizer
@@ -231,7 +231,7 @@ fun GeneralAudioEffectsCard(
                     SliderSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("general.audio_effects.settings_bass_boost_level"),
                         title = stringResource(R.string.settings_bass_boost_level),
-                        text = stringResource(R.string.settings_desc_general_audio_effects_settings_bass_boost_level),
+                        text = stringResource(R.string.audio_bass_boost_level_description),
                         state = newValue,
                         onSlide = { newValue = kotlin.math.round(it * 10000f) / 10000f },
                         onSlideComplete = {
@@ -271,7 +271,7 @@ fun GeneralAudioEffectsCard(
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.audio_effects.settings_audio_reverb"),
                 title = stringResource(R.string.settings_audio_reverb),
-                text = stringResource(R.string.settings_desc_general_audio_effects_settings_audio_reverb),
+                text = stringResource(R.string.audio_reverb_description),
                 selectedValueText = stringResource(audioReverb.textRes),
                 onClick = { showAudioReverbDialog = true },
                 icon = R.drawable.reverb
@@ -302,8 +302,8 @@ fun GeneralAudioEffectsCard(
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.audio_effects.equalizer"),
-                title = stringResource(R.string.equalizer),
-                text = stringResource(R.string.interact_with_the_system_equalizer),
+                title = stringResource(R.string.settings_audio_equalizer_label),
+                text = stringResource(R.string.settings_audio_equalizer_description),
                 onClick = launchEqualizer,
                 icon = R.drawable.equalizer
             )

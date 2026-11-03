@@ -349,7 +349,7 @@ internal fun PairedDevicesCard(ui: PairedDevicesUi) {
 
     DialogPresence(target = toRevoke) { device ->
         ConfirmationDialog(
-            title = stringResource(R.string.dialog_revoke_device),
+            title = stringResource(R.string.bridge_revoke_device_dialog_title),
             text = stringResource(R.string.bridge_revoke_confirm, device.deviceName),
             confirmText = stringResource(R.string.bridge_revoke),
             onDismiss = { toRevoke = null },

@@ -122,7 +122,7 @@ fun RewindIntroCard(
             })
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 50, direction = RewindRevealDirection.Left, distance = 18.dp) {
-                    RewindKicker(stringResource(R.string.rw_intro_kicker, data.periodLabel), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rewind_intro_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(if (compact) 14.dp else 18.dp))
                 // The face avatar reveals between the kicker (50 ms) and the hero name
@@ -160,7 +160,7 @@ fun RewindIntroCard(
                 Spacer(Modifier.height(4.dp))
                 RewindReveal(active, 430, direction = RewindRevealDirection.Left, distance = 36.dp) {
                     Text(
-                        text = stringResource(R.string.rw_intro_this_is_your),
+                        text = stringResource(R.string.rewind_intro_this_is_your),
                         color = rewindColors.value.cream,
                         fontSize = textScale.size(if (compact) 37.sp else 44.sp),
                         lineHeight = textScale.size(if (compact) 36.sp else 42.sp),
@@ -198,7 +198,7 @@ fun RewindIntroCard(
                 }
                 RewindReveal(active, 850, direction = RewindRevealDirection.Left, distance = 32.dp) {
                     Text(
-                        text = stringResource(R.string.rw_intro_reword),
+                        text = stringResource(R.string.rewind_intro_word_rewind),
                         color = rewindColors.value.cream,
                         fontSize = textScale.size(if (compact) 48.sp else 57.sp),
                         lineHeight = textScale.size(if (compact) 45.sp else 53.sp),
@@ -222,9 +222,9 @@ fun RewindIntroCard(
                     RewindAdaptiveTitle(
                         text = stringResource(
                             when (data.period) {
-                                is RewindPeriod.Year -> R.string.rw_intro_tagline
-                                is RewindPeriod.Month -> R.string.rw_intro_tagline_month
-                                is RewindPeriod.Global -> R.string.rw_intro_tagline_global
+                                is RewindPeriod.Year -> R.string.rewind_intro_tagline
+                                is RewindPeriod.Month -> R.string.rewind_intro_tagline_month
+                                is RewindPeriod.Global -> R.string.rewind_intro_tagline_global
                             }
                         ),
                         color = rewindColors.value.cream,
@@ -254,7 +254,7 @@ fun RewindIntroCard(
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                text = stringResource(R.string.rw_intro_start),
+                                text = stringResource(R.string.rewind_intro_start),
                                 color = onLime,
                                 fontSize = textScale.size(12.sp),
                                 fontWeight = FontWeight.Black,
@@ -262,7 +262,7 @@ fun RewindIntroCard(
                             )
                         }
                         Text(
-                            text = if (revealComplete) stringResource(R.string.rw_intro_tap_to_begin) else stringResource(R.string.rw_intro_opening),
+                            text = if (revealComplete) stringResource(R.string.rewind_intro_tap_to_begin) else stringResource(R.string.rewind_intro_opening),
                             color = rewindColors.value.cream.copy(alpha = 0.52f),
                             fontSize = textScale.size(9.sp),
                             fontWeight = FontWeight.Black,

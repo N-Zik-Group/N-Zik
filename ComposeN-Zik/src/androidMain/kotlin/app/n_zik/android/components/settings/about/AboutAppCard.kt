@@ -142,7 +142,7 @@ internal fun AboutAppCard() {
                                  }
                          ) {
                              BasicText(
-                                 text = stringResource(R.string.by_string),
+                                 text = stringResource(R.string.about_authorship_preposition),
                                      style = typography().xs.secondary.copy(
                                      textAlign = TextAlign.Center
                                  ),

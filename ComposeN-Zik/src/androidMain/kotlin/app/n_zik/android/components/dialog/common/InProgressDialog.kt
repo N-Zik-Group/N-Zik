@@ -35,7 +35,7 @@ fun InProgressDialog(
             ButtonRow(
                 buttons = listOf(
                     DialogButton(
-                        text = stringResource(R.string.cancel),
+                        text = stringResource(R.string.common_action_cancel),
                         onClick = onDismiss,
                         danger = true
                     )

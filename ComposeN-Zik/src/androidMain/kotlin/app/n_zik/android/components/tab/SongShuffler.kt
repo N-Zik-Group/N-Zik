@@ -49,7 +49,7 @@ class SongShuffler private constructor(
             songs: List<Song>
         ) {
             if( songs.isEmpty() ) {
-                Toaster.i( R.string.no_song_to_shuffle )
+                Toaster.i( R.string.player_shuffle_empty_message )
                 return
             }
             Shuffler.play( binder, songs )
@@ -59,10 +59,10 @@ class SongShuffler private constructor(
     // Issue #866 (gh-866): app-wide shuffle confirmation flash — the icon follows the binder's
     // flash state (shuffle_ok ~1 s), triggered in onShortClick below.
     override val iconId: Int get() = shuffleButtonIconRes( binder )
-    override val messageId: Int = R.string.info_shuffle
+    override val messageId: Int = R.string.player_action_shuffle_hint
     override val menuIconTitle: String
         @Composable
-        get() = stringResource( R.string.shuffle )
+        get() = stringResource( R.string.player_action_shuffle )
 
     override fun onShortClick() {
         playShuffled(

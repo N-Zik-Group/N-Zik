@@ -109,7 +109,7 @@ class AppearanceSettingsWiringTest {
     }
 
     @Test fun durationAndSkipControlsBelongToTimelineAndKeepTheirPreferences() {
-        val selectedCards = mutableStateOf<Set<Int>?>(setOf(R.string.colors_and_background))
+        val selectedCards = mutableStateOf<Set<Int>?>(setOf(R.string.settings_player_background_section_title))
         val registry = SettingsTargetRegistry()
         val controls = listOf(
             "show_total_time_of_queue" to showTotalTimeQueueKey,
@@ -136,7 +136,7 @@ class AppearanceSettingsWiringTest {
             composeRule.onNodeWithTag("settings.target.appearance.colors_and_background.$id")
                 .assertDoesNotExist()
         }
-        composeRule.runOnIdle { selectedCards.value = setOf(R.string.timeline_and_controls) }
+        composeRule.runOnIdle { selectedCards.value = setOf(R.string.settings_player_timeline_controls_section_title) }
         composeRule.waitForIdle()
         controls.forEach { (id, key) ->
             val row = composeRule.onNodeWithTag("settings.target.appearance.colors_and_background.$id")
@@ -198,17 +198,17 @@ class AppearanceSettingsWiringTest {
                     AppearanceSettingsContent(
                         search = search,
                         navController = mockk(relaxed = true),
-                        selectedCards = setOf(R.string.player_presets_and_layout, R.string.timeline_and_controls),
+                        selectedCards = setOf(R.string.player_presets_and_layout, R.string.settings_player_timeline_controls_section_title),
                     )
                 }
             }
         }
         composeRule.waitForIdle()
-        composeRule.onAllNodesWithText(context.getString(R.string.icon_like_button), useUnmergedTree = true)
+        composeRule.onAllNodesWithText(context.getString(R.string.settings_player_favorite_button_style_label), useUnmergedTree = true)
             .assertCountEquals(1)
-        composeRule.runOnIdle { query.value = context.getString(R.string.icon_like_button) }
+        composeRule.runOnIdle { query.value = context.getString(R.string.settings_player_favorite_button_style_label) }
         composeRule.waitForIdle()
-        composeRule.onAllNodesWithText(context.getString(R.string.icon_like_button), useUnmergedTree = true)
+        composeRule.onAllNodesWithText(context.getString(R.string.settings_player_favorite_button_style_label), useUnmergedTree = true)
             .assertCountEquals(1)
     }
 

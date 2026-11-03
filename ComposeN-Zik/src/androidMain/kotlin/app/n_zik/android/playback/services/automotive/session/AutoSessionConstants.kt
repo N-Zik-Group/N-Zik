@@ -86,7 +86,7 @@ object AutoSessionConstants {
         .setMediaId(id)
         .setMediaMetadata(
             MediaMetadata.Builder()
-                .setTitle(context.getString(R.string.shuffle))
+                .setTitle(context.getString(R.string.player_action_shuffle))
                 .setArtworkUri(AutoMediaItemMapper.drawableUri(context, R.drawable.random))
                 .setIsPlayable(true)
                 .setIsBrowsable(false)
@@ -100,7 +100,7 @@ object AutoSessionConstants {
         .setMediaId(id)
         .setMediaMetadata(
             MediaMetadata.Builder()
-                .setTitle(context.getString(R.string.play_all))
+                .setTitle(context.getString(R.string.automotive_action_play_all))
                 .setArtworkUri(AutoMediaItemMapper.drawableUri(context, R.drawable.play))
                 .setIsPlayable(true)
                 .setIsBrowsable(false)

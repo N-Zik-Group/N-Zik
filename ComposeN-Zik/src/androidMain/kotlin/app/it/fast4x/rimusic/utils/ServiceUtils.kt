@@ -30,12 +30,12 @@ fun RestartPlayerService(
     AnimatedVisibility(visible = restartService) {
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             SettingsDescription(
-                text = stringResource(R.string.minimum_silence_length_warning),
+                text = stringResource(R.string.player_restart_required_message),
                 important = true,
                 modifier = Modifier.weight(2f)
             )
             SecondaryTextButton(
-                text = stringResource(R.string.restart_service),
+                text = stringResource(R.string.settings_player_action_restart_service),
                 onClick = {
                     binder?.restartForegroundOrStop().let { onRestart() }
                     Toaster.done()
@@ -59,12 +59,12 @@ fun RestartActivity(
     AnimatedVisibility(visible = restart) {
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             SettingsDescription(
-                text = stringResource(R.string.minimum_silence_length_warning),
+                text = stringResource(R.string.player_restart_required_message),
                 important = true,
                 modifier = Modifier.weight(2f)
             )
             SecondaryTextButton(
-                text = stringResource(R.string.restart_service),
+                text = stringResource(R.string.settings_player_action_restart_service),
                 onClick = {
                     restartActivity = !restartActivity
                     onRestart()

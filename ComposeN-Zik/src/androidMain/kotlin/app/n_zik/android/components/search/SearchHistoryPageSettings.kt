@@ -54,7 +54,7 @@ fun SearchHistoryPagesDialog(onDismiss: () -> Unit) {
         val labelRes = legacyCategory?.labelRes ?: category?.labelRes ?: R.string.settings_global_title
         val iconRes = legacyCategory?.iconRes ?: category?.iconRes ?: R.drawable.settings
         val label = when (page) {
-            SearchHistoryStore.PAGE_HISTORY -> stringResource(R.string.history)
+            SearchHistoryStore.PAGE_HISTORY -> stringResource(R.string.library_history_title)
             SearchHistoryStore.PAGE_LOCAL -> stringResource(R.string.search_history_local)
             SearchHistoryStore.PAGE_ONLINE -> stringResource(R.string.search_history_online)
             SearchHistoryStore.PAGE_SETTINGS_GLOBAL -> stringResource(R.string.settings_global_title)

@@ -85,13 +85,13 @@ class AppearancePresetLoadingTest {
         assertFalse("closed preset chooser must not load its preset-only state", blurStrengthKey in tracked.readKeys)
         assertTrue("opening the page must not apply a preset", context.preferences.all.isEmpty())
 
-        composeRule.onNodeWithText(context.getString(R.string.appearancepresets)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.settings_player_appearance_presets_title)).performClick()
         composeRule.waitForIdle()
         assertTrue("opening the chooser loads its state", blurStrengthKey in tracked.readKeys)
         assertTrue("opening the chooser must not apply a preset", context.preferences.all.isEmpty())
         composeRule.onNode(
             hasAnyAncestor(isDialog()) and hasClickAction() and
-                hasText(context.getString(R.string.dialog_apply))
+                hasText(context.getString(R.string.common_action_apply))
         ).performClick()
         composeRule.waitForIdle()
         assertEquals(50f, context.preferences.getFloat(blurStrengthKey, -1f), 0f)

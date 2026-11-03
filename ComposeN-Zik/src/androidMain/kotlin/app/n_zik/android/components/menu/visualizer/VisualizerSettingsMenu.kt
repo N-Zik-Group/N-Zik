@@ -110,31 +110,31 @@ class VisualizerSettingsMenu private constructor(
         var isShowingCustomColorPicker by remember { mutableStateOf(false) }
 
         DialogPresence(visible = isShowingCustomColorPicker) {
-            val customColorString = stringResource(R.string.color_custom)
+            val customColorString = stringResource(R.string.common_color_custom)
             DialogColorPicker(onDismiss = { isShowingCustomColorPicker = false }) {
                 visualizerCustomColor = it.toArgb()
                 isShowingCustomColorPicker = false
-                Toaster.n(R.string.info_color_s_applied, customColorString)
+                Toaster.n(R.string.settings_theme_color_applied_format, customColorString)
             }
         }
 
         @Composable
         fun settingsContent() {
             // Section Title for General settings
-            SectionTitle(stringResource(R.string.visualizer))
+            SectionTitle(stringResource(R.string.visualizer_title))
 
             // Colors Option
             EnumSettingEntry(
-                title = stringResource(R.string.visualizer_white_color_option),
+                title = stringResource(R.string.visualizer_color_source),
                 icon = R.drawable.color_palette,
                 selectedValue = visualizerWhiteColorOption,
                 values = VisualizerWhiteColorOption.entries.toList(),
                 valueText = { value ->
                     stringResource(when(value) { 
-                        VisualizerWhiteColorOption.White -> R.string.color_white
-                        VisualizerWhiteColorOption.Theme -> R.string.theme
-                        VisualizerWhiteColorOption.Cover -> R.string.artwork
-                        VisualizerWhiteColorOption.Custom -> R.string.color_custom
+                        VisualizerWhiteColorOption.White -> R.string.common_color_white
+                        VisualizerWhiteColorOption.Theme -> R.string.common_color_source_theme
+                        VisualizerWhiteColorOption.Cover -> R.string.common_color_source_artwork
+                        VisualizerWhiteColorOption.Custom -> R.string.common_color_custom
                     })
                 },
                 onValueSelected = { visualizerWhiteColorOption = it }
@@ -142,7 +142,7 @@ class VisualizerSettingsMenu private constructor(
             
             AnimatedVisibility(visible = visualizerWhiteColorOption == VisualizerWhiteColorOption.Custom) {
                 ListMenu.Entry(
-                    text = stringResource(R.string.color_custom),
+                    text = stringResource(R.string.common_color_custom),
                     icon = { SettingIcon(R.drawable.color_palette) },
                     onClick = { isShowingCustomColorPicker = true },
                     trailingContent = {
@@ -159,7 +159,7 @@ class VisualizerSettingsMenu private constructor(
 
             // Save Visualizer State
             ToggleSettingEntry(
-                title = stringResource(R.string.save_visualizer_state),
+                title = stringResource(R.string.settings_visualizer_remember_state_label),
                 icon = R.drawable.bookmark,
                 isChecked = showVisualizerStateKeyPref,
                 onCheckedChange = { showVisualizerStateKeyPref = it }
@@ -167,7 +167,7 @@ class VisualizerSettingsMenu private constructor(
             
             // Show Thumbnail
             ToggleSettingEntry(
-                title = stringResource(R.string.showvisthumbnail),
+                title = stringResource(R.string.settings_visualizer_artwork_visible_label),
                 icon = R.drawable.equalizer,
                 isChecked = showvisthumbnail,
                 onCheckedChange = { showvisthumbnail = it }
@@ -175,7 +175,7 @@ class VisualizerSettingsMenu private constructor(
 
             AnimatedVisibility(visible = showvisthumbnail) {
                 ToggleSettingEntry(
-                    title = stringResource(R.string.black_background_for_visualizer),
+                    title = stringResource(R.string.visualizer_dark_background_title),
                     icon = R.drawable.images_sharp,
                     isChecked = blackBackgroundForVisThumbnail,
                     onCheckedChange = { blackBackgroundForVisThumbnail = it }
@@ -184,7 +184,7 @@ class VisualizerSettingsMenu private constructor(
 
             // Auto-hide buttons
             ToggleSettingEntry(
-                title = stringResource(R.string.show_visualizer_buttons),
+                title = stringResource(R.string.visualizer_auto_hide_buttons_title),
                 icon = R.drawable.menu,
                 isChecked = showVisualizerButtons,
                 onCheckedChange = { showVisualizerButtons = it }
@@ -213,21 +213,21 @@ class VisualizerSettingsMenu private constructor(
 
         fun LazyGridScope.settingsGridContent() {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.visualizer))
+                SectionTitle(stringResource(R.string.visualizer_title))
             }
 
             item {
                 EnumSettingEntry(
-                    title = stringResource(R.string.visualizer_white_color_option),
+                    title = stringResource(R.string.visualizer_color_source),
                     icon = R.drawable.color_palette,
                     selectedValue = visualizerWhiteColorOption,
                     values = VisualizerWhiteColorOption.entries.toList(),
                     valueText = { value ->
                         stringResource(when(value) { 
-                            VisualizerWhiteColorOption.White -> R.string.color_white
-                            VisualizerWhiteColorOption.Theme -> R.string.theme
-                            VisualizerWhiteColorOption.Cover -> R.string.artwork
-                            VisualizerWhiteColorOption.Custom -> R.string.color_custom
+                            VisualizerWhiteColorOption.White -> R.string.common_color_white
+                            VisualizerWhiteColorOption.Theme -> R.string.common_color_source_theme
+                            VisualizerWhiteColorOption.Cover -> R.string.common_color_source_artwork
+                            VisualizerWhiteColorOption.Custom -> R.string.common_color_custom
                         })
                     },
                     onValueSelected = { visualizerWhiteColorOption = it }
@@ -237,7 +237,7 @@ class VisualizerSettingsMenu private constructor(
             if (visualizerWhiteColorOption == VisualizerWhiteColorOption.Custom) {
                 item {
                     GridMenu.Entry(
-                        text = stringResource(R.string.color_custom),
+                        text = stringResource(R.string.common_color_custom),
                         icon = { SettingIcon(R.drawable.color_palette) },
                         onClick = { isShowingCustomColorPicker = true },
                         trailingContent = {
@@ -255,7 +255,7 @@ class VisualizerSettingsMenu private constructor(
 
             item {
                 ToggleSettingEntry(
-                    title = stringResource(R.string.save_visualizer_state),
+                    title = stringResource(R.string.settings_visualizer_remember_state_label),
                     icon = R.drawable.bookmark,
                     isChecked = showVisualizerStateKeyPref,
                     onCheckedChange = { showVisualizerStateKeyPref = it }
@@ -264,7 +264,7 @@ class VisualizerSettingsMenu private constructor(
             
             item {
                 ToggleSettingEntry(
-                    title = stringResource(R.string.showvisthumbnail),
+                    title = stringResource(R.string.settings_visualizer_artwork_visible_label),
                     icon = R.drawable.equalizer,
                     isChecked = showvisthumbnail,
                     onCheckedChange = { showvisthumbnail = it }
@@ -274,7 +274,7 @@ class VisualizerSettingsMenu private constructor(
             if (showvisthumbnail) {
                 item {
                     ToggleSettingEntry(
-                        title = stringResource(R.string.black_background_for_visualizer),
+                        title = stringResource(R.string.visualizer_dark_background_title),
                         icon = R.drawable.images_sharp,
                         isChecked = blackBackgroundForVisThumbnail,
                         onCheckedChange = { blackBackgroundForVisThumbnail = it }
@@ -284,7 +284,7 @@ class VisualizerSettingsMenu private constructor(
 
             item {
                 ToggleSettingEntry(
-                    title = stringResource(R.string.show_visualizer_buttons),
+                    title = stringResource(R.string.visualizer_auto_hide_buttons_title),
                     icon = R.drawable.menu,
                     isChecked = showVisualizerButtons,
                     onCheckedChange = { showVisualizerButtons = it }
@@ -316,12 +316,12 @@ class VisualizerSettingsMenu private constructor(
         }
 
         if (menuStyle == MenuStyle.List) {
-            ListMenu.Menu(title = stringResource(R.string.visualizer)) {
+            ListMenu.Menu(title = stringResource(R.string.visualizer_title)) {
                 settingsContent()
                 Spacer(modifier = Modifier.navigationBarsPadding())
             }
         } else {
-            GridMenu.Menu(title = stringResource(R.string.visualizer)) {
+            GridMenu.Menu(title = stringResource(R.string.visualizer_title)) {
                 settingsGridContent()
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Spacer(modifier = Modifier.navigationBarsPadding())

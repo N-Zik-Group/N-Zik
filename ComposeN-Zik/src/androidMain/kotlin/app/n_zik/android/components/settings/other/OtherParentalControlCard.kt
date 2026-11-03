@@ -23,11 +23,11 @@ internal fun OtherParentalControlCard(search: Search) {
         title = stringResource(R.string.parental_control),
         icon = R.drawable.shield_checkmark,
         content = {
-            if (search.inputValue.isBlank() || stringResource(R.string.parental_control).contains(search.inputValue, true) || stringResource(R.string.info_prevent_play_songs_with_age_limitation).contains(search.inputValue, true)) {
+            if (search.inputValue.isBlank() || stringResource(R.string.parental_control).contains(search.inputValue, true) || stringResource(R.string.settings_parental_age_restriction_description).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("other.parental_control.parental_control"),
                     title = stringResource(R.string.parental_control),
-                    text = stringResource(R.string.info_prevent_play_songs_with_age_limitation),
+                    text = stringResource(R.string.settings_parental_age_restriction_description),
                     isChecked = parentalControlEnabled,
                     onCheckedChange = { parentalControlEnabled = it },
                     icon = R.drawable.parental_control

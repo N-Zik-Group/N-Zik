@@ -113,7 +113,7 @@ fun NewAlbums(
                     span = { GridItemSpan(maxLineSpan) }
                 ) {
                     HeaderWithIcon(
-                        title = stringResource(R.string.new_albums),
+                        title = stringResource(R.string.recommendations_new_albums_title),
                         iconId = R.drawable.search,
                         enabled = true,
                         showIcon = !showSearchTab,

@@ -237,7 +237,7 @@ fun OnboardingAccountsScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = stringResource(R.string.onboard_accounts_title),
+            text = stringResource(R.string.onboarding_accounts_title),
             style = typography().l,
             fontWeight = FontWeight.SemiBold,
             color = colorPalette().text
@@ -252,11 +252,11 @@ fun OnboardingAccountsScreen(
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             OnboardingActionCard(
                 icon = R.drawable.logo_youtube,
-                title = stringResource(R.string.onboard_accounts_youtube),
+                title = stringResource(R.string.onboarding_accounts_youtube),
                 description = if (ytLoggedIn && ytName.isNotBlank()) {
-                    stringResource(R.string.onboard_accounts_youtube_account, ytName)
+                    stringResource(R.string.onboarding_accounts_youtube_account, ytName)
                 } else {
-                    stringResource(R.string.onboard_accounts_youtube_desc)
+                    stringResource(R.string.onboarding_accounts_youtube_description)
                 },
                 action = {
                     OnboardingAccountActionButton(
@@ -271,11 +271,11 @@ fun OnboardingAccountsScreen(
             if (lastfmConfigured) {
                 OnboardingActionCard(
                     icon = R.drawable.logo_lastfm,
-                    title = stringResource(R.string.social_lastfm),
+                    title = stringResource(R.string.settings_lastfm_title),
                     description = if (lastfmSession.isNotEmpty()) {
                         stringResource(R.string.lastfm_connected)
                     } else {
-                        stringResource(R.string.social_lastfm_info)
+                        stringResource(R.string.settings_lastfm_scrobbling_description)
                     },
                     action = {
                         OnboardingAccountActionButton(
@@ -298,11 +298,11 @@ fun OnboardingAccountsScreen(
 
             OnboardingActionCard(
                 icon = R.drawable.logo_discord,
-                title = stringResource(R.string.social_discord),
+                title = stringResource(R.string.settings_discord_title),
                 description = if (discordToken.isNotEmpty()) {
                     stringResource(R.string.discord_connected_to_discord_account)
                 } else {
-                    stringResource(R.string.onboard_accounts_discord_desc)
+                    stringResource(R.string.onboarding_accounts_discord_description)
                 },
                 action = {
                     OnboardingAccountActionButton(
@@ -357,8 +357,8 @@ fun OnboardingAccountsScreen(
                 // "Skip" while nothing is connected, "I'm done" once at least one
                 // account is logged in — the user leaves the step either way
                 stringResource(
-                    if (ytLoggedIn || lastfmSession.isNotEmpty() || discordToken.isNotEmpty()) R.string.onboard_accounts_done
-                    else R.string.onboard_accounts_skip
+                    if (ytLoggedIn || lastfmSession.isNotEmpty() || discordToken.isNotEmpty()) R.string.onboarding_accounts_done
+                    else R.string.onboarding_accounts_skip
                 )
             )
         }
@@ -392,7 +392,7 @@ fun OnboardingAccountsScreen(
                     ytLoggedIn = true
                     ytName = ytAccountName()
                     Timber.tag("Onboarding").i("YouTube account connected from onboarding")
-                    Toaster.i(R.string.youtube_login_successful)
+                    Toaster.i(R.string.account_youtube_login_success)
                 }
             }
         )
@@ -439,7 +439,7 @@ fun OnboardingAccountsScreen(
                     .fillMaxWidth()
                     .heightIn(max = (screenHeightDp * 0.5f).dp)
             ) {
-                ListMenu.Menu(title = stringResource(R.string.social_lastfm)) {
+                ListMenu.Menu(title = stringResource(R.string.settings_lastfm_title)) {
                     LastFmLoginContent(
                         onConnected = { sessionKey, username ->
                             loginLastfm = false

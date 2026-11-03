@@ -147,7 +147,7 @@ class ImportChainRunnerTest {
         val stateUri = mockUri()
         coEvery { ImportDatabase.importTo(context, dbUri, "default") } just Runs
         every { RescueFiles.importProfileState(context, stateUri) } returns Result.failure(Exception("bad archive"))
-        every { context.getString(R.string.import_profile_state_failed) } returns "Import failed"
+        every { context.getString(R.string.backup_import_profile_state_failed) } returns "Import failed"
 
         ImportChainRunner.runChain(context, "default", dbUri, null, stateUri, onCompleted)
 
@@ -164,7 +164,7 @@ class ImportChainRunnerTest {
         coEvery { ImportDatabase.importTo(context, dbUri, "work") } just Runs
         coEvery { ImportSettings.importFile(context, settingsUri, "work") } just Runs
         every { context.getString(R.string.profile_base_name) } returns "N-Zik Fan"
-        every { context.getString(R.string.import_completed_profile, "work") } returns "Imported into work"
+        every { context.getString(R.string.backup_import_completed_profile, "work") } returns "Imported into work"
 
         ImportChainRunner.runChain(context, "work", dbUri, settingsUri, null, onCompleted)
 
@@ -185,7 +185,7 @@ class ImportChainRunnerTest {
         File(files, PROFILE_NAMES_FILE_NAME).writeText("work\n")
         coEvery { ImportDatabase.importTo(context, dbUri, "work") } just Runs
         every { context.getString(R.string.profile_base_name) } returns "N-Zik Fan"
-        every { context.getString(R.string.import_completed_profile, "work") } returns "Imported into work"
+        every { context.getString(R.string.backup_import_completed_profile, "work") } returns "Imported into work"
 
         ImportChainRunner.runChain(context, "work", dbUri, null, null, onCompleted)
 

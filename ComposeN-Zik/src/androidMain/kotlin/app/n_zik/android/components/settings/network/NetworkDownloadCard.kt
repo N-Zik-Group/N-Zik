@@ -30,14 +30,14 @@ internal fun NetworkDownloadCard(query: String) {
     var autoDownloadSongWhenAlbumBookmarked by rememberPreference(autoDownloadSongWhenAlbumBookmarkedKey, false)
 
     SettingsSectionCard(
-        title = stringResource(R.string.download),
+        title = stringResource(R.string.downloads_title),
         icon = R.drawable.download,
         content = {
-            if (query.isBlank() || stringResource(R.string.settings_enable_autodownload_song).contains(query, true) || stringResource(R.string.auto_download_song_description).contains(query, true)) {
+            if (query.isBlank() || stringResource(R.string.settings_enable_autodownload_song).contains(query, true) || stringResource(R.string.settings_downloads_automatic_description).contains(query, true)) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("network.download.settings_enable_autodownload_song"),
                     title = stringResource(R.string.settings_enable_autodownload_song),
-                    text = stringResource(R.string.auto_download_song_description),
+                    text = stringResource(R.string.settings_downloads_automatic_description),
                     isChecked = autoDownloadSong,
                     onCheckedChange = {
                         autoDownloadSong = it
@@ -60,11 +60,11 @@ internal fun NetworkDownloadCard(query: String) {
                 Column(
                     modifier = Modifier.padding(start = 16.dp)
                 ) {
-                    if (query.isBlank() || stringResource(R.string.settings_enable_autodownload_song_when_liked).contains(query, true) || stringResource(R.string.auto_download_when_liked_description).contains(query, true)) {
+                    if (query.isBlank() || stringResource(R.string.settings_enable_autodownload_song_when_liked).contains(query, true) || stringResource(R.string.settings_downloads_on_like_description).contains(query, true)) {
                         OtherSwitchSettingEntry(
                             modifier = Modifier.settingsSearchTarget("network.download.settings_enable_autodownload_song_when_liked"),
                             title = stringResource(R.string.settings_enable_autodownload_song_when_liked),
-                            text = stringResource(R.string.auto_download_when_liked_description),
+                            text = stringResource(R.string.settings_downloads_on_like_description),
                             isChecked = autoDownloadSongWhenLiked,
                             onCheckedChange = {
                                 autoDownloadSongWhenLiked = it
@@ -73,11 +73,11 @@ internal fun NetworkDownloadCard(query: String) {
                         )
                     }
 
-                    if (query.isBlank() || stringResource(R.string.settings_enable_autodownload_song_when_album_bookmarked).contains(query, true) || stringResource(R.string.auto_download_when_album_bookmarked_description).contains(query, true)) {
+                    if (query.isBlank() || stringResource(R.string.settings_enable_autodownload_song_when_album_bookmarked).contains(query, true) || stringResource(R.string.settings_downloads_on_album_bookmark_description).contains(query, true)) {
                         OtherSwitchSettingEntry(
                             modifier = Modifier.settingsSearchTarget("network.download.settings_enable_autodownload_song_when_album_bookmarked"),
                             title = stringResource(R.string.settings_enable_autodownload_song_when_album_bookmarked),
-                            text = stringResource(R.string.auto_download_when_album_bookmarked_description),
+                            text = stringResource(R.string.settings_downloads_on_album_bookmark_description),
                             isChecked = autoDownloadSongWhenAlbumBookmarked,
                             onCheckedChange = {
                                 autoDownloadSongWhenAlbumBookmarked = it

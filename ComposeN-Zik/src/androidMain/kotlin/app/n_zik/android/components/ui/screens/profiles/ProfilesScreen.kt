@@ -204,7 +204,7 @@ fun ProfileScreen(
         topInsetHandledByContent = true,
         miniPlayer = miniPlayer,
         navBarContent = { item ->
-            item(0, stringResource(R.string.profiles), R.drawable.person)
+            item(0, stringResource(R.string.profile_title), R.drawable.person)
 
         }
     ) {
@@ -217,7 +217,7 @@ fun ProfileScreen(
                 // Listen-Together-style header: the icon is shown and a centered
                 // description sits under the title.
                 HeaderWithIcon(
-                    title = stringResource(R.string.profiles),
+                    title = stringResource(R.string.profile_title),
                     iconId = R.drawable.person,
                     enabled = false,
                     showIcon = true,
@@ -225,7 +225,7 @@ fun ProfileScreen(
                     onClick = {}
                 )
                 SettingsDescription(
-                    text = stringResource(R.string.profiles_description),
+                    text = stringResource(R.string.profile_description),
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
                 )
@@ -280,19 +280,19 @@ fun ProfileScreen(
                     // Same card style as the export / import cards below.
                     ProfileStateActionCard(
                         icon = R.drawable.add,
-                        title = stringResource(R.string.add_profile),
-                        description = stringResource(R.string.add_profile_description),
+                        title = stringResource(R.string.profile_action_add),
+                        description = stringResource(R.string.profile_add_description),
                         onClick = { showAddPopup = true },
                     )
                 }
                 item(key = "export_state", contentType = 3) {
                     ProfileStateActionCard(
                         icon = R.drawable.export_outline,
-                        title = stringResource(R.string.profiles_export_profiles),
+                        title = stringResource(R.string.profile_action_export),
                         description = if (page.hasState) {
-                            stringResource(R.string.export_accounts_description)
+                            stringResource(R.string.backup_export_accounts_description)
                         } else {
-                            stringResource(R.string.rescue_no_profile_state)
+                            stringResource(R.string.recovery_no_profile_state)
                         },
                         enabled = page.hasState,
                         onClick = { exportProfileState.export() },
@@ -301,8 +301,8 @@ fun ProfileScreen(
                 item(key = "import_state", contentType = 4) {
                     ProfileStateActionCard(
                         icon = R.drawable.import_outline,
-                        title = stringResource(R.string.profiles_import_profiles),
-                        description = stringResource(R.string.import_accounts_description),
+                        title = stringResource(R.string.profile_action_import),
+                        description = stringResource(R.string.backup_import_accounts_description),
                         onClick = { showImportConfirm = true },
                     )
                 }
@@ -313,9 +313,9 @@ fun ProfileScreen(
 
     DialogPresence(visible = showAddPopup) {
         SettingsInputDialog(
-            title = stringResource(R.string.add_profile),
+            title = stringResource(R.string.profile_action_add),
             initialValue = "",
-            placeholder = stringResource(R.string.enter_profile_name),
+            placeholder = stringResource(R.string.profile_name_input_hint),
             onDismiss = { showAddPopup = false },
             onSetValue = { name ->
                 val trimmedName = name.trim()
@@ -346,7 +346,7 @@ fun ProfileScreen(
         SettingsInputDialog(
             title = stringResource(R.string.profile_rename),
             initialValue = renameRow.displayName,
-            placeholder = stringResource(R.string.enter_profile_name),
+            placeholder = stringResource(R.string.profile_name_input_hint),
             onDismiss = { showRenamePopup = false },
             onSetValue = { name ->
                 val trimmedName = name.trim()
@@ -393,9 +393,9 @@ fun ProfileScreen(
 
     DialogPresence(visible = showRemovePopup) {
         ConfirmationDialog(
-            title = stringResource(R.string.remove_profile),
-            confirmText = stringResource(R.string.dialog_remove),
-            text = stringResource(R.string.dialog_remove_profile_question),
+            title = stringResource(R.string.profile_action_remove),
+            confirmText = stringResource(R.string.common_action_remove),
+            text = stringResource(R.string.profile_remove_confirmation),
             onDismiss = { showRemovePopup = false },
             onConfirm = {
                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
@@ -436,14 +436,14 @@ fun ProfileScreen(
 
     DialogPresence(visible = showErrorPopup) {
         DefaultDialog(
-            title = stringResource(R.string.dialog_profile_error),
+            title = stringResource(R.string.profile_error_dialog_title),
             onDismiss = { showErrorPopup = false },
             modifier = Modifier,
             footer = {
                 ButtonRow(
                     buttons = listOf(
                         DialogButton(
-                            text = stringResource(R.string.dialog_close),
+                            text = stringResource(R.string.common_action_close),
                             primary = true,
                             onClick = {
                                 showErrorPopup = false
@@ -463,8 +463,8 @@ fun ProfileScreen(
     }
     DialogPresence(visible = showChangePopup) {
         ConfirmationDialog(
-            title = stringResource(R.string.dialog_switch_profile),
-            confirmText = stringResource(R.string.dialog_switch_profile),
+            title = stringResource(R.string.profile_switch_dialog_title),
+            confirmText = stringResource(R.string.profile_switch_dialog_title),
             text = stringResource(R.string.profile_restart_required),
             onDismiss = { showChangePopup = false },
             onConfirm = {
@@ -482,9 +482,9 @@ fun ProfileScreen(
 
     DialogPresence(visible = showImportConfirm) {
         ConfirmationDialog(
-            title = stringResource(R.string.rescue_import_profiles),
-            confirmText = stringResource(R.string.import_button),
-            text = stringResource(R.string.rescue_confirm_import_accounts),
+            title = stringResource(R.string.profile_action_import),
+            confirmText = stringResource(R.string.common_action_import),
+            text = stringResource(R.string.recovery_confirm_import_accounts),
             onDismiss = { showImportConfirm = false },
             onConfirm = {
                 showImportConfirm = false
@@ -496,10 +496,10 @@ fun ProfileScreen(
     // A picked file tagged with a different profile: confirm before importing it.
     DialogPresence(target = crossProfilePending) { (tag, proceed) ->
         ConfirmationDialog(
-            title = stringResource(R.string.dialog_import_backup),
-            confirmText = stringResource(R.string.import_button),
+            title = stringResource(R.string.backup_action_import),
+            confirmText = stringResource(R.string.common_action_import),
             text = context.getString(
-                R.string.rescue_cross_profile_confirm,
+                R.string.recovery_cross_profile_confirm,
                 tag,
                 resolveProfileDisplayName(
                     getActiveProfile(context),

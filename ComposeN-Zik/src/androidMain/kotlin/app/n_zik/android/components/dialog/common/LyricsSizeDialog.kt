@@ -44,7 +44,7 @@ fun LyricsSizeDialog(
             onDismiss()
         },
         footer = {
-            ButtonRow(listOf(DialogButton(stringResource(R.string.dialog_close), onClick = {
+            ButtonRow(listOf(DialogButton(stringResource(R.string.common_action_close), onClick = {
                 sizeValue(lyricsSize)
                 sizeValueL(lyricsSizeL)
                 onDismiss()

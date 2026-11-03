@@ -35,13 +35,13 @@ object HomeSongsSettingsDialog : ContentFramedDialog {
     internal fun searchOptions(): List<SettingsNestedOption> = songsDefaultOrder.map { SettingsNestedOption(it, searchLabelResources.getValue(it)) }
 
     private val searchLabelResources = mapOf(
-        "all" to R.string.all,
-        "favorites" to R.string.favorites,
-        "cached" to R.string.cached,
-        "downloaded" to R.string.downloaded,
+        "all" to R.string.common_option_all,
+        "favorites" to R.string.library_favorites_title,
+        "cached" to R.string.library_cached_title,
+        "downloaded" to R.string.library_downloaded_title,
         "top" to R.string.playlist_top,
-        "on_device" to R.string.on_device,
-        "disliked" to R.string.disliked,
+        "on_device" to R.string.library_on_device_title,
+        "disliked" to R.string.library_disliked_title,
     )
     override val dialogTitle: String @Composable get() = stringResource(R.string.home_songs_settings)
     override var isActive: Boolean by mutableStateOf(false)
@@ -135,7 +135,7 @@ object HomeSongsSettingsDialog : ContentFramedDialog {
                 }
                 edit.putString(excludeDislikedSongsKey, if (workingToggles["disliked"] == true) DislikeMode.Enabled.name else DislikeMode.Disabled.name)
                 edit.apply()
-                Toaster.s(R.string.toast_preference_saved); hideDialog()
+                Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }
         )
     }

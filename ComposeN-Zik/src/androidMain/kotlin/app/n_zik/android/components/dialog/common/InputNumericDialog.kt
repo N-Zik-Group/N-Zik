@@ -38,8 +38,8 @@ inline fun InputNumericDialog(
     val colorPalette = colorPalette()
     val txtFieldError = remember { mutableStateOf("") }
     val txtField = remember { mutableStateOf(value) }
-    val value_cannot_empty = stringResource(R.string.value_cannot_be_empty)
-    val value_must_be_greater = stringResource(R.string.value_must_be_greater_than)
+    val value_cannot_empty = stringResource(R.string.common_validation_empty_value)
+    val value_must_be_greater = stringResource(R.string.common_validation_minimum_value)
 
     DefaultDialog(
         title = title,
@@ -50,7 +50,7 @@ inline fun InputNumericDialog(
             ButtonRow(
                 buttons = listOf(
                     DialogButton(
-                        text = stringResource(R.string.dialog_apply),
+                        text = stringResource(R.string.common_action_apply),
                         onClick = {
                             when {
                                 txtField.value.isEmpty() -> txtFieldError.value = value_cannot_empty
@@ -61,7 +61,7 @@ inline fun InputNumericDialog(
                         }
                     ),
                     DialogButton(
-                        text = stringResource(R.string.cancel),
+                        text = stringResource(R.string.common_action_cancel),
                         onClick = onDismiss,
                         danger = true
                     )

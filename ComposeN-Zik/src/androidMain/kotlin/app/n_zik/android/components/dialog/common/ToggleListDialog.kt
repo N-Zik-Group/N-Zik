@@ -191,7 +191,7 @@ fun ToggleListDialog(
                 onReset?.let { reset ->
                     add(
                         DialogButton(
-                            text = stringResource(R.string.reset),
+                            text = stringResource(R.string.common_action_reset),
                             onClick = reset
                         )
                     )
@@ -199,7 +199,7 @@ fun ToggleListDialog(
                 onCancel?.let { cancel ->
                     add(
                         DialogButton(
-                            text = stringResource(if (checkedStatesOverride != null || onConfirm != null) R.string.cancel else R.string.dialog_close),
+                            text = stringResource(if (checkedStatesOverride != null || onConfirm != null) R.string.common_action_cancel else R.string.common_action_close),
                             onClick = cancel,
                             danger = true
                         )
@@ -208,7 +208,7 @@ fun ToggleListDialog(
                 onConfirm?.let { confirm ->
                     add(
                         DialogButton(
-                            text = stringResource(R.string.dialog_apply),
+                            text = stringResource(R.string.common_action_apply),
                             onClick = confirm,
                             primary = true
                         )
@@ -340,7 +340,7 @@ private fun ToggleRow(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.close),
-                    contentDescription = stringResource(R.string.delete),
+                    contentDescription = stringResource(R.string.common_action_delete),
                     tint = colorPalette().textDisabled,
                     modifier = Modifier.size(24.dp)
                 )

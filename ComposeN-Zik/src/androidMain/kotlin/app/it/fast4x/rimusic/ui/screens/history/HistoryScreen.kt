@@ -36,7 +36,7 @@ fun HistoryScreen(
                 topInsetHandledByContent = true,
                 topContentInsetProvider = topContentInset,
                 navBarContent = { item ->
-                    item(0, stringResource(R.string.history), R.drawable.history)
+                    item(0, stringResource(R.string.library_history_title), R.drawable.history)
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {

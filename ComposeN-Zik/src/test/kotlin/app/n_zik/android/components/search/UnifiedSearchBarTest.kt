@@ -102,13 +102,13 @@ class UnifiedSearchBarTest {
             UnifiedSearchBar(
                 input = input,
                 onInputChanged = { input = it },
-                placeholderRes = R.string.search,
+                placeholderRes = R.string.search_title,
                 onSearch = { submits++ },
                 onClear = { clears++; input = TextFieldValue("") },
                 onBackDismiss = { dismissals++ },
                 focusRequester = requester,
                 textFieldTestTag = "glass_search_input",
-                actionBubbles = listOf(SearchBarBubble(R.drawable.link, R.string.search) { actions++ }),
+                actionBubbles = listOf(SearchBarBubble(R.drawable.link, R.string.search_title) { actions++ }),
             )
         }
         fun settle() {
@@ -151,7 +151,7 @@ class UnifiedSearchBarTest {
             UnifiedSearchBar(
                 input = TextFieldValue("query"),
                 onInputChanged = {},
-                placeholderRes = R.string.search,
+                placeholderRes = R.string.search_title,
                 onClear = {},
                 onSearch = { submitted = true },
                 onFocused = { focused = it },
@@ -233,11 +233,11 @@ class UnifiedSearchBarTest {
             UnifiedSearchBar(
                 input = TextFieldValue(""),
                 onInputChanged = {},
-                placeholderRes = R.string.search,
+                placeholderRes = R.string.search_title,
                 actionBubbles = listOf(
                     SearchBarBubble(
                         iconRes = R.drawable.link,
-                        contentDescriptionRes = R.string.search,
+                        contentDescriptionRes = R.string.search_title,
                         onClick = {},
                     ),
                 ),
@@ -273,7 +273,7 @@ class UnifiedSearchBarTest {
             UnifiedSearchBar(
                 input = TextFieldValue(""),
                 onInputChanged = {},
-                placeholderRes = R.string.search,
+                placeholderRes = R.string.search_title,
                 onClear = { cleared = true },
                 onFocused = { focused = it },
                 focusRequester = focusRequester,

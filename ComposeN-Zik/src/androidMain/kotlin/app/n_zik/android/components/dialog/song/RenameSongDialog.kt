@@ -54,7 +54,7 @@ class RenameSongDialog private constructor(
 
     override val keyboardOption: KeyboardOptions = KeyboardOptions.Default
     override val iconId: Int = R.drawable.title_edit
-    override val messageId: Int = R.string.update_title
+    override val messageId: Int = R.string.metadata_action_change_title
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -105,7 +105,7 @@ class RenameSongDialog private constructor(
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 Text(
-                    text = stringResource(R.string.explicit),
+                    text = stringResource(R.string.common_content_explicit_label),
                     color = colorPalette().text,
                     modifier = Modifier.padding(start = 8.dp)
                 )

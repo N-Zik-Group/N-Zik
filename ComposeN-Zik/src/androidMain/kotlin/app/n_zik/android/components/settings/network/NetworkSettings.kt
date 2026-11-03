@@ -99,7 +99,7 @@ fun NetworkSettings(
             .onGloballyPositioned { containerTopY = it.positionInRoot().y }
             .settingsTopContentPadding()
     ) {
-        settingsSearchTitle(searchFocus, R.string.tab_network, R.drawable.network)
+        settingsSearchTitle(searchFocus, R.string.settings_network_title, R.drawable.network)
 
         settingsSearchDescription(searchFocus) {
             SettingsDescription(
@@ -162,8 +162,8 @@ internal fun NetworkSettingsContent(
         if (selectedCards == null) {
             SettingsCardSlot(R.string.network_status, modifier = { cardModifier(R.string.network_status) }) { NetworkStatusCard(networkQuality) }
         }
-        if (selectedCards == null || R.string.quality in selectedCards) {
-            SettingsCardSlot(R.string.quality, modifier = { cardModifier(R.string.quality) }) {
+        if (selectedCards == null || R.string.settings_network_quality_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_network_quality_title, modifier = { cardModifier(R.string.settings_network_quality_title) }) {
                 NetworkQualityCard(search.inputValue, audioDialog, imageDialog,
                     networkQuality = networkQuality,
                     includeDownloadQuality = selectedCards == null) { restartService = it }
@@ -174,18 +174,18 @@ internal fun NetworkSettingsContent(
                 NetworkDownloadQualityCard(search.inputValue, networkQuality) { restartService = it }
             }
         }
-        if (selectedCards == null || R.string.connection_settings in selectedCards) {
-            SettingsCardSlot(R.string.connection_settings, modifier = { cardModifier(R.string.connection_settings) }) { NetworkConnectionCard(search.inputValue) }
+        if (selectedCards == null || R.string.network_settings in selectedCards) {
+            SettingsCardSlot(R.string.network_settings, modifier = { cardModifier(R.string.network_settings) }) { NetworkConnectionCard(search.inputValue) }
         }
-        if (selectedCards == null || R.string.offline_mode in selectedCards) {
-            SettingsCardSlot(R.string.offline_mode, modifier = { cardModifier(R.string.offline_mode) }) { val matches = search.inputValue.isBlank() || stringResource(R.string.offline_mode).contains(search.inputValue, true) || stringResource(R.string.offline_mode_description).contains(search.inputValue, true)
+        if (selectedCards == null || R.string.settings_network_offline_mode_label in selectedCards) {
+            SettingsCardSlot(R.string.settings_network_offline_mode_label, modifier = { cardModifier(R.string.settings_network_offline_mode_label) }) { val matches = search.inputValue.isBlank() || stringResource(R.string.settings_network_offline_mode_label).contains(search.inputValue, true) || stringResource(R.string.settings_network_offline_mode_description).contains(search.inputValue, true)
                 if (matches) OfflineModeSettingsCard(Modifier.onGloballyPositioned { onCardPosition("offline", it.positionInRoot().y) }) }
         }
         if (selectedCards == null || R.string.bridge_server in selectedCards) {
             SettingsCardSlot(R.string.bridge_server, modifier = { cardModifier(R.string.bridge_server) }) { NetworkServerCard(search.inputValue, navController, Modifier.onGloballyPositioned { onCardPosition("pcserver", it.positionInRoot().y) }) }
         }
-        if (selectedCards == null || R.string.download in selectedCards) {
-            SettingsCardSlot(R.string.download, modifier = { cardModifier(R.string.download) }) { NetworkDownloadCard(search.inputValue) }
+        if (selectedCards == null || R.string.downloads_title in selectedCards) {
+            SettingsCardSlot(R.string.downloads_title, modifier = { cardModifier(R.string.downloads_title) }) { NetworkDownloadCard(search.inputValue) }
         }
         if (selectedCards == null || R.string.settings_reset in selectedCards) {
             SettingsCardSlot(R.string.settings_reset, modifier = { cardModifier(R.string.settings_reset) }) { NetworkResetCard(search.inputValue) { restartService = true } }

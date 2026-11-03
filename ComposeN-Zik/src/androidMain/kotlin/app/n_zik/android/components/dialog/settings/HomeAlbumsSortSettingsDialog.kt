@@ -43,9 +43,9 @@ object HomeAlbumsSortSettingsDialog : ContentFramedDialog {
     private val dislikedSortIds = listOf("AlbumName", "Artist", "Year", "DateAdded", "PlayCount", "Duration")
 
     private enum class AlbumTab(val textId: Int, val availableIds: List<String>) {
-        Library(R.string.library, librarySortIds),
-        Favorites(R.string.favorites, favoritesSortIds),
-        Disliked(R.string.disliked, dislikedSortIds)
+        Library(R.string.library_title, librarySortIds),
+        Favorites(R.string.library_favorites_title, favoritesSortIds),
+        Disliked(R.string.library_disliked_title, dislikedSortIds)
     }
 
     private val tabs = AlbumTab.entries
@@ -82,13 +82,13 @@ object HomeAlbumsSortSettingsDialog : ContentFramedDialog {
     }
 
     private fun getSortLabelRes(id: String): Int? = when (id) {
-        "AlbumName" -> R.string.sort_name
-        "Artist" -> R.string.sort_artist
-        "Year" -> R.string.sort_album_year
-        "DateAdded" -> R.string.sort_date_added
-        "PlayCount" -> R.string.sort_play_count
-        "Duration" -> R.string.sort_duration
-        "Custom" -> R.string.sort_custom_order
+        "AlbumName" -> R.string.library_sort_name
+        "Artist" -> R.string.library_sort_artist
+        "Year" -> R.string.library_sort_album_year
+        "DateAdded" -> R.string.library_sort_date_added
+        "PlayCount" -> R.string.library_sort_play_count
+        "Duration" -> R.string.library_sort_duration
+        "Custom" -> R.string.library_sort_custom_order
         else -> null
     }
 
@@ -184,7 +184,7 @@ object HomeAlbumsSortSettingsDialog : ContentFramedDialog {
                     val finalOrder = (workingOrders[tab] ?: emptyList()).filter { id -> (workingToggles[tab] ?: emptyMap())[id] == true }
                     edit.putString(key, serializeOrder(finalOrder))
                 }
-                edit.apply(); Toaster.s(R.string.toast_preference_saved); hideDialog()
+                edit.apply(); Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }
         )
     }

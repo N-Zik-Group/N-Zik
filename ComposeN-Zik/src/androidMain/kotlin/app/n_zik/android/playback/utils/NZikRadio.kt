@@ -72,7 +72,7 @@ class NZikRadio(
         get() = context.preferences.getBoolean(autoLoadSongsInQueueKey, true)
 
     val radioActionTextRes: Int
-        get() = if (isRadioActive) R.string.stop_radio else R.string.start_radio
+        get() = if (isRadioActive) R.string.radio_action_stop else R.string.radio_action_start
 
 
     /**
@@ -88,7 +88,7 @@ class NZikRadio(
             return
         }
         if (!isRadioActive && !isAutoFillEnabled) {
-            Toaster.e(R.string.state_discover_error)
+            Toaster.e(R.string.radio_discovery_requires_radio_or_autofill_message)
             return
         }
 
@@ -96,9 +96,9 @@ class NZikRadio(
         context.preferences.edit().putBoolean(discoverKey, newState).apply()
         
         if (newState) {
-            Toaster.i(R.string.state_discover_on)
+            Toaster.i(R.string.radio_discovery_enabled_message)
         } else {
-            Toaster.i(R.string.state_discover_off)
+            Toaster.i(R.string.radio_discovery_disabled_message)
         }
     }
 
@@ -141,9 +141,9 @@ class NZikRadio(
 
             // Toast: Radio ON
             if (isDiscoverEnabled) {
-                Toaster.i(R.string.state_radio_on_discover)
+                Toaster.i(R.string.radio_discover_started_message)
             } else {
-                Toaster.i(R.string.state_radio_on_classic)
+                Toaster.i(R.string.radio_classic_started_message)
             }
         } else {
             // Implicit start (fetching songs silently for queue/autofill)
@@ -179,7 +179,7 @@ class NZikRadio(
         radioJob = null
         
         if (showToast) {
-            Toaster.i(R.string.state_radio_off)
+            Toaster.i(R.string.radio_stopped_message)
         }
     }
 
@@ -216,7 +216,7 @@ class NZikRadio(
 
             if (isDiscoverEnabled) {
                 if (isAutoFillEnabled) {
-                    Toaster.i(R.string.state_reminder_discover)
+                    Toaster.i(R.string.radio_discovery_active_reminder)
                 } else {
                     // Auto-correction: if Discover is ON but AutoFill is OFF and Radio is OFF
                     context.preferences.edit().putBoolean(discoverKey, false).apply()
@@ -354,7 +354,7 @@ class NZikRadio(
             // a radio fetch problem). Toaster is @MainThread, so the toast hops to the UI dispatcher.
             withContext(NzikDispatchers.UI) {
                 if (isRadioFetchNetworkFailure(context)) Toaster.noInternet()
-                else Toaster.e(R.string.state_radio_fetch_error)
+                else Toaster.e(R.string.radio_fetch_empty_queue_preserved_message)
             }
         }
     }

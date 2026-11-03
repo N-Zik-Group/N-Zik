@@ -225,7 +225,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                 })
             }
         } else {
-            errorMessage = context.getString(R.string.bluetooth_permission_required)
+            errorMessage = context.getString(R.string.audio_output_bluetooth_permission_description)
             isLoading = false
         }
     }
@@ -398,7 +398,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                 refreshDevices()
                             }
                         ) {
-                            Text(text = stringResource(R.string.retry))
+                            Text(text = stringResource(R.string.common_action_retry))
                         }
                     }
                 } else {
@@ -496,7 +496,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                     )
                             }
 
-                            SectionTitle(stringResource(R.string.volume))
+                            SectionTitle(stringResource(R.string.player_statistics_volume_label))
                             VolumeRow(
                                 currentVolume = currentVolume,
                                 maxVolume = maxVolume.toFloat(),
@@ -651,7 +651,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                             }
 
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                SectionTitle(stringResource(R.string.volume))
+                                SectionTitle(stringResource(R.string.player_statistics_volume_label))
                             }
                             item {
                                 VolumeGridEntry(
@@ -767,7 +767,7 @@ private fun VolumeRow(
         }
 
         BasicText(
-            text = stringResource(R.string.volume),
+            text = stringResource(R.string.player_statistics_volume_label),
             style = typography().s.copy(
                 fontWeight = FontWeight.SemiBold,
                 color = colorPalette().text
@@ -888,7 +888,7 @@ internal fun loadDevices(
 
                     AudioDeviceInfo.TYPE_WIRED_HEADPHONES, AudioDeviceInfo.TYPE_WIRED_HEADSET -> {
                         AudioDevice(
-                            name = context.getString(R.string.wired_headphones),
+                            name = context.getString(R.string.audio_output_wired_headphones_label),
                             type = AudioDeviceType.WIRED_HEADPHONES,
                             isConnected = true,
                             isActive = false,
@@ -918,7 +918,7 @@ internal fun loadDevices(
                     }
                     AudioDeviceInfo.TYPE_BUILTIN_SPEAKER, AudioDeviceInfo.TYPE_BUILTIN_EARPIECE -> {
                         AudioDevice(
-                            name = context.getString(R.string.phone_speaker),
+                            name = context.getString(R.string.audio_output_phone_speaker_label),
                             type = AudioDeviceType.PHONE_SPEAKER,
                             isConnected = true,
                             isActive = false,
@@ -936,8 +936,8 @@ internal fun loadDevices(
                 val isActive = device.deviceId == activeDevice?.id
                 val isCar = isActive && isCarProjectionActive
                 val displayName = when {
-                    isCar -> context.getString(R.string.android_auto_1)
-                    device.type == AudioDeviceType.PHONE_SPEAKER -> context.getString(R.string.this_phone)
+                    isCar -> context.getString(R.string.automotive_title)
+                    device.type == AudioDeviceType.PHONE_SPEAKER -> context.getString(R.string.audio_output_this_phone_label)
                     else -> device.name
                 }
 
@@ -1057,7 +1057,7 @@ private fun VolumeGridEntry(
     }
 
     GridMenu.Entry(
-        text = stringResource(R.string.volume),
+        text = stringResource(R.string.player_statistics_volume_label),
         enabled = enabled,
         icon = {
             Box(
@@ -1102,13 +1102,13 @@ private fun VolumeDialog(
 
     DialogFrame(
         onDismiss = onDismiss,
-        title = stringResource(R.string.volume),
+        title = stringResource(R.string.player_statistics_volume_label),
         horizontalAlignment = Alignment.Start,
         footer = {
             ButtonRow(
                 buttons = listOf(
                     DialogButton(
-                        text = stringResource(R.string.dialog_close),
+                        text = stringResource(R.string.common_action_close),
                         icon = R.drawable.close,
                         textColor = colorPalette().textSecondary,
                         onClick = onDismiss

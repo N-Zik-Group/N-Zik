@@ -515,7 +515,7 @@ fun HomeQuickPicksContent(
                         "playlists_might_like" -> {
                             item(key = "playlists_might_like") {
                                 AnimatedVisibility(visible = showPlaylistMightLike && (showLoader || hasYtmSection("Playlist you might like")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("Playlist you might like", ignoreCase = true) }, stringResource(R.string.playlists_you_might_like), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("Playlist you might like", ignoreCase = true) }, stringResource(R.string.recommendations_playlists_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
@@ -548,126 +548,126 @@ fun HomeQuickPicksContent(
                         "fresh_finds_old_favorites" -> {
                             item(key = "fresh_finds_old_favorites") {
                                 AnimatedVisibility(visible = showFreshFindsOldFavorites && (showLoader || hasYtmSection("Fresh finds") || hasYtmSection("Old favorites")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("Fresh finds", ignoreCase = true) || it.contains("Old favorites", ignoreCase = true) }, stringResource(R.string.fresh_finds_old_favorites), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("Fresh finds", ignoreCase = true) || it.contains("Old favorites", ignoreCase = true) }, stringResource(R.string.recommendations_fresh_finds_old_favorites_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "mixed_for_you" -> {
                             item(key = "mixed_for_you") {
                                 AnimatedVisibility(visible = showMixedForYou && (showLoader || hasYtmSection("Mixed for you")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("Mixed for you", ignoreCase = true) }, stringResource(R.string.mixed_for_you), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("Mixed for you", ignoreCase = true) }, stringResource(R.string.recommendations_mixed_for_you_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "forgotten_favorites" -> {
                             item(key = "forgotten_favorites") {
                                 AnimatedVisibility(visible = showForgottenFavorites && (showLoader || hasYtmSection("Forgotten favorites")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("Forgotten favorites", ignoreCase = true) }, stringResource(R.string.forgotten_favorites), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("Forgotten favorites", ignoreCase = true) }, stringResource(R.string.recommendations_forgotten_favorites_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "your_daily_discover" -> {
                             item(key = "your_daily_discover") {
                                 AnimatedVisibility(visible = showYourDailyDiscover && (showLoader || hasYtmSection("Your daily discover")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("Your daily discover", ignoreCase = true) }, stringResource(R.string.your_daily_discover), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("Your daily discover", ignoreCase = true) }, stringResource(R.string.recommendations_daily_discover_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "fresh_new_music" -> {
                             item(key = "fresh_new_music") {
                                 AnimatedVisibility(visible = showFreshNewMusic && (showLoader || hasYtmSection("Fresh new music")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("Fresh new music", ignoreCase = true) }, stringResource(R.string.fresh_new_music), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("Fresh new music", ignoreCase = true) }, stringResource(R.string.recommendations_fresh_new_music_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "new_releases" -> {
                             item(key = "new_releases") {
                                 AnimatedVisibility(visible = showNewReleases && (showLoader || hasYtmSection("New release")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("New release", ignoreCase = true) && !it.contains("Fresh new music", ignoreCase = true) }, stringResource(R.string.new_releases), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("New release", ignoreCase = true) && !it.contains("Fresh new music", ignoreCase = true) }, stringResource(R.string.recommendations_new_releases_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "albums_for_you" -> {
                             item(key = "albums_for_you") {
                                 AnimatedVisibility(visible = showAlbumsForYou && (showLoader || hasYtmSection("Albums for you")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("Albums for you", ignoreCase = true) }, stringResource(R.string.albums_for_you), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("Albums for you", ignoreCase = true) }, stringResource(R.string.recommendations_albums_for_you_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "todays_biggest_hits" -> {
                             item(key = "todays_biggest_hits") {
                                 AnimatedVisibility(visible = showTodaysBiggestHits && (showLoader || hasYtmSection("Today's biggest hits")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("Today's biggest hits", ignoreCase = true) }, stringResource(R.string.todays_biggest_hits), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("Today's biggest hits", ignoreCase = true) }, stringResource(R.string.recommendations_todays_biggest_hits_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "all_hits" -> {
                             item(key = "all_hits") {
                                 AnimatedVisibility(visible = showAllHits && (showLoader || hasYtmSection("All hits")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("All hits", ignoreCase = true) }, stringResource(R.string.all_hits), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("All hits", ignoreCase = true) }, stringResource(R.string.recommendations_all_hits_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "featured_playlists" -> {
                             item(key = "featured_playlists") {
                                 AnimatedVisibility(visible = showFeaturedPlaylists && (showLoader || hasYtmSection("Featured playlists")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("Featured playlists", ignoreCase = true) }, stringResource(R.string.featured_playlists_for_you), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("Featured playlists", ignoreCase = true) }, stringResource(R.string.recommendations_featured_playlists_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "trending_community_playlists" -> {
                             item(key = "trending_community_playlists") {
                                 AnimatedVisibility(visible = showTrendingCommunityPlaylists && (showLoader || hasYtmSection("Trending community playlists")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("Trending community playlists", ignoreCase = true) }, stringResource(R.string.trending_community_playlists), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("Trending community playlists", ignoreCase = true) }, stringResource(R.string.recommendations_trending_community_playlists_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "from_the_community" -> {
                             item(key = "from_the_community") {
                                 AnimatedVisibility(visible = showFromTheCommunity && (showLoader || hasYtmSection("From the community")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("From the community", ignoreCase = true) }, stringResource(R.string.from_the_community), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("From the community", ignoreCase = true) }, stringResource(R.string.recommendations_community_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "trending_songs_for_you" -> {
                             item(key = "trending_songs_for_you") {
                                 AnimatedVisibility(visible = showTrendingSongsForYou && (showLoader || hasYtmSection("Trending songs for you")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("Trending songs for you", ignoreCase = true) }, stringResource(R.string.trending_songs_for_you), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("Trending songs for you", ignoreCase = true) }, stringResource(R.string.recommendations_trending_songs_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "top_music_videos" -> {
                             item(key = "top_music_videos") {
                                 AnimatedVisibility(visible = showTopMusicVideos && (showLoader || hasYtmSection("Top music videos")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("Top music videos", ignoreCase = true) }, stringResource(R.string.top_music_videos), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("Top music videos", ignoreCase = true) }, stringResource(R.string.recommendations_top_music_videos_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "cover_and_remixes" -> {
                             item(key = "cover_and_remixes") {
                                 AnimatedVisibility(visible = showCoverAndRemixes && (showLoader || hasYtmSection("Cover") || hasYtmSection("remix")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("Cover", ignoreCase = true) || it.contains("remix", ignoreCase = true) }, stringResource(R.string.cover_and_remixes), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("Cover", ignoreCase = true) || it.contains("remix", ignoreCase = true) }, stringResource(R.string.recommendations_covers_and_remixes_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "trending_in_shorts" -> {
                             item(key = "trending_in_shorts") {
                                 AnimatedVisibility(visible = showTrendingInShorts && (showLoader || hasYtmSection("Trending in Shorts")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("Trending in Shorts", ignoreCase = true) }, stringResource(R.string.trending_in_shorts), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("Trending in Shorts", ignoreCase = true) }, stringResource(R.string.recommendations_trending_shorts_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "music_videos_for_you" -> {
                             item(key = "music_videos_for_you") {
                                 AnimatedVisibility(visible = showMusicVideosForYou && (showLoader || hasYtmSection("Music videos for you")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("Music videos for you", ignoreCase = true) }, stringResource(R.string.music_videos_for_you), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("Music videos for you", ignoreCase = true) }, stringResource(R.string.recommendations_music_videos_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
                         "live_performances" -> {
                             item(key = "live_performances") {
                                 AnimatedVisibility(visible = showLivePerformances && (showLoader || hasYtmSection("Live performances")), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                                    YtmSectionByTitle(ytmSections, { it.contains("Live performances", ignoreCase = true) }, stringResource(R.string.live_performances), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
+                                    YtmSectionByTitle(ytmSections, { it.contains("Live performances", ignoreCase = true) }, stringResource(R.string.recommendations_live_performances_title), itemInHorizontalGridWidth, albumThumbnailSizePx, albumThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, playlistThumbnailSizePx, playlistThumbnailSizeDp, disableScrollingText, endPaddingValues, navController, onAlbumClick, onArtistClick, onPlaylistClick, displayedSectionTitles, isLoading = showLoader, showTitle = true)
                                 }
                             }
                         }
@@ -708,18 +708,18 @@ fun HomeQuickPicksContent(
                 } else if (state.relatedPageResult.value?.exceptionOrNull() != null) {
                     item(key = "error_related") {
                         Spacer(modifier = Modifier.height(50.dp))
-                        BasicText(text = stringResource(R.string.page_not_been_loaded), style = typography().s.secondary.center, modifier = Modifier.fillMaxWidth().padding(all = 16.dp))
+                        BasicText(text = stringResource(R.string.recommendations_load_failed_message), style = typography().s.secondary.center, modifier = Modifier.fillMaxWidth().padding(all = 16.dp))
                     }
                 } else {
                     if (!currentYouTubeLoggedIn) {
                         item(key = "login_prompt") {
                             Spacer(modifier = Modifier.height(50.dp))
-                            BasicText(text = stringResource(R.string.log_in_to_ytm), style = typography().s.secondary.center, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).clickable(onClick = onSettingsClick))
+                            BasicText(text = stringResource(R.string.home_youtube_login_description), style = typography().s.secondary.center, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).clickable(onClick = onSettingsClick))
                         }
                     } else if (MainApplication.cookieStatus in listOf(MainApplication.CookieStatus.INVALID, MainApplication.CookieStatus.EXPIRED)) {
                         item(key = "cookie_error") {
                             Spacer(modifier = Modifier.height(50.dp))
-                            BasicText(text = stringResource(R.string.error_cookie_invalid), style = typography().s.secondary.center, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).clickable(onClick = onSettingsClick))
+                            BasicText(text = stringResource(R.string.account_youtube_cookie_invalid), style = typography().s.secondary.center, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).clickable(onClick = onSettingsClick))
                         }
                     }
                 }

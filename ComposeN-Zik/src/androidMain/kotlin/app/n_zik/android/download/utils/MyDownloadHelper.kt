@@ -575,9 +575,9 @@ object MyDownloadHelper {
     internal suspend fun addDownloadInternal( context: Context, mediaItem: MediaItem ) {
         downloadPreparationSemaphore.withPermit {
             val artistTextRaw = mediaItem.artistTextOrDb()
-            val artistText = if (artistTextRaw == "null" || artistTextRaw.isBlank()) context.getString(R.string.unknown_artist) else artistTextRaw
+            val artistText = if (artistTextRaw == "null" || artistTextRaw.isBlank()) context.getString(R.string.metadata_unknown_artist) else artistTextRaw
             val titleTextRaw = mediaItem.mediaMetadata.title?.toString() ?: ""
-            val titleText = if (titleTextRaw == "null" || titleTextRaw.isBlank()) context.getString(R.string.unknown_title) else titleTextRaw
+            val titleText = if (titleTextRaw == "null" || titleTextRaw.isBlank()) context.getString(R.string.metadata_unknown_title) else titleTextRaw
             val notificationTitle = "$artistText - $titleText"
 
             val downloadRequest = DownloadRequest
@@ -598,7 +598,7 @@ object MyDownloadHelper {
                 Timber.tag("MyDownloadHelper").e("scheduleDownload exception ${it.stackTraceToString()}")
                 // A2 (offline audit, 2026-10-22): download-domain string — error_playback_failed was
                 // shown without format args, so the user saw the literal "Playback failed: %1$s"
-                Toaster.e(R.string.download_failed)
+                Toaster.e(R.string.downloads_failed)
             }
         }
         // Lyrics and image preload OUTSIDE semaphore - don't block download preparation

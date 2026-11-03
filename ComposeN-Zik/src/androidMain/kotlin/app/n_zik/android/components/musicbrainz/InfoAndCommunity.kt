@@ -110,22 +110,22 @@ fun InfoAndCommunity(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(R.string.title_info_and_community),
+                    text = stringResource(R.string.metadata_info_and_community_title),
                     style = typography().m.semiBold
                 )
                 Text(
                     text = when {
                         pausedForSeconds > 0 -> stringResource(
-                            R.string.mb_last_sync_paused,
+                            R.string.metadata_musicbrainz_last_sync_paused,
                             (pausedForSeconds / 60).coerceAtLeast(1)
                         )
-                        lastSyncAt == null -> stringResource(R.string.mb_last_sync_never)
+                        lastSyncAt == null -> stringResource(R.string.metadata_musicbrainz_last_sync_never)
                         lastSyncFailed -> stringResource(
-                            R.string.mb_last_sync_failed,
+                            R.string.metadata_musicbrainz_last_sync_failed,
                             DateUtils.getRelativeTimeSpanString(lastSyncAt).toString()
                         )
                         else -> stringResource(
-                            R.string.mb_last_sync,
+                            R.string.metadata_musicbrainz_last_sync,
                             DateUtils.getRelativeTimeSpanString(lastSyncAt).toString()
                         )
                     },
@@ -135,8 +135,8 @@ fun InfoAndCommunity(
                         typography().xxs.secondary
                 )
             }
-            val resyncDescription = stringResource(R.string.mb_resync)
-            val expandDescription = stringResource(R.string.title_info_and_community)
+            val resyncDescription = stringResource(R.string.metadata_musicbrainz_resync)
+            val expandDescription = stringResource(R.string.metadata_info_and_community_title)
             GlassSectionActions(
                 actions = buildList {
                     add(GlassSectionAction(R.drawable.refresh, resyncDescription,
@@ -203,7 +203,7 @@ fun InfoAndCommunity(
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.title_keywords),
+                        text = stringResource(R.string.metadata_keywords_title),
                         color = colorPalette().text,
                         style = typography().xs.semiBold
                     )
@@ -218,7 +218,7 @@ fun InfoAndCommunity(
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.title_external_links),
+                        text = stringResource(R.string.metadata_external_links_title),
                         color = colorPalette().text,
                         style = typography().xs.semiBold
                     )
@@ -232,7 +232,7 @@ fun InfoAndCommunity(
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.title_bio),
+                        text = stringResource(R.string.metadata_biography_title),
                         color = colorPalette().text,
                         style = typography().xs.semiBold
                     )
@@ -280,13 +280,13 @@ fun InfoAndCommunity(
             onClick = if (materialActions) null else onInsightsClick,
         ) {
             Text(
-                text = stringResource(R.string.mb_insights),
+                text = stringResource(R.string.metadata_musicbrainz_insights),
                 style = typography().m.semiBold,
                 modifier = Modifier.weight(1f)
             )
             GlassSectionActions(
                 actions = listOf(GlassSectionAction(
-                    R.drawable.chevron_forward, stringResource(R.string.mb_insights), onClick = onInsightsClick,
+                    R.drawable.chevron_forward, stringResource(R.string.metadata_musicbrainz_insights), onClick = onInsightsClick,
                 )),
                 settings = glass,
                 nativeContent = {

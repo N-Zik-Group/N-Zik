@@ -105,7 +105,7 @@ internal fun ClassicBottomDockNavigation(
                 Box(Modifier.fillMaxSize().clip(actionShape)
                     .then(if (folded) Modifier.clickable(role = Role.Button, onClick = dock.state::expand) else Modifier),
                     contentAlignment = Alignment.Center) {
-                    Icon(painterResource(R.drawable.floating_dock_home), stringResource(R.string.home),
+                    Icon(painterResource(R.drawable.floating_dock_home), stringResource(R.string.home_title),
                         Modifier.size(26.dp), tint = colorPalette().text)
                 }
             }

@@ -291,9 +291,9 @@ fun HomeAlbums(
     val showDislikedAlbum by rememberPreference(excludeDislikedAlbumsKey, DislikeMode.Enabled)
     val homeAlbumsOrderPref by rememberPreference(homeAlbumsOrderKey, "")
 
-    val favoritesLabel = stringResource(R.string.favorites)
-    val allLabel = stringResource(R.string.all)
-    val dislikedLabel = stringResource(R.string.disliked)
+    val favoritesLabel = stringResource(R.string.library_favorites_title)
+    val allLabel = stringResource(R.string.common_option_all)
+    val dislikedLabel = stringResource(R.string.library_disliked_title)
     val albumsDefaultOrder = listOf("all", "favorites", "disliked")
     val labelMap = mapOf("favorites" to favoritesLabel, "all" to allLabel, "disliked" to dislikedLabel)
     val typeMap = mapOf("favorites" to AlbumsType.Favorites, "all" to AlbumsType.Library, "disliked" to AlbumsType.Disliked)
@@ -384,7 +384,7 @@ fun HomeAlbums(
         }
     }
 
-    val sync = autoSyncToolbutton(R.string.autosync_albums, autosyncAlbumsKey) { scope.launch { importYTMLikedAlbums(force = true) } }
+    val sync = autoSyncToolbutton(R.string.sync_albums, autosyncAlbumsKey) { scope.launch { importYTMLikedAlbums(force = true) } }
 
     // Full offline mode (spec-full-offline-mode): the network sync action is removed.
     val offlineMode by OfflineMode.rememberEnabled()
@@ -397,7 +397,7 @@ fun HomeAlbums(
 
     fun refresh(itemsToRefresh: List<Album>? = null) {
         if (refreshing || HomeSyncState.isSyncingAlbums) {
-            Toaster.e(appContext().getString(R.string.already_syncing))
+            Toaster.e(appContext().getString(R.string.library_sync_already_running_message))
             return
         }
         val targetItems = itemsToRefresh ?: itemsOnDisplay
@@ -514,7 +514,7 @@ fun HomeAlbums(
                     Column {
                         Column {
                     CollapsibleTitleRow( titleOffsetState, titleHeightState ) {
-                        TabHeader(R.string.albums) {
+                        TabHeader(R.string.library_albums_title) {
                             HeaderInfo(items.size.toString(), R.drawable.album)
                         }
                     }
@@ -556,9 +556,9 @@ fun HomeAlbums(
                                 label = {
                                     Text(
                                         text = when (filterBy) {
-                                            FilterBy.All -> stringResource(R.string.all)
-                                            FilterBy.Local -> stringResource(R.string.on_device)
-                                            FilterBy.YoutubeLibrary -> stringResource(R.string.ytm_library)
+                                            FilterBy.All -> stringResource(R.string.common_option_all)
+                                            FilterBy.Local -> stringResource(R.string.library_on_device_title)
+                                            FilterBy.YoutubeLibrary -> stringResource(R.string.library_youtube_music_title)
                                         }
                                     )
                                 },
@@ -573,7 +573,7 @@ fun HomeAlbums(
                                 onClick = {
                                     menuState.display {
                                         FilterMenu(
-                                            title = stringResource(R.string.filter_by),
+                                            title = stringResource(R.string.library_filter_by_title),
                                             onDismiss = menuState::hide,
                                             onAll = { filterBy = FilterBy.All },
                                             onYoutubeLibrary = { filterBy = FilterBy.YoutubeLibrary },
@@ -588,19 +588,19 @@ fun HomeAlbums(
                         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 BasicText(
-                                    text = stringResource(R.string.syncing_item, HomeSyncState.albumSyncCurrentName),
+                                    text = stringResource(R.string.library_sync_current_item_format, HomeSyncState.albumSyncCurrentName),
                                     style = typography.xxs.semiBold.copy(color = colorPalette.textSecondary),
                                     maxLines = 1,
                                     modifier = Modifier.weight(1f).padding(end = 8.dp).basicMarquee(iterations = Int.MAX_VALUE)
                                 )
                                 Row {
                                     BasicText(
-                                        text = stringResource(R.string.syncing_progress, HomeSyncState.albumSyncCurrentIndex, HomeSyncState.albumSyncTotal),
+                                        text = stringResource(R.string.library_sync_progress_format, HomeSyncState.albumSyncCurrentIndex, HomeSyncState.albumSyncTotal),
                                         style = typography.xxs.semiBold.copy(color = colorPalette.textSecondary)
                                     )
                                     if (HomeSyncState.albumSyncFailed > 0) {
                                         BasicText(
-                                            text = " " + stringResource(R.string.syncing_failed, HomeSyncState.albumSyncFailed),
+                                            text = " " + stringResource(R.string.library_sync_failed_count_suffix, HomeSyncState.albumSyncFailed),
                                             style = typography.xxs.semiBold.copy(color = colorPalette.red)
                                         )
                                     }
@@ -788,7 +788,7 @@ fun HomeAlbums(
                         modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding(topInsetProvider = scrollContentInsetProvider, base = PaddingValues(top = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() }, bottom = Dimensions.bottomSpacer))),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.no_items))
+                        if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.common_empty_items))
                     }
                 }
                     }

@@ -24,7 +24,7 @@ fun MediaItem.artistTextWithFallback(): String {
     }.collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
     val dbText = dbSong?.artistsText
     if (!dbText.isNullOrBlank() && dbText != "null") return cleanPrefix(dbText)
-    return stringResource(R.string.unknown_artist)
+    return stringResource(R.string.metadata_unknown_artist)
 }
 
 @Composable
@@ -36,7 +36,7 @@ fun MediaItem.titleWithFallback(): String {
     }.collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
     val dbTitle = dbSong?.title
     if (!dbTitle.isNullOrBlank() && dbTitle != "null") return dbTitle
-    return stringResource(R.string.unknown_title)
+    return stringResource(R.string.metadata_unknown_title)
 }
 
 @Composable

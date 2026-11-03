@@ -28,12 +28,12 @@ import kotlin.math.roundToInt
 @Composable
 internal fun GlassInteractionSettingsCard(config: GlassSettings, store: GlassStore, target: String = "") {
     SettingsSectionCard(
-        title = stringResource(R.string.glass_group_interactions),
+        title = stringResource(R.string.glass_effect_group_interactions),
         icon = R.drawable.sparkles,
         content = {
             OtherSwitchSettingEntry(
-                title = stringResource(R.string.glass_ripple_enabled),
-                text = stringResource(R.string.glass_ripple_description),
+                title = stringResource(R.string.glass_effect_ripple_enabled),
+                text = stringResource(R.string.glass_effect_ripple_description),
                 icon = R.drawable.sparkles,
                 isChecked = config.rippleEnabled,
                 onCheckedChange = { store.setBoolean(glassRippleEnabledKey, it) },
@@ -41,22 +41,22 @@ internal fun GlassInteractionSettingsCard(config: GlassSettings, store: GlassSto
             )
             AnimatedVisibility(config.rippleEnabled || target in setOf("glass.ripple.intensity", "glass.ripple.size"), enter = settingsEntryEnter, exit = settingsEntryExit) {
                 Column {
-                    InteractionSlider(R.string.glass_ripple_intensity, R.string.glass_ripple_intensity_description,
+                    InteractionSlider(R.string.glass_effect_ripple_intensity, R.string.glass_effect_ripple_intensity_description,
                         config.rippleIntensity, 0f..1f, "ripple.intensity", R.drawable.eye) { store.setFloat(glassRippleIntensityKey, it) }
-                    InteractionSlider(R.string.glass_ripple_size, R.string.glass_ripple_size_description,
+                    InteractionSlider(R.string.glass_effect_ripple_size, R.string.glass_effect_ripple_size_description,
                         config.rippleSize, .5f..2f, "ripple.size", R.drawable.resize) { store.setFloat(glassRippleSizeKey, it) }
                 }
             }
             OtherSwitchSettingEntry(
-                title = stringResource(R.string.glass_jelly_enabled),
-                text = stringResource(R.string.glass_jelly_description),
+                title = stringResource(R.string.glass_effect_jelly_enabled),
+                text = stringResource(R.string.glass_effect_jelly_description),
                 icon = R.drawable.shake_gesture,
                 isChecked = config.jellyEnabled,
                 onCheckedChange = { store.setBoolean(glassJellyEnabledKey, it) },
                 modifier = Modifier.testTag("settings.glass.jelly.enabled").settingsSearchTarget("glass.jelly.enabled"),
             )
             AnimatedVisibility(config.jellyEnabled || target == "glass.jelly.intensity", enter = settingsEntryEnter, exit = settingsEntryExit) {
-                InteractionSlider(R.string.glass_jelly_intensity, R.string.glass_jelly_intensity_description,
+                InteractionSlider(R.string.glass_effect_jelly_intensity, R.string.glass_effect_jelly_intensity_description,
                     config.jellyIntensity, 0f..1f, "jelly.intensity", R.drawable.slow_motion) { store.setFloat(glassJellyIntensityKey, it) }
             }
         },
@@ -77,10 +77,10 @@ private fun InteractionSlider(@StringRes title: Int, @StringRes description: Int
 }
 
 internal fun glassInteractionKeywordResources(): List<Int> = listOf(
-    R.string.glass_group_interactions,
-    R.string.glass_ripple_enabled, R.string.glass_ripple_description,
-    R.string.glass_ripple_intensity, R.string.glass_ripple_intensity_description,
-    R.string.glass_ripple_size, R.string.glass_ripple_size_description,
-    R.string.glass_jelly_enabled, R.string.glass_jelly_description,
-    R.string.glass_jelly_intensity, R.string.glass_jelly_intensity_description,
+    R.string.glass_effect_group_interactions,
+    R.string.glass_effect_ripple_enabled, R.string.glass_effect_ripple_description,
+    R.string.glass_effect_ripple_intensity, R.string.glass_effect_ripple_intensity_description,
+    R.string.glass_effect_ripple_size, R.string.glass_effect_ripple_size_description,
+    R.string.glass_effect_jelly_enabled, R.string.glass_effect_jelly_description,
+    R.string.glass_effect_jelly_intensity, R.string.glass_effect_jelly_intensity_description,
 )

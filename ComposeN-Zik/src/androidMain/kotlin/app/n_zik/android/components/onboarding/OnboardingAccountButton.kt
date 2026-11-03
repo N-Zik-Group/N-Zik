@@ -11,4 +11,4 @@ import app.n_zik.android.R
  * Pure on purpose (unit-tested in [app.n_zik.android.components.onboarding]).
  */
 fun onboardingAccountButtonResId(isConnected: Boolean): Int =
-    if (isConnected) R.string.account_logoff else R.string.account_login
+    if (isConnected) R.string.account_action_logout else R.string.account_action_login

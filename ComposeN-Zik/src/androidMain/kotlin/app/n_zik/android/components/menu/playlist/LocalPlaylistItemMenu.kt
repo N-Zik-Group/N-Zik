@@ -148,12 +148,12 @@ class LocalPlaylistItemMenu private constructor(
     @Composable
     override fun ListMenu() = ListMenu.Menu(title = null, showDragHandle = false) {
         // Section: Playback
-        SectionTitle(stringResource(R.string.playback))
+        SectionTitle(stringResource(R.string.common_playback_section_title))
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Management
-        SectionTitle(stringResource(R.string.management))
+        SectionTitle(stringResource(R.string.library_management_section_title))
         val mgmtEnd = if (hasYouTubeLink) buttons.size - 1 else buttons.size
         for (i in 2 until mgmtEnd) {
             // idx 3 = download_all (network)
@@ -163,7 +163,7 @@ class LocalPlaylistItemMenu private constructor(
 
         // Section: Navigation
         if (hasYouTubeLink) {
-            SectionTitle(stringResource(R.string.navigation))
+            SectionTitle(stringResource(R.string.common_navigation_section_title))
             buttons.lastOrNull()?.let { if (it is MenuIcon) it.ListMenuItem() }
         }
     }
@@ -172,14 +172,14 @@ class LocalPlaylistItemMenu private constructor(
     override fun GridMenu() = GridMenu.Menu(title = null, showDragHandle = false) {
         // Section: Playback
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.playback))
+            SectionTitle(stringResource(R.string.common_playback_section_title))
         }
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
         // Section: Management
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.management))
+            SectionTitle(stringResource(R.string.library_management_section_title))
         }
         val mgmtEnd = if (hasYouTubeLink) buttons.size - 1 else buttons.size
         for (i in 2 until mgmtEnd) {
@@ -191,7 +191,7 @@ class LocalPlaylistItemMenu private constructor(
         // Section: Navigation
         if (hasYouTubeLink) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.navigation))
+                SectionTitle(stringResource(R.string.common_navigation_section_title))
             }
             buttons.lastOrNull()?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         }
@@ -313,7 +313,7 @@ class LocalPlaylistItemMenu private constructor(
                         modifier = Modifier.conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                     )
                     BasicText(
-                        text = "${playlistPreview.songCount} ${stringResource(R.string.songs)}",
+                        text = "${playlistPreview.songCount} ${stringResource(R.string.library_songs_title)}",
                         style = typography().xs.semiBold.secondary.copy(color = colorPalette().textSecondary),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -387,11 +387,11 @@ class LocalPlaylistItemMenu private constructor(
             override fun onShortClick() {
                 val currentSongs = songs
                 if (currentSongs == null) {
-                    Toaster.w(R.string.opening_url)
+                    Toaster.w(R.string.common_external_link_loading_suffix)
                 } else if (currentSongs.isNotEmpty()) {
                     downloadAllDialog.onShortClick()
                 } else {
-                    Toaster.e(R.string.no_song_found)
+                    Toaster.e(R.string.player_no_song_found)
                 }
             }
             override fun onLongClick() {}
@@ -404,11 +404,11 @@ class LocalPlaylistItemMenu private constructor(
             override fun onShortClick() {
                 val currentSongs = songs
                 if (currentSongs == null) {
-                    Toaster.w(R.string.opening_url)
+                    Toaster.w(R.string.common_external_link_loading_suffix)
                 } else if (currentSongs.isNotEmpty()) {
                     deleteAllDialog.onShortClick()
                 } else {
-                    Toaster.e(R.string.no_song_found)
+                    Toaster.e(R.string.player_no_song_found)
                 }
             }
             override fun onLongClick() {}
@@ -419,7 +419,7 @@ class LocalPlaylistItemMenu private constructor(
 
         val rename = object : MenuIcon, Descriptive, Clickable {
             override val iconId: Int = R.drawable.title_edit
-            override val messageId: Int = R.string.rename_playlist
+            override val messageId: Int = R.string.playlist_rename_dialog_title
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() { renamePlaylist.onShortClick() }
             override fun onLongClick() {}
@@ -433,7 +433,7 @@ class LocalPlaylistItemMenu private constructor(
         val playNext = PlayNext {
             val currentSongs = songs
             if (currentSongs == null) {
-                Toaster.w(R.string.opening_url)
+                Toaster.w(R.string.common_external_link_loading_suffix)
             } else if (currentSongs.isNotEmpty()) {
                 // Launch on a scope independent of the popup menu's lifecycle: MenuComponent.kt hides the menu
                 // (cancelling its rememberCoroutineScope()) right after onShortClick() returns, so a scope owned
@@ -445,14 +445,14 @@ class LocalPlaylistItemMenu private constructor(
                 }
                 menuState.hide()
             } else {
-                Toaster.e(R.string.no_song_found)
+                Toaster.e(R.string.player_no_song_found)
             }
         }
 
         val enqueue = Enqueue {
             val currentSongs = songs
             if (currentSongs == null) {
-                Toaster.w(R.string.opening_url)
+                Toaster.w(R.string.common_external_link_loading_suffix)
             } else if (currentSongs.isNotEmpty()) {
                 NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                     val mediaItems = withContext(NzikDispatchers.DATA) { currentSongs.map { it.asMediaItem } }
@@ -460,7 +460,7 @@ class LocalPlaylistItemMenu private constructor(
                 }
                 menuState.hide()
             } else {
-                Toaster.e(R.string.no_song_found)
+                Toaster.e(R.string.player_no_song_found)
             }
         }
 
@@ -481,13 +481,13 @@ class LocalPlaylistItemMenu private constructor(
 
         val bookmark = object : MenuIcon, Descriptive, Clickable {
             override val iconId: Int = if (isBookmarked) R.drawable.bookmark else R.drawable.bookmark_outline
-            override val messageId: Int = R.string.bookmark
+            override val messageId: Int = R.string.library_action_bookmark
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() {
                 if (!canBookmarkPlaylist(playlistPreview.playlist)) return
                 if (toggleSavedPodcast()) return
                 if (isSpecialPlaylist) {
-                    Toaster.e(R.string.cannot_bookmark_special_playlist)
+                    Toaster.e(R.string.playlist_bookmark_unsupported_message)
                     return
                 }
                 val wasBookmarked = isBookmarked
@@ -512,7 +512,7 @@ class LocalPlaylistItemMenu private constructor(
                     withContext(NzikDispatchers.UI) {
                         isBookmarked = !wasBookmarked
                     }
-                    Toaster.s( if (!wasBookmarked) R.string.added_to_favorites else R.string.removed_from_favorites )
+                    Toaster.s( if (!wasBookmarked) R.string.library_favorites_added else R.string.library_favorites_removed )
                 }
             }
             override fun onLongClick() {}
@@ -542,7 +542,7 @@ class LocalPlaylistItemMenu private constructor(
                 
                 list.add(object : MenuIcon, Descriptive, Clickable {
                     override val iconId: Int = R.drawable.trash
-                    override val messageId: Int = R.string.delete
+                    override val messageId: Int = R.string.common_action_delete
                     @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
                     override fun onShortClick() {
                         menuState.hide()
@@ -585,7 +585,7 @@ class LocalPlaylistItemMenu private constructor(
             if (canRefreshPlaylist(playlistPreview.playlist) && !offlineMode) {
                 list.add(object : MenuIcon, Descriptive, Clickable {
                     override val iconId: Int = R.drawable.sync
-                    override val messageId: Int = R.string.sync
+                    override val messageId: Int = R.string.sync_action_sync
                     @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
                     override fun onShortClick() {
                         launchPlaylistSourceRefresh(playlistPreview.playlist, NzikDispatchers.fireAndForget(NzikDispatchers.UI))
@@ -600,7 +600,7 @@ class LocalPlaylistItemMenu private constructor(
             if (hasYouTubeLink) {
                 list.add(object : MenuIcon, Descriptive, Clickable {
                     override val iconId: Int = R.drawable.play
-                    override val messageId: Int = R.string.listen_on_youtube
+                    override val messageId: Int = R.string.player_action_listen_on_youtube
                     @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
                     override fun onShortClick() {
                         menuState.hide()
@@ -646,7 +646,7 @@ class LocalPlaylistItemMenu private constructor(
                     withContext(NzikDispatchers.UI) {
                         isBookmarked = !wasBookmarked
                     }
-                    Toaster.s( if (!wasBookmarked) R.string.added_to_favorites else R.string.removed_from_favorites )
+                    Toaster.s( if (!wasBookmarked) R.string.library_favorites_added else R.string.library_favorites_removed )
                 }
             })
 

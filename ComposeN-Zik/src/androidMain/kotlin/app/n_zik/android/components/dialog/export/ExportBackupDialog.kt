@@ -45,7 +45,7 @@ object ExportBackupDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.export_backup)
+        get() = stringResource(R.string.backup_action_export)
 
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -64,18 +64,18 @@ object ExportBackupDialog : ContentFramedDialog {
         // export button exports.
         var selectedOption by rememberSaveable { mutableIntStateOf(0) }
 
-        val databaseLabel = stringResource(R.string.database)
-        val databaseDescription = stringResource(R.string.export_database_description)
-        val settingsLabel = stringResource(R.string.settings)
-        val settingsDescription = stringResource(R.string.export_settings_description)
-        val bothLabel = stringResource(R.string.database_and_settings)
-        val bothDescription = stringResource(R.string.export_both_description)
+        val databaseLabel = stringResource(R.string.backup_target_database_label)
+        val databaseDescription = stringResource(R.string.backup_export_database_description)
+        val settingsLabel = stringResource(R.string.settings_title)
+        val settingsDescription = stringResource(R.string.backup_export_settings_description)
+        val bothLabel = stringResource(R.string.backup_target_database_and_settings_label)
+        val bothDescription = stringResource(R.string.backup_export_both_description)
         // The option is the profile state (the list + every face), not the login
         // accounts: labeled "Profiles" like everywhere else in the app.
-        val profilesLabel = stringResource(R.string.profiles)
-        val profilesDescription = stringResource(R.string.export_accounts_description)
-        val allLabel = stringResource(R.string.export_all)
-        val allDescription = stringResource(R.string.export_all_description)
+        val profilesLabel = stringResource(R.string.profile_title)
+        val profilesDescription = stringResource(R.string.backup_export_accounts_description)
+        val allLabel = stringResource(R.string.backup_export_all)
+        val allDescription = stringResource(R.string.backup_export_all_description)
 
         val options = listOf(
             Triple(R.drawable.server, databaseLabel, databaseDescription),
@@ -98,7 +98,7 @@ object ExportBackupDialog : ContentFramedDialog {
                 ButtonRow(
                     buttons = listOf(
                         DialogButton(
-                            text = stringResource(R.string.export),
+                            text = stringResource(R.string.common_action_export),
                             primary = true,
                             textColor = colorPalette().textSecondary,
                             onClick = {
@@ -182,7 +182,7 @@ object ExportBackupDialog : ContentFramedDialog {
                                         .padding(end = 8.dp)
                                 )
                                 Text(
-                                    stringResource(R.string.include_youtube_credentials),
+                                    stringResource(R.string.backup_include_youtube_credentials),
                                     style = typography().xxs,
                                     color = colorPalette().text,
                                     maxLines = 1,
@@ -206,7 +206,7 @@ object ExportBackupDialog : ContentFramedDialog {
                                         .padding(end = 8.dp)
                                 )
                                 Text(
-                                    stringResource(R.string.include_discord_credentials),
+                                    stringResource(R.string.backup_include_discord_credentials),
                                     style = typography().xxs,
                                     color = colorPalette().text,
                                     maxLines = 1,
@@ -230,7 +230,7 @@ object ExportBackupDialog : ContentFramedDialog {
                                         .padding(end = 8.dp)
                                 )
                                 Text(
-                                    stringResource(R.string.include_lastfm_credentials),
+                                    stringResource(R.string.backup_include_lastfm_credentials),
                                     style = typography().xxs,
                                     color = colorPalette().text,
                                     maxLines = 1,
@@ -254,7 +254,7 @@ object ExportBackupDialog : ContentFramedDialog {
                                         .padding(end = 8.dp)
                                 )
                                 Text(
-                                    stringResource(R.string.include_proxy_credentials),
+                                    stringResource(R.string.backup_include_proxy_password),
                                     style = typography().xxs,
                                     color = colorPalette().text,
                                     maxLines = 1,

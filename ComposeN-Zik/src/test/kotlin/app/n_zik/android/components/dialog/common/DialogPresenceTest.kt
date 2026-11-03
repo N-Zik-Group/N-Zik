@@ -382,7 +382,7 @@ class DialogPresenceTest {
             }
         }
         advance()
-        compose.onNodeWithText(context.getString(R.string.dialog_save)).performClick()
+        compose.onNodeWithText(context.getString(R.string.common_action_save)).performClick()
         compose.runOnIdle { assertEquals(listOf("value", "dismiss"), events) }
         advance()
         assertEquals(listOf("value", "dismiss"), events)

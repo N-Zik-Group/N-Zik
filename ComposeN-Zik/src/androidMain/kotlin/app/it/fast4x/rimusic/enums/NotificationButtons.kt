@@ -26,24 +26,24 @@ enum class NotificationButtons(
     @field:DrawableRes override val iconId: Int
 ): TextView, Drawable {
 
-    Download( R.string.download, R.drawable.download ),
+    Download( R.string.downloads_title, R.drawable.download ),
 
-    Favorites( R.string.favorites, R.drawable.heart_outline ),
+    Favorites( R.string.library_favorites_title, R.drawable.heart_outline ),
 
-    Repeat( R.string.repeat, R.drawable.repeat ),
+    Repeat( R.string.player_action_repeat, R.drawable.repeat ),
 
-    Shuffle( R.string.shuffle, R.drawable.shuffle ),
+    Shuffle( R.string.player_action_shuffle, R.drawable.shuffle ),
 
-    Radio( R.string.start_radio, R.drawable.radio ),
+    Radio( R.string.radio_action_start, R.drawable.radio ),
 
     // Issue #866 (gh-866): discover command button (notification + AA overflow) —
     // joins the "other" command buttons.
 
     // Its active-state icon (discover_stop) is applied by
     // PlayerServiceModern.commandButtonIconRes.
-    Discover( R.string.discover, R.drawable.discover ),
+    Discover( R.string.queue_discover_title, R.drawable.discover ),
 
-    Search( R.string.search, R.drawable.search );
+    Search( R.string.search_title, R.drawable.search );
 
     val sessionCommand: SessionCommand
     get() = when (this) {

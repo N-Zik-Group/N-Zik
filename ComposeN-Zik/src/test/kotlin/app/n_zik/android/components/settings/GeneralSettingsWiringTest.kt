@@ -119,15 +119,15 @@ class GeneralSettingsWiringTest {
     }
 
     private val cardTitles: List<Int> = listOf(
-        R.string.languages,
-        R.string.playback,
+        R.string.settings_languages_title,
+        R.string.common_playback_section_title,
         R.string.player_controls,
-        R.string.queue_management,
-        R.string.app_behavior,
+        R.string.settings_queue_management_title,
+        R.string.settings_app_behavior_title,
         R.string.audio_effects,
-        R.string.gestures_events,
-        R.string.picture_in_picture,
-        R.string.app_shortcuts_settings,
+        R.string.settings_gestures_title,
+        R.string.settings_picture_in_picture_title,
+        R.string.settings_launcher_shortcuts_title,
         R.string.settings_reset,
     )
 
@@ -158,7 +158,7 @@ class GeneralSettingsWiringTest {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     GeneralSettingsContent(
                         search = Search(initialVisible = true),
-                        selectedCards = setOf(R.string.playback),
+                        selectedCards = setOf(R.string.common_playback_section_title),
                         cardModifier = { Modifier.testTag("general.selected") },
                     )
                 }
@@ -167,8 +167,8 @@ class GeneralSettingsWiringTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithTag("general.selected").assertExists()
         composeRule.onAllNodes(isEditable()).assertCountEquals(0)
-        assertTrue(cardTitleIsShown(R.string.playback))
-        assertTrue(!cardTitleIsShown(R.string.languages))
+        assertTrue(cardTitleIsShown(R.string.common_playback_section_title))
+        assertTrue(!cardTitleIsShown(R.string.settings_languages_title))
         assertTrue(!cardTitleIsShown(R.string.settings_reset))
     }
 
@@ -177,10 +177,10 @@ class GeneralSettingsWiringTest {
         showGeneralTab()
 
         composeRule
-            .onNodeWithText(context.getString(R.string.tab_general), substring = false)
+            .onNodeWithText(context.getString(R.string.settings_general_title), substring = false)
             .fetchSemanticsNode()
         composeRule
-            .onNodeWithText(context.getString(R.string.general_settings_description), substring = false)
+            .onNodeWithText(context.getString(R.string.settings_general_page_description), substring = false)
             .fetchSemanticsNode()
 
         cardTitles.forEach { titleRes ->
@@ -197,7 +197,7 @@ class GeneralSettingsWiringTest {
 
         composeRule
             .onNode(isEditable())
-            .performTextInput(context.getString(R.string.skip_silence))
+            .performTextInput(context.getString(R.string.settings_audio_skip_silence_label))
         composeRule.waitForIdle()
 
         assertTrue(
@@ -206,11 +206,11 @@ class GeneralSettingsWiringTest {
         )
         assertTrue(
             "a non-matching card must be filtered out",
-            !cardTitleIsShown(R.string.languages)
+            !cardTitleIsShown(R.string.settings_languages_title)
         )
         assertTrue(
             "a non-matching card must be filtered out",
-            !cardTitleIsShown(R.string.playback)
+            !cardTitleIsShown(R.string.common_playback_section_title)
         )
     }
 
@@ -227,7 +227,7 @@ class GeneralSettingsWiringTest {
         }
 
         val pipTitles = composeRule.onAllNodesWithText(
-            context.getString(R.string.picture_in_picture),
+            context.getString(R.string.settings_picture_in_picture_title),
             substring = false,
             useUnmergedTree = true
         )
@@ -254,20 +254,20 @@ class GeneralSettingsWiringTest {
         assertTrue(
             "a setting that needs a service restart must show the tab-level restart bar",
             composeRule
-                .onAllNodesWithText(context.getString(R.string.restart_service))
+                .onAllNodesWithText(context.getString(R.string.settings_player_action_restart_service))
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         )
 
         composeRule
-            .onAllNodesWithText(context.getString(R.string.restart_service))[0]
+            .onAllNodesWithText(context.getString(R.string.settings_player_action_restart_service))[0]
             .performSemanticsAction(SemanticsActions.OnClick)
         composeRule.waitForIdle()
 
         assertTrue(
             "restarting must clear the restart bar",
             composeRule
-                .onAllNodesWithText(context.getString(R.string.restart_service))
+                .onAllNodesWithText(context.getString(R.string.settings_player_action_restart_service))
                 .fetchSemanticsNodes()
                 .isEmpty()
         )
@@ -283,7 +283,7 @@ class GeneralSettingsWiringTest {
         assertTrue(
             "the reset must trigger the tab-level restart bar",
             composeRule
-                .onAllNodesWithText(context.getString(R.string.restart_service))
+                .onAllNodesWithText(context.getString(R.string.settings_player_action_restart_service))
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         )
@@ -294,7 +294,7 @@ class GeneralSettingsWiringTest {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     GeneralSettingsContent(
                         search = Search(initialVisible = false),
-                        selectedCards = setOf(R.string.queue_management),
+                        selectedCards = setOf(R.string.settings_queue_management_title),
                     )
                 }
             }
@@ -305,7 +305,7 @@ class GeneralSettingsWiringTest {
         composeRule.waitForIdle()
         assertTrue(!context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
             .getBoolean(app.it.fast4x.rimusic.utils.autoLoadSongsInQueueKey, true))
-        assertTrue(composeRule.onAllNodesWithText(context.getString(R.string.restart_service))
+        assertTrue(composeRule.onAllNodesWithText(context.getString(R.string.settings_player_action_restart_service))
             .fetchSemanticsNodes().isNotEmpty())
     }
 
@@ -325,37 +325,37 @@ class GeneralSettingsWiringTest {
 
     @Test
     fun playbackAutomationKeepsDefaultsAndWritesOriginalPreferences() {
-        showSelectedCard(R.string.playback)
+        showSelectedCard(R.string.common_playback_section_title)
         val preferences = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-        assertTrue(!cardTitleIsShown(R.string.app_behavior))
+        assertTrue(!cardTitleIsShown(R.string.settings_app_behavior_title))
         assertTrue(!cardTitleIsShown(R.string.player_controls))
-        clickRowByDescription(R.string.when_device_is_connected)
-        clickRowByDescription(R.string.skip_media_on_error_description)
-        clickRowByDescription(R.string.info_pauses_player_when_volume_zero)
-        clickRowByDescription(R.string.pause_on_headphone_disconnect_description)
+        clickRowByDescription(R.string.settings_playback_resume_on_connection_description)
+        clickRowByDescription(R.string.settings_playback_skip_on_error_description)
+        clickRowByDescription(R.string.settings_playback_pause_at_zero_volume_description)
+        clickRowByDescription(R.string.settings_playback_pause_on_headphone_disconnect_description)
         composeRule.waitForIdle()
         assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.resumePlaybackWhenDeviceConnectedKey, false))
         assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.skipMediaOnErrorKey, false))
         assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.isPauseOnVolumeZeroEnabledKey, false))
         assertTrue(!preferences.getBoolean(app.it.fast4x.rimusic.utils.pauseOnHeadphoneDisconnectKey, true))
-        composeRule.onAllNodesWithText(context.getString(R.string.restart_service)).assertCountEquals(1)
+        composeRule.onAllNodesWithText(context.getString(R.string.settings_player_action_restart_service)).assertCountEquals(1)
     }
 
     @Test
     fun persistentQueueKeepsResumeOnStartConditionalWithoutResettingItsPreference() {
-        showSelectedCard(R.string.queue_management)
+        showSelectedCard(R.string.settings_queue_management_title)
         val preferences = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-        val resumeDescription = context.getString(R.string.resume_automatically_when_app_opens)
+        val resumeDescription = context.getString(R.string.settings_playback_resume_on_start_description)
         composeRule.onAllNodesWithText(resumeDescription).assertCountEquals(0)
-        clickRowByDescription(R.string.save_and_restore_playing_songs)
+        clickRowByDescription(R.string.settings_player_persistent_queue_description)
         composeRule.waitForIdle()
         composeRule.onAllNodesWithText(resumeDescription).assertCountEquals(1)
-        clickRowByDescription(R.string.resume_automatically_when_app_opens)
+        clickRowByDescription(R.string.settings_playback_resume_on_start_description)
         composeRule.waitForIdle()
         assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.persistentQueueKey, false))
         assertTrue(preferences.getBoolean(app.it.fast4x.rimusic.utils.resumePlaybackOnStartKey, false))
-        composeRule.onAllNodesWithText(context.getString(R.string.restart_service)).assertCountEquals(1)
-        clickRowByDescription(R.string.save_and_restore_playing_songs)
+        composeRule.onAllNodesWithText(context.getString(R.string.settings_player_action_restart_service)).assertCountEquals(1)
+        clickRowByDescription(R.string.settings_player_persistent_queue_description)
         composeRule.waitForIdle()
         composeRule.onAllNodesWithText(resumeDescription).assertCountEquals(0)
         assertTrue(!preferences.getBoolean(app.it.fast4x.rimusic.utils.persistentQueueKey, true))

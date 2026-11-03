@@ -12,8 +12,8 @@ enum class NavigationBarType(
     @field:StringRes override val textId: Int
 ): TextView {
 
-    IconAndText( R.string.icon_and_text ),
-    IconOnly( R.string.only_icon );
+    IconAndText( R.string.navigation_style_icon_and_text_label ),
+    IconOnly( R.string.navigation_style_icon_only_label );
 
     companion object {
 

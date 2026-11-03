@@ -104,7 +104,7 @@ fun adaptiveThumbnailContent(
                         .padding(top = 16.dp)
                         .padding(all = 5.dp)
                         .size(40.dp),
-                    contentDescription = stringResource(R.string.cd_youtube_playlist),
+                    contentDescription = stringResource(R.string.accessibility_youtube_playlist),
                     contentScale = ContentScale.Fit
                 )
             }

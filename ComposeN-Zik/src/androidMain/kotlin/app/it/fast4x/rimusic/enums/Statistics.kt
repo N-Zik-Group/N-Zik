@@ -15,19 +15,19 @@ enum class StatisticsType(
     @field:StringRes override val textId: Int
 ): Drawable, TextView {
 
-    Today( 1.days, R.drawable.stat_today, R.string.today ),
+    Today( 1.days, R.drawable.stat_today, R.string.calendar_today ),
 
-    OneWeek( 7.days, R.drawable.stat_week, R.string._1_week ),
+    OneWeek( 7.days, R.drawable.stat_week, R.string.calendar_period_one_week ),
 
-    OneMonth( 30.days, R.drawable.stat_month, R.string._1_month ),
+    OneMonth( 30.days, R.drawable.stat_month, R.string.calendar_period_one_month ),
 
-    ThreeMonths( 90.days, R.drawable.stat_3months, R.string._3_month ),
+    ThreeMonths( 90.days, R.drawable.stat_3months, R.string.calendar_period_three_months ),
 
-    SixMonths( 180.days, R.drawable.stat_6months, R.string._6_month ),
+    SixMonths( 180.days, R.drawable.stat_6months, R.string.calendar_period_six_months ),
 
-    OneYear( 365.days, R.drawable.stat_year, R.string._1_year ),
+    OneYear( 365.days, R.drawable.stat_year, R.string.calendar_period_one_year ),
 
-    All( Duration.INFINITE, R.drawable.calendar_clear, R.string.all );
+    All( Duration.INFINITE, R.drawable.calendar_clear, R.string.common_option_all );
 
     /**
      * For example:
@@ -56,13 +56,13 @@ enum class StatisticsCategory(
     @field:StringRes override val textId: Int
 ): TextView {
 
-    Songs( R.string.songs ),
+    Songs( R.string.library_songs_title ),
 
-    Artists( R.string.artists ),
+    Artists( R.string.library_artists_title ),
 
-    Albums( R.string.albums ),
+    Albums( R.string.library_albums_title ),
 
-    Playlists( R.string.playlists );
+    Playlists( R.string.library_playlists_title );
 }
 
 

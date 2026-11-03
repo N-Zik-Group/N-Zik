@@ -20,7 +20,7 @@ internal fun NetworkDownloadQualityCard(
         title = stringResource(R.string.settings_download_quality),
         icon = R.drawable.network,
         content = {
-            if (query.isBlank() || stringResource(R.string.download_quality_format).contains(query, true) || stringResource(R.string.update_downloads).contains(query, true)) {
+            if (query.isBlank() || stringResource(R.string.downloads_quality_format).contains(query, true) || stringResource(R.string.downloads_action_refresh_quality).contains(query, true)) {
                 DownloadQualityEntry(automaticQualityText = automaticQualityStatusText(networkQuality), onQualityChanged = { onRestartRequired(true) })
                 UpdateDownloadsButton()
             }

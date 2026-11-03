@@ -41,9 +41,9 @@ object HomeArtistsSortSettingsDialog : ContentFramedDialog {
     private val dislikedSortIds = listOf("Name", "PlayCount", "ListeningTime", "DateAdded")
 
     private enum class ArtistTab(val textId: Int, val availableIds: List<String>) {
-        Library(R.string.library, librarySortIds),
-        Favorites(R.string.favorites, favoritesSortIds),
-        Disliked(R.string.disliked, dislikedSortIds)
+        Library(R.string.library_title, librarySortIds),
+        Favorites(R.string.library_favorites_title, favoritesSortIds),
+        Disliked(R.string.library_disliked_title, dislikedSortIds)
     }
 
     private val tabs = ArtistTab.entries
@@ -71,11 +71,11 @@ object HomeArtistsSortSettingsDialog : ContentFramedDialog {
         else -> R.drawable.text
     }
     private fun getSortLabelRes(id: String): Int? = when (id) {
-        "Name" -> R.string.sort_name
-        "PlayCount" -> R.string.sort_play_count
-        "ListeningTime" -> R.string.sort_listening_time
-        "DateAdded" -> R.string.sort_date_added
-        "Custom" -> R.string.sort_custom_order
+        "Name" -> R.string.library_sort_name
+        "PlayCount" -> R.string.library_sort_play_count
+        "ListeningTime" -> R.string.library_sort_listening_time
+        "DateAdded" -> R.string.library_sort_date_added
+        "Custom" -> R.string.library_sort_custom_order
         else -> null
     }
 
@@ -160,7 +160,7 @@ object HomeArtistsSortSettingsDialog : ContentFramedDialog {
                     (workingToggles[tab] ?: emptyMap()).forEach { (id, isChecked) -> edit.putBoolean("${prefix2}_sort_${id}_visible", isChecked) }
                     edit.putString(key, serializeOrder((workingOrders[tab] ?: emptyList()).filter { id -> (workingToggles[tab] ?: emptyMap())[id] == true }))
                 }
-                edit.apply(); Toaster.s(R.string.toast_preference_saved); hideDialog()
+                edit.apply(); Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }
         )
     }

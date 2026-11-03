@@ -18,7 +18,7 @@ enum class RecommendationsNumber: TextView {
     override val text: String
         @Composable
         get() = when (this) {
-            Adaptive -> stringResource(R.string.smart_recommendations_adaptive)
+            Adaptive -> stringResource(R.string.recommendations_adaptive)
             else -> this.name
         }
 

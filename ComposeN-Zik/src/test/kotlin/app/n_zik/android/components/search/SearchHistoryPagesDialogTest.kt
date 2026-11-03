@@ -73,10 +73,10 @@ class SearchHistoryPagesDialogTest {
         composeRule.onAllNodes(isDialog()).assertCountEquals(1)
 
         val legacyLabels = listOf(
-            R.string.history, R.string.search_history_local, R.string.search_history_online,
-            R.string.settings_global_title, R.string.tab_general, R.string.ui_tab,
-            R.string.player_appearance, R.string.ai_recommendations, R.string.tab_data,
-            R.string.tab_accounts, R.string.tab_network, R.string.tab_miscellaneous,
+            R.string.library_history_title, R.string.search_history_local, R.string.search_history_online,
+            R.string.settings_global_title, R.string.settings_general_title, R.string.settings_interface_page_title,
+            R.string.player_appearance, R.string.settings_recommendations_title, R.string.settings_data_title,
+            R.string.settings_accounts_title, R.string.settings_network_title, R.string.settings_miscellaneous_title,
         )
         val expectedLabels = legacyLabels.mapIndexed { index, label ->
             if (index < 4) context.getString(label) else settingsPageLabel(label)

@@ -135,7 +135,7 @@ fun QuickPicksHeader(
                 .padding(horizontal = 12.dp, vertical = 12.dp)
         ) {
             Text(
-                text = stringResource(R.string.tips),
+                text = stringResource(R.string.recommendations_for_you_title),
                 style = TextStyle(
                     fontSize = typography().l.semiBold.fontSize,
                     fontWeight = typography().l.semiBold.fontWeight,
@@ -148,10 +148,10 @@ fun QuickPicksHeader(
             val glass = rememberGlassSettings()
             val onSortClick: () -> Unit = {
                 menuState.display {
-                    ListMenu.Menu(title = stringResource(R.string.sorting_order)) {
+                    ListMenu.Menu(title = stringResource(R.string.library_sort_order_title)) {
                         ListMenu.Entry(
                             icon = { MenuIcon(R.drawable.chevron_up) },
-                            text = stringResource(R.string.by_most_played_song),
+                            text = stringResource(R.string.home_sort_most_played_song_label),
                             onClick = {
                                 onPlayEventTypeChange(PlayEventsType.MostPlayed)
                                 menuState.hide()
@@ -159,7 +159,7 @@ fun QuickPicksHeader(
                         )
                         ListMenu.Entry(
                             icon = { MenuIcon(R.drawable.chevron_down) },
-                            text = stringResource(R.string.by_last_played_song),
+                            text = stringResource(R.string.home_sort_last_played_song_label),
                             onClick = {
                                 onPlayEventTypeChange(PlayEventsType.LastPlayed)
                                 menuState.hide()
@@ -167,7 +167,7 @@ fun QuickPicksHeader(
                         )
                         ListMenu.Entry(
                             icon = { MenuIcon(R.drawable.random) },
-                            text = stringResource(R.string.by_casual_played_song),
+                            text = stringResource(R.string.home_sort_random_label),
                             onClick = {
                                 onPlayEventTypeChange(PlayEventsType.CasualPlayed)
                                 menuState.hide()
@@ -184,14 +184,14 @@ fun QuickPicksHeader(
                         }
                     } else {
                         GlassActionGroupItem(onClick = onDiceClick) {
-                            Icon(painterResource(R.drawable.dice), stringResource(R.string.glass_action_shuffle), tint = colorPalette().text, modifier = Modifier.size(GlassActionIconSize))
+                            Icon(painterResource(R.drawable.dice), stringResource(R.string.glass_effect_action_shuffle), tint = colorPalette().text, modifier = Modifier.size(GlassActionIconSize))
                         }
                         GlassActionGroupItem(onClick = onPlayAllClick) {
-                            Icon(painterResource(R.drawable.play), stringResource(R.string.glass_action_play_all), tint = colorPalette().text, modifier = Modifier.size(GlassActionIconSize))
+                            Icon(painterResource(R.drawable.play), stringResource(R.string.glass_effect_action_play_all), tint = colorPalette().text, modifier = Modifier.size(GlassActionIconSize))
                         }
                     }
                     GlassActionGroupItem(onClick = onSortClick) {
-                        Icon(painterResource(R.drawable.settings), stringResource(R.string.sorting_order), tint = colorPalette().text, modifier = Modifier.size(GlassActionIconSize))
+                        Icon(painterResource(R.drawable.settings), stringResource(R.string.library_sort_order_title), tint = colorPalette().text, modifier = Modifier.size(GlassActionIconSize))
                     }
                 }
             } else {
@@ -200,14 +200,14 @@ fun QuickPicksHeader(
                         CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp, color = colorPalette().textSecondary)
                     }
                 } else {
-                    NativeSectionIconAction(R.drawable.dice, stringResource(R.string.glass_action_shuffle),
+                    NativeSectionIconAction(R.drawable.dice, stringResource(R.string.glass_effect_action_shuffle),
                         endSpacing = 12.dp, color = colorPalette().text,
                         settings = glass, onClick = onDiceClick)
-                    NativeSectionIconAction(R.drawable.play, stringResource(R.string.glass_action_play_all),
+                    NativeSectionIconAction(R.drawable.play, stringResource(R.string.glass_effect_action_play_all),
                         endSpacing = 12.dp, color = colorPalette().text,
                         settings = glass, onClick = onPlayAllClick)
                 }
-                NativeSectionIconAction(R.drawable.settings, stringResource(R.string.sorting_order),
+                NativeSectionIconAction(R.drawable.settings, stringResource(R.string.library_sort_order_title),
                         color = colorPalette().text,
                         settings = glass, onClick = onSortClick)
             }
@@ -441,7 +441,7 @@ fun NewAlbumsOfYourArtistsSection(
             Column {
                 if (showTitle) {
                     BasicText(
-                        text = stringResource(R.string.new_albums_of_your_artists),
+                        text = stringResource(R.string.recommendations_followed_artists_new_albums_title),
                         style = typography().l.semiBold,
                         modifier = sectionTextModifier
                     )
@@ -500,7 +500,7 @@ fun NewAlbumsSection(
                 Column {
                     if (showTitle) {
                         HomeSectionTitle(
-                            title = stringResource(R.string.new_albums),
+                            title = stringResource(R.string.recommendations_new_albums_title),
                             onClick = { navController.navigate(NavRoutes.newAlbums.name) },
                             verticalPadding = 16.dp,
                         )
@@ -559,7 +559,7 @@ fun RelatedAlbumsSection(
                 Timber.tag("HomeQuickPicksSections").d("Related Section found: Albums (${albums.size} items)")
                 displayedSectionTitles.add("Related albums")
                 BasicText(
-                    text = stringResource(R.string.related_albums),
+                    text = stringResource(R.string.album_related_title),
                     style = typography().l.semiBold,
                     modifier = sectionTextModifier
                 )
@@ -618,7 +618,7 @@ fun SimilarArtistsSection(
                 Timber.tag("HomeQuickPicksSections").d("Related Section found: Similar Artists (${artists.size} items)")
                 displayedSectionTitles.add("Similar artists")
                 BasicText(
-                    text = stringResource(R.string.similar_artists),
+                    text = stringResource(R.string.artist_similar_title),
                     style = typography().l.semiBold,
                     modifier = sectionTextModifier
                 )
@@ -680,7 +680,7 @@ fun MyTopSection(
             Timber.tag("HomeQuickPicksSections").d("Local Section found: My Top (${myTopSongs.size} items)")
             Column {
                 BasicText(
-                    text = stringResource(R.string.my_playlist_top1),
+                    text = stringResource(R.string.recommendations_personal_top_title),
                     style = typography().l.semiBold,
                     modifier = sectionTextModifier
                 )
@@ -727,7 +727,7 @@ fun RewindSection(
             Timber.tag("HomeQuickPicksSections").d("Local Section found: Rewind (${rewindPlaylists.size} items)")
             Column {
                 BasicText(
-                    text = stringResource(R.string.rewind),
+                    text = stringResource(R.string.rewind_title),
                     style = typography().l.semiBold,
                     modifier = sectionTextModifier
                 )
@@ -789,7 +789,7 @@ fun MoodsSection(
             displayedSectionTitles.add("Moods")
             Column {
                 Title(
-                    title = stringResource(R.string.moods),
+                    title = stringResource(R.string.recommendations_moods_title),
                     verticalPadding = 16.dp,
                 )
 
@@ -827,7 +827,7 @@ fun MoodsAndGenresSection(
             displayedSectionTitles.add("Moods & genres")
             Column {
                 HomeSectionTitle(
-                    title = stringResource(R.string.moods_and_genres),
+                    title = stringResource(R.string.recommendations_moods_and_genres_title),
                     onClick = { navController.navigate(NavRoutes.moodsPage.name) },
                     verticalPadding = 16.dp,
                 )
@@ -892,10 +892,10 @@ fun ChartsSection(
                 displayedSectionTitles.add("Charts")
                 Column {
                     HomeSectionTitle(
-                        title = "${stringResource(R.string.charts)} (${selectedCountryCode.countryName})",
+                        title = "${stringResource(R.string.recommendations_charts_title)} (${selectedCountryCode.countryName})",
                         onClick = {
                             menuState.display {
-                                ListMenu.Menu(title = stringResource(R.string.charts)) {
+                                ListMenu.Menu(title = stringResource(R.string.recommendations_charts_title)) {
                                     Countries.entries.forEach { country ->
                                         ListMenu.Entry(
                                             icon = {
@@ -972,7 +972,7 @@ fun ChartsSection(
                         }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
                         BasicText(
-                            text = stringResource(R.string.chart_top_songs),
+                            text = stringResource(R.string.home_chart_top_songs_title),
                             style = typography().l.semiBold,
                             modifier = Modifier
                                 .padding(horizontal = 12.dp)
@@ -1032,7 +1032,7 @@ fun ChartsSection(
                         }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
                         BasicText(
-                            text = stringResource(R.string.chart_top_artists),
+                            text = stringResource(R.string.home_chart_top_artists_title),
                             style = typography().l.semiBold,
                             modifier = Modifier
                                 .padding(horizontal = 12.dp)

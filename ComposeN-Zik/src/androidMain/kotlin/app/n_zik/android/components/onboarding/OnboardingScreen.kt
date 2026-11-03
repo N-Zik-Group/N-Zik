@@ -172,18 +172,18 @@ fun OnboardingScreen(
     }
 
     // stringResource is @Composable: the card texts are hoisted out of the remember block
-    val notificationsTitle = stringResource(R.string.onboard_perm_notifications)
-    val notificationsDesc = stringResource(R.string.onboard_perm_notifications_desc)
-    val mediaTitle = stringResource(R.string.onboard_perm_media)
-    val mediaDesc = stringResource(R.string.onboard_perm_media_desc)
-    val bluetoothTitle = stringResource(R.string.onboard_perm_bluetooth)
-    val bluetoothDesc = stringResource(R.string.onboard_perm_bluetooth_desc)
-    val micTitle = stringResource(R.string.onboard_perm_mic)
-    val micDesc = stringResource(R.string.onboard_perm_mic_desc)
-    val cameraTitle = stringResource(R.string.onboard_perm_camera)
-    val cameraDesc = stringResource(R.string.onboard_perm_camera_desc)
-    val batteryTitle = stringResource(R.string.onboard_perm_battery)
-    val batteryDesc = stringResource(R.string.onboard_perm_battery_desc)
+    val notificationsTitle = stringResource(R.string.onboarding_permission_notifications)
+    val notificationsDesc = stringResource(R.string.onboarding_permission_notifications_description)
+    val mediaTitle = stringResource(R.string.onboarding_permission_media)
+    val mediaDesc = stringResource(R.string.onboarding_permission_media_description)
+    val bluetoothTitle = stringResource(R.string.onboarding_permission_bluetooth)
+    val bluetoothDesc = stringResource(R.string.onboarding_permission_bluetooth_description)
+    val micTitle = stringResource(R.string.onboarding_permission_microphone)
+    val micDesc = stringResource(R.string.onboarding_permission_microphone_description)
+    val cameraTitle = stringResource(R.string.onboarding_permission_camera)
+    val cameraDesc = stringResource(R.string.onboarding_permission_camera_description)
+    val batteryTitle = stringResource(R.string.onboarding_permission_battery)
+    val batteryDesc = stringResource(R.string.onboarding_permission_battery_description)
 
     val cards = remember(refreshTrigger) {
         buildList {
@@ -318,7 +318,7 @@ fun OnboardingScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = stringResource(R.string.onboard_greeting),
+            text = stringResource(R.string.onboarding_greeting),
             style = typography().m,
             color = colorPalette().text,
             textAlign = TextAlign.Center
@@ -327,7 +327,7 @@ fun OnboardingScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         OnboardingSectionCard(
-            title = stringResource(R.string.onboard_permissions_section)
+            title = stringResource(R.string.onboarding_permissions_section)
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -357,7 +357,7 @@ fun OnboardingScreen(
                 .fillMaxWidth()
                 .navigationBarsPadding()
         ) {
-            Text(stringResource(R.string.onboard_start))
+            Text(stringResource(R.string.onboarding_start))
         }
     }
 }
@@ -376,7 +376,7 @@ private fun OnboardingActionButton(status: PermissionStatus, onClick: () -> Unit
     when (status) {
         PermissionStatus.GRANTED -> Icon(
             painter = painterResource(R.drawable.checkmark),
-            contentDescription = stringResource(R.string.onboard_permission_granted),
+            contentDescription = stringResource(R.string.onboarding_permission_granted),
             tint = colorPalette().accent,
             modifier = Modifier.size(28.dp)
         )
@@ -385,11 +385,11 @@ private fun OnboardingActionButton(status: PermissionStatus, onClick: () -> Unit
             onClick = onClick,
             outlined = true,
         ) {
-            OnboardingActionLabel(stringResource(R.string.onboard_permission_grant))
+            OnboardingActionLabel(stringResource(R.string.onboarding_permission_grant))
         }
 
         PermissionStatus.PERMANENTLY_DENIED -> OnboardingSecondaryButton(onClick = onClick) {
-            OnboardingActionLabel(stringResource(R.string.onboard_permission_settings))
+            OnboardingActionLabel(stringResource(R.string.onboarding_permission_settings))
         }
     }
 }

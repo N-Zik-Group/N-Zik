@@ -14,9 +14,9 @@ enum class HomeItemSize (
     val size: Int
 ): TextView, Drawable {
 
-    SMALL( R.string.small, 100 ),
-    MEDIUM( R.string.medium,130 ),
-    BIG( R.string.big, 160 );
+    SMALL( R.string.common_size_small, 100 ),
+    MEDIUM( R.string.common_size_medium,130 ),
+    BIG( R.string.common_size_big, 160 );
 
     @field:DrawableRes
     override val iconId = R.drawable.arrow_forward

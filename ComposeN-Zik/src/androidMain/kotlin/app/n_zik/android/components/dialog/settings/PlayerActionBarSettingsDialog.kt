@@ -48,20 +48,20 @@ private data class ButtonDef(
 )
 
 private fun buildButtonDefs(): Map<String, ButtonDef> = mapOf(
-    "video" to ButtonDef("video", showButtonPlayerVideoKey, R.drawable.video, R.string.action_bar_show_video_button, true),
-    "discover" to ButtonDef("discover", showButtonPlayerDiscoverKey, R.drawable.discover, R.string.action_bar_show_discover_button, false),
-    "download" to ButtonDef("download", showButtonPlayerDownloadKey, R.drawable.download, R.string.action_bar_show_download_button, true),
-    "add_to_playlist" to ButtonDef("add_to_playlist", showButtonPlayerAddToPlaylistKey, R.drawable.add_in_playlist, R.string.action_bar_show_add_to_playlist_button, true),
-    "loop" to ButtonDef("loop", showButtonPlayerLoopKey, R.drawable.repeat, R.string.action_bar_show_loop_button, false),
-    "shuffle" to ButtonDef("shuffle", showButtonPlayerShuffleKey, R.drawable.shuffle, R.string.action_bar_show_shuffle_button, true),
-    "lyrics" to ButtonDef("lyrics", showButtonPlayerLyricsKey, R.drawable.song_lyrics, R.string.action_bar_show_lyrics_button, true),
-    "visualizer" to ButtonDef("visualizer", visualizerEnabledKey, R.drawable.sound_effect, R.string.action_bar_show_visualizer_button, false),
-    "expanded_player" to ButtonDef("expanded_player", expandedplayertoggleKey, R.drawable.maximize, R.string.expandedplayer, false),
-    "sleep_timer" to ButtonDef("sleep_timer", showButtonPlayerSleepTimerKey, R.drawable.sleep, R.string.action_bar_show_sleep_timer_button, false),
-    "equalizer" to ButtonDef("equalizer", showButtonPlayerSystemEqualizerKey, R.drawable.equalizer, R.string.show_equalizer, false),
-    "arrow" to ButtonDef("arrow", showButtonPlayerArrowKey, R.drawable.chevron_up, R.string.action_bar_show_arrow_button_to_open_queue, true),
-    "start_radio" to ButtonDef("start_radio", showButtonPlayerStartRadioKey, R.drawable.radio, R.string.action_bar_show_start_radio_button, false),
-    "menu" to ButtonDef("menu", showButtonPlayerMenuKey, R.drawable.ellipsis_vertical, R.string.action_bar_show_menu_button, false)
+    "video" to ButtonDef("video", showButtonPlayerVideoKey, R.drawable.video, R.string.settings_player_action_bar_video_visible_label, true),
+    "discover" to ButtonDef("discover", showButtonPlayerDiscoverKey, R.drawable.discover, R.string.settings_player_action_bar_discover_visible_label, false),
+    "download" to ButtonDef("download", showButtonPlayerDownloadKey, R.drawable.download, R.string.settings_player_action_bar_download_visible_label, true),
+    "add_to_playlist" to ButtonDef("add_to_playlist", showButtonPlayerAddToPlaylistKey, R.drawable.add_in_playlist, R.string.settings_player_action_bar_playlist_add_visible_label, true),
+    "loop" to ButtonDef("loop", showButtonPlayerLoopKey, R.drawable.repeat, R.string.settings_player_action_bar_loop_visible_label, false),
+    "shuffle" to ButtonDef("shuffle", showButtonPlayerShuffleKey, R.drawable.shuffle, R.string.settings_player_action_bar_shuffle_visible_label, true),
+    "lyrics" to ButtonDef("lyrics", showButtonPlayerLyricsKey, R.drawable.song_lyrics, R.string.settings_action_bar_show_lyrics_button, true),
+    "visualizer" to ButtonDef("visualizer", visualizerEnabledKey, R.drawable.sound_effect, R.string.settings_player_action_bar_visualizer_visible_label, false),
+    "expanded_player" to ButtonDef("expanded_player", expandedplayertoggleKey, R.drawable.maximize, R.string.settings_player_expanded_label, false),
+    "sleep_timer" to ButtonDef("sleep_timer", showButtonPlayerSleepTimerKey, R.drawable.sleep, R.string.settings_player_action_bar_sleep_timer_visible_label, false),
+    "equalizer" to ButtonDef("equalizer", showButtonPlayerSystemEqualizerKey, R.drawable.equalizer, R.string.settings_player_action_bar_equalizer_visible_label, false),
+    "arrow" to ButtonDef("arrow", showButtonPlayerArrowKey, R.drawable.chevron_up, R.string.settings_player_action_bar_queue_arrow_visible_label, true),
+    "start_radio" to ButtonDef("start_radio", showButtonPlayerStartRadioKey, R.drawable.radio, R.string.settings_player_action_bar_radio_visible_label, false),
+    "menu" to ButtonDef("menu", showButtonPlayerMenuKey, R.drawable.ellipsis_vertical, R.string.settings_player_action_bar_menu_visible_label, false)
 )
 
 object PlayerActionBarSettingsDialog : ContentFramedDialog {
@@ -177,7 +177,7 @@ object PlayerActionBarSettingsDialog : ContentFramedDialog {
                     editor.putBoolean(def.preferenceKey, workingToggles[index])
                 }
                 editor.apply()
-                Toaster.s(R.string.toast_preference_saved)
+                Toaster.s(R.string.settings_preference_saved_message)
                 hideDialog()
             }
         )

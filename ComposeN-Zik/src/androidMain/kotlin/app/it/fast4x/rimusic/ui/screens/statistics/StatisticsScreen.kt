@@ -55,13 +55,13 @@ fun StatisticsScreen(
                 topInsetHandledByContent = true,
                 topContentInsetProvider = topContentInset,
                 navBarContent = { item ->
-                    item(0, stringResource(R.string.today), R.drawable.stat_today)
-                    item(1, stringResource(R.string._1_week), R.drawable.stat_week)
-                    item(2, stringResource(R.string._1_month), R.drawable.stat_month)
-                    item(3, stringResource(R.string._3_month), R.drawable.stat_3months)
-                    item(4, stringResource(R.string._6_month), R.drawable.stat_6months)
-                    item(5, stringResource(R.string._1_year), R.drawable.stat_year)
-                    item(6, stringResource(R.string.all), R.drawable.calendar_clear)
+                    item(0, stringResource(R.string.calendar_today), R.drawable.stat_today)
+                    item(1, stringResource(R.string.calendar_period_one_week), R.drawable.stat_week)
+                    item(2, stringResource(R.string.calendar_period_one_month), R.drawable.stat_month)
+                    item(3, stringResource(R.string.calendar_period_three_months), R.drawable.stat_3months)
+                    item(4, stringResource(R.string.calendar_period_six_months), R.drawable.stat_6months)
+                    item(5, stringResource(R.string.calendar_period_one_year), R.drawable.stat_year)
+                    item(6, stringResource(R.string.common_option_all), R.drawable.calendar_clear)
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {

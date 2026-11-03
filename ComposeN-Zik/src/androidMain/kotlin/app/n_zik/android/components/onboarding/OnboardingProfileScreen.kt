@@ -253,7 +253,7 @@ fun OnboardingProfileScreen(
                 photoVersion++
                 Timber.tag("Onboarding").i("Base clone photo saved")
             } else {
-                Toaster.e(R.string.face_photo_failed)
+                Toaster.e(R.string.profile_photo_failed)
             }
         }
     }
@@ -325,7 +325,7 @@ fun OnboardingProfileScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = stringResource(R.string.onboard_profile_title),
+            text = stringResource(R.string.onboarding_profile_title),
             style = typography().l,
             fontWeight = FontWeight.SemiBold,
             color = colorPalette().text
@@ -334,7 +334,7 @@ fun OnboardingProfileScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = stringResource(R.string.onboard_profile_desc),
+            text = stringResource(R.string.onboarding_profile_description),
             style = typography().s,
             color = colorPalette().textSecondary,
             textAlign = TextAlign.Center
@@ -347,7 +347,7 @@ fun OnboardingProfileScreen(
         // nav buttons
         OnboardingActionCard(
             icon = R.drawable.person,
-            title = stringResource(R.string.face_profile_name),
+            title = stringResource(R.string.profile_local_name),
             description = "",
             modifier = Modifier.navigationBarsPadding(),
             extraContent = {
@@ -373,7 +373,7 @@ fun OnboardingProfileScreen(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = stringResource(R.string.display_name_shown_as),
+                            text = stringResource(R.string.profile_display_name_preview_label),
                             style = typography().xxs.copy(color = colorPalette().textSecondary)
                         )
                         Spacer(modifier = Modifier.height(2.dp))
@@ -388,7 +388,7 @@ fun OnboardingProfileScreen(
 
                 // stringResource is @Composable: hoisted out of the non-composable
                 // semantics lambda
-                val fieldHint = stringResource(R.string.onboard_profile_field_hint)
+                val fieldHint = stringResource(R.string.onboarding_profile_field_hint)
                 TextField(
                     value = name,
                     onValueChange = {
@@ -423,7 +423,7 @@ fun OnboardingProfileScreen(
 //
                 // while that account is not logged in
                 Text(
-                    text = stringResource(R.string.face_name_source),
+                    text = stringResource(R.string.profile_name_source),
                     style = typography().xxs,
                     color = colorPalette().textSecondary,
                     modifier = Modifier
@@ -452,7 +452,7 @@ fun OnboardingProfileScreen(
 //
                 // the settings face card)
                 Text(
-                    text = stringResource(R.string.face_avatar_source),
+                    text = stringResource(R.string.profile_avatar_source),
                     style = typography().xxs,
                     color = colorPalette().textSecondary,
                     modifier = Modifier
@@ -505,7 +505,7 @@ fun OnboardingProfileScreen(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = stringResource(R.string.face_photo),
+                        text = stringResource(R.string.profile_photo),
                         style = typography().s,
                         color = colorPalette().text,
                         modifier = Modifier.weight(1f)
@@ -513,7 +513,7 @@ fun OnboardingProfileScreen(
 
                     Text(
                         text = stringResource(
-                            if (profilePhoto != null) R.string.face_photo_set else R.string.face_photo_not_set
+                            if (profilePhoto != null) R.string.profile_photo_set else R.string.profile_photo_not_set
                         ),
                         style = typography().xxs.copy(color = colorPalette().textSecondary)
                     )
@@ -537,7 +537,7 @@ fun OnboardingProfileScreen(
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.trash),
-                                contentDescription = stringResource(R.string.face_photo_remove),
+                                contentDescription = stringResource(R.string.profile_photo_remove),
                                 tint = Color.Red,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -556,7 +556,7 @@ fun OnboardingProfileScreen(
                     // Single line: the button is full width, so an enlarged font must not
                     // wrap the label onto a second line
                     Text(
-                        stringResource(R.string.onboard_profile_continue),
+                        stringResource(R.string.onboarding_profile_continue),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -626,7 +626,7 @@ private fun FaceSourceOptionRow(
 
         if (locked) {
             Text(
-                text = stringResource(R.string.face_source_locked),
+                text = stringResource(R.string.profile_identity_source_not_connected),
                 style = typography().xxs.copy(color = colorPalette().textSecondary)
             )
         }

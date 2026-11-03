@@ -47,18 +47,18 @@ class SettingsDetailedSearchTest {
     @Test fun localizedLabelAndDescriptionFindTheExactEntry() {
         val french = localized(Locale.FRENCH)
         val skipSilence = AllSettingsEntryTargets.single {
-            it.tab == 0 && it.cardTitleRes == R.string.audio_effects && it.labelRes == R.string.skip_silence
+            it.tab == 0 && it.cardTitleRes == R.string.audio_effects && it.labelRes == R.string.settings_audio_skip_silence_label
         }
-        assertTrue(searchSettingsEntries(french, french.getString(R.string.skip_silence)).contains(skipSilence))
-        assertTrue(searchSettingsEntries(french, french.getString(R.string.skip_silent_parts_during_playback)).contains(skipSilence))
+        assertTrue(searchSettingsEntries(french, french.getString(R.string.settings_audio_skip_silence_label)).contains(skipSilence))
+        assertTrue(searchSettingsEntries(french, french.getString(R.string.settings_audio_skip_silence_description)).contains(skipSilence))
         val embedded = EmbeddedSettingsEntryTargets.single { it.labelRes == R.string.listen_together_server_url }
         assertTrue(searchSettingsEntries(french, french.getString(embedded.labelRes)).contains(embedded))
     }
 
     @Test fun dynamicBrightnessTitleAndDescriptionFindTheThemeControl() {
         val target = AllSettingsEntryTargets.single { it.id == "ui.theme.respect_brightness" }
-        assertEquals(R.string.theme, target.cardTitleRes)
-        listOf(R.string.dynamic_theme_respect_brightness, R.string.dynamic_theme_respect_brightness_description)
+        assertEquals(R.string.common_color_source_theme, target.cardTitleRes)
+        listOf(R.string.settings_theme_keep_dark_mode_label, R.string.settings_theme_keep_dark_mode_description)
             .forEach { resource ->
                 assertTrue(searchSettingsEntries(context, context.getString(resource)).contains(target))
             }
@@ -73,8 +73,8 @@ class SettingsDetailedSearchTest {
                 val card = entry.parentCard()
                 val category = OrganizedSettingsCategories.single { it.id == card.categoryId() }
                 val location = entry.locationDescription(localized)
-                val root = localized.getString(R.string.settings)
-                val expectedPage = if (entry.id.startsWith("glass.")) localized.getString(R.string.liquid_glass)
+                val root = localized.getString(R.string.settings_title)
+                val expectedPage = if (entry.id.startsWith("glass.")) localized.getString(R.string.glass_effect_title)
                     else localized.getString(category.labelRes)
                 assertTrue("Wrong page for ${entry.id}: $location", location.startsWith("$root › $expectedPage"))
                 assertTrue("Missing parent card for ${entry.id}: $location", location.contains(card.displayTitle(localized)))
@@ -86,14 +86,14 @@ class SettingsDetailedSearchTest {
         val targets = EmbeddedSettingsEntryTargets.filter { it.id == "embedded.maintenance.debug_updater_layout_access" }
         assertEquals(if (BuildConfig.DEBUG) 1 else 0, targets.size)
         if (BuildConfig.DEBUG) {
-            assertTrue(searchSettingsEntries(context, context.getString(R.string.debug_updater_layout_access_description)).contains(targets.single()))
+            assertTrue(searchSettingsEntries(context, context.getString(R.string.settings_debug_updater_preview_description)).contains(targets.single()))
         }
     }
 
     @Test fun searchFoldsCaseAndAccentsWithoutChangingStableIdentity() {
         val french = localized(Locale.FRENCH)
         val english = localized(Locale.ENGLISH)
-        val target = EmbeddedSettingsEntryTargets.single { it.labelRes == R.string.enable_log_debug }
+        val target = EmbeddedSettingsEntryTargets.single { it.labelRes == R.string.maintenance_debug_logging_title }
         assertNotEquals(english.getString(target.labelRes), french.getString(target.labelRes))
         val frenchResult = searchSettingsEntries(french, "DEBOGAGE").single { it.id == target.id }
         val englishResult = searchSettingsEntries(english, english.getString(target.labelRes)).single { it.id == target.id }
@@ -144,7 +144,7 @@ class SettingsDetailedSearchTest {
                 assertEquals("card.${card.tab}.$stableName", settingsCardTargetId(localized, card.tab, card.titleRes))
             }
         }
-        assertEquals(null, settingsSectionNavigationName(R.string.playback))
+        assertEquals(null, settingsSectionNavigationName(R.string.common_playback_section_title))
     }
 
     @Test fun artworkAndThemeSourcesFindEverySelectorAndKeepBackgroundStylesDistinct() {
@@ -156,27 +156,27 @@ class SettingsDetailedSearchTest {
             "appearance.player_behavior_and_visuals.visualizer_white_color_option",
             "appearance.txt_lyrics.lyricscolor",
         )
-        listOf(english.getString(R.string.artwork), english.getString(R.string.theme)).forEach { source ->
+        listOf(english.getString(R.string.common_color_source_artwork), english.getString(R.string.common_color_source_theme)).forEach { source ->
             val actualTargets = searchSettingsEntries(english, source).map { it.id }.toSet()
             assertTrue("Missing $source selectors: ${expectedTargets - actualTargets}", actualTargets.containsAll(expectedTargets))
         }
         mapOf(
-            R.string.artwork to "Artwork",
-            R.string.theme to "Theme",
-            R.string.bg_colors_gradient_background_from_cover to "Artwork gradient",
-            R.string.bg_colors_gradient_background_from_theme to "Theme gradient",
-            R.string.bg_colors_blurred_cover_background to "Artwork blurred",
-            R.string.bg_colors_fluid_gradient_background_from_cover to "Artwork Fluid gradient",
-            R.string.bg_colors_fluid_gradient_background_from_theme to "Theme Fluid gradient",
-            R.string.bg_colors_m3e_morphing_cover to "Artwork M3E morphing shapes",
-            R.string.bg_colors_m3e_morphing_theme to "Theme M3E morphing shapes",
+            R.string.common_color_source_artwork to "Artwork",
+            R.string.common_color_source_theme to "Theme",
+            R.string.player_background_artwork_gradient_label to "Artwork gradient",
+            R.string.player_background_theme_gradient_label to "Theme gradient",
+            R.string.player_background_artwork_blurred_label to "Artwork blurred",
+            R.string.player_background_artwork_fluid_gradient_label to "Artwork Fluid gradient",
+            R.string.player_background_theme_fluid_gradient_label to "Theme Fluid gradient",
+            R.string.player_background_artwork_m3e_morphing_label to "Artwork M3E morphing shapes",
+            R.string.player_background_theme_m3e_morphing_label to "Theme M3E morphing shapes",
         ).forEach { (resource, label) -> assertEquals(label, english.getString(resource)) }
         val catalog = settingsEntryChoiceLabels(english::getString, Locale.ENGLISH)
         val backgrounds = catalog.getValue("appearance.colors_and_background.background_colors")
-        assertTrue(backgrounds.containsAll(listOf(R.string.artwork, R.string.theme, R.string.bg_colors_gradient_background_from_cover, R.string.bg_colors_gradient_background_from_theme, R.string.bg_colors_blurred_cover_background).map(english::getString)))
+        assertTrue(backgrounds.containsAll(listOf(R.string.common_color_source_artwork, R.string.common_color_source_theme, R.string.player_background_artwork_gradient_label, R.string.player_background_theme_gradient_label, R.string.player_background_artwork_blurred_label).map(english::getString)))
         assertEquals(backgrounds.size, backgrounds.distinct().size)
         val animations = catalog.getValue("appearance.colors_and_background.gradienttype")
-        assertTrue(animations.containsAll(listOf(R.string.bg_colors_fluid_gradient_background_from_cover, R.string.bg_colors_fluid_gradient_background_from_theme, R.string.bg_colors_m3e_morphing_cover, R.string.bg_colors_m3e_morphing_theme).map(english::getString)))
+        assertTrue(animations.containsAll(listOf(R.string.player_background_artwork_fluid_gradient_label, R.string.player_background_theme_fluid_gradient_label, R.string.player_background_artwork_m3e_morphing_label, R.string.player_background_theme_m3e_morphing_label).map(english::getString)))
         assertEquals(animations.size, animations.distinct().size)
         animations.forEach { choice ->
             assertTrue(searchSettingsEntries(english, choice).any { it.id == "appearance.colors_and_background.gradienttype" })
@@ -193,13 +193,13 @@ class SettingsDetailedSearchTest {
             "data.cache.image_cache_max_size" to "32MB",
             "general.playback.pause_between_songs" to "5s",
             "general.playback.crossfade_duration" to "12s",
-            "ai.quick_picks.quick_selection_type" to english.getString(R.string.quick_selection, 3),
+            "ai.quick_picks.quick_selection_type" to english.getString(R.string.recommendations_quick_picks_count, 3),
             "ui.settings_use_font_type.settings_use_font_type" to FontType.entries.first().name,
             "other.proxy.proxy_mode" to "SOCKS",
-            "ai.statistics.statistics_max_number_of_items" to english.getString(R.string.max_items_custom),
+            "ai.statistics.statistics_max_number_of_items" to english.getString(R.string.statistics_items_limit_custom),
             "network.quality.audio_quality_format" to english.getString(R.string.audio_quality_format_high),
             "accounts.social_discord.discord_activity_type" to english.getString(R.string.discord_activity_watching),
-            "embedded.profile.face_name_source" to english.getString(R.string.face_source_profile),
+            "embedded.profile.face_name_source" to english.getString(R.string.profile_name_source_local),
         )
         samples.forEach { (id, choice) ->
             assertTrue("Missing choice $id: $choice", catalog.getValue(id).contains(choice))
@@ -213,7 +213,7 @@ class SettingsDetailedSearchTest {
 
     @Test fun formattedChoiceLabelsUseTheResourcesLocale() {
         val arabic = localized(Locale.forLanguageTag("ar"))
-        val choice = arabic.getString(R.string.quick_selection, 3)
+        val choice = arabic.getString(R.string.recommendations_quick_picks_count, 3)
         assertEquals(
             1,
             searchSettingsEntries(arabic, choice).count { it.id == "ai.quick_picks.quick_selection_type" },
@@ -239,29 +239,29 @@ class SettingsDetailedSearchTest {
         val base = SettingsEntryTargets.first()
         val child = base.copy(id = "nested.breadcrumb.test", nestedDestination = SettingsNestedDestination(
             openerId = base.id, dialogId = "breadcrumb", tabIndex = 0, itemId = "test",
-            sectionTitleRes = R.string.favorites,
+            sectionTitleRes = R.string.library_favorites_title,
         ))
         val location = child.locationDescription(context)
         assertTrue(location.contains(context.getString(base.labelRes)))
-        assertTrue(location.endsWith(context.getString(R.string.favorites)))
+        assertTrue(location.endsWith(context.getString(R.string.library_favorites_title)))
     }
 
     @Test fun glassPolicyResultsNameTheirAppearanceScopeAndDedicatedVisiblePath() {
         val entry = AllSettingsEntryTargets.single { it.id == "glass.destination.PlayerActions.ActionButtons" }
-        assertEquals("${context.getString(R.string.liquid_glass)} › ${context.getString(entry.labelRes)}",
+        assertEquals("${context.getString(R.string.glass_effect_title)} › ${context.getString(entry.labelRes)}",
             entry.searchResultTitle(context))
-        assertEquals(listOf(R.string.settings, R.string.liquid_glass, R.string.glass_destination_playback)
+        assertEquals(listOf(R.string.settings_title, R.string.glass_effect_title, R.string.glass_effect_destination_playback)
             .joinToString(" › ") { context.getString(it) }, entry.locationDescription(context))
         assertFalse(entry.locationDescription(context).contains(context.getString(R.string.settings_category_interface)))
     }
 
     @Test fun functionalResultsKeepTheirVisibleLabelAndActualOrganizedCardPath() {
         val entry = AllSettingsEntryTargets.single { it.id == "general.audio_effects.skip_silence" }
-        assertEquals(context.getString(R.string.skip_silence), entry.searchResultTitle(context))
-        assertEquals(listOf(R.string.settings, R.string.settings_category_audio, R.string.audio_effects)
+        assertEquals(context.getString(R.string.settings_audio_skip_silence_label), entry.searchResultTitle(context))
+        assertEquals(listOf(R.string.settings_title, R.string.settings_category_audio, R.string.audio_effects)
             .joinToString(" › ") { context.getString(it) }, entry.locationDescription(context))
         val audioQuality = AllSettingsEntryTargets.single { it.id == "network.quality.audio_quality_format" }
-        assertEquals(listOf(R.string.settings, R.string.tab_network, R.string.quality)
+        assertEquals(listOf(R.string.settings_title, R.string.settings_network_title, R.string.settings_network_quality_title)
             .joinToString(" › ") { context.getString(it) }, audioQuality.locationDescription(context))
     }
 

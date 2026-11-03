@@ -12,50 +12,50 @@ fun isGlassSettingsLink(tab: Int, focus: String): Boolean =
 data class SettingsCategory(val id: String, val labelRes: Int, val iconRes: Int, val group: Int, val descriptionRes: Int)
 
 val OrganizedSettingsCategories = listOf(
-    SettingsCategory("about", R.string.about, R.drawable.information, 1, R.string.settings_page_about_description),
-    SettingsCategory("playback", R.string.playback, R.drawable.play_forward, 2, R.string.settings_page_playback_description),
+    SettingsCategory("about", R.string.about_title, R.drawable.information, 1, R.string.settings_page_about_description),
+    SettingsCategory("playback", R.string.common_playback_section_title, R.drawable.play_forward, 2, R.string.settings_page_playback_description),
     SettingsCategory("audio", R.string.settings_category_audio, R.drawable.sound_effect, 2, R.string.settings_page_audio_description),
     SettingsCategory("behavior", R.string.settings_category_behavior, R.drawable.gesture, 2, R.string.settings_page_behavior_description),
     SettingsCategory("interface", R.string.settings_category_interface, R.drawable.ui, 3, R.string.settings_page_interface_description),
     SettingsCategory("player", R.string.settings_category_player, R.drawable.player_control, 3, R.string.settings_page_player_description),
     SettingsCategory("privacy", R.string.settings_category_privacy, R.drawable.shield_checkmark, 4, R.string.settings_page_privacy_description),
-    SettingsCategory("data", R.string.tab_data, R.drawable.server, 4, R.string.settings_page_data_description),
-    SettingsCategory("downloads", R.string.download, R.drawable.download, 4, R.string.settings_page_downloads_description),
-    SettingsCategory("network", R.string.tab_network, R.drawable.network, 4, R.string.settings_page_network_description),
-    SettingsCategory("youtube", R.string.youtube_music, R.drawable.ytmusic, 5, R.string.settings_page_youtube_description),
-    SettingsCategory("profiles", R.string.profiles, R.drawable.person, 5, R.string.settings_page_profiles_description),
+    SettingsCategory("data", R.string.settings_data_title, R.drawable.server, 4, R.string.settings_page_data_description),
+    SettingsCategory("downloads", R.string.downloads_title, R.drawable.download, 4, R.string.settings_page_downloads_description),
+    SettingsCategory("network", R.string.settings_network_title, R.drawable.network, 4, R.string.settings_page_network_description),
+    SettingsCategory("youtube", R.string.settings_youtube_music_title, R.drawable.ytmusic, 5, R.string.settings_page_youtube_description),
+    SettingsCategory("profiles", R.string.profile_title, R.drawable.person, 5, R.string.settings_page_profiles_description),
     SettingsCategory("services", R.string.settings_category_services, R.drawable.people, 5, R.string.settings_page_services_description),
     SettingsCategory("ai", R.string.settings_category_ai, R.drawable.sparkles, 6, R.string.settings_page_ai_description),
-    SettingsCategory("rewind", R.string.rw_settings_title, R.drawable.sparkles, 6, R.string.settings_page_rewind_description),
+    SettingsCategory("rewind", R.string.rewind_settings_title, R.drawable.sparkles, 6, R.string.settings_page_rewind_description),
     SettingsCategory("maintenance", R.string.settings_category_maintenance, R.drawable.extension, 7, R.string.settings_page_maintenance_description),
     SettingsCategory("system", R.string.settings_category_system, R.drawable.settings, 7, R.string.settings_page_system_description),
 )
 
 fun SettingsCardRegistryEntry.categoryId(): String = when {
     titleRes == R.string.settings_reset -> "system"
-    tab == 9 || (tab == 4 && titleRes == R.string.history) || (tab == 3 && titleRes == R.string.tab_data) -> "privacy"
+    tab == 9 || (tab == 4 && titleRes == R.string.library_history_title) || (tab == 3 && titleRes == R.string.settings_data_title) -> "privacy"
     tab == 0 -> when (titleRes) {
-        R.string.languages, R.string.app_shortcuts_settings -> "system"
-        R.string.playback, R.string.queue_management -> "playback"
+        R.string.settings_languages_title, R.string.settings_launcher_shortcuts_title -> "system"
+        R.string.common_playback_section_title, R.string.settings_queue_management_title -> "playback"
         R.string.audio_effects -> "audio"
-        R.string.player_controls, R.string.picture_in_picture -> "player"
+        R.string.player_controls, R.string.settings_picture_in_picture_title -> "player"
         else -> "behavior"
     }
-    tab == 1 -> if (titleRes == R.string.swipe_to_action) "behavior" else "interface"
+    tab == 1 -> if (titleRes == R.string.settings_swipe_actions_title) "behavior" else "interface"
     tab == 2 -> "player"
-    tab == 3 -> if (titleRes == R.string.rw_settings_title) "rewind" else "ai"
+    tab == 3 -> if (titleRes == R.string.rewind_settings_title) "rewind" else "ai"
     tab == 4 -> "data"
     tab == 5 -> when (titleRes) {
         R.string.profile_face -> "profiles"
-        R.string.social_discord, R.string.social_lastfm, R.string.listen_together -> "services"
+        R.string.settings_discord_title, R.string.settings_lastfm_title, R.string.listen_together_title -> "services"
         else -> "youtube"
     }
-    tab == 6 -> if (titleRes == R.string.download || titleRes == R.string.settings_download_quality) "downloads" else "network"
+    tab == 6 -> if (titleRes == R.string.downloads_title || titleRes == R.string.settings_download_quality) "downloads" else "network"
     tab == 7 -> when (titleRes) {
         R.string.parental_control -> "playback"
-        R.string.on_device -> "data"
+        R.string.library_on_device_title -> "data"
         R.string.settings_section_proxy_title -> "network"
-        R.string.maintenance, R.string.modules_title, R.string.rescue_center -> "maintenance"
+        R.string.maintenance_title, R.string.modules_title, R.string.recovery_center -> "maintenance"
         else -> "system"
     }
     else -> "about"

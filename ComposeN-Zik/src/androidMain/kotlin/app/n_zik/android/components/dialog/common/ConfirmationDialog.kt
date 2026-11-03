@@ -23,7 +23,7 @@ fun ConfirmationDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
     modifier: Modifier = Modifier,
-    cancelText: String = stringResource(R.string.cancel),
+    cancelText: String = stringResource(R.string.common_action_cancel),
     confirmText: String,
     onCancel: () -> Unit = onDismiss,
     title: String,

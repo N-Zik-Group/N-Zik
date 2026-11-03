@@ -48,7 +48,7 @@ abstract class TextInputDialog(
     override fun onValueChanged(newValue: String): Boolean {
         val result = newValue.matches( constraintRegex )
         if( !result )
-            errorMessage = appContext().resources.getString( R.string.invalid_input )
+            errorMessage = appContext().resources.getString( R.string.common_validation_invalid_input )
         else
             errorMessage = ""
 
@@ -58,7 +58,7 @@ abstract class TextInputDialog(
     @CallSuper
     override fun onSet( newValue: String ) {
         if( !allowEmpty && newValue.isEmpty() )
-            errorMessage = appContext().resources.getString( R.string.value_cannot_be_empty )
+            errorMessage = appContext().resources.getString( R.string.common_validation_empty_value )
     }
 
     @Composable

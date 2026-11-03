@@ -49,13 +49,13 @@ open class DeleteSongDialog(
     var song = Optional.empty<Song>()
 
     override val confirmationTitle: String
-        @Composable get() = stringResource(R.string.dialog_delete_songs)
+        @Composable get() = stringResource(R.string.song_delete_dialog_title)
     override val confirmationAction: String
-        @Composable get() = stringResource(R.string.delete)
+        @Composable get() = stringResource(R.string.common_action_delete)
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource( R.string.delete_song )
+        get() = stringResource( R.string.song_delete_confirmation )
 
     override fun onDismiss() {
         song = Optional.empty()
@@ -80,7 +80,7 @@ open class DeleteSongDialog(
             // allocated per call, never cancelled (delete + toast must run to completion).
             NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                 deleteSongFiles( s )
-                Toaster.i( R.string.deleted )
+                Toaster.i( R.string.common_delete_success )
             }
         }
 

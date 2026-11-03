@@ -59,17 +59,17 @@ internal fun UiInterfaceCard(search: Search) {
     var searchDisplayOrder by rememberPreference(searchDisplayOrderKey, SearchDisplayOrder.SuggestionsFirst)
 
     val navSearchContextMatch = search.inputValue.isBlank() ||
-        stringResource(R.string.hide_status_bar).contains(search.inputValue, true) ||
+        stringResource(R.string.settings_interface_hide_status_bar_label).contains(search.inputValue, true) ||
         stringResource(R.string.search_history_pages).contains(search.inputValue, true) ||
         stringResource(R.string.search_history_pages_description).contains(search.inputValue, true) ||
         stringResource(R.string.search_display_order).contains(search.inputValue, true) ||
-        stringResource(R.string.navigation_bar_position).contains(search.inputValue, true) ||
-        stringResource(R.string.navigation_bar_type).contains(search.inputValue, true) ||
+        stringResource(R.string.settings_navigation_position_label).contains(search.inputValue, true) ||
+        stringResource(R.string.settings_navigation_style_label).contains(search.inputValue, true) ||
         stringResource(R.string.player_position).contains(search.inputValue, true) ||
-        stringResource(R.string.menu_style).contains(search.inputValue, true) ||
+        stringResource(R.string.settings_menu_style_label).contains(search.inputValue, true) ||
         stringResource(R.string.home_tabs_settings).contains(search.inputValue, true) ||
-        stringResource(R.string.default_page).contains(search.inputValue, true) ||
-        stringResource(R.string.transition_effect).contains(search.inputValue, true)
+        stringResource(R.string.settings_home_default_page_label).contains(search.inputValue, true) ||
+        stringResource(R.string.settings_navigation_transition_effect_label).contains(search.inputValue, true)
 
     AnimatedVisibility(
         visible = navSearchContextMatch,
@@ -78,14 +78,14 @@ internal fun UiInterfaceCard(search: Search) {
     ) {
         SettingsSectionCard(
             modifier = Modifier.testTag("ui.card.interface"),
-            title = stringResource(R.string.user_interface),
+            title = stringResource(R.string.settings_interface_title),
             icon = R.drawable.ui,
             content = {
-                if (search.inputValue.isBlank() || stringResource(R.string.hide_status_bar).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_interface_hide_status_bar_label).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.hide_status_bar"),
-                        title = stringResource(R.string.hide_status_bar),
-                        text = stringResource(R.string.settings_desc_ui_settings_use_font_type_hide_status_bar),
+                        title = stringResource(R.string.settings_interface_hide_status_bar_label),
+                        text = stringResource(R.string.interface_hide_status_bar_description),
                         isChecked = hideStatusBar,
                         onCheckedChange = { hideStatusBar = it },
                         icon = R.drawable.eye_off
@@ -93,11 +93,11 @@ internal fun UiInterfaceCard(search: Search) {
                 }
 
                 var showNavPosDialog by remember { mutableStateOf(false) }
-                if (search.inputValue.isBlank() || stringResource(R.string.navigation_bar_position).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_navigation_position_label).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.navigation_bar_position"),
-                        title = stringResource(R.string.navigation_bar_position),
-                        text = stringResource(R.string.settings_desc_ui_user_interface_navigation_bar_position),
+                        title = stringResource(R.string.settings_navigation_position_label),
+                        text = stringResource(R.string.interface_navigation_bar_position_description),
                         selectedValueText = navigationBarPosition.text,
                         icon = R.drawable.locate,
                         onClick = { showNavPosDialog = true }
@@ -105,7 +105,7 @@ internal fun UiInterfaceCard(search: Search) {
                 }
                 DialogPresence(visible = showNavPosDialog) {
                     ValueSelectorDialog(
-                        title = stringResource(R.string.navigation_bar_position),
+                        title = stringResource(R.string.settings_navigation_position_label),
                         selectedValue = navigationBarPosition,
                         onValueSelected = { navigationBarPosition = it },
                         valueText = { it.text },
@@ -115,11 +115,11 @@ internal fun UiInterfaceCard(search: Search) {
                 }
 
                 var showNavTypeDialog by remember { mutableStateOf(false) }
-                if (search.inputValue.isBlank() || stringResource(R.string.navigation_bar_type).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_navigation_style_label).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.navigation_bar_type"),
-                        title = stringResource(R.string.navigation_bar_type),
-                        text = stringResource(R.string.settings_desc_ui_user_interface_navigation_bar_type),
+                        title = stringResource(R.string.settings_navigation_style_label),
+                        text = stringResource(R.string.interface_navigation_bar_type_description),
                         selectedValueText = navigationBarType.text,
                         icon = R.drawable.burger,
                         onClick = { showNavTypeDialog = true }
@@ -127,7 +127,7 @@ internal fun UiInterfaceCard(search: Search) {
                 }
                 DialogPresence(visible = showNavTypeDialog) {
                     ValueSelectorDialog(
-                        title = stringResource(R.string.navigation_bar_type),
+                        title = stringResource(R.string.settings_navigation_style_label),
                         selectedValue = navigationBarType,
                         onValueSelected = { navigationBarType = it },
                         valueText = { it.text },
@@ -141,7 +141,7 @@ internal fun UiInterfaceCard(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.player_position"),
                         title = stringResource(R.string.player_position),
-                        text = stringResource(R.string.settings_desc_ui_user_interface_player_position),
+                        text = stringResource(R.string.interface_player_position_description),
                         selectedValueText = playerPosition.text,
                         icon = R.drawable.position,
                         onClick = { showPlayerPosDialog = true }
@@ -159,11 +159,11 @@ internal fun UiInterfaceCard(search: Search) {
                 }
 
                 var showMenuStyleDialog by remember { mutableStateOf(false) }
-                if (search.inputValue.isBlank() || stringResource(R.string.menu_style).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_menu_style_label).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.menu_style"),
-                        title = stringResource(R.string.menu_style),
-                        text = stringResource(R.string.settings_desc_ui_user_interface_menu_style),
+                        title = stringResource(R.string.settings_menu_style_label),
+                        text = stringResource(R.string.interface_menu_style_description),
                         selectedValueText = menuStyle.text,
                         icon = R.drawable.reorder,
                         onClick = { showMenuStyleDialog = true }
@@ -171,7 +171,7 @@ internal fun UiInterfaceCard(search: Search) {
                 }
                 DialogPresence(visible = showMenuStyleDialog) {
                     ValueSelectorDialog(
-                        title = stringResource(R.string.menu_style),
+                        title = stringResource(R.string.settings_menu_style_label),
                         selectedValue = menuStyle,
                         onValueSelected = { menuStyle = it },
                         valueText = { it.text },
@@ -181,11 +181,11 @@ internal fun UiInterfaceCard(search: Search) {
                 }
 
                 var showDefPageDialog by remember { mutableStateOf(false) }
-                if (search.inputValue.isBlank() || stringResource(R.string.default_page).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_home_default_page_label).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.default_page"),
-                        title = stringResource(R.string.default_page),
-                        text = stringResource(R.string.settings_desc_ui_user_interface_default_page),
+                        title = stringResource(R.string.settings_home_default_page_label),
+                        text = stringResource(R.string.interface_default_page_description),
                         selectedValueText = indexNavigationTab.text,
                         icon = R.drawable.star_brilliant,
                         onClick = { showDefPageDialog = true }
@@ -193,7 +193,7 @@ internal fun UiInterfaceCard(search: Search) {
                 }
                 DialogPresence(visible = showDefPageDialog) {
                     ValueSelectorDialog(
-                        title = stringResource(R.string.default_page),
+                        title = stringResource(R.string.settings_home_default_page_label),
                         selectedValue = indexNavigationTab,
                         onValueSelected = { indexNavigationTab = it },
                         valueText = { it.text },
@@ -213,11 +213,11 @@ internal fun UiInterfaceCard(search: Search) {
                 }
 
                 var showTransDialog by remember { mutableStateOf(false) }
-                if (search.inputValue.isBlank() || stringResource(R.string.transition_effect).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_navigation_transition_effect_label).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.transition_effect"),
-                        title = stringResource(R.string.transition_effect),
-                        text = stringResource(R.string.settings_desc_ui_user_interface_transition_effect),
+                        title = stringResource(R.string.settings_navigation_transition_effect_label),
+                        text = stringResource(R.string.interface_transition_effect_description),
                         selectedValueText = transitionEffect.text,
                         icon = R.drawable.images_sharp,
                         onClick = { showTransDialog = true }
@@ -225,7 +225,7 @@ internal fun UiInterfaceCard(search: Search) {
                 }
                 DialogPresence(visible = showTransDialog) {
                     ValueSelectorDialog(
-                        title = stringResource(R.string.transition_effect),
+                        title = stringResource(R.string.settings_navigation_transition_effect_label),
                         selectedValue = transitionEffect,
                         onValueSelected = { transitionEffect = it },
                         valueText = { it.text },
@@ -234,11 +234,11 @@ internal fun UiInterfaceCard(search: Search) {
                     )
                 }
 
-                if (search.inputValue.isBlank() || stringResource(R.string.disable_navigation_back_stack).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_navigation_back_to_home_label).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.disable_navigation_back_stack"),
-                        title = stringResource(R.string.disable_navigation_back_stack),
-                        text = stringResource(R.string.disable_navigation_back_stack_description),
+                        title = stringResource(R.string.settings_navigation_back_to_home_label),
+                        text = stringResource(R.string.settings_navigation_back_to_home_description),
                         icon = R.drawable.chevron_back,
                         isChecked = disableBackStack,
                         onCheckedChange = { disableBackStack = it }
@@ -277,11 +277,11 @@ internal fun UiInterfaceCard(search: Search) {
                     )
                 }
 
-                if (search.inputValue.isBlank() || stringResource(R.string.show_floating_icon).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_search_floating_button_visible_label).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.show_floating_icon"),
-                        title = stringResource(R.string.show_floating_icon),
-                        text = stringResource(R.string.settings_desc_ui_user_interface_show_floating_icon),
+                        title = stringResource(R.string.settings_search_floating_button_visible_label),
+                        text = stringResource(R.string.interface_show_floating_icon_description),
                         isChecked = showFloatingIcon,
                         onCheckedChange = { showFloatingIcon = it },
                         icon = R.drawable.maximize
@@ -289,11 +289,11 @@ internal fun UiInterfaceCard(search: Search) {
                 }
 
                 var rememberQueueScrollPosition by rememberPreference(rememberQueueScrollPositionKey, true)
-                if (search.inputValue.isBlank() || stringResource(R.string.remember_queue_scroll_position).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_queue_remember_scroll_label).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.remember_queue_scroll_position"),
-                        title = stringResource(R.string.remember_queue_scroll_position),
-                        text = stringResource(R.string.remember_queue_scroll_position_description),
+                        title = stringResource(R.string.settings_player_queue_remember_scroll_label),
+                        text = stringResource(R.string.settings_player_queue_remember_scroll_description),
                         isChecked = rememberQueueScrollPosition,
                         onCheckedChange = { rememberQueueScrollPosition = it },
                         icon = R.drawable.reorder

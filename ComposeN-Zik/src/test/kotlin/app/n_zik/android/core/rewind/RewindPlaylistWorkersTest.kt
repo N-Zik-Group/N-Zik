@@ -58,7 +58,7 @@ class RewindWorkerTestApplication : Application() {
         super.onCreate()
         val channel = NotificationChannel(
             RewindReminderWorker.CHANNEL_ID,
-            getString(R.string.rw_channel),
+            getString(R.string.rewind_channel),
             NotificationManager.IMPORTANCE_LOW
         )
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)

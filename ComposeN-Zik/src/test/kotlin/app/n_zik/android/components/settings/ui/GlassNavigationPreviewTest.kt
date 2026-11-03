@@ -181,24 +181,24 @@ class GlassNavigationPreviewTest {
 
         val tabs = composeRule.onAllNodes(isTab).fetchSemanticsNodes().sortedBy { it.positionInRoot.x }
         assertEquals(
-            listOf(R.string.playlists, R.string.albums, R.string.songs, R.string.quick_picks).map(context::getString),
+            listOf(R.string.library_playlists_title, R.string.library_albums_title, R.string.library_songs_title, R.string.recommendations_title).map(context::getString),
             tabs.map { it.config[SemanticsProperties.ContentDescription].single() },
         )
-        composeRule.onNodeWithContentDescription(context.getString(R.string.artists)).assertDoesNotExist()
-        composeRule.onNodeWithContentDescription(context.getString(R.string.playlists)).assertIsSelected()
-        composeRule.onNodeWithContentDescription(context.getString(R.string.songs)).performClick().assertIsSelected()
+        composeRule.onNodeWithContentDescription(context.getString(R.string.library_artists_title)).assertDoesNotExist()
+        composeRule.onNodeWithContentDescription(context.getString(R.string.library_playlists_title)).assertIsSelected()
+        composeRule.onNodeWithContentDescription(context.getString(R.string.library_songs_title)).performClick().assertIsSelected()
         assertEquals(3, context.preferences.getInt(homeScreenTabIndexKey, -1))
         assertFalse(context.preferences.getBoolean(glassEnabledKey, false))
     }
 
     @Test fun offlineChangesRemoveQuickPicksAndKeepThePreviewSelectionValid() {
         showPreview()
-        composeRule.onNodeWithContentDescription(context.getString(R.string.quick_picks)).assertIsSelected()
+        composeRule.onNodeWithContentDescription(context.getString(R.string.recommendations_title)).assertIsSelected()
         composeRule.runOnIdle {
             context.preferences.edit().putBoolean(fullOfflineModeKey, true).commit()
         }
-        composeRule.onNodeWithContentDescription(context.getString(R.string.quick_picks)).assertDoesNotExist()
-        composeRule.onNodeWithContentDescription(context.getString(R.string.songs)).assertIsSelected()
+        composeRule.onNodeWithContentDescription(context.getString(R.string.recommendations_title)).assertDoesNotExist()
+        composeRule.onNodeWithContentDescription(context.getString(R.string.library_songs_title)).assertIsSelected()
         composeRule.onAllNodes(isTab).assertCountEquals(4)
     }
 

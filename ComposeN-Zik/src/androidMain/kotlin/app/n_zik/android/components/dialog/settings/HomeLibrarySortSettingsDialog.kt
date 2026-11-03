@@ -43,10 +43,10 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
     private val rewindSortIds = listOf("Name", "SongCount", "DateAdded")
 
     private enum class LibraryTab(val textId: Int, val availableIds: List<String>) {
-        Playlist(R.string.playlists, libraryPlaylistSortIds),
-        YTPlaylist(R.string.youtube_playlist, ytPlaylistSortIds),
-        PinnedPlaylist(R.string.pinned_playlists, pinnedPlaylistSortIds),
-        Rewind(R.string.rewind, rewindSortIds)
+        Playlist(R.string.library_playlists_title, libraryPlaylistSortIds),
+        YTPlaylist(R.string.playlist_youtube_title, ytPlaylistSortIds),
+        PinnedPlaylist(R.string.playlist_pinned_title, pinnedPlaylistSortIds),
+        Rewind(R.string.rewind_title, rewindSortIds)
     }
 
     private val tabs = LibraryTab.entries
@@ -58,7 +58,7 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
         LibraryTab.Rewind -> "lib_rw"
     }
 
-    override val dialogTitle: String @Composable get() = stringResource(R.string.library) + " - Sort"
+    override val dialogTitle: String @Composable get() = stringResource(R.string.library_title) + " - Sort"
     override var isActive: Boolean by mutableStateOf(false)
 
     private fun parseOrder(s: String, available: List<String>): List<String> {
@@ -82,12 +82,12 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
         else -> R.drawable.text
     }
     private fun getSortLabelRes(id: String): Int? = when (id) {
-        "Name" -> R.string.sort_name
-        "SongCount" -> R.string.sort_songs_number
-        "ListeningTime" -> R.string.sort_listening_time
-        "PlayCount" -> R.string.sort_play_count
-        "DateAdded" -> R.string.sort_date_added
-        "Custom" -> R.string.sort_custom_order
+        "Name" -> R.string.library_sort_name
+        "SongCount" -> R.string.library_sort_songs_number
+        "ListeningTime" -> R.string.library_sort_listening_time
+        "PlayCount" -> R.string.library_sort_play_count
+        "DateAdded" -> R.string.library_sort_date_added
+        "Custom" -> R.string.library_sort_custom_order
         else -> null
     }
 
@@ -162,7 +162,7 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
                     (workingToggles[tab] ?: emptyMap()).forEach { (id, isChecked) -> edit.putBoolean("${p}_sort_${id}_visible", isChecked) }
                     edit.putString(key, serializeOrder((workingOrders[tab] ?: emptyList()).filter { id -> (workingToggles[tab] ?: emptyMap())[id] == true }))
                 }
-                edit.apply(); Toaster.s(R.string.toast_preference_saved); hideDialog()
+                edit.apply(); Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }
         )
     }

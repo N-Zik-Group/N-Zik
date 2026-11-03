@@ -45,13 +45,13 @@ class GlassSettingsEntryTest {
                 GlobalPageItemRow(SettingsGlassItem, { clicks++ }, testTag = "glass-entry")
             }
         }
-        val title = compose.onNodeWithText(context.getString(R.string.liquid_glass), useUnmergedTree = true)
-        val beta = compose.onNodeWithText(context.getString(R.string.beta_title), useUnmergedTree = true)
-        assertEquals("Glass effect", context.getString(R.string.liquid_glass))
+        val title = compose.onNodeWithText(context.getString(R.string.glass_effect_title), useUnmergedTree = true)
+        val beta = compose.onNodeWithText(context.getString(R.string.updates_build_beta_label), useUnmergedTree = true)
+        assertEquals("Glass effect", context.getString(R.string.glass_effect_title))
         title.assertIsDisplayed()
         beta.assertIsDisplayed()
         assertTrue(beta.fetchSemanticsNode().boundsInRoot.right <= title.fetchSemanticsNode().boundsInRoot.left)
-        compose.onNodeWithText(context.getString(R.string.page_glass_summary), useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.glass_effect_summary), useUnmergedTree = true).assertDoesNotExist()
         compose.onNodeWithTag("glass-entry").performClick()
         compose.runOnIdle { assertEquals(1, clicks) }
     }

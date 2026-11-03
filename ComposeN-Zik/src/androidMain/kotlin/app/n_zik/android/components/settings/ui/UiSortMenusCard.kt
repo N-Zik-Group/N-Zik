@@ -24,11 +24,11 @@ import app.n_zik.android.R
 internal fun UiSortMenusCard(search: Search) {
     val sortMenuSearchContextMatch = search.inputValue.isBlank() ||
         "sort".contains(search.inputValue, true) ||
-        stringResource(R.string.songs).contains(search.inputValue, true) ||
-        stringResource(R.string.artists).contains(search.inputValue, true) ||
-        stringResource(R.string.albums).contains(search.inputValue, true) ||
-        stringResource(R.string.playlists).contains(search.inputValue, true) ||
-        stringResource(R.string.history).contains(search.inputValue, true)
+        stringResource(R.string.library_songs_title).contains(search.inputValue, true) ||
+        stringResource(R.string.library_artists_title).contains(search.inputValue, true) ||
+        stringResource(R.string.library_albums_title).contains(search.inputValue, true) ||
+        stringResource(R.string.library_playlists_title).contains(search.inputValue, true) ||
+        stringResource(R.string.library_history_title).contains(search.inputValue, true)
 
     AnimatedVisibility(
         visible = sortMenuSearchContextMatch,
@@ -37,59 +37,59 @@ internal fun UiSortMenusCard(search: Search) {
     ) {
         SettingsSectionCard(
             modifier = Modifier.testTag("ui.card.sort-menus"),
-            title = stringResource(R.string.sort_menu),
+            title = stringResource(R.string.library_sort_menu),
             icon = R.drawable.arrow_up,
             content = {
-                if (search.inputValue.isBlank() || stringResource(R.string.songs).contains(search.inputValue, true) || stringResource(R.string.sort_menu).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.library_songs_title).contains(search.inputValue, true) || stringResource(R.string.library_sort_menu).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.sort_menu.songs"),
-                        title = stringResource(R.string.songs),
-                        text = stringResource(R.string.customize_sort_options),
+                        title = stringResource(R.string.library_songs_title),
+                        text = stringResource(R.string.settings_library_sort_options_description),
                         onClick = { HomeSongsSortSettingsDialog.showDialog() },
                         icon = R.drawable.musical_notes
                     )
                 }
-                if (search.inputValue.isBlank() || stringResource(R.string.artists).contains(search.inputValue, true) || stringResource(R.string.sort_menu).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.library_artists_title).contains(search.inputValue, true) || stringResource(R.string.library_sort_menu).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.sort_menu.artists"),
-                        title = stringResource(R.string.artists),
-                        text = stringResource(R.string.customize_sort_options),
+                        title = stringResource(R.string.library_artists_title),
+                        text = stringResource(R.string.settings_library_sort_options_description),
                         onClick = { HomeArtistsSortSettingsDialog.showDialog() },
                         icon = R.drawable.people
                     )
                 }
-                if (search.inputValue.isBlank() || stringResource(R.string.albums).contains(search.inputValue, true) || stringResource(R.string.sort_menu).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.library_albums_title).contains(search.inputValue, true) || stringResource(R.string.library_sort_menu).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.sort_menu.albums"),
-                        title = stringResource(R.string.albums),
-                        text = stringResource(R.string.customize_sort_options),
+                        title = stringResource(R.string.library_albums_title),
+                        text = stringResource(R.string.settings_library_sort_options_description),
                         onClick = { HomeAlbumsSortSettingsDialog.showDialog() },
                         icon = R.drawable.album
                     )
                 }
-                if (search.inputValue.isBlank() || stringResource(R.string.playlists).contains(search.inputValue, true) || stringResource(R.string.sort_menu).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.library_playlists_title).contains(search.inputValue, true) || stringResource(R.string.library_sort_menu).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.sort_menu.playlists"),
-                        title = stringResource(R.string.playlists),
-                        text = stringResource(R.string.customize_sort_options),
+                        title = stringResource(R.string.library_playlists_title),
+                        text = stringResource(R.string.settings_library_sort_options_description),
                         onClick = { HomeLibrarySortSettingsDialog.showDialog() },
                         icon = R.drawable.library
                     )
                 }
-                if (search.inputValue.isBlank() || stringResource(R.string.playlists).contains(search.inputValue, true) || stringResource(R.string.sort_menu).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.library_playlists_title).contains(search.inputValue, true) || stringResource(R.string.library_sort_menu).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.sort_menu.local_playlist_sort"),
-                        title = stringResource(R.string.local_playlist_sort),
-                        text = stringResource(R.string.customize_sort_options),
+                        title = stringResource(R.string.settings_local_playlist_title),
+                        text = stringResource(R.string.settings_library_sort_options_description),
                         onClick = { LocalPlaylistSortSettingsDialog.showDialog() },
                         icon = R.drawable.playlist
                     )
                 }
-                if (search.inputValue.isBlank() || stringResource(R.string.history).contains(search.inputValue, true) || stringResource(R.string.sort_menu).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.library_history_title).contains(search.inputValue, true) || stringResource(R.string.library_sort_menu).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.sort_menu.history"),
-                        title = stringResource(R.string.history),
-                        text = stringResource(R.string.customize_sort_options),
+                        title = stringResource(R.string.library_history_title),
+                        text = stringResource(R.string.settings_library_sort_options_description),
                         onClick = { HistorySortSettingsDialog.showDialog() },
                         icon = R.drawable.time
                     )

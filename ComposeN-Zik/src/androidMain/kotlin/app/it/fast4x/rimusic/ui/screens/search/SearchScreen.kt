@@ -118,7 +118,7 @@ fun SearchScreen(
                 )
             },
             onError = {
-                errorMessage = context.getString(R.string.voice_search_no_match)
+                errorMessage = context.getString(R.string.search_voice_no_match_message)
                 Toaster.e(errorMessage ?: "")
             },
             onListeningStateChanged = { listening ->
@@ -141,7 +141,7 @@ fun SearchScreen(
         if (isGranted) {
             voiceSearchUtils.startListening()
         } else {
-            Toaster.e(context.getString(R.string.voice_search_error_permissions))
+            Toaster.e(context.getString(R.string.search_voice_microphone_permission_error))
         }
     }
 
@@ -165,7 +165,7 @@ fun SearchScreen(
             // tabs).
             val micBubble = SearchBarBubble(
                 iconRes = R.drawable.microphone,
-                contentDescriptionRes = R.string.voice_search,
+                contentDescriptionRes = R.string.search_voice_action_start,
                 active = isListening,
                 onClick = {
                     if (isListening) {
@@ -188,7 +188,7 @@ fun SearchScreen(
             )
             val musicSearchBubble = SearchBarBubble(
                 iconRes = R.drawable.sound_effect,
-                contentDescriptionRes = R.string.music_search,
+                contentDescriptionRes = R.string.search_music_action_start,
                 active = isFindActive,
                 onClick = {
                     keyboardController?.hide()
@@ -209,11 +209,11 @@ fun SearchScreen(
                 topContentInsetProvider = topContentInset,
                 navBarContent = { item ->
                     if (offlineMode)
-                        item(1, stringResource(R.string.library), R.drawable.library)
+                        item(1, stringResource(R.string.library_title), R.drawable.library)
                     else {
-                        item(0, stringResource(R.string.online), R.drawable.globe)
-                        item(1, stringResource(R.string.library), R.drawable.library)
-                        item(2, stringResource(R.string.go_to_link), R.drawable.link)
+                        item(0, stringResource(R.string.search_online), R.drawable.globe)
+                        item(1, stringResource(R.string.library_title), R.drawable.library)
+                        item(2, stringResource(R.string.search_youtube_action_open_url), R.drawable.link)
                     }
                 }
             ) { currentTabIndex ->

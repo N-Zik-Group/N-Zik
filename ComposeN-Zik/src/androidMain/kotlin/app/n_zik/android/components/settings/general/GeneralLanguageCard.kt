@@ -29,14 +29,14 @@ fun GeneralLanguageCard(
     var showLanguageDialog by remember { mutableStateOf(false) }
 
     SettingsSectionCard(
-        title = stringResource(R.string.languages),
+        title = stringResource(R.string.settings_languages_title),
         icon = R.drawable.discover,
         visible = visible,
         content = {
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.languages.app_language"),
-                title = stringResource(R.string.app_language),
-                text = stringResource(R.string.settings_desc_general_languages_app_language),
+                title = stringResource(R.string.settings_app_language_label),
+                text = stringResource(R.string.language_app_selection_description),
                 selectedValueText = languageApp.text,
                 onClick = { showLanguageDialog = true },
                 icon = R.drawable.translate
@@ -44,7 +44,7 @@ fun GeneralLanguageCard(
 
             DialogPresence(visible = showLanguageDialog) {
                 ValueSelectorDialog(
-                    title = stringResource(R.string.app_language) + ": $systemLocale",
+                    title = stringResource(R.string.settings_app_language_label) + ": $systemLocale",
                     selectedValue = languageApp,
                     onValueSelected = { languageApp = it },
                     valueText = { it.text },

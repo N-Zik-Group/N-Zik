@@ -42,7 +42,7 @@ fun DebugLogsBadge(
         onToggle = {
             logDebugEnabled = !logDebugEnabled
             if (logDebugEnabled) {
-                Toaster.i(R.string.restarting_rimusic_is_required)
+                Toaster.i(R.string.settings_restart_required_message)
             } else {
                 purgeDebugLogs(File(context.filesDir, "logs"))
             }

@@ -107,7 +107,7 @@ object CopyLogsDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.export_logs)
+        get() = stringResource(R.string.logs_action_export)
 
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -125,7 +125,7 @@ object CopyLogsDialog : ContentFramedDialog {
         val coroutineScope = rememberCoroutineScope()
         val currentOption by selectedOption
 
-        val noLogAvailable = stringResource(R.string.no_log_available)
+        val noLogAvailable = stringResource(R.string.common_log_unavailable)
 
         // Live preview of the selected option's log (re-read on every option change):
         // all three options are viewable + copyable, not just exportable — the same
@@ -160,12 +160,12 @@ object CopyLogsDialog : ContentFramedDialog {
             }
         }
 
-        val debugLogLabel = stringResource(R.string.export_debug_log)
-        val debugLogDescription = stringResource(R.string.export_debug_log_description)
-        val crashLogLabel = stringResource(R.string.export_crash_log)
-        val crashLogDescription = stringResource(R.string.export_crash_log_description)
-        val bothLabel = stringResource(R.string.export_both_logs)
-        val bothDescription = stringResource(R.string.export_both_logs_description)
+        val debugLogLabel = stringResource(R.string.logs_action_export_debug)
+        val debugLogDescription = stringResource(R.string.logs_export_debug_description)
+        val crashLogLabel = stringResource(R.string.logs_action_export_crash)
+        val crashLogDescription = stringResource(R.string.logs_export_crash_description)
+        val bothLabel = stringResource(R.string.logs_action_export_both)
+        val bothDescription = stringResource(R.string.logs_export_both_description)
 
         // "Debug log" and "Both logs" are greyed out while debug logging is off (their
         // debug content doesn't exist then): only the crash log option stays selectable,
@@ -205,7 +205,7 @@ object CopyLogsDialog : ContentFramedDialog {
                             },
                         ),
                         DialogButton(
-                            text = stringResource(R.string.export),
+                            text = stringResource(R.string.common_action_export),
                             primary = true,
                             textColor = colorPalette().textSecondary,
                             onClick = {

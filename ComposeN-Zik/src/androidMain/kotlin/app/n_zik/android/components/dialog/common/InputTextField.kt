@@ -48,7 +48,7 @@ inline fun InputTextField(
     val palette = colorPalette()
     val txtFieldError = remember { mutableStateOf("") }
     val txtField = remember { mutableStateOf(value) }
-    val value_cannot_empty = stringResource(R.string.value_cannot_be_empty)
+    val value_cannot_empty = stringResource(R.string.common_validation_empty_value)
 
     var copyText by remember { mutableStateOf(true) }
     if (copyText) {
@@ -102,7 +102,7 @@ inline fun InputTextField(
         ButtonRow(
             buttons = listOf(
                 DialogButton(
-                    text = stringResource(R.string.import_button),
+                    text = stringResource(R.string.common_action_import),
                     onClick = {
                         if (txtField.value.isEmpty()) {
                             txtFieldError.value = value_cannot_empty
@@ -113,13 +113,13 @@ inline fun InputTextField(
                     }
                 ),
                 DialogButton(
-                    text = stringResource(R.string.paste),
+                    text = stringResource(R.string.common_action_paste),
                     onClick = {
                         copyText = true
                     }
                 ),
                 DialogButton(
-                    text = stringResource(R.string.clear),
+                    text = stringResource(R.string.common_action_clear),
                     onClick = { txtField.value = "" }
                 )
             )

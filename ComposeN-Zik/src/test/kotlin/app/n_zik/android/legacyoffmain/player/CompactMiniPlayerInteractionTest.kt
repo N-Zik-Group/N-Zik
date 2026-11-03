@@ -157,7 +157,7 @@ class CompactMiniPlayerInteractionTest {
             tintStrength = 0f, depth = 0f, amount = 0f, rim = 0f)
         renderMini(glassHost = host, glassSettings = settings, sourceColor = { sourceColor })
         fun assertSingleFilm() {
-            val pixels = compose.onNodeWithContentDescription(context.getString(R.string.play))
+            val pixels = compose.onNodeWithContentDescription(context.getString(R.string.player_action_play))
                 .captureToImage().toPixelMap()
             // Stay inside the rounded pane and outside the central play glyph.
             val actual = pixels[(pixels.width * .2f).toInt(), (pixels.height * .2f).toInt()]
@@ -173,7 +173,7 @@ class CompactMiniPlayerInteractionTest {
 
     @Test fun defaultsPlayAndNextUseExistingPlaybackHandlers() {
         renderMini()
-        compose.onNodeWithContentDescription(context.getString(R.string.play)).performClick()
+        compose.onNodeWithContentDescription(context.getString(R.string.player_action_play)).performClick()
         compose.onNodeWithContentDescription(context.getString(MiniPlayerButton.SkipForward.labelRes)).performClick()
         compose.runOnIdle {
             verify(exactly = 1) { binder.gracefulPlay() }
@@ -245,7 +245,7 @@ class CompactMiniPlayerInteractionTest {
             .putBoolean(showMiniPlayerQueueKey, true)
             .putBoolean(showMiniPlayerAudioOutputKey, false).commit()
         renderMini(dockProvider = true)
-        val play = context.getString(R.string.play)
+        val play = context.getString(R.string.player_action_play)
         val next = context.getString(MiniPlayerButton.SkipForward.labelRes)
         val previous = context.getString(MiniPlayerButton.SkipBack.labelRes)
         val actions = hasClickAction() and !body

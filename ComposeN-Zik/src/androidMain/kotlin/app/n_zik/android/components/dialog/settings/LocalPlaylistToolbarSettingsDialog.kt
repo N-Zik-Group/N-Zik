@@ -26,28 +26,28 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
 
     private val searchLabelResources = mapOf(
         "insertion_position" to R.string.playlist_insertion_position,
-        "pin" to R.string.info_pin_unpin_playlist,
-        "search" to R.string.search,
-        "position_lock" to R.string.info_lock_unlock_reorder_songs,
-        "match" to R.string.match_album_audio_version,
-        "renumber" to R.string.renumber_songs_positions,
-        "download_all" to R.string.info_download_all_songs,
-        "delete_downloads" to R.string.info_remove_all_downloaded_songs,
-        "item_selector" to R.string.item_select,
-        "play_next" to R.string.play_next,
-        "enqueue" to R.string.enqueue,
-        "add_to_favorite" to R.string.add_to_favorites,
-        "add_to_playlist" to R.string.add_to_playlist,
-        "sync" to R.string.sync,
+        "pin" to R.string.playlist_action_toggle_pinned,
+        "search" to R.string.search_title,
+        "position_lock" to R.string.playlist_reorder_lock_toggle_label,
+        "match" to R.string.song_matching_action_open,
+        "renumber" to R.string.playlist_action_shuffle_positions,
+        "download_all" to R.string.downloads_action_download_all,
+        "delete_downloads" to R.string.downloads_action_remove_all,
+        "item_selector" to R.string.common_action_select,
+        "play_next" to R.string.player_action_play_next,
+        "enqueue" to R.string.player_action_enqueue,
+        "add_to_favorite" to R.string.library_favorites_action_add,
+        "add_to_playlist" to R.string.playlist_action_add,
+        "sync" to R.string.sync_action_sync,
         "refresh_on_open" to R.string.playlist_refresh_on_open,
-        "listen_on_yt" to R.string.listen_on_youtube,
-        "import_menu" to R.string.import_playlist,
-        "rename" to R.string.rename_playlist,
-        "delete" to R.string.delete,
-        "export" to R.string.export_playlist,
-        "thumbnail_picker" to R.string.edit_thumbnail,
-        "reset_thumbnail" to R.string.reset_thumbnail,
-        "update" to R.string.update,
+        "listen_on_yt" to R.string.player_action_listen_on_youtube,
+        "import_menu" to R.string.playlist_action_import,
+        "rename" to R.string.playlist_rename_dialog_title,
+        "delete" to R.string.common_action_delete,
+        "export" to R.string.playlist_action_export,
+        "thumbnail_picker" to R.string.thumbnail_action_edit,
+        "reset_thumbnail" to R.string.thumbnail_action_reset,
+        "update" to R.string.common_action_update,
     )
 
 
@@ -63,7 +63,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
     )
 
     override val dialogTitle: String @Composable get() =
-        stringResource(R.string.local_playlist_sort) + " - " + stringResource(R.string.toolbar)
+        stringResource(R.string.settings_local_playlist_title) + " - " + stringResource(R.string.settings_library_toolbar_title)
     override var isActive: Boolean by mutableStateOf(false)
 
     /** Restores saved ordering while retaining the insertion action's original leading position. */
@@ -188,7 +188,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
                 workingToggles.forEach { (id, isChecked) -> edit.putBoolean("pl_ts_$id", isChecked) }
                 // Always save the full order (all IDs) to preserve user ordering
                 edit.putString(localPlaylistToolbarOrderKey, serializeOrder(workingOrder))
-                edit.apply(); Toaster.s(R.string.toast_preference_saved); hideDialog()
+                edit.apply(); Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }
         )
     }

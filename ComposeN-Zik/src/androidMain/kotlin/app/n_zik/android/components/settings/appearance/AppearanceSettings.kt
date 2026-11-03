@@ -91,7 +91,7 @@ fun AppearanceSettings(
 
         settingsSearchDescription(searchFocus) {
             SettingsDescription(
-                text = stringResource(R.string.appearance_settings_description),
+                text = stringResource(R.string.settings_player_appearance_page_description),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
@@ -148,7 +148,7 @@ internal fun AppearanceSettingsContent(
     var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
     val restartState = rememberSaveable { mutableStateOf(false) }
     var restartService by restartState
-    if (normalizePreferences && (selectedCards == null || R.string.player_presets_and_layout in selectedCards || R.string.cover_and_thumbnail in selectedCards)) {
+    if (normalizePreferences && (selectedCards == null || R.string.player_presets_and_layout in selectedCards || R.string.settings_player_artwork_section_title in selectedCards)) {
     if (playerBackgroundColors != PlayerBackgroundColors.BlurredCoverColor)
         showthumbnail = true
     if (!showthumbnail) {showlyricsthumbnail = false}
@@ -165,18 +165,18 @@ internal fun AppearanceSettingsContent(
                 AppearancePresetsCard(search)
             }
         }
-        if (selectedCards == null || R.string.cover_and_thumbnail in selectedCards) {
-            SettingsCardSlot(R.string.cover_and_thumbnail, modifier = { cardModifier(R.string.cover_and_thumbnail) }) {
+        if (selectedCards == null || R.string.settings_player_artwork_section_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_player_artwork_section_title, modifier = { cardModifier(R.string.settings_player_artwork_section_title) }) {
                 AppearanceCoverCard(search)
             }
         }
-        if (selectedCards == null || R.string.colors_and_background in selectedCards) {
-            SettingsCardSlot(R.string.colors_and_background, modifier = { cardModifier(R.string.colors_and_background) }) {
+        if (selectedCards == null || R.string.settings_player_background_section_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_player_background_section_title, modifier = { cardModifier(R.string.settings_player_background_section_title) }) {
                 AppearanceColorsCard(search)
             }
         }
-        if (selectedCards == null || R.string.timeline_and_controls in selectedCards) {
-            SettingsCardSlot(R.string.timeline_and_controls, modifier = { cardModifier(R.string.timeline_and_controls) }) {
+        if (selectedCards == null || R.string.settings_player_timeline_controls_section_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_player_timeline_controls_section_title, modifier = { cardModifier(R.string.settings_player_timeline_controls_section_title) }) {
                 AppearanceTimelineCard(search)
             }
         }
@@ -190,8 +190,8 @@ internal fun AppearanceSettingsContent(
                 AppearanceBehaviorCard(search)
             }
         }
-        if (selectedCards == null || R.string.txt_lyrics in selectedCards) {
-            SettingsCardSlot(R.string.txt_lyrics, modifier = { cardModifier(R.string.txt_lyrics) }) {
+        if (selectedCards == null || R.string.lyrics_title in selectedCards) {
+            SettingsCardSlot(R.string.lyrics_title, modifier = { cardModifier(R.string.lyrics_title) }) {
                 AppearanceLyricsCard(search)
             }
         }

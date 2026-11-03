@@ -15,14 +15,14 @@ fun GeneralAppShortcutsCard(
     visible: Boolean,
 ) {
     SettingsSectionCard(
-        title = stringResource(R.string.app_shortcuts_settings),
+        title = stringResource(R.string.settings_launcher_shortcuts_title),
         icon = R.drawable.shortcut_rescue,
         visible = visible,
         content = {
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.app_shortcuts_settings.app_shortcuts_settings"),
-                title = stringResource(R.string.app_shortcuts_settings),
-                text = stringResource(R.string.app_shortcuts_settings_description),
+                title = stringResource(R.string.settings_launcher_shortcuts_title),
+                text = stringResource(R.string.settings_launcher_shortcuts_description),
                 icon = R.drawable.shortcut_rescue,
                 onClick = { AppShortcutsSettingsDialog.showDialog() }
             )

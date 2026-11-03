@@ -114,7 +114,7 @@ class PlayerServiceModernSelfHealTest {
         MyDownloadHelper.downloads.value = mapOf("ABXtWqmArUU" to download("ABXtWqmArUU"))
         stubIndexRemoval()
         mockkObject(Toaster)
-        every { Toaster.w(R.string.download_stale_removed, "Artist X - Song A", duration = Toast.LENGTH_LONG) } just Runs
+        every { Toaster.w(R.string.downloads_stale_removed, "Artist X - Song A", duration = Toast.LENGTH_LONG) } just Runs
 
         val healed = selfHealStaleDownloadEntry(context, mediaItem("ABXtWqmArUU", "Artist X - Song A"), cache)
 
@@ -150,7 +150,7 @@ class PlayerServiceModernSelfHealTest {
         MyDownloadHelper.downloads.value = mapOf("Zk9qWbR7xMk" to download("Zk9qWbR7xMk"))
         stubIndexRemoval()
         mockkObject(Toaster)
-        every { Toaster.w(R.string.download_stale_removed, "", duration = Toast.LENGTH_LONG) } just Runs
+        every { Toaster.w(R.string.downloads_stale_removed, "", duration = Toast.LENGTH_LONG) } just Runs
 
         val healed = selfHealStaleDownloadEntry(context, mediaItem("Zk9qWbR7xMk"), cache)
 

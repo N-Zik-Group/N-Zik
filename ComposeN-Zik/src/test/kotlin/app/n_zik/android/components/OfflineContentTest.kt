@@ -129,10 +129,10 @@ class OfflineContentTest {
     @Before
     fun setUp() {
         val app = ApplicationProvider.getApplicationContext<Application>()
-        offlineMessage = app.getString(R.string.unable_to_load_no_connection)
-        tipsTitle = app.getString(R.string.tips)
-        mixedForYouTitle = app.getString(R.string.mixed_for_you)
-        unableToLoad = app.getString(R.string.unable_to_load)
+        offlineMessage = app.getString(R.string.common_load_failed_no_connection)
+        tipsTitle = app.getString(R.string.recommendations_for_you_title)
+        mixedForYouTitle = app.getString(R.string.recommendations_mixed_for_you_title)
+        unableToLoad = app.getString(R.string.common_load_failed)
         val mainApplication = mockk<MainApplication>()
         every { mainApplication.applicationContext } returns app
         Dependencies.init(mainApplication)

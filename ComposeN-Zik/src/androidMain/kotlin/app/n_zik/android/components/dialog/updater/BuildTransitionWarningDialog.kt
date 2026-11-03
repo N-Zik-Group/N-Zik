@@ -39,8 +39,8 @@ object BuildTransitionWarningDialog {
     fun Render(onConfirm: () -> Unit) {
         DialogPresence(target = transitionType.takeIf { isActive }) { transitionType ->
 
-        val titleRes = if (transitionType == "${UpdaterConstants.TYPE_STABLE}-to-${UpdaterConstants.TYPE_BETA}") R.string.stable_to_beta_warning_title else R.string.beta_to_stable_warning_title
-        val messageRes = if (transitionType == "${UpdaterConstants.TYPE_STABLE}-to-${UpdaterConstants.TYPE_BETA}") R.string.stable_to_beta_warning_message else R.string.beta_to_stable_warning_message
+        val titleRes = if (transitionType == "${UpdaterConstants.TYPE_STABLE}-to-${UpdaterConstants.TYPE_BETA}") R.string.updates_stable_to_beta_warning_title else R.string.updates_beta_to_stable_warning_title
+        val messageRes = if (transitionType == "${UpdaterConstants.TYPE_STABLE}-to-${UpdaterConstants.TYPE_BETA}") R.string.updates_stable_to_beta_warning_message else R.string.updates_beta_to_stable_warning_message
 
         DialogFrame(
             title = stringResource(titleRes),
@@ -53,7 +53,7 @@ object BuildTransitionWarningDialog {
                 ButtonRow(
                     buttons = listOf(
                         DialogButton(
-                            text = stringResource(R.string.major_update_warning_button),
+                            text = stringResource(R.string.updates_warning_acknowledge),
                             icon = R.drawable.checkmark,
                             onClick = {
                                 isActive = false

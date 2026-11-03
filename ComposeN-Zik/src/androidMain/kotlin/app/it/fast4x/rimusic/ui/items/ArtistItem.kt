@@ -189,7 +189,7 @@ fun ArtistItem(
                         modifier = Modifier
                             .size(if (smallThumbnail) 30.dp else 40.dp)
                             .padding(all = 5.dp),
-                        contentDescription = stringResource(R.string.cd_background_image),
+                        contentDescription = stringResource(R.string.accessibility_background_image),
                         contentScale = ContentScale.Fit
                     )
                 }

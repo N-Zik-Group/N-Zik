@@ -786,7 +786,7 @@ fun Player(
                     binder.cancelSleepTimer()
                     binder.startSleepTimer(timeRemaining.toLong())
                     delayedSleepTimer = true
-                    Toaster.n(R.string.info_sleep_timer_delayed_at_end_of_song)
+                    Toaster.n(R.string.player_sleep_timer_end_of_song_message)
                 }
             }
         }
@@ -2186,7 +2186,7 @@ fun Player(
                             color = colorPalette().collapsedPlayerProgressBar,
                             rotation = 0f,
                             settings = glassSettings,
-                            contentDescription = stringResource(R.string.cd_app_icon_in_player),
+                            contentDescription = stringResource(R.string.accessibility_app_icon_in_player),
                             onClick = {
                                 onDismiss()
                                 navController.navigate(NavRoutes.home.name)
@@ -2487,7 +2487,7 @@ fun Player(
                                     modifier = Modifier
                                         .size(20.dp)
                                         .padding(horizontal = 5.dp),
-                                    contentDescription = stringResource(R.string.cd_background_image),
+                                    contentDescription = stringResource(R.string.accessibility_background_image),
                                     contentScale = ContentScale.Fit
                                 )
 

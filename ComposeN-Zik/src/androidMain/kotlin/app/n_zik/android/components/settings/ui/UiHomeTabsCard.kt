@@ -23,11 +23,11 @@ import app.n_zik.android.R
 internal fun UiHomeTabsCard(search: Search) {
     val homeTabsSearchContextMatch = search.inputValue.isBlank() ||
         stringResource(R.string.home_tabs_settings).contains(search.inputValue, true) ||
-        stringResource(R.string.quick_picks).contains(search.inputValue, true) ||
-        stringResource(R.string.songs).contains(search.inputValue, true) ||
-        stringResource(R.string.artists).contains(search.inputValue, true) ||
-        stringResource(R.string.albums).contains(search.inputValue, true) ||
-        stringResource(R.string.playlists).contains(search.inputValue, true)
+        stringResource(R.string.recommendations_title).contains(search.inputValue, true) ||
+        stringResource(R.string.library_songs_title).contains(search.inputValue, true) ||
+        stringResource(R.string.library_artists_title).contains(search.inputValue, true) ||
+        stringResource(R.string.library_albums_title).contains(search.inputValue, true) ||
+        stringResource(R.string.library_playlists_title).contains(search.inputValue, true)
 
     AnimatedVisibility(
         visible = homeTabsSearchContextMatch,
@@ -39,47 +39,47 @@ internal fun UiHomeTabsCard(search: Search) {
             title = stringResource(R.string.home_tabs_settings),
             icon = R.drawable.library,
             content = {
-                if (search.inputValue.isBlank() || stringResource(R.string.quick_picks).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.recommendations_title).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.home_tabs_settings.quick_picks"),
-                        title = stringResource(R.string.quick_picks),
-                        text = stringResource(R.string.library_visibility_description),
+                        title = stringResource(R.string.recommendations_title),
+                        text = stringResource(R.string.settings_library_sections_visibility_description),
                         onClick = { QuickPicksContentSettingsDialog.showDialog() },
                         icon = R.drawable.sparkles
                     )
                 }
-                if (search.inputValue.isBlank() || stringResource(R.string.songs).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.library_songs_title).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.home_tabs_settings.songs"),
-                        title = stringResource(R.string.songs),
-                        text = stringResource(R.string.library_visibility_description),
+                        title = stringResource(R.string.library_songs_title),
+                        text = stringResource(R.string.settings_library_sections_visibility_description),
                         onClick = { HomeSongsSettingsDialog.showDialog() },
                         icon = R.drawable.musical_notes
                     )
                 }
-                if (search.inputValue.isBlank() || stringResource(R.string.artists).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.library_artists_title).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.home_tabs_settings.artists"),
-                        title = stringResource(R.string.artists),
-                        text = stringResource(R.string.library_visibility_description),
+                        title = stringResource(R.string.library_artists_title),
+                        text = stringResource(R.string.settings_library_sections_visibility_description),
                         onClick = { HomeArtistsSettingsDialog.showDialog() },
                         icon = R.drawable.people
                     )
                 }
-                if (search.inputValue.isBlank() || stringResource(R.string.albums).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.library_albums_title).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.home_tabs_settings.albums"),
-                        title = stringResource(R.string.albums),
-                        text = stringResource(R.string.library_visibility_description),
+                        title = stringResource(R.string.library_albums_title),
+                        text = stringResource(R.string.settings_library_sections_visibility_description),
                         onClick = { HomeAlbumsSettingsDialog.showDialog() },
                         icon = R.drawable.album
                     )
                 }
-                if (search.inputValue.isBlank() || stringResource(R.string.playlists).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.library_playlists_title).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.home_tabs_settings.playlists"),
-                        title = stringResource(R.string.playlists),
-                        text = stringResource(R.string.library_visibility_description),
+                        title = stringResource(R.string.library_playlists_title),
+                        text = stringResource(R.string.settings_library_sections_visibility_description),
                         onClick = { HomePlaylistsSettingsDialog.showDialog() },
                         icon = R.drawable.library
                     )

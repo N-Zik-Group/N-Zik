@@ -339,7 +339,7 @@ fun HomeLibrary(
             networkOptionsEnabled = { !offlineMode }
         )
     }
-    val sync = autoSyncToolbutton(R.string.autosync, autosyncPlaylistsKey) {
+    val sync = autoSyncToolbutton(R.string.sync_imported_playlists_automatic_title, autosyncPlaylistsKey) {
         coroutineScope.launch {
             importYTMPlaylists(force = true)
             importYTMLibrarySongs(force = true)
@@ -379,7 +379,7 @@ fun HomeLibrary(
     val deletePlaylistsButton = remember {
         object : MenuIcon, Descriptive {
             override val iconId: Int = R.drawable.trash
-            override val messageId: Int = R.string.delete_playlists_label
+            override val messageId: Int = R.string.playlist_action_delete_selected
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() { showDeleteConfirmDialog = true }
             override fun onLongClick() {}
@@ -420,10 +420,10 @@ fun HomeLibrary(
         "pinned_playlists" to PlaylistsType.PinnedPlaylist,
         "rewind" to PlaylistsType.MonthlyPlaylist
     )
-    val allLabel = stringResource(R.string.all)
-    val ytLabel = stringResource(R.string.yt_playlists)
-    val pinnedLabel = stringResource(R.string.pinned_playlists)
-    val rewindLabel = stringResource(R.string.rewind)
+    val allLabel = stringResource(R.string.common_option_all)
+    val ytLabel = stringResource(R.string.library_youtube_playlists_label)
+    val pinnedLabel = stringResource(R.string.playlist_pinned_title)
+    val rewindLabel = stringResource(R.string.rewind_title)
     val labelMap = mapOf(
         "yt_playlists" to ytLabel,
         "pinned_playlists" to pinnedLabel,
@@ -480,7 +480,7 @@ fun HomeLibrary(
 
     fun refresh(itemsToRefresh: List<PlaylistPreview>? = null) {
         if (refreshing || HomeSyncState.isSyncingPlaylists) {
-            Toaster.e(appContext().getString(R.string.already_syncing))
+            Toaster.e(appContext().getString(R.string.library_sync_already_running_message))
             return
         }
         val targetPlaylists = itemsToRefresh ?: actionSource.targets
@@ -496,13 +496,13 @@ fun HomeLibrary(
                     }
                     ContextCompat.startForegroundService(appContext(), intent)
                 })
-                if (result.failedPodcasts > 0) Toaster.e(R.string.error)
+                if (result.failedPodcasts > 0) Toaster.e(R.string.common_error_title)
                 else if (result.refreshedPodcasts > 0) Toaster.done()
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
                 Timber.tag("HomeLibrary").e(error, "Failed to refresh library playlists")
-                Toaster.e(R.string.error)
+                Toaster.e(R.string.common_error_title)
             } finally {
                 refreshing = false
             }
@@ -610,7 +610,7 @@ fun HomeLibrary(
                     Column {
                         Column {
                             CollapsibleTitleRow( titleOffsetState, titleHeightState ) {
-                                TabHeader( R.string.playlists ) {
+                                TabHeader( R.string.library_playlists_title ) {
                                     HeaderInfo( items.size.toString(), R.drawable.playlist )
                                 }
                             }
@@ -621,13 +621,13 @@ fun HomeLibrary(
                         val hasSelection = itemSelector.isNotEmpty()
                         val itemsToDelete = selected.toList()
                         val text = if (hasSelection) {
-                            stringResource(R.string.delete_playlists_confirm_multiple, itemsToDelete.size)
+                            stringResource(R.string.playlist_delete_selected_confirmation_count_format, itemsToDelete.size)
                         } else {
-                            stringResource(R.string.delete_playlists_confirm_all, itemsToDelete.size)
+                            stringResource(R.string.playlist_delete_all_confirmation_count_format, itemsToDelete.size)
                         }
                         ConfirmationDialog(
-                            title = stringResource(R.string.dialog_delete_playlists),
-                            confirmText = stringResource(R.string.delete),
+                            title = stringResource(R.string.playlist_delete_multiple_dialog_title),
+                            confirmText = stringResource(R.string.common_action_delete),
                             text = text,
                             onDismiss = { showDeleteConfirmDialog = false },
                             onConfirm = {
@@ -687,19 +687,19 @@ fun HomeLibrary(
                         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 BasicText(
-                                    text = stringResource(R.string.syncing_item, HomeSyncState.playlistSyncCurrentName),
+                                    text = stringResource(R.string.library_sync_current_item_format, HomeSyncState.playlistSyncCurrentName),
                                     style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
                                     maxLines = 1,
                                     modifier = Modifier.weight(1f).padding(end = 8.dp).basicMarquee(iterations = Int.MAX_VALUE)
                                 )
                                 Row {
                                     BasicText(
-                                        text = stringResource(R.string.syncing_progress, HomeSyncState.playlistSyncCurrentIndex, HomeSyncState.playlistSyncTotal),
+                                        text = stringResource(R.string.library_sync_progress_format, HomeSyncState.playlistSyncCurrentIndex, HomeSyncState.playlistSyncTotal),
                                         style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary)
                                     )
                                     if (HomeSyncState.playlistSyncFailed > 0) {
                                         BasicText(
-                                            text = " " + stringResource(R.string.syncing_failed, HomeSyncState.playlistSyncFailed),
+                                            text = " " + stringResource(R.string.library_sync_failed_count_suffix, HomeSyncState.playlistSyncFailed),
                                             style = typography().xxs.semiBold.copy(color = colorPalette().red)
                                         )
                                     }
@@ -893,7 +893,7 @@ fun HomeLibrary(
                         modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding(topInsetProvider = scrollContentInsetProvider, base = PaddingValues(top = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() }, bottom = Dimensions.bottomSpacer))),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.no_items))
+                        if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.common_empty_items))
                     }
                 }
                     }

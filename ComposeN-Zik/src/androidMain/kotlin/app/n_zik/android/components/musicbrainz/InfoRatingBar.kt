@@ -86,7 +86,7 @@ fun RatingBar(rating: Float?, votesCount: Int?) {
         if (votesCount != null && votesCount > 0) {
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = stringResource(R.string.mb_rating_votes, votesCount),
+                text = stringResource(R.string.metadata_musicbrainz_rating_votes, votesCount),
                 style = typography().xxs.semiBold,
                 color = colorPalette().text
             )

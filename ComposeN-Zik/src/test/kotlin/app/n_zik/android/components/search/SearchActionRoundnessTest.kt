@@ -53,7 +53,7 @@ class SearchActionRoundnessTest {
             CompositionLocalProvider(LocalAppearance provides appearance) {
                 Row(Modifier.background(Color.Black)) {
                     icons.forEachIndexed { index, icon ->
-                        SearchBarBubbleButton(SearchBarBubble(icon, R.string.clear) { clicks[index]++ },
+                        SearchBarBubbleButton(SearchBarBubble(icon, R.string.common_action_clear) { clicks[index]++ },
                             GlassSettings(enabled = glass.value, quality = GlassQuality.Performance,
                                 film = 1f, rim = 0f, blur = 0f, depth = 0f, amount = 0f))
                     }

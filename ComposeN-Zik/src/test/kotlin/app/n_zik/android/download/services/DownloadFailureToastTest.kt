@@ -18,7 +18,7 @@ class DownloadFailureToastTest {
     fun `the offline fast-fail marker maps to no internet`() {
         val cause = StreamResolutionOfflineException("RmYCOm4ehKs")
 
-        assertEquals(R.string.error_no_internet, downloadFailureToastRes(httpCode = null, specificCause = cause))
+        assertEquals(R.string.common_error_no_internet, downloadFailureToastRes(httpCode = null, specificCause = cause))
     }
 
     @Test
@@ -34,13 +34,13 @@ class DownloadFailureToastTest {
     fun `dns failures still map to the network error toast`() {
         val cause = UnknownHostException("youtube.com")
 
-        assertEquals(R.string.error_a_network_error_has_occurred, downloadFailureToastRes(httpCode = null, specificCause = cause))
+        assertEquals(R.string.downloads_error_network, downloadFailureToastRes(httpCode = null, specificCause = cause))
     }
 
     @Test
     fun `403 responses still map to the server restrictions toast`() {
         assertEquals(
-            R.string.error_this_song_cannot_be_played_due_to_server_restrictions,
+            R.string.downloads_error_server_restriction,
             downloadFailureToastRes(httpCode = 403, specificCause = null)
         )
     }
@@ -52,7 +52,7 @@ class DownloadFailureToastTest {
         val cause = IOException("boom")
 
         assertEquals(
-            R.string.download_failed,
+            R.string.downloads_failed,
             downloadFailureToastRes(httpCode = null, specificCause = cause)
         )
     }
@@ -60,7 +60,7 @@ class DownloadFailureToastTest {
     @Test
     fun `a null exception falls back to the download-domain toast`() {
         assertEquals(
-            R.string.download_failed,
+            R.string.downloads_failed,
             downloadFailureToastRes(httpCode = null, specificCause = null)
         )
     }
@@ -71,14 +71,14 @@ class DownloadFailureToastTest {
     fun `a socket timeout failure maps to the network error toast`() {
         val cause = SocketTimeoutException("connect timed out")
 
-        assertEquals(R.string.error_a_network_error_has_occurred, downloadFailureToastRes(httpCode = null, specificCause = cause))
+        assertEquals(R.string.downloads_error_network, downloadFailureToastRes(httpCode = null, specificCause = cause))
     }
 
     @Test
     fun `a socket exception failure maps to the network error toast`() {
         val cause = SocketException("connection reset")
 
-        assertEquals(R.string.error_a_network_error_has_occurred, downloadFailureToastRes(httpCode = null, specificCause = cause))
+        assertEquals(R.string.downloads_error_network, downloadFailureToastRes(httpCode = null, specificCause = cause))
     }
 
     @Test
@@ -95,7 +95,7 @@ class DownloadFailureToastTest {
         val cause = FileNotFoundException("/data/download.mp3")
 
         assertEquals(
-            R.string.download_failed,
+            R.string.downloads_failed,
             downloadFailureToastRes(httpCode = null, specificCause = findSpecificDownloadCause(cause))
         )
     }

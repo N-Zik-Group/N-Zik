@@ -34,7 +34,7 @@ fun ModuleInfoDialog(
             ButtonRow(
                 buttons = listOf(
                     DialogButton(
-                        text = stringResource(R.string.dialog_close),
+                        text = stringResource(R.string.common_action_close),
                         onClick = onDismiss,
                         primary = true,
                     ),

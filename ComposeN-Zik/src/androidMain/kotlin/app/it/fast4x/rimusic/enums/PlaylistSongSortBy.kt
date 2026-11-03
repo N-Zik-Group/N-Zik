@@ -11,33 +11,33 @@ enum class PlaylistSongSortBy(
     @field:DrawableRes override val iconId: Int
 ): TextView, Drawable {
 
-    Title( R.string.sort_title, R.drawable.text ),
+    Title( R.string.library_sort_title, R.drawable.text ),
 
-    Artist( R.string.sort_artist, R.drawable.artist ),
+    Artist( R.string.library_sort_artist, R.drawable.artist ),
 
-    Album( R.string.sort_album, R.drawable.album ),
+    Album( R.string.library_sort_album, R.drawable.album ),
 
     ArtistAndAlbum( -1, R.drawable.artist ),
 
-    Duration( R.string.sort_duration, R.drawable.time ),
+    Duration( R.string.library_sort_duration, R.drawable.time ),
 
-    PlayCount( R.string.sort_play_count, R.drawable.play ),
+    PlayCount( R.string.library_sort_play_count, R.drawable.play ),
 
-    PlayTime( R.string.sort_listening_time, R.drawable.trending ),
+    PlayTime( R.string.library_sort_listening_time, R.drawable.trending ),
 
-    RelativePlayTime( R.string.relative_listening_time, R.drawable.stats_chart ),
+    RelativePlayTime( R.string.library_sort_relative_listening_time, R.drawable.stats_chart ),
 
-    DateAdded( R.string.sort_date_added, R.drawable.time ),
+    DateAdded( R.string.library_sort_date_added, R.drawable.time ),
 
-    DatePlayed( R.string.sort_date_played, R.drawable.up_right_arrow ),
+    DatePlayed( R.string.library_sort_date_played, R.drawable.up_right_arrow ),
 
-    DateLiked( R.string.sort_date_liked, R.drawable.heart ),
+    DateLiked( R.string.library_sort_date_liked, R.drawable.heart ),
 
-    AlbumYear( R.string.sort_album_year, R.drawable.calendar ),
+    AlbumYear( R.string.library_sort_album_year, R.drawable.calendar ),
 
-    Downloaded( R.string.sort_downloaded, R.drawable.downloaded ),
+    Downloaded( R.string.library_sort_downloaded, R.drawable.downloaded ),
 
-    Custom( R.string.sort_custom_order, R.drawable.position ),
+    Custom( R.string.library_sort_custom_order, R.drawable.position ),
 
     // Spec 2: only shown for generated `rewind-*` playlists (filtered in PlaylistSongsSort);
     // sorts by the top order written at generation time (a live sort never rewrites it)

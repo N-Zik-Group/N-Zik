@@ -33,7 +33,7 @@ fun MoodScreen(
                 navController,
                 topInsetHandledByContent = true,
                 navBarContent = { item ->
-                    item(0, stringResource(R.string.mood), R.drawable.album)
+                    item(0, stringResource(R.string.search_mood_title), R.drawable.album)
                 },
                 miniPlayer = miniPlayer
             ) { currentTabIndex ->

@@ -22,11 +22,11 @@ import app.n_zik.android.R
 @Composable
 internal fun UiToolbarsCard(search: Search) {
     val toolbarSearchContextMatch = search.inputValue.isBlank() ||
-        stringResource(R.string.toolbar).contains(search.inputValue, true) ||
-        stringResource(R.string.songs).contains(search.inputValue, true) ||
-        stringResource(R.string.artists).contains(search.inputValue, true) ||
-        stringResource(R.string.albums).contains(search.inputValue, true) ||
-        stringResource(R.string.playlists).contains(search.inputValue, true)
+        stringResource(R.string.settings_library_toolbar_title).contains(search.inputValue, true) ||
+        stringResource(R.string.library_songs_title).contains(search.inputValue, true) ||
+        stringResource(R.string.library_artists_title).contains(search.inputValue, true) ||
+        stringResource(R.string.library_albums_title).contains(search.inputValue, true) ||
+        stringResource(R.string.library_playlists_title).contains(search.inputValue, true)
 
     AnimatedVisibility(
         visible = toolbarSearchContextMatch,
@@ -35,50 +35,50 @@ internal fun UiToolbarsCard(search: Search) {
     ) {
         SettingsSectionCard(
             modifier = Modifier.testTag("ui.card.toolbars"),
-            title = stringResource(R.string.toolbar),
+            title = stringResource(R.string.settings_library_toolbar_title),
             icon = R.drawable.ellipsis_horizontal,
             content = {
-                if (search.inputValue.isBlank() || stringResource(R.string.songs).contains(search.inputValue, true) || stringResource(R.string.toolbar).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.library_songs_title).contains(search.inputValue, true) || stringResource(R.string.settings_library_toolbar_title).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.toolbar.songs"),
-                        title = stringResource(R.string.songs),
-                        text = stringResource(R.string.customize_toolbar),
+                        title = stringResource(R.string.library_songs_title),
+                        text = stringResource(R.string.settings_library_toolbar_customization_description),
                         onClick = { HomeSongsToolbarSettingsDialog.showDialog() },
                         icon = R.drawable.musical_notes
                     )
                 }
-                if (search.inputValue.isBlank() || stringResource(R.string.artists).contains(search.inputValue, true) || stringResource(R.string.toolbar).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.library_artists_title).contains(search.inputValue, true) || stringResource(R.string.settings_library_toolbar_title).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.toolbar.artists"),
-                        title = stringResource(R.string.artists),
-                        text = stringResource(R.string.customize_toolbar),
+                        title = stringResource(R.string.library_artists_title),
+                        text = stringResource(R.string.settings_library_toolbar_customization_description),
                         onClick = { HomeArtistsToolbarSettingsDialog.showDialog() },
                         icon = R.drawable.people
                     )
                 }
-                if (search.inputValue.isBlank() || stringResource(R.string.albums).contains(search.inputValue, true) || stringResource(R.string.toolbar).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.library_albums_title).contains(search.inputValue, true) || stringResource(R.string.settings_library_toolbar_title).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.toolbar.albums"),
-                        title = stringResource(R.string.albums),
-                        text = stringResource(R.string.customize_toolbar),
+                        title = stringResource(R.string.library_albums_title),
+                        text = stringResource(R.string.settings_library_toolbar_customization_description),
                         onClick = { HomeAlbumsToolbarSettingsDialog.showDialog() },
                         icon = R.drawable.album
                     )
                 }
-                if (search.inputValue.isBlank() || stringResource(R.string.playlists).contains(search.inputValue, true) || stringResource(R.string.toolbar).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.library_playlists_title).contains(search.inputValue, true) || stringResource(R.string.settings_library_toolbar_title).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.toolbar.playlists"),
-                        title = stringResource(R.string.playlists),
-                        text = stringResource(R.string.customize_toolbar),
+                        title = stringResource(R.string.library_playlists_title),
+                        text = stringResource(R.string.settings_library_toolbar_customization_description),
                         onClick = { HomeLibraryToolbarSettingsDialog.showDialog() },
                         icon = R.drawable.library
                     )
                 }
-                if (search.inputValue.isBlank() || stringResource(R.string.playlists).contains(search.inputValue, true) || stringResource(R.string.toolbar).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.library_playlists_title).contains(search.inputValue, true) || stringResource(R.string.settings_library_toolbar_title).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.toolbar.local_playlist_sort"),
-                        title = stringResource(R.string.local_playlist_sort),
-                        text = stringResource(R.string.customize_toolbar),
+                        title = stringResource(R.string.settings_local_playlist_title),
+                        text = stringResource(R.string.settings_library_toolbar_customization_description),
                         onClick = { LocalPlaylistToolbarSettingsDialog.showDialog() },
                         icon = R.drawable.playlist
                     )

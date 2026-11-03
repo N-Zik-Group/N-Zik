@@ -57,7 +57,7 @@ object CrashLogDialog : ContentFramedDialog {
         val coroutineScope = rememberCoroutineScope()
         var content by remember { mutableStateOf<String?>(null) }
 
-        val noLogAvailable = stringResource(R.string.no_log_available)
+        val noLogAvailable = stringResource(R.string.common_log_unavailable)
 
         // The crash file is re-read on every open (the dialog re-composes on activation)
         LaunchedEffect(Unit) {
@@ -104,7 +104,7 @@ object CrashLogDialog : ContentFramedDialog {
                             },
                         ),
                         DialogButton(
-                            text = stringResource(R.string.export),
+                            text = stringResource(R.string.common_action_export),
                             primary = true,
                             textColor = colorPalette().textSecondary,
                             onClick = {

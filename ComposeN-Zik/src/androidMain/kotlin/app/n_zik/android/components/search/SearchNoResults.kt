@@ -47,7 +47,7 @@ fun SearchResultsViewport(modifier: Modifier = Modifier, content: @Composable Bo
 fun SearchNoResults(
     modifier: Modifier = Modifier,
     fillRemainingViewport: Boolean = false,
-    text: String = stringResource(R.string.no_results_found),
+    text: String = stringResource(R.string.search_no_results_message),
 ) {
     SearchEmptySpace(modifier, fillRemainingViewport) {
         BasicText(

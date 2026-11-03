@@ -33,7 +33,7 @@ enum class DurationInMinutes(
     override val text: String
         @Composable
         get() = when( this ) {
-            Disabled -> stringResource( R.string.vt_disabled )
+            Disabled -> stringResource( R.string.common_option_disabled )
             else -> "${this.name}m"
         }
 }
@@ -56,7 +56,7 @@ enum class DurationInMilliseconds(
     override val text: String
         @Composable
         get() = when( this )  {
-            Disabled -> stringResource( R.string.vt_disabled )
+            Disabled -> stringResource( R.string.common_option_disabled )
             else -> this.name
         }
 }

@@ -121,11 +121,11 @@ class SettingsDialogFooterBandsTest {
         }
         assertTrue("footer sits after body", footer.top >= body.bottom)
         assertTrue("footer remains inside card", footer.bottom <= card.bottom)
-        val labels = listOf(R.string.reset, R.string.cancel, R.string.dialog_apply).map { context.getString(it) }
+        val labels = listOf(R.string.common_action_reset, R.string.common_action_cancel, R.string.common_action_apply).map { context.getString(it) }
         val pills = labels.map { composeRule.onNodeWithText(it).getBoundsInRoot() }
         pills.forEach { assertTrue("action lies in footer: $it", it.top >= footer.top && it.bottom <= footer.bottom) }
         val allFooterPills = if (hasExtraFooterAction) {
-            val extra = composeRule.onNodeWithText(context.getString(R.string.add_separator)).getBoundsInRoot()
+            val extra = composeRule.onNodeWithText(context.getString(R.string.settings_navigation_menu_action_add_separator)).getBoundsInRoot()
             assertTrue("add separator stays inside footer after body", extra.top >= footer.top && extra.top >= body.bottom && extra.bottom <= footer.bottom)
             assertTrue("add separator sits above standard row", extra.bottom < pills.minOf { it.top })
             assertEquals("add separator is centered", (footer.left.value + footer.right.value) / 2, (extra.left.value + extra.right.value) / 2, 1f)
@@ -137,9 +137,9 @@ class SettingsDialogFooterBandsTest {
         composeRule.onNodeWithTag("toggleListDialogList").performScrollToIndex(scrollIndex)
         assertEquals(footer, composeRule.onNodeWithTag("dialogFrameFooter").getBoundsInRoot())
         assertEquals(list, composeRule.onNodeWithTag("toggleListDialogList").getBoundsInRoot())
-        composeRule.onNodeWithText(context.getString(R.string.reset)).performSemanticsAction(SemanticsActions.OnClick)
+        composeRule.onNodeWithText(context.getString(R.string.common_action_reset)).performSemanticsAction(SemanticsActions.OnClick)
         assertTrue("reset retains the open draft", dialog.isActive)
-        composeRule.onNodeWithText(context.getString(R.string.cancel)).performSemanticsAction(SemanticsActions.OnClick)
+        composeRule.onNodeWithText(context.getString(R.string.common_action_cancel)).performSemanticsAction(SemanticsActions.OnClick)
         assertFalse("cancel dismisses without confirming", dialog.isActive)
     }
 }

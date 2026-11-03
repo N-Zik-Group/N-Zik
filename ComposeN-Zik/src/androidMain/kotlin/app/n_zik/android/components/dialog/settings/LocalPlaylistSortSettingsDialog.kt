@@ -26,7 +26,7 @@ object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
         SettingsNestedOption(
             "pl_$id",
             requireNotNull(getSortLabelRes(id)),
-            descriptionRes = if (id == "ArtistAndAlbum") R.string.sort_album else null,
+            descriptionRes = if (id == "ArtistAndAlbum") R.string.library_sort_album else null,
         )
     }
 
@@ -37,7 +37,7 @@ object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
         "DatePlayed", "DateLiked", "AlbumYear", "Downloaded", "Custom"
     )
 
-    override val dialogTitle: String @Composable get() = stringResource(R.string.local_playlist_sort) + " - Sort"
+    override val dialogTitle: String @Composable get() = stringResource(R.string.settings_local_playlist_title) + " - Sort"
     override var isActive: Boolean by mutableStateOf(false)
 
     private fun parseOrder(s: String): List<String> {
@@ -69,26 +69,26 @@ object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
         else -> R.drawable.text
     }
     private fun getSortLabelRes(id: String): Int? = when (id) {
-        "Title" -> R.string.sort_title
-        "Artist" -> R.string.sort_artist
-        "Album" -> R.string.sort_album
-        "ArtistAndAlbum" -> R.string.sort_artist
-        "Duration" -> R.string.sort_duration
-        "PlayCount" -> R.string.sort_play_count
-        "PlayTime" -> R.string.sort_listening_time
-        "RelativePlayTime" -> R.string.relative_listening_time
-        "DateAdded" -> R.string.sort_date_added
-        "DatePlayed" -> R.string.sort_date_played
-        "DateLiked" -> R.string.sort_date_liked
-        "AlbumYear" -> R.string.sort_album_year
-        "Downloaded" -> R.string.sort_downloaded
-        "Custom" -> R.string.sort_custom_order
+        "Title" -> R.string.library_sort_title
+        "Artist" -> R.string.library_sort_artist
+        "Album" -> R.string.library_sort_album
+        "ArtistAndAlbum" -> R.string.library_sort_artist
+        "Duration" -> R.string.library_sort_duration
+        "PlayCount" -> R.string.library_sort_play_count
+        "PlayTime" -> R.string.library_sort_listening_time
+        "RelativePlayTime" -> R.string.library_sort_relative_listening_time
+        "DateAdded" -> R.string.library_sort_date_added
+        "DatePlayed" -> R.string.library_sort_date_played
+        "DateLiked" -> R.string.library_sort_date_liked
+        "AlbumYear" -> R.string.library_sort_album_year
+        "Downloaded" -> R.string.library_sort_downloaded
+        "Custom" -> R.string.library_sort_custom_order
         else -> null
     }
 
     @Composable
     private fun getSortLabel(id: String): String = if (id == "ArtistAndAlbum") {
-        "${stringResource(R.string.sort_artist)}, ${stringResource(R.string.sort_album)}"
+        "${stringResource(R.string.library_sort_artist)}, ${stringResource(R.string.library_sort_album)}"
     } else getSortLabelRes(id)?.let { stringResource(it) } ?: id
 
     @Composable
@@ -133,7 +133,7 @@ object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
                 val edit = prefs.edit()
                 workingToggles.forEach { (id, isChecked) -> edit.putBoolean("pl_sort_${id}_visible", isChecked) }
                 edit.putString(localPlaylistSortMenuOrderKey, serializeOrder(workingOrder.filter { id -> workingToggles[id] == true }))
-                edit.apply(); Toaster.s(R.string.toast_preference_saved); hideDialog()
+                edit.apply(); Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }
         )
     }

@@ -144,9 +144,9 @@ class DialogOverflowTest {
         composeRule.waitForIdle()
 
         val pills = listOf(
-            app.getString(R.string.reset),
-            app.getString(R.string.cancel),
-            app.getString(R.string.dialog_apply)
+            app.getString(R.string.common_action_reset),
+            app.getString(R.string.common_action_cancel),
+            app.getString(R.string.common_action_apply)
         )
         val heights = pills.map { pill ->
             composeRule.onNodeWithText(pill).assertIsDisplayed()
@@ -219,7 +219,7 @@ class DialogOverflowTest {
         // repo idiom in GetSeekBarPendingSeekTargetTest), so click through the semantics
         // action and tick the clock once for the resulting recomposition.
         composeRule
-            .onNodeWithText(app.getString(R.string.left, formatAsDuration(5L * 60 * 1000)))
+            .onNodeWithText(app.getString(R.string.player_sleep_timer_remaining, formatAsDuration(5L * 60 * 1000)))
             .performSemanticsAction(SemanticsActions.OnClick)
         composeRule.mainClock.advanceTimeBy(100)
         composeRule.waitForIdle()
@@ -245,10 +245,10 @@ class DialogOverflowTest {
 
         // pills are never clipped below the card (issue #896, vertical half).
         val confirmPill = composeRule.onNode(
-            hasText(app.getString(R.string.set_sleep_timer)) and
+            hasText(app.getString(R.string.player_sleep_timer_action_set)) and
                 hasAnyAncestor(hasTestTag("dialogFrameFooter"))
         ).getBoundsInRoot()
-        val cancelPill = composeRule.onNodeWithText(app.getString(R.string.cancel)).getBoundsInRoot()
+        val cancelPill = composeRule.onNodeWithText(app.getString(R.string.common_action_cancel)).getBoundsInRoot()
         assertTrue(
             "confirm pill clipped below the card (cardBottom=${card.bottom}, pillBottom=${confirmPill.bottom})",
             confirmPill.bottom <= card.bottom
@@ -334,7 +334,7 @@ class DialogOverflowTest {
         composeRule.waitForIdle()
 
         composeRule.onNodeWithText("1 / 4").assertIsDisplayed()
-        composeRule.onNodeWithText(app.getString(R.string.cancel)).assertIsDisplayed()
+        composeRule.onNodeWithText(app.getString(R.string.common_action_cancel)).assertIsDisplayed()
     }
 
     @Test

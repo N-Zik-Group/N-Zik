@@ -345,13 +345,13 @@ fun RescueScreen() {
     fun showResult(result: Result<*>, successMsg: String? = null) {
         fileStateVersion++
         result.onSuccess {
-            val msg = successMsg ?: context.getString(R.string.rescue_success)
+            val msg = successMsg ?: context.getString(R.string.recovery_success)
             Toasty.success(context, msg, Toast.LENGTH_SHORT, true).show()
         }.onFailure { e ->
             val msg = if (e is RescueFiles.DatabaseBusyException) {
-                context.getString(R.string.rescue_error_database_busy)
+                context.getString(R.string.recovery_error_database_busy)
             } else {
-                context.getString(R.string.rescue_error, e.message ?: "Unknown")
+                context.getString(R.string.recovery_error, e.message ?: "Unknown")
             }
             Toasty.error(context, msg, Toast.LENGTH_LONG, true).show()
             Timber.tag("RescueScreen").e(e, "Action failed")
@@ -364,7 +364,7 @@ fun RescueScreen() {
         if (result.getOrNull()?.encryptedSkipped == true) {
             Toasty.warning(
                 context,
-                context.getString(R.string.rescue_encrypted_unavailable_warning),
+                context.getString(R.string.recovery_encrypted_unavailable_warning),
                 Toast.LENGTH_LONG,
                 true
             ).show()
@@ -380,7 +380,7 @@ fun RescueScreen() {
 //
         // DB-busy guard (checkpointWal) stays the last resort when the marker misleads.
         if (RescueProcess.isMainProcessLikelyAlive(context)) {
-            Toasty.warning(context, context.getString(R.string.rescue_main_process_running), Toast.LENGTH_LONG, true).show()
+            Toasty.warning(context, context.getString(R.string.recovery_main_process_running), Toast.LENGTH_LONG, true).show()
         } else {
             action()
         }
@@ -451,7 +451,7 @@ fun RescueScreen() {
         uri ?: return@rememberLauncherForActivityResult
         scope.launch {
             val result = withContext(NzikDispatchers.DATA) { RescueFiles.exportProfileState(context, uri) }
-            showResult(result, context.getString(R.string.rescue_accounts_exported))
+            showResult(result, context.getString(R.string.recovery_accounts_exported))
         }
     }
 
@@ -468,12 +468,12 @@ fun RescueScreen() {
                         result.getOrNull()?.let { applied ->
                             when {
                                 applied.profiles > 0 ->
-                                    context.getString(R.string.rescue_accounts_imported_count, applied.profiles)
+                                    context.getString(R.string.recovery_accounts_imported_count, applied.profiles)
                                 // A base-only archive restores the base face and/or name, not a profile count.
                                 applied.faces > 0 || applied.names > 0 ->
-                                    context.getString(R.string.rescue_accounts_imported_base)
+                                    context.getString(R.string.recovery_accounts_imported_base)
                                 else ->
-                                    context.getString(R.string.rescue_accounts_imported_count, 0)
+                                    context.getString(R.string.recovery_accounts_imported_count, 0)
                             }
                         }
                     )
@@ -492,7 +492,7 @@ fun RescueScreen() {
                 if (found == true) {
                     showResult(Result.success(Unit))
                 } else {
-                    Toasty.warning(context, context.getString(R.string.rescue_no_logs), Toast.LENGTH_SHORT, true).show()
+                    Toasty.warning(context, context.getString(R.string.recovery_no_logs), Toast.LENGTH_SHORT, true).show()
                 }
             }.onFailure { e ->
                 showResult(Result.failure<Unit>(e))
@@ -518,10 +518,10 @@ fun RescueScreen() {
     // Cross-profile warning: the picked file was created under a different profile
     DialogPresence(target = crossProfilePending) { pending ->
         RescueConfirmationDialog(
-            title = stringResource(R.string.dialog_import_backup),
-            confirmText = stringResource(R.string.import_button),
+            title = stringResource(R.string.backup_action_import),
+            confirmText = stringResource(R.string.common_action_import),
             text = stringResource(
-                R.string.rescue_cross_profile_confirm,
+                R.string.recovery_cross_profile_confirm,
                 pending.tag,
                 profileOptions.firstOrNull { it.id == targetProfile }?.label ?: targetProfile
             ),
@@ -538,7 +538,7 @@ fun RescueScreen() {
     DialogPresence(visible = showCredentialToggles) {
         DialogFrame(
             onDismiss = { showCredentialToggles = false },
-            title = stringResource(R.string.rescue_export_settings),
+            title = stringResource(R.string.recovery_export_settings),
             footer = {
                 ButtonRow(
                     buttons = listOf(
@@ -548,7 +548,7 @@ fun RescueScreen() {
                             danger = true
                         ),
                         DialogButton(
-                            text = stringResource(R.string.export),
+                            text = stringResource(R.string.common_action_export),
                             primary = true,
                             onClick = {
                                 showCredentialToggles = false
@@ -562,19 +562,19 @@ fun RescueScreen() {
             val palette = colorPalette()
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(checked = includeYtb, onCheckedChange = { includeYtb = it }, colors = palette.checkboxColors())
-                Text(stringResource(R.string.rescue_include_youtube_credentials), color = palette.text)
+                Text(stringResource(R.string.recovery_include_youtube_credentials), color = palette.text)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(checked = includeDiscord, onCheckedChange = { includeDiscord = it }, colors = palette.checkboxColors())
-                Text(stringResource(R.string.rescue_include_discord_credentials), color = palette.text)
+                Text(stringResource(R.string.recovery_include_discord_credentials), color = palette.text)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(checked = includeLastfm, onCheckedChange = { includeLastfm = it }, colors = palette.checkboxColors())
-                Text(stringResource(R.string.rescue_include_lastfm_credentials), color = palette.text)
+                Text(stringResource(R.string.recovery_include_lastfm_credentials), color = palette.text)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(checked = includeProxy, onCheckedChange = { includeProxy = it }, colors = palette.checkboxColors())
-                Text(stringResource(R.string.rescue_include_proxy_credentials), color = palette.text)
+                Text(stringResource(R.string.backup_include_proxy_password), color = palette.text)
             }
         }
     }
@@ -588,7 +588,7 @@ fun RescueScreen() {
         val userProfiles = profileOptions.filter { it.id != DEFAULT_PROFILE_ID }
         DialogFrame(
             onDismiss = { deleteProfilesDialog = false },
-            title = stringResource(R.string.rescue_profiles_to_delete),
+            title = stringResource(R.string.recovery_profiles_to_delete),
             bodyPadding = PaddingValues(0.dp),
             footer = {
                 ButtonRow(
@@ -599,7 +599,7 @@ fun RescueScreen() {
                             danger = true
                         ),
                         DialogButton(
-                            text = stringResource(R.string.next),
+                            text = stringResource(R.string.common_action_next),
                             primary = true,
                             enabled = deleteSelection.isNotEmpty(),
                             onClick = {
@@ -609,7 +609,7 @@ fun RescueScreen() {
                                 guardWrite {
                                     // The selection is the informed choice; the standard
                                     // confirmation states the permanent consequences.
-                                    confirmAction = ConfirmAction(R.string.rescue_confirm_delete_profiles) {
+                                    confirmAction = ConfirmAction(R.string.recovery_confirm_delete_profiles) {
                                         scope.launch {
                                             val activeId = getActiveProfile(context)
                                             val result = withContext(NzikDispatchers.DATA) {
@@ -618,7 +618,7 @@ fun RescueScreen() {
                                             showResult(
                                                 result,
                                                 result.getOrNull()?.let {
-                                                    context.getString(R.string.rescue_profiles_deleted_count, it)
+                                                    context.getString(R.string.recovery_profiles_deleted_count, it)
                                                 }
                                             )
                                             // Deleting the CURRENT profile switches the active slot
@@ -630,7 +630,7 @@ fun RescueScreen() {
                                             ) {
                                                 Toasty.warning(
                                                     context,
-                                                    context.getString(R.string.rescue_profiles_deleted_active_restart),
+                                                    context.getString(R.string.recovery_profiles_deleted_active_restart),
                                                     Toast.LENGTH_LONG,
                                                     true
                                                 ).show()
@@ -676,7 +676,7 @@ fun RescueScreen() {
                         )
                         if (option.isActive) {
                             Text(
-                                text = stringResource(R.string.rescue_profile_active),
+                                text = stringResource(R.string.recovery_profile_active),
                                 style = typography().xxs.copy(color = palette.accent)
                             )
                         }
@@ -695,7 +695,7 @@ fun RescueScreen() {
             profileOptions.filter { it.id != DEFAULT_PROFILE_ID }
         DialogFrame(
             onDismiss = { resetProfilesDialog = false },
-            title = stringResource(R.string.rescue_profiles_to_reset),
+            title = stringResource(R.string.recovery_profiles_to_reset),
             bodyPadding = PaddingValues(0.dp),
             footer = {
                 ButtonRow(
@@ -706,7 +706,7 @@ fun RescueScreen() {
                             danger = true
                         ),
                         DialogButton(
-                            text = stringResource(R.string.next),
+                            text = stringResource(R.string.common_action_next),
                             primary = true,
                             enabled = resetSelection.isNotEmpty(),
                             onClick = {
@@ -716,7 +716,7 @@ fun RescueScreen() {
                                 guardWrite {
                                     // The selection is the informed choice; the standard
                                     // confirmation states the permanent consequences.
-                                    confirmAction = ConfirmAction(R.string.rescue_confirm_reset_profiles) {
+                                    confirmAction = ConfirmAction(R.string.recovery_confirm_reset_profiles) {
                                         scope.launch {
                                             val result = withContext(NzikDispatchers.DATA) {
                                                 RescueFiles.resetProfiles(context, selected.toList())
@@ -724,7 +724,7 @@ fun RescueScreen() {
                                             showResult(
                                                 result,
                                                 result.getOrNull()?.let {
-                                                    context.getString(R.string.rescue_profiles_reset_count, it)
+                                                    context.getString(R.string.recovery_profiles_reset_count, it)
                                                 }
                                             )
                                         }
@@ -769,13 +769,13 @@ fun RescueScreen() {
                         )
                         if (option.isActive) {
                             Text(
-                                text = stringResource(R.string.rescue_profile_active),
+                                text = stringResource(R.string.recovery_profile_active),
                                 style = typography().xxs.copy(color = palette.accent)
                             )
                         }
                         if (option.id == DEFAULT_PROFILE_ID) {
                             Text(
-                                text = stringResource(R.string.rescue_profile_base),
+                                text = stringResource(R.string.recovery_profile_base),
                                 style = typography().xxs.copy(color = palette.accent)
                             )
                         }
@@ -797,7 +797,7 @@ fun RescueScreen() {
         }
         DialogFrame(
             onDismiss = { restoreProfilesDialog = false },
-            title = stringResource(R.string.rescue_profiles_to_restore),
+            title = stringResource(R.string.recovery_profiles_to_restore),
             bodyPadding = PaddingValues(0.dp),
             footer = {
                 ButtonRow(
@@ -808,7 +808,7 @@ fun RescueScreen() {
                             danger = true
                         ),
                         DialogButton(
-                            text = stringResource(R.string.next),
+                            text = stringResource(R.string.common_action_next),
                             primary = true,
                             enabled = restoreSelection.isNotEmpty(),
                             onClick = {
@@ -818,7 +818,7 @@ fun RescueScreen() {
                                 guardWrite {
                                     // The selection is the informed choice; the standard
                                     // confirmation states what the restore replaces.
-                                    confirmAction = ConfirmAction(R.string.rescue_confirm_restore_profiles) {
+                                    confirmAction = ConfirmAction(R.string.recovery_confirm_restore_profiles) {
                                         scope.launch {
                                             val result = withContext(NzikDispatchers.DATA) {
                                                 RescueFiles.restoreProfiles(context, selected.toList())
@@ -826,7 +826,7 @@ fun RescueScreen() {
                                             showResult(
                                                 result,
                                                 result.getOrNull()?.let {
-                                                    context.getString(R.string.rescue_profiles_restored_count, it)
+                                                    context.getString(R.string.recovery_profiles_restored_count, it)
                                                 }
                                             )
                                         }
@@ -870,13 +870,13 @@ fun RescueScreen() {
                         )
                         if (option.isActive) {
                             Text(
-                                text = stringResource(R.string.rescue_profile_active),
+                                text = stringResource(R.string.recovery_profile_active),
                                 style = typography().xxs.copy(color = palette.accent)
                             )
                         }
                         if (option.id == DEFAULT_PROFILE_ID) {
                             Text(
-                                text = stringResource(R.string.rescue_profile_base),
+                                text = stringResource(R.string.recovery_profile_base),
                                 style = typography().xxs.copy(color = palette.accent)
                             )
                         }
@@ -888,7 +888,7 @@ fun RescueScreen() {
 
     Scaffold(
         topBar = {
-            RescueHeader(title = stringResource(R.string.rescue_center))
+            RescueHeader(title = stringResource(R.string.recovery_center))
         },
         containerColor = MaterialTheme.colorScheme.background,
         // Like the app's screens: the scaffold background stretches behind the transparent
@@ -915,7 +915,7 @@ fun RescueScreen() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                stringResource(R.string.rescue_center_description),
+                stringResource(R.string.recovery_center_description),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -938,8 +938,8 @@ fun RescueScreen() {
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         stringResource(
-                            if (running) R.string.rescue_status_main_process_stopping
-                            else R.string.rescue_status_main_process_stopped
+                            if (running) R.string.recovery_status_main_process_stopping
+                            else R.string.recovery_status_main_process_stopped
                         ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -957,13 +957,13 @@ fun RescueScreen() {
                     .padding(bottom = 8.dp)
             ) {
                 RescueCategoryChip(
-                    label = stringResource(R.string.rescue_category_all),
+                    label = stringResource(R.string.recovery_category_all),
                     selected = rescueCategory == RescueCategory.ALL,
                     onSelect = { rescueCategory = RescueCategory.ALL }
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 RescueCategoryChip(
-                    label = stringResource(R.string.rescue_category_profile),
+                    label = stringResource(R.string.recovery_category_profile),
                     selected = rescueCategory == RescueCategory.PER_PROFILE,
                     onSelect = { rescueCategory = RescueCategory.PER_PROFILE }
                 )
@@ -984,7 +984,7 @@ fun RescueScreen() {
                 // Profile target selector — the profile-scoped actions below operate on the
                 // chosen profile (its database, its settings, its face); switching is not implied.
                 Text(
-                    text = stringResource(R.string.rescue_profile_target_description),
+                    text = stringResource(R.string.recovery_profile_target_description),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 4.dp)
@@ -1026,7 +1026,7 @@ fun RescueScreen() {
                                 )
                                 if (option.isActive) {
                                     Text(
-                                        text = stringResource(R.string.rescue_profile_active),
+                                        text = stringResource(R.string.recovery_profile_active),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = (if (selected)
                                             MaterialTheme.colorScheme.onPrimary
@@ -1043,14 +1043,14 @@ fun RescueScreen() {
 
                 // Database — the target profile's database (export / import / reset / restore)
                 RescueSectionCard(
-                title = stringResource(R.string.rescue_group_database),
+                title = stringResource(R.string.recovery_group_database),
                 iconRes = R.drawable.server,
                 content = {
                     // Export database
                     RescueActionCard(
                         iconRes = R.drawable.server,
-                        title = stringResource(R.string.rescue_export_database),
-                        description = stringResource(R.string.rescue_export_database_description),
+                        title = stringResource(R.string.recovery_export_database),
+                        description = stringResource(R.string.recovery_export_database_description),
                         onClick = {
                             exportDbLauncher.launch("${BuildConfig.APP_NAME} $date Database.sqlite")
                         }
@@ -1059,11 +1059,11 @@ fun RescueScreen() {
                     // Import database
                     RescueActionCard(
                         iconRes = R.drawable.server,
-                        title = stringResource(R.string.rescue_import_database),
-                        description = stringResource(R.string.rescue_import_database_description),
+                        title = stringResource(R.string.recovery_import_database),
+                        description = stringResource(R.string.recovery_import_database_description),
                         onClick = {
                             guardWrite {
-                                confirmAction = ConfirmAction(R.string.rescue_confirm_import_database) {
+                                confirmAction = ConfirmAction(R.string.recovery_confirm_import_database) {
                                     importDbLauncher.launch(IMPORT_DATABASE_MIMES)
                                 }
                             }
@@ -1073,15 +1073,15 @@ fun RescueScreen() {
                     // Reset database
                     RescueActionCard(
                         iconRes = R.drawable.server,
-                        title = stringResource(R.string.rescue_reset_database),
-                        description = stringResource(R.string.rescue_reset_database_description),
+                        title = stringResource(R.string.recovery_reset_database),
+                        description = stringResource(R.string.recovery_reset_database_description),
                         onClick = {
                             guardWrite {
                                 // A second reset overwrites the only backup: say so before it happens.
                                 val message = if (fileState.hasDatabaseBackup) {
-                                    R.string.rescue_confirm_reset_database_replace_backup
+                                    R.string.recovery_confirm_reset_database_replace_backup
                                 } else {
-                                    R.string.rescue_confirm_reset_database
+                                    R.string.recovery_confirm_reset_database
                                 }
                                 confirmAction = ConfirmAction(message) {
                                     scope.launch {
@@ -1098,13 +1098,13 @@ fun RescueScreen() {
                     // Restore database
                     RescueActionCard(
                         iconRes = R.drawable.restore,
-                        title = stringResource(R.string.rescue_restore_database),
-                        description = stringResource(R.string.rescue_restore_database_description),
+                        title = stringResource(R.string.recovery_restore_database),
+                        description = stringResource(R.string.recovery_restore_database_description),
                         enabled = fileState.hasDatabaseBackup,
-                        disabledReason = stringResource(R.string.rescue_no_backup),
+                        disabledReason = stringResource(R.string.recovery_no_backup),
                         onClick = {
                             guardWrite {
-                                confirmAction = ConfirmAction(R.string.rescue_confirm_restore_database) {
+                                confirmAction = ConfirmAction(R.string.recovery_confirm_restore_database) {
                                     scope.launch {
                                         val result = withContext(NzikDispatchers.DATA) {
                                             RescueFiles.restoreDatabase(context)
@@ -1120,25 +1120,25 @@ fun RescueScreen() {
 
             // Settings — the target profile's settings (export / import / reset / restore)
             RescueSectionCard(
-                title = stringResource(R.string.rescue_group_settings),
+                title = stringResource(R.string.recovery_group_settings),
                 iconRes = R.drawable.settings,
                 content = {
                     // Export settings
                     RescueActionCard(
                         iconRes = R.drawable.settings,
-                        title = stringResource(R.string.rescue_export_settings),
-                        description = stringResource(R.string.rescue_export_settings_description),
+                        title = stringResource(R.string.recovery_export_settings),
+                        description = stringResource(R.string.recovery_export_settings_description),
                         onClick = { showCredentialToggles = true }
                     )
 
                     // Import settings
                     RescueActionCard(
                         iconRes = R.drawable.settings,
-                        title = stringResource(R.string.rescue_import_settings),
-                        description = stringResource(R.string.rescue_import_settings_description),
+                        title = stringResource(R.string.recovery_import_settings),
+                        description = stringResource(R.string.recovery_import_settings_description),
                         onClick = {
                             guardWrite {
-                                confirmAction = ConfirmAction(R.string.rescue_confirm_import_settings) {
+                                confirmAction = ConfirmAction(R.string.recovery_confirm_import_settings) {
                                     importSettingsLauncher.launch(IMPORT_SETTINGS_MIMES)
                                 }
                             }
@@ -1148,15 +1148,15 @@ fun RescueScreen() {
                     // Reset settings
                     RescueActionCard(
                         iconRes = R.drawable.settings,
-                        title = stringResource(R.string.rescue_reset_settings),
-                        description = stringResource(R.string.rescue_reset_settings_description),
+                        title = stringResource(R.string.recovery_reset_settings),
+                        description = stringResource(R.string.recovery_reset_settings_description),
                         onClick = {
                             guardWrite {
                                 // A second reset would overwrite the backup with already-cleared settings.
                                 val message = if (fileState.hasSettingsBackup) {
-                                    R.string.rescue_confirm_reset_settings_replace_backup
+                                    R.string.recovery_confirm_reset_settings_replace_backup
                                 } else {
-                                    R.string.rescue_confirm_reset_settings
+                                    R.string.recovery_confirm_reset_settings
                                 }
                                 confirmAction = ConfirmAction(message) {
                                     scope.launch {
@@ -1173,13 +1173,13 @@ fun RescueScreen() {
                     // Restore settings
                     RescueActionCard(
                         iconRes = R.drawable.restore,
-                        title = stringResource(R.string.rescue_restore_settings),
-                        description = stringResource(R.string.rescue_restore_settings_description),
+                        title = stringResource(R.string.recovery_restore_settings),
+                        description = stringResource(R.string.recovery_restore_settings_description),
                         enabled = fileState.hasSettingsBackup,
-                        disabledReason = stringResource(R.string.rescue_no_settings_backup),
+                        disabledReason = stringResource(R.string.recovery_no_settings_backup),
                         onClick = {
                             guardWrite {
-                                confirmAction = ConfirmAction(R.string.rescue_confirm_restore_settings) {
+                                confirmAction = ConfirmAction(R.string.recovery_confirm_restore_settings) {
                                     scope.launch {
                                         val result = withContext(NzikDispatchers.DATA) {
                                             RescueFiles.restoreSettings(context)
@@ -1231,16 +1231,16 @@ fun RescueScreen() {
 //
             // the dialog, not in the per-profile target subcategory)
             RescueSectionCard(
-                title = stringResource(R.string.rescue_group_profiles),
+                title = stringResource(R.string.recovery_group_profiles),
                 iconRes = R.drawable.person,
                 content = {
                     // Export profiles (profile state: the list + every face, one .txt file)
                     RescueActionCard(
                         iconRes = R.drawable.person,
-                        title = stringResource(R.string.rescue_export_profiles),
-                        description = stringResource(R.string.rescue_export_profiles_description),
+                        title = stringResource(R.string.profile_action_export),
+                        description = stringResource(R.string.recovery_export_profiles_description),
                         enabled = fileState.hasProfileState,
-                        disabledReason = stringResource(R.string.rescue_no_profile_state),
+                        disabledReason = stringResource(R.string.recovery_no_profile_state),
                         onClick = {
                             exportProfileStateLauncher.launch(
                                 "${BuildConfig.APP_NAME}_${targetProfile}_${fullDate}_Profiles_Export.txt"
@@ -1251,11 +1251,11 @@ fun RescueScreen() {
                     // Import profiles (profile state)
                     RescueActionCard(
                         iconRes = R.drawable.person,
-                        title = stringResource(R.string.rescue_import_profiles),
-                        description = stringResource(R.string.rescue_import_profiles_description),
+                        title = stringResource(R.string.profile_action_import),
+                        description = stringResource(R.string.recovery_import_profiles_description),
                         onClick = {
                             guardWrite {
-                                confirmAction = ConfirmAction(R.string.rescue_confirm_import_accounts) {
+                                confirmAction = ConfirmAction(R.string.recovery_confirm_import_accounts) {
                                     importProfileStateLauncher.launch(IMPORT_PROFILE_STATE_MIMES)
                                 }
                             }
@@ -1269,10 +1269,10 @@ fun RescueScreen() {
                     // switches the active slot to the base, and the app must be relaunched.
                     RescueActionCard(
                         iconRes = R.drawable.trash,
-                        title = stringResource(R.string.rescue_delete_profiles),
-                        description = stringResource(R.string.rescue_delete_profiles_description),
+                        title = stringResource(R.string.recovery_delete_profiles),
+                        description = stringResource(R.string.recovery_delete_profiles_description),
                         enabled = profileOptions.any { it.id != DEFAULT_PROFILE_ID },
-                        disabledReason = stringResource(R.string.rescue_no_profiles_to_delete),
+                        disabledReason = stringResource(R.string.recovery_no_profiles_to_delete),
                         onClick = {
                             guardWrite {
                                 deleteSelection = emptySet()
@@ -1290,8 +1290,8 @@ fun RescueScreen() {
                     // the app must be relaunched — the result message says so.
                     RescueActionCard(
                         iconRes = R.drawable.person,
-                        title = stringResource(R.string.rescue_reset_profiles),
-                        description = stringResource(R.string.rescue_reset_profiles_description),
+                        title = stringResource(R.string.recovery_reset_profiles),
+                        description = stringResource(R.string.recovery_reset_profiles_description),
                         onClick = {
                             guardWrite {
                                 resetSelection = emptySet()
@@ -1307,10 +1307,10 @@ fun RescueScreen() {
                     // that carry a backup.
                     RescueActionCard(
                         iconRes = R.drawable.restore,
-                        title = stringResource(R.string.rescue_restore_profiles),
-                        description = stringResource(R.string.rescue_restore_profiles_description),
+                        title = stringResource(R.string.recovery_restore_profiles),
+                        description = stringResource(R.string.recovery_restore_profiles_description),
                         enabled = fileState.profileBackups.isNotEmpty(),
-                        disabledReason = stringResource(R.string.rescue_no_profiles_to_restore),
+                        disabledReason = stringResource(R.string.recovery_no_profiles_to_restore),
                         onClick = {
                             guardWrite {
                                 restoreSelection = emptySet()
@@ -1323,16 +1323,16 @@ fun RescueScreen() {
 
             // Logs — export / delete the app log
             RescueSectionCard(
-                title = stringResource(R.string.rescue_group_logs),
+                title = stringResource(R.string.recovery_group_logs),
                 iconRes = R.drawable.bugs,
                 content = {
                     // Export logs
                     RescueActionCard(
                         iconRes = R.drawable.bugs,
-                        title = stringResource(R.string.rescue_export_logs),
-                        description = stringResource(R.string.rescue_export_logs_description),
+                        title = stringResource(R.string.recovery_export_logs),
+                        description = stringResource(R.string.recovery_export_logs_description),
                         enabled = fileState.hasLogs,
-                        disabledReason = stringResource(R.string.rescue_no_logs),
+                        disabledReason = stringResource(R.string.recovery_no_logs),
                         onClick = {
                             exportLogsLauncher.launch("${BuildConfig.APP_NAME} $date Logs.txt")
                         }
@@ -1341,13 +1341,13 @@ fun RescueScreen() {
                     // Delete logs
                     RescueActionCard(
                         iconRes = R.drawable.trash,
-                        title = stringResource(R.string.rescue_delete_logs),
-                        description = stringResource(R.string.rescue_delete_logs_description),
+                        title = stringResource(R.string.recovery_delete_logs),
+                        description = stringResource(R.string.recovery_delete_logs_description),
                         enabled = fileState.hasLogs,
-                        disabledReason = stringResource(R.string.rescue_no_logs),
+                        disabledReason = stringResource(R.string.recovery_no_logs),
                         onClick = {
                             guardWrite {
-                                confirmAction = ConfirmAction(R.string.rescue_confirm_delete_logs) {
+                                confirmAction = ConfirmAction(R.string.recovery_confirm_delete_logs) {
                                     scope.launch {
                                         val result = withContext(NzikDispatchers.DATA) {
                                             RescueFiles.deleteLogs(context)
@@ -1363,17 +1363,17 @@ fun RescueScreen() {
 
             // Storage — the shared (non-profiled) caches, downloads and the safety copies
             RescueSectionCard(
-                title = stringResource(R.string.rescue_group_storage),
+                title = stringResource(R.string.recovery_group_storage),
                 iconRes = R.drawable.trash,
                 content = {
                     // Clear cache
                     RescueActionCard(
                         iconRes = R.drawable.trash,
-                        title = stringResource(R.string.rescue_clear_cache),
-                        description = stringResource(R.string.rescue_clear_cache_description),
+                        title = stringResource(R.string.recovery_clear_cache),
+                        description = stringResource(R.string.recovery_clear_cache_description),
                         onClick = {
                             guardWrite {
-                                confirmAction = ConfirmAction(R.string.rescue_confirm_clear_cache) {
+                                confirmAction = ConfirmAction(R.string.recovery_confirm_clear_cache) {
                                     scope.launch {
                                         val result = withContext(NzikDispatchers.DATA) {
                                             RescueFiles.clearCache(context)
@@ -1388,11 +1388,11 @@ fun RescueScreen() {
                     // Delete downloads
                     RescueActionCard(
                         iconRes = R.drawable.trash,
-                        title = stringResource(R.string.rescue_delete_downloads),
-                        description = stringResource(R.string.rescue_delete_downloads_description),
+                        title = stringResource(R.string.recovery_delete_downloads),
+                        description = stringResource(R.string.recovery_delete_downloads_description),
                         onClick = {
                             guardWrite {
-                                confirmAction = ConfirmAction(R.string.rescue_confirm_delete_downloads) {
+                                confirmAction = ConfirmAction(R.string.recovery_confirm_delete_downloads) {
                                     scope.launch {
                                         val result = withContext(NzikDispatchers.DATA) {
                                             RescueFiles.deleteDownloads(context)
@@ -1407,17 +1407,17 @@ fun RescueScreen() {
                     // Delete backups: removes the only safety copy
                     RescueActionCard(
                         iconRes = R.drawable.trash,
-                        title = stringResource(R.string.rescue_delete_backups),
-                        description = stringResource(R.string.rescue_delete_backups_description),
+                        title = stringResource(R.string.recovery_delete_backups),
+                        description = stringResource(R.string.recovery_delete_backups_description),
                         // The action wipes the whole rescue_backups tree — database, settings
                         // AND the profile reset backups — so any of them keeps the card on.
                         enabled = fileState.hasDatabaseBackup ||
                             fileState.hasSettingsBackup ||
                             fileState.profileBackups.isNotEmpty(),
-                        disabledReason = stringResource(R.string.rescue_no_backups_to_delete),
+                        disabledReason = stringResource(R.string.recovery_no_backups_to_delete),
                         onClick = {
                             guardWrite {
-                                confirmAction = ConfirmAction(R.string.rescue_confirm_delete_backups) {
+                                confirmAction = ConfirmAction(R.string.recovery_confirm_delete_backups) {
                                     scope.launch {
                                         val result = withContext(NzikDispatchers.DATA) {
                                             RescueFiles.deleteBackups(context)
@@ -1433,7 +1433,7 @@ fun RescueScreen() {
 
             // App — end the main process
             RescueSectionCard(
-                title = stringResource(R.string.rescue_group_app),
+                title = stringResource(R.string.recovery_group_app),
                 iconRes = R.drawable.logout,
                 content = {
 
@@ -1444,11 +1444,11 @@ fun RescueScreen() {
             // Not gated by guardWrite: its purpose is to release the guard; it writes nothing.
                     RescueActionCard(
                         iconRes = R.drawable.logout,
-                        title = stringResource(R.string.rescue_kill_app),
-                        description = stringResource(R.string.rescue_kill_app_description),
+                        title = stringResource(R.string.recovery_kill_app),
+                        description = stringResource(R.string.recovery_kill_app_description),
                         enabled = mainProcessRunning == true,
                         onClick = {
-                            confirmAction = ConfirmAction(R.string.rescue_confirm_kill_app) {
+                            confirmAction = ConfirmAction(R.string.recovery_confirm_kill_app) {
                                 scope.launch {
                                     withContext(NzikDispatchers.DATA) {
                                         RescueProcess.requestKillMain(context)
@@ -1658,23 +1658,23 @@ private data class ConfirmAction(
 ) {
     val titleRes: Int
         get() = when (messageRes) {
-            R.string.rescue_confirm_delete_profiles -> R.string.rescue_delete_profiles
-            R.string.rescue_confirm_reset_profiles -> R.string.rescue_reset_profiles
-            R.string.rescue_confirm_restore_profiles -> R.string.rescue_restore_profiles
-            R.string.rescue_confirm_import_database -> R.string.rescue_import_database
-            R.string.rescue_confirm_reset_database,
-            R.string.rescue_confirm_reset_database_replace_backup -> R.string.rescue_reset_database
-            R.string.rescue_confirm_restore_database -> R.string.rescue_restore_database
-            R.string.rescue_confirm_import_settings -> R.string.rescue_import_settings
-            R.string.rescue_confirm_reset_settings,
-            R.string.rescue_confirm_reset_settings_replace_backup -> R.string.rescue_reset_settings
-            R.string.rescue_confirm_restore_settings -> R.string.rescue_restore_settings
-            R.string.rescue_confirm_import_accounts -> R.string.rescue_import_profiles
-            R.string.rescue_confirm_delete_logs -> R.string.rescue_delete_logs
-            R.string.rescue_confirm_clear_cache -> R.string.rescue_clear_cache
-            R.string.rescue_confirm_delete_downloads -> R.string.rescue_delete_downloads
-            R.string.rescue_confirm_delete_backups -> R.string.rescue_delete_backups
-            R.string.rescue_confirm_kill_app -> R.string.rescue_kill_app
+            R.string.recovery_confirm_delete_profiles -> R.string.recovery_delete_profiles
+            R.string.recovery_confirm_reset_profiles -> R.string.recovery_reset_profiles
+            R.string.recovery_confirm_restore_profiles -> R.string.recovery_restore_profiles
+            R.string.recovery_confirm_import_database -> R.string.recovery_import_database
+            R.string.recovery_confirm_reset_database,
+            R.string.recovery_confirm_reset_database_replace_backup -> R.string.recovery_reset_database
+            R.string.recovery_confirm_restore_database -> R.string.recovery_restore_database
+            R.string.recovery_confirm_import_settings -> R.string.recovery_import_settings
+            R.string.recovery_confirm_reset_settings,
+            R.string.recovery_confirm_reset_settings_replace_backup -> R.string.recovery_reset_settings
+            R.string.recovery_confirm_restore_settings -> R.string.recovery_restore_settings
+            R.string.recovery_confirm_import_accounts -> R.string.profile_action_import
+            R.string.recovery_confirm_delete_logs -> R.string.recovery_delete_logs
+            R.string.recovery_confirm_clear_cache -> R.string.recovery_clear_cache
+            R.string.recovery_confirm_delete_downloads -> R.string.recovery_delete_downloads
+            R.string.recovery_confirm_delete_backups -> R.string.recovery_delete_backups
+            R.string.recovery_confirm_kill_app -> R.string.recovery_kill_app
             else -> messageRes
         }
 }

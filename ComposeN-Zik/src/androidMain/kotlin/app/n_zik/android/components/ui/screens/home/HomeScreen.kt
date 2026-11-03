@@ -347,11 +347,11 @@ fun HomeScreen(
             navBarContent = { Item ->
                 activeTabs.forEachIndexed { index, id ->
                     when (id) {
-                        "quickpicks" -> Item(index, stringResource(R.string.quick_picks), R.drawable.sparkles)
-                        "songs" -> Item(index, stringResource(R.string.songs), R.drawable.musical_notes)
-                        "artists" -> Item(index, stringResource(R.string.artists), R.drawable.people)
-                        "albums" -> Item(index, stringResource(R.string.albums), R.drawable.album)
-                        "playlists" -> Item(index, stringResource(R.string.playlists), R.drawable.library)
+                        "quickpicks" -> Item(index, stringResource(R.string.recommendations_title), R.drawable.sparkles)
+                        "songs" -> Item(index, stringResource(R.string.library_songs_title), R.drawable.musical_notes)
+                        "artists" -> Item(index, stringResource(R.string.library_artists_title), R.drawable.people)
+                        "albums" -> Item(index, stringResource(R.string.library_albums_title), R.drawable.album)
+                        "playlists" -> Item(index, stringResource(R.string.library_playlists_title), R.drawable.library)
                     }
                 }
             }
@@ -472,7 +472,7 @@ fun HomeScreen(
     // Outgoing Home remains composed during transitions; it must not intercept another page's gesture.
     BackHandler(enabled = currentBackEntry?.destination?.route?.startsWith(NavRoutes.home.name) == true) {
         if( confirmCount == 0 ) {
-            Toaster.i( R.string.press_once_again_to_exit )
+            Toaster.i( R.string.navigation_back_again_to_exit_message )
             confirmCount++
 
             // Reset confirmCount after 5s

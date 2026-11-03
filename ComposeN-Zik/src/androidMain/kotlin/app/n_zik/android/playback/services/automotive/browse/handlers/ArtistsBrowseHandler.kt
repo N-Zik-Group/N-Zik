@@ -45,9 +45,9 @@ class ArtistsBrowseHandler : BrowseHandler {
                 val favoritesCount = database.artistTable.allFollowing().first().count { it.dislikedAt == null }
                 val dislikedCount = database.artistTable.allDisliked().first().size
                 val categoryItems = mapOf(
-                    "all" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_LIBRARY, context.getString(R.string.library), libraryCount.toString(), drawableUri(context, R.drawable.artist), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
-                    "favorites" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_FAVORITES, context.getString(R.string.favorites), favoritesCount.toString(), drawableUri(context, R.drawable.heart), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
-                    "disliked" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_DISLIKED, context.getString(R.string.disliked), dislikedCount.toString(), drawableUri(context, R.drawable.heart_dislike), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS)
+                    "all" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_LIBRARY, context.getString(R.string.library_title), libraryCount.toString(), drawableUri(context, R.drawable.artist), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
+                    "favorites" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_FAVORITES, context.getString(R.string.library_favorites_title), favoritesCount.toString(), drawableUri(context, R.drawable.heart), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
+                    "disliked" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_DISLIKED, context.getString(R.string.library_disliked_title), dislikedCount.toString(), drawableUri(context, R.drawable.heart_dislike), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS)
                 )
                 homeCategoryOrder(context, homeArtistsOrderKey, listOf("all", "favorites", "disliked"))
                     .mapNotNull { id -> if (id == "favorites" && !showFavoritesArtist) null else categoryItems[id] }

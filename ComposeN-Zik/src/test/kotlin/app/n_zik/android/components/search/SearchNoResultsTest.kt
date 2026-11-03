@@ -68,7 +68,7 @@ class SearchNoResultsTest {
     @Test
     fun collectionExplanationsStayInlineAndSearchSpaceHasNoText() {
         val emptySearch = mutableStateOf(false)
-        val messageId = mutableStateOf(R.string.no_items)
+        val messageId = mutableStateOf(R.string.common_empty_items)
         val appearance = Appearance(
             colorPalette = DefaultDarkColorPalette,
             typography = typographyOf(Color.White, true, false, FontType.Rubik),
@@ -83,7 +83,7 @@ class SearchNoResultsTest {
             }
         }
         composeRule.onNodeWithTag("search_no_results_text").assertTextEquals(
-            RuntimeEnvironment.getApplication().getString(R.string.no_items)
+            RuntimeEnvironment.getApplication().getString(R.string.common_empty_items)
         )
         composeRule.runOnIdle { messageId.value = R.string.album_no_alternative_version }
         composeRule.onNodeWithTag("search_no_results_text").assertTextEquals(

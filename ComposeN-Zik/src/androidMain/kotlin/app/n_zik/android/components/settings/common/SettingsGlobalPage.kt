@@ -258,7 +258,7 @@ internal fun GlobalPageItemRow(
             modifier = Modifier.clip(uiRoundnessShape()).testTag(testTag),
             onClick = { onItemSelected(item) },
             titlePrefix = if (item == SettingsGlassItem) ({
-                HeaderBadgeBox(stringResource(R.string.beta_title), colorPalette().accent,
+                HeaderBadgeBox(stringResource(R.string.updates_build_beta_label), colorPalette().accent,
                     modifier = Modifier.testTag("settings.glass.beta"),
                     glassSettings = app.n_zik.android.components.glass.rememberGlassSettings())
             }) else null,
@@ -291,13 +291,13 @@ private fun UpdateRow(
                 UpdateRowTrailingStatus()
             } else if (canOpen) {
                 BasicText(
-                    text = stringResource(R.string.debug),
+                    text = stringResource(R.string.common_debug_title),
                     style = typography().xxs.secondary,
                     modifier = Modifier.testTag("settings_global_update_debug_preview"),
                 )
             } else {
                 BasicText(
-                    text = stringResource(R.string.description_app_not_installed_by_apk),
+                    text = stringResource(R.string.updates_unavailable_build_description),
                     style = typography().xxs.secondary,
                     modifier = Modifier
                         .widthIn(max = 120.dp)
@@ -319,17 +319,17 @@ private fun UpdateRowTrailingStatus() {
     val status = stringResource(
         when {
             release == null -> R.string.audio_quality_format_unknown
-            hasUpdate -> R.string.update_available
-            else -> R.string.up_to_date
+            hasUpdate -> R.string.updates_available
+            else -> R.string.updates_up_to_date
         }
     )
     val lastCheckTime by rememberPreference(lastUpdateCheckKey, 0L)
     val context = LocalContext.current
     val lastCheck = if (lastCheckTime > 0) {
         val sdf = remember { SimpleDateFormat("dd MMM HH:mm", Locale.getDefault()) }
-        context.getString(R.string.last_check, sdf.format(Date(lastCheckTime)))
+        context.getString(R.string.updates_last_check_format, sdf.format(Date(lastCheckTime)))
     } else {
-        context.getString(R.string.never_checked)
+        context.getString(R.string.updates_never_checked)
     }
     BasicText(
         text = "$status \u00B7 $lastCheck",

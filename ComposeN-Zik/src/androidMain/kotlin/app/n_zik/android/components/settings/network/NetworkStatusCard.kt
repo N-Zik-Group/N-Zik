@@ -60,8 +60,8 @@ internal fun NetworkStatusCard(
 
             OtherInfoSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("network.network_status.image_quality_format"),
-                title = stringResource(R.string.image_quality_format),
-                text = stringResource(R.string.settings_desc_network_network_status_image_quality_format),
+                title = stringResource(R.string.settings_network_image_quality_label),
+                text = stringResource(R.string.network_current_artwork_quality_description),
                 selectedValueText = imageStatusText,
                 icon = R.drawable.image
             )
@@ -79,7 +79,7 @@ internal fun NetworkStatusCard(
             OtherInfoSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("network.network_status.audio_quality_format"),
                 title = stringResource(R.string.audio_quality_format),
-                text = stringResource(R.string.settings_desc_network_network_status_audio_quality_format),
+                text = stringResource(R.string.network_current_stream_audio_quality_description),
                 selectedValueText = audioStatusText,
                 icon = R.drawable.audio_quality
             )
@@ -96,8 +96,8 @@ internal fun NetworkStatusCard(
 
             OtherInfoSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("network.network_status.download_quality_format"),
-                title = stringResource(R.string.download_quality_format),
-                text = stringResource(R.string.settings_desc_network_network_status_download_quality_format),
+                title = stringResource(R.string.downloads_quality_format),
+                text = stringResource(R.string.network_current_download_audio_quality_description),
                 selectedValueText = downloadStatusText,
                 icon = R.drawable.download
             )

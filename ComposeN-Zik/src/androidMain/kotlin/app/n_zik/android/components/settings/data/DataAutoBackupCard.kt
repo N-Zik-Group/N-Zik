@@ -13,7 +13,7 @@ import app.n_zik.android.core.backup.ui.AutoBackupSettingsBlock
 internal fun DataAutoBackupCard() {
     SettingsSectionCard(
         modifier = Modifier.testTag("data.card.auto-backup"),
-        title = stringResource(R.string.auto_backup_title),
+        title = stringResource(R.string.backup_auto_title),
         icon = R.drawable.history,
         content = {
             AutoBackupSettingsBlock()

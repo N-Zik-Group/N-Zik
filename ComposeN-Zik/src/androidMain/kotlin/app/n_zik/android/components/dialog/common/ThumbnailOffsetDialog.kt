@@ -56,7 +56,7 @@ fun ThumbnailOffsetDialog(
     val showCoverThumbnailAnimation by rememberPreference(showCoverThumbnailAnimationKey, false)
     val expandedplayer by rememberPreference(expandedplayerKey, false)
     DefaultDialog(
-        title = stringResource(R.string.dialog_thumbnail_layout),
+        title = stringResource(R.string.thumbnail_layout_dialog_title),
         onDismiss = {
             spacingValue(thumbnailSpacing)
             spacingValueL(thumbnailSpacingL)
@@ -66,7 +66,7 @@ fun ThumbnailOffsetDialog(
             onDismiss()
         },
         footer = {
-            ButtonRow(listOf(DialogButton(stringResource(R.string.dialog_close), onClick = {
+            ButtonRow(listOf(DialogButton(stringResource(R.string.common_action_close), onClick = {
                 spacingValue(thumbnailSpacing)
                 spacingValueL(thumbnailSpacingL)
                 fadeValue(thumbnailFade)

@@ -8,17 +8,17 @@ enum class TransitionEffect(
     @field:StringRes override val textId: Int
 ): TextView {
 
-    SlideVertical( R.string.te_slide_vertical ),
+    SlideVertical( R.string.settings_transition_slide_vertical ),
 
-    SlideHorizontal( R.string.te_slide_horizontal ),
+    SlideHorizontal( R.string.settings_transition_slide_horizontal ),
 
-    Scale( R.string.te_scale ),
+    Scale( R.string.settings_transition_scale ),
 
-    Fade( R.string.te_fade ),
+    Fade( R.string.settings_transition_fade ),
 
-    Expand( R.string.te_expand ),
+    Expand( R.string.settings_transition_expand ),
 
-    None( R.string.none );
+    None( R.string.common_option_none );
 }
 
 

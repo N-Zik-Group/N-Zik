@@ -93,7 +93,7 @@ class RewindMasterToggleSettingsTest {
         showScreen()
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText(context.getString(R.string.rw_settings_master)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_enabled)).performClick()
         composeRule.waitForIdle()
 
         assertFalse(
@@ -119,7 +119,7 @@ class RewindMasterToggleSettingsTest {
         showScreen()
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText(context.getString(R.string.rw_settings_master)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_enabled)).performClick()
         composeRule.waitForIdle()
 
         assertTrue(

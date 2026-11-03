@@ -25,7 +25,7 @@ class LikeComponent private constructor(
     }
 
     override val iconId: Int = R.drawable.heart
-    override val messageId: Int = R.string.add_to_favorites
+    override val messageId: Int = R.string.library_favorites_action_add
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )

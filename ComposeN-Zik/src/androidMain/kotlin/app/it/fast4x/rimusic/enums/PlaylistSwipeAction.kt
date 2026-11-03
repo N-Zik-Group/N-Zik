@@ -15,15 +15,15 @@ enum class PlaylistSwipeAction(
     @field:StringRes override val textId: Int,
 ): Drawable, TextView {
 
-    NoAction( R.drawable.close, R.string.none ),
+    NoAction( R.drawable.close, R.string.common_option_none ),
 
-    PlayNext( R.drawable.play_skip_forward, R.string.play_next ),
+    PlayNext( R.drawable.play_skip_forward, R.string.player_action_play_next ),
 
-    Download( R.drawable.download, R.string.download ),
+    Download( R.drawable.download, R.string.downloads_title ),
 
-    Favourite( R.drawable.heart_outline, R.string.favorites ),
+    Favourite( R.drawable.heart_outline, R.string.library_favorites_title ),
 
-    Enqueue( R.drawable.enqueue, R.string.enqueue );
+    Enqueue( R.drawable.enqueue, R.string.player_action_enqueue );
 
     @OptIn(UnstableApi::class)
     fun getStateIcon( likeState: Boolean?, downloadState: Int, downloadedStateMedia: DownloadedStateMedia, showDisliked: Boolean = true ): Int? =

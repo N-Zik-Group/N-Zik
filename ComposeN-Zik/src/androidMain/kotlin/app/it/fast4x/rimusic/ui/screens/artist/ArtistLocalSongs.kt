@@ -224,7 +224,7 @@ fun ArtistLocalSongs(
                         iconSize = 24.dp,
                         modifier = Modifier.clip(uiRoundnessShape()),
                         onClick = { showConfirmDownloadAllDialog = true },
-                        onLongClick = { Toaster.i(context.resources.getString(R.string.info_download_all_songs)) }
+                        onLongClick = { Toaster.i(context.resources.getString(R.string.downloads_action_download_all)) }
                     )
                 }, {
                     HeaderIconButton(
@@ -233,7 +233,7 @@ fun ArtistLocalSongs(
                         iconSize = 24.dp,
                         modifier = Modifier.clip(uiRoundnessShape()),
                         onClick = { showConfirmDeleteDownloadDialog = true },
-                        onLongClick = { Toaster.i(context.resources.getString(R.string.info_remove_all_downloaded_songs)) }
+                        onLongClick = { Toaster.i(context.resources.getString(R.string.downloads_action_remove_all)) }
                     )
                 }, {
                     HeaderIconButton(
@@ -255,7 +255,7 @@ fun ArtistLocalSongs(
                                 }
                             }
                         },
-                        onLongClick = { Toaster.i(context.resources.getString(R.string.info_enqueue_songs)) }
+                        onLongClick = { Toaster.i(context.resources.getString(R.string.player_action_enqueue_songs)) }
                     )
                 }, {
                     HeaderIconButton(
@@ -275,7 +275,7 @@ fun ArtistLocalSongs(
                                 }
                             }
                         },
-                        onLongClick = { Toaster.i(context.resources.getString(R.string.info_shuffle)) }
+                        onLongClick = { Toaster.i(context.resources.getString(R.string.player_action_shuffle_hint)) }
                     )
                 }),
             )
@@ -283,9 +283,9 @@ fun ArtistLocalSongs(
         item {
             DialogPresence(visible = showConfirmDownloadAllDialog) {
                 ConfirmationDialog(
-                    title = stringResource(R.string.info_download_all_songs),
-                    confirmText = stringResource(R.string.download),
-                    text = stringResource(R.string.do_you_really_want_to_download_all),
+                    title = stringResource(R.string.downloads_action_download_all),
+                    confirmText = stringResource(R.string.downloads_title),
+                    text = stringResource(R.string.downloads_download_all_confirmation),
                     onDismiss = { showConfirmDownloadAllDialog = false },
                     onConfirm = {
                         showConfirmDownloadAllDialog = false
@@ -312,9 +312,9 @@ fun ArtistLocalSongs(
             }
             DialogPresence(visible = showConfirmDeleteDownloadDialog) {
                 ConfirmationDialog(
-                    title = stringResource(R.string.dialog_clear_downloads),
-                    confirmText = stringResource(R.string.delete),
-                    text = stringResource(R.string.do_you_really_want_to_delete_download),
+                    title = stringResource(R.string.downloads_delete_dialog_title),
+                    confirmText = stringResource(R.string.common_action_delete),
+                    text = stringResource(R.string.downloads_delete_all_confirmation),
                     onDismiss = { showConfirmDeleteDownloadDialog = false },
                     onConfirm = {
                         showConfirmDeleteDownloadDialog = false
@@ -357,7 +357,7 @@ fun ArtistLocalSongs(
             item(key = "empty") {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = stringResource(R.string.info_no_songs_yet),
+                        text = stringResource(R.string.artist_songs_unavailable_message),
                         style = MaterialTheme.typography.bodyLarge,
                         color = colorPalette().textSecondary,
                         modifier = Modifier.align(Alignment.Center)
@@ -519,15 +519,15 @@ fun ArtistLocalSongs(
                                             showConfirmDownloadAllDialog = true
                                         },
                                         onLongClick = {
-                                            Toaster.i(context.resources.getString(R.string.info_download_all_songs))
+                                            Toaster.i(context.resources.getString(R.string.downloads_action_download_all))
                                         }
                             )
 
                             DialogPresence(visible = showConfirmDownloadAllDialog) {
                                 ConfirmationDialog(
-                                    title = stringResource(R.string.info_download_all_songs),
-                                    confirmText = stringResource(R.string.download),
-                                    text = stringResource(R.string.do_you_really_want_to_download_all),
+                                    title = stringResource(R.string.downloads_action_download_all),
+                                    confirmText = stringResource(R.string.downloads_title),
+                                    text = stringResource(R.string.downloads_download_all_confirmation),
                                     onDismiss = { showConfirmDownloadAllDialog = false },
                                     onConfirm = {
                                         showConfirmDownloadAllDialog = false
@@ -562,15 +562,15 @@ fun ArtistLocalSongs(
                                             showConfirmDeleteDownloadDialog = true
                                         },
                                         onLongClick = {
-                                            Toaster.i(context.resources.getString(R.string.info_remove_all_downloaded_songs))
+                                            Toaster.i(context.resources.getString(R.string.downloads_action_remove_all))
                                         }
                             )
 
                             DialogPresence(visible = showConfirmDeleteDownloadDialog) {
                                 ConfirmationDialog(
-                                    title = stringResource(R.string.dialog_clear_downloads),
-                                    confirmText = stringResource(R.string.delete),
-                                    text = stringResource(R.string.do_you_really_want_to_delete_download),
+                                    title = stringResource(R.string.downloads_delete_dialog_title),
+                                    confirmText = stringResource(R.string.common_action_delete),
+                                    text = stringResource(R.string.downloads_delete_all_confirmation),
                                     onDismiss = { showConfirmDeleteDownloadDialog = false },
                                     onConfirm = {
                                         showConfirmDeleteDownloadDialog = false
@@ -615,7 +615,7 @@ fun ArtistLocalSongs(
                                             }
                                         },
                                         onLongClick = {
-                                            Toaster.i(context.resources.getString(R.string.info_enqueue_songs))
+                                            Toaster.i(context.resources.getString(R.string.player_action_enqueue_songs))
                                         }
                             )
                             HeaderIconButton(
@@ -636,7 +636,7 @@ fun ArtistLocalSongs(
                                             }
                                         },
                                         onLongClick = {
-                                            Toaster.i(context.resources.getString(R.string.info_shuffle))
+                                            Toaster.i(context.resources.getString(R.string.player_action_shuffle_hint))
                                         }
                             )
                         }

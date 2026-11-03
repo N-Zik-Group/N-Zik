@@ -209,7 +209,7 @@ class HorizontalNavigationBarInsetsTest {
             }
         }
         composeRule.runOnIdle { assertFalse(dock.present) }
-        val search = composeRule.onNodeWithContentDescription(context.getString(R.string.search))
+        val search = composeRule.onNodeWithContentDescription(context.getString(R.string.search_title))
         search.assertDoesNotExist()
         for (route in listOf("search", "searchResults/example")) {
             composeRule.runOnIdle { navigation.navigate(route) }
@@ -256,9 +256,9 @@ class HorizontalNavigationBarInsetsTest {
                 }
             }
         }
-        val searchInSearchBar = hasContentDescription(context.getString(R.string.search)) and
+        val searchInSearchBar = hasContentDescription(context.getString(R.string.search_title)) and
             hasAnyAncestor(hasTestTag("searchBar"))
-        val searchInHomeBar = hasContentDescription(context.getString(R.string.search)) and
+        val searchInHomeBar = hasContentDescription(context.getString(R.string.search_title)) and
             hasAnyAncestor(hasTestTag("homeBar"))
         composeRule.mainClock.autoAdvance = false
         composeRule.runOnIdle { navigation.navigate("search") }
@@ -283,6 +283,6 @@ class HorizontalNavigationBarInsetsTest {
         composeRule.onAllNodes(searchInSearchBar).assertCountEquals(0)
         composeRule.mainClock.advanceTimeBy(400)
         composeRule.onNodeWithTag("searchBar").assertDoesNotExist()
-        composeRule.onNodeWithContentDescription(context.getString(R.string.search)).assertDoesNotExist()
+        composeRule.onNodeWithContentDescription(context.getString(R.string.search_title)).assertDoesNotExist()
     }
 }

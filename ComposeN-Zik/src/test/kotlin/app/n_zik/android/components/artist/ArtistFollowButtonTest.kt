@@ -70,13 +70,13 @@ class ArtistFollowButtonTest {
             assertFill(Color.Green)
             compose.onNodeWithTag("follow").assertWidthIsEqualTo(100.dp)
                 .assertHeightIsEqualTo(40.dp)
-            compose.onNodeWithText(context.getString(R.string.following)).performClick()
+            compose.onNodeWithText(context.getString(R.string.artist_following_status)).performClick()
         }
         compose.runOnIdle { assertEquals(4, clicks); state.value = false }
-        compose.onNodeWithText(context.getString(R.string.disliked)).assertExists()
+        compose.onNodeWithText(context.getString(R.string.library_disliked_title)).assertExists()
         assertFill(palette.value.red)
         compose.runOnIdle { state.value = null }
-        compose.onNodeWithText(context.getString(R.string.follow)).assertExists()
+        compose.onNodeWithText(context.getString(R.string.artist_action_follow)).assertExists()
         assertFill(palette.value.background2)
     }
 }

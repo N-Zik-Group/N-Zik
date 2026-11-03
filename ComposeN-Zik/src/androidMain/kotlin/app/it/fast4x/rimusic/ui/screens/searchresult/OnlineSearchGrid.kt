@@ -145,7 +145,7 @@ fun OnlineSearchGrid(
                     SwipeablePlaylistItem(
                         mediaItem = item.asMediaItem,
                         onPlayNext = { binder?.player?.addNext(item.asMediaItem) },
-                        onDownload = { Toaster.w(R.string.downloading_videos_not_supported) },
+                        onDownload = { Toaster.w(R.string.search_video_download_unsupported_message) },
                         onEnqueue = { binder?.player?.enqueue(item.asMediaItem) }
                     ) {
                         VideoItem(

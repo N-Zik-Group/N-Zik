@@ -68,29 +68,29 @@ class RawUrlImportDialogTest {
         val footer = composeRule.onNodeWithTag("dialogFrameFooter").getBoundsInRoot()
         val body = composeRule.onNodeWithTag("dialogFrameBody").getBoundsInRoot()
         assertTrue(field.getBoundsInRoot().bottom <= body.bottom)
-        listOf(R.string.paste, R.string.clear, R.string.cancel, R.string.import_button).forEach {
+        listOf(R.string.common_action_paste, R.string.common_action_clear, R.string.common_action_cancel, R.string.common_action_import).forEach {
             val bounds = composeRule.onNodeWithText(context.getString(it)).assertIsDisplayed().getBoundsInRoot()
             assertTrue(bounds.top >= body.bottom && bounds.top >= footer.top)
             assertTrue(bounds.bottom <= footer.bottom)
         }
-        composeRule.onNodeWithText(context.getString(R.string.import_button)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_import)).performClick()
         composeRule.runOnIdle { assertEquals(listOf(initial), imported) }
-        composeRule.onNodeWithText(context.getString(R.string.clear)).performClick()
-        composeRule.onNodeWithText(context.getString(R.string.import_button)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_clear)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_import)).performClick()
         composeRule.runOnIdle { assertEquals(listOf(initial), imported) }
         val pasted = "  https://youtube.com/playlist?list=raw  "
         composeRule.runOnIdle { clipboard.setPrimaryClip(ClipData.newPlainText("", pasted)) }
-        composeRule.onNodeWithText(context.getString(R.string.paste)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_paste)).performClick()
         repeat(3) { composeRule.mainClock.advanceTimeByFrame() }
         field.assertTextEquals(pasted)
-        composeRule.onNodeWithText(context.getString(R.string.import_button)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_import)).performClick()
         field.performTextReplacement(" ")
-        composeRule.onNodeWithText(context.getString(R.string.import_button)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_import)).performClick()
         composeRule.runOnIdle {
             assertEquals(listOf(initial, pasted, " "), imported)
             assertEquals(0, dismissed)
         }
-        composeRule.onNodeWithText(context.getString(R.string.cancel)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
         composeRule.runOnIdle { assertEquals(1, dismissed) }
     }
 }

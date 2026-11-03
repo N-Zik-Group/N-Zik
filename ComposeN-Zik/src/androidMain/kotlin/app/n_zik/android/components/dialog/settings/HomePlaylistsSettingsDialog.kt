@@ -30,10 +30,10 @@ object HomePlaylistsSettingsDialog : ContentFramedDialog {
     internal fun searchOptions(): List<SettingsNestedOption> = playlistsDefaultOrder.map { SettingsNestedOption(it, searchLabelResources.getValue(it)) }
 
     private val searchLabelResources = mapOf(
-        "all" to R.string.all,
-        "yt_playlists" to R.string.yt_playlists,
-        "pinned_playlists" to R.string.pinned_playlists,
-        "rewind" to R.string.rewind,
+        "all" to R.string.common_option_all,
+        "yt_playlists" to R.string.library_youtube_playlists_label,
+        "pinned_playlists" to R.string.playlist_pinned_title,
+        "rewind" to R.string.rewind_title,
     )
     override val dialogTitle: String @Composable get() = stringResource(R.string.home_playlists_settings)
     override var isActive: Boolean by mutableStateOf(false)
@@ -114,7 +114,7 @@ object HomePlaylistsSettingsDialog : ContentFramedDialog {
                     edit.putBoolean(pk, workingToggles[id] ?: true)
                 }
                 edit.apply()
-                Toaster.s(R.string.toast_preference_saved); hideDialog()
+                Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }
         )
     }

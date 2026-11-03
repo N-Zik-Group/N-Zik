@@ -178,8 +178,8 @@ internal class RewindReminderWorker(
             NOTIFICATION_ID,
             NotificationCompat.Builder(applicationContext, channelId(CHANNEL_ID, getActiveProfile(applicationContext)))
                 .setSmallIcon(R.drawable.ic_launcher_monochrome)
-                .setContentTitle(applicationContext.getString(R.string.rw_notif_title, monthName))
-                .setContentText(applicationContext.getString(R.string.rw_monthly_notif_body))
+                .setContentTitle(applicationContext.getString(R.string.rewind_notification_title, monthName))
+                .setContentText(applicationContext.getString(R.string.rewind_monthly_notification_description))
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setAutoCancel(true)
                 .setContentIntent(pending)

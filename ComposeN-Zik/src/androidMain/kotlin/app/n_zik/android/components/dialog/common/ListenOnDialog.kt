@@ -14,22 +14,22 @@ fun ListenOnDialog(
     onPlayOnUrl: (String) -> Unit
 ) {
     ValueSelectorDialog(
-        title = stringResource(R.string.listen_on),
+        title = stringResource(R.string.player_listen_on_title),
         onDismiss = onDismiss,
         selectedValue = Info("none", null),
         values = listOf(
             Info(
                 ExternalUris.youtube(mediaId),
-                stringResource(R.string.listen_on_youtube)
+                stringResource(R.string.player_action_listen_on_youtube)
             ),
             Info(
                 ExternalUris.youtubeMusic(mediaId),
-                stringResource(R.string.listen_on_youtube_music)
+                stringResource(R.string.player_action_listen_on_youtube_music)
             ),
 
             Info(
                 ExternalUris.invidious(mediaId),
-                stringResource(R.string.listen_on_invidious)
+                stringResource(R.string.player_action_listen_on_invidious)
             )
         ),
         onValueSelected = {

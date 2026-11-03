@@ -193,8 +193,8 @@ internal class RewindYearlyReminderWorker(
             NOTIFICATION_ID,
             NotificationCompat.Builder(applicationContext, channelId(RewindReminderWorker.CHANNEL_ID, getActiveProfile(applicationContext)))
                 .setSmallIcon(R.drawable.ic_launcher_monochrome)
-                .setContentTitle(applicationContext.getString(R.string.rw_notif_title, finishedYear.toString()))
-                .setContentText(applicationContext.getString(R.string.rw_yearly_notif_body))
+                .setContentTitle(applicationContext.getString(R.string.rewind_notification_title, finishedYear.toString()))
+                .setContentText(applicationContext.getString(R.string.rewind_yearly_notification_description))
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setAutoCancel(true)
                 .setContentIntent(pending)

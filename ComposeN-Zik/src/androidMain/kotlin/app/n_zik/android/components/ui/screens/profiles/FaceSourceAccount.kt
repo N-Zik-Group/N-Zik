@@ -70,11 +70,11 @@ fun loadAccountLoginState(app: Context, profileId: String): AccountLoginState {
 /** Label shown for a face source (onboarding source rows + the "source" entries). */
 @Composable
 fun faceSourceLabel(source: String): String = when (source) {
-    FACE_SOURCE_PROFILE -> stringResource(R.string.face_source_profile)
-    FACE_SOURCE_YOUTUBE -> stringResource(R.string.display_name_source_youtube)
-    FACE_SOURCE_DISCORD -> stringResource(R.string.face_source_discord)
-    FACE_SOURCE_LASTFM -> stringResource(R.string.face_source_lastfm)
-    else -> stringResource(R.string.face_source_profile)
+    FACE_SOURCE_PROFILE -> stringResource(R.string.profile_name_source_local)
+    FACE_SOURCE_YOUTUBE -> stringResource(R.string.profile_display_name_source_youtube)
+    FACE_SOURCE_DISCORD -> stringResource(R.string.profile_identity_source_discord)
+    FACE_SOURCE_LASTFM -> stringResource(R.string.profile_identity_source_lastfm)
+    else -> stringResource(R.string.profile_name_source_local)
 }
 
 /** Icon of a face source entry. */

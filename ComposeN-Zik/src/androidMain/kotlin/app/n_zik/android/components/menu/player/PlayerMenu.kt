@@ -269,9 +269,9 @@ fun AddToPlaylistItemMenu(
                 !it.playlist.isYoutubePlaylist
     }
 
-    ListMenu.Menu(title = stringResource(R.string.playlists)) {
+    ListMenu.Menu(title = stringResource(R.string.library_playlists_title)) {
         val search = Search()
-        val title = stringResource(R.string.playlists)
+        val title = stringResource(R.string.library_playlists_title)
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
@@ -325,7 +325,7 @@ fun AddToPlaylistItemMenu(
         }
         if (filteredPinnedPlaylists.isNotEmpty()) {
             BasicText(
-                text = stringResource(R.string.pinned_playlists),
+                text = stringResource(R.string.playlist_pinned_title),
                 style = typography().m.semiBold,
                 modifier = Modifier.padding(start = 20.dp, top = 5.dp)
             )
@@ -335,7 +335,7 @@ fun AddToPlaylistItemMenu(
                     ListMenu.Entry(
                         text = cleanPrefix(playlistPreview.playlist.name),
                         icon = { SettingIcon(R.drawable.add_in_playlist) },
-                        subtitle = "${playlistPreview.songCount} " + stringResource(R.string.songs),
+                        subtitle = "${playlistPreview.songCount} " + stringResource(R.string.library_songs_title),
                         onClick = {
                             onAddToPlaylist(playlistPreview.playlist, playlistPreview.songCount)
                             Toaster.done()
@@ -375,7 +375,7 @@ fun AddToPlaylistItemMenu(
 
         if (filteredYoutubePlaylists.isNotEmpty() && isNetworkConnected(context)) {
             BasicText(
-                text = stringResource(R.string.ytm_playlists),
+                text = stringResource(R.string.sync_youtube_playlists_title),
                 style = typography().m.semiBold,
                 modifier = Modifier.padding(start = 20.dp, top = 5.dp)
             )
@@ -385,7 +385,7 @@ fun AddToPlaylistItemMenu(
                     ListMenu.Entry(
                         text = cleanPrefix(playlistPreview.playlist.name),
                         icon = { SettingIcon(R.drawable.add_in_playlist) },
-                        subtitle = "${playlistPreview.songCount} " + stringResource(R.string.songs),
+                        subtitle = "${playlistPreview.songCount} " + stringResource(R.string.library_songs_title),
                         onClick = {
                             onAddToPlaylist(playlistPreview.playlist, playlistPreview.songCount)
                             Toaster.done()
@@ -413,7 +413,7 @@ fun AddToPlaylistItemMenu(
 
         if (filteredUnpinnedPlaylists.isNotEmpty()) {
             BasicText(
-                text = stringResource(R.string.playlists),
+                text = stringResource(R.string.library_playlists_title),
                 style = typography().m.semiBold,
                 modifier = Modifier.padding(start = 20.dp, top = 5.dp)
             )
@@ -423,7 +423,7 @@ fun AddToPlaylistItemMenu(
                     ListMenu.Entry(
                         text = cleanPrefix(playlistPreview.playlist.name),
                         icon = { SettingIcon(R.drawable.add_in_playlist) },
-                        subtitle = "${playlistPreview.songCount} " + stringResource(R.string.songs),
+                        subtitle = "${playlistPreview.songCount} " + stringResource(R.string.library_songs_title),
                         onClick = {
                             onAddToPlaylist(playlistPreview.playlist, playlistPreview.songCount)
                             Toaster.done()
@@ -512,9 +512,9 @@ fun AddToPlaylistArtistSongsMenu(
                 !it.playlist.isYoutubePlaylist
     }
 
-    ListMenu.Menu(title = stringResource(R.string.playlists)) {
+    ListMenu.Menu(title = stringResource(R.string.library_playlists_title)) {
         val search = Search()
-        val title = stringResource(R.string.playlists)
+        val title = stringResource(R.string.library_playlists_title)
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
@@ -568,7 +568,7 @@ fun AddToPlaylistArtistSongsMenu(
         }
         if (filteredPinnedPlaylists.isNotEmpty()) {
             BasicText(
-                text = stringResource(R.string.pinned_playlists),
+                text = stringResource(R.string.playlist_pinned_title),
                 style = typography().m.semiBold,
                 modifier = Modifier.padding(start = 20.dp, top = 5.dp)
             )
@@ -578,7 +578,7 @@ fun AddToPlaylistArtistSongsMenu(
                     ListMenu.Entry(
                         text = cleanPrefix(playlistPreview.playlist.name),
                         icon = { SettingIcon(R.drawable.add_in_playlist) },
-                        subtitle = "${playlistPreview.songCount} " + stringResource(R.string.songs),
+                        subtitle = "${playlistPreview.songCount} " + stringResource(R.string.library_songs_title),
                         onClick = {
                             onAddToPlaylist(
                                 PlaylistPreview(
@@ -623,7 +623,7 @@ fun AddToPlaylistArtistSongsMenu(
 
         if (filteredYoutubePlaylists.isNotEmpty() && isNetworkConnected(context)) {
             BasicText(
-                text = stringResource(R.string.ytm_playlists),
+                text = stringResource(R.string.sync_youtube_playlists_title),
                 style = typography().m.semiBold,
                 modifier = Modifier.padding(start = 20.dp, top = 5.dp)
             )
@@ -633,7 +633,7 @@ fun AddToPlaylistArtistSongsMenu(
                     ListMenu.Entry(
                         text = cleanPrefix(playlistPreview.playlist.name),
                         icon = { SettingIcon(R.drawable.add_in_playlist) },
-                        subtitle = "${playlistPreview.songCount} " + stringResource(R.string.songs),
+                        subtitle = "${playlistPreview.songCount} " + stringResource(R.string.library_songs_title),
                         onClick = {
                             onAddToPlaylist(
                                 PlaylistPreview(
@@ -666,7 +666,7 @@ fun AddToPlaylistArtistSongsMenu(
 
         if (filteredUnpinnedPlaylists.isNotEmpty()) {
             BasicText(
-                text = stringResource(R.string.playlists),
+                text = stringResource(R.string.library_playlists_title),
                 style = typography().m.semiBold,
                 modifier = Modifier.padding(start = 20.dp, top = 5.dp)
             )
@@ -676,7 +676,7 @@ fun AddToPlaylistArtistSongsMenu(
                     ListMenu.Entry(
                         text = cleanPrefix(playlistPreview.playlist.name),
                         icon = { SettingIcon(R.drawable.add_in_playlist) },
-                        subtitle = "${playlistPreview.songCount} " + stringResource(R.string.songs),
+                        subtitle = "${playlistPreview.songCount} " + stringResource(R.string.library_songs_title),
                         onClick = {
                             onAddToPlaylist(
                                 PlaylistPreview(

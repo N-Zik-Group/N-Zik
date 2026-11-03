@@ -256,7 +256,7 @@ class SearchBackConsumptionTest {
                 UnifiedSearchBar(
                     input = TextFieldValue("retained filter"),
                     onInputChanged = {},
-                    placeholderRes = R.string.search,
+                    placeholderRes = R.string.search_title,
                     onClear = {},
                     backSessionActive = searching.value,
                     onBackDismiss = { searching.value = false },
@@ -302,7 +302,7 @@ class SearchBackConsumptionTest {
                     UnifiedSearchBar(
                         input = TextFieldValue("results"),
                         onInputChanged = {},
-                        placeholderRes = R.string.search,
+                        placeholderRes = R.string.search_title,
                         onClear = {},
                         textFieldTestTag = "direct",
                     )

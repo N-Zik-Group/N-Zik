@@ -259,7 +259,7 @@ fun SeekBarVisualizer(
             ) {
                 if (!hasPermission) {
                     BasicText(
-                        text = stringResource(R.string.require_mic_permission),
+                        text = stringResource(R.string.visualizer_microphone_permission_message),
                         modifier = Modifier.fillMaxWidth(),
                         style = typography().xs.semiBold.copy(color = notPlayedColor, textAlign = TextAlign.Center)
                     )

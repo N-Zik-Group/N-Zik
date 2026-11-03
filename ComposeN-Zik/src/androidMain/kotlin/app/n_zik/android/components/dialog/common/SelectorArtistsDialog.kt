@@ -65,7 +65,7 @@ inline fun SelectorArtistsDialog(
         title = title,
         modifier = modifier,
         footer = {
-            ButtonRow(listOf(DialogButton(stringResource(R.string.dialog_close), onClick = onDismiss)))
+            ButtonRow(listOf(DialogButton(stringResource(R.string.common_action_close), onClick = onDismiss)))
         }
     ) {
         Box(
@@ -126,7 +126,7 @@ inline fun SelectorArtistsDialog(
                                         .size(40.dp)
                                         .padding(all = 5.dp)
                                         .offset(10.dp,10.dp),
-                                    contentDescription = stringResource(R.string.cd_background_image),
+                                    contentDescription = stringResource(R.string.accessibility_background_image),
                                     contentScale = ContentScale.Fit
                                 )
                             }

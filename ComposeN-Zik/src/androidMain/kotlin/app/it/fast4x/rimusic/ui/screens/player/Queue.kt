@@ -295,7 +295,7 @@ fun Queue(
                     if( itemSelector.isEmpty() ) {
                         player.stop()
                         player.clearMediaItems()
-                        Toaster.s( R.string.deleted )
+                        Toaster.s( R.string.common_delete_success )
                     } else {
                         val count = itemSelector.size
                         val selectedIds = itemSelector.map { it.id }.toSet()
@@ -303,7 +303,7 @@ fun Queue(
                         (player.mediaItemCount - 1 downTo 0)
                             .filter { player.getMediaItemAt(it).mediaId in selectedIds }
                             .forEach( player::removeMediaItem )
-                        Toaster.s( R.string.deleted_item, formatArgs = *arrayOf( "$count" ) )
+                        Toaster.s( R.string.player_queue_deleted_item_format, formatArgs = *arrayOf( "$count" ) )
                     }
                 } catch( e: Exception ) {
                     Timber.tag( "Queue" ).e( e, "Failed to delete from queue" )
@@ -531,7 +531,7 @@ fun Queue(
                                             try {
                                                 player.removeMediaItem( actualIndex )
                                                 Toaster.s(
-                                                    context.resources.getString(R.string.deleted_item, song.cleanTitle())
+                                                    context.resources.getString(R.string.player_queue_deleted_item_format, song.cleanTitle())
                                                 )
                                             } catch (e: IllegalArgumentException) {
                                                 // Media item may have already been removed or index is invalid

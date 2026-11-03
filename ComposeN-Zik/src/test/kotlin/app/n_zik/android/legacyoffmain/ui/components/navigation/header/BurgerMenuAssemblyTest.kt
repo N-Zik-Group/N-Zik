@@ -143,25 +143,25 @@ class BurgerMenuAssemblyTest {
         }
         composeRule.onNodeWithText("NF").performClick()
         composeWaitUntil("the burger menu opened", 5_000) {
-            composeRule.onAllNodesWithText(app.getString(R.string.history)).fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithText(app.getString(R.string.library_history_title)).fetchSemanticsNodes().isNotEmpty()
         }
     }
 
     /** The default-seed rows in render order (label resources). */
     private val defaultVisibleLabels = listOf(
-        R.string.history,
-        R.string.statistics,
-        R.string.rewind,
-        R.string.enable_offline_mode,
-        R.string.listen_together,
+        R.string.library_history_title,
+        R.string.statistics_title,
+        R.string.rewind_title,
+        R.string.network_action_enable_offline_mode,
+        R.string.listen_together_title,
         R.string.bridge_server,
-        R.string.profiles,
-        R.string.menu_go_to_picture_in_picture,
-        R.string.settings,
+        R.string.profile_title,
+        R.string.navigation_action_picture_in_picture,
+        R.string.settings_title,
         R.string.modules_title,
-        R.string.enable_log_debug,
-        R.string.maintenance,
-        R.string.rescue_center,
+        R.string.maintenance_debug_logging_title,
+        R.string.maintenance_title,
+        R.string.recovery_center,
     )
 
     @Test
@@ -188,12 +188,12 @@ class BurgerMenuAssemblyTest {
         // The default order carries one separator between PIP and Settings: a visible
         // gap where the rows are otherwise adjacent.
         val pipBottom = composeRule
-            .onNodeWithText(app.getString(R.string.menu_go_to_picture_in_picture))
+            .onNodeWithText(app.getString(R.string.navigation_action_picture_in_picture))
             .fetchSemanticsNode()
             .boundsInRoot
             .bottom
         val settingsTop = composeRule
-            .onNodeWithText(app.getString(R.string.settings))
+            .onNodeWithText(app.getString(R.string.settings_title))
             .fetchSemanticsNode()
             .boundsInRoot
             .top
@@ -210,29 +210,29 @@ class BurgerMenuAssemblyTest {
             .commit()
         openMenu()
 
-        composeRule.onNodeWithText(app.getString(R.string.rewind)).assertDoesNotExist()
+        composeRule.onNodeWithText(app.getString(R.string.rewind_title)).assertDoesNotExist()
 
         // The hidden row's neighbours keep their order; the row after the gap still
         // renders right where the hidden one used to sit in the stored order.
         val historyTop = composeRule
-            .onNodeWithText(app.getString(R.string.history))
+            .onNodeWithText(app.getString(R.string.library_history_title))
             .fetchSemanticsNode()
             .boundsInRoot
             .top
         val statisticsTop = composeRule
-            .onNodeWithText(app.getString(R.string.statistics))
+            .onNodeWithText(app.getString(R.string.statistics_title))
             .fetchSemanticsNode()
             .boundsInRoot
             .top
         val offlineTop = composeRule
-            .onNodeWithText(app.getString(R.string.enable_offline_mode))
+            .onNodeWithText(app.getString(R.string.network_action_enable_offline_mode))
             .fetchSemanticsNode()
             .boundsInRoot
             .top
         assertTrue("History must stay above Statistics", historyTop < statisticsTop)
         assertTrue("Offline mode must stay directly after the hidden Rewind row", statisticsTop < offlineTop)
         defaultVisibleLabels.map { app.getString(it) }
-            .filter { it != app.getString(R.string.rewind) }
+            .filter { it != app.getString(R.string.rewind_title) }
             .forEach { composeRule.onNodeWithText(it).assertExists() }
     }
 
@@ -251,12 +251,12 @@ class BurgerMenuAssemblyTest {
 
         // Offline mode wins over the stored toggle: the entry is closed while the
         // offline row shows its live "Disable" label.
-        composeRule.onNodeWithText(app.getString(R.string.listen_together)).assertDoesNotExist()
-        composeRule.onNodeWithText(app.getString(R.string.disable_offline_mode)).assertExists()
+        composeRule.onNodeWithText(app.getString(R.string.listen_together_title)).assertDoesNotExist()
+        composeRule.onNodeWithText(app.getString(R.string.network_action_disable_offline_mode)).assertExists()
         // The rewind master hides the row even though its stored toggle is on.
-        composeRule.onNodeWithText(app.getString(R.string.rewind)).assertDoesNotExist()
+        composeRule.onNodeWithText(app.getString(R.string.rewind_title)).assertDoesNotExist()
         // The rest of the menu is untouched.
-        composeRule.onNodeWithText(app.getString(R.string.history)).assertExists()
-        composeRule.onNodeWithText(app.getString(R.string.settings)).assertExists()
+        composeRule.onNodeWithText(app.getString(R.string.library_history_title)).assertExists()
+        composeRule.onNodeWithText(app.getString(R.string.settings_title)).assertExists()
     }
 }

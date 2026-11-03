@@ -98,11 +98,11 @@ fun AIRecommendationSettings(
     ) {
 
 
-        settingsSearchTitle(searchFocus, if (!ytLoggedIn) R.string.ai_recommendations else R.string.home, if (!ytLoggedIn) R.drawable.sparkles else R.drawable.ytmusic)
+        settingsSearchTitle(searchFocus, if (!ytLoggedIn) R.string.settings_recommendations_title else R.string.home_title, if (!ytLoggedIn) R.drawable.sparkles else R.drawable.ytmusic)
 
         settingsSearchDescription(searchFocus) {
             SettingsDescription(
-                text = stringResource(R.string.quick_picks_description),
+                text = stringResource(R.string.recommendations_description),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
@@ -155,18 +155,18 @@ internal fun AIRecommendationSettingsContent(
 ) {
     QuickPicksContentSettingsDialog.Render()
     cardsContainer {
-        if (selectedCards == null || R.string.tab_general in selectedCards) {
-            SettingsCardSlot(R.string.tab_general, modifier = { cardModifier(R.string.tab_general) }) {
+        if (selectedCards == null || R.string.settings_general_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_general_title, modifier = { cardModifier(R.string.settings_general_title) }) {
                 AiGeneralCard(search, showRewindMaster = selectedCards == null)
             }
         }
-        if (selectedCards == null || R.string.quick_picks in selectedCards) {
-            SettingsCardSlot(R.string.quick_picks, modifier = { cardModifier(R.string.quick_picks) }) {
+        if (selectedCards == null || R.string.recommendations_title in selectedCards) {
+            SettingsCardSlot(R.string.recommendations_title, modifier = { cardModifier(R.string.recommendations_title) }) {
                 AiQuickPicksCard(search)
             }
         }
-        if (selectedCards == null || R.string.rw_settings_title in selectedCards) {
-            SettingsCardSlot(R.string.rw_settings_title, modifier = { cardModifier(R.string.rw_settings_title).onGloballyPositioned { onCardPosition("rewind", it.positionInRoot().y) } }) {
+        if (selectedCards == null || R.string.rewind_settings_title in selectedCards) {
+            SettingsCardSlot(R.string.rewind_settings_title, modifier = { cardModifier(R.string.rewind_settings_title).onGloballyPositioned { onCardPosition("rewind", it.positionInRoot().y) } }) {
                 RewindSettingsCard(onOpenRewind = { navController.navigate(NavRoutes.rewindHome.name) })
             }
         }
@@ -175,8 +175,8 @@ internal fun AIRecommendationSettingsContent(
                 AiRecommendationsCard(search)
             }
         }
-        if (selectedCards == null || R.string.statistics in selectedCards) {
-            SettingsCardSlot(R.string.statistics, modifier = { cardModifier(R.string.statistics).onGloballyPositioned { onCardPosition("statistics", it.positionInRoot().y) } }) {
+        if (selectedCards == null || R.string.statistics_title in selectedCards) {
+            SettingsCardSlot(R.string.statistics_title, modifier = { cardModifier(R.string.statistics_title).onGloballyPositioned { onCardPosition("statistics", it.positionInRoot().y) } }) {
                 AiStatisticsCard(search, navController)
             }
         }
@@ -185,8 +185,8 @@ internal fun AIRecommendationSettingsContent(
                 AiTopPlaylistsCard(search)
             }
         }
-        if (selectedCards == null || R.string.tab_data in selectedCards) {
-            SettingsCardSlot(R.string.tab_data, modifier = { cardModifier(R.string.tab_data) }) {
+        if (selectedCards == null || R.string.settings_data_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_data_title, modifier = { cardModifier(R.string.settings_data_title) }) {
                 AiDataCard(search)
             }
         }

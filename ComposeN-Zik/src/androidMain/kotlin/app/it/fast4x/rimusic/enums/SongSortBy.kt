@@ -10,29 +10,29 @@ enum class SongSortBy(
     @field:DrawableRes override val iconId: Int
 ): TextView, Drawable {
 
-    Title( R.string.sort_title, R.drawable.text ),
+    Title( R.string.library_sort_title, R.drawable.text ),
 
-    Artist( R.string.sort_artist, R.drawable.artist ),
+    Artist( R.string.library_sort_artist, R.drawable.artist ),
 
-    AlbumName( R.string.sort_album, R.drawable.album ),
+    AlbumName( R.string.library_sort_album, R.drawable.album ),
 
-    Duration( R.string.sort_duration, R.drawable.time ),
+    Duration( R.string.library_sort_duration, R.drawable.time ),
 
-    PlayCount( R.string.sort_play_count, R.drawable.play ),
+    PlayCount( R.string.library_sort_play_count, R.drawable.play ),
 
-    PlayTime( R.string.sort_listening_time, R.drawable.trending ),
+    PlayTime( R.string.library_sort_listening_time, R.drawable.trending ),
 
-    RelativePlayTime( R.string.relative_listening_time, R.drawable.stats_chart ),
+    RelativePlayTime( R.string.library_sort_relative_listening_time, R.drawable.stats_chart ),
 
-    DateAdded( R.string.sort_date_added, R.drawable.time ),
+    DateAdded( R.string.library_sort_date_added, R.drawable.time ),
 
-    DatePlayed( R.string.sort_date_played, R.drawable.calendar ),
+    DatePlayed( R.string.library_sort_date_played, R.drawable.calendar ),
 
-    DateLiked( R.string.sort_date_liked, R.drawable.heart ),
+    DateLiked( R.string.library_sort_date_liked, R.drawable.heart ),
 
-    Downloaded( R.string.sort_downloaded, R.drawable.downloaded ),
+    Downloaded( R.string.library_sort_downloaded, R.drawable.downloaded ),
 
-    Custom( R.string.sort_custom_order, R.drawable.position );
+    Custom( R.string.library_sort_custom_order, R.drawable.position );
 }
 
 

@@ -154,7 +154,7 @@ class UiSettingsWiringTest {
 
     @Test fun `history records only explicit submission on the Interface page`() {
         show()
-        val query = context.getString(R.string.default_page)
+        val query = context.getString(R.string.settings_home_default_page_label)
         val preferences = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         composeRule.onNode(isEditable()).performTextInput(query)
         composeRule.waitForIdle()
@@ -167,17 +167,17 @@ class UiSettingsWiringTest {
 
     @Test fun `inner search term displays its actual control`() {
         show()
-        composeRule.onNode(isEditable()).performTextInput(context.getString(R.string.default_page))
+        composeRule.onNode(isEditable()).performTextInput(context.getString(R.string.settings_home_default_page_label))
         composeRule.waitForIdle()
-        composeRule.onNode(hasText(context.getString(R.string.default_page)) and !isEditable()).performScrollTo().assertIsDisplayed()
+        composeRule.onNode(hasText(context.getString(R.string.settings_home_default_page_label)) and !isEditable()).performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithTag("ui.card.interface", useUnmergedTree = true).assertExists()
         composeRule.onNodeWithTag("ui.card.theme", useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test fun `dynamic brightness switch is searchable defaults off and updates live appearance`() {
         val preferences = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-        val title = context.getString(R.string.dynamic_theme_respect_brightness)
-        val description = context.getString(R.string.dynamic_theme_respect_brightness_description)
+        val title = context.getString(R.string.settings_theme_keep_dark_mode_label)
+        val description = context.getString(R.string.settings_theme_keep_dark_mode_description)
         val raw = dynamicColorPaletteOf(Color(0xffaaaaaa), false)
         var liveAppearance by mutableStateOf(appearance.copy(colorPalette = raw))
         var systemBarsDark = false
@@ -229,7 +229,7 @@ class UiSettingsWiringTest {
             Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(250))
         }
         composeRule.onNodeWithTag("search_no_results_text").assertDoesNotExist()
-        assertTrue(searchMessages.contains(context.getString(R.string.no_results_found)))
+        assertTrue(searchMessages.contains(context.getString(R.string.search_no_results_message)))
         composeRule.onNodeWithTag("ui.card.theme", useUnmergedTree = true).assertDoesNotExist()
         composeRule.onNode(isEditable()).performTextReplacement("")
         composeRule.waitForIdle()
@@ -255,7 +255,7 @@ class UiSettingsWiringTest {
         composeRule.runOnIdle { HomeTabsSettingsDialog.showDialog() }
         settleDialogFrames()
         composeRule.onAllNodes(isDialog()).assertCountEquals(1)
-        composeRule.onNodeWithText(context.getString(R.string.cancel)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
         settleDialogFrames()
         composeRule.onAllNodes(isDialog()).assertCountEquals(0)
     }
@@ -269,7 +269,7 @@ class UiSettingsWiringTest {
             composeRule.mainClock.advanceTimeBy(250)
             Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(250))
             visible = runCatching {
-                composeRule.onNodeWithText(context.getString(R.string.burger_menu_customize)).assertIsDisplayed()
+                composeRule.onNodeWithText(context.getString(R.string.settings_navigation_menu_customization_description)).assertIsDisplayed()
             }.isSuccess
         }
         assertTrue("Burger customization control must be visible after the measured focus scroll", visible)
@@ -319,10 +319,10 @@ class UiSettingsWiringTest {
             }
         }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText(context.getString(R.string.hide_status_bar)).assertDoesNotExist()
-        composeRule.runOnIdle { selected.value = setOf(R.string.user_interface) }
+        composeRule.onNodeWithText(context.getString(R.string.settings_interface_hide_status_bar_label)).assertDoesNotExist()
+        composeRule.runOnIdle { selected.value = setOf(R.string.settings_interface_title) }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText(context.getString(R.string.hide_status_bar))
+        composeRule.onNodeWithText(context.getString(R.string.settings_interface_hide_status_bar_label))
             .performScrollTo().performClick()
         composeRule.waitForIdle()
         assertTrue(context.getSharedPreferences("preferences", Context.MODE_PRIVATE)

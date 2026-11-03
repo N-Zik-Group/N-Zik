@@ -65,13 +65,13 @@ class NewPlaylistDialog private constructor(
 
     override val keyboardOption: KeyboardOptions = KeyboardOptions.Default
     override val iconId: Int = R.drawable.add_in_playlist
-    override val messageId: Int = R.string.create_new_playlist
+    override val messageId: Int = R.string.playlist_create_dialog_title
     override val dialogTitle: String
         @Composable
-        get() = stringResource( R.string.enter_the_playlist_name)
+        get() = stringResource( R.string.playlist_name_input_hint)
     override val menuIconTitle: String
         @Composable
-        get() = stringResource( R.string.new_playlist )
+        get() = stringResource( R.string.playlist_action_create )
 
     override var value: TextFieldValue by valueState
     override var isActive: Boolean by activeState
@@ -88,7 +88,7 @@ class NewPlaylistDialog private constructor(
     override fun LeadingIcon() = Icon(
         imageVector = Icons.Outlined.Edit,
         tint = colorPalette().accent,
-        contentDescription = stringResource(R.string.cd_new_playlist_name)
+        contentDescription = stringResource(R.string.accessibility_new_playlist_name)
     )
 
     override fun onSet( newValue: String ) {
@@ -112,7 +112,7 @@ class NewPlaylistDialog private constructor(
                         }
                     }.onFailure { e ->
                         Timber.tag("NewPlaylistDialog").e(e, "Failed to create playlist on YouTube")
-                        Toaster.e( R.string.error )
+                        Toaster.e( R.string.common_error_title )
                     }.getOrNull() ?: Playlist(name = newValue)
 
                     Database.asyncTransaction {

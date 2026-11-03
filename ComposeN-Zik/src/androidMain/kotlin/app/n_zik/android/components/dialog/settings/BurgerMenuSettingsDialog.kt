@@ -36,20 +36,20 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
     internal fun searchOptions(): List<SettingsNestedOption> = allItemIds.map { SettingsNestedOption(if (it == "separator") "separator#1" else it, searchLabelResources.getValue(it)) }
 
     private val searchLabelResources = mapOf(
-        "history" to R.string.history,
-        "statistics" to R.string.statistics,
-        "rewind" to R.string.rewind,
-        "offline_mode" to R.string.offline_mode,
-        "listen_together" to R.string.listen_together,
+        "history" to R.string.library_history_title,
+        "statistics" to R.string.statistics_title,
+        "rewind" to R.string.rewind_title,
+        "offline_mode" to R.string.settings_network_offline_mode_label,
+        "listen_together" to R.string.listen_together_title,
         "bridge_server" to R.string.bridge_server,
-        "profiles" to R.string.profiles,
-        "pip" to R.string.menu_go_to_picture_in_picture,
-        "settings" to R.string.settings,
+        "profiles" to R.string.profile_title,
+        "pip" to R.string.navigation_action_picture_in_picture,
+        "settings" to R.string.settings_title,
         "extensions" to R.string.modules_title,
         "debug_logs" to R.string.maintenance_debug_logs,
-        "maintenance" to R.string.maintenance,
-        "rescue_center" to R.string.rescue_center,
-        "separator" to R.string.burger_separator,
+        "maintenance" to R.string.maintenance_title,
+        "rescue_center" to R.string.recovery_center,
+        "separator" to R.string.settings_navigation_menu_separator_label,
     )
 
 
@@ -103,7 +103,7 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
     fun resolveVisibleIds(order: List<String>, toggles: Map<String, Boolean>): List<String> =
         order.filter { id -> id in lockedIds || toggles[id] ?: true }
 
-    override val dialogTitle: String @Composable get() = stringResource(R.string.burger_menu)
+    override val dialogTitle: String @Composable get() = stringResource(R.string.settings_navigation_menu_title)
     override var isActive: Boolean by mutableStateOf(false)
 
     @Composable
@@ -161,7 +161,7 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
             enforceMinOneChecked = false,
             lockedCheckedIds = lockedIds,
             extraFooterButton = DialogButton(
-                text = stringResource(R.string.add_separator),
+                text = stringResource(R.string.settings_navigation_menu_action_add_separator),
                 enabled = separatorCount < DataStoreUtils.MAX_BURGER_MENU_SEPARATORS,
                 onClick = {
                     // A fresh list reference: mutating in place would not invalidate the state
@@ -196,7 +196,7 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
                     edit.putBoolean(DataStoreUtils.burgerMenuToggleKey(id), isVisible)
                 }
                 edit.apply()
-                Toaster.s(R.string.toast_preference_saved)
+                Toaster.s(R.string.settings_preference_saved_message)
                 hideDialog()
             }
         )
@@ -225,8 +225,8 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
         "separator" -> ToggleItem(
             rowKey,
             R.drawable.horizontal_straight_line,
-            if (separatorCount > 1) stringResource(R.string.burger_menu_separator_instance, separatorInstance)
-            else stringResource(R.string.burger_separator),
+            if (separatorCount > 1) stringResource(R.string.settings_navigation_menu_separator_instance_format, separatorInstance)
+            else stringResource(R.string.settings_navigation_menu_separator_label),
             DataStoreUtils.burgerMenuToggleKey(id),
             true
         )

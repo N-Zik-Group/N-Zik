@@ -57,7 +57,7 @@ class RewindIntroActionTest {
         compose.runOnIdle { assertEquals(0, advances) }
         compose.mainClock.advanceTimeBy(500)
         compose.onNode(hasClickAction()).assertIsEnabled()
-        compose.onNodeWithText(context.getString(R.string.rw_intro_start), useUnmergedTree = true)
+        compose.onNodeWithText(context.getString(R.string.rewind_intro_start), useUnmergedTree = true)
             .performTouchInput { click() }
         compose.runOnIdle { assertEquals(1, advances) }
     }

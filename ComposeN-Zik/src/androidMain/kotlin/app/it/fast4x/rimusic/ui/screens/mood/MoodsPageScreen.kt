@@ -32,7 +32,7 @@ fun MoodsPageScreen(
                 miniPlayer = miniPlayer,
                 topInsetHandledByContent = true,
                 navBarContent = { item ->
-                    item(0, stringResource(R.string.moods_and_genres), R.drawable.album)
+                    item(0, stringResource(R.string.recommendations_moods_and_genres_title), R.drawable.album)
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {

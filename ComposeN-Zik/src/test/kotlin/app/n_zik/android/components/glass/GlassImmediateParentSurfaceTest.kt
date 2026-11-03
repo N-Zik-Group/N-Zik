@@ -64,7 +64,7 @@ class GlassImmediateParentSurfaceTest {
                 LocalGlassMaterialSource provides playerFreePage,
                 LocalGlassPreviewSettings provides neutral.copy(film = .7f)) {
                 Box(Modifier.size(320.dp, 100.dp).background(Color.Blue)) {
-                    UnifiedSearchBar(TextFieldValue(""), {}, R.string.search,
+                    UnifiedSearchBar(TextFieldValue(""), {}, R.string.search_title,
                         baseSurface = fill.value, onClear = {})
                 }
             }

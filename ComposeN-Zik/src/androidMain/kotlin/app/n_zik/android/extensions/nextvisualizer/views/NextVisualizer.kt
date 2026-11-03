@@ -116,13 +116,13 @@ fun NextVisualizer(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     BasicText(
-                        text = stringResource(R.string.require_mic_permission),
+                        text = stringResource(R.string.visualizer_microphone_permission_message),
                         modifier = Modifier.fillMaxWidth(0.75f),
                         style = typography().xs.semiBold
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                     SecondaryTextButton(
-                        text = stringResource(R.string.open_permission_settings),
+                        text = stringResource(R.string.visualizer_action_open_permission_settings),
                         onClick = {
                             context.startActivity(
                                 Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -137,7 +137,7 @@ fun NextVisualizer(
                     val backgroundColor by animateColorAsState(
                         targetValue = if (!showvisthumbnail || !blackBackgroundForVisThumbnail || !isPlaying) Color.Transparent else Color.Black.copy(0.6f),
                         animationSpec = tween(500),
-                        label = stringResource(R.string.txt_visualizerbackground)
+                        label = stringResource(R.string.visualizer_debug_background)
                     )
 
                     Box(

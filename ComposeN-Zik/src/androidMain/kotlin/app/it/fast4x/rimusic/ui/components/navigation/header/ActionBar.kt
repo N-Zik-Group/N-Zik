@@ -116,7 +116,7 @@ private fun HamburgerMenu(
             "history" -> menu.add {
                 BurgerMenuItem(
                     iconRes = R.drawable.history,
-                    label = stringResource(R.string.history),
+                    label = stringResource(R.string.library_history_title),
                     onShortTap = { onItemClick(NavRoutes.history) },
                     onLongTap = {
                         navController.navigate("${NavRoutes.settings.name}?tab=4&focus=history")
@@ -129,7 +129,7 @@ private fun HamburgerMenu(
             "statistics" -> menu.add {
                 BurgerMenuItem(
                     iconRes = R.drawable.stats_chart,
-                    label = stringResource(R.string.statistics),
+                    label = stringResource(R.string.statistics_title),
                     onShortTap = { onItemClick(NavRoutes.statistics) },
                     onLongTap = {
                         navController.navigate("${NavRoutes.settings.name}?tab=3&focus=statistics")
@@ -146,7 +146,7 @@ private fun HamburgerMenu(
                 menu.add {
                     BurgerMenuItem(
                         iconRes = R.drawable.ic_launcher_monochrome,
-                        label = stringResource(R.string.rewind),
+                        label = stringResource(R.string.rewind_title),
                         onShortTap = { onItemClick(NavRoutes.rewindHome) },
                         onLongTap = {
                             navController.navigate("${NavRoutes.settings.name}?tab=3&focus=rewind")
@@ -162,7 +162,7 @@ private fun HamburgerMenu(
             "offline_mode" -> menu.add {
                 BurgerMenuItem(
                     iconRes = R.drawable.airplane,
-                    label = stringResource(if (offlineMode) R.string.disable_offline_mode else R.string.enable_offline_mode),
+                    label = stringResource(if (offlineMode) R.string.network_action_disable_offline_mode else R.string.network_action_enable_offline_mode),
                     onShortTap = { context.preferences.edit().putBoolean(fullOfflineModeKey, !offlineMode).apply() },
                     onLongTap = {
                         navController.navigate("${NavRoutes.settings.name}?tab=6&focus=offline")
@@ -177,7 +177,7 @@ private fun HamburgerMenu(
                 menu.add {
                     BurgerMenuItem(
                         iconRes = R.drawable.people,
-                        label = stringResource(R.string.listen_together),
+                        label = stringResource(R.string.listen_together_title),
                         onShortTap = { onItemClick(NavRoutes.listenTogether) },
                         onLongTap = {
                             navController.navigate("${NavRoutes.settings.name}?tab=5&focus=listentogether")
@@ -203,7 +203,7 @@ private fun HamburgerMenu(
             "profiles" -> menu.add {
                 BurgerMenuItem(
                     iconRes = R.drawable.person,
-                    label = stringResource(R.string.profiles),
+                    label = stringResource(R.string.profile_title),
                     onShortTap = { onItemClick(NavRoutes.profiles) },
                     onLongTap = {
                         navController.navigate("${NavRoutes.settings.name}?tab=5&focus=profiles")
@@ -217,7 +217,7 @@ private fun HamburgerMenu(
                 menu.add {
                     BurgerMenuItem(
                         iconRes = R.drawable.images_sharp,
-                        label = stringResource(R.string.menu_go_to_picture_in_picture),
+                        label = stringResource(R.string.navigation_action_picture_in_picture),
                         onShortTap = { pipHandler.enterPictureInPictureMode() },
                         onLongTap = {
                             navController.navigate("${NavRoutes.settings.name}?tab=0&focus=pip")
@@ -232,7 +232,7 @@ private fun HamburgerMenu(
             "settings" -> menu.add {
                 BurgerMenuItem(
                     iconRes = R.drawable.settings,
-                    label = stringResource(R.string.settings),
+                    label = stringResource(R.string.settings_title),
                     onShortTap = { onItemClick(NavRoutes.settings) },
                     onLongTap = {
                         navController.navigate("${NavRoutes.settings.name}?tab=1&focus=burger")
@@ -281,7 +281,7 @@ private fun HamburgerMenu(
             "rescue_center" -> menu.add {
                 BurgerMenuItem(
                     iconRes = R.drawable.shortcut_rescue,
-                    label = stringResource(R.string.rescue_center),
+                    label = stringResource(R.string.recovery_center),
                     onShortTap = {
                         context.startActivity(
                             Intent(context, RescueActivity::class.java).setAction(ACTION_RESCUE)

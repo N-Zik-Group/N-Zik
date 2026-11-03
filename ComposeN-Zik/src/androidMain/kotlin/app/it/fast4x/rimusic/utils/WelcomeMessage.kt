@@ -33,16 +33,16 @@ fun WelcomeMessage(){
 
     val baseMessage = when (hour) {
         in 6..12 -> {
-            stringResource(R.string.good_morning)
+            stringResource(R.string.home_greeting_morning)
         }
         in 13..17 -> {
-            stringResource(R.string.good_afternoon)
+            stringResource(R.string.home_greeting_afternoon)
         }
         in 18..23 -> {
-            stringResource(R.string.good_evening)
+            stringResource(R.string.home_greeting_evening)
         }
         else -> {
-            stringResource(R.string.good_night)
+            stringResource(R.string.home_greeting_night)
         }
     }
 

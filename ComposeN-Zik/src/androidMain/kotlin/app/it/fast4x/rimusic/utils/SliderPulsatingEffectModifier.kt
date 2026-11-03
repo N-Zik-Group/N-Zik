@@ -38,7 +38,7 @@ fun Modifier.pulsatingEffect(
                 durationMillis = 800,
                 delayMillis = 200,
             )
-        ), label = stringResource(R.string.txt_width)
+        ), label = stringResource(R.string.common_debug_width)
     )
 
     this then Modifier

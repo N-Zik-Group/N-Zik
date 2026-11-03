@@ -33,7 +33,7 @@ fun About(navController: NavController) {
             .settingsTopContentPadding()
     ) {
         HeaderWithIcon(
-             title = stringResource(R.string.about),
+             title = stringResource(R.string.about_title),
              iconId = R.drawable.information,
              enabled = false,
              showIcon = true,
@@ -41,7 +41,7 @@ fun About(navController: NavController) {
              onClick = {}
          )
          SettingsDescription(
-            text = stringResource(R.string.about_description),
+            text = stringResource(R.string.settings_about_page_description),
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center
         )
@@ -56,8 +56,8 @@ internal fun AboutSettingsContent(
     selectedCards: Set<Int>? = null,
     cardModifier: @Composable (Int) -> Modifier = { Modifier },
 ) {
-    if (selectedCards == null || R.string.about in selectedCards) {
-        SettingsCardSlot(R.string.about, modifier = { cardModifier(R.string.about) }) { AboutAppCard() }
+    if (selectedCards == null || R.string.about_title in selectedCards) {
+        SettingsCardSlot(R.string.about_title, modifier = { cardModifier(R.string.about_title) }) { AboutAppCard() }
     }
     if (selectedCards == null || R.string.settings_section_troubleshooting_title in selectedCards) {
         SettingsCardSlot(R.string.settings_section_troubleshooting_title, modifier = { cardModifier(R.string.settings_section_troubleshooting_title) }) { AboutSupportCard() }

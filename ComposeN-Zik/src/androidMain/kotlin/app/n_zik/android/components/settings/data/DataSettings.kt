@@ -92,11 +92,11 @@ fun DataSettings(
             .settingsTopContentPadding()
     ) {
 
-        settingsSearchTitle(searchFocus, R.string.tab_data, R.drawable.server)
+        settingsSearchTitle(searchFocus, R.string.settings_data_title, R.drawable.server)
 
         settingsSearchDescription(searchFocus) {
             SettingsDescription(
-                text = stringResource(R.string.data_settings_description),
+                text = stringResource(R.string.settings_data_page_description),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
@@ -144,17 +144,17 @@ internal fun DataSettingsContent(
     ExportBackupDialog.Render()
     ImportBackupDialog.Render()
     cardsContainer {
-        if (selectedCards == null || R.string.cache in selectedCards) {
-            SettingsCardSlot(R.string.cache, modifier = { cardModifier(R.string.cache) }) { DataCacheCard(search, restartState) }
+        if (selectedCards == null || R.string.settings_cache_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_cache_title, modifier = { cardModifier(R.string.settings_cache_title) }) { DataCacheCard(search, restartState) }
         }
         if (selectedCards == null || R.string.settings_section_backup_and_restore_title in selectedCards) {
             SettingsCardSlot(R.string.settings_section_backup_and_restore_title, modifier = { cardModifier(R.string.settings_section_backup_and_restore_title) }) { DataBackupCard(search) }
         }
-        if (selectedCards == null || R.string.auto_backup_title in selectedCards) {
-            SettingsCardSlot(R.string.auto_backup_title, modifier = { cardModifier(R.string.auto_backup_title) }) { DataAutoBackupCard() }
+        if (selectedCards == null || R.string.backup_auto_title in selectedCards) {
+            SettingsCardSlot(R.string.backup_auto_title, modifier = { cardModifier(R.string.backup_auto_title) }) { DataAutoBackupCard() }
         }
-        if (selectedCards == null || R.string.history in selectedCards) {
-            SettingsCardSlot(R.string.history, modifier = { cardModifier(R.string.history) }) { DataHistoryCard(search, navController, restartState, Modifier.onGloballyPositioned { onCardPosition("history", it.positionInRoot().y) }) }
+        if (selectedCards == null || R.string.library_history_title in selectedCards) {
+            SettingsCardSlot(R.string.library_history_title, modifier = { cardModifier(R.string.library_history_title) }) { DataHistoryCard(search, navController, restartState, Modifier.onGloballyPositioned { onCardPosition("history", it.positionInRoot().y) }) }
         }
         if (selectedCards == null || R.string.settings_reset in selectedCards) {
             SettingsCardSlot(R.string.settings_reset, modifier = { cardModifier(R.string.settings_reset) }) { DataResetCard(search) }

@@ -60,7 +60,7 @@ class FollowButton private constructor(
             FollowButton(getArtist)
     }
 
-    override val messageId: Int = R.string.follow
+    override val messageId: Int = R.string.artist_action_follow
 
     override fun onShortClick() {
         if ( isYouTubeSyncEnabled() && !isNetworkConnected( appContext() ) ){
@@ -100,15 +100,15 @@ class FollowButton private constructor(
             }
             val messageId = if (showDisliked) {
                 when(newState) {
-                    true -> R.string.added_to_favorites
-                    false -> R.string.added_to_dislikes
-                    null -> R.string.removed_from_favorites
+                    true -> R.string.library_favorites_added
+                    false -> R.string.library_dislikes_added
+                    null -> R.string.library_favorites_removed
                 }
             } else {
                 when(newState) {
-                    true -> R.string.added_to_favorites
-                    null -> R.string.removed_from_favorites
-                    else -> R.string.added_to_favorites
+                    true -> R.string.library_favorites_added
+                    null -> R.string.library_favorites_removed
+                    else -> R.string.library_favorites_added
                 }
             }
             with( artist ) {
@@ -162,9 +162,9 @@ internal fun ArtistFollowButton(
 
         val buttonProps: Triple<Int, Color, Color> = run {
             val text = when(likeState) {
-                true -> R.string.following
-                false -> R.string.disliked
-                null -> R.string.follow
+                true -> R.string.artist_following_status
+                false -> R.string.library_disliked_title
+                null -> R.string.artist_action_follow
             }
             val background = when(likeState) {
                 true -> colorPalette.accent

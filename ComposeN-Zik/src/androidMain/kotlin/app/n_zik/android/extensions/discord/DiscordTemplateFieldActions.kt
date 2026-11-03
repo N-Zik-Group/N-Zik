@@ -19,7 +19,7 @@ class DiscordTemplateFieldActions(private val textState: MutableState<String>) {
     /** OK: persist the draft, confirm with the "preference saved" toast, dismiss the dialog. */
     fun confirm(onSave: (String) -> Unit, onDismiss: () -> Unit) {
         onSave(textState.value)
-        Toaster.s(R.string.toast_preference_saved)
+        Toaster.s(R.string.settings_preference_saved_message)
         onDismiss()
     }
 

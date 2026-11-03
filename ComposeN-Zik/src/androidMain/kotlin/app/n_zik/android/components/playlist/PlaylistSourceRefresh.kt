@@ -87,13 +87,13 @@ fun launchPlaylistSourceRefresh(playlist: Playlist?, scope: CoroutineScope, sile
         try {
             val refreshed = refreshPlaylistSource(playlist)
             if (!silent) {
-                if (refreshed) Toaster.done() else Toaster.e(R.string.error)
+                if (refreshed) Toaster.done() else Toaster.e(R.string.common_error_title)
             }
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
             Timber.tag("PlaylistRefresh").e(error, "Unable to refresh playlist source")
-            if (!silent) Toaster.e(R.string.error)
+            if (!silent) Toaster.e(R.string.common_error_title)
         }
     }
 }

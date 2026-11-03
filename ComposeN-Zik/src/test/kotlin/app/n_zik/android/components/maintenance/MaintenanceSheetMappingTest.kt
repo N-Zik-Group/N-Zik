@@ -654,7 +654,7 @@ class MaintenanceSheetMappingTest {
     fun updateRowIdleWithKnownVersionIsAvailableInAccent() {
         val row = updateRow(true, true, UpdateDownloadManager.DownloadState.Idle)
 
-        assertEquals(R.string.update_available, row.resId)
+        assertEquals(R.string.updates_available, row.resId)
         assertEquals(RowColorKey.Accent, row.color)
     }
 
@@ -662,7 +662,7 @@ class MaintenanceSheetMappingTest {
     fun updateRowIdleWithoutKnownVersionIsUpToDate() {
         val row = updateRow(true, false, UpdateDownloadManager.DownloadState.Idle)
 
-        assertEquals(R.string.up_to_date, row.resId)
+        assertEquals(R.string.updates_up_to_date, row.resId)
         assertEquals(RowColorKey.Secondary, row.color)
     }
 
@@ -761,8 +761,8 @@ class MaintenanceSheetMappingTest {
 
     @Test
     fun blankDownloadTitleFallsBackToUnknownTitle() {
-        assertEquals(R.string.unknown_title, downloadDetailLine(null, Download.STATE_COMPLETED).titleResId)
-        assertEquals(R.string.unknown_title, downloadDetailLine("   ", Download.STATE_COMPLETED).titleResId)
+        assertEquals(R.string.metadata_unknown_title, downloadDetailLine(null, Download.STATE_COMPLETED).titleResId)
+        assertEquals(R.string.metadata_unknown_title, downloadDetailLine("   ", Download.STATE_COMPLETED).titleResId)
         assertNull(downloadDetailLine("Artist - Title", Download.STATE_COMPLETED).titleResId)
     }
 

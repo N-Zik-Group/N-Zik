@@ -39,30 +39,30 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
     /** Exact searchable options from the same definitions used by this dialog. */
     internal fun searchOptions(): List<SettingsNestedOption> = listOf(BuiltInPlaylist.All, BuiltInPlaylist.Favorites, BuiltInPlaylist.Disliked, BuiltInPlaylist.Offline, BuiltInPlaylist.Downloaded, BuiltInPlaylist.Top, BuiltInPlaylist.OnDevice)
         .flatMapIndexed { index, tab -> tabAvailableIds.getValue(tab).map { id ->
-            SettingsNestedOption("${getTabPrefix(tab)}_$id", if (id == "sort" && tab == BuiltInPlaylist.Top) R.string.statistics else searchLabelResources.getValue(id), index, tab.textId)
+            SettingsNestedOption("${getTabPrefix(tab)}_$id", if (id == "sort" && tab == BuiltInPlaylist.Top) R.string.statistics_title else searchLabelResources.getValue(id), index, tab.textId)
         } }
 
     private val searchLabelResources = mapOf(
-        "position_lock" to R.string.info_lock_unlock_reorder_songs,
-        "match" to R.string.match_album_audio_version,
-        "search" to R.string.search,
-        "locator" to R.string.info_find_the_song_that_is_playing,
-        "download_all" to R.string.info_download_all_songs,
-        "delete_downloads" to R.string.info_remove_all_downloaded_songs,
-        "update" to R.string.update,
-        "shuffle" to R.string.info_shuffle,
-        "smart_shuffle" to R.string.info_smart_recommendation,
-        "item_selector" to R.string.item_select,
-        "play_next" to R.string.play_next,
-        "enqueue" to R.string.enqueue,
-        "add_to_favorite" to R.string.add_to_favorites,
-        "add_to_playlist" to R.string.add_to_playlist,
-        "import_menu" to R.string.import_playlist,
-        "export_dialog" to R.string.export_playlist,
-        "export_cache" to R.string.export_cached,
-        "smart_trash" to R.string.smart_trash,
-        "sync_ytm_likes" to R.string.autosync_likes,
-        "sort" to R.string.sorting_order,
+        "position_lock" to R.string.playlist_reorder_lock_toggle_label,
+        "match" to R.string.song_matching_action_open,
+        "search" to R.string.search_title,
+        "locator" to R.string.player_action_locate_current_song,
+        "download_all" to R.string.downloads_action_download_all,
+        "delete_downloads" to R.string.downloads_action_remove_all,
+        "update" to R.string.common_action_update,
+        "shuffle" to R.string.player_action_shuffle_hint,
+        "smart_shuffle" to R.string.recommendations_action_smart_shuffle,
+        "item_selector" to R.string.common_action_select,
+        "play_next" to R.string.player_action_play_next,
+        "enqueue" to R.string.player_action_enqueue,
+        "add_to_favorite" to R.string.library_favorites_action_add,
+        "add_to_playlist" to R.string.playlist_action_add,
+        "import_menu" to R.string.playlist_action_import,
+        "export_dialog" to R.string.playlist_action_export,
+        "export_cache" to R.string.export_cached_songs_action,
+        "smart_trash" to R.string.library_cleanup_title,
+        "sync_ytm_likes" to R.string.sync_likes,
+        "sort" to R.string.library_sort_order_title,
     )
 
 
@@ -167,7 +167,7 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
         val tabPrefix = getTabPrefix(currentTab)
 
         val sortLabel = stringResource(searchLabelResources.getValue("sort"))
-        val topSortLabel = stringResource(R.string.statistics)
+        val topSortLabel = stringResource(R.string.statistics_title)
         val positionLockLabel = stringResource(searchLabelResources.getValue("position_lock"))
         val downloadAllLabel = stringResource(searchLabelResources.getValue("download_all"))
         val deleteDownloadsLabel = stringResource(searchLabelResources.getValue("delete_downloads"))
@@ -274,7 +274,7 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
                     edit.putString(key, serializeOrder(order))
                 }
                 edit.apply()
-                Toaster.s(R.string.toast_preference_saved); hideDialog()
+                Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }
         )
     }

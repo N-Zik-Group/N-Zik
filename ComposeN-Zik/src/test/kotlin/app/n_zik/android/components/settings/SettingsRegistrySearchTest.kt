@@ -60,8 +60,8 @@ class SettingsRegistrySearchTest {
         assertEquals(SettingsGlassItem, SettingsPageItems[interfaceIndex + 1])
         assertEquals(SettingsPageItems[interfaceIndex].group, SettingsGlassItem.group)
         assertEquals(SETTINGS_GLASS_ROUTE, SettingsGlassItem.route)
-        assertTrue(cardsForCategory("interface").none { it.titleRes == R.string.liquid_glass })
-        listOf(R.string.liquid_glass, R.string.liquid_glass_enable, R.string.glass_refraction_depth, R.string.glass_indicator).forEach { label ->
+        assertTrue(cardsForCategory("interface").none { it.titleRes == R.string.glass_effect_title })
+        listOf(R.string.glass_effect_title, R.string.glass_effect_enabled_title, R.string.glass_effect_refraction_depth, R.string.glass_effect_active_tab_indicator).forEach { label ->
             assertTrue(searchSettingsPageItems(context, context.getString(label)).contains(SettingsGlassItem))
         }
         listOf("glass", "liquid_glass", "card.1.liquid_glass").forEach { focus ->
@@ -101,7 +101,7 @@ class SettingsRegistrySearchTest {
     fun thematicGroupsAreCompleteAndKeepAboutAndUpdateTogether() {
         assertEquals((1..7).toList(), SettingsPageGroups.map { it.group })
         assertEquals(SETTINGS_GROUP_ABOUT_UPDATE, SettingsUpdateItem.group)
-        assertEquals(listOf(R.string.about, R.string.update), SettingsPageItems.filter { it.group == 1 }.map { it.labelRes })
+        assertEquals(listOf(R.string.about_title, R.string.common_action_update), SettingsPageItems.filter { it.group == 1 }.map { it.labelRes })
         assertTrue(SettingsPageGroups.all { group -> SettingsPageItems.any { it.group == group.group } })
         assertEquals(R.string.settings_global_update_description, SettingsUpdateItem.descriptionRes)
     }
@@ -122,11 +122,11 @@ class SettingsRegistrySearchTest {
 
     @Test fun privacyContainsHistoryControlsAndCaptureProtection() {
         val cards = cardsForCategory("privacy")
-        assertTrue(cards.any { it.tab == 4 && it.titleRes == R.string.history })
-        assertTrue(cards.any { it.tab == 3 && it.titleRes == R.string.tab_data })
-        assertTrue(cards.any { it.titleRes == R.string.permission_usage_journal })
+        assertTrue(cards.any { it.tab == 4 && it.titleRes == R.string.library_history_title })
+        assertTrue(cards.any { it.tab == 3 && it.titleRes == R.string.settings_data_title })
+        assertTrue(cards.any { it.titleRes == R.string.permissions_usage_journal })
         assertTrue(cards.any { it.titleRes == R.string.privacy_screen_protection })
-        assertTrue(cards.any { it.titleRes == R.string.rw_settings_master })
+        assertTrue(cards.any { it.titleRes == R.string.rewind_settings_enabled })
     }
 
     @Test
@@ -139,7 +139,7 @@ class SettingsRegistrySearchTest {
         assertEquals(listOf(SettingsUpdateItem), searchSettingsPageItems(context, "update available"))
 
         // Category labels are not part of the item-level index.
-        assertTrue(searchSettingsPageItems(context, context.getString(R.string.about)).isEmpty())
+        assertTrue(searchSettingsPageItems(context, context.getString(R.string.about_title)).isEmpty())
 
         // A blank or non-matching query returns no item results.
         assertTrue(searchSettingsPageItems(context, "").isEmpty())
@@ -151,7 +151,7 @@ class SettingsRegistrySearchTest {
     fun theCardSearchMatchesTitlesAndKeywords() {
         assertTrue("a blank query returns no card results", searchSettingsCards(context, "").isEmpty())
 
-        val query = context.getString(R.string.skip_silence)
+        val query = context.getString(R.string.settings_audio_skip_silence_label)
         val audioEffects = SettingsCards.first { it.tab == 0 && it.titleRes == R.string.audio_effects }
         assertTrue(
             "the card whose keywords contain the query must be found",
@@ -168,7 +168,7 @@ class SettingsRegistrySearchTest {
     @Test
     fun removedProfileStorageCardIsNotSearchableAndProfilesFocusUsesEditor() {
         val cards = SettingsCards.filter { it.tab == 5 }
-        assertTrue(cards.none { it.titleRes == R.string.profiles })
+        assertTrue(cards.none { it.titleRes == R.string.profile_title })
         assertEquals("profiles", cards.single { it.titleRes == R.string.profile_face }.focusId)
         assertTrue(searchSettingsCards(context, context.getString(R.string.profile_data_waveforms))
             .none { it.tab == 5 })
@@ -185,7 +185,7 @@ class SettingsRegistrySearchTest {
         assertEquals(
             "a query keeps only the matching card",
             setOf(R.string.audio_effects),
-            visibleCardTitleRes(context, 0, context.getString(R.string.skip_silence))
+            visibleCardTitleRes(context, 0, context.getString(R.string.settings_audio_skip_silence_label))
         )
     }
 }

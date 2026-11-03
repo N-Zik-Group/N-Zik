@@ -236,7 +236,7 @@ fun VideoOrSongInfoScreen(
                     ) {
                         // Titre + Flèche
                         InfoRow(
-                            label = stringResource(R.string.title),
+                            label = stringResource(R.string.metadata_info_title_label),
                             value = displayTitle,
                             showArrow = onPlay != null,
                             onClick = {
@@ -253,7 +253,7 @@ fun VideoOrSongInfoScreen(
                             // Multiple artists - show each separately
                             finalArtists.forEach { (artistId, artistName) ->
                                 InfoRow(
-                                    label = stringResource(R.string.artists),
+                                    label = stringResource(R.string.library_artists_title),
                                     value = artistName,
                                     showArrow = artistId.isNotBlank(),
                                     onClick = {
@@ -267,7 +267,7 @@ fun VideoOrSongInfoScreen(
                         } else if (finalArtists.size == 1) {
                             // Single artist
                             InfoRow(
-                                label = stringResource(R.string.artists),
+                                label = stringResource(R.string.library_artists_title),
                                 value = finalArtists[0].second,
                                 showArrow = finalArtists[0].first.isNotBlank(),
                                 onClick = {
@@ -282,8 +282,8 @@ fun VideoOrSongInfoScreen(
                         if (albumId.isNotBlank()) {
                             Spacer(Modifier.height(8.dp))
                             InfoRow(
-                                label = stringResource(R.string.sort_album),
-                                value = albumTitle.takeIf { it.isNotBlank() } ?: stringResource(R.string.sort_album),
+                                label = stringResource(R.string.library_sort_album),
+                                value = albumTitle.takeIf { it.isNotBlank() } ?: stringResource(R.string.library_sort_album),
                                 showArrow = true,
                                 onClick = {
                                     navController?.navigate("${NavRoutes.album.name}/$albumId")
@@ -334,10 +334,10 @@ fun VideoOrSongInfoScreen(
                                 .padding(16.dp),
                                 horizontalArrangement = Arrangement.SpaceEvenly
                             ) {
-                                StatItem(label = stringResource(R.string.subscribers), value = info?.subscribers ?: "-")
-                                StatItem(label = stringResource(R.string.views), value = info?.viewCount ?: "-")
-                                StatItem(label = stringResource(R.string.likes), value = info?.like ?: "-")
-                                StatItem(label = stringResource(R.string.dislikes), value = info?.dislike ?: "-")
+                                StatItem(label = stringResource(R.string.metadata_video_subscribers_label), value = info?.subscribers ?: "-")
+                                StatItem(label = stringResource(R.string.metadata_video_views_label), value = info?.viewCount ?: "-")
+                                StatItem(label = stringResource(R.string.metadata_video_likes_label), value = info?.like ?: "-")
+                                StatItem(label = stringResource(R.string.metadata_video_dislikes_label), value = info?.dislike ?: "-")
                             }
                         }
                     }
@@ -347,13 +347,13 @@ fun VideoOrSongInfoScreen(
                     item {
                         Column(modifier = Modifier.padding(bottom = 8.dp)) {
                             Text(
-                                text = stringResource(R.string.description),
+                                text = stringResource(R.string.metadata_description_title),
                                 style = typography().m,
                                 color = colorPalette().accent,
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                             Text(
-                                text = if (!desc.isNullOrBlank()) desc else stringResource(R.string.no_description_available),
+                                text = if (!desc.isNullOrBlank()) desc else stringResource(R.string.common_description_unavailable),
                                 style = typography().xs,
                                 color = colorPalette().text,
                                 fontStyle = if (desc.isNullOrBlank()) FontStyle.Italic else null

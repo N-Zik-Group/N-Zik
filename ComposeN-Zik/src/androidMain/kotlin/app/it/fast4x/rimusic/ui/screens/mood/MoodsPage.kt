@@ -81,7 +81,7 @@ fun MoodsPage(
                     span = { GridItemSpan(maxLineSpan) }
                 ) {
                     HeaderWithIcon(
-                        title = stringResource(R.string.moods_and_genres),
+                        title = stringResource(R.string.recommendations_moods_and_genres_title),
                         iconId = R.drawable.search,
                         enabled = true,
                         showIcon = false,
@@ -119,7 +119,7 @@ fun MoodsPage(
         } ?: CollectionPageStatus {
             if (discoverPage?.exceptionOrNull() != null) {
                 BasicText(
-                    text = stringResource(R.string.page_not_been_loaded),
+                    text = stringResource(R.string.recommendations_load_failed_message),
                     style = typography().s.secondary.center,
                     modifier = Modifier.padding(all = 16.dp)
                 )

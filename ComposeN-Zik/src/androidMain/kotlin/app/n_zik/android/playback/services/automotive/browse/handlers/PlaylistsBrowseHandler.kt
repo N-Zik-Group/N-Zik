@@ -85,13 +85,13 @@ class PlaylistsBrowseHandler : BrowseHandler {
         val previews = database.playlistTable.allAsPreview().first()
         fun count(id: String) = visibleAutoLibraryPlaylists(autoLibraryPlaylistScope(context, id), id, previews).size
         val categories = mapOf(
-            "all" to folder(context, AutoSessionConstants.ID_PLAYLISTS_LOCAL, R.string.library,
+            "all" to folder(context, AutoSessionConstants.ID_PLAYLISTS_LOCAL, R.string.library_title,
                 R.drawable.library, count(AutoSessionConstants.ID_PLAYLISTS_LOCAL)),
-            "pinned_playlists" to folder(context, AutoSessionConstants.ID_PLAYLISTS_PINNED, R.string.pinned_playlists,
+            "pinned_playlists" to folder(context, AutoSessionConstants.ID_PLAYLISTS_PINNED, R.string.playlist_pinned_title,
                 R.drawable.pin_filled, count(AutoSessionConstants.ID_PLAYLISTS_PINNED)),
-            "rewind" to folder(context, AutoSessionConstants.ID_PLAYLISTS_REWIND, R.string.rewind,
+            "rewind" to folder(context, AutoSessionConstants.ID_PLAYLISTS_REWIND, R.string.rewind_title,
                 R.drawable.musical_notes, count(AutoSessionConstants.ID_PLAYLISTS_REWIND)),
-            "yt_playlists" to folder(context, AutoSessionConstants.ID_PLAYLISTS_YT, R.string.ytm_playlists,
+            "yt_playlists" to folder(context, AutoSessionConstants.ID_PLAYLISTS_YT, R.string.sync_youtube_playlists_title,
                 R.drawable.ytmusic, count(AutoSessionConstants.ID_PLAYLISTS_YT)),
         )
         return homeCategoryOrder(context, homePlaylistsOrderKey, listOf("all", "pinned_playlists", "rewind", "yt_playlists"))
@@ -125,7 +125,7 @@ class PlaylistsBrowseHandler : BrowseHandler {
     private fun rewindGroupLabel(filter: RewindPlaylists.Filter): Int = when (filter) {
         RewindPlaylists.Filter.Month -> R.string.rewind_filter_month
         RewindPlaylists.Filter.Year -> R.string.rewind_filter_year
-        RewindPlaylists.Filter.All -> R.string.all
+        RewindPlaylists.Filter.All -> R.string.common_option_all
     }
 
     private fun rewindGroupIcon(filter: RewindPlaylists.Filter): Int = when (filter) {

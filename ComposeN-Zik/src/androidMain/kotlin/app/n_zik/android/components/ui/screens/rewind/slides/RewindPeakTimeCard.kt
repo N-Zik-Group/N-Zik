@@ -74,12 +74,12 @@ fun RewindPeakTimeCard(
             val clockSize = if (compact) 210.dp else 250.dp
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_peak_time_kicker, data.periodLabel), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rewind_peak_time_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
                     RewindAdaptiveTitle(
-                        text = stringResource(R.string.rw_peak_time_heading),
+                        text = stringResource(R.string.rewind_peak_time_heading),
                         color = rewindColors.value.cream,
                         fontSize = textScale.size(if (compact) 35.sp else 41.sp),
                         lineHeight = textScale.size(if (compact) 33.sp else 38.sp),
@@ -155,7 +155,7 @@ fun RewindPeakTimeCard(
                                     modifier = Modifier.rewindMarqueeOnly()
                                 )
                                 Text(
-                                    text = stringResource(R.string.rw_peak_time_peak_hour),
+                                    text = stringResource(R.string.rewind_peak_time_peak_hour),
                                     color = rewindColors.value.lime,
                                     fontSize = textScale.size(8.sp),
                                     fontWeight = FontWeight.Black,
@@ -175,7 +175,7 @@ fun RewindPeakTimeCard(
                             .padding(horizontal = 12.dp, vertical = 12.dp)
                     ) {
                         Text(
-                            text = stringResource(R.string.rw_peak_time_by_day),
+                            text = stringResource(R.string.rewind_peak_time_by_day),
                             color = rewindColors.value.lime,
                             fontSize = textScale.size(9.sp),
                             fontWeight = FontWeight.Black,

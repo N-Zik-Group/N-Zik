@@ -225,7 +225,7 @@ inline fun <T : Innertube.Item> ItemsPage(
                     item {
                         if (searchQuery == null) {
                             SearchNoResults(
-                                text = emptyItemsText.ifEmpty { stringResource(R.string.no_items_found) },
+                                text = emptyItemsText.ifEmpty { stringResource(R.string.search_items_empty_message) },
                                 fillRemainingViewport = true,
                             )
                         } else {
@@ -424,7 +424,7 @@ inline fun <T : Innertube.Item> ItemsGridPage(
                     ) {
                         if (searchQuery == null) {
                             SearchNoResults(
-                                text = emptyItemsText.ifEmpty { stringResource(R.string.no_items_found) },
+                                text = emptyItemsText.ifEmpty { stringResource(R.string.search_items_empty_message) },
                                 fillRemainingViewport = true,
                             )
                         } else {

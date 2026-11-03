@@ -74,28 +74,28 @@ class GlassQueuePolicySelectorTest {
         Dependencies.init(application)
     }
 
-    @Test fun `legacy glass only is displayed as disabled without changing saved settings`() {
-        assertLegacyDisplay(GlassAreaMode.GlassOnly, R.string.glass_mode_disabled)
+    @Test fun `saved glass only is displayed accurately without changing saved settings`() {
+        assertSavedDisplay(GlassAreaMode.GlassOnly, R.string.glass_effect_mode_glass_only)
     }
 
-    @Test fun `legacy glass and contour is displayed as contour only without changing saved settings`() {
-        assertLegacyDisplay(GlassAreaMode.GlassAndContour, R.string.glass_mode_contour_only)
+    @Test fun `saved glass and contour is displayed accurately without changing saved settings`() {
+        assertSavedDisplay(GlassAreaMode.GlassAndContour, R.string.glass_effect_mode_glass_and_contour)
     }
 
-    @Test fun `inherited glass only displays disabled without creating a queue override`() {
-        assertLegacyDisplay(GlassAreaMode.GlassOnly, R.string.glass_mode_disabled, inherited = true)
+    @Test fun `inherited glass only displays accurately without creating a queue override`() {
+        assertSavedDisplay(GlassAreaMode.GlassOnly, R.string.glass_effect_mode_glass_only, inherited = true)
     }
 
-    @Test fun `inherited glass and contour displays contour without creating a queue override`() {
-        assertLegacyDisplay(GlassAreaMode.GlassAndContour, R.string.glass_mode_contour_only, inherited = true)
+    @Test fun `inherited glass and contour displays accurately without creating a queue override`() {
+        assertSavedDisplay(GlassAreaMode.GlassAndContour, R.string.glass_effect_mode_glass_and_contour, inherited = true)
     }
 
     @Test fun `choosing disabled preserves explicit queue override when shared menus have glass only`() {
-        assertQueueSelection(GlassAreaMode.GlassOnly, GlassAreaMode.Disabled, R.string.glass_mode_disabled)
+        assertQueueSelection(GlassAreaMode.GlassOnly, GlassAreaMode.Disabled, R.string.glass_effect_mode_disabled)
     }
 
     @Test fun `choosing contour preserves explicit queue override when shared menus have glass and contour`() {
-        assertQueueSelection(GlassAreaMode.GlassAndContour, GlassAreaMode.ContourOnly, R.string.glass_mode_contour_only)
+        assertQueueSelection(GlassAreaMode.GlassAndContour, GlassAreaMode.ContourOnly, R.string.glass_effect_mode_contour_only)
     }
 
     @Test fun `queue actions still offer all four material modes`() {
@@ -110,7 +110,7 @@ class GlassQueuePolicySelectorTest {
         assertOptions(allModeLabels)
     }
 
-    private fun assertLegacyDisplay(mode: GlassAreaMode, label: Int, inherited: Boolean = false) {
+    private fun assertSavedDisplay(mode: GlassAreaMode, label: Int, inherited: Boolean = false) {
         if (inherited) store.setAreaMode(GlassArea.Menus, mode)
         else store.setContextMode(GlassScope.Queue, GlassArea.Menus, mode)
         val before = preferences.all.toMap()
@@ -121,7 +121,7 @@ class GlassQueuePolicySelectorTest {
             useUnmergedTree = true,
         ).performScrollTo().assertIsDisplayed()
         openSelector()
-        assertOptions(listOf(R.string.glass_mode_disabled, R.string.glass_mode_contour_only))
+        assertOptions(allModeLabels)
         composeRule.runOnIdle {
             assertEquals(before, preferences.all)
             if (inherited) assertFalse(preferences.contains(queueKey))
@@ -136,7 +136,7 @@ class GlassQueuePolicySelectorTest {
         val before = preferences.all.toMap()
         showCard()
         openSelector()
-        assertOptions(listOf(R.string.glass_mode_disabled, R.string.glass_mode_contour_only))
+        assertOptions(allModeLabels)
         composeRule.onNode(
             hasText(context.getString(label)) and hasAnyAncestor(hasTestTag("valueSelectorList")),
         ).performClick()
@@ -177,9 +177,9 @@ class GlassQueuePolicySelectorTest {
     }
 
     private val allModeLabels = listOf(
-        R.string.glass_mode_disabled,
-        R.string.glass_mode_contour_only,
-        R.string.glass_mode_glass_only,
-        R.string.glass_mode_glass_and_contour,
+        R.string.glass_effect_mode_disabled,
+        R.string.glass_effect_mode_contour_only,
+        R.string.glass_effect_mode_glass_only,
+        R.string.glass_effect_mode_glass_and_contour,
     )
 }

@@ -105,7 +105,7 @@ internal fun AppearancePresetsCard(search: Search) {
     var queueType by rememberPreference(queueTypeKey, QueueType.Modern)
     var playerInfoShowIcons by rememberPreference(playerInfoShowIconsKey, true)
     var appearanceChooser by remember { mutableStateOf(false) }
-    val searchCtx_0_1 = search.inputValue.isBlank() || stringResource(R.string.player_presets_and_layout).contains(search.inputValue, true) || stringResource(R.string.appearancepresets).contains(search.inputValue, true) || stringResource(R.string.appearancepresetssecondary).contains(search.inputValue, true) || stringResource(R.string.playertype).contains(search.inputValue, true) || stringResource(R.string.queuetype).contains(search.inputValue, true) || stringResource(R.string.thumbnailtype).contains(search.inputValue, true) || stringResource(R.string.pinfo_type).contains(search.inputValue, true) || stringResource(R.string.pinfo_album_and_artist_name).contains(search.inputValue, true) || stringResource(R.string.pinfo_show_icons).contains(search.inputValue, true) || stringResource(R.string.pcontrols_type).contains(search.inputValue, true)
+    val searchCtx_0_1 = search.inputValue.isBlank() || stringResource(R.string.player_presets_and_layout).contains(search.inputValue, true) || stringResource(R.string.settings_player_appearance_presets_title).contains(search.inputValue, true) || stringResource(R.string.settings_player_appearance_presets_preview_description).contains(search.inputValue, true) || stringResource(R.string.player_type).contains(search.inputValue, true) || stringResource(R.string.settings_player_queue_style_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_style_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_header_style_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_header_album_artist_description).contains(search.inputValue, true) || stringResource(R.string.settings_player_header_icons_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_controls_style_label).contains(search.inputValue, true)
     AnimatedVisibility(
                 visible = searchCtx_0_1,
                 enter = settingsCardEnter,
@@ -440,28 +440,28 @@ internal fun AppearancePresetsCard(search: Search) {
             }
 
             if (!isLandscape) {
-                if (search.inputValue.isBlank() || stringResource(R.string.appearancepresets).contains(search.inputValue, true) || (stringResource(R.string.appearancepresetssecondary)).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_appearance_presets_title).contains(search.inputValue, true) || (stringResource(R.string.settings_player_appearance_presets_preview_description)).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.player_presets_and_layout.appearancepresets"),
-                        title = stringResource(R.string.appearancepresets),
-                        text = stringResource(R.string.appearancepresetssecondary),
+                        title = stringResource(R.string.settings_player_appearance_presets_title),
+                        text = stringResource(R.string.settings_player_appearance_presets_preview_description),
                         icon = R.drawable.ui,
                         onClick = { appearanceChooser = true }
                     )
                 }
             }
 
-            if (search.inputValue.isBlank() || stringResource(R.string.playertype).contains(
+            if (search.inputValue.isBlank() || stringResource(R.string.player_type).contains(
                     search.inputValue,
                     true
                 )
             )
-                if (search.inputValue.isBlank() || stringResource(R.string.playertype).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.player_type).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_player_presets_and_layout_playertype), playerType.text),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_layout_player_style_description), playerType.text),
                         modifier = Modifier.settingsSearchTarget("appearance.player_presets_and_layout.playertype"),
                         icon = R.drawable.play,
-                        title = stringResource(R.string.playertype),
+                        title = stringResource(R.string.player_type),
                         selectedValue = playerType,
                         onValueSelected = {
                             playerType = it
@@ -470,17 +470,17 @@ internal fun AppearancePresetsCard(search: Search) {
                     )
                 }
 
-            if (search.inputValue.isBlank() || stringResource(R.string.queuetype).contains(
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_queue_style_label).contains(
                     search.inputValue,
                     true
                 )
             )
-                if (search.inputValue.isBlank() || stringResource(R.string.queuetype).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_queue_style_label).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_player_presets_and_layout_queuetype), queueType.text),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_layout_queue_style_description), queueType.text),
                         modifier = Modifier.settingsSearchTarget("appearance.player_presets_and_layout.queuetype"),
                         icon = R.drawable.sort_grid,
-                        title = stringResource(R.string.queuetype),
+                        title = stringResource(R.string.settings_player_queue_style_label),
                         selectedValue = queueType,
                         onValueSelected = {
                             queueType = it
@@ -489,16 +489,16 @@ internal fun AppearancePresetsCard(search: Search) {
                     )
                 }
 
-            if (search.inputValue.isBlank() || stringResource(R.string.thumbnailtype).contains(
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_artwork_style_label).contains(
                     search.inputValue,
                     true
                 )
             )
-                if (search.inputValue.isBlank() || stringResource(R.string.thumbnailtype).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_artwork_style_label).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_player_presets_and_layout_thumbnailtype), thumbnailType.text),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_layout_artwork_style_description), thumbnailType.text),
                         icon = R.drawable.cd,
-                        title = stringResource(R.string.thumbnailtype),
+                        title = stringResource(R.string.settings_player_artwork_style_label),
                         selectedValue = thumbnailType,
                         onValueSelected = {
                             thumbnailType = it
@@ -508,17 +508,17 @@ internal fun AppearancePresetsCard(search: Search) {
                     )
                 }
 
-            if (search.inputValue.isBlank() || stringResource(R.string.pinfo_type).contains(
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_header_style_label).contains(
                     search.inputValue,
                     true
                 )
             ) {
-                if (search.inputValue.isBlank() || stringResource(R.string.pinfo_type).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_header_style_label).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_player_presets_and_layout_pinfo_type), playerInfoType.text),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_layout_information_style_description), playerInfoType.text),
                         modifier = Modifier.settingsSearchTarget("appearance.player_presets_and_layout.pinfo_type"),
                         icon = R.drawable.information,
-                        title = stringResource(R.string.pinfo_type),
+                        title = stringResource(R.string.settings_player_header_style_label),
                         selectedValue = playerInfoType,
                         onValueSelected = {
                             playerInfoType = it
@@ -526,20 +526,20 @@ internal fun AppearancePresetsCard(search: Search) {
                         valueText = { it.text },
                     )
                 }
-                SettingsDescription(text = stringResource(R.string.pinfo_album_and_artist_name))
+                SettingsDescription(text = stringResource(R.string.settings_player_header_album_artist_description))
 
                 AnimatedVisibility( visible = playerInfoType == PlayerInfoType.Modern) {
                     Column {
-                        if (search.inputValue.isBlank() || stringResource(R.string.pinfo_show_icons).contains(
+                        if (search.inputValue.isBlank() || stringResource(R.string.settings_player_header_icons_visible_label).contains(
                                 search.inputValue,
                                 true
                             )
                         )
-                            if (search.inputValue.isBlank() || stringResource(R.string.pinfo_show_icons).contains(search.inputValue, true)) {
+                            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_header_icons_visible_label).contains(search.inputValue, true)) {
                                 OtherSwitchSettingEntry(
                         icon = R.drawable.information,
-                                    title = stringResource(R.string.pinfo_show_icons),
-                                    text = stringResource(R.string.settings_desc_appearance_player_presets_and_layout_pinfo_show_icons),
+                                    title = stringResource(R.string.settings_player_header_icons_visible_label),
+                                    text = stringResource(R.string.player_layout_information_icons_description),
                                     isChecked = playerInfoShowIcons,
                                     onCheckedChange = { playerInfoShowIcons = it },
                                     modifier = (Modifier
@@ -551,17 +551,17 @@ internal fun AppearancePresetsCard(search: Search) {
 
             }
 
-            if (search.inputValue.isBlank() || stringResource(R.string.pcontrols_type).contains(
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_controls_style_label).contains(
                     search.inputValue,
                     true
                 )
             )
-                if (search.inputValue.isBlank() || stringResource(R.string.pcontrols_type).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_controls_style_label).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_player_presets_and_layout_pcontrols_type), playerControlsType.text),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_layout_controls_style_description), playerControlsType.text),
                         modifier = Modifier.settingsSearchTarget("appearance.player_presets_and_layout.pcontrols_type"),
                         icon = R.drawable.burger,
-                        title = stringResource(R.string.pcontrols_type),
+                        title = stringResource(R.string.settings_player_controls_style_label),
                         selectedValue = playerControlsType,
                         onValueSelected = {
                             playerControlsType = it

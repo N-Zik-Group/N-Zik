@@ -73,7 +73,7 @@ fun SearchHistorySection(
             GlassControlOverflowColumn(if (overflow) glassOverflowFade(200, 150) else Modifier) {
                 // Inset one step inside the search bar's margins (24dp)
                 TitleMiniSection(
-                    title = stringResource(R.string.searches_saved_searches),
+                    title = stringResource(R.string.search_saved_history_title),
                     modifier = Modifier.padding(start = 24.dp)
                 )
 
@@ -124,14 +124,14 @@ fun SearchHistorySection(
                                 actions = buildList {
                                     add(GlassSectionAction(
                                         icon = R.drawable.trash,
-                                        contentDescription = stringResource(R.string.delete),
+                                        contentDescription = stringResource(R.string.common_action_delete),
                                         onLongClick = onQueryDeleteAll,
                                         onClick = { onQueryDelete(query) },
                                     ))
                                     if (onQueryEdit != null) {
                                         add(GlassSectionAction(
                                             icon = R.drawable.pencil,
-                                            contentDescription = stringResource(R.string.search),
+                                            contentDescription = stringResource(R.string.search_title),
                                             onClick = { onQueryEdit(query) },
                                         ))
                                     }
@@ -141,7 +141,7 @@ fun SearchHistorySection(
                         } else {
                             NativeSectionIconAction(
                                 icon = R.drawable.trash,
-                                contentDescription = stringResource(R.string.delete),
+                                contentDescription = stringResource(R.string.common_action_delete),
                                 iconSize = 20.dp,
                                 color = colorPalette().textDisabled,
                                 settings = glassSettings,
@@ -151,7 +151,7 @@ fun SearchHistorySection(
                             if (onQueryEdit != null) {
                                 NativeSectionIconAction(
                                     icon = R.drawable.pencil,
-                                    contentDescription = stringResource(R.string.search),
+                                    contentDescription = stringResource(R.string.search_title),
                                     iconSize = 22.dp,
                                     color = colorPalette().textDisabled,
                                     settings = glassSettings,

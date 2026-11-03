@@ -46,7 +46,7 @@ class ImportSongsFromServices private constructor(
             onImportComplete: ((Long) -> Unit)? = null,
         ) {
             val context = appContext()
-            var fileName = uri.lastPathSegment ?: context.getString(R.string.imported_playlist)
+            var fileName = uri.lastPathSegment ?: context.getString(R.string.playlist_import_default_name)
             context.applicationContext.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
                 val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
                 if (cursor.moveToFirst() && nameIndex != -1) {
@@ -217,7 +217,7 @@ class ImportSongsFromServices private constructor(
     }
 
     override val supportedMimes: Array<String> = arrayOf("text/csv", "text/comma-separated-values")
-    override val messageId: Int = R.string.import_playlist
+    override val messageId: Int = R.string.playlist_action_import
     override val iconId: Int = R.drawable.import_outline
     override val menuIconTitle: String
         @Composable

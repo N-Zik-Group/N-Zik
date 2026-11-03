@@ -145,17 +145,17 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
     val selectedServer = remember(serverUrl) { ListenTogetherServers.findByUrl(serverUrl) }
 
     SettingsSectionCard(
-        title = stringResource(R.string.listen_together),
+        title = stringResource(R.string.listen_together_title),
         icon = R.drawable.people,
-        description = stringResource(R.string.listen_together_settings_desc),
+        description = stringResource(R.string.listen_together_settings_description),
         content = {
         // Optional deep link to the Listen Together screen (wired by the Accounts
         // tab, spec-customizable-burger-menu goal B); first row of the card.
         onOpenScreen?.let { onOpen ->
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.listen_together.module_open"),
-                title = stringResource(R.string.module_open),
-                text = stringResource(R.string.listen_together_open_desc),
+                title = stringResource(R.string.modules_open),
+                text = stringResource(R.string.listen_together_open_description),
                 icon = R.drawable.chevron_forward,
                 onClick = onOpen,
             )
@@ -165,7 +165,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         OtherSettingsEntry(
             modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_server_url"),
             title = stringResource(R.string.listen_together_server_url),
-            text = stringResource(R.string.settings_desc_embedded_listen_together_listen_together_server_url),
+            text = stringResource(R.string.listen_together_server_url_description),
             selectedValueText = selectedServer?.let { server -> "${server.name} — ${server.location}" }
                 ?: serverUrl,
             icon = R.drawable.server,
@@ -176,7 +176,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         OtherSettingsEntry(
             modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_username"),
             title = stringResource(R.string.listen_together_username),
-            text = stringResource(R.string.settings_desc_embedded_listen_together_listen_together_username),
+            text = stringResource(R.string.listen_together_username_description),
             selectedValueText = username.ifEmpty { stringResource(R.string.listen_together_not_set) },
             icon = R.drawable.person,
             onClick = {
@@ -192,7 +192,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         OtherSwitchSettingEntry(
             modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_auto_approval_joins"),
             title = stringResource(R.string.listen_together_auto_approval_joins),
-            text = stringResource(R.string.listen_together_auto_approval_joins_desc),
+            text = stringResource(R.string.listen_together_auto_approval_joins_description),
             isChecked = autoApprovalJoins,
             enabled = canEditApprovals,
             onCheckedChange = {
@@ -207,7 +207,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         OtherSwitchSettingEntry(
             modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_auto_approval_suggestions"),
             title = stringResource(R.string.listen_together_auto_approval_suggestions),
-            text = stringResource(R.string.listen_together_auto_approval_suggestions_desc),
+            text = stringResource(R.string.listen_together_auto_approval_suggestions_description),
             isChecked = autoApproveSuggestions,
             enabled = canEditApprovals,
             onCheckedChange = {
@@ -226,7 +226,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         OtherSwitchSettingEntry(
             modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_sync_volume"),
             title = stringResource(R.string.listen_together_sync_volume),
-            text = stringResource(R.string.listen_together_sync_volume_desc),
+            text = stringResource(R.string.listen_together_sync_volume_description),
             isChecked = syncHostVolume,
             onCheckedChange = { manager.setSyncHostVolumeEnabled(it) },
             icon = R.drawable.volume_up,
@@ -237,7 +237,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         OtherSwitchSettingEntry(
             modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_history"),
             title = stringResource(R.string.listen_together_history),
-            text = stringResource(R.string.listen_together_history_desc),
+            text = stringResource(R.string.listen_together_history_description),
             isChecked = historyEnabled,
             onCheckedChange = {
                 DataStoreUtils.saveBoolean(context, ListenTogetherClient.PREF_HISTORY, it)
@@ -251,7 +251,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         OtherSettingsEntry(
             modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_view_logs"),
             title = stringResource(R.string.listen_together_view_logs),
-            text = stringResource(R.string.listen_together_view_logs_desc),
+            text = stringResource(R.string.listen_together_view_logs_description),
             icon = R.drawable.bugs,
             onClick = {
                 menuState.display {
@@ -264,7 +264,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         OtherSettingsEntry(
             modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_blocked_users"),
             title = stringResource(R.string.listen_together_blocked_users),
-            text = stringResource(R.string.settings_desc_embedded_listen_together_listen_together_blocked_users),
+            text = stringResource(R.string.listen_together_blocked_users_description),
             selectedValueText = if (blockedUsernames.isNotEmpty()) {
                 stringResource(
                     R.string.listen_together_blocked_users_count,
@@ -517,7 +517,7 @@ internal fun UsernameSheet(
                             IconButton(onClick = { tempUsername = "" }) {
                                 Icon(
                                     painter = painterResource(R.drawable.close),
-                                    contentDescription = stringResource(R.string.clear),
+                                    contentDescription = stringResource(R.string.common_action_clear),
                                     tint = palette.textSecondary,
                                     modifier = Modifier.size(20.dp),
                                 )

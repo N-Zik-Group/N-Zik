@@ -69,7 +69,7 @@ internal fun NativeMenuSheetDragHandle(
 ) {
     val scope = rememberCoroutineScope()
     val partiallyExpanded = sheetState.currentValue == SheetValue.PartiallyExpanded
-    val clickLabel = stringResource(if (partiallyExpanded) R.string.te_expand else R.string.dialog_close)
+    val clickLabel = stringResource(if (partiallyExpanded) R.string.settings_transition_expand else R.string.common_action_close)
     fun dismissSheet() {
         scope.launch {
             sheetState.hide()

@@ -103,7 +103,7 @@ class RescueScreenResetSettingsTargetTest {
 
         // load on the real DATA pool: wait for the chip before clicking it.
         composeRule
-            .onNodeWithText(context.getString(R.string.rescue_category_profile))
+            .onNodeWithText(context.getString(R.string.recovery_category_profile))
             .performClick()
         composeRule.mainClock.advanceTimeBy(500)
         composeRule.waitForIdle()
@@ -118,15 +118,15 @@ class RescueScreenResetSettingsTargetTest {
         composeRule.waitForIdle()
 
         composeRule
-            .onNodeWithText(context.getString(R.string.rescue_reset_settings))
+            .onNodeWithText(context.getString(R.string.recovery_reset_settings))
             .performScrollTo()
         composeRule
-            .onNodeWithText(context.getString(R.string.rescue_reset_settings))
+            .onNodeWithText(context.getString(R.string.recovery_reset_settings))
             .performClick()
         composeRule.waitForIdle()
         // The title and card share this label; select the clickable dialog control.
         composeRule.onNode(
-            hasText(context.getString(R.string.rescue_reset_settings)) and hasClickAction() and hasAnyAncestor(isDialog())
+            hasText(context.getString(R.string.recovery_reset_settings)) and hasClickAction() and hasAnyAncestor(isDialog())
         ).performClick()
 
         // The reset runs on the compose scope with a hop to the real DATA pool: poll until

@@ -164,9 +164,9 @@ internal fun GlassMiniPlayerPreview(
     val buttons = order.filter { enabled[it.button] == true }.map { it.button }
     val metadata = rememberPreviewMetadata(player)
     val title = cleanPrefix(metadata.title?.toString().orEmpty())
-        .ifBlank { stringResource(R.string.unknown_title) }
+        .ifBlank { stringResource(R.string.metadata_unknown_title) }
     val artist = cleanPrefix(metadata.artist?.toString().orEmpty())
-        .ifBlank { stringResource(R.string.unknown_artist) }
+        .ifBlank { stringResource(R.string.metadata_unknown_artist) }
     var playing by rememberSaveable { mutableStateOf(false) }
     val settings = config
     val colors = colorPalette()
@@ -223,7 +223,7 @@ internal fun GlassMiniPlayerPreview(
                                 MiniPlayerButton.PlayPause -> GlassMiniPlayerPlayPauseButton(
                                     onClick = { playing = !playing },
                                     backgroundColor = colors.background2,
-                                    contentDescription = stringResource(if (playing) R.string.notification_pause else R.string.play),
+                                    contentDescription = stringResource(if (playing) R.string.player_notification_pause else R.string.player_action_play),
                                     settings = settings,
                                     backdrop = controlsBackdrop,
                                 ) {

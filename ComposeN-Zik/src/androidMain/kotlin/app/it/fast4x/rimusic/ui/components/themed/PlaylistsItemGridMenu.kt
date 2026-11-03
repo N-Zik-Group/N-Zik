@@ -196,7 +196,7 @@ fun PlaylistsItemGridMenu(
             }
 
             val search = Search()
-            val title = stringResource(R.string.playlists)
+            val title = stringResource(R.string.library_playlists_title)
 
             val newPlaylistDialog = NewPlaylistDialog { playlist ->
                 onDismiss()
@@ -225,7 +225,7 @@ fun PlaylistsItemGridMenu(
                 isViewingPlaylists = false
             }
 
-            ListMenu.Menu(title = stringResource(R.string.playlists)) {
+            ListMenu.Menu(title = stringResource(R.string.library_playlists_title)) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -280,7 +280,7 @@ fun PlaylistsItemGridMenu(
                 }
                 if (filteredPinnedPlaylists.isNotEmpty()) {
                     BasicText(
-                        text = stringResource(R.string.pinned_playlists),
+                        text = stringResource(R.string.playlist_pinned_title),
                         style = typography().m.semiBold,
                         modifier = modifier.padding(start = 20.dp, top = 5.dp)
                     )
@@ -291,7 +291,7 @@ fun PlaylistsItemGridMenu(
                                 text = cleanPrefix(playlistPreview.playlist.name),
                                 icon = { SettingIcon(R.drawable.add_in_playlist) },
                                 subtitle = "${playlistPreview.songCount} " + stringResource(
-                                    R.string.songs
+                                    R.string.library_songs_title
                                 ),
                                 onClick = {
                                     onAddToPlaylist(
@@ -336,7 +336,7 @@ fun PlaylistsItemGridMenu(
 
                 if (filteredYoutubePlaylists.isNotEmpty() && isNetworkConnected(context)) {
                     BasicText(
-                        text = stringResource(R.string.ytm_playlists),
+                        text = stringResource(R.string.sync_youtube_playlists_title),
                         style = typography().m.semiBold,
                         modifier = Modifier.padding(start = 20.dp, top = 5.dp)
                     )
@@ -346,7 +346,7 @@ fun PlaylistsItemGridMenu(
                             ListMenu.Entry(
                                 text = cleanPrefix(playlistPreview.playlist.name),
                                 icon = { SettingIcon(R.drawable.add_in_playlist) },
-                                subtitle = "${playlistPreview.songCount} " + stringResource(R.string.songs),
+                                subtitle = "${playlistPreview.songCount} " + stringResource(R.string.library_songs_title),
                                 onClick = {
                                     onAddToPlaylist(
                                         PlaylistPreview(
@@ -379,7 +379,7 @@ fun PlaylistsItemGridMenu(
 
                 if (filteredUnpinnedPlaylists.isNotEmpty()) {
                     BasicText(
-                        text = stringResource(R.string.playlists),
+                        text = stringResource(R.string.library_playlists_title),
                         style = typography().m.semiBold,
                         modifier = modifier.padding(start = 20.dp, top = 5.dp)
                     )
@@ -390,7 +390,7 @@ fun PlaylistsItemGridMenu(
                                 text = cleanPrefix(playlistPreview.playlist.name),
                                 icon = { SettingIcon(R.drawable.add_in_playlist) },
                                 subtitle = "${playlistPreview.songCount} " + stringResource(
-                                    R.string.songs
+                                    R.string.library_songs_title
                                 ),
                                 onClick = {
                                     onAddToPlaylist(
@@ -425,7 +425,7 @@ fun PlaylistsItemGridMenu(
                 }
             }
         } else {
-            val selectText = "${stringResource(R.string.item_select)}/${stringResource(R.string.item_deselect)}"
+            val selectText = "${stringResource(R.string.common_action_select)}/${stringResource(R.string.playlist_selection_action_deselect)}"
             val colorPalette = colorPalette()
 
             GridMenu.Menu(title = null) {
@@ -460,7 +460,7 @@ fun PlaylistsItemGridMenu(
                 onPlayNext?.let { onPlayNext ->
                     item {
                         GridMenu.Entry(
-                            text = stringResource(R.string.play_next),
+                            text = stringResource(R.string.player_action_play_next),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.play_skip_forward) },
                             onClick = {
@@ -474,7 +474,7 @@ fun PlaylistsItemGridMenu(
                 onDeleteSongsNotInLibrary?.let { onDeleteSongsNotInLibrary ->
                     item {
                         GridMenu.Entry(
-                            text = stringResource(R.string.delete_songs_not_in_library),
+                            text = stringResource(R.string.playlist_action_remove_songs_outside_library),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.trash) },
                             onClick = {
@@ -488,7 +488,7 @@ fun PlaylistsItemGridMenu(
                 onEnqueue?.let { onEnqueue ->
                     item {
                         GridMenu.Entry(
-                            text = stringResource(R.string.enqueue),
+                            text = stringResource(R.string.player_action_enqueue),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.enqueue) },
                             onClick = {
@@ -502,7 +502,7 @@ fun PlaylistsItemGridMenu(
                 if (showOnSyncronize) onSyncronize?.let { onSyncronize ->
                     item {
                         GridMenu.Entry(
-                            text = stringResource(R.string.sync),
+                            text = stringResource(R.string.sync_action_sync),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.sync) },
                             onClick = {
@@ -516,7 +516,7 @@ fun PlaylistsItemGridMenu(
                 if (showLinkUnlink) onLinkUnlink?.let { onLinkUnlink ->
                     item {
                         GridMenu.Entry(
-                            text = if (playlist?.playlist?.isYoutubePlaylist == true) stringResource(R.string.unlink_from_ytm) else stringResource(R.string.unlink_from_yt),
+                            text = if (playlist?.playlist?.isYoutubePlaylist == true) stringResource(R.string.playlist_action_unlink_youtube_library) else stringResource(R.string.playlist_action_unlink_youtube),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.link) },
                             onClick = {
@@ -530,7 +530,7 @@ fun PlaylistsItemGridMenu(
                 onImportOnlinePlaylist?.let { onImportOnlinePlaylist ->
                     item {
                         GridMenu.Entry(
-                            text = stringResource(R.string.import_playlist),
+                            text = stringResource(R.string.playlist_action_import),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.add_in_playlist) },
                             onClick = {
@@ -544,7 +544,7 @@ fun PlaylistsItemGridMenu(
                 if (onAddToPreferites != null)
                     item {
                         GridMenu.Entry(
-                            text = stringResource(R.string.add_to_favorites),
+                            text = stringResource(R.string.library_favorites_action_add),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.heart) },
                             onClick = {
@@ -558,7 +558,7 @@ fun PlaylistsItemGridMenu(
                     if (onAddToPreferitesYoutube != null)
                         item {
                             GridMenu.Entry(
-                                text = stringResource(R.string.add_rimusic_to_ytm_favorites),
+                                text = stringResource(R.string.playlist_action_like_favorites_on_youtube),
                                 iconHasOwnBackground = true,
                                 icon = { SettingIcon(R.drawable.ytmusic) },
                                 onClick = {
@@ -572,7 +572,7 @@ fun PlaylistsItemGridMenu(
                 onAddToPlaylist?.let { onAddToPlaylist ->
                     item {
                         GridMenu.Entry(
-                            text = stringResource(R.string.add_to_playlist),
+                            text = stringResource(R.string.playlist_action_add),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.add_in_playlist) },
                             onClick = {
@@ -585,7 +585,7 @@ fun PlaylistsItemGridMenu(
                 onRename?.let { onRename ->
                     item {
                         GridMenu.Entry(
-                            text = stringResource(R.string.rename),
+                            text = stringResource(R.string.playlist_action_rename),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.title_edit) },
                             onClick = {
@@ -599,7 +599,7 @@ fun PlaylistsItemGridMenu(
                 onDelete?.let { onDelete ->
                     item {
                         GridMenu.Entry(
-                            text = stringResource(R.string.delete),
+                            text = stringResource(R.string.common_action_delete),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.trash) },
                             onClick = {
@@ -613,7 +613,7 @@ fun PlaylistsItemGridMenu(
                 onRenumberPositions?.let { onRenumberPositions ->
                     item {
                         GridMenu.Entry(
-                            text = stringResource(R.string.renumber_songs_positions),
+                            text = stringResource(R.string.playlist_action_shuffle_positions),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.position) },
                             onClick = {
@@ -627,7 +627,7 @@ fun PlaylistsItemGridMenu(
                 if (showonListenToYT) onListenToYT?.let { onListenToYT ->
                     item {
                         GridMenu.Entry(
-                            text = stringResource(R.string.listen_on_youtube),
+                            text = stringResource(R.string.player_action_listen_on_youtube),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.play) },
                             onClick = {
@@ -641,7 +641,7 @@ fun PlaylistsItemGridMenu(
                 onExport?.let { onExport ->
                     item {
                         GridMenu.Entry(
-                            text = stringResource(R.string.export_playlist),
+                            text = stringResource(R.string.playlist_action_export),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.export_outline) },
                             onClick = {
@@ -655,7 +655,7 @@ fun PlaylistsItemGridMenu(
                 onImport?.let { onImport ->
                     item {
                         GridMenu.Entry(
-                            text = stringResource(R.string.import_playlist),
+                            text = stringResource(R.string.playlist_action_import),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.import_outline) },
                             onClick = {
@@ -669,7 +669,7 @@ fun PlaylistsItemGridMenu(
                 onImportFavorites?.let { onImport ->
                     item {
                         GridMenu.Entry(
-                            text = stringResource(R.string.import_favorites),
+                            text = stringResource(R.string.playlist_action_import_favorites),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.import_outline) },
                             onClick = {
@@ -683,7 +683,7 @@ fun PlaylistsItemGridMenu(
                 onEditThumbnail?.let { onEditThumbnail ->
                     item {
                         GridMenu.Entry(
-                            text = stringResource(R.string.edit_thumbnail),
+                            text = stringResource(R.string.thumbnail_action_edit),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.image) },
                             onClick = {
@@ -697,7 +697,7 @@ fun PlaylistsItemGridMenu(
                 onResetThumbnail?.let { onResetThumbnail ->
                     item {
                         GridMenu.Entry(
-                            text = stringResource(R.string.reset_thumbnail),
+                            text = stringResource(R.string.thumbnail_action_reset),
                             iconHasOwnBackground = true,
                             icon = { SettingIcon(R.drawable.image) },
                             onClick = {

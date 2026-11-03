@@ -47,7 +47,7 @@
             android:scaleType="fitCenter"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_widget_skip_previous"
-            android:contentDescription="@string/previous" />
+            android:contentDescription="@string/common_action_previous" />
 
         <!-- Next Button -->
         <ImageButton
@@ -58,7 +58,7 @@
             android:scaleType="fitCenter"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_widget_skip_next"
-            android:contentDescription="@string/next" />
+            android:contentDescription="@string/common_action_next" />
 
         </LinearLayout>
     </FrameLayout>
@@ -92,7 +92,7 @@
                 android:layout_height="22dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_widget_play_secondary"
-                android:contentDescription="@string/play_pause" />
+                android:contentDescription="@string/widget_action_play_pause" />
         </FrameLayout>
 
         <FrameLayout android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
@@ -143,7 +143,7 @@
                 android:scaleType="fitCenter"
                 android:background="@android:color/transparent"
                 android:src="@drawable/ic_widget_heart_outline_nav"
-                android:contentDescription="@string/like" />
+                android:contentDescription="@string/player_action_like" />
         </FrameLayout>
     </LinearLayout>
 

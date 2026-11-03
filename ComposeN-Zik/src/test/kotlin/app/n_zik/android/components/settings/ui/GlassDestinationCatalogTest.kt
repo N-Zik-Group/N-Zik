@@ -41,7 +41,7 @@ class GlassDestinationCatalogTest {
 
     @Test fun `title favorite search has its own playback destination`() {
         val row = glassDestinationRows(GlassDestinationGroup.Playback).single { it.scope == GlassScope.PlayerFavorite }
-        assertEquals(R.string.glass_role_player_favorite, row.title)
+        assertEquals(R.string.glass_effect_role_player_favorite, row.title)
         assertEquals("destination.Playback", glassSearchOption(row.searchId)?.section)
         assertTrue(searchSettingsEntries(context, context.getString(row.title)).any { it.id == row.searchId })
         assertTrue(glassDestinationKeywordResources().contains(row.description))

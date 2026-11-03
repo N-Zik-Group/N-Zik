@@ -343,9 +343,9 @@ fun PlaylistSongList(
     }
     DialogPresence(visible = showYoutubeLikeConfirmDialog) {
         ConfirmationDialog(
-            title = stringResource(R.string.dialog_like_all_songs),
-            confirmText = stringResource(R.string.dialog_like_all_songs),
-            text = "$totalMinutesToLike "+stringResource(R.string.do_you_really_want_to_like_all),
+            title = stringResource(R.string.playlist_like_all_dialog_title),
+            confirmText = stringResource(R.string.playlist_like_all_dialog_title),
+            text = "$totalMinutesToLike "+stringResource(R.string.playlist_like_all_duration_confirmation_suffix),
             onDismiss = { showYoutubeLikeConfirmDialog = false },
             onConfirm = {
                 showYoutubeLikeConfirmDialog = false
@@ -429,7 +429,7 @@ fun PlaylistSongList(
                         if (loadedSongsCount > 0) {
                             Spacer(modifier = Modifier.height(8.dp))
                             BasicText(
-                                text = stringResource(R.string.loading_songs_count, loadedSongsCount),
+                                text = stringResource(R.string.album_loading_song_count_format, loadedSongsCount),
                                 style = typography().xxs.copy(
                                     color = colorPalette().textDisabled
                                 )
@@ -484,7 +484,7 @@ fun PlaylistSongList(
                                             1000,
                                             1000
                                         ),
-                                        contentDescription = stringResource(R.string.cd_loading),
+                                        contentDescription = stringResource(R.string.accessibility_loading),
                                         modifier = Modifier.then(artworkBackdrop)
                                             .fillMaxWidth()
                                             .align(Alignment.Center)
@@ -531,7 +531,7 @@ fun PlaylistSongList(
 
                             BasicText(
                                 text = (filteredPageSongs?.size ?: 0).toString() + " "
-                                        + stringResource(R.string.songs)
+                                        + stringResource(R.string.library_songs_title)
                                         + " - " + formatAsTime(totalPlayTimes),
                                 style = typography().xs.medium,
                                 maxLines = 1,
@@ -626,7 +626,7 @@ fun PlaylistSongList(
                                         }
                                     },
                                     onLongClick = {
-                                        Toaster.i( R.string.save_youtube_library )
+                                        Toaster.i( R.string.playlist_action_save_to_youtube_library )
                                     }
                                 )
                             }
@@ -652,15 +652,15 @@ fun PlaylistSongList(
                                                     showConfirmDownloadAllDialog = true
                                                 },
                                                 onLongClick = {
-                                                    Toaster.i(R.string.info_download_all_songs)
+                                                    Toaster.i(R.string.downloads_action_download_all)
                                                 }
                                     )
 
                                     DialogPresence(visible = showConfirmDownloadAllDialog) {
                                         ConfirmationDialog(
-                                            title = stringResource(R.string.info_download_all_songs),
-                                            confirmText = stringResource(R.string.download),
-                                            text = stringResource(R.string.do_you_really_want_to_download_all),
+                                            title = stringResource(R.string.downloads_action_download_all),
+                                            confirmText = stringResource(R.string.downloads_title),
+                                            text = stringResource(R.string.downloads_download_all_confirmation),
                                             onDismiss = { showConfirmDownloadAllDialog = false },
                                             onConfirm = {
                                                 showConfirmDownloadAllDialog = false
@@ -687,15 +687,15 @@ fun PlaylistSongList(
                                                     showConfirmDeleteDownloadDialog = true
                                                 },
                                                 onLongClick = {
-                                                    Toaster.n(R.string.info_remove_all_downloaded_songs)
+                                                    Toaster.n(R.string.downloads_action_remove_all)
                                                 }
                                     )
 
                                     DialogPresence(visible = showConfirmDeleteDownloadDialog) {
                                         ConfirmationDialog(
-                                            title = stringResource(R.string.dialog_clear_downloads),
-                                            confirmText = stringResource(R.string.delete),
-                                            text = stringResource(R.string.do_you_really_want_to_delete_download),
+                                            title = stringResource(R.string.downloads_delete_dialog_title),
+                                            confirmText = stringResource(R.string.common_action_delete),
+                                            text = stringResource(R.string.downloads_delete_all_confirmation),
                                             onDismiss = { showConfirmDeleteDownloadDialog = false },
                                             onConfirm = {
                                                 showConfirmDeleteDownloadDialog = false
@@ -736,10 +736,10 @@ fun PlaylistSongList(
                                                             player.enqueue(filtered)
                                                         }
                                                     } else
-                                                        Toaster.e(R.string.disliked_this_collection)
+                                                        Toaster.e(R.string.playlist_error_action_on_all_disliked_songs)
                                                 },
                                                 onLongClick = {
-                                                    Toaster.i(R.string.info_enqueue_songs)
+                                                    Toaster.i(R.string.player_action_enqueue_songs)
                                                 }
                                     )
 
@@ -762,10 +762,10 @@ fun PlaylistSongList(
                                                             Shuffler.play(it, mediaItems)
                                                         }
                                                     } else
-                                                        Toaster.e( R.string.disliked_this_collection )
+                                                        Toaster.e( R.string.playlist_error_action_on_all_disliked_songs )
                                                 },
                                                 onLongClick = {
-                                                    Toaster.i( R.string.info_shuffle )
+                                                    Toaster.i( R.string.player_action_shuffle_hint )
                                                 }
                                     )
 
@@ -783,7 +783,7 @@ fun PlaylistSongList(
                                                 onClick = {
                                                     val songs = filteredPageSongs.orEmpty()
                                                     if( songs.fastAny { it.key in dislikedSongs } ) {
-                                                        Toaster.e( R.string.disliked_this_collection )
+                                                        Toaster.e( R.string.playlist_error_action_on_all_disliked_songs )
                                                         return@HeaderIconButton
                                                     }
 
@@ -794,7 +794,7 @@ fun PlaylistSongList(
                                                     mediaItem.let { binder?.startRadio( it, false, null, true ) }
                                                 },
                                                 onLongClick = {
-                                                    Toaster.i( binder?.radioActionTextRes ?: R.string.info_start_radio )
+                                                    Toaster.i( binder?.radioActionTextRes ?: R.string.radio_action_start_hint )
                                                 }
                                     )
 
@@ -824,7 +824,7 @@ fun PlaylistSongList(
                                                                 val playlistSize = filteredPageSongs?.size ?: 0
 
                                                                 if ((playlistSize + playlistPreview.songCount) > 5000 && playlistPreview.playlist.isYoutubePlaylist && isYouTubeSyncEnabled()){
-                                                                    Toaster.e( R.string.yt_playlist_limited )
+                                                                    Toaster.e( R.string.playlist_youtube_song_limit_message )
                                                                 } else if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                                     Database.asyncTransaction {
                                                                         val songs = filteredPageSongs
@@ -854,7 +854,7 @@ fun PlaylistSongList(
                                                     }
                                                 },
                                                 onLongClick = {
-                                                    Toaster.i( R.string.info_add_in_playlist )
+                                                    Toaster.i( R.string.playlist_action_add_hint )
                                                 }
                                     )
                                 },
@@ -890,7 +890,7 @@ fun PlaylistSongList(
                                                     }
                                                 },
                                                 onLongClick = {
-                                                    Toaster.i( R.string.add_to_favorites )
+                                                    Toaster.i( R.string.library_favorites_action_add )
                                                 }
                                     )
                                 },
@@ -901,7 +901,7 @@ fun PlaylistSongList(
 
                         } else {
                             BasicText(
-                                text = stringResource(R.string.info_wait_it_may_take_a_few_minutes),
+                                text = stringResource(R.string.playlist_operation_wait_message),
                                 style = typography().xxs.medium,
                                 maxLines = 1
                             )
@@ -942,7 +942,7 @@ fun PlaylistSongList(
                             UnifiedSearchBar(
                                 input = TextFieldValue(filter ?: ""),
                                 onInputChanged = { filter = it.text },
-                                placeholderRes = R.string.search,
+                                placeholderRes = R.string.search_title,
                                 baseSurface = colorPalette().background4,
                                 onClear = { filter = "" },
                                 onSearch = {
@@ -1029,7 +1029,7 @@ fun PlaylistSongList(
 
                                     DialogPresence(visible = showTranslateLanguageDialog) {
                                         ValueSelectorDialog(
-                                            title = stringResource(R.string.info_translation),
+                                            title = stringResource(R.string.common_translation_title),
                                             selectedValue = otherLanguageApp,
                                             onValueSelected = {
                                                 otherLanguageApp = it
@@ -1076,7 +1076,7 @@ fun PlaylistSongList(
                                         modifier = Modifier.align(Alignment.CenterHorizontally),
                                     ) {
                                         BasicText(
-                                            text = if (isDescriptionExpanded) stringResource(R.string.show_less) else stringResource(R.string.show_more),
+                                            text = if (isDescriptionExpanded) stringResource(R.string.common_action_show_less) else stringResource(R.string.common_action_show_more),
                                             style = typography().xs.semiBold.copy(colorPalette().text),
                                             modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally)
                                         )
@@ -1085,7 +1085,7 @@ fun PlaylistSongList(
 
                                 if (isDescriptionExpanded && attributionsIndex != -1) {
                                     BasicText(
-                                        text = stringResource(R.string.from_wikipedia_cca),
+                                        text = stringResource(R.string.metadata_wikipedia_attribution),
                                         style = typography().xxs
                                             .color(colorPalette().textDisabled)
                                             .align(TextAlign.Start),
@@ -1152,7 +1152,7 @@ fun PlaylistSongList(
                                                     )
                                                 }
                                 } else
-                                    Toaster.e( R.string.disliked_this_song )
+                                    Toaster.e( R.string.playlist_error_action_on_disliked_song )
                             }
                         )
                     }
@@ -1181,7 +1181,7 @@ fun PlaylistSongList(
                             Shuffler.play(it, mediaItems)
                         }
                     } else
-                        Toaster.e( R.string.disliked_this_collection )
+                        Toaster.e( R.string.playlist_error_action_on_all_disliked_songs )
                 }
             )
             }

@@ -176,7 +176,7 @@ fun GoToLink(
                         .fillMaxWidth()
                 ) {
                     HeaderWithIcon(
-                        title = stringResource(R.string.go_to_link),
+                        title = stringResource(R.string.search_youtube_action_open_url),
                         iconId = R.drawable.query_stats,
                         enabled = true,
                         showIcon = true,
@@ -229,14 +229,14 @@ fun GoToLink(
                 */
                 InputTextField(
                     onDismiss = { },
-                    title = stringResource(R.string.paste_or_type_a_valid_url),
+                    title = stringResource(R.string.search_youtube_url_input_hint),
                     value = textFieldValue.text,
                     placeholder = "https://........",
                     setValue = { textLink = it }
                 )
 
                 BasicText(
-                    text = stringResource(R.string.you_can_put_a_complete_link),
+                    text = stringResource(R.string.search_youtube_url_supported_types_description),
                     style = typography().s.semiBold,
                     modifier = Modifier
                         .padding(vertical = 8.dp, horizontal = 24.dp)

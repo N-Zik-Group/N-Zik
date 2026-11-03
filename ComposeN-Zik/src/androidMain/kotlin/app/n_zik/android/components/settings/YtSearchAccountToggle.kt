@@ -47,8 +47,8 @@ fun YtSearchAccountToggle(
 
     var useLoginForSearch by rememberPreference(useLoginForSearchKey, true)
 
-    val title = stringResource(R.string.use_account_for_searches)
-    val description = stringResource(R.string.use_account_for_searches_description)
+    val title = stringResource(R.string.settings_youtube_authenticated_search_label)
+    val description = stringResource(R.string.settings_youtube_authenticated_search_description)
     // Trim the query so a stray edge space cannot hide the row on a near-match.
     val query = searchQuery.trim()
     if (
@@ -60,7 +60,7 @@ fun YtSearchAccountToggle(
     OtherSwitchSettingEntry(
         modifier = Modifier.settingsSearchTarget("embedded.youtube.use_account_for_searches"),
         title = title,
-        text = if (!isLoggedIn) stringResource(R.string.youtube_connect_first) else description,
+        text = if (!isLoggedIn) stringResource(R.string.settings_youtube_connection_required_description) else description,
         isChecked = isLoggedIn && useLoginForSearch,
         enabled = isLoggedIn,
         onCheckedChange = {

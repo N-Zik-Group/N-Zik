@@ -303,7 +303,7 @@ fun InfoAlbumAndArtistEssential(
 
         DialogPresence(visible = showSelectDialog) {
             SelectorArtistsDialog(
-                title = stringResource(R.string.artists),
+                title = stringResource(R.string.library_artists_title),
                 onDismiss = { showSelectDialog = false },
                 values = artistIds,
                 onValueSelected = {
@@ -431,10 +431,10 @@ fun ControlsEssential(
         animationSpec = tween(durationMillis = 200), label = ""
     )
     val transportPlayShape = playerTransportPlayShape(playerPlayButtonType, rotationAngle)
-    val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = stringResource(R.string.txt_shouldbeplaying))
+    val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = stringResource(R.string.player_debug_should_be_playing))
     val playPauseRoundness by shouldBePlayingTransition.animateDp(
         transitionSpec = { tween(durationMillis = 100, easing = LinearEasing) },
-        label = stringResource(R.string.txt_playpauseroundness),
+        label = stringResource(R.string.player_debug_play_pause_roundness),
         targetValueByState = { if (it) 32.dp else 16.dp }
     )
 
@@ -568,7 +568,7 @@ fun ControlsEssential(
                     .fillMaxSize()
                     .rotate(rotationAngle)
                     ,
-                contentDescription = stringResource(R.string.cd_background_image),
+                contentDescription = stringResource(R.string.accessibility_background_image),
                 contentScale = ContentScale.Fit
             )
 

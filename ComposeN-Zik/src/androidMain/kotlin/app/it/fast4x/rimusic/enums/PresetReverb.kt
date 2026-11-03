@@ -5,13 +5,13 @@ import androidx.annotation.StringRes
 import app.n_zik.android.R
 
 enum class PresetsReverb(@StringRes val textRes: Int) {
-    NONE(R.string.reverb_none),
-    SMALLROOM(R.string.reverb_small_room),
-    MEDIUMROOM(R.string.reverb_medium_room),
-    LARGEROOM(R.string.reverb_large_room),
-    MEDIUMHALL(R.string.reverb_medium_hall),
-    LARGEHALL(R.string.reverb_large_hall),
-    PLATE(R.string.reverb_plate);
+    NONE(R.string.audio_reverb_none),
+    SMALLROOM(R.string.audio_reverb_small_room),
+    MEDIUMROOM(R.string.audio_reverb_medium_room),
+    LARGEROOM(R.string.audio_reverb_large_room),
+    MEDIUMHALL(R.string.audio_reverb_medium_hall),
+    LARGEHALL(R.string.audio_reverb_large_hall),
+    PLATE(R.string.audio_reverb_plate);
 
     val preset: Short
         get() = when (this) {

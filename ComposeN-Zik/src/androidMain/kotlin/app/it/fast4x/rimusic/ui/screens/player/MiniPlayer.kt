@@ -523,10 +523,10 @@ private fun MiniPlayerContent(
     }
     val backgroundProgress by rememberPreference(backgroundProgressKey, BackgroundProgress.MiniPlayer)
     val effectRotationEnabled by rememberPreference(effectRotationKey, false)
-    val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = stringResource(R.string.txt_shouldbeplaying))
+    val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = stringResource(R.string.player_debug_should_be_playing))
     val playPauseRoundness by shouldBePlayingTransition.animateDp(
         transitionSpec = { tween(durationMillis = 100, easing = LinearEasing) },
-        label = stringResource(R.string.txt_playpauseroundness),
+        label = stringResource(R.string.player_debug_play_pause_roundness),
         targetValueByState = { if (it) 24.dp else 12.dp }
     )
 
@@ -595,7 +595,7 @@ private fun MiniPlayerContent(
                     SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.primaryContainer
                     SwipeToDismissBoxValue.Settled -> Color.Transparent
                 },
-                label = stringResource(R.string.txt_background)
+                label = stringResource(R.string.common_debug_background)
             )
              */
 
@@ -800,7 +800,7 @@ private fun MiniPlayerContent(
                             },
                             backgroundColor = colorPalette().background2,
                             contentDescription = stringResource(
-                                if (shouldBePlaying) R.string.notification_pause else R.string.play,
+                                if (shouldBePlaying) R.string.player_notification_pause else R.string.player_action_play,
                             ),
                             settings = glass,
                         ) {
@@ -864,7 +864,7 @@ private fun MiniPlayerContent(
                                         }
                                     }
                                     else -> {
-                                        Toaster.w(R.string.available_on_android_10_or_higher)
+                                        Toaster.w(R.string.audio_output_android_10_required_message)
                                     }
                                 }
                             },
@@ -1255,7 +1255,7 @@ private fun MiniPlayerSlotButton(
                     if (!listenTogetherGuestLock) binder.service.nzikRadio.toggleDiscover()
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
-                onLongClick = { Toaster.i(R.string.discoverinfo) },
+                onLongClick = { Toaster.i(R.string.queue_discover_description) },
                 rotationAngle = rotationAngle,
                 alpha = (if (isDiscoverClickable) 1f else 0.4f) * guestLockAlpha
             )

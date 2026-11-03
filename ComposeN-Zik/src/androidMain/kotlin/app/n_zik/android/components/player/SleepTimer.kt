@@ -65,13 +65,13 @@ class SleepTimer private constructor(
     }
 
     override val iconId: Int = R.drawable.time
-    override val messageId: Int = R.string.info_sleep_timer_delayed_at_end_of_song
+    override val messageId: Int = R.string.player_sleep_timer_end_of_song_message
     override val menuIconTitle: String
         @Composable
-        get() = stringResource( R.string.sleep_timer )
+        get() = stringResource( R.string.player_sleep_timer_title )
     override val dialogTitle: String
         @Composable
-        get() = stringResource( R.string.set_sleep_timer )
+        get() = stringResource( R.string.player_sleep_timer_action_set )
 
     var seconds: Int by timeState
     override var isActive: Boolean by activeState
@@ -178,7 +178,7 @@ class SleepTimer private constructor(
             val arrowColor = colorPalette().text
             Icon(
                 painter = painterResource(R.drawable.chevron_up),
-                contentDescription = stringResource(R.string.cd_arrow_up),
+                contentDescription = stringResource(R.string.accessibility_arrow_up),
                 tint = arrowColor
             )
 
@@ -216,7 +216,7 @@ class SleepTimer private constructor(
 
             Icon(
                 painter = painterResource(R.drawable.chevron_down),
-                contentDescription = stringResource(R.string.cd_arrow_down),
+                contentDescription = stringResource(R.string.accessibility_arrow_down),
                 tint = arrowColor
             )
         }

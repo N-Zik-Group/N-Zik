@@ -69,7 +69,7 @@ internal fun PlayerCoverCrossfade(frame: PlayerCoverFrame<Painter>, modifier: Mo
     ) { visible ->
         Image(
             painter = visible.image,
-            contentDescription = stringResource(R.string.cd_blurred_background),
+            contentDescription = stringResource(R.string.accessibility_blurred_background),
             contentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxSize(),
         )

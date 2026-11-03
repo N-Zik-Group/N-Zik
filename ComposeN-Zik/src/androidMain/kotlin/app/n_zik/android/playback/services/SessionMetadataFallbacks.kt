@@ -9,7 +9,7 @@ package app.n_zik.android.playback.services
  * Why: tracks whose title or artist is missing (untagged local files, streams whose metadata
  * did not resolve) carried the raw empty string into the session metadata, so the Android
  * Auto surfaces and the media notification rendered a blank label while the phone lists
- * already show the localized placeholders (`R.string.unknown_title` / `R.string.unknown_artist`).
+ * already show the localized placeholders (`R.string.metadata_unknown_title` / `R.string.metadata_unknown_artist`).
  * The placeholder strings stay in the resource layer — this object only decides WHEN a field
  * counts as missing.
  */

@@ -63,7 +63,7 @@ fun FilterMenu(
     ListMenu.Menu(title = title) {
         onAll?.let {
             ListMenu.Entry(
-                text = stringResource(R.string.all),
+                text = stringResource(R.string.common_option_all),
                 icon = { SettingIcon(R.drawable.musical_notes) },
                 onClick = {
                     onDismiss()
@@ -73,7 +73,7 @@ fun FilterMenu(
         }
         onOnlineSongs?.let {
             ListMenu.Entry(
-                text = stringResource(R.string.online_songs),
+                text = stringResource(R.string.library_filter_online_songs_label),
                 icon = { SettingIcon(R.drawable.globe) },
                 onClick = {
                     onDismiss()
@@ -83,7 +83,7 @@ fun FilterMenu(
         }
         onYoutubeLibrary?.let {
             ListMenu.Entry(
-                text = stringResource(R.string.ytm_library),
+                text = stringResource(R.string.library_youtube_music_title),
                 icon = { SettingIcon(R.drawable.ytmusic) },
                 onClick = {
                     onDismiss()
@@ -93,7 +93,7 @@ fun FilterMenu(
         }
         onVideos?.let {
             ListMenu.Entry(
-                text = stringResource(R.string.videos),
+                text = stringResource(R.string.search_videos_title),
                 icon = { SettingIcon(R.drawable.video) },
                 onClick = {
                     onDismiss()
@@ -103,7 +103,7 @@ fun FilterMenu(
         }
         onUnmatched?.let {
             ListMenu.Entry(
-                text = stringResource(R.string.unmatched),
+                text = stringResource(R.string.library_filter_unmatched_songs_label),
                 icon = { SettingIcon(R.drawable.alert) },
                 onClick = {
                     onDismiss()
@@ -113,7 +113,7 @@ fun FilterMenu(
         }
         onFavorites?.let {
             ListMenu.Entry(
-                text = stringResource(R.string.favorites),
+                text = stringResource(R.string.library_favorites_title),
                 icon = { SettingIcon(R.drawable.heart) },
                 onClick = {
                     onDismiss()
@@ -123,7 +123,7 @@ fun FilterMenu(
         }
         onLocal?.let {
             ListMenu.Entry(
-                text = stringResource(R.string.on_device),
+                text = stringResource(R.string.library_on_device_title),
                 icon = { SettingIcon(R.drawable.devices) },
                 onClick = {
                     onDismiss()
@@ -133,7 +133,7 @@ fun FilterMenu(
         }
         onDownloaded?.let {
             ListMenu.Entry(
-                text = stringResource(R.string.downloaded),
+                text = stringResource(R.string.library_downloaded_title),
                 icon = { SettingIcon(R.drawable.downloaded) },
                 onClick = {
                     onDismiss()
@@ -143,7 +143,7 @@ fun FilterMenu(
         }
         onCached?.let {
             ListMenu.Entry(
-                text = stringResource(R.string.cached),
+                text = stringResource(R.string.library_cached_title),
                 icon = { SettingIcon(R.drawable.download) },
                 onClick = {
                     onDismiss()
@@ -153,7 +153,7 @@ fun FilterMenu(
         }
         onExplicit?.let {
             ListMenu.Entry(
-                text = stringResource(R.string.explicit),
+                text = stringResource(R.string.common_content_explicit_label),
                 icon = { SettingIcon(R.drawable.explicit) },
                 onClick = {
                     onDismiss()

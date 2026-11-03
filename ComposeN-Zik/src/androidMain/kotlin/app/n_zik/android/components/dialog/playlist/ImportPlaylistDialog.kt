@@ -39,17 +39,17 @@ class ImportPlaylistDialog private constructor(
     }
 
     override val submitText: String
-        @Composable get() = stringResource(R.string.import_button)
+        @Composable get() = stringResource(R.string.common_action_import)
 
     override val keyboardOption: KeyboardOptions = KeyboardOptions.Default
     override val iconId: Int = R.drawable.import_outline
-    override val messageId: Int = R.string.import_playlist
+    override val messageId: Int = R.string.playlist_action_import
     override val dialogTitle: String
         @Composable
-        get() = stringResource( R.string.enter_the_playlist_name)
+        get() = stringResource( R.string.playlist_name_input_hint)
     override val menuIconTitle: String
         @Composable
-        get() = stringResource( R.string.import_playlist )
+        get() = stringResource( R.string.playlist_action_import )
 
     override var value: TextFieldValue by valueState
     override var isActive: Boolean by activeState
@@ -60,7 +60,7 @@ class ImportPlaylistDialog private constructor(
     override fun LeadingIcon() = Icon(
         imageVector = Icons.Outlined.Edit,
         tint = colorPalette().accent,
-        contentDescription = stringResource(R.string.cd_import_playlist_name)
+        contentDescription = stringResource(R.string.accessibility_import_playlist_name)
     )
 
     override fun onSet( newValue: String ) {

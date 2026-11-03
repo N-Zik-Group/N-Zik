@@ -223,7 +223,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
             onComplete = { successCount, failCount ->
                 isExportingCache = false
                 if (successCount > 0) Toaster.done()
-                else Toaster.e(R.string.export_failed, "No songs exported")
+                else Toaster.e(R.string.export_cached_songs_failed, "No songs exported")
             }
         )
     }
@@ -236,7 +236,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                 coroutineScope.launch(NzikDispatchers.DATA) {
                     val browseId = if (urlPlaylistId.startsWith("VL")) urlPlaylistId else "VL$urlPlaylistId"
                     Innertube.playlistPage(browseId = browseId)?.getOrNull()?.let { playlistPage ->
-                        val playlistName = playlistPage.title ?: appContext().getString(R.string.youtube_playlist)
+                        val playlistName = playlistPage.title ?: appContext().getString(R.string.playlist_youtube_title)
                         val playlist = Playlist(name = playlistName, browseId = browseId)
                         val playlistRowId = Database.playlistTable.insert(playlist)
                         val isFavoriteTab = builtInPlaylist == BuiltInPlaylist.Favorites
@@ -268,9 +268,9 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
 
     DialogPresence(visible = showConfirmMatchAllDialog) {
         ConfirmationDialog(
-            title = stringResource(R.string.dialog_match_songs),
-            confirmText = stringResource(R.string.dialog_match_songs),
-            text = stringResource(R.string.match_all_confirmation, getSongs().count { it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L) }),
+            title = stringResource(R.string.song_matching_dialog_title),
+            confirmText = stringResource(R.string.song_matching_dialog_title),
+            text = stringResource(R.string.song_matching_all_confirmation, getSongs().count { it.id.length != 11 || (it.durationText == "00:00" && it.totalPlayTimeMs == 1L) }),
             onDismiss = { showConfirmMatchAllDialog = false },
             onConfirm = {
                 showConfirmMatchAllDialog = false
@@ -285,8 +285,8 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
 
     DialogPresence(visible = showDeleteConfirmDialog) {
         ConfirmationDialog(
-            title = stringResource(R.string.dialog_delete_songs),
-            confirmText = stringResource(R.string.delete),
+            title = stringResource(R.string.song_delete_dialog_title),
+            confirmText = stringResource(R.string.common_action_delete),
             text = deleteDialogTitle,
             onDismiss = { showDeleteConfirmDialog = false },
             onConfirm = {
@@ -300,8 +300,8 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         InProgressDialog(
             total = totalSongsToMatch,
             done = songsMatched,
-            text = stringResource(R.string.dialog_matching_songs),
-            message = stringResource(R.string.matching_songs),
+            text = stringResource(R.string.song_matching_progress_title),
+            message = stringResource(R.string.song_matching_running_message),
             onDismiss = {
                 cancelMatch = true
                 showMatchingProgressDialog = false
@@ -483,7 +483,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
 
     val sync = object : MenuIcon, Descriptive {
         override val iconId: Int = R.drawable.sync
-        override val messageId: Int = R.string.autosync_likes
+        override val messageId: Int = R.string.sync_likes
         @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
         override fun onShortClick() {
             coroutineScope.launch(NzikDispatchers.DATA) { importYTMLikedSongs(force = true) }
@@ -496,7 +496,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     val localMatchButton = remember {
         object : MenuIcon, Descriptive {
             override val iconId: Int = R.drawable.alert
-            override val messageId: Int = R.string.match_album_audio_version
+            override val messageId: Int = R.string.song_matching_action_open
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() { showConfirmMatchAllDialog = true }
             override fun onLongClick() {}
@@ -572,7 +572,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                 "export_cache" -> if (builtInPlaylist == BuiltInPlaylist.Offline || builtInPlaylist == BuiltInPlaylist.Downloaded) add(
                     object : MenuIcon, Descriptive {
                         override val iconId: Int = R.drawable.export_outline
-                        override val messageId: Int = R.string.export_cached
+                        override val messageId: Int = R.string.export_cached_songs_action
                         @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
                         override fun onShortClick() {
                             val count = getSongs().size
@@ -590,7 +590,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     val header: @Composable (MutableFloatState, MutableIntState) -> Unit = { titleOffsetState, titleHeightState ->
         Column {
             CollapsibleTitleRow( titleOffsetState, titleHeightState ) {
-                TabHeader( R.string.songs ) {
+                TabHeader( R.string.library_songs_title ) {
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 HeaderInfo( itemsOnDisplayState.size.toString(), R.drawable.musical_notes )
@@ -637,9 +637,9 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                     DialogPresence(visible = showExportCacheConfirmDialog) {
                         val count = getSongs().size
                         ConfirmationDialog(
-                            title = stringResource(R.string.export_cached),
-                            confirmText = stringResource(R.string.export_cached),
-                            text = stringResource(R.string.do_you_really_want_to_export_cached_count, count),
+                            title = stringResource(R.string.export_cached_songs_action),
+                            confirmText = stringResource(R.string.export_cached_songs_action),
+                            text = stringResource(R.string.library_export_cached_songs_confirmation_format, count),
                             onDismiss = { showExportCacheConfirmDialog = false },
                             onConfirm = {
                                 showExportCacheConfirmDialog = false
@@ -649,7 +649,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                     }
                     DialogPresence(visible = showExportCacheLyricsDialog) {
                         val lyricsOptions = listOf(
-                            null to stringResource(R.string.no_lyrics),
+                            null to stringResource(R.string.lyrics_empty),
                             LyricsType.Synced.name to stringResource(R.string.lyrics_synced),
                             LyricsType.Unsynced.name to stringResource(R.string.lyrics_unsynced),
                             LyricsType.Karaoke.name to stringResource(R.string.lyrics_karaoke)
@@ -657,7 +657,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                         var selectedLyricsType by remember { mutableStateOf(exportCacheLyricsType) }
                         ValueSelectorDialog(
                             onDismiss = { showExportCacheLyricsDialog = false },
-                            title = stringResource(R.string.export_lyrics_choice),
+                            title = stringResource(R.string.export_cached_songs_lyrics_confirmation),
                             selectedValue = selectedLyricsType,
                             values = lyricsOptions.map { it.first },
                             onValueSelected = { type ->
@@ -671,7 +671,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                         InProgressDialog(
                             total = exportCacheTotal,
                             done = exportCacheProgress,
-                            text = stringResource(R.string.exporting),
+                            text = stringResource(R.string.export_running_status),
                             onDismiss = null
                         )
                     }
@@ -753,9 +753,9 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                                     label = {
                                         Text(
                                             text = when (filterBy) {
-                                                FilterBy.All -> stringResource(R.string.all)
-                                                FilterBy.Local -> stringResource(R.string.on_device)
-                                                FilterBy.YoutubeLibrary -> stringResource(R.string.ytm_library)
+                                                FilterBy.All -> stringResource(R.string.common_option_all)
+                                                FilterBy.Local -> stringResource(R.string.library_on_device_title)
+                                                FilterBy.YoutubeLibrary -> stringResource(R.string.library_youtube_music_title)
                                             }
                                         )
                                     },
@@ -770,7 +770,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                                     onClick = {
                                         menuState.display {
                                             FilterMenu(
-                                                title = stringResource(R.string.filter_by),
+                                                title = stringResource(R.string.library_filter_by_title),
                                                 onDismiss = menuState::hide,
                                                 onAll = { filterBy = FilterBy.All },
                                                 onYoutubeLibrary = { filterBy = FilterBy.YoutubeLibrary },

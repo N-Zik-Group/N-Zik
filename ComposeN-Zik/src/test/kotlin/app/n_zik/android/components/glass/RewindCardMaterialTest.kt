@@ -180,7 +180,7 @@ class RewindCardMaterialTest {
             }
         }
         compose.mainClock.advanceTimeBy(600)
-        val label = ApplicationProvider.getApplicationContext<Application>().getString(R.string.rw_share_slide)
+        val label = ApplicationProvider.getApplicationContext<Application>().getString(R.string.rewind_share_slide)
         fun assertShare(expected: Color) {
             val icon = compose.onNodeWithContentDescription(label, useUnmergedTree = true)
                 .fetchSemanticsNode().boundsInRoot

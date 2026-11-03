@@ -21,7 +21,7 @@ object RestartAppDialog: ConfirmDialog {
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource( R.string.title_restart_required )
+        get() = stringResource( R.string.common_restart_required_title )
 
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -42,7 +42,7 @@ object RestartAppDialog: ConfirmDialog {
     override fun Buttons() = ButtonRow(
         buttons = listOf(
             DialogButton(
-                text = stringResource(R.string.dialog_close_app),
+                text = stringResource(R.string.common_action_close_app),
                 onClick = ::onConfirm,
                 primary = true
             )
@@ -52,7 +52,7 @@ object RestartAppDialog: ConfirmDialog {
     @Composable
     override fun DialogBody() {
         BasicText(
-            text = stringResource( R.string.restart_dialog_body, BuildConfig.APP_NAME ),
+            text = stringResource( R.string.common_restart_required_message, BuildConfig.APP_NAME ),
             style = typography().xs.copy( color = colorPalette().text )
         )
     }

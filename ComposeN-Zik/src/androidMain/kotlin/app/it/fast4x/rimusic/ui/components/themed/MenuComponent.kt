@@ -19,7 +19,7 @@ fun PlayNext(
 
     val menuState: MenuState = LocalMenuState.current
     override val iconId: Int = R.drawable.play_skip_forward
-    override val messageId: Int = R.string.play_next
+    override val messageId: Int = R.string.player_action_play_next
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -38,7 +38,7 @@ fun Enqueue(
 
     val menuState: MenuState = LocalMenuState.current
     override val iconId: Int = R.drawable.enqueue
-    override val messageId: Int = R.string.enqueue
+    override val messageId: Int = R.string.player_action_enqueue
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -57,7 +57,7 @@ fun Synchronize(
 
     val menuState: MenuState = LocalMenuState.current
     override val iconId: Int = R.drawable.sync
-    override val messageId: Int = R.string.sync
+    override val messageId: Int = R.string.sync_action_sync
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -77,7 +77,7 @@ fun ListenOnYouTube(
 
     val menuState: MenuState = LocalMenuState.current
     override val iconId: Int = R.drawable.play
-    override val messageId: Int = R.string.listen_on_youtube
+    override val messageId: Int = R.string.player_action_listen_on_youtube
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -96,7 +96,7 @@ fun ThumbnailPicker(
 
     val menuState: MenuState = LocalMenuState.current
     override val iconId: Int = R.drawable.image
-    override val messageId: Int = R.string.edit_thumbnail
+    override val messageId: Int = R.string.thumbnail_action_edit
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -116,7 +116,7 @@ fun Bookmark(
 
     val menuState: MenuState = LocalMenuState.current
     override val iconId: Int = if (isBookmarked) R.drawable.bookmark else R.drawable.bookmark_outline
-    override val messageId: Int = R.string.bookmark
+    override val messageId: Int = R.string.library_action_bookmark
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -136,7 +136,7 @@ fun ResetThumbnail(
 
     val menuState: MenuState = LocalMenuState.current
     override val iconId: Int = R.drawable.image
-    override val messageId: Int = R.string.reset_thumbnail
+    override val messageId: Int = R.string.thumbnail_action_reset
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )

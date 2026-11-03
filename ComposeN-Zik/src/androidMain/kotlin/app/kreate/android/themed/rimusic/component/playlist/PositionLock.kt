@@ -24,7 +24,7 @@ class PositionLock(
 
     override val secondIconId: Int = R.drawable.unlocked
     override val iconId: Int = R.drawable.locked
-    override val messageId: Int = R.string.info_lock_unlock_reorder_songs
+    override val messageId: Int = R.string.playlist_reorder_lock_toggle_label
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -47,7 +47,7 @@ class PositionLock(
         // toolbar button is already disabled via [isEnabled]).
         if( listenTogetherGuestLock.value ) return
         if( !isFirstColor )
-            Toaster.e( R.string.info_reorder_is_possible_only_in_ascending_sort )
+            Toaster.e( R.string.playlist_reorder_ascending_sort_required_message )
         else
             isFirstIcon = !isFirstIcon
     }

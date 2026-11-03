@@ -41,15 +41,15 @@ fun RewindListenerBadgeCard(
     val textScale = LocalRewindTextScale.current
     val badge = calculateListenerBadge(data)
     val tierNames = listOf(
-        R.string.rw_badge_tier_0_name,
-        R.string.rw_badge_tier_1_name,
-        R.string.rw_badge_tier_2_name,
-        R.string.rw_badge_tier_3_name,
-        R.string.rw_badge_tier_4_name,
-        R.string.rw_badge_tier_5_name,
-        R.string.rw_badge_tier_6_name,
-        R.string.rw_badge_tier_7_name,
-        R.string.rw_badge_tier_8_name
+        R.string.rewind_badge_tier_0_name,
+        R.string.rewind_badge_tier_1_name,
+        R.string.rewind_badge_tier_2_name,
+        R.string.rewind_badge_tier_3_name,
+        R.string.rewind_badge_tier_4_name,
+        R.string.rewind_badge_tier_5_name,
+        R.string.rewind_badge_tier_6_name,
+        R.string.rewind_badge_tier_7_name,
+        R.string.rewind_badge_tier_8_name
     )
     RewindStoryShell(
         page = page,
@@ -78,12 +78,12 @@ fun RewindListenerBadgeCard(
             val badgeSize = if (compact) 178.dp else 215.dp
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_badge_kicker, data.periodLabel), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rewind_badge_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(12.dp))
                 RewindReveal(active, 120, direction = RewindRevealDirection.Left) {
                     RewindAdaptiveTitle(
-                        text = stringResource(R.string.rw_badge_heading),
+                        text = stringResource(R.string.rewind_badge_heading),
                         color = rewindColors.value.cream,
                         fontSize = textScale.size(if (compact) 31.sp else 37.sp),
                         lineHeight = textScale.size(if (compact) 29.sp else 34.sp),
@@ -108,7 +108,7 @@ fun RewindListenerBadgeCard(
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
-                                    text = stringResource(R.string.rw_badge_index_label),
+                                    text = stringResource(R.string.rewind_badge_index_label),
                                     color = rewindColors.value.cream.copy(alpha = 0.55f),
                                     fontSize = textScale.size(11.sp),
                                     fontWeight = FontWeight.Black,
@@ -126,7 +126,7 @@ fun RewindListenerBadgeCard(
                                     durationMillis = 900
                                 )
                                 Text(
-                                    text = stringResource(R.string.rw_badge_index_sublabel),
+                                    text = stringResource(R.string.rewind_badge_index_sublabel),
                                     color = rewindColors.value.cream,
                                     fontSize = textScale.size(11.sp),
                                     fontWeight = FontWeight.Black,

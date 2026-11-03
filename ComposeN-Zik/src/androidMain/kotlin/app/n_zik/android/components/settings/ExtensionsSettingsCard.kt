@@ -30,8 +30,8 @@ fun ExtensionsSettingsCard(modifier: Modifier = Modifier) {
         content = {
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.extensions.module_open"),
-                title = stringResource(R.string.module_open),
-                text = stringResource(R.string.module_open_desc),
+                title = stringResource(R.string.modules_open),
+                text = stringResource(R.string.modules_open_desc),
                 icon = R.drawable.chevron_forward,
                 onClick = { showSheet = true },
             )

@@ -54,7 +54,7 @@ object PlaylistWidgetManager {
         val now = System.currentTimeMillis()
         if (cachedQuickPicks != null && now - lastQuickPicksUpdateTime < 60_000) {
             val picks = cachedQuickPicks?.toMutableList() ?: return emptyList()
-            if (picks.isNotEmpty() && picks[0].title == context.getString(R.string.favorites)) {
+            if (picks.isNotEmpty() && picks[0].title == context.getString(R.string.library_favorites_title)) {
                 picks[0] = picks[0].copy(artworkBitmap = getLikedBitmap(context, accentArgb))
             }
             return picks
@@ -108,7 +108,7 @@ object PlaylistWidgetManager {
             data = Uri.parse("nzik://app/playFavorites")
         }
         val likedPendingIntent = PendingIntent.getActivity(context, "Favorites".hashCode(), likedIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        items.add(QuickPick(context.getString(R.string.favorites), getLikedBitmap(context, accentArgb), likedPendingIntent))
+        items.add(QuickPick(context.getString(R.string.library_favorites_title), getLikedBitmap(context, accentArgb), likedPendingIntent))
 
         val playlists = Database.playlistTable.sortPreviewsByPlayCount(8).firstOrNull() ?: emptyList()
         playlists.forEach { p ->
@@ -176,8 +176,8 @@ object PlaylistWidgetManager {
     suspend fun updateIdleWidgets(context: Context) {
         updateWidgets(
             context = context,
-            title = context.getString(R.string.not_playing),
-            artist = context.getString(R.string.choose_something_below),
+            title = context.getString(R.string.widget_not_playing_status),
+            artist = context.getString(R.string.widget_configuration_choose_item_hint),
             artworkBitmap = null,
             isPlaying = false,
             isLiked = false,

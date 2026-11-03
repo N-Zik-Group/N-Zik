@@ -47,10 +47,10 @@ fun DebugLogsMenuItem(
     // width-cap pattern as the header badges' "DEBUG" cap).
     val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
     val labelStyle = MaterialTheme.typography.labelLarge
-    val labelMaxWidth = clampedLabelMaxWidth(stringResource(R.string.rescue_center), labelStyle)
+    val labelMaxWidth = clampedLabelMaxWidth(stringResource(R.string.recovery_center), labelStyle)
     // The label follows the live state so the item reads as reactive: "Enable" while
     // off, "Disable" while on (flips without a restart, like the header badge).
-    val labelRes = if (logDebugEnabled) R.string.disable_log_debug else R.string.enable_log_debug
+    val labelRes = if (logDebugEnabled) R.string.settings_logging_disabled_label else R.string.maintenance_debug_logging_title
 
     Row(
         modifier = modifier
@@ -59,7 +59,7 @@ fun DebugLogsMenuItem(
                 onClick = {
                     logDebugEnabled = !logDebugEnabled
                     if (logDebugEnabled) {
-                        Toaster.i(R.string.restarting_rimusic_is_required)
+                        Toaster.i(R.string.settings_restart_required_message)
                     } else {
                         purgeDebugLogs(File(context.filesDir, "logs"))
                     }

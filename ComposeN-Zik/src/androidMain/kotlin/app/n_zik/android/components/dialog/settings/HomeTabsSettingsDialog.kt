@@ -38,11 +38,11 @@ data class HomeTabDef(
 )
 
 fun buildHomeTabDefs(): Map<String, HomeTabDef> = mapOf(
-    "quickpicks" to HomeTabDef("quickpicks", enableQuickPicksPageKey, R.drawable.sparkles, R.string.quick_picks, true),
-    "songs" to HomeTabDef("songs", null, R.drawable.musical_notes, R.string.songs, true),
-    "artists" to HomeTabDef("artists", null, R.drawable.people, R.string.artists, true),
-    "albums" to HomeTabDef("albums", null, R.drawable.album, R.string.albums, true),
-    "playlists" to HomeTabDef("playlists", null, R.drawable.library, R.string.playlists, true)
+    "quickpicks" to HomeTabDef("quickpicks", enableQuickPicksPageKey, R.drawable.sparkles, R.string.recommendations_title, true),
+    "songs" to HomeTabDef("songs", null, R.drawable.musical_notes, R.string.library_songs_title, true),
+    "artists" to HomeTabDef("artists", null, R.drawable.people, R.string.library_artists_title, true),
+    "albums" to HomeTabDef("albums", null, R.drawable.album, R.string.library_albums_title, true),
+    "playlists" to HomeTabDef("playlists", null, R.drawable.library, R.string.library_playlists_title, true)
 )
 
 object HomeTabsSettingsDialog : ContentFramedDialog {
@@ -179,7 +179,7 @@ object HomeTabsSettingsDialog : ContentFramedDialog {
                     toggleMap[id] = workingToggles[index]
                 }
                 savePrefs(prefs, workingOrder, toggleMap)
-                Toaster.s(R.string.toast_preference_saved)
+                Toaster.s(R.string.settings_preference_saved_message)
                 hideDialog()
             }
         )

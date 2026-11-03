@@ -53,8 +53,8 @@ fun RewindDeepCutsCard(
                 verticalArrangement = Arrangement.Center
             ) {
                 RewindEmptyState(
-                    title = stringResource(R.string.rw_deep_cuts_empty_title),
-                    body = stringResource(R.string.rw_deep_cuts_empty_body),
+                    title = stringResource(R.string.rewind_deep_cuts_empty_title),
+                    body = stringResource(R.string.rewind_deep_cuts_empty_body),
                     foreground = onSlide,
                     accent = rewindColors.value.purple
                 )
@@ -63,12 +63,12 @@ fun RewindDeepCutsCard(
         }
         Column(modifier = Modifier.fillMaxSize()) {
             RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                RewindKicker(stringResource(R.string.rw_deep_cuts_kicker, periodLabel), rewindColors.value.lime)
+                RewindKicker(stringResource(R.string.rewind_deep_cuts_kicker, periodLabel), rewindColors.value.lime)
             }
             Spacer(Modifier.height(11.dp))
             RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
                 Text(
-                    text = stringResource(R.string.rw_deep_cuts_heading, 5 + deepCuts.size),
+                    text = stringResource(R.string.rewind_deep_cuts_heading, 5 + deepCuts.size),
                     color = onSlide,
                     fontSize = textScale.size(34.sp),
                     lineHeight = textScale.size(32.sp),
@@ -131,7 +131,7 @@ fun RewindDeepCutsCard(
                                     modifier = Modifier.rewindMarqueeOnly()
                                 )
                                 Text(
-                                    text = firstNonBlank(song.song.cleanArtistsText(), stringResource(R.string.rw_unknown_artist)),
+                                    text = firstNonBlank(song.song.cleanArtistsText(), stringResource(R.string.rewind_unknown_artist)),
                                     color = rowOn.copy(alpha = 0.58f),
                                     fontSize = textScale.size(9.sp),
                                     maxLines = 1,
@@ -155,7 +155,7 @@ fun RewindDeepCutsCard(
             Spacer(Modifier.weight(1f))
             RewindReveal(active, 900) {
                 Text(
-                    text = stringResource(R.string.rw_deep_cuts_sub),
+                    text = stringResource(R.string.rewind_deep_cuts_sub),
                     color = onSlide.copy(alpha = 0.60f),
                     fontSize = textScale.size(11.sp),
                     lineHeight = textScale.size(15.sp),

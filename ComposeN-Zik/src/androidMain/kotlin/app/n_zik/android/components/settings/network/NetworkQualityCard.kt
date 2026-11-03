@@ -38,7 +38,7 @@ internal fun NetworkQualityCard(
     var showImageQualityDialog by imageDialog
 
     SettingsSectionCard(
-        title = stringResource(R.string.quality),
+        title = stringResource(R.string.settings_network_quality_title),
         icon = R.drawable.network,
         content = {
 
@@ -46,7 +46,7 @@ internal fun NetworkQualityCard(
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("network.quality.audio_quality_format"),
                     title = stringResource(R.string.audio_quality_format),
-                    text = stringResource(R.string.settings_desc_network_quality_audio_quality_format),
+                    text = stringResource(R.string.network_stream_audio_quality_description),
                     selectedValueText = when (audioQualityFormat) {
                         AudioQualityFormat.Auto -> automaticQualityStatusText(networkQuality)
                         AudioQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
@@ -57,11 +57,11 @@ internal fun NetworkQualityCard(
                 )
             }
 
-            if (query.isBlank() || stringResource(R.string.image_quality_format).contains(query, true)) {
+            if (query.isBlank() || stringResource(R.string.settings_network_image_quality_label).contains(query, true)) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("network.quality.image_quality_format"),
-                    title = stringResource(R.string.image_quality_format),
-                    text = stringResource(R.string.settings_desc_network_quality_image_quality_format),
+                    title = stringResource(R.string.settings_network_image_quality_label),
+                    text = stringResource(R.string.network_artwork_quality_description),
                     selectedValueText = when (imageQualityFormat) {
                         ImageQualityFormat.Auto -> automaticQualityStatusText(networkQuality)
                         ImageQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
@@ -73,7 +73,7 @@ internal fun NetworkQualityCard(
                 )
             }
 
-            if (includeDownloadQuality && (query.isBlank() || stringResource(R.string.download_quality_format).contains(query, true) || stringResource(R.string.update_downloads).contains(query, true))) {
+            if (includeDownloadQuality && (query.isBlank() || stringResource(R.string.downloads_quality_format).contains(query, true) || stringResource(R.string.downloads_action_refresh_quality).contains(query, true))) {
                 DownloadQualityEntry(automaticQualityText = automaticQualityStatusText(networkQuality), onQualityChanged = { onRestartRequired(true) })
                 UpdateDownloadsButton()
             }
@@ -104,7 +104,7 @@ internal fun NetworkQualityCard(
 
     DialogPresence(visible = showImageQualityDialog) {
         ValueSelectorDialog(
-            title = stringResource(R.string.image_quality_format),
+            title = stringResource(R.string.settings_network_image_quality_label),
             values = ImageQualityFormat.values().toList(),
             selectedValue = imageQualityFormat,
             onValueSelected = {

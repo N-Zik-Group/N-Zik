@@ -222,7 +222,7 @@ fun OnlineSearch(
                     UnifiedSearchBar(
                         input = textFieldValue,
                         onInputChanged = onTextFieldValueChanged,
-                        placeholderRes = R.string.search,
+                        placeholderRes = R.string.search_title,
                         actionBubbles = actionBubbles,
                         onClear = { onTextFieldValueChanged(TextFieldValue("")) },
                         onSearch = {
@@ -260,7 +260,7 @@ fun OnlineSearch(
                         // Afficher d'abord les suggestions
                         suggestionsResult?.getOrNull()?.takeIf { it.hasContent() }?.let { suggestions ->
                             item {
-                                TitleMiniSection(title = stringResource(R.string.searches_suggestions),
+                                TitleMiniSection(title = stringResource(R.string.search_suggestions_title),
                                     modifier = Modifier.padding(start = 24.dp)
                                 )
                             }
@@ -450,12 +450,12 @@ fun OnlineSearch(
                                     modifier = Modifier
                                         .fillMaxSize()
                                 ) {
-                                    TitleMiniSection(title = stringResource(R.string.searches_no_suggestions),
+                                    TitleMiniSection(title = stringResource(R.string.search_suggestions_empty_message),
                                         modifier = Modifier.padding(start = 24.dp)
                                     )
                                     /*
                                     BasicText(
-                                        text = stringResource(R.string.error),
+                                        text = stringResource(R.string.common_error_title),
                                         style = typography().s.secondary.center,
                                         modifier = Modifier
                                             .align(Alignment.Center)
@@ -516,7 +516,7 @@ fun OnlineSearch(
                         // Puis afficher les suggestions
                         suggestionsResult?.getOrNull()?.takeIf { it.hasContent() }?.let { suggestions ->
                             item {
-                                TitleMiniSection(title = stringResource(R.string.searches_suggestions),
+                                TitleMiniSection(title = stringResource(R.string.search_suggestions_title),
                                     modifier = Modifier.padding(start = 24.dp)
                                 )
                             }
@@ -706,12 +706,12 @@ fun OnlineSearch(
                                     modifier = Modifier
                                         .fillMaxSize()
                                 ) {
-                                    TitleMiniSection(title = stringResource(R.string.searches_no_suggestions),
+                                    TitleMiniSection(title = stringResource(R.string.search_suggestions_empty_message),
                                         modifier = Modifier.padding(start = 24.dp)
                                     )
                                     /*
                                     BasicText(
-                                        text = stringResource(R.string.error),
+                                        text = stringResource(R.string.common_error_title),
                                         style = typography().s.secondary.center,
                                         modifier = Modifier
                                             .align(Alignment.Center)

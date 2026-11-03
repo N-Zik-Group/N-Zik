@@ -66,7 +66,7 @@ object UpdateDownloadManager {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 UPDATE_CHANNEL_ID,
-                context.getString(R.string.update_channel_name),
+                context.getString(R.string.updates_channel_name),
                 NotificationManager.IMPORTANCE_DEFAULT
             )
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -89,7 +89,7 @@ object UpdateDownloadManager {
         val notificationManager = NotificationManagerCompat.from(context)
         val notificationBuilder = NotificationCompat.Builder(context, UPDATE_CHANNEL_ID)
             .setSmallIcon(R.drawable.update)
-            .setContentTitle(context.getString(R.string.downloading_update))
+            .setContentTitle(context.getString(R.string.updates_downloading_status))
             .setContentText(version)
             .setOngoing(true)
             .setProgress(100, 0, false)
@@ -117,14 +117,14 @@ object UpdateDownloadManager {
                 if (!response.isSuccessful) {
                     try { notificationManager.cancel(UPDATE_NOTIFICATION_ID) } catch (e: Exception) { Timber.tag("UpdateDownloadManager").w(e, "Failed to cancel notification") }
                     _downloadState.value = DownloadState.Failed(
-                        context.getString(R.string.server_error, response.code.toString(), response.message)
+                        context.getString(R.string.updates_download_server_error, response.code.toString(), response.message)
                     )
                     return@launch
                 }
 
                 val body = response.body ?: run {
                     try { notificationManager.cancel(UPDATE_NOTIFICATION_ID) } catch (e: Exception) { Timber.tag("UpdateDownloadManager").w(e, "Failed to cancel notification") }
-                    _downloadState.value = DownloadState.Failed(context.getString(R.string.empty_response_body))
+                    _downloadState.value = DownloadState.Failed(context.getString(R.string.updates_download_empty_response))
                     return@launch
                 }
 
@@ -183,8 +183,8 @@ object UpdateDownloadManager {
 
                 val completedNotification = NotificationCompat.Builder(context, UPDATE_CHANNEL_ID)
                     .setSmallIcon(R.drawable.update)
-                    .setContentTitle(context.getString(R.string.update_download_completed))
-                    .setContentText(context.getString(R.string.tap_to_install_update))
+                    .setContentTitle(context.getString(R.string.updates_download_completed))
+                    .setContentText(context.getString(R.string.updates_notification_install_action))
                     .setOngoing(false)
                     .setAutoCancel(true)
                     .setContentIntent(pendingIntent)
@@ -218,15 +218,15 @@ object UpdateDownloadManager {
                     Timber.tag("UpdateDownloadManager").e(e, "Update download failed")
                     val failedNotification = NotificationCompat.Builder(context, UPDATE_CHANNEL_ID)
                         .setSmallIcon(R.drawable.update)
-                        .setContentTitle(context.getString(R.string.update_download_failed))
-                        .setContentText(e.message ?: context.getString(R.string.download_failed))
+                        .setContentTitle(context.getString(R.string.updates_download_failed))
+                        .setContentText(e.message ?: context.getString(R.string.downloads_failed))
                         .setOngoing(false)
                         .setAutoCancel(true)
                         .build()
                     try { notificationManager.notify(UPDATE_NOTIFICATION_ID, failedNotification) } catch (ex: Exception) { Timber.tag("UpdateDownloadManager").e(ex, "Failed to show failed notification") }
                     
                     _downloadState.value = DownloadState.Failed(
-                        e.message ?: context.getString(R.string.download_failed)
+                        e.message ?: context.getString(R.string.downloads_failed)
                     )
                 }
             } catch (e: Exception) {
@@ -236,15 +236,15 @@ object UpdateDownloadManager {
                 Timber.tag("UpdateDownloadManager").e(e, "Update download failed")
                 val failedNotification = NotificationCompat.Builder(context, UPDATE_CHANNEL_ID)
                     .setSmallIcon(R.drawable.update)
-                    .setContentTitle(context.getString(R.string.update_download_failed))
-                    .setContentText(e.message ?: context.getString(R.string.download_failed))
+                    .setContentTitle(context.getString(R.string.updates_download_failed))
+                    .setContentText(e.message ?: context.getString(R.string.downloads_failed))
                     .setOngoing(false)
                     .setAutoCancel(true)
                     .build()
                 try { notificationManager.notify(UPDATE_NOTIFICATION_ID, failedNotification) } catch (ex: Exception) { Timber.tag("UpdateDownloadManager").e(ex, "Failed to show failed notification") }
                 
                 _downloadState.value = DownloadState.Failed(
-                    e.message ?: context.getString(R.string.download_failed)
+                    e.message ?: context.getString(R.string.downloads_failed)
                 )
             }
         }
@@ -302,7 +302,7 @@ object UpdateDownloadManager {
         } catch (e: Exception) {
             Timber.tag("UpdateDownloadManager").e(e, "Failed to launch APK installer")
             _downloadState.value = DownloadState.Failed(
-                context.getString(R.string.failed_to_install, e.message ?: "")
+                context.getString(R.string.updates_install_failed, e.message ?: "")
             )
         }
     }

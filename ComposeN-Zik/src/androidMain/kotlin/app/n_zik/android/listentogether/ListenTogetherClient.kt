@@ -849,7 +849,7 @@ class ListenTogetherClient(
                             context.getString(R.string.listen_together_notification_channel_name),
                             NotificationManager.IMPORTANCE_HIGH,
                         )
-                    channel.description = context.getString(R.string.listen_together_notification_channel_desc)
+                    channel.description = context.getString(R.string.listen_together_notification_channel_description)
                     nm?.createNotificationChannel(channel)
                 }
             } catch (e: Exception) {
@@ -898,12 +898,12 @@ class ListenTogetherClient(
                 NotificationCompat
                     .Builder(context, channelId(NOTIFICATION_CHANNEL_ID, getActiveProfile(context)))
                     .setSmallIcon(R.drawable.people)
-                    .setContentTitle(context.getString(R.string.listen_together))
+                    .setContentTitle(context.getString(R.string.listen_together_title))
                     .setContentText(content)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setAutoCancel(true)
-                    .addAction(0, context.getString(R.string.approve), approvePI)
-                    .addAction(0, context.getString(R.string.reject), rejectPI)
+                    .addAction(0, context.getString(R.string.listen_together_action_approve), approvePI)
+                    .addAction(0, context.getString(R.string.listen_together_action_reject), rejectPI)
 
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
                 NotificationManagerCompat.from(context).notify(notifId, builder.build())
@@ -952,12 +952,12 @@ class ListenTogetherClient(
                 NotificationCompat
                     .Builder(context, channelId(NOTIFICATION_CHANNEL_ID, getActiveProfile(context)))
                     .setSmallIcon(R.drawable.people)
-                    .setContentTitle(context.getString(R.string.listen_together))
+                    .setContentTitle(context.getString(R.string.listen_together_title))
                     .setContentText(content)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setAutoCancel(true)
-                    .addAction(0, context.getString(R.string.approve), approvePI)
-                    .addAction(0, context.getString(R.string.reject), rejectPI)
+                    .addAction(0, context.getString(R.string.listen_together_action_approve), approvePI)
+                    .addAction(0, context.getString(R.string.listen_together_action_reject), rejectPI)
 
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
                 NotificationManagerCompat.from(context).notify(notifId, builder.build())

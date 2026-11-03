@@ -215,15 +215,15 @@ object Updater {
         val suffix = extractVersionSuffix(versionName)
         if (suffix.isEmpty()) return null
         return when (suffix) {
-            UpdaterConstants.SUFFIX_CHAR_RELEASE64 -> FlavorLabel(R.string.release_title)
-            UpdaterConstants.SUFFIX_CHAR_MINIFIED64 -> FlavorLabel(R.string.minified_title)
-            UpdaterConstants.SUFFIX_CHAR_DEV64 -> FlavorLabel(R.string.dev_title)
-            UpdaterConstants.SUFFIX_CHAR_BETA64 -> FlavorLabel(R.string.beta_title)
-            UpdaterConstants.SUFFIX_CHAR_RELEASE32 -> FlavorLabel(R.string.release_title, append32 = true)
-            UpdaterConstants.SUFFIX_CHAR_MINIFIED32 -> FlavorLabel(R.string.minified_title, append32 = true)
-            UpdaterConstants.SUFFIX_CHAR_BETA32 -> FlavorLabel(R.string.beta_title, append32 = true)
-            UpdaterConstants.SUFFIX_CHAR_DEV32 -> FlavorLabel(R.string.dev_title, append32 = true)
-            "debug" -> FlavorLabel(R.string.debug_title)
+            UpdaterConstants.SUFFIX_CHAR_RELEASE64 -> FlavorLabel(R.string.updates_build_release_label)
+            UpdaterConstants.SUFFIX_CHAR_MINIFIED64 -> FlavorLabel(R.string.updates_build_minified_label)
+            UpdaterConstants.SUFFIX_CHAR_DEV64 -> FlavorLabel(R.string.updates_build_dev_label)
+            UpdaterConstants.SUFFIX_CHAR_BETA64 -> FlavorLabel(R.string.updates_build_beta_label)
+            UpdaterConstants.SUFFIX_CHAR_RELEASE32 -> FlavorLabel(R.string.updates_build_release_label, append32 = true)
+            UpdaterConstants.SUFFIX_CHAR_MINIFIED32 -> FlavorLabel(R.string.updates_build_minified_label, append32 = true)
+            UpdaterConstants.SUFFIX_CHAR_BETA32 -> FlavorLabel(R.string.updates_build_beta_label, append32 = true)
+            UpdaterConstants.SUFFIX_CHAR_DEV32 -> FlavorLabel(R.string.updates_build_dev_label, append32 = true)
+            "debug" -> FlavorLabel(R.string.updates_build_debug_label)
             else -> FlavorLabel(literal = suffix.uppercase())
         }
     }
@@ -445,7 +445,7 @@ object Updater {
 
         val resBody = response.body?.string()
         if (resBody.isNullOrBlank()) {
-            Toaster.i(R.string.info_no_update_available)
+            Toaster.i(R.string.updates_no_update_available)
             return@withContext
         }
 
@@ -682,7 +682,7 @@ object Updater {
             
             if (!hasUpdate) {
                 if (isForced) {
-                    Toaster.i(R.string.info_no_update_available)
+                    Toaster.i(R.string.updates_no_update_available)
                 }
                 NewUpdateAvailableDialog.isCancelled = true
                 // Also reset the cancelled state in SharedPreferences when no update is available
@@ -691,16 +691,16 @@ object Updater {
                     .apply()
             } else {
                 if (isForced) {
-                    Toaster.i(R.string.update_available)
+                    Toaster.i(R.string.updates_available)
                 }
                 // If there's an update available, reset the cancelled state
                 NewUpdateAvailableDialog.isCancelled = false
             }
         } catch (e: Exception) {
             val message = when (e) {
-                is UnknownHostException -> appContext().getString(R.string.error_no_internet)
-                is NoSuchFileException -> appContext().getString(R.string.info_no_update_available)
-                else -> e.message ?: appContext().getString(R.string.error_unknown)
+                is UnknownHostException -> appContext().getString(R.string.common_error_no_internet)
+                is NoSuchFileException -> appContext().getString(R.string.updates_no_update_available)
+                else -> e.message ?: appContext().getString(R.string.common_error_unknown)
             }
             
             // Use appropriate toast type based on exception
@@ -734,7 +734,7 @@ object Updater {
 
         Row(Modifier.fillMaxWidth()) {
             EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.enable_check_for_update),
+                title = stringResource(R.string.updates_automatic_check_title),
                 selectedValue = checkUpdateState,
                 onValueSelected = { checkUpdateState = it },
                 valueText = { it.text },
@@ -750,7 +750,7 @@ object Updater {
                 exit = slideOutHorizontally(targetOffsetX = { it }) + fadeOut(targetAlpha = 0f)
             ) {
                 SecondaryTextButton(
-                    text = stringResource(R.string.info_check_update_now),
+                    text = stringResource(R.string.updates_action_check_now),
                     onClick = { checkForUpdate(true, checkBetaUpdates) },
                     modifier = Modifier.padding(end = 24.dp)
                 )
@@ -760,9 +760,9 @@ object Updater {
         SettingsDescription(
             stringResource(
                 if (BuildConfig.IS_AUTOUPDATE)
-                    R.string.when_enabled_a_new_version_is_checked_and_notified_during_startup
+                    R.string.updates_automatic_check_description
                 else
-                    R.string.description_app_not_installed_by_apk
+                    R.string.updates_unavailable_build_description
             )
         )
     }

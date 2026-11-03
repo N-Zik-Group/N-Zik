@@ -32,7 +32,7 @@ fun SearchSuggestionEditAction(
         GlassSectionActions(
             actions = listOf(GlassSectionAction(
                 icon = R.drawable.pencil,
-                contentDescription = stringResource(R.string.search),
+                contentDescription = stringResource(R.string.search_title),
                 onClick = onClick,
             )),
             settings = settings,

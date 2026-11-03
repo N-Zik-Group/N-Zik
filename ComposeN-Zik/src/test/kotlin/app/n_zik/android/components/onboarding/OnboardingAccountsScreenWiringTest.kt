@@ -112,7 +112,7 @@ class OnboardingAccountsScreenWiringTest {
 
         // At least one account connected: the button reads "I'm done"
         composeRule
-            .onNodeWithText(context.getString(R.string.onboard_accounts_done))
+            .onNodeWithText(context.getString(R.string.onboarding_accounts_done))
             .performScrollTo()
             .performClick()
         composeRule.waitForIdle()
@@ -128,7 +128,7 @@ class OnboardingAccountsScreenWiringTest {
         composeRule.waitForIdle()
 
         composeRule
-            .onNodeWithText(context.getString(R.string.onboard_accounts_skip))
+            .onNodeWithText(context.getString(R.string.onboarding_accounts_skip))
             .performScrollTo()
             .performClick()
         composeRule.waitForIdle()

@@ -8,9 +8,9 @@ enum class AlbumsType(
     @field:StringRes override val textId: Int
 ): TextView {
 
-    Favorites( R.string.favorites ),
-    Library( R.string.library ),
-    Disliked( R.string.disliked );
+    Favorites( R.string.library_favorites_title ),
+    Library( R.string.library_title ),
+    Disliked( R.string.library_disliked_title );
 }
 
 

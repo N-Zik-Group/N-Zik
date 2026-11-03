@@ -36,7 +36,7 @@ object DockToolbarSettingsDialog : ContentFramedDialog {
     }
 
     override val dialogTitle: String
-        @Composable get() = stringResource(R.string.floating_dock_toolbar_order)
+        @Composable get() = stringResource(R.string.settings_dock_expanded_tab_order_label)
     override var isActive: Boolean by mutableStateOf(false)
 
     @Composable
@@ -78,7 +78,7 @@ object DockToolbarSettingsDialog : ContentFramedDialog {
                     if (order == defaultOrder) remove(DockToolbarPreferences.orderKey)
                     else putString(DockToolbarPreferences.orderKey, DockToolbarPreferences.serializeOrder(order))
                 }.apply()
-                Toaster.s(R.string.toast_preference_saved)
+                Toaster.s(R.string.settings_preference_saved_message)
                 hideDialog()
             },
         )

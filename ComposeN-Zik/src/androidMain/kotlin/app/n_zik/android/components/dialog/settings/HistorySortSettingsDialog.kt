@@ -27,7 +27,7 @@ object HistorySortSettingsDialog : ContentFramedDialog {
 
     private val sortIds = listOf("DATE", "ALPHABETICAL", "ARTIST")
 
-    override val dialogTitle: String @Composable get() = stringResource(R.string.history)
+    override val dialogTitle: String @Composable get() = stringResource(R.string.library_history_title)
     override var isActive: Boolean by mutableStateOf(false)
 
     private fun parseOrder(s: String): List<String> {
@@ -48,9 +48,9 @@ object HistorySortSettingsDialog : ContentFramedDialog {
         else -> R.drawable.text
     }
     private fun getSortLabelRes(id: String): Int? = when (id) {
-        "DATE" -> R.string.date
-        "ALPHABETICAL" -> R.string.alphabetical
-        "ARTIST" -> R.string.artist
+        "DATE" -> R.string.library_sort_history_date
+        "ALPHABETICAL" -> R.string.library_sort_history_alphabetical
+        "ARTIST" -> R.string.artist_title
         else -> null
     }
 
@@ -99,7 +99,7 @@ object HistorySortSettingsDialog : ContentFramedDialog {
                 val edit = prefs.edit()
                 workingToggles.forEach { (id, isChecked) -> edit.putBoolean("hist_sort_${id}_visible", isChecked) }
                 edit.putString(historySortMenuOrderKey, serializeOrder(workingOrder.filter { id -> workingToggles[id] == true }))
-                edit.apply(); Toaster.s(R.string.toast_preference_saved); hideDialog()
+                edit.apply(); Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }
         )
     }

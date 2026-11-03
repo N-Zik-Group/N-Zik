@@ -66,27 +66,27 @@ val defaultShortcutsOrder = listOf(
 
 fun buildShortcutDefs(): Map<String, ShortcutDef> = mapOf(
     SHORTCUT_SEARCH_ID to ShortcutDef(
-        SHORTCUT_SEARCH_ID, R.drawable.shortcut_search, R.string.search,
+        SHORTCUT_SEARCH_ID, R.drawable.shortcut_search, R.string.search_title,
         defaultEnabled = false
     ),
     SHORTCUT_ALBUMS_ID to ShortcutDef(
-        SHORTCUT_ALBUMS_ID, R.drawable.shortcut_albums, R.string.albums,
+        SHORTCUT_ALBUMS_ID, R.drawable.shortcut_albums, R.string.library_albums_title,
         defaultEnabled = true
     ),
     SHORTCUT_ARTISTS_ID to ShortcutDef(
-        SHORTCUT_ARTISTS_ID, R.drawable.shortcut_artists, R.string.artists,
+        SHORTCUT_ARTISTS_ID, R.drawable.shortcut_artists, R.string.library_artists_title,
         defaultEnabled = true
     ),
     SHORTCUT_LIBRARY_ID to ShortcutDef(
-        SHORTCUT_LIBRARY_ID, R.drawable.shortcut_library, R.string.playlists,
+        SHORTCUT_LIBRARY_ID, R.drawable.shortcut_library, R.string.library_playlists_title,
         defaultEnabled = true
     ),
     SHORTCUT_PROFILES_ID to ShortcutDef(
-        SHORTCUT_PROFILES_ID, R.drawable.shortcut_profiles, R.string.profiles,
+        SHORTCUT_PROFILES_ID, R.drawable.shortcut_profiles, R.string.profile_title,
         defaultEnabled = false
     ),
     SHORTCUT_RESCUE_ID to ShortcutDef(
-        SHORTCUT_RESCUE_ID, R.drawable.shortcut_rescue, R.string.rescue_center,
+        SHORTCUT_RESCUE_ID, R.drawable.shortcut_rescue, R.string.recovery_center,
         defaultEnabled = true,
         locked = true
     )
@@ -112,7 +112,7 @@ fun profileShortcutDefs(context: Context): Map<String, ShortcutDef> {
         shortcutId to ShortcutDef(
             id = shortcutId,
             iconRes = R.drawable.shortcut_profiles,
-            labelRes = R.string.profiles,
+            labelRes = R.string.profile_title,
             defaultEnabled = false,
             dynamicLabel = profileShortcutDisplayName(context, id),
         )
@@ -136,7 +136,7 @@ object AppShortcutsSettingsDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.app_shortcuts_settings)
+        get() = stringResource(R.string.settings_launcher_shortcuts_title)
 
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -227,7 +227,7 @@ object AppShortcutsSettingsDialog : ContentFramedDialog {
 
                 // Rescue cannot be disabled
                 if (def?.locked == true && !newValue) {
-                    Toaster.s(R.string.app_shortcuts_rescue_locked)
+                    Toaster.s(R.string.settings_launcher_shortcuts_recovery_required_message)
                     return@ToggleListDialog
                 }
 
@@ -235,7 +235,7 @@ object AppShortcutsSettingsDialog : ContentFramedDialog {
                 if (newValue) {
                     val currentActive = workingToggles.count { it }
                     if (currentActive >= MAX_ACTIVE_SHORTCUTS) {
-                        Toaster.s(context.getString(R.string.app_shortcuts_max_reached, MAX_ACTIVE_SHORTCUTS))
+                        Toaster.s(context.getString(R.string.settings_launcher_shortcuts_limit_message, MAX_ACTIVE_SHORTCUTS))
                         return@ToggleListDialog
                     }
                 }
@@ -266,7 +266,7 @@ object AppShortcutsSettingsDialog : ContentFramedDialog {
                 savePrefs(prefs, workingOrder, toggleMap)
                 // Re-register shortcuts with the updated preferences
                 registerAppShortcuts(context)
-                Toaster.s(R.string.toast_preference_saved)
+                Toaster.s(R.string.settings_preference_saved_message)
                 hideDialog()
             }
         )

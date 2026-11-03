@@ -72,12 +72,12 @@ fun YoutubePlayer(
         ) {
             Image(
                 painter = painterResource(R.drawable.musical_notes),
-                contentDescription = stringResource(R.string.return_to_audio_mode),
+                contentDescription = stringResource(R.string.player_action_return_to_audio),
                 colorFilter = ColorFilter.tint(colorPalette().text),
                 modifier = Modifier.size(28.dp)
             )
             Text(
-                text = stringResource(R.string.return_to_audio_mode),
+                text = stringResource(R.string.player_action_return_to_audio),
                 style = typography().xs.semiBold,
                 color = colorPalette().text
             )

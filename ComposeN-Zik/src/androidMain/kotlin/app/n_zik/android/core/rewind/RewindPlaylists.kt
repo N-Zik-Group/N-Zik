@@ -102,13 +102,13 @@ object RewindPlaylists {
             val tail = name.substringAfter(MONTHLY_PREFIX, "")
             val month = if (tail.length == 6) tail.substring(4, 6).toIntOrNull() else null
             if (tail.length == 6 && month != null && month in 1..12) {
-                getString(R.string.rewind) + " " + getString(monthNameKeys[month - 1], tail.substring(0, 4))
+                getString(R.string.rewind_title) + " " + getString(monthNameKeys[month - 1], tail.substring(0, 4))
             } else {
                 name
             }
         }
-        isYearly(name) -> getString(R.string.rewind) + " " + name.substringAfter(YEARLY_PREFIX, "")
-        isAlltime(name) -> getString(R.string.rewind) + " " + getString(R.string.rewind_alltime_name)
+        isYearly(name) -> getString(R.string.rewind_title) + " " + name.substringAfter(YEARLY_PREFIX, "")
+        isAlltime(name) -> getString(R.string.rewind_title) + " " + getString(R.string.rewind_alltime_name)
         else -> name
     }
 
@@ -153,17 +153,17 @@ object RewindPlaylists {
 
     /** `month_*_s` string keys in calendar order (1 = January … 12 = December). */
     private val monthNameKeys = intArrayOf(
-        R.string.month_january_s,
-        R.string.month_february_s,
-        R.string.month_march_s,
-        R.string.month_april_s,
-        R.string.month_may_s,
-        R.string.month_june_s,
-        R.string.month_july_s,
-        R.string.month_august_s,
-        R.string.month_september_s,
-        R.string.month_october_s,
-        R.string.month_november_s,
-        R.string.month_december_s
+        R.string.calendar_month_january_with_year,
+        R.string.calendar_month_february_with_year,
+        R.string.calendar_month_march_with_year,
+        R.string.calendar_month_april_with_year,
+        R.string.calendar_month_may_with_year,
+        R.string.calendar_month_june_with_year,
+        R.string.calendar_month_july_with_year,
+        R.string.calendar_month_august_with_year,
+        R.string.calendar_month_september_with_year,
+        R.string.calendar_month_october_with_year,
+        R.string.calendar_month_november_with_year,
+        R.string.calendar_month_december_with_year
     )
 }

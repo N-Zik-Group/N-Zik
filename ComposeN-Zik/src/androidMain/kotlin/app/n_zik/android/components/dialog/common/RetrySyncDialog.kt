@@ -35,7 +35,7 @@ class RetrySyncDialog(
         }
 
     override val confirmText: String
-        @Composable get() = stringResource(R.string.retry)
+        @Composable get() = stringResource(R.string.common_action_retry)
 
     override val dialogTitle: String
         @Composable
@@ -44,7 +44,7 @@ class RetrySyncDialog(
     @Composable
     override fun DialogBody() {
         BasicText(
-            text = stringResource(R.string.retry_sync_failed_items, failedCount),
+            text = stringResource(R.string.sync_retry_failed_items_confirmation, failedCount),
             style = typography().s.medium.copy(color = colorPalette().text)
         )
     }

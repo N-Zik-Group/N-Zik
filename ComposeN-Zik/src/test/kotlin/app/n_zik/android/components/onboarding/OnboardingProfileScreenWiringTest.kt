@@ -118,7 +118,7 @@ class OnboardingProfileScreenWiringTest {
 
     /** Waits for the one-shot account state load to settle: [lockedCount] "Not logged in" badges. */
     private fun waitForLockState(lockedCount: Int) {
-        val locked = context.getString(R.string.face_source_locked)
+        val locked = context.getString(R.string.profile_identity_source_not_connected)
         val deadline = System.currentTimeMillis() + 10_000
         while (System.currentTimeMillis() < deadline) {
             if (runCatching { composeRule.onAllNodesWithText(locked).fetchSemanticsNodes().size == lockedCount }.isSuccess) return
@@ -153,7 +153,7 @@ class OnboardingProfileScreenWiringTest {
         // The Continue button sits below the fold of the test window: scroll it into
         // view first, then click (performClick hit-tests, so an off-screen node is a no-op)
         composeRule
-            .onNodeWithText(context.getString(R.string.onboard_profile_continue))
+            .onNodeWithText(context.getString(R.string.onboarding_profile_continue))
             .performScrollTo()
             .performClick()
         composeRule.waitForIdle()
@@ -180,7 +180,7 @@ class OnboardingProfileScreenWiringTest {
         waitForLockState(6)
 
         composeRule
-            .onNodeWithText(context.getString(R.string.onboard_profile_continue))
+            .onNodeWithText(context.getString(R.string.onboarding_profile_continue))
             .performScrollTo()
             .performClick()
         composeRule.waitForIdle()
@@ -202,11 +202,11 @@ class OnboardingProfileScreenWiringTest {
 
         // The name section's YouTube row (the avatar section's row is the
         // second one in document order)
-        val ytRows = composeRule.onAllNodesWithText(context.getString(R.string.display_name_source_youtube))
+        val ytRows = composeRule.onAllNodesWithText(context.getString(R.string.profile_display_name_source_youtube))
         ytRows.assertCountEquals(2)
         ytRows[0].performScrollTo().performClick()
         composeRule
-            .onNodeWithText(context.getString(R.string.onboard_profile_continue))
+            .onNodeWithText(context.getString(R.string.onboarding_profile_continue))
             .performScrollTo()
             .performClick()
         composeRule.waitForIdle()
@@ -230,11 +230,11 @@ class OnboardingProfileScreenWiringTest {
 
         // The avatar section's YouTube row (the name section's row is the
         // first one in document order, so the avatar one is last)
-        val ytRows = composeRule.onAllNodesWithText(context.getString(R.string.display_name_source_youtube))
+        val ytRows = composeRule.onAllNodesWithText(context.getString(R.string.profile_display_name_source_youtube))
         ytRows.assertCountEquals(2)
         ytRows[1].performScrollTo().performClick()
         composeRule
-            .onNodeWithText(context.getString(R.string.onboard_profile_continue))
+            .onNodeWithText(context.getString(R.string.onboarding_profile_continue))
             .performScrollTo()
             .performClick()
         composeRule.waitForIdle()
@@ -262,7 +262,7 @@ class OnboardingProfileScreenWiringTest {
         nameNodes.assertCountEquals(2)
         nameNodes[1].performTextReplacement("Bad/Name")
         composeRule
-            .onNodeWithText(context.getString(R.string.onboard_profile_continue))
+            .onNodeWithText(context.getString(R.string.onboarding_profile_continue))
             .performScrollTo()
             .performClick()
         composeRule.waitForIdle()
@@ -287,7 +287,7 @@ class OnboardingProfileScreenWiringTest {
         nameNodes.assertCountEquals(2)
         nameNodes[1].performTextReplacement("")
         composeRule
-            .onNodeWithText(context.getString(R.string.onboard_profile_continue))
+            .onNodeWithText(context.getString(R.string.onboarding_profile_continue))
             .performScrollTo()
             .performClick()
         composeRule.waitForIdle()
@@ -315,7 +315,7 @@ class OnboardingProfileScreenWiringTest {
         nameNodes.assertCountEquals(2)
         nameNodes[1].performTextReplacement(base.lowercase())
         composeRule
-            .onNodeWithText(context.getString(R.string.onboard_profile_continue))
+            .onNodeWithText(context.getString(R.string.onboarding_profile_continue))
             .performScrollTo()
             .performClick()
         composeRule.waitForIdle()
@@ -336,7 +336,7 @@ class OnboardingProfileScreenWiringTest {
         nameNodes.assertCountEquals(2)
         nameNodes[1].performTextReplacement("default")
         composeRule
-            .onNodeWithText(context.getString(R.string.onboard_profile_continue))
+            .onNodeWithText(context.getString(R.string.onboarding_profile_continue))
             .performScrollTo()
             .performClick()
         composeRule.waitForIdle()
@@ -357,11 +357,11 @@ class OnboardingProfileScreenWiringTest {
 
         // No account connected: the account rows are faded and unclickable — the
         // click is a no-op, the source stays on the default "profil" (no write)
-        val ytRows = composeRule.onAllNodesWithText(context.getString(R.string.display_name_source_youtube))
+        val ytRows = composeRule.onAllNodesWithText(context.getString(R.string.profile_display_name_source_youtube))
         ytRows.assertCountEquals(2)
         ytRows[0].performScrollTo().performClick()
         composeRule
-            .onNodeWithText(context.getString(R.string.onboard_profile_continue))
+            .onNodeWithText(context.getString(R.string.onboarding_profile_continue))
             .performScrollTo()
             .performClick()
         composeRule.waitForIdle()

@@ -45,16 +45,16 @@ internal fun OtherOnDeviceCard(search: Search) {
     }
 
     SettingsSectionCard(
-        title = stringResource(R.string.on_device),
+        title = stringResource(R.string.library_on_device_title),
         icon = R.drawable.folder,
         content = {
 
             var showBlacklistDialog by remember { mutableStateOf(false) }
-            if (search.inputValue.isBlank() || stringResource(R.string.blacklisted_folders).contains(search.inputValue, true) || stringResource(R.string.edit_blacklist_for_on_device_songs).contains(search.inputValue, true)) {
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_local_music_blocked_folders_title).contains(search.inputValue, true) || stringResource(R.string.settings_local_music_blocked_folders_description).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("other.on_device.blacklisted_folders"),
-                    title = stringResource(R.string.blacklisted_folders),
-                    text = stringResource(R.string.edit_blacklist_for_on_device_songs),
+                    title = stringResource(R.string.settings_local_music_blocked_folders_title),
+                    text = stringResource(R.string.settings_local_music_blocked_folders_description),
                     icon = R.drawable.blacklisted_folder,
                     onClick = { showBlacklistDialog = true }
                 )
@@ -62,15 +62,15 @@ internal fun OtherOnDeviceCard(search: Search) {
 
             DialogPresence(visible = showBlacklistDialog) {
                 StringListDialog(
-                    title = stringResource(R.string.blacklisted_folders),
-                    addTitle = stringResource(R.string.add_folder),
+                    title = stringResource(R.string.settings_local_music_blocked_folders_title),
+                    addTitle = stringResource(R.string.settings_local_music_action_add_blocked_folder),
                     addPlaceholder = if (isAtLeastAndroid10) {
                         "Android/media/com.whatsapp/WhatsApp/Media"
                     } else {
                         "/storage/emulated/0/Android/media/com.whatsapp/"
                     },
-                    conflictTitle = stringResource(R.string.this_folder_already_exists),
-                    removeTitle = stringResource(R.string.are_you_sure_you_want_to_remove_this_folder_from_the_blacklist),
+                    conflictTitle = stringResource(R.string.settings_local_music_blocked_folder_exists_message),
+                    removeTitle = stringResource(R.string.settings_local_music_remove_blocked_folder_confirmation),
                     list = blackListedPaths,
                     add = { newPath: String ->
                         blackListedPaths = blackListedPaths + newPath
@@ -94,11 +94,11 @@ internal fun OtherOnDeviceCard(search: Search) {
                 )
             }
 
-            if (search.inputValue.isBlank() || stringResource(R.string.folders).contains(search.inputValue, true) || stringResource(R.string.show_folders_in_on_device_page).contains(search.inputValue, true)) {
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_local_music_folders_label).contains(search.inputValue, true) || stringResource(R.string.settings_local_music_folders_description).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("other.on_device.folders"),
-                    title = stringResource(R.string.folders),
-                    text = stringResource(R.string.show_folders_in_on_device_page),
+                    title = stringResource(R.string.settings_local_music_folders_label),
+                    text = stringResource(R.string.settings_local_music_folders_description),
                     isChecked = showFolders,
                     onCheckedChange = { showFolders = it },
                     icon = R.drawable.playlist
@@ -108,11 +108,11 @@ internal fun OtherOnDeviceCard(search: Search) {
             AnimatedVisibility(visible = showFolders) {
 
                 var showFolderDialog by remember { mutableStateOf(false) }
-                if (search.inputValue.isBlank() || stringResource(R.string.folder_that_will_show_when_you_open_on_device_page).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_local_music_initial_folder_description).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("other.on_device.folder_that_will_show_when_you_open_on_device_page"),
-                        title = stringResource(R.string.folder_that_will_show_when_you_open_on_device_page),
-                        text = stringResource(R.string.settings_desc_other_on_device_folder_that_will_show_when_you_open_on_device_page),
+                        title = stringResource(R.string.settings_local_music_initial_folder_description),
+                        text = stringResource(R.string.library_on_device_start_folder_description),
                         selectedValueText = defaultFolder,
                         icon = R.drawable.music_file,
                         onClick = { showFolderDialog = true }
@@ -121,9 +121,9 @@ internal fun OtherOnDeviceCard(search: Search) {
 
                 DialogPresence(visible = showFolderDialog) {
                     SettingsInputDialog(
-                        title = stringResource(R.string.folder_that_will_show_when_you_open_on_device_page),
+                        title = stringResource(R.string.settings_local_music_initial_folder_description),
                         initialValue = defaultFolder,
-                        placeholder = stringResource(R.string.folder_that_will_show_when_you_open_on_device_page),
+                        placeholder = stringResource(R.string.settings_local_music_initial_folder_description),
                         onDismiss = { showFolderDialog = false },
                         onSetValue = { defaultFolder = it }
                     ).apply {

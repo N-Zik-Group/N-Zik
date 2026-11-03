@@ -146,7 +146,7 @@ class BurgerMenuItemTest {
                         onShortTap = {},
                         onLongTap = {},
                     )
-                    Text(context.getString(R.string.rescue_center), style = MaterialTheme.typography.labelLarge)
+                    Text(context.getString(R.string.recovery_center), style = MaterialTheme.typography.labelLarge)
                 }
             }
         }
@@ -163,7 +163,7 @@ class BurgerMenuItemTest {
 
     private fun referenceWidth(): Float =
         composeRule
-            .onNodeWithText(context.getString(R.string.rescue_center), useUnmergedTree = true)
+            .onNodeWithText(context.getString(R.string.recovery_center), useUnmergedTree = true)
             .fetchSemanticsNode()
             .boundsInRoot
             .width

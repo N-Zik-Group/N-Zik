@@ -119,7 +119,7 @@ fun RewindHomeScreen(
     // The counter resets when the home leaves the composition.
     var lockedSpam by remember { mutableStateOf(0) }
     val onLockedSpam: () -> Unit = {
-        val reply = nextLockedSpamReply(lockedSpam, LOCKED_SPAM_MESSAGES, R.string.rw_home_locked_spam_kick)
+        val reply = nextLockedSpamReply(lockedSpam, LOCKED_SPAM_MESSAGES, R.string.rewind_home_locked_spam_kick)
         lockedSpam = if (reply.kicks) 0 else lockedSpam + 1
         // The app's in-app toaster (theme colors, main-thread, floating-nav-bar aware):
         // info toasts for the rotation, red for the final "stop".
@@ -182,7 +182,7 @@ fun RewindHomeScreen(
                         tint = palette.textDisabled
                     )
                     Text(
-                        text = stringResource(R.string.rw_home_empty),
+                        text = stringResource(R.string.rewind_home_empty),
                         color = palette.textSecondary,
                         fontSize = 13.sp,
                         textAlign = TextAlign.Center
@@ -273,7 +273,7 @@ private fun RewindHomeContent(
 //
             // one the player's media notification uses (ic_launcher_monochrome).
             HeaderWithIcon(
-                title = stringResource(R.string.rw_home_title),
+                title = stringResource(R.string.rewind_home_title),
                 iconId = R.drawable.ic_launcher_monochrome,
                 enabled = false,
                 showIcon = true,
@@ -281,7 +281,7 @@ private fun RewindHomeContent(
                 onClick = {}
             )
             SettingsDescription(
-                text = stringResource(R.string.rw_home_tagline),
+                text = stringResource(R.string.rewind_home_tagline),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
@@ -297,9 +297,9 @@ private fun RewindHomeContent(
                 item(key = "all_time") {
                     Column(modifier = Modifier.animateItem()) {
                         RewindHomeYearRow(
-                            label = stringResource(R.string.rw_home_all_time),
+                            label = stringResource(R.string.rewind_home_all_time),
                             stats = stringResource(
-                                R.string.rw_home_year_stats,
+                                R.string.rewind_home_year_stats,
                                 rewindHomeDuration(allTime.minutes),
                                 formatRewindNumber(allTime.plays.toLong())
                             ),
@@ -319,7 +319,7 @@ private fun RewindHomeContent(
         if (yearlyEnabled) {
             item(key = "years_header") {
                 RewindHomeSectionHeader(
-                    text = stringResource(R.string.rw_home_years),
+                    text = stringResource(R.string.rewind_home_years),
                     order = yearsOrder,
                     onToggleOrder = onYearOrderToggle
                 )
@@ -339,10 +339,10 @@ private fun RewindHomeContent(
                         // The locked year shows "LOCKED" instead of its (spoiling) stats —
                         // same anti-spoiler decision as the album previews.
                         stats = if (yearLocked) {
-                            stringResource(R.string.rw_home_locked)
+                            stringResource(R.string.rewind_home_locked)
                         } else {
                             stringResource(
-                                R.string.rw_home_year_stats,
+                                R.string.rewind_home_year_stats,
                                 rewindHomeDuration(year.minutes),
                                 formatRewindNumber(year.plays.toLong())
                             )
@@ -365,7 +365,7 @@ private fun RewindHomeContent(
         if (monthlyEnabled) {
             item(key = "months_header") {
                 RewindHomeSectionHeader(
-                    text = stringResource(R.string.rw_home_months_of, selectedYear.toString()),
+                    text = stringResource(R.string.rewind_home_months_of, selectedYear.toString()),
                     order = monthsOrder,
                     onToggleOrder = onMonthOrderToggle
                 )
@@ -494,7 +494,7 @@ private fun RewindHomeSortArrow(
         actions = listOf(
             GlassSectionAction(
                 icon = R.drawable.arrow_up,
-                contentDescription = stringResource(R.string.sorting_order),
+                contentDescription = stringResource(R.string.library_sort_order_title),
                 iconModifier = Modifier.graphicsLayer { rotationZ = order.rotationZ },
                 onClick = onToggle,
             )
@@ -802,7 +802,7 @@ private fun RewindHomeMonthCell(
                     // appear as toasts while the cell is spammed.
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = stringResource(R.string.rw_home_locked),
+                        text = stringResource(R.string.rewind_home_locked),
                         color = Color.White.copy(alpha = 0.7f),
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Medium
@@ -818,7 +818,7 @@ private fun RewindHomeMonthCell(
                     Spacer(Modifier.height(2.dp))
                     Text(
                         text = stringResource(
-                            R.string.rw_home_plays,
+                            R.string.rewind_play_count,
                             formatRewindNumber(month.plays.toLong())
                         ),
                         color = if (showArtwork) Color.White.copy(alpha = 0.7f) else palette.textSecondary,
@@ -830,7 +830,7 @@ private fun RewindHomeMonthCell(
                     // (user decision, 2026-09-24)
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = stringResource(R.string.rw_home_month_empty_sad),
+                        text = stringResource(R.string.rewind_home_month_empty_sad),
                         color = Color.White.copy(alpha = 0.7f),
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Medium
@@ -926,19 +926,19 @@ private fun rewindHomeDuration(minutes: Long): String {
     val hours = (minutes / 60L).toInt()
     val rest = (minutes % 60L).toInt()
     return if (hours > 0) {
-        stringResource(R.string.rw_home_duration, hours, rest)
+        stringResource(R.string.rewind_home_duration, hours, rest)
     } else {
-        stringResource(R.string.rw_minutes_compact, formatRewindNumber(minutes))
+        stringResource(R.string.rewind_minutes_compact, formatRewindNumber(minutes))
     }
 }
 
 /** The locked-period spam rotation (user decision, 2026-09-24): the funny replies to a locked month cell or year row being hammered, in order. */
 internal val LOCKED_SPAM_MESSAGES = intArrayOf(
-    R.string.rw_home_locked_spam_1,
-    R.string.rw_home_locked_spam_2,
-    R.string.rw_home_locked_spam_3,
-    R.string.rw_home_locked_spam_4,
-    R.string.rw_home_locked_spam_5
+    R.string.rewind_home_locked_spam_1,
+    R.string.rewind_home_locked_spam_2,
+    R.string.rewind_home_locked_spam_3,
+    R.string.rewind_home_locked_spam_4,
+    R.string.rewind_home_locked_spam_5
 )
 
 /** The tap that reaches this count kicks the user back from the home (final message). */
@@ -969,12 +969,12 @@ internal fun nextLockedSpamReply(
 
 /** The random replies to an empty finished month being tapped (user decision, 2026-09-24): each tap answers with a random sad one-liner (no rotation, no kick — nothing to protect there, just the joke). */
 internal val EMPTY_MONTH_SPAM_MESSAGES = intArrayOf(
-    R.string.rw_home_month_empty_spam_1,
-    R.string.rw_home_month_empty_spam_2,
-    R.string.rw_home_month_empty_spam_3,
-    R.string.rw_home_month_empty_spam_4,
-    R.string.rw_home_month_empty_spam_5,
-    R.string.rw_home_month_empty_spam_6
+    R.string.rewind_home_month_empty_spam_1,
+    R.string.rewind_home_month_empty_spam_2,
+    R.string.rewind_home_month_empty_spam_3,
+    R.string.rewind_home_month_empty_spam_4,
+    R.string.rewind_home_month_empty_spam_5,
+    R.string.rewind_home_month_empty_spam_6
 )
 
 /** Pure random pick of an empty-month reply so it can be unit-tested without UI: [nextIndex] is invoked with the list size and its result is reduced modulo it. */

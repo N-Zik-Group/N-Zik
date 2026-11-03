@@ -50,7 +50,7 @@ object PreferredStreamClientDialog : ContentFramedDialog {
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.preferred_stream_client_title)
+        get() = stringResource(R.string.settings_stream_preferred_client_title)
 
     override var isActive: Boolean by mutableStateOf(false)
 
@@ -65,8 +65,8 @@ object PreferredStreamClientDialog : ContentFramedDialog {
         var selectedClient by remember { mutableStateOf(savedPref) }
 
         val options = listOf(
-            Triple("ANDROID_VR", "Android VR", stringResource(R.string.client_android_vr_desc)),
-            Triple("WEB_REMIX", "Web Remix", stringResource(R.string.client_youtube_music_web_desc))
+            Triple("ANDROID_VR", "Android VR", stringResource(R.string.network_stream_client_android_vr_description)),
+            Triple("WEB_REMIX", "Web Remix", stringResource(R.string.network_stream_client_youtube_music_web_description))
         )
 
         DialogFrame(onDismiss = ::hideDialog, title = dialogTitle, bodyPadding = PaddingValues(0.dp),
@@ -75,7 +75,7 @@ object PreferredStreamClientDialog : ContentFramedDialog {
                 buttons = listOf(
                     // Reset button (grey) - only changes local state
                     DialogButton(
-                        text = stringResource(R.string.reset),
+                        text = stringResource(R.string.common_action_reset),
                         enabled = selectedClient != "WEB_REMIX",
                         textColor = colorPalette().textDisabled,
                         onClick = {
@@ -84,13 +84,13 @@ object PreferredStreamClientDialog : ContentFramedDialog {
                     ),
                     // Cancel button (red) - closes without saving
                     DialogButton(
-                        text = stringResource(R.string.cancel),
+                        text = stringResource(R.string.common_action_cancel),
                         onClick = { hideDialog() },
                         danger = true
                     ),
                     // OK button (accent filled) - saves only if changed
                     DialogButton(
-                        text = stringResource(R.string.dialog_apply),
+                        text = stringResource(R.string.common_action_apply),
                         onClick = {
                             if (selectedClient != savedPref) {
                                 prefs.edit().putString(preferredStreamClientKey, selectedClient).apply()
@@ -100,8 +100,8 @@ object PreferredStreamClientDialog : ContentFramedDialog {
                                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                                     clearAudioCache(binder?.cache)
                                 }
-                                Toaster.i(R.string.preferred_stream_client_changed)
-                                Toaster.w(R.string.stream_client_redownload_recommendation)
+                                Toaster.i(R.string.settings_stream_preferred_client_changed_message)
+                                Toaster.w(R.string.network_stream_client_redownload_recommendation)
                             }
                             hideDialog()
                         },

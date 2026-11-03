@@ -131,26 +131,26 @@ object HomeSongsSortSettingsDialog : ContentFramedDialog {
     }
 
     private fun getSortLabelRes(id: String): Int? = when (id) {
-        "Title" -> R.string.sort_title
-        "Artist" -> R.string.sort_artist
-        "AlbumName" -> R.string.sort_album
-        "Duration" -> R.string.sort_duration
-        "PlayCount" -> R.string.sort_play_count
-        "PlayTime" -> R.string.sort_listening_time
-        "RelativePlayTime" -> R.string.relative_listening_time
-        "DateAdded" -> R.string.sort_date_added
-        "DatePlayed" -> R.string.sort_date_played
-        "DateLiked" -> R.string.sort_date_liked
-        "Downloaded" -> R.string.sort_downloaded
-        "Custom" -> R.string.sort_custom_order
-        "Album" -> R.string.sort_album
-        "Today" -> R.string.today
-        "OneWeek" -> R.string._1_week
-        "OneMonth" -> R.string._1_month
-        "ThreeMonths" -> R.string._3_month
-        "SixMonths" -> R.string._6_month
-        "OneYear" -> R.string._1_year
-        "All" -> R.string.all
+        "Title" -> R.string.library_sort_title
+        "Artist" -> R.string.library_sort_artist
+        "AlbumName" -> R.string.library_sort_album
+        "Duration" -> R.string.library_sort_duration
+        "PlayCount" -> R.string.library_sort_play_count
+        "PlayTime" -> R.string.library_sort_listening_time
+        "RelativePlayTime" -> R.string.library_sort_relative_listening_time
+        "DateAdded" -> R.string.library_sort_date_added
+        "DatePlayed" -> R.string.library_sort_date_played
+        "DateLiked" -> R.string.library_sort_date_liked
+        "Downloaded" -> R.string.library_sort_downloaded
+        "Custom" -> R.string.library_sort_custom_order
+        "Album" -> R.string.library_sort_album
+        "Today" -> R.string.calendar_today
+        "OneWeek" -> R.string.calendar_period_one_week
+        "OneMonth" -> R.string.calendar_period_one_month
+        "ThreeMonths" -> R.string.calendar_period_three_months
+        "SixMonths" -> R.string.calendar_period_six_months
+        "OneYear" -> R.string.calendar_period_one_year
+        "All" -> R.string.common_option_all
         else -> null
     }
 
@@ -261,7 +261,7 @@ object HomeSongsSortSettingsDialog : ContentFramedDialog {
                     edit.putString(key, serializeOrder(finalOrder))
                 }
                 edit.apply()
-                Toaster.s(R.string.toast_preference_saved); hideDialog()
+                Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }
         )
     }

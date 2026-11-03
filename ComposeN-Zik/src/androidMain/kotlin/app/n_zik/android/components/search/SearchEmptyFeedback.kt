@@ -16,7 +16,7 @@ fun SearchEmptyFeedback(
     loading: Boolean = false,
     showMessage: (String) -> Unit = { Toaster.i(it) }
 ) {
-    val message = stringResource(R.string.no_results_found)
+    val message = stringResource(R.string.search_no_results_message)
     val currentMessage = rememberUpdatedState(message)
     val currentShowMessage = rememberUpdatedState(showMessage)
     LaunchedEffect(query, empty, loading) {

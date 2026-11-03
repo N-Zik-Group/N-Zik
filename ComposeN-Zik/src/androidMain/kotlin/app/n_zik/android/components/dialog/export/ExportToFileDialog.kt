@@ -41,7 +41,7 @@ abstract class ExportToFileDialog(
         try {
             launcher.launch( "$fileName.$extension" )
         } catch ( _: ActivityNotFoundException) {
-            Toaster.e( R.string.info_not_find_app_open_doc )
+            Toaster.e( R.string.common_error_no_document_handler )
         } finally { hideDialog() }
     }
 }

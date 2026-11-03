@@ -85,12 +85,12 @@ fun RewindDiscoveryCard(
             }
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_discovery_kicker, data.periodLabel), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rewind_discovery_kicker, data.periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(11.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {
                     RewindAdaptiveTitle(
-                        text = stringResource(R.string.rw_discovery_heading),
+                        text = stringResource(R.string.rewind_discovery_heading),
                         color = rewindColors.value.cream,
                         fontSize = textScale.size(if (compact) 34.sp else 40.sp),
                         lineHeight = textScale.size(if (compact) 32.sp else 37.sp),
@@ -155,7 +155,7 @@ fun RewindDiscoveryCard(
                         durationMillis = 1_000
                     )
                     Text(
-                        text = stringResource(R.string.rw_label_unique_songs),
+                        text = stringResource(R.string.rewind_label_unique_songs),
                         color = rewindColors.value.lime,
                         fontSize = textScale.size(10.sp),
                         fontWeight = FontWeight.Black,
@@ -170,9 +170,9 @@ fun RewindDiscoveryCard(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        DiscoveryMetric(stringResource(R.string.rw_label_artists), data.totalUniqueArtists, rewindColors.value.purple, Modifier.weight(1f))
-                        DiscoveryMetric(stringResource(R.string.rw_label_albums), data.totalUniqueAlbums, rewindColors.value.pink, Modifier.weight(1f))
-                        DiscoveryMetric(stringResource(R.string.rw_label_playlists), data.totalUniquePlaylists, rewindColors.value.orange, Modifier.weight(1f))
+                        DiscoveryMetric(stringResource(R.string.rewind_label_artists), data.totalUniqueArtists, rewindColors.value.purple, Modifier.weight(1f))
+                        DiscoveryMetric(stringResource(R.string.rewind_label_albums), data.totalUniqueAlbums, rewindColors.value.pink, Modifier.weight(1f))
+                        DiscoveryMetric(stringResource(R.string.rewind_label_playlists), data.totalUniquePlaylists, rewindColors.value.orange, Modifier.weight(1f))
                     }
                 }
             }

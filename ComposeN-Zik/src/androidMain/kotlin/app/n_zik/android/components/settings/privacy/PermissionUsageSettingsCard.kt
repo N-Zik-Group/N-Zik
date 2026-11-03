@@ -45,21 +45,21 @@ fun PermissionUsageSettingsCard(modifier: Modifier = Modifier) {
     var open by remember { mutableStateOf(false) }
     var paused by rememberPreference(PermissionUsageJournal.PAUSED_KEY, false)
     SettingsSectionCard(
-        title = stringResource(R.string.permission_usage_journal),
+        title = stringResource(R.string.permissions_usage_journal),
         icon = R.drawable.history,
         modifier = modifier,
         content = {
             OtherSwitchSettingEntry(
-                title = stringResource(R.string.permission_journal_pause),
-                text = stringResource(R.string.permission_journal_pause_description),
+                title = stringResource(R.string.permissions_journal_pause),
+                text = stringResource(R.string.permissions_journal_pause_description),
                 isChecked = paused,
                 onCheckedChange = { paused = it },
                 icon = R.drawable.pause,
                 modifier = Modifier.settingsSearchTarget("privacy.permissions.pause"),
             )
             OtherSettingsEntry(
-                title = stringResource(R.string.permission_journal_entries),
-                text = stringResource(R.string.permission_journal_entries_description),
+                title = stringResource(R.string.permissions_journal_entries),
+                text = stringResource(R.string.permissions_journal_entries_description),
                 icon = R.drawable.history,
                 onClick = { open = true },
                 modifier = Modifier.settingsSearchTarget("privacy.permissions.open"),
@@ -80,18 +80,18 @@ private fun PermissionUsageDialog(onDismiss: () -> Unit) {
     var confirmClear by remember { mutableStateOf(false) }
     DialogFrame(
         bodyPadding = PaddingValues(horizontal = 24.dp),
-        title = stringResource(R.string.permission_usage_journal),
+        title = stringResource(R.string.permissions_usage_journal),
         onDismiss = onDismiss,
         modifier = Modifier.testTag("permission_journal_dialog"),
         footer = {
             ButtonRow(buttons = listOf(
                 DialogButton(
-                    text = stringResource(R.string.clear),
+                    text = stringResource(R.string.common_action_clear),
                     placement = DialogButtonPlacement.Start,
                     onClick = { confirmClear = true },
                     danger = true,
                 ),
-                DialogButton(text = stringResource(R.string.dialog_close), onClick = onDismiss, primary = true),
+                DialogButton(text = stringResource(R.string.common_action_close), onClick = onDismiss, primary = true),
             ))
         }
     ) {
@@ -102,14 +102,14 @@ private fun PermissionUsageDialog(onDismiss: () -> Unit) {
         ) {
             if (events.isEmpty()) item {
                 BasicText(
-                    text = stringResource(R.string.permission_journal_empty),
+                    text = stringResource(R.string.permissions_journal_empty),
                     style = typography().xxs.secondary,
                 )
             }
             itemsIndexed(events, key = { index, _ -> index }, contentType = { _, _ -> "permission_event" }) { _, event ->
                 val timestamp = dateFormat.format(Date(event.timestamp))
                 BasicText(
-                    text = stringResource(R.string.permission_journal_event, timestamp,
+                    text = stringResource(R.string.permissions_journal_event, timestamp,
                         stringResource(featureLabel(event.feature)), stringResource(permissionLabel(event.permission)), stringResource(eventLabel(event.kind))),
                     style = typography().xxs.secondary,
                 )
@@ -118,14 +118,14 @@ private fun PermissionUsageDialog(onDismiss: () -> Unit) {
     }
     DialogPresence(visible = confirmClear) {
         ConfirmationDialog(
-        title = stringResource(R.string.permission_journal_clear),
-        confirmText = stringResource(R.string.clear),
-        text = stringResource(R.string.permission_journal_clear_confirm),
+        title = stringResource(R.string.permissions_journal_clear),
+        confirmText = stringResource(R.string.common_action_clear),
+        text = stringResource(R.string.permissions_journal_clear_confirm),
         onDismiss = { confirmClear = false },
         onConfirm = {
             confirmClear = false
             if (!PermissionUsageJournal.clear(context)) {
-                Toaster.i(context.getString(R.string.permission_journal_busy))
+                Toaster.i(context.getString(R.string.permissions_journal_busy))
             }
         },
     )
@@ -133,30 +133,30 @@ private fun PermissionUsageDialog(onDismiss: () -> Unit) {
 }
 
 private fun featureLabel(feature: PermissionFeature): Int = when (feature) {
-    PermissionFeature.MUSIC_RECOGNITION -> R.string.permission_feature_music_recognition
-    PermissionFeature.VOICE_SEARCH -> R.string.permission_feature_voice_search
-    PermissionFeature.VISUALIZER -> R.string.permission_feature_visualizer
-    PermissionFeature.LOCAL_LIBRARY -> R.string.permission_feature_local_library
-    PermissionFeature.AUDIO_DEVICES -> R.string.permission_feature_audio_devices
-    PermissionFeature.PLAYBACK -> R.string.permission_feature_playback
-    PermissionFeature.DOWNLOADS -> R.string.permission_feature_downloads
-    PermissionFeature.REWIND -> R.string.permission_feature_rewind
-    PermissionFeature.LISTEN_TOGETHER -> R.string.permission_feature_listen_together
-    PermissionFeature.PC_SERVER -> R.string.permission_feature_pc_server
-    PermissionFeature.PC_PAIRING -> R.string.permission_feature_pc_pairing
-    PermissionFeature.ONBOARDING -> R.string.permission_feature_onboarding
+    PermissionFeature.MUSIC_RECOGNITION -> R.string.permissions_feature_music_recognition
+    PermissionFeature.VOICE_SEARCH -> R.string.permissions_feature_voice_search
+    PermissionFeature.VISUALIZER -> R.string.permissions_feature_visualizer
+    PermissionFeature.LOCAL_LIBRARY -> R.string.permissions_feature_local_library
+    PermissionFeature.AUDIO_DEVICES -> R.string.permissions_feature_audio_devices
+    PermissionFeature.PLAYBACK -> R.string.permissions_feature_playback
+    PermissionFeature.DOWNLOADS -> R.string.permissions_feature_downloads
+    PermissionFeature.REWIND -> R.string.permissions_feature_rewind
+    PermissionFeature.LISTEN_TOGETHER -> R.string.permissions_feature_listen_together
+    PermissionFeature.PC_SERVER -> R.string.permissions_feature_pc_server
+    PermissionFeature.PC_PAIRING -> R.string.permissions_feature_pc_pairing
+    PermissionFeature.ONBOARDING -> R.string.permissions_feature_onboarding
 }
 private fun permissionLabel(permission: JournalPermission): Int = when (permission) {
-    JournalPermission.MICROPHONE -> R.string.permission_label_microphone
-    JournalPermission.MEDIA_AUDIO -> R.string.permission_label_media_audio
-    JournalPermission.BLUETOOTH -> R.string.permission_label_bluetooth
-    JournalPermission.LOCAL_NETWORK -> R.string.permission_label_local_network
-    JournalPermission.CAMERA -> R.string.permission_label_camera
-    JournalPermission.NOTIFICATIONS -> R.string.permission_label_notifications
+    JournalPermission.MICROPHONE -> R.string.permissions_label_microphone
+    JournalPermission.MEDIA_AUDIO -> R.string.permissions_label_media_audio
+    JournalPermission.BLUETOOTH -> R.string.permissions_label_bluetooth
+    JournalPermission.LOCAL_NETWORK -> R.string.permissions_label_local_network
+    JournalPermission.CAMERA -> R.string.permissions_label_camera
+    JournalPermission.NOTIFICATIONS -> R.string.permissions_label_notifications
 }
 private fun eventLabel(kind: PermissionEventKind): Int = when (kind) {
-    PermissionEventKind.REQUESTED -> R.string.permission_event_requested
-    PermissionEventKind.GRANTED -> R.string.permission_event_granted
-    PermissionEventKind.DENIED -> R.string.permission_event_denied
-    PermissionEventKind.USED -> R.string.permission_event_used
+    PermissionEventKind.REQUESTED -> R.string.permissions_event_requested
+    PermissionEventKind.GRANTED -> R.string.permissions_event_granted
+    PermissionEventKind.DENIED -> R.string.permissions_event_denied
+    PermissionEventKind.USED -> R.string.permissions_event_used
 }

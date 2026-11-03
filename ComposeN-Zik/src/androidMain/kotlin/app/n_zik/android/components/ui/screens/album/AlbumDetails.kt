@@ -109,7 +109,7 @@ fun AlbumBookmark(
     }
     override val secondIconId: Int = R.drawable.bookmark_outline
     override var isFirstIcon: Boolean = likeState != null
-    override val messageId: Int = R.string.info_bookmark_album
+    override val messageId: Int = R.string.album_action_bookmark
     override val color: Color
         @Composable
         get() = when(likeState) {
@@ -155,15 +155,15 @@ fun AlbumBookmark(
             }
             val messageId = if (showDisliked) {
                 when(newState) {
-                    true -> R.string.added_to_favorites
-                    false -> R.string.added_to_dislikes
-                    null -> R.string.removed_from_favorites
+                    true -> R.string.library_favorites_added
+                    false -> R.string.library_dislikes_added
+                    null -> R.string.library_favorites_removed
                 }
             } else {
                 when(newState) {
-                    true -> R.string.added_to_favorites
-                    null -> R.string.removed_from_favorites
-                    else -> R.string.added_to_favorites
+                    true -> R.string.library_favorites_added
+                    null -> R.string.library_favorites_removed
+                    else -> R.string.library_favorites_added
                 }
             }
             val albumName = album?.title
@@ -192,7 +192,7 @@ class Translate private constructor(
     var isActive by activeState
 
     override val iconId: Int = R.drawable.translate
-    override val messageId: Int = R.string.info_translation
+    override val messageId: Int = R.string.common_translation_title
 
     override var isFirstColor by activeState
 

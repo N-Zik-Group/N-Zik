@@ -24,17 +24,17 @@ internal fun AiGeneralCard(search: Search, showRewindMaster: Boolean = true) {
     var enableQuickPicksPage by rememberPreference(enableQuickPicksPageKey, true)
     val rewindEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_ENABLED, true)
     val context = LocalContext.current
-    val searchCtx_0 = search.inputValue.isBlank() || stringResource(R.string.tab_general).contains(search.inputValue, true) || stringResource(R.string.enable_quick_picks_page).contains(search.inputValue, true) || stringResource(R.string.rw_settings_master).contains(search.inputValue, true) || stringResource(R.string.rw_settings_title).contains(search.inputValue, true) || stringResource(R.string.disable_if_you_do_not_want_to_see).contains(search.inputValue, true)
+    val searchCtx_0 = search.inputValue.isBlank() || stringResource(R.string.settings_general_title).contains(search.inputValue, true) || stringResource(R.string.settings_recommendations_quick_picks_enabled_label).contains(search.inputValue, true) || stringResource(R.string.rewind_settings_enabled).contains(search.inputValue, true) || stringResource(R.string.rewind_settings_title).contains(search.inputValue, true) || stringResource(R.string.recommendations_section_visibility_description).contains(search.inputValue, true)
     SettingsSectionCard(
-        title = stringResource(R.string.tab_general),
+        title = stringResource(R.string.settings_general_title),
         icon = R.drawable.settings,
         visible = searchCtx_0,
         content = {
-            if (search.inputValue.isBlank() || stringResource(R.string.enable_quick_picks_page).contains(search.inputValue, true)) {
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_recommendations_quick_picks_enabled_label).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("ai.tab_general.enable_quick_picks_page"),
-                    title = stringResource(R.string.enable_quick_picks_page),
-                    text = stringResource(R.string.settings_desc_ai_tab_general_enable_quick_picks_page),
+                    title = stringResource(R.string.settings_recommendations_quick_picks_enabled_label),
+                    text = stringResource(R.string.recommendations_page_enabled_description),
                     isChecked = enableQuickPicksPage,
                     onCheckedChange = {
                         enableQuickPicksPage = it
@@ -42,11 +42,11 @@ internal fun AiGeneralCard(search: Search, showRewindMaster: Boolean = true) {
                     icon = R.drawable.sparkles
                 )
             }
-            if (showRewindMaster && (search.inputValue.isBlank() || stringResource(R.string.rw_settings_master).contains(search.inputValue, true))) {
+            if (showRewindMaster && (search.inputValue.isBlank() || stringResource(R.string.rewind_settings_enabled).contains(search.inputValue, true))) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("ai.tab_general.rw_settings_master"),
-                    title = stringResource(R.string.rw_settings_master),
-                    text = stringResource(R.string.rw_settings_master_description),
+                    title = stringResource(R.string.rewind_settings_enabled),
+                    text = stringResource(R.string.rewind_settings_enabled_description),
                     isChecked = rewindEnabled,
                     onCheckedChange = {
                         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, it)

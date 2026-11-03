@@ -57,9 +57,9 @@ class AboutCardsTest {
         }
         composeRule.onNodeWithText(context.getString(R.string.settings_section_contributors_title)).assertDoesNotExist()
         assertEquals("Rendering a search destination must not open a browser", emptyList<String>(), opened)
-        composeRule.onNodeWithText(context.getString(R.string.view_the_source_code)).performClick()
-        composeRule.onNodeWithText(context.getString(R.string.report_an_issue)).performClick()
-        composeRule.onNodeWithText(context.getString(R.string.request_a_feature_or_suggest_an_idea)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.about_action_view_source)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.about_action_report_issue)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.about_action_request_feature)).performClick()
         assertEquals(listOf(UpdateEndpoints.REPO_URL,
             UpdateEndpoints.REPO_URL + "/issues/new?assignees=&labels=bug&template=bug_report.yaml",
             UpdateEndpoints.REPO_URL + "/issues/new?assignees=&labels=feature_request&template=feature_request.yaml"), opened)

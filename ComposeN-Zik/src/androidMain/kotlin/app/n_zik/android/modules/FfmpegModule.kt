@@ -36,8 +36,8 @@ object FfmpegModule {
     // Gradle resolves for the compile-time `libs.ffmpegKitAudio` dependency.
     val definition = ModuleDefinition(
         id = "ffmpeg",
-        displayNameRes = R.string.module_ffmpeg,
-        descriptionRes = R.string.module_ffmpeg_description,
+        displayNameRes = R.string.modules_ffmpeg,
+        descriptionRes = R.string.modules_ffmpeg_description,
         version = BuildConfig.FFMPEG_MODULE_VERSION,
         abis = setOf("arm64-v8a", "armeabi-v7a", "x86_64"),
         downloadUrl = "https://repo1.maven.org/maven2/io/github/maxrave-dev/ffmpeg-kit-audio/" +
@@ -107,7 +107,7 @@ object FfmpegModule {
             // off the caller's dispatcher (callers run on Main)
             val loaded = withContext(NzikDispatchers.DATA) { ensureLoaded() }
             if (!loaded) {
-                return ModuleState.FAILED(appContext().getString(R.string.module_load_failed))
+                return ModuleState.FAILED(appContext().getString(R.string.modules_load_failed))
             }
         }
         return state

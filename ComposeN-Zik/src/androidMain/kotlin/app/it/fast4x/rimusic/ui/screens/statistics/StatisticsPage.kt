@@ -640,7 +640,7 @@ fun StatisticsPage(
                             contentAlignment = Alignment.Center
                         ) {
                             BasicText(
-                                text = stringResource(R.string.no_items),
+                                text = stringResource(R.string.common_empty_items),
                                 style = typography().m.semiBold.copy(
                                     color = colorPalette().textSecondary
                                 )

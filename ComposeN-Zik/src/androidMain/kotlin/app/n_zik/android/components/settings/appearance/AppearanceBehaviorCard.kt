@@ -95,7 +95,7 @@ internal fun AppearanceBehaviorCard(search: Search) {
     var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
     var showVisualizerStateKey by rememberPreference(showVisualizerStateKey, false)
     var topPadding by rememberPreference(topPaddingKey, true)
-    val searchCtx_0_5 = search.inputValue.isBlank() || stringResource(R.string.player_behavior_and_visuals).contains(search.inputValue, true) || stringResource(R.string.show_player_top_actions_bar).contains(search.inputValue, true) || stringResource(R.string.blankspace).contains(search.inputValue, true) || stringResource(R.string.show_next_songs_in_player).contains(search.inputValue, true) || stringResource(R.string.showtwosongs).contains(search.inputValue, true) || stringResource(R.string.songs_number_to_show).contains(search.inputValue, true) || stringResource(R.string.showalbumcover).contains(search.inputValue, true) || stringResource(R.string.disable_scrolling_text).contains(search.inputValue, true) || stringResource(R.string.scrolling_text_is_used_for_long_texts).contains(search.inputValue, true) || stringResource(R.string.player_rotating_buttons).contains(search.inputValue, true) || stringResource(R.string.player_enable_rotation_buttons).contains(search.inputValue, true) || stringResource(R.string.toggle_lyrics).contains(search.inputValue, true) || stringResource(R.string.by_tapping_on_the_thumbnail).contains(search.inputValue, true) || stringResource(R.string.click_lyrics_text).contains(search.inputValue, true) || stringResource(R.string.save_lyrics_state).contains(search.inputValue, true) || stringResource(R.string.save_lyrics_state_description).contains(search.inputValue, true) || stringResource(R.string.show_background_in_lyrics).contains(search.inputValue, true) || stringResource(R.string.player_enable_lyrics_popup_message).contains(search.inputValue, true) || stringResource(R.string.background_progress_bar).contains(search.inputValue, true) || stringResource(R.string.visualizer).contains(search.inputValue, true) || stringResource(R.string.save_visualizer_state).contains(search.inputValue, true) || stringResource(R.string.save_visualizer_state_description).contains(search.inputValue, true) || stringResource(R.string.require_mic_permission).contains(search.inputValue, true)
+    val searchCtx_0_5 = search.inputValue.isBlank() || stringResource(R.string.player_behavior_and_visuals).contains(search.inputValue, true) || stringResource(R.string.settings_player_top_action_bar_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_top_spacing_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_next_queue_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_next_two_songs_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_queue_visible_count_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_album_cover_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_disable_text_marquee_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_disable_text_marquee_description).contains(search.inputValue, true) || stringResource(R.string.player_rotating_buttons).contains(search.inputValue, true) || stringResource(R.string.player_enable_rotation_buttons).contains(search.inputValue, true) || stringResource(R.string.settings_player_tap_artwork_toggle_lyrics_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_tap_artwork_toggle_lyrics_description).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_seek_on_line_press_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_remember_state_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_remember_state_description).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_match_player_background_label).contains(search.inputValue, true) || stringResource(R.string.player_enable_lyrics_popup_message).contains(search.inputValue, true) || stringResource(R.string.settings_player_background_progress_label).contains(search.inputValue, true) || stringResource(R.string.visualizer_title).contains(search.inputValue, true) || stringResource(R.string.settings_visualizer_remember_state_label).contains(search.inputValue, true) || stringResource(R.string.settings_visualizer_remember_state_description).contains(search.inputValue, true) || stringResource(R.string.visualizer_microphone_permission_message).contains(search.inputValue, true)
     AnimatedVisibility(
                 visible = searchCtx_0_5,
                 enter = settingsCardEnter,
@@ -107,34 +107,34 @@ internal fun AppearanceBehaviorCard(search: Search) {
             icon = R.drawable.equalizer,
             content = {
             if (!isLandscape) {
-                if (search.inputValue.isBlank() || stringResource(R.string.show_player_top_actions_bar).contains(
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_top_action_bar_visible_label).contains(
                         search.inputValue,
                         true
                     )
                 )
-                    if (search.inputValue.isBlank() || stringResource(R.string.show_player_top_actions_bar).contains(search.inputValue, true)) {
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_player_top_action_bar_visible_label).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.player_behavior_and_visuals.show_player_top_actions_bar"),
                         icon = R.drawable.enqueue,
-                            title = stringResource(R.string.show_player_top_actions_bar),
-                            text = stringResource(R.string.settings_desc_appearance_player_behavior_and_visuals_show_player_top_actions_bar),
+                            title = stringResource(R.string.settings_player_top_action_bar_visible_label),
+                            text = stringResource(R.string.player_show_player_top_actions_bar_description),
                             isChecked = showTopActionsBar,
                             onCheckedChange = { showTopActionsBar = it }
                         )
                     }
 
                 if (!showTopActionsBar) {
-                    if (search.inputValue.isBlank() || stringResource(R.string.blankspace).contains(
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_top_spacing_label).contains(
                             search.inputValue,
                             true
                         )
                     )
-                        if (search.inputValue.isBlank() || stringResource(R.string.blankspace).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_top_spacing_label).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.player_behavior_and_visuals.blankspace"),
                         icon = R.drawable.space,
-                                title = stringResource(R.string.blankspace),
-                                text = stringResource(R.string.settings_desc_appearance_player_behavior_and_visuals_blankspace),
+                                title = stringResource(R.string.settings_lyrics_top_spacing_label),
+                                text = stringResource(R.string.player_top_spacing_description),
                                 isChecked = topPadding,
                                 onCheckedChange = { topPadding = it }
                             )
@@ -142,28 +142,28 @@ internal fun AppearanceBehaviorCard(search: Search) {
                 }
             }
 
-            if (search.inputValue.isBlank() || stringResource(R.string.show_next_songs_in_player).contains(
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_next_queue_visible_label).contains(
                     search.inputValue,
                     true
                 )
             )
-                if (search.inputValue.isBlank() || stringResource(R.string.show_next_songs_in_player).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_next_queue_visible_label).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.player_behavior_and_visuals.show_next_songs_in_player"),
                         icon = R.drawable.arrow_forward,
-                        title = stringResource(R.string.show_next_songs_in_player),
-                        text = stringResource(R.string.settings_desc_appearance_player_behavior_and_visuals_show_next_songs_in_player),
+                        title = stringResource(R.string.settings_player_next_queue_visible_label),
+                        text = stringResource(R.string.player_show_next_songs_in_player_description),
                         isChecked = showNextSongsInPlayer,
                         onCheckedChange = { showNextSongsInPlayer = it }
                     )
                 }
             AnimatedVisibility( visible = showNextSongsInPlayer) {
               Column {
-                  if (search.inputValue.isBlank() || stringResource(R.string.showtwosongs).contains(search.inputValue,true))
+                  if (search.inputValue.isBlank() || stringResource(R.string.settings_player_next_two_songs_visible_label).contains(search.inputValue,true))
                       OtherEnumValueSelectorSettingsEntry(
-                    text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_player_behavior_and_visuals_songs_number_to_show), showsongs.name),
+                    text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_queue_preview_song_count_description), showsongs.name),
                     icon = R.drawable.information,
-                          title = stringResource(R.string.songs_number_to_show),
+                          title = stringResource(R.string.settings_player_queue_visible_count_label),
                           selectedValue = showsongs,
                           onValueSelected = {
                               showsongs = it
@@ -174,16 +174,16 @@ internal fun AppearanceBehaviorCard(search: Search) {
                       )
 
 
-                if (search.inputValue.isBlank() || stringResource(R.string.showalbumcover).contains(
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_album_cover_visible_label).contains(
                         search.inputValue,
                         true
                     )
                 )
-                    if (search.inputValue.isBlank() || stringResource(R.string.showalbumcover).contains(search.inputValue, true)) {
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_player_album_cover_visible_label).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
                         icon = R.drawable.album,
-                            title = stringResource(R.string.showalbumcover),
-                            text = stringResource(R.string.settings_desc_appearance_player_behavior_and_visuals_showalbumcover),
+                            title = stringResource(R.string.settings_player_album_cover_visible_label),
+                            text = stringResource(R.string.player_queue_preview_artwork_description),
                             isChecked = showalbumcover,
                             onCheckedChange = { showalbumcover = it },
                               modifier = (Modifier.padding(start = 25.dp)).settingsSearchTarget("appearance.player_behavior_and_visuals.showalbumcover")
@@ -192,33 +192,33 @@ internal fun AppearanceBehaviorCard(search: Search) {
               }
             }
 
-            if (search.inputValue.isBlank() || stringResource(R.string.disable_scrolling_text).contains(
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_disable_text_marquee_label).contains(
                     search.inputValue,
                     true
                 )
             )
-                if (search.inputValue.isBlank() || stringResource(R.string.disable_scrolling_text).contains(search.inputValue, true) || (stringResource(R.string.scrolling_text_is_used_for_long_texts)).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_disable_text_marquee_label).contains(search.inputValue, true) || (stringResource(R.string.settings_player_disable_text_marquee_description)).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.player_behavior_and_visuals.disable_scrolling_text"),
                         icon = R.drawable.text,
-                        title = stringResource(R.string.disable_scrolling_text),
-                        text = stringResource(R.string.scrolling_text_is_used_for_long_texts),
+                        title = stringResource(R.string.settings_player_disable_text_marquee_label),
+                        text = stringResource(R.string.settings_player_disable_text_marquee_description),
                         isChecked = disableScrollingText,
                         onCheckedChange = { disableScrollingText = it }
                     )
                 }
 
-            if (search.inputValue.isBlank() || stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_horizontal_swipe else R.string.disable_vertical_swipe).contains(
+            if (search.inputValue.isBlank() || stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.settings_player_disable_horizontal_swipe_label else R.string.settings_player_disable_vertical_song_swipe_label).contains(
                     search.inputValue,
                     true
                 )
             )
-                if (search.inputValue.isBlank() || stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_vertical_swipe else R.string.disable_horizontal_swipe).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.settings_player_disable_vertical_song_swipe_label else R.string.settings_player_disable_horizontal_swipe_label).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget(if (playerType == PlayerType.Modern && !isLandscape) "appearance.player_behavior_and_visuals.disable_vertical_swipe" else "appearance.player_behavior_and_visuals.disable_horizontal_swipe"),
                         icon = R.drawable.sync,
-                        title = stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_vertical_swipe else R.string.disable_horizontal_swipe),
-                        text = stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_vertical_swipe_secondary else R.string.disable_song_switching_via_swipe),
+                        title = stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.settings_player_disable_vertical_song_swipe_label else R.string.settings_player_disable_horizontal_swipe_label),
+                        text = stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.settings_player_vertical_swipe_expansion_description else R.string.settings_player_disable_song_swipe_label),
                         isChecked = disablePlayerHorizontalSwipe,
                         onCheckedChange = { disablePlayerHorizontalSwipe = it }
                     )
@@ -227,7 +227,7 @@ internal fun AppearanceBehaviorCard(search: Search) {
             AnimatedVisibility(visible = !disablePlayerHorizontalSwipe) {
                 if (search.inputValue.isBlank() || stringResource(R.string.player_swipe_sensitivity).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_player_behavior_and_visuals_player_swipe_sensitivity), playerSwipeSensitivity.text),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_track_swipe_sensitivity_description), playerSwipeSensitivity.text),
                         icon = R.drawable.gesture,
                         title = stringResource(R.string.player_swipe_sensitivity),
                         selectedValue = playerSwipeSensitivity,
@@ -256,17 +256,17 @@ internal fun AppearanceBehaviorCard(search: Search) {
 
 
 
-            if (search.inputValue.isBlank() || stringResource(R.string.background_progress_bar).contains(
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_background_progress_label).contains(
                     search.inputValue,
                     true
                 )
             )
-                if (search.inputValue.isBlank() || stringResource(R.string.background_progress_bar).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_background_progress_label).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_player_behavior_and_visuals_background_progress_bar), backgroundProgress.text),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_background_progress_description), backgroundProgress.text),
                         modifier = Modifier.settingsSearchTarget("appearance.player_behavior_and_visuals.background_progress_bar"),
                         icon = R.drawable.horizontal_straight_line,
-                        title = stringResource(R.string.background_progress_bar),
+                        title = stringResource(R.string.settings_player_background_progress_label),
                         selectedValue = backgroundProgress,
                         onValueSelected = {
                             backgroundProgress = it
@@ -275,17 +275,17 @@ internal fun AppearanceBehaviorCard(search: Search) {
                     )
                 }
 
-            if (search.inputValue.isBlank() || stringResource(R.string.visualizer).contains(
+            if (search.inputValue.isBlank() || stringResource(R.string.visualizer_title).contains(
                     search.inputValue,
                     true
                 )
             ) {
-                if (search.inputValue.isBlank() || stringResource(R.string.visualizer).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(R.string.visualizer_title).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.player_behavior_and_visuals.visualizer"),
                         icon = R.drawable.sound_effect,
-                        title = stringResource(R.string.visualizer),
-                        text = stringResource(R.string.settings_desc_appearance_player_behavior_and_visuals_visualizer),
+                        title = stringResource(R.string.visualizer_title),
+                        text = stringResource(R.string.visualizer_enabled_description),
                         isChecked = visualizerEnabled,
                         onCheckedChange = { visualizerEnabled = it }
                     )
@@ -294,24 +294,24 @@ internal fun AppearanceBehaviorCard(search: Search) {
 
                 AnimatedVisibility(visible = visualizerEnabled) {
                     Column {
-                        if (search.inputValue.isBlank() || stringResource(R.string.save_visualizer_state).contains(search.inputValue, true) || (stringResource(R.string.save_visualizer_state_description)).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.settings_visualizer_remember_state_label).contains(search.inputValue, true) || (stringResource(R.string.settings_visualizer_remember_state_description)).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
                         icon = R.drawable.bookmark,
-                                title = stringResource(R.string.save_visualizer_state),
-                                text = stringResource(R.string.save_visualizer_state_description),
+                                title = stringResource(R.string.settings_visualizer_remember_state_label),
+                                text = stringResource(R.string.settings_visualizer_remember_state_description),
                                 isChecked = showVisualizerStateKey,
                                 onCheckedChange = { showVisualizerStateKey = it },
                                 modifier = (Modifier.padding(start = 25.dp)).settingsSearchTarget("appearance.player_behavior_and_visuals.save_visualizer_state")
                             )
                         }
 
-                        if (search.inputValue.isBlank() || stringResource(R.string.visualizer_white_color_option).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.visualizer_color_source).contains(search.inputValue, true)) {
                             OtherEnumValueSelectorSettingsEntry(
-                                text = stringResource(R.string.settings_description_with_value, stringResource(R.string.settings_desc_appearance_player_behavior_and_visuals_visualizer_white_color_option), stringResource(when(visualizerWhiteColorOption) { enums.VisualizerWhiteColorOption.White -> R.string.color_white; enums.VisualizerWhiteColorOption.Theme -> R.string.theme; enums.VisualizerWhiteColorOption.Cover -> R.string.artwork; enums.VisualizerWhiteColorOption.Custom -> R.string.color_custom })),
-                                title = stringResource(R.string.visualizer_white_color_option),
+                                text = stringResource(R.string.settings_description_with_value, stringResource(R.string.visualizer_color_source_description), stringResource(when(visualizerWhiteColorOption) { enums.VisualizerWhiteColorOption.White -> R.string.common_color_white; enums.VisualizerWhiteColorOption.Theme -> R.string.common_color_source_theme; enums.VisualizerWhiteColorOption.Cover -> R.string.common_color_source_artwork; enums.VisualizerWhiteColorOption.Custom -> R.string.common_color_custom })),
+                                title = stringResource(R.string.visualizer_color_source),
                                 selectedValue = visualizerWhiteColorOption,
                                 onValueSelected = { visualizerWhiteColorOption = it },
-                                valueText = { stringResource(when(it) { enums.VisualizerWhiteColorOption.White -> R.string.color_white; enums.VisualizerWhiteColorOption.Theme -> R.string.theme; enums.VisualizerWhiteColorOption.Cover -> R.string.artwork; enums.VisualizerWhiteColorOption.Custom -> R.string.color_custom }) },
+                                valueText = { stringResource(when(it) { enums.VisualizerWhiteColorOption.White -> R.string.common_color_white; enums.VisualizerWhiteColorOption.Theme -> R.string.common_color_source_theme; enums.VisualizerWhiteColorOption.Cover -> R.string.common_color_source_artwork; enums.VisualizerWhiteColorOption.Custom -> R.string.common_color_custom }) },
                                 modifier = (Modifier.padding(start = 25.dp)).settingsSearchTarget("appearance.player_behavior_and_visuals.visualizer_white_color_option"),
                                 icon = R.drawable.color_palette
                             )
@@ -321,7 +321,7 @@ internal fun AppearanceBehaviorCard(search: Search) {
                             SliderSettingsEntry(
                                 icon = R.drawable.settings,
                                 title = stringResource(R.string.visualizer_line_thickness),
-                                text = stringResource(R.string.settings_desc_appearance_player_behavior_and_visuals_visualizer_line_thickness),
+                                text = stringResource(R.string.visualizer_line_thickness_description),
                                 state = visualizerLineThickness,
                                 onSlide = { visualizerLineThickness = kotlin.math.round(it) },
                                 range = 1f..10f,
@@ -336,11 +336,11 @@ internal fun AppearanceBehaviorCard(search: Search) {
 
                         AnimatedVisibility(visible = visualizerWhiteColorOption == enums.VisualizerWhiteColorOption.Custom) {
                             var showColorPicker by remember { mutableStateOf(false) }
-                            val customColorString = stringResource(R.string.color_custom)
+                            val customColorString = stringResource(R.string.common_color_custom)
                             if (search.inputValue.isBlank() || true) {
                                 OtherSettingsEntry(
                                     title = customColorString,
-                                    text = stringResource(R.string.settings_desc_appearance_player_behavior_and_visuals_color_custom),
+                                    text = stringResource(R.string.visualizer_custom_color_description),
                                     icon = R.drawable.color_palette,
                                     onClick = { showColorPicker = true },
                                     modifier = (Modifier.padding(start = 40.dp)).settingsSearchTarget("appearance.player_behavior_and_visuals.color_custom"),
@@ -358,38 +358,38 @@ internal fun AppearanceBehaviorCard(search: Search) {
                                 DialogColorPicker(onDismiss = { showColorPicker = false }) {
                                     visualizerCustomColor = it.toArgb()
                                     showColorPicker = false
-                                    Toaster.n(R.string.info_color_s_applied, customColorString)
+                                    Toaster.n(R.string.settings_theme_color_applied_format, customColorString)
                                 }
                             }
                         }
 
-                        if (search.inputValue.isBlank() || stringResource(R.string.showvisthumbnail).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.settings_visualizer_artwork_visible_label).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
                                 icon = R.drawable.equalizer,
-                                title = stringResource(R.string.showvisthumbnail),
-                                text = stringResource(R.string.settings_desc_appearance_player_behavior_and_visuals_showvisthumbnail),
+                                title = stringResource(R.string.settings_visualizer_artwork_visible_label),
+                                text = stringResource(R.string.visualizer_artwork_visible_description),
                                 isChecked = showvisthumbnail,
                                 onCheckedChange = { showvisthumbnail = it },
                                 modifier = (Modifier.padding(start = 25.dp)).settingsSearchTarget("appearance.player_behavior_and_visuals.showvisthumbnail")
                             )
                         }
                         AnimatedVisibility(visible = showvisthumbnail) {
-                            if (search.inputValue.isBlank() || stringResource(R.string.black_background_for_visualizer).contains(search.inputValue, true)) {
+                            if (search.inputValue.isBlank() || stringResource(R.string.visualizer_dark_background_title).contains(search.inputValue, true)) {
                                 OtherSwitchSettingEntry(
                                     icon = R.drawable.images_sharp,
-                                    title = stringResource(R.string.black_background_for_visualizer),
-                                    text = stringResource(R.string.settings_desc_appearance_player_behavior_and_visuals_black_background_for_visualizer),
+                                    title = stringResource(R.string.visualizer_dark_background_title),
+                                    text = stringResource(R.string.visualizer_dark_background_description),
                                     isChecked = blackBackgroundForVisThumbnail,
                                     onCheckedChange = { blackBackgroundForVisThumbnail = it },
                                     modifier = (Modifier.padding(start = 45.dp)).settingsSearchTarget("appearance.player_behavior_and_visuals.black_background_for_visualizer")
                                 )
                             }
                         }
-                        if (search.inputValue.isBlank() || stringResource(R.string.show_visualizer_buttons).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.visualizer_auto_hide_buttons_title).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
                                 icon = R.drawable.menu,
-                                title = stringResource(R.string.show_visualizer_buttons),
-                                text = stringResource(R.string.settings_desc_appearance_player_behavior_and_visuals_show_visualizer_buttons),
+                                title = stringResource(R.string.visualizer_auto_hide_buttons_title),
+                                text = stringResource(R.string.visualizer_auto_hide_buttons_description),
                                 isChecked = showVisualizerButtons,
                                 onCheckedChange = { showVisualizerButtons = it },
                                 modifier = (Modifier.padding(start = 25.dp)).settingsSearchTarget("appearance.player_behavior_and_visuals.show_visualizer_buttons")
@@ -399,7 +399,7 @@ internal fun AppearanceBehaviorCard(search: Search) {
                 }
             }
 
-            ImportantSettingsDescription(text = stringResource(R.string.require_mic_permission))
+            ImportantSettingsDescription(text = stringResource(R.string.visualizer_microphone_permission_message))
 
                     }
                 )

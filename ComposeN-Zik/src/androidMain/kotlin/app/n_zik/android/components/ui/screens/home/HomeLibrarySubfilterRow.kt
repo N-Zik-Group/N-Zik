@@ -63,7 +63,7 @@ internal fun RewindLibraryFilterChip(
     val labels = mapOf(
         RewindPlaylists.Filter.Month to stringResource(R.string.rewind_filter_month),
         RewindPlaylists.Filter.Year to stringResource(R.string.rewind_filter_year),
-        RewindPlaylists.Filter.All to stringResource(R.string.all),
+        RewindPlaylists.Filter.All to stringResource(R.string.common_option_all),
     )
     val icons = mapOf(RewindPlaylists.Filter.Month to R.drawable.stat_month,
         RewindPlaylists.Filter.Year to R.drawable.stat_year, RewindPlaylists.Filter.All to R.drawable.musical_notes)
@@ -72,7 +72,7 @@ internal fun RewindLibraryFilterChip(
         label = { Text(labels.getValue(selected)) },
         onClick = {
             menuState.display {
-                ListMenu.Menu(title = stringResource(R.string.filter_by)) {
+                ListMenu.Menu(title = stringResource(R.string.library_filter_by_title)) {
                     RewindPlaylists.Filter.entries.forEach { filter ->
                         ListMenu.Entry(
                             text = labels.getValue(filter),

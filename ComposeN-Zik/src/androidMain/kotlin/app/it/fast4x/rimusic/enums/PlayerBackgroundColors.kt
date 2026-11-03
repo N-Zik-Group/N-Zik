@@ -8,19 +8,19 @@ enum class PlayerBackgroundColors(
     @field:StringRes override val textId: Int
 ): TextView {
 
-    CoverColor( R.string.bg_colors_background_from_cover ),
+    CoverColor( R.string.player_background_artwork_label ),
 
-    ThemeColor( R.string.bg_colors_background_from_theme ),
+    ThemeColor( R.string.player_background_theme_label ),
 
-    CoverColorGradient( R.string.bg_colors_gradient_background_from_cover ),
+    CoverColorGradient( R.string.player_background_artwork_gradient_label ),
 
-    ThemeColorGradient( R.string.bg_colors_gradient_background_from_theme ),
+    ThemeColorGradient( R.string.player_background_theme_gradient_label ),
 
-    BlurredCoverColor( R.string.bg_colors_blurred_cover_background ),
+    BlurredCoverColor( R.string.player_background_artwork_blurred_label ),
 
-    ColorPalette( R.string.colorpalette ),
+    ColorPalette( R.string.player_background_palette_label ),
 
-    AnimatedGradient( R.string.animatedgradient );
+    AnimatedGradient( R.string.player_background_animated_gradient_label );
 }
 
 

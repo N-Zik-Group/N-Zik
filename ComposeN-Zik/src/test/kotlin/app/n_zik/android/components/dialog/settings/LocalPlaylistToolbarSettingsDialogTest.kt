@@ -82,12 +82,12 @@ class LocalPlaylistToolbarSettingsDialogTest {
         showDialog()
 
         composeRule.onNodeWithText(
-            context.getString(R.string.local_playlist_sort) + " - " + context.getString(R.string.toolbar)
+            context.getString(R.string.settings_local_playlist_title) + " - " + context.getString(R.string.settings_library_toolbar_title)
         ).assertIsDisplayed()
         composeRule.onNodeWithText(context.getString(R.string.playlist_insertion_position))
             .assertIsDisplayed().performClick()
         assertTrue("changes remain a draft until apply", preferences.getBoolean("pl_ts_insertion_position", true))
-        composeRule.onNodeWithText(context.getString(R.string.dialog_apply)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_apply)).performClick()
 
         assertFalse(preferences.getBoolean("pl_ts_insertion_position", true))
         assertTrue(preferences.getBoolean("pl_ts_search", true))
@@ -98,7 +98,7 @@ class LocalPlaylistToolbarSettingsDialogTest {
     @Test fun `cancel discards insertion toggle changes`() {
         showDialog()
         composeRule.onNodeWithText(context.getString(R.string.playlist_insertion_position)).performClick()
-        composeRule.onNodeWithText(context.getString(R.string.cancel)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
 
         assertTrue(preferences.getBoolean("pl_ts_insertion_position", true))
         assertFalse(preferences.contains(localPlaylistToolbarOrderKey))

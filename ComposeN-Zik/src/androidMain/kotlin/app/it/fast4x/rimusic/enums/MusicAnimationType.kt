@@ -8,15 +8,15 @@ enum class MusicAnimationType(
     @field:StringRes override val textId: Int
 ): TextView {
 
-    Disabled( R.string.vt_disabled ),
+    Disabled( R.string.common_option_disabled ),
 
-    Bars( R.string.music_animations_bars ),
+    Bars( R.string.visualizer_animation_bars ),
 
-    CrazyBars( R.string.music_animations_crazy_bars ),
+    CrazyBars( R.string.visualizer_animation_crazy_bars ),
 
-    CrazyPoints( R.string.music_animations_crazy_points ),
+    CrazyPoints( R.string.visualizer_animation_crazy_points ),
 
-    Bubbles( R.string.music_animations_bubbles );
+    Bubbles( R.string.visualizer_animation_bubbles );
 }
 
 

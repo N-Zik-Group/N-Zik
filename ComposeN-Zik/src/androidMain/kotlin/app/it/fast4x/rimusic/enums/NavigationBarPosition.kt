@@ -11,11 +11,11 @@ enum class NavigationBarPosition(
     @field:StringRes override val textId: Int
 ): TextView {
 
-    Left( R.string.direction_left ),
-    Right( R.string.direction_right ),
-    Top( R.string.direction_top ),
-    Bottom( R.string.direction_bottom ),
-    BottomFloating( R.string.direction_bottom_floating );
+    Left( R.string.lyrics_alignment_left_label ),
+    Right( R.string.lyrics_alignment_right_label ),
+    Top( R.string.navigation_position_top_label ),
+    Bottom( R.string.navigation_position_bottom_label ),
+    BottomFloating( R.string.navigation_position_bottom_floating_label );
 
 
     companion object {

@@ -204,7 +204,7 @@ fun OnlineSearchList(
                 SwipeablePlaylistItem(
                     mediaItem = item.asMediaItem,
                     onPlayNext = { binder?.player?.addNext(item.asMediaItem) },
-                    onDownload = { Toaster.w(R.string.downloading_videos_not_supported) },
+                    onDownload = { Toaster.w(R.string.search_video_download_unsupported_message) },
                     onEnqueue = { binder?.player?.enqueue(item.asMediaItem) },
                     downloadStateParam = downloadsMapState[item.asMediaItem.mediaId]?.state ?: Download.STATE_STOPPED,
                     downloadedStateMediaParam = downloadStatesMap[item.asMediaItem.mediaId] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
@@ -310,7 +310,7 @@ fun OnlineSearchList(
                                     .align(Alignment.TopStart)
                                     .padding(all = 5.dp)
                                     .size(30.dp),
-                                contentDescription = androidx.compose.ui.res.stringResource(R.string.cd_youtube_playlist),
+                                contentDescription = androidx.compose.ui.res.stringResource(R.string.accessibility_youtube_playlist),
                                 contentScale = ContentScale.Fit
                             )
                         }

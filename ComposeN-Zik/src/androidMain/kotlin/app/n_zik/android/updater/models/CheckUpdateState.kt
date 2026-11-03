@@ -16,9 +16,9 @@ import app.n_zik.android.R
 enum class CheckUpdateState(
     @field:StringRes val textId: Int
 ) {
-    Enabled(R.string.enabled),
-    Disabled(R.string.vt_disabled),
-    Ask(R.string.ask);
+    Enabled(R.string.common_state_enabled),
+    Disabled(R.string.common_option_disabled),
+    Ask(R.string.updates_check_mode_ask);
 
     /** The localized display text of this state. */
     val text: String

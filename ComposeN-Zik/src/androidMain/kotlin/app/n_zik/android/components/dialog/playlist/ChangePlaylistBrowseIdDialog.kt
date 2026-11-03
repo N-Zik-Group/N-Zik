@@ -73,7 +73,7 @@ class ChangePlaylistBrowseIdDialog private constructor(
     }
 
     override val iconId: Int = R.drawable.title_edit
-    override val messageId: Int = R.string.update_playlist_browse_id
+    override val messageId: Int = R.string.metadata_playlist_action_change_browse_id
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
@@ -132,7 +132,7 @@ class ChangePlaylistBrowseIdDialog private constructor(
                 TextField(
                     value = query,
                     onValueChange = { query = it },
-                    placeholder = { Text(stringResource(R.string.search)) },
+                    placeholder = { Text(stringResource(R.string.search_title)) },
                     modifier = Modifier.weight(1f),
                     colors = InputDialog.defaultTextFieldColors(),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -152,7 +152,7 @@ class ChangePlaylistBrowseIdDialog private constructor(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.search),
-                        contentDescription = stringResource(R.string.search),
+                        contentDescription = stringResource(R.string.search_title),
                         tint = colorPalette().text,
                         modifier = Modifier.size(24.dp)
                     )
@@ -220,7 +220,7 @@ class ChangePlaylistBrowseIdDialog private constructor(
             buttons = buildList {
                 add(
                     DialogButton(
-                        text = stringResource(R.string.cancel),
+                        text = stringResource(R.string.common_action_cancel),
                         onClick = ::hideDialog,
                         danger = true
                     )
@@ -229,7 +229,7 @@ class ChangePlaylistBrowseIdDialog private constructor(
                 if (playlist.browseId?.startsWith(MODIFIED_PREFIX) == true || playlist.browseId?.startsWith("LOCAL_Playlist_") == true) {
                     add(
                         DialogButton(
-                            text = stringResource(R.string.reset),
+                            text = stringResource(R.string.common_action_reset),
                             onClick = {
                                 val prefs = appContext().preferences
                                 val oldId = prefs.getString("old_browse_id_${playlist.browseId}", null)
@@ -246,7 +246,7 @@ class ChangePlaylistBrowseIdDialog private constructor(
                 // Unlink Button
                 add(
                     DialogButton(
-                        text = stringResource(R.string.unlink),
+                        text = stringResource(R.string.common_action_unlink),
                         onClick = {
                             Database.playlistTable.updateBrowseId(playlist.id, "LOCAL_Playlist_${UUID.randomUUID()}")
                             Toaster.done()

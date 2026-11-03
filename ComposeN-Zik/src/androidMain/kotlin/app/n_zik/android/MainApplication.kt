@@ -246,7 +246,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             }
         }
 
-        ArtistConjunctions.conjunctions = listOf(R.string.and).mapNotNull { id ->
+        ArtistConjunctions.conjunctions = listOf(R.string.common_artist_conjunction_and).mapNotNull { id ->
             runCatching { getString(id) }.getOrNull()
         }
 
@@ -467,7 +467,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
             val moduleUpdate = withContext(NzikDispatchers.DATA) { FfmpegModule.checkForUpdate() }
             if (moduleUpdate is ModuleUpdateStatus.UpdateAvailable) {
-                Toaster.i(R.string.module_update_available)
+                Toaster.i(R.string.modules_update_available)
             }
         }
 
@@ -599,37 +599,37 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             // Channel for music player
             val playerChannel = NotificationChannel(
                 PlayerServiceModern.NotificationChannelId,
-                applicationContext.getString(R.string.player),
+                applicationContext.getString(R.string.player_title),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = applicationContext.getString(R.string.player)
+                description = applicationContext.getString(R.string.player_title)
                 setShowBadge(false)
             }
 
             // Channel for sleep timer
             val sleepTimerChannel = NotificationChannel(
                 PlayerServiceModern.SleepTimerNotificationChannelId,
-                applicationContext.getString(R.string.sleep_timer),
+                applicationContext.getString(R.string.player_sleep_timer_title),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = applicationContext.getString(R.string.sleep_timer)
+                description = applicationContext.getString(R.string.player_sleep_timer_title)
                 setShowBadge(false)
             }
 
             // Channel for downloads
             val downloadChannel = NotificationChannel(
                 MyDownloadHelper.DOWNLOAD_NOTIFICATION_CHANNEL_ID,
-                applicationContext.getString(R.string.download),
+                applicationContext.getString(R.string.downloads_title),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = applicationContext.getString(R.string.download)
+                description = applicationContext.getString(R.string.downloads_title)
                 setShowBadge(false)
             }
 
             // Channel for sync
             val syncChannel = NotificationChannel(
                 "sync_channel_id",
-                applicationContext.getString(R.string.sync),
+                applicationContext.getString(R.string.sync_action_sync),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
                 description = applicationContext.getString(R.string.sync_notifications)
@@ -639,10 +639,10 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             // Channel for the monthly rewind reminder
             val rewindChannel = NotificationChannel(
                 RewindReminderWorker.CHANNEL_ID,
-                applicationContext.getString(R.string.rw_channel),
+                applicationContext.getString(R.string.rewind_channel),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = applicationContext.getString(R.string.rw_channel)
+                description = applicationContext.getString(R.string.rewind_channel)
                 setShowBadge(false)
             }
 

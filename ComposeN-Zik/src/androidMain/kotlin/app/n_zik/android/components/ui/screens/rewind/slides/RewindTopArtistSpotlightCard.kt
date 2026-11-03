@@ -100,8 +100,8 @@ fun RewindTopArtistSpotlightCard(
                 verticalArrangement = Arrangement.Center
             ) {
                 RewindEmptyState(
-                    title = stringResource(R.string.rw_artist_spotlight_empty_title),
-                    body = stringResource(R.string.rw_artist_spotlight_empty_body),
+                    title = stringResource(R.string.rewind_artist_spotlight_empty_title),
+                    body = stringResource(R.string.rewind_artist_spotlight_empty_body),
                     foreground = rewindColors.value.cream,
                     accent = rewindColors.value.lime
                 )
@@ -128,7 +128,7 @@ fun RewindTopArtistSpotlightCard(
             )
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rw_artist_spotlight_kicker, periodLabel), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rewind_artist_spotlight_kicker, periodLabel), rewindColors.value.lime)
                 }
                 Spacer(Modifier.height(12.dp))
                 RewindReveal(active, 180, scaleFrom = 0.90f, durationMillis = 760) {
@@ -223,12 +223,12 @@ fun RewindTopArtistSpotlightCard(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         SpotlightMetric(
-                            label = stringResource(R.string.rw_label_minutes),
+                            label = stringResource(R.string.rewind_label_minutes),
                             value = formatRewindNumber(artist.minutes),
                             modifier = Modifier.weight(1f)
                         )
                         SpotlightMetric(
-                            label = stringResource(R.string.rw_label_songs),
+                            label = stringResource(R.string.rewind_label_songs),
                             value = formatRewindNumber(artist.songCount.toLong()),
                             modifier = Modifier.weight(1f)
                         )
@@ -298,7 +298,7 @@ fun RewindTopArtistSpotlightCard(
                     ) {
                         Column(modifier = Modifier.fillMaxSize()) {
                             Text(
-                                text = stringResource(R.string.rw_artist_spotlight_about),
+                                text = stringResource(R.string.rewind_artist_spotlight_about),
                                 color = rewindColors.value.lime,
                                 fontSize = textScale.size(9.sp),
                                 fontWeight = FontWeight.Black,
@@ -352,7 +352,7 @@ fun RewindTopArtistSpotlightCard(
                                     if (bioOverflow && !rewindShareCaptureActive.value) {
                                         Spacer(Modifier.height(6.dp))
                                         RewindSeeMorePill(
-                                            text = stringResource(R.string.rw_artist_spotlight_see_more),
+                                            text = stringResource(R.string.rewind_artist_spotlight_see_more),
                                             onClick = { showBioSheet = true }
                                         )
                                     }
@@ -360,7 +360,7 @@ fun RewindTopArtistSpotlightCard(
                             }
                             Spacer(Modifier.height(5.dp))
                             Text(
-                                text = stringResource(R.string.rw_artist_spotlight_innertube),
+                                text = stringResource(R.string.rewind_artist_spotlight_innertube),
                                 color = rewindColors.value.cream.copy(alpha = 0.35f),
                                 fontSize = textScale.size(8.sp),
                                 fontWeight = FontWeight.Bold,
@@ -401,7 +401,7 @@ fun RewindTopArtistSpotlightCard(
                         // clip, drag handle, title header, scrolling) is shared.
                         if (menuStyle == MenuStyle.List) {
                             ListMenu.Menu(
-                                title = stringResource(R.string.rw_artist_spotlight_about)
+                                title = stringResource(R.string.rewind_artist_spotlight_about)
                             ) {
                                 Text(
                                     text = bio,
@@ -411,7 +411,7 @@ fun RewindTopArtistSpotlightCard(
                                 )
                                 Spacer(Modifier.height(16.dp))
                                 Text(
-                                    text = stringResource(R.string.rw_artist_spotlight_innertube),
+                                    text = stringResource(R.string.rewind_artist_spotlight_innertube),
                                     color = colorPalette().text.copy(alpha = 0.45f),
                                     fontSize = 8.sp,
                                     fontWeight = FontWeight.Bold,
@@ -421,7 +421,7 @@ fun RewindTopArtistSpotlightCard(
                             }
                         } else {
                             GridMenu.Menu(
-                                title = stringResource(R.string.rw_artist_spotlight_about)
+                                title = stringResource(R.string.rewind_artist_spotlight_about)
                             ) {
                                 item(span = { GridItemSpan(maxLineSpan) }) {
                                     Column {
@@ -433,7 +433,7 @@ fun RewindTopArtistSpotlightCard(
                                         )
                                         Spacer(Modifier.height(16.dp))
                                         Text(
-                                            text = stringResource(R.string.rw_artist_spotlight_innertube),
+                                            text = stringResource(R.string.rewind_artist_spotlight_innertube),
                                             color = colorPalette().text.copy(alpha = 0.45f),
                                             fontSize = 8.sp,
                                             fontWeight = FontWeight.Bold,

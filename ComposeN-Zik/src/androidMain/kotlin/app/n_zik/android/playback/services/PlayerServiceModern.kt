@@ -1366,7 +1366,7 @@ class PlayerServiceModern : MediaLibraryService(),
             && player.playerError != null
         ) {
             Timber.tag("PlayerServiceModern").e("UNEXPECTED auto-skip detected with skipMediaOnError=OFF! error=${player.playerError?.errorCodeName}")
-            Toaster.w(R.string.stream_unexpected_skip)
+            Toaster.w(R.string.network_stream_unexpected_skip)
         }
 
         publishCurrentMediaItem(mediaItem)
@@ -1760,7 +1760,7 @@ class PlayerServiceModern : MediaLibraryService(),
             }
             val unmatchedCause = generateSequence<Throwable>(error) { it.cause }.firstOrNull { it is UnmatchedSongException }
             if (unmatchedCause != null) {
-                Toaster.w(R.string.playback_blocked_match_first)
+                Toaster.w(R.string.player_matching_required_message)
             }
             // LoginRequiredException — show YouTube's reason (e.g. "Sign in to confirm your age")
             val loginCause = generateSequence<Throwable>(error) { it.cause }.firstOrNull { it is LoginRequiredException }
@@ -1769,9 +1769,9 @@ class PlayerServiceModern : MediaLibraryService(),
                 val isAgeRestricted = loginReason.contains("age", ignoreCase = true) ||
                     loginReason.contains("confirm your age", ignoreCase = true)
                 val displayMessage = when {
-                    isAgeRestricted -> getString(R.string.error_age_restricted, loginReason)
-                    loginReason.isNotEmpty() -> getString(R.string.error_login_required, loginReason)
-                    else -> getString(R.string.error_youtube_login)
+                    isAgeRestricted -> getString(R.string.player_error_age_restricted_format, loginReason)
+                    loginReason.isNotEmpty() -> getString(R.string.player_error_login_required_format, loginReason)
+                    else -> getString(R.string.player_error_youtube_authentication)
                 }
                 Toaster.w(displayMessage)
                 Timber.tag("PlayerServiceModern").w("LoginRequired: reason=$loginReason isAgeRestricted=$isAgeRestricted")
@@ -1810,7 +1810,7 @@ class PlayerServiceModern : MediaLibraryService(),
                             MainApplication.cookieStatus = MainApplication.CookieStatus.EXPIRED
                             preferences.edit().putBoolean(ytCookieExpiredKey, true).apply()
                             Timber.tag("PlayerServiceModern").w("Cookie expired (401) — marking session as EXPIRED")
-                            Toaster.w(R.string.error_session_expired)
+                            Toaster.w(R.string.account_youtube_session_expired)
                         }
                         streamUrlCache.invalidate(currentMediaId)
                         try {
@@ -1896,7 +1896,7 @@ class PlayerServiceModern : MediaLibraryService(),
                         player.play()
                     }
                 }
-                Toaster.w(R.string.stream_error_retrying, formatArgs = arrayOf(errorDetail.take(80)))
+                Toaster.w(R.string.network_stream_error_retrying, formatArgs = arrayOf(errorDetail.take(80)))
                 return
             } else {
                 Timber.tag("PlayerServiceModern").e("onPlayerError recovery exhausted ($MAX_RECOVERY_ATTEMPTS attempts) for $currentMediaId")
@@ -1908,7 +1908,7 @@ class PlayerServiceModern : MediaLibraryService(),
         if (!preferences.getBoolean(skipMediaOnErrorKey, false) || !player.hasNextMediaItem()) {
             // Show error toast with code name for debugging
             val codeName = getErrorCodeName(error.errorCode)
-            Toaster.e(R.string.error_playback_failed_with_code, formatArgs = arrayOf(errorDetail.take(80), codeName))
+            Toaster.e(R.string.player_error_playback_code_format, formatArgs = arrayOf(errorDetail.take(80), codeName))
             return
         }
 
@@ -1921,7 +1921,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
         showSmartMessage(
             message = getString(
-                R.string.skip_media_on_error_message,
+                R.string.player_song_playback_error_format,
                 prev.mediaMetadata.title
             )
         )
@@ -1977,7 +1977,7 @@ class PlayerServiceModern : MediaLibraryService(),
             bassBoost?.enabled = true
             bassBoostReady = true
         }.onFailure {
-            Toaster.e( R.string.cant_enable_bass_boost )
+            Toaster.e( R.string.audio_bass_boost_unavailable_message )
         }
     }
 
@@ -2046,7 +2046,7 @@ class PlayerServiceModern : MediaLibraryService(),
                         .collectLatest { format ->
                             val loudnessMb = format?.loudnessDb.toMb().let {
                                 if (it !in -2000..2000) {
-                                    Toaster.w( R.string.extreme_loudness_detected )
+                                    Toaster.w( R.string.audio_extreme_loudness_warning )
 
                                     0
                                 } else
@@ -2204,7 +2204,7 @@ class PlayerServiceModern : MediaLibraryService(),
                 } else if (!skipOnError) {
                     // User wants to NEVER skip: keep retrying with a long delay.
                     // Show a toast so the user always knows something is happening.
-                    Toaster.w(R.string.stream_still_retrying, formatArgs = arrayOf(count.toString()))
+                    Toaster.w(R.string.network_stream_still_retrying, formatArgs = arrayOf(count.toString()))
                     // Returning a positive value ensures ExoPlayer never gives up
                     // on this media item (C.TIME_UNSET would cause a skip).
                     delayMs = 15_000L
@@ -2801,7 +2801,7 @@ class PlayerServiceModern : MediaLibraryService(),
 //
             // construction-time profile is always the active one at emission.
             channelId(NotificationChannelId, getActiveProfile(context)),
-            R.string.player,
+            R.string.player_title,
         ) {
 
         /**
@@ -2814,13 +2814,13 @@ class PlayerServiceModern : MediaLibraryService(),
         override fun getNotificationChannelInfo(): Provider.NotificationChannelInfo =
             Provider.NotificationChannelInfo(
                 channelId(NotificationChannelId, getActiveProfile(context)),
-                context.getString(R.string.player),
+                context.getString(R.string.player_title),
             )
 
         override fun getNotificationContentTitle(metadata: MediaMetadata): CharSequence? {
             val isExplicit = metadata.extras?.getBoolean("isExplicit") == true ||
                              metadata.extras?.getBoolean("androidx.media3.session.EXTRAS_KEY_IS_EXPLICIT") == true
-            val title = cleanPrefix(metadata.title?.toString() ?: "").ifBlank { context.getString(R.string.unknown_title) }.let {
+            val title = cleanPrefix(metadata.title?.toString() ?: "").ifBlank { context.getString(R.string.metadata_unknown_title) }.let {
                 if (isExplicit) "\uD83C\uDD74 $it" else it
             }
             val customMetadata = MediaMetadata.Builder()
@@ -2834,7 +2834,7 @@ class PlayerServiceModern : MediaLibraryService(),
             if (cleaned.isNotBlank() && cleaned != "null") return cleaned
             val albumCleaned = cleanPrefix(metadata.albumTitle?.toString() ?: "")
             if (albumCleaned.isNotBlank() && albumCleaned != "null") return albumCleaned
-            return context.getString(R.string.unknown_artist)
+            return context.getString(R.string.metadata_unknown_artist)
         }
     }
 
@@ -2956,7 +2956,7 @@ class PlayerServiceModern : MediaLibraryService(),
             timerJob = coroutineScope.timer(delayMillis) {
                 val notification = NotificationCompat
                     .Builder(this@PlayerServiceModern, channelId(SleepTimerNotificationChannelId, getActiveProfile(this@PlayerServiceModern)))
-                    .setContentTitle(getString(R.string.sleep_timer_ended))
+                    .setContentTitle(getString(R.string.player_sleep_timer_finished_message))
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setAutoCancel(true)
                     .setOnlyAlertOnce(true)
@@ -3836,7 +3836,7 @@ fun getErrorCodeName(errorCode: Int): String = when (errorCode) {
 
 /** Issue #866 (gh-866): label of the state-dependent radio command button — pure so the state → string mapping is unit-testable without a running [PlayerServiceModern]. */
 internal fun radioCommandButtonLabelRes(isRadioActive: Boolean): Int =
-    if (isRadioActive) R.string.stop_radio else R.string.start_radio
+    if (isRadioActive) R.string.radio_action_stop else R.string.radio_action_start
 
 /**
  * Issue #866 (gh-866): icon of the state-dependent radio command button — pure so the
@@ -3978,7 +3978,7 @@ internal fun selfHealStaleDownloadEntry(context: Context, item: MediaItem, downl
     Timber.tag("PlayerServiceModern").w("Download re-validation (pre-playback): ${item.mediaId} is stale, removing the index entry")
     MyDownloadHelper.removeDownload(context, item)
     Toaster.w(
-        R.string.download_stale_removed,
+        R.string.downloads_stale_removed,
         formatArgs = arrayOf(item.mediaMetadata.title ?: ""),
         duration = Toast.LENGTH_LONG
     )

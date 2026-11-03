@@ -264,7 +264,7 @@ class PlaylistSourceRefreshTest {
         val active = mutableStateOf(false)
         every { binder.isRadioActive } answers { active.value }
         every { binder.radioActionTextRes } answers {
-            if (active.value) R.string.stop_radio else R.string.start_radio
+            if (active.value) R.string.radio_action_stop else R.string.radio_action_start
         }
         val song = Song(id = "radio-song", title = "Radio song", durationText = null, thumbnailUrl = null)
         val menu = MenuState()
@@ -286,13 +286,13 @@ class PlaylistSourceRefreshTest {
         compose.runOnIdle {
             assertEquals(R.drawable.radio, requireNotNull(radio).iconId)
             assertEquals(appearance.colorPalette.text, color)
-            assertEquals(context.getString(R.string.start_radio), title)
+            assertEquals(context.getString(R.string.radio_action_start), title)
             active.value = true
         }
         compose.runOnIdle {
             assertEquals(R.drawable.radio_stop, requireNotNull(radio).iconId)
             assertEquals(appearance.colorPalette.accent, color)
-            assertEquals(context.getString(R.string.stop_radio), title)
+            assertEquals(context.getString(R.string.radio_action_stop), title)
             menu.display { }
             requireNotNull(radio).onShortClick()
             assertFalse(menu.isDisplayed)

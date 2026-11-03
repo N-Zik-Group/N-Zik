@@ -70,28 +70,28 @@ class DockToolbarSettingsDialogTest {
 
     @Test fun `reset and apply clears only toolbar order while normal mini actions remain unchanged`() {
         showDialog()
-        compose.onNodeWithText(context.getString(R.string.reset)).performClick()
+        compose.onNodeWithText(context.getString(R.string.common_action_reset)).performClick()
         assertEquals(customOrder, context.preferences.getString(DockToolbarPreferences.orderKey, null))
-        compose.onNodeWithText(context.getString(R.string.dialog_apply)).performClick()
+        compose.onNodeWithText(context.getString(R.string.common_action_apply)).performClick()
         assertFalse(context.preferences.contains(DockToolbarPreferences.orderKey))
         assertOtherMiniPreferencesUnchanged()
     }
 
     @Test fun `reset then cancel keeps stored toolbar order and normal mini actions unchanged`() {
         showDialog()
-        compose.onNodeWithText(context.getString(R.string.reset)).performClick()
-        compose.onNodeWithText(context.getString(R.string.cancel)).performClick()
+        compose.onNodeWithText(context.getString(R.string.common_action_reset)).performClick()
+        compose.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
         assertEquals(customOrder, context.preferences.getString(DockToolbarPreferences.orderKey, null))
         assertOtherMiniPreferencesUnchanged()
     }
 
     @Test fun `mini action settings expose the normal controls without separate compact selectors`() {
         showDialog(miniActions = true)
-        compose.onNodeWithText(context.getString(R.string.miniplayer_button_skip_back)).assertExists()
-        compose.onNodeWithText(context.getString(R.string.miniplayer_button_play_pause)).assertExists()
-        compose.onNodeWithText(context.getString(R.string.miniplayer_button_skip_forward)).assertExists()
-        compose.onNodeWithText(context.getString(R.string.compact_miniplayer_slot_1)).assertDoesNotExist()
-        compose.onNodeWithText(context.getString(R.string.compact_miniplayer_slot_2)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.player_action_previous)).assertExists()
+        compose.onNodeWithText(context.getString(R.string.player_mini_button_play_pause)).assertExists()
+        compose.onNodeWithText(context.getString(R.string.player_action_next)).assertExists()
+        compose.onNodeWithText(context.getString(R.string.settings_dock_compact_first_action_label)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.settings_dock_compact_second_action_label)).assertDoesNotExist()
     }
 
     private fun assertOtherMiniPreferencesUnchanged() {

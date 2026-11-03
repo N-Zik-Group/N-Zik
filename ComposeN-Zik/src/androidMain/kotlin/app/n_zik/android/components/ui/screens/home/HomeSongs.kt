@@ -502,7 +502,7 @@ fun HomeSongs(
         object : MenuIcon,
             Descriptive {
             override val iconId: Int = R.drawable.alert
-            override val messageId: Int = R.string.match_album_audio_version
+            override val messageId: Int = R.string.song_matching_action_open
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() { onMatchClick?.invoke() }
             override fun onLongClick() {}
@@ -616,7 +616,7 @@ fun HomeSongs(
                                         if ((song.id.length != 11 || (song.durationText == "00:00" && song.totalPlayTimeMs == 1L)) && !song.id.startsWith(LOCAL_KEY_PREFIX)) {
                                             Icon(
                                                 painter = painterResource(R.drawable.alert),
-                                                contentDescription = stringResource(R.string.unmatched_song),
+                                                contentDescription = stringResource(R.string.song_matching_unmatched_label),
                                                 tint = Color(0xFFFF9800),
                                                 modifier = Modifier.padding(start = 8.dp).size(18.dp)
                                             )
@@ -660,7 +660,7 @@ fun HomeSongs(
                                     onClick = {
                                         search.hideIfEmpty()
                                         if (song.isUnmatched) {
-                                            Toaster.w(R.string.playback_blocked_match_first)
+                                            Toaster.w(R.string.player_matching_required_message)
                                         } else {
                                             binder?.stopRadio()
                                             val mediaItems = getSongs().fastMap( Song::asMediaItem )
@@ -705,7 +705,7 @@ fun HomeSongs(
                 modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding(topInsetProvider = topContentInsetProvider, base = PaddingValues(top = visibleHeaderPadding(), bottom = Dimensions.bottomSpacer))),
                 contentAlignment = Alignment.Center
             ) {
-                if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.no_items))
+                if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.common_empty_items))
             }
         }
     }

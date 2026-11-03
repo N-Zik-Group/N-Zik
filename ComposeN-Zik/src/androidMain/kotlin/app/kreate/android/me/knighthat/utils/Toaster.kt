@@ -189,9 +189,9 @@ object Toaster {
 
      */
 
-    fun done() = this.s( R.string.done )
+    fun done() = this.s( R.string.common_action_done )
 
-    fun noInternet() = this.e( R.string.no_connection )
+    fun noInternet() = this.e( R.string.common_error_no_connection )
 }
 
 

@@ -37,7 +37,7 @@ class ChangeAlbumAuthorsDialog private constructor(
 
     override val keyboardOption: KeyboardOptions = KeyboardOptions.Default
     override val iconId: Int = R.drawable.artists_edit
-    override val messageId: Int = R.string.update_authors
+    override val messageId: Int = R.string.metadata_action_change_artists
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )

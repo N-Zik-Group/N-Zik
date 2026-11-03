@@ -83,7 +83,7 @@ class SearchResultHeaderActionsTest {
                 }
             }
         }
-        val pencil = compose.onNodeWithContentDescription(context.getString(R.string.search))
+        val pencil = compose.onNodeWithContentDescription(context.getString(R.string.search_title))
         val layout = compose.onNodeWithContentDescription("native layout")
         val before = listOf(pencil.fetchSemanticsNode().boundsInRoot, layout.fetchSemanticsNode().boundsInRoot)
         val source = trigger.bounds
@@ -227,7 +227,7 @@ class SearchResultHeaderActionsTest {
             }
             val globe = compose.onNodeWithContentDescription("globe").fetchSemanticsNode().boundsInRoot
             val layout = compose.onNodeWithContentDescription("layout").fetchSemanticsNode().boundsInRoot
-            val pencil = compose.onNodeWithContentDescription(context.getString(R.string.search)).fetchSemanticsNode().boundsInRoot
+            val pencil = compose.onNodeWithContentDescription(context.getString(R.string.search_title)).fetchSemanticsNode().boundsInRoot
             compose.onNodeWithContentDescription("globe").performClick()
             compose.waitForIdle()
             compose.runOnIdle {
@@ -244,9 +244,9 @@ class SearchResultHeaderActionsTest {
             }
             assertEquals(globe, compose.onNodeWithContentDescription("globe").fetchSemanticsNode().boundsInRoot)
             assertEquals(layout, compose.onNodeWithContentDescription("layout").fetchSemanticsNode().boundsInRoot)
-            assertEquals(pencil, compose.onNodeWithContentDescription(context.getString(R.string.search)).fetchSemanticsNode().boundsInRoot)
+            assertEquals(pencil, compose.onNodeWithContentDescription(context.getString(R.string.search_title)).fetchSemanticsNode().boundsInRoot)
             compose.onNodeWithContentDescription("layout").performClick()
-            compose.onNodeWithContentDescription(context.getString(R.string.search)).performClick()
+            compose.onNodeWithContentDescription(context.getString(R.string.search_title)).performClick()
             compose.runOnIdle { assertEquals(listOf(1, 1), clicks.toList()) }
         } finally {
             context.preferences.edit().putBoolean(glassEnabledKey, previous).commit()
@@ -277,7 +277,7 @@ class SearchResultHeaderActionsTest {
             }
         }
         compose.onNodeWithContentDescription("layout").assertDoesNotExist()
-        compose.onNodeWithContentDescription(context.getString(R.string.search)).performTouchInput { click() }
+        compose.onNodeWithContentDescription(context.getString(R.string.search_title)).performTouchInput { click() }
         compose.onNodeWithContentDescription("filter").performTouchInput { click() }
         compose.runOnIdle { showToggle.value = true }
         compose.onNodeWithContentDescription("layout").assertWidthIsEqualTo(44.dp).performTouchInput { click() }

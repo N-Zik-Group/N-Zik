@@ -46,7 +46,7 @@ class MaintenanceMenuItemTest {
     val composeRule = createComposeRule()
 
     private val context: Context = ApplicationProvider.getApplicationContext()
-    private val label: String get() = context.getString(R.string.maintenance)
+    private val label: String get() = context.getString(R.string.maintenance_title)
 
     private val appearance = Appearance(
         colorPalette = DefaultDarkColorPalette,

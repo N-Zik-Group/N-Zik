@@ -64,7 +64,7 @@ abstract class CheckboxDialog(activeState: MutableState<Boolean>): ConfirmDialog
                     override val id: String = "select_all"
                     override val menuIconTitle: String
                         @Composable
-                        get() = stringResource(R.string.all)
+                        get() = stringResource(R.string.common_option_all)
 
                     override fun onShortClick() {
                         // Disable uncheck

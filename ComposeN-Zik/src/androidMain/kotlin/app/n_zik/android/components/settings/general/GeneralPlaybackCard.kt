@@ -80,15 +80,15 @@ fun GeneralPlaybackCard(
     var showPauseBetweenSongsDialog by remember { mutableStateOf(false) }
 
     SettingsSectionCard(
-        title = stringResource(R.string.playback),
+        title = stringResource(R.string.common_playback_section_title),
         icon = R.drawable.play_forward,
         visible = visible,
         content = {
             if (isAtLeastAndroid6) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("general.app_behavior.resume_playback"),
-                    title = stringResource(R.string.resume_playback),
-                    text = stringResource(R.string.when_device_is_connected),
+                    title = stringResource(R.string.settings_playback_resume_on_connection_label),
+                    text = stringResource(R.string.settings_playback_resume_on_connection_description),
                     isChecked = resumePlaybackWhenDeviceConnected,
                     onCheckedChange = {
                         resumePlaybackWhenDeviceConnected = it
@@ -101,7 +101,7 @@ fun GeneralPlaybackCard(
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.player_controls.player_pause_on_volume_zero"),
                 title = stringResource(R.string.player_pause_on_volume_zero),
-                text = stringResource(R.string.info_pauses_player_when_volume_zero),
+                text = stringResource(R.string.settings_playback_pause_at_zero_volume_description),
                 isChecked = isPauseOnVolumeZeroEnabled,
                 onCheckedChange = { isPauseOnVolumeZeroEnabled = it },
                 icon = R.drawable.volume_up
@@ -109,8 +109,8 @@ fun GeneralPlaybackCard(
 
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.player_controls.pause_on_headphone_disconnect"),
-                title = stringResource(R.string.pause_on_headphone_disconnect),
-                text = stringResource(R.string.pause_on_headphone_disconnect_description),
+                title = stringResource(R.string.settings_playback_pause_on_headphone_disconnect_label),
+                text = stringResource(R.string.settings_playback_pause_on_headphone_disconnect_description),
                 isChecked = pauseOnHeadphoneDisconnect,
                 onCheckedChange = { pauseOnHeadphoneDisconnect = it },
                 icon = R.drawable.headphones
@@ -118,8 +118,8 @@ fun GeneralPlaybackCard(
 
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.app_behavior.skip_media_on_error"),
-                title = stringResource(R.string.skip_media_on_error),
-                text = stringResource(R.string.skip_media_on_error_description),
+                title = stringResource(R.string.settings_playback_skip_on_error_label),
+                text = stringResource(R.string.settings_playback_skip_on_error_description),
                 isChecked = skipMediaOnError,
                 onCheckedChange = {
                     skipMediaOnError = it
@@ -130,8 +130,8 @@ fun GeneralPlaybackCard(
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.jump_previous"),
-                title = stringResource(R.string.jump_previous),
-                text = stringResource(R.string.settings_desc_general_playback_jump_previous),
+                title = stringResource(R.string.settings_playback_previous_restart_threshold_label),
+                text = stringResource(R.string.player_previous_track_threshold_description),
                 selectedValueText = jumpPrevious,
                 onClick = { showJumpPreviousDialog = true },
                 icon = R.drawable.play_skip_back
@@ -139,9 +139,9 @@ fun GeneralPlaybackCard(
 
             DialogPresence(visible = showJumpPreviousDialog) {
                 SettingsInputDialog(
-                    title = stringResource(R.string.jump_previous_blank),
+                    title = stringResource(R.string.settings_playback_previous_restart_threshold_description),
                     initialValue = jumpPrevious,
-                    placeholder = stringResource(R.string.jump_previous_blank),
+                    placeholder = stringResource(R.string.settings_playback_previous_restart_threshold_description),
                     onDismiss = { showJumpPreviousDialog = false },
                     onSetValue = {
                         if (TextUtils.isDigitsOnly(it))
@@ -155,8 +155,8 @@ fun GeneralPlaybackCard(
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.min_listening_time"),
-                title = stringResource(R.string.min_listening_time),
-                text = stringResource(R.string.settings_desc_general_playback_min_listening_time),
+                title = stringResource(R.string.recommendations_minimum_playback_duration_label),
+                text = stringResource(R.string.player_minimum_listening_time_description),
                 selectedValueText = when (exoPlayerMinTimeForEvent) {
                     ExoPlayerMinTimeForEvent.`10s` -> "10s"
                     ExoPlayerMinTimeForEvent.`15s` -> "15s"
@@ -171,7 +171,7 @@ fun GeneralPlaybackCard(
 
             DialogPresence(visible = showMinListeningTimeDialog) {
                 ValueSelectorDialog(
-                    title = stringResource(R.string.is_min_list_time_for_tips_or_quick_pics),
+                    title = stringResource(R.string.recommendations_minimum_listening_time_description),
                     selectedValue = exoPlayerMinTimeForEvent,
                     onValueSelected = { exoPlayerMinTimeForEvent = it },
                     valueText = {
@@ -191,10 +191,10 @@ fun GeneralPlaybackCard(
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.exclude_songs_with_duration_limit"),
-                title = stringResource(R.string.exclude_songs_with_duration_limit),
-                text = stringResource(R.string.settings_desc_general_playback_exclude_songs_with_duration_limit),
+                title = stringResource(R.string.settings_playback_duration_limit_label),
+                text = stringResource(R.string.player_exclude_songs_with_duration_limit_description),
                 selectedValueText = when (excludeSongWithDurationLimit) {
-                    DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
+                    DurationInMinutes.Disabled -> stringResource(R.string.common_option_disabled)
                     DurationInMinutes.`3` -> "3m"
                     DurationInMinutes.`5` -> "5m"
                     DurationInMinutes.`10` -> "10m"
@@ -210,12 +210,12 @@ fun GeneralPlaybackCard(
 
             DialogPresence(visible = showExcludeSongsDialog) {
                 ValueSelectorDialog(
-                    title = stringResource(R.string.exclude_songs_with_duration_limit_description),
+                    title = stringResource(R.string.settings_playback_duration_limit_description),
                     selectedValue = excludeSongWithDurationLimit,
                     onValueSelected = { excludeSongWithDurationLimit = it },
                     valueText = {
                         when (it) {
-                            DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
+                            DurationInMinutes.Disabled -> stringResource(R.string.common_option_disabled)
                             DurationInMinutes.`3` -> "3m"
                             DurationInMinutes.`5` -> "5m"
                             DurationInMinutes.`10` -> "10m"
@@ -234,8 +234,8 @@ fun GeneralPlaybackCard(
             // Dislike exclusion settings
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.exclude_disliked_songs"),
-                title = stringResource(R.string.exclude_disliked_songs),
-                text = stringResource(R.string.settings_desc_general_playback_exclude_disliked_songs),
+                title = stringResource(R.string.settings_playback_exclude_disliked_songs_label),
+                text = stringResource(R.string.player_exclude_disliked_songs_description),
                 selectedValueText = excludeDislikedSongs.text,
                 onClick = { showDislikeSongsDialog = true },
                 icon = R.drawable.heart_dislike
@@ -243,7 +243,7 @@ fun GeneralPlaybackCard(
 
             DialogPresence(visible = showDislikeSongsDialog) {
                 ValueSelectorDialog(
-                    title = stringResource(R.string.exclude_disliked_songs),
+                    title = stringResource(R.string.settings_playback_exclude_disliked_songs_label),
                     selectedValue = excludeDislikedSongs,
                     onValueSelected = {
                         excludeDislikedSongs = it
@@ -261,8 +261,8 @@ fun GeneralPlaybackCard(
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.exclude_disliked_artists"),
-                title = stringResource(R.string.exclude_disliked_artists),
-                text = stringResource(R.string.settings_desc_general_playback_exclude_disliked_artists),
+                title = stringResource(R.string.settings_playback_exclude_disliked_artists_label),
+                text = stringResource(R.string.player_exclude_disliked_artists_description),
                 selectedValueText = excludeDislikedArtists.text,
                 onClick = { showDislikeArtistsDialog = true },
                 icon = R.drawable.person
@@ -270,7 +270,7 @@ fun GeneralPlaybackCard(
 
             DialogPresence(visible = showDislikeArtistsDialog) {
                 ValueSelectorDialog(
-                    title = stringResource(R.string.exclude_disliked_artists),
+                    title = stringResource(R.string.settings_playback_exclude_disliked_artists_label),
                     selectedValue = excludeDislikedArtists,
                     onValueSelected = {
                         excludeDislikedArtists = it
@@ -288,8 +288,8 @@ fun GeneralPlaybackCard(
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.exclude_disliked_albums"),
-                title = stringResource(R.string.exclude_disliked_albums),
-                text = stringResource(R.string.settings_desc_general_playback_exclude_disliked_albums),
+                title = stringResource(R.string.settings_playback_exclude_disliked_albums_label),
+                text = stringResource(R.string.player_exclude_disliked_albums_description),
                 selectedValueText = excludeDislikedAlbums.text,
                 onClick = { showDislikeAlbumsDialog = true },
                 icon = R.drawable.album
@@ -297,7 +297,7 @@ fun GeneralPlaybackCard(
 
             DialogPresence(visible = showDislikeAlbumsDialog) {
                 ValueSelectorDialog(
-                    title = stringResource(R.string.exclude_disliked_albums),
+                    title = stringResource(R.string.settings_playback_exclude_disliked_albums_label),
                     selectedValue = excludeDislikedAlbums,
                     onValueSelected = {
                         excludeDislikedAlbums = it
@@ -315,8 +315,8 @@ fun GeneralPlaybackCard(
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.pause_between_songs"),
-                title = stringResource(R.string.pause_between_songs),
-                text = stringResource(R.string.settings_desc_general_playback_pause_between_songs),
+                title = stringResource(R.string.settings_playback_pause_between_songs_label),
+                text = stringResource(R.string.player_pause_between_songs_description),
                 selectedValueText = when (pauseBetweenSongs) {
                     PauseBetweenSongs.`0` -> "0s"
                     PauseBetweenSongs.`5` -> "5s"
@@ -334,7 +334,7 @@ fun GeneralPlaybackCard(
 
             DialogPresence(visible = showPauseBetweenSongsDialog) {
                 ValueSelectorDialog(
-                    title = stringResource(R.string.pause_between_songs_description),
+                    title = stringResource(R.string.settings_playback_pause_between_songs_description),
                     selectedValue = pauseBetweenSongs,
                     onValueSelected = { pauseBetweenSongs = it },
                     valueText = {
@@ -357,8 +357,8 @@ fun GeneralPlaybackCard(
 
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.crossfade"),
-                title = stringResource(R.string.crossfade),
-                text = stringResource(R.string.crossfade_description),
+                title = stringResource(R.string.settings_audio_crossfade_label),
+                text = stringResource(R.string.settings_audio_crossfade_description),
                 isChecked = crossfadeEnabled,
                 onCheckedChange = { crossfadeEnabled = it },
                 icon = R.drawable.shuffle
@@ -371,8 +371,8 @@ fun GeneralPlaybackCard(
                     var showCrossfadeDurationDialog by remember { mutableStateOf(false) }
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("general.playback.crossfade_duration"),
-                        title = stringResource(R.string.crossfade_duration),
-                        text = stringResource(R.string.settings_desc_general_playback_crossfade_duration),
+                        title = stringResource(R.string.settings_audio_crossfade_duration_label),
+                        text = stringResource(R.string.player_crossfade_duration_description),
                         selectedValueText = "${crossfadeDuration / 1000}s",
                         onClick = { showCrossfadeDurationDialog = true },
                         icon = R.drawable.time
@@ -380,7 +380,7 @@ fun GeneralPlaybackCard(
 
                     DialogPresence(visible = showCrossfadeDurationDialog) {
                         ValueSelectorDialog(
-                            title = stringResource(R.string.crossfade_duration),
+                            title = stringResource(R.string.settings_audio_crossfade_duration_label),
                             selectedValue = crossfadeDuration,
                             onValueSelected = { crossfadeDuration = it },
                             valueText = { "${it / 1000}s" },
@@ -391,8 +391,8 @@ fun GeneralPlaybackCard(
 
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("general.playback.crossfade_gapless"),
-                        title = stringResource(R.string.crossfade_gapless),
-                        text = stringResource(R.string.crossfade_gapless_description),
+                        title = stringResource(R.string.settings_audio_crossfade_album_gapless_label),
+                        text = stringResource(R.string.settings_audio_crossfade_album_gapless_description),
                         isChecked = crossfadeGapless,
                         onCheckedChange = { crossfadeGapless = it },
                         icon = R.drawable.album

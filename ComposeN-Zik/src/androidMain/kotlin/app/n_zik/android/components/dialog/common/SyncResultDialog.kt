@@ -69,7 +69,7 @@ class SyncResultDialog(
     override fun Buttons() = ButtonRow(
         buttons = listOf(
             DialogButton(
-                text = stringResource(R.string.dialog_close),
+                text = stringResource(R.string.common_action_close),
                 onClick = { hideDialog() },
                 primary = true
             )

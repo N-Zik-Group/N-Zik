@@ -12,9 +12,9 @@ enum class ContentType {
     val textName: String
         @Composable
         get() = when( this ) {
-            All -> stringResource(R.string.content_type_all)
-            Official -> stringResource(R.string.content_type_official)
-            UserGenerated -> stringResource(R.string.content_type_user_generated)
+            All -> stringResource(R.string.search_content_type_all)
+            Official -> stringResource(R.string.search_content_type_official)
+            UserGenerated -> stringResource(R.string.search_content_type_user_generated)
         }
 
     val icon: Int

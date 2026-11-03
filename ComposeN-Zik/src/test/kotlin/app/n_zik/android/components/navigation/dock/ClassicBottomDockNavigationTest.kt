@@ -92,7 +92,7 @@ class ClassicBottomDockNavigationTest {
             compose.onNodeWithTag("classic").assertWidthIsEqualTo(360.dp).assertHeightIsEqualTo((row + bottomPadding).dp)
             compose.runOnIdle { assertEquals(1, mounts); assertEquals(0, disposals) }
         }
-        val home = compose.onNodeWithContentDescription(context.getString(R.string.home))
+        val home = compose.onNodeWithContentDescription(context.getString(R.string.home_title))
         if (!attachedMini) {
             home.assertDoesNotExist()
             compose.onNodeWithTag("tabs").performTouchInput { click(center) }

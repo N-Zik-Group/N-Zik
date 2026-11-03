@@ -112,11 +112,11 @@ fun UiSettings(navController: NavController, focus: String = "") {
             .settingsTopContentPadding()
     ) {
 
-        settingsSearchTitle(searchFocus, R.string.user_interface, R.drawable.ic_launcher_monochrome)
+        settingsSearchTitle(searchFocus, R.string.settings_interface_title, R.drawable.ic_launcher_monochrome)
 
         settingsSearchDescription(searchFocus) {
             SettingsDescription(
-                text = stringResource(R.string.ui_settings_description),
+                text = stringResource(R.string.settings_interface_page_description),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
@@ -180,18 +180,18 @@ internal fun UiSettingsContent(
     LocalPlaylistSortSettingsDialog.Render()
     LocalPlaylistToolbarSettingsDialog.Render()
     cardsContainer {
-        if (selectedCards == null || R.string.user_interface in selectedCards) {
-            SettingsCardSlot(R.string.user_interface, modifier = { cardModifier(R.string.user_interface) }) {
+        if (selectedCards == null || R.string.settings_interface_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_interface_title, modifier = { cardModifier(R.string.settings_interface_title) }) {
                 UiInterfaceCard(search)
             }
         }
-        if (selectedCards == null || R.string.floating_dock_settings in selectedCards) {
-            SettingsCardSlot(R.string.floating_dock_settings, modifier = { cardModifier(R.string.floating_dock_settings) }) {
+        if (selectedCards == null || R.string.settings_dock_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_dock_title, modifier = { cardModifier(R.string.settings_dock_title) }) {
                 UiFloatingDockCard(search)
             }
         }
-        if (selectedCards == null || R.string.theme in selectedCards) {
-            SettingsCardSlot(R.string.theme, modifier = { cardModifier(R.string.theme) }) {
+        if (selectedCards == null || R.string.common_color_source_theme in selectedCards) {
+            SettingsCardSlot(R.string.common_color_source_theme, modifier = { cardModifier(R.string.common_color_source_theme) }) {
                 UiThemeCard(search)
             }
         }
@@ -200,8 +200,8 @@ internal fun UiSettingsContent(
                 UiFontCard(search)
             }
         }
-        if (selectedCards == null || R.string.swipe_to_action in selectedCards) {
-            SettingsCardSlot(R.string.swipe_to_action, modifier = { cardModifier(R.string.swipe_to_action) }) {
+        if (selectedCards == null || R.string.settings_swipe_actions_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_swipe_actions_title, modifier = { cardModifier(R.string.settings_swipe_actions_title) }) {
                 UiSwipeCard(search)
             }
         }
@@ -210,11 +210,11 @@ internal fun UiSettingsContent(
                 UiHomeTabsCard(search)
             }
         }
-        if (selectedCards == null || R.string.burger_menu in selectedCards) {
-            SettingsCardSlot(R.string.burger_menu, modifier = { cardModifier(R.string.burger_menu) }) {
+        if (selectedCards == null || R.string.settings_navigation_menu_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_navigation_menu_title, modifier = { cardModifier(R.string.settings_navigation_menu_title) }) {
                 val burgerSearchContextMatch = search.inputValue.isBlank() ||
-                    stringResource(R.string.burger_menu).contains(search.inputValue, true) ||
-                    stringResource(R.string.burger_menu_customize).contains(search.inputValue, true)
+                    stringResource(R.string.settings_navigation_menu_title).contains(search.inputValue, true) ||
+                    stringResource(R.string.settings_navigation_menu_customization_description).contains(search.inputValue, true)
                 AnimatedVisibility(
                     visible = burgerSearchContextMatch,
                     enter = settingsCardEnter,
@@ -227,13 +227,13 @@ internal fun UiSettingsContent(
                 }
             }
         }
-        if (selectedCards == null || R.string.toolbar in selectedCards) {
-            SettingsCardSlot(R.string.toolbar, modifier = { cardModifier(R.string.toolbar) }) {
+        if (selectedCards == null || R.string.settings_library_toolbar_title in selectedCards) {
+            SettingsCardSlot(R.string.settings_library_toolbar_title, modifier = { cardModifier(R.string.settings_library_toolbar_title) }) {
                 UiToolbarsCard(search)
             }
         }
-        if (selectedCards == null || R.string.sort_menu in selectedCards) {
-            SettingsCardSlot(R.string.sort_menu, modifier = { cardModifier(R.string.sort_menu) }) {
+        if (selectedCards == null || R.string.library_sort_menu in selectedCards) {
+            SettingsCardSlot(R.string.library_sort_menu, modifier = { cardModifier(R.string.library_sort_menu) }) {
                 UiSortMenusCard(search)
             }
         }

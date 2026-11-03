@@ -137,7 +137,7 @@ fun RelatedArtistRow(
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = cleanPrefix(artist.name ?: stringResource(R.string.unknown_artist)),
+                text = cleanPrefix(artist.name ?: stringResource(R.string.metadata_unknown_artist)),
                 style = typography().xs,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis

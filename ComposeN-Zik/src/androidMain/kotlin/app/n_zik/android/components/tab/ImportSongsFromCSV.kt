@@ -158,8 +158,8 @@ class ImportSongsFromCSV(
                         }
                     } catch ( e: Exception ) {
                         when( e ) {
-                            is InvalidHeaderException   -> Toaster.e( R.string.error_message_unsupported_local_playlist )
-                            else                        -> Toaster.e( R.string.error_message_import_local_playlist_failed )
+                            is InvalidHeaderException   -> Toaster.e( R.string.playlist_import_unsupported_format )
+                            else                        -> Toaster.e( R.string.playlist_import_failed )
                         }
                     }
                 }
@@ -169,7 +169,7 @@ class ImportSongsFromCSV(
 
     override val supportedMimes: Array<String> = arrayOf("text/csv", "text/comma-separated-values")
     override val iconId: Int = R.drawable.import_outline
-    override val messageId: Int = R.string.import_playlist
+    override val messageId: Int = R.string.playlist_action_import
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )

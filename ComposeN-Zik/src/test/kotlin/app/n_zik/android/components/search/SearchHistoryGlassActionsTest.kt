@@ -79,11 +79,11 @@ class SearchHistoryGlassActionsTest {
         }
         compose.mainClock.advanceTimeBy(400)
         compose.waitForIdle()
-        val delete = if (glass && !contourOnly) compose.onNodeWithContentDescription(context.getString(R.string.delete))
+        val delete = if (glass && !contourOnly) compose.onNodeWithContentDescription(context.getString(R.string.common_action_delete))
             else compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.OnLongClick))
         delete.performTouchInput { click() }
         delete.performTouchInput { longClick() }
-        compose.onNodeWithContentDescription(context.getString(R.string.search)).performTouchInput { click() }
+        compose.onNodeWithContentDescription(context.getString(R.string.search_title)).performTouchInput { click() }
         compose.runOnIdle {
             assertEquals(listOf("Saved query"), deleted)
             assertEquals(listOf("Saved query"), edited)

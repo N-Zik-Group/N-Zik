@@ -257,21 +257,21 @@ fun AlbumDetails(
     //<editor-fold defaultstate="collapsed" desc="Album modifiers">
     val changeTitle = AlbumModifier(
         iconId = R.drawable.title_edit,
-        messageId = R.string.update_title,
+        messageId = R.string.metadata_action_change_title,
         getDefaultValue = { album?.cleanTitle() ?: "" },
     ) {
         updateTitle( browseId, "$MODIFIED_PREFIX$it" )
     }
     val changeAuthors = AlbumModifier(
         iconId = R.drawable.artists_edit,
-        messageId = R.string.update_authors,
+        messageId = R.string.metadata_action_change_artists,
         getDefaultValue = { album?.cleanAuthorsText() ?: "" },
     ) {
         updateAuthors( browseId, "$MODIFIED_PREFIX$it" )
     }
     val changeCover = AlbumModifier(
         iconId = R.drawable.cover_edit,
-        messageId = R.string.update_cover,
+        messageId = R.string.metadata_action_change_cover,
         getDefaultValue = { album?.thumbnailUrl ?: "" },
     ) {
         updateCover( browseId, "$MODIFIED_PREFIX$it" )
@@ -319,7 +319,7 @@ fun AlbumDetails(
                     if (loadedSongsCount > 0) {
                         Spacer(modifier = Modifier.height(8.dp))
                         BasicText(
-                            text = stringResource(R.string.loading_songs_count, loadedSongsCount),
+                            text = stringResource(R.string.album_loading_song_count_format, loadedSongsCount),
                             style = typography().xxs.copy(
                                 color = colorPalette().textDisabled
                             )
@@ -428,7 +428,7 @@ fun AlbumDetails(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         val year = album?.year ?: "0000"
-                        val songCount = "${items.size} ${stringResource( R.string.songs )}"
+                        val songCount = "${items.size} ${stringResource( R.string.library_songs_title )}"
                         val totalDuration = items.sumOf {
                             durationTextToMillis(it.durationText ?: "")
                         }.let( ::formatAsTime )
@@ -515,7 +515,7 @@ fun AlbumDetails(
                                 
                                 DialogPresence(visible = showTranslateLanguageDialog) {
                                     ValueSelectorDialog(
-                                        title = stringResource(R.string.info_translation),
+                                        title = stringResource(R.string.common_translation_title),
                                         selectedValue = otherLanguageApp,
                                         onValueSelected = {
                                             otherLanguageApp = it
@@ -562,7 +562,7 @@ fun AlbumDetails(
                                     modifier = Modifier.align(Alignment.CenterHorizontally),
                                 ) {
                                     BasicText(
-                                        text = if (isDescriptionExpanded) stringResource(R.string.show_less) else stringResource(R.string.show_more),
+                                        text = if (isDescriptionExpanded) stringResource(R.string.common_action_show_less) else stringResource(R.string.common_action_show_more),
                                         style = typography().xs.semiBold.copy(colorPalette().text),
                                         modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally)
                                     )
@@ -571,7 +571,7 @@ fun AlbumDetails(
 
                             if (isDescriptionExpanded && attributionsIndex != -1) {
                                 BasicText(
-                                    text = stringResource(R.string.from_wikipedia_cca),
+                                    text = stringResource(R.string.metadata_wikipedia_attribution),
                                     style = typography().xxs
                                         .color(colorPalette().textDisabled)
                                         .align(TextAlign.Start),
@@ -585,7 +585,7 @@ fun AlbumDetails(
 
                 item( "songsTitle" ) {
                     BasicText(
-                        text = stringResource(R.string.songs),
+                        text = stringResource(R.string.library_songs_title),
                         style = typography().m.semiBold.align(TextAlign.Start),
                         modifier = sectionTextModifier.fillMaxWidth()
                     )

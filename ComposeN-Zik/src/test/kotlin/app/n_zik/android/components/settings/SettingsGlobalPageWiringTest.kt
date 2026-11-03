@@ -235,7 +235,7 @@ class SettingsGlobalPageWiringTest {
         settle()
         assertGlobalCannotScroll()
         composeRule.onNodeWithTag("settings_global_search").performSemanticsAction(SemanticsActions.SetText) {
-            it(androidx.compose.ui.text.AnnotatedString(context.getString(R.string.skip_silence)))
+            it(androidx.compose.ui.text.AnnotatedString(context.getString(R.string.settings_audio_skip_silence_label)))
         }
         settle()
         composeRule.onNodeWithTag("settings_global_entry_general.audio_effects.skip_silence").assertIsDisplayed()
@@ -273,7 +273,7 @@ class SettingsGlobalPageWiringTest {
 
         // The registry descriptions stay as search keywords only: none of them
         // is rendered on a page row.
-        val generalDescription = context.getString(R.string.general_settings_description)
+        val generalDescription = context.getString(R.string.settings_general_page_description)
         val updateDescription = context.getString(R.string.settings_global_update_description)
         assertTrue(
             "no row may render the General description text",
@@ -300,7 +300,7 @@ class SettingsGlobalPageWiringTest {
             .onNodeWithTag("settings_global_update_status", useUnmergedTree = true)
             .assertTextEquals(
                 "${context.getString(R.string.audio_quality_format_unknown)} \u00B7 " +
-                    context.getString(R.string.never_checked)
+                    context.getString(R.string.updates_never_checked)
             )
     }
 
@@ -316,9 +316,9 @@ class SettingsGlobalPageWiringTest {
         showGlobalPage()
 
         // Same formatting the About tab's removed update block used.
-        val expected = "${context.getString(R.string.up_to_date)} \u00B7 " +
+        val expected = "${context.getString(R.string.updates_up_to_date)} \u00B7 " +
             context.getString(
-                R.string.last_check,
+                R.string.updates_last_check_format,
                 SimpleDateFormat("dd MMM HH:mm", Locale.getDefault()).format(Date(lastCheck))
             )
         composeRule
@@ -337,9 +337,9 @@ class SettingsGlobalPageWiringTest {
 
         showGlobalPage()
 
-        val expected = "${context.getString(R.string.update_available)} \u00B7 " +
+        val expected = "${context.getString(R.string.updates_available)} \u00B7 " +
             context.getString(
-                R.string.last_check,
+                R.string.updates_last_check_format,
                 SimpleDateFormat("dd MMM HH:mm", Locale.getDefault()).format(Date(lastCheck))
             )
         composeRule
@@ -394,7 +394,7 @@ class SettingsGlobalPageWiringTest {
         val item = selectedItem
         assertEquals(NavRoutes.updater.name, item?.route)
         assertEquals(null, item?.tab)
-        assertEquals(R.string.update, item?.labelRes)
+        assertEquals(R.string.common_action_update, item?.labelRes)
     }
 
     @Test
@@ -432,7 +432,7 @@ class SettingsGlobalPageWiringTest {
 
         composeRule
             .onNodeWithTag("settings_global_search")
-            .performTextInput(context.getString(R.string.skip_silence))
+            .performTextInput(context.getString(R.string.settings_audio_skip_silence_label))
 
         val result = composeRule.onNodeWithTag("settings_global_entry_general.audio_effects.skip_silence")
         pumpUntil("the exact setting result is composed", 30_000) {
@@ -533,7 +533,7 @@ class SettingsGlobalPageWiringTest {
     private fun scrollToGlobalNode(tag: String) {
         val key = when {
             tag == "settings_global_search" -> "search_controls"
-            tag == "settings_global_result_update" -> "item_${R.string.update}"
+            tag == "settings_global_result_update" -> "item_${R.string.common_action_update}"
             tag.startsWith("settings_global_entry_") -> "entry_${tag.removePrefix("settings_global_entry_")}"
             tag.startsWith("settings_global_result_") -> "card_${tag.removePrefix("settings_global_result_")}"
             else -> error("Unknown global item tag: $tag")
@@ -567,9 +567,9 @@ class SettingsGlobalPageWiringTest {
         composeRule.onNodeWithTag("settings_global_search").performTextInput("zzz_no_match")
 
         pumpUntil("the no-results toast is emitted", 30_000) {
-            messages.contains(context.getString(R.string.no_results_found))
+            messages.contains(context.getString(R.string.search_no_results_message))
         }
-        composeRule.onNodeWithText(context.getString(R.string.no_results_found)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.search_no_results_message)).assertDoesNotExist()
         assertTrue(
             "the default item list must disappear with a non-blank query",
             composeRule.onAllNodesWithTag("settings_global_category_playback").fetchSemanticsNodes().isEmpty()

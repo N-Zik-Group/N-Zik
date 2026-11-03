@@ -354,7 +354,7 @@ fun PlaylistItem(
 
                         Icon(
                             painter = icon,
-                            contentDescription = stringResource(R.string.cd_origin_indicator),
+                            contentDescription = stringResource(R.string.accessibility_origin_indicator),
                             tint = color,
                             // Dark badge background: the origin icon stays legible over
                             // any cover (same overlay color as the song-count badge).

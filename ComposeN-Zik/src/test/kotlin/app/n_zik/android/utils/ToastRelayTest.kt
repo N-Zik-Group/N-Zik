@@ -28,6 +28,17 @@ class ToastRelayTest {
     }
 
     @Test
+    fun `renamed resource toast keeps the published key and format arguments`() {
+        val relayed = ToastRelay.relayedOf(
+            "12 songs shuffled", "SUCCESS", "player_shuffled_song_count_format" to listOf("12"),
+        )
+        assertEquals(
+            ToastRelay.Relayed("songs_shuffled", listOf("12"), ToastRelay.Kind.SUCCESS, "12 songs shuffled"),
+            relayed,
+        )
+    }
+
+    @Test
     fun `each toast is relayed exactly once and nothing without a listener`() {
         ToastRelay.onLegacyToast("ignored", "INFO")
         assertTrue(received.isEmpty())

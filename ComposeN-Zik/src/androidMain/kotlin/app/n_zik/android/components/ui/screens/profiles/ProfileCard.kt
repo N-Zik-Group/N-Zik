@@ -496,7 +496,7 @@ fun ProfileCard(
             )
             ProfileCardInfoRow(
                 icon = R.drawable.settings,
-                label = stringResource(R.string.settings),
+                label = stringResource(R.string.settings_title),
                 value = settingsSizeBytes?.let { formatBytes(it) } ?: stringResource(R.string.profile_no_data),
             )
             // Shared data (app-level, identical on every card) — the same sources
@@ -588,7 +588,7 @@ fun ProfileCard(
                         IconButton(onClick = onDelete) {
                             Icon(
                                 painter = painterResource(R.drawable.trash),
-                                contentDescription = stringResource(R.string.remove_profile),
+                                contentDescription = stringResource(R.string.profile_action_remove),
                                 tint = Color.Red,
                             )
                         }

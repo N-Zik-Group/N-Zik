@@ -40,21 +40,21 @@ fun MatchResultsDialog(
     DialogFrame(
         onDismiss = onDismiss,
         bodyPadding = PaddingValues(0.dp),
-        title = stringResource(R.string.match_results_title),
+        title = stringResource(R.string.library_matching_results_title),
         footer = {
             ButtonRow(
                 buttons = buildList {
                     if (failed > 0 && onRetry != null) {
                         add(
                             DialogButton(
-                                text = stringResource(R.string.retry_match),
+                                text = stringResource(R.string.library_matching_action_retry),
                                 onClick = onRetry
                             )
                         )
                     }
                     add(
                         DialogButton(
-                            text = stringResource(R.string.dialog_close),
+                            text = stringResource(R.string.common_action_close),
                             onClick = onDismiss,
                             primary = true
                         )
@@ -66,13 +66,13 @@ fun MatchResultsDialog(
         Column(Modifier.weight(1f, false).fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp)) {
             if (failed == 0) {
                 BasicText(
-                    text = stringResource(R.string.match_results_all_matched),
+                    text = stringResource(R.string.library_matching_all_success_message),
                     style = typography().s.copy(color = colorPalette().text),
                     modifier = Modifier.fillMaxWidth()
                 )
             } else {
                 BasicText(
-                    text = stringResource(R.string.match_results_some_failed, matched, failed),
+                    text = stringResource(R.string.library_matching_success_failure_count_format, matched, failed),
                     style = typography().s.copy(color = colorPalette().text),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -80,7 +80,7 @@ fun MatchResultsDialog(
 
             if (merged > 0) {
                 BasicText(
-                    text = stringResource(R.string.match_results_merged, merged),
+                    text = stringResource(R.string.library_matching_merged_count_format, merged),
                     style = typography().xs.copy(color = colorPalette().textSecondary),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -88,7 +88,7 @@ fun MatchResultsDialog(
 
             if (failed > 0) {
                 BasicText(
-                    text = stringResource(R.string.match_results_failed_songs),
+                    text = stringResource(R.string.library_matching_failed_songs_description),
                     style = typography().xs.copy(color = colorPalette().textSecondary),
                     modifier = Modifier.fillMaxWidth()
                 )

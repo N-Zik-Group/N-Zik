@@ -25,7 +25,7 @@ class HiddenSongs private constructor(
 
     override val secondIconId: Int = R.drawable.eye_off
     override val iconId: Int = R.drawable.eye
-    override val messageId: Int = R.string.info_show_hide_hidden_songs
+    override val messageId: Int = R.string.library_action_toggle_hidden_songs
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )

@@ -13,9 +13,9 @@ import app.n_zik.android.core.database.playlistLinkKind
 internal const val YOUTUBE_LIBRARY_FILTER_KEY = "youtubeLibraryContentFilter"
 
 internal enum class YouTubeLibraryFilter(val labelRes: Int, val iconRes: Int) {
-    All(R.string.all, R.drawable.ytmusic),
-    Playlists(R.string.playlists, R.drawable.playlist),
-    Podcasts(R.string.podcasts, R.drawable.podcast),
+    All(R.string.common_option_all, R.drawable.ytmusic),
+    Playlists(R.string.library_playlists_title, R.drawable.playlist),
+    Podcasts(R.string.podcast_title, R.drawable.podcast),
 }
 
 /** The YouTube library groups saved content by source, independently of account sync flags. */
@@ -37,7 +37,7 @@ internal fun YouTubeLibraryFilterChip(
         label = { Text(stringResource(selected.labelRes)) },
         onClick = {
             menuState.display {
-                ListMenu.Menu(title = stringResource(R.string.filter_by)) {
+                ListMenu.Menu(title = stringResource(R.string.library_filter_by_title)) {
                     YouTubeLibraryFilter.entries.forEach { filter ->
                         ListMenu.Entry(
                             text = stringResource(filter.labelRes),

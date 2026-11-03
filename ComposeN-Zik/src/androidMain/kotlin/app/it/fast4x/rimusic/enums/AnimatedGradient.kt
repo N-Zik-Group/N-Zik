@@ -8,39 +8,39 @@ enum class AnimatedGradient(
     @field:StringRes override val textId: Int
 ): TextView {
 
-    FluidThemeColorGradient( R.string.bg_colors_fluid_gradient_background_from_theme ),
+    FluidThemeColorGradient( R.string.player_background_theme_fluid_gradient_label ),
 
-    FluidCoverColorGradient( R.string.bg_colors_fluid_gradient_background_from_cover ),
+    FluidCoverColorGradient( R.string.player_background_artwork_fluid_gradient_label ),
 
-    M3EMorphingTheme( R.string.bg_colors_m3e_morphing_theme ),
+    M3EMorphingTheme( R.string.player_background_theme_m3e_morphing_label ),
 
-    M3EMorphingCover( R.string.bg_colors_m3e_morphing_cover ),
+    M3EMorphingCover( R.string.player_background_artwork_m3e_morphing_label ),
 
-    Linear( R.string.linear ),
+    Linear( R.string.player_background_linear_gradient ),
 
-    Mesh( R.string.mesh ),
+    Mesh( R.string.player_background_mesh_gradient ),
 
-    MesmerizingLens( R.string.mesmerizinglens ),
+    MesmerizingLens( R.string.player_background_mesmerizing_lens ),
 
-    GlossyGradients( R.string.glossygradient ),
+    GlossyGradients( R.string.player_background_glossy_gradient ),
 
-    GradientFlow( R.string.gradientflow ),
+    GradientFlow( R.string.player_background_gradient_flow ),
 
-    PurpleLiquid( R.string.purpleliquid ),
+    PurpleLiquid( R.string.player_background_purple_liquid ),
 
-    InkFlow( R.string.inkflow ),
+    InkFlow( R.string.player_background_ink_flow ),
 
-    OilFlow( R.string.oilflow ),
+    OilFlow( R.string.player_background_oil_flow ),
 
-    IceReflection( R.string.icereflection ),
+    IceReflection( R.string.player_background_ice_reflection ),
 
-    Stage( R.string.stage ),
+    Stage( R.string.player_background_stage ),
 
-    GoldenMagma( R.string.goldenmagma ),
+    GoldenMagma( R.string.player_background_golden_magma ),
 
-    BlackCherryCosmos( R.string.blackcherrycosmos ),
+    BlackCherryCosmos( R.string.player_background_black_cherry_cosmos ),
 
-    Random( R.string.random );
+    Random( R.string.common_option_random );
 }
 
 
