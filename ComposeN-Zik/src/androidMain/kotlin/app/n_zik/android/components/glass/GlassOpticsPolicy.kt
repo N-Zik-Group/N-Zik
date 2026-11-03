@@ -29,8 +29,9 @@ val LocalGlassOpticsTransitionProgress = compositionLocalOf { 1f }
 
 /** Effective sampling budget; source recordings remain available to foreground overlays. */
 @Composable
-fun glassOpticsEnabled(): Boolean = LocalGlassOpticsEnabled.current &&
-    !LocalGlassUnderlayCovered.current && !LocalGlassOpticalUnderlayCovered.current
+fun glassOpticsEnabled(settings: GlassSettings = rememberGlassSettings()): Boolean = LocalGlassOpticsEnabled.current &&
+    !LocalGlassUnderlayCovered.current &&
+    (!settings.optimizationEnabled || !LocalGlassOpticalUnderlayCovered.current)
 
 internal const val GLASS_OPTICS_FADE_MILLIS = 280
 

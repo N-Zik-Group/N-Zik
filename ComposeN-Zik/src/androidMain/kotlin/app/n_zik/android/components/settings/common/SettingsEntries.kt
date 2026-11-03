@@ -263,6 +263,7 @@ fun OtherSwitchSettingEntry(
                 Switch(
                     checked = isChecked,
                     onCheckedChange = onCheckedChange,
+                    enabled = enabled,
                     checkedThumbColor = colorPalette().textSecondary,
                     checkedTrackColor = colorPalette().accent.copy(alpha = 0.3f),
                     uncheckedThumbColor = colorPalette().textSecondary,

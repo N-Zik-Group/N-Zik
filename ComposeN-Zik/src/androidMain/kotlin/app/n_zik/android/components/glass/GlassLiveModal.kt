@@ -30,6 +30,6 @@ internal fun rememberGlassModalLiveFrame(): () -> Long {
 @Composable
 internal fun rememberGlassModalLiveFrameIfEnabled(covered: Boolean = false): (() -> Long)? {
     val settings = rememberGlassSettings()
-    return if (!covered && settings.enabled && glassRenderer(settings) != GlassRenderer.Tint)
+    return if ((!covered || !settings.optimizationEnabled) && settings.enabled && glassRenderer(settings) != GlassRenderer.Tint)
         rememberGlassModalLiveFrame() else null
 }

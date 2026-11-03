@@ -38,6 +38,30 @@ class GlassProfilePreferencesTest {
         setActiveProfile(DEFAULT_PROFILE_ID, context)
     }
 
+    @Test fun `switch and optimization choices survive profiles quality and reset independently`() {
+        val work = GlassStore(context, "work")
+        val travel = GlassStore(context, "travel")
+        assertTrue(work.read().usesGlassMaterial(GlassArea.Switches))
+        assertTrue(work.read().optimizationEnabled)
+        work.setAreaMode(GlassArea.Switches, GlassAreaMode.Disabled)
+        work.setBoolean(glassOptimizationEnabledKey, false)
+        GlassQuality.entries.forEach { quality ->
+            work.setProfile(quality)
+            assertFalse(GlassStore(context, "work").read().usesGlassMaterial(GlassArea.Switches))
+            assertFalse(GlassStore(context, "work").read().optimizationEnabled)
+        }
+        assertTrue(travel.read().usesGlassMaterial(GlassArea.Switches))
+        assertTrue(travel.read().optimizationEnabled)
+        listOf(glassOptimizationEnabledKey).forEach { key ->
+            assertTrue(validGlassPreferenceValue(key, false))
+            assertFalse(validGlassPreferenceValue(key, "false"))
+            assertFalse(validGlassPreferenceValue(key, 0))
+        }
+        work.reset()
+        assertTrue(work.read().usesGlassMaterial(GlassArea.Switches))
+        assertTrue(work.read().optimizationEnabled)
+    }
+
     @Test fun `existing global optics and destinations migrate once without later cross profile writes`() {
         val legacy = context.getSharedPreferences(GlassProfilePreferences.LEGACY_NAME, Context.MODE_PRIVATE)
         val favorite = GlassContextArea(GlassScope.PlayerFavorite, GlassArea.ActionButtons)

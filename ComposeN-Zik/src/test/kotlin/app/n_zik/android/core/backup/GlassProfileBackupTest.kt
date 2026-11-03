@@ -9,6 +9,10 @@ import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.n_zik.android.components.glass.GlassProfilePreferences
 import app.n_zik.android.components.glass.GlassStore
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassAreaMode
+import app.n_zik.android.components.glass.mode
+import app.n_zik.android.components.glass.glassOptimizationEnabledKey
 import app.n_zik.android.components.glass.glassBlurKey
 import app.n_zik.android.components.import.ImportSettings
 import app.n_zik.android.components.ui.screens.profiles.profileSecurePrefs
@@ -17,6 +21,7 @@ import app.n_zik.android.core.rescue.RescueFiles
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -44,12 +49,18 @@ class GlassProfileBackupTest {
         val work = GlassStore(context, "work")
         base.setFloat(glassBlurKey, 4f)
         work.setFloat(glassBlurKey, 17f)
+        work.setAreaMode(GlassArea.Switches, GlassAreaMode.ContourOnly)
+        work.setBoolean(glassOptimizationEnabledKey, false)
         val file = File(context.cacheDir, "work-glass.csv")
         val uri = Uri.fromFile(file)
         assertTrue(RescueFiles.exportSettings(context, uri).isSuccess)
         work.setFloat(glassBlurKey, 22f)
+        work.setAreaMode(GlassArea.Switches, GlassAreaMode.GlassAndContour)
+        work.setBoolean(glassOptimizationEnabledKey, true)
         assertTrue(RescueFiles.importSettings(context, uri).isSuccess)
         assertEquals(17f, work.read().blur, 0f)
+        assertEquals(GlassAreaMode.ContourOnly, work.read().mode(GlassArea.Switches))
+        assertFalse(work.read().optimizationEnabled)
         assertEquals(4f, base.read().blur, 0f)
     }
 

@@ -38,6 +38,39 @@ import org.robolectric.annotation.GraphicsMode
 class GlassCoveredMaterialTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun `visible covered material retains actual sampled pixels when optimization is disabled live`() {
+        val settings = mutableStateOf(GlassSettings(blur = 0f, rim = 0f, vibrancy = 0f))
+        val covered = mutableStateOf(false)
+        compose.setContent {
+            val shape = RoundedCornerShape(12.dp)
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                colorPalette = DefaultDarkColorPalette, typography = Typography.fallback,
+                thumbnailShape = shape, uiRoundnessShape = shape, artistThumbnailShape = shape,
+            )) {
+                val backdrop = rememberLayerBackdrop()
+                Box {
+                    Box(Modifier.size(80.dp).layerBackdrop(backdrop).background(Color.Red))
+                    CompositionLocalProvider(LocalGlassOpticalUnderlayCovered provides covered.value,
+                        LocalGlassPreviewSettings provides settings.value) {
+                        Box(Modifier.size(80.dp).testTag("pane").background(Color.Blue)
+                            .glassMaterial(settings.value, shape, ownBackdrop = backdrop,
+                                drawFilm = false, drawShadow = false))
+                    }
+                }
+            }
+        }
+        fun pixel(): Color = compose.onNodeWithTag("pane").captureToImage().toPixelMap().let { it[it.width / 2, it.height / 2] }
+        assertTrue(pixel().red > .9f)
+        compose.runOnIdle { covered.value = true }
+        assertTrue(pixel().blue > .9f)
+        compose.runOnIdle { settings.value = settings.value.copy(optimizationEnabled = false) }
+        assertTrue(pixel().red > .9f)
+        compose.runOnIdle { settings.value = settings.value.copy(optimizationEnabled = true) }
+        assertTrue(pixel().blue > .9f)
+        compose.runOnIdle { covered.value = false }
+        assertTrue(pixel().red > .9f)
+    }
+
     @Test fun `covered material keeps scene capture live and restores fresh optics without moving`() {
         compose.mainClock.autoAdvance = false
         val settled = mutableStateOf(true)

@@ -31,6 +31,8 @@ import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassAreaMode
+import app.n_zik.android.components.glass.mode
 import app.n_zik.android.components.glass.GlassControlOverflowColumn
 import app.n_zik.android.components.glass.glassOverflowFade
 import app.n_zik.android.components.glass.rememberGlassSettings
@@ -82,7 +84,9 @@ fun SettingsSectionCard(
         if (visible) Column(modifier = modifier.fillMaxWidth()) { content() }
         return
     }
-    val overflow = rememberGlassSettings().usesGlassMaterial(GlassArea.ActionButtons)
+    val glassSettings = rememberGlassSettings()
+    val overflow = glassSettings.usesGlassMaterial(GlassArea.ActionButtons) ||
+        (glassSettings.enabled && glassSettings.mode(GlassArea.Switches) != GlassAreaMode.Disabled)
     val chevronRotation by animateFloatAsState(
         targetValue = if (expanded == true) 90f else 0f,
         animationSpec = tween(300), label = "settingsSectionExpansion",

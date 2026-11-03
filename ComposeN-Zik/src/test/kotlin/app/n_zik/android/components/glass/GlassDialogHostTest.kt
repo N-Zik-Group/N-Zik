@@ -1,5 +1,7 @@
 package app.n_zik.android.components.glass
 
+import androidx.compose.runtime.Composable
+import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import android.app.Application
 import android.os.Looper
 import androidx.compose.foundation.IndicationNodeFactory
@@ -29,6 +31,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -68,6 +71,17 @@ import org.robolectric.annotation.Config
 class GlassDialogHostTest {
     @get:Rule val composeRule = createComposeRule()
 
+
+    private fun showContent(content: @Composable () -> Unit) {
+        composeRule.setContent {
+            val shape = RoundedCornerShape(12.dp)
+            CompositionLocalProvider(LocalAppearance provides Appearance(
+                colorPalette = DefaultDarkColorPalette, typography = Typography.fallback,
+                thumbnailShape = shape, uiRoundnessShape = shape, artistThumbnailShape = shape,
+            )) { content() }
+        }
+    }
+
     @Test fun `native sheet scrim respects menu dimming and explicit native overrides`() {
         val glass = GlassSettings(enabled = true, menuDimming = .23f)
         val native = Color.Black.copy(alpha = .6f)
@@ -96,7 +110,7 @@ class GlassDialogHostTest {
         var bounds = Rect.Zero
         var sheetState: SheetState? = null
         composeRule.mainClock.autoAdvance = false
-        composeRule.setContent {
+        showContent {
             LaunchedEffect(source) {
                 source.interactions.collect { interaction ->
                     interactions += when (interaction) {
@@ -182,7 +196,7 @@ class GlassDialogHostTest {
         var policy by mutableStateOf(androidx.compose.ui.window.SecureFlagPolicy.SecureOn)
         var window: android.view.Window? = null
         var activityWindow: android.view.Window? = null
-        composeRule.setContent {
+        showContent {
             val activity = androidx.compose.ui.platform.LocalContext.current as android.app.Activity
             activityWindow = activity.window
             CompositionLocalProvider(LocalGlassMenuHost provides host) {
@@ -231,7 +245,7 @@ class GlassDialogHostTest {
         var visible by mutableStateOf(true)
         var text by mutableStateOf("")
         var dismissals = 0
-        composeRule.setContent {
+        showContent {
             CompositionLocalProvider(LocalGlassMenuHost provides host) {
                 Box {
                     GlassModalContent(host) {
@@ -258,7 +272,7 @@ class GlassDialogHostTest {
         val host = GlassMenuHostState()
         var mounted by mutableStateOf(true)
         var dismissals = 0
-        composeRule.setContent {
+        showContent {
             CompositionLocalProvider(LocalGlassMenuHost provides host) {
                 Box {
                     if (mounted) GlassDialogWindow(true, { dismissals++ },
@@ -278,17 +292,45 @@ class GlassDialogHostTest {
     }
 
     @Test fun `missing shared host composes fallback content`() {
-        composeRule.setContent {
+        showContent {
             GlassDialogWindow(true, {}, DialogProperties()) { BasicText("Fallback") }
         }
         composeRule.onNodeWithText("Fallback").assertExists()
         composeRule.onNodeWithTag("glassDialogOverlay").assertDoesNotExist()
     }
 
+    @Test fun `live dialog locals update without replacing reordering or resetting retained content`() {
+        val local = staticCompositionLocalOf { "initial" }
+        val value = mutableStateOf("initial")
+        val host = GlassMenuHostState()
+        var mounts = 0
+        showContent {
+            CompositionLocalProvider(LocalGlassMenuHost provides host, local provides value.value) {
+                Box {
+                    GlassDialogWindow(true, {}, DialogProperties()) {
+                        val retained = remember { ++mounts }
+                        BasicText("${local.current}:$retained", Modifier.testTag("live-local"))
+                    }
+                    GlassDialogWindow(true, {}, DialogProperties()) { BasicText("top") }
+                    GlassDialogOverlayHost(host)
+                }
+            }
+        }
+        val entries = host.dialogs.entries.toList()
+        composeRule.runOnIdle { value.value = "updated" }
+        composeRule.runOnIdle {
+            assertEquals(entries, host.dialogs.entries.toList())
+            assertEquals(1, mounts)
+            host.dialogs.remove(entries.last().id)
+        }
+        composeRule.onNodeWithTag("live-local").assertTextEquals("updated:1")
+        assertEquals(1, mounts)
+    }
+
     @Test fun `closing nested dialog reveals retained parent content`() {
         val host = GlassMenuHostState()
         var childVisible by mutableStateOf(true)
-        composeRule.setContent {
+        showContent {
             CompositionLocalProvider(LocalGlassMenuHost provides host) {
                 Box {
                     GlassDialogWindow(true, {}, DialogProperties()) {
@@ -314,7 +356,7 @@ class GlassDialogHostTest {
         val host = GlassMenuHostState()
         var visible by mutableStateOf(false)
         var session by mutableStateOf("home")
-        composeRule.setContent {
+        showContent {
             CompositionLocalProvider(LocalGlassMenuHost provides host) {
                 Box {
                     GlassModalContent(host, focusSessionKey = session) {
@@ -341,7 +383,7 @@ class GlassDialogHostTest {
         val host = GlassMenuHostState()
         var parentVisible by mutableStateOf(false)
         var childVisible by mutableStateOf(false)
-        composeRule.setContent {
+        showContent {
             CompositionLocalProvider(LocalGlassMenuHost provides host) {
                 Box {
                     GlassModalContent(host) {
@@ -372,7 +414,7 @@ class GlassDialogHostTest {
         val host = GlassMenuHostState()
         var childVisible by mutableStateOf(false)
         composeRule.mainClock.autoAdvance = false
-        composeRule.setContent {
+        showContent {
             CompositionLocalProvider(LocalGlassMenuHost provides host) {
                 Box {
                     GlassModalContent(host) {

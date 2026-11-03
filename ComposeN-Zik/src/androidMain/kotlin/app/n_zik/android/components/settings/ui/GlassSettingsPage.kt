@@ -73,6 +73,7 @@ import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.LocalGlassPreviewSettings
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.glass.glassOptimizationEnabledKey
 import app.n_zik.android.components.glass.glassAmountKey
 import app.n_zik.android.components.glass.glassBlurKey
 import app.n_zik.android.components.glass.glassDepthEffectKey
@@ -227,6 +228,13 @@ internal fun GlassSettingsContent(
                     item("interactions", contentType = "group") { GlassInteractionSettingsCard(config, store, target) }
                     item("material", contentType = "group") {
                         GlassSection(R.string.glass_effect_group_material) {
+                            OtherSwitchSettingEntry(
+                                title = stringResource(R.string.glass_effect_optimization_title),
+                                text = stringResource(R.string.glass_effect_optimization_description),
+                                isChecked = config.optimizationEnabled, icon = R.drawable.settings,
+                                onCheckedChange = { store.setBoolean(glassOptimizationEnabledKey, it) },
+                                modifier = Modifier.testTag("settings.glass.optimization").settingsSearchTarget("glass.optimization"),
+                            )
                             OtherEnumValueSelectorSettingsEntry(
                                 title = stringResource(R.string.settings_network_quality_title),
                                 icon = R.drawable.settings,

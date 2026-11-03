@@ -33,7 +33,8 @@ fun MiniPlayerQueueScene(
     val inheritedOptics = app.n_zik.android.components.glass.LocalGlassOpticsEnabled.current
     val reportCoverage = remember { { value: Boolean -> covered = value } }
     val backdrop = rememberLayerBackdrop()
-    val capture = glassContentCaptureEnabled(rememberGlassSettings(GlassScope.Queue))
+    val settings = rememberGlassSettings(GlassScope.Queue)
+    val capture = glassContentCaptureEnabled(settings)
     val frozen = remember(queueVisible) { { !queueVisible } }
     // A fully expanded player owns its complete foreground, without the Home beneath it.
     val foreground = LocalGlassMenuHost.current?.foregroundBackdrop

@@ -75,6 +75,7 @@ const val glassSettingsCardRimsKey = "settings_card_rims"
 const val glassSettingsCardsKey = "settings_cards"
 const val glassSearchBarsKey = "search_bars"
 const val glassActionButtonsKey = "action_buttons"
+const val glassOptimizationEnabledKey = "optimization_enabled"
 private const val glassIndependentAreasKey = "independent_areas"
 
 /** Tint colours the material without changing the app palette. */
@@ -93,7 +94,7 @@ enum class GlassArea(val legacyKey: String) {
     Nav(glassNavKey), MiniPlayer(glassMiniPlayerKey), Header(glassHeaderKey), Menus(glassMenusKey),
     Dropdowns(glassDropdownsKey), Dialogs(glassDialogsKey), DialogButtons(glassDialogButtonsKey),
     NowPlaying(glassNowPlayingKey), Images(glassImageRimsKey), SettingsCards(glassSettingsCardsKey),
-    SearchBars(glassSearchBarsKey), ActionButtons(glassActionButtonsKey), MoodCards("mood_cards");
+    SearchBars(glassSearchBarsKey), ActionButtons(glassActionButtonsKey), Switches("switches"), MoodCards("mood_cards");
 
     val preferenceKey: String get() = "${legacyKey}_mode"
 }
@@ -134,6 +135,7 @@ data class GlassSettings(
     val settingsCards: Boolean = true,
     val searchBars: Boolean = true,
     val actionButtons: Boolean = true,
+    val optimizationEnabled: Boolean = true,
     val areaModes: Map<GlassArea, GlassAreaMode> = emptyMap(),
     val contextModes: Map<GlassContextArea, GlassAreaMode> = emptyMap(),
     val scope: GlassScope = GlassScope.Shared,
@@ -157,7 +159,7 @@ fun GlassSettings.mode(area: GlassArea): GlassAreaMode {
         GlassArea.SettingsCards -> settingsCards
         GlassArea.SearchBars -> searchBars
         GlassArea.ActionButtons -> actionButtons
-        GlassArea.MoodCards -> true
+        GlassArea.MoodCards, GlassArea.Switches -> true
         GlassArea.Images -> false
     }
     val contour = when (area) {
@@ -209,7 +211,8 @@ internal fun validGlassPreferenceValue(key: String, value: Any): Boolean = when 
     glassRimKey, glassDepthKey, glassAmountKey, glassRippleIntensityKey,
     glassRippleSizeKey, glassJellyIntensityKey -> value is Float && value.isFinite()
     glassDispersionKey, glassDepthEffectKey, glassRippleEnabledKey, glassJellyEnabledKey,
-    glassSettingsCardRimsKey, glassIndependentAreasKey -> value is Boolean
+    glassSettingsCardRimsKey, glassIndependentAreasKey,
+    glassOptimizationEnabledKey -> value is Boolean
     else -> when {
         GlassArea.entries.any { it.legacyKey == key } -> value is Boolean
         key.endsWith("_mode") -> value is String
@@ -273,6 +276,7 @@ class GlassStore(context: Context, val profileId: String = getActiveProfile(cont
             settingsCards = preferences.getBoolean(glassSettingsCardsKey, true),
             searchBars = preferences.getBoolean(glassSearchBarsKey, true),
             actionButtons = preferences.getBoolean(glassActionButtonsKey, true),
+            optimizationEnabled = preferences.getBoolean(glassOptimizationEnabledKey, true),
             contextModes = GlassScope.entries.flatMap { scope -> scope.areas.mapNotNull { area ->
                 val key = GlassContextArea(scope, area)
                 val saved = preferences.getString(key.preferenceKey, null)

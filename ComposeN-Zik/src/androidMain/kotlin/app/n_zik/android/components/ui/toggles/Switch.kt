@@ -1,17 +1,19 @@
 package app.n_zik.android.components.ui.toggles
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,6 +21,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.exactUiRoundnessShape
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.glassAreaContour
+import app.n_zik.android.components.glass.GlassAreaMode
+import app.n_zik.android.components.glass.mode
+import app.n_zik.android.components.glass.forArea
+import app.n_zik.android.components.glass.isGlassMotionAllowed
+import app.n_zik.android.components.glass.GlassSwitch
+import app.n_zik.android.components.glass.rememberGlassSettings
 
 @Composable
 fun Switch(
@@ -31,37 +41,41 @@ fun Switch(
     uncheckedTrackColor: Color = colorPalette().textSecondary.copy(alpha = 0.3f),
     enabled: Boolean = true
 ) {
+    val settings = rememberGlassSettings()
+    if (settings.enabled && settings.mode(GlassArea.Switches) != GlassAreaMode.Disabled) {
+        GlassSwitch(checked, onCheckedChange, modifier, enabled, settings.forArea(GlassArea.Switches))
+        return
+    }
+    val gesture = rememberSwitchGestureState(checked, enabled)
+    val interactions = remember { MutableInteractionSource() }
+    val position = remember { Animatable(if (checked) 1f else 0f) }
+    val motion = isGlassMotionAllowed()
+    val target = if (gesture.dragging) gesture.position else if (checked) 1f else 0f
+    LaunchedEffect(target, gesture.dragging, motion) {
+        if (gesture.dragging || !motion) position.snapTo(target) else position.animateTo(target, tween(150))
+    }
+    val input = Modifier.switchInput(checked, onCheckedChange, enabled, interactions, gesture,
+        position.value, 20.dp)
+    val shape = exactUiRoundnessShape()
+    val indication = LocalIndication.current
+    val feedback = if (onCheckedChange != null) Modifier.indication(interactions, indication) else Modifier
     val trackColor by animateColorAsState(if (checked) checkedTrackColor else uncheckedTrackColor)
     val thumbColor by animateColorAsState(if (checked) checkedThumbColor else uncheckedThumbColor)
-    
-    // M3 Switch track is 52.dp wide, 32.dp high.
-    val thumbSize by animateDpAsState(if (checked) 24.dp else 16.dp, animationSpec = tween(150))
-    
-    // If thumb is 24.dp, its margin is 4.dp. So x offset ranges from 4.dp to 52-24-4=24.dp.
-    // If thumb is 16.dp, its margin is 8.dp. So x offset ranges from 8.dp to 52-16-8=28.dp.
-    val thumbOffset by animateDpAsState(if (checked) 24.dp else 8.dp, animationSpec = tween(150))
 
     Box(
-        modifier = modifier
+        modifier = modifier.then(input)
             .size(width = 52.dp, height = 32.dp)
-            .background(trackColor, shape = exactUiRoundnessShape())
-            .clip(exactUiRoundnessShape())
-            .then(
-                if (onCheckedChange != null) {
-                    Modifier.clickable(enabled = enabled) {
-                        onCheckedChange.invoke(!checked)
-                    }
-                } else {
-                    Modifier
-                }
-            ),
+            .background(trackColor, shape = shape)
+            .glassAreaContour(settings, GlassArea.Switches, shape)
+            .clip(shape)
+            .then(feedback),
         contentAlignment = Alignment.CenterStart
     ) {
         Box(
             modifier = Modifier
-                .offset(x = thumbOffset)
-                .size(thumbSize)
-                .background(thumbColor, shape = exactUiRoundnessShape())
+                .offset(x = (8f + 16f * position.value).dp)
+                .size((16f + 8f * position.value).dp)
+                .background(thumbColor, shape = shape)
         )
     }
 }

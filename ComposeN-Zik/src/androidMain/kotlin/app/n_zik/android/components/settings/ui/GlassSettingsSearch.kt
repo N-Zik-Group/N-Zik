@@ -22,6 +22,7 @@ internal val GlassSearchOptions: List<GlassSearchOption> = buildList {
             listOfNotNull(R.string.glass_effect_title, sectionTitle, description) + choices), section, sectionTitle, fallback))
     }
     option("master", R.string.glass_effect_enabled_title, "master", R.string.glass_effect_title, R.string.glass_effect_enabled_description)
+    option("optimization", R.string.glass_effect_optimization_title, "material", R.string.glass_effect_group_material, R.string.glass_effect_optimization_description)
     option("ripple.enabled", R.string.glass_effect_ripple_enabled, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_ripple_description)
     option("ripple.intensity", R.string.glass_effect_ripple_intensity, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_ripple_intensity_description)
     option("ripple.size", R.string.glass_effect_ripple_size, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_ripple_size_description)

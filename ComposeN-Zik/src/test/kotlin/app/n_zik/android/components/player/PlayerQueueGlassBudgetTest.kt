@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
+import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.LocalGlassPreviewSettings
 import app.n_zik.android.components.glass.LocalGlassOpticsEnabled
 import app.n_zik.android.components.glass.LocalGlassUnderlayCovered
 import app.n_zik.android.components.glass.glassOpticsEnabled
@@ -94,23 +96,26 @@ class PlayerQueueGlassBudgetTest {
         val visible = mutableStateOf(false)
         val inheritedOptics = mutableStateOf(true)
         val modalCovered = mutableStateOf(false)
+        val settings = mutableStateOf(GlassSettings())
         var playerOptics = false
         var queueOptics = false
         var decorationsCovered = true
         compose.setContent {
-            val covered = playerQueueUnderlayCovered(modalCovered.value, visible.value, false)
-            CompositionLocalProvider(
-                LocalGlassOpticsEnabled provides playerQueueOpticsEnabled(inheritedOptics.value, visible.value),
-                LocalGlassUnderlayCovered provides covered,
-            ) {
-                val player = glassOpticsEnabled()
-                SideEffect { playerOptics = player; decorationsCovered = covered }
+            CompositionLocalProvider(LocalGlassPreviewSettings provides settings.value) {
+                val covered = playerQueueUnderlayCovered(modalCovered.value, visible.value, false)
                 CompositionLocalProvider(
-                    LocalGlassOpticsEnabled provides inheritedOptics.value,
-                    LocalGlassUnderlayCovered provides modalCovered.value,
+                    LocalGlassOpticsEnabled provides playerQueueOpticsEnabled(inheritedOptics.value, visible.value),
+                    LocalGlassUnderlayCovered provides covered,
                 ) {
-                    val queue = glassOpticsEnabled()
-                    SideEffect { queueOptics = queue }
+                    val player = glassOpticsEnabled()
+                    SideEffect { playerOptics = player; decorationsCovered = covered }
+                    CompositionLocalProvider(
+                        LocalGlassOpticsEnabled provides inheritedOptics.value,
+                        LocalGlassUnderlayCovered provides modalCovered.value,
+                    ) {
+                        val queue = glassOpticsEnabled()
+                        SideEffect { queueOptics = queue }
+                    }
                 }
             }
         }
@@ -121,9 +126,18 @@ class PlayerQueueGlassBudgetTest {
                 assertFalse("$type player optics must use the cheap covered-menu budget", playerOptics)
                 assertFalse("$type visible player decorations must remain live", decorationsCovered)
                 assertTrue("$type foreground queue retains its configured optics", queueOptics)
+                settings.value = settings.value.copy(optimizationEnabled = false)
+            }
+            compose.runOnIdle {
+                assertTrue("$type visible player retains optics when optimization is disabled", playerOptics)
                 modalCovered.value = true
             }
-            compose.runOnIdle { assertFalse(playerOptics); assertFalse(queueOptics); modalCovered.value = false }
+            compose.runOnIdle {
+                assertFalse(playerOptics)
+                assertFalse(queueOptics)
+                modalCovered.value = false
+                settings.value = settings.value.copy(optimizationEnabled = true)
+            }
             compose.runOnIdle { visible.value = false }
             compose.runOnIdle { assertTrue("Closing $type restores player optics", playerOptics) }
         }
@@ -158,10 +172,12 @@ class PlayerQueueGlassBudgetTest {
     @Test fun `mini queue owner pauses covered scene and restores it without lowering foreground budget`() {
         val visible = mutableStateOf(true)
         val full = mutableStateOf(false)
+        val settings = mutableStateOf(GlassSettings())
         var sceneCovered = false
         var sceneOptics = true
         var foregroundOptics = false
         compose.setContent {
+            CompositionLocalProvider(LocalGlassPreviewSettings provides settings.value) {
             MiniPlayerQueueScene(visible.value, scene = {
                 val covered = LocalGlassUnderlayCovered.current
                 val optics = glassOpticsEnabled()
@@ -172,13 +188,20 @@ class PlayerQueueGlassBudgetTest {
                 val coverage = full.value
                 SideEffect { report(coverage); foregroundOptics = optics }
             })
+            }
         }
         compose.runOnIdle {
             assertFalse(sceneCovered)
             assertFalse(sceneOptics)
             assertTrue(foregroundOptics)
-            full.value = true
+            settings.value = settings.value.copy(optimizationEnabled = false)
         }
+        compose.runOnIdle { assertTrue(sceneOptics); assertFalse(sceneCovered); assertTrue(foregroundOptics)
+            settings.value = settings.value.copy(optimizationEnabled = true) }
+        compose.runOnIdle { assertFalse(sceneOptics); full.value = true }
+        compose.runOnIdle { assertTrue(sceneCovered); settings.value = settings.value.copy(optimizationEnabled = false) }
+        compose.runOnIdle { assertTrue(sceneCovered); assertFalse("Full coverage remains suppressed", sceneOptics)
+            settings.value = settings.value.copy(optimizationEnabled = true) }
         compose.runOnIdle { assertTrue(sceneCovered); assertTrue(foregroundOptics); full.value = false }
         compose.runOnIdle { assertFalse(sceneCovered); full.value = true }
         compose.runOnIdle { visible.value = false }

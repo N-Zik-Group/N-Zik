@@ -1,6 +1,9 @@
 package app.n_zik.android.components.glass
 
 import android.app.Application
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.view.View
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -8,31 +11,39 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.Typography
+import app.n_zik.android.R
 import app.n_zik.android.components.settings.common.SettingsCardSurface
+import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsCardOverflowEnter
 import app.n_zik.android.components.settings.common.settingsCardOverflowExit
 import app.n_zik.android.components.ui.screens.profiles.ProfileCardSurface
+import app.n_zik.android.components.ui.toggles.Switch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -47,6 +58,95 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassCardControlOverflowTest {
     @get:Rule val compose = createComposeRule()
+
+    private enum class SwitchHost { Settings, Profile, Section }
+
+    @Test fun `switch alone can paint beyond real card skins and section transitions`() {
+        val host = mutableStateOf(SwitchHost.Settings)
+        val expanded = mutableStateOf(true)
+        var composeView: View? = null
+        val shape = RoundedCornerShape(24.dp)
+        val settings = GlassSettings(
+            enabled = true,
+            quality = GlassQuality.Performance,
+            areaModes = mapOf(
+                GlassArea.ActionButtons to GlassAreaMode.Disabled,
+                GlassArea.SettingsCards to GlassAreaMode.Disabled,
+                GlassArea.Switches to GlassAreaMode.ContourOnly,
+            ),
+        )
+        compose.setContent {
+            val view = LocalView.current
+            SideEffect { composeView = view }
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(DefaultDarkColorPalette, Typography.fallback, shape, shape, shape),
+                LocalGlassPreviewSettings provides settings,
+                LocalMinimumInteractiveComponentSize provides Dp.Unspecified,
+            ) {
+                Column(Modifier.size(280.dp, 220.dp).background(Color.Black)) {
+                    val control: @Composable () -> Unit = {
+                        // Put the track against the bottom clip boundary. A native
+                        // touch target or section padding would otherwise hide the regression.
+                        val offset = if (host.value == SwitchHost.Section) 16.dp else 0.dp
+                        Switch(false, {}, Modifier.offset(x = 40.dp, y = offset).testTag("switch"))
+                    }
+                    when (host.value) {
+                        SwitchHost.Settings -> SettingsCardSurface(
+                            Modifier.fillMaxWidth(), shape, Color.DarkGray, Color.Black, Color.Black,
+                            settings = settings, content = { control() },
+                        )
+                        SwitchHost.Profile -> ProfileCardSurface(
+                            Modifier.fillMaxWidth(), settings = settings, content = { control() },
+                        )
+                        SwitchHost.Section -> SettingsSectionCard(
+                            title = "Switch settings", icon = R.drawable.settings, expanded = expanded.value,
+                            content = control,
+                        )
+                    }
+                }
+            }
+        }
+
+        fun thumbBelowTrack(track: Rect): Boolean {
+            var found = false
+            compose.runOnIdle {
+                val view = requireNotNull(composeView)
+                val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+                try {
+                    view.draw(Canvas(bitmap))
+                    val x = (track.left + 22f).toInt()
+                    found = (track.bottom.toInt() until track.bottom.toInt() + 4).any { y ->
+                        val color = Color(bitmap.getPixel(x, y))
+                        color.red > .65f && color.green > .65f && color.blue > .65f
+                    }
+                } finally {
+                    bitmap.recycle()
+                }
+            }
+            return found
+        }
+
+        SwitchHost.entries.forEach { current ->
+            compose.mainClock.autoAdvance = true
+            compose.runOnIdle { host.value = current }
+            compose.waitForIdle()
+            compose.mainClock.autoAdvance = false
+            val control = compose.onNodeWithTag("switch")
+            val track = control.fetchSemanticsNode().boundsInRoot
+            control.performTouchInput { down(center) }
+            compose.mainClock.advanceTimeBy(350)
+            assertTrue("The held switch must paint below the ${current.name} skin", thumbBelowTrack(track))
+            if (current == SwitchHost.Section) {
+                compose.runOnIdle { expanded.value = false }
+                compose.mainClock.advanceTimeBy(32)
+                compose.runOnIdle { expanded.value = true }
+                compose.mainClock.advanceTimeBy(32)
+                assertTrue("An interrupted section collapse must preserve the held thumb", thumbBelowTrack(track))
+            }
+            control.performTouchInput { cancel() }
+            compose.mainClock.advanceTimeBy(600)
+        }
+    }
 
     @Test fun `settings and profile card skins cannot crop a held child capsule`() {
         val profile = mutableStateOf(false)

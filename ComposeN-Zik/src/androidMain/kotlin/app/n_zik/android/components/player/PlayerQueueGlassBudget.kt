@@ -5,10 +5,12 @@ import androidx.compose.runtime.getValue
 import app.it.fast4x.rimusic.enums.QueueType
 import app.it.fast4x.rimusic.utils.queueTypeKey
 import app.it.fast4x.rimusic.utils.rememberPreference
+import app.n_zik.android.components.glass.rememberGlassSettings
 
 /** Optical budget is independent of whether visible player decorations may animate. */
+@Composable
 internal fun playerQueueOpticsEnabled(inheritedEnabled: Boolean, queueVisible: Boolean): Boolean =
-    inheritedEnabled && !queueVisible
+    inheritedEnabled && (!queueVisible || !rememberGlassSettings().optimizationEnabled)
 
 /** Keeps any uncovered player content live while the queue opens or closes. */
 @Composable

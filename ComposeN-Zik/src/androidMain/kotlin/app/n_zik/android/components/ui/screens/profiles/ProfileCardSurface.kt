@@ -18,6 +18,8 @@ import androidx.compose.ui.semantics.onClick as semanticsOnClick
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassAreaMode
+import app.n_zik.android.components.glass.mode
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassControlOverflowSurface
 import app.n_zik.android.components.glass.GlassMaterialContainerScope
@@ -51,7 +53,7 @@ internal fun ProfileCardSurface(
         else interactionModifier
     // Opaque legacy modifiers retain their original card semantics/mask. Real profile
     // owners use the explicit callback so the skin can relinquish accessibility safely.
-    if (settings.usesGlassMaterial(GlassArea.ActionButtons) && (onClick != null || interactionModifier == Modifier)) {
+    if ((settings.usesGlassMaterial(GlassArea.ActionButtons) || settings.enabled && settings.mode(GlassArea.Switches) != GlassAreaMode.Disabled) && (onClick != null || interactionModifier == Modifier)) {
         val accessible = if (onClick != null) Modifier.semantics(mergeDescendants = true) {
             if (!enabled) disabled()
             semanticsOnClick {

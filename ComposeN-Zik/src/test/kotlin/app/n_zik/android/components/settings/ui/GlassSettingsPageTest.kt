@@ -135,6 +135,32 @@ class GlassSettingsPageTest {
         store.setProfile(GlassQuality.Performance)
     }
 
+    @Test fun `switch destination search target reveals all four persistent modes`() {
+        showPage(target = "glass.destination.Shared.Switches")
+        composeRule.onNodeWithTag("settings.glass.mode.Switches").performScrollTo().performClick()
+        listOf(R.string.glass_effect_mode_disabled, R.string.glass_effect_mode_contour_only,
+            R.string.glass_effect_mode_glass_only, R.string.glass_effect_mode_glass_and_contour).forEach { label ->
+            composeRule.onAllNodesWithText(context.getString(label)).onLast().assertIsDisplayed()
+        }
+        composeRule.onAllNodesWithText(context.getString(R.string.glass_effect_mode_contour_only)).onLast().performClick()
+        composeRule.runOnIdle {
+            assertEquals(GlassAreaMode.ContourOnly, GlassStore(context).read().mode(GlassArea.Switches))
+            assertTrue(store.read().optimizationEnabled)
+            assertEquals("destination.Shared", requireNotNull(glassSearchOption("glass.destination.Shared.Switches")).section)
+        }
+    }
+
+    @Test fun `optimization search reveals its card and warning before disabling`() {
+        showPage(target = "glass.optimization")
+        composeRule.onNodeWithTag("settings.glass.optimization").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.glass_effect_optimization_description)).assertIsDisplayed()
+        composeRule.onNodeWithTag("settings.glass.optimization").performClick()
+        composeRule.runOnIdle {
+            assertFalse(GlassStore(context).read().optimizationEnabled)
+            assertEquals("material", requireNotNull(glassSearchOption("glass.optimization")).section)
+        }
+    }
+
     @Test fun `global interaction controls persist independently without removing the preview`() {
         showPage()
         composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("interactions")

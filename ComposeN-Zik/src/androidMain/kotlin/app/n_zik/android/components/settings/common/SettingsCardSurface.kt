@@ -1,6 +1,8 @@
 package app.n_zik.android.components.settings.common
 
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassAreaMode
+import app.n_zik.android.components.glass.mode
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.usesGlassContour
 import androidx.compose.foundation.layout.Column
@@ -42,7 +44,7 @@ internal fun SettingsCardSurface(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val sourceBackdrop = rememberInlineGlassBackdrop(backgroundColor)
-    if (settings.usesGlassMaterial(GlassArea.ActionButtons)) {
+    if (settings.usesGlassMaterial(GlassArea.ActionButtons) || settings.enabled && settings.mode(GlassArea.Switches) != GlassAreaMode.Disabled) {
         val glassCard = settings.usesGlassMaterial(GlassArea.SettingsCards)
         GlassMaterialContainerScope(
             modifier = Modifier,

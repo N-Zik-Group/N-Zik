@@ -66,7 +66,7 @@ import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdr
 @Stable
 internal class GlassDialogEntry(
     val id: Any,
-    val locals: CompositionLocalContext,
+    val locals: () -> CompositionLocalContext,
     val onDismiss: () -> Unit,
     val properties: () -> DialogProperties,
     val edgeToEdge: () -> Boolean,
@@ -157,6 +157,7 @@ internal fun GlassDialogWindow(
         presentation?.motion?.value ?: scrimMotion.value
     }
     val locals = currentCompositionLocalContext
+    val currentLocals = rememberUpdatedState(locals)
     val currentContent = rememberUpdatedState<@Composable () -> Unit> {
         GlassArtworkContent(settings, settings.usesGlassMaterial(area)) { content() }
     }
@@ -164,13 +165,15 @@ internal fun GlassDialogWindow(
     val currentProperties = rememberUpdatedState(properties)
     val currentEdgeToEdge = rememberUpdatedState(edgeToEdge)
     val currentBackdrop = rememberUpdatedState(currentGlassOverlayBackdrop())
-    val dropdownOwner = LocalGlassDropdownBackdropOwner.current
-    DisposableEffect(host, id, locals) {
-        host.dialogs.add(GlassDialogEntry(id, locals, { currentDismiss.value() },
+    val currentDropdownOwner = rememberUpdatedState(LocalGlassDropdownBackdropOwner.current)
+    val currentPresentation = rememberUpdatedState(presentation)
+    DisposableEffect(host, id) {
+        host.dialogs.add(GlassDialogEntry(id, { currentLocals.value }, { currentDismiss.value() },
             { currentProperties.value }, { currentEdgeToEdge.value }, { currentContent.value() }, {
-                if (dropdownOwner != null) dropdownOwner.resolve(currentBackdrop.value) else currentBackdrop.value
+                val owner = currentDropdownOwner.value
+                if (owner != null) owner.resolve(currentBackdrop.value) else currentBackdrop.value
             }, { currentDimming.value }, { currentScrimProgress.value() }, { currentScrimColor.value },
-            { presentation?.motion?.value?.let(::dialogFadeAlpha) ?: 1f }))
+            { currentPresentation.value?.motion?.value?.let(::dialogFadeAlpha) ?: 1f }))
         onDispose { host.dialogs.remove(id); host.visibility.removeOverlay(id) }
     }
 }
@@ -246,6 +249,7 @@ fun GlassModalContent(
 /** The top dialog owns input; retained lower dialogs remain visible for nested dismissal. */
 @Composable
 fun GlassDialogOverlayHost(host: GlassMenuHostState) {
+    val settings = rememberGlassSettings()
     val view = LocalView.current
     SideEffect { host.dialogs.windowRoot = view.rootView }
     DisposableEffect(host) { onDispose { host.dialogs.windowRoot = null } }
@@ -257,15 +261,18 @@ fun GlassDialogOverlayHost(host: GlassMenuHostState) {
             val dimmedSource = rememberGlassDimmedBackdrop(source, dimmingAlpha, scrimColor)
             val visibleDialog = rememberLayerBackdrop()
             val completedBackdrop = if (source != null) rememberCombinedBackdrop(source, visibleDialog) else visibleDialog
-            val topmost = entry === host.dialogs.entries.lastOrNull() && host.entry?.visible != true
+            val topmostSharedOverlay = entry === host.dialogs.entries.lastOrNull() && host.entry?.visible != true
+            val topmost = topmostSharedOverlay && host.nativeOverlays.isEmpty()
             val properties = entry.properties()
             val focus = remember { FocusRequester() }
             LaunchedEffect(topmost) { if (topmost) focus.requestFocus() }
-            LaunchedEffect(topmost) { animateDialogMotion(entry.exposure, if (topmost) 1f else 0f) }
+            LaunchedEffect(topmostSharedOverlay, settings.optimizationEnabled) {
+                animateDialogMotion(entry.exposure, if (topmostSharedOverlay || !settings.optimizationEnabled) 1f else 0f)
+            }
             BackHandler(enabled = topmost) {
                 if (properties.dismissOnBackPress) entry.onDismiss()
             }
-            CompositionLocalProvider(entry.locals) {
+            GlassDialogEntryLocals(entry) {
                 CompositionLocalProvider(
                     LocalGlassOpticsEnabled provides true,
                     LocalGlassOpticalUnderlayCovered provides host.overlaysAbove(entry.id).isNotEmpty(),
@@ -331,4 +338,10 @@ internal fun NativeGlassOverlayCoverage(host: GlassMenuHostState?, id: Any) {
         host?.nativeOverlays?.add(id)
         onDispose { host?.nativeOverlays?.remove(id); host?.visibility?.removeOverlay(id) }
     }
+}
+
+/** A child updating captured locals must not recompose and invalidate its parent dialog. */
+@Composable
+private fun GlassDialogEntryLocals(entry: GlassDialogEntry, content: @Composable () -> Unit) {
+    CompositionLocalProvider(entry.locals(), content)
 }

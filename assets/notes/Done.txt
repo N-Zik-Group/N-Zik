@@ -1,4 +1,10 @@
 Added:
+- feat(glass): add configurable liquid switches and overlay optimization
+  - Add four switch modes to Glass settings and index them in both settings searches. Use the Cancel and Done colors for the liquid toggle states.
+  - Share drag handling across Glass and classic switches. Preserve the displayed thumb position when interrupting an animation and clip the classic ripple to the track shape.
+  - Add a profile setting for reducing covered Glass effects. Apply it to dialogs and both queue hosts while keeping input blocked behind native windows.
+  - Verify 117 focused tests, including switch overflow in settings and profile cards, and assemble the Debug APK.
+
 - feat(theme): share artwork colors across dynamic surfaces
   - Share cached artwork analysis from the high-quality source across the theme, player, mini player, lyrics, Glass, visualizer and widgets.
   - Add Keep dark mode to darken monochrome colors in both light and dark themes; update derived colors immediately when the option or active profile changes.

@@ -75,6 +75,7 @@ internal fun glassDestinationRows(group: GlassDestinationGroup): List<GlassPolic
         GlassPolicyRow(R.string.glass_effect_where_dialog_buttons, GlassArea.DialogButtons, description = R.string.glass_effect_where_dialog_buttons_description),
         GlassPolicyRow(R.string.glass_effect_role_messages, GlassArea.Menus, GlassScope.Toast, description = R.string.glass_effect_role_messages_description))
     GlassDestinationGroup.Shared -> listOf(
+        GlassPolicyRow(R.string.glass_effect_switches_title, GlassArea.Switches, description = R.string.glass_effect_switches_description),
         GlassPolicyRow(R.string.glass_effect_where_action_buttons, GlassArea.ActionButtons, description = R.string.glass_effect_where_action_buttons_description),
         GlassPolicyRow(R.string.glass_effect_common_cards, GlassArea.SettingsCards, description = R.string.glass_effect_common_cards_description),
         GlassPolicyRow(R.string.glass_effect_common_discovery_cards, GlassArea.MoodCards, description = R.string.glass_effect_common_discovery_cards_description),
@@ -112,7 +113,7 @@ private val GlassPolicyRow.icon: Int
             GlassArea.SearchBars -> R.drawable.search
             GlassArea.SettingsCards -> R.drawable.settings
             GlassArea.MoodCards -> R.drawable.album
-            GlassArea.ActionButtons -> R.drawable.gesture
+            GlassArea.ActionButtons, GlassArea.Switches -> R.drawable.gesture
         }
     }
 
@@ -121,7 +122,8 @@ private val GlassPolicyRow.icon: Int
 /** Global search follows the same localized destinations and roles displayed on this page. */
 internal fun glassDestinationKeywordResources(): List<Int> = GlassDestinationGroup.entries.flatMap { group ->
     listOf(group.title, group.summary) + glassDestinationRows(group).flatMap { listOf(it.title, it.description) }
-}.plus(glassInteractionKeywordResources()).distinct()
+}.plus(glassInteractionKeywordResources()).plus(listOf(
+    R.string.glass_effect_optimization_title, R.string.glass_effect_optimization_description)).distinct()
 
 @Composable
 internal fun GlassDestinationCard(group: GlassDestinationGroup, config: GlassSettings, store: GlassStore, target: String = "") {
