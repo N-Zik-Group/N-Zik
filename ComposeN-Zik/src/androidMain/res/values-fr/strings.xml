@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <!-- About -->
     <string name="about_action_report_issue">Signaler un problème</string>
     <string name="about_action_request_feature">Demander une fonctionnalité ou nous suggérer une idée</string>
@@ -18,7 +17,6 @@
     <string name="about_title">À propos</string>
     <string name="about_translators_description">Show or hide the people who translated the app.</string>
     <string name="about_translators_title">Traducteurs</string>
-
     <!-- Accessibility -->
     <string name="accessibility_app_icon">Icône de l\'application</string>
     <string name="accessibility_app_icon_in_player">icône de l\'application dans le lecteur</string>
@@ -39,18 +37,15 @@
     <string name="accessibility_song_album_cover">pochette de l\'album de la chanson</string>
     <string name="accessibility_switch_mode">Changer de Mode</string>
     <string name="accessibility_youtube_playlist">Playlist Youtube</string>
-
     <!-- Account -->
     <string name="account_action_login">Se connecter</string>
     <string name="account_action_logout">Se déconnecter</string>
     <string name="account_youtube_login_description">Connect your YouTube account or sign out of the current session.</string>
     <string name="account_youtube_login_enabled_description">Allow YouTube account sign-in for personalized browsing and synchronization.</string>
-
     <!-- Account Youtube -->
     <string name="account_youtube_cookie_invalid">Le cookie YouTube n\'est pas valide. Veuillez vous reconnecter.</string>
     <string name="account_youtube_login_success">Connexion à YouTube réussie</string>
     <string name="account_youtube_session_expired">La session YouTube a expiré. Veuillez vous reconnecter.</string>
-
     <!-- Album -->
     <string name="album_action_bookmark">Marquer l\'album</string>
     <string name="album_action_open">Aller à l\'album</string>
@@ -65,7 +60,6 @@
     <string name="album_not_found">Album introuvable</string>
     <string name="album_related_title">Albums Associés</string>
     <string name="album_right_swipe">Balayage vers la droite de l\'album</string>
-
     <!-- Artist -->
     <string name="artist_action_follow">Suivre</string>
     <string name="artist_action_play_local_songs">Jouer toutes les chansons locales</string>
@@ -82,7 +76,6 @@
     <string name="artist_songs_count_duration">Titres %1$d • %2$s</string>
     <string name="artist_songs_unavailable_message">Pas encore de titres</string>
     <string name="artist_title">Artiste</string>
-
     <!-- Audio -->
     <string name="audio_bass_boost_description">Enhance low frequencies during playback.</string>
     <string name="audio_bass_boost_level_description">Adjust the strength of the low-frequency boost.</string>
@@ -114,7 +107,6 @@
     <string name="audio_waveform_updated_message">La forme d\'onde a été mise à jour avec succès</string>
     <string name="audio_waveform_updating_message">Mise à jour de la forme d\'onde en cours…</string>
     <string name="audio_waveform_waiting_for_download_message">La courbe d\'onde sera mise à jour dès que le téléchargement sera terminé.</string>
-
     <!-- Audio Reverb -->
     <string name="audio_reverb_large_hall">Grand Hall</string>
     <string name="audio_reverb_large_room">Grande chambre</string>
@@ -123,12 +115,10 @@
     <string name="audio_reverb_none">Aucun</string>
     <string name="audio_reverb_plate">Plaque</string>
     <string name="audio_reverb_small_room">Petite chambre</string>
-
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">Je me sens chanceux</string>
     <string name="automotive_action_play_all">Tout lire</string>
     <string name="automotive_title">Android Auto</string>
-
     <!-- Backup -->
     <string name="backup_action_export">Exporter la sauvegarde</string>
     <string name="backup_action_import">Importer une sauvegarde</string>
@@ -161,7 +151,6 @@
     <string name="backup_restore_overwrite_and_restart_warning">Les données existantes seront écrasées. %1$s se fermera automatiquement après la restauration de la base de données.</string>
     <string name="backup_target_database_and_settings_label">Base de données + Paramètres</string>
     <string name="backup_target_database_label">Base de données</string>
-
     <!-- Backup Auto -->
     <string name="backup_auto_custom_interval_unit">Unité d\'intervalle personnalisée</string>
     <string name="backup_auto_custom_interval_value">Valeur d\'intervalle personnalisée</string>
@@ -188,7 +177,6 @@
     <string name="backup_auto_unit_minutes">Minutes</string>
     <string name="backup_auto_unit_months">Mois</string>
     <string name="backup_auto_unit_weeks">Semaines</string>
-
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Exporter la liste des profils et les photos de visage dans un seul fichier .txt</string>
     <string name="backup_export_all">Tout exporter</string>
@@ -197,7 +185,6 @@
     <string name="backup_export_database_description">Exporter la base de données contenant les titres, les playlists et l\'historique</string>
     <string name="backup_export_profile_state_failed">Échec de l\'exportation de l\'état du profil</string>
     <string name="backup_export_settings_description">Exporter les paramètres et les préférences de l\'application</string>
-
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importer la liste des profils et les photos de visage à partir d\'un fichier .txt</string>
     <string name="backup_import_all">Tout importer</string>
@@ -211,7 +198,6 @@
     <string name="backup_import_settings_description">Importer les paramètres et les préférences de l\'application</string>
     <string name="backup_import_target_from_file">À partir du fichier</string>
     <string name="backup_import_target_profile_title">Dans quel profil l\'importer ?</string>
-
     <!-- Bridge -->
     <string name="bridge_audio_output_pc_subtitle">Son sur PC (N-Zik Desktop Compagnon)</string>
     <string name="bridge_audio_output_pc_unavailable">Cet ordinateur n\'est pas disponible</string>
@@ -271,7 +257,6 @@
     <string name="bridge_server_stopped_user">Interrompu depuis le téléphone</string>
     <string name="bridge_server_stopped_wifi">Aucun réseau Wi-Fi ni point d\'accès</string>
     <string name="bridge_server_via_hotspot">Via le point d\'accès de ce téléphone</string>
-
     <!-- Cache -->
     <string name="cache_action_reset">Réinitialiser le cache</string>
     <string name="cache_clear_song_dialog_title">Vider le cache des morceaux</string>
@@ -281,7 +266,6 @@
     <string name="cache_location_private">Privé</string>
     <string name="cache_location_system">Système</string>
     <string name="cache_streaming_max_size_description">Limit disk space used to cache streamed songs. The trash button clears this playback cache.</string>
-
     <!-- Calendar -->
     <string name="calendar_days_ago">Il y a %d jours</string>
     <string name="calendar_last_week">Semaine dernière</string>
@@ -306,7 +290,6 @@
     <string name="calendar_this_month">Le mois dernier</string>
     <string name="calendar_today">Aujourd\'hui</string>
     <string name="calendar_yesterday">Hier</string>
-
     <!-- Common -->
     <string name="common_action_apply">Appliquer</string>
     <string name="common_action_cancel">Annuler</string>
@@ -391,7 +374,6 @@
     <string name="common_validation_minimum_value">"La valeur doit être supérieure à "</string>
     <string name="common_validation_name_in_use">Ce nom est déjà utilisé</string>
     <string name="common_value_input_hint">Entrez la valeur</string>
-
     <!-- Discord -->
     <string name="discord_activity_competing">Compétition</string>
     <string name="discord_activity_listening">Écouter</string>
@@ -469,7 +451,6 @@
     <string name="discord_state_template_description">Set the secondary activity line using track information placeholders.</string>
     <string name="discord_template_unknown_album">Album inconnu</string>
     <string name="discord_token_text_invalid">Votre jeton Discord n\'est pas valide, veuillez vous reconnecter</string>
-
     <!-- Downloads -->
     <string name="downloads_action_download_all">Télécharger tous les titres</string>
     <string name="downloads_action_refresh_quality">Téléchargements de mises à jour</string>
@@ -500,7 +481,6 @@
     <string name="downloads_stale_removed">Les données de téléchargement de %1$s sont manquantes et ont été supprimées. Veuillez les télécharger à nouveau.</string>
     <string name="downloads_stale_startup_removed">%1$d morceaux téléchargés ne disposent plus de leurs fichiers et ont été supprimés. Veuillez les télécharger à nouveau.</string>
     <string name="downloads_title">Télécharger</string>
-
     <!-- Export -->
     <string name="export_cached_song_action">Exporter le titre mis en cache ou téléchargé</string>
     <string name="export_cached_songs_action">Exporter en cache</string>
@@ -510,7 +490,6 @@
     <string name="export_file_name_dialog_title">Nommez votre exportation</string>
     <string name="export_running_status">Exportation en cours…</string>
     <string name="export_song_unavailable_message">Le titre doit être mis en cache ou téléchargé pour être exporté</string>
-
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Choisissez l\'action à effectuer en faisant glisser vers la gauche un morceau de l\'album.</string>
     <string name="gestures_album_track_swipe_right_description">Choisissez l\'action à effectuer en faisant glisser vers la droite un morceau de l\'album.</string>
@@ -518,7 +497,6 @@
     <string name="gestures_playlist_track_swipe_right_description">Choisissez l\'action à effectuer en faisant glisser vers la droite un titre de la playlist.</string>
     <string name="gestures_queue_item_swipe_left_description">Choose the action performed by swiping a queue item left.</string>
     <string name="gestures_queue_item_swipe_right_description">Choisissez l\'action à effectuer en faisant glisser vers la droite un élément de la file d\'attente.</string>
-
     <!-- Glass -->
     <string name="glass_effect_active_tab_indicator">Active tab</string>
     <string name="glass_effect_color_vibrancy">Colour</string>
@@ -535,7 +513,6 @@
     <string name="glass_effect_tint_source_custom">Personnalisé</string>
     <string name="glass_effect_tint_source_system_accent">System accent</string>
     <string name="glass_effect_where_bottom_bar">Glass on the bottom bar</string>
-
     <!-- Glass Effect -->
     <string name="glass_effect_action_play_all">Play all quick picks</string>
     <string name="glass_effect_action_shuffle">Shuffle quick picks</string>
@@ -668,11 +645,9 @@
     <string name="glass_effect_where_search_bars">Glass on search bars</string>
     <string name="glass_effect_where_search_bars_description">Les champs dans lesquels vous saisissez une recherche, y compris les recherches dans les paramètres.</string>
     <string name="glass_effect_windows_summary">Change menus, pop-up windows and short messages.</string>
-
     <!-- History -->
     <string name="history_clear_listen_history_description">Delete saved playback events from listening history.</string>
     <string name="history_clear_search_history_description">Delete saved searches from every search-history page without changing history preferences.</string>
-
     <!-- Home -->
     <string name="home_albums_settings">Accueil Albums</string>
     <string name="home_artists_settings">Accueil Artistes</string>
@@ -691,16 +666,13 @@
     <string name="home_tabs_settings_description">Réorganiser et afficher/masquer les onglets</string>
     <string name="home_title">Accueil</string>
     <string name="home_youtube_login_description">Connectez-vous à votre compte YTM pour voir plus de contenu</string>
-
     <!-- Home Easter Egg -->
     <string name="home_easter_egg_click_message">Aimeriez-vous cliquer ? Alors continuez...</string>
     <string name="home_easter_egg_keep_going">Ok, vous cherchez quelque chose, gardez...</string>
     <string name="home_easter_egg_last">Vous êtes numéro un, faites un clic long et profitez de la surprise</string>
     <string name="home_easter_egg_number_one">Vous êtes numéro un, cliquez et profitez de la surprise</string>
-
     <!-- Image -->
     <string name="image_error_unknown">Erreur Inconnue</string>
-
     <!-- Interface -->
     <string name="interface_artist_image_roundness_description">Régler l\'arrondi des coins des images des artistes.</string>
     <string name="interface_corner_roundness_description">Adjust the rounding of interface cards and controls.</string>
@@ -713,7 +685,6 @@
     <string name="interface_player_position_description">Choose where the player is placed in the interface.</string>
     <string name="interface_show_floating_icon_description">Display a floating shortcut that opens search.</string>
     <string name="interface_transition_effect_description">Choose the animation used when moving between screens.</string>
-
     <!-- Language -->
     <string name="language_app_selection_description">Choose the language used for app labels and messages.</string>
     <string name="language_name_afrikaans">Africain (Afrikaans)</string>
@@ -765,7 +736,6 @@
     <string name="language_name_ukrainian">Ukrainien (українська)</string>
     <string name="language_name_vietnamese">Vietnamien (Tiếng Việt)</string>
     <string name="language_system_default">Langue du système</string>
-
     <!-- Lastfm -->
     <string name="lastfm_action_failed">Échec de la requête Last.fm</string>
     <string name="lastfm_auth_failed">Échec de la connexion. Vérifiez vos identifiants Last.fm.</string>
@@ -791,7 +761,6 @@
     <string name="lastfm_unlove">Retirer des favoris sur Last.fm</string>
     <string name="lastfm_unloved">Supprimé de la liste des titres préférés</string>
     <string name="lastfm_username">Nom d’utilisateur</string>
-
     <!-- Library -->
     <string name="library_action_bookmark">Signet</string>
     <string name="library_action_randomize">Générateur aléatoire</string>
@@ -839,14 +808,12 @@
     <string name="library_title">Bibliothèque</string>
     <string name="library_youtube_music_title">Bibliothèque YouTube Music</string>
     <string name="library_youtube_playlists_label">YouTube / YouTube Music</string>
-
     <!-- Library Favorites -->
     <string name="library_dislikes_added">N\'a pas aimé %s</string>
     <string name="library_dislikes_removed">Suppression de %s des « Je n\'aime pas »</string>
     <string name="library_favorites_action_add">Ajouter aux favoris</string>
     <string name="library_favorites_added">Ajouté aux favoris</string>
     <string name="library_favorites_removed">Retiré des favoris</string>
-
     <!-- Library Sort -->
     <string name="library_sort_album">Album</string>
     <string name="library_sort_album_year">Année de l\'album</string>
@@ -863,7 +830,6 @@
     <string name="library_sort_play_count">Nombre de lectures</string>
     <string name="library_sort_songs_number">Numéro du titre</string>
     <string name="library_sort_title">Titre</string>
-
     <!-- Listen -->
     <string name="listen_together_auto_approval_joins_description">Approuver automatiquement les demandes d\'adhésion sans les examiner manuellement</string>
     <string name="listen_together_auto_approval_suggestions_description">Approuver et mettre en file d\'attente automatiquement les suggestions de titres des invités</string>
@@ -880,7 +846,6 @@
     <string name="listen_together_transfer_ownership_description">Désignez cette personne comme animateur de la salle</string>
     <string name="listen_together_username_description">Set the name other participants see in shared listening rooms.</string>
     <string name="listen_together_view_logs_description">Déboguer les événements et les messages liés à la connexion</string>
-
     <!-- Listen Together -->
     <string name="listen_together_action_approve">Approuver</string>
     <string name="listen_together_action_reject">Refuser</string>
@@ -960,7 +925,6 @@
     <string name="listen_together_you_are_guest">Vous êtes un invité</string>
     <string name="listen_together_you_are_host">Vous êtes l\'hôte</string>
     <string name="listen_together_you_label">Vous</string>
-
     <!-- Logs -->
     <string name="logs_action_export">Exporter les journaux</string>
     <string name="logs_action_export_both">Exporter les deux fichiers journaux</string>
@@ -969,7 +933,6 @@
     <string name="logs_export_both_description">Exporter les journaux de débogage et d\'erreurs vers un fichier</string>
     <string name="logs_export_crash_description">Exporter le journal des erreurs vers un fichier</string>
     <string name="logs_export_debug_description">Exporter le journal de débogage vers un fichier</string>
-
     <!-- Lyrics -->
     <string name="lyrics_action_choose_translation_language">Traduire en une autre langue</string>
     <string name="lyrics_action_copy">Copier les paroles</string>
@@ -1048,7 +1011,6 @@
     <string name="lyrics_translation_section_title">Traduction</string>
     <string name="lyrics_translation_success_message">Traduction réussie</string>
     <string name="lyrics_unsynced">Texte brut</string>
-
     <!-- Maintenance -->
     <string name="maintenance_all_systems_ok">Tous les systèmes sont opérationnels</string>
     <string name="maintenance_auto_update">Mise à jour automatique</string>
@@ -1173,7 +1135,6 @@
     <string name="maintenance_yt_invalid">Non valide</string>
     <string name="maintenance_yt_session">Session YouTube</string>
     <string name="maintenance_yt_valid">Valide</string>
-
     <!-- Metadata -->
     <string name="metadata_action_change_artists">Mettre à jour les auteurs</string>
     <string name="metadata_action_change_cover">Mettre à jour la pochette</string>
@@ -1221,7 +1182,6 @@
     <string name="metadata_video_views_label">Vues</string>
     <string name="metadata_wikipedia_attribution">De Wikipedia sous license Creative Commons Attribution CC-BY-SA 3.0</string>
     <string name="metadata_year">Année</string>
-
     <!-- Metadata Musicbrainz -->
     <string name="metadata_musicbrainz_insights">Perspectives</string>
     <string name="metadata_musicbrainz_insights_biography">Biographie</string>
@@ -1252,7 +1212,6 @@
     <string name="metadata_musicbrainz_stat_songs">Titres</string>
     <string name="metadata_musicbrainz_stat_time">Durée totale</string>
     <string name="metadata_musicbrainz_wikipedia">Wikipédia</string>
-
     <!-- Modules -->
     <string name="modules_abi">ABI</string>
     <string name="modules_already_installed">Déjà installé</string>
@@ -1287,7 +1246,6 @@
     <string name="modules_update_available_body">La version %1$s est installée. L\'application est désormais fournie avec la version %2$s.</string>
     <string name="modules_updating">Mise à jour du module</string>
     <string name="modules_version">Version</string>
-
     <!-- Navigation -->
     <string name="navigation_action_picture_in_picture">PIP</string>
     <string name="navigation_back_again_to_exit_message">Appuyez à nouveau pour quitter</string>
@@ -1296,7 +1254,6 @@
     <string name="navigation_position_top_label">En haut</string>
     <string name="navigation_style_icon_and_text_label">Texte et icône</string>
     <string name="navigation_style_icon_only_label">Icône uniquement</string>
-
     <!-- Network -->
     <string name="network_action_disable_offline_mode">Disable full offline mode</string>
     <string name="network_action_enable_offline_mode">Activer le mode hors ligne complet</string>
@@ -1331,10 +1288,8 @@
     <string name="network_stream_client_web_creator_description">Client de création de sites Web.</string>
     <string name="network_stream_client_web_description">Client Web standard.</string>
     <string name="network_stream_client_youtube_music_web_description">Plus lent, mais prend en charge les formats premium. Utilise le décryptage de signature via JavaScript (délai d\'environ 5 à 10 s). Recommandé pour les utilisateurs premium.</string>
-
     <!-- Network Proxy -->
     <string name="network_proxy_invalid_hostname">Le nom d\'hôte de votre proxy n\'est pas valide. Veuillez le vérifier</string>
-
     <!-- Network Stream -->
     <string name="network_stream_client">Client de streaming</string>
     <string name="network_stream_client_android">Android</string>
@@ -1354,7 +1309,6 @@
     <string name="network_stream_error_retrying">Réessayer : %1$s</string>
     <string name="network_stream_still_retrying">Chargement en cours… Tentative %1$s</string>
     <string name="network_stream_unexpected_skip">Changement de piste inattendu détecté</string>
-
     <!-- Onboarding -->
     <string name="onboarding_accounts_discord_description">Afficher ce que vous écoutez sur Discord (bêta)</string>
     <string name="onboarding_accounts_done">J\'ai fini</string>
@@ -1391,11 +1345,9 @@
     <string name="onboarding_restore_skip_description">Vous pouvez restaurer une sauvegarde ultérieurement depuis les paramètres de l\'application</string>
     <string name="onboarding_restore_title">Restaurer une sauvegarde</string>
     <string name="onboarding_start">Démarrer</string>
-
     <!-- Parental -->
     <string name="parental_control">Contrôle parental</string>
     <string name="parental_control_is_enabled">Le contrôle parental est activé</string>
-
     <!-- Permissions -->
     <string name="permissions_event_denied">Permission denied</string>
     <string name="permissions_event_granted">Autorisation accordée</string>
@@ -1431,7 +1383,6 @@
     <string name="permissions_label_microphone">Microphone / audio capture</string>
     <string name="permissions_label_notifications">Notifications</string>
     <string name="permissions_usage_journal">Permission activity</string>
-
     <!-- Player -->
     <string name="common_action_stop">Arrêter</string>
     <string name="player_action_bar_buttons">Visibilité des boutons</string>
@@ -1619,7 +1570,6 @@
     <string name="player_top_spacing_description">Keep empty space at the top when the top actions bar is hidden.</string>
     <string name="player_track_swipe_sensitivity_description">Adjust how easily a swipe changes tracks in the player.</string>
     <string name="player_type">Type de lecteur</string>
-
     <!-- Player Appearance -->
     <string name="player_controls_style_essential">Minimale</string>
     <string name="player_controls_style_modern">Moderne</string>
@@ -1635,7 +1585,6 @@
     <string name="player_progress_both">Les deux</string>
     <string name="player_progress_mini_player">Lecteur minimisé</string>
     <string name="settings_action_bar_show_lyrics_button">Bouton « Paroles »</string>
-
     <!-- Player Background -->
     <string name="player_background_black_cherry_cosmos">Cosmos à la cerise noire</string>
     <string name="player_background_glossy_gradient">Dégradé brillant</string>
@@ -1649,7 +1598,6 @@
     <string name="player_background_oil_flow">Débit d\'huile</string>
     <string name="player_background_purple_liquid">Liquide violet</string>
     <string name="player_background_stage">Étape</string>
-
     <!-- Player Mini -->
     <string name="player_mini_button_audio_output">Sortie audio</string>
     <string name="player_mini_button_discover">Découvrir</string>
@@ -1665,10 +1613,8 @@
     <string name="player_mini_button_visualizer">Visualiseur</string>
     <string name="player_mini_buttons_config">Boutons du mini-lecteur</string>
     <string name="player_mini_buttons_config_description">Configurer les 4 boutons du mini-lecteur</string>
-
     <!-- Player Notification -->
     <string name="player_notification_pause">Mettre en pause</string>
-
     <!-- Player Sleep Timer -->
     <string name="player_sleep_timer_action_set">Régler le minuteur de mise en veille</string>
     <string name="player_sleep_timer_end_of_song">fin du titre</string>
@@ -1676,7 +1622,6 @@
     <string name="player_sleep_timer_set_to">Régler sur</string>
     <string name="player_sleep_timer_stop_confirmation">Voulez-vous désactiver la minuterie de mise en veille ?</string>
     <string name="player_sleep_timer_title">Minuteur de veille</string>
-
     <!-- Playlist -->
     <string name="playlist_action_add">Ajouter à la playlist</string>
     <string name="playlist_action_add_hint">Ajouter à la playlist</string>
@@ -1738,16 +1683,13 @@
     <string name="playlist_top_show_description">Show your top-played playlist in Quick Picks.</string>
     <string name="playlist_youtube_song_limit_message">Les playlists YouTube sont limitées à 5000 titres.</string>
     <string name="playlist_youtube_title">Playlist YouTube</string>
-
     <!-- Podcast -->
     <string name="podcast_episodes_title">Épisodes</string>
     <string name="podcast_title">Podcasts</string>
-
     <!-- Privacy -->
     <string name="privacy_block_screenshots">Block screenshots</string>
     <string name="privacy_block_screenshots_description">Prevent screenshots and screen recordings of N-Zik, and hide its content on non-secure displays. Applies immediately for this profile.</string>
     <string name="privacy_screen_protection">Screen protection</string>
-
     <!-- Profile -->
     <string name="profile_action_add">Ajouter un profil</string>
     <string name="profile_action_export">Exporter des profils</string>
@@ -1812,14 +1754,12 @@
     <string name="profile_share_waveforms_description">Utiliser le dossier « formes d\'onde » du profil de base à la place de celui de ce profil. Cette modification s\'appliquera au prochain redémarrage de l\'application ; les données déjà enregistrées dans le dossier de ce profil y resteront.</string>
     <string name="profile_switch_dialog_title">Changer de profil</string>
     <string name="profile_title">Profils</string>
-
     <!-- Queue -->
     <string name="queue_discover_description">Supprimer les titres de la file d\'attente s\'ils figurent dans les favoris ou dans des playlists</string>
     <string name="queue_discover_title">Découvrir</string>
     <string name="queue_max_songs_in_queue_android_auto_description">Limit the number of tracks exposed to the Android Auto queue.</string>
     <string name="queue_max_songs_in_queue_description">Limit the number of tracks added to the play queue.</string>
     <string name="queue_now_playing_indicator_description">Choose the indicator displayed beside the currently playing track.</string>
-
     <!-- Radio -->
     <string name="radio_action_start">Lancer la radio</string>
     <string name="radio_action_start_hint">Démarrer la radio</string>
@@ -1832,7 +1772,6 @@
     <string name="radio_discovery_requires_radio_or_autofill_message">Activez la fonction « Radio » ou « Remplissage automatique » pour utiliser « Découverte »</string>
     <string name="radio_fetch_empty_queue_preserved_message">Radio : aucun morceau chargé (file d\'attente conservée)</string>
     <string name="radio_stopped_message">La radio s\'est arrêtée (Retour à la normale)</string>
-
     <!-- Recognition -->
     <string name="recognition_action_more_details">Plus d\'informations</string>
     <string name="recognition_audio_hint">Lancez un morceau de musique pour que l\'analyse fonctionne</string>
@@ -1840,7 +1779,6 @@
     <string name="recognition_error_no_match">Impossible d\'identifier ce morceau. Essayez un extrait plus fort ou plus net.</string>
     <string name="recognition_listening_duration">Analyse de %1$ds de données audio</string>
     <string name="recognition_ready_message">Approchez votre téléphone de la musique</string>
-
     <!-- Recommendations -->
     <string name="recommendations_action_reset_quick_picks">Réinitialiser la « Sélection Rapide »</string>
     <string name="recommendations_adaptive">Adaptatif</string>
@@ -1890,7 +1828,6 @@
     <string name="recommendations_trending_community_playlists_title">Playlists Communautaires</string>
     <string name="recommendations_trending_shorts_title">Tendances Shorts</string>
     <string name="recommendations_trending_songs_title">Les titres du moment pour vous</string>
-
     <!-- Recovery -->
     <string name="recovery_accounts_exported">État du profil exporté</string>
     <string name="recovery_accounts_imported_base">État du profil importé : profil de base</string>
@@ -1986,7 +1923,6 @@
     <string name="recovery_status_main_process_stopped">L\'application est arrêtée — aucune action de fermeture n\'est nécessaire</string>
     <string name="recovery_status_main_process_stopping">L\'application est en train de se fermer…</string>
     <string name="recovery_success">Terminé</string>
-
     <!-- Rewind -->
     <string name="rewind_albums_empty_body">Vos albums préférés s\'afficheront ici dès que votre historique d\'écoute sera suffisamment complet.</string>
     <string name="rewind_albums_empty_title">VOTRE PILE D\'ALBUMS EST VIDE</string>
@@ -2236,7 +2172,6 @@
     <string name="rewind_years_kicker">VOS ANNÉES • %1$s</string>
     <string name="rewind_years_peak_sub">%1$s FRAPPE LE PLUS FORT.</string>
     <string name="rewind_years_peak_year">ANNÉE RECORD</string>
-
     <!-- Search -->
     <string name="search_content_type_all">Tout</string>
     <string name="search_content_type_official">Officiel</string>
@@ -2279,7 +2214,6 @@
     <string name="voice_search_listening">Écoute...</string>
     <string name="voice_search_retry">Réessayer</string>
     <string name="voice_search_speak_now">Parlez maintenant</string>
-
     <!-- Settings -->
     <string name="audio_loudness_boost_level">Niveau d\'amplification de la sonorité</string>
     <string name="common_error_no_document_handler">Impossible de trouver une application pour ouvrir les documents</string>
@@ -2579,6 +2513,10 @@ Volume BAS : titre précédent</string>
     <string name="settings_recommendations_title">Recommandations AI</string>
     <string name="settings_region_override">Region Override</string>
     <string name="settings_reset">Réinitialiser</string>
+    <string name="settings_reset_all">Reset all settings</string>
+    <string name="settings_reset_all_confirm">Reset all</string>
+    <string name="settings_reset_all_confirmation">Reset all application settings? Saved accounts, credentials, profiles, playlists, downloads and files will be kept.</string>
+    <string name="settings_reset_all_description">Restore all application settings to their defaults.</string>
     <string name="settings_reset_choose_scope">Choisissez les paramètres à restaurer</string>
     <string name="settings_reset_choose_scope_description">Sélectionnez une section des paramètres, puis rétablissez ses paramètres par défaut.</string>
     <string name="settings_reset_scope">Réinitialiser tous les paramètres %1$s (toutes catégories confondues)</string>
@@ -2625,6 +2563,8 @@ Volume BAS : titre précédent</string>
     <string name="settings_theme_dark_colors_reset_title">Réinitialiser les couleurs sombres personnalisées</string>
     <string name="settings_theme_dark_mode_label">Sombre</string>
     <string name="settings_theme_disabled_text_color_label">Texte désactivé</string>
+    <string name="settings_theme_keep_dark_mode_description">Disable monochrome luminance adaptation in both dark and light modes to avoid bright flashes from light covers.</string>
+    <string name="settings_theme_keep_dark_mode_label">Keep dark mode</string>
     <string name="settings_theme_light_colors_reset_confirmation">Voulez-vous vraiment réinitialiser les couleurs personnalisées du thème clair ?</string>
     <string name="settings_theme_light_colors_reset_description">Cliquez pour réinitialiser les couleurs claires par défaut</string>
     <string name="settings_theme_light_colors_reset_title">Réinitialiser les couleurs claires personnalisées</string>
@@ -2653,7 +2593,6 @@ Volume BAS : titre précédent</string>
     <string name="settings_youtube_library_sync_content_description">Playlists, albums, artistes, histoire, etc.</string>
     <string name="settings_youtube_login_enabled_label">Activer la connexion à YouTube Music</string>
     <string name="settings_youtube_music_title">YouTube Music</string>
-
     <!-- Smart Trash -->
     <string name="library_cleanup_all_downloads_confirmation">Do you want to delete all downloads (%d songs)?</string>
     <string name="library_cleanup_all_favorites_confirmation">Voulez-vous supprimer tous les favoris %d?</string>
@@ -2668,14 +2607,12 @@ Volume BAS : titre précédent</string>
     <string name="library_cleanup_title">Corbeille intelligente</string>
     <string name="library_favorites_remove_dialog_title">Supprimer des favoris</string>
     <string name="library_listening_history_reset_dialog_title">Réinitialiser l\'historique d\'écoute</string>
-
     <!-- Song -->
     <string name="song_delete_confirmation">Voulez-vous vraiment supprimer ce titre ? Il sera supprimé de la base de données.\nCette action est irréversible.</string>
     <string name="song_delete_dialog_title">Supprimer des morceaux</string>
     <string name="song_metadata_update_action_open">Ouvrir la boîte de dialogue de mise à jour</string>
     <string name="song_metadata_updated_count">Mise à jour de %1$d titres</string>
     <string name="song_play_time_action_reset">Réinitialiser le temps de lecture total</string>
-
     <!-- Song Matching -->
     <string name="song_matching_action_open">Version de l\'album/de l\'audio</string>
     <string name="song_matching_all_confirmation">Voulez-vous faire correspondre %d chansons sans correspondance?</string>
@@ -2683,7 +2620,6 @@ Volume BAS : titre précédent</string>
     <string name="song_matching_progress_title">Matching songs</string>
     <string name="song_matching_running_message">Titres correspondants. Veuillez patienter. Ne réduisez pas ou ne quittez pas l\'application</string>
     <string name="song_matching_unmatched_label">Chanson sans correspondance</string>
-
     <!-- Statistics -->
     <string name="statistics_action_delete_playback_events_count">Supprimer %1$s événements de la lecture</string>
     <string name="statistics_delete_playback_events_confirmation">Voulez-vous vraiment supprimer tous les événements de lecture ?</string>
@@ -2700,14 +2636,12 @@ Volume BAS : titre précédent</string>
     <string name="statistics_songs_heard">titres écoutés</string>
     <string name="statistics_title">Statistiques</string>
     <string name="statistics_top_period_title">Voir le top %s de …</string>
-
     <!-- Storage -->
     <string name="storage_samsung_action_keep_system">Keep system storage</string>
     <string name="storage_samsung_action_use_private">Use private storage</string>
     <string name="storage_samsung_advice_message">Samsung\'s automatic memory management can delete N-Zik\'s downloads and cache files, even when you did not ask for it. To keep your downloads safe, use the private (app) storage location instead of system storage.</string>
     <string name="storage_samsung_advice_title">Samsung storage advice</string>
     <string name="storage_samsung_system_usage_message">You currently have %1$s of downloads and cache on system storage.</string>
-
     <!-- Sync -->
     <string name="sync_action_sync">Synchronise</string>
     <string name="sync_albums">Synchronisation automatique des albums enregistrés</string>
@@ -2779,7 +2713,6 @@ Volume BAS : titre précédent</string>
     <string name="sync_success_notification_artists">Tous les artistes ont été synchronisés avec succès.</string>
     <string name="sync_success_notification_playlists">Toutes les playlists ont été synchronisées avec succès.</string>
     <string name="sync_successful">Synchronisation réussie</string>
-
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">Souhaitez-vous réessayer de synchroniser les %1$d éléments pour lesquels la synchronisation a échoué ?</string>
     <string name="sync_running_status">Synchronisation...</string>
@@ -2796,7 +2729,6 @@ Volume BAS : titre précédent</string>
     <string name="sync_youtube_songs_remaining">%1$s Chansons restantes</string>
     <string name="sync_youtube_unlike_failed">Impossible de ne pas aimer le titre sur YouTube</string>
     <string name="sync_youtube_unlike_success">Le titre n\'est pas apprécié sur YouTube</string>
-
     <!-- Theme -->
     <string name="theme_custom_accent_description">Choisissez la couleur d\'accent personnalisée utilisée par ce thème.</string>
     <string name="theme_dark_palette_accent_description">Choose the color for accented controls and highlights in the dark palette.</string>
@@ -2832,7 +2764,6 @@ Volume BAS : titre précédent</string>
     <string name="theme_shake_sensitivity_low">Faible (5,0 G)</string>
     <string name="theme_shake_sensitivity_medium">Moyenne (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Très élevée (1,0 G)</string>
-
     <!-- Thumbnail -->
     <string name="thumbnail_action_edit">Éditer la miniature</string>
     <string name="thumbnail_action_pick_from_gallery">Choisissez une photo dans la galerie</string>
@@ -2842,7 +2773,6 @@ Volume BAS : titre précédent</string>
     <string name="thumbnail_not_selected">Miniature non sélectionnée</string>
     <string name="thumbnail_remove_failed">Échec de la suppression de la miniature</string>
     <string name="thumbnail_remove_success">Supprimer la miniature</string>
-
     <!-- Updates -->
     <string name="updates_action_check">Vérifier les mises à jour</string>
     <string name="updates_action_check_now">Vérifiez maintenant</string>
@@ -2900,7 +2830,6 @@ Volume BAS : titre précédent</string>
     <string name="updates_unavailable_build_description">Si vous voyez ce message, cela signifie que votre version n\'a pas activé la mise à jour automatique, pls met à jour l\'application manuellement à partir de github</string>
     <string name="updates_up_to_date">À jour</string>
     <string name="updates_warning_acknowledge">Je comprends</string>
-
     <!-- Visualizer -->
     <string name="visualizer_action_open_permission_settings">Ouvrir les paramètres d\'autorisation</string>
     <string name="visualizer_animation_bars">Barres</string>
@@ -2922,7 +2851,6 @@ Volume BAS : titre précédent</string>
     <string name="visualizer_line_thickness_description">Adjust the width of the lines in the audio visualization.</string>
     <string name="visualizer_microphone_permission_message">L\'effet « Visualizer » nécessite l\'autorisation d\'accès au micro. Veuillez l\'accorder.</string>
     <string name="visualizer_title">Visualiseur</string>
-
     <!-- Widget -->
     <string name="widget_action_play_pause">Lecture / Pause</string>
     <string name="widget_action_tap_to_play">Appuyez pour lancer la lecture</string>
