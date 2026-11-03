@@ -54,7 +54,6 @@ jobs:
           # 3. Fetch total downloads across all releases (handling pagination)
           TOTAL_DOWNLOADS=0
           PAGE=1
-          : > "$RUNNER_TEMP/metrics-releases.jsonl"
           while true; do
             PAGE_DATA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/N-Zik-Group/N-Zik/releases?per_page=100&page=$PAGE")
             COUNT=$(echo "$PAGE_DATA" | jq 'length')
@@ -62,7 +61,6 @@ jobs:
               break
             fi
             DL=$(echo "$PAGE_DATA" | jq '[.[].assets[].download_count] | add // 0')
-            echo "$PAGE_DATA" | jq -c '.[] | select(.draft == false and .prerelease == false and .published_at != null) | {tag_name, published_at}' >> "$RUNNER_TEMP/metrics-releases.jsonl"
             TOTAL_DOWNLOADS=$((TOTAL_DOWNLOADS + DL))
             PAGE=$((PAGE + 1))
           done
@@ -172,7 +170,6 @@ jobs:
           import json
           import os
           from datetime import datetime, timedelta, timezone
-          from html import escape
           from zoneinfo import ZoneInfo
           from pathlib import Path
           from urllib.request import Request, urlopen
@@ -194,12 +191,12 @@ jobs:
                           None,
                       )
               return [(time.timestamp(), total)
-                      for total, time in enumerate(sorted(stars.values()), 1)] or [(releases[-1][0] if releases else datetime.now(timezone.utc).timestamp(), 0)]
+                      for total, time in enumerate(sorted(stars.values()), 1)] or [(datetime.now(timezone.utc).timestamp(), 0)]
 
           def render_chart(data, title, filename, unit):
               width, height, padding = 600, 280, 72
               chart_w = width - padding - 32
-              top, bottom = 86, 250
+              top, bottom = 52, 250
               chart_h = bottom - top
 
               times, values = zip(*data)
@@ -207,8 +204,6 @@ jobs:
               range_v = max_v - min_v or 1
 
               min_t, max_t = min(times), max(times)
-              if releases:
-                  max_t = max(max_t, releases[-1][0])
               range_t = max_t - min_t or 1
 
               def time_x(timestamp):
@@ -243,22 +238,6 @@ jobs:
                   f'<text x="{x:.1f}" y="{bottom + 18}" text-anchor="middle">{label}</text>'
                   for x, label in dates
               )
-
-              markers = []
-              previous_x = width
-              for timestamp, tag in reversed(releases):
-                  if not min_t <= timestamp <= max_t:
-                      continue
-                  x = time_x(timestamp)
-                  if previous_x - x < 19:
-                      continue
-                  previous_x = x
-                  label = escape(tag if len(tag) <= 10 else tag[:9] + "…")
-                  markers.append(
-                      f'<g><title>{escape(tag)}</title>'
-                      f'<text transform="translate({x + 4:.1f} 42) rotate(90)">{label}</text></g>'
-                  )
-              release_markers = "".join(markers)
 
               points = []
               for t, value in data:
@@ -350,7 +329,6 @@ jobs:
                   <text transform="translate(19 {(top + bottom) / 2:g}) rotate(-90)" text-anchor="middle">{unit}</text>
                   {value_labels}
                   {date_labels}
-                  {release_markers}
                 </g>
 
                 <!-- Main curve -->
@@ -362,10 +340,6 @@ jobs:
 
               Path('assets/stats', filename).write_text(svg, encoding='utf-8')
 
-          release_file = Path(os.environ["RUNNER_TEMP"], "metrics-releases.jsonl")
-          release_data = [json.loads(line) for line in release_file.read_text(encoding="utf-8").splitlines()]
-          releases = sorted((datetime.fromisoformat(item["published_at"]).timestamp(), item["tag_name"])
-                            for item in release_data)
           downloads = json.loads(Path("assets/stats/history.json").read_text(encoding="utf-8"))
           history_zone = ZoneInfo("Europe/Paris")
           render_chart(
