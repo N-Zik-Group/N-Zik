@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <!-- About -->
     <string name="about_action_report_issue">Sorun bildir</string>
     <string name="about_action_request_feature">Bir özellik isteyin veya bir fikir önerin</string>
@@ -18,7 +17,6 @@
     <string name="about_title">Hakkında</string>
     <string name="about_translators_description">Uygulamayı çeviren kişileri göster veya gizle.</string>
     <string name="about_translators_title">Çevirmenler</string>
-
     <!-- Accessibility -->
     <string name="accessibility_app_icon">Uygulamanın simgesi</string>
     <string name="accessibility_app_icon_in_player">oynatıcıdaki uygulama simgesi</string>
@@ -39,18 +37,15 @@
     <string name="accessibility_song_album_cover">albüm kapağını göster</string>
     <string name="accessibility_switch_mode">Anahtar Modu</string>
     <string name="accessibility_youtube_playlist">Youtube Oynatma Listesi</string>
-
     <!-- Account -->
     <string name="account_action_login">Giriş yap</string>
     <string name="account_action_logout">Oturumu kapat</string>
     <string name="account_youtube_login_description">YouTube hesabınızı bağlayın veya mevcut oturumdan çıkış yapın.</string>
     <string name="account_youtube_login_enabled_description">Kişiselleştirilmiş gezinme ve senkronizasyon için YouTube hesabıyla oturum açmaya izin verin.</string>
-
     <!-- Account Youtube -->
     <string name="account_youtube_cookie_invalid">YouTube çerezi geçersiz, lütfen tekrar oturum açın</string>
     <string name="account_youtube_login_success">YouTube\'da oturum açma işlemi başarıyla tamamlandı</string>
     <string name="account_youtube_session_expired">YouTube oturumunuzun süresi doldu, lütfen tekrar oturum açın</string>
-
     <!-- Album -->
     <string name="album_action_bookmark">Albümü yer imlerine ekle</string>
     <string name="album_action_open">Albüme git</string>
@@ -65,7 +60,6 @@
     <string name="album_not_found">Albüm bulunamadı</string>
     <string name="album_related_title">İlgili albümler</string>
     <string name="album_right_swipe">Albüm Sağa Kaydırma</string>
-
     <!-- Artist -->
     <string name="artist_action_follow">Takip et</string>
     <string name="artist_action_play_local_songs">Tüm yerel şarkıları çal</string>
@@ -82,7 +76,6 @@
     <string name="artist_songs_count_duration">%1$d Şarkı • %2$s</string>
     <string name="artist_songs_unavailable_message">Şarkılar bulunamadı</string>
     <string name="artist_title">Sanatçı</string>
-
     <!-- Audio -->
     <string name="audio_bass_boost_description">Çalma sırasında düşük frekansları güçlendirin.</string>
     <string name="audio_bass_boost_level_description">Düşük frekans güçlendirmesinin şiddetini ayarlayın.</string>
@@ -114,7 +107,6 @@
     <string name="audio_waveform_updated_message">Waveform başarıyla güncellendi</string>
     <string name="audio_waveform_updating_message">Waveform güncelleniyor…</string>
     <string name="audio_waveform_waiting_for_download_message">İndirme işlemi biter bitmez Waveform güncellenecektir</string>
-
     <!-- Audio Reverb -->
     <string name="audio_reverb_large_hall">Büyük Salon</string>
     <string name="audio_reverb_large_room">Geniş Oda</string>
@@ -123,12 +115,10 @@
     <string name="audio_reverb_none">Yok</string>
     <string name="audio_reverb_plate">Plaka</string>
     <string name="audio_reverb_small_room">Küçük Oda</string>
-
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">Kendimi şanslı hissediyorum</string>
     <string name="automotive_action_play_all">Tümünü Oynat</string>
     <string name="automotive_title">Android Auto</string>
-
     <!-- Backup -->
     <string name="backup_action_export">Yedeklemeyi dışa aktar</string>
     <string name="backup_action_import">Yedeklemeyi içe aktar</string>
@@ -161,7 +151,6 @@
     <string name="backup_restore_overwrite_and_restart_warning">Mevcut verilerin üzerine yazılacaktır. Veritabanı geri yüklendikten sonra %1$s otomatik olarak kapanacaktır.</string>
     <string name="backup_target_database_and_settings_label">Veritabanı + Ayarlar</string>
     <string name="backup_target_database_label">Veritabanı</string>
-
     <!-- Backup Auto -->
     <string name="backup_auto_custom_interval_unit">Özel Aralık Birimi</string>
     <string name="backup_auto_custom_interval_value">Özel Aralık Değeri</string>
@@ -188,7 +177,6 @@
     <string name="backup_auto_unit_minutes">Dakikalar</string>
     <string name="backup_auto_unit_months">Aylar</string>
     <string name="backup_auto_unit_weeks">Haftalar</string>
-
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Profil listesini ve yüz fotoğraflarını tek bir .txt dosyasına aktarın</string>
     <string name="backup_export_all">Tümünü dışa aktar</string>
@@ -197,7 +185,6 @@
     <string name="backup_export_database_description">Şarkıları, çalma listelerini ve geçmişi içeren veritabanını dışa aktar</string>
     <string name="backup_export_profile_state_failed">Profil durumunun dışa aktarılması başarısız oldu</string>
     <string name="backup_export_settings_description">Uygulama ayarlarını ve tercihlerini dışa aktar</string>
-
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Profil listesini ve yüz fotoğraflarını bir .txt dosyasından içe aktar</string>
     <string name="backup_import_all">Tümünü içe aktar</string>
@@ -211,7 +198,6 @@
     <string name="backup_import_settings_description">Uygulama ayarlarını ve tercihlerini içe aktar</string>
     <string name="backup_import_target_from_file">Dosyadan</string>
     <string name="backup_import_target_profile_title">Hangi profile aktarılsın?</string>
-
     <!-- Bridge -->
     <string name="bridge_audio_output_pc_subtitle">Bilgisayarda ses (N-Zik Masaüstü Yardımcısı)</string>
     <string name="bridge_audio_output_pc_unavailable">Bu bilgisayar mevcut değil</string>
@@ -271,7 +257,6 @@
     <string name="bridge_server_stopped_user">Telefonla durduruldu</string>
     <string name="bridge_server_stopped_wifi">Wi-Fi ağı veya erişim noktası yok</string>
     <string name="bridge_server_via_hotspot">Bu telefonun erişim noktası aracılığıyla</string>
-
     <!-- Cache -->
     <string name="cache_action_reset">Önbelleği sıfırla</string>
     <string name="cache_clear_song_dialog_title">Şarkı önbelleğini temizle</string>
@@ -281,7 +266,6 @@
     <string name="cache_location_private">Özel</string>
     <string name="cache_location_system">Sistem</string>
     <string name="cache_streaming_max_size_description">Akışla çalınan şarkılar için önbellekte kullanılan disk alanını sınırlayın. Çöp kutusu düğmesi bu oynatma önbelleğini temizler.</string>
-
     <!-- Calendar -->
     <string name="calendar_days_ago">%d gün önce</string>
     <string name="calendar_last_week">Geçen hafta</string>
@@ -306,7 +290,6 @@
     <string name="calendar_this_month">Bu ay</string>
     <string name="calendar_today">Bugün</string>
     <string name="calendar_yesterday">Dün</string>
-
     <!-- Common -->
     <string name="common_action_apply">Uygula</string>
     <string name="common_action_cancel">İptal</string>
@@ -391,7 +374,6 @@
     <string name="common_validation_minimum_value">"Değer şundan büyük olmalıdır "</string>
     <string name="common_validation_name_in_use">Ad zaten kullanılıyor</string>
     <string name="common_value_input_hint">Değeri girin</string>
-
     <!-- Discord -->
     <string name="discord_activity_competing">Yarışıyor</string>
     <string name="discord_activity_listening">Dinleniyor</string>
@@ -469,7 +451,6 @@
     <string name="discord_state_template_description">Parça bilgisi yer tutucularını kullanarak ikincil aktivite satırını ayarlayın.</string>
     <string name="discord_template_unknown_album">Bilinmeyen Albüm</string>
     <string name="discord_token_text_invalid">Discord tokeniniz geçersiz, lütfen tekrar giriş yapın</string>
-
     <!-- Downloads -->
     <string name="downloads_action_download_all">Tüm şarkıları indir</string>
     <string name="downloads_action_refresh_quality">İndirilenleri güncelle</string>
@@ -500,7 +481,6 @@
     <string name="downloads_stale_removed">%1$s indirme verileri eksik ve silinmiştir. Lütfen dosyayı yeniden indirin.</string>
     <string name="downloads_stale_startup_removed">%1$d adet indirilen şarkının dosyaları eksik olduğundan silinmiştir. Lütfen bunları yeniden indirin.</string>
     <string name="downloads_title">İndir</string>
-
     <!-- Export -->
     <string name="export_cached_song_action">Önbelleğe alınmış veya indirilmiş şarkıyı dışa aktar</string>
     <string name="export_cached_songs_action">Önbelleğe alınanı dışa aktar</string>
@@ -510,7 +490,6 @@
     <string name="export_file_name_dialog_title">Dışa aktarmanıza isim verin</string>
     <string name="export_running_status">Dışa aktarılıyor…</string>
     <string name="export_song_unavailable_message">Dışa aktarmak için şarkı önbelleğe alınmış veya indirilmiş olmalıdır</string>
-
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Bir albüm parçasını sola kaydırarak gerçekleştirilecek eylemi seçin.</string>
     <string name="gestures_album_track_swipe_right_description">Bir albüm parçasını sağa kaydırarak gerçekleştirilecek eylemi seçin.</string>
@@ -518,7 +497,6 @@
     <string name="gestures_playlist_track_swipe_right_description">Bir çalma listesindeki parçayı sağa kaydırarak gerçekleştirilecek eylemi seçin.</string>
     <string name="gestures_queue_item_swipe_left_description">Bir kuyruk öğesini sola kaydırarak gerçekleştirilecek eylemi seçin.</string>
     <string name="gestures_queue_item_swipe_right_description">Bir kuyruk öğesini sağa kaydırarak gerçekleştirilecek eylemi seçin.</string>
-
     <!-- Glass -->
     <string name="glass_effect_active_tab_indicator">Etkin sekme</string>
     <string name="glass_effect_color_vibrancy">Renk</string>
@@ -535,7 +513,6 @@
     <string name="glass_effect_tint_source_custom">Özel</string>
     <string name="glass_effect_tint_source_system_accent">Sistem vurgusu</string>
     <string name="glass_effect_where_bottom_bar">Alt çubuktaki cam</string>
-
     <!-- Glass Effect -->
     <string name="glass_effect_action_play_all">Tüm hızlı seçimleri oynat</string>
     <string name="glass_effect_action_shuffle">Hızlı seçimleri karıştır</string>
@@ -668,11 +645,9 @@
     <string name="glass_effect_where_search_bars">Arama çubuklarındaki cam</string>
     <string name="glass_effect_where_search_bars_description">Ayar aramaları da dahil olmak üzere, arama yaptığınız kutular.</string>
     <string name="glass_effect_windows_summary">Menüleri, açılır pencereleri ve kısa mesajları değiştirin.</string>
-
     <!-- History -->
     <string name="history_clear_listen_history_description">Dinleme geçmişinden kaydedilmiş çalma olaylarını sil.</string>
     <string name="history_clear_search_history_description">Arama geçmişi tercihlerini değiştirmeden, her arama geçmişi sayfasından kaydedilmiş aramaları silin.</string>
-
     <!-- Home -->
     <string name="home_albums_settings">Ana Sayfa Albümler</string>
     <string name="home_artists_settings">Ana Sayfa Sanatçılar</string>
@@ -691,16 +666,13 @@
     <string name="home_tabs_settings_description">Sekmeleri yeniden sıralama ve gösterme/gizleme</string>
     <string name="home_title">Ana Sayfa</string>
     <string name="home_youtube_login_description">Daha fazla içerik için YTM hesabınıza giriş yapın</string>
-
     <!-- Home Easter Egg -->
     <string name="home_easter_egg_click_message">Tıklamayı sever misiniz? Öyleyse devam edin...</string>
     <string name="home_easter_egg_keep_going">Tamam, bir şey arıyorsun, devam et...</string>
     <string name="home_easter_egg_last">Sen bir numarasın, uzun bas ve sürprizin tadını çıkar</string>
     <string name="home_easter_egg_number_one">Sen bir numarasın, tıkla ve sürprizin tadını çıkar</string>
-
     <!-- Image -->
     <string name="image_error_unknown">Bilinmeyen hata</string>
-
     <!-- Interface -->
     <string name="interface_artist_image_roundness_description">Sanatçı resimlerinin köşe yuvarlaklığını ayarlayın.</string>
     <string name="interface_corner_roundness_description">Arayüz kartlarının ve kontrollerinin yuvarlama ayarlarını yapın.</string>
@@ -713,7 +685,6 @@
     <string name="interface_player_position_description">Oynatıcının arayüzde nereye yerleştirileceğini seçin.</string>
     <string name="interface_show_floating_icon_description">Arama penceresini açan bir yüzen kısayol görüntüle.</string>
     <string name="interface_transition_effect_description">Ekranlar arasında geçiş yaparken kullanılacak animasyonu seçin.</string>
-
     <!-- Language -->
     <string name="language_app_selection_description">Uygulama etiketleri ve mesajlarında kullanılacak dili seçin.</string>
     <string name="language_name_afrikaans">Afrikaanca (Afrikaans)</string>
@@ -765,7 +736,6 @@
     <string name="language_name_ukrainian">Ukraynaca (Українська)</string>
     <string name="language_name_vietnamese">Vietnamca (tiếng Việt)</string>
     <string name="language_system_default">Sistem dili</string>
-
     <!-- Lastfm -->
     <string name="lastfm_action_failed">Last.fm isteği başarısız oldu</string>
     <string name="lastfm_auth_failed">Giriş başarısız oldu, Last.fm kimlik bilgilerinizi kontrol edin</string>
@@ -791,7 +761,6 @@
     <string name="lastfm_unlove">Last.fm\'de beğenme</string>
     <string name="lastfm_unloved">Sevilen şarkılar listesinden kaldırıldı</string>
     <string name="lastfm_username">Kullanıcı adı</string>
-
     <!-- Library -->
     <string name="library_action_bookmark">Yer imi</string>
     <string name="library_action_randomize">Rastgeleleştirme</string>
@@ -839,14 +808,12 @@
     <string name="library_title">Kütüphane</string>
     <string name="library_youtube_music_title">YTM Kütüphanesi</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
-
     <!-- Library Favorites -->
     <string name="library_dislikes_added">%s Beğenilmeyenlere eklendi</string>
     <string name="library_dislikes_removed">%s Beğenilmeyenlerden çıkarıldı</string>
     <string name="library_favorites_action_add">Favorilere ekle</string>
     <string name="library_favorites_added">Favorilere eklendi</string>
     <string name="library_favorites_removed">Favorilerden çıkarıldı</string>
-
     <!-- Library Sort -->
     <string name="library_sort_album">Albüm</string>
     <string name="library_sort_album_year">Albüm Yılı</string>
@@ -863,7 +830,6 @@
     <string name="library_sort_play_count">Oynatma Sayısı</string>
     <string name="library_sort_songs_number">Şarkı sayısı</string>
     <string name="library_sort_title">Başlık</string>
-
     <!-- Listen -->
     <string name="listen_together_auto_approval_joins_description">Katılma isteklerini manuel olarak incelemeden otomatik olarak onayla</string>
     <string name="listen_together_auto_approval_suggestions_description">Misafirlerden gelen şarkı önerilerini otomatik onayla ve sıraya al</string>
@@ -880,7 +846,6 @@
     <string name="listen_together_transfer_ownership_description">Bu kişiyi odanın oda sahibi yapın</string>
     <string name="listen_together_username_description">Paylaşımlı dinleme odalarında diğer katılımcıların göreceği adı belirleyin.</string>
     <string name="listen_together_view_logs_description">Bağlantı olaylarını ve mesajlarını hata ayıklama</string>
-
     <!-- Listen Together -->
     <string name="listen_together_action_approve">Onayla</string>
     <string name="listen_together_action_reject">Reddet</string>
@@ -960,7 +925,6 @@
     <string name="listen_together_you_are_guest">Misafirsiniz</string>
     <string name="listen_together_you_are_host">Oda sahibisiniz</string>
     <string name="listen_together_you_label">Siz</string>
-
     <!-- Logs -->
     <string name="logs_action_export">Günlükleri dışa aktar</string>
     <string name="logs_action_export_both">Her iki günlüğü de dışa aktar</string>
@@ -969,7 +933,6 @@
     <string name="logs_export_both_description">Hata ayıklama ve çökme günlüğünü bir dosyaya aktar</string>
     <string name="logs_export_crash_description">Çökme günlüğünü bir dosyaya aktar</string>
     <string name="logs_export_debug_description">Hata ayıklama günlüğünü bir dosyaya aktar</string>
-
     <!-- Lyrics -->
     <string name="lyrics_action_choose_translation_language">Başka bir dile çevir</string>
     <string name="lyrics_action_copy">Şarkı sözlerini kopyala</string>
@@ -1048,7 +1011,6 @@
     <string name="lyrics_translation_section_title">Çeviri</string>
     <string name="lyrics_translation_success_message">Çeviri tamamlandı</string>
     <string name="lyrics_unsynced">Düz metin</string>
-
     <!-- Maintenance -->
     <string name="maintenance_all_systems_ok">Tüm sistemler çalışıyor</string>
     <string name="maintenance_auto_update">Otomatik güncelleme</string>
@@ -1173,7 +1135,6 @@
     <string name="maintenance_yt_invalid">Geçersiz</string>
     <string name="maintenance_yt_session">YouTube oturumu</string>
     <string name="maintenance_yt_valid">Geçerli</string>
-
     <!-- Metadata -->
     <string name="metadata_action_change_artists">Yazarları Değiştir</string>
     <string name="metadata_action_change_cover">Kapağı Değiştir</string>
@@ -1221,7 +1182,6 @@
     <string name="metadata_video_views_label">Görüntülemeler</string>
     <string name="metadata_wikipedia_attribution">Creative Commons Attribution CC-BY-SA 3.0 lisansı altında Wikipedia\'dan</string>
     <string name="metadata_year">Yıl</string>
-
     <!-- Metadata Musicbrainz -->
     <string name="metadata_musicbrainz_insights">Bilgiler</string>
     <string name="metadata_musicbrainz_insights_biography">Biyografi</string>
@@ -1252,7 +1212,6 @@
     <string name="metadata_musicbrainz_stat_songs">Şarkılar</string>
     <string name="metadata_musicbrainz_stat_time">Toplam süre</string>
     <string name="metadata_musicbrainz_wikipedia">Wikipedia</string>
-
     <!-- Modules -->
     <string name="modules_abi">ABI</string>
     <string name="modules_already_installed">Zaten yüklü</string>
@@ -1287,7 +1246,6 @@
     <string name="modules_update_available_body">%1$s sürümü yüklü. Uygulama artık %2$s sürümüyle birlikte sunuluyor.</string>
     <string name="modules_updating">Modülü güncelle</string>
     <string name="modules_version">Sürüm</string>
-
     <!-- Navigation -->
     <string name="navigation_action_picture_in_picture">PIP</string>
     <string name="navigation_back_again_to_exit_message">Çıkmak için bir kez daha basın</string>
@@ -1296,7 +1254,6 @@
     <string name="navigation_position_top_label">Üst</string>
     <string name="navigation_style_icon_and_text_label">Simge ve metin</string>
     <string name="navigation_style_icon_only_label">Sadece simge</string>
-
     <!-- Network -->
     <string name="network_action_disable_offline_mode">Tam çevrimdışı modunu devre dışı bırak</string>
     <string name="network_action_enable_offline_mode">Tam çevrimdışı modunu etkinleştir</string>
@@ -1331,10 +1288,8 @@
     <string name="network_stream_client_web_creator_description">Web tasarımcısı istemcisi.</string>
     <string name="network_stream_client_web_description">Standart web istemcisi.</string>
     <string name="network_stream_client_youtube_music_web_description">Daha yavaştır ancak premium formatları destekler. JavaScript imzalı şifre çözme kullanır (~5-10 saniye gecikme). Premium kullanıcılara önerilir.</string>
-
     <!-- Network Proxy -->
     <string name="network_proxy_invalid_hostname">Proxy sunucu adınız geçersiz, lütfen kontrol edin</string>
-
     <!-- Network Stream -->
     <string name="network_stream_client">Akış İstemcisi</string>
     <string name="network_stream_client_android">Android</string>
@@ -1354,7 +1309,6 @@
     <string name="network_stream_error_retrying">Tekrar deniyor: %1$s</string>
     <string name="network_stream_still_retrying">Hala yükleniyor… Deneme %1$s</string>
     <string name="network_stream_unexpected_skip">Beklenmedik bir parça değişikliği tespit edildi</string>
-
     <!-- Onboarding -->
     <string name="onboarding_accounts_discord_description">Discord (beta)\'da ne dinlediğini göster</string>
     <string name="onboarding_accounts_done">Bitirdim</string>
@@ -1391,11 +1345,9 @@
     <string name="onboarding_restore_skip_description">Uygulama ayarlarından daha sonra bir yedeği geri yükleyebilirsiniz</string>
     <string name="onboarding_restore_title">Bir yedeği geri yükle</string>
     <string name="onboarding_start">Başlat</string>
-
     <!-- Parental -->
     <string name="parental_control">Ebeveyn kontrolü</string>
     <string name="parental_control_is_enabled">Ebeveyn denetimi etkinleştirildi</string>
-
     <!-- Permissions -->
     <string name="permissions_event_denied">İzin reddedildi</string>
     <string name="permissions_event_granted">İzin verildi</string>
@@ -1431,7 +1383,6 @@
     <string name="permissions_label_microphone">Mikrofon / ses kaydı</string>
     <string name="permissions_label_notifications">Bildirimler</string>
     <string name="permissions_usage_journal">İzin etkinliği</string>
-
     <!-- Player -->
     <string name="common_action_stop">Durdur</string>
     <string name="player_action_bar_buttons">Düğmenin görünürlüğü</string>
@@ -1619,7 +1570,6 @@
     <string name="player_top_spacing_description">Üstteki eylem çubuğu gizlendiğinde üst kısımda boşluk bırakın.</string>
     <string name="player_track_swipe_sensitivity_description">Oynatıcıda kaydırma hareketiyle parça değiştirme hassasiyetini ayarlayın.</string>
     <string name="player_type">Oynatıcı türü</string>
-
     <!-- Player Appearance -->
     <string name="player_controls_style_essential">Temel</string>
     <string name="player_controls_style_modern">Modern</string>
@@ -1635,7 +1585,6 @@
     <string name="player_progress_both">Her ikisi</string>
     <string name="player_progress_mini_player">Küçültülmüş oynatıcı</string>
     <string name="settings_action_bar_show_lyrics_button">Şarkı sözleri düğmesi</string>
-
     <!-- Player Background -->
     <string name="player_background_black_cherry_cosmos">Siyah Kiraz Kozmosu</string>
     <string name="player_background_glossy_gradient">Parlak Gradyan</string>
@@ -1649,7 +1598,6 @@
     <string name="player_background_oil_flow">Yağ Akışı</string>
     <string name="player_background_purple_liquid">Mor Sıvı</string>
     <string name="player_background_stage">Sahne</string>
-
     <!-- Player Mini -->
     <string name="player_mini_button_audio_output">Ses çıkışı</string>
     <string name="player_mini_button_discover">Keşfet</string>
@@ -1665,10 +1613,8 @@
     <string name="player_mini_button_visualizer">Görselleştirme</string>
     <string name="player_mini_buttons_config">Mini Oynatıcı düğmeleri</string>
     <string name="player_mini_buttons_config_description">Mini oynatıcıdaki 4 düğmeyi yapılandırın</string>
-
     <!-- Player Notification -->
     <string name="player_notification_pause">Duraklat</string>
-
     <!-- Player Sleep Timer -->
     <string name="player_sleep_timer_action_set">Uyku zamanlayıcısını ayarla</string>
     <string name="player_sleep_timer_end_of_song">(şarkı sonu)</string>
@@ -1676,7 +1622,6 @@
     <string name="player_sleep_timer_set_to">Ayarla</string>
     <string name="player_sleep_timer_stop_confirmation">Uyku zamanlayıcısını durdurmak istiyor musunuz?</string>
     <string name="player_sleep_timer_title">Uyku zamanlayıcısı</string>
-
     <!-- Playlist -->
     <string name="playlist_action_add">Çalma listesine ekle</string>
     <string name="playlist_action_add_hint">Çalma listesine ekle</string>
@@ -1738,16 +1683,13 @@
     <string name="playlist_top_show_description">En çok dinlediğiniz çalma listesini Hızlı Seçimlerde göster</string>
     <string name="playlist_youtube_song_limit_message">YouTube Çalma Listeleri 5000 şarkı ile sınırlıdır</string>
     <string name="playlist_youtube_title">YouTube Çalma Listesi</string>
-
     <!-- Podcast -->
     <string name="podcast_episodes_title">Bölümler</string>
     <string name="podcast_title">Podcast\'ler</string>
-
     <!-- Privacy -->
     <string name="privacy_block_screenshots">Ekran görüntülerini engelle</string>
     <string name="privacy_block_screenshots_description">N-Zik uygulamasının ekran görüntülerinin ve ekran kayıtlarının alınmasını engelleyin ve güvenli olmayan ekranlarda içeriğini gizleyin. Bu profil için hemen geçerli olur.</string>
     <string name="privacy_screen_protection">Ekran koruyucu</string>
-
     <!-- Profile -->
     <string name="profile_action_add">Profil ekle</string>
     <string name="profile_action_export">Profilleri dışa aktar</string>
@@ -1812,14 +1754,12 @@
     <string name="profile_share_waveforms_description">Bu profilin kendi klasörü yerine temel profilin waveformları klasörünü kullanın. Bu ayar, uygulamanın bir sonraki yeniden başlatılmasında geçerli olur; bu profilin kendi klasörüne önceden yazılmış veriler orada kalır</string>
     <string name="profile_switch_dialog_title">Profili değiştirin</string>
     <string name="profile_title">Profiller</string>
-
     <!-- Queue -->
     <string name="queue_discover_description">Favorilerde veya çalma listelerinde bulunan şarkıları kuyruktan kaldır</string>
     <string name="queue_discover_title">Keşfet</string>
     <string name="queue_max_songs_in_queue_android_auto_description">Android Auto kuyruğuna eklenecek parça sayısını sınırlayın.</string>
     <string name="queue_max_songs_in_queue_description">Çalma kuyruğuna eklenen parça sayısını sınırlayın.</string>
     <string name="queue_now_playing_indicator_description">Şu anda çalmakta olan parçanın yanında görüntülenen göstergeyi seçin.</string>
-
     <!-- Radio -->
     <string name="radio_action_start">Radyo başlat</string>
     <string name="radio_action_start_hint">Radyo başlat</string>
@@ -1832,7 +1772,6 @@
     <string name="radio_discovery_requires_radio_or_autofill_message">Keşif özelliğini kullanmak için Radyo veya Otomatik Doldurma seçeneğini etkinleştirin</string>
     <string name="radio_fetch_empty_queue_preserved_message">Radyo: yüklenmiş şarkı yok (Kuyruk korunuyor)</string>
     <string name="radio_stopped_message">Radyo durdu (Normal duruma geri dön)</string>
-
     <!-- Recognition -->
     <string name="recognition_action_more_details">Daha fazla ayrıntı</string>
     <string name="recognition_audio_hint">Analizin çalışması için biraz müzik çalın</string>
@@ -1840,7 +1779,6 @@
     <string name="recognition_error_no_match">Bu şarkıyı tanıyamadım. Daha yüksek sesli veya daha net bir örnek deneyin.</string>
     <string name="recognition_listening_duration">Ses kaydının %1$d saniyesini analiz ediyor</string>
     <string name="recognition_ready_message">Telefonunuzu müziğin yakınına tutun</string>
-
     <!-- Recommendations -->
     <string name="recommendations_action_reset_quick_picks">Hızlı Seçimleri sıfırla</string>
     <string name="recommendations_adaptive">Uyarlanabilir</string>
@@ -1890,7 +1828,6 @@
     <string name="recommendations_trending_community_playlists_title">Popüler topluluk çalma listeleri</string>
     <string name="recommendations_trending_shorts_title">Shorts\'larda Popüler Olanlar</string>
     <string name="recommendations_trending_songs_title">Sizin için popüler olan şarkılar</string>
-
     <!-- Recovery -->
     <string name="recovery_accounts_exported">Profil durumu dışa aktarıldı</string>
     <string name="recovery_accounts_imported_base">İçe aktarılan profil durumu: temel profil</string>
@@ -1986,7 +1923,6 @@
     <string name="recovery_status_main_process_stopped">Uygulama durduruldu</string>
     <string name="recovery_status_main_process_stopping">Uygulama kapanıyor…</string>
     <string name="recovery_success">Tamam</string>
-
     <!-- Rewind -->
     <string name="rewind_albums_empty_body">En çok dinlediğiniz albümler yeterli dinleme geçmişi oluştuğunda burada görünecektir.</string>
     <string name="rewind_albums_empty_title">ALBÜM YIĞININIZ BOŞ</string>
@@ -2236,7 +2172,6 @@
     <string name="rewind_years_kicker">YILLARINIZ • %1$s</string>
     <string name="rewind_years_peak_sub">%1$s EN ÇOK ETKİLİ OLDU.</string>
     <string name="rewind_years_peak_year">EN İYİ YIL</string>
-
     <!-- Search -->
     <string name="search_content_type_all">Tümü</string>
     <string name="search_content_type_official">Resmi</string>
@@ -2279,7 +2214,6 @@
     <string name="voice_search_listening">Dinleniyor...</string>
     <string name="voice_search_retry">Tekrar dene</string>
     <string name="voice_search_speak_now">Şimdi konuşun</string>
-
     <!-- Settings -->
     <string name="audio_loudness_boost_level">Bas güçlendirme seviyesi</string>
     <string name="common_error_no_document_handler">Belgeleri açmak için uygulama bulunamadı</string>
@@ -2578,6 +2512,10 @@
     <string name="settings_recommendations_title">Yapay Zeka Önerileri</string>
     <string name="settings_region_override">Bölge Geçersiz Kılma</string>
     <string name="settings_reset">Sıfırla</string>
+    <string name="settings_reset_all">Reset all settings</string>
+    <string name="settings_reset_all_confirm">Reset all</string>
+    <string name="settings_reset_all_confirmation">Reset all application settings? Saved accounts, credentials, profiles, playlists, downloads and files will be kept.</string>
+    <string name="settings_reset_all_description">Restore all application settings to their defaults.</string>
     <string name="settings_reset_choose_scope">Geri yüklenecek ayarları seçin</string>
     <string name="settings_reset_choose_scope_description">Bir ayarlar bölümünü seçin, ardından varsayılan ayarlarına geri yükleyin.</string>
     <string name="settings_reset_scope">Tüm %1$s ayarlarını sıfırla (tüm kategorilerde)</string>
@@ -2624,6 +2562,8 @@
     <string name="settings_theme_dark_colors_reset_title">Özelleştirilmiş koyu renkleri sıfırla</string>
     <string name="settings_theme_dark_mode_label">Koyu</string>
     <string name="settings_theme_disabled_text_color_label">Metin devre dışı</string>
+    <string name="settings_theme_keep_dark_mode_description">Disable monochrome luminance adaptation in both dark and light modes to avoid bright flashes from light covers.</string>
+    <string name="settings_theme_keep_dark_mode_label">Keep dark mode</string>
     <string name="settings_theme_light_colors_reset_confirmation">Özel açık tema renklerini gerçekten sıfırlamak istiyor musunuz?</string>
     <string name="settings_theme_light_colors_reset_description">Varsayılan açık renklere sıfırlamak için tıklayın</string>
     <string name="settings_theme_light_colors_reset_title">Özelleştirilmiş açık renkleri sıfırla</string>
@@ -2652,7 +2592,6 @@
     <string name="settings_youtube_library_sync_content_description">Çalma listeleri, albümler, sanatçılar, geçmiş, beğeniler vb.</string>
     <string name="settings_youtube_login_enabled_label">YouTube Music girişini etkinleştir</string>
     <string name="settings_youtube_music_title">YouTube Music</string>
-
     <!-- Smart Trash -->
     <string name="library_cleanup_all_downloads_confirmation">Tüm indirmeleri (%d şarkı) silmek istiyor musunuz?</string>
     <string name="library_cleanup_all_favorites_confirmation">Tüm %d favoriyi silmek istiyor musunuz?</string>
@@ -2667,14 +2606,12 @@
     <string name="library_cleanup_title">Akıllı çöp</string>
     <string name="library_favorites_remove_dialog_title">Favorilerden kaldır</string>
     <string name="library_listening_history_reset_dialog_title">Dinleme geçmişini sıfırla</string>
-
     <!-- Song -->
     <string name="song_delete_confirmation">Bu şarkıyı gerçekten silmek istiyor musunuz? Veritabanından silinecek.\nBu işlem geri alınamaz.</string>
     <string name="song_delete_dialog_title">Şarkıları sil</string>
     <string name="song_metadata_update_action_open">Güncelleme iletişim kutusunu aç</string>
     <string name="song_metadata_updated_count">%1$d adet şarkı güncellendi</string>
     <string name="song_play_time_action_reset">Toplam çalma süresini sıfırla</string>
-
     <!-- Song Matching -->
     <string name="song_matching_action_open">Albüm/Ses versiyon</string>
     <string name="song_matching_all_confirmation">%d adet eşleşmemiş şarkıyı eşleştirmek ister misiniz?</string>
@@ -2682,7 +2619,6 @@
     <string name="song_matching_progress_title">Eşleşen şarkılar</string>
     <string name="song_matching_running_message">Şarkılar Eşleştiriliyor. Lütfen Bekleyin. Uygulamayı Küçültmeyin veya Çıkmayın</string>
     <string name="song_matching_unmatched_label">Eşleşmeyen şarkılar</string>
-
     <!-- Statistics -->
     <string name="statistics_action_delete_playback_events_count">%1$s çalma olayını sil</string>
     <string name="statistics_delete_playback_events_confirmation">Tüm çalma olaylarını gerçekten silmek istiyor musunuz?</string>
@@ -2699,14 +2635,12 @@
     <string name="statistics_songs_heard">dinlenen şarkılar</string>
     <string name="statistics_title">İstatistikler</string>
     <string name="statistics_top_period_title">… içindeki en iyi %s</string>
-
     <!-- Storage -->
     <string name="storage_samsung_action_keep_system">Sistem depolama alanını koruyun</string>
     <string name="storage_samsung_action_use_private">Özel depolama alanını kullan</string>
     <string name="storage_samsung_advice_message">Samsung\'un otomatik bellek yönetimi, siz istememiş olsanız bile N-Zik\'in indirdiği dosyaları ve önbellek dosyalarını silebilir. İndirdiğiniz dosyaları güvende tutmak için sistem depolama alanı yerine özel (uygulama) depolama alanını kullanın.</string>
     <string name="storage_samsung_advice_title">Samsung depolama önerileri</string>
     <string name="storage_samsung_system_usage_message">Şu anda sistem depolama alanında %1$s boyutunda indirme ve önbellek verisi bulunuyor.</string>
-
     <!-- Sync -->
     <string name="sync_action_sync">Senkronize et</string>
     <string name="sync_albums">Kaydedilen Albümleri Otomatik Senkronize Et</string>
@@ -2778,7 +2712,6 @@
     <string name="sync_success_notification_artists">Tüm sanatçılar başarıyla senkronize edildi.</string>
     <string name="sync_success_notification_playlists">Tüm çalma listeleri başarıyla senkronize edildi.</string>
     <string name="sync_successful">Senkronizasyon başarıyla tamamlandı</string>
-
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">%1$d adet başarısız olan öğenin senkronizasyonunu yeniden denemek ister misiniz?</string>
     <string name="sync_running_status">Senkronize ediliyor...</string>
@@ -2795,7 +2728,6 @@
     <string name="sync_youtube_songs_remaining">%1$s şarkı kaldı</string>
     <string name="sync_youtube_unlike_failed">Şarkı YouTube\'da beğenilmedi</string>
     <string name="sync_youtube_unlike_success">Şarkı YouTube\'da Beğenilmedi</string>
-
     <!-- Theme -->
     <string name="theme_custom_accent_description">Bu temada kullanılacak özel vurgu rengini seçin.</string>
     <string name="theme_dark_palette_accent_description">Koyu renk paletinden vurgu yapılan kontrol öğeleri ve vurgular için rengi seçin.</string>
@@ -2831,7 +2763,6 @@
     <string name="theme_shake_sensitivity_low">Düşük (5,0G)</string>
     <string name="theme_shake_sensitivity_medium">Orta (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Çok Yüksek (1,0G)</string>
-
     <!-- Thumbnail -->
     <string name="thumbnail_action_edit">Küçük Resmi Düzenle</string>
     <string name="thumbnail_action_pick_from_gallery">Galeriden seçin</string>
@@ -2841,7 +2772,6 @@
     <string name="thumbnail_not_selected">Küçük Resim Seçilmedi</string>
     <string name="thumbnail_remove_failed">Küçük Resmi Kaldırma Başarısız</string>
     <string name="thumbnail_remove_success">Küçük Resim Kaldırıldı</string>
-
     <!-- Updates -->
     <string name="updates_action_check">Güncellemeyi kontrol et</string>
     <string name="updates_action_check_now">Şimdi kontrol et</string>
@@ -2899,7 +2829,6 @@
     <string name="updates_unavailable_build_description">Bu mesajı görüyorsanız, derlemenizde otomatik güncelleme özelliği etkin değil demektir, lütfen uygulamayı GitHub\'dan manuel olarak güncelleyin.</string>
     <string name="updates_up_to_date">Güncel</string>
     <string name="updates_warning_acknowledge">Anlıyorum</string>
-
     <!-- Visualizer -->
     <string name="visualizer_action_open_permission_settings">İzin ayarlarını aç</string>
     <string name="visualizer_animation_bars">Çubuklar</string>
@@ -2921,7 +2850,6 @@
     <string name="visualizer_line_thickness_description">Ses görselleştirmesindeki çizgilerin genişliğini ayarlayın.</string>
     <string name="visualizer_microphone_permission_message">Görselleştirici efekti mikrofon izni gerektirir, lütfen izin ver.</string>
     <string name="visualizer_title">Görselleştirme</string>
-
     <!-- Widget -->
     <string name="widget_action_play_pause">Oynat / Duraklat</string>
     <string name="widget_action_tap_to_play">Oynatmak için dokunun</string>
