@@ -93,7 +93,7 @@ jobs:
 
           # 5. Generate the main stats card (always refreshed for safety)
           cat > assets/stats/download-card.svg << EOF
-          <svg width="600" height="136" viewBox="0 0 600 136" xmlns="http://www.w3.org/2000/svg">
+          <svg width="750" height="170" viewBox="0 0 600 136" xmlns="http://www.w3.org/2000/svg">
             <style>
               .bg { fill: #ffffff; stroke: #e1e4e8; }
               .text-title { fill: #2b3137; font-weight: 600; font-size: 15px; }
@@ -256,7 +256,6 @@ jobs:
                   label = escape(tag if len(tag) <= 10 else tag[:9] + "…")
                   markers.append(
                       f'<g><title>{escape(tag)}</title>'
-                      f'<line x1="{x:.1f}" x2="{x:.1f}" y1="40" y2="{bottom}" class="release-line"/>'
                       f'<text transform="translate({x + 4:.1f} 42) rotate(90)">{label}</text></g>'
                   )
               release_markers = "".join(markers)
@@ -299,7 +298,6 @@ jobs:
                   .bg {{ fill: #ffffff; stroke: #e1e4e8; }}
                   .text-title {{ fill: #2b3137; font-weight: 600; font-size: 15px; }}
                   .axis-label {{ fill: #586069; font-size: 10px; }}
-                  .release-line {{ stroke: #8b949e; stroke-dasharray: 3 3; opacity: 0.55; }}
                   .chart-line {{ stroke: #0366d6; fill: none; }}
                   .chart-dot {{ fill: #ffffff; stroke: #0366d6; }}
                   .grad-start {{ stop-color: #0366d6; stop-opacity: 0.4; }}
