@@ -366,7 +366,7 @@
     <string name="common_size_medium">Orta</string>
     <string name="common_size_small">Küçük</string>
     <string name="common_state_enabled">Etkin</string>
-    <string name="common_state_off">Kapat</string>
+    <string name="common_state_off">Kapalı</string>
     <string name="common_state_on">Açık</string>
     <string name="common_storage_used_suffix">" kullanıldı"</string>
     <string name="common_validation_empty_value">Değer boş olamaz</string>
@@ -729,7 +729,7 @@
     <string name="language_name_serbian_latin">Sırpça Latin (Gajeva latinica)</string>
     <string name="language_name_sinhala">Sinhala (සිංහල)</string>
     <string name="language_name_spanish">İspanyolca (Español)</string>
-    <string name="language_name_swedish">Swedish (Svenska)</string>
+    <string name="language_name_swedish">İsveççe (Swedish)</string>
     <string name="language_name_tamil">Tamilce</string>
     <string name="language_name_telugu">Teluguca (తెలుగు)</string>
     <string name="language_name_turkish">Türkçe (Turkish)</string>
