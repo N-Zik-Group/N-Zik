@@ -41,7 +41,7 @@ jobs:
               SUFFIX_FIT='textLength="160" lengthAdjust="spacingAndGlyphs"'
             fi
             SUFFIX=$(printf '%s' "$SUFFIX" | jq -sRr '@html')
-            RELEASE_SUBTITLE="<text x=\"245\" y=\"102\" class=\"text-release-suffix\" $SUFFIX_FIT>$SUFFIX</text>"
+            RELEASE_SUBTITLE="<text text-anchor=\"middle\" x=\"320\" y=\"102\" class=\"text-release-suffix\" $SUFFIX_FIT>$SUFFIX</text>"
             RELEASE_DOWNLOADS_Y=120
           fi
           RELEASE_FIT=""
@@ -140,25 +140,25 @@ jobs:
               
               <!-- Column 1 -->
               <g class="animated delay-1">
-                <text x="35" y="65" class="text-label">TOTAL DOWNLOADS</text>
-                <text x="35" y="95" class="text-value-1">${TOTAL_FMT}</text>
+                <text text-anchor="middle" x="110" y="65" class="text-label">TOTAL DOWNLOADS</text>
+                <text text-anchor="middle" x="110" y="95" class="text-value-1">${TOTAL_FMT}</text>
               </g>
 
               <line x1="220" y1="45" x2="220" y2="115" class="line" stroke-width="1" />
               
               <!-- Column 2 -->
               <g class="animated delay-2">
-                <text x="245" y="65" class="text-label">LATEST RELEASE</text>
-                <text x="245" y="85" class="text-value-2" ${RELEASE_FIT}>${LATEST_VERSION}</text>
-                ${RELEASE_SUBTITLE}<text x="245" y="${RELEASE_DOWNLOADS_Y}" class="text-sub">📥 ${LATEST_FMT} downloads</text>
+                <text text-anchor="middle" x="320" y="65" class="text-label">LATEST RELEASE</text>
+                <text text-anchor="middle" x="320" y="85" class="text-value-2" ${RELEASE_FIT}>${LATEST_VERSION}</text>
+                ${RELEASE_SUBTITLE}<text text-anchor="middle" x="320" y="${RELEASE_DOWNLOADS_Y}" class="text-sub">${LATEST_FMT} downloads</text>
               </g>
 
               <line x1="420" y1="45" x2="420" y2="115" class="line" stroke-width="1" />
               
               <!-- Column 3 -->
               <g class="animated delay-3">
-                <text x="445" y="65" class="text-label">FORKS</text>
-                <text x="445" y="91" class="text-forks">${FORKS_FMT}</text>
+                <text text-anchor="middle" x="510" y="65" class="text-label">FORKS</text>
+                <text text-anchor="middle" x="510" y="91" class="text-forks">${FORKS_FMT}</text>
               </g>
             </g>
           </svg>
@@ -294,7 +294,7 @@ jobs:
                   for value in levels
               )
 
-              svg = f'''<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">
+              svg = f'''<svg width="750" height="250" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">
                 <style>
                   .bg {{ fill: #ffffff; stroke: #e1e4e8; }}
                   .text-title {{ fill: #2b3137; font-weight: 600; font-size: 15px; }}

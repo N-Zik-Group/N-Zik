@@ -45,25 +45,25 @@
     
     <!-- Column 1 -->
     <g class="animated delay-1">
-      <text x="35" y="65" class="text-label">TOTAL DOWNLOADS</text>
-      <text x="35" y="95" class="text-value-1">55.5k</text>
+      <text text-anchor="middle" x="110" y="65" class="text-label">TOTAL DOWNLOADS</text>
+      <text text-anchor="middle" x="110" y="95" class="text-value-1">55.5k</text>
     </g>
 
     <line x1="220" y1="45" x2="220" y2="115" class="line" stroke-width="1" />
     
     <!-- Column 2 -->
     <g class="animated delay-2">
-      <text x="245" y="65" class="text-label">LATEST RELEASE</text>
-      <text x="245" y="85" class="text-value-2" >v8.6.0</text>
-      <text x="245" y="105" class="text-sub">📥 67 downloads</text>
+      <text text-anchor="middle" x="320" y="65" class="text-label">LATEST RELEASE</text>
+      <text text-anchor="middle" x="320" y="85" class="text-value-2" >v8.6.0</text>
+      <text text-anchor="middle" x="320" y="105" class="text-sub">67 downloads</text>
     </g>
 
     <line x1="420" y1="45" x2="420" y2="115" class="line" stroke-width="1" />
     
     <!-- Column 3 -->
     <g class="animated delay-3">
-      <text x="445" y="65" class="text-label">FORKS</text>
-      <text x="445" y="91" class="text-forks">8</text>
+      <text text-anchor="middle" x="510" y="65" class="text-label">FORKS</text>
+      <text text-anchor="middle" x="510" y="91" class="text-forks">8</text>
     </g>
   </g>
 </svg>
