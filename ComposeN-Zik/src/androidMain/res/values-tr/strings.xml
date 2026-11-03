@@ -294,7 +294,7 @@
     <string name="common_action_apply">Uygula</string>
     <string name="common_action_cancel">İptal</string>
     <string name="common_action_clear">Temizle</string>
-    <string name="common_action_close">Kapalı</string>
+    <string name="common_action_close">Kapat</string>
     <string name="common_action_close_app">Uygulamayı kapat</string>
     <string name="common_action_confirm">Onayla</string>
     <string name="common_action_delete">Sil</string>
@@ -2512,10 +2512,10 @@
     <string name="settings_recommendations_title">Yapay Zeka Önerileri</string>
     <string name="settings_region_override">Bölge Geçersiz Kılma</string>
     <string name="settings_reset">Sıfırla</string>
-    <string name="settings_reset_all">Reset all settings</string>
-    <string name="settings_reset_all_confirm">Reset all</string>
-    <string name="settings_reset_all_confirmation">Reset all application settings? Saved accounts, credentials, profiles, playlists, downloads and files will be kept.</string>
-    <string name="settings_reset_all_description">Restore all application settings to their defaults.</string>
+    <string name="settings_reset_all">Tüm ayarları sıfırla</string>
+    <string name="settings_reset_all_confirm">Tümünü sıfırla</string>
+    <string name="settings_reset_all_confirmation">Tüm uygulama ayarlarını sıfırlamak ister misiniz? Kaydedilmiş hesaplar, kimlik bilgileri, profiller, çalma listeleri, indirmeler ve dosyalar korunacaktır.</string>
+    <string name="settings_reset_all_description">Tüm uygulama ayarlarını varsayılan değerlerine geri yükle.</string>
     <string name="settings_reset_choose_scope">Geri yüklenecek ayarları seçin</string>
     <string name="settings_reset_choose_scope_description">Bir ayarlar bölümünü seçin, ardından varsayılan ayarlarına geri yükleyin.</string>
     <string name="settings_reset_scope">Tüm %1$s ayarlarını sıfırla (tüm kategorilerde)</string>
@@ -2562,8 +2562,8 @@
     <string name="settings_theme_dark_colors_reset_title">Özelleştirilmiş koyu renkleri sıfırla</string>
     <string name="settings_theme_dark_mode_label">Koyu</string>
     <string name="settings_theme_disabled_text_color_label">Metin devre dışı</string>
-    <string name="settings_theme_keep_dark_mode_description">Disable monochrome luminance adaptation in both dark and light modes to avoid bright flashes from light covers.</string>
-    <string name="settings_theme_keep_dark_mode_label">Keep dark mode</string>
+    <string name="settings_theme_keep_dark_mode_description">Aydınlık ve karanlık modlarda tek renkli parlaklık adaptasyonunu devre dışı bırakarak aydınlık kapaklardan kaynaklanan parlak ışık parlamalarını önleyin.</string>
+    <string name="settings_theme_keep_dark_mode_label">Koyu modu koru</string>
     <string name="settings_theme_light_colors_reset_confirmation">Özel açık tema renklerini gerçekten sıfırlamak istiyor musunuz?</string>
     <string name="settings_theme_light_colors_reset_description">Varsayılan açık renklere sıfırlamak için tıklayın</string>
     <string name="settings_theme_light_colors_reset_title">Özelleştirilmiş açık renkleri sıfırla</string>
