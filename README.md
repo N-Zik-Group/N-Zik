@@ -93,7 +93,7 @@ As a **Free and Open Source Software (FOSS)** project, **N‑Zik** and his **dev
 
 ## 📚 Wiki
 
-[![Ask DeepWiki](https://img.shields.io/badge/Ask-DeepWiki-8d5cff?style=for-the-badge)](https://deepwiki.com/N-Zik-Group/N-Zik)
+[![Ask DeepWiki](https://img.shields.io/badge/Ask-DeepWiki-8d5cff?style=flat)](https://deepwiki.com/N-Zik-Group/N-Zik)
 
 <br>
 
