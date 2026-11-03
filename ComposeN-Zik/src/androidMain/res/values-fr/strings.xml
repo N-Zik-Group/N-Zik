@@ -8,14 +8,14 @@
     <string name="about_contributors_alphabetical_order_label">Dans l\'ordre alphabétique :</string>
     <string name="about_debug_developers_rotation">rotation_développeurs</string>
     <string name="about_debug_translators_rotation">Rotation des traducteurs</string>
-    <string name="about_developers_description">Show or hide the developers and designers who contributed to the app.</string>
+    <string name="about_developers_description">Afficher ou masquer les noms des développeurs et des concepteurs ayant contribué à l\'application.</string>
     <string name="about_developers_designers_title">Développeurs / Concepteurs</string>
     <string name="about_github_link_description">Vous allez être redirigé vers GitHub.</string>
-    <string name="about_report_issue_description">Open the GitHub bug report form to describe a problem.</string>
-    <string name="about_request_feature_description">Open the GitHub feature request form to suggest an improvement.</string>
-    <string name="about_source_code_description">Open the source code repository on GitHub.</string>
+    <string name="about_report_issue_description">Ouvrez le formulaire de signalement de bug sur GitHub pour décrire un problème.</string>
+    <string name="about_request_feature_description">Ouvrez le formulaire de demande de fonctionnalité de GitHub pour proposer une amélioration.</string>
+    <string name="about_source_code_description">Ouvrez le dépôt de code source sur GitHub.</string>
     <string name="about_title">À propos</string>
-    <string name="about_translators_description">Show or hide the people who translated the app.</string>
+    <string name="about_translators_description">Afficher ou masquer les noms des personnes qui ont traduit l\'application.</string>
     <string name="about_translators_title">Traducteurs</string>
     <!-- Accessibility -->
     <string name="accessibility_app_icon">Icône de l\'application</string>
@@ -40,8 +40,8 @@
     <!-- Account -->
     <string name="account_action_login">Se connecter</string>
     <string name="account_action_logout">Se déconnecter</string>
-    <string name="account_youtube_login_description">Connect your YouTube account or sign out of the current session.</string>
-    <string name="account_youtube_login_enabled_description">Allow YouTube account sign-in for personalized browsing and synchronization.</string>
+    <string name="account_youtube_login_description">Connectez-vous à votre compte YouTube ou déconnectez-vous de la session en cours.</string>
+    <string name="account_youtube_login_enabled_description">Autorisez la connexion à votre compte YouTube pour bénéficier d\'une navigation personnalisée et de la synchronisation.</string>
     <!-- Account Youtube -->
     <string name="account_youtube_cookie_invalid">Le cookie YouTube n\'est pas valide. Veuillez vous reconnecter.</string>
     <string name="account_youtube_login_success">Connexion à YouTube réussie</string>
@@ -77,7 +77,7 @@
     <string name="artist_songs_unavailable_message">Pas encore de titres</string>
     <string name="artist_title">Artiste</string>
     <!-- Audio -->
-    <string name="audio_bass_boost_description">Enhance low frequencies during playback.</string>
+    <string name="audio_bass_boost_description">Amplifier les basses fréquences pendant la lecture.</string>
     <string name="audio_bass_boost_level_description">Adjust the strength of the low-frequency boost.</string>
     <string name="audio_bass_boost_unavailable_message">Impossible d\'activer l\'amplification des basses</string>
     <string name="audio_devices">Périphériques audio</string>
@@ -445,7 +445,7 @@
     <string name="discord_preview_state_playing">Jouer</string>
     <string name="discord_preview_title">Aperçu de Rich Presence</string>
     <string name="discord_rpc_reconnect_failed">La fonctionnalité « Rich Presence » de Discord n\'a pas pu se reconnecter ; les mises à jour de statut sont suspendues jusqu\'au prochain changement de média ou à une reconnexion manuelle.</string>
-    <string name="discord_second_button_enabled_description">Show the second link button on your Discord activity.</string>
+    <string name="discord_second_button_enabled_description">Affichez le bouton du deuxième lien dans votre historique d\'activité sur Discord.</string>
     <string name="discord_second_button_label_description">Set the text displayed on the second Discord activity button.</string>
     <string name="discord_second_button_url_description">Set the web address opened by the second Discord activity button.</string>
     <string name="discord_state_template_description">Set the secondary activity line using track information placeholders.</string>
@@ -2643,8 +2643,8 @@ Volume BAS : titre précédent</string>
     <string name="storage_samsung_action_keep_system">Keep system storage</string>
     <string name="storage_samsung_action_use_private">Use private storage</string>
     <string name="storage_samsung_advice_message">Samsung\'s automatic memory management can delete N-Zik\'s downloads and cache files, even when you did not ask for it. To keep your downloads safe, use the private (app) storage location instead of system storage.</string>
-    <string name="storage_samsung_advice_title">Samsung storage advice</string>
-    <string name="storage_samsung_system_usage_message">You currently have %1$s of downloads and cache on system storage.</string>
+    <string name="storage_samsung_advice_title">Conseils de Samsung en matière de stockage</string>
+    <string name="storage_samsung_system_usage_message">Vous disposez actuellement de %1$s de fichiers téléchargés et mis en cache sur le stockage système.</string>
     <!-- Sync -->
     <string name="sync_action_sync">Synchronise</string>
     <string name="sync_albums">Synchronisation automatique des albums enregistrés</string>
@@ -2659,7 +2659,7 @@ Volume BAS : titre précédent</string>
     <string name="sync_data_with_ytm_account">Synchroniser les données avec le compte YTM</string>
     <string name="sync_direction">Sens de synchronisation</string>
     <string name="sync_direction_app_to_yt">Application → YouTube uniquement</string>
-    <string name="sync_direction_description">Choose whether synchronization imports from YouTube, sends local changes, or works in both directions.</string>
+    <string name="sync_direction_description">Choisissez si la synchronisation doit importer des données depuis YouTube, envoyer les modifications locales ou fonctionner dans les deux sens.</string>
     <string name="sync_direction_two_way">Dans les deux sens (Application ↔ YouTube)</string>
     <string name="sync_direction_yt_to_app">YouTube → Application uniquement</string>
     <string name="sync_failed">Échec de la synchronisation</string>
@@ -2734,17 +2734,17 @@ Volume BAS : titre précédent</string>
     <string name="sync_youtube_unlike_success">Le titre n\'est pas apprécié sur YouTube</string>
     <!-- Theme -->
     <string name="theme_custom_accent_description">Choisissez la couleur d\'accent personnalisée utilisée par ce thème.</string>
-    <string name="theme_dark_palette_accent_description">Choose the color for accented controls and highlights in the dark palette.</string>
-    <string name="theme_dark_palette_background_1_description">Choose the color for main app background in the dark palette.</string>
-    <string name="theme_dark_palette_background_2_description">Choose the color for secondary surfaces in the dark palette.</string>
-    <string name="theme_dark_palette_background_3_description">Choose the color for tertiary surfaces in the dark palette.</string>
-    <string name="theme_dark_palette_background_4_description">Choose the color for additional background surfaces in the dark palette.</string>
-    <string name="theme_dark_palette_background_5_description">Choose the color for additional background accents in the dark palette.</string>
-    <string name="theme_dark_palette_icon_button_player_description">Choose the color for player control icons in the dark palette.</string>
-    <string name="theme_dark_palette_text_description">Choose the color for primary text in the dark palette.</string>
-    <string name="theme_dark_palette_text_disabled_description">Choose the color for disabled text in the dark palette.</string>
+    <string name="theme_dark_palette_accent_description">Choisissez la couleur des éléments de commande mis en valeur et des surlignages dans la palette sombre.</string>
+    <string name="theme_dark_palette_background_1_description">Choisissez la couleur de l\'arrière-plan principal de l\'application dans la palette sombre.</string>
+    <string name="theme_dark_palette_background_2_description">Choisissez la couleur des surfaces secondaires dans la palette sombre.</string>
+    <string name="theme_dark_palette_background_3_description">Choisissez la couleur des surfaces tertiaires dans la palette sombre.</string>
+    <string name="theme_dark_palette_background_4_description">Choisissez la couleur des surfaces d\'arrière-plan supplémentaires dans la palette sombre.</string>
+    <string name="theme_dark_palette_background_5_description">Choisissez la couleur qui servira à mettre en valeur certains éléments de l\'arrière-plan dans la palette sombre.</string>
+    <string name="theme_dark_palette_icon_button_player_description">Choisissez la couleur des icônes de contrôle du lecteur dans la palette sombre.</string>
+    <string name="theme_dark_palette_text_description">Choisissez la couleur du texte principal dans la palette sombre.</string>
+    <string name="theme_dark_palette_text_disabled_description">Choisissez la couleur du texte désactivé dans la palette sombre.</string>
     <string name="theme_dark_palette_text_secondary_description">Choose the color for secondary text in the dark palette.</string>
-    <string name="theme_light_palette_accent_description">Choose the color for accented controls and highlights in the light palette.</string>
+    <string name="theme_light_palette_accent_description">Choisissez la couleur des éléments de commande mis en valeur et des surlignages dans la palette claire.</string>
     <string name="theme_light_palette_background_1_description">Choisissez la couleur de l\'arrière-plan principal de l\'application dans la palette claire.</string>
     <string name="theme_light_palette_background_2_description">Choisissez la couleur des surfaces secondaires dans la palette claire.</string>
     <string name="theme_light_palette_background_3_description">Choisissez la couleur des surfaces tertiaires dans la palette claire.</string>
