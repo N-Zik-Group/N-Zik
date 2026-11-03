@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <!-- About -->
     <string name="about_action_report_issue">Tuairiscigh fadhb</string>
     <string name="about_action_request_feature">Mol gné nó smaoineamh</string>
@@ -18,7 +17,6 @@
     <string name="about_title">About</string>
     <string name="about_translators_description">Show or hide the people who translated the app.</string>
     <string name="about_translators_title">Translators</string>
-
     <!-- Accessibility -->
     <string name="accessibility_app_icon">App\'s icon</string>
     <string name="accessibility_app_icon_in_player">app icon in player</string>
@@ -39,18 +37,15 @@
     <string name="accessibility_song_album_cover">song album cover</string>
     <string name="accessibility_switch_mode">Switch Mode</string>
     <string name="accessibility_youtube_playlist">Youtube Playlist</string>
-
     <!-- Account -->
     <string name="account_action_login">Log in</string>
     <string name="account_action_logout">Log off</string>
     <string name="account_youtube_login_description">Connect your YouTube account or sign out of the current session.</string>
     <string name="account_youtube_login_enabled_description">Allow YouTube account sign-in for personalized browsing and synchronization.</string>
-
     <!-- Account Youtube -->
     <string name="account_youtube_cookie_invalid">YouTube cookie is invalid, please log in again</string>
     <string name="account_youtube_login_success">YouTube login successful</string>
     <string name="account_youtube_session_expired">YouTube session expired, please sign in again</string>
-
     <!-- Album -->
     <string name="album_action_bookmark">Bookmark album</string>
     <string name="album_action_open">Téigh chuig an t-albam</string>
@@ -65,7 +60,6 @@
     <string name="album_not_found">Album not found</string>
     <string name="album_related_title">Albaim cosúil leis seo</string>
     <string name="album_right_swipe">Album Right Swipe</string>
-
     <!-- Artist -->
     <string name="artist_action_follow">Follow</string>
     <string name="artist_action_play_local_songs">Play all local songs</string>
@@ -82,7 +76,6 @@
     <string name="artist_songs_count_duration">%1$d Songs • %2$s</string>
     <string name="artist_songs_unavailable_message">No songs yet</string>
     <string name="artist_title">Artist</string>
-
     <!-- Audio -->
     <string name="audio_bass_boost_description">Enhance low frequencies during playback.</string>
     <string name="audio_bass_boost_level_description">Adjust the strength of the low-frequency boost.</string>
@@ -114,7 +107,6 @@
     <string name="audio_waveform_updated_message">Waveform updated successfully</string>
     <string name="audio_waveform_updating_message">Updating waveform in progress…</string>
     <string name="audio_waveform_waiting_for_download_message">Waveform will be updated as soon as the download finishes</string>
-
     <!-- Audio Reverb -->
     <string name="audio_reverb_large_hall">Large Hall</string>
     <string name="audio_reverb_large_room">Large Room</string>
@@ -123,12 +115,10 @@
     <string name="audio_reverb_none">None</string>
     <string name="audio_reverb_plate">Plate</string>
     <string name="audio_reverb_small_room">Small Room</string>
-
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">I\'m feeling lucky</string>
     <string name="automotive_action_play_all">Play All</string>
     <string name="automotive_title">Android Auto</string>
-
     <!-- Backup -->
     <string name="backup_action_export">Export backup</string>
     <string name="backup_action_import">Import backup</string>
@@ -161,7 +151,6 @@
     <string name="backup_restore_overwrite_and_restart_warning">Existing data will be overwritten. %1$s will automatically close itself after restoring the database.</string>
     <string name="backup_target_database_and_settings_label">Database + Settings</string>
     <string name="backup_target_database_label">Bunachar sonraí</string>
-
     <!-- Backup Auto -->
     <string name="backup_auto_custom_interval_unit">Custom Interval Unit</string>
     <string name="backup_auto_custom_interval_value">Custom Interval Value</string>
@@ -188,7 +177,6 @@
     <string name="backup_auto_unit_minutes">Minutes</string>
     <string name="backup_auto_unit_months">Months</string>
     <string name="backup_auto_unit_weeks">Weeks</string>
-
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Export the profile list and the face photos in a single .txt file</string>
     <string name="backup_export_all">Export all</string>
@@ -197,7 +185,6 @@
     <string name="backup_export_database_description">Export database with songs, playlists, and history</string>
     <string name="backup_export_profile_state_failed">Profile state export failed</string>
     <string name="backup_export_settings_description">Export app settings and preferences</string>
-
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Import the profile list and the face photos from a .txt file</string>
     <string name="backup_import_all">Import all</string>
@@ -211,7 +198,6 @@
     <string name="backup_import_settings_description">Import app settings and preferences</string>
     <string name="backup_import_target_from_file">From the file</string>
     <string name="backup_import_target_profile_title">Import into which profile?</string>
-
     <!-- Bridge -->
     <string name="bridge_audio_output_pc_subtitle">Sound on the PC (N-Zik Desktop Compagnon)</string>
     <string name="bridge_audio_output_pc_unavailable">This PC is not available</string>
@@ -271,7 +257,6 @@
     <string name="bridge_server_stopped_user">Stopped from the phone</string>
     <string name="bridge_server_stopped_wifi">No Wi-Fi network or hotspot</string>
     <string name="bridge_server_via_hotspot">Through this phone\'s hotspot</string>
-
     <!-- Cache -->
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Clear song cache</string>
@@ -281,7 +266,6 @@
     <string name="cache_location_private">Private</string>
     <string name="cache_location_system">System</string>
     <string name="cache_streaming_max_size_description">Limit disk space used to cache streamed songs. The trash button clears this playback cache.</string>
-
     <!-- Calendar -->
     <string name="calendar_days_ago">%d days ago</string>
     <string name="calendar_last_week">Last week</string>
@@ -306,7 +290,6 @@
     <string name="calendar_this_month">Past month</string>
     <string name="calendar_today">Today</string>
     <string name="calendar_yesterday">Yesterday</string>
-
     <!-- Common -->
     <string name="common_action_apply">Apply</string>
     <string name="common_action_cancel">Cuir ar Ceal</string>
@@ -391,7 +374,6 @@
     <string name="common_validation_minimum_value">"Value must be greater than "</string>
     <string name="common_validation_name_in_use">Name already in use</string>
     <string name="common_value_input_hint">Enter The Value</string>
-
     <!-- Discord -->
     <string name="discord_activity_competing">Competing</string>
     <string name="discord_activity_listening">Listening</string>
@@ -469,7 +451,6 @@
     <string name="discord_state_template_description">Set the secondary activity line using track information placeholders.</string>
     <string name="discord_template_unknown_album">Unknown Album</string>
     <string name="discord_token_text_invalid">Your Discord token is invalid, please login again</string>
-
     <!-- Downloads -->
     <string name="downloads_action_download_all">Download all songs</string>
     <string name="downloads_action_refresh_quality">Update downloads</string>
@@ -500,7 +481,6 @@
     <string name="downloads_stale_removed">%1$s download data is missing and was removed. Please download it again.</string>
     <string name="downloads_stale_startup_removed">%1$d downloaded song(s) are missing their files and were removed. Please download them again.</string>
     <string name="downloads_title">Download</string>
-
     <!-- Export -->
     <string name="export_cached_song_action">Export cached or downloaded song</string>
     <string name="export_cached_songs_action">Export cached</string>
@@ -510,7 +490,6 @@
     <string name="export_file_name_dialog_title">Name your export</string>
     <string name="export_running_status">Exporting…</string>
     <string name="export_song_unavailable_message">Song must be cached or downloaded to export</string>
-
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Choose the action performed by swiping an album track left.</string>
     <string name="gestures_album_track_swipe_right_description">Choose the action performed by swiping an album track right.</string>
@@ -518,7 +497,6 @@
     <string name="gestures_playlist_track_swipe_right_description">Choose the action performed by swiping a playlist track right.</string>
     <string name="gestures_queue_item_swipe_left_description">Choose the action performed by swiping a queue item left.</string>
     <string name="gestures_queue_item_swipe_right_description">Choose the action performed by swiping a queue item right.</string>
-
     <!-- Glass -->
     <string name="glass_effect_active_tab_indicator">Active tab</string>
     <string name="glass_effect_color_vibrancy">Colour</string>
@@ -535,7 +513,6 @@
     <string name="glass_effect_tint_source_custom">Custom</string>
     <string name="glass_effect_tint_source_system_accent">System accent</string>
     <string name="glass_effect_where_bottom_bar">Glass on the bottom bar</string>
-
     <!-- Glass Effect -->
     <string name="glass_effect_action_play_all">Play all quick picks</string>
     <string name="glass_effect_action_shuffle">Shuffle quick picks</string>
@@ -668,11 +645,9 @@
     <string name="glass_effect_where_search_bars">Glass on search bars</string>
     <string name="glass_effect_where_search_bars_description">The boxes where you type a search, including settings searches.</string>
     <string name="glass_effect_windows_summary">Change menus, pop-up windows and short messages.</string>
-
     <!-- History -->
     <string name="history_clear_listen_history_description">Delete saved playback events from listening history.</string>
     <string name="history_clear_search_history_description">Delete saved searches from every search-history page without changing history preferences.</string>
-
     <!-- Home -->
     <string name="home_albums_settings">Home Albums</string>
     <string name="home_artists_settings">Home Artists</string>
@@ -691,16 +666,13 @@
     <string name="home_tabs_settings_description">Reorder and show/hide tabs</string>
     <string name="home_title">Home</string>
     <string name="home_youtube_login_description">Log in to your YTM account for more content</string>
-
     <!-- Home Easter Egg -->
     <string name="home_easter_egg_click_message">Do you like clicking? Then continue...</string>
     <string name="home_easter_egg_keep_going">Okay, you\'re looking for something, keep...</string>
     <string name="home_easter_egg_last">You are a number one, long click and enjoy the surprise</string>
     <string name="home_easter_egg_number_one">You are a number one, click and enjoy the surprise</string>
-
     <!-- Image -->
     <string name="image_error_unknown">Unknown error</string>
-
     <!-- Interface -->
     <string name="interface_artist_image_roundness_description">Adjust the corner rounding of artist images.</string>
     <string name="interface_corner_roundness_description">Adjust the rounding of interface cards and controls.</string>
@@ -713,7 +685,6 @@
     <string name="interface_player_position_description">Choose where the player is placed in the interface.</string>
     <string name="interface_show_floating_icon_description">Display a floating shortcut that opens search.</string>
     <string name="interface_transition_effect_description">Choose the animation used when moving between screens.</string>
-
     <!-- Language -->
     <string name="language_app_selection_description">Choose the language used for app labels and messages.</string>
     <string name="language_name_afrikaans">Afrikaans</string>
@@ -765,7 +736,6 @@
     <string name="language_name_ukrainian">Ukrainian</string>
     <string name="language_name_vietnamese">Vietnamese</string>
     <string name="language_system_default">System language</string>
-
     <!-- Lastfm -->
     <string name="lastfm_action_failed">Last.fm request failed</string>
     <string name="lastfm_auth_failed">Login failed, check your Last.fm credentials</string>
@@ -791,7 +761,6 @@
     <string name="lastfm_unlove">Unlove on Last.fm</string>
     <string name="lastfm_unloved">Removed from loved tracks</string>
     <string name="lastfm_username">Username</string>
-
     <!-- Library -->
     <string name="library_action_bookmark">Bookmark</string>
     <string name="library_action_randomize">Randomizer</string>
@@ -839,14 +808,12 @@
     <string name="library_title">Leabharlann</string>
     <string name="library_youtube_music_title">YTM Library</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
-
     <!-- Library Favorites -->
     <string name="library_dislikes_added">Disliked %s</string>
     <string name="library_dislikes_removed">Removed %s from dislikes</string>
     <string name="library_favorites_action_add">Add to favorites</string>
     <string name="library_favorites_added">Added to favorites</string>
     <string name="library_favorites_removed">Removed from favorites</string>
-
     <!-- Library Sort -->
     <string name="library_sort_album">Album</string>
     <string name="library_sort_album_year">Album Year</string>
@@ -863,7 +830,6 @@
     <string name="library_sort_play_count">Play Count</string>
     <string name="library_sort_songs_number">Songs Number</string>
     <string name="library_sort_title">Title</string>
-
     <!-- Listen -->
     <string name="listen_together_auto_approval_joins_description">Automatically approve join requests without reviewing them manually</string>
     <string name="listen_together_auto_approval_suggestions_description">Automatically approve and queue song suggestions from guests</string>
@@ -880,7 +846,6 @@
     <string name="listen_together_transfer_ownership_description">Make this person the host of the room</string>
     <string name="listen_together_username_description">Set the name other participants see in shared listening rooms.</string>
     <string name="listen_together_view_logs_description">Debug connection events and messages</string>
-
     <!-- Listen Together -->
     <string name="listen_together_action_approve">Approve</string>
     <string name="listen_together_action_reject">Reject</string>
@@ -960,7 +925,6 @@
     <string name="listen_together_you_are_guest">You are a guest</string>
     <string name="listen_together_you_are_host">You are the host</string>
     <string name="listen_together_you_label">You</string>
-
     <!-- Logs -->
     <string name="logs_action_export">Export logs</string>
     <string name="logs_action_export_both">Export both logs</string>
@@ -969,7 +933,6 @@
     <string name="logs_export_both_description">Export debug and crash logs to a file</string>
     <string name="logs_export_crash_description">Export crash log to a file</string>
     <string name="logs_export_debug_description">Export debug log to a file</string>
-
     <!-- Lyrics -->
     <string name="lyrics_action_choose_translation_language">Traslate to other language</string>
     <string name="lyrics_action_copy">Copy lyrics</string>
@@ -1048,7 +1011,6 @@
     <string name="lyrics_translation_section_title">Translation</string>
     <string name="lyrics_translation_success_message">Translation successful</string>
     <string name="lyrics_unsynced">Plain text</string>
-
     <!-- Maintenance -->
     <string name="maintenance_all_systems_ok">All systems operational</string>
     <string name="maintenance_auto_update">Auto update</string>
@@ -1176,7 +1138,6 @@
     <string name="maintenance_yt_invalid">Invalid</string>
     <string name="maintenance_yt_session">YouTube session</string>
     <string name="maintenance_yt_valid">Valid</string>
-
     <!-- Metadata -->
     <string name="metadata_action_change_artists">Change Authors</string>
     <string name="metadata_action_change_cover">Update Cover</string>
@@ -1224,7 +1185,6 @@
     <string name="metadata_video_views_label">Views</string>
     <string name="metadata_wikipedia_attribution">As Vicipéid faoi Admhála Creative Commons CC-BY-SA 3.0</string>
     <string name="metadata_year">Year</string>
-
     <!-- Metadata Musicbrainz -->
     <string name="metadata_musicbrainz_insights">Insights</string>
     <string name="metadata_musicbrainz_insights_biography">Biography</string>
@@ -1255,7 +1215,6 @@
     <string name="metadata_musicbrainz_stat_songs">Amhráin</string>
     <string name="metadata_musicbrainz_stat_time">Total time</string>
     <string name="metadata_musicbrainz_wikipedia">Wikipedia</string>
-
     <!-- Modules -->
     <string name="modules_abi">ABI</string>
     <string name="modules_already_installed">Already installed</string>
@@ -1290,7 +1249,6 @@
     <string name="modules_update_available_body">Version %1$s is installed. The app now ships %2$s.</string>
     <string name="modules_updating">Updating module</string>
     <string name="modules_version">Version</string>
-
     <!-- Navigation -->
     <string name="navigation_action_picture_in_picture">PIP</string>
     <string name="navigation_back_again_to_exit_message">Press once again to exit</string>
@@ -1299,7 +1257,6 @@
     <string name="navigation_position_top_label">Top</string>
     <string name="navigation_style_icon_and_text_label">Icon and text</string>
     <string name="navigation_style_icon_only_label">Only icon</string>
-
     <!-- Network -->
     <string name="network_action_disable_offline_mode">Disable full offline mode</string>
     <string name="network_action_enable_offline_mode">Enable full offline mode</string>
@@ -1334,10 +1291,8 @@
     <string name="network_stream_client_web_creator_description">Web creator client.</string>
     <string name="network_stream_client_web_description">Standard web client.</string>
     <string name="network_stream_client_youtube_music_web_description">Slower but supports premium formats. Uses JavaScript signature decryption (~5-10s delay). Recommended for premium users.</string>
-
     <!-- Network Proxy -->
     <string name="network_proxy_invalid_hostname">Your Proxy Hostname is invalid, please check it</string>
-
     <!-- Network Stream -->
     <string name="network_stream_client">Stream Client</string>
     <string name="network_stream_client_android">Android</string>
@@ -1357,7 +1312,6 @@
     <string name="network_stream_error_retrying">Retrying: %1$s</string>
     <string name="network_stream_still_retrying">Still loading… Attempt %1$s</string>
     <string name="network_stream_unexpected_skip">Unexpected track change detected</string>
-
     <!-- Onboarding -->
     <string name="onboarding_accounts_discord_description">Show what you are listening to in Discord (beta)</string>
     <string name="onboarding_accounts_done">I\'m done</string>
@@ -1394,11 +1348,9 @@
     <string name="onboarding_restore_skip_description">You can restore a backup later from the app settings</string>
     <string name="onboarding_restore_title">Restore a backup</string>
     <string name="onboarding_start">Start</string>
-
     <!-- Parental -->
     <string name="parental_control">Parental control</string>
     <string name="parental_control_is_enabled">Parental control is enabled</string>
-
     <!-- Permissions -->
     <string name="permissions_event_denied">Permission denied</string>
     <string name="permissions_event_granted">Permission granted</string>
@@ -1434,7 +1386,6 @@
     <string name="permissions_label_microphone">Microphone / audio capture</string>
     <string name="permissions_label_notifications">Notifications</string>
     <string name="permissions_usage_journal">Permission activity</string>
-
     <!-- Player -->
     <string name="common_action_stop">Stop</string>
     <string name="player_action_bar_buttons">Button visibility</string>
@@ -1622,7 +1573,6 @@
     <string name="player_top_spacing_description">Keep empty space at the top when the top actions bar is hidden.</string>
     <string name="player_track_swipe_sensitivity_description">Adjust how easily a swipe changes tracks in the player.</string>
     <string name="player_type">Player Type</string>
-
     <!-- Player Appearance -->
     <string name="player_controls_style_essential">Essential</string>
     <string name="player_controls_style_modern">Modern</string>
@@ -1638,7 +1588,6 @@
     <string name="player_progress_both">Both</string>
     <string name="player_progress_mini_player">Minimized player</string>
     <string name="settings_action_bar_show_lyrics_button">Show Lyrics button</string>
-
     <!-- Player Background -->
     <string name="player_background_black_cherry_cosmos">Black Cherry Cosmos</string>
     <string name="player_background_glossy_gradient">Glossy Gradient</string>
@@ -1652,7 +1601,6 @@
     <string name="player_background_oil_flow">Oil Flow</string>
     <string name="player_background_purple_liquid">Purple Liquid</string>
     <string name="player_background_stage">Stage</string>
-
     <!-- Player Mini -->
     <string name="player_mini_button_audio_output">Audio output</string>
     <string name="player_mini_button_discover">Discover</string>
@@ -1668,10 +1616,8 @@
     <string name="player_mini_button_visualizer">Visualizer</string>
     <string name="player_mini_buttons_config">MiniPlayer buttons</string>
     <string name="player_mini_buttons_config_description">Configure the 4 buttons in the miniplayer</string>
-
     <!-- Player Notification -->
     <string name="player_notification_pause">Pause</string>
-
     <!-- Player Sleep Timer -->
     <string name="player_sleep_timer_action_set">Socraigh amadóir codlata</string>
     <string name="player_sleep_timer_end_of_song">end of song</string>
@@ -1679,7 +1625,6 @@
     <string name="player_sleep_timer_set_to">Set to</string>
     <string name="player_sleep_timer_stop_confirmation">An mhaith leat an t-amadóir codlata a stopadh?</string>
     <string name="player_sleep_timer_title">Sleep timer</string>
-
     <!-- Playlist -->
     <string name="playlist_action_add">Cuir le seinnliosta</string>
     <string name="playlist_action_add_hint">Add in playlist</string>
@@ -1741,16 +1686,13 @@
     <string name="playlist_top_show_description">Show your top-played playlist in Quick Picks.</string>
     <string name="playlist_youtube_song_limit_message">Youtube Playlists are Limited to 5000 songs</string>
     <string name="playlist_youtube_title">YouTube Playlist</string>
-
     <!-- Podcast -->
     <string name="podcast_episodes_title">Episodes</string>
     <string name="podcast_title">Podcasts</string>
-
     <!-- Privacy -->
     <string name="privacy_block_screenshots">Block screenshots</string>
     <string name="privacy_block_screenshots_description">Prevent screenshots and screen recordings of N-Zik, and hide its content on non-secure displays. Applies immediately for this profile.</string>
     <string name="privacy_screen_protection">Screen protection</string>
-
     <!-- Profile -->
     <string name="profile_action_add">Add profile</string>
     <string name="profile_action_export">Export profiles</string>
@@ -1815,14 +1757,12 @@
     <string name="profile_share_waveforms_description">Use the base profile\'s waveforms folder instead of this profile\'s own. Applies at the next app restart; data already written in this profile\'s own folder stays there</string>
     <string name="profile_switch_dialog_title">Switch profile</string>
     <string name="profile_title">Profiles</string>
-
     <!-- Queue -->
     <string name="queue_discover_description">Removes Liked and Playlist songs from queue</string>
     <string name="queue_discover_title">Discover</string>
     <string name="queue_max_songs_in_queue_android_auto_description">Limit the number of tracks exposed to the Android Auto queue.</string>
     <string name="queue_max_songs_in_queue_description">Limit the number of tracks added to the play queue.</string>
     <string name="queue_now_playing_indicator_description">Choose the indicator displayed beside the currently playing track.</string>
-
     <!-- Radio -->
     <string name="radio_action_start">Tosaigh raidió</string>
     <string name="radio_action_start_hint">Tosaigh raidió</string>
@@ -1835,7 +1775,6 @@
     <string name="radio_discovery_requires_radio_or_autofill_message">Turn on Radio or Auto-fill to use Discover</string>
     <string name="radio_fetch_empty_queue_preserved_message">Radio: no songs loaded (Queue kept)</string>
     <string name="radio_stopped_message">Radio stopped (Return to normal)</string>
-
     <!-- Recognition -->
     <string name="recognition_action_more_details">More details</string>
     <string name="recognition_audio_hint">Play some music for the analysis to work</string>
@@ -1843,7 +1782,6 @@
     <string name="recognition_error_no_match">Couldn\'t identify that song. Try a louder or cleaner sample.</string>
     <string name="recognition_listening_duration">Analysing %1$ds of audio</string>
     <string name="recognition_ready_message">Hold your phone near the music</string>
-
     <!-- Recommendations -->
     <string name="recommendations_action_reset_quick_picks">Athshocraigh roghanna ghasta</string>
     <string name="recommendations_adaptive">Adaptive</string>
@@ -1893,7 +1831,6 @@
     <string name="recommendations_trending_community_playlists_title">Trending community playlists</string>
     <string name="recommendations_trending_shorts_title">Trending in Shorts</string>
     <string name="recommendations_trending_songs_title">Trending songs for you</string>
-
     <!-- Recovery -->
     <string name="recovery_accounts_exported">Profile state exported</string>
     <string name="recovery_accounts_imported_base">Profile state imported: base profile</string>
@@ -1989,7 +1926,6 @@
     <string name="recovery_status_main_process_stopped">The app is stopped — no kill action needed</string>
     <string name="recovery_status_main_process_stopping">The app is shutting down…</string>
     <string name="recovery_success">Déanta</string>
-
     <!-- Rewind -->
     <string name="rewind_albums_empty_body">Your top albums will appear here once there is enough listening history.</string>
     <string name="rewind_albums_empty_title">YOUR ALBUM STACK IS EMPTY</string>
@@ -2239,7 +2175,6 @@
     <string name="rewind_years_kicker">YOUR YEARS • %1$s</string>
     <string name="rewind_years_peak_sub">%1$s HIT THE HARDEST.</string>
     <string name="rewind_years_peak_year">PEAK YEAR</string>
-
     <!-- Search -->
     <string name="search_content_type_all">All</string>
     <string name="search_content_type_official">Official</string>
@@ -2282,7 +2217,6 @@
     <string name="voice_search_listening">Listening...</string>
     <string name="voice_search_retry">Retry</string>
     <string name="voice_search_speak_now">Speak now</string>
-
     <!-- Settings -->
     <string name="audio_loudness_boost_level">Loudness boost level</string>
     <string name="common_error_no_document_handler">Couldn\'t find an application to open documents</string>
@@ -2581,6 +2515,10 @@
     <string name="settings_recommendations_title">AI Recommendations</string>
     <string name="settings_region_override">Region Override</string>
     <string name="settings_reset">Reset</string>
+    <string name="settings_reset_all">Reset all settings</string>
+    <string name="settings_reset_all_confirm">Reset all</string>
+    <string name="settings_reset_all_confirmation">Reset all application settings? Saved accounts, credentials, profiles, playlists, downloads and files will be kept.</string>
+    <string name="settings_reset_all_description">Restore all application settings to their defaults.</string>
     <string name="settings_reset_choose_scope">Choose which settings to restore</string>
     <string name="settings_reset_choose_scope_description">Select a settings section, then restore its defaults.</string>
     <string name="settings_reset_scope">Reset all %1$s settings (across categories)</string>
@@ -2595,7 +2533,7 @@
     <string name="settings_section_player_action_bar_title">Player action bar</string>
     <string name="settings_section_proxy_title">Proxy</string>
     <string name="settings_section_service_lifetime_title">Saol na seirbhíse</string>
-    <string name="settings_section_smart_recommendations_title">Smart recommendations</string>
+    <string name="settings_section_smart_recommendations_title">Smart recommendation</string>
     <string name="settings_section_troubleshooting_title">Troubleshooting</string>
     <string name="settings_service_action_disable_background_restrictions">Disable background restrictions</string>
     <string name="settings_service_android_12_requirement_description">Since Android 12, disabling battery optimizations is required for the \"Invincible service\" option to take effect.</string>
@@ -2627,6 +2565,8 @@
     <string name="settings_theme_dark_colors_reset_title">Reset customized dark colors</string>
     <string name="settings_theme_dark_mode_label">Dark</string>
     <string name="settings_theme_disabled_text_color_label">Text disabled</string>
+    <string name="settings_theme_keep_dark_mode_description">Disable monochrome luminance adaptation in both dark and light modes to avoid bright flashes from light covers.</string>
+    <string name="settings_theme_keep_dark_mode_label">Keep dark mode</string>
     <string name="settings_theme_light_colors_reset_confirmation">Do you really want to reset the custom light theme colors?</string>
     <string name="settings_theme_light_colors_reset_description">Click to reset default light colors</string>
     <string name="settings_theme_light_colors_reset_title">Reset customized light colors</string>
@@ -2655,7 +2595,6 @@
     <string name="settings_youtube_library_sync_content_description">Playlists, albums, artists, history, like, etc.</string>
     <string name="settings_youtube_login_enabled_label">Enable YouTube Music Login</string>
     <string name="settings_youtube_music_title">YouTube Music</string>
-
     <!-- Smart Trash -->
     <string name="library_cleanup_all_downloads_confirmation">Do you want to delete all downloads (%d songs)?</string>
     <string name="library_cleanup_all_favorites_confirmation">Do you want to remove all %d favorites?</string>
@@ -2670,14 +2609,12 @@
     <string name="library_cleanup_title">Smart trash</string>
     <string name="library_favorites_remove_dialog_title">Remove from favorites</string>
     <string name="library_listening_history_reset_dialog_title">Reset listening history</string>
-
     <!-- Song -->
     <string name="song_delete_confirmation">Do you really want to delete this song? It will be deleted from database.\nThis action is irreversible.</string>
     <string name="song_delete_dialog_title">Delete songs</string>
     <string name="song_metadata_update_action_open">Open update dialog</string>
     <string name="song_metadata_updated_count">Updated %1$d songs</string>
     <string name="song_play_time_action_reset">Reset total play time</string>
-
     <!-- Song Matching -->
     <string name="song_matching_action_open">Match Album/Audio version</string>
     <string name="song_matching_all_confirmation">Do you want to match %d unmatched songs?</string>
@@ -2685,7 +2622,6 @@
     <string name="song_matching_progress_title">Matching songs</string>
     <string name="song_matching_running_message">Matching Songs. Please Wait. Do not Minimize or Exit the App</string>
     <string name="song_matching_unmatched_label">Unmatched song</string>
-
     <!-- Statistics -->
     <string name="statistics_action_delete_playback_events_count">Delete %1$s playback events</string>
     <string name="statistics_delete_playback_events_confirmation">Do you really want to delete all playback events?</string>
@@ -2702,14 +2638,12 @@
     <string name="statistics_songs_heard">songs heard</string>
     <string name="statistics_title">Statistics</string>
     <string name="statistics_top_period_title">View top %s of …</string>
-
     <!-- Storage -->
     <string name="storage_samsung_action_keep_system">Keep system storage</string>
     <string name="storage_samsung_action_use_private">Use private storage</string>
     <string name="storage_samsung_advice_message">Samsung\'s automatic memory management can delete N-Zik\'s downloads and cache files, even when you did not ask for it. To keep your downloads safe, use the private (app) storage location instead of system storage.</string>
     <string name="storage_samsung_advice_title">Samsung storage advice</string>
     <string name="storage_samsung_system_usage_message">You currently have %1$s of downloads and cache on system storage.</string>
-
     <!-- Sync -->
     <string name="sync_action_sync">Sioncronaigh</string>
     <string name="sync_albums">Auto Sync Saved Albums</string>
@@ -2781,7 +2715,6 @@
     <string name="sync_success_notification_artists">Successfully synchronized all artists.</string>
     <string name="sync_success_notification_playlists">Successfully synchronized all playlists.</string>
     <string name="sync_successful">Sync successful</string>
-
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">Do you want to retry syncing the %1$d failed items?</string>
     <string name="sync_running_status">Syncing...</string>
@@ -2798,7 +2731,6 @@
     <string name="sync_youtube_songs_remaining">%1$s Songs Remaining</string>
     <string name="sync_youtube_unlike_failed">Failed to unlike the song in YouTube</string>
     <string name="sync_youtube_unlike_success">Song is Unliked in YouTube</string>
-
     <!-- Theme -->
     <string name="theme_custom_accent_description">Choose the custom accent color used by this theme.</string>
     <string name="theme_dark_palette_accent_description">Choose the color for accented controls and highlights in the dark palette.</string>
@@ -2834,7 +2766,6 @@
     <string name="theme_shake_sensitivity_low">Low (5.0G)</string>
     <string name="theme_shake_sensitivity_medium">Medium (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Very High (1.0G)</string>
-
     <!-- Thumbnail -->
     <string name="thumbnail_action_edit">Edit Thumbnail</string>
     <string name="thumbnail_action_pick_from_gallery">Pick from gallery</string>
@@ -2844,7 +2775,6 @@
     <string name="thumbnail_not_selected">Thumbnail Not Selected</string>
     <string name="thumbnail_remove_failed">Failed to Remove Thumbnail</string>
     <string name="thumbnail_remove_success">Removed Thumbnail</string>
-
     <!-- Updates -->
     <string name="updates_action_check">Check Update</string>
     <string name="updates_action_check_now">Check Now</string>
@@ -2902,7 +2832,6 @@
     <string name="updates_unavailable_build_description">App installed by an APK distributor should let its distributor update the app!</string>
     <string name="updates_up_to_date">Up to date</string>
     <string name="updates_warning_acknowledge">I understand</string>
-
     <!-- Visualizer -->
     <string name="visualizer_action_open_permission_settings">Open permission settings</string>
     <string name="visualizer_animation_bars">Bars</string>
@@ -2924,7 +2853,6 @@
     <string name="visualizer_line_thickness_description">Adjust the width of the lines in the audio visualization.</string>
     <string name="visualizer_microphone_permission_message">Visualizer effect require mic permission, grant please.</string>
     <string name="visualizer_title">Visualizer</string>
-
     <!-- Widget -->
     <string name="widget_action_play_pause">Play / Pause</string>
     <string name="widget_action_tap_to_play">Tap to play</string>
