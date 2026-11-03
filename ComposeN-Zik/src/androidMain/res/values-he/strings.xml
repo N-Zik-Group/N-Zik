@@ -2859,4 +2859,8 @@
     <string name="widget_not_playing_status">Not playing</string>
     <string name="widget_playlists_description">N-Zik Playlists</string>
     <string name="widget_turntable_description">N-Zik Turntable</string>
+    <string name="glass_effect_switches_title">Glass switches</string>
+    <string name="glass_effect_switches_description">Use liquid Glass switches with the shared material and interaction effects when Glass is enabled.</string>
+    <string name="glass_effect_optimization_title">Glass optimization</string>
+    <string name="glass_effect_optimization_description">Reduce or disable background Glass effects when a menu, dialog, or other overlay is open to avoid stacking expensive blur and refraction effects. Disable with caution: the app may become significantly slower.</string>
 </resources>
