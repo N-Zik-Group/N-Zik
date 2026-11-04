@@ -1,28 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Calendar -->
     <string name="calendar_days_ago">%d days ago</string>
-    <string name="calendar_last_week">先週</string>
+    <string name="calendar_last_week">Last week</string>
     <string name="calendar_last_year">Last year</string>
-    <string name="calendar_month_april_with_year">%s年4月</string>
-    <string name="calendar_month_august_with_year">%s年8月</string>
-    <string name="calendar_month_december_with_year">%s年12月</string>
-    <string name="calendar_month_february_with_year">%s年2月</string>
-    <string name="calendar_month_january_with_year">%s年1月</string>
-    <string name="calendar_month_july_with_year">%s年7月</string>
-    <string name="calendar_month_june_with_year">%s年6月</string>
-    <string name="calendar_month_march_with_year">%s年3月</string>
-    <string name="calendar_month_may_with_year">%s年5月</string>
-    <string name="calendar_month_november_with_year">%s年11月</string>
-    <string name="calendar_month_october_with_year">%s年10月</string>
-    <string name="calendar_month_september_with_year">%s年9月</string>
+    <string name="calendar_month_april_with_year">April %s</string>
+    <string name="calendar_month_august_with_year">August %s</string>
+    <string name="calendar_month_december_with_year">December %s</string>
+    <string name="calendar_month_february_with_year">February %s</string>
+    <string name="calendar_month_january_with_year">January %s</string>
+    <string name="calendar_month_july_with_year">July %s</string>
+    <string name="calendar_month_june_with_year">June %s</string>
+    <string name="calendar_month_march_with_year">March %s</string>
+    <string name="calendar_month_may_with_year">May %s</string>
+    <string name="calendar_month_november_with_year">November %s</string>
+    <string name="calendar_month_october_with_year">October %s</string>
+    <string name="calendar_month_september_with_year">September %s</string>
     <string name="calendar_period_one_month">1か月</string>
     <string name="calendar_period_one_week">1週間</string>
     <string name="calendar_period_one_year">1年</string>
     <string name="calendar_period_six_months">6か月</string>
     <string name="calendar_period_three_months">3か月</string>
-    <string name="calendar_this_month">今月の</string>
+    <string name="calendar_this_month">This month</string>
     <string name="calendar_today">今日</string>
-    <string name="calendar_yesterday">昨日</string>
+    <string name="calendar_yesterday">Yesterday</string>
+    <!-- Rewind -->
     <string name="rewind_albums_empty_body">Your top albums will appear here once there is enough listening history.</string>
     <string name="rewind_albums_empty_title">YOUR ALBUM STACK IS EMPTY</string>
     <string name="rewind_albums_heading">YOUR TOP\nALBUMS.</string>
@@ -45,13 +47,13 @@
     <string name="rewind_badge_tier_0_name">CURIOUS</string>
     <string name="rewind_badge_tier_0_sub">Still finding your sound.</string>
     <string name="rewind_badge_tier_1_name">EXPLORER</string>
-    <string name="rewind_badge_tier_1_sub">You tried a lot this year.</string>
+    <string name="rewind_badge_tier_1_sub">You tried a lot.</string>
     <string name="rewind_badge_tier_2_name">IN ROTATION</string>
     <string name="rewind_badge_tier_2_sub">Music, most days.</string>
     <string name="rewind_badge_tier_3_name">DEDICATED</string>
     <string name="rewind_badge_tier_3_sub">You kept coming back.</string>
     <string name="rewind_badge_tier_4_name">HEAVY ROTATION</string>
-    <string name="rewind_badge_tier_4_sub">Music ran through your whole year.</string>
+    <string name="rewind_badge_tier_4_sub">Music ran through the whole period.</string>
     <string name="rewind_badge_tier_5_name">RELENTLESS</string>
     <string name="rewind_badge_tier_5_sub">You barely hit pause.</string>
     <string name="rewind_badge_tier_6_name">SOUND MACHINE</string>
@@ -67,11 +69,11 @@
     <string name="rewind_days_peak_day">PEAK DAY</string>
     <string name="rewind_days_peak_minutes">PEAK MINUTES</string>
     <string name="rewind_days_peak_sub">DAY %1$s HIT THE HARDEST.</string>
-    <string name="rewind_deep_cuts_empty_body">Songs ranked 6–10 will appear here once there is enough listening history.</string>
-    <string name="rewind_deep_cuts_empty_title">YOUR TOP TEN IS STILL FORMING</string>
+    <string name="rewind_deep_cuts_empty_body">The next most-played songs will appear here once there is enough listening history.</string>
+    <string name="rewind_deep_cuts_empty_title">DEEP CUTS ARE FORMING</string>
     <string name="rewind_deep_cuts_heading">SONGS 6–%1$d.</string>
     <string name="rewind_deep_cuts_kicker">DEEP CUTS • %1$s</string>
-    <string name="rewind_deep_cuts_sub">Your next five most-played songs.</string>
+    <string name="rewind_deep_cuts_sub">Your next most-played songs.</string>
     <string name="rewind_discovery_heading">HOW MUCH YOU\nDISCOVERED.</string>
     <string name="rewind_discovery_kicker">DISCOVERY • %1$s</string>
     <string name="rewind_empty_state_kicker">REWIND</string>
@@ -89,7 +91,7 @@
     <string name="rewind_finale_listener_level">LISTENER LEVEL</string>
     <string name="rewind_finale_play_again">PLAY AGAIN</string>
     <string name="rewind_finale_playlist_updated">PLAYLIST UPDATED</string>
-    <string name="rewind_finale_share">SHARE REWIND</string>
+    <string name="rewind_finale_share">EXPORT ALL PAGES</string>
     <string name="rewind_finale_top_album">TOP ALBUM</string>
     <string name="rewind_finale_top_artist">TOP ARTIST</string>
     <string name="rewind_finale_top_playlist">TOP PLAYLIST</string>
@@ -210,7 +212,7 @@
     <string name="rewind_playlist_notification_description">Tap to open your Rewind playlists.</string>
     <string name="rewind_playlist_notification_title">Your %1$s rewind playlist is ready</string>
     <string name="rewind_settings_enabled">Enable Rewind</string>
-    <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_enabled_description">Enable or disable the whole rewind feature: menu item, reminders and playlists.</string>
     <string name="rewind_settings_global">All-time rewind</string>
     <string name="rewind_settings_global_description">Show the all-time recap on the Rewind home.</string>
     <string name="rewind_settings_monthly">Monthly rewind</string>
@@ -271,19 +273,20 @@
     <string name="rewind_years_kicker">YOUR YEARS • %1$s</string>
     <string name="rewind_years_peak_sub">%1$s HIT THE HARDEST.</string>
     <string name="rewind_years_peak_year">PEAK YEAR</string>
-    <string name="statistics_action_delete_playback_events_count">%1$s 再生イベントを削除</string>
-    <string name="statistics_delete_playback_events_confirmation">本当にすべての再生イベントを削除しますか？</string>
+    <!-- Statistics -->
+    <string name="statistics_action_delete_playback_events_count">Delete %1$s playback events</string>
+    <string name="statistics_delete_playback_events_confirmation">Do you really want to delete all playback events?</string>
     <string name="statistics_delete_playback_events_dialog_title">Delete playback events</string>
     <string name="statistics_items_limit_custom">カスタム</string>
     <string name="statistics_items_limit_custom_value">Custom (%1$d)</string>
     <string name="statistics_items_limit_unlimited">無制限</string>
-    <string name="statistics_listening_totals_description">合計曲数と再生時間を表示する</string>
-    <string name="statistics_max_number_of_items">アイテムの最大数</string>
+    <string name="statistics_listening_totals_description">Show total number of songs heard and playback duration</string>
+    <string name="statistics_max_number_of_items">Max number of items</string>
     <string name="statistics_maximum_items_description">Limit the number of entries shown in listening statistics.</string>
-    <string name="statistics_of_time_taken">費やした時間</string>
+    <string name="statistics_of_time_taken">time spent</string>
     <string name="statistics_open_desc">Open the Statistics screen</string>
-    <string name="statistics_playback_duration_label">再生時間</string>
-    <string name="statistics_songs_heard">曲聴きました</string>
+    <string name="statistics_playback_duration_label">Playback duration</string>
+    <string name="statistics_songs_heard">songs heard</string>
     <string name="statistics_title">統計情報</string>
     <string name="statistics_top_period_title">上位 %s / …</string>
 </resources>
