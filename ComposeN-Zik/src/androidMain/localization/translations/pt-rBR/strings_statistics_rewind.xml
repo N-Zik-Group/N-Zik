@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Calendar -->
     <string name="calendar_days_ago">%d days ago</string>
-    <string name="calendar_last_week">Última semana</string>
+    <string name="calendar_last_week">Last week</string>
     <string name="calendar_last_year">Last year</string>
-    <string name="calendar_month_april_with_year">%s de Abril</string>
-    <string name="calendar_month_august_with_year">%s de Agosto</string>
-    <string name="calendar_month_december_with_year">%s de Dezembro</string>
-    <string name="calendar_month_february_with_year">%s de Fevereiro</string>
-    <string name="calendar_month_january_with_year">%s de Janeiro</string>
-    <string name="calendar_month_july_with_year">%s de Julho</string>
-    <string name="calendar_month_june_with_year">%s de Junho</string>
-    <string name="calendar_month_march_with_year">%s de Março</string>
-    <string name="calendar_month_may_with_year">%s de Maio</string>
-    <string name="calendar_month_november_with_year">%s de Novembro</string>
-    <string name="calendar_month_october_with_year">%s de Outubro</string>
-    <string name="calendar_month_september_with_year">%s de Setembro</string>
+    <string name="calendar_month_april_with_year">April %s</string>
+    <string name="calendar_month_august_with_year">August %s</string>
+    <string name="calendar_month_december_with_year">December %s</string>
+    <string name="calendar_month_february_with_year">February %s</string>
+    <string name="calendar_month_january_with_year">January %s</string>
+    <string name="calendar_month_july_with_year">July %s</string>
+    <string name="calendar_month_june_with_year">June %s</string>
+    <string name="calendar_month_march_with_year">March %s</string>
+    <string name="calendar_month_may_with_year">May %s</string>
+    <string name="calendar_month_november_with_year">November %s</string>
+    <string name="calendar_month_october_with_year">October %s</string>
+    <string name="calendar_month_september_with_year">September %s</string>
     <string name="calendar_period_one_month">1 mês</string>
     <string name="calendar_period_one_week">1 Semana</string>
     <string name="calendar_period_one_year">1 Ano</string>
@@ -22,7 +23,8 @@
     <string name="calendar_period_three_months">3 mês</string>
     <string name="calendar_this_month">This month</string>
     <string name="calendar_today">Hoje</string>
-    <string name="calendar_yesterday">Ontem</string>
+    <string name="calendar_yesterday">Yesterday</string>
+    <!-- Rewind -->
     <string name="rewind_albums_empty_body">Your top albums will appear here once there is enough listening history.</string>
     <string name="rewind_albums_empty_title">YOUR ALBUM STACK IS EMPTY</string>
     <string name="rewind_albums_heading">YOUR TOP\nALBUMS.</string>
@@ -271,19 +273,20 @@
     <string name="rewind_years_kicker">YOUR YEARS • %1$s</string>
     <string name="rewind_years_peak_sub">%1$s HIT THE HARDEST.</string>
     <string name="rewind_years_peak_year">PEAK YEAR</string>
-    <string name="statistics_action_delete_playback_events_count">Excluir eventos %1$s de reprodução</string>
-    <string name="statistics_delete_playback_events_confirmation">Você realmente quer deletar esta playlist?</string>
+    <!-- Statistics -->
+    <string name="statistics_action_delete_playback_events_count">Delete %1$s playback events</string>
+    <string name="statistics_delete_playback_events_confirmation">Do you really want to delete all playback events?</string>
     <string name="statistics_delete_playback_events_dialog_title">Delete playback events</string>
-    <string name="statistics_items_limit_custom">Custom</string>
+    <string name="statistics_items_limit_custom">Personalizado</string>
     <string name="statistics_items_limit_custom_value">Custom (%1$d)</string>
     <string name="statistics_items_limit_unlimited">Ilimitado</string>
-    <string name="statistics_listening_totals_description">Mostra o número de músicas ouvidas e o seu tempo de reprodução</string>
-    <string name="statistics_max_number_of_items">Número máximo de itens</string>
+    <string name="statistics_listening_totals_description">Show total number of songs heard and playback duration</string>
+    <string name="statistics_max_number_of_items">Max number of items</string>
     <string name="statistics_maximum_items_description">Limit the number of entries shown in listening statistics.</string>
-    <string name="statistics_of_time_taken">do tempo gasto</string>
+    <string name="statistics_of_time_taken">time spent</string>
     <string name="statistics_open_desc">Open the Statistics screen</string>
-    <string name="statistics_playback_duration_label">Tempo de reprodução</string>
-    <string name="statistics_songs_heard">músicas ouvidas</string>
+    <string name="statistics_playback_duration_label">Playback duration</string>
+    <string name="statistics_songs_heard">songs heard</string>
     <string name="statistics_title">Estatísticas</string>
     <string name="statistics_top_period_title">Ver principais %s de…</string>
 </resources>
