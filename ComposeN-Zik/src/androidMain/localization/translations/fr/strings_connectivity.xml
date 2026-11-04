@@ -167,6 +167,7 @@
     <string name="network_stream_client_visionos">visionOS</string>
     <string name="network_stream_client_web_creator">Créateur de sites web</string>
     <string name="network_stream_error_retrying">Réessayer : %1$s</string>
+    <string name="network_stream_retrying_playback">Tentative de reprise de la lecture…</string>
     <string name="network_stream_still_retrying">Chargement en cours… Tentative %1$s</string>
     <string name="network_stream_unexpected_skip">Changement de piste inattendu détecté</string>
 </resources>

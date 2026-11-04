@@ -39,7 +39,7 @@
     <string name="lyrics_translation_section_title">번역</string>
     <string name="common_action_stop">중지</string>
     <string name="player_action_enqueue">대기열에 추가</string>
-    <string name="player_action_listen_on_invidious">Invidious에서 듣기</string>
+    <string name="player_action_listen_on_invidious">%1$s에서 듣기</string>
     <string name="player_action_listen_on_youtube">YouTube에서 듣기</string>
     <string name="player_action_listen_on_youtube_music">YouTube Music에서 듣기</string>
     <string name="player_action_play_next">다음 재생</string>

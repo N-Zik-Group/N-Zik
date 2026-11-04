@@ -143,7 +143,7 @@
     <string name="playlist_action_export">Playlist exportieren</string>
     <string name="playlist_action_import">Playlist importieren</string>
     <string name="playlist_action_import_favorites">Favoriten importieren</string>
-    <string name="playlist_action_like_favorites_on_youtube">\"Gefällt mir\" Angaben aus Kreate nach YouTube übertragen</string>
+    <string name="playlist_action_like_favorites_on_youtube">\"Gefällt mir\" Angaben aus N-Zik nach YouTube übertragen</string>
     <string name="playlist_action_remove_songs">Aus der Playlist entfernen</string>
     <string name="playlist_action_remove_songs_outside_library">Titel außerhalb der Bibliothek löschen</string>
     <string name="playlist_action_rename">Umbenennen</string>

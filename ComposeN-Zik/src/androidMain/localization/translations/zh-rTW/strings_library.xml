@@ -65,7 +65,7 @@
     <string name="playlist_action_export">匯出播放清單</string>
     <string name="playlist_action_import">匯入播放清單</string>
     <string name="playlist_action_import_favorites">匯入我的最愛</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="playlist_action_remove_songs">從播放清單中移除</string>
     <string name="playlist_action_rename">重新命名</string>
     <string name="playlist_action_shuffle_positions">重新排列</string>

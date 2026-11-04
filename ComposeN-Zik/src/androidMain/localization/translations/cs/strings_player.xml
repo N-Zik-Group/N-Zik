@@ -71,7 +71,7 @@
     <string name="lyrics_translation_section_title">Překlad</string>
     <string name="lyrics_translation_success_message">Překlad byl úspěšný</string>
     <string name="player_action_enqueue">Zařadit do fronty</string>
-    <string name="player_action_listen_on_invidious">Poslouchat na Invidious</string>
+    <string name="player_action_listen_on_invidious">Poslouchat na %1$s</string>
     <string name="player_action_listen_on_youtube">Poslouchat na YouTube</string>
     <string name="player_action_listen_on_youtube_music">Poslouchat na YouTube Music</string>
     <string name="player_action_locate_current_song">Vyhledat přehrávanou skladbu</string>

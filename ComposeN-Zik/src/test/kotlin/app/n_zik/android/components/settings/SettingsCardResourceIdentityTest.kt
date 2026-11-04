@@ -236,6 +236,7 @@ class SettingsCardResourceIdentityTest {
             R.string.radio_discovery_active_reminder to "state_reminder_discover",
             R.string.network_stream_client_redownload_recommendation to "stream_client_redownload_recommendation",
             R.string.network_stream_error_retrying to "stream_error_retrying",
+            R.string.network_stream_retrying_playback to "network_stream_retrying_playback",
             R.string.network_stream_still_retrying to "stream_still_retrying",
             R.string.network_stream_unexpected_skip to "stream_unexpected_skip",
             R.string.sync_failed to "sync_failed",

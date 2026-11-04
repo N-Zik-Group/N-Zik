@@ -91,7 +91,7 @@
     <string name="player_action_bar_buttons">Sichtbarkeit der Schaltflächen</string>
     <string name="player_action_bar_buttons_description">Konfiguriere die Schaltflächen in der Player-Aktionsleiste</string>
     <string name="player_action_enqueue">Zur Warteschlange hinzufügen</string>
-    <string name="player_action_listen_on_invidious">Auf Invidious anhören</string>
+    <string name="player_action_listen_on_invidious">Auf %1$s anhören</string>
     <string name="player_action_listen_on_youtube">Auf YouTube anhören</string>
     <string name="player_action_listen_on_youtube_music">Auf YouTube Music anhören</string>
     <string name="player_action_locate_current_song">Finde den Titel, der gerade abgespielt wird</string>
@@ -174,7 +174,7 @@
     <string name="player_queue_added_next_message">Hinzugefügt, um als nächstes abzuspielen</string>
     <string name="player_queue_clear_confirmation">Wollen Sie die Warteschlange wirklich bereinigen?</string>
     <string name="player_queue_deleted_item_format">%1$s gelöscht</string>
-    <string name="player_queue_remove_selected_confirmation_format">%d Songs von der Warteschlange entfernen?</string>
+    <string name="player_queue_remove_selected_confirmation_format">Auswahl aus der Warteschlange entfernen? Anzahl der Titel: %d</string>
     <string name="player_queue_shuffled_count_format">Warteschlange gemischt (%d Songs)</string>
     <string name="player_restart_required_message">Damit die Änderungen wirksam werden, ist ein Neustart des Players erforderlich!</string>
     <string name="player_rotating_buttons">Rotierende Buttons</string>

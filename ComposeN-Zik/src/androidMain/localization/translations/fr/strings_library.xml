@@ -185,7 +185,7 @@
     <string name="playlist_action_export">Exporter la playlist</string>
     <string name="playlist_action_import">Importer une playlist</string>
     <string name="playlist_action_import_favorites">Importer les favoris</string>
-    <string name="playlist_action_like_favorites_on_youtube">J\'aime les titres aimés de RiMusic sur YouTube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Ajouter les titres favoris de N-Zik aux titres aimés sur YouTube</string>
     <string name="playlist_action_remove_songs">Supprimer de la playlist </string>
     <string name="playlist_action_remove_songs_outside_library">Supprimer les titres qui ne sont pas dans la bibliothèque</string>
     <string name="playlist_action_rename">Renommer</string>
@@ -220,7 +220,7 @@
     <string name="playlist_refresh_on_open">Actualiser à l\'ouverture</string>
     <string name="playlist_refresh_on_open_enable">Activer l\'actualisation à l\'ouverture</string>
     <string name="playlist_remove_selected_confirmation">Souhaitez-vous supprimer les morceaux sélectionnés de cette playlist ?</string>
-    <string name="playlist_remove_songs_confirmation">Êtes-vous sûr de vouloir supprimer ces %d titres de la playlist ?</string>
+    <string name="playlist_remove_songs_confirmation">Retirer la sélection de la playlist ? Nombre de titres : %d</string>
     <string name="playlist_rename_dialog_title">Renommer la playlist</string>
     <string name="playlist_reorder_ascending_sort_required_message">La réorganisation est possible uniquement dans le tri ascendant</string>
     <string name="playlist_reorder_lock_toggle_label">Verrouiller / Déverrouiller la réorganisation des titres</string>

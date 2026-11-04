@@ -74,7 +74,7 @@
     <string name="lyrics_translation_success_message">翻訳に成功しました</string>
     <string name="common_action_stop">停止</string>
     <string name="player_action_enqueue">キューへ追加</string>
-    <string name="player_action_listen_on_invidious">Invidiousで聴く</string>
+    <string name="player_action_listen_on_invidious">%1$sで聴く</string>
     <string name="player_action_listen_on_youtube">YouTubeで再生</string>
     <string name="player_action_listen_on_youtube_music">YouTube Musicで再生</string>
     <string name="player_action_locate_current_song">再生中の曲を表示</string>

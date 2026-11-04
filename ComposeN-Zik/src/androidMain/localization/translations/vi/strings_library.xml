@@ -26,7 +26,7 @@
     <string name="playlist_action_add">Thêm vào danh sách phát</string>
     <string name="playlist_action_add_hint">Thêm vào danh sách phát</string>
     <string name="playlist_action_create">Danh sách phát mới</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="playlist_action_remove_songs">Xóa khỏi danh sách phát</string>
     <string name="playlist_action_rename">Đổi tên</string>
     <string name="playlist_delete_confirmation">Bạn thật sự muốn xóa danh sách phát này?</string>

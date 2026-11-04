@@ -112,7 +112,7 @@
     <string name="playlist_action_export">Esporta playlist</string>
     <string name="playlist_action_import">Importa playlist</string>
     <string name="playlist_action_import_favorites">Importa preferiti</string>
-    <string name="playlist_action_like_favorites_on_youtube">Mi piace RiMusic Canzoni piaciute su Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Metti Mi piace su YouTube ai brani preferiti di N-Zik</string>
     <string name="playlist_action_remove_songs">Rimuovi dalla playlist</string>
     <string name="playlist_action_remove_songs_outside_library">Rimuovi i brani non nella libreria</string>
     <string name="playlist_action_rename">Rinomina</string>

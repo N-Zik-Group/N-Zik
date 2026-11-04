@@ -67,7 +67,7 @@
     <string name="playlist_action_create">নতুন প্লে-লিস্ট</string>
     <string name="playlist_action_export">প্লে-লিস্ট এক্সপোর্ট করুন</string>
     <string name="playlist_action_import">প্লেলিস্ট আমদানি করুন</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="playlist_action_remove_songs">প্লে-লিস্ট থেকে সড়ান</string>
     <string name="playlist_action_rename">নতুন নাম দিন</string>
     <string name="playlist_action_shuffle_positions">পজিশন চেঞ্জ করুন</string>

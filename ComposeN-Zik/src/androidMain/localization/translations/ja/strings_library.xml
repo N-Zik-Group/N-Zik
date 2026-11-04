@@ -97,7 +97,7 @@
     <string name="playlist_action_export">プレイリストのエクスポート</string>
     <string name="playlist_action_import">プレイリストをインポート</string>
     <string name="playlist_action_import_favorites">お気に入りをインポート</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="playlist_action_remove_songs">プレイリストから削除</string>
     <string name="playlist_action_remove_songs_outside_library">ライブラリにない楽曲を削除</string>
     <string name="playlist_action_rename">名前を変更</string>

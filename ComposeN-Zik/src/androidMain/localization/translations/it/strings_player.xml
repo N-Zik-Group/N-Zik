@@ -72,7 +72,7 @@
     <string name="lyrics_translation_success_message">Traduzione riuscita</string>
     <string name="common_action_stop">Interrompi</string>
     <string name="player_action_enqueue">Aggiungi alla coda</string>
-    <string name="player_action_listen_on_invidious">Ascolta su Invidious</string>
+    <string name="player_action_listen_on_invidious">Ascolta su %1$s</string>
     <string name="player_action_listen_on_youtube">Ascolta su YouTube</string>
     <string name="player_action_listen_on_youtube_music">Ascolta su YouTube Music</string>
     <string name="player_action_locate_current_song">Mostra il brano in riproduzione</string>

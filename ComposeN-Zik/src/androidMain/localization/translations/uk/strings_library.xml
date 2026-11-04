@@ -101,7 +101,7 @@
     <string name="playlist_action_export">Експортувати список відтворення</string>
     <string name="playlist_action_import">Імпортувати плейлист</string>
     <string name="playlist_action_import_favorites">Імпортувати Обране</string>
-    <string name="playlist_action_like_favorites_on_youtube">Вподобані пісні RiMusic в Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Позначити улюблені треки N-Zik як уподобані на YouTube</string>
     <string name="playlist_action_remove_songs">Видалити з плейлиста</string>
     <string name="playlist_action_remove_songs_outside_library">Видалити пісні, яких немає у бібліотеці</string>
     <string name="playlist_action_rename">Перейменувати</string>

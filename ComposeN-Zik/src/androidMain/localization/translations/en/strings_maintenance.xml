@@ -156,7 +156,7 @@
     <string name="modules_version">Version</string>
     <string name="recovery_accounts_exported">Profile state exported</string>
     <string name="recovery_accounts_imported_base">Profile state imported: base profile</string>
-    <string name="recovery_accounts_imported_count">Profile state imported: %1$d profiles</string>
+    <string name="recovery_accounts_imported_count">Profile state import complete. Profile count: %1$d</string>
     <string name="recovery_category_all">All</string>
     <string name="recovery_category_profile">Per profile</string>
     <string name="recovery_center">Rescue Center</string>

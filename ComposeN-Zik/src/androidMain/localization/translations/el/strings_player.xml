@@ -50,7 +50,7 @@
     <string name="lyrics_translation_success_message">Επιτυχής μετάφραση</string>
     <string name="common_action_stop">Διακοπή</string>
     <string name="player_action_enqueue">Προσθήκη στη λίστα αναπαραγωγής</string>
-    <string name="player_action_listen_on_invidious">Ακούστε στο Invidious</string>
+    <string name="player_action_listen_on_invidious">Ακούστε στο %1$s</string>
     <string name="player_action_listen_on_youtube">Ακούστε στο YouTube</string>
     <string name="player_action_listen_on_youtube_music">Ακούστε στο YouTube Music</string>
     <string name="player_action_locate_current_song">Find the song that is playing</string>

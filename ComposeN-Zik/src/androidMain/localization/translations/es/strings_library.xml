@@ -107,7 +107,7 @@
     <string name="playlist_action_export">Exportar lista de reproducción</string>
     <string name="playlist_action_import">Importar lista de reproducción</string>
     <string name="playlist_action_import_favorites">Importar favoritos</string>
-    <string name="playlist_action_like_favorites_on_youtube">Me gusta RiMusic, me gustan canciones en YouTube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Marcar como favoritas en YouTube las canciones favoritas de N-Zik</string>
     <string name="playlist_action_remove_songs">Eliminar de la lista de reproducción</string>
     <string name="playlist_action_remove_songs_outside_library">Eliminar canciones que no están en la biblioteca</string>
     <string name="playlist_action_rename">Renombrar</string>

@@ -143,7 +143,7 @@
     <string name="modules_updating">Mise à jour du module</string>
     <string name="recovery_accounts_exported">État du profil exporté</string>
     <string name="recovery_accounts_imported_base">État du profil importé : profil de base</string>
-    <string name="recovery_accounts_imported_count">État des profils importés : %1$d profils</string>
+    <string name="recovery_accounts_imported_count">Import de l\'état des profils terminé. Nombre de profils : %1$d</string>
     <string name="recovery_category_all">Tout</string>
     <string name="recovery_category_profile">Par profil</string>
     <string name="recovery_center">Centre de Secours</string>

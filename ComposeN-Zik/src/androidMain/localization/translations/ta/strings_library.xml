@@ -5,6 +5,6 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
     <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="recommendations_adaptive_description">Adaptive: Scales with playlist size (10-150 recommendations)</string>
 </resources>

@@ -77,7 +77,7 @@
     <string name="playlist_action_create">Nieuwe afspeellijst</string>
     <string name="playlist_action_export">Afspeellijst exporteren</string>
     <string name="playlist_action_import">Afspeellijst importeren</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="playlist_action_remove_songs">Verwijderen uit afspeellijst</string>
     <string name="playlist_action_rename">Hernoem</string>
     <string name="playlist_action_save_to_youtube_library">Opslaan in de Youtube-bibliotheek</string>

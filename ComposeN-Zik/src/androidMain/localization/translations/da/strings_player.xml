@@ -72,7 +72,7 @@
     <string name="lyrics_translation_section_title">Oversættelse</string>
     <string name="lyrics_translation_success_message">Oversættelse succesfuld</string>
     <string name="player_action_enqueue">Sæt i kø</string>
-    <string name="player_action_listen_on_invidious">Lyt på Invidious</string>
+    <string name="player_action_listen_on_invidious">Lyt på %1$s</string>
     <string name="player_action_listen_on_youtube">Lyt på YouTube</string>
     <string name="player_action_listen_on_youtube_music">Lyt på YouTube Musik</string>
     <string name="player_action_locate_current_song">Find sangen, der bliver afspillet</string>

@@ -14,7 +14,7 @@
     <string name="metadata_video_views_label">Visningar</string>
     <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
     <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="playlist_import_default_name">Importerad spellista</string>
     <string name="playlist_import_youtube_link">Importera via YouTube-länk</string>
     <string name="playlist_youtube_title">YouTube spellista</string>

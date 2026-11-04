@@ -29,7 +29,10 @@ fun ListenOnDialog(
 
             Info(
                 ExternalUris.invidious(mediaId),
-                stringResource(R.string.player_action_listen_on_invidious)
+                stringResource(
+                    R.string.player_action_listen_on_invidious,
+                    stringResource(R.string.player_brand_invidious)
+                )
             )
         ),
         onValueSelected = {

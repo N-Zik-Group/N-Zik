@@ -30,7 +30,7 @@
     <string name="lyrics_translation_section_title">Traduction</string>
     <string name="common_action_stop">Stoppar</string>
     <string name="player_action_enqueue">Adder al cauda</string>
-    <string name="player_action_listen_on_invidious">Ascoltar sur Invidious</string>
+    <string name="player_action_listen_on_invidious">Ascoltar sur %1$s</string>
     <string name="player_action_listen_on_youtube">Ascoltar sur YouTube</string>
     <string name="player_action_listen_on_youtube_music">Ascoltar sur Youtube Music</string>
     <string name="player_action_play_next">Reproducer le sequente</string>

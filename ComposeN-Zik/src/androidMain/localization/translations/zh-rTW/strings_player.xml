@@ -33,7 +33,7 @@
     <string name="lyrics_translation_second_line_label">Show Translation in the Second Line</string>
     <string name="common_action_stop">停止</string>
     <string name="player_action_enqueue">加入至播放佇列</string>
-    <string name="player_action_listen_on_invidious">在Invidious上收聽</string>
+    <string name="player_action_listen_on_invidious">在%1$s上收聽</string>
     <string name="player_action_listen_on_youtube">在YouTube上收聽</string>
     <string name="player_action_listen_on_youtube_music">在YouTube Music上收聽</string>
     <string name="player_action_locate_current_song">尋找正在播放的歌曲</string>

@@ -37,7 +37,7 @@
     <string name="lyrics_translation_second_line_label">Show Translation in the Second Line</string>
     <string name="common_action_stop">Zaustavi</string>
     <string name="player_action_enqueue">Dodaj u red</string>
-    <string name="player_action_listen_on_invidious">Slusaj na Invidious</string>
+    <string name="player_action_listen_on_invidious">Slusaj na %1$s</string>
     <string name="player_action_listen_on_youtube">Slušaj na YouTube</string>
     <string name="player_action_listen_on_youtube_music">Slušaj na YouTube Music</string>
     <string name="player_action_locate_current_song">Pronađi pesmu koja svira</string>

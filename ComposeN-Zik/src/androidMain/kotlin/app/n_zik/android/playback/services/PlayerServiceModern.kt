@@ -1896,7 +1896,7 @@ class PlayerServiceModern : MediaLibraryService(),
                         player.play()
                     }
                 }
-                Toaster.w(R.string.network_stream_error_retrying, getString(R.string.player_error_unknown))
+                Toaster.w(R.string.network_stream_retrying_playback)
                 return
             } else {
                 Timber.tag("PlayerServiceModern").e("onPlayerError recovery exhausted ($MAX_RECOVERY_ATTEMPTS attempts) for $currentMediaId")

@@ -47,7 +47,7 @@
     <string name="playlist_action_add">Voeg by speellys</string>
     <string name="playlist_action_add_hint">Add in playlist</string>
     <string name="playlist_action_create">Nuwe speellys</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="playlist_action_remove_songs">Verwyder van speellys</string>
     <string name="playlist_action_rename">Hernoem</string>
     <string name="playlist_action_shuffle_positions">Renumber positions</string>

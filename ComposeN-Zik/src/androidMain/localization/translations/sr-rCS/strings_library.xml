@@ -60,7 +60,7 @@
     <string name="playlist_action_create">Nova plejlista</string>
     <string name="playlist_action_export">Izvezi plejlistu</string>
     <string name="playlist_action_import">Uvezi plejlistu</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="playlist_action_remove_songs">Ukloni sa plejliste</string>
     <string name="playlist_action_rename">Preimenuj</string>
     <string name="playlist_action_shuffle_positions">Promeni numeraciju pozicija</string>

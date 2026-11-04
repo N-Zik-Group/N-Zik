@@ -221,7 +221,7 @@
     <string name="playlist_action_export">Export playlist</string>
     <string name="playlist_action_import">Import playlist</string>
     <string name="playlist_action_import_favorites">Import favorites</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="playlist_action_remove_songs">Remove from playlist</string>
     <string name="playlist_action_remove_songs_outside_library">Delete Songs not in the Library</string>
     <string name="playlist_action_rename">Rename</string>
@@ -261,7 +261,7 @@
     <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
     <string name="playlist_refresh_on_open_enable">Enable refresh on opening</string>
     <string name="playlist_remove_selected_confirmation">Remove the selected songs from this playlist?</string>
-    <string name="playlist_remove_songs_confirmation">Are you sure you want to remove these %d songs from the playlist?</string>
+    <string name="playlist_remove_songs_confirmation">Remove the selection from the playlist? Selected tracks: %d</string>
     <string name="playlist_rename_dialog_title">Rename playlist</string>
     <string name="playlist_reorder_ascending_sort_required_message">Reorder is possible only in ascending sorting</string>
     <string name="playlist_reorder_lock_toggle_label">Lock/Unlock reorder songs</string>

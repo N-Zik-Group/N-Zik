@@ -34,7 +34,7 @@
     <string name="lyrics_translation_section_title">Fordítás</string>
     <string name="common_action_stop">Megállít</string>
     <string name="player_action_enqueue">Várólistára</string>
-    <string name="player_action_listen_on_invidious">Hallgasd meg az Invidious-on</string>
+    <string name="player_action_listen_on_invidious">Hallgasd meg az %1$s-on</string>
     <string name="player_action_listen_on_youtube">Hallgasd meg a YouTube-on</string>
     <string name="player_action_listen_on_youtube_music">Hallgasd meg a YouTube Music-on</string>
     <string name="player_action_play_next">Lejátszás következőnek</string>

@@ -103,7 +103,7 @@
     <string name="playlist_action_export">Eksportér playliste</string>
     <string name="playlist_action_import">Importér playliste</string>
     <string name="playlist_action_import_favorites">Importér favoritter</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic\'s \'Kan lide\'-sange på Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik\'s \'Kan lide\'-sange på YouTube</string>
     <string name="playlist_action_remove_songs">Fjern fra playliste</string>
     <string name="playlist_action_remove_songs_outside_library">Slet sange, der ikke er i biblioteket</string>
     <string name="playlist_action_rename">Omdøb</string>

@@ -192,7 +192,7 @@
     <string name="sync_no_items">Aucun élément à synchroniser</string>
     <string name="sync_notifications">Synchronisation des notifications</string>
     <string name="sync_now">Synchroniser maintenant</string>
-    <string name="sync_now_description">Autoriser la synchronisation automatique des playlists individuelles</string>
+    <string name="sync_now_description">Forcer une synchronisation complète avec YouTube Music</string>
     <string name="sync_per_playlist_auto">Synchronisation automatique par playlist</string>
     <string name="sync_per_playlist_auto_off">Synchronisation automatique : désactivée</string>
     <string name="sync_per_playlist_auto_on">Synchronisation automatique : activée</string>

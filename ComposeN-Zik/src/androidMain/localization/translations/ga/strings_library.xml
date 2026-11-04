@@ -33,7 +33,7 @@
     <string name="playlist_action_add">Cuir le seinnliosta</string>
     <string name="playlist_action_add_hint">Add in playlist</string>
     <string name="playlist_action_create">Seinnliosta nua</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="playlist_action_remove_songs">Bain as seinnliosta</string>
     <string name="playlist_action_rename">Athainmnigh</string>
     <string name="playlist_action_shuffle_positions">Renumber positions</string>

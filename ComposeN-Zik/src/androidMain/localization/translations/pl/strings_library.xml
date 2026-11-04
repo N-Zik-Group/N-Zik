@@ -90,7 +90,7 @@
     <string name="playlist_action_export">Eksportuj playlistę</string>
     <string name="playlist_action_import">Importuj playlistę</string>
     <string name="playlist_action_import_favorites">Importuj ulubione</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="playlist_action_remove_songs">Usuń z playlisty</string>
     <string name="playlist_action_rename">Zmień nazwę</string>
     <string name="playlist_action_save_to_youtube_library">Zapisz w Bibliotece YouTube</string>

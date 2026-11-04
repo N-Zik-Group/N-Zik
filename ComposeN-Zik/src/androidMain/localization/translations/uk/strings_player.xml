@@ -74,7 +74,7 @@
     <string name="lyrics_translation_success_message">Переклад успішний</string>
     <string name="common_action_stop">Стоп</string>
     <string name="player_action_enqueue">Зачекайте</string>
-    <string name="player_action_listen_on_invidious">Слухайте на Invidious</string>
+    <string name="player_action_listen_on_invidious">Слухайте на %1$s</string>
     <string name="player_action_listen_on_youtube">Слухати на YouTube</string>
     <string name="player_action_listen_on_youtube_music">Слухайте на YouTube Music</string>
     <string name="player_action_locate_current_song">Показати пісню, яка зараз відтворюється</string>

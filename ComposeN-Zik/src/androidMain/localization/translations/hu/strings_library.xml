@@ -58,7 +58,7 @@
     <string name="playlist_action_create">Új lejátszási lista</string>
     <string name="playlist_action_export">Lejátszási lista exportálása</string>
     <string name="playlist_action_import">Lejátszási lista importálása</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="playlist_action_remove_songs">Eltávolítás a lejátszási listából</string>
     <string name="playlist_action_rename">Átnevez</string>
     <string name="playlist_action_toggle_pinned">Lejátszási lista rögzítése/eltávolítása</string>

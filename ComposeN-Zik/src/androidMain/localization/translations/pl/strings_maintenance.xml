@@ -52,7 +52,7 @@
     <string name="updates_check_mode_ask_status">Zapytaj</string>
     <string name="updates_check_mode_disabled_status">Wyłączony</string>
     <string name="updates_check_mode_enabled_status">Włączone</string>
-    <string name="updates_check_permission_description">Kiedy aktualizacja będzie dostępna, zostaniesz poproszony o jej zainstalowanie. RiMusic nie aktualizuje się samoczynnie, bez twojej wiedzy.</string>
+    <string name="updates_check_permission_description">Kiedy aktualizacja będzie dostępna, zostaniesz poproszony o jej zainstalowanie. Aktualizacje nie będą instalowane automatycznie bez Twojej wiedzy.</string>
     <string name="updates_check_permission_message">Sprawdzić aktualizacje na Github?</string>
     <string name="updates_check_permission_screening_note">Te aktualizacje nie podlegają procesowi sprawdzania tak jak na IzzyOnDroid lub F-droid.</string>
     <string name="updates_check_permission_settings_note">Nadal możesz ją włączyć lub wyłączyć na podstawie ustawień.</string>

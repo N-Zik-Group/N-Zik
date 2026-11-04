@@ -117,7 +117,7 @@
     <string name="player_action_bar_buttons_description">Configurer les boutons qui s\'affichent dans la barre d\'actions du lecteur</string>
     <string name="player_action_enqueue">Mettre en file d\'attente</string>
     <string name="player_action_like">J\'aime</string>
-    <string name="player_action_listen_on_invidious">Écouter sur Invidious</string>
+    <string name="player_action_listen_on_invidious">Écouter sur %1$s</string>
     <string name="player_action_listen_on_youtube">Écouter sur YouTube</string>
     <string name="player_action_listen_on_youtube_music">Écouter sur YouTube Music</string>
     <string name="player_action_locate_current_song">Trouver le titre qui est en cours de lecture</string>
@@ -205,7 +205,7 @@
     <string name="player_queue_added_next_message">Ajouté à la lecture suivante</string>
     <string name="player_queue_clear_confirmation">Voulez-vous vraiment nettoyer la file d\'attente ?</string>
     <string name="player_queue_deleted_item_format">%1$s supprimé</string>
-    <string name="player_queue_remove_selected_confirmation_format">Supprimer %d titres de la file d\'attente ?</string>
+    <string name="player_queue_remove_selected_confirmation_format">Retirer la sélection de la file d\'attente ? Nombre de titres : %d</string>
     <string name="player_queue_shuffled_count_format">File d\'attente aléatoire (%d titres)</string>
     <string name="player_restart_required_message">Le lecteur doit être redémarré pour que les modifications soient effectives !</string>
     <string name="player_rotating_buttons">Boutons rotatifs</string>

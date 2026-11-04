@@ -72,7 +72,7 @@
     <string name="playlist_action_export">Exportar playlist</string>
     <string name="playlist_action_import">Importar playlist</string>
     <string name="playlist_action_import_favorites">Importar favoritos</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Marcar as músicas favoritas do N-Zik como curtidas no YouTube</string>
     <string name="playlist_action_remove_songs">Remover da Lista de Produção</string>
     <string name="playlist_action_remove_songs_outside_library">Excluir músicas que não estão na Biblioteca</string>
     <string name="playlist_action_rename">Renomear</string>

@@ -74,7 +74,7 @@
     <string name="lyrics_translation_success_message">Traducción exitosa</string>
     <string name="common_action_stop">Detener</string>
     <string name="player_action_enqueue">Añadir a la cola</string>
-    <string name="player_action_listen_on_invidious">Escuchar en Invidious</string>
+    <string name="player_action_listen_on_invidious">Escuchar en %1$s</string>
     <string name="player_action_listen_on_youtube">Escuchar en YouTube</string>
     <string name="player_action_listen_on_youtube_music">Escuchar en YouTube Music</string>
     <string name="player_action_locate_current_song">Encuentra la canción que se está reproduciendo</string>

@@ -45,7 +45,7 @@
     <string name="lyrics_translation_section_title">Traducció</string>
     <string name="common_action_stop">Atura</string>
     <string name="player_action_enqueue">Afegeix a la cua</string>
-    <string name="player_action_listen_on_invidious">Escolta a Invidious</string>
+    <string name="player_action_listen_on_invidious">Escolta a %1$s</string>
     <string name="player_action_listen_on_youtube">Escolta a YouTube</string>
     <string name="player_action_listen_on_youtube_music">Escolta a YouTube Music</string>
     <string name="player_action_locate_current_song">Cerca la cançó que s\'està reproduint</string>

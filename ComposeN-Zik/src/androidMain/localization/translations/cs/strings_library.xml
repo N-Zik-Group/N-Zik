@@ -95,7 +95,7 @@
     <string name="playlist_action_export">Exportovat playlist</string>
     <string name="playlist_action_import">Importovat playlist</string>
     <string name="playlist_action_import_favorites">Importovat oblíbené</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="playlist_action_remove_songs">Odstranit z playlistu</string>
     <string name="playlist_action_rename">Přejmenovat</string>
     <string name="playlist_action_save_to_youtube_library">Uložit do knihovny YouTube</string>

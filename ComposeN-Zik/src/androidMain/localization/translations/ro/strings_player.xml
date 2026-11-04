@@ -71,7 +71,7 @@
     <string name="lyrics_translation_success_message">Traducere reușită</string>
     <string name="common_action_stop">Oprește</string>
     <string name="player_action_enqueue">Adaugă în coadă</string>
-    <string name="player_action_listen_on_invidious">Ascultă pe Invidious</string>
+    <string name="player_action_listen_on_invidious">Ascultă pe %1$s</string>
     <string name="player_action_listen_on_youtube">Ascultă pe YouTube</string>
     <string name="player_action_listen_on_youtube_music">Ascultă pe YouTube Music</string>
     <string name="player_action_locate_current_song">Afișează melodia redată în prezent</string>
