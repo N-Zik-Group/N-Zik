@@ -6,8 +6,8 @@
         <item quantity="other">%d systèmes nécessitent une intervention</item>
     </plurals>
     <plurals name="sync_detail_songs_liked">
-        <item quantity="one">%1$d song liked</item>
-        <item quantity="other">%1$d songs liked</item>
+        <item quantity="one">%1$d chanson aimée</item>
+        <item quantity="other">%1$d chansons aimées</item>
     </plurals>
     <plurals name="sync_detail_playlists_synced">
         <item quantity="one">%1$d playlist synced</item>
@@ -18,11 +18,27 @@
         <item quantity="other">%1$d songs imported</item>
     </plurals>
     <plurals name="sync_detail_albums_imported">
-        <item quantity="one">%1$d album imported</item>
+        <item quantity="one">Album %1$d importé</item>
         <item quantity="other">%1$d albums imported</item>
     </plurals>
     <plurals name="sync_detail_episodes">
         <item quantity="one">%1$d episode</item>
         <item quantity="other">%1$d episodes</item>
+    </plurals>
+    <plurals name="library_song_count">
+        <item quantity="one">%1$d song</item>
+        <item quantity="other">%1$d songs</item>
+    </plurals>
+    <plurals name="about_translator_count">
+        <item quantity="one">Traducteur %1$d</item>
+        <item quantity="other">Traducteurs %1$d</item>
+    </plurals>
+    <plurals name="about_developer_designer_count">
+        <item quantity="one">%1$d developer / designer</item>
+        <item quantity="other">Développeurs / concepteurs %1$d</item>
+    </plurals>
+    <plurals name="statistics_songs_heard_count">
+        <item quantity="one">%1$d song heard</item>
+        <item quantity="other">%1$d songs heard</item>
     </plurals>
 </resources>
