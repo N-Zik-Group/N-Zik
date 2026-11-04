@@ -300,7 +300,6 @@
     <string name="search_display_order_suggestions_first">Suggestions d\'abord</string>
     <string name="search_featured_title">En Vedette</string>
     <string name="search_history_action_clear">Effacer l’historique de recherche</string>
-    <string name="search_history_close">Fermer</string>
     <string name="search_history_empty_message">L’historique est vide</string>
     <string name="search_history_local">Recherche locale</string>
     <string name="search_history_online">Recherche en ligne</string>

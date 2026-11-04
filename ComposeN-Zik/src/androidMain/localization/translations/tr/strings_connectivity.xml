@@ -16,7 +16,6 @@
     <string name="bridge_disconnect">Bağlantıyı kes</string>
     <string name="bridge_disconnected">%1$s bağlantısı kesildi</string>
     <string name="bridge_pair_camera_denied">Kamera erişimi reddedildi: Yukarıdaki adres ve kodla manuel olarak eşleştirin</string>
-    <string name="bridge_pair_close">Kapalı</string>
     <string name="bridge_pair_code_label">Eşleştirme kodu</string>
     <string name="bridge_pair_confirm">%2$s kodunu kullanarak “%1$s” ile eşleştirmek ister misiniz?</string>
     <string name="bridge_pair_confirm_action">Eşleştir</string>

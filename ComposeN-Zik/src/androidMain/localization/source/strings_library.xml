@@ -359,7 +359,6 @@
     <string name="search_display_order_suggestions_first">Suggestions first</string>
     <string name="search_featured_title">Featured</string>
     <string name="search_history_action_clear">Clear search history</string>
-    <string name="search_history_close">Close</string>
     <string name="search_history_empty_message">History is empty</string>
     <string name="search_history_local">Local search</string>
     <string name="search_history_online">Online search</string>

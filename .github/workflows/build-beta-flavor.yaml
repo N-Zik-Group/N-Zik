@@ -167,7 +167,7 @@ jobs:
           merge-multiple: true
 
       - name: Sign APK
-        uses: Tlaster/android-sign@v1.2.2
+        uses: Tlaster/android-sign@1c5bf4b2fa309acb0c0ae0bf9379ab458f14d5b1 # v1.2.2
         with:
           releaseDirectory: upstream/unsigned
           signingKeyBase64: '${{ secrets.RELEASE_KEYSTORE }}'

@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -123,7 +124,7 @@ import java.io.File
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import androidx.compose.ui.platform.LocalConfiguration
+import java.time.format.FormatStyle
 import java.util.Locale
 
 private const val TAG = "MaintenanceSheet"
@@ -655,15 +656,16 @@ private const val CACHE_STATUS_WIDTH_REF = "9.3 GB used (100%)"
 
 @Composable
 internal fun formatBytes(bytes: Long): String =
-    formatBytes(bytes, LocalConfiguration.current.locales[0] ?: Locale.getDefault())
+    Formatter.formatShortFileSize(LocalContext.current, bytes)
 
-/** Formats a byte count as a human-readable size in MB with the selected locale. */
-internal fun formatBytes(bytes: Long, locale: Locale): String =
-    String.format(locale, "%.1f MB", bytes / 1_048_576.0)
-
-/** Formats an epoch-millis timestamp as `dd/MM/yyyy HH:mm` in [zone] (device zone by default). */
-internal fun formatTimestamp(millis: Long, zone: ZoneId = ZoneId.systemDefault()): String =
-    Instant.ofEpochMilli(millis).atZone(zone).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+/** Formats an epoch-millis timestamp in the display locale and device zone. */
+internal fun formatTimestamp(
+    millis: Long,
+    locale: Locale,
+    zone: ZoneId = ZoneId.systemDefault(),
+): String = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
+    .withLocale(locale)
+    .format(Instant.ofEpochMilli(millis).atZone(zone))
 
 /**
  * The chevron rows of the boot passes share one trailing format: the last run's timestamp
@@ -674,9 +676,10 @@ internal fun lastRunLine(
     timestamp: Long?,
     statusText: String,
     noDataText: String,
+    locale: Locale,
     zone: ZoneId = ZoneId.systemDefault(),
 ): String =
-    if (timestamp == null) noDataText else "${formatTimestamp(timestamp, zone)} · $statusText"
+    if (timestamp == null) noDataText else "${formatTimestamp(timestamp, locale, zone)} · $statusText"
 
 /** The cache result line, aligned with the Data settings cache rows: the short file size followed by " used (<pct>%)" — a zero max (Unlimited) answers " used (Unlimited)" instead of a percentage. */
 @Composable
@@ -962,6 +965,7 @@ fun MaintenanceSheet(
     renderLogsDialog: Boolean = false,
 ) {
     val context = LocalContext.current
+    val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
     val palette = colorPalette()
 
     var refreshTick by remember { mutableIntStateOf(0) }
@@ -1014,7 +1018,7 @@ fun MaintenanceSheet(
     val dedupNoData = dedup == null
     val dedupPassStatus = dedupStatusRes(dedup)
     val dedupStatusText = passStatusText(dedupPassStatus)
-    val dedupSummary = lastRunLine(dedup?.timestamp, dedupStatusText, stringResource(R.string.maintenance_no_data))
+    val dedupSummary = lastRunLine(dedup?.timestamp, dedupStatusText, stringResource(R.string.maintenance_no_data), locale)
     // The expansion's top summary line: the status repeated on one line above the per-section
     // detail
     //
@@ -1041,7 +1045,7 @@ fun MaintenanceSheet(
     val convergence = snap?.convergence
     val convergencePassStatus = convergenceStatusRes(convergence)
     val convergenceStatusText = passStatusText(convergencePassStatus)
-    val convergenceStatus = lastRunLine(convergence?.timestamp, convergenceStatusText, stringResource(R.string.maintenance_no_data))
+    val convergenceStatus = lastRunLine(convergence?.timestamp, convergenceStatusText, stringResource(R.string.maintenance_no_data), locale)
     val convergenceSummaryLine = convergenceStatusText.takeIf { passHasState(convergencePassStatus) }
     // Expanded convergence detail: the status on one line on top, the per-reason counters underneath
     val convergenceDetails = convergenceDetailLines(convergence?.summary).map { line ->
@@ -1057,7 +1061,7 @@ fun MaintenanceSheet(
     val dbCleanup = snap?.dbCleanup
     val dbCleanupPassStatus = dbCleanupStatusRes(dbCleanup)
     val dbCleanupStatusText = passStatusText(dbCleanupPassStatus)
-    val dbCleanupStatus = lastRunLine(dbCleanup?.timestamp, dbCleanupStatusText, stringResource(R.string.maintenance_no_data))
+    val dbCleanupStatus = lastRunLine(dbCleanup?.timestamp, dbCleanupStatusText, stringResource(R.string.maintenance_no_data), locale)
     val dbCleanupSummaryLine = dbCleanupStatusText.takeIf { passHasState(dbCleanupPassStatus) }
     val dbCleanupLines = dbCleanupLines(dbCleanup)
     val dbCleanupEmpty = dbCleanupEmptyRes(dbCleanup)
@@ -1074,7 +1078,7 @@ fun MaintenanceSheet(
     val downloadRevalidation = snap?.downloadRevalidation
     val downloadRevalidationPassStatus = downloadRevalidationStatusRes(downloadRevalidation)
     val downloadRevalidationStatusText = passStatusText(downloadRevalidationPassStatus)
-    val downloadRevalidationStatus = lastRunLine(downloadRevalidation?.timestamp, downloadRevalidationStatusText, stringResource(R.string.maintenance_no_data))
+    val downloadRevalidationStatus = lastRunLine(downloadRevalidation?.timestamp, downloadRevalidationStatusText, stringResource(R.string.maintenance_no_data), locale)
     val downloadRevalidationSummaryLine = downloadRevalidationStatusText.takeIf { passHasState(downloadRevalidationPassStatus) }
     val downloadRevalidationLines = downloadRevalidationLines(downloadRevalidation)
     val downloadRevalidationEmpty = downloadRevalidationEmptyRes(downloadRevalidation)
@@ -1089,7 +1093,7 @@ fun MaintenanceSheet(
     val downloadSelfHeal = snap?.downloadSelfHeal
     val downloadSelfHealPassStatus = downloadSelfHealStatusRes(downloadSelfHeal)
     val downloadSelfHealStatusText = passStatusText(downloadSelfHealPassStatus)
-    val downloadSelfHealStatus = lastRunLine(downloadSelfHeal?.timestamp, downloadSelfHealStatusText, stringResource(R.string.maintenance_no_data))
+    val downloadSelfHealStatus = lastRunLine(downloadSelfHeal?.timestamp, downloadSelfHealStatusText, stringResource(R.string.maintenance_no_data), locale)
     val downloadSelfHealSummaryLine = downloadSelfHealStatusText.takeIf { passHasState(downloadSelfHealPassStatus) }
     val downloadSelfHealLines = downloadSelfHealLines(downloadSelfHeal)
     // A missing state is genuinely "no data" (before the first startup run); a startup
@@ -1233,7 +1237,7 @@ fun MaintenanceSheet(
             ),
         )
         val backupRunAt = backupJob?.runAtStartTime ?: 0L
-        if (backupRunAt > 0L) parts.add(stringResource(R.string.maintenance_backup_next, formatTimestamp(backupRunAt)))
+        if (backupRunAt > 0L) parts.add(stringResource(R.string.maintenance_backup_next, formatTimestamp(backupRunAt, locale)))
         val backupState = backupJob?.state
         if (backupState != null) parts.add(stringResource(R.string.maintenance_backup_last, stringResource(workStateResId(backupState))))
         append(parts.joinToString(" · "))

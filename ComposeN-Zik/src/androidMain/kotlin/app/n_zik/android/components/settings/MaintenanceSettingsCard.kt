@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -90,6 +91,7 @@ fun MaintenanceSettingsCard(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val locale = LocalConfiguration.current.locales[0] ?: java.util.Locale.getDefault()
     val palette = colorPalette()
     var showSheet by remember { mutableStateOf(false) }
     var snapshot by remember { mutableStateOf<MaintenanceSnapshot?>(null) }
@@ -148,6 +150,7 @@ fun MaintenanceSettingsCard(
                     dedup?.timestamp,
                     passStatusText(dedupStatusRes(dedup)),
                     stringResource(R.string.maintenance_no_data),
+                    locale,
                 ),
                 icon = R.drawable.trash,
             )
@@ -157,6 +160,7 @@ fun MaintenanceSettingsCard(
                     convergence?.timestamp,
                     passStatusText(convergenceStatusRes(convergence)),
                     stringResource(R.string.maintenance_no_data),
+                    locale,
                 ),
                 icon = R.drawable.sync,
             )
@@ -166,6 +170,7 @@ fun MaintenanceSettingsCard(
                     dbCleanup?.timestamp,
                     passStatusText(dbCleanupStatusRes(dbCleanup)),
                     stringResource(R.string.maintenance_no_data),
+                    locale,
                 ),
                 icon = R.drawable.data_migration,
             )
@@ -175,6 +180,7 @@ fun MaintenanceSettingsCard(
                     downloadRevalidation?.timestamp,
                     passStatusText(downloadRevalidationStatusRes(downloadRevalidation)),
                     stringResource(R.string.maintenance_no_data),
+                    locale,
                 ),
                 icon = R.drawable.download,
             )
@@ -184,6 +190,7 @@ fun MaintenanceSettingsCard(
                     downloadSelfHeal?.timestamp,
                     passStatusText(downloadSelfHealStatusRes(downloadSelfHeal)),
                     stringResource(R.string.maintenance_no_data),
+                    locale,
                 ),
                 icon = R.drawable.refresh,
             )

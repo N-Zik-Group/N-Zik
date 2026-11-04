@@ -913,31 +913,25 @@ class MaintenanceSheetMappingTest {
 
     // ---- formatting ----
 
-    @Test
-    fun formatBytesUsesSelectedLocale() {
-        assertEquals("0.0 MB", formatBytes(0L, java.util.Locale.ROOT))
-        assertEquals("1,0 MB", formatBytes(1_048_576L, java.util.Locale.FRENCH))
-        assertEquals("1.0 MB", formatBytes(1_048_576L, java.util.Locale.ROOT))
-        assertEquals("5.1 MB", formatBytes(5_375_942L, java.util.Locale.ROOT))
-        assertEquals("1024.0 MB", formatBytes(1_073_741_824L, java.util.Locale.ROOT))
-    }
-
-    @Test
-    fun formatTimestampUsesTheDaySlashMonthPatternInTheGivenZone() {
-        // 1750000000000 ms = 2025-06-15T15:06:40Z
-        assertEquals("15/06/2025 15:06", formatTimestamp(1_750_000_000_000L, ZoneOffset.UTC))
-    }
-
+    @Test
+    fun formatTimestampUsesTheRequestedLocaleAndZone() {
+        val timestamp = 1_750_000_000_000L
+        val french = formatTimestamp(timestamp, java.util.Locale.FRANCE, ZoneOffset.UTC)
+        val american = formatTimestamp(timestamp, java.util.Locale.US, ZoneOffset.ofHours(-4))
+        assertTrue(french.contains("juin") && french.contains("15:06"))
+        assertTrue(american.contains("Jun") && american.contains("11:06"))
+    }
+
     @Test
     fun lastRunLinePutsTheDateInFrontOfTheStatus() {
         // 1750000000000 ms = 2025-06-15T15:06:40Z
-        val line = lastRunLine(1_750_000_000_000L, "3 copies rewritten", "No data", ZoneOffset.UTC)
+        val line = lastRunLine(1_750_000_000_000L, "3 copies rewritten", "No data", java.util.Locale.FRANCE, ZoneOffset.UTC)
 
-        assertEquals("15/06/2025 15:06 · 3 copies rewritten", line)
+        assertEquals(formatTimestamp(1_750_000_000_000L, java.util.Locale.FRANCE, ZoneOffset.UTC) + " · 3 copies rewritten", line)
     }
 
     @Test
     fun lastRunLineAnswersNoDataWithoutATimestamp() {
-        assertEquals("No data", lastRunLine(null, "3 copies rewritten", "No data"))
+        assertEquals("No data", lastRunLine(null, "3 copies rewritten", "No data", java.util.Locale.FRANCE))
     }
 }

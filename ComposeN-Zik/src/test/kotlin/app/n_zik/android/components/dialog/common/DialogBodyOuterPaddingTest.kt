@@ -22,7 +22,6 @@ import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.n_zik.android.R
-import app.n_zik.android.components.maintenance.formatBytes
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -71,7 +70,7 @@ class DialogBodyOuterPaddingTest {
             val message = context.getString(R.string.storage_samsung_advice_message)
             val summary = if (storageBytes == 0L) null else context.getString(
                 R.string.storage_samsung_system_usage_message,
-                formatBytes(storageBytes, context.resources.configuration.locales[0] ?: java.util.Locale.getDefault()),
+                android.text.format.Formatter.formatShortFileSize(context, storageBytes),
             )
             val textHeight = textHeight(message) + (summary?.let(::textHeight) ?: 0f)
             val body = composeRule.onNodeWithTag("dialogFrameBody").getBoundsInRoot()
@@ -94,7 +93,7 @@ class DialogBodyOuterPaddingTest {
                 DialogFrame(onDismiss = {}, title = "Padding regression", bodyPadding = bodyPadding) { content() }
             }
         }
-        repeat(5) { composeRule.mainClock.advanceTimeByFrame() }
+        composeRule.mainClock.advanceTimeBy(300)
         composeRule.waitForIdle()
     }
 }

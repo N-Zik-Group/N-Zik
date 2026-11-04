@@ -15,7 +15,6 @@
     <string name="bridge_disconnect">Se déconnecter</string>
     <string name="bridge_disconnected">%1$s déconnecté</string>
     <string name="bridge_pair_camera_denied">Accès à la caméra refusé : effectuez l\'appairage manuellement à l\'aide de l\'adresse et du code ci-dessus</string>
-    <string name="bridge_pair_close">Fermer</string>
     <string name="bridge_pair_code_label">Code d\'appariement</string>
     <string name="bridge_pair_confirm">Associer à « %1$s » à l\'aide du code %2$s ?</string>
     <string name="bridge_pair_confirm_action">Appairer</string>
