@@ -1,68 +1,69 @@
-Android용 다국어 YouTube Music 프론트엔드. 성능, UI/UX 개선, 기능 확장 및 장기 지원에 초점을 맞춥니다.
+A multilingual YouTube Music frontend for Android, focused on performance, UI/UX refinements, feature expansion, and long-term support.
 
-<b>N-Zik</b>은 <a href="https://github.com/knighthat/Kreate">Kreate</a>의 오픈 소스 포크입니다.
+<b>N-Zik</b> is an open-source fork of <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>참고:</b> N-Zik은 사이드 프로젝트로 시작되었습니다. 더 성숙한 대안은 <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, <a href="https://github.com/fast4x/RiPlay">RiPlay</a>를 확인해 보세요.
+<b>Note:</b> N-Zik started as a side project. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>AI 사용:</b> 코드 작성을 위해 생성형 AI를 사용합니다(<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>). 배포 전 검토 및 테스트를 거칩니다.
+<b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), reviewed and tested before shipping.
 
-캐주얼한 리스너든 오디오필이든, N-Zik은 프라이버시를 해치지 않으면서 음악에 대한 완전한 제어를 제공합니다.
+✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI - free, always.
 
-✨ <b>왜 N-ZIK?</b> 광고 없음, 백그라운드 재생, 오프라인 캐싱, 맞춤 설정 가능한 UI - 항상 무료.
+🎨 <b>Customizable UI</b>
+- Jetpack Compose interface
+- Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
+- 3D Carousel Player, home widgets, unified player and mini-player
+- Artist profiles, Discovery and moods, collapsible home headers
 
-🎨 <b>맞춤 설정 가능한 UI</b>
-- 테마: AMOLED, Deep Dark, Crisp Light + 색상 강조
-- 3D Carousel Player, 홈 위젯, 통합 플레이어와 미니 플레이어
-- 아티스트 프로필, Discovery와 무드, 접이식 홈 헤더
+🫧 <b>Glass Effect (BETA, optional)</b>
+Disabled on fresh installs. Enable in Settings: native, contour-only or Glass by category, with adjustable quality. May increase rendering work and battery use; reduce quality or disable if needed.
+Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
-🫧 <b>Glass 효과 (BETA, 선택 사항)</b>
-새로 설치하면 꺼져 있습니다. 설정에서 켜고 범주별로 기본, 윤곽선만 또는 Glass를 선택하고 품질을 조절하세요. 렌더링 부하와 배터리 소모가 증가할 수 있으니 필요하면 품질을 낮추거나 끄세요.
-Glass 크레딧: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+🎵 <b>Audio Experience</b>
+- Premium quality via YouTube Music Premium, applied automatically
+- Synced lyrics with editing and real-time translation
+- Song recognition (Shazam-like), voice search, audio visualizer
+- Pro controls: speed, pitch, normalization, crossfade, volume boost, bass boost, reverb
+- Audio Bar waveform seekbar for precise navigation
 
-🎵 <b>오디오 경험</b>
-- YouTube Music Premium을 통한 프리미엄 품질, 자동 적용
-- 편집 및 실시간 번역이 가능한 동기화 가사
-- 음악 인식 (Shazam 유사), 음성 검색, 오디오 시각화
-- 프로 컨트롤: 속도, 피치, 정규화, 크로스페이드, 볼륨 부스트, 베이스 부스트, 리버브
-- 정밀한 탐색용 Audio Bar 웨이브폼 시크바
+💾 <b>Offline, Metadata & Privacy</b>
+- Smart caching and downloads for tracks and playlists, with selectable download quality
+- FFmpeg-powered export with full metadata (FFmpeg is a downloadable extension, installed on first use)
+- In-app metadata editor (AAC/Opus, cover art)
+- Local listening stats and history
+- Auto-backup with custom intervals and retention
 
-💾 <b>오프라인, 메타데이터 및 프라이버시</b>
-- 트랙 및 재생 목록용 스마트 캐싱 및 다운로드, 다운로드 품질 선택 가능
-- 전체 메타데이터가 포함된 FFmpeg 기반 내보내기 (표준 빌드 전용)
-- 앱 내 메타데이터 편집기 (AAC/Opus, 커버 아트)
-- 로컬 청취 통계 및 기록
-- 맞춤 간격 및 보존 기간의 자동 백업
+🔗 <b>Integrations</b>
+- YouTube sign-in for recommendations and video playback, plus an experimental two-way sync engine
+- Last.fm scrobbling with Now Playing and love/unlove
+- MusicBrainz artist and album insights
+- Discord Rich Presence, including advanced mode with live preview
+- Invidious integration for alternative YouTube streaming
+- Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
-🔗 <b>통합</b>
-- 추천 및 비디오 재생을 위한 YouTube 로그인, 실험적 양방향 동기화 엔진 포함
-- Now Playing과 love/unlove를 갖춘 Last.fm 스크로블링
-- MusicBrainz 아티스트 및 앨범 정보
-- Discord Rich Presence, 라이브 미리보기가 있는 고급 모드 포함
-- 대체 YouTube 스트리밍용 Invidious 통합
-- 재생 목록 가져오기/내보내기: RiPlay, Spotify, YouTube Music, N-Zik
-
-👥 <b>함께 듣기</b>
-- 다른 사용자와 코드 또는 초대 링크로 라이브 청취 세션에 참여하거나 호스트하세요
+👥 <b>Listen Together</b>
+- Join or host live listening sessions with other users via code or invite link
 
 🗓️ <b>Rewind</b>
-- 자동 생성되는 Rewind 재생 목록이 있는 연간 및 월간 청취 요약
+- Yearly and monthly listening recaps with auto-generated Rewind playlists
 
-📱 <b>어디서나 재생:</b> Android Auto, Automotive, TV 및 Tablets
+📱 <b>Play Anywhere:</b> Android Auto, Automotive, TV, and Tablets
 
-🛠️ <b>파워 유저 기능</b>
-- 멀티 프로필: 프로필별 독립된 데이터베이스 및 설정
-- Bluetooth 연결 시 자동 재개, 지속 큐, 큐 자동 채우기
-- 스마트 휴지통, 숨겨진 노래, 싫음 시스템, 부모 제어
-- 프록시 지원, 네트워크 품질 적응, 로그 내보내기
-- Rescue Center, 유지보수 화면, 온보딩, 앱 바로가기
-- GitHub에서의 OTA 업데이트, 수면 타이머, 백그라운드 재생
+🛠️ <b>Power User Features</b>
+- Multi-profile: isolated database and settings per profile
+- Auto-resume on Bluetooth connect, persistent queue, auto-fill queue
+- Smart trash, hidden songs, dislike system, parental control
+- Proxy support, network quality adaptation, log export
+- Rescue Center, maintenance screen, onboarding, app shortcuts
+- OTA updates from GitHub, sleep timer, background playback
 
-📦 <b>사용 가능한 빌드</b>
-- Release64/Beta64 (`com.nevar.nzik`): 전체 빌드, 64-bit 기기 전용
-- Release32/Beta32 (`com.nevar.nzik`): 전체 빌드, 32-bit 기기 전용
-- Minified64 (`com.nevar.nzik`): 경량 R8 빌드, 저사양 기기용 (64-bit)
-- Minified32 (`com.nevar.nzik`): 경량 R8 빌드 (32-bit)
-- FOSS (`com.nevar.nzik.foss`): 자동 업데이트 없음, F-Droid용 (모든 아키텍처)
-- Dev64/Dev32 (`com.nevar.nzik.dev`): 개발 빌드, 테스트 전용
+📦 <b>Available Builds</b>
+- Release64/Beta64 (`com.nevar.nzik`): Complete build, 64-bit devices only
+- Release32/Beta32 (`com.nevar.nzik`): Complete build, 32-bit devices only
+- Minified64 (`com.nevar.nzik`): Lightweight R8 build, for low-end devices (64-bit)
+- Minified32 (`com.nevar.nzik`): Lightweight R8 build (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Without auto-updater, for F-Droid (all architectures)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Development builds, testing only
 
-어떤 빌드도 FFmpeg를 포함하지 않습니다: 이는 다운로드 가능한 확장 기능입니다(최초 사용 시 설치되며, 설정 → 확장 기능에서 관리). F-Droid에는 FOSS만 있습니다.
+No build bundles FFmpeg: it is a downloadable extension (installed on first use, managed in Settings → Extensions). Only FOSS is on F-Droid.
+
+Historical project credits include ViMusic.
