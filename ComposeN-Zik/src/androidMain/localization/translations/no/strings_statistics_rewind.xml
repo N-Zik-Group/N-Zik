@@ -32,9 +32,7 @@
     <string name="statistics_items_limit_unlimited">Ubegrenset</string>
     <string name="statistics_listening_totals_description">Vis totalt antall sanger hørt og avspillingsvarighet</string>
     <string name="statistics_max_number_of_items">Maks antall elementer</string>
-    <string name="statistics_of_time_taken">brukt tid</string>
     <string name="statistics_playback_duration_label">Varighet på avspilling</string>
-    <string name="statistics_songs_heard">sanger hørt</string>
     <string name="statistics_title">Statistikk</string>
     <string name="statistics_top_period_title">Topp %s av …</string>
 </resources>

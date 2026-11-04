@@ -32,6 +32,5 @@
     <string name="statistics_items_limit_custom">Egyéni</string>
     <string name="statistics_items_limit_unlimited">Korlátlan</string>
     <string name="statistics_max_number_of_items">Maximális tételek száma</string>
-    <string name="statistics_songs_heard">hallgatott dalok</string>
     <string name="statistics_title">Statisztikák</string>
 </resources>

@@ -38,9 +38,7 @@
     <string name="statistics_items_limit_unlimited">Unbegrenzt</string>
     <string name="statistics_listening_totals_description">Zeigt die Wiedergabedauer und die Anzahl der gehörten Songs an</string>
     <string name="statistics_max_number_of_items">Max. Anzahl der Elemente</string>
-    <string name="statistics_of_time_taken">Wiedergabezeit</string>
     <string name="statistics_playback_duration_label">Wiedergabedauer</string>
-    <string name="statistics_songs_heard">gehörte Songs</string>
     <string name="statistics_title">Statistik</string>
     <string name="statistics_top_period_title">Zeige Top %s …</string>
 </resources>

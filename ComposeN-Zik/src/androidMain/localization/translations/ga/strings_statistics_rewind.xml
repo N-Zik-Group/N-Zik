@@ -10,7 +10,6 @@
     <string name="rewind_level_playlist_opus_name">OPUS</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
     <string name="statistics_listening_totals_description">Shows the number of songs heard and their listening time</string>
-    <string name="statistics_of_time_taken">of time taken</string>
     <string name="statistics_playback_duration_label">Listening time</string>
     <string name="statistics_top_period_title">View top %s of …</string>
 </resources>

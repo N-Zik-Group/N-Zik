@@ -22,9 +22,7 @@
     <string name="statistics_items_limit_unlimited">Onbeperkt</string>
     <string name="statistics_listening_totals_description">Toon totaal aantal gehoorde nummers en afspeelduur</string>
     <string name="statistics_max_number_of_items">Max. aantal artikelen</string>
-    <string name="statistics_of_time_taken">tijd besteed</string>
     <string name="statistics_playback_duration_label">Afspeelduur</string>
-    <string name="statistics_songs_heard">nummers geluisterd</string>
     <string name="statistics_title">Statistieken</string>
     <string name="statistics_top_period_title">Top %s van …</string>
 </resources>

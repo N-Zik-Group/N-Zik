@@ -267,6 +267,8 @@ fun CustomBottomSheet(
     val horizontalPadding = { (collapsedHorizontalPaddingProvider?.invoke() ?: 16.dp).coerceAtLeast(0.dp) }
     val baseShape = app.n_zik.android.uiRoundnessShape()
     val layoutDirection = LocalLayoutDirection.current
+    val leftInset = if (layoutDirection == LayoutDirection.Rtl) endInset else startInset
+    val rightInset = if (layoutDirection == LayoutDirection.Rtl) startInset else endInset
     val scope = rememberCoroutineScope()
     val glass = rememberGlassSettings()
     val miniPlayerGlass = glass.usesGlassMaterial(GlassArea.MiniPlayer)
@@ -326,7 +328,7 @@ fun CustomBottomSheet(
             .graphicsLayer {
                 val p = state.progress.coerceIn(0f, 1f)
                 val baseCornerPx = collapsedCardCornerPx(baseShape, size, collapsedHeight().toPx(),
-                    horizontalPadding().toPx(), startInset().toPx(), endInset().toPx(), this)
+                    horizontalPadding().toPx(), leftInset().toPx(), rightInset().toPx(), this)
                 val geometry = computeCardGeometry(
                     p = p,
                     size = size,
@@ -334,8 +336,8 @@ fun CustomBottomSheet(
                     horizontalPaddingPx = horizontalPadding().toPx(),
                     baseCornerPx = baseCornerPx,
                     corner28Px = 28.dp.toPx(),
-                    startInsetPx = startInset().toPx(),
-                    endInsetPx = endInset().toPx(),
+                    startInsetPx = leftInset().toPx(),
+                    endInsetPx = rightInset().toPx(),
                 )
                 val feedbackClip = feedbackOverflow.clipFrame(CardClipShape(geometry), sheetCoordinates,
                     size, layoutDirection, this)
@@ -378,7 +380,7 @@ fun CustomBottomSheet(
                 val p = state.progress.coerceIn(0f, 1f)
                 if (!miniPlayerGlass && shouldDrawCardBackground(p)) {
                     val baseCornerPx = collapsedCardCornerPx(baseShape, size, collapsedHeight().toPx(),
-                    horizontalPadding().toPx(), startInset().toPx(), endInset().toPx(), this)
+                    horizontalPadding().toPx(), leftInset().toPx(), rightInset().toPx(), this)
                     val geometry = computeCardGeometry(
                         p = p,
                         size = size,
@@ -386,8 +388,8 @@ fun CustomBottomSheet(
                         horizontalPaddingPx = horizontalPadding().toPx(),
                         baseCornerPx = baseCornerPx,
                         corner28Px = 28.dp.toPx(),
-                        startInsetPx = startInset().toPx(),
-                        endInsetPx = endInset().toPx(),
+                        startInsetPx = leftInset().toPx(),
+                        endInsetPx = rightInset().toPx(),
                     )
                     // The card keeps the mini-player background color throughout
                     // the deploy animation instead of lerping toward the player color.
@@ -403,7 +405,7 @@ fun CustomBottomSheet(
     ) {
         if (miniPlayerGlass) PlayerDeployGlassSurface(
             progress = { state.progress }, collapsedHeight = collapsedHeight(),
-            startInset = startInset(), endInset = endInset(),
+            startInset = leftInset(), endInset = rightInset(),
             horizontalPadding = horizontalPadding(),
             baseShape = baseShape, settings = glass, backdrop = pageBackdrop,
             filmColor = miniPlayerColor, exportedBackdrop = deployBackdrop,
@@ -451,9 +453,9 @@ fun CustomBottomSheet(
                     alpha = playerContentFade(state.progress)
                     val p = state.progress.coerceIn(0f, 1f)
                     val corner = collapsedCardCornerPx(baseShape, size, collapsedHeight().toPx(),
-                        horizontalPadding().toPx(), startInset().toPx(), endInset().toPx(), this)
+                        horizontalPadding().toPx(), leftInset().toPx(), rightInset().toPx(), this)
                     shape = CardClipShape(computeCardGeometry(p, size, collapsedHeight().toPx(),
-                        horizontalPadding().toPx(), corner, 28.dp.toPx(), startInset().toPx(), endInset().toPx()))
+                        horizontalPadding().toPx(), corner, 28.dp.toPx(), leftInset().toPx(), rightInset().toPx()))
                     clip = true
                 },
             content = content

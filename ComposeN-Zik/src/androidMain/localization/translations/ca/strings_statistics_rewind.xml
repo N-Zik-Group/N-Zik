@@ -36,9 +36,7 @@
     <string name="statistics_items_limit_unlimited">Il·limitat</string>
     <string name="statistics_listening_totals_description">Mostra el nombre de cançons escoltades i el seu temps d\'escolta</string>
     <string name="statistics_max_number_of_items">Nombre màxim d\'elements</string>
-    <string name="statistics_of_time_taken">de temps ocupat</string>
     <string name="statistics_playback_duration_label">Temps d\'escolta</string>
-    <string name="statistics_songs_heard">cançons escoltades</string>
     <string name="statistics_title">Estadístiques</string>
     <string name="statistics_top_period_title">Mostra els %s principals de…</string>
 </resources>

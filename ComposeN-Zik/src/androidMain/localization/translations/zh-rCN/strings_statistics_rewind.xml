@@ -26,9 +26,7 @@
     <string name="statistics_items_limit_unlimited">无限制</string>
     <string name="statistics_listening_totals_description">显示所听歌曲的数量和他们的收听时间</string>
     <string name="statistics_max_number_of_items">最大条目数</string>
-    <string name="statistics_of_time_taken">时间已花费</string>
     <string name="statistics_playback_duration_label">收听时间</string>
-    <string name="statistics_songs_heard">歌曲已收听</string>
     <string name="statistics_title">统计</string>
     <string name="statistics_top_period_title">查看 … 的排行榜的前 %s</string>
 </resources>

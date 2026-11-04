@@ -36,9 +36,7 @@
     <string name="statistics_items_limit_unlimited">Neomezený</string>
     <string name="statistics_listening_totals_description">Zobrazit počet poslechnutých skladeb a dobu jejich poslechu</string>
     <string name="statistics_max_number_of_items">Maximální počet položek</string>
-    <string name="statistics_of_time_taken">potřebného času</string>
     <string name="statistics_playback_duration_label">Doba poslechu</string>
-    <string name="statistics_songs_heard">poslechnuté skladby</string>
     <string name="statistics_title">Statistiky</string>
     <string name="statistics_top_period_title">Top %s z …</string>
 </resources>

@@ -35,9 +35,7 @@
     <string name="statistics_items_limit_unlimited">Nelimitat</string>
     <string name="statistics_listening_totals_description">Afișează numărul total de melodii ascultate și durata redării</string>
     <string name="statistics_max_number_of_items">Numărul maxim de elemente</string>
-    <string name="statistics_of_time_taken">timp petrecut</string>
     <string name="statistics_playback_duration_label">Durata redării</string>
-    <string name="statistics_songs_heard">melodii ascultate</string>
     <string name="statistics_title">Statistici</string>
     <string name="statistics_top_period_title">Top %s din …</string>
 </resources>

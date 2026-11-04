@@ -31,9 +31,7 @@
     <string name="statistics_items_limit_unlimited">Ubegrænset</string>
     <string name="statistics_listening_totals_description">Viser antallet af hørte sange og deres lyttetid</string>
     <string name="statistics_max_number_of_items">Maks. antal elementer</string>
-    <string name="statistics_of_time_taken">af tid taget</string>
     <string name="statistics_playback_duration_label">Lyttetid</string>
-    <string name="statistics_songs_heard">sange hørt</string>
     <string name="statistics_title">Statistikker</string>
     <string name="statistics_top_period_title">Se top %s af …</string>
 </resources>

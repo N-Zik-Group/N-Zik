@@ -19,7 +19,6 @@
     <string name="statistics_items_limit_custom">Προσαρμοσμένο</string>
     <string name="statistics_items_limit_unlimited">Απεριόριστο</string>
     <string name="statistics_listening_totals_description">Shows the number of songs heard and their listening time</string>
-    <string name="statistics_of_time_taken">of time taken</string>
     <string name="statistics_playback_duration_label">Listening time</string>
     <string name="statistics_title">Στατιστικά</string>
     <string name="statistics_top_period_title">View top %s of …</string>

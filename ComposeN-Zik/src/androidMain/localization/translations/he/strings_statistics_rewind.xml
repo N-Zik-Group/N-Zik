@@ -34,6 +34,5 @@
     <string name="statistics_items_limit_custom">התאמה אישית</string>
     <string name="statistics_items_limit_unlimited">ללא הגבלה</string>
     <string name="statistics_max_number_of_items">מספר פריטים מקסימלי</string>
-    <string name="statistics_songs_heard">שירים שנשמעו</string>
     <string name="statistics_title">סטָטִיסטִיקָה</string>
 </resources>

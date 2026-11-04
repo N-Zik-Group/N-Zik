@@ -36,9 +36,7 @@
     <string name="statistics_items_limit_unlimited">無制限</string>
     <string name="statistics_listening_totals_description">合計曲数と再生時間を表示する</string>
     <string name="statistics_max_number_of_items">アイテムの最大数</string>
-    <string name="statistics_of_time_taken">費やした時間</string>
     <string name="statistics_playback_duration_label">再生時間</string>
-    <string name="statistics_songs_heard">曲聴きました</string>
     <string name="statistics_title">統計情報</string>
     <string name="statistics_top_period_title">上位 %s / …</string>
 </resources>

@@ -36,9 +36,7 @@
     <string name="statistics_items_limit_unlimited">Неограничено</string>
     <string name="statistics_listening_totals_description">Prikazuje broj slušanih pesama i vreme njihovog slušanja</string>
     <string name="statistics_max_number_of_items">Maksimalni broj stavki</string>
-    <string name="statistics_of_time_taken">utrošenog vremena </string>
     <string name="statistics_playback_duration_label">Vreme slušanja</string>
-    <string name="statistics_songs_heard">slušane pesme</string>
     <string name="statistics_title">Statistika</string>
     <string name="statistics_top_period_title">Pogledaj vrh %s od …</string>
 </resources>

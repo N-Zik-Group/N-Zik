@@ -75,7 +75,7 @@ fun SearchHistoryPagesDialog(onDismiss: () -> Unit) {
     DialogFrame(onDismiss = onDismiss, title = stringResource(R.string.search_history_pages),
         bodyPadding = PaddingValues(horizontal = 24.dp),
         footer = {
-            ButtonRow(listOf(DialogButton(stringResource(R.string.search_history_close), onDismiss, primary = true)))
+            ButtonRow(listOf(DialogButton(stringResource(R.string.common_action_close), onDismiss, primary = true)))
         }
     ) {
         Box(Modifier.weight(1f, fill = false)) {

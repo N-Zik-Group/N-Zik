@@ -270,10 +270,8 @@
     <string name="statistics_listening_totals_description">Dinlenen toplam şarkı sayısını ve oynatma süresini göster</string>
     <string name="statistics_max_number_of_items">Maksimum öğe sayısı</string>
     <string name="statistics_maximum_items_description">Dinleme istatistiklerinde gösterilen giriş sayısını sınırlayın.</string>
-    <string name="statistics_of_time_taken">harcanan zaman</string>
     <string name="statistics_open_desc">İstatistikler ekranını açın</string>
     <string name="statistics_playback_duration_label">Oynatma süresi</string>
-    <string name="statistics_songs_heard">dinlenen şarkılar</string>
     <string name="statistics_title">İstatistikler</string>
     <string name="statistics_top_period_title">… içindeki en iyi %s</string>
 </resources>

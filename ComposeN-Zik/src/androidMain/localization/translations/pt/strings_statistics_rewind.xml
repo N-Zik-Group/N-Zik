@@ -36,9 +36,7 @@
     <string name="statistics_items_limit_unlimited">Ilimitado</string>
     <string name="statistics_listening_totals_description">Mostra o número de músicas ouvidas e o seu tempo de reprodução</string>
     <string name="statistics_max_number_of_items">Número máximo de itens</string>
-    <string name="statistics_of_time_taken">do tempo gasto</string>
     <string name="statistics_playback_duration_label">Tempo de reprodução</string>
-    <string name="statistics_songs_heard">músicas ouvidas</string>
     <string name="statistics_title">Estatísticas</string>
     <string name="statistics_top_period_title">Ver principais %s de…</string>
 </resources>

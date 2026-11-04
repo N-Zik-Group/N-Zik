@@ -287,6 +287,8 @@ Want to:
 
 Join us on Crowdin!
 
+Android UI sources are in [the thematic catalogs](ComposeN-Zik/src/androidMain/localization/source/). Store listing sources are in [Fastlane](fastlane/source/). Submit translations through Crowdin.
+
 > ❓ Don't see your language?
 
 [![Translated with Crowdin](https://badges.crowdin.net/badge/light/crowdin-on-dark.png)](https://crowdin.com/project/N-Zik)

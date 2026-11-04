@@ -259,10 +259,8 @@
     <string name="statistics_listening_totals_description">Affiche le nombre de titres écoutées et leur temps d\'écoute</string>
     <string name="statistics_max_number_of_items">Nombre maximal d\'éléments</string>
     <string name="statistics_maximum_items_description">Limiter le nombre d\'entrées affichées dans les statistiques d\'écoute.</string>
-    <string name="statistics_of_time_taken">du temps écoulé</string>
     <string name="statistics_open_desc">Ouvrez l\'écran « Statistiques »</string>
     <string name="statistics_playback_duration_label">Durée d’écoute</string>
-    <string name="statistics_songs_heard">titres écoutés</string>
     <string name="statistics_title">Statistiques</string>
     <string name="statistics_top_period_title">Voir le top %s de …</string>
 </resources>

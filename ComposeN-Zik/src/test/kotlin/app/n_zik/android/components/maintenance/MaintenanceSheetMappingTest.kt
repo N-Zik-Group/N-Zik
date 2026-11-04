@@ -914,11 +914,12 @@ class MaintenanceSheetMappingTest {
     // ---- formatting ----
 
     @Test
-    fun formatBytesAlwaysUsesMbWithRootLocale() {
-        assertEquals("0.0 MB", formatBytes(0L))
-        assertEquals("1.0 MB", formatBytes(1_048_576L))
-        assertEquals("5.1 MB", formatBytes(5_375_942L))
-        assertEquals("1024.0 MB", formatBytes(1_073_741_824L))
+    fun formatBytesUsesSelectedLocale() {
+        assertEquals("0.0 MB", formatBytes(0L, java.util.Locale.ROOT))
+        assertEquals("1,0 MB", formatBytes(1_048_576L, java.util.Locale.FRENCH))
+        assertEquals("1.0 MB", formatBytes(1_048_576L, java.util.Locale.ROOT))
+        assertEquals("5.1 MB", formatBytes(5_375_942L, java.util.Locale.ROOT))
+        assertEquals("1024.0 MB", formatBytes(1_073_741_824L, java.util.Locale.ROOT))
     }
 
     @Test

@@ -89,7 +89,7 @@ class SearchHistoryPagesDialogTest {
             composeRule.onAllNodesWithText(label).onLast().assertIsDisplayed()
         }
         composeRule.mainClock.autoAdvance = true
-        composeRule.onNodeWithText(context.getString(R.string.search_history_close))
+        composeRule.onNodeWithText(context.getString(R.string.common_action_close))
             .assertIsDisplayed().performClick()
         awaitDialogClosed()
         assertFalse(open.value)
@@ -118,7 +118,7 @@ class SearchHistoryPagesDialogTest {
             assertFalse(context.preferences.getBoolean(SearchHistoryStore.enabledKey(otherPage), true))
         }
         composeRule.mainClock.autoAdvance = true
-        composeRule.onNodeWithText(context.getString(R.string.search_history_close))
+        composeRule.onNodeWithText(context.getString(R.string.common_action_close))
             .assertIsDisplayed().performClick()
         awaitDialogClosed()
     }
@@ -144,7 +144,7 @@ class SearchHistoryPagesDialogTest {
                 assertFalse(profilePrefs.getBoolean(SearchHistoryStore.enabledKey(page), true))
                 assertTrue(defaultPrefs.getBoolean(SearchHistoryStore.enabledKey(page), true))
             }
-            composeRule.onNodeWithText(context.getString(R.string.search_history_close)).performClick()
+            composeRule.onNodeWithText(context.getString(R.string.common_action_close)).performClick()
             awaitDialogClosed()
         } finally {
             profilePrefs.edit().clear().commit()

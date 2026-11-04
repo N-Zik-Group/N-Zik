@@ -36,9 +36,7 @@
     <string name="statistics_items_limit_unlimited">Неограниченный</string>
     <string name="statistics_listening_totals_description">Показать общее количество прослушиваемых и прослушиваемых песен</string>
     <string name="statistics_max_number_of_items">Макс. кол-во элементов</string>
-    <string name="statistics_of_time_taken">затрачено времени</string>
     <string name="statistics_playback_duration_label">Длительность воспроизведения</string>
-    <string name="statistics_songs_heard">прослушанные треки</string>
     <string name="statistics_title">Статистика</string>
     <string name="statistics_top_period_title">Топ %s из …</string>
 </resources>

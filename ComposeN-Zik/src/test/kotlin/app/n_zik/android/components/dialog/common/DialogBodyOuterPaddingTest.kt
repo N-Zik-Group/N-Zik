@@ -71,7 +71,7 @@ class DialogBodyOuterPaddingTest {
             val message = context.getString(R.string.storage_samsung_advice_message)
             val summary = if (storageBytes == 0L) null else context.getString(
                 R.string.storage_samsung_system_usage_message,
-                formatBytes(storageBytes),
+                formatBytes(storageBytes, context.resources.configuration.locales[0] ?: java.util.Locale.getDefault()),
             )
             val textHeight = textHeight(message) + (summary?.let(::textHeight) ?: 0f)
             val body = composeRule.onNodeWithTag("dialogFrameBody").getBoundsInRoot()

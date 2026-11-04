@@ -36,9 +36,7 @@
     <string name="statistics_items_limit_unlimited">Nielimitowane</string>
     <string name="statistics_listening_totals_description">Pokaż całkowitą liczbę utworów i czas odtwarzania</string>
     <string name="statistics_max_number_of_items">Maksymalny numer utworów</string>
-    <string name="statistics_of_time_taken">czas spędzony</string>
     <string name="statistics_playback_duration_label">Czas odtwarzania</string>
-    <string name="statistics_songs_heard">odtworzone piosenki</string>
     <string name="statistics_title">Statystyki</string>
     <string name="statistics_top_period_title">Top %s …</string>
 </resources>

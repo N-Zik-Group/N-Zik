@@ -123,6 +123,7 @@ import java.io.File
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import androidx.compose.ui.platform.LocalConfiguration
 import java.util.Locale
 
 private const val TAG = "MaintenanceSheet"
@@ -652,9 +653,13 @@ internal fun countCrashBlocks(content: String): Int {
 /** The widest realistic cache result line ("9.3 GB used (100%)" — the largest custom cache max with a full usage): the second reference of the shared status column width. */
 private const val CACHE_STATUS_WIDTH_REF = "9.3 GB used (100%)"
 
-/** Formats a byte count as a human-readable size (always MB, Locale.ROOT decimal). */
+@Composable
 internal fun formatBytes(bytes: Long): String =
-    String.format(Locale.ROOT, "%.1f MB", bytes / 1_048_576.0)
+    formatBytes(bytes, LocalConfiguration.current.locales[0] ?: Locale.getDefault())
+
+/** Formats a byte count as a human-readable size in MB with the selected locale. */
+internal fun formatBytes(bytes: Long, locale: Locale): String =
+    String.format(locale, "%.1f MB", bytes / 1_048_576.0)
 
 /** Formats an epoch-millis timestamp as `dd/MM/yyyy HH:mm` in [zone] (device zone by default). */
 internal fun formatTimestamp(millis: Long, zone: ZoneId = ZoneId.systemDefault()): String =

@@ -36,9 +36,7 @@
     <string name="statistics_items_limit_unlimited">Необмежено</string>
     <string name="statistics_listening_totals_description">Показувати загальну кількість пісень які прочули і тривалість відтворення</string>
     <string name="statistics_max_number_of_items">Максимальна кількість позицій</string>
-    <string name="statistics_of_time_taken">витрачено часу</string>
     <string name="statistics_playback_duration_label">Тривалість відтворення</string>
-    <string name="statistics_songs_heard">пісні чути</string>
     <string name="statistics_title">Статистика</string>
     <string name="statistics_top_period_title">Найпопулярніший %s з …</string>
 </resources>

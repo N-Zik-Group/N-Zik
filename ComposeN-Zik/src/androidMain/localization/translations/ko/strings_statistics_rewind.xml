@@ -34,6 +34,5 @@
     <string name="statistics_items_limit_custom">맞춤 설정</string>
     <string name="statistics_items_limit_unlimited">무제한</string>
     <string name="statistics_max_number_of_items">최대 항목 수</string>
-    <string name="statistics_songs_heard">곡 재생함</string>
     <string name="statistics_title">통계</string>
 </resources>

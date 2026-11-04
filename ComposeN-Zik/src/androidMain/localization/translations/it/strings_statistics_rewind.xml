@@ -36,9 +36,7 @@
     <string name="statistics_items_limit_unlimited">Illimitato</string>
     <string name="statistics_listening_totals_description">Mostra il numero totale di brani ascoltati e la durata di riproduzione</string>
     <string name="statistics_max_number_of_items">Numero massimo di elementi</string>
-    <string name="statistics_of_time_taken">tempo trascorso</string>
     <string name="statistics_playback_duration_label">Durata riproduzione</string>
-    <string name="statistics_songs_heard">brani ascoltati</string>
     <string name="statistics_title">Statistiche</string>
     <string name="statistics_top_period_title">Top %s di …</string>
 </resources>
