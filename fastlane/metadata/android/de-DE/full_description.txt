@@ -9,7 +9,7 @@ Ein mehrsprachiges YouTube Music Frontend für Android, fokussiert auf Leistung,
 ✨ <b>WARUM N-ZIK?</b> Keine Werbung, Hintergrundwiedergabe, Offline-Caching, anpassbare UI - kostenlos, immer.
 
 🎨 <b>Anpassbare UI</b>
-- Jetpack Compose interface
+- Jetpack Compose Schnittstelle
 - Themes: AMOLED, Deep Dark, Crisp Light + eingefärbte Akzente
 - 3D Carousel Player, Home-Widgets, einheitlicher Player und Mini-Player
 - Künstlerprofile, Discovery und Moods, einklappbare Home-Header
@@ -66,4 +66,4 @@ erweitertem Modus mit Live-Vorschau
 
 Kein Build bündelt FFmpeg: er ist eine herunterladbare Erweiterung (wird bei Erstverwendung installiert, verwaltet unter Einstellungen → Erweiterungen). Nur FOSS ist auf F-Droid.
 
-Historical project credits include ViMusic.
+Historische Projektkredite sind u. a. ViMusic.
