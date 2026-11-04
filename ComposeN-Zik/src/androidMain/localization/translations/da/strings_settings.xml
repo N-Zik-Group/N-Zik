@@ -69,7 +69,6 @@
     <string name="recommendations_quick_picks_count">%s anbefalet sang</string>
     <string name="settings_about_page_description">Afsnittet viser oplysninger om app\'en, udviklerne, fejlfinding og opdateringsmuligheder</string>
     <string name="settings_account_information_label">Konto info</string>
-    <string name="settings_accounts_page_description">Kontosektionen indeholder indstillinger for YouTube-synkronisering, Piped streaming indstillinger og Discord RPC indstillinger</string>
     <string name="settings_accounts_title">Konti</string>
     <string name="settings_app_behavior_title">App Opførsel</string>
     <string name="settings_app_language_label">Appsprog</string>

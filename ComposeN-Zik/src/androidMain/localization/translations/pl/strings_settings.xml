@@ -50,7 +50,6 @@
     <string name="recommendations_quick_picks_count">%s rekomendowany utwór</string>
     <string name="settings_about_page_description">Sekcja o wyświetla informacje o aplikacji, programistach, rozwiązaniach problemów i opcjach aktualizacji</string>
     <string name="settings_account_information_label">Informacje o koncie</string>
-    <string name="settings_accounts_page_description">Sekcja kont zawiera ustawienia synchronizacji z YouTube, ustawienia transmisji strumieniowej w ipach i ustawienia Rpc Discorda</string>
     <string name="settings_accounts_title">Konta</string>
     <string name="settings_app_behavior_title">Zachowanie aplikacji</string>
     <string name="settings_app_language_label">Język aplikacji</string>

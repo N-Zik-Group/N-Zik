@@ -476,13 +476,13 @@ internal fun RewindBrandBug(
     ) {
         Image(
             painter = painterResource(R.drawable.ic_launcher),
-            contentDescription = "NZik",
+            contentDescription = null,
             modifier = Modifier
                 .size(18.dp)
                 .clip(RoundedCornerShape(5.dp))
         )
         Text(
-            text = "N-ZIK",
+            text = stringResource(R.string.discord_presence_name),
             color = foreground.copy(alpha = 0.68f),
             fontSize = textScale.size(8.sp),
             lineHeight = textScale.size(9.sp),
@@ -1184,11 +1184,12 @@ internal fun RewindKicker(
     // The pill is a small solid surface the slide scrim does not cover, so contrast is
     // judged on the pill itself.
     foreground: Color = rewindColors.value.flatTextOn(background),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    preserveCase: Boolean = false
 ) {
     val textScale = LocalRewindTextScale.current
     Text(
-        text = text.uppercase(),
+        text = if (preserveCase) text else text.uppercase(),
         color = foreground,
         fontSize = textScale.size(10.sp),
         lineHeight = textScale.size(11.sp),

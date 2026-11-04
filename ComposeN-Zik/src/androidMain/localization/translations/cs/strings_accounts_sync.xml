@@ -4,9 +4,9 @@
     <string name="discord_advanced_button_url">URL</string>
     <string name="discord_beta_warning">Toto je stále v Beta verzi a může obsahovat chyby a pád</string>
     <string name="discord_connected_to_discord_account">Připojeno k Discord účtu</string>
-    <string name="discord_enable_rich_presence">Povolit Discord Rich Presence</string>
+    <string name="discord_enable_rich_presence">Povolit Discord RPC</string>
     <string name="discord_presence_closed">Discord přítomnost uzavřena</string>
-    <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
+    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates are paused</string>
     <string name="discord_token_text_invalid">Váš Discord token je neplatný, přihlaste se prosím znovu</string>
     <string name="lastfm_password">Heslo</string>
     <string name="lastfm_username">Uživatelské jméno</string>

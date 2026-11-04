@@ -6,7 +6,7 @@
     <string name="discord_connected_to_discord_account">Discordアカウントに接続しました</string>
     <string name="discord_enable_rich_presence">Rich Presenceを有効にする</string>
     <string name="discord_presence_closed">Discordが終了しました</string>
-    <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
+    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates are paused</string>
     <string name="discord_token_text_invalid">Discordトークンが無効です。もう一度ログインしてください。</string>
     <string name="lastfm_password">パスワード</string>
     <string name="lastfm_username">ユーザー名</string>

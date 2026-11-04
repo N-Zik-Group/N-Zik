@@ -54,7 +54,6 @@
     <string name="recommendations_quick_picks_count">%s рекомендуемая песня</string>
     <string name="settings_about_page_description">Раздел содержит информацию о приложении, разработчиках, диагностике и обновлении</string>
     <string name="settings_account_information_label">Информация о клиенте</string>
-    <string name="settings_accounts_page_description">Раздел \"Аккаунты\" содержит настройки синхронизации Youtube, настройки стриминга Piped и настройки Discord Rpc</string>
     <string name="settings_accounts_title">Аккаунты</string>
     <string name="settings_app_behavior_title">Поведение приложения</string>
     <string name="settings_app_language_label">Язык приложения</string>

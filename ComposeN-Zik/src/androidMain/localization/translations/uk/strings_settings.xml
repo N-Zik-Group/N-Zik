@@ -54,7 +54,6 @@
     <string name="recommendations_quick_picks_count">%s рекомендована пісня</string>
     <string name="settings_about_page_description">У розділі відображаються відомості про програму, розробники, усунення несправностей та оновлення</string>
     <string name="settings_account_information_label">Інформація про обліковий запис</string>
-    <string name="settings_accounts_page_description">Розділ облікових записів містить налаштування синхронізації Youtube, Конвеєрі стрімінг і настройки Discord Rpc</string>
     <string name="settings_accounts_title">Аккаунти</string>
     <string name="settings_app_behavior_title">Поведінка застосунку</string>
     <string name="settings_app_language_label">Мова програми</string>

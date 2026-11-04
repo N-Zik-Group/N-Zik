@@ -132,7 +132,7 @@
     <string name="recommendations_quick_picks_count">%s recommended song</string>
     <string name="settings_about_page_description">The about section shows information about the app, the developers, troubleshooting and update options</string>
     <string name="settings_account_information_label">Account info</string>
-    <string name="settings_accounts_page_description">The accounts section contains Youtube sync settings, Piped streaming settings and Discord Rpc settings</string>
+    <string name="settings_accounts_page_description">Manage YouTube Music sync and Discord RPC settings.</string>
     <string name="settings_accounts_title">Accounts</string>
     <string name="settings_app_behavior_title">App Behavior</string>
     <string name="settings_app_language_label">App language</string>
@@ -190,7 +190,7 @@
     <string name="settings_discord_advanced_button1_url">First Discord button URL</string>
     <string name="settings_discord_advanced_button2_label">Second Discord button label</string>
     <string name="settings_discord_advanced_button2_url">Second Discord button URL</string>
-    <string name="settings_discord_title" translatable="false">Discord</string>
+    <string name="settings_discord_title" translatable="false">Discord RPC</string>
     <string name="settings_dock_compact_first_action_label">Compact dock: first action</string>
     <string name="settings_dock_compact_second_action_label">Compact dock: second action</string>
     <string name="settings_dock_expanded_tab_order_description">Reorder dock tabs. Search stays on the right; compact Home and Search keep their positions.</string>

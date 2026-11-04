@@ -112,7 +112,6 @@
     <string name="recommendations_quick_picks_count">%s önerilen şarkı </string>
     <string name="settings_about_page_description">Hakkında bölümünde uygulama, geliştiriciler, sorun giderme ve güncelleme seçenekleri hakkında bilgiler yer almaktadır</string>
     <string name="settings_account_information_label">Hesap bilgileri </string>
-    <string name="settings_accounts_page_description">Hesaplar bölümü, YouTube senkronizasyon ayarlarını, Piped akış ayarlarını ve Discord RPC ayarlarını içerir</string>
     <string name="settings_accounts_title">Hesaplar</string>
     <string name="settings_app_behavior_title">Uygulama Davranışı</string>
     <string name="settings_app_language_label">Uygulama dili</string>

@@ -55,10 +55,10 @@
     <string name="discord_details_template_description">Set the main activity line using track information placeholders.</string>
     <string name="discord_enable_rich_presence">Enable Rich Presence</string>
     <string name="discord_enabled_description">Share your current listening activity on your Discord profile.</string>
-    <string name="discord_error_banner_title">Discord Rich Presence problem</string>
+    <string name="discord_error_banner_title">Discord RPC problem</string>
     <string name="discord_error_dismiss">Dismiss</string>
     <string name="discord_error_invalid_token">Your Discord token was rejected (invalid or expired). Update your token, then restart the app.</string>
-    <string name="discord_error_reconnect_failed">Discord Rich Presence could not reconnect after repeated failures. It resumes on the next media event or token change.</string>
+    <string name="discord_error_reconnect_failed">Discord RPC could not reconnect after repeated failures. It resumes on the next media event or token change.</string>
     <string name="discord_first_button_enabled_description">Show the first link button on your Discord activity.</string>
     <string name="discord_first_button_label_description">Set the text displayed on the first Discord activity button.</string>
     <string name="discord_first_button_url_description">Set the web address opened by the first Discord activity button.</string>
@@ -75,7 +75,7 @@
     <string name="discord_preview_state_paused">Paused</string>
     <string name="discord_preview_state_playing">Playing</string>
     <string name="discord_preview_title">Rich Presence preview</string>
-    <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates stopped until the next media change or manual reconnect</string>
+    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates stopped until the next media change or manual reconnect</string>
     <string name="discord_second_button_enabled_description">Show the second link button on your Discord activity.</string>
     <string name="discord_second_button_label_description">Set the text displayed on the second Discord activity button.</string>
     <string name="discord_second_button_url_description">Set the web address opened by the second Discord activity button.</string>

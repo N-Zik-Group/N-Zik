@@ -70,7 +70,6 @@
     <string name="recommendations_quick_picks_count">%s recomendada música</string>
     <string name="settings_about_page_description">A seção \"Sobre\" mostra informações sobre o aplicativo, os desenvolvedores, solução de problemas e opções de atualização</string>
     <string name="settings_account_information_label">Informações da conta</string>
-    <string name="settings_accounts_page_description">A seção de contas contém configurações de sincronização do Youtube, configurações de streaming Piped e configurações do Discord Rpc</string>
     <string name="settings_accounts_title">Contas</string>
     <string name="settings_app_behavior_title">Comportamento do App</string>
     <string name="settings_app_language_label">Idioma do aplicativo</string>

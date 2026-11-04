@@ -6,7 +6,7 @@
     <string name="discord_connected_to_discord_account">Conectat la contul Discord</string>
     <string name="discord_enable_rich_presence">Activează Rich Presence</string>
     <string name="discord_presence_closed">Prezență Discord închisă</string>
-    <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
+    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates are paused</string>
     <string name="discord_token_text_invalid">Token-ul tău Discord este invalid, te rugăm să te autentifici din nou</string>
     <string name="lastfm_password">Parolă</string>
     <string name="lastfm_username">Nume de utilizator</string>

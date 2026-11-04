@@ -69,7 +69,6 @@
     <string name="recommendations_quick_picks_count">%s empfohlenes Lied</string>
     <string name="settings_about_page_description">Die �ber-Sektion zeigt Informationen über die App, die Entwickler, Fehlerbehebung und Update-Optionen</string>
     <string name="settings_account_information_label">Kontoinformationen</string>
-    <string name="settings_accounts_page_description">Der Account-Bereich enthält Youtube Sync-Einstellungen, Piped Streaming Einstellungen und Discord Rpc Einstellungen</string>
     <string name="settings_accounts_title">Konten</string>
     <string name="settings_app_behavior_title">App-Verhalten</string>
     <string name="settings_app_language_label">App-Sprache</string>

@@ -45,7 +45,6 @@
     <string name="recommendations_quick_picks_count">%s aanbevolen nummer</string>
     <string name="settings_about_page_description">De Over sectie toont informatie over de app, de ontwikkelaars, probleemoplossing en update opties</string>
     <string name="settings_account_information_label">Account informatie</string>
-    <string name="settings_accounts_page_description">De accounts sectie bevat instellingen voor Youtube synchronisatie, streaminginstellingen en instellingen voor Discord Rpc</string>
     <string name="settings_app_behavior_title">App gedrag</string>
     <string name="settings_app_language_label">App-taal</string>
     <string name="settings_audio_crossfade_album_gapless_description">Geen kruisfade-nummers vanuit hetzelfde album</string>

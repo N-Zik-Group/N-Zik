@@ -58,7 +58,6 @@
     <string name="recommendations_quick_picks_count">Προτεινόμενο τραγούδι %s</string>
     <string name="settings_about_page_description">Η ενότητα σχετικά με την ενότητα δείχνει πληροφορίες σχετικά με την εφαρμογή, τους προγραμματιστές, την αντιμετώπιση προβλημάτων και την ενημέρωση των επιλογών</string>
     <string name="settings_account_information_label">Πληροφορίες λογαριασμού</string>
-    <string name="settings_accounts_page_description">Η ενότητα λογαριασμών περιέχει ρυθμίσεις συγχρονισμού Youtube, ρυθμίσεις Piped streaming και ρυθμίσεις Discord Rpc</string>
     <string name="settings_app_behavior_title">Συμπεριφορά Εφαρμογής</string>
     <string name="settings_app_language_label">Γλώσσα εφαρμογής</string>
     <string name="settings_audio_crossfade_album_gapless_description">Μην ξεθωριάζετε κομμάτια από το ίδιο άλμπουμ</string>

@@ -6,7 +6,7 @@
     <string name="discord_connected_to_discord_account">Під\'єднано до облікового запису Discord</string>
     <string name="discord_enable_rich_presence">Увімкнути Rich Presence</string>
     <string name="discord_presence_closed">Справжність Discord закрита</string>
-    <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
+    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates are paused</string>
     <string name="discord_token_text_invalid">Ваш маркер Discord недійсний, будь ласка, увійдіть знову</string>
     <string name="lastfm_password">Пароль</string>
     <string name="lastfm_username">Ім\'я користувача</string>

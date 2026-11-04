@@ -38,7 +38,7 @@
     <string name="rewind_background_music_toggle_accessibility">Toggle background music</string>
     <string name="rewind_background_music_volume_accessibility">Background music volume</string>
     <string name="rewind_badge_heading">YOUR LISTENER\nLEVEL.</string>
-    <string name="rewind_badge_index_label">N-ZIK INDEX</string>
+    <string name="rewind_badge_index_label">N-Zik INDEX</string>
     <string name="rewind_badge_index_sublabel">LISTENING INDEX</string>
     <string name="rewind_badge_kicker">YOUR LISTENER CLASS • %1$s</string>
     <string name="rewind_badge_tier_0_name">CURIOUS</string>
@@ -59,7 +59,6 @@
     <string name="rewind_badge_tier_7_sub">An absurd number of hours.</string>
     <string name="rewind_badge_tier_8_name">BEYOND REPEAT</string>
     <string name="rewind_badge_tier_8_sub">One long, uninterrupted queue.</string>
-    <string name="rewind_channel">Rewind</string>
     <string name="rewind_days_default_sub">ONE MONTH. EVERY DAY COUNTS.</string>
     <string name="rewind_days_heading">DAY BY\nDAY.</string>
     <string name="rewind_days_kicker">THE MONTH, DAY BY DAY • %1$s</string>
@@ -73,18 +72,15 @@
     <string name="rewind_deep_cuts_sub">Your next most-played songs.</string>
     <string name="rewind_discovery_heading">HOW MUCH YOU\nDISCOVERED.</string>
     <string name="rewind_discovery_kicker">DISCOVERY • %1$s</string>
-    <string name="rewind_empty_state_kicker">REWIND</string>
     <string name="rewind_error_export">Couldn\'t export the Rewind images.</string>
     <string name="rewind_error_export_partial">Exported %1$d of %2$d images.</string>
     <string name="rewind_filter_month">Month</string>
     <string name="rewind_filter_year">Year</string>
     <string name="rewind_finale_action_regenerate_all_time">REGENERATE ALL-TIME</string>
     <string name="rewind_finale_action_regenerate_playlist">REGENERATE PLAYLIST</string>
-    <string name="rewind_finale_brand">N-ZIK REWIND %1$s</string>
     <string name="rewind_finale_export_options">EXPORT OPTIONS</string>
     <string name="rewind_finale_export_page">EXPORT THIS PAGE</string>
     <string name="rewind_finale_heading">YOUR %1$s\nREWIND.</string>
-    <string name="rewind_finale_kicker">N-ZIK • REWIND %1$s</string>
     <string name="rewind_finale_listener_level">LISTENER LEVEL</string>
     <string name="rewind_finale_play_again">PLAY AGAIN</string>
     <string name="rewind_finale_playlist_updated">PLAYLIST UPDATED</string>
@@ -116,7 +112,6 @@
     <string name="rewind_home_years">YEARS</string>
     <string name="rewind_hour_am">AM</string>
     <string name="rewind_hour_pm">PM</string>
-    <string name="rewind_intro_kicker">N-ZIK • %1$s</string>
     <string name="rewind_intro_opening">OPENING…</string>
     <string name="rewind_intro_start">START</string>
     <string name="rewind_intro_tagline">A year of music. Yours.</string>
@@ -225,13 +220,11 @@
     <string name="rewind_settings_playlists_yearly_description">Create the yearly rewind playlist.</string>
     <string name="rewind_settings_playlists_yearly_notification">Yearly rewind playlist notification</string>
     <string name="rewind_settings_playlists_yearly_notification_description">Get notified when the yearly rewind playlist is ready.</string>
-    <string name="rewind_settings_title">Rewind</string>
     <string name="rewind_settings_yearly">Yearly rewind</string>
     <string name="rewind_settings_yearly_description">Show the yearly recaps on the Rewind home.</string>
     <string name="rewind_settings_yearly_notification">Yearly rewind notification</string>
     <string name="rewind_settings_yearly_notification_description">Get notified when a yearly rewind is ready.</string>
     <string name="rewind_share_slide">Share this slide</string>
-    <string name="rewind_title">Rewind</string>
     <string name="rewind_top_album_aoty">AOTY</string>
     <string name="rewind_top_album_empty_body">Your top album will appear here once there is enough listening history.</string>
     <string name="rewind_top_album_empty_title">NO ALBUM OF THE YEAR YET</string>
@@ -257,7 +250,6 @@
     <string name="rewind_top_songs_empty_title">NO TRACK CHART YET</string>
     <string name="rewind_top_songs_heading">YOUR TOP 5\nSONGS.</string>
     <string name="rewind_top_songs_next">Next: songs 6-%1$d.</string>
-    <string name="rewind_top_sort">Rewind Top</string>
     <string name="rewind_totals_heading">YOU LISTENED FOR</string>
     <string name="rewind_totals_kicker">YOUR LISTENING TIME • %1$s</string>
     <string name="rewind_totals_subheading">TOTAL LISTENING TIME</string>

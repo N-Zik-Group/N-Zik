@@ -4,9 +4,9 @@
     <string name="discord_advanced_button_url">URL</string>
     <string name="discord_beta_warning">To jest nadal w wersji beta i może zawierać błędy i awarię</string>
     <string name="discord_connected_to_discord_account">Połączono z kontem Discorda</string>
-    <string name="discord_enable_rich_presence">Włącz Discord Rich Presence</string>
+    <string name="discord_enable_rich_presence">Włącz Discord RPC</string>
     <string name="discord_presence_closed">Obecność Discorda zamknięta</string>
-    <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
+    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates are paused</string>
     <string name="discord_token_text_invalid">Twój token Discorda jest nieprawidłowy, zaloguj się ponownie</string>
     <string name="lastfm_password">Hasło</string>
     <string name="lastfm_username">Nazwa użyt.</string>

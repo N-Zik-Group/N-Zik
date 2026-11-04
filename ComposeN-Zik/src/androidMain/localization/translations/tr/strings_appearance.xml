@@ -51,8 +51,8 @@
     <string name="glass_effect_navigation_bars">Gezinti çubukları ve bağlantılar</string>
     <string name="glass_effect_navigation_bars_description">Uygulama sayfaları arasında geçiş yapmak için kullandığınız sekme dizisi.</string>
     <string name="glass_effect_navigation_header">Başlık kontrolleri</string>
-    <string name="glass_effect_navigation_header_description">N-ZIK logosunun yanındaki Geri, Arama ve Profil düğmeleri.</string>
-    <string name="glass_effect_navigation_summary">N-ZIK logosunun yanındaki sekme çubuğunu ve düğmeleri değiştirin.</string>
+    <string name="glass_effect_navigation_header_description">N-Zik logosunun yanındaki Geri, Arama ve Profil düğmeleri.</string>
+    <string name="glass_effect_navigation_summary">N-Zik logosunun yanındaki sekme çubuğunu ve düğmeleri değiştirin.</string>
     <string name="glass_effect_pages_summary">Ana Sayfa, Arama ve diğer sayfalar için bir görünüm seçin.</string>
     <string name="glass_effect_playback_summary">Küçük oynatıcıyı, tam ekran oynatıcıyı ve kuyruğu değiştirin.</string>
     <string name="glass_effect_quality_balanced">Dengeli</string>
@@ -124,7 +124,6 @@
     <string name="glass_effect_tint_source">Cam rengi kaynağı</string>
     <string name="glass_effect_tint_source_custom">Özel</string>
     <string name="glass_effect_tint_strength">Ton yoğunluğu</string>
-    <string name="glass_effect_title">Cam efekti</string>
     <string name="glass_effect_unsupported">Bu telefonda donanım kaynaklı bulanıklık bulunmadığından, her yüzeyde renkli film kullanılmaktadır.</string>
     <string name="glass_effect_where_action_buttons">Eylem düğmeleri</string>
     <string name="glass_effect_where_action_buttons_description">Düğmeler ve araç çubukları için standart görünüm. Diğer gruplardaki seçenekler bunun yerine kullanılabilir.</string>

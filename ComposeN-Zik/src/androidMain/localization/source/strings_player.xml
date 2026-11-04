@@ -109,9 +109,9 @@
     <string name="lyrics_not_available">No lyrics available. Please try again or enter them manually.</string>
     <string name="lyrics_offset">Lyrics Offset</string>
     <string name="lyrics_popup_messages_description">Display lyric-related popup messages in the player.</string>
-    <string name="lyrics_brand_betterlyrics" translatable="false">BetterLyrics</string>
-    <string name="lyrics_brand_kugou" translatable="false">KuGou.com</string>
-    <string name="lyrics_brand_lrclib" translatable="false">LrcLib.net</string>
+    <string name="lyrics_brand_betterlyrics" translatable="false">Better Lyrics</string>
+    <string name="lyrics_brand_kugou" translatable="false">Kugou Music</string>
+    <string name="lyrics_brand_lrclib" translatable="false">LRCLIB</string>
     <string name="lyrics_provider_betterlyrics_karaoke_label">%1$s (karaoke)</string>
     <string name="lyrics_provider_betterlyrics_synced_label">%1$s (synced)</string>
     <string name="lyrics_provider_found_format">Lyrics found on %s</string>

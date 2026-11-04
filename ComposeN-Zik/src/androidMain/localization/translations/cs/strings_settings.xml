@@ -68,7 +68,6 @@
     <string name="recommendations_quick_picks_count">%s doporučená skladba</string>
     <string name="settings_about_page_description">O sekci zobrazuje informace o aplikaci, vývojáři, řešení problémů a možnosti aktualizace</string>
     <string name="settings_account_information_label">Informace o účtu</string>
-    <string name="settings_accounts_page_description">Sekce účty obsahuje nastavení synchronizace YouTube, nastavení síťového vysílání Piped a nastavení pro Discord Rpc</string>
     <string name="settings_accounts_title">Účty</string>
     <string name="settings_app_behavior_title">Chování aplikace</string>
     <string name="settings_app_language_label">Jazyk aplikace</string>

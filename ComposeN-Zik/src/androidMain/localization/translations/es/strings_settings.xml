@@ -68,7 +68,6 @@
     <string name="recommendations_quick_picks_count">%s canción recomendada</string>
     <string name="settings_about_page_description">La sección de acerca muestra información sobre la aplicación, los desarrolladores, soluciones de problemas y opciones de actualización</string>
     <string name="settings_account_information_label">Información de la cuenta</string>
-    <string name="settings_accounts_page_description">La sección de cuentas contiene los ajustes de sincronización de Youtube, ajustes de transmisión de tuberías y ajustes de Rpc de Discord</string>
     <string name="settings_accounts_title">Cuentas</string>
     <string name="settings_app_behavior_title">Comportamiento de App</string>
     <string name="settings_app_language_label">Idioma de la aplicación</string>

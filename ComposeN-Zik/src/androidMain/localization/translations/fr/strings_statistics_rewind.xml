@@ -37,7 +37,7 @@
     <string name="rewind_background_music_toggle_accessibility">Activer/désactiver la musique de fond</string>
     <string name="rewind_background_music_volume_accessibility">Volume de la musique d\'ambiance</string>
     <string name="rewind_badge_heading">VOTRE NIVEAU\nD\'ÉCOUTE.</string>
-    <string name="rewind_badge_index_label">INDEX N-ZIK</string>
+    <string name="rewind_badge_index_label">INDEX N-Zik</string>
     <string name="rewind_badge_index_sublabel">INDICE D\'ÉCOUTE</string>
     <string name="rewind_badge_kicker">VOTRE CATÉGORIE D\'AUDITEURS • %1$s</string>
     <string name="rewind_badge_tier_0_name">CURIEUX</string>
@@ -58,7 +58,6 @@
     <string name="rewind_badge_tier_7_sub">Un nombre d\'heures complètement absurde.</string>
     <string name="rewind_badge_tier_8_name">AU-DELÀ DE LA RÉPÉTITION</string>
     <string name="rewind_badge_tier_8_sub">Une longue file d\'attente ininterrompue.</string>
-    <string name="rewind_channel">Rétrospective</string>
     <string name="rewind_days_default_sub">UN MOIS. CHAQUE JOUR COMPTE.</string>
     <string name="rewind_days_heading">JOUR APRÈS\nJOUR.</string>
     <string name="rewind_days_kicker">LE MOIS, JOUR APRÈS JOUR • %1$s</string>
@@ -72,18 +71,15 @@
     <string name="rewind_deep_cuts_sub">Vos prochains titres les plus écoutés.</string>
     <string name="rewind_discovery_heading">TOUT CE QUE VOUS\nAVEZ DÉCOUVERT.</string>
     <string name="rewind_discovery_kicker">DÉCOUVERTE • %1$s</string>
-    <string name="rewind_empty_state_kicker">RÉTROSPECTIVE</string>
     <string name="rewind_error_export">Impossible d\'exporter les images « Rétrospective ».</string>
     <string name="rewind_error_export_partial">%1$d images sur %2$d ont été exportées.</string>
     <string name="rewind_filter_month">Mois</string>
     <string name="rewind_filter_year">Année</string>
     <string name="rewind_finale_action_regenerate_all_time">RÉGÉNÉRER TOUTES LES DONNÉES</string>
     <string name="rewind_finale_action_regenerate_playlist">RÉGÉNÉRER LA PLAYLIST</string>
-    <string name="rewind_finale_brand">RÉTROSPECTIVE N-ZIK %1$s</string>
     <string name="rewind_finale_export_options">OPTIONS D\'EXPORTATION</string>
     <string name="rewind_finale_export_page">EXPORTER CETTE PAGE</string>
     <string name="rewind_finale_heading">VOTRE %1$s\nRÉTROSPECTIVE.</string>
-    <string name="rewind_finale_kicker">N-ZIK • RÉTROSPECTIVE %1$s</string>
     <string name="rewind_finale_listener_level">NIVEAU DE L\'AUDITEUR</string>
     <string name="rewind_finale_play_again">REJOUER</string>
     <string name="rewind_finale_playlist_updated">PLAYLIST MISE À JOUR</string>
@@ -213,13 +209,11 @@
     <string name="rewind_settings_playlists_yearly_description">Créer la playlist « rétrospective de l\'année ».</string>
     <string name="rewind_settings_playlists_yearly_notification">Notification concernant la playlist « Rétrospective de l\'année »</string>
     <string name="rewind_settings_playlists_yearly_notification_description">Recevez une notification dès que la playlist rétrospective annuelle sera disponible.</string>
-    <string name="rewind_settings_title">Rétrospective</string>
     <string name="rewind_settings_yearly">Rétrospective annuelle</string>
     <string name="rewind_settings_yearly_description">Afficher les rétrospectives annuelles sur la page d\'accueil de la Rétrospective.</string>
     <string name="rewind_settings_yearly_notification">Notification annuelle de réinitialisation</string>
     <string name="rewind_settings_yearly_notification_description">Recevez une notification dès qu\'une rétrospective annuelle est disponible.</string>
     <string name="rewind_share_slide">Partager cette diapositive</string>
-    <string name="rewind_title">Rétrospective</string>
     <string name="rewind_top_album_aoty">ALBUM DE L\'ANNÉE</string>
     <string name="rewind_top_album_empty_body">Votre album préféré s\'affichera ici dès que vous aurez suffisamment d\'historique d\'écoute.</string>
     <string name="rewind_top_album_empty_title">PAS ENCORE D\'ALBUM DE L\'ANNÉE</string>
@@ -245,7 +239,6 @@
     <string name="rewind_top_songs_empty_title">AUCUN CLASSEMENT POUR L\'INSTANT</string>
     <string name="rewind_top_songs_heading">VOTRE TOP 5\nDES TITRES.</string>
     <string name="rewind_top_songs_next">Suivant : morceaux 6 à %1$d.</string>
-    <string name="rewind_top_sort">Meilleures Rétrospectives</string>
     <string name="rewind_totals_heading">VOUS AVEZ ÉCOUTÉ POUR</string>
     <string name="rewind_totals_kicker">VOTRE DURÉE D\'ÉCOUTE • %1$s</string>
     <string name="rewind_totals_subheading">DURÉE TOTALE D\'ÉCOUTE</string>

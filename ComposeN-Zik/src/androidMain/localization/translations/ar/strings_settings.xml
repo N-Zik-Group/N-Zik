@@ -52,7 +52,6 @@
     <string name="recommendations_quick_picks_count">%s أغنية موصى بها</string>
     <string name="settings_about_page_description">يعرض القسم حول معلومات حول التطبيق، المطورين، استكشاف الأخطاء وتحديثها</string>
     <string name="settings_account_information_label">معلومات الحساب</string>
-    <string name="settings_accounts_page_description">قسم الحسابات يحتوي على إعدادات يوتيوب المزامنة، إعدادات بث الأنابيب وإعدادات ديسكورد</string>
     <string name="settings_app_behavior_title">سلوك التطبيق</string>
     <string name="settings_app_language_label">لغة التطبيق</string>
     <string name="settings_audio_crossfade_album_gapless_description">لا تتقاطع المسارات المتلاشية من نفس الألبوم</string>

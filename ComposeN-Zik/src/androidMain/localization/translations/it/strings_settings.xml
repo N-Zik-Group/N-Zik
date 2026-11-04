@@ -51,7 +51,6 @@
     <string name="recommendations_quick_picks_count">%s canzone consigliata</string>
     <string name="settings_about_page_description">La sezione Informazioni mostra informazioni sull\'app, gli sviluppatori, le opzioni di risoluzione dei problemi e di aggiornamento</string>
     <string name="settings_account_information_label">Informazioni account</string>
-    <string name="settings_accounts_page_description">La sezione account contiene le impostazioni di sincronizzazione Youtube, le impostazioni di streaming iped e le impostazioni di Discord Rpc</string>
     <string name="settings_accounts_title">Account</string>
     <string name="settings_app_behavior_title">Comportamento App</string>
     <string name="settings_app_language_label">Lingua principale</string>

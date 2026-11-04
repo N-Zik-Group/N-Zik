@@ -164,7 +164,7 @@ fun RewindFinaleCard(
             val statSize = textScale.size(if (compact) 14.sp else 17.sp)
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 40, direction = RewindRevealDirection.Left) {
-                    RewindKicker(stringResource(R.string.rewind_finale_kicker, data.periodLabel), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rewind_finale_kicker, data.periodLabel), rewindColors.value.lime, preserveCase = true)
                 }
                 Spacer(Modifier.height(10.dp))
                 RewindReveal(active, 110, direction = RewindRevealDirection.Left) {

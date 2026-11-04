@@ -54,7 +54,6 @@
     <string name="recommendations_quick_picks_count">%s 推奨曲</string>
     <string name="settings_about_page_description">概要セクションには、アプリ、開発者、トラブルシューティング、更新オプションに関する情報が表示されます。</string>
     <string name="settings_account_information_label">アカウント情報</string>
-    <string name="settings_accounts_page_description">アカウントセクションには、Youtubeの同期設定、パイプストリーミング設定、Discord Rpc設定が含まれています</string>
     <string name="settings_accounts_title">アカウント</string>
     <string name="settings_app_behavior_title">アプリの動作</string>
     <string name="settings_app_language_label">アプリ言語</string>

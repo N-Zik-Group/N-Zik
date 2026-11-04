@@ -5,7 +5,7 @@
     <string name="discord_beta_warning">Dit is nog steeds in Bèta en kan bugs en crash bevatten</string>
     <string name="discord_connected_to_discord_account">Verbonden met Discord-account</string>
     <string name="discord_presence_closed">Discord aanwezigheidsstatus gesloten</string>
-    <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
+    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates are paused</string>
     <string name="discord_token_text_invalid">Je Discord token is ongeldig, log opnieuw in</string>
     <string name="profile_channel_name">%1$s - %2$s</string>
     <string name="profile_rename">Hernoem</string>

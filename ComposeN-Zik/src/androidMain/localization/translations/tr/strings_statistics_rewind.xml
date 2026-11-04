@@ -38,7 +38,7 @@
     <string name="rewind_background_music_toggle_accessibility">Arka plan müziğine geç</string>
     <string name="rewind_background_music_volume_accessibility">Arka plan müziği ses düzeyi</string>
     <string name="rewind_badge_heading">DİNLEYİCİ\nSEVİYENİZ.</string>
-    <string name="rewind_badge_index_label">N-ZIK İNDEKSİ</string>
+    <string name="rewind_badge_index_label">N-Zik İNDEKSİ</string>
     <string name="rewind_badge_index_sublabel">DİNLEME İNDEKSİ</string>
     <string name="rewind_badge_kicker">DİNLEYİCİ GRUBUNUZ • %1$s</string>
     <string name="rewind_badge_tier_0_name">MERAKLI</string>
@@ -59,7 +59,6 @@
     <string name="rewind_badge_tier_7_sub">Absürt bir saat sayısı.</string>
     <string name="rewind_badge_tier_8_name">TEKRARIN ÖTESİ</string>
     <string name="rewind_badge_tier_8_sub">Bir uzun, kesintisiz kuyruk.</string>
-    <string name="rewind_channel">Geri Sarma</string>
     <string name="rewind_days_default_sub">BİR AY. HER GÜN ÖNEMLİ.</string>
     <string name="rewind_days_heading">GÜN\nGÜN</string>
     <string name="rewind_days_kicker">AY, GÜN GÜN • %1$s</string>
@@ -73,18 +72,15 @@
     <string name="rewind_deep_cuts_sub">En çok dinlediğiniz şarkılardan sonraki şarkılar.</string>
     <string name="rewind_discovery_heading">NE KADAR ŞEY\nKEŞFETTİNİZ.</string>
     <string name="rewind_discovery_kicker">KEŞİF • %1$s</string>
-    <string name="rewind_empty_state_kicker">GERİ SARMA</string>
     <string name="rewind_error_export">Geri Sarma görüntüleri dışa aktarılamadı.</string>
     <string name="rewind_error_export_partial">%2$d adet resmin %1$d adedi dışa aktarıldı.</string>
     <string name="rewind_filter_month">Ay</string>
     <string name="rewind_filter_year">Yıl</string>
     <string name="rewind_finale_action_regenerate_all_time">TÜM ZAMANLARI YENİDEN OLUŞTUR</string>
     <string name="rewind_finale_action_regenerate_playlist">ÇALMA LİSTESİNİ YENİDEN OLUŞTUR</string>
-    <string name="rewind_finale_brand">N-ZIK GERİ SARMA %1$s</string>
     <string name="rewind_finale_export_options">DIŞA AKTARMA SEÇENEKLERİ</string>
     <string name="rewind_finale_export_page">BU SAYFAYI DIŞA AKTAR</string>
     <string name="rewind_finale_heading"> %1$s\nGERİ SARMA.</string>
-    <string name="rewind_finale_kicker">N-ZIK • GERİ SARMA %1$s</string>
     <string name="rewind_finale_listener_level">DİNLEYİCİ SEVİYESİ</string>
     <string name="rewind_finale_play_again">TEKRAR OYNAT</string>
     <string name="rewind_finale_playlist_updated">ÇALMA LİSTESİ GÜNCELLENDİ</string>
@@ -224,13 +220,11 @@
     <string name="rewind_settings_playlists_yearly_description">Yıllık geri sarma çalma listesini oluşturun.</string>
     <string name="rewind_settings_playlists_yearly_notification">Yıllık geri sarma çalma listesi bildirimi</string>
     <string name="rewind_settings_playlists_yearly_notification_description">Yıllık geri sarma çalma listesi hazır olduğunda bildirim al.</string>
-    <string name="rewind_settings_title">Geri Sarma</string>
     <string name="rewind_settings_yearly">Yıllık geri sarma</string>
     <string name="rewind_settings_yearly_description">Geri Sarma ana sayfasında yıllık özetleri göster.</string>
     <string name="rewind_settings_yearly_notification">Yıllık geri sarma bildirimi</string>
     <string name="rewind_settings_yearly_notification_description">Yıllık geri sarma hazır olduğunda bildirim alın.</string>
     <string name="rewind_share_slide">Bu slaytı paylaş</string>
-    <string name="rewind_title">Geri Sarma</string>
     <string name="rewind_top_album_aoty">YILIN ALBÜMÜ</string>
     <string name="rewind_top_album_empty_body">En çok dinlediğiniz albüm yeterli dinleme geçmişi oluştuğunda burada görünecektir.</string>
     <string name="rewind_top_album_empty_title">HENÜZ YILIN ALBÜMÜ SEÇİLMEDİ</string>
@@ -256,7 +250,6 @@
     <string name="rewind_top_songs_empty_title">HENÜZ PARÇA LİSTESİ YOK</string>
     <string name="rewind_top_songs_heading">EN SEVDİĞİNİZ 5\nŞARKI.</string>
     <string name="rewind_top_songs_next">Sonraki: 6-%1$d numaralı şarkılar.</string>
-    <string name="rewind_top_sort">Geri Sarma Üst</string>
     <string name="rewind_totals_heading">DİNLEDİĞİNİZ SÜRE</string>
     <string name="rewind_totals_kicker">DİNLEME SÜRENİZ • %1$s</string>
     <string name="rewind_totals_subheading">TOPLAM DİNLEME SÜRESİ</string>

@@ -54,7 +54,6 @@
     <string name="recommendations_quick_picks_count">%s anbefalte sang</string>
     <string name="settings_about_page_description">Om delen viser informasjon om appen, utviklerne, feilsøking og oppdatering</string>
     <string name="settings_account_information_label">Info om Kunden</string>
-    <string name="settings_accounts_page_description">Konto-delen inneholder Youtube synkroniseringsinnstillinger, Piped streaming innstillinger og Discord Rpc innstillinger</string>
     <string name="settings_app_behavior_title">Appens oppførsel</string>
     <string name="settings_app_language_label">Appspråk</string>
     <string name="settings_audio_crossfade_album_gapless_description">Ikke crossfade spor fra samme album</string>

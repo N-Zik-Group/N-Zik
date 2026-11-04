@@ -53,7 +53,6 @@
     <string name="recommendations_quick_picks_count">%s suositteli kappaletta</string>
     <string name="settings_about_page_description">Osio näyttää tietoa sovelluksesta, kehittäjistä, vianmäärityksestä ja päivityksestä</string>
     <string name="settings_account_information_label">Tilin tiedot</string>
-    <string name="settings_accounts_page_description">Tilien osiossa on Youtube sync -asetuksia, Piped streaming -asetuksia ja Discord Rpc -asetuksia.</string>
     <string name="settings_accounts_title">Tilit</string>
     <string name="settings_app_behavior_title">Sovelluksen Käyttäytyminen</string>
     <string name="settings_app_language_label">Sovelluksen kieli</string>

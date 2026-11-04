@@ -123,7 +123,7 @@ internal fun shouldCollapseTitle(availablePx: Int, idealPx: Int, tolerancePx: In
 
 /**
  * The app header's title row — the always-visible app logo plus the sliding extras
- * ("N-ZIK" text, parental-control shield, debug badge) that collapse
+ * ("N-Zik" text, parental-control shield, debug badge) that collapse
  * behind the logo when the header runs out of horizontal space, and the full-offline
  * airplane badge ([OfflineModeBadge]), which rides outside the clipped box as a
  * sibling of the logo so it stays visible through its whole travel.
@@ -251,7 +251,7 @@ fun CollapsingAppTitle(
 }
 
 /**
- * The sliding part of the header title row — everything after the logo: the "N-ZIK"
+ * The sliding part of the header title row — everything after the logo: the "N-Zik"
  * text, the parental-control shield (when active) and the debug
  * badge. Composed at its ideal (natural) width at all times; the parent [Box] clips
  * and slides it.
@@ -318,7 +318,7 @@ private fun AppLogoText(navController: NavController, modifier: Modifier = Modif
     }
 
     BasicText(
-        text = "N-ZIK",
+        text = stringResource(R.string.discord_presence_name),
         style = TextStyle(
             fontSize = typography().xl.semiBold.fontSize,
             fontWeight = typography().xl.semiBold.fontWeight,

@@ -52,8 +52,8 @@
     <string name="glass_effect_navigation_bars">Navigation bars and docks</string>
     <string name="glass_effect_navigation_bars_description">The row of tabs you use to move between app pages.</string>
     <string name="glass_effect_navigation_header">Header controls</string>
-    <string name="glass_effect_navigation_header_description">The Back, Search and Profile buttons near the N-ZIK logo.</string>
-    <string name="glass_effect_navigation_summary">Change the tab bar and the buttons near the N-ZIK logo.</string>
+    <string name="glass_effect_navigation_header_description">The Back, Search and Profile buttons near the N-Zik logo.</string>
+    <string name="glass_effect_navigation_summary">Change the tab bar and the buttons near the N-Zik logo.</string>
     <string name="glass_effect_optimization_description">Reduce or disable background Glass effects when a menu, dialog, or other overlay is open to avoid stacking expensive blur and refraction effects. Disable with caution: the app may become significantly slower.</string>
     <string name="glass_effect_optimization_title">Glass optimization</string>
     <string name="glass_effect_pages_summary">Choose a look for Home, Search and other pages.</string>
@@ -129,7 +129,6 @@
     <string name="glass_effect_tint_source">Glass color source</string>
     <string name="glass_effect_tint_source_custom">Custom</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
-    <string name="glass_effect_title">Glass effect</string>
     <string name="glass_effect_unsupported">This phone has no hardware blur, so every surface uses the tinted film.</string>
     <string name="glass_effect_where_action_buttons">Action buttons</string>
     <string name="glass_effect_where_action_buttons_description">The usual look for buttons and toolbars. Choices in the other groups can replace it.</string>

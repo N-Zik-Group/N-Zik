@@ -2,7 +2,7 @@
 <resources>
     <string name="discord_advanced_button_url">URL</string>
     <string name="discord_enable_rich_presence">Activa Rich Presence</string>
-    <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
+    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates are paused</string>
     <string name="lastfm_password">Contrasenya</string>
     <string name="lastfm_username">Nom d’usuari</string>
     <string name="profile_channel_name">%1$s - %2$s</string>

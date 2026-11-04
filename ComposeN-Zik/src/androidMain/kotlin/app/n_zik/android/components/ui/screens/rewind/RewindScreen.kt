@@ -790,7 +790,7 @@ private fun RewindLoadingScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "N-ZIK",
+                    text = stringResource(R.string.discord_presence_name),
                     color = cream.copy(alpha = segment(p, 0.02f, 0.14f)),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Black,

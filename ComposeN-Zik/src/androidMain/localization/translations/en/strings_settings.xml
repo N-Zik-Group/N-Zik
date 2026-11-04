@@ -115,7 +115,7 @@
     <string name="recommendations_quick_picks_count">%s recommended song</string>
     <string name="settings_about_page_description">The about section shows information about the app, the developers, troubleshooting and update options</string>
     <string name="settings_account_information_label">Account info</string>
-    <string name="settings_accounts_page_description">The accounts section contains Youtube sync settings, Piped streaming settings and Discord Rpc settings</string>
+    <string name="settings_accounts_page_description">Manage YouTube Music sync and Discord RPC settings.</string>
     <string name="settings_accounts_title">Accounts</string>
     <string name="settings_app_behavior_title">App Behavior</string>
     <string name="settings_app_language_label">App language</string>

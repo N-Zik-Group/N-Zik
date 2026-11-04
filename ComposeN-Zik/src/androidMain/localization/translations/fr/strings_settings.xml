@@ -81,7 +81,7 @@
     <string name="recommendations_quick_picks_count">%s titres recommandée</string>
     <string name="settings_about_page_description">La section « À propos » contient des informations sur l\'application, ses développeurs, le dépannage et les options de mise à jour.</string>
     <string name="settings_account_information_label">Informations sur le compte</string>
-    <string name="settings_accounts_page_description">La section « Comptes » contient les paramètres de synchronisation YouTube, les paramètres de streaming Piped et les paramètres RPC de Discord.</string>
+    <string name="settings_accounts_page_description">Gérez la synchronisation YouTube Music et les paramètres de Discord RPC.</string>
     <string name="settings_accounts_title">Comptes</string>
     <string name="settings_app_behavior_title">Comportement de l\'application</string>
     <string name="settings_app_language_label">Langues de l\'application</string>

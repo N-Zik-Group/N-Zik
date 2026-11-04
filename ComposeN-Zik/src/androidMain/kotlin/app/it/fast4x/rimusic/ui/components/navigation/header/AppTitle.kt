@@ -95,7 +95,7 @@ private fun AppLogoText(navController: NavController) {
     }
 
     BasicText(
-        text = "N-ZIK",
+        text = stringResource(R.string.discord_presence_name),
         style = TextStyle(
             fontSize = typography().xl.semiBold.fontSize,
             fontWeight = typography().xl.semiBold.fontWeight,

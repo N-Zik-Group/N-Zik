@@ -122,7 +122,7 @@ fun RewindIntroCard(
             })
             Column(modifier = Modifier.fillMaxSize()) {
                 RewindReveal(active, 50, direction = RewindRevealDirection.Left, distance = 18.dp) {
-                    RewindKicker(stringResource(R.string.rewind_intro_kicker, data.periodLabel), rewindColors.value.lime)
+                    RewindKicker(stringResource(R.string.rewind_intro_kicker, data.periodLabel), rewindColors.value.lime, preserveCase = true)
                 }
                 Spacer(Modifier.height(if (compact) 14.dp else 18.dp))
                 // The face avatar reveals between the kicker (50 ms) and the hero name

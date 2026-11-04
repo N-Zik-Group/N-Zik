@@ -6,7 +6,7 @@
     <string name="discord_connected_to_discord_account">Connesso all\'account Discord</string>
     <string name="discord_enable_rich_presence">Abilita Rich Presence</string>
     <string name="discord_presence_closed">Presenza di Discord chiusa</string>
-    <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
+    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates are paused</string>
     <string name="discord_token_text_invalid">Il tuo token Discord non è valido, per favore accedi di nuovo</string>
     <string name="lastfm_username">Nome utente</string>
     <string name="profile_channel_name">%1$s - %2$s</string>

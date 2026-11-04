@@ -2087,7 +2087,7 @@ private fun ColumnScope.MaintenanceListContent(
         trailingContent = { StatusTrailing(content.ltStatus, content.ltColor, statusColumnWidth) },
     )
     ListMenu.Entry(
-        text = stringResource(R.string.maintenance_discord),
+        text = stringResource(R.string.settings_discord_title),
         icon = { SettingIcon(R.drawable.logo_discord, palette.accent) },
         trailingContent = { StatusTrailing(content.discordStatus, content.discordColor, statusColumnWidth) },
     )

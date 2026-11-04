@@ -65,7 +65,6 @@
     <string name="recommendations_quick_picks_count">%s a recomandat melodia</string>
     <string name="settings_about_page_description">Secțiunea despre despre aplicație arată opțiunile de depanare și actualizare</string>
     <string name="settings_account_information_label">Informații cont</string>
-    <string name="settings_accounts_page_description">Secțiunea conturilor conține setările de sincronizare Youtube pentru sincronizare, Setări Piped pentru streaming și Setări Discord Rpc</string>
     <string name="settings_accounts_title">Conturi</string>
     <string name="settings_app_behavior_title">Comportament aplicație</string>
     <string name="settings_app_language_label">Limba aplicației</string>
