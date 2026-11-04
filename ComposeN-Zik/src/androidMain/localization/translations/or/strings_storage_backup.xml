@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Backup -->
     <string name="backup_action_export">Export backup</string>
     <string name="backup_action_import">Import backup</string>
     <string name="backup_action_import_legacy_migration">Import migration file.</string>
@@ -31,6 +32,7 @@
     <string name="backup_restore_overwrite_and_restart_warning">Existing data will be overwritten. %1$s will automatically close itself after restoring the database.</string>
     <string name="backup_target_database_and_settings_label">Database + Settings</string>
     <string name="backup_target_database_label">Database</string>
+    <!-- Backup Auto -->
     <string name="backup_auto_custom_interval_unit">Custom Interval Unit</string>
     <string name="backup_auto_custom_interval_value">Custom Interval Value</string>
     <string name="backup_auto_interval">Auto Backup Interval</string>
@@ -56,6 +58,7 @@
     <string name="backup_auto_unit_minutes">Minutes</string>
     <string name="backup_auto_unit_months">Months</string>
     <string name="backup_auto_unit_weeks">Weeks</string>
+    <!-- Backup Export -->
     <string name="backup_export_accounts_description">Export the profile list and the face photos in a single .txt file</string>
     <string name="backup_export_all">Export all</string>
     <string name="backup_export_all_description">Export database, settings, and profile state</string>
@@ -63,6 +66,7 @@
     <string name="backup_export_database_description">Export database with songs, playlists, and history</string>
     <string name="backup_export_profile_state_failed">Profile state export failed</string>
     <string name="backup_export_settings_description">Export app settings and preferences</string>
+    <!-- Backup Import -->
     <string name="backup_import_accounts_description">Import the profile list and the face photos from a .txt file</string>
     <string name="backup_import_all">Import all</string>
     <string name="backup_import_all_description">Import database, settings, and profile state</string>
@@ -75,6 +79,7 @@
     <string name="backup_import_settings_description">Import app settings and preferences</string>
     <string name="backup_import_target_from_file">From the file</string>
     <string name="backup_import_target_profile_title">Import into which profile?</string>
+    <!-- Cache -->
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Clear song cache</string>
     <string name="cache_downloads_max_size_description">Choose how much disk space is available for downloaded songs. The trash button removes downloaded audio.</string>
@@ -83,6 +88,7 @@
     <string name="cache_location_private">Private</string>
     <string name="cache_location_system">System</string>
     <string name="cache_streaming_max_size_description">Limit disk space used to cache streamed songs. The trash button clears this playback cache.</string>
+    <!-- Downloads -->
     <string name="downloads_action_download_all">Download all songs</string>
     <string name="downloads_action_refresh_quality">Update downloads</string>
     <string name="downloads_action_remove_all">Remove all downloaded songs</string>
@@ -112,6 +118,7 @@
     <string name="downloads_stale_removed">%1$s download data is missing and was removed. Please download it again.</string>
     <string name="downloads_stale_startup_removed">%1$d downloaded song(s) are missing their files and were removed. Please download them again.</string>
     <string name="downloads_title">Download</string>
+    <!-- Export -->
     <string name="export_cached_song_action">Export cached or downloaded song</string>
     <string name="export_cached_songs_action">Export cached</string>
     <string name="export_cached_songs_error">Export error: %s</string>
@@ -120,6 +127,7 @@
     <string name="export_file_name_dialog_title">Name your export</string>
     <string name="export_running_status">Exporting…</string>
     <string name="export_song_unavailable_message">Song must be cached or downloaded to export</string>
+    <!-- Smart Trash -->
     <string name="library_cleanup_all_downloads_confirmation">Do you want to delete all downloads (%d songs)?</string>
     <string name="library_cleanup_all_favorites_confirmation">Do you want to remove all %d favorites?</string>
     <string name="library_cleanup_all_listening_history_confirmation">Do you want to reset listening history for %d songs?</string>
@@ -133,9 +141,13 @@
     <string name="library_cleanup_title">Smart trash</string>
     <string name="library_favorites_remove_dialog_title">Remove from favorites</string>
     <string name="library_listening_history_reset_dialog_title">Reset listening history</string>
+    <!-- Storage -->
     <string name="storage_samsung_action_keep_system">Keep system storage</string>
     <string name="storage_samsung_action_use_private">Use private storage</string>
     <string name="storage_samsung_advice_message">Samsung\'s automatic memory management can delete N-Zik\'s downloads and cache files, even when you did not ask for it. To keep your downloads safe, use the private (app) storage location instead of system storage.</string>
     <string name="storage_samsung_advice_title">Samsung storage advice</string>
     <string name="storage_samsung_system_usage_message">You currently have %1$s of downloads and cache on system storage.</string>
+    <string name="backup_import_failed">Import failed</string>
+    <string name="export_no_songs">No songs exported</string>
+    <string name="export_cached_songs_generic_error">Export failed</string>
 </resources>
