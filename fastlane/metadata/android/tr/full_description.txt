@@ -1,4 +1,4 @@
-Android için çok dilli YouTube Music frontend'i: performans, UI/UX iyileştirmeleri, özellik genişletme ve uzun vadeli destek.
+Android için çok dilli YouTube Music ön yüzü, performans, UI/UX iyileştirmeleri, özellik genişletme ve uzun vadeli destek.
 
 <b>N-Zik</b>, <a href="https://github.com/knighthat/Kreate">Kreate</a>'nin açık kaynaklı bir çatalıdır.
 
@@ -6,54 +6,54 @@ Android için çok dilli YouTube Music frontend'i: performans, UI/UX iyileştirm
 
 <b>AI Kullanımı:</b> Kod için üretken AI kullanıyorum (<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a> aracılığıyla), her şey yayına alınmadan önce incelenir ve test edilir.
 
-✨ <b>NEDEN N-ZIK?</b> Reklamsız, arka plan oynatma, çevrimdışı önbellekleme, ayarlanabilir arayüz - her zaman ücretsiz.
+✨ <b>NEDEN N-ZIK?</b> Reklam yok, arka planda oynatma, çevrimdışı önbellekleme, özelleştirilebilir kullanıcı arayüzü – her zaman ücretsiz.
 
 🎨 <b>Ayarlanabilir Arayüz</b>
-- Jetpack Compose interface
-- Temalar: AMOLED, Deep Dark, Crisp Light + renkli vurgular
-- 3D Carousel Player, ana ekran widget'ları, birleşik ve mini-oynatıcı
+- Jetpack Compose kullanıcı arayüzü
+- Temalar: AMOLED, Derin Karanlık, Net Işık + renkli vurgular
+- 3D Karusel Oynatıcı, ana sayfa widget'ları, birleştirilmiş oynatıcı ve mini oynatıcı
 - Sanatçı profilleri, Keşif/ruh halleri, katlanabilir ana ekran başlıkları
 
-🫧 <b>Glass efekti (BETA, isteğe bağlı)</b>
-Yeni kurulumlarda kapalıdır. Ayarlar’dan açın: kategoriye göre yerel görünüm, yalnızca kontur veya Glass, ayarlanabilir kalite. İşleme yükünü ve pil tüketimini artırabilir; kaliteyi düşürün veya kapatın.
-Glass katkıları: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+🫧 <b>Cam efekti (BETA, isteğe bağlı)</b>
+Yeni kurulumlarda kapalıdır. Ayarlardan açın: kategoriye göre yerel , yalnızca kenar veya Cam, ayarlanabilir kalite. İşleme yükünü ve pil tüketimini artırabilir; kaliteyi düşürün veya kapatın.
+Cam katkıları: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Ses Deneyimi</b>
 - YouTube Music Premium aracılığıyla premium ses, otomatik uygulanır
-- Düzenleme, gerçek zamanlı çeviriyle senkronize sözler
+- Düzenleme ve gerçek zamanlı çeviri özellikleriyle senkronize şarkı sözleri
 - Şarkı tanıma (Shazam benzeri), sesli arama, görselleştirici
-- Pro kontroller: hız, perde, normalleştirme, crossfade, ses/bas artırma, yankı
-- Kesin navigasyon için Audio Bar dalga formu kaydırma çubuğu
+- Profesyonel kontrol seçenekleri: hız, ton, normalizasyon, çapraz geçiş, ses seviyesi artırma, bas artırma, yankı
+- Hassas gezinme için Ses Çubuğu waveform kaydırma çubuğu
 
-💾 <b>Çevrimdışı, Meta Veriler ve Gizlilik</b>
+💾 <b>Çevrimdışı, Meta Veri ve Gizlilik</b>
 - Parçalar ve listeler için akıllı önbellekleme/indirme, seçilebilir indirme kalitesi
-- Tam meta veriyle FFmpeg destekli dışa aktarma (yalnız standart yapılar)
-- Uygulama içi meta veri düzenleyici (AAC/Opus, kapak)
+- Tam meta veri içeren FFmpeg tabanlı dışa aktarma (FFmpeg ilk kullanımda yüklenen, indirilebilir bir eklentidir)
+- Uygulama içi meta veri düzenleyici (AAC/Opus, kapak resmi)
 - Yerel dinleme istatistikleri ve geçmişi
 - Özel aralıklı ve saklama süreli otomatik yedekleme
 
 🔗 <b>Entegrasyonlar</b>
-- Öneriler ve video oynatma için YouTube girişi; deneysel çift yönlü senkronizasyon motoru
-- Last.fm scrobbling: Now Playing, love/unlove
+- Öneriler ve video oynatma için YouTube'da oturum açma, deneysel çift yönlü senkronizasyon motoru
+- Şimdi Çalıyor ve beğenme/beğenme seçenekleriyle Last.fm'e kaydetme
 - MusicBrainz sanatçı ve albüm bilgileri
-- Discord Rich Presence; canlı önizlemeli gelişmiş mod
-- Alternatif YouTube akışı için Invidious
+- Discord Zengin Varlık, canlı önizleme özelliğine sahip gelişmiş mod dahil
+- Alternatif YouTube akışı için Invidious entegrasyonu
 - Çalma listesi içe/dışa aktarma: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Birlikte Dinleyin</b>
 - Kod veya davet bağlantısıyla canlı dinleme oturumlarına katılın ya da ev sahipliği yapın
 
-🗓️ <b>Rewind</b>
-- Otomatik Rewind listeleriyle yıllık/aylık dinleme özetleri
+🗓️ <b>Geri Sarma</b>
+- Otomatik Geri Sarma listeleriyle yıllık/aylık dinleme özetleri
 
-📱 <b>Her Yerde Oynatın:</b> Android Auto, Automotive, TV ve Tablets
+📱 <b>Her Yerde Oynatın:</b> Android Auto, Araç Sistemi, TV ve Tabletler
 
 🛠️ <b>Gelişmiş Kullanıcı Özellikleri</b>
 - Çoklu profil: profil başına izole veritabanı ve ayarlar
 - Bluetooth bağlantısında otomatik devam, kalıcı kuyruk, otomatik doldurma
 - Akıllı çöp kutusu, gizli şarkılar, beğenmeme sistemi, ebeveyn denetimi
 - Proxy desteği, ağ kalitesi uyarlama, günlük dışa aktarma
-- Rescue Center, bakım ekranı, başlangıç rehberi, uygulama kısayolları
+- Kurtarma Merkezi, bakım ekranı, ilk kullanım kılavuzu, uygulama kısayolları
 - GitHub'dan OTA güncellemeleri, uyku zamanlayıcısı, arka plan oynatma
 
 📦 <b>Mevcut Yapılar</b>
@@ -66,4 +66,4 @@ Glass katkıları: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass /
 
 Hiçbir yapı FFmpeg içermez: indirilebilir bir eklentidir (ilk kullanımda kurulur, Ayarlar → Eklentiler içinde yönetilir). F-Droid'de yalnızca FOSS var.
 
-Historical project credits include ViMusic.
+Geçmiş proje kredileri arasında ViMusic yer almaktadır.
