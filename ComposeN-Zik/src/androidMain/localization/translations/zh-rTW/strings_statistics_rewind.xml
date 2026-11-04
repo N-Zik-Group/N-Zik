@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Calendar -->
     <string name="calendar_days_ago">%d days ago</string>
-    <string name="calendar_last_week">上週</string>
+    <string name="calendar_last_week">Last week</string>
     <string name="calendar_last_year">Last year</string>
-    <string name="calendar_month_april_with_year">四月 %s</string>
-    <string name="calendar_month_august_with_year">八月 %s</string>
-    <string name="calendar_month_december_with_year">十二月 %s</string>
-    <string name="calendar_month_february_with_year">二月 %s</string>
-    <string name="calendar_month_january_with_year">一月 %s</string>
-    <string name="calendar_month_july_with_year">七月 %s</string>
-    <string name="calendar_month_june_with_year">六月 %s</string>
-    <string name="calendar_month_march_with_year">三月 %s</string>
-    <string name="calendar_month_may_with_year">5月 %s</string>
-    <string name="calendar_month_november_with_year">十一月 %s</string>
-    <string name="calendar_month_october_with_year">十月 %s</string>
-    <string name="calendar_month_september_with_year">九月 %s</string>
+    <string name="calendar_month_april_with_year">April %s</string>
+    <string name="calendar_month_august_with_year">August %s</string>
+    <string name="calendar_month_december_with_year">December %s</string>
+    <string name="calendar_month_february_with_year">February %s</string>
+    <string name="calendar_month_january_with_year">January %s</string>
+    <string name="calendar_month_july_with_year">July %s</string>
+    <string name="calendar_month_june_with_year">June %s</string>
+    <string name="calendar_month_march_with_year">March %s</string>
+    <string name="calendar_month_may_with_year">May %s</string>
+    <string name="calendar_month_november_with_year">November %s</string>
+    <string name="calendar_month_october_with_year">October %s</string>
+    <string name="calendar_month_september_with_year">September %s</string>
     <string name="calendar_period_one_month">一個月</string>
     <string name="calendar_period_one_week">一星期</string>
     <string name="calendar_period_one_year">一年</string>
@@ -22,7 +23,8 @@
     <string name="calendar_period_three_months">三個月</string>
     <string name="calendar_this_month">This month</string>
     <string name="calendar_today">今日</string>
-    <string name="calendar_yesterday">昨天</string>
+    <string name="calendar_yesterday">Yesterday</string>
+    <!-- Rewind -->
     <string name="rewind_albums_empty_body">Your top albums will appear here once there is enough listening history.</string>
     <string name="rewind_albums_empty_title">YOUR ALBUM STACK IS EMPTY</string>
     <string name="rewind_albums_heading">YOUR TOP\nALBUMS.</string>
@@ -271,19 +273,20 @@
     <string name="rewind_years_kicker">YOUR YEARS • %1$s</string>
     <string name="rewind_years_peak_sub">%1$s HIT THE HARDEST.</string>
     <string name="rewind_years_peak_year">PEAK YEAR</string>
-    <string name="statistics_action_delete_playback_events_count">移除 %1$s 個重播活動</string>
-    <string name="statistics_delete_playback_events_confirmation">你真的要移除所有重播紀錄嗎?</string>
+    <!-- Statistics -->
+    <string name="statistics_action_delete_playback_events_count">Delete %1$s playback events</string>
+    <string name="statistics_delete_playback_events_confirmation">Do you really want to delete all playback events?</string>
     <string name="statistics_delete_playback_events_dialog_title">Delete playback events</string>
-    <string name="statistics_items_limit_custom">Custom</string>
+    <string name="statistics_items_limit_custom">自定義</string>
     <string name="statistics_items_limit_custom_value">Custom (%1$d)</string>
     <string name="statistics_items_limit_unlimited">無限制</string>
-    <string name="statistics_listening_totals_description">顯示聽過的歌曲數量和他們的收聽時間</string>
-    <string name="statistics_max_number_of_items">歌曲數量上限</string>
+    <string name="statistics_listening_totals_description">Show total number of songs heard and playback duration</string>
+    <string name="statistics_max_number_of_items">Max number of items</string>
     <string name="statistics_maximum_items_description">Limit the number of entries shown in listening statistics.</string>
-    <string name="statistics_of_time_taken">已經過的時間</string>
+    <string name="statistics_of_time_taken">time spent</string>
     <string name="statistics_open_desc">Open the Statistics screen</string>
-    <string name="statistics_playback_duration_label">收聽時間</string>
-    <string name="statistics_songs_heard">聽過的歌曲</string>
+    <string name="statistics_playback_duration_label">Playback duration</string>
+    <string name="statistics_songs_heard">songs heard</string>
     <string name="statistics_title">統計</string>
     <string name="statistics_top_period_title">View top %s of …</string>
 </resources>
