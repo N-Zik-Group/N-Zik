@@ -52,7 +52,7 @@
     <string name="bridge_server_state_running">Running</string>
     <string name="bridge_server_state_stopping">Stopping…</string>
     <string name="bridge_server_status">Server status</string>
-    <string name="bridge_server_stop">Stop</string>
+    <string name="bridge_server_stop">Megállít</string>
     <string name="bridge_server_stopped">PC server stopped</string>
     <string name="bridge_server_stopped_auto">Stopped automatically (auto-stop)</string>
     <string name="bridge_server_stopped_timeout">Android background time limit reached, restart it from the app</string>
@@ -130,7 +130,7 @@
     <string name="listen_together_unblock">Unblock</string>
     <string name="listen_together_use_custom_server">Use custom server</string>
     <string name="listen_together_user_blocked_by_host">Blocked by host</string>
-    <string name="listen_together_username">Username</string>
+    <string name="listen_together_username">Felhasználónév</string>
     <string name="listen_together_username_hint">Your username</string>
     <string name="listen_together_view_logs">View logs</string>
     <string name="listen_together_waiting_for_approval">Waiting for host approval…</string>
@@ -150,9 +150,9 @@
     <string name="network_proxy_password_description">Set the optional proxy password. The saved value is encrypted and hidden here.</string>
     <string name="network_proxy_port_description">Enter the port on which the proxy server accepts connections.</string>
     <string name="network_proxy_username_description">Set the optional username required to authenticate with the proxy.</string>
-    <string name="network_quality_high">High</string>
-    <string name="network_quality_low">Low</string>
-    <string name="network_quality_medium">Medium</string>
+    <string name="network_quality_high">Magas</string>
+    <string name="network_quality_low">Alacsony</string>
+    <string name="network_quality_medium">Közepes</string>
     <string name="network_region_override_description">Override the country used for requests; leave it empty to use the phone region.</string>
     <string name="network_settings">Connection Settings</string>
     <string name="network_settings_description">The network section contains settings to optimize the app\'s performance and data usage</string>
