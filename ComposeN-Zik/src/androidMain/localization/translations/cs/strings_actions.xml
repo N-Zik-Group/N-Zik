@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_action_apply">Apply</string>
     <string name="common_action_cancel">Zrušit</string>
     <string name="common_action_clear">Vymazat</string>
@@ -12,15 +13,15 @@
     <string name="common_action_import">Import</string>
     <string name="common_action_next">Next</string>
     <string name="common_action_ok">OK</string>
-    <string name="common_action_paste">Vložit</string>
+    <string name="common_action_paste">Paste</string>
     <string name="common_action_previous">Previous</string>
     <string name="common_action_remove">Remove</string>
-    <string name="common_action_reset">Obnovit</string>
+    <string name="common_action_reset">Reset</string>
     <string name="common_action_retry">Opakovat</string>
     <string name="common_action_save">Save</string>
     <string name="common_action_select">Vybrat</string>
-    <string name="common_action_show_less">Zobrazit méně</string>
-    <string name="common_action_show_more">Zobrazit více</string>
+    <string name="common_action_show_less">Show less</string>
+    <string name="common_action_show_more">Show more</string>
     <string name="common_action_translate">Překlad</string>
     <string name="common_action_turn_off">Vypnout</string>
     <string name="common_action_unlink">Unlink</string>
