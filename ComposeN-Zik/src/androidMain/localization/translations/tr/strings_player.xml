@@ -34,7 +34,7 @@
     <!-- Audio Reverb -->
     <string name="audio_reverb_large_hall">Büyük Salon</string>
     <string name="audio_reverb_large_room">Geniş Oda</string>
-    <string name="audio_reverb_medium_hall">Orta Salon </string>
+    <string name="audio_reverb_medium_hall">Orta Salon</string>
     <string name="audio_reverb_medium_room">Orta Boy Oda</string>
     <string name="audio_reverb_none">Yok</string>
     <string name="audio_reverb_plate">Plaka</string>
@@ -142,7 +142,7 @@
     <string name="player_action_bar_transparent_background_description">Oyuncu eylem düğmelerinin arkasındaki düz arka planı kaldırın.</string>
     <string name="player_action_enqueue">Sıraya ekle</string>
     <string name="player_action_like">Beğen</string>
-    <string name="player_action_listen_on_invidious">Invidious\'ta dinle</string>
+    <string name="player_action_listen_on_invidious">%1$s\'ta dinle</string>
     <string name="player_action_listen_on_youtube">YouTube\'da dinle</string>
     <string name="player_action_listen_on_youtube_music">YouTube Music\'te dinle</string>
     <string name="player_action_locate_current_song">Şu anda çalan şarkıyı göster</string>
@@ -372,9 +372,9 @@
     <string name="widget_not_playing_status">Oynatılmıyor</string>
     <string name="widget_playlists_description">N-Zik Çalma Listeleri</string>
     <string name="widget_turntable_description">N-Zik Plak Çalar</string>
-    <string name="audio_device_battery_format">Battery: %1$d%%</string>
-    <string name="audio_output_bluetooth_device_label">Bluetooth device</string>
-    <string name="audio_output_usb_audio_label">USB audio</string>
-    <string name="audio_output_external_speaker_label">External speaker</string>
-    <string name="audio_output_load_failed">Failed to load devices: %1$s</string>
+    <string name="audio_device_battery_format">Pil: %1$d%%</string>
+    <string name="audio_output_bluetooth_device_label">Bluetooth cihazı</string>
+    <string name="audio_output_usb_audio_label">USB ses</string>
+    <string name="audio_output_external_speaker_label">Harici hoparlör</string>
+    <string name="audio_output_load_failed">Aygıtlar yüklenemedi: %1$s</string>
 </resources>
