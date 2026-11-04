@@ -150,9 +150,9 @@
     <string name="network_proxy_password_description">Set the optional proxy password. The saved value is encrypted and hidden here.</string>
     <string name="network_proxy_port_description">Enter the port on which the proxy server accepts connections.</string>
     <string name="network_proxy_username_description">Set the optional username required to authenticate with the proxy.</string>
-    <string name="network_quality_high">High</string>
-    <string name="network_quality_low">Low</string>
-    <string name="network_quality_medium">Medium</string>
+    <string name="network_quality_high">Alto</string>
+    <string name="network_quality_low">Baixa</string>
+    <string name="network_quality_medium">Médio</string>
     <string name="network_region_override_description">Override the country used for requests; leave it empty to use the phone region.</string>
     <string name="network_settings">Connection Settings</string>
     <string name="network_settings_description">The network section contains settings to optimize the app\'s performance and data usage</string>
