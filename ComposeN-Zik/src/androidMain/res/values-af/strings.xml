@@ -2402,6 +2402,8 @@
     <string name="settings_parental_age_restriction_description">Prevent play songs with age limitation</string>
     <string name="settings_picture_in_picture_android_12_auto_description">From Android 12 pip can be automatically enabled</string>
     <string name="settings_picture_in_picture_artwork_module_label">Cover</string>
+    <string name="settings_picture_in_picture_open">Open picture-in-picture</string>
+    <string name="settings_picture_in_picture_open_failed">Couldn’t open picture-in-picture. Check app info settings on your android to allows it for N-Zik.</string>
     <string name="settings_picture_in_picture_title">Picture in Picture</string>
     <string name="settings_pip_module">Pip module</string>
     <string name="settings_playback_duration_limit_description">If enabled, songs with duration over the limit will be excluded, applied to mytop and playback queue</string>
