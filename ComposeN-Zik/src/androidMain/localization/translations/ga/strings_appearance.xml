@@ -171,13 +171,13 @@
     <string name="player_cover_style_vinyl">Vinyl</string>
     <string name="player_like_icon_apple">Apple</string>
     <string name="player_like_icon_brilliant">Brilliant</string>
-    <string name="player_like_icon_broken">Broken</string>
-    <string name="player_like_icon_cute">Cute</string>
+    <string name="player_like_icon_broken">Breaked</string>
+    <string name="player_like_icon_cute">Shape</string>
     <string name="player_like_icon_gift">Gift</string>
     <string name="player_like_icon_striped">Striped</string>
     <string name="player_progress_both">Both</string>
     <string name="player_progress_mini_player">Minimized player</string>
-    <string name="settings_action_bar_show_lyrics_button">Lyrics button</string>
+    <string name="settings_action_bar_show_lyrics_button">Show Lyrics button</string>
     <!-- Player Background -->
     <string name="player_background_black_cherry_cosmos">Black Cherry Cosmos</string>
     <string name="player_background_glossy_gradient">Glossy Gradient</string>
