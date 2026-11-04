@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="common_color_picker_title">Choisissez une couleur</string>
-    <string name="common_content_explicit_label">Explicite</string>
-    <string name="common_debug_title">Débogage</string>
+    <!-- Common -->
+    <string name="common_color_picker_title">Choose color</string>
+    <string name="common_content_explicit_label">Explicit</string>
+    <string name="common_debug_title">Debug</string>
     <string name="common_information_title">Information</string>
     <string name="common_limit_unlimited_label">Illimité</string>
     <string name="common_navigation_section_title">Navigation</string>
     <string name="common_other_section_title">Autres</string>
     <string name="common_playback_section_title">Lecture</string>
-    <string name="common_restart_required_title">Redémarrage requis</string>
+    <string name="common_restart_required_title">Restart required</string>
     <string name="common_size_label">Taille</string>
 </resources>
