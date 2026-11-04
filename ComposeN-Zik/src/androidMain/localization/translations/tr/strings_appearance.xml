@@ -25,7 +25,6 @@
     <string name="glass_effect_enable_warning_title">Cam efekti etkinleştirilsin mi?</string>
     <string name="glass_effect_enabled_description">Tema renklerinizi koruyarak yarı saydam yüzeyleri ve dış hatları özelleştirin.</string>
     <string name="glass_effect_enabled_title">Cam efekti kullan</string>
-    <string name="glass_effect_film">Film</string>
     <string name="glass_effect_frost">Don</string>
     <string name="glass_effect_frost_strength">Don gücü</string>
     <string name="glass_effect_group_color">Renk</string>
@@ -54,8 +53,6 @@
     <string name="glass_effect_navigation_header">Başlık kontrolleri</string>
     <string name="glass_effect_navigation_header_description">N-ZIK logosunun yanındaki Geri, Arama ve Profil düğmeleri.</string>
     <string name="glass_effect_navigation_summary">N-ZIK logosunun yanındaki sekme çubuğunu ve düğmeleri değiştirin.</string>
-    <string name="glass_effect_optimization_description">Reduce or disable background Glass effects when a menu, dialog, or other overlay is open to avoid stacking expensive blur and refraction effects. Disable with caution: the app may become significantly slower.</string>
-    <string name="glass_effect_optimization_title">Glass optimization</string>
     <string name="glass_effect_pages_summary">Ana Sayfa, Arama ve diğer sayfalar için bir görünüm seçin.</string>
     <string name="glass_effect_playback_summary">Küçük oynatıcıyı, tam ekran oynatıcıyı ve kuyruğu değiştirin.</string>
     <string name="glass_effect_quality_balanced">Dengeli</string>
@@ -122,8 +119,6 @@
     <string name="glass_effect_role_visualizer_description">Görselleştiriciyle birlikte kullanılan oklar ve Ayarlar düğmesi.</string>
     <string name="glass_effect_shared_summary">Uygulama için standart görünümü seçin. Diğer gruplar, belirli kısımları değiştirmenize olanak tanır.</string>
     <string name="glass_effect_summary">Cam efekti yüzeylerini, renklerini, kenarlarını ve kalitesini özelleştirin.</string>
-    <string name="glass_effect_switches_description">Use liquid Glass switches with the shared material and interaction effects when Glass is enabled.</string>
-    <string name="glass_effect_switches_title">Glass switches</string>
     <string name="glass_effect_tint">Renk tonu</string>
     <string name="glass_effect_tint_none">Yok</string>
     <string name="glass_effect_tint_source">Cam rengi kaynağı</string>
@@ -162,8 +157,6 @@
     <string name="interface_show_floating_icon_description">Arama penceresini açan bir yüzen kısayol görüntüle.</string>
     <string name="interface_transition_effect_description">Ekranlar arasında geçiş yaparken kullanılacak animasyonu seçin.</string>
     <string name="player_controls_style_essential">Temel</string>
-    <string name="player_controls_style_modern">Modern</string>
-    <string name="player_cover_style_cd">CD</string>
     <string name="player_cover_style_cd_with_cover">Kapaklı CD</string>
     <string name="player_cover_style_vinyl">Vinil</string>
     <string name="player_like_icon_apple">Elma</string>

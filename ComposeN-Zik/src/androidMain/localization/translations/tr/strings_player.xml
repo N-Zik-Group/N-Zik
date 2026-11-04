@@ -73,7 +73,6 @@
     <string name="lyrics_color_white">Beyaz</string>
     <string name="lyrics_current_state_format">Mevcut durum: %1$s</string>
     <string name="lyrics_custom_color_description">Bu bileşenin kullandığı özel rengi seçin.</string>
-    <string name="lyrics_debug_interval_progress">lyricsIntervalProgress</string>
     <string name="lyrics_display_section_title">Ekran</string>
     <string name="lyrics_editor_title">Şarkı sözlerini girin</string>
     <string name="lyrics_empty">Şarkı sözü yok</string>
@@ -101,7 +100,6 @@
     <string name="lyrics_not_available">Şarkı sözleri mevcut değil. Lütfen tekrar deneyin veya şarkı sözlerini elle girin.</string>
     <string name="lyrics_offset">Şarkı Sözleri</string>
     <string name="lyrics_popup_messages_description">Oynatıcıda şarkı sözleriyle ilgili açılır mesajları göster.</string>
-    <string name="lyrics_provider_betterlyrics_karaoke_label">BetterLyrics (karaoke)</string>
     <string name="lyrics_provider_betterlyrics_synced_label">BetterLyrics (senkronize)</string>
     <string name="lyrics_provider_found_format">%s üzerinde şarkı sözleri bulundu</string>
     <string name="lyrics_provider_kugou_synced_label">KuGou.com (senkronize)</string>
@@ -213,8 +211,6 @@
     <string name="player_controls_timeline_size_description">Oynatıcı zaman çizelgesinin boyutunu seçin.</string>
     <string name="player_crossfade_duration_description">Giden ve gelen parçaların ne kadar süreyle üst üste bineceğini ayarlayın.</string>
     <string name="player_current_song_not_in_list">Mevcut listede çalan şarkı bulunamadı</string>
-    <string name="player_debug_play_pause_roundness">playPauseRoundness</string>
-    <string name="player_debug_should_be_playing">shouldBePlaying</string>
     <string name="player_effects">Oyuncu Efektleri</string>
     <string name="player_enable_lyrics_popup_message">Şarkı sözleri açılır mesajını etkinleştir</string>
     <string name="player_enable_rotation_buttons">Tıklandığında düğmeyi döndür</string>
@@ -227,7 +223,6 @@
     <string name="player_error_unknown">Bilinmeyen bir çalma hatası oluştu</string>
     <string name="player_error_unsupported_format">Dosya biçimi desteklenmiyor</string>
     <string name="player_error_video_id_mismatch">Dönen video kimliği istenenle eşleşmiyor</string>
-    <string name="player_error_youtube_authentication">Error YoutubeLogin</string>
     <string name="player_exclude_disliked_albums_description">Beğenmediğiniz albümlerdeki parçaların nasıl hariç tutulacağını seçin.</string>
     <string name="player_exclude_disliked_artists_description">Beğenmediğiniz sanatçıların şarkılarının nasıl hariç tutulacağını seçin.</string>
     <string name="player_exclude_disliked_songs_description">Beğenmediğiniz parçaların çalma önerilerinden nasıl hariç tutulacağını seçin.</string>
@@ -290,7 +285,6 @@
     <string name="player_statistics_bitrate_label">Bit hızı</string>
     <string name="player_statistics_codec_label">Kodek</string>
     <string name="player_statistics_container_label">Medya Türü</string>
-    <string name="player_statistics_itag_label">Itag</string>
     <string name="player_statistics_loudness_label">Ses yüksekliği</string>
     <string name="player_statistics_media_id_label">Kimlik</string>
     <string name="player_statistics_perceptual_loudness_label">Algısal Ses Yüksekliği</string>
@@ -320,7 +314,6 @@
     <string name="player_mini_button_radio">Radyo</string>
     <string name="player_mini_button_share">Paylaş</string>
     <string name="player_mini_button_sleep_timer">Uyku zamanlayıcısı</string>
-    <string name="player_mini_button_video">Video</string>
     <string name="player_mini_button_visualizer">Görselleştirme</string>
     <string name="player_mini_buttons_config">Mini Oynatıcı düğmeleri</string>
     <string name="player_mini_buttons_config_description">Mini oynatıcıdaki 4 düğmeyi yapılandırın</string>

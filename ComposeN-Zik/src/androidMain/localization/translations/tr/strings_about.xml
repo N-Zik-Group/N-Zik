@@ -5,8 +5,6 @@
     <string name="about_action_view_source">Kaynak kodunu görüntüle</string>
     <string name="about_authorship_preposition">tarafından</string>
     <string name="about_contributors_alphabetical_order_label">Alfabetik sırada:</string>
-    <string name="about_debug_developers_rotation">developers_rotation</string>
-    <string name="about_debug_translators_rotation">translators_rotation</string>
     <string name="about_developers_description">Uygulamaya katkıda bulunan geliştiricileri ve tasarımcıları göster veya gizle.</string>
     <string name="about_developers_designers_title">Geliştiriciler / Tasarımcılar</string>
     <string name="about_github_link_description">GitHub\'a yönlendirileceksiniz</string>

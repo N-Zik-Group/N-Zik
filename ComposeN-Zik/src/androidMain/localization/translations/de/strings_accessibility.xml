@@ -18,5 +18,4 @@
     <string name="accessibility_reset">Zurücksetzen</string>
     <string name="accessibility_song_album_cover">Albumcover des Songs</string>
     <string name="accessibility_switch_mode">Wechselmodus</string>
-    <string name="accessibility_youtube_playlist">Youtube Playlist</string>
 </resources>

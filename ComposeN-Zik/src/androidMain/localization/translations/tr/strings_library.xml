@@ -96,7 +96,6 @@
     <string name="library_sync_progress_format">%1$d / %2$d</string>
     <string name="library_title">Kütüphane</string>
     <string name="library_youtube_music_title">YTM Kütüphanesi</string>
-    <string name="library_youtube_playlists_label">YT/YTM</string>
     <string name="library_dislikes_added">%s Beğenilmeyenlere eklendi</string>
     <string name="library_dislikes_removed">%s Beğenilmeyenlerden çıkarıldı</string>
     <string name="library_favorites_action_add">Favorilere ekle</string>
@@ -191,7 +190,6 @@
     <string name="metadata_musicbrainz_stat_listens">Dinler</string>
     <string name="metadata_musicbrainz_stat_songs">Şarkılar</string>
     <string name="metadata_musicbrainz_stat_time">Toplam süre</string>
-    <string name="metadata_musicbrainz_wikipedia">Wikipedia</string>
     <string name="playlist_action_add">Çalma listesine ekle</string>
     <string name="playlist_action_add_hint">Çalma listesine ekle</string>
     <string name="playlist_action_create">Yeni çalma listesi</string>
@@ -221,7 +219,6 @@
     <string name="playlist_import_failed">Yerel çalma listesi içe aktarılırken hata oluştu</string>
     <string name="playlist_import_format_exportify_csv">CSV\'yi Dışa Aktar (Spotify)</string>
     <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
-    <string name="playlist_import_format_riplay_csv">RiPlay CSV</string>
     <string name="playlist_import_unsupported_format">Desteklenmeyen format</string>
     <string name="playlist_import_youtube_link">YouTube bağlantısı üzerinden içe aktar</string>
     <string name="playlist_insertion_beginning">Başlangıç</string>

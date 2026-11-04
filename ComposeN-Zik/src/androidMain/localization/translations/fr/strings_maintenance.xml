@@ -46,8 +46,6 @@
     <string name="maintenance_download_failed">Échec</string>
     <string name="maintenance_download_in_progress">En cours</string>
     <string name="maintenance_download_queued">En attente</string>
-    <string name="maintenance_download_revalidation">Download re-validation</string>
-    <string name="maintenance_download_self_heal">Download self-heal</string>
     <string name="maintenance_downloads">Téléchargements</string>
     <string name="maintenance_downloads_completed">%d terminé</string>
     <string name="maintenance_downloads_failed">%d ont échoué</string>
@@ -60,12 +58,9 @@
     <string name="maintenance_jobs_all_ok">Toutes les tâches sont OK</string>
     <string name="maintenance_jobs_none">Pas de tâches</string>
     <string name="maintenance_last_crash">Dernier accident</string>
-    <string name="maintenance_lastfm_active">Session active</string>
     <string name="maintenance_library">Bibliothèque</string>
-    <string name="maintenance_library_albums">%d albums</string>
     <string name="maintenance_library_artists">%d artistes</string>
     <string name="maintenance_library_listened">%d ont écouté</string>
-    <string name="maintenance_library_playlists">%d playlists</string>
     <string name="maintenance_library_songs">%d titres</string>
     <string name="maintenance_live_subsystems">Sous-systèmes en temps réel</string>
     <string name="maintenance_log_view">Afficher</string>
@@ -78,22 +73,17 @@
     <string name="maintenance_lt_not_started">Pas encore commencé</string>
     <string name="maintenance_lt_reconnecting">Reconnexion</string>
     <string name="maintenance_mb_ok">Ok</string>
-    <string name="maintenance_mb_rate_limited">%d min</string>
     <string name="maintenance_migration_done">Terminé</string>
     <string name="maintenance_no_data">Aucune donnée</string>
     <string name="maintenance_not_connected">Non connecté</string>
     <string name="maintenance_open">Ouvrir</string>
     <string name="maintenance_open_desc">Ouvrir la fiche d\'entretien complète</string>
     <string name="maintenance_pass_clean">Rien à nettoyer</string>
-    <string name="maintenance_pass_cleaned">%d item(s) cleaned</string>
-    <string name="maintenance_pass_deferred">%d item(s) deferred</string>
-    <string name="maintenance_pass_skipped">%d item(s) skipped</string>
     <string name="maintenance_refresh">Actualiser</string>
     <string name="maintenance_section_caches_downloads">Caches &amp; Téléchargements</string>
     <string name="maintenance_section_database">Base de données</string>
     <string name="maintenance_section_jobs">Emplois</string>
     <string name="maintenance_section_library_sync">Bibliothèque &amp; Synchronisation</string>
-    <string name="maintenance_section_services">Services</string>
     <string name="maintenance_section_system">Système</string>
     <string name="maintenance_settings_size">Taille des paramètres</string>
     <string name="maintenance_skip_custom_name">Nom personnalisé</string>
@@ -109,7 +99,6 @@
     <string name="maintenance_status_song_resolved">Résolution au niveau des notes</string>
     <string name="maintenance_sync_ytm">Synchronisation YouTube Music</string>
     <string name="maintenance_sync_ytm_running">Synchronisation en cours</string>
-    <string name="maintenance_title">Maintenance</string>
     <string name="maintenance_update_completed">Prêt pour la mise à jour</string>
     <string name="maintenance_update_downloading">Téléchargement de %s</string>
     <string name="maintenance_update_failed">Échec du téléchargement</string>
@@ -133,7 +122,6 @@
     <string name="modules_download_needed">Le module doit être téléchargé (environ 25 Mo). Vérifiez votre connexion.</string>
     <string name="modules_downloading">Module de téléchargement</string>
     <string name="modules_edit_unavailable">Modification des métadonnées impossible : %1$s</string>
-    <string name="modules_ffmpeg">FFmpeg</string>
     <string name="modules_ffmpeg_description">Nécessaire pour exporter les morceaux mis en cache et modifier les métadonnées des morceaux. Téléchargé lors de la première utilisation.</string>
     <string name="modules_info">Infos</string>
     <string name="modules_insufficient_space">Cette fonctionnalité nécessite environ 70 Mo d\'espace libre.</string>
@@ -147,7 +135,6 @@
     <string name="modules_size">Taille</string>
     <string name="modules_tab_installed">Installé</string>
     <string name="modules_tab_marketplace">Marché</string>
-    <string name="modules_title">Extensions</string>
     <string name="modules_uninstall">Désinstaller</string>
     <string name="modules_uninstall_confirm">Cette opération supprime le module de cet appareil. Il sera téléchargé à nouveau lors de la première utilisation.</string>
     <string name="modules_uninstalled">Module désinstallé</string>
@@ -155,7 +142,6 @@
     <string name="modules_update_available">Une mise à jour du module est disponible</string>
     <string name="modules_update_available_body">La version %1$s est installée. L\'application est désormais fournie avec la version %2$s.</string>
     <string name="modules_updating">Mise à jour du module</string>
-    <string name="modules_version">Version</string>
     <string name="recovery_accounts_exported">État du profil exporté</string>
     <string name="recovery_accounts_imported_base">État du profil importé : profil de base</string>
     <string name="recovery_accounts_imported_count">État des profils importés : %1$d profils</string>
@@ -226,7 +212,6 @@
     <string name="recovery_no_profiles_to_restore">Aucun profil ne dispose d\'une sauvegarde de réinitialisation à restaurer</string>
     <string name="recovery_no_settings_backup">Aucune sauvegarde des paramètres n\'a été trouvée</string>
     <string name="recovery_profile_active">Actif</string>
-    <string name="recovery_profile_base">Base</string>
     <string name="recovery_profile_target_description">Les actions sur les données ci-dessous s\'appliquent au profil sélectionné</string>
     <string name="recovery_profiles_deleted_active_restart">Le profil actuel a été supprimé : le profil par défaut est désormais actif — redémarrez l\'application</string>
     <string name="recovery_profiles_deleted_count">Suppression de %1$d profil(s)</string>

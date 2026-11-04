@@ -14,7 +14,6 @@
     <string name="common_debug_width">genişlik</string>
     <string name="common_delete_success">Silindi</string>
     <string name="common_description_unavailable">Açıklama mevcut değil</string>
-    <string name="common_duration_milliseconds_format">%1$s ms</string>
     <string name="common_empty_items">Öğe yok</string>
     <string name="common_external_link_loading_suffix">yükleniyor...</string>
     <string name="common_load_failed">Yüklenemiyor</string>

@@ -53,7 +53,6 @@
     <string name="backup_auto_title">Sauvegarde automatique</string>
     <string name="backup_auto_unit_days">Jours</string>
     <string name="backup_auto_unit_hours">Heures</string>
-    <string name="backup_auto_unit_minutes">Minutes</string>
     <string name="backup_auto_unit_months">Mois</string>
     <string name="backup_auto_unit_weeks">Semaines</string>
     <string name="backup_export_accounts_description">Exporter la liste des profils et les photos de visage dans un seul fichier .txt</string>

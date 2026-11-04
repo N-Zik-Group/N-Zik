@@ -133,7 +133,6 @@
     <string name="modules_download_needed">Modülün indirilmesi gerekiyor (~25 MB). Bağlantıyı kontrol edin.</string>
     <string name="modules_downloading">Modül indiriliyor</string>
     <string name="modules_edit_unavailable">Meta verileri düzenlenemiyor: %1$s</string>
-    <string name="modules_ffmpeg">FFmpeg</string>
     <string name="modules_ffmpeg_description">Önbelleğe alınmış şarkıları dışa aktarmak ve şarkı meta verilerini düzenlemek için gerekliydi. İlk kullanımda indirildi.</string>
     <string name="modules_info">Bilgi</string>
     <string name="modules_insufficient_space">Bu özellik için yaklaşık 70 MB boş alan gereklidir</string>
@@ -266,8 +265,6 @@
     <string name="updates_build_beta_label">BETA</string>
     <string name="updates_build_debug_label">HATA AYIKLAMA</string>
     <string name="updates_build_dev_label">GELİŞTİRİCİ</string>
-    <string name="updates_build_minified_label">MINIFIED</string>
-    <string name="updates_build_release_label">RELEASE</string>
     <string name="updates_cache_cleared">Önbellek temizlendi</string>
     <string name="updates_changelog_title">%s sürümündeki yenilikler</string>
     <string name="updates_channel_name">Uygulama Güncellemeleri</string>

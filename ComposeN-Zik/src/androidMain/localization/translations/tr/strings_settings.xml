@@ -34,7 +34,6 @@
     <string name="language_name_hindi">Hintçe (हिन्दी)</string>
     <string name="language_name_hungarian">Macarca (Hungarian)</string>
     <string name="language_name_indonesian">Endonezya (Indonesia)</string>
-    <string name="language_name_interlingua">Interlingua</string>
     <string name="language_name_irish">İrlandaca (Gaeilge)</string>
     <string name="language_name_italian">İtalyanca (Italiano)</string>
     <string name="language_name_japanese">Japonca (日本語)</string>
@@ -50,7 +49,6 @@
     <string name="language_name_russian">Rusça (Русский)</string>
     <string name="language_name_serbian_cyrillic">Sırp Kiril alfabesi (Српска)</string>
     <string name="language_name_serbian_latin">Sırpça Latin (Gajeva latinica)</string>
-    <string name="language_name_sinhala">Sinhala (සිංහල)</string>
     <string name="language_name_spanish">İspanyolca (Español)</string>
     <string name="language_name_swedish">İsveççe (Swedish)</string>
     <string name="language_name_tamil">Tamilce</string>
@@ -92,7 +90,6 @@
     <string name="permissions_journal_empty">Henüz kaydedilmiş izin olayı yok.</string>
     <string name="permissions_journal_entries">İzin etkinliklerini göster</string>
     <string name="permissions_journal_entries_description">N-Zik özelliğine göre izin taleplerini ve kullanımlarını görüntüleyin.</string>
-    <string name="permissions_journal_event">%1$s · %2$s\n%3$s · %4$s</string>
     <string name="permissions_journal_pause">İzin faaliyet geçmişini duraklat</string>
     <string name="permissions_journal_pause_description">Daha önce kaydedilmiş olayları silmeden bu profil için izin olayları eklemeyi durdurun.</string>
     <string name="permissions_label_bluetooth">Yakındaki Bluetooth cihazları</string>
@@ -169,7 +166,6 @@
     <string name="settings_debug_title">Ayarlar</string>
     <string name="settings_debug_updater_preview_description">Bu hata ayıklama sürümünde, Genel ayarlardan Güncelle seçeneğini açın. Otomatik güncellemeler devre dışı kalmaya devam eder.</string>
     <string name="settings_debug_updater_preview_label">Güncelleyici düzenini önizle</string>
-    <string name="settings_description_with_value">%1$s\n%2$s</string>
     <string name="settings_discord_advanced_button1_label">Birinci Discord düğme etiketi</string>
     <string name="settings_discord_advanced_button1_url">Birinci Discord düğme URL’si</string>
     <string name="settings_discord_advanced_button2_label">İkinci Discord düğme etiketi</string>
@@ -418,7 +414,6 @@
     <string name="settings_section_fullscreen_lyrics_title">Tam ekran şarkı sözleri bileşenleri</string>
     <string name="settings_section_notification_player_title">Bildirim Oynatıcı</string>
     <string name="settings_section_player_action_bar_title">Oyuncu eylem çubuğu</string>
-    <string name="settings_section_proxy_title">Proxy</string>
     <string name="settings_section_service_lifetime_title">Hizmet ömrü</string>
     <string name="settings_section_smart_recommendations_title">Akıllı öneriler</string>
     <string name="settings_section_troubleshooting_title">Sorun giderme</string>

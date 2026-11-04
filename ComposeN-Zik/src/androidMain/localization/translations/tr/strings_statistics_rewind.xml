@@ -31,7 +31,6 @@
     <string name="rewind_artist_spotlight_about">HAKKINDA</string>
     <string name="rewind_artist_spotlight_empty_body">#1 numaralı sanatçınız yeterli dinleme geçmişi oluştuğunda burada görünecektir.</string>
     <string name="rewind_artist_spotlight_empty_title">HENÜZ EN İYİ SANATÇI YOK</string>
-    <string name="rewind_artist_spotlight_innertube">INNER TUBE</string>
     <string name="rewind_artist_spotlight_kicker">#1 NUMARALI SANATÇINIZ • %1$s</string>
     <string name="rewind_artist_spotlight_see_more">DAHA FAZLASINI GÖR</string>
     <string name="rewind_background_music_description">Geri Sarma hikayelerini izlerken arka plan müziği çal.</string>
@@ -118,7 +117,6 @@
     <string name="rewind_home_years">YILLAR</string>
     <string name="rewind_hour_am">ÖÖ</string>
     <string name="rewind_hour_pm">ÖS</string>
-    <string name="rewind_intro_kicker">N-ZIK • %1$s</string>
     <string name="rewind_intro_opening">AÇILIŞ…</string>
     <string name="rewind_intro_start">BAŞLAT</string>
     <string name="rewind_intro_tagline">Müzikle dolu bir yıl. Sizin için.</string>

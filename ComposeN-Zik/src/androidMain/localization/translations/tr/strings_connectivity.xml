@@ -163,7 +163,6 @@
     <string name="network_stream_client_mobile_description">Mobil istemcisi.</string>
     <string name="network_stream_client_tv_embedded_description">TV\'ye entegre oynatıcı istemcisi.</string>
     <string name="network_stream_client_tv_html5_description">TV HTML5 oynatıcı istemcisi.</string>
-    <string name="network_stream_client_tv_simply_description">TV Simply client. Lightweight TV variant.</string>
     <string name="network_stream_client_visionos_description">VisionOS istemcisi.</string>
     <string name="network_stream_client_web_creator_description">Web tasarımcısı istemcisi.</string>
     <string name="network_stream_client_web_description">Standart web istemcisi.</string>
@@ -171,19 +170,12 @@
     <string name="network_proxy_invalid_hostname">Proxy sunucu adınız geçersiz, lütfen kontrol edin</string>
     <string name="network_stream_client">Akış İstemcisi</string>
     <string name="network_stream_client_android">Android</string>
-    <string name="network_stream_client_android_creator">Android Creator</string>
     <string name="network_stream_client_android_vr">Android VR</string>
     <string name="network_stream_client_ios">iOS</string>
     <string name="network_stream_client_ipados">iPadOS</string>
-    <string name="network_stream_client_mobile">Mobile</string>
     <string name="network_stream_client_redownload_recommendation">Şarkıları yeni kalitede yeniden indirin (özellikle Web Remix/YTB Premium hesabıyla)</string>
-    <string name="network_stream_client_tv_embedded">TV Embedded</string>
-    <string name="network_stream_client_tv_html5">TV HTML5</string>
     <string name="network_stream_client_tv_simply">TV Simply</string>
     <string name="network_stream_client_visionos">visionOS</string>
-    <string name="network_stream_client_web">Web</string>
-    <string name="network_stream_client_web_creator">Web Creator</string>
-    <string name="network_stream_client_web_remix">Web Remix</string>
     <string name="network_stream_error_retrying">Tekrar deniyor: %1$s</string>
     <string name="network_stream_still_retrying">Hala yükleniyor… Deneme %1$s</string>
     <string name="network_stream_unexpected_skip">Beklenmedik bir parça değişikliği tespit edildi</string>

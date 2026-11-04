@@ -13,9 +13,7 @@
     <string name="accessibility_new_playlist_name">nytt spellistnamn</string>
     <string name="accessibility_number_of_songs_in_queue">Antal låtar i kö</string>
     <string name="accessibility_origin_indicator">Ursprungsindikator</string>
-    <string name="accessibility_recenter">Recenter</string>
     <string name="accessibility_rename_dialog_text_box_icon">Döp om dialogrutan ikonen</string>
-    <string name="accessibility_reset">Reset</string>
     <string name="accessibility_song_album_cover">Låtens skivomslag</string>
     <string name="accessibility_switch_mode">Växla läge</string>
     <string name="accessibility_youtube_playlist">YouTube spellista</string>
