@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_app_icon">Icona dell\'app</string>
+    <string name="accessibility_app_icon_in_player">icona app nel giocatore</string>
+    <string name="accessibility_arrow_down">arrow_down</string>
+    <string name="accessibility_arrow_up">arrow_up</string>
+    <string name="accessibility_background_image">Immagine Di Sfondo</string>
+    <string name="accessibility_blurred_background">sfocato_sfondo</string>
+    <string name="accessibility_disc_background">sfondo disco</string>
+    <string name="accessibility_filter">Filtro</string>
+    <string name="accessibility_import_playlist_name">importazione nome playlist</string>
+    <string name="accessibility_loading">caricamento...</string>
+    <string name="accessibility_new_playlist_name">nuovo nome della playlist</string>
+    <string name="accessibility_number_of_songs_in_queue">Numero di brani in coda</string>
+    <string name="accessibility_origin_indicator">indicatore</string>
+    <string name="accessibility_recenter">Recenter</string>
+    <string name="accessibility_rename_dialog_text_box_icon">Rinomina icona della finestra di testo</string>
+    <string name="accessibility_reset">Ripristina</string>
+    <string name="accessibility_song_album_cover">copertina album brani</string>
+    <string name="accessibility_switch_mode">Cambia Modalità</string>
+    <string name="accessibility_youtube_playlist">Playlist Youtube</string>
+</resources>

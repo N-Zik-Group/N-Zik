@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_action_report_issue">Rapportér et problem</string>
+    <string name="about_action_request_feature">Anmod om en funktion eller foreslå en idé</string>
+    <string name="about_action_view_source">Se kildekoden</string>
+    <string name="about_authorship_preposition">af</string>
+    <string name="about_contributors_alphabetical_order_label">I alfabetisk orden:</string>
+    <string name="about_debug_developers_rotation">developers_rotation</string>
+    <string name="about_debug_translators_rotation">oversættere_rotation</string>
+    <string name="about_developers_description">Show or hide the developers and designers who contributed to the app.</string>
+    <string name="about_developers_designers_title">Udviklere / Designere</string>
+    <string name="about_github_link_description">Du omdirigeres til GitHub</string>
+    <string name="about_report_issue_description">Open the GitHub bug report form to describe a problem.</string>
+    <string name="about_request_feature_description">Open the GitHub feature request form to suggest an improvement.</string>
+    <string name="about_source_code_description">Open the source code repository on GitHub.</string>
+    <string name="about_title">Om</string>
+    <string name="about_translators_description">Show or hide the people who translated the app.</string>
+    <string name="about_translators_title">Oversættere</string>
+</resources>

@@ -362,11 +362,11 @@ class LyricsScreenTest {
 
 ## Translations (Crowdin)
 
-- Source strings live ONLY in `values/strings.xml` — this is the single source of truth for translators
-- NEVER hand-edit a translation VALUE in any `values-*/strings.xml` file - these are managed by the Crowdin sync; manual value edits get overwritten and cause merge conflicts with translator work. (Removing an entire dead key element across all locales is a structural cleanup, not a value edit - see the "Removing a string key" rule below.)
-- If a Crowdin sync commit/PR appears (bot-authored, touches only `values-*/strings.xml`), it is exempt from the full BMAD workflow and from code review — merge as-is after a diff sanity check (human commit approval from AGENTS.md still applies: show the diff, ask before merging/committing)
-- Adding a NEW string key: add it to `values/strings.xml` only; Crowdin will propagate it to other locales automatically
-- Removing a string key: check for usages in code first (a stale key breaks translator context, not just compilation), then remove the element from `values/strings.xml` AND from every `values-*/strings.xml` so no stale copy lingers in a locale
+- Source strings live in thematic XML files under `ComposeN-Zik/src/androidMain/localization/res/values/`. Use the feature's file for feature-specific copy and shared files for reusable text
+- NEVER hand-edit a translation VALUE in any Crowdin-managed `values-*/strings_*.xml` or `values-*/plurals.xml` file - these are managed by the Crowdin sync; manual value edits get overwritten and cause merge conflicts with translator work. (Removing an entire dead key element across all locales is a structural cleanup, not a value edit - see the "Removing a string key" rule below.)
+- If a Crowdin sync commit/PR appears (bot-authored, touches only Crowdin-managed localized XML), it is exempt from the full BMAD workflow and from code review — merge as-is after a diff sanity check (human commit approval from AGENTS.md still applies: show the diff, ask before merging/committing)
+- Adding a NEW string key: add it to the appropriate source XML only; Crowdin will propagate it to other locales automatically
+- Removing a string key: check for usages in code first (a stale key breaks translator context, not just compilation), then remove the element from its source XML and corresponding localized XML files so no stale copy lingers in a locale
 - Never assume a `values-*` string is wrong because it "reads oddly" in English — flag it to the user/translation team instead of editing it directly
 
 ## Dependency Injection

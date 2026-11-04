@@ -59,7 +59,7 @@
 
 ### 🏗️ Code
 - [ ] New code lives in `app.n_zik.android.*` — nothing new under the legacy packages; any legacy edit has explicit user approval (quoted in the description)
-- [ ] New strings go in `values/strings.xml` only — I didn't touch any `values-*/` file (Crowdin-managed)
+- [ ] New strings go in the appropriate XML under `src/androidMain/localization/res/values/` — I didn't touch any `values-*/` file (Crowdin-managed)
 - [ ] This is a Crowdin sync PR — I said so in the description (exempt from BMAD + review)
 - [ ] Coroutines run on `NzikDispatchers` only (`fireAndForget()` for fire-and-forget) — no `GlobalScope`, no raw `Dispatchers.*`, no `runBlocking` without a "why" comment
 - [ ] Compose: `collectAsStateWithLifecycle()`, atomic `_state.update { }`, `key` + `contentType` on lazy lists

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_answer_no">아니요</string>
+    <string name="common_artist_conjunction_and">and</string>
+    <string name="common_brand_github">GitHub</string>
+    <string name="common_clipboard_copy_failed">Failed to copy text to clipboard, try again</string>
+    <string name="common_clipboard_copy_success">복사됨</string>
+    <string name="common_color_black">검은색</string>
+    <string name="common_color_custom">맞춤 색상</string>
+    <string name="common_color_source_artwork">Cover color</string>
+    <string name="common_color_source_theme">테마</string>
+    <string name="common_color_white">흰색</string>
+    <string name="common_debug_background">background</string>
+    <string name="common_debug_width">width</string>
+    <string name="common_delete_success">삭제됨</string>
+    <string name="common_description_unavailable">No description available</string>
+    <string name="common_duration_milliseconds_format">%1$s ms</string>
+    <string name="common_empty_items">No items</string>
+    <string name="common_external_link_loading_suffix">로딩 중...</string>
+    <string name="common_load_failed">Unable to load</string>
+    <string name="common_load_failed_no_connection">Unable to load, no connection</string>
+    <string name="common_log_unavailable">Log unavailable</string>
+    <string name="common_option_all">전체</string>
+    <string name="common_option_custom">맞춤 설정</string>
+    <string name="common_option_default">기본값</string>
+    <string name="common_option_disabled">비활성화</string>
+    <string name="common_option_none">없음</string>
+    <string name="common_option_random">무작위</string>
+    <string name="common_restart_required_message">Please open %s again after!</string>
+    <string name="common_size_big">크게</string>
+    <string name="common_size_biggest">가장 크게</string>
+    <string name="common_size_expanded">확장됨</string>
+    <string name="common_size_medium">중간</string>
+    <string name="common_size_small">작게</string>
+    <string name="common_state_enabled">활성화됨</string>
+    <string name="common_state_off">Off</string>
+    <string name="common_state_on">On</string>
+    <string name="common_storage_used_suffix">" 사용됨"</string>
+    <string name="common_validation_empty_value">값을 비워둘 수 없습니다</string>
+    <string name="common_validation_invalid_input">Invalid input!</string>
+    <string name="common_validation_minimum_value">"최솟값: "</string>
+    <string name="common_validation_name_in_use">Name already in use</string>
+    <string name="common_value_input_hint">Enter the value</string>
+</resources>

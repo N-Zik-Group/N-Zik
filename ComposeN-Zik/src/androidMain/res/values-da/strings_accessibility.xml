@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_app_icon">Appens ikon</string>
+    <string name="accessibility_app_icon_in_player">app-ikon i afspiller</string>
+    <string name="accessibility_arrow_down">pile_ned</string>
+    <string name="accessibility_arrow_up">pile_op</string>
+    <string name="accessibility_background_image">Baggrundsbillede</string>
+    <string name="accessibility_blurred_background">blurred_baggrund</string>
+    <string name="accessibility_disc_background">disk baggrund</string>
+    <string name="accessibility_filter">Filtrer</string>
+    <string name="accessibility_import_playlist_name">importér afspilningslistens navn</string>
+    <string name="accessibility_loading">indlæser...</string>
+    <string name="accessibility_new_playlist_name">nyt afspilningslistenavn</string>
+    <string name="accessibility_number_of_songs_in_queue">Antal sange i kø</string>
+    <string name="accessibility_origin_indicator">origin_indikator</string>
+    <string name="accessibility_recenter">Seneste</string>
+    <string name="accessibility_rename_dialog_text_box_icon">Omdøb dialog tekstfelt ikon</string>
+    <string name="accessibility_reset">Nulstil</string>
+    <string name="accessibility_song_album_cover">album omslag til sang</string>
+    <string name="accessibility_switch_mode">Skift Tilstand</string>
+    <string name="accessibility_youtube_playlist">Youtube Afspilningsliste</string>
+</resources>

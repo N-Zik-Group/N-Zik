@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_action_report_issue">Nahlásit problém</string>
+    <string name="about_action_request_feature">Žádost o funkci nebo návrh nápadu</string>
+    <string name="about_action_view_source">Zobrazit zdrojový kód</string>
+    <string name="about_authorship_preposition">od</string>
+    <string name="about_contributors_alphabetical_order_label">V abecedním pořadí:</string>
+    <string name="about_debug_developers_rotation">Otočení vývojářů</string>
+    <string name="about_debug_translators_rotation">rotace překladatelů</string>
+    <string name="about_developers_description">Show or hide the developers and designers who contributed to the app.</string>
+    <string name="about_developers_designers_title">Vývojáři / Designéři</string>
+    <string name="about_github_link_description">Budete přesměrováni na GitHub.</string>
+    <string name="about_report_issue_description">Open the GitHub bug report form to describe a problem.</string>
+    <string name="about_request_feature_description">Open the GitHub feature request form to suggest an improvement.</string>
+    <string name="about_source_code_description">Open the source code repository on GitHub.</string>
+    <string name="about_title">O aplikaci</string>
+    <string name="about_translators_description">Show or hide the people who translated the app.</string>
+    <string name="about_translators_title">Překladatelé</string>
+</resources>

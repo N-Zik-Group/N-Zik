@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_error_connection_timeout">Conexiune expirată</string>
+    <string name="common_error_no_connection">Nici o conexiune</string>
+    <string name="common_error_no_internet">Fără conexiune la rețea</string>
+    <string name="common_error_title">A apărut o eroare.</string>
+    <string name="common_error_unknown">Eroare necunoscută</string>
+</resources>

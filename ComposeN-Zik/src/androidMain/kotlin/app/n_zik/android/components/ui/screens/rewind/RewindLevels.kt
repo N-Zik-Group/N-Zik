@@ -7,7 +7,7 @@ import app.n_zik.android.R
  *
  * Ported from the RiPlay Rewind extension (GPL-3.0, original in docs/RiPlay): tier names,
  * taglines and threshold ranges follow its buildRewindState() mapping. Name and tagline come
- * from string resources (rw_level_*_name / rw_level_*_tagline entries in values/strings.xml)
+ * from string resources (rw_level_*_name / rw_level_*_tagline entries in strings_statistics_rewind.xml)
  * and are resolved at the UI call site.
  */
 internal data class RewindLevel(

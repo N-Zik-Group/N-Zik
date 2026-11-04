@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_answer_no">Anuluj</string>
+    <string name="common_artist_conjunction_and">and</string>
+    <string name="common_brand_github">GitHub</string>
+    <string name="common_clipboard_copy_failed">Nie udało się skopiować tekstu do schowka, spróbuj ponownie</string>
+    <string name="common_clipboard_copy_success">Skopiowano</string>
+    <string name="common_color_black">Czarny</string>
+    <string name="common_color_custom">Custom Color</string>
+    <string name="common_color_source_artwork">Kolor okładki</string>
+    <string name="common_color_source_theme">Motyw</string>
+    <string name="common_color_white">Biały</string>
+    <string name="common_debug_background">kontekst</string>
+    <string name="common_debug_width">width</string>
+    <string name="common_delete_success">Usunięte</string>
+    <string name="common_description_unavailable">Brak dostępnego opisu</string>
+    <string name="common_duration_milliseconds_format">%1$s ms</string>
+    <string name="common_empty_items">Brak elementów</string>
+    <string name="common_external_link_loading_suffix">ładuje się...</string>
+    <string name="common_load_failed">Unable to load</string>
+    <string name="common_load_failed_no_connection">Unable to load, no connection</string>
+    <string name="common_log_unavailable">Logowanie niedostępne</string>
+    <string name="common_option_all">Wszystko</string>
+    <string name="common_option_custom">Niestandardowy</string>
+    <string name="common_option_default">Domyślny</string>
+    <string name="common_option_disabled">Wyłączony</string>
+    <string name="common_option_none">Brak</string>
+    <string name="common_option_random">Random</string>
+    <string name="common_restart_required_message">Please open %s again after!</string>
+    <string name="common_size_big">Duży</string>
+    <string name="common_size_biggest">Największy</string>
+    <string name="common_size_expanded">Rozszerzony</string>
+    <string name="common_size_medium">Średni</string>
+    <string name="common_size_small">Mały</string>
+    <string name="common_state_enabled">Włączone</string>
+    <string name="common_state_off">Wyłączony</string>
+    <string name="common_state_on">Włączone</string>
+    <string name="common_storage_used_suffix">"w użyciu"</string>
+    <string name="common_validation_empty_value">Wartość nie może być pusta</string>
+    <string name="common_validation_invalid_input">Invalid input!</string>
+    <string name="common_validation_minimum_value">"Wartość musi być większa niż "</string>
+    <string name="common_validation_name_in_use">Name already in use</string>
+    <string name="common_value_input_hint">Wprowadź wartość</string>
+</resources>

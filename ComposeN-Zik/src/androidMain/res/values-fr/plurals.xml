@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="maintenance_systems_need_attention">
+        <item quantity="one">Le système %d nécessite une intervention</item>
+        <item quantity="other">%d systèmes nécessitent une intervention</item>
+    </plurals>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_error_connection_timeout">Zeitüberschreitung der Verbindung</string>
+    <string name="common_error_no_connection">Keine Verbindung</string>
+    <string name="common_error_no_internet">Keine Internetverbindung</string>
+    <string name="common_error_title">Es ist ein Fehler aufgetreten.</string>
+    <string name="common_error_unknown">Unbekannter Fehler</string>
+</resources>

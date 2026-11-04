@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_error_connection_timeout">Час очікування підключення закінчився</string>
+    <string name="common_error_no_connection">Відсутнє підключення</string>
+    <string name="common_error_no_internet">Відсутнє мережеве з\'єднання</string>
+    <string name="common_error_title">Сталася помилка.</string>
+    <string name="common_error_unknown">Невідома помилка</string>
+</resources>

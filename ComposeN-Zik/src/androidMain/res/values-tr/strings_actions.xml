@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_action_apply">Uygula</string>
+    <string name="common_action_cancel">İptal</string>
+    <string name="common_action_clear">Temizle</string>
+    <string name="common_action_close">Kapat</string>
+    <string name="common_action_close_app">Uygulamayı kapat</string>
+    <string name="common_action_confirm">Onayla</string>
+    <string name="common_action_delete">Sil</string>
+    <string name="common_action_done">Tamam</string>
+    <string name="common_action_export">Dışa aktar</string>
+    <string name="common_action_import">İçe aktar</string>
+    <string name="common_action_next">Sonraki</string>
+    <string name="common_action_ok">Tamam</string>
+    <string name="common_action_paste">Yapıştır</string>
+    <string name="common_action_previous">Önceki</string>
+    <string name="common_action_remove">Kaldır</string>
+    <string name="common_action_reset">Sıfırla</string>
+    <string name="common_action_retry">Yeniden dene</string>
+    <string name="common_action_save">Kaydet</string>
+    <string name="common_action_select">Seç</string>
+    <string name="common_action_show_less">Daha az göster</string>
+    <string name="common_action_show_more">Daha fazla göster</string>
+    <string name="common_action_translate">Çevir</string>
+    <string name="common_action_turn_off">Kapat</string>
+    <string name="common_action_unlink">Bağlantıyı kaldır</string>
+    <string name="common_action_update">Güncelle</string>
+    <string name="common_menu_label">Menü</string>
+</resources>

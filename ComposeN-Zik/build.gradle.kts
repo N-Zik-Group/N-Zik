@@ -418,6 +418,8 @@ android {
             }
     }
 
+    sourceSets.getByName("main").res.srcDir("src/androidMain/localization/res")
+
     sourceSets.all {
         kotlin.srcDirs("src/$name/kotlin")
     }

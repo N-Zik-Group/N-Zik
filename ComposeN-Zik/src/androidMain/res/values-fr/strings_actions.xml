@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_action_apply">Appliquer</string>
+    <string name="common_action_cancel">Annuler</string>
+    <string name="common_action_clear">Effacer</string>
+    <string name="common_action_close">Fermer</string>
+    <string name="common_action_close_app">Fermer l\'application</string>
+    <string name="common_action_confirm">Confirmer</string>
+    <string name="common_action_delete">Supprimer</string>
+    <string name="common_action_done">Terminé</string>
+    <string name="common_action_export">Exporter</string>
+    <string name="common_action_import">Importer</string>
+    <string name="common_action_next">Suivant</string>
+    <string name="common_action_ok">Ok</string>
+    <string name="common_action_paste">Coller</string>
+    <string name="common_action_previous">Précédent</string>
+    <string name="common_action_remove">Supprimer</string>
+    <string name="common_action_reset">Réinitialiser</string>
+    <string name="common_action_retry">Réessayer</string>
+    <string name="common_action_save">Enregistrer</string>
+    <string name="common_action_select">Sélectionner</string>
+    <string name="common_action_show_less">Afficher moins</string>
+    <string name="common_action_show_more">Afficher plus</string>
+    <string name="common_action_translate">Traduire</string>
+    <string name="common_action_turn_off">Desactivé</string>
+    <string name="common_action_unlink">Dissocier</string>
+    <string name="common_action_update">Mettre à jour</string>
+    <string name="common_menu_label">Menu</string>
+</resources>

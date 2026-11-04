@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_action_apply">Apply</string>
+    <string name="common_action_cancel">Annulla</string>
+    <string name="common_action_clear">Pulisci</string>
+    <string name="common_action_close">Close</string>
+    <string name="common_action_close_app">Close app</string>
+    <string name="common_action_confirm">Conferma</string>
+    <string name="common_action_delete">Elimina</string>
+    <string name="common_action_done">Ok</string>
+    <string name="common_action_export">Export</string>
+    <string name="common_action_import">Import</string>
+    <string name="common_action_next">Next</string>
+    <string name="common_action_ok">OK</string>
+    <string name="common_action_paste">Incolla</string>
+    <string name="common_action_previous">Previous</string>
+    <string name="common_action_remove">Remove</string>
+    <string name="common_action_reset">Ripristina</string>
+    <string name="common_action_retry">Riprova</string>
+    <string name="common_action_save">Save</string>
+    <string name="common_action_select">Seleziona</string>
+    <string name="common_action_show_less">Mostra meno</string>
+    <string name="common_action_show_more">Mostra di più</string>
+    <string name="common_action_translate">Traduci</string>
+    <string name="common_action_turn_off">Disattiva</string>
+    <string name="common_action_unlink">Unlink</string>
+    <string name="common_action_update">Aggiornamento</string>
+    <string name="common_menu_label">Menu</string>
+</resources>

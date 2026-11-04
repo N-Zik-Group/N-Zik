@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="onboarding_accounts_discord_description">Show what you are listening to in Discord (beta)</string>
+    <string name="onboarding_accounts_done">I\'m done</string>
+    <string name="onboarding_accounts_skip">Skip</string>
+    <string name="onboarding_accounts_title">Connect your accounts</string>
+    <string name="onboarding_accounts_youtube">YouTube</string>
+    <string name="onboarding_accounts_youtube_account">Logged in as %1$s</string>
+    <string name="onboarding_accounts_youtube_description">Optional — browse the app with your YouTube account (home, explore, etc.)</string>
+    <string name="onboarding_greeting">Hello! Let\'s set up NZik for the perfect music experience. Every permission below is optional.</string>
+    <string name="onboarding_permission_battery">Battery optimization</string>
+    <string name="onboarding_permission_battery_description">Prevent the system from stopping the background music</string>
+    <string name="onboarding_permission_bluetooth">Bluetooth</string>
+    <string name="onboarding_permission_bluetooth_description">Detect headphones to pause or resume the music</string>
+    <string name="onboarding_permission_camera">Camera</string>
+    <string name="onboarding_permission_camera_description">Scan the QR code of N-Zik Desktop Compagnon to pair a PC</string>
+    <string name="onboarding_permission_grant">Grant</string>
+    <string name="onboarding_permission_granted">Permission granted</string>
+    <string name="onboarding_permission_media">Media access</string>
+    <string name="onboarding_permission_media_description">Read your local music library</string>
+    <string name="onboarding_permission_microphone">Microphone</string>
+    <string name="onboarding_permission_microphone_description">Use the microphone for voice commands, the visualizer and other features</string>
+    <string name="onboarding_permission_notifications">Notifications</string>
+    <string name="onboarding_permission_notifications_description">See the player and control the music from the notification</string>
+    <string name="onboarding_permission_settings">Parametros</string>
+    <string name="onboarding_permissions_section">Permissions</string>
+    <string name="onboarding_profile_continue">Continue</string>
+    <string name="onboarding_profile_description">This name is shown in the app. You can also choose where the name and the avatar come from, and set a photo.</string>
+    <string name="onboarding_profile_field_hint">Your name</string>
+    <string name="onboarding_profile_title">Name your clone</string>
+    <string name="onboarding_restore_description">Bring your library and your settings back from a previous version of the app. This step is optional.</string>
+    <string name="onboarding_restore_restart_note">A successful import restarts the app.</string>
+    <string name="onboarding_restore_skip">Skip for now</string>
+    <string name="onboarding_restore_skip_button">Skip</string>
+    <string name="onboarding_restore_skip_description">You can restore a backup later from the app settings</string>
+    <string name="onboarding_restore_title">Restore a backup</string>
+    <string name="onboarding_start">Start</string>
+</resources>

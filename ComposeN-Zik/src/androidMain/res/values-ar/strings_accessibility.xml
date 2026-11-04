@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_app_icon">أيقونة التطبيق</string>
+    <string name="accessibility_app_icon_in_player">أيقونة التطبيق في المشغل</string>
+    <string name="accessibility_arrow_down">السهم_لأسفل</string>
+    <string name="accessibility_arrow_up">السهم_لأعلى</string>
+    <string name="accessibility_background_image">صورة الخلفية</string>
+    <string name="accessibility_blurred_background">خلفية_ضبابية</string>
+    <string name="accessibility_disc_background">خلفية القرص</string>
+    <string name="accessibility_filter">تصفية</string>
+    <string name="accessibility_import_playlist_name">استيراد اسم قائمة التشغيل</string>
+    <string name="accessibility_loading">تحميل...</string>
+    <string name="accessibility_new_playlist_name">اسم جديد لقائمة التشغيل</string>
+    <string name="accessibility_number_of_songs_in_queue">عدد الأغاني في قائمة الانتظار</string>
+    <string name="accessibility_origin_indicator">مصدر_مؤشر</string>
+    <string name="accessibility_recenter">المُسجل</string>
+    <string name="accessibility_rename_dialog_text_box_icon">إعادة تسمية أيقونة مربع النص</string>
+    <string name="accessibility_reset">Reset</string>
+    <string name="accessibility_song_album_cover">غلاف ألبوم الأغنية</string>
+    <string name="accessibility_switch_mode">تبديل الوضع</string>
+    <string name="accessibility_youtube_playlist">قائمة تشغيل اليوتيوب</string>
+</resources>

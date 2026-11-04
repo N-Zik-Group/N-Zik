@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_answer_no">否</string>
+    <string name="common_artist_conjunction_and">and</string>
+    <string name="common_brand_github">GitHub</string>
+    <string name="common_clipboard_copy_failed">Failed to copy text to clipboard, try again</string>
+    <string name="common_clipboard_copy_success">已复制</string>
+    <string name="common_color_black">黑色</string>
+    <string name="common_color_custom">Custom Color</string>
+    <string name="common_color_source_artwork">Artwork</string>
+    <string name="common_color_source_theme">主题</string>
+    <string name="common_color_white">White</string>
+    <string name="common_debug_background">background</string>
+    <string name="common_debug_width">width</string>
+    <string name="common_delete_success">已删除</string>
+    <string name="common_description_unavailable">No description available</string>
+    <string name="common_duration_milliseconds_format">%1$s 毫秒</string>
+    <string name="common_empty_items">No items</string>
+    <string name="common_external_link_loading_suffix">正在加载……</string>
+    <string name="common_load_failed">Unable to load</string>
+    <string name="common_load_failed_no_connection">Unable to load, no connection</string>
+    <string name="common_log_unavailable">没有可用的日志</string>
+    <string name="common_option_all">所有</string>
+    <string name="common_option_custom">自定义</string>
+    <string name="common_option_default">默认</string>
+    <string name="common_option_disabled">停用</string>
+    <string name="common_option_none">无</string>
+    <string name="common_option_random">随机</string>
+    <string name="common_restart_required_message">Please open %s again after!</string>
+    <string name="common_size_big">大</string>
+    <string name="common_size_biggest">最大</string>
+    <string name="common_size_expanded">已展开</string>
+    <string name="common_size_medium">中</string>
+    <string name="common_size_small">小</string>
+    <string name="common_state_enabled">启用</string>
+    <string name="common_state_off">Off</string>
+    <string name="common_state_on">On</string>
+    <string name="common_storage_used_suffix">" 已使用"</string>
+    <string name="common_validation_empty_value">值不能为空</string>
+    <string name="common_validation_invalid_input">Invalid input!</string>
+    <string name="common_validation_minimum_value">"值必须于 "</string>
+    <string name="common_validation_name_in_use">Name already in use</string>
+    <string name="common_value_input_hint">输入自定值</string>
+</resources>

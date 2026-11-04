@@ -7,7 +7,7 @@ import io.mockk.mockk
 
 /**
  * Test context that resolves the Discord presence strings to their English
- * `values/strings.xml` values. The [DiscordPresenceManager] resolves them via
+ * `strings_accounts_sync.xml` values. The [DiscordPresenceManager] resolves them via
  * `context.getString(...)` (item 6: no hardcoded user-facing strings), and a plain
  * relaxed mock would answer empty strings, breaking the presence-content assertions.
  */

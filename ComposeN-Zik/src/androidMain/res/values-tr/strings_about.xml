@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_action_report_issue">Sorun bildir</string>
+    <string name="about_action_request_feature">Bir özellik isteyin veya bir fikir önerin</string>
+    <string name="about_action_view_source">Kaynak kodunu görüntüle</string>
+    <string name="about_authorship_preposition">tarafından</string>
+    <string name="about_contributors_alphabetical_order_label">Alfabetik sırada:</string>
+    <string name="about_debug_developers_rotation">developers_rotation</string>
+    <string name="about_debug_translators_rotation">translators_rotation</string>
+    <string name="about_developers_description">Uygulamaya katkıda bulunan geliştiricileri ve tasarımcıları göster veya gizle.</string>
+    <string name="about_developers_designers_title">Geliştiriciler / Tasarımcılar</string>
+    <string name="about_github_link_description">GitHub\'a yönlendirileceksiniz</string>
+    <string name="about_report_issue_description">Bir sorunu rapor etmek için GitHub hata bildirim formunu açın.</string>
+    <string name="about_request_feature_description">Bir özellik önerisinde bulunmak için GitHub özellik formunu açın.</string>
+    <string name="about_source_code_description">GitHub\'daki kaynak kodu deposunu açın.</string>
+    <string name="about_title">Hakkında</string>
+    <string name="about_translators_description">Uygulamayı çeviren kişileri göster veya gizle.</string>
+    <string name="about_translators_title">Çevirmenler</string>
+</resources>

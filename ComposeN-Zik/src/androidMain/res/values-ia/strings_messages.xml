@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_error_connection_timeout">Connection timeout</string>
+    <string name="common_error_no_connection">No Connection</string>
+    <string name="common_error_no_internet">Nulle connexion de rete</string>
+    <string name="common_error_title">Ocurreva un error.</string>
+    <string name="common_error_unknown">Error incognite</string>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_error_connection_timeout">Kapcsolat időtúllépés</string>
+    <string name="common_error_no_connection">No Connection</string>
+    <string name="common_error_no_internet">Nincs internetkapcsolat</string>
+    <string name="common_error_title">Hiba történt.</string>
+    <string name="common_error_unknown">Ismeretlen hiba</string>
+</resources>

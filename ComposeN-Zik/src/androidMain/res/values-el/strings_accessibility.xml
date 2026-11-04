@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_app_icon">Εικονίδιο εφαρμογής</string>
+    <string name="accessibility_app_icon_in_player">εικονίδιο εφαρμογής στο πρόγραμμα αναπαραγωγής</string>
+    <string name="accessibility_arrow_down">βέλος_κάτω</string>
+    <string name="accessibility_arrow_up">arrow_up</string>
+    <string name="accessibility_background_image">Εικόνα Φόντου</string>
+    <string name="accessibility_blurred_background">θαμπωμένο_φόντο</string>
+    <string name="accessibility_disc_background">φόντο δίσκου</string>
+    <string name="accessibility_filter">Φίλτρο</string>
+    <string name="accessibility_import_playlist_name">εισαγωγή ονόματος λίστας αναπαραγωγής</string>
+    <string name="accessibility_loading">φόρτωση...</string>
+    <string name="accessibility_new_playlist_name">νέο όνομα λίστας αναπαραγωγής</string>
+    <string name="accessibility_number_of_songs_in_queue">Αριθμός τραγουδιών στην ουρά</string>
+    <string name="accessibility_origin_indicator">αρχικός_δείκτης</string>
+    <string name="accessibility_recenter">Recenter</string>
+    <string name="accessibility_rename_dialog_text_box_icon">Μετονομασία εικονιδίου πλαισίου κειμένου διαλόγου</string>
+    <string name="accessibility_reset">Reset</string>
+    <string name="accessibility_song_album_cover">εξώφυλλο άλμπουμ τραγουδιών</string>
+    <string name="accessibility_switch_mode">Εναλλαγή Λειτουργίας</string>
+    <string name="accessibility_youtube_playlist">Λίστα Αναπαραγωγής Youtube</string>
+</resources>

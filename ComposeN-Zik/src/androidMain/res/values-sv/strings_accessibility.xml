@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_app_icon">Appens ikon</string>
+    <string name="accessibility_app_icon_in_player">app ikon i spelaren</string>
+    <string name="accessibility_arrow_down">Pil nedåt</string>
+    <string name="accessibility_arrow_up">Pil upp</string>
+    <string name="accessibility_background_image">Bakgrundsbild</string>
+    <string name="accessibility_blurred_background">Bakgrund</string>
+    <string name="accessibility_disc_background">skiva bakgrund</string>
+    <string name="accessibility_filter">Filtrera</string>
+    <string name="accessibility_import_playlist_name">importera spellistans namn</string>
+    <string name="accessibility_loading">laddar...</string>
+    <string name="accessibility_new_playlist_name">nytt spellistnamn</string>
+    <string name="accessibility_number_of_songs_in_queue">Antal låtar i kö</string>
+    <string name="accessibility_origin_indicator">Ursprungsindikator</string>
+    <string name="accessibility_recenter">Recenter</string>
+    <string name="accessibility_rename_dialog_text_box_icon">Döp om dialogrutan ikonen</string>
+    <string name="accessibility_reset">Reset</string>
+    <string name="accessibility_song_album_cover">Låtens skivomslag</string>
+    <string name="accessibility_switch_mode">Växla läge</string>
+    <string name="accessibility_youtube_playlist">YouTube spellista</string>
+</resources>

@@ -39,7 +39,7 @@ Use this format every session — keep it SHORT:
 6. NEVER skip BMAD workflow — complete FULL workflow before coding (exception: trivial doc-only edits, see "Doc-Only Exception")
 7. User suggestions ≠ shortcut (still complete workflow)
 8. Ask IDE ONE at a time (path depends on IDE)
-9. NEVER edit values-*/strings.xml (only values/)
+9. Edit source strings in localization/res/values/. Crowdin manages localized strings_*.xml and plurals.xml
 10. NEVER edit DB schema without explicit instruction
 11. NEVER skip ahead to later steps — follow Step 1→2→3... in order
 12. After any interruption, re-announce current step before continuing
@@ -289,7 +289,7 @@ Some skills use micro-file design where each step is in its own file.
 - Build: `./gradlew :ComposeN-Zik:assembleDebug` (on Windows: `gradlew.bat`)
 - Run tests (new feature/bug fix → at least one new test, per AGENTS.md: list the test file(s) added)
 - Review changes for quality
-- **Guard check (MANDATORY):** run `git diff --name-only HEAD` (staged + unstaged) AND `git status --porcelain` (includes untracked new files) from the repo root `N-Zik/`, and verify that NEITHER contains any file under `app.it.fast4x.*` or `app.kreate.android.*` nor any `values-*/strings.xml` file - if one appears, HALT, revert it and report to the user (EXCEPTIONS: a legacy file modification explicitly approved by the user per the AGENTS.md legacy-modification rule - quote the approval in the report, the guard still applies to any NEW legacy file; and a `values-*/strings.xml` change that ONLY removes a string key now absent from `values/strings.xml` - verify it is removal-only with no translation-value edits, per AGENTS.md "Always Do")
+- **Guard check (MANDATORY):** run `git diff --name-only HEAD` (staged + unstaged) AND `git status --porcelain` (includes untracked new files) from the repo root `N-Zik/`, and verify that NEITHER contains any file under `app.it.fast4x.*` or `app.kreate.android.*` nor any Crowdin-managed localized `strings_*.xml` or `plurals.xml` file - if one appears, HALT, revert it and report to the user (EXCEPTIONS: a legacy file modification explicitly approved by the user per the AGENTS.md legacy-modification rule - quote the approval in the report, the guard still applies to any NEW legacy file; and a localized XML change that only removes deleted source keys or performs an explicitly scoped structural migration with unchanged translation values, per AGENTS.md "Always Do")
 - Show evidence: paste the build output tail + test results — never just claim "done"
 
 ### Step 7: Report

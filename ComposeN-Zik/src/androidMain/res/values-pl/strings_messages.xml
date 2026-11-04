@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_error_connection_timeout">Upłynął limit czasu połączenia</string>
+    <string name="common_error_no_connection">No Connection</string>
+    <string name="common_error_no_internet">Brak połączenia z siecią</string>
+    <string name="common_error_title">Wystąpił błąd.</string>
+    <string name="common_error_unknown">Nieznany błąd</string>
+</resources>

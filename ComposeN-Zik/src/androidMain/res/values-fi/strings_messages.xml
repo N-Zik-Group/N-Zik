@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_error_connection_timeout">Yhteyden aikakatkaisu</string>
+    <string name="common_error_no_connection">Ei yhteyttä</string>
+    <string name="common_error_no_internet">Ei verkkoyhteyttä</string>
+    <string name="common_error_title">Tapahtui virhe.</string>
+    <string name="common_error_unknown">Tuntematon virhe</string>
+</resources>

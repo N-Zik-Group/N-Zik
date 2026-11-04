@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_action_report_issue">Signaler un problème</string>
+    <string name="about_action_request_feature">Demander une fonctionnalité ou nous suggérer une idée</string>
+    <string name="about_action_view_source">Afficher le code source</string>
+    <string name="about_authorship_preposition">par</string>
+    <string name="about_contributors_alphabetical_order_label">Dans l\'ordre alphabétique :</string>
+    <string name="about_debug_developers_rotation">rotation_développeurs</string>
+    <string name="about_debug_translators_rotation">Rotation des traducteurs</string>
+    <string name="about_developers_description">Afficher ou masquer les noms des développeurs et des concepteurs ayant contribué à l\'application.</string>
+    <string name="about_developers_designers_title">Développeurs / Concepteurs</string>
+    <string name="about_github_link_description">Vous allez être redirigé vers GitHub.</string>
+    <string name="about_report_issue_description">Ouvrez le formulaire de signalement de bug sur GitHub pour décrire un problème.</string>
+    <string name="about_request_feature_description">Ouvrez le formulaire de demande de fonctionnalité de GitHub pour proposer une amélioration.</string>
+    <string name="about_source_code_description">Ouvrez le dépôt de code source sur GitHub.</string>
+    <string name="about_title">À propos</string>
+    <string name="about_translators_description">Afficher ou masquer les noms des personnes qui ont traduit l\'application.</string>
+    <string name="about_translators_title">Traducteurs</string>
+</resources>

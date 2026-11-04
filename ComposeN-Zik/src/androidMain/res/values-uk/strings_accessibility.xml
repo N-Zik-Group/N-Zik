@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_app_icon">Значок додатка</string>
+    <string name="accessibility_app_icon_in_player">іконка додатка в плеєрі</string>
+    <string name="accessibility_arrow_down">стрілкою вниз</string>
+    <string name="accessibility_arrow_up">стріл_вгору</string>
+    <string name="accessibility_background_image">Фоновий малюнок</string>
+    <string name="accessibility_blurred_background">розмитий фон</string>
+    <string name="accessibility_disc_background">дисковий фон</string>
+    <string name="accessibility_filter">Фільтр</string>
+    <string name="accessibility_import_playlist_name">імпортувати ім\'я списку відтворення</string>
+    <string name="accessibility_loading">завантаження...</string>
+    <string name="accessibility_new_playlist_name">нова назва плейлиста</string>
+    <string name="accessibility_number_of_songs_in_queue">Кількість пісень у черзі</string>
+    <string name="accessibility_origin_indicator">індикатор оригіналу</string>
+    <string name="accessibility_recenter">Повторенд</string>
+    <string name="accessibility_rename_dialog_text_box_icon">Перейменувати значок тексту діалогового вікна</string>
+    <string name="accessibility_reset">Скинути</string>
+    <string name="accessibility_song_album_cover">обкладинка пісні</string>
+    <string name="accessibility_switch_mode">Перемкнути режим</string>
+    <string name="accessibility_youtube_playlist">Плейліст YouTube</string>
+</resources>

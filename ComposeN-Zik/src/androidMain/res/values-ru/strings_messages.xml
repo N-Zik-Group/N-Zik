@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_error_connection_timeout">Время ожидания подключения истекло</string>
+    <string name="common_error_no_connection">Отсутствует подключение</string>
+    <string name="common_error_no_internet">Отсутствует сетевое соединение</string>
+    <string name="common_error_title">Произошла ошибка.</string>
+    <string name="common_error_unknown">Неизвестная ошибка</string>
+</resources>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="onboarding_accounts_discord_description">Discord (beta)\'da ne dinlediğini göster</string>
+    <string name="onboarding_accounts_done">Bitirdim</string>
+    <string name="onboarding_accounts_skip">Atla</string>
+    <string name="onboarding_accounts_title">Hesaplarınızı bağlayın</string>
+    <string name="onboarding_accounts_youtube">YouTube</string>
+    <string name="onboarding_accounts_youtube_account">%1$s olarak oturum açıldı</string>
+    <string name="onboarding_accounts_youtube_description">İsteğe bağlı: YouTube hesabınızla uygulamada gezinin (ana sayfa, keşfet vb.)</string>
+    <string name="onboarding_greeting">Merhaba! Mükemmel bir müzik deneyimi için N-Zik\'i kuralım. Aşağıdaki izinlerin tümü isteğe bağlıdır.</string>
+    <string name="onboarding_permission_battery">Pil optimizasyonu</string>
+    <string name="onboarding_permission_battery_description">Sistemin arka plan müziğini durdurmasını önleyin</string>
+    <string name="onboarding_permission_bluetooth">Bluetooth</string>
+    <string name="onboarding_permission_bluetooth_description">Kulaklığı algılayarak müziği duraklat veya devam ettir</string>
+    <string name="onboarding_permission_camera">Kamera</string>
+    <string name="onboarding_permission_camera_description">Bir bilgisayarla eşleştirmek için N-Zik Masaüstü Yardımcısı uygulamasının QR kodunu tarayın</string>
+    <string name="onboarding_permission_grant">İzin ver</string>
+    <string name="onboarding_permission_granted">İzin verildi</string>
+    <string name="onboarding_permission_media">Medya erişimi</string>
+    <string name="onboarding_permission_media_description">Yerel müzik kitaplığınızı okuyun</string>
+    <string name="onboarding_permission_microphone">Mikrofon</string>
+    <string name="onboarding_permission_microphone_description">Sesli komutlar, görselleştirici ve diğer özellikler için mikrofonu kullanın</string>
+    <string name="onboarding_permission_notifications">Bildirimler</string>
+    <string name="onboarding_permission_notifications_description">Oynatıcıyı görüntüleyin ve bildirimden müziği kontrol edin</string>
+    <string name="onboarding_permission_settings">Ayarlar</string>
+    <string name="onboarding_permissions_section">İzinler</string>
+    <string name="onboarding_profile_continue">Devam et</string>
+    <string name="onboarding_profile_description">Bu isim uygulamada görüntülenir. Ayrıca ismin ve avatarın nereden alınacağını seçebilir ve bir fotoğraf ayarlayabilirsiniz.</string>
+    <string name="onboarding_profile_field_hint">Adınız</string>
+    <string name="onboarding_profile_title">Klonuna bir isim ver</string>
+    <string name="onboarding_restore_description">Kütüphanenizi ve ayarlarınızı uygulamanın önceki bir sürümünden geri yükleyin. Bu adım isteğe bağlıdır.</string>
+    <string name="onboarding_restore_restart_note">İçe aktarma işlemi başarıyla tamamlandığında uygulama yeniden başlatılır.</string>
+    <string name="onboarding_restore_skip">Şimdilik atla</string>
+    <string name="onboarding_restore_skip_button">Atla</string>
+    <string name="onboarding_restore_skip_description">Uygulama ayarlarından daha sonra bir yedeği geri yükleyebilirsiniz</string>
+    <string name="onboarding_restore_title">Bir yedeği geri yükle</string>
+    <string name="onboarding_start">Başlat</string>
+</resources>

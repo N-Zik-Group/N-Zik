@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_answer_no">לא</string>
+    <string name="common_artist_conjunction_and">and</string>
+    <string name="common_brand_github">GitHub</string>
+    <string name="common_clipboard_copy_failed">Failed to copy text to clipboard, try again</string>
+    <string name="common_clipboard_copy_success">הועתק</string>
+    <string name="common_color_black">Black</string>
+    <string name="common_color_custom">Custom Color</string>
+    <string name="common_color_source_artwork">Cover color</string>
+    <string name="common_color_source_theme">ערכת נושא</string>
+    <string name="common_color_white">White</string>
+    <string name="common_debug_background">background</string>
+    <string name="common_debug_width">width</string>
+    <string name="common_delete_success">נמחק</string>
+    <string name="common_description_unavailable">No description available</string>
+    <string name="common_duration_milliseconds_format">%1$s ms</string>
+    <string name="common_empty_items">No items</string>
+    <string name="common_external_link_loading_suffix">טוען...</string>
+    <string name="common_load_failed">Unable to load</string>
+    <string name="common_load_failed_no_connection">Unable to load, no connection</string>
+    <string name="common_log_unavailable">Log unavailable</string>
+    <string name="common_option_all">הכל</string>
+    <string name="common_option_custom">התאמה אישית</string>
+    <string name="common_option_default">ברירת מחדל</string>
+    <string name="common_option_disabled">מושבת</string>
+    <string name="common_option_none">כלום</string>
+    <string name="common_option_random">Random</string>
+    <string name="common_restart_required_message">Please open %s again after!</string>
+    <string name="common_size_big">גדול</string>
+    <string name="common_size_biggest">הכי גדול</string>
+    <string name="common_size_expanded">Expanded</string>
+    <string name="common_size_medium">בינוני</string>
+    <string name="common_size_small">קטן</string>
+    <string name="common_state_enabled">מופעל</string>
+    <string name="common_state_off">Off</string>
+    <string name="common_state_on">On</string>
+    <string name="common_storage_used_suffix">" בשימוש"</string>
+    <string name="common_validation_empty_value">הערך אינו יכול להיות ריק</string>
+    <string name="common_validation_invalid_input">Invalid input!</string>
+    <string name="common_validation_minimum_value">"הערך חייב להיות גדול מ "</string>
+    <string name="common_validation_name_in_use">Name already in use</string>
+    <string name="common_value_input_hint">Enter the value</string>
+</resources>

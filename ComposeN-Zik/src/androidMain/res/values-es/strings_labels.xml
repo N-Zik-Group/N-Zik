@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_color_picker_title">Choose color</string>
+    <string name="common_content_explicit_label">Explícito</string>
+    <string name="common_debug_title">Debug</string>
+    <string name="common_information_title">Información</string>
+    <string name="common_limit_unlimited_label">Ilimitado</string>
+    <string name="common_navigation_section_title">Navigation</string>
+    <string name="common_other_section_title">Otros</string>
+    <string name="common_playback_section_title">Reproducir</string>
+    <string name="common_restart_required_title">Es necesario reiniciar</string>
+    <string name="common_size_label">Tamaño</string>
+</resources>

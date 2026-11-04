@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_app_icon">Uygulamanın simgesi</string>
+    <string name="accessibility_app_icon_in_player">oynatıcıdaki uygulama simgesi</string>
+    <string name="accessibility_arrow_down">arrow_down</string>
+    <string name="accessibility_arrow_up">arrow_up</string>
+    <string name="accessibility_background_image">Arka Plan Resmi</string>
+    <string name="accessibility_blurred_background">blurred_background</string>
+    <string name="accessibility_disc_background">şarkı sözü arka planı</string>
+    <string name="accessibility_filter">Filtre</string>
+    <string name="accessibility_import_playlist_name">çalma listesi adını içe aktar</string>
+    <string name="accessibility_loading">yükleniyor...</string>
+    <string name="accessibility_new_playlist_name">yeni çalma listesi adı</string>
+    <string name="accessibility_number_of_songs_in_queue">Kuyrukta bulunan şarkı sayısı</string>
+    <string name="accessibility_origin_indicator">origin_indicator</string>
+    <string name="accessibility_recenter">Yeniden ortala</string>
+    <string name="accessibility_rename_dialog_text_box_icon">Yeniden Adlandırma iletişim kutusundaki metin kutusu simgesi</string>
+    <string name="accessibility_reset">Sıfırla</string>
+    <string name="accessibility_song_album_cover">albüm kapağını göster</string>
+    <string name="accessibility_switch_mode">Anahtar Modu</string>
+    <string name="accessibility_youtube_playlist">Youtube Oynatma Listesi</string>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_error_connection_timeout">Conexão expirada</string>
+    <string name="common_error_no_connection">No Connection</string>
+    <string name="common_error_no_internet">Sem conexão com a internet</string>
+    <string name="common_error_title">Ocorreu um erro.</string>
+    <string name="common_error_unknown">Erro desconhecido</string>
+</resources>

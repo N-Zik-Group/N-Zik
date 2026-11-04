@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="onboarding_accounts_discord_description">Afficher ce que vous écoutez sur Discord (bêta)</string>
+    <string name="onboarding_accounts_done">J\'ai fini</string>
+    <string name="onboarding_accounts_skip">Passer</string>
+    <string name="onboarding_accounts_title">Connectez vos comptes</string>
+    <string name="onboarding_accounts_youtube">YouTube</string>
+    <string name="onboarding_accounts_youtube_account">Connecté en tant que %1$s</string>
+    <string name="onboarding_accounts_youtube_description">Facultatif — naviguez dans l\'application avec votre compte YouTube (page d\'accueil, « Explorer », etc.)</string>
+    <string name="onboarding_greeting">Bonjour ! Configurons N-Zik pour profiter d\'une expérience musicale optimale. Toutes les autorisations ci-dessous sont facultatives.</string>
+    <string name="onboarding_permission_battery">Optimisation de la batterie</string>
+    <string name="onboarding_permission_battery_description">Empêchez le système d\'interrompre la musique de fond</string>
+    <string name="onboarding_permission_bluetooth">Bluetooth</string>
+    <string name="onboarding_permission_bluetooth_description">Détecter le port d\'un casque pour mettre la musique en pause ou la relancer</string>
+    <string name="onboarding_permission_camera">Appareil photo</string>
+    <string name="onboarding_permission_camera_description">Scannez le QR code de N-Zik Desktop Compagnon pour connecter un PC</string>
+    <string name="onboarding_permission_grant">Accorder</string>
+    <string name="onboarding_permission_granted">Autorisation accordée</string>
+    <string name="onboarding_permission_media">Accès aux médias</string>
+    <string name="onboarding_permission_media_description">Consultez votre bibliothèque musicale locale</string>
+    <string name="onboarding_permission_microphone">Microphone</string>
+    <string name="onboarding_permission_microphone_description">Utilisez le microphone pour les commandes vocales, le visualiseur et d\'autres fonctionnalités</string>
+    <string name="onboarding_permission_notifications">Notifications</string>
+    <string name="onboarding_permission_notifications_description">Afficher le lecteur et contrôler la musique depuis la notification</string>
+    <string name="onboarding_permission_settings">Paramètres</string>
+    <string name="onboarding_permissions_section">Autorisations</string>
+    <string name="onboarding_profile_continue">Continuer</string>
+    <string name="onboarding_profile_description">Ce nom s\'affiche dans l\'application. Vous pouvez également choisir d\'où proviennent le nom et l\'avatar, et ajouter une photo.</string>
+    <string name="onboarding_profile_field_hint">Votre nom</string>
+    <string name="onboarding_profile_title">Donne un nom à votre clone</string>
+    <string name="onboarding_restore_description">Récupérez votre bibliothèque et vos paramètres à partir d\'une version antérieure de l\'application. Cette étape est facultative.</string>
+    <string name="onboarding_restore_restart_note">Une importation réussie entraîne le redémarrage de l\'application.</string>
+    <string name="onboarding_restore_skip">Passer pour le moment</string>
+    <string name="onboarding_restore_skip_button">Passer</string>
+    <string name="onboarding_restore_skip_description">Vous pouvez restaurer une sauvegarde ultérieurement depuis les paramètres de l\'application</string>
+    <string name="onboarding_restore_title">Restaurer une sauvegarde</string>
+    <string name="onboarding_start">Démarrer</string>
+</resources>

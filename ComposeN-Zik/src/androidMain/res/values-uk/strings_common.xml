@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_answer_no">Ні</string>
+    <string name="common_artist_conjunction_and">and</string>
+    <string name="common_brand_github">GitHub</string>
+    <string name="common_clipboard_copy_failed">Не вдалося скопіювати текст до буфера обміну, спробуйте ще раз</string>
+    <string name="common_clipboard_copy_success">Скопійовано</string>
+    <string name="common_color_black">Чорний</string>
+    <string name="common_color_custom">Користувальницький колір</string>
+    <string name="common_color_source_artwork">Колір обкладинки</string>
+    <string name="common_color_source_theme">Тема</string>
+    <string name="common_color_white">Білий</string>
+    <string name="common_debug_background">тло</string>
+    <string name="common_debug_width">width</string>
+    <string name="common_delete_success">Видалено</string>
+    <string name="common_description_unavailable">Опис відсутній</string>
+    <string name="common_duration_milliseconds_format">%1$s мс</string>
+    <string name="common_empty_items">Товарів немає</string>
+    <string name="common_external_link_loading_suffix">завантажується...</string>
+    <string name="common_load_failed">Unable to load</string>
+    <string name="common_load_failed_no_connection">Unable to load, no connection</string>
+    <string name="common_log_unavailable">Журнал недоступний</string>
+    <string name="common_option_all">Усе</string>
+    <string name="common_option_custom">Користувальницькі</string>
+    <string name="common_option_default">За замовчуванням</string>
+    <string name="common_option_disabled">Відключено</string>
+    <string name="common_option_none">Ні</string>
+    <string name="common_option_random">Випадковий</string>
+    <string name="common_restart_required_message">Please open %s again after!</string>
+    <string name="common_size_big">Крупний</string>
+    <string name="common_size_biggest">Найбільший</string>
+    <string name="common_size_expanded">Розширений</string>
+    <string name="common_size_medium">Середні</string>
+    <string name="common_size_small">Малий</string>
+    <string name="common_state_enabled">Увімкнено</string>
+    <string name="common_state_off">Вимкнено</string>
+    <string name="common_state_on">Увімк</string>
+    <string name="common_storage_used_suffix">" зайнято"</string>
+    <string name="common_validation_empty_value">Значення не може бути порожнім</string>
+    <string name="common_validation_invalid_input">Invalid input!</string>
+    <string name="common_validation_minimum_value">"Значення повинно бути більше, ніж "</string>
+    <string name="common_validation_name_in_use">Name already in use</string>
+    <string name="common_value_input_hint">Введіть значення</string>
+</resources>

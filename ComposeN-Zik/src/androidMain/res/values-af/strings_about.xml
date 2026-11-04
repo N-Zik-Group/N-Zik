@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_action_report_issue">Rapporteer \'n probleem</string>
+    <string name="about_action_request_feature">Versoek \'n funksie of verskaf \'n idee</string>
+    <string name="about_action_view_source">Kyk na die bronkode</string>
+    <string name="about_authorship_preposition">by</string>
+    <string name="about_contributors_alphabetical_order_label">In alfabetiese volgorde:</string>
+    <string name="about_debug_developers_rotation">developers_rotation</string>
+    <string name="about_debug_translators_rotation">translators_rotation</string>
+    <string name="about_developers_description">Show or hide the developers and designers who contributed to the app.</string>
+    <string name="about_developers_designers_title">Developers / Designers</string>
+    <string name="about_github_link_description">Jy sal na GitHub gestuur word</string>
+    <string name="about_report_issue_description">Open the GitHub bug report form to describe a problem.</string>
+    <string name="about_request_feature_description">Open the GitHub feature request form to suggest an improvement.</string>
+    <string name="about_source_code_description">Open the source code repository on GitHub.</string>
+    <string name="about_title">Leer meer</string>
+    <string name="about_translators_description">Show or hide the people who translated the app.</string>
+    <string name="about_translators_title">Translators</string>
+</resources>

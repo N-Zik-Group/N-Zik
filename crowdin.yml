@@ -1,6 +1,13 @@
 files:
-  - source: /ComposeN-Zik/src/androidMain/res/values/strings.xml
-    translation: /ComposeN-Zik/src/androidMain/res/values-%two_letters_code%/strings.xml
+  - source: /ComposeN-Zik/src/androidMain/localization/res/values/*.xml
+    translation: /ComposeN-Zik/src/androidMain/res/values-%two_letters_code%/%original_file_name%
+    languages_mapping:
+      two_letters_code:
+        pt-BR: pt-rBR
+        sr: sr
+        sr-CS: sr-rCS
+        zh-CN: zh-rCN
+        zh-TW: zh-rTW
 
   - source: /fastlane/source/en-US/short_description.txt
     translation: /fastlane/metadata/android/%locale%/short_description.txt

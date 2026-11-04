@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_app_icon">App-Symbol</string>
+    <string name="accessibility_app_icon_in_player">app-Symbol im Player</string>
+    <string name="accessibility_arrow_down">pfeile_runter</string>
+    <string name="accessibility_arrow_up">auf_pfeil</string>
+    <string name="accessibility_background_image">Hintergrundbild</string>
+    <string name="accessibility_blurred_background">verschwommener Hintergrund</string>
+    <string name="accessibility_disc_background">disc Hintergrund</string>
+    <string name="accessibility_filter">Filtern</string>
+    <string name="accessibility_import_playlist_name">importiere Playlist-Name</string>
+    <string name="accessibility_loading">lade...</string>
+    <string name="accessibility_new_playlist_name">neuer Playlist-Name</string>
+    <string name="accessibility_number_of_songs_in_queue">Anzahl der Lieder in der Warteschlange</string>
+    <string name="accessibility_origin_indicator">origin_Indikator</string>
+    <string name="accessibility_recenter">Neu zentrieren</string>
+    <string name="accessibility_rename_dialog_text_box_icon">Textfeld umbenennen</string>
+    <string name="accessibility_reset">Zurücksetzen</string>
+    <string name="accessibility_song_album_cover">Albumcover des Songs</string>
+    <string name="accessibility_switch_mode">Wechselmodus</string>
+    <string name="accessibility_youtube_playlist">Youtube Playlist</string>
+</resources>

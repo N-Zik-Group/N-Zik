@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_answer_no">Nu</string>
+    <string name="common_artist_conjunction_and">and</string>
+    <string name="common_brand_github">GitHub</string>
+    <string name="common_clipboard_copy_failed">Copierea textului în clipboard a eșuat, încercați din nou</string>
+    <string name="common_clipboard_copy_success">Copiat</string>
+    <string name="common_color_black">Negru</string>
+    <string name="common_color_custom">Culoare personalizată</string>
+    <string name="common_color_source_artwork">Culoare copertă</string>
+    <string name="common_color_source_theme">Tematică</string>
+    <string name="common_color_white">Alb</string>
+    <string name="common_debug_background">Fundal</string>
+    <string name="common_debug_width">width</string>
+    <string name="common_delete_success">Șters</string>
+    <string name="common_description_unavailable">Nici o descriere disponibilă</string>
+    <string name="common_duration_milliseconds_format">%1$s ms</string>
+    <string name="common_empty_items">Niciun articol</string>
+    <string name="common_external_link_loading_suffix">se încarcă...</string>
+    <string name="common_load_failed">Unable to load</string>
+    <string name="common_load_failed_no_connection">Unable to load, no connection</string>
+    <string name="common_log_unavailable">Jurnal indisponibil</string>
+    <string name="common_option_all">Total</string>
+    <string name="common_option_custom">Personalizat</string>
+    <string name="common_option_default">Implicit</string>
+    <string name="common_option_disabled">Dezactivat</string>
+    <string name="common_option_none">Niciunul</string>
+    <string name="common_option_random">Aleatoriu</string>
+    <string name="common_restart_required_message">Please open %s again after!</string>
+    <string name="common_size_big">Mare</string>
+    <string name="common_size_biggest">Gigantic</string>
+    <string name="common_size_expanded">Extins</string>
+    <string name="common_size_medium">Mediu</string>
+    <string name="common_size_small">Mic</string>
+    <string name="common_state_enabled">Activat</string>
+    <string name="common_state_off">Dezactivat</string>
+    <string name="common_state_on">Activat</string>
+    <string name="common_storage_used_suffix">" folosit"</string>
+    <string name="common_validation_empty_value">Valoarea nu poate fi goală</string>
+    <string name="common_validation_invalid_input">Invalid input!</string>
+    <string name="common_validation_minimum_value">"Valoarea trebuie să fie mai mare decât "</string>
+    <string name="common_validation_name_in_use">Name already in use</string>
+    <string name="common_value_input_hint">Introdu valoarea</string>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_error_connection_timeout">Forbindelsen udløb</string>
+    <string name="common_error_no_connection">Ingen forbindelse</string>
+    <string name="common_error_no_internet">Ingen netværksforbindelse</string>
+    <string name="common_error_title">En fejl opstod.</string>
+    <string name="common_error_unknown">Ukendt fejl</string>
+</resources>
