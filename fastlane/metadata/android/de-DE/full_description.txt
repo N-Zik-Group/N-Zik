@@ -9,6 +9,7 @@ Ein mehrsprachiges YouTube Music Frontend für Android, fokussiert auf Leistung,
 ✨ <b>WARUM N-ZIK?</b> Keine Werbung, Hintergrundwiedergabe, Offline-Caching, anpassbare UI - kostenlos, immer.
 
 🎨 <b>Anpassbare UI</b>
+- Jetpack Compose interface
 - Themes: AMOLED, Deep Dark, Crisp Light + eingefärbte Akzente
 - 3D Carousel Player, Home-Widgets, einheitlicher Player und Mini-Player
 - Künstlerprofile, Discovery und Moods, einklappbare Home-Header
@@ -35,7 +36,7 @@ Danksagung: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdr
 - YouTube-Anmeldung für Empfehlungen und Videowiedergabe, plus experimentelle Zwei-Wege-Sync
 - Last.fm-Scrobbling mit Now Playing und love/unlove
 - MusicBrainz-Künstler- und Album-Infos
-- Discord Rich Presence, inkl. erweitertem Modus mit Live-Vorschau
+erweitertem Modus mit Live-Vorschau
 - Invidious-Integration für alternatives YouTube-Streaming
 - Playlist-Import/Export: RiPlay, Spotify, YouTube Music, N-Zik
 
@@ -64,3 +65,5 @@ Danksagung: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdr
 - Dev64/Dev32 (`com.nevar.nzik.dev`): Entwicklungs-Builds, nur zum Testen
 
 Kein Build bündelt FFmpeg: er ist eine herunterladbare Erweiterung (wird bei Erstverwendung installiert, verwaltet unter Einstellungen → Erweiterungen). Nur FOSS ist auf F-Droid.
+
+Historical project credits include ViMusic.
