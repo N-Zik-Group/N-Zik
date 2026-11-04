@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Accessibility -->
     <string name="accessibility_app_icon">App\'s icon</string>
     <string name="accessibility_app_icon_in_player">app icon in player</string>
     <string name="accessibility_arrow_down">arrow_down</string>
@@ -15,7 +16,7 @@
     <string name="accessibility_origin_indicator">origin_indicator</string>
     <string name="accessibility_recenter">Recenter</string>
     <string name="accessibility_rename_dialog_text_box_icon">Rename dialog text box icon</string>
-    <string name="accessibility_reset">Restableix</string>
+    <string name="accessibility_reset">Reset</string>
     <string name="accessibility_song_album_cover">song album cover</string>
     <string name="accessibility_switch_mode">Switch Mode</string>
     <string name="accessibility_youtube_playlist">Youtube Playlist</string>
