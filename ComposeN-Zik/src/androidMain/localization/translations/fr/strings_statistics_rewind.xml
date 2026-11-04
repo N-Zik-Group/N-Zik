@@ -277,5 +277,5 @@
     <string name="statistics_playback_duration_label">Durée d’écoute</string>
     <string name="statistics_title">Statistiques</string>
     <string name="statistics_top_period_title">Voir le top %s de …</string>
-    <string name="statistics_time_spent_format">%1$s time spent</string>
+    <string name="statistics_time_spent_format">%1$s de temps passé</string>
 </resources>
