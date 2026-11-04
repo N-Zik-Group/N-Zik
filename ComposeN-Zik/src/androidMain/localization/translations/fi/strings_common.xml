@@ -1,25 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="common_answer_no">Ei</string>
+    <!-- Common -->
+    <string name="common_answer_no">No</string>
     <string name="common_artist_conjunction_and">and</string>
     <string name="common_brand_github">GitHub</string>
-    <string name="common_clipboard_copy_failed">Tekstin kopiointi leikepöydälle epäonnistui, yritä uudelleen</string>
+    <string name="common_clipboard_copy_failed">Failed to copy text to clipboard, try again</string>
     <string name="common_clipboard_copy_success">Kopioitu</string>
-    <string name="common_color_black">Musta</string>
-    <string name="common_color_custom">Mukautettu väri</string>
-    <string name="common_color_source_artwork">Kansikuvien väri</string>
+    <string name="common_color_black">Black</string>
+    <string name="common_color_custom">Custom Color</string>
+    <string name="common_color_source_artwork">Artwork</string>
     <string name="common_color_source_theme">Teema</string>
     <string name="common_color_white">Valkoinen</string>
-    <string name="common_debug_background">tausta</string>
+    <string name="common_debug_background">background</string>
     <string name="common_debug_width">width</string>
     <string name="common_delete_success">Poistettu</string>
-    <string name="common_description_unavailable">Ei kuvausta saatavilla</string>
+    <string name="common_description_unavailable">No description available</string>
     <string name="common_duration_milliseconds_format">%1$s ms</string>
     <string name="common_empty_items">Ei kohteita</string>
-    <string name="common_external_link_loading_suffix">ladataan...</string>
+    <string name="common_external_link_loading_suffix">is loading...</string>
     <string name="common_load_failed">Unable to load</string>
     <string name="common_load_failed_no_connection">Unable to load, no connection</string>
-    <string name="common_log_unavailable">Loki ei käytettävissä</string>
+    <string name="common_log_unavailable">Log unavailable</string>
     <string name="common_option_all">Kaikki</string>
     <string name="common_option_custom">Mukautettu</string>
     <string name="common_option_default">Oletus</string>
@@ -29,16 +30,18 @@
     <string name="common_restart_required_message">Please open %s again after!</string>
     <string name="common_size_big">Suuri</string>
     <string name="common_size_biggest">Suurin</string>
-    <string name="common_size_expanded">Laajennettu</string>
+    <string name="common_size_expanded">Expanded</string>
     <string name="common_size_medium">Keskikokoinen</string>
     <string name="common_size_small">Pieni</string>
-    <string name="common_state_enabled">Käytössä</string>
+    <string name="common_state_enabled">Enabled</string>
     <string name="common_state_off">Pois</string>
     <string name="common_state_on">Päällä</string>
-    <string name="common_storage_used_suffix">" käytetty"</string>
+    <string name="common_storage_used_suffix">" used"</string>
     <string name="common_validation_empty_value">Arvo ei voi olla tyhjä</string>
     <string name="common_validation_invalid_input">Invalid input!</string>
-    <string name="common_validation_minimum_value">"Arvon on oltava suurempi kuin "</string>
+    <string name="common_validation_minimum_value">"Value must be greater than "</string>
     <string name="common_validation_name_in_use">Name already in use</string>
-    <string name="common_value_input_hint">Syötä arvo</string>
+    <string name="common_value_input_hint">Enter the value</string>
+    <string name="common_unknown">Tuntematon</string>
+    <string name="common_duration_minutes_short">%1$d min</string>
 </resources>
