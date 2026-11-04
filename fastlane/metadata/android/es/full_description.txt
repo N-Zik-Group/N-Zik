@@ -9,12 +9,13 @@ Frontend multilingüe de YouTube Music para Android enfocado en rendimiento, UI/
 ✨ <b>¿POR QUÉ N-ZIK?</b> Sin anuncios, reproducción en segundo plano, caché offline e interfaz personalizable - gratis, siempre.
 
 🎨 <b>Interfaz personalizable</b>
+- Jetpack Compose interface
 - Temas: AMOLED, Deep Dark, Crisp Light + acentos de color
 - 3D Carousel Player, widgets de inicio, reproductor y mini-reproductor unificados
 - Perfiles de artistas, Descubrimiento y moods, cabeceras plegables
 
 <b>Glass opcional (BETA)</b>
-Desactivado al instalar; actívalo en Ajustes. Por categoría: nativo, solo contornos o Glass; calidad ajustable. Puede aumentar la carga gráfica y el consumo de batería; reduce la calidad o desactívalo.
+Disabled on fresh installs. Por categoría: nativo, solo contornos o Glass; calidad ajustable. Puede aumentar la carga gráfica y el consumo de batería; reduce la calidad o desactívalo.
 Créditos: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Experiencia de audio</b>
@@ -64,3 +65,5 @@ Créditos: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdro
 - Dev64/Dev32 (`com.nevar.nzik.dev`): Builds de desarrollo, solo pruebas
 
 Ninguna versión incluye FFmpeg: es una extensión descargable (se instala al primer uso, gestionada en Ajustes → Extensiones). Solo FOSS está en F-Droid.
+
+Historical project credits include ViMusic.
