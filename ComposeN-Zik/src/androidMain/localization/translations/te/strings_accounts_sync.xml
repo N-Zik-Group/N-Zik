@@ -78,7 +78,7 @@
     <string name="discord_preview_state_paused">Paused</string>
     <string name="discord_preview_state_playing">Playing</string>
     <string name="discord_preview_title">Rich Presence preview</string>
-    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates stopped until the next media change or manual reconnect</string>
+    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates are paused</string>
     <string name="discord_second_button_enabled_description">Show the second link button on your Discord activity.</string>
     <string name="discord_second_button_label_description">Set the text displayed on the second Discord activity button.</string>
     <string name="discord_second_button_url_description">Set the web address opened by the second Discord activity button.</string>
