@@ -2,7 +2,7 @@
 <resources>
     <!-- Common -->
     <string name="common_error_connection_timeout">Conexão expirada</string>
-    <string name="common_error_no_connection">No Connection</string>
+    <string name="common_error_no_connection">Sem conexão</string>
     <string name="common_error_no_internet">Sem conexão com a internet</string>
     <string name="common_error_title">Ocorreu um erro.</string>
     <string name="common_error_unknown">Erro desconhecido</string>
