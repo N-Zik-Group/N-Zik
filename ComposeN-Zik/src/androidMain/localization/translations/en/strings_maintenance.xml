@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Logs -->
     <string name="logs_action_export">Export logs</string>
     <string name="logs_action_export_both">Export both logs</string>
     <string name="logs_action_export_crash">Export crash log</string>
@@ -7,6 +8,7 @@
     <string name="logs_export_both_description">Export debug and crash logs to a file</string>
     <string name="logs_export_crash_description">Export crash log to a file</string>
     <string name="logs_export_debug_description">Export debug log to a file</string>
+    <!-- Maintenance -->
     <string name="maintenance_all_systems_ok">All systems operational</string>
     <string name="maintenance_auto_update">Auto update</string>
     <string name="maintenance_backup">Auto backup</string>
@@ -123,6 +125,7 @@
     <string name="maintenance_yt_invalid">Invalid</string>
     <string name="maintenance_yt_session">YouTube session</string>
     <string name="maintenance_yt_valid">Valid</string>
+    <!-- Modules -->
     <string name="modules_abi">ABI</string>
     <string name="modules_already_installed">Already installed</string>
     <string name="modules_bundled_libraries">Bundled libraries</string>
@@ -156,6 +159,7 @@
     <string name="modules_update_available_body">Version %1$s is installed. The app now ships %2$s.</string>
     <string name="modules_updating">Updating module</string>
     <string name="modules_version">Version</string>
+    <!-- Recovery -->
     <string name="recovery_accounts_exported">Profile state exported</string>
     <string name="recovery_accounts_imported_base">Profile state imported: base profile</string>
     <string name="recovery_accounts_imported_count">Profile state imported: %1$d profiles</string>
@@ -250,6 +254,7 @@
     <string name="recovery_status_main_process_stopped">The app is stopped: no kill action needed</string>
     <string name="recovery_status_main_process_stopping">The app is shutting down…</string>
     <string name="recovery_success">Done</string>
+    <!-- Updates -->
     <string name="updates_action_check">Check Update</string>
     <string name="updates_action_check_now">Check now</string>
     <string name="updates_action_download_current_version">Download again last update</string>
