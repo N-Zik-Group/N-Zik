@@ -1,66 +1,69 @@
-Android için çok dilli YouTube Music frontend'i: performans, UI/UX iyileştirmeleri, özellik genişletme ve uzun vadeli destek.
+A multilingual YouTube Music frontend for Android, focused on performance, UI/UX refinements, feature expansion, and long-term support.
 
-<b>N-Zik</b>, <a href="https://github.com/knighthat/Kreate">Kreate</a>'nin açık kaynaklı bir çatalıdır.
+<b>N-Zik</b> is an open-source fork of <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Not:</b> N-Zik bir yan proje olarak başladı. Daha olgun alternatifler için <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> veya <a href="https://github.com/fast4x/RiPlay">RiPlay</a>'e göz atın.
+<b>Note:</b> N-Zik started as a side project. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>AI Kullanımı:</b> Kod için üretken AI kullanıyorum (<a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a> aracılığıyla), her şey yayına alınmadan önce incelenir ve test edilir.
+<b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), reviewed and tested before shipping.
 
-✨ <b>NEDEN N-ZIK?</b> Reklamsız, arka plan oynatma, çevrimdışı önbellekleme, ayarlanabilir arayüz - her zaman ücretsiz.
+✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI - free, always.
 
-🎨 <b>Ayarlanabilir Arayüz</b>
-- Temalar: AMOLED, Deep Dark, Crisp Light + renkli vurgular
-- 3D Carousel Player, ana ekran widget'ları, birleşik ve mini-oynatıcı
-- Sanatçı profilleri, Keşif/ruh halleri, katlanabilir ana ekran başlıkları
+🎨 <b>Customizable UI</b>
+- Jetpack Compose interface
+- Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
+- 3D Carousel Player, home widgets, unified player and mini-player
+- Artist profiles, Discovery and moods, collapsible home headers
 
-🫧 <b>Glass efekti (BETA, isteğe bağlı)</b>
-Yeni kurulumlarda kapalıdır. Ayarlar’dan açın: kategoriye göre yerel görünüm, yalnızca kontur veya Glass, ayarlanabilir kalite. İşleme yükünü ve pil tüketimini artırabilir; kaliteyi düşürün veya kapatın.
-Glass katkıları: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+🫧 <b>Glass Effect (BETA, optional)</b>
+Disabled on fresh installs. Enable in Settings: native, contour-only or Glass by category, with adjustable quality. May increase rendering work and battery use; reduce quality or disable if needed.
+Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
-🎵 <b>Ses Deneyimi</b>
-- YouTube Music Premium aracılığıyla premium ses, otomatik uygulanır
-- Düzenleme, gerçek zamanlı çeviriyle senkronize sözler
-- Şarkı tanıma (Shazam benzeri), sesli arama, görselleştirici
-- Pro kontroller: hız, perde, normalleştirme, crossfade, ses/bas artırma, yankı
-- Kesin navigasyon için Audio Bar dalga formu kaydırma çubuğu
+🎵 <b>Audio Experience</b>
+- Premium quality via YouTube Music Premium, applied automatically
+- Synced lyrics with editing and real-time translation
+- Song recognition (Shazam-like), voice search, audio visualizer
+- Pro controls: speed, pitch, normalization, crossfade, volume boost, bass boost, reverb
+- Audio Bar waveform seekbar for precise navigation
 
-💾 <b>Çevrimdışı, Meta Veriler ve Gizlilik</b>
-- Parçalar ve listeler için akıllı önbellekleme/indirme, seçilebilir indirme kalitesi
-- Tam meta veriyle FFmpeg destekli dışa aktarma (yalnız standart yapılar)
-- Uygulama içi meta veri düzenleyici (AAC/Opus, kapak)
-- Yerel dinleme istatistikleri ve geçmişi
-- Özel aralıklı ve saklama süreli otomatik yedekleme
+💾 <b>Offline, Metadata & Privacy</b>
+- Smart caching and downloads for tracks and playlists, with selectable download quality
+- FFmpeg-powered export with full metadata (FFmpeg is a downloadable extension, installed on first use)
+- In-app metadata editor (AAC/Opus, cover art)
+- Local listening stats and history
+- Auto-backup with custom intervals and retention
 
-🔗 <b>Entegrasyonlar</b>
-- Öneriler ve video oynatma için YouTube girişi; deneysel çift yönlü senkronizasyon motoru
-- Last.fm scrobbling: Now Playing, love/unlove
-- MusicBrainz sanatçı ve albüm bilgileri
-- Discord Rich Presence; canlı önizlemeli gelişmiş mod
-- Alternatif YouTube akışı için Invidious
-- Çalma listesi içe/dışa aktarma: RiPlay, Spotify, YouTube Music, N-Zik
+🔗 <b>Integrations</b>
+- YouTube sign-in for recommendations and video playback, plus an experimental two-way sync engine
+- Last.fm scrobbling with Now Playing and love/unlove
+- MusicBrainz artist and album insights
+- Discord Rich Presence, including advanced mode with live preview
+- Invidious integration for alternative YouTube streaming
+- Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
-👥 <b>Birlikte Dinleyin</b>
-- Kod veya davet bağlantısıyla canlı dinleme oturumlarına katılın ya da ev sahipliği yapın
+👥 <b>Listen Together</b>
+- Join or host live listening sessions with other users via code or invite link
 
 🗓️ <b>Rewind</b>
-- Otomatik Rewind listeleriyle yıllık/aylık dinleme özetleri
+- Yearly and monthly listening recaps with auto-generated Rewind playlists
 
-📱 <b>Her Yerde Oynatın:</b> Android Auto, Automotive, TV ve Tablets
+📱 <b>Play Anywhere:</b> Android Auto, Automotive, TV, and Tablets
 
-🛠️ <b>Gelişmiş Kullanıcı Özellikleri</b>
-- Çoklu profil: profil başına izole veritabanı ve ayarlar
-- Bluetooth bağlantısında otomatik devam, kalıcı kuyruk, otomatik doldurma
-- Akıllı çöp kutusu, gizli şarkılar, beğenmeme sistemi, ebeveyn denetimi
-- Proxy desteği, ağ kalitesi uyarlama, günlük dışa aktarma
-- Rescue Center, bakım ekranı, başlangıç rehberi, uygulama kısayolları
-- GitHub'dan OTA güncellemeleri, uyku zamanlayıcısı, arka plan oynatma
+🛠️ <b>Power User Features</b>
+- Multi-profile: isolated database and settings per profile
+- Auto-resume on Bluetooth connect, persistent queue, auto-fill queue
+- Smart trash, hidden songs, dislike system, parental control
+- Proxy support, network quality adaptation, log export
+- Rescue Center, maintenance screen, onboarding, app shortcuts
+- OTA updates from GitHub, sleep timer, background playback
 
-📦 <b>Mevcut Yapılar</b>
-- Release64/Beta64 (`com.nevar.nzik`): Tam yapı, yalnızca 64-bit cihazlar
-- Release32/Beta32 (`com.nevar.nzik`): Tam yapı, yalnızca 32-bit cihazlar
-- Minified64 (`com.nevar.nzik`): Hafif R8 yapı, düşük özellikli cihazlar için (64-bit)
-- Minified32 (`com.nevar.nzik`): Hafif R8 yapı (32-bit)
-- FOSS (`com.nevar.nzik.foss`): Otomatik güncelleyicisiz, F-Droid için (tüm mimariler)
-- Dev64/Dev32 (`com.nevar.nzik.dev`): Geliştirme yapıları, yalnızca test için
+📦 <b>Available Builds</b>
+- Release64/Beta64 (`com.nevar.nzik`): Complete build, 64-bit devices only
+- Release32/Beta32 (`com.nevar.nzik`): Complete build, 32-bit devices only
+- Minified64 (`com.nevar.nzik`): Lightweight R8 build, for low-end devices (64-bit)
+- Minified32 (`com.nevar.nzik`): Lightweight R8 build (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Without auto-updater, for F-Droid (all architectures)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Development builds, testing only
 
-Hiçbir yapı FFmpeg içermez: indirilebilir bir eklentidir (ilk kullanımda kurulur, Ayarlar → Eklentiler içinde yönetilir). F-Droid'de yalnızca FOSS var.
+No build bundles FFmpeg: it is a downloadable extension (installed on first use, managed in Settings → Extensions). Only FOSS is on F-Droid.
+
+Historical project credits include ViMusic.
