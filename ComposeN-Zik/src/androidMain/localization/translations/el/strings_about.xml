@@ -8,13 +8,13 @@
     <string name="about_contributors_alphabetical_order_label">Με αλφαβητική σειρά:</string>
     <string name="about_debug_developers_rotation">προγραμματιστές_περιστροφή</string>
     <string name="about_debug_translators_rotation">translators_rotation</string>
-    <string name="about_developers_description">Show or hide the developers and designers who contributed to the app.</string>
-    <string name="about_developers_designers_title">Developers / Designers</string>
+    <string name="about_developers_description">Εμφάνιση ή απόκρυψη των προγραμματιστών και των σχεδιαστών που συνέβαλαν στην εφαρμογή.</string>
+    <string name="about_developers_designers_title">Προγραμματιστές / Σχεδιαστές</string>
     <string name="about_github_link_description">Θα μεταφερθείτε στο GitHub</string>
-    <string name="about_report_issue_description">Open the GitHub bug report form to describe a problem.</string>
-    <string name="about_request_feature_description">Open the GitHub feature request form to suggest an improvement.</string>
-    <string name="about_source_code_description">Open the source code repository on GitHub.</string>
+    <string name="about_report_issue_description">Ανοίξτε τη φόρμα αναφοράς σφάλματος GitHub για να περιγράψετε ένα πρόβλημα.</string>
+    <string name="about_request_feature_description">Ανοίξτε την φόρμα αιτημάτων λειτουργιών GitHub για να προτείνετε μια βελτίωση.</string>
+    <string name="about_source_code_description">Ανοίξτε το αποθετήριο πηγαίου κώδικα στο GitHub.</string>
     <string name="about_title">Σχετικά</string>
-    <string name="about_translators_description">Show or hide the people who translated the app.</string>
-    <string name="about_translators_title">Translators</string>
+    <string name="about_translators_description">Εμφάνιση ή απόκρυψη των ατόμων που μετέφρασαν την εφαρμογή.</string>
+    <string name="about_translators_title">Μεταφραστές</string>
 </resources>
