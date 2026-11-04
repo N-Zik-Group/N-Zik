@@ -21,7 +21,7 @@
     <string name="backup_before_update_failed">Pre-install backup failed</string>
     <string name="backup_before_update_running_message">Backing up data before installation…</string>
     <string name="backup_before_update_running_title">Backup in progress</string>
-    <string name="backup_excluded_preferences_and_cache_description">Personal preferences (i.e. the theme mode) and the cache are excluded.</string>
+    <string name="backup_excluded_preferences_and_cache_description">Fágtar rogha pearsanta (i.e. Modh an téama) agus taisce amach.</string>
     <string name="backup_export_description">Export database or settings to a file</string>
     <string name="backup_import_description">Import database or settings from a file</string>
     <string name="backup_include_discord_credentials">Include Discord identity credentials</string>
@@ -31,7 +31,7 @@
     <string name="backup_legacy_migration_description">For old users before conversion.\nUse old app to make a backup for migration.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Existing data will be overwritten. %1$s will automatically close itself after restoring the database.</string>
     <string name="backup_target_database_and_settings_label">Database + Settings</string>
-    <string name="backup_target_database_label">Database</string>
+    <string name="backup_target_database_label">Bunachar sonraí</string>
     <!-- Backup Auto -->
     <string name="backup_auto_custom_interval_unit">Custom Interval Unit</string>
     <string name="backup_auto_custom_interval_value">Custom Interval Value</string>
@@ -39,7 +39,7 @@
     <string name="backup_auto_interval_custom">Custom</string>
     <string name="backup_auto_interval_daily">Daily</string>
     <string name="backup_auto_interval_hourly">Hourly</string>
-    <string name="backup_auto_interval_monthly">Monthly</string>
+    <string name="backup_auto_interval_monthly">Monthly playlists</string>
     <string name="backup_auto_interval_none">Disabled</string>
     <string name="backup_auto_interval_weekly">Weekly</string>
     <string name="backup_auto_location">Auto Backup Location</string>
