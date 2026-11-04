@@ -126,9 +126,9 @@
     <string name="glass_effect_switches_description">Use liquid Glass switches with the shared material and interaction effects when Glass is enabled.</string>
     <string name="glass_effect_switches_title">Glass switches</string>
     <string name="glass_effect_tint">Tint</string>
-    <string name="glass_effect_tint_none">None</string>
+    <string name="glass_effect_tint_none">無</string>
     <string name="glass_effect_tint_source">Glass color source</string>
-    <string name="glass_effect_tint_source_custom">Custom</string>
+    <string name="glass_effect_tint_source_custom">自定義</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
     <string name="glass_effect_unsupported">This phone has no hardware blur, so every surface uses the tinted film.</string>
     <string name="glass_effect_where_action_buttons">Action buttons</string>
@@ -150,7 +150,7 @@
     <string name="glass_effect_where_search_bars_description">The boxes where you type a search, including settings searches.</string>
     <string name="glass_effect_windows_summary">Change menus, pop-up windows and short messages.</string>
     <!-- Image -->
-    <string name="image_error_unknown">Unknown error</string>
+    <string name="image_error_unknown">未知的錯誤</string>
     <!-- Interface -->
     <string name="interface_artist_image_roundness_description">Adjust the corner rounding of artist images.</string>
     <string name="interface_corner_roundness_description">Adjust the rounding of interface cards and controls.</string>
@@ -164,20 +164,20 @@
     <string name="interface_show_floating_icon_description">Display a floating shortcut that opens search.</string>
     <string name="interface_transition_effect_description">Choose the animation used when moving between screens.</string>
     <!-- Player Appearance -->
-    <string name="player_controls_style_essential">Essential</string>
-    <string name="player_controls_style_modern">Modern</string>
+    <string name="player_controls_style_essential">基本</string>
+    <string name="player_controls_style_modern">現代</string>
     <string name="player_cover_style_cd">CD</string>
     <string name="player_cover_style_cd_with_cover">CD with Cover</string>
     <string name="player_cover_style_vinyl">Vinyl</string>
-    <string name="player_like_icon_apple">Apple</string>
-    <string name="player_like_icon_brilliant">Brilliant</string>
-    <string name="player_like_icon_broken">Broken</string>
-    <string name="player_like_icon_cute">Cute</string>
-    <string name="player_like_icon_gift">Gift</string>
-    <string name="player_like_icon_striped">Striped</string>
-    <string name="player_progress_both">Both</string>
-    <string name="player_progress_mini_player">Minimized player</string>
-    <string name="settings_action_bar_show_lyrics_button">Lyrics button</string>
+    <string name="player_like_icon_apple">蘋果</string>
+    <string name="player_like_icon_brilliant">傑出的</string>
+    <string name="player_like_icon_broken">Breaked</string>
+    <string name="player_like_icon_cute">形狀</string>
+    <string name="player_like_icon_gift">禮物</string>
+    <string name="player_like_icon_striped">條紋</string>
+    <string name="player_progress_both">兩者</string>
+    <string name="player_progress_mini_player">最小化播放器</string>
+    <string name="settings_action_bar_show_lyrics_button">顯示 \"歌詞\" 按鈕</string>
     <!-- Player Background -->
     <string name="player_background_black_cherry_cosmos">Black Cherry Cosmos</string>
     <string name="player_background_glossy_gradient">Glossy Gradient</string>
@@ -214,12 +214,12 @@
     <string name="theme_light_palette_text_disabled_description">Choose the color for disabled text in the light palette.</string>
     <string name="theme_light_palette_text_secondary_description">Choose the color for secondary text in the light palette.</string>
     <string name="theme_mode_description">Choose when the app uses its light or dark palette.</string>
-    <string name="theme_mode_pitch_black">Pitch Black</string>
-    <string name="theme_palette_custom">Customized</string>
+    <string name="theme_mode_pitch_black">純黑</string>
+    <string name="theme_palette_custom">自訂</string>
     <string name="theme_palette_description">Choose the color palette used throughout the app.</string>
-    <string name="theme_palette_dynamic">Dynamic</string>
-    <string name="theme_palette_modern_black">Modern Black</string>
-    <string name="theme_palette_pure_black">Pure Black</string>
+    <string name="theme_palette_dynamic">動態</string>
+    <string name="theme_palette_modern_black">現代黑</string>
+    <string name="theme_palette_pure_black">純黑</string>
     <string name="theme_shake_sensitivity_disabled">Disabled</string>
     <string name="theme_shake_sensitivity_high">High (2.2G)</string>
     <string name="theme_shake_sensitivity_low">Low (5.0G)</string>
