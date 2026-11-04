@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Album -->
     <string name="album_action_bookmark">Bookmark album</string>
     <string name="album_action_open">Go to album</string>
     <string name="album_alternative_versions">Alternative versions</string>
@@ -13,6 +14,7 @@
     <string name="album_not_found">Album not found</string>
     <string name="album_related_title">Related albums</string>
     <string name="album_right_swipe">Album Right Swipe</string>
+    <!-- Artist -->
     <string name="artist_action_follow">Follow</string>
     <string name="artist_action_play_local_songs">Play all local songs</string>
     <string name="artist_deduplication_result">Merged %d duplicate artist(s) with the right artist</string>
@@ -28,8 +30,10 @@
     <string name="artist_songs_count_duration">%1$d Songs • %2$s</string>
     <string name="artist_songs_unavailable_message">No songs available</string>
     <string name="artist_title">Artist</string>
+    <!-- History -->
     <string name="history_clear_listen_history_description">Delete saved playback events from listening history.</string>
     <string name="history_clear_search_history_description">Delete saved searches from every search-history page without changing history preferences.</string>
+    <!-- Home -->
     <string name="home_albums_settings">Home Albums</string>
     <string name="home_artists_settings">Home Artists</string>
     <string name="home_chart_top_artists_title">Top artists</string>
@@ -47,10 +51,12 @@
     <string name="home_tabs_settings_description">Reorder and show/hide tabs</string>
     <string name="home_title">Home</string>
     <string name="home_youtube_login_description">Log in to your YTM account for more content</string>
+    <!-- Home Easter Egg -->
     <string name="home_easter_egg_click_message">Do you like clicking? Then continue...</string>
     <string name="home_easter_egg_keep_going">Okay, you\'re looking for something, keep...</string>
     <string name="home_easter_egg_last">You are a number one, long click and enjoy the surprise</string>
     <string name="home_easter_egg_number_one">You are a number one, click and enjoy the surprise</string>
+    <!-- Library -->
     <string name="library_action_bookmark">Bookmark</string>
     <string name="library_action_randomize">Randomizer</string>
     <string name="library_albums_title">Albums</string>
@@ -68,12 +74,12 @@
     <string name="library_layout_list_label">List</string>
     <string name="library_local_media_permission_message">Media permission required, please grant.</string>
     <string name="library_management_section_title">Management</string>
-    <string name="library_matching_action_retry">Försök matcha</string>
-    <string name="library_matching_all_success_message">Alla låtar matchades framgångsrikt!</string>
-    <string name="library_matching_failed_songs_description">Följande låtar kunde inte matchas:</string>
+    <string name="library_matching_action_retry">Retry Match</string>
+    <string name="library_matching_all_success_message">All songs were matched successfully!</string>
+    <string name="library_matching_failed_songs_description">The following songs could not be matched:</string>
     <string name="library_matching_merged_count_format">%d merged with existing</string>
-    <string name="library_matching_results_title">Matchning slutförd</string>
-    <string name="library_matching_success_failure_count_format">%1$d matchade, %2$d misslyckades</string>
+    <string name="library_matching_results_title">Matching Complete</string>
+    <string name="library_matching_success_failure_count_format">%1$d matched, %2$d failed</string>
     <string name="library_on_device_start_folder_description">Choose the starting folder for the on-device music browser.</string>
     <string name="library_on_device_title">On device</string>
     <string name="library_playlists_title">Playlists</string>
@@ -97,11 +103,13 @@
     <string name="library_title">Library</string>
     <string name="library_youtube_music_title">YTM Library</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
+    <!-- Library Favorites -->
     <string name="library_dislikes_added">Disliked %s</string>
     <string name="library_dislikes_removed">Removed %s from dislikes</string>
     <string name="library_favorites_action_add">Add to favorites</string>
     <string name="library_favorites_added">Added to favorites</string>
     <string name="library_favorites_removed">Removed from favorites</string>
+    <!-- Library Sort -->
     <string name="library_sort_album">Album</string>
     <string name="library_sort_album_year">Album Year</string>
     <string name="library_sort_artist">Artist</string>
@@ -117,6 +125,7 @@
     <string name="library_sort_play_count">Play Count</string>
     <string name="library_sort_songs_number">Number of songs</string>
     <string name="library_sort_title">Title</string>
+    <!-- Metadata -->
     <string name="metadata_action_change_artists">Change Authors</string>
     <string name="metadata_action_change_cover">Change Cover</string>
     <string name="metadata_action_change_title">Change Title</string>
@@ -136,7 +145,7 @@
     <string name="metadata_conductor">Conductor</string>
     <string name="metadata_copyright">Copyright</string>
     <string name="metadata_cover">Cover</string>
-    <string name="metadata_description_title">Beskrivning</string>
+    <string name="metadata_description_title">Description</string>
     <string name="metadata_disc_number">Disc Number</string>
     <string name="metadata_encoder">Encoder</string>
     <string name="metadata_exported">Exported</string>
@@ -158,11 +167,12 @@
     <string name="metadata_unknown_artist">Unknown Artist</string>
     <string name="metadata_unknown_title">Unknown Title</string>
     <string name="metadata_video_dislikes_label">Dislikes</string>
-    <string name="metadata_video_likes_label">Gillar</string>
-    <string name="metadata_video_subscribers_label">Prenumeranter</string>
-    <string name="metadata_video_views_label">Visningar</string>
+    <string name="metadata_video_likes_label">Likes</string>
+    <string name="metadata_video_subscribers_label">Subscribers</string>
+    <string name="metadata_video_views_label">Views</string>
     <string name="metadata_wikipedia_attribution">From Wikipedia under Creative Commons Attribution CC-BY-SA 3.0</string>
     <string name="metadata_year">Year</string>
+    <!-- Metadata Musicbrainz -->
     <string name="metadata_musicbrainz_insights">Insights</string>
     <string name="metadata_musicbrainz_insights_biography">Biography</string>
     <string name="metadata_musicbrainz_insights_links">Links</string>
@@ -182,8 +192,8 @@
     <string name="metadata_musicbrainz_no_rating">No rating available</string>
     <string name="metadata_musicbrainz_rating_votes">(%1$d votes)</string>
     <string name="metadata_musicbrainz_resync">Resync</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed, MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures, retry in %1$d min</string>
     <string name="metadata_musicbrainz_resync_success">MusicBrainz data synced</string>
     <string name="metadata_musicbrainz_stat_albums">Albums</string>
     <string name="metadata_musicbrainz_stat_bookmarked_albums">Bookmarked albums</string>
@@ -192,6 +202,7 @@
     <string name="metadata_musicbrainz_stat_songs">Songs</string>
     <string name="metadata_musicbrainz_stat_time">Total time</string>
     <string name="metadata_musicbrainz_wikipedia">Wikipedia</string>
+    <!-- Playlist -->
     <string name="playlist_action_add">Add to playlist</string>
     <string name="playlist_action_add_hint">Add to playlist</string>
     <string name="playlist_action_create">New playlist</string>
@@ -199,7 +210,7 @@
     <string name="playlist_action_export">Export playlist</string>
     <string name="playlist_action_import">Import playlist</string>
     <string name="playlist_action_import_favorites">Import favorites</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik Liked songs in Youtube</string>
     <string name="playlist_action_remove_songs">Remove from playlist</string>
     <string name="playlist_action_remove_songs_outside_library">Delete Songs not in the Library</string>
     <string name="playlist_action_rename">Rename</string>
@@ -217,13 +228,13 @@
     <string name="playlist_delete_selected_confirmation_count_format">Are you sure you want to delete these %d playlists?</string>
     <string name="playlist_error_action_on_all_disliked_songs">Cannot Perform this Action when all the Songs are Disliked</string>
     <string name="playlist_error_action_on_disliked_song">Cannot Perform this Action with the Disliked Songs</string>
-    <string name="playlist_import_default_name">Importerad spellista</string>
+    <string name="playlist_import_default_name">Imported Playlist</string>
     <string name="playlist_import_failed">Error occurs while importing local playlist</string>
-    <string name="playlist_import_format_exportify_csv">Exportera CSV (Spotify)</string>
+    <string name="playlist_import_format_exportify_csv">Exportify CSV (Spotify)</string>
     <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_import_format_riplay_csv">RiPlay CSV</string>
     <string name="playlist_import_unsupported_format">Unsupported format</string>
-    <string name="playlist_import_youtube_link">Importera via YouTube-länk</string>
+    <string name="playlist_import_youtube_link">Import via YouTube link</string>
     <string name="playlist_insertion_beginning">Beginning</string>
     <string name="playlist_insertion_description">Choose where new songs are added in the playlist custom order. Existing songs and display sorting stay unchanged.</string>
     <string name="playlist_insertion_end">End</string>
@@ -251,9 +262,11 @@
     <string name="playlist_top_maximum_items_description">Limit how many songs are included in your top-played playlist.</string>
     <string name="playlist_top_show_description">Show your top-played playlist in Quick Picks.</string>
     <string name="playlist_youtube_song_limit_message">Youtube Playlists are Limited to 5000 songs</string>
-    <string name="playlist_youtube_title">YouTube spellista</string>
+    <string name="playlist_youtube_title">YouTube Playlist</string>
+    <!-- Podcast -->
     <string name="podcast_episodes_title">Episodes</string>
     <string name="podcast_title">Podcasts</string>
+    <!-- Radio -->
     <string name="radio_action_start">Start radio</string>
     <string name="radio_action_start_hint">Start radio</string>
     <string name="radio_action_stop">Stop radio</string>
@@ -265,15 +278,17 @@
     <string name="radio_discovery_requires_radio_or_autofill_message">Turn on Radio or Auto-fill to use Discover</string>
     <string name="radio_fetch_empty_queue_preserved_message">Radio: no songs loaded (Queue kept)</string>
     <string name="radio_stopped_message">Radio stopped (Return to normal)</string>
+    <!-- Recognition -->
     <string name="recognition_action_more_details">More details</string>
     <string name="recognition_audio_hint">Play some music for the analysis to work</string>
     <string name="recognition_error_microphone_permission">Microphone permission is needed for Find.</string>
     <string name="recognition_error_no_match">Couldn\'t identify that song. Try a louder or cleaner sample.</string>
     <string name="recognition_listening_duration">Analysing %1$ds of audio</string>
     <string name="recognition_ready_message">Hold your phone near the music</string>
+    <!-- Recommendations -->
     <string name="recommendations_action_reset_quick_picks">Reset Quick Picks</string>
     <string name="recommendations_adaptive">Adaptive</string>
-    <string name="recommendations_adaptive_description">Adaptive: Scales with playlist size (10-150 recommendations)</string>
+    <string name="recommendations_adaptive_description">Adaptive: Scales with playlist size (10-120 recommendations)</string>
     <string name="recommendations_albums_for_you_title">Albums for you</string>
     <string name="recommendations_all_hits_title">All hits</string>
     <string name="recommendations_charts_title">Charts</string>
@@ -285,7 +300,7 @@
     <string name="recommendations_description">The quick picks section contains settings for the quick picks page and AI powered recommendations</string>
     <string name="recommendations_featured_playlists_title">Featured playlists for you</string>
     <string name="recommendations_followed_artists_new_albums_title">New albums from your artists</string>
-    <string name="recommendations_followed_artists_no_new_releases">Det finns inga nya utgåvor för dina favoritartister</string>
+    <string name="recommendations_followed_artists_no_new_releases">There are no new releases for your favorite artists</string>
     <string name="recommendations_for_you_title">For You</string>
     <string name="recommendations_forgotten_favorites_title">Forgotten favorites</string>
     <string name="recommendations_fresh_finds_old_favorites_title">Fresh finds, old favorites</string>
@@ -318,6 +333,7 @@
     <string name="recommendations_trending_community_playlists_title">Trending community playlists</string>
     <string name="recommendations_trending_shorts_title">Trending in Shorts</string>
     <string name="recommendations_trending_songs_title">Trending songs for you</string>
+    <!-- Search -->
     <string name="search_content_type_all">All</string>
     <string name="search_content_type_official">Official</string>
     <string name="search_content_type_user_generated">User Generated</string>
@@ -336,7 +352,7 @@
     <string name="search_history_pause_description">Neither save new searched queries nor show history</string>
     <string name="search_history_pause_label">Pause search history</string>
     <string name="search_history_settings_page">Settings › %1$s</string>
-    <string name="search_items_empty_message">Inga objekt hittades</string>
+    <string name="search_items_empty_message">No items found</string>
     <string name="search_lyrics_online">Search lyrics online</string>
     <string name="search_mood_title">Mood</string>
     <string name="search_music_action_start">Music search</string>
@@ -351,23 +367,31 @@
     <string name="search_video_download_unsupported_message">Downloading videos not supported</string>
     <string name="search_videos_title">Videos</string>
     <string name="search_voice_action_start">Voice search</string>
-    <string name="search_voice_microphone_permission_error">Behörighet för mikrofon krävs</string>
-    <string name="search_voice_no_match_message">Jag förstod inte, försök igen</string>
+    <string name="search_voice_microphone_permission_error">Microphone permission required</string>
+    <string name="search_voice_no_match_message">I didn\'t understand, try again</string>
     <string name="search_youtube_action_open_url">Go to link</string>
     <string name="search_youtube_url_input_hint">Paste or type a valid url</string>
     <string name="search_youtube_url_supported_types_description">You can put a complete link of a playlist, an album, a channel or a single song on YouTube or YouTube Music</string>
-    <string name="voice_search_listening">Lyssnar...</string>
-    <string name="voice_search_retry">Försök igen</string>
-    <string name="voice_search_speak_now">Tala nu</string>
+    <string name="voice_search_listening">Listening...</string>
+    <string name="voice_search_retry">Retry</string>
+    <string name="voice_search_speak_now">Speak now</string>
+    <!-- Song -->
     <string name="song_delete_confirmation">Do you really want to delete this song? It will be deleted from database.\nThis action is irreversible.</string>
     <string name="song_delete_dialog_title">Delete songs</string>
     <string name="song_metadata_update_action_open">Open update dialog</string>
     <string name="song_metadata_updated_count">Updated %1$d songs</string>
     <string name="song_play_time_action_reset">Reset total play time</string>
-    <string name="song_matching_action_open">Matcha Album/Ljudversion</string>
-    <string name="song_matching_all_confirmation">Vill du matcha %d oöverträffade låtar?</string>
+    <!-- Song Matching -->
+    <string name="song_matching_action_open">Match Album/Audio version</string>
+    <string name="song_matching_all_confirmation">Do you want to match %d unmatched songs?</string>
     <string name="song_matching_dialog_title">Match songs</string>
     <string name="song_matching_progress_title">Matching songs</string>
     <string name="song_matching_running_message">Matching Songs. Please Wait. Do not Minimize or Exit the App</string>
-    <string name="song_matching_unmatched_label">Oöverträffad låt</string>
+    <string name="song_matching_unmatched_label">Unmatched song</string>
+    <string name="metadata_musicbrainz_rating">Rating</string>
+    <string name="metadata_cover_art">Cover art</string>
+    <string name="metadata_file_path_unavailable">Cannot resolve file path</string>
+    <string name="metadata_save_failed">Failed to save metadata</string>
+    <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
+    <string name="recommendations_charts_global">Global</string>
 </resources>
