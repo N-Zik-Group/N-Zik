@@ -33,7 +33,7 @@
     <string name="accessibility_origin_indicator">origin_indicator</string>
     <string name="accessibility_recenter">Recenter</string>
     <string name="accessibility_rename_dialog_text_box_icon">Rename dialog text box icon</string>
-    <string name="accessibility_reset">Reset</string>
+    <string name="accessibility_reset">Ресетуј</string>
     <string name="accessibility_song_album_cover">song album cover</string>
     <string name="accessibility_switch_mode">Switch Mode</string>
     <string name="accessibility_youtube_playlist">Youtube Playlist</string>
@@ -75,7 +75,7 @@
     <string name="artist_similar_title">Slični izvođači</string>
     <string name="artist_songs_count_duration">%1$d Songs • %2$s</string>
     <string name="artist_songs_unavailable_message">Još uvek nema pesama</string>
-    <string name="artist_title">Artist</string>
+    <string name="artist_title">Izvođač</string>
     <!-- Audio -->
     <string name="audio_bass_boost_description">Enhance low frequencies during playback.</string>
     <string name="audio_bass_boost_level_description">Adjust the strength of the low-frequency boost.</string>
@@ -112,13 +112,13 @@
     <string name="audio_reverb_large_room">Large Room</string>
     <string name="audio_reverb_medium_hall">Medium Hall</string>
     <string name="audio_reverb_medium_room">Medium Room</string>
-    <string name="audio_reverb_none">None</string>
+    <string name="audio_reverb_none">Nema</string>
     <string name="audio_reverb_plate">Plate</string>
     <string name="audio_reverb_small_room">Small Room</string>
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">I\'m feeling lucky</string>
     <string name="automotive_action_play_all">Play All</string>
-    <string name="automotive_title">Android Auto</string>
+    <string name="automotive_title">Андроид Ауто</string>
     <!-- Backup -->
     <string name="backup_action_export">Export backup</string>
     <string name="backup_action_import">Import backup</string>
@@ -155,11 +155,11 @@
     <string name="backup_auto_custom_interval_unit">Custom Interval Unit</string>
     <string name="backup_auto_custom_interval_value">Custom Interval Value</string>
     <string name="backup_auto_interval">Auto Backup Interval</string>
-    <string name="backup_auto_interval_custom">Custom</string>
+    <string name="backup_auto_interval_custom">Прилагођено</string>
     <string name="backup_auto_interval_daily">Daily</string>
     <string name="backup_auto_interval_hourly">Hourly</string>
-    <string name="backup_auto_interval_monthly">Monthly</string>
-    <string name="backup_auto_interval_none">Disabled</string>
+    <string name="backup_auto_interval_monthly">Mesečne plejliste</string>
+    <string name="backup_auto_interval_none">Онемогућено</string>
     <string name="backup_auto_interval_weekly">Weekly</string>
     <string name="backup_auto_location">Auto Backup Location</string>
     <string name="backup_auto_location_not_set">Not set</string>
@@ -250,7 +250,7 @@
     <string name="bridge_server_state_running">Running</string>
     <string name="bridge_server_state_stopping">Stopping…</string>
     <string name="bridge_server_status">Server status</string>
-    <string name="bridge_server_stop">Stop</string>
+    <string name="bridge_server_stop">Zaustavi</string>
     <string name="bridge_server_stopped">PC server stopped</string>
     <string name="bridge_server_stopped_auto">Stopped automatically (auto-stop)</string>
     <string name="bridge_server_stopped_timeout">Android background time limit reached, restart it from the app</string>
@@ -270,7 +270,7 @@
     <string name="calendar_days_ago">%d days ago</string>
     <string name="calendar_last_week">Prethodne nedelje</string>
     <string name="calendar_last_year">Last year</string>
-    <string name="calendar_month_april_with_year">April %s</string>
+    <string name="calendar_month_april_with_year">Април %s</string>
     <string name="calendar_month_august_with_year">Avgust %s</string>
     <string name="calendar_month_december_with_year">Decembar %s</string>
     <string name="calendar_month_february_with_year">Februar %s</string>
@@ -287,7 +287,7 @@
     <string name="calendar_period_one_year">1 Godina</string>
     <string name="calendar_period_six_months">6 Meseca</string>
     <string name="calendar_period_three_months">3 meseca</string>
-    <string name="calendar_this_month">This month</string>
+    <string name="calendar_this_month">Prošli mesec</string>
     <string name="calendar_today">Danas</string>
     <string name="calendar_yesterday">Juče</string>
     <!-- Common -->
@@ -303,10 +303,10 @@
     <string name="common_action_import">Import</string>
     <string name="common_action_next">Next</string>
     <string name="common_action_ok">OK</string>
-    <string name="common_action_paste">Paste</string>
+    <string name="common_action_paste">Налепи</string>
     <string name="common_action_previous">Previous</string>
     <string name="common_action_remove">Remove</string>
-    <string name="common_action_reset">Reset</string>
+    <string name="common_action_reset">Ресетуј</string>
     <string name="common_action_retry">Retry</string>
     <string name="common_action_save">Save</string>
     <string name="common_action_select">Izabеri</string>
@@ -324,9 +324,9 @@
     <string name="common_color_black">Crna</string>
     <string name="common_color_custom">Custom Color</string>
     <string name="common_color_picker_title">Choose color</string>
-    <string name="common_color_source_artwork">Artwork</string>
+    <string name="common_color_source_artwork">Cover color</string>
     <string name="common_color_source_theme">Tema</string>
-    <string name="common_color_white">White</string>
+    <string name="common_color_white">Бела</string>
     <string name="common_content_explicit_label">Explicit</string>
     <string name="common_debug_background">background</string>
     <string name="common_debug_title">Otklanjanje grešaka</string>
@@ -421,7 +421,7 @@
     <string name="discord_beta_warning">This is still in Beta and may contain bugs and crash</string>
     <string name="discord_connected_to_discord_account">Connected to Discord Account</string>
     <string name="discord_details_template_description">Set the main activity line using track information placeholders.</string>
-    <string name="discord_enable_rich_presence">Enable Rich Presence</string>
+    <string name="discord_enable_rich_presence">Омогући богато присуство</string>
     <string name="discord_enabled_description">Share your current listening activity on your Discord profile.</string>
     <string name="discord_error_banner_title">Discord Rich Presence problem</string>
     <string name="discord_error_dismiss">Dismiss</string>
@@ -444,7 +444,7 @@
     <string name="discord_preview_state_paused">Paused</string>
     <string name="discord_preview_state_playing">Playing</string>
     <string name="discord_preview_title">Rich Presence preview</string>
-    <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates stopped until the next media change or manual reconnect</string>
+    <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
     <string name="discord_second_button_enabled_description">Show the second link button on your Discord activity.</string>
     <string name="discord_second_button_label_description">Set the text displayed on the second Discord activity button.</string>
     <string name="discord_second_button_url_description">Set the web address opened by the second Discord activity button.</string>
@@ -543,7 +543,7 @@
     <string name="glass_effect_mini_player">Mini player · surface and controls</string>
     <string name="glass_effect_mini_player_description">The small player with the song cover and playback buttons.</string>
     <string name="glass_effect_mode_contour_only">Contour only</string>
-    <string name="glass_effect_mode_disabled">Disabled</string>
+    <string name="glass_effect_mode_disabled">Onemogućeno</string>
     <string name="glass_effect_mode_glass_and_contour">Glass and contour</string>
     <string name="glass_effect_mode_glass_only">Glass only</string>
     <string name="glass_effect_mode_inherited">Following the shared element mode</string>
@@ -623,9 +623,9 @@
     <string name="glass_effect_switches_description">Use liquid Glass switches with the shared material and interaction effects when Glass is enabled.</string>
     <string name="glass_effect_switches_title">Glass switches</string>
     <string name="glass_effect_tint">Tint</string>
-    <string name="glass_effect_tint_none">None</string>
+    <string name="glass_effect_tint_none">Nema</string>
     <string name="glass_effect_tint_source">Glass color source</string>
-    <string name="glass_effect_tint_source_custom">Custom</string>
+    <string name="glass_effect_tint_source_custom">Prilagođeno</string>
     <string name="glass_effect_tint_source_system_accent">System accent</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
     <string name="glass_effect_title">Glass effect</string>
@@ -754,7 +754,7 @@
     <string name="lastfm_min_track_duration_description">Tracks this short or shorter are never sent</string>
     <string name="lastfm_now_playing">Now Playing</string>
     <string name="lastfm_now_playing_description">Send a Now Playing update when a track starts</string>
-    <string name="lastfm_password">Password</string>
+    <string name="lastfm_password">Лозинка</string>
     <string name="lastfm_scrobble">Scrobble</string>
     <string name="lastfm_scrobble_description">Scrobble tracks after the configured delay</string>
     <string name="lastfm_scrobble_threshold">Scrobble delay %</string>
@@ -763,7 +763,7 @@
     <string name="lastfm_show_password">Show password</string>
     <string name="lastfm_unlove">Unlove on Last.fm</string>
     <string name="lastfm_unloved">Removed from loved tracks</string>
-    <string name="lastfm_username">Username</string>
+    <string name="lastfm_username">Корисничко име</string>
     <!-- Library -->
     <string name="library_action_bookmark">Bookmark</string>
     <string name="library_action_randomize">Randomizer</string>
@@ -794,7 +794,7 @@
     <string name="library_songs_title">Pesme</string>
     <string name="library_sort_history_alphabetical">Alphabetical</string>
     <string name="library_sort_history_date">Date</string>
-    <string name="library_sort_relative_listening_time">Relative Listening Time</string>
+    <string name="library_sort_relative_listening_time">Релативно време слушања</string>
     <string name="library_sync_album_refresh_count_format">Refreshing %1$d albums</string>
     <string name="library_sync_album_retry_count_format">Failed to find %1$d albums, retrying</string>
     <string name="library_sync_albums_complete_message">Found all albums</string>
@@ -814,18 +814,18 @@
     <!-- Library Favorites -->
     <string name="library_dislikes_added">Disliked %s</string>
     <string name="library_dislikes_removed">Removed %s from dislikes</string>
-    <string name="library_favorites_action_add">Add to favorites</string>
+    <string name="library_favorites_action_add">Dodaj u omiljenо</string>
     <string name="library_favorites_added">Dodato u omiljeno</string>
     <string name="library_favorites_removed">Uklonjeno iz omiljenog</string>
     <!-- Library Sort -->
-    <string name="library_sort_album">Album</string>
+    <string name="library_sort_album">Албум</string>
     <string name="library_sort_album_year">Godina Albuma</string>
     <string name="library_sort_artist">Izvođač</string>
     <string name="library_sort_custom_order">Custom order</string>
     <string name="library_sort_date_added">Datum Dodavanja</string>
     <string name="library_sort_date_liked">Datum Sviđanja</string>
     <string name="library_sort_date_played">Datum Puštanja</string>
-    <string name="library_sort_downloaded">Preuzimanja</string>
+    <string name="library_sort_downloaded">Преузето</string>
     <string name="library_sort_duration">Trajanje</string>
     <string name="library_sort_listening_time">Vreme slušanja</string>
     <string name="library_sort_menu">Sort Menu</string>
@@ -921,7 +921,7 @@
     <string name="listen_together_unblock">Unblock</string>
     <string name="listen_together_use_custom_server">Use custom server</string>
     <string name="listen_together_user_blocked_by_host">Blocked by host</string>
-    <string name="listen_together_username">Username</string>
+    <string name="listen_together_username">Корисничко име</string>
     <string name="listen_together_username_hint">Your username</string>
     <string name="listen_together_view_logs">View logs</string>
     <string name="listen_together_waiting_for_approval">Waiting for host approval…</string>
@@ -980,7 +980,7 @@
     <string name="lyrics_karaoke">Karaoke (word-level)</string>
     <string name="lyrics_karaoke_respect_agent_position_label">Respect agent position</string>
     <string name="lyrics_karaoke_unavailable_synced_fallback_format">Karaoke not found on %s, showing synced from %s</string>
-    <string name="lyrics_mode_automatic_label">auto lyrics</string>
+    <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">karaoke lyrics</string>
     <string name="lyrics_mode_synchronized_label">sinhronizovane stihove</string>
     <string name="lyrics_mode_unsynchronized_label">nesinhronizovane stihove</string>
@@ -1011,14 +1011,14 @@
     <string name="lyrics_translation_failed_message">Translation failed, try again or report error</string>
     <string name="lyrics_translation_in_progress_message">Translation in progress</string>
     <string name="lyrics_translation_second_line_label">Show Translation in the Second Line</string>
-    <string name="lyrics_translation_section_title">Translation</string>
+    <string name="lyrics_translation_section_title">Prevod</string>
     <string name="lyrics_translation_success_message">Translation successful</string>
     <string name="lyrics_unsynced">Plain text</string>
     <!-- Maintenance -->
     <string name="maintenance_all_systems_ok">All systems operational</string>
     <string name="maintenance_auto_update">Auto update</string>
     <string name="maintenance_backup">Auto backup</string>
-    <string name="maintenance_backup_disabled">Disabled</string>
+    <string name="maintenance_backup_disabled">Onemogućeno</string>
     <string name="maintenance_backup_last">Last: %s</string>
     <string name="maintenance_backup_next">Next: %s</string>
     <string name="maintenance_battery">Battery</string>
@@ -1034,7 +1034,7 @@
     <string name="maintenance_convergence_unlinked_albums">%d unlinked albums</string>
     <string name="maintenance_convergence_unlinked_songs">%d unlinked songs</string>
     <string name="maintenance_copy">Copy</string>
-    <string name="maintenance_crash_none">None</string>
+    <string name="maintenance_crash_none">Nema</string>
     <string name="maintenance_crash_occurred_count">A crash occurred (%d)</string>
     <string name="maintenance_db_cleanup">Artist link cleanup</string>
     <string name="maintenance_db_size">Database size</string>
@@ -1140,17 +1140,17 @@
     <string name="maintenance_yt_session">YouTube session</string>
     <string name="maintenance_yt_valid">Valid</string>
     <!-- Metadata -->
-    <string name="metadata_action_change_artists">Ažuriraj Autore</string>
+    <string name="metadata_action_change_artists">Change Authors</string>
     <string name="metadata_action_change_cover">Ažuriraj Omot</string>
     <string name="metadata_action_change_title">Ažuriraj Naslov</string>
     <string name="metadata_action_edit">Edit Metadata</string>
     <string name="metadata_action_refresh_artists_from_youtube">Update authors from YouTube Music</string>
     <string name="metadata_action_refresh_cover_from_youtube">Update thumbnail from YouTube Music</string>
     <string name="metadata_action_refresh_title_from_youtube">Update title from YouTube Music</string>
-    <string name="metadata_album">Album</string>
+    <string name="metadata_album">Албум</string>
     <string name="metadata_album_action_change_browse_id">Change Album Browse ID</string>
     <string name="metadata_album_artist">Album Artist</string>
-    <string name="metadata_artist">Artist</string>
+    <string name="metadata_artist">Izvođač</string>
     <string name="metadata_artist_action_change_browse_id">Change Artist Browse ID</string>
     <string name="metadata_biography_title">Bio</string>
     <string name="metadata_bpm">BPM</string>
@@ -1158,7 +1158,7 @@
     <string name="metadata_composer">Composer</string>
     <string name="metadata_conductor">Conductor</string>
     <string name="metadata_copyright">Copyright</string>
-    <string name="metadata_cover">Cover</string>
+    <string name="metadata_cover">Omot</string>
     <string name="metadata_description_title">Description</string>
     <string name="metadata_disc_number">Disc Number</string>
     <string name="metadata_encoder">Encoder</string>
@@ -1185,7 +1185,7 @@
     <string name="metadata_video_subscribers_label">Subscribers</string>
     <string name="metadata_video_views_label">Views</string>
     <string name="metadata_wikipedia_attribution">Sa Vikipedije pod Creative Commons Attribution CC-BI-SA 3.0</string>
-    <string name="metadata_year">Year</string>
+    <string name="metadata_year">Godina</string>
     <!-- Metadata Musicbrainz -->
     <string name="metadata_musicbrainz_insights">Insights</string>
     <string name="metadata_musicbrainz_insights_biography">Biography</string>
@@ -1206,14 +1206,14 @@
     <string name="metadata_musicbrainz_no_rating">No rating available</string>
     <string name="metadata_musicbrainz_rating_votes">(%1$d votes)</string>
     <string name="metadata_musicbrainz_resync">Resync</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed, MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures, retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
     <string name="metadata_musicbrainz_resync_success">MusicBrainz data synced</string>
-    <string name="metadata_musicbrainz_stat_albums">Albumi</string>
+    <string name="metadata_musicbrainz_stat_albums">Албуми</string>
     <string name="metadata_musicbrainz_stat_bookmarked_albums">Bookmarked albums</string>
     <string name="metadata_musicbrainz_stat_liked_songs">Liked songs</string>
     <string name="metadata_musicbrainz_stat_listens">Listens</string>
-    <string name="metadata_musicbrainz_stat_songs">Pesme</string>
+    <string name="metadata_musicbrainz_stat_songs">Песме</string>
     <string name="metadata_musicbrainz_stat_time">Total time</string>
     <string name="metadata_musicbrainz_wikipedia">Wikipedia</string>
     <!-- Modules -->
@@ -1271,9 +1271,9 @@
     <string name="network_proxy_password_description">Set the optional proxy password. The saved value is encrypted and hidden here.</string>
     <string name="network_proxy_port_description">Enter the port on which the proxy server accepts connections.</string>
     <string name="network_proxy_username_description">Set the optional username required to authenticate with the proxy.</string>
-    <string name="network_quality_high">Visok</string>
-    <string name="network_quality_low">Nizak</string>
-    <string name="network_quality_medium">Srednji</string>
+    <string name="network_quality_high">Висок</string>
+    <string name="network_quality_low">Низак</string>
+    <string name="network_quality_medium">Средња</string>
     <string name="network_region_override_description">Override the country used for requests; leave it empty to use the phone region.</string>
     <string name="network_settings">Connection Settings</string>
     <string name="network_settings_description">The network section contains settings to optimize the app\'s performance and data usage</string>
@@ -1320,7 +1320,7 @@
     <string name="onboarding_accounts_title">Connect your accounts</string>
     <string name="onboarding_accounts_youtube">YouTube</string>
     <string name="onboarding_accounts_youtube_account">Logged in as %1$s</string>
-    <string name="onboarding_accounts_youtube_description">Optional: browse the app with your YouTube account (home, explore, etc.)</string>
+    <string name="onboarding_accounts_youtube_description">Optional — browse the app with your YouTube account (home, explore, etc.)</string>
     <string name="onboarding_greeting">Hello! Let\'s set up NZik for the perfect music experience. Every permission below is optional.</string>
     <string name="onboarding_permission_battery">Battery optimization</string>
     <string name="onboarding_permission_battery_description">Prevent the system from stopping the background music</string>
@@ -1336,7 +1336,7 @@
     <string name="onboarding_permission_microphone_description">Use the microphone for voice commands, the visualizer and other features</string>
     <string name="onboarding_permission_notifications">Notifications</string>
     <string name="onboarding_permission_notifications_description">See the player and control the music from the notification</string>
-    <string name="onboarding_permission_settings">Settings</string>
+    <string name="onboarding_permission_settings">Podešavanja</string>
     <string name="onboarding_permissions_section">Permissions</string>
     <string name="onboarding_profile_continue">Continue</string>
     <string name="onboarding_profile_description">This name is shown in the app. You can also choose where the name and the avatar come from, and set a photo.</string>
@@ -1439,7 +1439,7 @@
     <string name="player_background_artwork_fluid_gradient_label">Fluid prelazna boja pozadine od omota</string>
     <string name="player_background_artwork_gradient_label">Prelazna boja pozadine od omota</string>
     <string name="player_background_artwork_label">Pozadine sa omota</string>
-    <string name="player_background_artwork_m3e_morphing_label">Artwork M3E morphing shapes</string>
+    <string name="player_background_artwork_m3e_morphing_label">Morphing shapes from cover</string>
     <string name="player_background_artwork_rotation_description">Rotate the album artwork shown in the player background.</string>
     <string name="player_background_dark_gradient_description">Darken the lower part of the player with a black gradient.</string>
     <string name="player_background_palette_label">Color Palette</string>
@@ -1451,7 +1451,7 @@
     <string name="player_background_theme_fluid_gradient_label">Fluid prelazna boja pozadine od teme</string>
     <string name="player_background_theme_gradient_label">Prelazna boja pozadine od teme</string>
     <string name="player_background_theme_label">Pozadine od teme</string>
-    <string name="player_background_theme_m3e_morphing_label">Theme M3E morphing shapes</string>
+    <string name="player_background_theme_m3e_morphing_label">Morphing shapes from theme</string>
     <string name="player_behavior_and_visuals">Player Behavior &amp; Visuals</string>
     <string name="player_collapsed_disable_swiping_down">Onemogući prevlačenje nadole</string>
     <string name="player_controls">Player Controls</string>
@@ -1460,15 +1460,15 @@
     <string name="player_controls_color_style_description">Choose the color style of the playback controls.</string>
     <string name="player_controls_colors">Player controls colors</string>
     <string name="player_controls_compact_buttons_description">Reduce the playback buttons to a more compact size.</string>
-    <string name="player_controls_device_volume_title">Device volume</string>
+    <string name="player_controls_device_volume_title">Јачина звука уређаја</string>
     <string name="player_controls_like_icon_description">Choose the icon used for the like button.</string>
-    <string name="player_controls_medley_duration_title">Medley duration</string>
+    <string name="player_controls_medley_duration_title">Трајање мешавине</string>
     <string name="player_controls_mini_player_transparent_background_description">Remove the solid background behind the mini-player.</string>
     <string name="player_controls_monochrome_label">Monochrome</string>
-    <string name="player_controls_pitch_title">Playback pitch</string>
+    <string name="player_controls_pitch_title">Висина Тоналитета Репродукције</string>
     <string name="player_controls_play_pause_style_description">Choose the appearance of the play and pause button.</string>
     <string name="player_controls_playback_volume_title">Playback Volume</string>
-    <string name="player_controls_speed_title">Playback speed</string>
+    <string name="player_controls_speed_title">Брзина репродукције</string>
     <string name="player_controls_timeline_position_swapped_description">Exchange the vertical positions of the timeline and playback controls.</string>
     <string name="player_controls_timeline_size_description">Choose the size of the playback timeline.</string>
     <string name="player_crossfade_duration_description">Set how long the outgoing and incoming tracks overlap.</string>
@@ -1503,8 +1503,8 @@
     <string name="player_layout_queue_style_description">Choose the appearance of the play queue.</string>
     <string name="player_listen_on_title">Slušaj na</string>
     <string name="player_matching_required_message">Playback blocked, please match first</string>
-    <string name="player_mini_action_add_to_playlist">Add to playlist</string>
-    <string name="player_mini_action_shuffle">Nasumično</string>
+    <string name="player_mini_action_add_to_playlist">Додај у плејлисту</string>
+    <string name="player_mini_action_shuffle">Промешано</string>
     <string name="player_minimum_listening_time_description">Set how long a track must play before it counts as a listening event.</string>
     <string name="player_no_current_song">No song is playing at the moment</string>
     <string name="player_no_song_found">No song found</string>
@@ -1527,7 +1527,7 @@
     <string name="player_presets_and_layout">Presets &amp; Layout</string>
     <string name="player_previous_track_threshold_description">Set the playback position threshold for returning to the previous track.</string>
     <string name="player_queue_action_remove">Ukloni iz redosleda</string>
-    <string name="player_queue_added_next_message">Added to play next</string>
+    <string name="player_queue_added_next_message">Додато за следеће пуштање</string>
     <string name="player_queue_clear_confirmation">Do you really want to clean queue?</string>
     <string name="player_queue_deleted_item_format">%1$s deleted</string>
     <string name="player_queue_duration_visible_description">Display the combined duration of tracks in the play queue.</string>
@@ -1546,22 +1546,22 @@
     <string name="player_shuffle_empty_message">No song to shuffle</string>
     <string name="player_shuffled_song_count_format">%d songs shuffled</string>
     <string name="player_sleep_timer_end_of_song_message">Tajmer za spavanje je odložen na kraju pesme</string>
-    <string name="player_sleep_timer_finished_message">Sleep timer ended</string>
+    <string name="player_sleep_timer_finished_message">Тајмер за спавање је завршио</string>
     <string name="player_song_playback_error_format">The media %1$s went wrong</string>
     <string name="player_statistics_bitrate_label">Bitrejt</string>
     <string name="player_statistics_codec_label">Codec</string>
     <string name="player_statistics_container_label">Container</string>
-    <string name="player_statistics_itag_label">Itag</string>
+    <string name="player_statistics_itag_label">Итаг</string>
     <string name="player_statistics_loudness_label">Glasnoća</string>
-    <string name="player_statistics_media_id_label">Id</string>
+    <string name="player_statistics_media_id_label">Ид</string>
     <string name="player_statistics_perceptual_loudness_label">Perceptual Loudness</string>
     <string name="player_statistics_sample_rate_label">Sample Rate</string>
     <string name="player_statistics_volume_label">Volume</string>
     <string name="player_swap_controls_with_timeline">Zamenite kontrole sa vremenskom linijom</string>
     <string name="player_swipe_sensitivity">Player Swipe Sensitivity</string>
-    <string name="player_swipe_sensitivity_high_label">Visok</string>
-    <string name="player_swipe_sensitivity_low_label">Nizak</string>
-    <string name="player_swipe_sensitivity_medium_label">Srednji</string>
+    <string name="player_swipe_sensitivity_high_label">Висок</string>
+    <string name="player_swipe_sensitivity_low_label">Низак</string>
+    <string name="player_swipe_sensitivity_medium_label">Средња</string>
     <string name="player_swipe_sensitivity_very_high_label">Very High</string>
     <string name="player_thumbnail_size">Veličina Sličica</string>
     <string name="player_timeline_colored_bar_label">Colored bar</string>
@@ -1604,17 +1604,17 @@
     <string name="player_background_stage">Stage</string>
     <!-- Player Mini -->
     <string name="player_mini_button_audio_output">Audio output</string>
-    <string name="player_mini_button_discover">Discover</string>
-    <string name="player_mini_button_download">Prеuzimanjе</string>
+    <string name="player_mini_button_discover">Откријте</string>
+    <string name="player_mini_button_download">Преузимања</string>
     <string name="player_mini_button_lyrics">Lyrics</string>
     <string name="player_mini_button_play_pause">Play/Pause</string>
     <string name="player_mini_button_queue">Queue</string>
     <string name="player_mini_button_radio">Radio</string>
     <string name="player_mini_button_repeat">Repeat</string>
     <string name="player_mini_button_share">Share</string>
-    <string name="player_mini_button_sleep_timer">Sleep timer</string>
+    <string name="player_mini_button_sleep_timer">Тајмер за спавање</string>
     <string name="player_mini_button_video">Video</string>
-    <string name="player_mini_button_visualizer">Visualizer</string>
+    <string name="player_mini_button_visualizer">Визуализатор</string>
     <string name="player_mini_buttons_config">MiniPlayer buttons</string>
     <string name="player_mini_buttons_config_description">Configure the 4 buttons in the miniplayer</string>
     <!-- Player Notification -->
@@ -1633,7 +1633,7 @@
     <string name="playlist_action_delete_selected">Delete playlists</string>
     <string name="playlist_action_export">Izvezi plejlistu</string>
     <string name="playlist_action_import">Uvezi plejlistu</string>
-    <string name="playlist_action_import_favorites">Import favorites</string>
+    <string name="playlist_action_import_favorites">Увези Омиљено</string>
     <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
     <string name="playlist_action_remove_songs">Ukloni sa plejliste</string>
     <string name="playlist_action_remove_songs_outside_library">Delete Songs not in the Library</string>
@@ -1644,7 +1644,7 @@
     <string name="playlist_action_unlink_youtube">Unlink from Youtube</string>
     <string name="playlist_action_unlink_youtube_library">Unlink from Youtube Library</string>
     <string name="playlist_bookmark_unsupported_message">Cannot bookmark Liked Songs or Episodes playlist</string>
-    <string name="playlist_create_dialog_title">Create new playlist</string>
+    <string name="playlist_create_dialog_title">Направи Нову Плејлисту</string>
     <string name="playlist_delete_all_confirmation_count_format">Are you sure you want to delete ALL %d playlists?</string>
     <string name="playlist_delete_confirmation">Da li zaista želite da obrišete ovu plejlistu?</string>
     <string name="playlist_delete_dialog_title">Delete playlist</string>
@@ -1704,7 +1704,7 @@
     <string name="profile_avatar_source">Avatar source</string>
     <string name="profile_avatar_source_description">Choose which profile or connected account supplies your avatar.</string>
     <string name="profile_base_name">N-Zik Fan</string>
-    <string name="profile_channel_name">%1$s - %2$s</string>
+    <string name="profile_channel_name">%1$s — %2$s</string>
     <string name="profile_data_downloads">downloads</string>
     <string name="profile_data_images">images</string>
     <string name="profile_data_media_cache">media cache</string>
@@ -1786,7 +1786,7 @@
     <!-- Recommendations -->
     <string name="recommendations_action_reset_quick_picks">Resetujte brze odabire</string>
     <string name="recommendations_adaptive">Adaptive</string>
-    <string name="recommendations_adaptive_description">Adaptive: Scales with playlist size (10-120 recommendations)</string>
+    <string name="recommendations_adaptive_description">Adaptive: Scales with playlist size (10-150 recommendations)</string>
     <string name="recommendations_albums_for_you_title">Albums for you</string>
     <string name="recommendations_all_hits_title">All hits</string>
     <string name="recommendations_charts_title">Grafikoni</string>
@@ -1854,14 +1854,14 @@
     <string name="recovery_confirm_reset_database">Reset the database? A backup will be kept for restoration.</string>
     <string name="recovery_confirm_reset_database_replace_backup">Reset the database? The backup from your previous reset will be replaced and can no longer be restored. Only the database being reset is kept.</string>
     <string name="recovery_confirm_reset_profiles">Reset the selected profiles? Their database, settings, custom name and photo are deleted permanently. The profiles stay in the list, starting empty. This cannot be undone.</string>
-    <string name="recovery_confirm_reset_settings">Reset all settings and credentials? A backup is kept so you can restore it from the Rescue Center.</string>
+    <string name="recovery_confirm_reset_settings">Reset all settings and credentials? This cannot be undone.</string>
     <string name="recovery_confirm_reset_settings_replace_backup">Reset all settings and credentials? The settings backup from your previous reset will be replaced and can no longer be restored. Only the settings being reset are kept.</string>
     <string name="recovery_confirm_restore_database">Restore the backed-up database? The current one will become the new backup.</string>
     <string name="recovery_confirm_restore_profiles">Restore the selected profiles from their last reset? Their current state is replaced by the backup.</string>
-    <string name="recovery_confirm_restore_settings">Are you sure you want to restore settings? The app will overwrite current settings and use the restored settings on next launch. The Rescue Center will close once they are restored.</string>
+    <string name="recovery_confirm_restore_settings">Are you sure you want to restore settings? The app will overwrite current settings and use the restored settings on next launch.</string>
     <string name="recovery_cross_profile_confirm">This file was created for the profile \"%1$s\", but the target is \"%2$s\". Import it anyway?</string>
     <string name="recovery_delete_backups">Delete backups</string>
-    <string name="recovery_delete_backups_description">Delete the saved database and settings backups to free space. They can no longer be restored.</string>
+    <string name="recovery_delete_backups_description">Delete the saved database and settings backups from cache to free space</string>
     <string name="recovery_delete_downloads">Delete downloads</string>
     <string name="recovery_delete_downloads_description">Delete all downloaded media to free up space</string>
     <string name="recovery_delete_logs">Delete logs</string>
@@ -1870,7 +1870,7 @@
     <string name="recovery_delete_profiles_description">Delete user profiles with their database, settings, name and photo</string>
     <string name="recovery_encrypted_unavailable_warning">Saved credentials could not be accessed (keystore unavailable). Only regular settings were processed.</string>
     <string name="recovery_error">An error occurred: %s</string>
-    <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. The app must be stopped first: tap \"Kill the app\" in the Danger Zone, then wait for the status to show that the app is stopped.</string>
+    <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Export database</string>
     <string name="recovery_export_database_description">Save your library, playlists and history</string>
     <string name="recovery_export_logs">Export logs</string>
@@ -1882,7 +1882,7 @@
     <string name="recovery_group_database">Baza podataka</string>
     <string name="recovery_group_logs">Logs</string>
     <string name="recovery_group_profiles">Profiles</string>
-    <string name="recovery_group_settings">Settings</string>
+    <string name="recovery_group_settings">Podešavanja</string>
     <string name="recovery_group_storage">Storage</string>
     <string name="recovery_import_database">Import database</string>
     <string name="recovery_import_database_description">Restore a previously exported database</string>
@@ -1894,7 +1894,7 @@
     <string name="recovery_include_youtube_credentials">Include YouTube credentials</string>
     <string name="recovery_kill_app">Kill the app</string>
     <string name="recovery_kill_app_description">Force the app process to end if the automatic stop did not work</string>
-    <string name="recovery_main_process_running">The app is still running, so this action is blocked. Tap \"Kill the app\" in the Danger Zone to retry the shutdown, then wait for the status to show that the app is stopped.</string>
+    <string name="recovery_main_process_running">Close the main app before performing this action</string>
     <string name="recovery_no_backup">No backup available</string>
     <string name="recovery_no_backups_to_delete">No backups found</string>
     <string name="recovery_no_logs">No log files found</string>
@@ -1905,28 +1905,28 @@
     <string name="recovery_profile_active">Active</string>
     <string name="recovery_profile_base">Base</string>
     <string name="recovery_profile_target_description">Data actions below operate on the selected profile</string>
-    <string name="recovery_profiles_deleted_active_restart">The current profile was deleted: the base profile is now active. Relaunch the app</string>
+    <string name="recovery_profiles_deleted_active_restart">The current profile was deleted: the base profile is now active — relaunch the app</string>
     <string name="recovery_profiles_deleted_count">Deleted %1$d profile(s)</string>
-    <string name="recovery_profiles_reset_count">Reset %1$d profile(s). Relaunch the app</string>
-    <string name="recovery_profiles_restored_count">Restored %1$d profile(s): relaunch the app</string>
+    <string name="recovery_profiles_reset_count">Reset %1$d profile(s) — relaunch the app</string>
+    <string name="recovery_profiles_restored_count">Restored %1$d profile(s) — relaunch the app</string>
     <string name="recovery_profiles_to_delete">Profiles to delete</string>
     <string name="recovery_profiles_to_reset">Profiles to reset</string>
     <string name="recovery_profiles_to_restore">Profiles to restore</string>
     <string name="recovery_reset_database">Reset database</string>
     <string name="recovery_reset_database_description">Set aside the current database and start fresh</string>
     <string name="recovery_reset_profiles">Reset profiles</string>
-    <string name="recovery_reset_profiles_description">Factory-reset the profiles (base included): their database, settings, name and photo are deleted they stay in the list</string>
+    <string name="recovery_reset_profiles_description">Factory-reset user profiles: their database, settings, name and photo are deleted — they stay in the list</string>
     <string name="recovery_reset_settings">Reset settings</string>
     <string name="recovery_reset_settings_description">Clear all preferences and credentials</string>
     <string name="recovery_restore_database">Restore database</string>
     <string name="recovery_restore_database_description">Swap back to the database from the last reset</string>
     <string name="recovery_restore_profiles">Restore profiles</string>
-    <string name="recovery_restore_profiles_description">Restore the profiles reset earlier (base included): their database, settings, name and photo come back from the last reset</string>
+    <string name="recovery_restore_profiles_description">Restore user profiles reset earlier: their database, settings, name and photo come back from the last reset</string>
     <string name="recovery_restore_settings">Restore settings</string>
     <string name="recovery_restore_settings_description">Restore app settings from the last reset</string>
-    <string name="recovery_status_main_process_stopped">The app is stopped: no kill action needed</string>
+    <string name="recovery_status_main_process_stopped">The app is stopped — no kill action needed</string>
     <string name="recovery_status_main_process_stopping">The app is shutting down…</string>
-    <string name="recovery_success">Gotovo</string>
+    <string name="recovery_success">Готово</string>
     <!-- Rewind -->
     <string name="rewind_albums_empty_body">Your top albums will appear here once there is enough listening history.</string>
     <string name="rewind_albums_empty_title">YOUR ALBUM STACK IS EMPTY</string>
@@ -1950,13 +1950,13 @@
     <string name="rewind_badge_tier_0_name">CURIOUS</string>
     <string name="rewind_badge_tier_0_sub">Still finding your sound.</string>
     <string name="rewind_badge_tier_1_name">EXPLORER</string>
-    <string name="rewind_badge_tier_1_sub">You tried a lot.</string>
+    <string name="rewind_badge_tier_1_sub">You tried a lot this year.</string>
     <string name="rewind_badge_tier_2_name">IN ROTATION</string>
     <string name="rewind_badge_tier_2_sub">Music, most days.</string>
     <string name="rewind_badge_tier_3_name">DEDICATED</string>
     <string name="rewind_badge_tier_3_sub">You kept coming back.</string>
     <string name="rewind_badge_tier_4_name">HEAVY ROTATION</string>
-    <string name="rewind_badge_tier_4_sub">Music ran through the whole period.</string>
+    <string name="rewind_badge_tier_4_sub">Music ran through your whole year.</string>
     <string name="rewind_badge_tier_5_name">RELENTLESS</string>
     <string name="rewind_badge_tier_5_sub">You barely hit pause.</string>
     <string name="rewind_badge_tier_6_name">SOUND MACHINE</string>
@@ -1972,18 +1972,18 @@
     <string name="rewind_days_peak_day">PEAK DAY</string>
     <string name="rewind_days_peak_minutes">PEAK MINUTES</string>
     <string name="rewind_days_peak_sub">DAY %1$s HIT THE HARDEST.</string>
-    <string name="rewind_deep_cuts_empty_body">The next most-played songs will appear here once there is enough listening history.</string>
-    <string name="rewind_deep_cuts_empty_title">DEEP CUTS ARE FORMING</string>
-    <string name="rewind_deep_cuts_heading">SONGS 6–%1$d.</string>
+    <string name="rewind_deep_cuts_empty_body">Songs ranked 6–10 will appear here once there is enough listening history.</string>
+    <string name="rewind_deep_cuts_empty_title">YOUR TOP TEN IS STILL FORMING</string>
+    <string name="rewind_deep_cuts_heading">SONGS 6–10.</string>
     <string name="rewind_deep_cuts_kicker">DEEP CUTS • %1$s</string>
-    <string name="rewind_deep_cuts_sub">Your next most-played songs.</string>
+    <string name="rewind_deep_cuts_sub">Your next five most-played songs.</string>
     <string name="rewind_discovery_heading">HOW MUCH YOU\nDISCOVERED.</string>
     <string name="rewind_discovery_kicker">DISCOVERY • %1$s</string>
     <string name="rewind_empty_state_kicker">REWIND</string>
     <string name="rewind_error_export">Couldn\'t export the Rewind images.</string>
     <string name="rewind_error_export_partial">Exported %1$d of %2$d images.</string>
     <string name="rewind_filter_month">Month</string>
-    <string name="rewind_filter_year">Year</string>
+    <string name="rewind_filter_year">Godina</string>
     <string name="rewind_finale_action_regenerate_all_time">REGENERATE ALL-TIME</string>
     <string name="rewind_finale_action_regenerate_playlist">REGENERATE PLAYLIST</string>
     <string name="rewind_finale_brand">N-ZIK REWIND %1$s</string>
@@ -1994,7 +1994,7 @@
     <string name="rewind_finale_listener_level">LISTENER LEVEL</string>
     <string name="rewind_finale_play_again">PLAY AGAIN</string>
     <string name="rewind_finale_playlist_updated">PLAYLIST UPDATED</string>
-    <string name="rewind_finale_share">EXPORT ALL PAGES</string>
+    <string name="rewind_finale_share">SHARE REWIND</string>
     <string name="rewind_finale_top_album">TOP ALBUM</string>
     <string name="rewind_finale_top_artist">TOP ARTIST</string>
     <string name="rewind_finale_top_playlist">TOP PLAYLIST</string>
@@ -2115,7 +2115,7 @@
     <string name="rewind_playlist_notification_description">Tap to open your Rewind playlists.</string>
     <string name="rewind_playlist_notification_title">Your %1$s rewind playlist is ready</string>
     <string name="rewind_settings_enabled">Enable Rewind</string>
-    <string name="rewind_settings_enabled_description">Enable or disable the whole rewind feature: menu item, reminders and playlists.</string>
+    <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
     <string name="rewind_settings_global">All-time rewind</string>
     <string name="rewind_settings_global_description">Show the all-time recap on the Rewind home.</string>
     <string name="rewind_settings_monthly">Monthly rewind</string>
@@ -2163,7 +2163,7 @@
     <string name="rewind_top_songs_empty_body">Your top five will appear here once there is enough listening history.</string>
     <string name="rewind_top_songs_empty_title">NO TRACK CHART YET</string>
     <string name="rewind_top_songs_heading">YOUR TOP 5\nSONGS.</string>
-    <string name="rewind_top_songs_next">Next: songs 6–%1$d.</string>
+    <string name="rewind_top_songs_next">Next: songs 6–10.</string>
     <string name="rewind_top_sort">Rewind Top</string>
     <string name="rewind_totals_heading">YOU LISTENED FOR</string>
     <string name="rewind_totals_kicker">YOUR LISTENING TIME • %1$s</string>
@@ -2177,7 +2177,7 @@
     <string name="rewind_years_peak_sub">%1$s HIT THE HARDEST.</string>
     <string name="rewind_years_peak_year">PEAK YEAR</string>
     <!-- Search -->
-    <string name="search_content_type_all">Sve</string>
+    <string name="search_content_type_all">Све</string>
     <string name="search_content_type_official">Official</string>
     <string name="search_content_type_user_generated">User Generated</string>
     <string name="search_display_order">Online search display order</string>
@@ -2204,8 +2204,8 @@
     <string name="search_queries">" upiti za pretragu"</string>
     <string name="search_results_for">Search results for:</string>
     <string name="search_saved_history_title">Saved searches</string>
-    <string name="search_suggestions_empty_message">No suggestions</string>
-    <string name="search_suggestions_title">Suggestions</string>
+    <string name="search_suggestions_empty_message">Нема предлога</string>
+    <string name="search_suggestions_title">Предлози</string>
     <string name="search_title">Pretraga</string>
     <string name="search_video_download_unsupported_message">Downloading videos not supported</string>
     <string name="search_videos_title">Video</string>
@@ -2280,7 +2280,7 @@
     <string name="settings_current_value">Current value: %1$s</string>
     <string name="settings_data_page_description">The data section contains settings that modify how the app handles data locally and remotely</string>
     <string name="settings_data_title">Podaci</string>
-    <string name="settings_debug_title">Settings</string>
+    <string name="settings_debug_title">Podešavanja</string>
     <string name="settings_debug_updater_preview_description">Allow opening Update from Global settings in this debug build. Automatic updates remain disabled.</string>
     <string name="settings_debug_updater_preview_label">Preview updater layout</string>
     <string name="settings_description_with_value">%1$s\n%2$s</string>
@@ -2288,7 +2288,7 @@
     <string name="settings_discord_advanced_button1_url">First Discord button URL</string>
     <string name="settings_discord_advanced_button2_label">Second Discord button label</string>
     <string name="settings_discord_advanced_button2_url">Second Discord button URL</string>
-    <string name="settings_discord_title">Discord</string>
+    <string name="settings_discord_title">Дискорд</string>
     <string name="settings_dock_compact_first_action_label">Compact dock: first action</string>
     <string name="settings_dock_compact_second_action_label">Compact dock: second action</string>
     <string name="settings_dock_expanded_tab_order_description">Reorder dock tabs. Search stays on the right; compact Home and Search keep their positions.</string>
@@ -2312,10 +2312,10 @@
     <string name="settings_general_page_description">The general section contains settings for the general functionality of the app</string>
     <string name="settings_general_title">General</string>
     <string name="settings_gestures_title">Gestures &amp; Events</string>
-    <string name="settings_gestures_volume_keys_skip_description">Volume UP next and volume DOWN previous song</string>
+    <string name="settings_gestures_volume_keys_skip_description">Тастер за јачину звука ГОРЕ следећа и Тастер за јачину звука ДОЛЕ предходна песма</string>
     <string name="settings_gestures_volume_keys_skip_label">Change song with the volume keys</string>
     <string name="settings_global_search_hint">Search settings</string>
-    <string name="settings_global_title">Settings</string>
+    <string name="settings_global_title">Podešavanja</string>
     <string name="settings_global_update_description">Check for a new version of the app</string>
     <string name="settings_history_action_clear_listening">Clear listen history</string>
     <string name="settings_history_open_description">Open the History screen</string>
@@ -2329,7 +2329,7 @@
     <string name="settings_lastfm_scrobbling_description">Scrobble your music to Last.fm</string>
     <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_launcher_shortcuts_description">Choose and reorder launcher shortcuts</string>
-    <string name="settings_launcher_shortcuts_limit_message">Maximum of %1$d active shortcuts reached</string>
+    <string name="settings_launcher_shortcuts_limit_message">Maximum of 4 active shortcuts reached</string>
     <string name="settings_launcher_shortcuts_recovery_required_message">Rescue cannot be disabled</string>
     <string name="settings_launcher_shortcuts_title">App shortcuts</string>
     <string name="settings_library_now_playing_indicator_label">Now Playing Indicator</string>
@@ -2352,16 +2352,16 @@
     <string name="settings_local_playlist_title">Local Playlist</string>
     <string name="settings_logging_disabled_label">Disable debug logs</string>
     <string name="settings_logging_error_file_description">Ako je omogućeno, kreirajte datoteku zapisa da biste istakli greške</string>
-    <string name="settings_loudness_base_gain">Loudness base gain</string>
+    <string name="settings_loudness_base_gain">Појачање базе гласноће</string>
     <string name="settings_lyrics_action_bar_visible_label">Action Bar</string>
     <string name="settings_lyrics_artwork_visible_label">Prikaži Sličicu za Stihove</string>
-    <string name="settings_lyrics_controls_visible_label">Controls</string>
+    <string name="settings_lyrics_controls_visible_label">Контроле</string>
     <string name="settings_lyrics_match_player_background_label">Prikaži boju pozadine u Stihovima</string>
     <string name="settings_lyrics_next_queue_visible_label">Mini Queue</string>
     <string name="settings_lyrics_remember_state_description">Keep lyrics state between sessions</string>
     <string name="settings_lyrics_remember_state_label">Save lyrics state</string>
     <string name="settings_lyrics_seek_on_line_press_label">Klik na tekst stihova</string>
-    <string name="settings_lyrics_title_artist_visible_label">Title and Artists</string>
+    <string name="settings_lyrics_title_artist_visible_label">Наслов и Уметници</string>
     <string name="settings_lyrics_top_spacing_label">Blank Space at Top</string>
     <string name="settings_menu_style_label">Stil menija</string>
     <string name="settings_miscellaneous_page_description">The miscellaneous section contains various optional settings and utilities</string>
@@ -2402,7 +2402,7 @@
     <string name="settings_page_youtube_description">Manage your YouTube Music connection and synchronization.</string>
     <string name="settings_parental_age_restriction_description">Sprečite puštanje pesama sa starosnim ograničenjem</string>
     <string name="settings_picture_in_picture_android_12_auto_description">From Android 12 pip can be automatically enabled</string>
-    <string name="settings_picture_in_picture_artwork_module_label">Cover</string>
+    <string name="settings_picture_in_picture_artwork_module_label">Омот</string>
     <string name="settings_picture_in_picture_open">Open picture-in-picture</string>
     <string name="settings_picture_in_picture_open_failed">Couldn’t open picture-in-picture. Check app info settings on your android to allows it for N-Zik.</string>
     <string name="settings_picture_in_picture_title">Picture in Picture</string>
@@ -2466,8 +2466,8 @@
     <string name="settings_player_disable_song_swipe_label">Onemogući prebacivanje pesama prevlačenjem</string>
     <string name="settings_player_disable_text_marquee_description">Pomeranje teksta se koristi za dugačke tekstove</string>
     <string name="settings_player_disable_text_marquee_label">Onemogući pomeranje teksta</string>
-    <string name="settings_player_disable_vertical_song_swipe_label">Disable song switching via Vertical swipe</string>
-    <string name="settings_player_expanded_artwork_size_label">Thumbnail Size in Expanded Mode</string>
+    <string name="settings_player_disable_vertical_song_swipe_label">Онемогући пребацивање песама Вертикалним превлачењем</string>
+    <string name="settings_player_expanded_artwork_size_label">Величина Сличице у проширеном режиму</string>
     <string name="settings_player_expanded_label">Jugadora expandida</string>
     <string name="settings_player_favorite_button_style_label">Dugme za sviđanje</string>
     <string name="settings_player_gradient_style_label">Gradient Type</string>
@@ -2504,7 +2504,7 @@
     <string name="settings_player_timeline_size_label">Tamaño de la línea de tiempo del jugador</string>
     <string name="settings_player_timeline_transparent_label">Barra de línea de tiempo transparente</string>
     <string name="settings_player_top_action_bar_visible_label">Prikaži gornju traku sa radnjama</string>
-    <string name="settings_player_vertical_swipe_expansion_description">It affects only when the Expanded Player is off</string>
+    <string name="settings_player_vertical_swipe_expansion_description">То утиче само када је Проширени Плејер искључен</string>
     <string name="settings_preference_saved_message">Preference Saved</string>
     <string name="settings_proxy_enabled_label">Omogući proxy</string>
     <string name="settings_proxy_host_label">Proksi host</string>
@@ -2517,7 +2517,7 @@
     <string name="settings_recommendations_song_count_description">Choose how many recommended songs to show in Quick Picks</string>
     <string name="settings_recommendations_title">AI Recommendations</string>
     <string name="settings_region_override">Region Override</string>
-    <string name="settings_reset">Reset</string>
+    <string name="settings_reset">Ресетуј</string>
     <string name="settings_reset_all">Reset all settings</string>
     <string name="settings_reset_all_confirm">Reset all</string>
     <string name="settings_reset_all_confirmation">Reset all application settings? Saved accounts, credentials, profiles, playlists, downloads and files will be kept.</string>
@@ -2527,7 +2527,7 @@
     <string name="settings_reset_scope">Reset all %1$s settings (across categories)</string>
     <string name="settings_reset_scope_back">Back</string>
     <string name="settings_restart_required_message">Potrebno je ponovno pokretanje</string>
-    <string name="settings_restore_default_settings">Restore default settings</string>
+    <string name="settings_restore_default_settings">Вратити на фабричка подешавања</string>
     <string name="settings_search_floating_button_visible_label">Prikaži lebdeću ikonu</string>
     <string name="settings_section_backup_and_restore_title">Copia de seguridad y restaurar</string>
     <string name="settings_section_contributors_title">Saradnici</string>
@@ -2553,7 +2553,7 @@
     <string name="settings_stream_preferred_client_title">Preferred Stream Client</string>
     <string name="settings_swipe_actions_description">Aktivirajte meni radnji prevlačenjem pesme ulevo ili udesno</string>
     <string name="settings_swipe_actions_title">Prevucite prstom do akcije</string>
-    <string name="settings_target_gain_loudness_info">Target gain for the loudness normalization</string>
+    <string name="settings_target_gain_loudness_info">Појачање циља за нормализацију гласноће</string>
     <string name="settings_target_unavailable">This setting is unavailable with the current configuration. Its section is shown instead.</string>
     <string name="settings_theme_accent_color_label">Naglašena boja</string>
     <string name="settings_theme_background_1_color_label">Pozadina 1</string>
@@ -2590,7 +2590,7 @@
     <string name="settings_visualizer_remember_state_label">Save visualizer state</string>
     <string name="settings_youtube_authenticated_browsing_description">Use login for browse requests (home, explore, etc.)</string>
     <string name="settings_youtube_authenticated_browsing_label">Login for Browse</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest without your account, so they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Use account for searches</string>
     <string name="settings_youtube_clear_synced_data_confirmation">Clear all data synced from YouTube? This will remove liked songs, albums, artists, and playlists imported from YouTube.</string>
     <string name="settings_youtube_clear_synced_data_dialog_title">Clear YouTube synced data</string>
@@ -2629,9 +2629,9 @@
     <string name="statistics_action_delete_playback_events_count">Izbriši %1$s događaje reprodukcije</string>
     <string name="statistics_delete_playback_events_confirmation">Da li zaista želite da izbrišete sve događaje reprodukcije?</string>
     <string name="statistics_delete_playback_events_dialog_title">Delete playback events</string>
-    <string name="statistics_items_limit_custom">Custom</string>
+    <string name="statistics_items_limit_custom">Прилагођено</string>
     <string name="statistics_items_limit_custom_value">Custom (%1$d)</string>
-    <string name="statistics_items_limit_unlimited">Neograničeno</string>
+    <string name="statistics_items_limit_unlimited">Неограничено</string>
     <string name="statistics_listening_totals_description">Prikazuje broj slušanih pesama i vreme njihovog slušanja</string>
     <string name="statistics_max_number_of_items">Maksimalni broj stavki</string>
     <string name="statistics_maximum_items_description">Limit the number of entries shown in listening statistics.</string>
@@ -2679,7 +2679,7 @@
     <string name="sync_import_uploaded_albums_description">Import albums you uploaded to YouTube Music</string>
     <string name="sync_import_uploaded_songs">Import Uploaded Songs</string>
     <string name="sync_import_uploaded_songs_description">Import songs you uploaded to YouTube Music</string>
-    <string name="sync_imported_playlists_automatic_title">Auto Sync Imported Playlists</string>
+    <string name="sync_imported_playlists_automatic_title">Аутоматска синхронизација увезених Плејлиста</string>
     <string name="sync_likes">Auto Sync Liked Songs</string>
     <string name="sync_likes_description">Auto-import liked songs from YouTube Music</string>
     <string name="sync_no_items">No items to sync</string>
@@ -2764,7 +2764,7 @@
     <string name="theme_palette_material_you">Materijal Ti</string>
     <string name="theme_palette_modern_black">Moderna Crna</string>
     <string name="theme_palette_pure_black">Čisto Crna</string>
-    <string name="theme_shake_sensitivity_disabled">Disabled</string>
+    <string name="theme_shake_sensitivity_disabled">Onemogućeno</string>
     <string name="theme_shake_sensitivity_high">High (2.2G)</string>
     <string name="theme_shake_sensitivity_low">Low (5.0G)</string>
     <string name="theme_shake_sensitivity_medium">Medium (3.5G)</string>
@@ -2788,7 +2788,7 @@
     <string name="updates_automatic_check_title">Omogućite proveru ažuriranja</string>
     <string name="updates_available">Ažuriranje je dostupno</string>
     <string name="updates_available_download_size">The file size is %s</string>
-    <string name="updates_available_version_message">The new version %s can be downloaded!</string>
+    <string name="updates_available_version_message">Нова верзија %s се може преузети!</string>
     <string name="updates_beta_enabled_label">Beta Updates</string>
     <string name="updates_beta_to_stable_warning_message">You are switching back to a Stable build. Since you were using a Beta build, it is highly recommended to backup your data and completely reset the app (clear data or reinstall) to ensure stability before reporting any issue.</string>
     <string name="updates_beta_to_stable_warning_title">Switching back to Stable Build</string>
@@ -2801,9 +2801,9 @@
     <string name="updates_changelog_title">What\'s new in %s</string>
     <string name="updates_channel_name">App Updates</string>
     <string name="updates_check_mode_ask">Pitaj</string>
-    <string name="updates_check_mode_ask_status">Ask user</string>
-    <string name="updates_check_mode_disabled_status">Update disabled</string>
-    <string name="updates_check_mode_enabled_status">Update enabled</string>
+    <string name="updates_check_mode_ask_status">Питај</string>
+    <string name="updates_check_mode_disabled_status">Онемогућено</string>
+    <string name="updates_check_mode_enabled_status">Омогућено</string>
     <string name="updates_check_permission_description">Kada ažuriranje bude dostupno, bićete upitani da li želite da ga instalirate. Neće biti automatizovanih instalacija iza vaših leđa.</string>
     <string name="updates_check_permission_message">Proverite ažuriranja na Github-u?</string>
     <string name="updates_check_permission_screening_note">Ali ova ažuriranja ne bi prošla kroz dodatni skrining koji se vrši na npr. IzzyOnDroid ili F-Droid.</string>
