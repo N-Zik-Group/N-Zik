@@ -2,7 +2,7 @@
 <resources>
     <!-- Common -->
     <string name="common_error_connection_timeout">Spojení vypršelo</string>
-    <string name="common_error_no_connection">No Connection</string>
+    <string name="common_error_no_connection">Žádné připojení</string>
     <string name="common_error_no_internet">Bez připojení k síti</string>
     <string name="common_error_title">Došlo k chybě.</string>
     <string name="common_error_unknown">Neznámá chyba</string>
