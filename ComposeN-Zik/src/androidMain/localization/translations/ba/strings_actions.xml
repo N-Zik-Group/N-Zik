@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_action_apply">Apply</string>
     <string name="common_action_cancel">Cancel</string>
     <string name="common_action_clear">Clear</string>
