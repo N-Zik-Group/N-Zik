@@ -12,7 +12,6 @@
     <string name="onboarding_permission_battery_description">Prevent the system from stopping the background music</string>
     <string name="onboarding_permission_bluetooth">Bluetooth</string>
     <string name="onboarding_permission_bluetooth_description">Detect headphones to pause or resume the music</string>
-    <string name="onboarding_permission_camera">Camera</string>
     <string name="onboarding_permission_camera_description">Scan the QR code of N-Zik Desktop Compagnon to pair a PC</string>
     <string name="onboarding_permission_grant">Grant</string>
     <string name="onboarding_permission_granted">Permission granted</string>
@@ -20,7 +19,6 @@
     <string name="onboarding_permission_media_description">Read your local music library</string>
     <string name="onboarding_permission_microphone">Microphone</string>
     <string name="onboarding_permission_microphone_description">Use the microphone for voice commands, the visualizer and other features</string>
-    <string name="onboarding_permission_notifications">Notifications</string>
     <string name="onboarding_permission_notifications_description">See the player and control the music from the notification</string>
     <string name="onboarding_permission_settings">Nastavení</string>
     <string name="onboarding_permissions_section">Permissions</string>

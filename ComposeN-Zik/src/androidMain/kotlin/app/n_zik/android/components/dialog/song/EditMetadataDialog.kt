@@ -366,7 +366,7 @@ class EditMetadataDialog private constructor(
                 if (bitmap != null) {
                     Image(
                         bitmap = bitmap.asImageBitmap(),
-                        contentDescription = "Cover art",
+                        contentDescription = stringResource(R.string.metadata_cover_art),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(56.dp)
@@ -434,7 +434,7 @@ class EditMetadataDialog private constructor(
     )
 
     private fun saveToFile() {
-        val path = filePath ?: run { Toaster.e("Cannot resolve file path"); return }
+        val path = filePath ?: run { Toaster.e(R.string.metadata_file_path_unavailable); return }
         val song = getSong() ?: return
 
         coroutineScope.launch(NzikDispatchers.DATA) {
@@ -582,7 +582,7 @@ class EditMetadataDialog private constructor(
                 }
             } catch (e: Exception) {
                 Timber.tag("EditMetadata").e(e, "Failed to write tags")
-                withContext(NzikDispatchers.UI) { Toaster.e("Failed to save: ${e.message}") }
+                withContext(NzikDispatchers.UI) { Toaster.e(R.string.metadata_save_failed, e.message ?: appContext().getString(R.string.common_error_unknown)) }
             } finally {
                 if (pendingTempFile == null) {
                     tempFile.delete()
@@ -606,7 +606,7 @@ class EditMetadataDialog private constructor(
             } catch (e: Exception) {
                 Timber.tag("EditMetadata").e(e, "Failed to write after permission")
                 tempFile.delete()
-                withContext(NzikDispatchers.UI) { Toaster.e("Failed to save: ${e.message}") }
+                withContext(NzikDispatchers.UI) { Toaster.e(R.string.metadata_save_failed, e.message ?: appContext().getString(R.string.common_error_unknown)) }
             } finally {
                 pendingTempFile = null
                 pendingMediaStoreUri = null

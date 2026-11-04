@@ -60,7 +60,6 @@
     <string name="maintenance_jobs_all_ok">Toutes les tâches sont OK</string>
     <string name="maintenance_jobs_none">Pas de tâches</string>
     <string name="maintenance_last_crash">Dernier accident</string>
-    <string name="maintenance_lastfm">Last.fm</string>
     <string name="maintenance_lastfm_active">Session active</string>
     <string name="maintenance_library">Bibliothèque</string>
     <string name="maintenance_library_albums">%d albums</string>
@@ -68,7 +67,6 @@
     <string name="maintenance_library_listened">%d ont écouté</string>
     <string name="maintenance_library_playlists">%d playlists</string>
     <string name="maintenance_library_songs">%d titres</string>
-    <string name="maintenance_listen_together">Écoutons Ensemble</string>
     <string name="maintenance_live_subsystems">Sous-systèmes en temps réel</string>
     <string name="maintenance_log_view">Afficher</string>
     <string name="maintenance_lt_connected">Connecté</string>
@@ -82,7 +80,6 @@
     <string name="maintenance_mb_ok">Ok</string>
     <string name="maintenance_mb_rate_limited">%d min</string>
     <string name="maintenance_migration_done">Terminé</string>
-    <string name="maintenance_musicbrainz">MusicBrainz</string>
     <string name="maintenance_no_data">Aucune donnée</string>
     <string name="maintenance_not_connected">Non connecté</string>
     <string name="maintenance_open">Ouvrir</string>

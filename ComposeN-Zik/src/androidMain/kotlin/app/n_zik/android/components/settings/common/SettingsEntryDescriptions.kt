@@ -89,7 +89,7 @@ internal val SettingsEntryDescriptions = mapOf(
     "appearance.player_behavior_and_visuals.visualizer" to R.string.visualizer_enabled_description,
     "appearance.player_behavior_and_visuals.visualizer_line_thickness" to R.string.visualizer_line_thickness_description,
     "appearance.player_behavior_and_visuals.visualizer_white_color_option" to R.string.visualizer_color_source_description,
-    "appearance.player_presets_and_layout.icon_like_button" to R.string.player_layout_like_icon_description,
+    "appearance.player_presets_and_layout.icon_like_button" to R.string.player_controls_like_icon_description,
     "appearance.player_presets_and_layout.pcontrols_type" to R.string.player_layout_controls_style_description,
     "appearance.player_presets_and_layout.pinfo_show_icons" to R.string.player_layout_information_icons_description,
     "appearance.player_presets_and_layout.pinfo_type" to R.string.player_layout_information_style_description,

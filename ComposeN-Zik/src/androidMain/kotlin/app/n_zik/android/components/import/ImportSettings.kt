@@ -9,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.CoroutineScope
 import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.appContext
+import app.n_zik.android.R
 import app.n_zik.android.components.ui.screens.profiles.plainProfilePrefs
 import app.n_zik.android.components.ui.screens.profiles.profileSecurePrefs
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -100,7 +102,7 @@ class ImportSettings private constructor(
                         }.onFailure { e ->
                             Timber.tag("ImportSettings").e(e, "Import failed")
                             withContext(NzikDispatchers.UI) {
-                                Toaster.e("Import failed: ${e.message}")
+                                Toaster.e(R.string.backup_import_failed, e.message ?: appContext().getString(R.string.common_error_unknown))
                             }
                         }
                     }

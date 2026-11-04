@@ -309,7 +309,6 @@
     <string name="recommendations_reset_complete">Empfehlungen werden gelöscht</string>
     <string name="recommendations_reset_description">Delete the playback events used to generate local Quick Picks recommendations.</string>
     <string name="recommendations_section_other_youtube_title">Andere Bereiche</string>
-    <string name="recommendations_section_personal_top_title">Mein Top</string>
     <string name="recommendations_section_visibility_description">Deaktiviere diese Option, wenn Du Folgendes nicht sehen möchtest:</string>
     <string name="recommendations_show_section_label">Zeige</string>
     <string name="recommendations_smart_song_count_description">Set the number of smart recommendations, or let the app adjust it automatically.</string>

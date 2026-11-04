@@ -12,7 +12,6 @@
     <string name="onboarding_permission_battery_description">Empêchez le système d\'interrompre la musique de fond</string>
     <string name="onboarding_permission_bluetooth">Bluetooth</string>
     <string name="onboarding_permission_bluetooth_description">Détecter le port d\'un casque pour mettre la musique en pause ou la relancer</string>
-    <string name="onboarding_permission_camera">Appareil photo</string>
     <string name="onboarding_permission_camera_description">Scannez le QR code de N-Zik Desktop Compagnon pour connecter un PC</string>
     <string name="onboarding_permission_grant">Accorder</string>
     <string name="onboarding_permission_granted">Autorisation accordée</string>
@@ -20,7 +19,6 @@
     <string name="onboarding_permission_media_description">Consultez votre bibliothèque musicale locale</string>
     <string name="onboarding_permission_microphone">Microphone</string>
     <string name="onboarding_permission_microphone_description">Utilisez le microphone pour les commandes vocales, le visualiseur et d\'autres fonctionnalités</string>
-    <string name="onboarding_permission_notifications">Notifications</string>
     <string name="onboarding_permission_notifications_description">Afficher le lecteur et contrôler la musique depuis la notification</string>
     <string name="onboarding_permission_settings">Paramètres</string>
     <string name="onboarding_permissions_section">Autorisations</string>

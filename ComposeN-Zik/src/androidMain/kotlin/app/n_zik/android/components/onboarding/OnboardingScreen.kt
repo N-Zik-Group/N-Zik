@@ -172,7 +172,7 @@ fun OnboardingScreen(
     }
 
     // stringResource is @Composable: the card texts are hoisted out of the remember block
-    val notificationsTitle = stringResource(R.string.onboarding_permission_notifications)
+    val notificationsTitle = stringResource(R.string.permissions_label_notifications)
     val notificationsDesc = stringResource(R.string.onboarding_permission_notifications_description)
     val mediaTitle = stringResource(R.string.onboarding_permission_media)
     val mediaDesc = stringResource(R.string.onboarding_permission_media_description)
@@ -180,7 +180,7 @@ fun OnboardingScreen(
     val bluetoothDesc = stringResource(R.string.onboarding_permission_bluetooth_description)
     val micTitle = stringResource(R.string.onboarding_permission_microphone)
     val micDesc = stringResource(R.string.onboarding_permission_microphone_description)
-    val cameraTitle = stringResource(R.string.onboarding_permission_camera)
+    val cameraTitle = stringResource(R.string.permissions_label_camera)
     val cameraDesc = stringResource(R.string.onboarding_permission_camera_description)
     val batteryTitle = stringResource(R.string.onboarding_permission_battery)
     val batteryDesc = stringResource(R.string.onboarding_permission_battery_description)

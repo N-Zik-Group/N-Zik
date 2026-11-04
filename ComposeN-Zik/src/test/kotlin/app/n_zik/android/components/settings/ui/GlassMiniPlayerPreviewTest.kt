@@ -141,7 +141,7 @@ class GlassMiniPlayerPreviewTest {
         }
         fun checkRenderedParent() {
             val labels = listOf(R.string.player_action_previous, R.string.player_action_play,
-                R.string.player_action_next, R.string.player_mini_button_audio_output)
+                R.string.player_action_next, R.string.audio_output_title)
             val controls = labels.map { label -> context.getString(label) to
                 composeRule.onNodeWithContentDescription(context.getString(label)).fetchSemanticsNode().boundsInRoot }
             val body = composeRule.onNodeWithTag("settings.glass.miniPlayer").fetchSemanticsNode().boundsInRoot
@@ -201,7 +201,7 @@ class GlassMiniPlayerPreviewTest {
             node.config.getOrNull(SemanticsProperties.ContentDescription)?.any { it in labels } == true
         }).fetchSemanticsNodes().sortedBy { it.positionInRoot.x }
         assertEquals(labels, controls.map { it.config[SemanticsProperties.ContentDescription].single() })
-        composeRule.onNodeWithContentDescription(context.getString(R.string.player_mini_button_audio_output)).assertDoesNotExist()
+        composeRule.onNodeWithContentDescription(context.getString(R.string.audio_output_title)).assertDoesNotExist()
         composeRule.onNodeWithText(context.getString(R.string.metadata_unknown_title)).assertIsDisplayed()
         composeRule.onNodeWithText(context.getString(R.string.metadata_unknown_artist)).assertIsDisplayed()
         composeRule.onNodeWithContentDescription(context.getString(R.string.player_action_play)).performClick()

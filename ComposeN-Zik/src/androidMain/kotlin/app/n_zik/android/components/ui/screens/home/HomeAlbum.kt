@@ -412,7 +412,7 @@ fun HomeAlbums(
             ContextCompat.startForegroundService(appContext(), intent)
         } catch (e: Exception) {
             Timber.tag("HomeAlbum").e(e, "Failed to start HomeSyncService")
-            Toaster.e("Failed to start sync service")
+            Toaster.e(R.string.sync_start_service_failed)
         }
     }
 

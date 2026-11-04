@@ -238,7 +238,6 @@
     <string name="player_layout_controls_style_description">Oynatıcı kontrollerinin düzenini seçin.</string>
     <string name="player_layout_information_icons_description">Albüm ve sanatçı bilgilerinin yanında simgeler göster.</string>
     <string name="player_layout_information_style_description">Oynatıcıda albüm ve sanatçı bilgilerinin görüntülenme biçimini seçin.</string>
-    <string name="player_layout_like_icon_description">Beğen düğmesi için kullanılacak simgeyi seçin.</string>
     <string name="player_layout_player_style_description">Oynatıcı ekranının genel düzenini seçin.</string>
     <string name="player_layout_queue_style_description">Oynatıcı kuyruğunun görünümünü seçin.</string>
     <string name="player_listen_on_title">Dinle</string>
@@ -314,14 +313,11 @@
     <string name="player_top_spacing_description">Üstteki eylem çubuğu gizlendiğinde üst kısımda boşluk bırakın.</string>
     <string name="player_track_swipe_sensitivity_description">Oynatıcıda kaydırma hareketiyle parça değiştirme hassasiyetini ayarlayın.</string>
     <string name="player_type">Oynatıcı türü</string>
-    <string name="player_mini_button_audio_output">Ses çıkışı</string>
     <string name="player_mini_button_discover">Keşfet</string>
     <string name="player_mini_button_download">İndir</string>
-    <string name="player_mini_button_lyrics">Şarkı sözleri</string>
     <string name="player_mini_button_play_pause">Oynat/Duraklat</string>
     <string name="player_mini_button_queue">Kuyruk</string>
     <string name="player_mini_button_radio">Radyo</string>
-    <string name="player_mini_button_repeat">Tekrarla</string>
     <string name="player_mini_button_share">Paylaş</string>
     <string name="player_mini_button_sleep_timer">Uyku zamanlayıcısı</string>
     <string name="player_mini_button_video">Video</string>

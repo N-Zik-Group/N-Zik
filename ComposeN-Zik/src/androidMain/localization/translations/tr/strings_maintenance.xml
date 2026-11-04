@@ -60,7 +60,6 @@
     <string name="maintenance_jobs_all_ok">Tüm işler tamam</string>
     <string name="maintenance_jobs_none">İş yok</string>
     <string name="maintenance_last_crash">Son çökme</string>
-    <string name="maintenance_lastfm">Last.fm</string>
     <string name="maintenance_lastfm_active">Oturum aktif</string>
     <string name="maintenance_library">Kütüphane</string>
     <string name="maintenance_library_albums">%d albüm</string>
@@ -68,7 +67,6 @@
     <string name="maintenance_library_listened">%d dinlendi</string>
     <string name="maintenance_library_playlists">%d çalma listesi</string>
     <string name="maintenance_library_songs">%d şarkı</string>
-    <string name="maintenance_listen_together">Birlikte Dinle</string>
     <string name="maintenance_live_subsystems">Canlı alt sistemler</string>
     <string name="maintenance_log_view">Görüntüle</string>
     <string name="maintenance_lt_connected">Bağlanıldı</string>
@@ -82,7 +80,6 @@
     <string name="maintenance_mb_ok">Tamam</string>
     <string name="maintenance_mb_rate_limited">%d dakika</string>
     <string name="maintenance_migration_done">Tamam</string>
-    <string name="maintenance_musicbrainz">MusicBrainz</string>
     <string name="maintenance_no_data">Veri yok</string>
     <string name="maintenance_not_connected">Bağlı değil</string>
     <string name="maintenance_open">Açık</string>

@@ -153,7 +153,7 @@ internal fun AccountsSyncOverviewCard(isYouTubeSyncEnabled: Boolean, isSyncEnabl
                         range = 5f..120f,
                         stepSize = 15f,
                         onSlide = { syncCooldown = it.toInt() },
-                        toDisplay = { "${it.toInt()} min" },
+                        toDisplay = { stringResource(R.string.common_duration_minutes_short, it.toInt()) },
                         isIntegerOnly = true,
                         icon = R.drawable.time
                     )

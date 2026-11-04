@@ -269,4 +269,8 @@
     <string name="sync_youtube_songs_remaining">%1$s Songs Remaining</string>
     <string name="sync_youtube_unlike_failed">Failed to unlike the song in YouTube</string>
     <string name="sync_youtube_unlike_success">Song is Unliked in YouTube</string>
+    <string name="sync_starting_notification">Starting sync...</string>
+    <string name="sync_background_notification">Syncing in background...</string>
+    <string name="sync_aborted_network_error">Sync aborted due to network error.</string>
+    <string name="sync_start_service_failed">Failed to start sync service</string>
 </resources>

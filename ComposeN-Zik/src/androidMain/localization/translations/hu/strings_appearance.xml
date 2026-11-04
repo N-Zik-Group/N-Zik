@@ -128,7 +128,6 @@
     <string name="glass_effect_tint_none">Nincs</string>
     <string name="glass_effect_tint_source">Glass color source</string>
     <string name="glass_effect_tint_source_custom">Egyéni</string>
-    <string name="glass_effect_tint_source_system_accent">System accent</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
     <string name="glass_effect_title">Glass effect</string>
     <string name="glass_effect_unsupported">This phone has no hardware blur, so every surface uses the tinted film.</string>

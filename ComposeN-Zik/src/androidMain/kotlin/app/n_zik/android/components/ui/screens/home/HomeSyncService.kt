@@ -63,7 +63,7 @@ class HomeSyncService : Service() {
         
         HomeSyncState.showSyncNotification(
             title = appContext().getString(R.string.sync_notifications),
-            message = "Starting sync...",
+            message = appContext().getString(R.string.sync_starting_notification),
             notificationId = notificationId,
             isOngoing = true
         )
@@ -71,7 +71,7 @@ class HomeSyncService : Service() {
         val builder = NotificationCompat.Builder(appContext(), channelId(SYNC_NOTIFICATION_CHANNEL_ID, getActiveProfile(appContext())))
             .setSmallIcon(R.drawable.ic_launcher)
             .setContentTitle(appContext().getString(R.string.sync_notifications))
-            .setContentText("Syncing in background...")
+            .setContentText(appContext().getString(R.string.sync_background_notification))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
         
@@ -303,7 +303,7 @@ class HomeSyncService : Service() {
         withContext(NzikDispatchers.UI) {
             if (abortSync) {
                 Toaster.e(appContext().getString(R.string.sync_failed))
-                HomeSyncState.showSyncNotification(appContext().getString(R.string.sync_failed), "Sync aborted due to network error.", resultNotificationId)
+                HomeSyncState.showSyncNotification(appContext().getString(R.string.sync_failed), appContext().getString(R.string.sync_aborted_network_error), resultNotificationId)
             } else if (failedCount > 0) {
                 HomeSyncState.failedArtistsList = failedList
                 val errorMessage = appContext().getString(R.string.library_sync_artist_retry_count_format, failedCount)
@@ -539,7 +539,7 @@ class HomeSyncService : Service() {
         withContext(NzikDispatchers.UI) {
             if (abortSync) {
                 Toaster.e(appContext().getString(R.string.sync_failed))
-                HomeSyncState.showSyncNotification(appContext().getString(R.string.sync_failed), "Sync aborted due to network error.", resultNotificationId)
+                HomeSyncState.showSyncNotification(appContext().getString(R.string.sync_failed), appContext().getString(R.string.sync_aborted_network_error), resultNotificationId)
             } else if (failedCount > 0) {
                 HomeSyncState.failedAlbumsList = failedList
                 val errorMessage = appContext().getString(R.string.library_sync_album_retry_count_format, failedCount)
@@ -662,7 +662,7 @@ class HomeSyncService : Service() {
         withContext(NzikDispatchers.UI) {
             if (abortSync) {
                 Toaster.e(appContext().getString(R.string.sync_failed))
-                HomeSyncState.showSyncNotification(appContext().getString(R.string.sync_failed), "Sync aborted due to network error.", resultNotificationId)
+                HomeSyncState.showSyncNotification(appContext().getString(R.string.sync_failed), appContext().getString(R.string.sync_aborted_network_error), resultNotificationId)
             } else if (failedCount > 0) {
                 HomeSyncState.failedPlaylistsList = failedList
                 val errorMessage = appContext().getString(R.string.library_sync_playlist_retry_count_format, failedCount)

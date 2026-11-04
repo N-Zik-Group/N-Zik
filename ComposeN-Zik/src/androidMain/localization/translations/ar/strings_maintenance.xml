@@ -60,7 +60,6 @@
     <string name="maintenance_jobs_all_ok">All jobs OK</string>
     <string name="maintenance_jobs_none">No jobs</string>
     <string name="maintenance_last_crash">Last crash</string>
-    <string name="maintenance_lastfm">Last.fm</string>
     <string name="maintenance_lastfm_active">Session active</string>
     <string name="maintenance_library">المكتبة</string>
     <string name="maintenance_library_albums">%d albums</string>
@@ -68,7 +67,6 @@
     <string name="maintenance_library_listened">%d listened</string>
     <string name="maintenance_library_playlists">%d playlists</string>
     <string name="maintenance_library_songs">%d songs</string>
-    <string name="maintenance_listen_together">Listen Together</string>
     <string name="maintenance_live_subsystems">Live subsystems</string>
     <string name="maintenance_log_view">View</string>
     <string name="maintenance_lt_connected">Connected</string>
@@ -82,7 +80,6 @@
     <string name="maintenance_mb_ok">حسناً</string>
     <string name="maintenance_mb_rate_limited">%d min</string>
     <string name="maintenance_migration_done">أكتمل</string>
-    <string name="maintenance_musicbrainz">MusicBrainz</string>
     <string name="maintenance_no_data">No data</string>
     <string name="maintenance_not_connected">Not connected</string>
     <string name="maintenance_open">Open</string>

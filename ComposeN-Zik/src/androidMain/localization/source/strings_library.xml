@@ -339,7 +339,6 @@
     <string name="recommendations_reset_complete">Quick picks are cleared</string>
     <string name="recommendations_reset_description">Delete the playback events used to generate local Quick Picks recommendations.</string>
     <string name="recommendations_section_other_youtube_title">Other sections</string>
-    <string name="recommendations_section_personal_top_title">My Top</string>
     <string name="recommendations_section_visibility_description">Disable if you do not want to see</string>
     <string name="recommendations_show_section_label">Show</string>
     <string name="recommendations_smart_song_count_description">Set the number of smart recommendations, or let the app adjust it automatically.</string>
@@ -407,4 +406,8 @@
     <string name="song_matching_progress_title">Matching songs</string>
     <string name="song_matching_running_message">Matching Songs. Please Wait. Do not Minimize or Exit the App</string>
     <string name="song_matching_unmatched_label">Unmatched song</string>
+    <string name="metadata_musicbrainz_rating">Rating</string>
+    <string name="metadata_cover_art">Cover art</string>
+    <string name="metadata_file_path_unavailable">Cannot resolve file path</string>
+    <string name="metadata_save_failed">Failed to save: %1$s</string>
 </resources>

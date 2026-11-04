@@ -128,7 +128,6 @@
     <string name="glass_effect_tint_none">Yok</string>
     <string name="glass_effect_tint_source">Cam rengi kaynağı</string>
     <string name="glass_effect_tint_source_custom">Özel</string>
-    <string name="glass_effect_tint_source_system_accent">Sistem vurgusu</string>
     <string name="glass_effect_tint_strength">Ton yoğunluğu</string>
     <string name="glass_effect_title">Cam efekti</string>
     <string name="glass_effect_unsupported">Bu telefonda donanım kaynaklı bulanıklık bulunmadığından, her yüzeyde renkli film kullanılmaktadır.</string>

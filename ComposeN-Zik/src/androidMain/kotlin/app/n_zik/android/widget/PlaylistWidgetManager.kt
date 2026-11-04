@@ -130,7 +130,7 @@ object PlaylistWidgetManager {
                 data = Uri.parse("nzik://app/channel/${a.id}")
             }
             val pendingIntent = PendingIntent.getActivity(context, a.id.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            items.add(QuickPick(a.name ?: "Unknown", loadBitmap(context, a.thumbnailUrl), pendingIntent))
+            items.add(QuickPick(a.name ?: context.getString(R.string.common_unknown), loadBitmap(context, a.thumbnailUrl), pendingIntent))
         }
 
         val bookmarkedAlbums = Database.albumTable.sortBookmarkedByPlayCount(8).firstOrNull() ?: emptyList()
@@ -141,7 +141,7 @@ object PlaylistWidgetManager {
                 data = Uri.parse("nzik://app/album/${a.id}")
             }
             val pendingIntent = PendingIntent.getActivity(context, a.id.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            items.add(QuickPick(a.title ?: "Unknown", loadBitmap(context, a.thumbnailUrl), pendingIntent))
+            items.add(QuickPick(a.title ?: context.getString(R.string.common_unknown), loadBitmap(context, a.thumbnailUrl), pendingIntent))
         }
         
         val randomSongs = Database.songTable.all().firstOrNull()?.shuffled()?.take(8) ?: emptyList()

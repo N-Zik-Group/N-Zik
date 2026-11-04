@@ -309,7 +309,6 @@
     <string name="recommendations_reset_complete">Hızlı seçimler temizlendi</string>
     <string name="recommendations_reset_description">Yerel Hızlı Seçimler önerilerini oluşturmak için kullanılan oynatma olaylarını silin.</string>
     <string name="recommendations_section_other_youtube_title">Diğer bölümler</string>
-    <string name="recommendations_section_personal_top_title">En Beğendiklerim</string>
     <string name="recommendations_section_visibility_description">Görmek istemiyorsanız devre dışı bırakın</string>
     <string name="recommendations_show_section_label">Göster</string>
     <string name="recommendations_smart_song_count_description">Akıllı önerilerin sayısını ayarlayın ya da uygulamanın bunu otomatik olarak ayarlamasına izin verin.</string>

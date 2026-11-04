@@ -237,7 +237,7 @@ internal fun GlassSettingsContent(
                                 modifier = Modifier.testTag("settings.glass.optimization").settingsSearchTarget("glass.optimization"),
                             )
                             OtherEnumValueSelectorSettingsEntry(
-                                title = stringResource(R.string.settings_network_quality_title),
+                                title = stringResource(R.string.glass_effect_rendering_quality),
                                 icon = R.drawable.settings,
                                 selectedValue = config.quality,
                                 onValueSelected = store::setProfile,
@@ -377,7 +377,7 @@ internal fun TintRow(config: GlassSettings, onTint: (GlassTintSource) -> Unit, o
             GlassTintSource.None -> R.string.glass_effect_tint_none
             GlassTintSource.ThemeAccent -> R.string.common_color_source_theme
             GlassTintSource.Artwork -> R.string.common_color_source_artwork
-            GlassTintSource.SystemAccent -> R.string.glass_effect_tint_source_system_accent
+            GlassTintSource.SystemAccent -> R.string.theme_palette_material_you
             GlassTintSource.Custom -> R.string.glass_effect_tint_source_custom
         }) },
     )

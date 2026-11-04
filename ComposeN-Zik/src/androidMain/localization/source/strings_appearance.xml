@@ -130,7 +130,6 @@
     <string name="glass_effect_tint_none">None</string>
     <string name="glass_effect_tint_source">Glass color source</string>
     <string name="glass_effect_tint_source_custom">Custom</string>
-    <string name="glass_effect_tint_source_system_accent">System accent</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
     <string name="glass_effect_title">Glass effect</string>
     <string name="glass_effect_unsupported">This phone has no hardware blur, so every surface uses the tinted film.</string>
@@ -244,4 +243,5 @@
     <string name="thumbnail_not_selected">Thumbnail Not Selected</string>
     <string name="thumbnail_remove_failed">Failed to Remove Thumbnail</string>
     <string name="thumbnail_remove_success">Removed Thumbnail</string>
+    <string name="glass_effect_rendering_quality">Rendering quality</string>
 </resources>

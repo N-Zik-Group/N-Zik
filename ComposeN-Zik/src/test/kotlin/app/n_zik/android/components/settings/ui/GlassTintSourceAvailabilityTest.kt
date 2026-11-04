@@ -72,11 +72,11 @@ class GlassTintSourceAvailabilityTest {
         val before = store.read()
         showTintRow()
         composeRule.onNodeWithText(context.getString(R.string.settings_current_value, context.getString(R.string.glass_effect_tint_none))).assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.glass_effect_tint_source_system_accent)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.theme_palette_material_you)).assertDoesNotExist()
         assertEquals(before, store.read())
 
         openSelector()
-        composeRule.onNodeWithText(context.getString(R.string.glass_effect_tint_source_system_accent)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.theme_palette_material_you)).assertDoesNotExist()
         supportedLabels.forEach { label ->
             composeRule.onAllNodesWithText(context.getString(label)).onLast().performScrollTo().assertIsDisplayed()
         }
@@ -92,13 +92,13 @@ class GlassTintSourceAvailabilityTest {
         val before = store.read()
         showTintRow()
         openSelector()
-        (supportedLabels + R.string.glass_effect_tint_source_system_accent).forEach { label ->
+        (supportedLabels + R.string.theme_palette_material_you).forEach { label ->
             composeRule.onAllNodesWithText(context.getString(label)).onLast().performScrollTo().assertIsDisplayed()
         }
-        composeRule.onNodeWithText(context.getString(R.string.glass_effect_tint_source_system_accent)).performScrollTo().performClick()
+        composeRule.onNodeWithText(context.getString(R.string.theme_palette_material_you)).performScrollTo().performClick()
         composeRule.waitForIdle()
         assertEquals(before.copy(source = GlassTintSource.SystemAccent), store.read())
-        composeRule.onNodeWithText(context.getString(R.string.settings_current_value, context.getString(R.string.glass_effect_tint_source_system_accent))).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.settings_current_value, context.getString(R.string.theme_palette_material_you))).assertIsDisplayed()
     }
 
     private fun showTintRow() {

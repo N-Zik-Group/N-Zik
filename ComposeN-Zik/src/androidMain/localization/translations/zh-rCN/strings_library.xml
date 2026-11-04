@@ -309,7 +309,6 @@
     <string name="recommendations_reset_complete">快速选择已清除</string>
     <string name="recommendations_reset_description">Delete the playback events used to generate local Quick Picks recommendations.</string>
     <string name="recommendations_section_other_youtube_title">Other sections</string>
-    <string name="recommendations_section_personal_top_title">My Top</string>
     <string name="recommendations_section_visibility_description">如果你不想看到, 请禁用</string>
     <string name="recommendations_show_section_label">显示</string>
     <string name="recommendations_smart_song_count_description">Set the number of smart recommendations, or let the app adjust it automatically.</string>

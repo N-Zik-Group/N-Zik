@@ -28,13 +28,13 @@ internal val GlassSearchOptions: List<GlassSearchOption> = buildList {
     option("ripple.size", R.string.glass_effect_ripple_size, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_ripple_size_description)
     option("jelly.enabled", R.string.glass_effect_jelly_enabled, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_jelly_description)
     option("jelly.intensity", R.string.glass_effect_jelly_intensity, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_jelly_intensity_description)
-    option("quality", R.string.settings_network_quality_title, "material", R.string.glass_effect_group_material,
+    option("quality", R.string.glass_effect_rendering_quality, "material", R.string.glass_effect_group_material,
         choices = listOf(R.string.glass_effect_quality_fastest, R.string.glass_effect_quality_balanced, R.string.glass_effect_quality_high))
     option("vibrancy", R.string.glass_effect_color_vibrancy, "material", R.string.glass_effect_group_material, fallback = "glass.quality")
     option("blur", R.string.glass_effect_frost, "material", R.string.glass_effect_group_material, fallback = "glass.quality")
     option("tintSource", R.string.glass_effect_tint_source, "colour", R.string.glass_effect_group_color,
         choices = listOf(R.string.glass_effect_tint_none, R.string.common_color_source_theme, R.string.common_color_source_artwork,
-            R.string.glass_effect_tint_source_system_accent, R.string.glass_effect_tint_source_custom))
+            R.string.theme_palette_material_you, R.string.glass_effect_tint_source_custom))
     option("tint", R.string.glass_effect_custom_color, "colour", R.string.glass_effect_group_color, fallback = "glass.tintSource")
     option("hue", R.string.glass_effect_tint, "colour", R.string.glass_effect_group_color, fallback = "glass.tintSource")
     option("tintStrength", R.string.glass_effect_tint_strength, "colour", R.string.glass_effect_group_color, fallback = "glass.tintSource")

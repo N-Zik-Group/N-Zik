@@ -43,4 +43,6 @@
     <string name="common_validation_minimum_value">"Value must be greater than "</string>
     <string name="common_validation_name_in_use">Name already in use</string>
     <string name="common_value_input_hint">Enter the value</string>
+    <string name="common_unknown">Unknown</string>
+    <string name="common_duration_minutes_short">%1$d min</string>
 </resources>

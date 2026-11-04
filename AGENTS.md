@@ -30,6 +30,9 @@
 - Code comments & commits in English
 - Removing a source key requires removing it from the corresponding localized XML files too (a dead key left in a locale degrades translator context; Crowdin then drops it from its side) - see rules/CODE.md "Translations"
 - Add Android source strings to the matching thematic XML under `ComposeN-Zik/src/androidMain/localization/source/`. Keep screen-specific copy with its feature, reusable copy in the shared files, and plurals in `plurals.xml`. Crowdin exports matching filenames to `src/androidMain/localization/translations/<locale>/`.
+- Put screen-specific copy in its feature catalog. Reuse a key across screens only when it represents the same concept or action and a wording change should apply everywhere. Identical English is insufficient when the context differs. A permission name can be shared between onboarding and settings, while a permission request and a usage event keep separate keys.
+- Keep shared domain labels in their owning catalog. Use common catalogs for truly cross-feature copy such as Cancel or Close. Before merging keys, check the existing translations and any published Bridge identity or runtime lookup. Preserve protocol keys and alias compatibility.
+- Gradle generates Android `values/` and `values-*/` from `localization/source/` and `localization/translations/<locale>/` under `ComposeN-Zik/build/generated/localizedResources/<variant>/`. Treat those generated files as build outputs. Add or change source copy in the thematic XML and manage translated values through Crowdin.
 - Edit the English Fastlane listing sources (`title.txt`, `short_description.txt`, `full_description.txt`) in `fastlane/source/`. Crowdin exports the listing files to `fastlane/metadata/android/<locale>/`, including English. Use 30, 80, and 4,000 characters respectively. Release changelogs live in `fastlane/metadata/android/en-US/changelogs/` and are managed by the release workflow.
 
 ## ⚠️ Ask First

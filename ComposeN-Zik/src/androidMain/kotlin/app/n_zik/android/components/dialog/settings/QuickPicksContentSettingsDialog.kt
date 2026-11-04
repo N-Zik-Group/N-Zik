@@ -105,7 +105,7 @@ private fun buildSectionDefs(): Map<String, QuickPicksSectionDef> = mapOf(
     "new_albums" to QuickPicksSectionDef("new_albums", showNewAlbumsKey, R.drawable.album, R.string.recommendations_new_albums_title, true),
     "playlists_might_like" to QuickPicksSectionDef("playlists_might_like", showPlaylistMightLikeKey, R.drawable.playlist, R.string.recommendations_playlists_title, true),
     "moods_genres" to QuickPicksSectionDef("moods_genres", showMoodsAndGenresKey, R.drawable.moods, R.string.recommendations_moods_and_genres_title, true),
-    "my_top" to QuickPicksSectionDef("my_top", showMyTopPlaylistKey, R.drawable.person, R.string.recommendations_section_personal_top_title, true),
+    "my_top" to QuickPicksSectionDef("my_top", showMyTopPlaylistKey, R.drawable.person, R.string.recommendations_personal_top_title, true),
     // Spec 2: restored "Rewind" section — reuses the legacy showMonthlyPlaylistsKey so the
     // existing user preference (kept by spec 1) is preserved, zero new DataStore key.
     "rewind" to QuickPicksSectionDef("rewind", showMonthlyPlaylistsKey, R.drawable.musical_notes, R.string.rewind_title, true),

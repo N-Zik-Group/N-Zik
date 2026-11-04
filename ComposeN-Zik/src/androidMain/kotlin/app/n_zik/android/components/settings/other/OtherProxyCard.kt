@@ -66,6 +66,10 @@ internal fun OtherProxyCard(search: Search) {
     }
 
     var regionOverride by rememberPreference(regionOverrideKey, "")
+    val usernameTitle = stringResource(R.string.settings_proxy_username)
+    val passwordTitle = stringResource(R.string.settings_proxy_password)
+    val regionTitle = stringResource(R.string.settings_region_override)
+    val noneLabel = stringResource(R.string.common_option_none)
 
     SettingsSectionCard(
         title = stringResource(R.string.settings_section_proxy_title),
@@ -169,21 +173,21 @@ internal fun OtherProxyCard(search: Search) {
                     }
 
                     var showProxyUsernameDialog by remember { mutableStateOf(false) }
-                    if (search.inputValue.isBlank() || "proxy username".contains(search.inputValue, true)) {
+                    if (search.inputValue.isBlank() || usernameTitle.contains(search.inputValue, true)) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.settings_proxy_username"),
                             title = stringResource(R.string.settings_proxy_username),
                             text = stringResource(R.string.network_proxy_username_description),
-                            selectedValueText = if (proxyUsername.isBlank()) "None" else proxyUsername,
+                            selectedValueText = if (proxyUsername.isBlank()) noneLabel else proxyUsername,
                             icon = R.drawable.server,
                             onClick = { showProxyUsernameDialog = true }
                         )
                     }
                     DialogPresence(visible = showProxyUsernameDialog) {
                         SettingsInputDialog(
-                            title = "Proxy Username",
+                            title = usernameTitle,
                             initialValue = proxyUsername,
-                            placeholder = "Username (optional)",
+                            placeholder = stringResource(R.string.network_proxy_username_placeholder),
                             allowEmpty = true,
                             onDismiss = { showProxyUsernameDialog = false },
                             onSetValue = { proxyUsername = it }
@@ -194,21 +198,21 @@ internal fun OtherProxyCard(search: Search) {
                     }
 
                     var showProxyPasswordDialog by remember { mutableStateOf(false) }
-                    if (search.inputValue.isBlank() || "proxy password".contains(search.inputValue, true)) {
+                    if (search.inputValue.isBlank() || passwordTitle.contains(search.inputValue, true)) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.settings_proxy_password"),
                             title = stringResource(R.string.settings_proxy_password),
                             text = stringResource(R.string.network_proxy_password_description),
-                            selectedValueText = if (proxyPassword.isBlank()) "None" else "••••••",
+                            selectedValueText = if (proxyPassword.isBlank()) noneLabel else "••••••",
                             icon = R.drawable.server,
                             onClick = { showProxyPasswordDialog = true }
                         )
                     }
                     DialogPresence(visible = showProxyPasswordDialog) {
                         SettingsInputDialog(
-                            title = "Proxy Password",
+                            title = passwordTitle,
                             initialValue = proxyPassword,
-                            placeholder = "Password (optional)",
+                            placeholder = stringResource(R.string.network_proxy_password_placeholder),
                             allowEmpty = true,
                             isPassword = true,
                             onDismiss = { showProxyPasswordDialog = false },
@@ -220,21 +224,21 @@ internal fun OtherProxyCard(search: Search) {
                     }
 
                     var showRegionOverrideDialog by remember { mutableStateOf(false) }
-                    if (search.inputValue.isBlank() || "region override".contains(search.inputValue, true)) {
+                    if (search.inputValue.isBlank() || regionTitle.contains(search.inputValue, true)) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.settings_region_override"),
                             title = stringResource(R.string.settings_region_override),
                             text = stringResource(R.string.network_region_override_description),
-                            selectedValueText = if (regionOverride.isBlank()) "Auto (from phone)" else regionOverride,
+                            selectedValueText = if (regionOverride.isBlank()) stringResource(R.string.network_proxy_region_auto) else regionOverride,
                             icon = R.drawable.server,
                             onClick = { showRegionOverrideDialog = true }
                         )
                     }
                     DialogPresence(visible = showRegionOverrideDialog) {
                         SettingsInputDialog(
-                            title = "Region Override",
+                            title = regionTitle,
                             initialValue = regionOverride,
-                            placeholder = "e.g. US, FR, DE (empty = auto)",
+                            placeholder = stringResource(R.string.network_proxy_region_placeholder),
                             allowEmpty = true,
                             onDismiss = { showRegionOverrideDialog = false },
                             onSetValue = {

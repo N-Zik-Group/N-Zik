@@ -248,7 +248,6 @@
     <string name="player_layout_controls_style_description">Choose the layout of the player controls.</string>
     <string name="player_layout_information_icons_description">Display icons beside the album and artist information.</string>
     <string name="player_layout_information_style_description">Choose the layout of album and artist information in the player.</string>
-    <string name="player_layout_like_icon_description">Choose the icon used for the like button.</string>
     <string name="player_layout_player_style_description">Choose the overall layout of the player screen.</string>
     <string name="player_layout_queue_style_description">Choose the appearance of the play queue.</string>
     <string name="player_listen_on_title">Listen on</string>
@@ -326,14 +325,11 @@
     <string name="player_type">Player type</string>
 
     <!-- Player Mini -->
-    <string name="player_mini_button_audio_output">Audio output</string>
     <string name="player_mini_button_discover">Discover</string>
     <string name="player_mini_button_download">Download</string>
-    <string name="player_mini_button_lyrics">Lyrics</string>
     <string name="player_mini_button_play_pause">Play/Pause</string>
     <string name="player_mini_button_queue">Queue</string>
     <string name="player_mini_button_radio">Radio</string>
-    <string name="player_mini_button_repeat">Repeat</string>
     <string name="player_mini_button_share">Share</string>
     <string name="player_mini_button_sleep_timer">Sleep timer</string>
     <string name="player_mini_button_video">Video</string>
@@ -386,4 +382,9 @@
     <string name="widget_not_playing_status">Not playing</string>
     <string name="widget_playlists_description">N-Zik Playlists</string>
     <string name="widget_turntable_description">N-Zik Turntable</string>
+    <string name="audio_device_battery_format">Battery: %1$d%%</string>
+    <string name="audio_output_bluetooth_device_label">Bluetooth device</string>
+    <string name="audio_output_usb_audio_label">USB audio</string>
+    <string name="audio_output_external_speaker_label">External speaker</string>
+    <string name="audio_output_load_failed">Failed to load devices: %1$s</string>
 </resources>

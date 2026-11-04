@@ -238,7 +238,6 @@
     <string name="player_layout_controls_style_description">Choose the layout of the player controls.</string>
     <string name="player_layout_information_icons_description">Display icons beside the album and artist information.</string>
     <string name="player_layout_information_style_description">Choose the layout of album and artist information in the player.</string>
-    <string name="player_layout_like_icon_description">Choose the icon used for the like button.</string>
     <string name="player_layout_player_style_description">Choose the overall layout of the player screen.</string>
     <string name="player_layout_queue_style_description">Choose the appearance of the play queue.</string>
     <string name="player_listen_on_title">Kuuntele</string>
@@ -314,14 +313,11 @@
     <string name="player_top_spacing_description">Keep empty space at the top when the top actions bar is hidden.</string>
     <string name="player_track_swipe_sensitivity_description">Adjust how easily a swipe changes tracks in the player.</string>
     <string name="player_type">Soittimen tyyppi</string>
-    <string name="player_mini_button_audio_output">Audio output</string>
     <string name="player_mini_button_discover">Löydä uutta</string>
     <string name="player_mini_button_download">Lataa</string>
-    <string name="player_mini_button_lyrics">Sanoitukset</string>
     <string name="player_mini_button_play_pause">Play/Pause</string>
     <string name="player_mini_button_queue">Queue</string>
     <string name="player_mini_button_radio">Radio</string>
-    <string name="player_mini_button_repeat">Uudelleentoisto</string>
     <string name="player_mini_button_share">Share</string>
     <string name="player_mini_button_sleep_timer">Uniajastin</string>
     <string name="player_mini_button_video">Video</string>

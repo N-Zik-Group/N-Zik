@@ -12,7 +12,6 @@
     <string name="onboarding_permission_battery_description">Sistemin arka plan müziğini durdurmasını önleyin</string>
     <string name="onboarding_permission_bluetooth">Bluetooth</string>
     <string name="onboarding_permission_bluetooth_description">Kulaklığı algılayarak müziği duraklat veya devam ettir</string>
-    <string name="onboarding_permission_camera">Kamera</string>
     <string name="onboarding_permission_camera_description">Bir bilgisayarla eşleştirmek için N-Zik Masaüstü Yardımcısı uygulamasının QR kodunu tarayın</string>
     <string name="onboarding_permission_grant">İzin ver</string>
     <string name="onboarding_permission_granted">İzin verildi</string>
@@ -20,7 +19,6 @@
     <string name="onboarding_permission_media_description">Yerel müzik kitaplığınızı okuyun</string>
     <string name="onboarding_permission_microphone">Mikrofon</string>
     <string name="onboarding_permission_microphone_description">Sesli komutlar, görselleştirici ve diğer özellikler için mikrofonu kullanın</string>
-    <string name="onboarding_permission_notifications">Bildirimler</string>
     <string name="onboarding_permission_notifications_description">Oynatıcıyı görüntüleyin ve bildirimden müziği kontrol edin</string>
     <string name="onboarding_permission_settings">Ayarlar</string>
     <string name="onboarding_permissions_section">İzinler</string>

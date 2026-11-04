@@ -351,7 +351,7 @@ fun RescueScreen() {
             val msg = if (e is RescueFiles.DatabaseBusyException) {
                 context.getString(R.string.recovery_error_database_busy)
             } else {
-                context.getString(R.string.recovery_error, e.message ?: "Unknown")
+                context.getString(R.string.recovery_error, e.message ?: context.getString(R.string.common_unknown))
             }
             Toasty.error(context, msg, Toast.LENGTH_LONG, true).show()
             Timber.tag("RescueScreen").e(e, "Action failed")

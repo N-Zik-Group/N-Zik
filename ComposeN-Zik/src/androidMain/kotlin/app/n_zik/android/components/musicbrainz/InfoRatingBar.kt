@@ -33,7 +33,7 @@ fun InfoBar(year: String?, countryCode: String?) {
     ) {
         Icon(
             painter = painterResource(R.drawable.calendar),
-            contentDescription = "Year",
+            contentDescription = stringResource(R.string.metadata_year),
             tint = colorPalette().text,
             modifier = Modifier.size(14.dp)
         )
@@ -70,7 +70,7 @@ fun RatingBar(rating: Float?, votesCount: Int?) {
     ) {
         Icon(
             painter = painterResource(R.drawable.star_brilliant),
-            contentDescription = "Rating",
+            contentDescription = stringResource(R.string.metadata_musicbrainz_rating),
             tint = Color(0xFFFFC107),
             modifier = Modifier.size(18.dp)
         )

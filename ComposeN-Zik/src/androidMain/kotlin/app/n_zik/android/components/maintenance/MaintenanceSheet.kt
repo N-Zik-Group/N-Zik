@@ -1925,7 +1925,7 @@ private fun ColumnScope.MaintenanceListContent(
         trailingContent = { StatusTrailing(content.dbSizeStatus, palette.textSecondary, statusColumnWidth) },
     )
     ListMenu.Entry(
-        text = stringResource(R.string.maintenance_musicbrainz),
+        text = stringResource(R.string.metadata_musicbrainz_title),
         icon = { SettingIcon(R.drawable.globe, palette.accent) },
         trailingContent = { StatusTrailing(content.mbStatus, content.mbColor, statusColumnWidth) },
     )
@@ -2082,7 +2082,7 @@ private fun ColumnScope.MaintenanceListContent(
         trailingContent = { StatusTrailing(content.ytStatus, content.ytColor, statusColumnWidth) },
     )
     ListMenu.Entry(
-        text = stringResource(R.string.maintenance_listen_together),
+        text = stringResource(R.string.listen_together_title),
         icon = { SettingIcon(R.drawable.people, palette.accent) },
         trailingContent = { StatusTrailing(content.ltStatus, content.ltColor, statusColumnWidth) },
     )
@@ -2092,7 +2092,7 @@ private fun ColumnScope.MaintenanceListContent(
         trailingContent = { StatusTrailing(content.discordStatus, content.discordColor, statusColumnWidth) },
     )
     ListMenu.Entry(
-        text = stringResource(R.string.maintenance_lastfm),
+        text = stringResource(R.string.settings_lastfm_title),
         icon = { SettingIcon(R.drawable.logo_lastfm, palette.accent) },
         trailingContent = { StatusTrailing(content.lastfmStatus, content.lastfmColor, statusColumnWidth) },
     )

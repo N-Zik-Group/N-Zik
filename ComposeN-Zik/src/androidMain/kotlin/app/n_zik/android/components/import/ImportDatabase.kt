@@ -1,5 +1,7 @@
 package app.n_zik.android.components.import
 
+import app.n_zik.android.appContext
+import app.n_zik.android.R
 import app.n_zik.android.core.database.*
 
 import android.content.Context
@@ -129,7 +131,7 @@ class ImportDatabase private constructor(
                             onFailure = { e ->
                                 Timber.tag("ImportDatabase").e(e, "Import failed")
                                 withContext(NzikDispatchers.UI) {
-                                    Toaster.e("Import failed: ${e.message}")
+                                    Toaster.e(R.string.backup_import_failed, e.message ?: appContext().getString(R.string.common_error_unknown))
                                 }
                             },
                             isDatabaseClosed = { Database.isClosed },

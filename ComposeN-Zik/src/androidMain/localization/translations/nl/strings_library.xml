@@ -309,7 +309,6 @@
     <string name="recommendations_reset_complete">Snelle keuzes zijn gereset</string>
     <string name="recommendations_reset_description">Delete the playback events used to generate local Quick Picks recommendations.</string>
     <string name="recommendations_section_other_youtube_title">Other sections</string>
-    <string name="recommendations_section_personal_top_title">Mijn top</string>
     <string name="recommendations_section_visibility_description">Uitschakelen als u dit niet wilt zien</string>
     <string name="recommendations_show_section_label">Weergeven</string>
     <string name="recommendations_smart_song_count_description">Set the number of smart recommendations, or let the app adjust it automatically.</string>

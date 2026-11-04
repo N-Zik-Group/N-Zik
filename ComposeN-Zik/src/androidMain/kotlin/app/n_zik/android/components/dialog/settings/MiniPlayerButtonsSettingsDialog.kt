@@ -81,9 +81,9 @@ private fun buildButtonDefs(): Map<String, MiniPlayerButtonDef> = mapOf(
     "skip_forward" to MiniPlayerButtonDef("skip_forward", showMiniPlayerSkipForwardKey, R.drawable.play_skip_forward, R.string.player_action_next, true),
     "like" to MiniPlayerButtonDef("like", showMiniPlayerLikeKey, R.drawable.heart, R.string.player_action_like, false),
     "download" to MiniPlayerButtonDef("download", showMiniPlayerDownloadKey, R.drawable.download, R.string.player_mini_button_download, false),
-    "audio_output" to MiniPlayerButtonDef("audio_output", showMiniPlayerAudioOutputKey, R.drawable.devices, R.string.player_mini_button_audio_output, true),
+    "audio_output" to MiniPlayerButtonDef("audio_output", showMiniPlayerAudioOutputKey, R.drawable.devices, R.string.audio_output_title, true),
     "shuffle" to MiniPlayerButtonDef("shuffle", showMiniPlayerShuffleKey, R.drawable.shuffle, R.string.player_mini_action_shuffle, false),
-    "repeat" to MiniPlayerButtonDef("repeat", showMiniPlayerRepeatKey, R.drawable.repeat, R.string.player_mini_button_repeat, false),
+    "repeat" to MiniPlayerButtonDef("repeat", showMiniPlayerRepeatKey, R.drawable.repeat, R.string.player_action_repeat, false),
     "add_to_playlist" to MiniPlayerButtonDef("add_to_playlist", showMiniPlayerAddToPlaylistKey, R.drawable.add_in_playlist, R.string.player_mini_action_add_to_playlist, false),
     "queue" to MiniPlayerButtonDef("queue", showMiniPlayerQueueKey, R.drawable.reorder, R.string.player_mini_button_queue, false),
     "video" to MiniPlayerButtonDef("video", showMiniPlayerVideoKey, R.drawable.video, R.string.player_mini_button_video, false),
@@ -91,7 +91,7 @@ private fun buildButtonDefs(): Map<String, MiniPlayerButtonDef> = mapOf(
     "radio" to MiniPlayerButtonDef("radio", showMiniPlayerRadioKey, R.drawable.radio, R.string.player_mini_button_radio, false),
     "discover" to MiniPlayerButtonDef("discover", showMiniPlayerDiscoverKey, R.drawable.discover, R.string.player_mini_button_discover, false),
     "sleep_timer" to MiniPlayerButtonDef("sleep_timer", showMiniPlayerSleepTimerKey, R.drawable.sleep, R.string.player_mini_button_sleep_timer, false),
-    "lyrics" to MiniPlayerButtonDef("lyrics", showMiniPlayerLyricsKey, R.drawable.song_lyrics, R.string.player_mini_button_lyrics, false),
+    "lyrics" to MiniPlayerButtonDef("lyrics", showMiniPlayerLyricsKey, R.drawable.song_lyrics, R.string.lyrics_title, false),
     "visualizer" to MiniPlayerButtonDef("visualizer", showMiniPlayerVisualizerKey, R.drawable.sound_effect, R.string.player_mini_button_visualizer, false)
 )
 

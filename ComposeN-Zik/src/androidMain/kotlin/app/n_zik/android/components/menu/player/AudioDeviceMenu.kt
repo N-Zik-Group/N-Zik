@@ -447,7 +447,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                             }
                                         },
                                         modifier = if (dev.isActive) Modifier.background(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape()) else Modifier,
-                                        subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { "Battery: $it%" },
+                                        subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { stringResource(R.string.audio_device_battery_format, it) },
                                         trailingContent = {
                                             AnimatedVisibility(
                                                 visible = dev.isActive,
@@ -601,7 +601,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                             }
                                         }
                                     },
-                                    subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { "Battery: $it%" },
+                                    subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { stringResource(R.string.audio_device_battery_format, it) },
                                     trailingContent = {
                                         AnimatedVisibility(
                                             visible = dev.isActive,
@@ -876,7 +876,7 @@ internal fun loadDevices(
                         } else null
 
                         AudioDevice(
-                            name = customName ?: "Bluetooth Device",
+                            name = customName ?: context.getString(R.string.audio_output_bluetooth_device_label),
                             type = AudioDeviceType.BLUETOOTH,
                             isConnected = true,
                             isActive = false,
@@ -898,7 +898,7 @@ internal fun loadDevices(
                     }
                     AudioDeviceInfo.TYPE_USB_HEADSET, AudioDeviceInfo.TYPE_USB_DEVICE -> {
                         AudioDevice(
-                            name = deviceInfo.productName?.toString() ?: "USB Audio",
+                            name = deviceInfo.productName?.toString() ?: context.getString(R.string.audio_output_usb_audio_label),
                             type = AudioDeviceType.USB_HEADSET,
                             isConnected = true,
                             isActive = false,
@@ -969,7 +969,7 @@ internal fun loadDevices(
             loadDevicesLegacy(context, onSuccess, onError)
         }
     } catch (e: Exception) {
-        onError("Failed to load devices: ${e.message}")
+        onError(context.getString(R.string.audio_output_load_failed, e.message ?: context.getString(R.string.common_unknown)))
     }
 }
 
@@ -1015,16 +1015,16 @@ private fun loadDevicesLegacy(context: Context, onSuccess: (List<AudioDevice>) -
     val devices = mutableListOf<AudioDevice>()
 
     if (audioManager.isBluetoothA2dpOn) {
-        devices.add(AudioDevice("Bluetooth Device", AudioDeviceType.BLUETOOTH, true, true))
+        devices.add(AudioDevice(context.getString(R.string.audio_output_bluetooth_device_label), AudioDeviceType.BLUETOOTH, true, true))
     }
     if (audioManager.isWiredHeadsetOn) {
-        devices.add(AudioDevice("Wired Headphones", AudioDeviceType.WIRED_HEADPHONES, true, true))
+        devices.add(AudioDevice(context.getString(R.string.audio_output_wired_headphones_label), AudioDeviceType.WIRED_HEADPHONES, true, true))
     }
     if (audioManager.isSpeakerphoneOn) {
-        devices.add(AudioDevice("External Speaker", AudioDeviceType.EXTERNAL_SPEAKER, true, true))
+        devices.add(AudioDevice(context.getString(R.string.audio_output_external_speaker_label), AudioDeviceType.EXTERNAL_SPEAKER, true, true))
     }
     if (devices.isEmpty() || !devices.any { it.isActive }) {
-        devices.add(AudioDevice("Phone Speaker", AudioDeviceType.PHONE_SPEAKER, true, true))
+        devices.add(AudioDevice(context.getString(R.string.audio_output_phone_speaker_label), AudioDeviceType.PHONE_SPEAKER, true, true))
     }
     onSuccess(devices.filter { it.isActive }.take(1))
 }
