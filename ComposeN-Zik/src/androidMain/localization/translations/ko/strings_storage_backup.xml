@@ -21,7 +21,7 @@
     <string name="backup_before_update_failed">Pre-install backup failed</string>
     <string name="backup_before_update_running_message">Backing up data before installation…</string>
     <string name="backup_before_update_running_title">Backup in progress</string>
-    <string name="backup_excluded_preferences_and_cache_description">Personal preferences (i.e. the theme mode) and the cache are excluded.</string>
+    <string name="backup_excluded_preferences_and_cache_description">개인 설정(예: 테마 모드)과 캐시는 제외됩니다.</string>
     <string name="backup_export_description">Export database or settings to a file</string>
     <string name="backup_import_description">Import database or settings from a file</string>
     <string name="backup_include_discord_credentials">Include Discord identity credentials</string>
@@ -31,16 +31,16 @@
     <string name="backup_legacy_migration_description">For old users before conversion.\nUse old app to make a backup for migration.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Existing data will be overwritten. %1$s will automatically close itself after restoring the database.</string>
     <string name="backup_target_database_and_settings_label">Database + Settings</string>
-    <string name="backup_target_database_label">Database</string>
+    <string name="backup_target_database_label">데이터베이스</string>
     <!-- Backup Auto -->
     <string name="backup_auto_custom_interval_unit">Custom Interval Unit</string>
     <string name="backup_auto_custom_interval_value">Custom Interval Value</string>
     <string name="backup_auto_interval">Auto Backup Interval</string>
-    <string name="backup_auto_interval_custom">Custom</string>
+    <string name="backup_auto_interval_custom">맞춤 설정</string>
     <string name="backup_auto_interval_daily">Daily</string>
     <string name="backup_auto_interval_hourly">Hourly</string>
     <string name="backup_auto_interval_monthly">Monthly</string>
-    <string name="backup_auto_interval_none">Disabled</string>
+    <string name="backup_auto_interval_none">비활성화</string>
     <string name="backup_auto_interval_weekly">Weekly</string>
     <string name="backup_auto_location">Auto Backup Location</string>
     <string name="backup_auto_location_not_set">Not set</string>
@@ -85,30 +85,30 @@
     <string name="cache_downloads_max_size_description">Choose how much disk space is available for downloaded songs. The trash button removes downloaded audio.</string>
     <string name="cache_image_max_size_description">Limit disk space used by cached artwork. The trash button clears downloaded images from this cache.</string>
     <string name="cache_location_description">Choose where the app stores its song playback cache.</string>
-    <string name="cache_location_private">Private</string>
-    <string name="cache_location_system">System</string>
+    <string name="cache_location_private">비공개</string>
+    <string name="cache_location_system">시스템</string>
     <string name="cache_streaming_max_size_description">Limit disk space used to cache streamed songs. The trash button clears this playback cache.</string>
     <!-- Downloads -->
-    <string name="downloads_action_download_all">Download all songs</string>
+    <string name="downloads_action_download_all">모든 곡 다운로드</string>
     <string name="downloads_action_refresh_quality">Update downloads</string>
-    <string name="downloads_action_remove_all">Remove all downloaded songs</string>
+    <string name="downloads_action_remove_all">모든 다운로드된 곡 삭제</string>
     <string name="downloads_action_resume">Resume</string>
     <string name="downloads_audio_quality_description">Choose the preferred audio format and quality for new downloads.</string>
     <string name="downloads_cancelled">Download cancelled</string>
     <string name="downloads_completed">%1$d completed</string>
     <string name="downloads_completed_with_failed">%1$d completed, %2$d failed</string>
-    <string name="downloads_delete_all_confirmation">Do you really want to delete download?</string>
+    <string name="downloads_delete_all_confirmation">정말로 다운로드를 삭제하실건가요?</string>
     <string name="downloads_delete_all_count_confirmation">Delete all %d downloads?</string>
     <string name="downloads_delete_dialog_title">Delete downloads</string>
-    <string name="downloads_download_all_confirmation">Do you really want to download all?</string>
+    <string name="downloads_download_all_confirmation">정말로 모든 곡을 다운로드하실 건가요?</string>
     <string name="downloads_download_all_count_confirmation">Download all %d songs?</string>
     <string name="downloads_download_dialog_title">Download songs</string>
     <string name="downloads_empty_message">Nothing to download</string>
-    <string name="downloads_error_network">A network error has occurred</string>
-    <string name="downloads_error_server_restriction">This song cannot be played due to server restrictions</string>
+    <string name="downloads_error_network">네트워크 오류가 발생했습니다</string>
+    <string name="downloads_error_server_restriction">서버 제한으로 인해 이 곡을 재생할 수 없습니다</string>
     <string name="downloads_failed">Download failed</string>
     <string name="downloads_in_progress">%1$d in progress</string>
-    <string name="downloads_nothing_to_delete">Nothing to Delete</string>
+    <string name="downloads_nothing_to_delete">삭제할 항목 없음</string>
     <string name="downloads_progress">%1$d / %2$d</string>
     <string name="downloads_quality">Download quality</string>
     <string name="downloads_quality_format">Download Quality</string>
@@ -117,7 +117,7 @@
     <string name="downloads_refresh_quality_description">Re-download the songs that were downloaded with a different quality</string>
     <string name="downloads_stale_removed">%1$s download data is missing and was removed. Please download it again.</string>
     <string name="downloads_stale_startup_removed">%1$d downloaded song(s) are missing their files and were removed. Please download them again.</string>
-    <string name="downloads_title">Download</string>
+    <string name="downloads_title">다운로드</string>
     <!-- Export -->
     <string name="export_cached_song_action">Export cached or downloaded song</string>
     <string name="export_cached_songs_action">Export cached</string>
