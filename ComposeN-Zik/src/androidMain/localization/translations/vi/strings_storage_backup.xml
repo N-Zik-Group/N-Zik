@@ -21,7 +21,7 @@
     <string name="backup_before_update_failed">Pre-install backup failed</string>
     <string name="backup_before_update_running_message">Backing up data before installation…</string>
     <string name="backup_before_update_running_title">Backup in progress</string>
-    <string name="backup_excluded_preferences_and_cache_description">Personal preferences (i.e. the theme mode) and the cache are excluded.</string>
+    <string name="backup_excluded_preferences_and_cache_description">Tùy chỉnh cá nhân (vd chế độ nền) sẽ bị bỏ qua.</string>
     <string name="backup_export_description">Export database or settings to a file</string>
     <string name="backup_import_description">Import database or settings from a file</string>
     <string name="backup_include_discord_credentials">Include Discord identity credentials</string>
@@ -31,7 +31,7 @@
     <string name="backup_legacy_migration_description">For old users before conversion.\nUse old app to make a backup for migration.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Existing data will be overwritten. %1$s will automatically close itself after restoring the database.</string>
     <string name="backup_target_database_and_settings_label">Database + Settings</string>
-    <string name="backup_target_database_label">Database</string>
+    <string name="backup_target_database_label">Cơ sở dữ liệu</string>
     <!-- Backup Auto -->
     <string name="backup_auto_custom_interval_unit">Custom Interval Unit</string>
     <string name="backup_auto_custom_interval_value">Custom Interval Value</string>
@@ -86,7 +86,7 @@
     <string name="cache_image_max_size_description">Limit disk space used by cached artwork. The trash button clears downloaded images from this cache.</string>
     <string name="cache_location_description">Choose where the app stores its song playback cache.</string>
     <string name="cache_location_private">Private</string>
-    <string name="cache_location_system">System</string>
+    <string name="cache_location_system">Hệ thống</string>
     <string name="cache_streaming_max_size_description">Limit disk space used to cache streamed songs. The trash button clears this playback cache.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Download all songs</string>
@@ -104,7 +104,7 @@
     <string name="downloads_download_all_count_confirmation">Download all %d songs?</string>
     <string name="downloads_download_dialog_title">Download songs</string>
     <string name="downloads_empty_message">Nothing to download</string>
-    <string name="downloads_error_network">A network error has occurred</string>
+    <string name="downloads_error_network">Đã xảy ra lỗi mạng</string>
     <string name="downloads_error_server_restriction">This song cannot be played due to server restrictions</string>
     <string name="downloads_failed">Download failed</string>
     <string name="downloads_in_progress">%1$d in progress</string>
@@ -117,7 +117,7 @@
     <string name="downloads_refresh_quality_description">Re-download the songs that were downloaded with a different quality</string>
     <string name="downloads_stale_removed">%1$s download data is missing and was removed. Please download it again.</string>
     <string name="downloads_stale_startup_removed">%1$d downloaded song(s) are missing their files and were removed. Please download them again.</string>
-    <string name="downloads_title">Download</string>
+    <string name="downloads_title">Tải về</string>
     <!-- Export -->
     <string name="export_cached_song_action">Export cached or downloaded song</string>
     <string name="export_cached_songs_action">Export cached</string>
