@@ -209,7 +209,7 @@
     <string name="playlist_action_export">تصدير قائمة التشغيل</string>
     <string name="playlist_action_import">استيراد قائمة التشغيل</string>
     <string name="playlist_action_import_favorites">استيراد المفضلة</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
+    <string name="playlist_action_like_favorites_on_youtube">مثل N-Zik المفضلة على اليوتيوب</string>
     <string name="playlist_action_remove_songs">ازالة من قائمة التشغيل</string>
     <string name="playlist_action_remove_songs_outside_library">حذف الأغاني غير الموجودة في المكتبة</string>
     <string name="playlist_action_rename">إعادة تسمية</string>
@@ -247,7 +247,7 @@
     <string name="playlist_refresh_on_open_disable">تعطيل التحديث عند الفتح</string>
     <string name="playlist_refresh_on_open_enable">تمكين التحديث عند الفتح</string>
     <string name="playlist_remove_selected_confirmation">إزالة الأغاني المحددة من قائمة التشغيل هذه؟</string>
-    <string name="playlist_remove_songs_confirmation">هل أنت متأكد من أنك تريد إزالة هذه الأغاني %d من قائمة التشغيل؟</string>
+    <string name="playlist_remove_songs_confirmation">إزالة التحديد من قائمة التشغيل؟ المسارات المحددة: %d</string>
     <string name="playlist_rename_dialog_title">إعادة تسمية قائمة التشغيل</string>
     <string name="playlist_reorder_ascending_sort_required_message">Reorder is possible only in ascending sort</string>
     <string name="playlist_reorder_lock_toggle_label">قفل/فتح إعادة ترتيب الأغاني</string>
@@ -340,7 +340,6 @@
     <string name="search_display_order_suggestions_first">الاقتراحات أولاً</string>
     <string name="search_featured_title">مميز</string>
     <string name="search_history_action_clear">حذف سجل البحث</string>
-    <string name="search_history_close">أغلق</string>
     <string name="search_history_empty_message">السجل فارغ</string>
     <string name="search_history_local">البحث المحلي</string>
     <string name="search_history_online">البحث عبر الإنترنت</string>
@@ -391,4 +390,7 @@
     <string name="metadata_save_failed">فشل في حفظ البيانات الوصفية</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
     <string name="recommendations_charts_global">عام</string>
+    <string name="playlist_like_all_duration_confirmation_format">إعجاب جميع الأغاني سوف تأخذ حوالي %1$s. أغلق التطبيق لإلغائه. هل تريد الاستمرار؟</string>
+    <string name="library_on_device_permission_request_failed">تعذر طلب الوصول إلى الموسيقى على هذا الجهاز.</string>
+    <string name="library_on_device_permission_settings_failed">تعذر فتح إعدادات الإذن.</string>
 </resources>
