@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_color_picker_title">Choose color</string>
-    <string name="common_content_explicit_label">Täsmälleen</string>
+    <string name="common_content_explicit_label">Explicit</string>
     <string name="common_debug_title">Debug</string>
     <string name="common_information_title">Tietoja</string>
     <string name="common_limit_unlimited_label">Rajoittamaton</string>
