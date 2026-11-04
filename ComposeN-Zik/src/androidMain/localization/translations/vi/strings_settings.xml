@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">I\'m feeling lucky</string>
     <string name="automotive_action_play_all">Play All</string>
     <string name="automotive_title">Android Auto</string>
+    <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Choose the action performed by swiping an album track left.</string>
     <string name="gestures_album_track_swipe_right_description">Choose the action performed by swiping an album track right.</string>
     <string name="gestures_playlist_track_swipe_left_description">Choose the action performed by swiping a playlist track left.</string>
     <string name="gestures_playlist_track_swipe_right_description">Choose the action performed by swiping a playlist track right.</string>
     <string name="gestures_queue_item_swipe_left_description">Choose the action performed by swiping a queue item left.</string>
     <string name="gestures_queue_item_swipe_right_description">Choose the action performed by swiping a queue item right.</string>
+    <!-- Language -->
     <string name="language_app_selection_description">Choose the language used for app labels and messages.</string>
     <string name="language_name_afrikaans">Afrikaans (Afrikaans)</string>
     <string name="language_name_arabic">Arabic (العربية)</string>
@@ -21,7 +24,7 @@
     <string name="language_name_czech">Czech (Čeština)</string>
     <string name="language_name_danish">Danish (Dansk)</string>
     <string name="language_name_dutch">Dutch (Nederlands)</string>
-    <string name="language_name_english">Tiếng Anh</string>
+    <string name="language_name_english">English</string>
     <string name="language_name_esperanto">Esperanto (Esperanto)</string>
     <string name="language_name_estonian">Estonian (eesti keel)</string>
     <string name="language_name_filipino">Filipino (Tagalog)</string>
@@ -36,7 +39,7 @@
     <string name="language_name_indonesian">Indonesian (Indonesia)</string>
     <string name="language_name_interlingua">Interlingua</string>
     <string name="language_name_irish">Irish (Gaeilge)</string>
-    <string name="language_name_italian">Italiano (Tiếng Ý)</string>
+    <string name="language_name_italian">Italian (Italiano)</string>
     <string name="language_name_japanese">Japanese (日本語)</string>
     <string name="language_name_korean">Korean (한국인)</string>
     <string name="language_name_malayalam">Malayam (മലയാളം)</string>
@@ -58,7 +61,8 @@
     <string name="language_name_turkish">Turkish (Türkçe)</string>
     <string name="language_name_ukrainian">Ukrainian (Українська)</string>
     <string name="language_name_vietnamese">Vietnamese (tiếng Việt)</string>
-    <string name="language_system_default">Ngôn ngữ hệ thống</string>
+    <string name="language_system_default">System language</string>
+    <!-- Navigation -->
     <string name="navigation_action_picture_in_picture">PIP</string>
     <string name="navigation_back_again_to_exit_message">Press once again to exit</string>
     <string name="navigation_position_bottom_floating_label">Bottom Floating</string>
@@ -66,8 +70,10 @@
     <string name="navigation_position_top_label">Trên</string>
     <string name="navigation_style_icon_and_text_label">Icon and text</string>
     <string name="navigation_style_icon_only_label">Only icon</string>
+    <!-- Parental -->
     <string name="parental_control">Parental control</string>
     <string name="parental_control_is_enabled">Parental control is enabled</string>
+    <!-- Permissions -->
     <string name="permissions_event_denied">Permission denied</string>
     <string name="permissions_event_granted">Permission granted</string>
     <string name="permissions_event_requested">Permission requested</string>
@@ -102,9 +108,11 @@
     <string name="permissions_label_microphone">Microphone / audio capture</string>
     <string name="permissions_label_notifications">Notifications</string>
     <string name="permissions_usage_journal">Permission activity</string>
+    <!-- Privacy -->
     <string name="privacy_block_screenshots">Block screenshots</string>
     <string name="privacy_block_screenshots_description">Prevent screenshots and screen recordings of N-Zik, and hide its content on non-secure displays. Applies immediately for this profile.</string>
     <string name="privacy_screen_protection">Screen protection</string>
+    <!-- Settings -->
     <string name="audio_loudness_boost_level">Loudness boost level</string>
     <string name="common_error_no_document_handler">Couldn\'t find an application to open documents</string>
     <string name="common_translation_title">Translation</string>
@@ -159,10 +167,10 @@
     <string name="settings_category_behavior">Behavior</string>
     <string name="settings_category_interface">Theme &amp; Interface</string>
     <string name="settings_category_maintenance">Maintenance &amp; Extensions</string>
-    <string name="settings_category_player">Trình phát</string>
+    <string name="settings_category_player">Player</string>
     <string name="settings_category_privacy">Privacy</string>
     <string name="settings_category_services">Services</string>
-    <string name="settings_category_system">Hệ thống</string>
+    <string name="settings_category_system">System</string>
     <string name="settings_current_value">Current value: %1$s</string>
     <string name="settings_data_page_description">The data section contains settings that modify how the app handles data locally and remotely</string>
     <string name="settings_data_title">Data</string>
@@ -289,6 +297,8 @@
     <string name="settings_parental_age_restriction_description">Prevent play songs with age limitation</string>
     <string name="settings_picture_in_picture_android_12_auto_description">From Android 12 pip can be automatically enabled</string>
     <string name="settings_picture_in_picture_artwork_module_label">Cover</string>
+    <string name="settings_picture_in_picture_open">Open picture-in-picture</string>
+    <string name="settings_picture_in_picture_open_failed">Couldn’t open picture-in-picture. Check app info settings on your android to allows it for N-Zik.</string>
     <string name="settings_picture_in_picture_title">Picture in Picture</string>
     <string name="settings_pip_module">Pip module</string>
     <string name="settings_playback_duration_limit_description">Songs with duration exceeding the limit will be excluded from the Top songs and playback queue</string>
@@ -351,7 +361,7 @@
     <string name="settings_player_disable_text_marquee_description">Scrolling text is used for long texts</string>
     <string name="settings_player_disable_text_marquee_label">Disable scrolling text</string>
     <string name="settings_player_disable_vertical_song_swipe_label">Disable song switching via Vertical swipe</string>
-    <string name="settings_player_expanded_artwork_size_label">Size of Carousel</string>
+    <string name="settings_player_expanded_artwork_size_label">Thumbnail Size in Expanded Mode</string>
     <string name="settings_player_expanded_label">Expanded Player</string>
     <string name="settings_player_favorite_button_style_label">Favorite button</string>
     <string name="settings_player_gradient_style_label">Gradient Type</string>
@@ -379,7 +389,7 @@
     <string name="settings_player_seek_time_buttons_label">Skip time buttons</string>
     <string name="settings_player_start_minimized_description">When clicking on a song, player start minimized</string>
     <string name="settings_player_stop_on_task_removal_description">When app swipe out from task manager</string>
-    <string name="settings_player_stop_on_task_removal_label">Đóng trình phát nền</string>
+    <string name="settings_player_stop_on_task_removal_label">Close background player</string>
     <string name="settings_player_tap_artwork_toggle_lyrics_description">By tapping on the thumbnail</string>
     <string name="settings_player_tap_artwork_toggle_lyrics_label">Toggle lyrics</string>
     <string name="settings_player_text_outline_label">Enable Text Outline</string>
@@ -416,7 +426,7 @@
     <string name="settings_section_backup_and_restore_title">Backup and restore</string>
     <string name="settings_section_contributors_title">Contributors</string>
     <string name="settings_section_fullscreen_lyrics_title">Fullscreen lyrics components</string>
-    <string name="settings_section_notification_player_title">Notification Player</string>
+    <string name="settings_section_notification_player_title">Notification player</string>
     <string name="settings_section_player_action_bar_title">Player action bar</string>
     <string name="settings_section_proxy_title">Proxy</string>
     <string name="settings_section_service_lifetime_title">Service lifetime</string>
@@ -424,11 +434,11 @@
     <string name="settings_section_troubleshooting_title">Troubleshooting</string>
     <string name="settings_service_action_disable_background_restrictions">Disable background restrictions</string>
     <string name="settings_service_android_12_requirement_description">Since Android 12, disabling battery optimizations is required for the \"Invisible service\" option to take effect.</string>
-    <string name="settings_service_battery_optimizations_warning">Nếu bật tối ưu hóa pin, thông báo trình phát có thể sẽ bị xóa khi đang ngưng phát nhạc.</string>
+    <string name="settings_service_battery_optimizations_warning">If battery optimizations are applied, the playback notification can suddenly disappear when paused.</string>
     <string name="settings_service_battery_settings_unavailable_message">Couldn\'t find battery optimization settings, please whitelist manually</string>
     <string name="settings_service_battery_status_message_format">%1$s %2$s</string>
     <string name="settings_service_battery_unrestricted_status">Already unrestricted</string>
-    <string name="settings_service_ignore_battery_optimizations_label">Bỏ qua tối ưu hóa pin</string>
+    <string name="settings_service_ignore_battery_optimizations_label">Ignore battery optimizations</string>
     <string name="settings_service_keep_screen_on_description">Prevents screen timeout</string>
     <string name="settings_service_keep_screen_on_label">Keep screen on</string>
     <string name="settings_service_lifetime_battery_optimization_exemption_description">Allow unrestricted background operation so the system is less likely to interrupt playback.</string>
@@ -457,7 +467,7 @@
     <string name="settings_theme_light_colors_reset_confirmation">Do you really want to reset the custom light theme colors?</string>
     <string name="settings_theme_light_colors_reset_description">Click to reset default light colors</string>
     <string name="settings_theme_light_colors_reset_title">Reset customized light colors</string>
-    <string name="settings_theme_light_mode_label">Sáng</string>
+    <string name="settings_theme_light_mode_label">Light</string>
     <string name="settings_theme_mode_label">Kiểu giao diện</string>
     <string name="settings_theme_player_button_icon_color_label">Player button icon</string>
     <string name="settings_theme_primary_text_color_label">Text</string>
@@ -474,7 +484,7 @@
     <string name="settings_visualizer_remember_state_label">Save visualizer state</string>
     <string name="settings_youtube_authenticated_browsing_description">Use login for browse requests (home, explore, etc.)</string>
     <string name="settings_youtube_authenticated_browsing_label">Login for Browse</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest without your account, so they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Use account for searches</string>
     <string name="settings_youtube_clear_synced_data_confirmation">Clear all data synced from YouTube? This will remove liked songs, albums, artists, and playlists imported from YouTube.</string>
     <string name="settings_youtube_clear_synced_data_dialog_title">Clear YouTube synced data</string>
