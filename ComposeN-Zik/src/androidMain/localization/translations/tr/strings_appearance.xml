@@ -55,8 +55,8 @@
     <string name="glass_effect_navigation_header">Başlık kontrolleri</string>
     <string name="glass_effect_navigation_header_description">N-Zik logosunun yanındaki Geri, Arama ve Profil düğmeleri.</string>
     <string name="glass_effect_navigation_summary">N-Zik logosunun yanındaki sekme çubuğunu ve düğmeleri değiştirin.</string>
-    <string name="glass_effect_optimization_description">Reduce or disable background Glass effects when a menu, dialog, or other overlay is open to avoid stacking expensive blur and refraction effects. Disable with caution: the app may become significantly slower.</string>
-    <string name="glass_effect_optimization_title">Glass optimization</string>
+    <string name="glass_effect_optimization_description">Menü, iletişim kutusu veya başka bir üst katman açıkken, kaynak tüketen bulanıklık ve kırılma efektlerinin üst üste binmesini önlemek için arka plandaki Cam efektlerini azaltın veya devre dışı bırakın. Devre dışı bırakırken dikkatli olun: uygulama önemli ölçüde yavaşlayabilir.</string>
+    <string name="glass_effect_optimization_title">Cam optimizasyonu</string>
     <string name="glass_effect_pages_summary">Ana Sayfa, Arama ve diğer sayfalar için bir görünüm seçin.</string>
     <string name="glass_effect_playback_summary">Küçük oynatıcıyı, tam ekran oynatıcıyı ve kuyruğu değiştirin.</string>
     <string name="glass_effect_quality_balanced">Dengeli</string>
@@ -123,8 +123,8 @@
     <string name="glass_effect_role_visualizer_description">Görselleştiriciyle birlikte kullanılan oklar ve Ayarlar düğmesi.</string>
     <string name="glass_effect_shared_summary">Uygulama için standart görünümü seçin. Diğer gruplar, belirli kısımları değiştirmenize olanak tanır.</string>
     <string name="glass_effect_summary">Cam efekti yüzeylerini, renklerini, kenarlarını ve kalitesini özelleştirin.</string>
-    <string name="glass_effect_switches_description">Use liquid Glass switches with the shared material and interaction effects when Glass is enabled.</string>
-    <string name="glass_effect_switches_title">Glass switches</string>
+    <string name="glass_effect_switches_description">Cam özelliği etkinleştirildiğinde, ortak materyal ve etkileşim efektlerine sahip sıvı Cam anahtarlarını kullanın.</string>
+    <string name="glass_effect_switches_title">Cam anahtarlar</string>
     <string name="glass_effect_tint">Renk tonu</string>
     <string name="glass_effect_tint_none">Yok</string>
     <string name="glass_effect_tint_source">Cam rengi kaynağı</string>
@@ -234,5 +234,5 @@
     <string name="thumbnail_not_selected">Küçük Resim Seçilmedi</string>
     <string name="thumbnail_remove_failed">Küçük Resmi Kaldırma Başarısız</string>
     <string name="thumbnail_remove_success">Küçük Resim Kaldırıldı</string>
-    <string name="glass_effect_rendering_quality">Rendering quality</string>
+    <string name="glass_effect_rendering_quality">İşleme kalitesi</string>
 </resources>
