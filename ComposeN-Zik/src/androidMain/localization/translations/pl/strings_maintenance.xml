@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Logs -->
     <string name="logs_action_export">Export logs</string>
     <string name="logs_action_export_both">Export both logs</string>
     <string name="logs_action_export_crash">Export crash log</string>
@@ -7,6 +8,7 @@
     <string name="logs_export_both_description">Export debug and crash logs to a file</string>
     <string name="logs_export_crash_description">Export crash log to a file</string>
     <string name="logs_export_debug_description">Export debug log to a file</string>
+    <!-- Maintenance -->
     <string name="maintenance_all_systems_ok">All systems operational</string>
     <string name="maintenance_auto_update">Auto update</string>
     <string name="maintenance_backup">Auto backup</string>
@@ -61,7 +63,7 @@
     <string name="maintenance_jobs_none">No jobs</string>
     <string name="maintenance_last_crash">Last crash</string>
     <string name="maintenance_lastfm_active">Session active</string>
-    <string name="maintenance_library">Biblioteka</string>
+    <string name="maintenance_library">Library</string>
     <string name="maintenance_library_albums">%d albums</string>
     <string name="maintenance_library_artists">%d artists</string>
     <string name="maintenance_library_listened">%d listened</string>
@@ -90,11 +92,11 @@
     <string name="maintenance_pass_skipped">%d item(s) skipped</string>
     <string name="maintenance_refresh">Refresh</string>
     <string name="maintenance_section_caches_downloads">Caches &amp; downloads</string>
-    <string name="maintenance_section_database">Baza danych</string>
+    <string name="maintenance_section_database">Database</string>
     <string name="maintenance_section_jobs">Jobs</string>
     <string name="maintenance_section_library_sync">Library &amp; sync</string>
     <string name="maintenance_section_services">Services</string>
-    <string name="maintenance_section_system">Systemu</string>
+    <string name="maintenance_section_system">System</string>
     <string name="maintenance_settings_size">Settings size</string>
     <string name="maintenance_skip_custom_name">Custom name</string>
     <string name="maintenance_skip_network_failure">Network failure (retried next launch)</string>
@@ -112,7 +114,7 @@
     <string name="maintenance_title">Maintenance</string>
     <string name="maintenance_update_completed">Update ready</string>
     <string name="maintenance_update_downloading">Downloading %s</string>
-    <string name="maintenance_update_failed">Pobieranie nie powiodło się</string>
+    <string name="maintenance_update_failed">Download failed</string>
     <string name="maintenance_update_unavailable">Not available</string>
     <string name="maintenance_work_cancelled">Cancelled</string>
     <string name="maintenance_work_failed">Failed</string>
@@ -123,6 +125,7 @@
     <string name="maintenance_yt_invalid">Invalid</string>
     <string name="maintenance_yt_session">YouTube session</string>
     <string name="maintenance_yt_valid">Valid</string>
+    <!-- Modules -->
     <string name="modules_abi">ABI</string>
     <string name="modules_already_installed">Already installed</string>
     <string name="modules_bundled_libraries">Bundled libraries</string>
@@ -156,6 +159,7 @@
     <string name="modules_update_available_body">Version %1$s is installed. The app now ships %2$s.</string>
     <string name="modules_updating">Updating module</string>
     <string name="modules_version">Version</string>
+    <!-- Recovery -->
     <string name="recovery_accounts_exported">Profile state exported</string>
     <string name="recovery_accounts_imported_base">Profile state imported: base profile</string>
     <string name="recovery_accounts_imported_count">Profile state imported: %1$d profiles</string>
@@ -177,14 +181,14 @@
     <string name="recovery_confirm_reset_database">Reset the database? A backup will be kept for restoration.</string>
     <string name="recovery_confirm_reset_database_replace_backup">Reset the database? The backup from your previous reset will be replaced and can no longer be restored. Only the database being reset is kept.</string>
     <string name="recovery_confirm_reset_profiles">Reset the selected profiles? Their database, settings, custom name and photo are deleted permanently. The profiles stay in the list, starting empty. This cannot be undone.</string>
-    <string name="recovery_confirm_reset_settings">Reset all settings and credentials? This cannot be undone.</string>
+    <string name="recovery_confirm_reset_settings">Reset all settings and credentials? A backup is kept so you can restore it from the Rescue Center.</string>
     <string name="recovery_confirm_reset_settings_replace_backup">Reset all settings and credentials? The settings backup from your previous reset will be replaced and can no longer be restored. Only the settings being reset are kept.</string>
     <string name="recovery_confirm_restore_database">Restore the backed-up database? The current one will become the new backup.</string>
     <string name="recovery_confirm_restore_profiles">Restore the selected profiles from their last reset? Their current state is replaced by the backup.</string>
     <string name="recovery_confirm_restore_settings">Are you sure you want to restore settings? The app will overwrite current settings and use the restored settings on next launch. The Rescue Center will close once they are restored.</string>
     <string name="recovery_cross_profile_confirm">This file was created for the profile \"%1$s\", but the target is \"%2$s\". Import it anyway?</string>
     <string name="recovery_delete_backups">Delete backups</string>
-    <string name="recovery_delete_backups_description">Delete the saved database and settings backups from cache to free space</string>
+    <string name="recovery_delete_backups_description">Delete the saved database and settings backups to free space. They can no longer be restored.</string>
     <string name="recovery_delete_downloads">Delete downloads</string>
     <string name="recovery_delete_downloads_description">Delete all downloaded media to free up space</string>
     <string name="recovery_delete_logs">Delete logs</string>
@@ -193,7 +197,7 @@
     <string name="recovery_delete_profiles_description">Delete user profiles with their database, settings, name and photo</string>
     <string name="recovery_encrypted_unavailable_warning">Saved credentials could not be accessed (keystore unavailable). Only regular settings were processed.</string>
     <string name="recovery_error">An error occurred: %s</string>
-    <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
+    <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. The app must be stopped first: tap \"Kill the app\" in the Danger Zone, then wait for the status to show that the app is stopped.</string>
     <string name="recovery_export_database">Export database</string>
     <string name="recovery_export_database_description">Save your library, playlists and history</string>
     <string name="recovery_export_logs">Export logs</string>
@@ -202,10 +206,10 @@
     <string name="recovery_export_settings">Export settings</string>
     <string name="recovery_export_settings_description">Save your preferences to a CSV file</string>
     <string name="recovery_group_app">App</string>
-    <string name="recovery_group_database">Baza danych</string>
+    <string name="recovery_group_database">Database</string>
     <string name="recovery_group_logs">Logs</string>
     <string name="recovery_group_profiles">Profiles</string>
-    <string name="recovery_group_settings">Ustawienia</string>
+    <string name="recovery_group_settings">Settings</string>
     <string name="recovery_group_storage">Storage</string>
     <string name="recovery_import_database">Import database</string>
     <string name="recovery_import_database_description">Restore a previously exported database</string>
@@ -217,7 +221,7 @@
     <string name="recovery_include_youtube_credentials">Include YouTube credentials</string>
     <string name="recovery_kill_app">Kill the app</string>
     <string name="recovery_kill_app_description">Force the app process to end if the automatic stop did not work</string>
-    <string name="recovery_main_process_running">Close the main app before performing this action</string>
+    <string name="recovery_main_process_running">The app is still running, so this action is blocked. Tap \"Kill the app\" in the Danger Zone to retry the shutdown, then wait for the status to show that the app is stopped.</string>
     <string name="recovery_no_backup">No backup available</string>
     <string name="recovery_no_backups_to_delete">No backups found</string>
     <string name="recovery_no_logs">No log files found</string>
@@ -228,49 +232,50 @@
     <string name="recovery_profile_active">Active</string>
     <string name="recovery_profile_base">Base</string>
     <string name="recovery_profile_target_description">Data actions below operate on the selected profile</string>
-    <string name="recovery_profiles_deleted_active_restart">The current profile was deleted: the base profile is now active — relaunch the app</string>
+    <string name="recovery_profiles_deleted_active_restart">The current profile was deleted: the base profile is now active. Relaunch the app</string>
     <string name="recovery_profiles_deleted_count">Deleted %1$d profile(s)</string>
-    <string name="recovery_profiles_reset_count">Reset %1$d profile(s) — relaunch the app</string>
-    <string name="recovery_profiles_restored_count">Restored %1$d profile(s) — relaunch the app</string>
+    <string name="recovery_profiles_reset_count">Reset %1$d profile(s). Relaunch the app</string>
+    <string name="recovery_profiles_restored_count">Restored %1$d profile(s): relaunch the app</string>
     <string name="recovery_profiles_to_delete">Profiles to delete</string>
     <string name="recovery_profiles_to_reset">Profiles to reset</string>
     <string name="recovery_profiles_to_restore">Profiles to restore</string>
     <string name="recovery_reset_database">Reset database</string>
     <string name="recovery_reset_database_description">Set aside the current database and start fresh</string>
     <string name="recovery_reset_profiles">Reset profiles</string>
-    <string name="recovery_reset_profiles_description">Factory-reset user profiles: their database, settings, name and photo are deleted — they stay in the list</string>
+    <string name="recovery_reset_profiles_description">Factory-reset the profiles (base included): their database, settings, name and photo are deleted they stay in the list</string>
     <string name="recovery_reset_settings">Reset settings</string>
     <string name="recovery_reset_settings_description">Clear all preferences and credentials</string>
     <string name="recovery_restore_database">Restore database</string>
     <string name="recovery_restore_database_description">Swap back to the database from the last reset</string>
     <string name="recovery_restore_profiles">Restore profiles</string>
-    <string name="recovery_restore_profiles_description">Restore user profiles reset earlier: their database, settings, name and photo come back from the last reset</string>
+    <string name="recovery_restore_profiles_description">Restore the profiles reset earlier (base included): their database, settings, name and photo come back from the last reset</string>
     <string name="recovery_restore_settings">Restore settings</string>
     <string name="recovery_restore_settings_description">Restore app settings from the last reset</string>
-    <string name="recovery_status_main_process_stopped">The app is stopped — no kill action needed</string>
+    <string name="recovery_status_main_process_stopped">The app is stopped: no kill action needed</string>
     <string name="recovery_status_main_process_stopping">The app is shutting down…</string>
     <string name="recovery_success">Zatwierdź</string>
+    <!-- Updates -->
     <string name="updates_action_check">Sprawdź aktualizacje</string>
     <string name="updates_action_check_now">Sprawdź teraz</string>
     <string name="updates_action_download_current_version">Pobierz ponownie ostatnią aktualizację</string>
     <string name="updates_action_install">Zainstaluj</string>
     <string name="updates_action_open_download">Przejdź do pobrania</string>
-    <string name="updates_automatic_check_description">Pokaż powiadomienie, aby wyświetlić informację o aktualizacji aplikacji, gdy nowa wersja jest dostępna.</string>
+    <string name="updates_automatic_check_description">Show notification to prompt app update when new version is available.</string>
     <string name="updates_automatic_check_title">Włącz automatyczne sprawdzanie aktualizacji</string>
     <string name="updates_available">Dostępna jest aktualizacja</string>
     <string name="updates_available_download_size">Rozmiar pliku to %s</string>
     <string name="updates_available_version_message">Nowa wersja %s może zostać pobrana!</string>
-    <string name="updates_beta_enabled_label">Aktualizacje beta</string>
-    <string name="updates_beta_to_stable_warning_message">Przełączasz się z powrotem do stabilnej budowli. Ponieważ używałeś wersji Beta, Zaleca się wykonanie kopii zapasowej danych i całkowite zresetowanie aplikacji (wyczyszczenie danych lub ponowna instalacja), aby zapewnić stabilność przed zgłoszeniem jakichkolwiek problemów.</string>
-    <string name="updates_beta_to_stable_warning_title">Przełączanie z powrotem do Stajni</string>
+    <string name="updates_beta_enabled_label">Beta Updates</string>
+    <string name="updates_beta_to_stable_warning_message">You are switching back to a Stable build. Since you were using a Beta build, it is highly recommended to backup your data and completely reset the app (clear data or reinstall) to ensure stability before reporting any issue.</string>
+    <string name="updates_beta_to_stable_warning_title">Switching back to Stable Build</string>
     <string name="updates_build_beta_label">BETA</string>
     <string name="updates_build_debug_label">DEBUG</string>
     <string name="updates_build_dev_label">DEV</string>
-    <string name="updates_build_minified_label">ZAKOŃCZONO</string>
+    <string name="updates_build_minified_label">MINIFIED</string>
     <string name="updates_build_release_label">RELEASE</string>
     <string name="updates_cache_cleared">Pamięć podręczna usunięta</string>
     <string name="updates_changelog_title">Co nowego w %s</string>
-    <string name="updates_channel_name">Aktualizacje aplikacji</string>
+    <string name="updates_channel_name">App Updates</string>
     <string name="updates_check_mode_ask">Zapytaj</string>
     <string name="updates_check_mode_ask_status">Zapytaj</string>
     <string name="updates_check_mode_disabled_status">Wyłączony</string>
@@ -281,29 +286,29 @@
     <string name="updates_check_permission_settings_note">Nadal możesz ją włączyć lub wyłączyć na podstawie ustawień.</string>
     <string name="updates_checking_status">Sprawdzanie aktualizacji…</string>
     <string name="updates_download_completed">Aktualizacja pobrana</string>
-    <string name="updates_download_empty_response">Pusta treść odpowiedzi</string>
-    <string name="updates_download_failed">Pobieranie aktualizacji nie powiodło się</string>
-    <string name="updates_download_server_error">Błąd serwera: %1$s %2$s</string>
+    <string name="updates_download_empty_response">Empty response body</string>
+    <string name="updates_download_failed">Update download failed</string>
+    <string name="updates_download_server_error">Server error: %1$s %2$s</string>
     <string name="updates_downloading_status">Pobieranie aktualizacji</string>
     <string name="updates_file_size">Rozmiar pliku: %s</string>
-    <string name="updates_install_cancel_for_backup">Nie, najpierw wykonam kopię zapasową</string>
-    <string name="updates_install_confirm">Tak, zainstaluj</string>
-    <string name="updates_install_confirmation_message">Pamiętaj, aby utworzyć kopię zapasową ustawień i bazy danych. Aktualizacja może być uszkodzona lub uszkodzona jeśli schemat bazy danych jest edytowany, więc jest to wysoce zalecane.</string>
+    <string name="updates_install_cancel_for_backup">No, I will back up first</string>
+    <string name="updates_install_confirm">Yes, install</string>
+    <string name="updates_install_confirmation_message">Please remember to back up your settings and music database. An update might possibly corrupt or break it if the database schema is edited, so this is highly recommended.</string>
     <string name="updates_install_dialog_title">Install update</string>
-    <string name="updates_install_failed">Instalacja nie powiodła się: %s</string>
+    <string name="updates_install_failed">Failed to install: %s</string>
     <string name="updates_last_check_format">Ostatni sprawdzian: %s</string>
-    <string name="updates_major_warning_message">Ta wersja przynosi ważne zmiany. Zaleca się wykonanie kopii zapasowej danych i całkowite zresetowanie aplikacji poprzez wyczyszczenie wszystkich danych lub ponowne zainstalowanie aplikacji, przed zgłoszeniem jakichkolwiek problemów.</string>
-    <string name="updates_major_warning_title">Duża aktualizacja (%1$s)</string>
+    <string name="updates_major_warning_message">This version brings important changes. It is highly recommended to backup your data and completely reset the app by clearing all data or re-installing it, before reporting any issue.</string>
+    <string name="updates_major_warning_title">Major update (%1$s)</string>
     <string name="updates_never_checked">Nigdy nie zaznaczono</string>
     <string name="updates_no_update_available">Brak dostępnych aktualizacji</string>
     <string name="updates_not_available_yet">Aktualizacja jeszcze niedostępna lub kompilacja nie została znaleziona</string>
-    <string name="updates_notification_install_action">Dotknij, aby zainstalować</string>
+    <string name="updates_notification_install_action">Tap to install</string>
     <string name="updates_reinstalling_status">Ponowna instalacja aktualizacji</string>
     <string name="updates_reinstalling_version_progress">Reinstalacja: %1$s%2$s)</string>
-    <string name="updates_stable_to_beta_warning_message">Przełączyłeś się na wersję Beta. Ta wersja może zawierać błędy lub być niestabilna. Zalecane jest tworzenie kopii zapasowej danych przed przystąpieniem lub zgłoszeniem jakichkolwiek problemów.</string>
-    <string name="updates_stable_to_beta_warning_title">Przełączanie na wersję beta</string>
+    <string name="updates_stable_to_beta_warning_message">You are switching to a Beta build. This version may contain bugs or be unstable. It is highly recommended to backup your data before proceeding or reporting any issue.</string>
+    <string name="updates_stable_to_beta_warning_title">Switching to Beta Build</string>
     <string name="updates_starting_status">Uruchamianie…</string>
     <string name="updates_unavailable_build_description">Jeśli widzisz tę wiadomość, oznacza to, że twoja kompilacja nie ma włączonej automatycznej aktualizacji, pls aktualizuje aplikację ręcznie z github</string>
     <string name="updates_up_to_date">Aktualne</string>
-    <string name="updates_warning_acknowledge">Rozumiem</string>
+    <string name="updates_warning_acknowledge">I understand</string>
 </resources>
