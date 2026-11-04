@@ -54,7 +54,7 @@
     <string name="discord_advanced_state">State template</string>
     <string name="discord_artwork_tooltip_description">Set the tooltip shown over the large artwork image on Discord.</string>
     <string name="discord_beta_warning">This is still in Beta and may contain bugs and crash</string>
-    <string name="discord_connected_to_discord_account">Connected to Discord account</string>
+    <string name="discord_connected_to_discord_account">Connected to Discord Account</string>
     <string name="discord_details_template_description">Set the main activity line using track information placeholders.</string>
     <string name="discord_enable_rich_presence">Enable Rich Presence</string>
     <string name="discord_enabled_description">Share your current listening activity on your Discord profile.</string>
@@ -127,7 +127,7 @@
     <string name="profile_data_status_all_separate">Separate: database, settings, sessions, downloads, media cache, images, waveforms</string>
     <string name="profile_data_status_shared">Separate: database, settings, sessions%1$s · Shared: %2$s</string>
     <string name="profile_data_waveforms">waveforms</string>
-    <string name="profile_database">Database</string>
+    <string name="profile_database">Baza podataka</string>
     <string name="profile_description">Each profile has its own database, settings and face. Switching profiles requires a restart</string>
     <string name="profile_display_name_preview_label">Shown as</string>
     <string name="profile_display_name_source_description">Choose which profile or connected account supplies your displayed name.</string>
@@ -162,7 +162,7 @@
     <string name="profile_photo_remove_description">Remove the saved photo from the current local profile.</string>
     <string name="profile_photo_set">Set</string>
     <string name="profile_remove_confirmation">Remove this profile?</string>
-    <string name="profile_rename">Rename</string>
+    <string name="profile_rename">Preimenuj</string>
     <string name="profile_restart_required">This required a restart of the app</string>
     <string name="profile_share_downloads">Share downloads</string>
     <string name="profile_share_downloads_description">Use the base profile\'s downloads folder and index instead of this profile\'s own. Applies at the next app restart; data already written in this profile\'s own folder stays there</string>
@@ -175,7 +175,7 @@
     <string name="profile_switch_dialog_title">Switch profile</string>
     <string name="profile_title">Profiles</string>
     <!-- Sync -->
-    <string name="sync_action_sync">Sync</string>
+    <string name="sync_action_sync">Sinhronizuj</string>
     <string name="sync_albums">Auto Sync Saved Albums</string>
     <string name="sync_albums_description">Auto-import liked albums from YouTube Music</string>
     <string name="sync_background_guard">Background Guard</string>
