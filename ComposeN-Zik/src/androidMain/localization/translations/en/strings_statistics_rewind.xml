@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Calendar -->
     <string name="calendar_days_ago">%d days ago</string>
     <string name="calendar_last_week">Last week</string>
     <string name="calendar_last_year">Last year</string>
@@ -23,6 +24,7 @@
     <string name="calendar_this_month">This month</string>
     <string name="calendar_today">Today</string>
     <string name="calendar_yesterday">Yesterday</string>
+    <!-- Rewind -->
     <string name="rewind_albums_empty_body">Your top albums will appear here once there is enough listening history.</string>
     <string name="rewind_albums_empty_title">YOUR ALBUM STACK IS EMPTY</string>
     <string name="rewind_albums_heading">YOUR TOP\nALBUMS.</string>
@@ -271,6 +273,7 @@
     <string name="rewind_years_kicker">YOUR YEARS • %1$s</string>
     <string name="rewind_years_peak_sub">%1$s HIT THE HARDEST.</string>
     <string name="rewind_years_peak_year">PEAK YEAR</string>
+    <!-- Statistics -->
     <string name="statistics_action_delete_playback_events_count">Delete %1$s playback events</string>
     <string name="statistics_delete_playback_events_confirmation">Do you really want to delete all playback events?</string>
     <string name="statistics_delete_playback_events_dialog_title">Delete playback events</string>
