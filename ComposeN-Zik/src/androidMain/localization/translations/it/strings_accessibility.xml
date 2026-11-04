@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="accessibility_app_icon">Icona dell\'app</string>
-    <string name="accessibility_app_icon_in_player">icona app nel giocatore</string>
+    <!-- Accessibility -->
+    <string name="accessibility_app_icon">App\'s icon</string>
+    <string name="accessibility_app_icon_in_player">app icon in player</string>
     <string name="accessibility_arrow_down">arrow_down</string>
     <string name="accessibility_arrow_up">arrow_up</string>
-    <string name="accessibility_background_image">Immagine Di Sfondo</string>
-    <string name="accessibility_blurred_background">sfocato_sfondo</string>
-    <string name="accessibility_disc_background">sfondo disco</string>
-    <string name="accessibility_filter">Filtro</string>
-    <string name="accessibility_import_playlist_name">importazione nome playlist</string>
-    <string name="accessibility_loading">caricamento...</string>
-    <string name="accessibility_new_playlist_name">nuovo nome della playlist</string>
-    <string name="accessibility_number_of_songs_in_queue">Numero di brani in coda</string>
-    <string name="accessibility_origin_indicator">indicatore</string>
+    <string name="accessibility_background_image">Background Image</string>
+    <string name="accessibility_blurred_background">blurred_background</string>
+    <string name="accessibility_disc_background">disc background</string>
+    <string name="accessibility_filter">Filter</string>
+    <string name="accessibility_import_playlist_name">import playlist name</string>
+    <string name="accessibility_loading">loading...</string>
+    <string name="accessibility_new_playlist_name">new playlist name</string>
+    <string name="accessibility_number_of_songs_in_queue">Number of songs in queue</string>
+    <string name="accessibility_origin_indicator">origin_indicator</string>
     <string name="accessibility_recenter">Recenter</string>
-    <string name="accessibility_rename_dialog_text_box_icon">Rinomina icona della finestra di testo</string>
-    <string name="accessibility_reset">Ripristina</string>
-    <string name="accessibility_song_album_cover">copertina album brani</string>
-    <string name="accessibility_switch_mode">Cambia Modalità</string>
-    <string name="accessibility_youtube_playlist">Playlist Youtube</string>
+    <string name="accessibility_rename_dialog_text_box_icon">Rename dialog text box icon</string>
+    <string name="accessibility_reset">Reset</string>
+    <string name="accessibility_song_album_cover">song album cover</string>
+    <string name="accessibility_switch_mode">Switch Mode</string>
+    <string name="accessibility_youtube_playlist">Youtube Playlist</string>
 </resources>
