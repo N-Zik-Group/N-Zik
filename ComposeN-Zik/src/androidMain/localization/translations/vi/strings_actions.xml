@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_action_apply">Apply</string>
-    <string name="common_action_cancel">Hủy</string>
-    <string name="common_action_clear">Xóa</string>
+    <string name="common_action_cancel">Cancel</string>
+    <string name="common_action_clear">Clear</string>
     <string name="common_action_close">Close</string>
     <string name="common_action_close_app">Close app</string>
     <string name="common_action_confirm">Confirm</string>
-    <string name="common_action_delete">Xóa</string>
-    <string name="common_action_done">Xong</string>
+    <string name="common_action_delete">Delete</string>
+    <string name="common_action_done">Done</string>
     <string name="common_action_export">Export</string>
     <string name="common_action_import">Import</string>
     <string name="common_action_next">Next</string>
