@@ -59,7 +59,7 @@ internal fun UpdaterCard(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val settings = rememberGlassSettings()
-    UpdaterPressFeedback(onClick = onClick, allowJelly = false) { feedback ->
+    UpdaterPressFeedback(onClick) { feedback ->
         val cardModifier = modifier.then(feedback)
         if (!settings.usesGlassMaterial(GlassArea.SettingsCards) &&
             !settings.usesGlassContour(GlassArea.SettingsCards) &&
@@ -112,17 +112,26 @@ internal fun UpdaterIconAction(
     content: @Composable () -> Unit,
 ) {
     val shape = uiRoundnessShape()
-    UpdaterPressFeedback(onClick, onLongClick) { feedback ->
-        Box(modifier.glassChipBackground(Color.Transparent, shape).then(feedback),
-            contentAlignment = Alignment.Center) { content() }
+    val settings = rememberGlassSettings()
+    val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
+    PageButtonFeedback(material, true, shape, null, settings, animateContentLayer = true) { feedback, source ->
+        val surface = Modifier.glassChipBackground(Color.Transparent, shape, settings)
+        val click = Modifier.combinedClickable(
+            interactionSource = source,
+            indication = if (source == null) LocalIndication.current else null,
+            onClick = onClick,
+            onLongClick = onLongClick,
+        )
+        // Keep input outside the animated layer while the chip and glyph move together.
+        val action = if (material) click.then(feedback).then(surface)
+            else surface.clip(shape).then(feedback).then(click)
+        Box(modifier.then(action), contentAlignment = Alignment.Center) { content() }
     }
 }
 
 @Composable
 private fun UpdaterPressFeedback(
     onClick: (() -> Unit)?,
-    onLongClick: (() -> Unit)? = null,
-    allowJelly: Boolean = true,
     content: @Composable (Modifier) -> Unit,
 ) {
     if (onClick == null) {
@@ -132,13 +141,11 @@ private fun UpdaterPressFeedback(
     val settings = rememberGlassSettings()
     val shape = uiRoundnessShape()
     // Scrollable accordions use cancellable row feedback, never retained button gestures.
-    val material = allowJelly && settings.usesGlassMaterial(GlassArea.ActionButtons)
-    PageButtonFeedback(material, true, shape, null, settings) { feedback, source ->
-        content((if (material) Modifier else Modifier.clip(shape)).then(feedback).combinedClickable(
+    PageButtonFeedback(false, true, shape, null, settings) { feedback, source ->
+        content(Modifier.clip(shape).then(feedback).combinedClickable(
             interactionSource = source,
             indication = if (source == null) LocalIndication.current else null,
             onClick = onClick,
-            onLongClick = onLongClick,
         ))
     }
 }
