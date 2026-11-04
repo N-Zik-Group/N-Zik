@@ -47,8 +47,8 @@
     <string name="maintenance_download_failed">Échec</string>
     <string name="maintenance_download_in_progress">En cours</string>
     <string name="maintenance_download_queued">En attente</string>
-    <string name="maintenance_download_revalidation">Download re-validation</string>
-    <string name="maintenance_download_self_heal">Download self-heal</string>
+    <string name="maintenance_download_revalidation">Télécharger la re-validation</string>
+    <string name="maintenance_download_self_heal">Télécharger auto-guérison</string>
     <string name="maintenance_downloads">Téléchargements</string>
     <string name="maintenance_downloads_completed">%d terminé</string>
     <string name="maintenance_downloads_failed">%d ont échoué</string>
@@ -66,7 +66,7 @@
     <string name="maintenance_library_albums">%d albums</string>
     <string name="maintenance_library_artists">%d artistes</string>
     <string name="maintenance_library_listened">%d ont écouté</string>
-    <string name="maintenance_library_playlists">%d playlists</string>
+    <string name="maintenance_library_playlists">Liste de lecture %d</string>
     <string name="maintenance_library_songs">%d titres</string>
     <string name="maintenance_live_subsystems">Sous-systèmes en temps réel</string>
     <string name="maintenance_log_view">Afficher</string>
@@ -110,7 +110,7 @@
     <string name="maintenance_status_song_resolved">Résolution au niveau des notes</string>
     <string name="maintenance_sync_ytm">Synchronisation YouTube Music</string>
     <string name="maintenance_sync_ytm_running">Synchronisation en cours</string>
-    <string name="maintenance_title">Maintenance</string>
+    <string name="maintenance_title">Entretien</string>
     <string name="maintenance_update_completed">Prêt pour la mise à jour</string>
     <string name="maintenance_update_downloading">Téléchargement de %s</string>
     <string name="maintenance_update_failed">Échec du téléchargement</string>
@@ -160,7 +160,7 @@
     <!-- Recovery -->
     <string name="recovery_accounts_exported">État du profil exporté</string>
     <string name="recovery_accounts_imported_base">État du profil importé : profil de base</string>
-    <string name="recovery_accounts_imported_count">État des profils importés : %1$d profils</string>
+    <string name="recovery_accounts_imported_count">Import de l\'état des profils terminé. Nombre de profils : %1$d</string>
     <string name="recovery_category_all">Tout</string>
     <string name="recovery_category_profile">Par profil</string>
     <string name="recovery_center">Centre de Secours</string>
@@ -309,4 +309,6 @@
     <string name="updates_unavailable_build_description">Si vous voyez ce message, cela signifie que votre version n\'a pas activé la mise à jour automatique, pls met à jour l\'application manuellement à partir de github</string>
     <string name="updates_up_to_date">À jour</string>
     <string name="updates_warning_acknowledge">Je comprends</string>
+    <string name="updates_check_failed">Impossible de vérifier les mises à jour.</string>
+    <string name="updates_install_generic_error">Impossible d\'installer la mise à jour.</string>
 </resources>
