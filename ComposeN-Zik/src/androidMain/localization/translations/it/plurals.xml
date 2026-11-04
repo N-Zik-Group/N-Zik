@@ -2,27 +2,43 @@
 <resources>
     <!-- Maintenance -->
     <plurals name="maintenance_systems_need_attention">
-        <item quantity="one">%d system needs attention</item>
-        <item quantity="other">%d systems need attention</item>
+        <item quantity="one">Il sistema %d necessita di attenzione</item>
+        <item quantity="other">I sistemi %d richiedono attenzione</item>
     </plurals>
     <plurals name="sync_detail_songs_liked">
-        <item quantity="one">%1$d song liked</item>
+        <item quantity="one">Brano %1$d liked</item>
         <item quantity="other">%1$d songs liked</item>
     </plurals>
     <plurals name="sync_detail_playlists_synced">
-        <item quantity="one">%1$d playlist synced</item>
+        <item quantity="one">Scaletta %1$d sincronizzata</item>
         <item quantity="other">%1$d playlists synced</item>
     </plurals>
     <plurals name="sync_detail_songs_imported">
-        <item quantity="one">%1$d song imported</item>
-        <item quantity="other">%1$d songs imported</item>
+        <item quantity="one">%1$d canzone importata</item>
+        <item quantity="other">Canzoni importate %1$d</item>
     </plurals>
     <plurals name="sync_detail_albums_imported">
         <item quantity="one">%1$d album imported</item>
-        <item quantity="other">%1$d albums imported</item>
+        <item quantity="other">Album importati da %1$d</item>
     </plurals>
     <plurals name="sync_detail_episodes">
-        <item quantity="one">%1$d episode</item>
-        <item quantity="other">%1$d episodes</item>
+        <item quantity="one">%1$d episodio</item>
+        <item quantity="other">%1$d episodi</item>
+    </plurals>
+    <plurals name="library_song_count">
+        <item quantity="one">%1$d song</item>
+        <item quantity="other">Canzoni %1$d</item>
+    </plurals>
+    <plurals name="about_translator_count">
+        <item quantity="one">Traduttore %1$d</item>
+        <item quantity="other">Traduttori di %1$d</item>
+    </plurals>
+    <plurals name="about_developer_designer_count">
+        <item quantity="one">%1$d sviluppatore / designer</item>
+        <item quantity="other">Sviluppatori / designer di %1$d</item>
+    </plurals>
+    <plurals name="statistics_songs_heard_count">
+        <item quantity="one">%1$d song heard</item>
+        <item quantity="other">%1$d canzoni ascoltate</item>
     </plurals>
 </resources>
