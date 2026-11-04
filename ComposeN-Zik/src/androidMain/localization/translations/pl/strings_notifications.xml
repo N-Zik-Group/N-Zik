@@ -5,5 +5,5 @@
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">Listen Together</string>
     <!-- Player Notification -->
-    <string name="player_notification_pause">Pause</string>
+    <string name="player_notification_pause">Wstrzymaj</string>
 </resources>
