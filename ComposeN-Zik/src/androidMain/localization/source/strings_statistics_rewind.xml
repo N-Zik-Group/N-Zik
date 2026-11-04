@@ -292,4 +292,5 @@
     <string name="statistics_songs_heard">songs heard</string>
     <string name="statistics_title">Statistics</string>
     <string name="statistics_top_period_title">Top %s of …</string>
+    <string name="statistics_time_spent_format">%1$s time spent</string>
 </resources>

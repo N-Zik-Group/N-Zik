@@ -75,6 +75,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.input.TextFieldValue
@@ -345,7 +346,7 @@ fun PlaylistSongList(
         ConfirmationDialog(
             title = stringResource(R.string.playlist_like_all_dialog_title),
             confirmText = stringResource(R.string.playlist_like_all_dialog_title),
-            text = "$totalMinutesToLike "+stringResource(R.string.playlist_like_all_duration_confirmation_suffix),
+            text = stringResource(R.string.playlist_like_all_duration_confirmation_format, totalMinutesToLike),
             onDismiss = { showYoutubeLikeConfirmDialog = false },
             onConfirm = {
                 showYoutubeLikeConfirmDialog = false
@@ -530,8 +531,7 @@ fun PlaylistSongList(
                             )
 
                             BasicText(
-                                text = (filteredPageSongs?.size ?: 0).toString() + " "
-                                        + stringResource(R.string.library_songs_title)
+                                text = pluralStringResource(R.plurals.library_song_count, filteredPageSongs?.size ?: 0, filteredPageSongs?.size ?: 0)
                                         + " - " + formatAsTime(totalPlayTimes),
                                 style = typography().xs.medium,
                                 maxLines = 1,

@@ -439,7 +439,8 @@ object Updater {
         val response = NetworkClientFactory.getClient().newCall(request).execute()
 
         if (!response.isSuccessful) {
-            Toaster.e(response.message)
+            Timber.tag("Updater").w("Release request failed: HTTP %d", response.code)
+            Toaster.e(R.string.updates_check_failed)
             return@withContext
         }
 
@@ -700,7 +701,10 @@ object Updater {
             val message = when (e) {
                 is UnknownHostException -> appContext().getString(R.string.common_error_no_internet)
                 is NoSuchFileException -> appContext().getString(R.string.updates_no_update_available)
-                else -> e.message ?: appContext().getString(R.string.common_error_unknown)
+                else -> {
+                    Timber.tag("Updater").w(e, "Update check failed")
+                    appContext().getString(R.string.updates_check_failed)
+                }
             }
             
             // Use appropriate toast type based on exception

@@ -315,4 +315,6 @@
     <string name="updates_unavailable_build_description">If you see this message it means that your build doesnt have auto update enabled, pls update the app manually from github</string>
     <string name="updates_up_to_date">Up to date</string>
     <string name="updates_warning_acknowledge">I understand</string>
+    <string name="updates_check_failed">Could not check for updates.</string>
+    <string name="updates_install_generic_error">Could not install the update.</string>
 </resources>

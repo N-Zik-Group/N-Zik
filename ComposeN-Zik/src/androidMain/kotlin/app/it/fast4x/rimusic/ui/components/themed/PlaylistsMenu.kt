@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
@@ -141,7 +142,7 @@ class PlaylistsMenu private constructor(
         ListMenu.Entry(
             text = playlist.name.substringAfter( PINNED_PREFIX ),
             icon = { SettingIcon(R.drawable.add_in_playlist) },
-            subtitle = "${playlistPreview.songCount} ${stringResource( R.string.library_songs_title )}",
+            subtitle = pluralStringResource(R.plurals.library_song_count, playlistPreview.songCount, playlistPreview.songCount),
             onClick = {
                 onAdd( playlistPreview )
             },

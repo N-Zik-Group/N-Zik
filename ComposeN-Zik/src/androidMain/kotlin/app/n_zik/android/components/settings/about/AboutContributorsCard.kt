@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.extensions.contributors.ShowDevelopers
@@ -80,7 +81,7 @@ internal fun AboutContributorsCard() {
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             BasicText(
-                                text = "${countTranslators()} " + stringResource(R.string.about_translators_title),
+                                text = pluralStringResource(R.plurals.about_translator_count, countTranslators(), countTranslators()),
                                 style = typography().xs.semiBold.copy(color = colorPalette().textSecondary)
                             )
                         }
@@ -134,7 +135,7 @@ internal fun AboutContributorsCard() {
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             BasicText(
-                                text = "${countDevelopers()} ${stringResource(R.string.about_developers_designers_title)}",
+                                text = pluralStringResource(R.plurals.about_developer_designer_count, countDevelopers(), countDevelopers()),
                                 style = typography().xs.semiBold.copy(color = colorPalette().textSecondary)
                             )
                         }

@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.IntOffset
@@ -290,9 +291,7 @@ fun PlaylistsItemGridMenu(
                             ListMenu.Entry(
                                 text = cleanPrefix(playlistPreview.playlist.name),
                                 icon = { SettingIcon(R.drawable.add_in_playlist) },
-                                subtitle = "${playlistPreview.songCount} " + stringResource(
-                                    R.string.library_songs_title
-                                ),
+                                subtitle = pluralStringResource(R.plurals.library_song_count, playlistPreview.songCount, playlistPreview.songCount),
                                 onClick = {
                                     onAddToPlaylist(
                                         PlaylistPreview(
@@ -346,7 +345,7 @@ fun PlaylistsItemGridMenu(
                             ListMenu.Entry(
                                 text = cleanPrefix(playlistPreview.playlist.name),
                                 icon = { SettingIcon(R.drawable.add_in_playlist) },
-                                subtitle = "${playlistPreview.songCount} " + stringResource(R.string.library_songs_title),
+                                subtitle = pluralStringResource(R.plurals.library_song_count, playlistPreview.songCount, playlistPreview.songCount),
                                 onClick = {
                                     onAddToPlaylist(
                                         PlaylistPreview(
@@ -389,9 +388,7 @@ fun PlaylistsItemGridMenu(
                             ListMenu.Entry(
                                 text = cleanPrefix(playlistPreview.playlist.name),
                                 icon = { SettingIcon(R.drawable.add_in_playlist) },
-                                subtitle = "${playlistPreview.songCount} " + stringResource(
-                                    R.string.library_songs_title
-                                ),
+                                subtitle = pluralStringResource(R.plurals.library_song_count, playlistPreview.songCount, playlistPreview.songCount),
                                 onClick = {
                                     onAddToPlaylist(
                                         PlaylistPreview(

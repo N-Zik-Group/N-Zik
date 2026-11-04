@@ -26,4 +26,20 @@
         <item quantity="one">%1$d episode</item>
         <item quantity="other">%1$d episodes</item>
     </plurals>
+    <plurals name="library_song_count">
+        <item quantity="one">%1$d song</item>
+        <item quantity="other">%1$d songs</item>
+    </plurals>
+    <plurals name="about_translator_count">
+        <item quantity="one">%1$d translator</item>
+        <item quantity="other">%1$d translators</item>
+    </plurals>
+    <plurals name="about_developer_designer_count">
+        <item quantity="one">%1$d developer / designer</item>
+        <item quantity="other">%1$d developers / designers</item>
+    </plurals>
+    <plurals name="statistics_songs_heard_count">
+        <item quantity="one">%1$d song heard</item>
+        <item quantity="other">%1$d songs heard</item>
+    </plurals>
 </resources>

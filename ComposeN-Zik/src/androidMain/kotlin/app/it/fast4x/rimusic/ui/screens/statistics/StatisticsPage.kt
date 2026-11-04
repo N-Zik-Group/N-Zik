@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.style.TextOverflow
@@ -343,8 +344,8 @@ fun StatisticsPage(
                             ) {
                                 Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 8.dp)) {
                                     SettingsEntry(
-                                        title = "${distinctSongsPlayedCount} ${stringResource(R.string.statistics_songs_heard)}",
-                                        text = "${formatAsTime(totalPlayTimes)} ${stringResource(R.string.statistics_of_time_taken)}",
+                                        title = pluralStringResource(R.plurals.statistics_songs_heard_count, distinctSongsPlayedCount, distinctSongsPlayedCount),
+                                        text = stringResource(R.string.statistics_time_spent_format, formatAsTime(totalPlayTimes)),
                                         onClick = {},
                                         trailingContent = {
                                             Image(

@@ -287,7 +287,7 @@ class ExportCacheDialog(
                         Timber.tag("ExportCache").e("FFmpeg failed with return code $returnCode. Logs: $logs")
                         kotlinx.coroutines.withContext(NzikDispatchers.UI) {
                             isExporting.value = false
-                            if (showResultToast) Toaster.e(R.string.export_cached_songs_failed, "FFmpeg error: $returnCode")
+                            if (showResultToast) Toaster.e(R.string.export_cached_songs_generic_error)
                         }
                         try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (_: Exception) {}
                     }

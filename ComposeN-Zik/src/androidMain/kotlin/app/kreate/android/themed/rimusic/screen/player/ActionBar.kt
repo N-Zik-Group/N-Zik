@@ -360,7 +360,7 @@ fun BoxScope.ActionBar(
                                         thumbnailUrl = mediaItemAtIndex.mediaMetadata
                                                                        .artworkUri
                                                                        .toString(),
-                                        contentDescription = "song_pos_$index",
+                                        contentDescription = null,
                                         modifier = Modifier
                                             .padding(end = 5.dp)
                                             .clip(uiRoundnessShape())
