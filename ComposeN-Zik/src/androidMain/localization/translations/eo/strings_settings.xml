@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">I\'m feeling lucky</string>
     <string name="automotive_action_play_all">Play All</string>
     <string name="automotive_title">Android Auto</string>
+    <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Choose the action performed by swiping an album track left.</string>
     <string name="gestures_album_track_swipe_right_description">Choose the action performed by swiping an album track right.</string>
     <string name="gestures_playlist_track_swipe_left_description">Choose the action performed by swiping a playlist track left.</string>
     <string name="gestures_playlist_track_swipe_right_description">Choose the action performed by swiping a playlist track right.</string>
     <string name="gestures_queue_item_swipe_left_description">Choose the action performed by swiping a queue item left.</string>
     <string name="gestures_queue_item_swipe_right_description">Choose the action performed by swiping a queue item right.</string>
+    <!-- Language -->
     <string name="language_app_selection_description">Choose the language used for app labels and messages.</string>
     <string name="language_name_afrikaans">Afrikaans (Afrikaans)</string>
     <string name="language_name_arabic">Arabic (العربية)</string>
@@ -59,6 +62,7 @@
     <string name="language_name_ukrainian">Ukrainian (Українська)</string>
     <string name="language_name_vietnamese">Vietnamese (tiếng Việt)</string>
     <string name="language_system_default">System language</string>
+    <!-- Navigation -->
     <string name="navigation_action_picture_in_picture">PIP</string>
     <string name="navigation_back_again_to_exit_message">Press once again to exit</string>
     <string name="navigation_position_bottom_floating_label">Bottom Floating</string>
@@ -66,8 +70,10 @@
     <string name="navigation_position_top_label">Top</string>
     <string name="navigation_style_icon_and_text_label">Icon and text</string>
     <string name="navigation_style_icon_only_label">Only icon</string>
+    <!-- Parental -->
     <string name="parental_control">Parental control</string>
     <string name="parental_control_is_enabled">Parental control is enabled</string>
+    <!-- Permissions -->
     <string name="permissions_event_denied">Permission denied</string>
     <string name="permissions_event_granted">Permission granted</string>
     <string name="permissions_event_requested">Permission requested</string>
@@ -102,9 +108,11 @@
     <string name="permissions_label_microphone">Microphone / audio capture</string>
     <string name="permissions_label_notifications">Notifications</string>
     <string name="permissions_usage_journal">Permission activity</string>
+    <!-- Privacy -->
     <string name="privacy_block_screenshots">Block screenshots</string>
     <string name="privacy_block_screenshots_description">Prevent screenshots and screen recordings of N-Zik, and hide its content on non-secure displays. Applies immediately for this profile.</string>
     <string name="privacy_screen_protection">Screen protection</string>
+    <!-- Settings -->
     <string name="audio_loudness_boost_level">Loudness boost level</string>
     <string name="common_error_no_document_handler">Couldn\'t find an application to open documents</string>
     <string name="common_translation_title">Translation</string>
@@ -209,7 +217,7 @@
     <string name="settings_interface_corner_radius_label">UI Roundness</string>
     <string name="settings_interface_hide_status_bar_label">Hide status bar</string>
     <string name="settings_interface_page_description">The user interface section contains settings to modify the global interface and navigation</string>
-    <string name="settings_interface_page_title">UI</string>
+    <string name="settings_interface_page_title">User Interface</string>
     <string name="settings_interface_title">User interface</string>
     <string name="settings_languages_title">Languages</string>
     <string name="settings_lastfm_scrobbling_description">Scrobble your music to Last.fm</string>
@@ -289,6 +297,8 @@
     <string name="settings_parental_age_restriction_description">Prevent play songs with age limitation</string>
     <string name="settings_picture_in_picture_android_12_auto_description">From Android 12 pip can be automatically enabled</string>
     <string name="settings_picture_in_picture_artwork_module_label">Cover</string>
+    <string name="settings_picture_in_picture_open">Open picture-in-picture</string>
+    <string name="settings_picture_in_picture_open_failed">Couldn’t open picture-in-picture. Check app info settings on your android to allows it for N-Zik.</string>
     <string name="settings_picture_in_picture_title">Picture in Picture</string>
     <string name="settings_pip_module">Pip module</string>
     <string name="settings_playback_duration_limit_description">Songs with duration exceeding the limit will be excluded from the Top songs and playback queue</string>
@@ -416,7 +426,7 @@
     <string name="settings_section_backup_and_restore_title">Backup and restore</string>
     <string name="settings_section_contributors_title">Contributors</string>
     <string name="settings_section_fullscreen_lyrics_title">Fullscreen lyrics components</string>
-    <string name="settings_section_notification_player_title">Notification Player</string>
+    <string name="settings_section_notification_player_title">Notification player</string>
     <string name="settings_section_player_action_bar_title">Player action bar</string>
     <string name="settings_section_proxy_title">Proxy</string>
     <string name="settings_section_service_lifetime_title">Service lifetime</string>
@@ -474,7 +484,7 @@
     <string name="settings_visualizer_remember_state_label">Save visualizer state</string>
     <string name="settings_youtube_authenticated_browsing_description">Use login for browse requests (home, explore, etc.)</string>
     <string name="settings_youtube_authenticated_browsing_label">Login for Browse</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest without your account, so they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Use account for searches</string>
     <string name="settings_youtube_clear_synced_data_confirmation">Clear all data synced from YouTube? This will remove liked songs, albums, artists, and playlists imported from YouTube.</string>
     <string name="settings_youtube_clear_synced_data_dialog_title">Clear YouTube synced data</string>
