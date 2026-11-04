@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_answer_no">No</string>
     <string name="common_artist_conjunction_and">and</string>
     <string name="common_brand_github">GitHub</string>
@@ -7,13 +8,13 @@
     <string name="common_clipboard_copy_success">Copied</string>
     <string name="common_color_black">Black</string>
     <string name="common_color_custom">Custom Color</string>
-    <string name="common_color_source_artwork">Cover color</string>
+    <string name="common_color_source_artwork">Artwork</string>
     <string name="common_color_source_theme">Theme</string>
     <string name="common_color_white">White</string>
-    <string name="common_debug_background">bakgrund</string>
+    <string name="common_debug_background">background</string>
     <string name="common_debug_width">width</string>
     <string name="common_delete_success">Deleted</string>
-    <string name="common_description_unavailable">Ingen beskrivning tillgänglig</string>
+    <string name="common_description_unavailable">No description available</string>
     <string name="common_duration_milliseconds_format">%1$s ms</string>
     <string name="common_empty_items">No items</string>
     <string name="common_external_link_loading_suffix">is loading...</string>
@@ -41,4 +42,6 @@
     <string name="common_validation_minimum_value">"Value must be greater than "</string>
     <string name="common_validation_name_in_use">Name already in use</string>
     <string name="common_value_input_hint">Enter the value</string>
+    <string name="common_unknown">Unknown</string>
+    <string name="common_duration_minutes_short">%1$d min</string>
 </resources>
