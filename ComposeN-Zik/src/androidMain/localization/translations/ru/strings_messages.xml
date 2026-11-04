@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="common_error_connection_timeout">Время ожидания подключения истекло</string>
-    <string name="common_error_no_connection">Отсутствует подключение</string>
+    <!-- Common -->
+    <string name="common_error_connection_timeout">Connection timeout</string>
+    <string name="common_error_no_connection">No Connection</string>
     <string name="common_error_no_internet">Отсутствует сетевое соединение</string>
-    <string name="common_error_title">Произошла ошибка.</string>
-    <string name="common_error_unknown">Неизвестная ошибка</string>
+    <string name="common_error_title">An error has occurred.</string>
+    <string name="common_error_unknown">Unknown error</string>
 </resources>
