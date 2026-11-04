@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="common_error_connection_timeout">连接超时</string>
+    <!-- Common -->
+    <string name="common_error_connection_timeout">Connection timeout</string>
     <string name="common_error_no_connection">No Connection</string>
-    <string name="common_error_no_internet">无网络连接</string>
-    <string name="common_error_title">出现错误</string>
-    <string name="common_error_unknown">未知错误</string>
+    <string name="common_error_no_internet">No network connection</string>
+    <string name="common_error_title">An error has occurred.</string>
+    <string name="common_error_unknown">Unknown error</string>
 </resources>
