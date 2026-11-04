@@ -8,14 +8,14 @@
     <string name="about_contributors_alphabetical_order_label">Dans l\'ordre alphabétique :</string>
     <string name="about_debug_developers_rotation">rotation_développeurs</string>
     <string name="about_debug_translators_rotation">Rotation des traducteurs</string>
-    <string name="about_developers_description">Show or hide the developers and designers who contributed to the app.</string>
+    <string name="about_developers_description">Afficher ou masquer les noms des développeurs et des concepteurs ayant contribué à l\'application.</string>
     <string name="about_developers_designers_title">Développeurs / Concepteurs</string>
     <string name="about_github_link_description">Vous allez être redirigé vers GitHub.</string>
-    <string name="about_report_issue_description">Open the GitHub bug report form to describe a problem.</string>
-    <string name="about_request_feature_description">Open the GitHub feature request form to suggest an improvement.</string>
-    <string name="about_source_code_description">Open the source code repository on GitHub.</string>
+    <string name="about_report_issue_description">Ouvrez le formulaire de signalement de bug sur GitHub pour décrire un problème.</string>
+    <string name="about_request_feature_description">Ouvrez le formulaire de demande de fonctionnalité de GitHub pour proposer une amélioration.</string>
+    <string name="about_source_code_description">Ouvrez le dépôt de code source sur GitHub.</string>
     <string name="about_title">À propos</string>
-    <string name="about_translators_description">Show or hide the people who translated the app.</string>
+    <string name="about_translators_description">Afficher ou masquer les noms des personnes qui ont traduit l\'application.</string>
     <string name="about_translators_title">Traducteurs</string>
     <!-- Accessibility -->
     <string name="accessibility_app_icon">Icône de l\'application</string>
@@ -40,8 +40,8 @@
     <!-- Account -->
     <string name="account_action_login">Se connecter</string>
     <string name="account_action_logout">Se déconnecter</string>
-    <string name="account_youtube_login_description">Connect your YouTube account or sign out of the current session.</string>
-    <string name="account_youtube_login_enabled_description">Allow YouTube account sign-in for personalized browsing and synchronization.</string>
+    <string name="account_youtube_login_description">Connectez-vous à votre compte YouTube ou déconnectez-vous de la session en cours.</string>
+    <string name="account_youtube_login_enabled_description">Autorisez la connexion à votre compte YouTube pour bénéficier d\'une navigation personnalisée et de la synchronisation.</string>
     <!-- Account Youtube -->
     <string name="account_youtube_cookie_invalid">Le cookie YouTube n\'est pas valide. Veuillez vous reconnecter.</string>
     <string name="account_youtube_login_success">Connexion à YouTube réussie</string>
@@ -77,8 +77,8 @@
     <string name="artist_songs_unavailable_message">Pas encore de titres</string>
     <string name="artist_title">Artiste</string>
     <!-- Audio -->
-    <string name="audio_bass_boost_description">Enhance low frequencies during playback.</string>
-    <string name="audio_bass_boost_level_description">Adjust the strength of the low-frequency boost.</string>
+    <string name="audio_bass_boost_description">Amplifier les basses fréquences pendant la lecture.</string>
+    <string name="audio_bass_boost_level_description">Réglez l\'intensité de l\'accentuation des basses fréquences.</string>
     <string name="audio_bass_boost_unavailable_message">Impossible d\'activer l\'amplification des basses</string>
     <string name="audio_devices">Périphériques audio</string>
     <string name="audio_effects">Effets Audio</string>
@@ -99,7 +99,7 @@
     <string name="audio_quality_format_medium">Moyen</string>
     <string name="audio_quality_format_unknown">Inconnu</string>
     <string name="audio_quality_format_very_high">Très élevé</string>
-    <string name="audio_reverb_description">Choose the reverberation effect applied to playback.</string>
+    <string name="audio_reverb_description">Sélectionnez l\'effet de réverbération à appliquer à la lecture.</string>
     <string name="audio_waveform">Forme d\'onde audio</string>
     <string name="audio_waveform_action_refresh">Mettre à jour la forme d\'onde</string>
     <string name="audio_waveform_complete_file_required_message">La musique doit être entièrement téléchargée ou mise en cache pour que les ondes sonores s\'actualisent</string>
@@ -123,19 +123,19 @@
     <string name="backup_action_export">Exporter la sauvegarde</string>
     <string name="backup_action_import">Importer une sauvegarde</string>
     <string name="backup_action_import_legacy_migration">Importer un fichier de migration.</string>
-    <string name="backup_auto_custom_interval_unit_description">Choose the time unit for the custom backup interval.</string>
-    <string name="backup_auto_custom_interval_value_description">Set the number of time units between automatic backups.</string>
-    <string name="backup_auto_include_discord_credentials_description">Include saved Discord account credentials in automatic settings backups.</string>
-    <string name="backup_auto_include_lastfm_credentials_description">Include saved Last.fm account credentials in automatic settings backups.</string>
-    <string name="backup_auto_include_proxy_credentials_description">Include saved proxy credentials in automatic settings backups.</string>
-    <string name="backup_auto_include_youtube_credentials_description">Include saved YouTube account credentials in automatic settings backups.</string>
-    <string name="backup_auto_interval_description">Choose how often automatic backups are scheduled.</string>
-    <string name="backup_auto_location_description">Choose the folder where automatic backups are saved.</string>
-    <string name="backup_auto_maximum_backups_description">Limit the number of automatic backups retained in the selected folder.</string>
-    <string name="backup_auto_schedule_day_of_month_description">Choose the day of the month for monthly automatic backups.</string>
-    <string name="backup_auto_schedule_day_of_week_description">Choose the weekday for weekly automatic backups.</string>
-    <string name="backup_auto_schedule_time_description">Choose the hour at which scheduled automatic backups should run.</string>
-    <string name="backup_auto_target_description">Choose whether automatic backups include the database, settings, or both.</string>
+    <string name="backup_auto_custom_interval_unit_description">Sélectionnez l\'unité de temps pour l\'intervalle de sauvegarde personnalisé.</string>
+    <string name="backup_auto_custom_interval_value_description">Définissez le nombre d\'unités de temps entre deux sauvegardes automatiques.</string>
+    <string name="backup_auto_include_discord_credentials_description">Inclure les identifiants de compte Discord enregistrés dans les sauvegardes automatiques des paramètres.</string>
+    <string name="backup_auto_include_lastfm_credentials_description">Inclure les identifiants enregistrés du compte Last.fm dans les sauvegardes automatiques des paramètres.</string>
+    <string name="backup_auto_include_proxy_credentials_description">Inclure les identifiants de proxy enregistrés dans les sauvegardes automatiques des paramètres.</string>
+    <string name="backup_auto_include_youtube_credentials_description">Inclure les identifiants de compte YouTube enregistrés dans les sauvegardes automatiques des paramètres.</string>
+    <string name="backup_auto_interval_description">Choisissez la fréquence à laquelle les sauvegardes automatiques doivent être effectuées.</string>
+    <string name="backup_auto_location_description">Sélectionnez le dossier dans lequel les sauvegardes automatiques seront enregistrées.</string>
+    <string name="backup_auto_maximum_backups_description">Limitez le nombre de sauvegardes automatiques conservées dans le dossier sélectionné.</string>
+    <string name="backup_auto_schedule_day_of_month_description">Sélectionnez le jour du mois pour les sauvegardes automatiques mensuelles.</string>
+    <string name="backup_auto_schedule_day_of_week_description">Sélectionnez le jour de la semaine pour les sauvegardes automatiques hebdomadaires.</string>
+    <string name="backup_auto_schedule_time_description">Sélectionnez l\'heure à laquelle les sauvegardes automatiques programmées doivent s\'exécuter.</string>
+    <string name="backup_auto_target_description">Choisissez si les sauvegardes automatiques doivent inclure la base de données, les paramètres, ou les deux.</string>
     <string name="backup_before_update_description">Sauvegarder automatiquement les données avant d\'installer une mise à jour</string>
     <string name="backup_before_update_failed">Échec de la sauvegarde préalable à l\'installation</string>
     <string name="backup_before_update_running_message">Sauvegarder les données avant l\'installation…</string>
@@ -260,12 +260,12 @@
     <!-- Cache -->
     <string name="cache_action_reset">Réinitialiser le cache</string>
     <string name="cache_clear_song_dialog_title">Vider le cache des morceaux</string>
-    <string name="cache_downloads_max_size_description">Choose how much disk space is available for downloaded songs. The trash button removes downloaded audio.</string>
-    <string name="cache_image_max_size_description">Limit disk space used by cached artwork. The trash button clears downloaded images from this cache.</string>
-    <string name="cache_location_description">Choose where the app stores its song playback cache.</string>
+    <string name="cache_downloads_max_size_description">Choisissez l\'espace disque à allouer aux morceaux téléchargés. Le bouton « Corbeille » permet de supprimer les fichiers audio téléchargés.</string>
+    <string name="cache_image_max_size_description">Limitez l\'espace disque utilisé par les illustrations mises en cache. Le bouton « Corbeille » permet de supprimer les images téléchargées de ce cache.</string>
+    <string name="cache_location_description">Choisissez l\'emplacement où l\'application stocke son cache de lecture des morceaux.</string>
     <string name="cache_location_private">Privé</string>
     <string name="cache_location_system">Système</string>
-    <string name="cache_streaming_max_size_description">Limit disk space used to cache streamed songs. The trash button clears this playback cache.</string>
+    <string name="cache_streaming_max_size_description">Limitez l\'espace disque utilisé pour mettre en cache les morceaux diffusés en streaming. Le bouton « Corbeille » permet de vider ce cache de lecture.</string>
     <!-- Calendar -->
     <string name="calendar_days_ago">Il y a %d jours</string>
     <string name="calendar_last_week">Semaine dernière</string>
@@ -330,7 +330,7 @@
     <string name="common_content_explicit_label">Explicite</string>
     <string name="common_debug_background">fond d\'écran</string>
     <string name="common_debug_title">Débogage</string>
-    <string name="common_debug_width">width</string>
+    <string name="common_debug_width">largeur</string>
     <string name="common_delete_success">Supprimé</string>
     <string name="common_description_unavailable">Aucune description disponible</string>
     <string name="common_duration_milliseconds_format">%1$d ms</string>
@@ -380,7 +380,7 @@
     <string name="discord_activity_name_description">Set the application name displayed in your Discord activity.</string>
     <string name="discord_activity_playing">Jouer</string>
     <string name="discord_activity_type">Type d\'activité</string>
-    <string name="discord_activity_type_description">Choose the activity category shown on your Discord profile.</string>
+    <string name="discord_activity_type_description">Choisissez la catégorie d\'activité qui apparaît sur votre profil Discord.</string>
     <string name="discord_activity_watching">Regarder</string>
     <string name="discord_advanced_button1">Bouton 1</string>
     <string name="discord_advanced_button2">Bouton 2</string>
@@ -417,20 +417,20 @@
     <string name="discord_advanced_show_timestamps">Afficher la barre de progression</string>
     <string name="discord_advanced_show_timestamps_description">Afficher la barre de progression de la lecture avec les horodatages</string>
     <string name="discord_advanced_state">Modèle d\'état</string>
-    <string name="discord_artwork_tooltip_description">Set the tooltip shown over the large artwork image on Discord.</string>
+    <string name="discord_artwork_tooltip_description">Configurez l\'info-bulle qui s\'affiche au-dessus de la grande image d\'illustration sur Discord.</string>
     <string name="discord_beta_warning">Ceci est toujours en bêta et peut contenir des bugs et des plantages</string>
     <string name="discord_connected_to_discord_account">Connecté au compte Discord</string>
-    <string name="discord_details_template_description">Set the main activity line using track information placeholders.</string>
+    <string name="discord_details_template_description">Définissez la ligne d\'activité principale à l\'aide des espaces réservés d\'informations de piste.</string>
     <string name="discord_enable_rich_presence">Activer Rich Presence (Discord)</string>
-    <string name="discord_enabled_description">Share your current listening activity on your Discord profile.</string>
+    <string name="discord_enabled_description">Partagez ce que vous écoutez actuellement sur votre profil Discord.</string>
     <string name="discord_error_banner_title">Problème lié à la fonctionnalité « Rich Presence » sur Discord</string>
     <string name="discord_error_dismiss">Ignorer</string>
     <string name="discord_error_invalid_token">Votre jeton Discord a été refusé (non valide ou périmé). Mettez à jour votre jeton, puis redémarrez l\'application.</string>
     <string name="discord_error_reconnect_failed">La fonctionnalité « Rich Presence » de Discord n\'a pas pu se reconnecter après plusieurs échecs. Elle reprendra lors du prochain événement multimédia ou changement de jeton.</string>
-    <string name="discord_first_button_enabled_description">Show the first link button on your Discord activity.</string>
-    <string name="discord_first_button_label_description">Set the text displayed on the first Discord activity button.</string>
-    <string name="discord_first_button_url_description">Set the web address opened by the first Discord activity button.</string>
-    <string name="discord_login_description">Connect your Discord account or sign out of the current session.</string>
+    <string name="discord_first_button_enabled_description">Affichez le bouton du premier lien dans votre historique d\'activité sur Discord.</string>
+    <string name="discord_first_button_label_description">Définissez le texte qui s\'affiche sur le premier bouton d\'activité de Discord.</string>
+    <string name="discord_first_button_url_description">Définissez l\'adresse Web ouverte par le premier bouton d\'activité Discord.</string>
+    <string name="discord_login_description">Connectez-vous à votre compte Discord ou déconnectez-vous de la session en cours.</string>
     <string name="discord_logo_tooltip_description">Set the tooltip shown over the small logo on Discord.</string>
     <string name="discord_pause_presence">Afficher la présence en pause</string>
     <string name="discord_pause_presence_description">Afficher l\'état « en pause » (⏸︎) lorsque la musique est en pause</string>
@@ -445,10 +445,10 @@
     <string name="discord_preview_state_playing">Jouer</string>
     <string name="discord_preview_title">Aperçu de Rich Presence</string>
     <string name="discord_rpc_reconnect_failed">La fonctionnalité « Rich Presence » de Discord n\'a pas pu se reconnecter ; les mises à jour de statut sont suspendues jusqu\'au prochain changement de média ou à une reconnexion manuelle.</string>
-    <string name="discord_second_button_enabled_description">Show the second link button on your Discord activity.</string>
-    <string name="discord_second_button_label_description">Set the text displayed on the second Discord activity button.</string>
+    <string name="discord_second_button_enabled_description">Affichez le bouton du deuxième lien dans votre historique d\'activité sur Discord.</string>
+    <string name="discord_second_button_label_description">Définissez le texte qui s\'affiche sur le deuxième bouton d\'activité de Discord.</string>
     <string name="discord_second_button_url_description">Set the web address opened by the second Discord activity button.</string>
-    <string name="discord_state_template_description">Set the secondary activity line using track information placeholders.</string>
+    <string name="discord_state_template_description">Définissez la ligne d\'activité secondaire à l\'aide des espaces réservés d\'informations de piste.</string>
     <string name="discord_template_unknown_album">Album inconnu</string>
     <string name="discord_token_text_invalid">Votre jeton Discord n\'est pas valide, veuillez vous reconnecter</string>
     <!-- Downloads -->
@@ -456,7 +456,7 @@
     <string name="downloads_action_refresh_quality">Téléchargements de mises à jour</string>
     <string name="downloads_action_remove_all">Supprimer tous les titres téléchargés</string>
     <string name="downloads_action_resume">Reprendre</string>
-    <string name="downloads_audio_quality_description">Choose the preferred audio format and quality for new downloads.</string>
+    <string name="downloads_audio_quality_description">Choisissez le format audio et la qualité souhaités pour les nouveaux téléchargements.</string>
     <string name="downloads_cancelled">Téléchargement annulé</string>
     <string name="downloads_completed">%1$d terminé</string>
     <string name="downloads_completed_with_failed">%1$d terminé, %2$d a échoué</string>
@@ -495,7 +495,7 @@
     <string name="gestures_album_track_swipe_right_description">Choisissez l\'action à effectuer en faisant glisser vers la droite un morceau de l\'album.</string>
     <string name="gestures_playlist_track_swipe_left_description">Choisissez l\'action à effectuer en faisant glisser vers la gauche un titre de la playlist.</string>
     <string name="gestures_playlist_track_swipe_right_description">Choisissez l\'action à effectuer en faisant glisser vers la droite un titre de la playlist.</string>
-    <string name="gestures_queue_item_swipe_left_description">Choose the action performed by swiping a queue item left.</string>
+    <string name="gestures_queue_item_swipe_left_description">Choisissez l\'action à effectuer en faisant glisser un élément de la file d\'attente vers la gauche.</string>
     <string name="gestures_queue_item_swipe_right_description">Choisissez l\'action à effectuer en faisant glisser vers la droite un élément de la file d\'attente.</string>
     <!-- Glass -->
     <string name="glass_effect_action_play_all">Play all quick picks</string>
@@ -2545,14 +2545,14 @@ Volume BAS : titre précédent</string>
     <string name="settings_service_ignore_battery_optimizations_label">Ignorer les optimisations de la batterie</string>
     <string name="settings_service_keep_screen_on_description">Empêche la mise en veille de l\'écran</string>
     <string name="settings_service_keep_screen_on_label">Garder l\'écran allumé</string>
-    <string name="settings_service_lifetime_battery_optimization_exemption_description">Allow unrestricted background operation so the system is less likely to interrupt playback.</string>
+    <string name="settings_service_lifetime_battery_optimization_exemption_description">Autoriser le fonctionnement en arrière-plan sans restriction afin que le système soit moins susceptible d\'interrompre la lecture.</string>
     <string name="settings_stream_disabled_clients_title">Clients de streaming désactivés</string>
     <string name="settings_stream_preferred_client_changed_message">Le client privilégié a changé. Ce changement s\'appliquera au titre suivant.</string>
     <string name="settings_stream_preferred_client_title">Client de Streaming Préféré</string>
     <string name="settings_swipe_actions_description">Activer le menu d\'action en faisant glisser le titre vers la gauche ou la droite</string>
     <string name="settings_swipe_actions_title">Action associée au balayage</string>
     <string name="settings_target_gain_loudness_info">Gain cible pour la normalisation du volume sonore</string>
-    <string name="settings_target_unavailable">This setting is unavailable with the current configuration. Its section is shown instead.</string>
+    <string name="settings_target_unavailable">Ce paramètre n\'est pas disponible dans la configuration actuelle. Sa section s\'affiche à la place.</string>
     <string name="settings_theme_accent_color_label">Couleur d\'accentuation</string>
     <string name="settings_theme_background_1_color_label">Arrière-plan 1</string>
     <string name="settings_theme_background_2_color_label">Arrière-plan 2</string>
@@ -2566,8 +2566,8 @@ Volume BAS : titre précédent</string>
     <string name="settings_theme_dark_colors_reset_title">Réinitialiser les couleurs sombres personnalisées</string>
     <string name="settings_theme_dark_mode_label">Sombre</string>
     <string name="settings_theme_disabled_text_color_label">Texte désactivé</string>
-    <string name="settings_theme_keep_dark_mode_description">Disable monochrome luminance adaptation in both dark and light modes to avoid bright flashes from light covers.</string>
-    <string name="settings_theme_keep_dark_mode_label">Keep dark mode</string>
+    <string name="settings_theme_keep_dark_mode_description">Désactivez l\'adaptation de la luminance monochrome en mode sombre et en mode clair afin d\'éviter les flashs lumineux provenant des couvercles clairs.</string>
+    <string name="settings_theme_keep_dark_mode_label">Conserver le mode sombre</string>
     <string name="settings_theme_light_colors_reset_confirmation">Voulez-vous vraiment réinitialiser les couleurs personnalisées du thème clair ?</string>
     <string name="settings_theme_light_colors_reset_description">Cliquez pour réinitialiser les couleurs claires par défaut</string>
     <string name="settings_theme_light_colors_reset_title">Réinitialiser les couleurs claires personnalisées</string>
@@ -2597,7 +2597,7 @@ Volume BAS : titre précédent</string>
     <string name="settings_youtube_login_enabled_label">Activer la connexion à YouTube Music</string>
     <string name="settings_youtube_music_title">YouTube Music</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Do you want to delete all downloads (%d songs)?</string>
+    <string name="library_cleanup_all_downloads_confirmation">Souhaitez-vous supprimer tous les fichiers téléchargés (%d titres) ?</string>
     <string name="library_cleanup_all_favorites_confirmation">Voulez-vous supprimer tous les favoris %d?</string>
     <string name="library_cleanup_all_listening_history_confirmation">Voulez-vous réinitialiser l\'historique d\'écoute pour les chansons %d?</string>
     <string name="library_cleanup_all_songs_confirmation">⚠️ AVERTISSEMENT : Ceci SUPPRIMER PERMANENTEMENT toutes les chansons %d et les retirera de TOUTES les playlists. Cette action ne peut pas être annulée !</string>
@@ -2632,7 +2632,7 @@ Volume BAS : titre précédent</string>
     <string name="statistics_items_limit_unlimited">Illimité</string>
     <string name="statistics_listening_totals_description">Affiche le nombre de titres écoutées et leur temps d\'écoute</string>
     <string name="statistics_max_number_of_items">Nombre maximal d\'éléments</string>
-    <string name="statistics_maximum_items_description">Limit the number of entries shown in listening statistics.</string>
+    <string name="statistics_maximum_items_description">Limiter le nombre d\'entrées affichées dans les statistiques d\'écoute.</string>
     <string name="statistics_of_time_taken">du temps écoulé</string>
     <string name="statistics_open_desc">Ouvrez l\'écran « Statistiques »</string>
     <string name="statistics_playback_duration_label">Durée d’écoute</string>
@@ -2640,11 +2640,11 @@ Volume BAS : titre précédent</string>
     <string name="statistics_title">Statistiques</string>
     <string name="statistics_top_period_title">Voir le top %s de …</string>
     <!-- Storage -->
-    <string name="storage_samsung_action_keep_system">Keep system storage</string>
-    <string name="storage_samsung_action_use_private">Use private storage</string>
-    <string name="storage_samsung_advice_message">Samsung\'s automatic memory management can delete N-Zik\'s downloads and cache files, even when you did not ask for it. To keep your downloads safe, use the private (app) storage location instead of system storage.</string>
-    <string name="storage_samsung_advice_title">Samsung storage advice</string>
-    <string name="storage_samsung_system_usage_message">You currently have %1$s of downloads and cache on system storage.</string>
+    <string name="storage_samsung_action_keep_system">Conserver l\'espace de stockage du système</string>
+    <string name="storage_samsung_action_use_private">Utiliser un espace de stockage privé</string>
+    <string name="storage_samsung_advice_message">La gestion automatique de la mémoire de Samsung peut supprimer les fichiers téléchargés et mis en cache par N-Zik, même si vous ne l\'avez pas demandé. Pour protéger vos téléchargements, utilisez l\'espace de stockage privé (de l\'application) plutôt que l\'espace de stockage système.</string>
+    <string name="storage_samsung_advice_title">Conseils de Samsung en matière de stockage</string>
+    <string name="storage_samsung_system_usage_message">Vous disposez actuellement de %1$s de fichiers téléchargés et mis en cache sur le stockage système.</string>
     <!-- Sync -->
     <string name="sync_action_sync">Synchronise</string>
     <string name="sync_albums">Synchronisation automatique des albums enregistrés</string>
@@ -2659,7 +2659,7 @@ Volume BAS : titre précédent</string>
     <string name="sync_data_with_ytm_account">Synchroniser les données avec le compte YTM</string>
     <string name="sync_direction">Sens de synchronisation</string>
     <string name="sync_direction_app_to_yt">Application → YouTube uniquement</string>
-    <string name="sync_direction_description">Choose whether synchronization imports from YouTube, sends local changes, or works in both directions.</string>
+    <string name="sync_direction_description">Choisissez si la synchronisation doit importer des données depuis YouTube, envoyer les modifications locales ou fonctionner dans les deux sens.</string>
     <string name="sync_direction_two_way">Dans les deux sens (Application ↔ YouTube)</string>
     <string name="sync_direction_yt_to_app">YouTube → Application uniquement</string>
     <string name="sync_failed">Échec de la synchronisation</string>
@@ -2734,27 +2734,27 @@ Volume BAS : titre précédent</string>
     <string name="sync_youtube_unlike_success">Le titre n\'est pas apprécié sur YouTube</string>
     <!-- Theme -->
     <string name="theme_custom_accent_description">Choisissez la couleur d\'accent personnalisée utilisée par ce thème.</string>
-    <string name="theme_dark_palette_accent_description">Choose the color for accented controls and highlights in the dark palette.</string>
-    <string name="theme_dark_palette_background_1_description">Choose the color for main app background in the dark palette.</string>
-    <string name="theme_dark_palette_background_2_description">Choose the color for secondary surfaces in the dark palette.</string>
-    <string name="theme_dark_palette_background_3_description">Choose the color for tertiary surfaces in the dark palette.</string>
-    <string name="theme_dark_palette_background_4_description">Choose the color for additional background surfaces in the dark palette.</string>
-    <string name="theme_dark_palette_background_5_description">Choose the color for additional background accents in the dark palette.</string>
-    <string name="theme_dark_palette_icon_button_player_description">Choose the color for player control icons in the dark palette.</string>
-    <string name="theme_dark_palette_text_description">Choose the color for primary text in the dark palette.</string>
-    <string name="theme_dark_palette_text_disabled_description">Choose the color for disabled text in the dark palette.</string>
-    <string name="theme_dark_palette_text_secondary_description">Choose the color for secondary text in the dark palette.</string>
-    <string name="theme_light_palette_accent_description">Choose the color for accented controls and highlights in the light palette.</string>
+    <string name="theme_dark_palette_accent_description">Choisissez la couleur des éléments de commande mis en valeur et des surlignages dans la palette sombre.</string>
+    <string name="theme_dark_palette_background_1_description">Choisissez la couleur de l\'arrière-plan principal de l\'application dans la palette sombre.</string>
+    <string name="theme_dark_palette_background_2_description">Choisissez la couleur des surfaces secondaires dans la palette sombre.</string>
+    <string name="theme_dark_palette_background_3_description">Choisissez la couleur des surfaces tertiaires dans la palette sombre.</string>
+    <string name="theme_dark_palette_background_4_description">Choisissez la couleur des surfaces d\'arrière-plan supplémentaires dans la palette sombre.</string>
+    <string name="theme_dark_palette_background_5_description">Choisissez la couleur qui servira à mettre en valeur certains éléments de l\'arrière-plan dans la palette sombre.</string>
+    <string name="theme_dark_palette_icon_button_player_description">Choisissez la couleur des icônes de contrôle du lecteur dans la palette sombre.</string>
+    <string name="theme_dark_palette_text_description">Choisissez la couleur du texte principal dans la palette sombre.</string>
+    <string name="theme_dark_palette_text_disabled_description">Choisissez la couleur du texte désactivé dans la palette sombre.</string>
+    <string name="theme_dark_palette_text_secondary_description">Choisissez la couleur du texte secondaire dans la palette sombre.</string>
+    <string name="theme_light_palette_accent_description">Choisissez la couleur des éléments de commande mis en valeur et des surlignages dans la palette claire.</string>
     <string name="theme_light_palette_background_1_description">Choisissez la couleur de l\'arrière-plan principal de l\'application dans la palette claire.</string>
     <string name="theme_light_palette_background_2_description">Choisissez la couleur des surfaces secondaires dans la palette claire.</string>
     <string name="theme_light_palette_background_3_description">Choisissez la couleur des surfaces tertiaires dans la palette claire.</string>
     <string name="theme_light_palette_background_4_description">Choisissez la couleur des surfaces d\'arrière-plan supplémentaires dans la palette de couleurs claires.</string>
     <string name="theme_light_palette_background_5_description">Choisissez la couleur des accents supplémentaires de l\'arrière-plan dans la palette claire.</string>
-    <string name="theme_light_palette_icon_button_player_description">Choose the color for player control icons in the light palette.</string>
+    <string name="theme_light_palette_icon_button_player_description">Choisissez la couleur des icônes de contrôle du lecteur dans la palette claire.</string>
     <string name="theme_light_palette_text_description">Choisissez la couleur du texte principal dans la palette claire.</string>
-    <string name="theme_light_palette_text_disabled_description">Choose the color for disabled text in the light palette.</string>
-    <string name="theme_light_palette_text_secondary_description">Choose the color for secondary text in the light palette.</string>
-    <string name="theme_mode_description">Choose when the app uses its light or dark palette.</string>
+    <string name="theme_light_palette_text_disabled_description">Choisissez la couleur du texte désactivé dans la palette claire.</string>
+    <string name="theme_light_palette_text_secondary_description">Choisissez la couleur du texte secondaire dans la palette claire.</string>
+    <string name="theme_mode_description">Choisissez quand l\'application utilise sa palette claire ou sombre.</string>
     <string name="theme_mode_pitch_black">Noir Profond</string>
     <string name="theme_palette_custom">Personnalisé</string>
     <string name="theme_palette_description">Choisissez la palette de couleurs à utiliser dans l\'ensemble de l\'application.</string>
@@ -2839,13 +2839,13 @@ Volume BAS : titre précédent</string>
     <string name="visualizer_animation_bubbles">Bulles</string>
     <string name="visualizer_animation_crazy_bars">Barres Folles</string>
     <string name="visualizer_animation_crazy_points">Points Fous</string>
-    <string name="visualizer_artwork_visible_description">Keep album artwork visible with the audio visualization.</string>
-    <string name="visualizer_auto_hide_buttons_description">Display the controls for the audio visualization in the player.</string>
+    <string name="visualizer_artwork_visible_description">Affichez les pochettes d\'album grâce à la visualisation audio.</string>
+    <string name="visualizer_auto_hide_buttons_description">Afficher les commandes de visualisation audio dans le lecteur.</string>
     <string name="visualizer_auto_hide_buttons_title">Masquer automatiquement les boutons du visualiseur</string>
     <string name="visualizer_bar">Barre de visualisation</string>
     <string name="visualizer_color_source">Couleur des Visualiseurs</string>
-    <string name="visualizer_color_source_description">Choose the color source used for the audio visualization.</string>
-    <string name="visualizer_custom_color_description">Choose the custom color used by this component.</string>
+    <string name="visualizer_color_source_description">Sélectionnez la source de couleur utilisée pour la visualisation audio.</string>
+    <string name="visualizer_custom_color_description">Sélectionnez la couleur personnalisée utilisée par ce composant.</string>
     <string name="visualizer_dark_background_description">Use a black background behind the audio visualization.</string>
     <string name="visualizer_dark_background_title">Fond sombre pour le visualiseur</string>
     <string name="visualizer_debug_background">Fond d\'écran</string>
