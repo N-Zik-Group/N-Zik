@@ -160,7 +160,7 @@
     <!-- Recovery -->
     <string name="recovery_accounts_exported">تم تصدير الحالة الشخصية</string>
     <string name="recovery_accounts_imported_base">حالة الملف الشخصي المستورد: الملف الشخصي الأساسي</string>
-    <string name="recovery_accounts_imported_count">حالة الملف الشخصي المستورد: %1$d ملفات شخصية</string>
+    <string name="recovery_accounts_imported_count">اكتمل استيراد حالة الملف الشخصي. عدد الملفات: %1$d</string>
     <string name="recovery_category_all">الكل</string>
     <string name="recovery_category_profile">لكل ملف شخصي</string>
     <string name="recovery_center">مركز الإنقاذ</string>
@@ -309,4 +309,6 @@
     <string name="updates_unavailable_build_description">إذا رأيت هذه الرسالة، فانها تعني أن الإصدار الخاص بك لا يحتوي على تحديث تلقائي، قم بتحديث التطبيق يدوياً من github</string>
     <string name="updates_up_to_date">حتى الآن</string>
     <string name="updates_warning_acknowledge">أنا أفهم</string>
+    <string name="updates_check_failed">تعذر التحقق من وجود تحديثات.</string>
+    <string name="updates_install_generic_error">تعذر تثبيت التحديث.</string>
 </resources>
