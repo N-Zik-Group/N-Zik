@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="common_color_picker_title">Renk seçin</string>
-    <string name="common_content_explicit_label">Açık</string>
-    <string name="common_debug_title">Hata ayıklama</string>
-    <string name="common_information_title">Bilgi</string>
-    <string name="common_limit_unlimited_label">Sınırsız</string>
-    <string name="common_navigation_section_title">Navigasyon</string>
-    <string name="common_other_section_title">Diğerleri</string>
-    <string name="common_playback_section_title">Geri oynat</string>
-    <string name="common_restart_required_title">Yeniden başlatma gereklidir</string>
-    <string name="common_size_label">Boyut</string>
+    <!-- Common -->
+    <string name="common_color_picker_title">Choose color</string>
+    <string name="common_content_explicit_label">Explicit</string>
+    <string name="common_debug_title">Debug</string>
+    <string name="common_information_title">Information</string>
+    <string name="common_limit_unlimited_label">Unlimited</string>
+    <string name="common_navigation_section_title">Navigation</string>
+    <string name="common_other_section_title">Others</string>
+    <string name="common_playback_section_title">Playback</string>
+    <string name="common_restart_required_title">Restart required</string>
+    <string name="common_size_label">Size</string>
 </resources>
