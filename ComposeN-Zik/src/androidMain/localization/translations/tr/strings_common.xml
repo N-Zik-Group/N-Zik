@@ -42,5 +42,5 @@
     <string name="common_validation_name_in_use">Ad zaten kullanılıyor</string>
     <string name="common_value_input_hint">Değeri girin</string>
     <string name="common_unknown">Bilinmeyen</string>
-    <string name="common_duration_minutes_short">%1$d min</string>
+    <string name="common_duration_minutes_short">%1$d dakika</string>
 </resources>
