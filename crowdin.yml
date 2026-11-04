@@ -2,10 +2,8 @@ files:
   - source: /ComposeN-Zik/src/androidMain/res/values/strings.xml
     translation: /ComposeN-Zik/src/androidMain/res/values-%two_letters_code%/strings.xml
 
-  - source: /fastlane/metadata/android/en-US/short_description.txt
+  - source: /fastlane/source/en-US/short_description.txt
     translation: /fastlane/metadata/android/%locale%/short_description.txt
-    excluded_target_languages:
-      - en
     languages_mapping:
       locale:
         af: af
@@ -22,10 +20,8 @@ files:
         tr: tr
         vi: vi
 
-  - source: /fastlane/metadata/android/en-US/full_description.txt
+  - source: /fastlane/source/en-US/full_description.txt
     translation: /fastlane/metadata/android/%locale%/full_description.txt
-    excluded_target_languages:
-      - en
     languages_mapping:
       locale:
         af: af
@@ -42,10 +38,8 @@ files:
         tr: tr
         vi: vi
 
-  - source: /fastlane/metadata/android/en-US/title.txt
+  - source: /fastlane/source/en-US/title.txt
     translation: /fastlane/metadata/android/%locale%/title.txt
-    excluded_target_languages:
-      - en
     languages_mapping:
       locale:
         af: af
