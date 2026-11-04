@@ -1,69 +1,69 @@
-A multilingual YouTube Music frontend for Android, focused on performance, UI/UX refinements, feature expansion, and long-term support.
+Mnohojazyčné YouTube hudební rozhraní pro Android, zaměřené na výkon, UI/UX vylepšení, rozšíření funkcí a dlouhodobou podporu.
 
-<b>N-Zik</b> is an open-source fork of <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+<b>N-Zik</b> je open-source fork <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Note:</b> N-Zik started as a side project. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Poznámka:</b> N-Zik začal jako postranní projekt. Pro dospělé alternativy se podívejte na <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>nebo <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), reviewed and tested before shipping.
+<b>Využití AI:</b> Používám generativní AI pro kód (prostřednictvím <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD metoda</a>) zkontrolováno a testováno před odesláním.
 
-✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI - free, always.
+✨ <b>CO N-ZIK?</b> Žádné reklamy, přehrávání pozadí, offline ukládání do mezipaměti, přizpůsobitelné uživatelské rozhraní - vždy, zdarma.
 
-🎨 <b>Customizable UI</b>
-- Jetpack Compose interface
-- Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
-- 3D Carousel Player, home widgets, unified player and mini-player
-- Artist profiles, Discovery and moods, collapsible home headers
+🎨 <b>Upravitelné uživatelské rozhraní</b>
+- Jetpack vytvořit rozhraní
+- Motivy: AMOLED, hluboké tmavé, Crisp Light + tónované zvýraznění
+- 3D kolotočový přehrávač, domácí widgety, sjednocené hráče a mini-přehrávač
+- Profily umělce, objevování a nálady, sbalitelné hlavičky domů
 
-🫧 <b>Glass Effect (BETA, optional)</b>
-Disabled on fresh installs. Enable in Settings: native, contour-only or Glass by category, with adjustable quality. May increase rendering work and battery use; reduce quality or disable if needed.
-Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+:bubliny: <b>skleněný efekt (BETA, volitelné)</b>
+Zakázáno při čerstvých instalacích. Povolit v nastavení: nativní, pouze pro vzhled nebo sklo podle kategorií, s nastavitelnou kvalitou. Může zvýšit vykreslování a využití baterie; snížit kvalitu nebo v případě potřeby vypnout.
+Skleněné kredity: Square / Convx projekt (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Audio Experience</b>
-- Premium quality via YouTube Music Premium, applied automatically
-- Synced lyrics with editing and real-time translation
-- Song recognition (Shazam-like), voice search, audio visualizer
-- Pro controls: speed, pitch, normalization, crossfade, volume boost, bass boost, reverb
-- Audio Bar waveform seekbar for precise navigation
+- Prémiová kvalita přes YouTube Music Premium, automaticky aplikována
+- Synchronizované texty s úpravami a překlady v reálném čase
+- rozpoznávání skladeb (Shazam-like), hlasové vyhledávání, zvukový vizualizér
+- Pro ovládání: rychlost, posuv, normalizace, křížení, zvýšení hlasitosti, přívržení, zvrácení
+- Panel s vlnovým tvarem zvukového panelu pro přesnou navigaci
 
 💾 <b>Offline, Metadata & Privacy</b>
-- Smart caching and downloads for tracks and playlists, with selectable download quality
-- FFmpeg-powered export with full metadata (FFmpeg is a downloadable extension, installed on first use)
-- In-app metadata editor (AAC/Opus, cover art)
-- Local listening stats and history
-- Auto-backup with custom intervals and retention
+- Chytré ukládání do mezipaměti a stahování pro skladby a skladby s volitelnou kvalitou stahování
+- export na FFmpeg-powered s plnými metadaty (FFmpeg je rozšíření ke stažení, nainstalováno při prvním použití)
+- Editor metadat v aplikaci (AAC/Opus, obálka)
+- Místní statistiky poslech a historie
+- Automatická záloha s vlastními intervaly a uchováním
 
-🔗 <b>Integrations</b>
-- YouTube sign-in for recommendations and video playback, plus an experimental two-way sync engine
-- Last.fm scrobbling with Now Playing and love/unlove
-- MusicBrainz artist and album insights
-- Discord Rich Presence, including advanced mode with live preview
-- Invidious integration for alternative YouTube streaming
-- Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
+🔗 <b>integrace</b>
+- Přihlášení k YouTube pro doporučení a přehrávání videa, plus experimentální obousměrný synchronizační modul
+- Last.fm scrobbling s láskou/nemilovnou
+- Zhlédnutí umělce a alba MusicBrainz
+- Discord Rich Presence, včetně pokročilého režimu s živým náhledem
+- Neviditelná integrace pro alternativní YouTube streamování
+- import/export playlistu: RiPlay, Spotify, YouTube Music, N-Zik
 
-👥 <b>Listen Together</b>
-- Join or host live listening sessions with other users via code or invite link
+👥 <b>Poslechněte společně</b>
+- Připojte se nebo hostte živé poslech s ostatními uživateli prostřednictvím kódu nebo odkazu pozvánky
 
-🗓️ <b>Rewind</b>
-- Yearly and monthly listening recaps with auto-generated Rewind playlists
+🗓️ <b>Znovu</b>
+- Roční a měsíční poslech obnoví automaticky generované seznamy skladeb
 
-📱 <b>Play Anywhere:</b> Android Auto, Automotive, TV, and Tablets
+📱 <b>Play Anywhere:</b> Android Auto, Automotive, TV a tablety
 
-🛠️ <b>Power User Features</b>
-- Multi-profile: isolated database and settings per profile
-- Auto-resume on Bluetooth connect, persistent queue, auto-fill queue
-- Smart trash, hidden songs, dislike system, parental control
-- Proxy support, network quality adaptation, log export
-- Rescue Center, maintenance screen, onboarding, app shortcuts
-- OTA updates from GitHub, sleep timer, background playback
+🛠️ <b>Funkce uživatele</b>
+- Vícenásobný profil: izolovaná databáze a nastavení podle profilu
+- Automatické obnovení při připojení Bluetooth, trvalé frontě, automatickém vyplňování fronty
+- Chytrý koš, skryté skladby, bez chutného systému, rodičovské ovládání
+- Proxy podpora, úprava kvality sítě, export protokolu
+- Záchranné centrum, obrazovka údržby, zapojení, zkratky aplikací
+- OTA aktualizace z GitHubu, časovače spánku, přehrávání na pozadí
 
-📦 <b>Available Builds</b>
-- Release64/Beta64 (`com.nevar.nzik`): Complete build, 64-bit devices only
-- Release32/Beta32 (`com.nevar.nzik`): Complete build, 32-bit devices only
-- Minified64 (`com.nevar.nzik`): Lightweight R8 build, for low-end devices (64-bit)
+📦 <b>Dostupné sestavení</b>
+- Release64/Beta64 (`com.nevar.nzik`): Pouze kompletní sestavení, 64bitová zařízení
+- Release32/Beta32 (`com.nevar.nzik`): Pouze kompletní 32-bitová zařízení
+- Minified64 (`com.nevar.nzik`): lehká R8 postavená pro nízkokoncová zařízení (64-bit)
 - Minified32 (`com.nevar.nzik`): Lightweight R8 build (32-bit)
-- FOSS (`com.nevar.nzik.foss`): Without auto-updater, for F-Droid (all architectures)
-- Dev64/Dev32 (`com.nevar.nzik.dev`): Development builds, testing only
+- FOSS (`com.nevar.nzik.foss`): bez auto-updateru pro F-Droid (všechny architektury)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Vývojové sestavení, pouze testovací
 
-No build bundles FFmpeg: it is a downloadable extension (installed on first use, managed in Settings → Extensions). Only FOSS is on F-Droid.
+Žádné balíčky sestavení FFmpeg: je to rozšíření ke stažení (nainstalované při prvním použití, řízené v Nastavení → Rozšíření). Pouze FOSS je na F-Droid.
 
-Historical project credits include ViMusic.
+Historické kredity projektu zahrnují ViMusic.
