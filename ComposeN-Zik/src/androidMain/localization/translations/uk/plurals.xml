@@ -2,39 +2,63 @@
 <resources>
     <!-- Maintenance -->
     <plurals name="maintenance_systems_need_attention">
-        <item quantity="one">%d system needs attention</item>
-        <item quantity="few">%d systems need attention</item>
-        <item quantity="many">%d systems need attention</item>
-        <item quantity="other">%d systems need attention</item>
+        <item quantity="one">Система %d потребує уваги</item>
+        <item quantity="few">Системі %d потрібна увага</item>
+        <item quantity="many">Системі %d потрібна увага</item>
+        <item quantity="other">Системі %d потрібна увага</item>
     </plurals>
     <plurals name="sync_detail_songs_liked">
-        <item quantity="one">%1$d song liked</item>
-        <item quantity="few">%1$d songs liked</item>
-        <item quantity="many">%1$d songs liked</item>
-        <item quantity="other">%1$d songs liked</item>
+        <item quantity="one">Пісню сподобався %1$d</item>
+        <item quantity="few">Пісню сподобався %1$d</item>
+        <item quantity="many">Пісню сподобався %1$d</item>
+        <item quantity="other">Пісню сподобався %1$d</item>
     </plurals>
     <plurals name="sync_detail_playlists_synced">
-        <item quantity="one">%1$d playlist synced</item>
-        <item quantity="few">%1$d playlists synced</item>
-        <item quantity="many">%1$d playlists synced</item>
-        <item quantity="other">%1$d playlists synced</item>
+        <item quantity="one">%1$d список відтворення синхронізується</item>
+        <item quantity="few">%1$d плейлисти синхронізовано</item>
+        <item quantity="many">%1$d плейлисти синхронізовано</item>
+        <item quantity="other">%1$d плейлисти синхронізовано</item>
     </plurals>
     <plurals name="sync_detail_songs_imported">
-        <item quantity="one">%1$d song imported</item>
-        <item quantity="few">%1$d songs imported</item>
-        <item quantity="many">%1$d songs imported</item>
-        <item quantity="other">%1$d songs imported</item>
+        <item quantity="one">%1$d пісню імпортовано</item>
+        <item quantity="few">%1$d пісень імпортовано</item>
+        <item quantity="many">%1$d пісень імпортовано</item>
+        <item quantity="other">%1$d пісень імпортовано</item>
     </plurals>
     <plurals name="sync_detail_albums_imported">
-        <item quantity="one">%1$d album imported</item>
-        <item quantity="few">%1$d albums imported</item>
-        <item quantity="many">%1$d albums imported</item>
-        <item quantity="other">%1$d albums imported</item>
+        <item quantity="one">%1$d імпортовано альбом</item>
+        <item quantity="few">%1$d альбоми імпортовано</item>
+        <item quantity="many">%1$d альбоми імпортовано</item>
+        <item quantity="other">%1$d альбоми імпортовано</item>
     </plurals>
     <plurals name="sync_detail_episodes">
-        <item quantity="one">%1$d episode</item>
-        <item quantity="few">%1$d episodes</item>
-        <item quantity="many">%1$d episodes</item>
-        <item quantity="other">%1$d episodes</item>
+        <item quantity="one">%1$d епізод,</item>
+        <item quantity="few">%1$d епізодів</item>
+        <item quantity="many">%1$d епізодів</item>
+        <item quantity="other">%1$d епізодів</item>
+    </plurals>
+    <plurals name="library_song_count">
+        <item quantity="one">%1$d пісня</item>
+        <item quantity="few">%1$d пісень</item>
+        <item quantity="many">%1$d пісень</item>
+        <item quantity="other">%1$d пісень</item>
+    </plurals>
+    <plurals name="about_translator_count">
+        <item quantity="one">%1$d translator</item>
+        <item quantity="few">%1$d перекладачі</item>
+        <item quantity="many">%1$d перекладачі</item>
+        <item quantity="other">%1$d перекладачі</item>
+    </plurals>
+    <plurals name="about_developer_designer_count">
+        <item quantity="one">%1$d розробник / дизайнер</item>
+        <item quantity="few">%1$d developers / designers</item>
+        <item quantity="many">%1$d developers / designers</item>
+        <item quantity="other">%1$d developers / designers</item>
+    </plurals>
+    <plurals name="statistics_songs_heard_count">
+        <item quantity="one">%1$d song heard</item>
+        <item quantity="few">%1$d songs heard</item>
+        <item quantity="many">%1$d songs heard</item>
+        <item quantity="other">%1$d songs heard</item>
     </plurals>
 </resources>
