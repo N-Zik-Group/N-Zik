@@ -1139,7 +1139,7 @@
     <string name="maintenance_yt_session">Sessão do YouTube</string>
     <string name="maintenance_yt_valid">Valid</string>
     <!-- Metadata -->
-    <string name="metadata_action_change_artists">Alterar Autores</string>
+    <string name="metadata_action_change_artists">Atualizar Autores</string>
     <string name="metadata_action_change_cover">Atualizar a Capa</string>
     <string name="metadata_action_change_title">Atualizar o Título</string>
     <string name="metadata_action_edit">Editar Metadados</string>
