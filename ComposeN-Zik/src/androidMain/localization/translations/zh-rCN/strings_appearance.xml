@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Glass -->
     <string name="glass_effect_action_play_all">Play all quick picks</string>
     <string name="glass_effect_action_shuffle">Shuffle quick picks</string>
     <string name="glass_effect_active_tab_indicator">Active tab</string>
@@ -149,7 +150,9 @@
     <string name="glass_effect_where_search_bars">Glass on search bars</string>
     <string name="glass_effect_where_search_bars_description">The boxes where you type a search, including settings searches.</string>
     <string name="glass_effect_windows_summary">Change menus, pop-up windows and short messages.</string>
-    <string name="image_error_unknown">未知错误</string>
+    <!-- Image -->
+    <string name="image_error_unknown">Unknown error</string>
+    <!-- Interface -->
     <string name="interface_artist_image_roundness_description">Adjust the corner rounding of artist images.</string>
     <string name="interface_corner_roundness_description">Adjust the rounding of interface cards and controls.</string>
     <string name="interface_default_page_description">Choose which page opens when the app starts.</string>
@@ -161,32 +164,35 @@
     <string name="interface_player_position_description">Choose where the player is placed in the interface.</string>
     <string name="interface_show_floating_icon_description">Display a floating shortcut that opens search.</string>
     <string name="interface_transition_effect_description">Choose the animation used when moving between screens.</string>
-    <string name="player_controls_style_essential">基本</string>
-    <string name="player_controls_style_modern">现代</string>
+    <!-- Player Appearance -->
+    <string name="player_controls_style_essential">Essential</string>
+    <string name="player_controls_style_modern">Modern</string>
     <string name="player_cover_style_cd">CD</string>
-    <string name="player_cover_style_cd_with_cover">带封面的 CD</string>
-    <string name="player_cover_style_vinyl">黑胶唱片</string>
-    <string name="player_like_icon_apple">苹果风格</string>
-    <string name="player_like_icon_brilliant">杰出风格</string>
-    <string name="player_like_icon_broken">破碎风格</string>
-    <string name="player_like_icon_cute">特殊形状风格</string>
-    <string name="player_like_icon_gift">礼物风格</string>
-    <string name="player_like_icon_striped">条纹风格</string>
-    <string name="player_progress_both">两者</string>
-    <string name="player_progress_mini_player">最小化播放器</string>
-    <string name="settings_action_bar_show_lyrics_button">显示歌词按钮</string>
+    <string name="player_cover_style_cd_with_cover">CD with Cover</string>
+    <string name="player_cover_style_vinyl">Vinyl</string>
+    <string name="player_like_icon_apple">Apple</string>
+    <string name="player_like_icon_brilliant">Brilliant</string>
+    <string name="player_like_icon_broken">Broken</string>
+    <string name="player_like_icon_cute">Cute</string>
+    <string name="player_like_icon_gift">Gift</string>
+    <string name="player_like_icon_striped">Striped</string>
+    <string name="player_progress_both">Both</string>
+    <string name="player_progress_mini_player">Minimized player</string>
+    <string name="settings_action_bar_show_lyrics_button">Lyrics button</string>
+    <!-- Player Background -->
     <string name="player_background_black_cherry_cosmos">Black Cherry Cosmos</string>
-    <string name="player_background_glossy_gradient">光滑渐变</string>
+    <string name="player_background_glossy_gradient">Glossy Gradient</string>
     <string name="player_background_golden_magma">Golden Magma</string>
-    <string name="player_background_gradient_flow">渐变流动</string>
-    <string name="player_background_ice_reflection">冰面反射效果</string>
-    <string name="player_background_ink_flow">墨水流动</string>
-    <string name="player_background_linear_gradient">线性渐变</string>
-    <string name="player_background_mesh_gradient">网格渐变</string>
-    <string name="player_background_mesmerizing_lens">迷人镜头</string>
+    <string name="player_background_gradient_flow">Gradient Flow</string>
+    <string name="player_background_ice_reflection">Ice Reflection</string>
+    <string name="player_background_ink_flow">Ink Flow</string>
+    <string name="player_background_linear_gradient">Linear Gradient</string>
+    <string name="player_background_mesh_gradient">Mesh Gradient</string>
+    <string name="player_background_mesmerizing_lens">Mesmerizing Lens</string>
     <string name="player_background_oil_flow">Oil Flow</string>
-    <string name="player_background_purple_liquid">紫色液体</string>
+    <string name="player_background_purple_liquid">Purple Liquid</string>
     <string name="player_background_stage">Stage</string>
+    <!-- Theme -->
     <string name="theme_custom_accent_description">Choose the custom accent color used by this theme.</string>
     <string name="theme_dark_palette_accent_description">Choose the color for accented controls and highlights in the dark palette.</string>
     <string name="theme_dark_palette_background_1_description">Choose the color for main app background in the dark palette.</string>
@@ -209,24 +215,26 @@
     <string name="theme_light_palette_text_disabled_description">Choose the color for disabled text in the light palette.</string>
     <string name="theme_light_palette_text_secondary_description">Choose the color for secondary text in the light palette.</string>
     <string name="theme_mode_description">Choose when the app uses its light or dark palette.</string>
-    <string name="theme_mode_pitch_black">纯黑</string>
-    <string name="theme_palette_custom">自定义</string>
+    <string name="theme_mode_pitch_black">Pitch Black</string>
+    <string name="theme_palette_custom">Customized</string>
     <string name="theme_palette_description">Choose the color palette used throughout the app.</string>
-    <string name="theme_palette_dynamic">动态</string>
+    <string name="theme_palette_dynamic">Dynamic</string>
     <string name="theme_palette_material_you">Material You</string>
-    <string name="theme_palette_modern_black">现代黑色</string>
-    <string name="theme_palette_pure_black">纯黑</string>
+    <string name="theme_palette_modern_black">Modern Black</string>
+    <string name="theme_palette_pure_black">Pure Black</string>
     <string name="theme_shake_sensitivity_disabled">Disabled</string>
     <string name="theme_shake_sensitivity_high">High (2.2G)</string>
     <string name="theme_shake_sensitivity_low">Low (5.0G)</string>
     <string name="theme_shake_sensitivity_medium">Medium (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Very High (1.0G)</string>
-    <string name="thumbnail_action_edit">编辑缩略图</string>
+    <!-- Thumbnail -->
+    <string name="thumbnail_action_edit">Edit Thumbnail</string>
     <string name="thumbnail_action_pick_from_gallery">Pick from gallery</string>
-    <string name="thumbnail_action_reset">重置缩略图</string>
-    <string name="thumbnail_empty">无缩略图</string>
+    <string name="thumbnail_action_reset">Reset Thumbnail</string>
+    <string name="thumbnail_empty">No Thumbnail Present</string>
     <string name="thumbnail_layout_dialog_title">Thumbnail layout</string>
-    <string name="thumbnail_not_selected">未选定缩略图</string>
-    <string name="thumbnail_remove_failed">删除缩略图失败</string>
-    <string name="thumbnail_remove_success">删除缩略图</string>
+    <string name="thumbnail_not_selected">Thumbnail Not Selected</string>
+    <string name="thumbnail_remove_failed">Failed to Remove Thumbnail</string>
+    <string name="thumbnail_remove_success">Removed Thumbnail</string>
+    <string name="glass_effect_rendering_quality">Rendering quality</string>
 </resources>
