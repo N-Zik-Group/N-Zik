@@ -8,13 +8,13 @@
     <string name="about_contributors_alphabetical_order_label">В алфавитном порядке:</string>
     <string name="about_debug_developers_rotation">ротация разработчиков</string>
     <string name="about_debug_translators_rotation">переводчики_вращения</string>
-    <string name="about_developers_description">Show or hide the developers and designers who contributed to the app.</string>
+    <string name="about_developers_description">Показать или скрыть разработчиков и дизайнеров, которые внесли свой вклад в приложение.</string>
     <string name="about_developers_designers_title">Разработчики / Дизайнеры</string>
     <string name="about_github_link_description">Вы будете перенаправлены на сайт GitHub</string>
-    <string name="about_report_issue_description">Open the GitHub bug report form to describe a problem.</string>
-    <string name="about_request_feature_description">Open the GitHub feature request form to suggest an improvement.</string>
-    <string name="about_source_code_description">Open the source code repository on GitHub.</string>
+    <string name="about_report_issue_description">Откройте форму отчета об ошибке GitHub, чтобы описать проблему.</string>
+    <string name="about_request_feature_description">Откройте форму запроса на GitHub, чтобы предложить улучшение.</string>
+    <string name="about_source_code_description">Откройте репозиторий исходного кода на GitHub.</string>
     <string name="about_title">Инфо</string>
-    <string name="about_translators_description">Show or hide the people who translated the app.</string>
+    <string name="about_translators_description">Показать/скрыть людей, которые перевели приложение.</string>
     <string name="about_translators_title">Переводчики</string>
 </resources>
