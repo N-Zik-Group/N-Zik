@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Account -->
     <string name="account_action_login">Log in</string>
     <string name="account_action_logout">Log off</string>
     <string name="account_youtube_login_description">Connect your YouTube account or sign out of the current session.</string>
     <string name="account_youtube_login_enabled_description">Allow YouTube account sign-in for personalized browsing and synchronization.</string>
+    <!-- Account Youtube -->
     <string name="account_youtube_cookie_invalid">YouTube cookie is invalid, please log in again</string>
     <string name="account_youtube_login_success">YouTube login successful</string>
     <string name="account_youtube_session_expired">YouTube session expired, please sign in again</string>
+    <!-- Discord -->
     <string name="discord_activity_competing">Competing</string>
     <string name="discord_activity_listening">Listening</string>
     <string name="discord_activity_name_description">Set the application name displayed in your Discord activity.</string>
@@ -76,13 +79,14 @@
     <string name="discord_preview_state_paused">Paused</string>
     <string name="discord_preview_state_playing">Playing</string>
     <string name="discord_preview_title">Rich Presence preview</string>
-    <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
+    <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates stopped until the next media change or manual reconnect</string>
     <string name="discord_second_button_enabled_description">Show the second link button on your Discord activity.</string>
     <string name="discord_second_button_label_description">Set the text displayed on the second Discord activity button.</string>
     <string name="discord_second_button_url_description">Set the web address opened by the second Discord activity button.</string>
     <string name="discord_state_template_description">Set the secondary activity line using track information placeholders.</string>
     <string name="discord_template_unknown_album">Unknown Album</string>
     <string name="discord_token_text_invalid">Your Discord token is invalid, please login again</string>
+    <!-- Lastfm -->
     <string name="lastfm_action_failed">Last.fm request failed</string>
     <string name="lastfm_auth_failed">Login failed, check your Last.fm credentials</string>
     <string name="lastfm_connected">Connected to Last.fm account</string>
@@ -107,6 +111,7 @@
     <string name="lastfm_unlove">Unlove on Last.fm</string>
     <string name="lastfm_unloved">Removed from loved tracks</string>
     <string name="lastfm_username">Username</string>
+    <!-- Profile -->
     <string name="profile_action_add">Add profile</string>
     <string name="profile_action_export">Export profiles</string>
     <string name="profile_action_import">Import profiles</string>
@@ -116,14 +121,14 @@
     <string name="profile_avatar_source">Avatar source</string>
     <string name="profile_avatar_source_description">Choose which profile or connected account supplies your avatar.</string>
     <string name="profile_base_name">N-Zik Fan</string>
-    <string name="profile_channel_name">%1$s — %2$s</string>
+    <string name="profile_channel_name">%1$s - %2$s</string>
     <string name="profile_data_downloads">downloads</string>
     <string name="profile_data_images">images</string>
     <string name="profile_data_media_cache">media cache</string>
     <string name="profile_data_status_all_separate">Separate: database, settings, sessions, downloads, media cache, images, waveforms</string>
     <string name="profile_data_status_shared">Separate: database, settings, sessions%1$s · Shared: %2$s</string>
     <string name="profile_data_waveforms">waveforms</string>
-    <string name="profile_database">Cơ sở dữ liệu</string>
+    <string name="profile_database">Database</string>
     <string name="profile_description">Each profile has its own database, settings and face. Switching profiles requires a restart</string>
     <string name="profile_display_name_preview_label">Shown as</string>
     <string name="profile_display_name_source_description">Choose which profile or connected account supplies your displayed name.</string>
@@ -158,7 +163,7 @@
     <string name="profile_photo_remove_description">Remove the saved photo from the current local profile.</string>
     <string name="profile_photo_set">Set</string>
     <string name="profile_remove_confirmation">Remove this profile?</string>
-    <string name="profile_rename">Đổi tên</string>
+    <string name="profile_rename">Rename</string>
     <string name="profile_restart_required">This required a restart of the app</string>
     <string name="profile_share_downloads">Share downloads</string>
     <string name="profile_share_downloads_description">Use the base profile\'s downloads folder and index instead of this profile\'s own. Applies at the next app restart; data already written in this profile\'s own folder stays there</string>
@@ -170,7 +175,8 @@
     <string name="profile_share_waveforms_description">Use the base profile\'s waveforms folder instead of this profile\'s own. Applies at the next app restart; data already written in this profile\'s own folder stays there</string>
     <string name="profile_switch_dialog_title">Switch profile</string>
     <string name="profile_title">Profiles</string>
-    <string name="sync_action_sync">Đồng bộ</string>
+    <!-- Sync -->
+    <string name="sync_action_sync">Sync</string>
     <string name="sync_albums">Auto Sync Saved Albums</string>
     <string name="sync_albums_description">Auto-import liked albums from YouTube Music</string>
     <string name="sync_background_guard">Background Guard</string>
@@ -240,6 +246,7 @@
     <string name="sync_success_notification_artists">Successfully synchronized all artists.</string>
     <string name="sync_success_notification_playlists">Successfully synchronized all playlists.</string>
     <string name="sync_successful">Sync successful</string>
+    <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">Do you want to retry syncing the %1$d failed items?</string>
     <string name="sync_running_status">Syncing...</string>
     <string name="sync_youtube_history_title">YTM History</string>
@@ -255,4 +262,17 @@
     <string name="sync_youtube_songs_remaining">%1$s Songs Remaining</string>
     <string name="sync_youtube_unlike_failed">Failed to unlike the song in YouTube</string>
     <string name="sync_youtube_unlike_success">Song is Unliked in YouTube</string>
+    <string name="sync_starting_notification">Starting sync...</string>
+    <string name="sync_background_notification">Syncing in background...</string>
+    <string name="sync_aborted_network_error">Sync aborted due to network error.</string>
+    <string name="sync_start_service_failed">Failed to start sync service</string>
+    <string name="sync_fetch_subscribed_channels_failed">Failed to fetch subscribed channels</string>
+    <string name="sync_fetch_liked_albums_failed">Failed to fetch liked albums</string>
+    <string name="sync_fetch_liked_songs_failed">Failed to fetch liked songs</string>
+    <string name="sync_fetch_playlists_failed">Failed to fetch playlists</string>
+    <string name="sync_fetch_library_songs_failed">Failed to fetch library songs</string>
+    <string name="sync_fetch_uploaded_songs_failed">Failed to fetch uploaded songs</string>
+    <string name="sync_fetch_uploaded_albums_failed">Failed to fetch uploaded albums</string>
+    <string name="sync_fetch_episodes_failed">Failed to fetch episodes</string>
+    <string name="sync_detail_push_result">%1$d succeeded, %2$d failed</string>
 </resources>
