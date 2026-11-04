@@ -1140,7 +1140,7 @@
     <string name="maintenance_yt_session">YouTube session</string>
     <string name="maintenance_yt_valid">Valid</string>
     <!-- Metadata -->
-    <string name="metadata_action_change_artists">Change Authors</string>
+    <string name="metadata_action_change_artists">Ažuriraj Autore</string>
     <string name="metadata_action_change_cover">Ažuriraj Omot</string>
     <string name="metadata_action_change_title">Ažuriraj Naslov</string>
     <string name="metadata_action_edit">Edit Metadata</string>
