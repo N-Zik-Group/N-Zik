@@ -3,26 +3,42 @@
     <!-- Maintenance -->
     <plurals name="maintenance_systems_need_attention">
         <item quantity="one">%d sistem dikkat gerektiriyor</item>
-        <item quantity="other">%d sistem dikkat gerektiriyor</item>
+        <item quantity="other">%d sistemler dikkat gerektiriyor</item>
     </plurals>
     <plurals name="sync_detail_songs_liked">
-        <item quantity="one">%1$d song liked</item>
-        <item quantity="other">%1$d songs liked</item>
+        <item quantity="one">%1$d şarkı beğenildi</item>
+        <item quantity="other">%1$d şarkılar beğenildi</item>
     </plurals>
     <plurals name="sync_detail_playlists_synced">
-        <item quantity="one">%1$d playlist synced</item>
-        <item quantity="other">%1$d playlists synced</item>
+        <item quantity="one">%1$d çalma listesi senkronize edildi</item>
+        <item quantity="other">%1$d çalma listeleri senkronize edildi</item>
     </plurals>
     <plurals name="sync_detail_songs_imported">
-        <item quantity="one">%1$d song imported</item>
-        <item quantity="other">%1$d songs imported</item>
+        <item quantity="one">%1$d şarkı içe aktarıldı</item>
+        <item quantity="other">%1$d şarkılar içe aktarıldı</item>
     </plurals>
     <plurals name="sync_detail_albums_imported">
-        <item quantity="one">%1$d album imported</item>
-        <item quantity="other">%1$d albums imported</item>
+        <item quantity="one">%1$d albüm içe aktarıldı</item>
+        <item quantity="other">%1$d albümler içe aktarıldı</item>
     </plurals>
     <plurals name="sync_detail_episodes">
-        <item quantity="one">%1$d episode</item>
-        <item quantity="other">%1$d episodes</item>
+        <item quantity="one">%1$d bölüm</item>
+        <item quantity="other">%1$d bölümler</item>
+    </plurals>
+    <plurals name="library_song_count">
+        <item quantity="one">%1$d şarkı</item>
+        <item quantity="other">%1$d şarkılar</item>
+    </plurals>
+    <plurals name="about_translator_count">
+        <item quantity="one">%1$d çevirmen</item>
+        <item quantity="other">%1$d çevirmenler</item>
+    </plurals>
+    <plurals name="about_developer_designer_count">
+        <item quantity="one">%1$d geliştirici / tasarımcı </item>
+        <item quantity="other">%1$d geliştiriciler / tasarımcılar</item>
+    </plurals>
+    <plurals name="statistics_songs_heard_count">
+        <item quantity="one">%1$d şarkı dinlendi</item>
+        <item quantity="other">%1$d şarkılar dinlendi</item>
     </plurals>
 </resources>
