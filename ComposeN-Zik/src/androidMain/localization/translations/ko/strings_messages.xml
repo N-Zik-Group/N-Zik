@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="common_error_connection_timeout">연결 시간 초과</string>
+    <!-- Common -->
+    <string name="common_error_connection_timeout">Connection timeout</string>
     <string name="common_error_no_connection">No Connection</string>
     <string name="common_error_no_internet">인터넷 연결 안됨</string>
-    <string name="common_error_title">오류가 발생했습니다.</string>
-    <string name="common_error_unknown">알 수 없는 오류</string>
+    <string name="common_error_title">An error has occurred.</string>
+    <string name="common_error_unknown">Unknown error</string>
 </resources>
