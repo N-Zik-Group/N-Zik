@@ -21,7 +21,7 @@
     <string name="calendar_period_one_year">1 Year</string>
     <string name="calendar_period_six_months">6 Month</string>
     <string name="calendar_period_three_months">3 month</string>
-    <string name="calendar_this_month">This month</string>
+    <string name="calendar_this_month">Past month</string>
     <string name="calendar_today">Today</string>
     <string name="calendar_yesterday">Yesterday</string>
     <!-- Rewind -->
@@ -46,13 +46,13 @@
     <string name="rewind_badge_tier_0_name">CURIOUS</string>
     <string name="rewind_badge_tier_0_sub">Still finding your sound.</string>
     <string name="rewind_badge_tier_1_name">EXPLORER</string>
-    <string name="rewind_badge_tier_1_sub">You tried a lot.</string>
+    <string name="rewind_badge_tier_1_sub">You tried a lot this year.</string>
     <string name="rewind_badge_tier_2_name">IN ROTATION</string>
     <string name="rewind_badge_tier_2_sub">Music, most days.</string>
     <string name="rewind_badge_tier_3_name">DEDICATED</string>
     <string name="rewind_badge_tier_3_sub">You kept coming back.</string>
     <string name="rewind_badge_tier_4_name">HEAVY ROTATION</string>
-    <string name="rewind_badge_tier_4_sub">Music ran through the whole period.</string>
+    <string name="rewind_badge_tier_4_sub">Music ran through your whole year.</string>
     <string name="rewind_badge_tier_5_name">RELENTLESS</string>
     <string name="rewind_badge_tier_5_sub">You barely hit pause.</string>
     <string name="rewind_badge_tier_6_name">SOUND MACHINE</string>
@@ -67,11 +67,11 @@
     <string name="rewind_days_peak_day">PEAK DAY</string>
     <string name="rewind_days_peak_minutes">PEAK MINUTES</string>
     <string name="rewind_days_peak_sub">DAY %1$s HIT THE HARDEST.</string>
-    <string name="rewind_deep_cuts_empty_body">The next most-played songs will appear here once there is enough listening history.</string>
-    <string name="rewind_deep_cuts_empty_title">DEEP CUTS ARE FORMING</string>
+    <string name="rewind_deep_cuts_empty_body">Songs ranked 6-10 will appear here once there is enough listening history.</string>
+    <string name="rewind_deep_cuts_empty_title">YOUR TOP TEN IS STILL FORMING</string>
     <string name="rewind_deep_cuts_heading">SONGS 6-%1$d.</string>
     <string name="rewind_deep_cuts_kicker">DEEP CUTS • %1$s</string>
-    <string name="rewind_deep_cuts_sub">Your next most-played songs.</string>
+    <string name="rewind_deep_cuts_sub">Your next five most-played songs.</string>
     <string name="rewind_discovery_heading">HOW MUCH YOU\nDISCOVERED.</string>
     <string name="rewind_discovery_kicker">DISCOVERY • %1$s</string>
     <string name="rewind_error_export">Couldn\'t export the Rewind images.</string>
@@ -86,7 +86,7 @@
     <string name="rewind_finale_listener_level">LISTENER LEVEL</string>
     <string name="rewind_finale_play_again">PLAY AGAIN</string>
     <string name="rewind_finale_playlist_updated">PLAYLIST UPDATED</string>
-    <string name="rewind_finale_share">EXPORT ALL PAGES</string>
+    <string name="rewind_finale_share">SHARE REWIND</string>
     <string name="rewind_finale_top_album">TOP ALBUM</string>
     <string name="rewind_finale_top_artist">TOP ARTIST</string>
     <string name="rewind_finale_top_playlist">TOP PLAYLIST</string>
@@ -205,7 +205,7 @@
     <string name="rewind_playlist_notification_description">Tap to open your Rewind playlists.</string>
     <string name="rewind_playlist_notification_title">Your %1$s rewind playlist is ready</string>
     <string name="rewind_settings_enabled">Enable Rewind</string>
-    <string name="rewind_settings_enabled_description">Enable or disable the whole rewind feature: menu item, reminders and playlists.</string>
+    <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
     <string name="rewind_settings_global">All-time rewind</string>
     <string name="rewind_settings_global_description">Show the all-time recap on the Rewind home.</string>
     <string name="rewind_settings_monthly">Monthly rewind</string>
@@ -270,13 +270,12 @@
     <string name="statistics_items_limit_custom">Custom</string>
     <string name="statistics_items_limit_custom_value">Custom (%1$d)</string>
     <string name="statistics_items_limit_unlimited">Unlimited</string>
-    <string name="statistics_listening_totals_description">Show total number of songs heard and playback duration</string>
+    <string name="statistics_listening_totals_description">Shows the number of songs heard and their listening time</string>
     <string name="statistics_max_number_of_items">Max number of items</string>
     <string name="statistics_maximum_items_description">Limit the number of entries shown in listening statistics.</string>
-    <string name="statistics_of_time_taken">time spent</string>
     <string name="statistics_open_desc">Open the Statistics screen</string>
-    <string name="statistics_playback_duration_label">Playback duration</string>
-    <string name="statistics_songs_heard">songs heard</string>
+    <string name="statistics_playback_duration_label">Listening time</string>
     <string name="statistics_title">Statistics</string>
-    <string name="statistics_top_period_title">Top %s of …</string>
+    <string name="statistics_top_period_title">View top %s of …</string>
+    <string name="statistics_time_spent_format">%1$s time spent</string>
 </resources>
