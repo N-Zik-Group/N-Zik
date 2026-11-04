@@ -9,6 +9,7 @@ Android için çok dilli YouTube Music frontend'i: performans, UI/UX iyileştirm
 ✨ <b>NEDEN N-ZIK?</b> Reklamsız, arka plan oynatma, çevrimdışı önbellekleme, ayarlanabilir arayüz - her zaman ücretsiz.
 
 🎨 <b>Ayarlanabilir Arayüz</b>
+- Jetpack Compose interface
 - Temalar: AMOLED, Deep Dark, Crisp Light + renkli vurgular
 - 3D Carousel Player, ana ekran widget'ları, birleşik ve mini-oynatıcı
 - Sanatçı profilleri, Keşif/ruh halleri, katlanabilir ana ekran başlıkları
@@ -64,3 +65,5 @@ Glass katkıları: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass /
 - Dev64/Dev32 (`com.nevar.nzik.dev`): Geliştirme yapıları, yalnızca test için
 
 Hiçbir yapı FFmpeg içermez: indirilebilir bir eklentidir (ilk kullanımda kurulur, Ayarlar → Eklentiler içinde yönetilir). F-Droid'de yalnızca FOSS var.
+
+Historical project credits include ViMusic.
