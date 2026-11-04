@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Bridge -->
     <string name="bridge_audio_output_pc_subtitle">Sound on the PC (N-Zik Desktop Compagnon)</string>
     <string name="bridge_audio_output_pc_unavailable">This PC is not available</string>
     <string name="bridge_auto_stop">Auto-stop</string>
@@ -58,6 +59,7 @@
     <string name="bridge_server_stopped_user">Stopped from the phone</string>
     <string name="bridge_server_stopped_wifi">No Wi-Fi network or hotspot</string>
     <string name="bridge_server_via_hotspot">Through this phone\'s hotspot</string>
+    <!-- Listen Together -->
     <string name="listen_together_action_approve">Approve</string>
     <string name="listen_together_action_reject">Reject</string>
     <string name="listen_together_auto_approval_joins">Auto-approve join requests</string>
@@ -135,6 +137,7 @@
     <string name="listen_together_you_are_guest">You are a guest</string>
     <string name="listen_together_you_are_host">You are the host</string>
     <string name="listen_together_you_label">You</string>
+    <!-- Network -->
     <string name="network_action_disable_offline_mode">Disable full offline mode</string>
     <string name="network_action_enable_offline_mode">Enable full offline mode</string>
     <string name="network_artwork_quality_description">Choose artwork quality. Higher quality uses more data; Automatic adapts to the connection.</string>
@@ -147,9 +150,9 @@
     <string name="network_proxy_password_description">Set the optional proxy password. The saved value is encrypted and hidden here.</string>
     <string name="network_proxy_port_description">Enter the port on which the proxy server accepts connections.</string>
     <string name="network_proxy_username_description">Set the optional username required to authenticate with the proxy.</string>
-    <string name="network_quality_high">Alto</string>
-    <string name="network_quality_low">Baixa</string>
-    <string name="network_quality_medium">Médio</string>
+    <string name="network_quality_high">High</string>
+    <string name="network_quality_low">Low</string>
+    <string name="network_quality_medium">Medium</string>
     <string name="network_region_override_description">Override the country used for requests; leave it empty to use the phone region.</string>
     <string name="network_settings">Connection Settings</string>
     <string name="network_settings_description">The network section contains settings to optimize the app\'s performance and data usage</string>
@@ -168,7 +171,9 @@
     <string name="network_stream_client_web_creator_description">Web creator client.</string>
     <string name="network_stream_client_web_description">Standard web client.</string>
     <string name="network_stream_client_youtube_music_web_description">Slower but supports premium formats. Uses JavaScript signature decryption (~5-10s delay). Recommended for premium users.</string>
+    <!-- Network Proxy -->
     <string name="network_proxy_invalid_hostname">Your Proxy Hostname is invalid, please check it</string>
+    <!-- Network Stream -->
     <string name="network_stream_client">Stream Client</string>
     <string name="network_stream_client_android">Android</string>
     <string name="network_stream_client_android_creator">Android Creator</string>
@@ -187,4 +192,9 @@
     <string name="network_stream_error_retrying">Retrying: %1$s</string>
     <string name="network_stream_still_retrying">Still loading… Attempt %1$s</string>
     <string name="network_stream_unexpected_skip">Unexpected track change detected</string>
+    <string name="network_proxy_region_auto">Auto (from phone)</string>
+    <string name="network_proxy_username_placeholder">Username (optional)</string>
+    <string name="network_proxy_password_placeholder">Password (optional)</string>
+    <string name="network_proxy_region_placeholder">e.g. US, FR, DE (empty = auto)</string>
+    <string name="listen_together_server_request_failed">The Listen Together server could not complete the request.</string>
 </resources>
