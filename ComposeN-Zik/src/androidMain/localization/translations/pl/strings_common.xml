@@ -2,11 +2,11 @@
 <resources>
     <!-- Common -->
     <string name="common_answer_no">Anuluj</string>
-    <string name="common_artist_conjunction_and">and</string>
+    <string name="common_artist_conjunction_and">W przypadku gdy państwo członkowskie lub Szwajcaria stwierdzi, że dane państwo członkowskie lub Szwajcaria spełniają warunki określone w art. 4 ust. 1 lit. a) i b) oraz w art. 5 ust. 1 lit. b) i c) rozporządzenia (WE) nr 207/2009 oraz w art. 5 ust. 1 lit. b) i c) rozporządzenia (WE) nr 207/2009 oraz w art. 5 ust. 1 lit. b) tego rozporządzenia i art. 6 ust. 1 lit. b) tego rozporządzenia i c) tego rozporządzenia stosuje się od dnia 1 stycznia 2018 r.</string>
     <string name="common_clipboard_copy_failed">Nie udało się skopiować tekstu do schowka, spróbuj ponownie</string>
     <string name="common_clipboard_copy_success">Skopiowano</string>
     <string name="common_color_black">Czarny</string>
-    <string name="common_color_custom">Custom Color</string>
+    <string name="common_color_custom">Niestandardowy kolor</string>
     <string name="common_color_source_artwork">Kolor okładki</string>
     <string name="common_color_source_theme">Motyw</string>
     <string name="common_color_white">Biały</string>
@@ -17,15 +17,15 @@
     <string name="common_duration_milliseconds_format">%1$s ms</string>
     <string name="common_empty_items">Brak elementów</string>
     <string name="common_external_link_loading_suffix">ładuje się...</string>
-    <string name="common_load_failed">Unable to load</string>
-    <string name="common_load_failed_no_connection">Unable to load, no connection</string>
+    <string name="common_load_failed">Nie można załadować</string>
+    <string name="common_load_failed_no_connection">Nie można załadować, brak połączenia</string>
     <string name="common_log_unavailable">Logowanie niedostępne</string>
     <string name="common_option_all">Wszystko</string>
     <string name="common_option_custom">Niestandardowy</string>
     <string name="common_option_default">Domyślny</string>
     <string name="common_option_disabled">Wyłączony</string>
     <string name="common_option_none">Brak</string>
-    <string name="common_option_random">Random</string>
+    <string name="common_option_random">Losowo</string>
     <string name="common_restart_required_message">Please open %s again after!</string>
     <string name="common_size_big">Duży</string>
     <string name="common_size_biggest">Największy</string>
@@ -39,7 +39,7 @@
     <string name="common_validation_empty_value">Wartość nie może być pusta</string>
     <string name="common_validation_invalid_input">Invalid input!</string>
     <string name="common_validation_minimum_value">"Wartość musi być większa niż "</string>
-    <string name="common_validation_name_in_use">Name already in use</string>
+    <string name="common_validation_name_in_use">Nazwa jest już w użyciu</string>
     <string name="common_value_input_hint">Wprowadź wartość</string>
     <string name="common_unknown">Nieznana</string>
     <string name="common_duration_minutes_short">%1$d min</string>
