@@ -2402,6 +2402,8 @@
     <string name="settings_parental_age_restriction_description">Eviteu reproduir cançons amb limitació d\'edat</string>
     <string name="settings_picture_in_picture_android_12_auto_description">Des d\'Android 12, pip es pot activar automàticament</string>
     <string name="settings_picture_in_picture_artwork_module_label">Coberta</string>
+    <string name="settings_picture_in_picture_open">Open picture-in-picture</string>
+    <string name="settings_picture_in_picture_open_failed">Couldn’t open picture-in-picture. Check app info settings on your android to allows it for N-Zik.</string>
     <string name="settings_picture_in_picture_title">Picture in Picture</string>
     <string name="settings_pip_module">Mòdul PIP</string>
     <string name="settings_playback_duration_limit_description">Si està activat, s\'exclouran les cançons amb una durada superior al límit, s\'aplicaran a mytop i a la cua de reproducció</string>
