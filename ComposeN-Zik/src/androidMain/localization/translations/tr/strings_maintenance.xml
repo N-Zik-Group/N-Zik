@@ -160,7 +160,7 @@
     <!-- Recovery -->
     <string name="recovery_accounts_exported">Profil durumu dışa aktarıldı</string>
     <string name="recovery_accounts_imported_base">İçe aktarılan profil durumu: temel profil</string>
-    <string name="recovery_accounts_imported_count">İçe aktarılan profil durumu: %1$d profil</string>
+    <string name="recovery_accounts_imported_count">Profile state import complete. Profile count: %1$d</string>
     <string name="recovery_category_all">Tümü</string>
     <string name="recovery_category_profile">Profil başına</string>
     <string name="recovery_center">Kurtarma Merkezi</string>
@@ -309,4 +309,6 @@
     <string name="updates_unavailable_build_description">Bu mesajı görüyorsanız, derlemenizde otomatik güncelleme özelliği etkin değil demektir, lütfen uygulamayı GitHub\'dan manuel olarak güncelleyin.</string>
     <string name="updates_up_to_date">Güncel</string>
     <string name="updates_warning_acknowledge">Anlıyorum</string>
+    <string name="updates_check_failed">Güncellemeler kontrol edilemedi.</string>
+    <string name="updates_install_generic_error">Güncelleme yüklenemedi.</string>
 </resources>
