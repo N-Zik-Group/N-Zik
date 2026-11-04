@@ -17,7 +17,6 @@
     <string name="bridge_disconnect">Disconnect</string>
     <string name="bridge_disconnected">%1$s disconnected</string>
     <string name="bridge_pair_camera_denied">Camera access denied: pair manually with the address and code above</string>
-    <string name="bridge_pair_close">Close</string>
     <string name="bridge_pair_code_label">Pairing code</string>
     <string name="bridge_pair_confirm">Pair with \"%1$s\" using code %2$s?</string>
     <string name="bridge_pair_confirm_action">Pair</string>
@@ -197,4 +196,6 @@
     <string name="network_proxy_password_placeholder">Password (optional)</string>
     <string name="network_proxy_region_placeholder">e.g. US, FR, DE (empty = auto)</string>
     <string name="listen_together_server_request_failed">The Listen Together server could not complete the request.</string>
+    <string name="network_stream_retrying_playback">Retrying playback…</string>
+    <string name="listen_together_invite_link">Listen Together invitation link</string>
 </resources>
