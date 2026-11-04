@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Bridge -->
     <string name="bridge_audio_output_pc_subtitle">Sound on the PC (N-Zik Desktop Compagnon)</string>
     <string name="bridge_audio_output_pc_unavailable">This PC is not available</string>
     <string name="bridge_auto_stop">Auto-stop</string>
@@ -51,13 +52,14 @@
     <string name="bridge_server_state_running">Running</string>
     <string name="bridge_server_state_stopping">Stopping…</string>
     <string name="bridge_server_status">Server status</string>
-    <string name="bridge_server_stop">Stopp</string>
+    <string name="bridge_server_stop">Stop</string>
     <string name="bridge_server_stopped">PC server stopped</string>
     <string name="bridge_server_stopped_auto">Stopped automatically (auto-stop)</string>
     <string name="bridge_server_stopped_timeout">Android background time limit reached, restart it from the app</string>
     <string name="bridge_server_stopped_user">Stopped from the phone</string>
     <string name="bridge_server_stopped_wifi">No Wi-Fi network or hotspot</string>
     <string name="bridge_server_via_hotspot">Through this phone\'s hotspot</string>
+    <!-- Listen Together -->
     <string name="listen_together_action_approve">Approve</string>
     <string name="listen_together_action_reject">Reject</string>
     <string name="listen_together_auto_approval_joins">Auto-approve join requests</string>
@@ -135,6 +137,7 @@
     <string name="listen_together_you_are_guest">You are a guest</string>
     <string name="listen_together_you_are_host">You are the host</string>
     <string name="listen_together_you_label">You</string>
+    <!-- Network -->
     <string name="network_action_disable_offline_mode">Disable full offline mode</string>
     <string name="network_action_enable_offline_mode">Enable full offline mode</string>
     <string name="network_artwork_quality_description">Choose artwork quality. Higher quality uses more data; Automatic adapts to the connection.</string>
@@ -151,40 +154,47 @@
     <string name="network_quality_low">Niedrig</string>
     <string name="network_quality_medium">Mittel</string>
     <string name="network_region_override_description">Override the country used for requests; leave it empty to use the phone region.</string>
-    <string name="network_settings">Verbindungseinstellungen</string>
+    <string name="network_settings">Connection Settings</string>
     <string name="network_settings_description">Der Netzwerk-Bereich enthält Einstellungen zur Optimierung der Leistung und Datennutzung der App</string>
     <string name="network_status">Qualitätsstatus</string>
     <string name="network_stream_audio_quality_description">Choose the audio quality used for streaming. Automatic adapts to the current connection.</string>
-    <string name="network_stream_client_android_creator_description">Android-Entwickler-Client. Authentifizierung erforderlich.</string>
-    <string name="network_stream_client_android_description">Standard-Android-Client ohne SDK.</string>
-    <string name="network_stream_client_android_vr_description">Schnellste Option. Direkte Stream-URLs ohne Signaturentschlüsselung. Empfohlen für Nicht-Premium-Benutzer</string>
-    <string name="network_stream_client_ios_description">iOS-Client.</string>
-    <string name="network_stream_client_ipados_description">iPad-Client.</string>
-    <string name="network_stream_client_mobile_description">Mobile Client.</string>
-    <string name="network_stream_client_tv_embedded_description">TV-Embedded-Player-Client.</string>
-    <string name="network_stream_client_tv_html5_description">TV HTML5 Player Client.</string>
+    <string name="network_stream_client_android_creator_description">Android creator client. Requires authentication.</string>
+    <string name="network_stream_client_android_description">Standard Android client without SDK.</string>
+    <string name="network_stream_client_android_vr_description">Fastest option. Direct stream URLs without signature decryption. Recommended for non-premium users</string>
+    <string name="network_stream_client_ios_description">iOS client.</string>
+    <string name="network_stream_client_ipados_description">iPad client.</string>
+    <string name="network_stream_client_mobile_description">Mobile client.</string>
+    <string name="network_stream_client_tv_embedded_description">TV embedded player client.</string>
+    <string name="network_stream_client_tv_html5_description">TV HTML5 player client.</string>
     <string name="network_stream_client_tv_simply_description">TV Simply client. Lightweight TV variant.</string>
-    <string name="network_stream_client_visionos_description">VisionOS-Client.</string>
-    <string name="network_stream_client_web_creator_description">Webentwickler-Client.</string>
+    <string name="network_stream_client_visionos_description">VisionOS client.</string>
+    <string name="network_stream_client_web_creator_description">Web creator client.</string>
     <string name="network_stream_client_web_description">Standard web client.</string>
-    <string name="network_stream_client_youtube_music_web_description">Langsamer, unterstützt jedoch Premium-Formate. Verwendet die Entschlüsselung per JavaScript-Signatur (Verzögerung von ca. 5–10 Sekunden). Empfohlen für Premium-Nutzer.</string>
-    <string name="network_proxy_invalid_hostname">Ihr Proxy Hostname ist ungültig, bitte überprüfen Sie ihn</string>
-    <string name="network_stream_client">Stream-Client</string>
+    <string name="network_stream_client_youtube_music_web_description">Slower but supports premium formats. Uses JavaScript signature decryption (~5-10s delay). Recommended for premium users.</string>
+    <!-- Network Proxy -->
+    <string name="network_proxy_invalid_hostname">Your Proxy Hostname is invalid, please check it</string>
+    <!-- Network Stream -->
+    <string name="network_stream_client">Stream Client</string>
     <string name="network_stream_client_android">Android</string>
-    <string name="network_stream_client_android_creator">Android-Entwickler</string>
+    <string name="network_stream_client_android_creator">Android Creator</string>
     <string name="network_stream_client_android_vr">Android VR</string>
     <string name="network_stream_client_ios">iOS</string>
     <string name="network_stream_client_ipados">iPadOS</string>
     <string name="network_stream_client_mobile">Mobile</string>
-    <string name="network_stream_client_redownload_recommendation">Songs für neue Qualität erneut herunterladen (insbesondere mit Web Remix/ YTB Premium Account)</string>
+    <string name="network_stream_client_redownload_recommendation">Re-download songs for new quality (especially with Web Remix/ YTB Premium account)</string>
     <string name="network_stream_client_tv_embedded">TV Embedded</string>
     <string name="network_stream_client_tv_html5">TV HTML5</string>
     <string name="network_stream_client_tv_simply">TV Simply</string>
     <string name="network_stream_client_visionos">visionOS</string>
     <string name="network_stream_client_web">Web</string>
-    <string name="network_stream_client_web_creator">Webentwickler</string>
-    <string name="network_stream_client_web_remix">Web-Remix</string>
-    <string name="network_stream_error_retrying">Wiederholung: %1$s</string>
-    <string name="network_stream_still_retrying">Lade noch… Versuch %1$s</string>
-    <string name="network_stream_unexpected_skip">Unerwartete Titeländerung erkannt</string>
+    <string name="network_stream_client_web_creator">Web Creator</string>
+    <string name="network_stream_client_web_remix">Web Remix</string>
+    <string name="network_stream_error_retrying">Retrying: %1$s</string>
+    <string name="network_stream_still_retrying">Still loading… Attempt %1$s</string>
+    <string name="network_stream_unexpected_skip">Unexpected track change detected</string>
+    <string name="network_proxy_region_auto">Auto (from phone)</string>
+    <string name="network_proxy_username_placeholder">Username (optional)</string>
+    <string name="network_proxy_password_placeholder">Password (optional)</string>
+    <string name="network_proxy_region_placeholder">e.g. US, FR, DE (empty = auto)</string>
+    <string name="listen_together_server_request_failed">The Listen Together server could not complete the request.</string>
 </resources>
