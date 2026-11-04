@@ -1,69 +1,69 @@
-A multilingual YouTube Music frontend for Android, focused on performance, UI/UX refinements, feature expansion, and long-term support.
+Android向けの多言語YouTubeミュージックフロントエンド。パフォーマンス、UI/UX改良、機能拡張、長期サポートに焦点を当てています。
 
-<b>N-Zik</b> is an open-source fork of <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+<b>N-Zik</b> は、 <a href="https://github.com/knighthat/Kreate">Kreate</a> のオープンソースフォークです。
 
-<b>Note:</b> N-Zik started as a side project. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>注意:</b> N-Zik はサイドプロジェクトとして開始されました。より成熟した選択肢については、 <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, または <a href="https://github.com/fast4x/RiPlay">RiPlay</a> をご覧ください。
 
-<b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), reviewed and tested before shipping.
+<b>AI 使用法:</b> 生成AIをコード( <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD メソッド</a>を介して)に使用し、出荷前にレビューおよびテストします。
 
-✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI - free, always.
+✨ <b>なぜN-ZIK?</b> 広告なし、バックグラウンド再生、オフラインキャッシュ、カスタマイズ可能なUI - 常に無料。
 
-🎨 <b>Customizable UI</b>
-- Jetpack Compose interface
-- Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
-- 3D Carousel Player, home widgets, unified player and mini-player
-- Artist profiles, Discovery and moods, collapsible home headers
+🎨 <b>カスタマイズ可能なUI</b>
+- Jetpack Compose Interface
+- テーマ：AMOLED、ディープダーク、クリスプライト+色付きのアクセント。
+- 3Dカルーセルプレイヤー、ホームウィジェット、ユニファイドプレイヤー、ミニプレーヤー
+- アーティストプロフィール、ディスカバリー、気分、折りたたみ式のホームヘッダー
 
-🫧 <b>Glass Effect (BETA, optional)</b>
-Disabled on fresh installs. Enable in Settings: native, contour-only or Glass by category, with adjustable quality. May increase rendering work and battery use; reduce quality or disable if needed.
-Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+🫧 <b>ガラス効果 (ベータ、オプション)</b>
+新規インストール時には無効になります。設定:ネイティブ、輪郭のみ、またはカテゴリ別のガラスを調整可能な品質で有効にします。レンダリング作業とバッテリーの使用を増加させることができます。品質を低下させるか、必要に応じて無効にします。
+ガラスクレジット: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
-🎵 <b>Audio Experience</b>
-- Premium quality via YouTube Music Premium, applied automatically
-- Synced lyrics with editing and real-time translation
-- Song recognition (Shazam-like), voice search, audio visualizer
-- Pro controls: speed, pitch, normalization, crossfade, volume boost, bass boost, reverb
-- Audio Bar waveform seekbar for precise navigation
+🎵 <b>オーディオエクスペリエンス</b>
+- YouTube音楽プレミアムによるプレミアム品質、自動的に適用されます
+- 編集とリアルタイムの翻訳と同期された歌詞
+- 歌認識（サザムのような）、音声検索、音声ビジュアライザー
+- プロコントロール：スピード、ピッチ、正規化、クロスフェード、ボリュームブースト、ベースブースト、リバーブ
+- 正確なナビゲーションのためのオーディオバーの波形シークバー
 
-💾 <b>Offline, Metadata & Privacy</b>
-- Smart caching and downloads for tracks and playlists, with selectable download quality
-- FFmpeg-powered export with full metadata (FFmpeg is a downloadable extension, installed on first use)
-- In-app metadata editor (AAC/Opus, cover art)
-- Local listening stats and history
-- Auto-backup with custom intervals and retention
+💾 <b>オフライン、メタデータ、プライバシー</b>
+- 選択可能なダウンロード品質を持つトラックとプレイリストのスマートキャッシュとダウンロード
+- FFmpegで動作するフルメタデータエクスポート (FFmpegはダウンロード可能な拡張機能で、最初に使用してインストールされます)
+- アプリ内メタデータエディタ（AAC/Opus、カバーアート）
+- ローカルのリスニング統計と履歴
+- カスタムの間隔と保持の自動バックアップ
 
-🔗 <b>Integrations</b>
-- YouTube sign-in for recommendations and video playback, plus an experimental two-way sync engine
+🔗 <b>統合</b>
+- YouTubeにサインインしておすすめとビデオ再生を行い、実験的な双方向同期エンジン
 - Last.fm scrobbling with Now Playing and love/unlove
-- MusicBrainz artist and album insights
-- Discord Rich Presence, including advanced mode with live preview
-- Invidious integration for alternative YouTube streaming
-- Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
+- MusicBrainzアーティストとアルバムの洞察力があります
+- ライブプレビューの高度なモードを含むDiscord Rich Presence。
+- 代わりのYouTubeストリーミングへの鮮明な統合
+- Playlist のインポート/エクスポート: RiPlay, Spotify, YouTube Music, N-Zik
 
-👥 <b>Listen Together</b>
-- Join or host live listening sessions with other users via code or invite link
+:busts_in_sシルエット: <b>一緒に聞く</b>
+- コードまたは招待リンクを介して他のユーザーとライブリスニングセッションに参加またはホスト
 
 🗓️ <b>Rewind</b>
-- Yearly and monthly listening recaps with auto-generated Rewind playlists
+- 自動生成された巻き戻しプレイリストによる年間および月間のリスニング記録
 
-📱 <b>Play Anywhere:</b> Android Auto, Automotive, TV, and Tablets
+📱 <b>どこでもプレイ可能：</b> Android Auto、自動車、テレビ、タブレット
 
-🛠️ <b>Power User Features</b>
-- Multi-profile: isolated database and settings per profile
-- Auto-resume on Bluetooth connect, persistent queue, auto-fill queue
-- Smart trash, hidden songs, dislike system, parental control
-- Proxy support, network quality adaptation, log export
-- Rescue Center, maintenance screen, onboarding, app shortcuts
-- OTA updates from GitHub, sleep timer, background playback
+🛠️ <b>パワーユーザーの機能</b>
+- マルチプロファイル: プロファイルごとに分離されたデータベースと設定
+- Bluetooth接続、永続キュー、自動入力キュー
+- スマートゴミ箱、隠し曲、システムが嫌い、ペアレンタルコントロール
+- プロキシサポート、ネットワーク品質の適応、ログのエクスポート
+- レスキューセンター、メンテナンス画面、オンボーディング、アプリのショートカット
+- GitHubからOTAアップデート、スリープタイマー、バックグラウンド再生
 
-📦 <b>Available Builds</b>
-- Release64/Beta64 (`com.nevar.nzik`): Complete build, 64-bit devices only
-- Release32/Beta32 (`com.nevar.nzik`): Complete build, 32-bit devices only
-- Minified64 (`com.nevar.nzik`): Lightweight R8 build, for low-end devices (64-bit)
-- Minified32 (`com.nevar.nzik`): Lightweight R8 build (32-bit)
-- FOSS (`com.nevar.nzik.foss`): Without auto-updater, for F-Droid (all architectures)
-- Dev64/Dev32 (`com.nevar.nzik.dev`): Development builds, testing only
+📦 <b>利用可能なビルド</b>
+- Release64/Beta64 (`com.nevar.nzik`): 64ビットデバイスのみを完全にビルドする
+- Release32/Beta32 (`com.nevar.nzik`): 完全なビルド、32ビットデバイスのみ
+- Minified64 (`com.nevar.nzik`): 軽量R8ビルド、ローエンドデバイス (64ビット)
+- Minified32 (`com.nevar.nzik`): 軽量R8ビルド (32ビット)
+- FOSS (`com.nevar.nzik.foss`): 自動更新なし、F-Droid (すべてのアーキテクチャ)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): 開発ビルド、テストのみ
 
-No build bundles FFmpeg: it is a downloadable extension (installed on first use, managed in Settings → Extensions). Only FOSS is on F-Droid.
+ビルドバンドルなし FFmpeg: ダウンロード可能な拡張機能です (最初の使用時にインストールされ、設定 → 拡張機能で管理されます)。 F-Droidに搭載されているのはFOSSだけです。
 
-Historical project credits include ViMusic.
+過去のプロジェクトのクレジットには、ViMusicが含まれます。
