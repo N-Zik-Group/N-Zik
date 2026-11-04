@@ -142,7 +142,7 @@
     <string name="player_action_bar_transparent_background_description">Odstraňte pevné pozadí za tlačítky akce hráče.</string>
     <string name="player_action_enqueue">Zařadit do fronty</string>
     <string name="player_action_like">Líbí se mi</string>
-    <string name="player_action_listen_on_invidious">Poslouchat na Invidious</string>
+    <string name="player_action_listen_on_invidious">Poslouchat na %1$s</string>
     <string name="player_action_listen_on_youtube">Poslouchat na YouTube</string>
     <string name="player_action_listen_on_youtube_music">Poslouchat na YouTube Music</string>
     <string name="player_action_locate_current_song">Vyhledat přehrávanou skladbu</string>
@@ -277,7 +277,7 @@
     <string name="player_queue_duration_visible_description">Zobrazit kombinovanou dobu trvání skladeb ve frontě přehrávání.</string>
     <string name="player_queue_preview_artwork_description">Zahrnout obal alba vedle nadcházejících skladeb do náhledu hráče.</string>
     <string name="player_queue_preview_song_count_description">Vyberte, kolik nadcházejících skladeb se objeví v náhledu hráče.</string>
-    <string name="player_queue_remove_selected_confirmation_format">Remove %d songs from queue?</string>
+    <string name="player_queue_remove_selected_confirmation_format">Odstranit výběr z fronty? Vybrané skladby: %d</string>
     <string name="player_queue_shuffled_count_format">Fronta zamíchána (%d skladeb)</string>
     <string name="player_remaining_time_visible_description">Zobrazit zbývající čas v aktuální skladbě.</string>
     <string name="player_restart_required_message">Aby se změny projevily, musí být přehrávač restartován!</string>
