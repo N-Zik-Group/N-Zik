@@ -16,7 +16,7 @@
     <string name="glass_effect_depth_enabled">Depth</string>
     <string name="glass_effect_destination_navigation">Navigation</string>
     <string name="glass_effect_destination_pages">Pages</string>
-    <string name="glass_effect_destination_playback">Playback</string>
+    <string name="glass_effect_destination_playback">Přehrát</string>
     <string name="glass_effect_destination_shared">Shared elements</string>
     <string name="glass_effect_destination_windows">Windows and messages</string>
     <string name="glass_effect_dialog_dimming">Dialog background dimming</string>
@@ -46,7 +46,7 @@
     <string name="glass_effect_mini_player">Mini player · surface and controls</string>
     <string name="glass_effect_mini_player_description">The small player with the song cover and playback buttons.</string>
     <string name="glass_effect_mode_contour_only">Contour only</string>
-    <string name="glass_effect_mode_disabled">Disabled</string>
+    <string name="glass_effect_mode_disabled">Zakázaný</string>
     <string name="glass_effect_mode_glass_and_contour">Glass and contour</string>
     <string name="glass_effect_mode_glass_only">Glass only</string>
     <string name="glass_effect_mode_inherited">Following the shared element mode</string>
@@ -62,7 +62,7 @@
     <string name="glass_effect_quality_balanced">Balanced</string>
     <string name="glass_effect_quality_fastest">Fastest</string>
     <string name="glass_effect_quality_fastest_description">A tinted film, with nothing sampled from behind it. Costs about as much as drawing a rectangle.</string>
-    <string name="glass_effect_quality_high">Quality</string>
+    <string name="glass_effect_quality_high">Kvalita</string>
     <string name="glass_effect_refraction_amount">Bend</string>
     <string name="glass_effect_refraction_depth">Edge depth</string>
     <string name="glass_effect_refraction_unsupported">Edge refraction, colour splitting and depth require Android 13 or later. Frost remains available.</string>
@@ -126,9 +126,9 @@
     <string name="glass_effect_switches_description">Use liquid Glass switches with the shared material and interaction effects when Glass is enabled.</string>
     <string name="glass_effect_switches_title">Glass switches</string>
     <string name="glass_effect_tint">Tint</string>
-    <string name="glass_effect_tint_none">None</string>
+    <string name="glass_effect_tint_none">Žádný</string>
     <string name="glass_effect_tint_source">Glass color source</string>
-    <string name="glass_effect_tint_source_custom">Custom</string>
+    <string name="glass_effect_tint_source_custom">Vlastní</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
     <string name="glass_effect_unsupported">This phone has no hardware blur, so every surface uses the tinted film.</string>
     <string name="glass_effect_where_action_buttons">Action buttons</string>
@@ -150,7 +150,7 @@
     <string name="glass_effect_where_search_bars_description">The boxes where you type a search, including settings searches.</string>
     <string name="glass_effect_windows_summary">Change menus, pop-up windows and short messages.</string>
     <!-- Image -->
-    <string name="image_error_unknown">Unknown error</string>
+    <string name="image_error_unknown">Neznámá chyba</string>
     <!-- Interface -->
     <string name="interface_artist_image_roundness_description">Adjust the corner rounding of artist images.</string>
     <string name="interface_corner_roundness_description">Adjust the rounding of interface cards and controls.</string>
@@ -164,33 +164,33 @@
     <string name="interface_show_floating_icon_description">Display a floating shortcut that opens search.</string>
     <string name="interface_transition_effect_description">Choose the animation used when moving between screens.</string>
     <!-- Player Appearance -->
-    <string name="player_controls_style_essential">Essential</string>
-    <string name="player_controls_style_modern">Modern</string>
+    <string name="player_controls_style_essential">Základní</string>
+    <string name="player_controls_style_modern">Moderní</string>
     <string name="player_cover_style_cd">CD</string>
-    <string name="player_cover_style_cd_with_cover">CD with Cover</string>
-    <string name="player_cover_style_vinyl">Vinyl</string>
-    <string name="player_like_icon_apple">Apple</string>
-    <string name="player_like_icon_brilliant">Brilliant</string>
-    <string name="player_like_icon_broken">Broken</string>
-    <string name="player_like_icon_cute">Cute</string>
-    <string name="player_like_icon_gift">Gift</string>
-    <string name="player_like_icon_striped">Striped</string>
-    <string name="player_progress_both">Both</string>
-    <string name="player_progress_mini_player">Minimized player</string>
-    <string name="settings_action_bar_show_lyrics_button">Lyrics button</string>
+    <string name="player_cover_style_cd_with_cover">CD s obalem</string>
+    <string name="player_cover_style_vinyl">Gramodeska</string>
+    <string name="player_like_icon_apple">Jablko</string>
+    <string name="player_like_icon_brilliant">Zářivý</string>
+    <string name="player_like_icon_broken">Zlomený</string>
+    <string name="player_like_icon_cute">Tvar</string>
+    <string name="player_like_icon_gift">Dárek</string>
+    <string name="player_like_icon_striped">Pruhovaný</string>
+    <string name="player_progress_both">Oba</string>
+    <string name="player_progress_mini_player">Minimalizovaný přehrávač</string>
+    <string name="settings_action_bar_show_lyrics_button">Zobrazit tlačítko Písňový text</string>
     <!-- Player Background -->
-    <string name="player_background_black_cherry_cosmos">Black Cherry Cosmos</string>
-    <string name="player_background_glossy_gradient">Glossy Gradient</string>
-    <string name="player_background_golden_magma">Golden Magma</string>
-    <string name="player_background_gradient_flow">Gradient Flow</string>
-    <string name="player_background_ice_reflection">Ice Reflection</string>
-    <string name="player_background_ink_flow">Ink Flow</string>
-    <string name="player_background_linear_gradient">Linear Gradient</string>
-    <string name="player_background_mesh_gradient">Mesh Gradient</string>
-    <string name="player_background_mesmerizing_lens">Mesmerizing Lens</string>
-    <string name="player_background_oil_flow">Oil Flow</string>
-    <string name="player_background_purple_liquid">Purple Liquid</string>
-    <string name="player_background_stage">Stage</string>
+    <string name="player_background_black_cherry_cosmos">Kosmos černá třešeň</string>
+    <string name="player_background_glossy_gradient">Lesklý přechod</string>
+    <string name="player_background_golden_magma">Zlatá magma</string>
+    <string name="player_background_gradient_flow">Tok přechodu</string>
+    <string name="player_background_ice_reflection">Odraz ledu</string>
+    <string name="player_background_ink_flow">Tok inkoustu</string>
+    <string name="player_background_linear_gradient">Lineární přechod</string>
+    <string name="player_background_mesh_gradient">Síťový přechod</string>
+    <string name="player_background_mesmerizing_lens">Fascinující objektiv</string>
+    <string name="player_background_oil_flow">Tok oleje</string>
+    <string name="player_background_purple_liquid">Fialová kapalina</string>
+    <string name="player_background_stage">Stav</string>
     <!-- Theme -->
     <string name="theme_custom_accent_description">Choose the custom accent color used by this theme.</string>
     <string name="theme_dark_palette_accent_description">Choose the color for accented controls and highlights in the dark palette.</string>
@@ -214,25 +214,25 @@
     <string name="theme_light_palette_text_disabled_description">Choose the color for disabled text in the light palette.</string>
     <string name="theme_light_palette_text_secondary_description">Choose the color for secondary text in the light palette.</string>
     <string name="theme_mode_description">Choose when the app uses its light or dark palette.</string>
-    <string name="theme_mode_pitch_black">Pitch Black</string>
-    <string name="theme_palette_custom">Customized</string>
+    <string name="theme_mode_pitch_black">Úplně černý</string>
+    <string name="theme_palette_custom">Přizpůsobené</string>
     <string name="theme_palette_description">Choose the color palette used throughout the app.</string>
-    <string name="theme_palette_dynamic">Dynamic</string>
-    <string name="theme_palette_modern_black">Modern Black</string>
-    <string name="theme_palette_pure_black">Pure Black</string>
-    <string name="theme_shake_sensitivity_disabled">Disabled</string>
+    <string name="theme_palette_dynamic">Dynamický</string>
+    <string name="theme_palette_modern_black">Moderní černá</string>
+    <string name="theme_palette_pure_black">Čistě černý</string>
+    <string name="theme_shake_sensitivity_disabled">Zakázaný</string>
     <string name="theme_shake_sensitivity_high">High (2.2G)</string>
     <string name="theme_shake_sensitivity_low">Low (5.0G)</string>
     <string name="theme_shake_sensitivity_medium">Medium (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Very High (1.0G)</string>
     <!-- Thumbnail -->
-    <string name="thumbnail_action_edit">Edit Thumbnail</string>
+    <string name="thumbnail_action_edit">Upravit miniaturu</string>
     <string name="thumbnail_action_pick_from_gallery">Pick from gallery</string>
-    <string name="thumbnail_action_reset">Reset Thumbnail</string>
-    <string name="thumbnail_empty">No Thumbnail Present</string>
+    <string name="thumbnail_action_reset">Obnovit miniaturu</string>
+    <string name="thumbnail_empty">Žádná miniatura není k dispozici</string>
     <string name="thumbnail_layout_dialog_title">Thumbnail layout</string>
-    <string name="thumbnail_not_selected">Thumbnail Not Selected</string>
-    <string name="thumbnail_remove_failed">Failed to Remove Thumbnail</string>
-    <string name="thumbnail_remove_success">Removed Thumbnail</string>
+    <string name="thumbnail_not_selected">Miniatura není vybrána</string>
+    <string name="thumbnail_remove_failed">Nepodařilo se odstranit miniaturu</string>
+    <string name="thumbnail_remove_success">Odstraněná miniatura</string>
     <string name="glass_effect_rendering_quality">Rendering quality</string>
 </resources>
