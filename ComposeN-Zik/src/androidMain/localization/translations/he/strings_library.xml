@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Album -->
     <string name="album_action_bookmark">Bookmark album</string>
     <string name="album_action_open">מעבר לאלבום</string>
-    <string name="album_alternative_versions">גרסאות חלופיות</string>
+    <string name="album_alternative_versions">Alternative versions</string>
     <string name="album_art">Album art</string>
     <string name="album_found_online_verify">Album found online! Please verify it\'s the correct one.</string>
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_loading_song_count_format">Loading %1$d songs…</string>
     <string name="album_lookup_failed">Failed to fetch album</string>
     <string name="album_lookup_running">Looking up album from the internet</string>
-    <string name="album_no_alternative_version">לאלבום זה אין גרסאות חלופיות</string>
+    <string name="album_no_alternative_version">This album doesn\'t have any alternative version</string>
     <string name="album_not_found">Album not found</string>
-    <string name="album_related_title">אלבומים קשורים</string>
+    <string name="album_related_title">Related albums</string>
     <string name="album_right_swipe">Album Right Swipe</string>
+    <!-- Artist -->
     <string name="artist_action_follow">עקוב</string>
     <string name="artist_action_play_local_songs">Play all local songs</string>
     <string name="artist_deduplication_result">Merged %d duplicate artist(s) with the right artist</string>
@@ -22,14 +24,16 @@
     <string name="artist_lookup_failed">Failed to fetch aritst</string>
     <string name="artist_lookup_running">Looking up %s online...</string>
     <string name="artist_more_from">יותר מ</string>
-    <string name="artist_overview_title">סקירה כללית</string>
+    <string name="artist_overview_title">Overview</string>
     <string name="artist_roundness">Artist roundness</string>
-    <string name="artist_similar_title">אומנים דומים</string>
+    <string name="artist_similar_title">Similar artists</string>
     <string name="artist_songs_count_duration">%1$d Songs • %2$s</string>
     <string name="artist_songs_unavailable_message">No songs available</string>
     <string name="artist_title">אמן</string>
+    <!-- History -->
     <string name="history_clear_listen_history_description">Delete saved playback events from listening history.</string>
     <string name="history_clear_search_history_description">Delete saved searches from every search-history page without changing history preferences.</string>
+    <!-- Home -->
     <string name="home_albums_settings">Home Albums</string>
     <string name="home_artists_settings">Home Artists</string>
     <string name="home_chart_top_artists_title">Top artists</string>
@@ -40,17 +44,19 @@
     <string name="home_greeting_night">Good night</string>
     <string name="home_playlists_settings">Home Playists</string>
     <string name="home_songs_settings">Home Songs</string>
-    <string name="home_sort_last_played_song_label">מאת שיר שהושמע לאחרונה</string>
-    <string name="home_sort_most_played_song_label">מאת שיר המושמע ביותר</string>
+    <string name="home_sort_last_played_song_label">By Last played song</string>
+    <string name="home_sort_most_played_song_label">By Most played song</string>
     <string name="home_sort_random_label">Random</string>
     <string name="home_tabs_settings">Home page</string>
     <string name="home_tabs_settings_description">Reorder and show/hide tabs</string>
     <string name="home_title">Home</string>
     <string name="home_youtube_login_description">Log in to your YTM account for more content</string>
+    <!-- Home Easter Egg -->
     <string name="home_easter_egg_click_message">Do you like clicking? Then continue...</string>
     <string name="home_easter_egg_keep_going">Okay, you\'re looking for something, keep...</string>
     <string name="home_easter_egg_last">You are a number one, long click and enjoy the surprise</string>
     <string name="home_easter_egg_number_one">You are a number one, click and enjoy the surprise</string>
+    <!-- Library -->
     <string name="library_action_bookmark">Bookmark</string>
     <string name="library_action_randomize">Randomizer</string>
     <string name="library_albums_title">אלבומים</string>
@@ -63,10 +69,10 @@
     <string name="library_filter_by_title">Filter By</string>
     <string name="library_filter_online_songs_label">Online Songs</string>
     <string name="library_filter_unmatched_songs_label">Unmatched Songs</string>
-    <string name="library_history_title">היסטוריה</string>
-    <string name="library_layout_grid_label">רשת</string>
+    <string name="library_history_title">History</string>
+    <string name="library_layout_grid_label">Grid</string>
     <string name="library_layout_list_label">רשימה</string>
-    <string name="library_local_media_permission_message">נדרשת אישור מדיה, אנא הענק.</string>
+    <string name="library_local_media_permission_message">Media permission required, please grant.</string>
     <string name="library_management_section_title">Management</string>
     <string name="library_matching_action_retry">Retry Match</string>
     <string name="library_matching_all_success_message">All songs were matched successfully!</string>
@@ -75,8 +81,8 @@
     <string name="library_matching_results_title">Matching Complete</string>
     <string name="library_matching_success_failure_count_format">%1$d matched, %2$d failed</string>
     <string name="library_on_device_start_folder_description">Choose the starting folder for the on-device music browser.</string>
-    <string name="library_on_device_title">על המכשיר</string>
-    <string name="library_playlists_title">רשימות השמעה</string>
+    <string name="library_on_device_title">On device</string>
+    <string name="library_playlists_title">Playlists</string>
     <string name="library_songs_title">שירים</string>
     <string name="library_sort_history_alphabetical">Alphabetical</string>
     <string name="library_sort_history_date">Date</string>
@@ -94,14 +100,16 @@
     <string name="library_sync_playlist_retry_count_format">Failed to find %1$d playlists, retrying</string>
     <string name="library_sync_playlists_complete_message">Found all playlists</string>
     <string name="library_sync_progress_format">%1$d / %2$d</string>
-    <string name="library_title">ספריה</string>
+    <string name="library_title">Library</string>
     <string name="library_youtube_music_title">YTM Library</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
+    <!-- Library Favorites -->
     <string name="library_dislikes_added">Disliked %s</string>
     <string name="library_dislikes_removed">Removed %s from dislikes</string>
     <string name="library_favorites_action_add">Add to favorites</string>
     <string name="library_favorites_added">נוסף למועדפים</string>
     <string name="library_favorites_removed">הוסר ממועדפים</string>
+    <!-- Library Sort -->
     <string name="library_sort_album">אלבום</string>
     <string name="library_sort_album_year">שנת אלבום</string>
     <string name="library_sort_artist">אמן</string>
@@ -117,6 +125,7 @@
     <string name="library_sort_play_count">Play Count</string>
     <string name="library_sort_songs_number">Number of songs</string>
     <string name="library_sort_title">כותרת</string>
+    <!-- Metadata -->
     <string name="metadata_action_change_artists">Change Authors</string>
     <string name="metadata_action_change_cover">Change Cover</string>
     <string name="metadata_action_change_title">Change Title</string>
@@ -135,7 +144,7 @@
     <string name="metadata_composer">Composer</string>
     <string name="metadata_conductor">Conductor</string>
     <string name="metadata_copyright">Copyright</string>
-    <string name="metadata_cover">כיסוי</string>
+    <string name="metadata_cover">Cover</string>
     <string name="metadata_description_title">Description</string>
     <string name="metadata_disc_number">Disc Number</string>
     <string name="metadata_encoder">Encoder</string>
@@ -161,8 +170,9 @@
     <string name="metadata_video_likes_label">Likes</string>
     <string name="metadata_video_subscribers_label">Subscribers</string>
     <string name="metadata_video_views_label">Views</string>
-    <string name="metadata_wikipedia_attribution">מוויקיפדיה תחת Creative Commons Attribution CC-BY-SA 3.0</string>
+    <string name="metadata_wikipedia_attribution">From Wikipedia under Creative Commons Attribution CC-BY-SA 3.0</string>
     <string name="metadata_year">שנה</string>
+    <!-- Metadata Musicbrainz -->
     <string name="metadata_musicbrainz_insights">Insights</string>
     <string name="metadata_musicbrainz_insights_biography">Biography</string>
     <string name="metadata_musicbrainz_insights_links">Links</string>
@@ -182,8 +192,8 @@
     <string name="metadata_musicbrainz_no_rating">No rating available</string>
     <string name="metadata_musicbrainz_rating_votes">(%1$d votes)</string>
     <string name="metadata_musicbrainz_resync">Resync</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed, MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures, retry in %1$d min</string>
     <string name="metadata_musicbrainz_resync_success">MusicBrainz data synced</string>
     <string name="metadata_musicbrainz_stat_albums">אלבומים</string>
     <string name="metadata_musicbrainz_stat_bookmarked_albums">Bookmarked albums</string>
@@ -192,6 +202,7 @@
     <string name="metadata_musicbrainz_stat_songs">שירים</string>
     <string name="metadata_musicbrainz_stat_time">Total time</string>
     <string name="metadata_musicbrainz_wikipedia">Wikipedia</string>
+    <!-- Playlist -->
     <string name="playlist_action_add">הוספה לרשימת השמעה</string>
     <string name="playlist_action_add_hint">הוספה לרשימת השמעה</string>
     <string name="playlist_action_create">רשימת השמעה חדשה</string>
@@ -199,10 +210,10 @@
     <string name="playlist_action_export">ייצוא רשימת השמעה</string>
     <string name="playlist_action_import">ייבוא ​​רשימת השמעה</string>
     <string name="playlist_action_import_favorites">Import favorites</string>
-    <string name="playlist_action_like_favorites_on_youtube">Like RiMusic Liked songs in Youtube</string>
-    <string name="playlist_action_remove_songs">הסרה מרשימת ההשמעה</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik Liked songs in Youtube</string>
+    <string name="playlist_action_remove_songs">Remove from playlist</string>
     <string name="playlist_action_remove_songs_outside_library">Delete Songs not in the Library</string>
-    <string name="playlist_action_rename">שנה שם</string>
+    <string name="playlist_action_rename">Rename</string>
     <string name="playlist_action_save_to_youtube_library">Save in the Youtube Library</string>
     <string name="playlist_action_shuffle_positions">Shuffle song positions</string>
     <string name="playlist_action_toggle_pinned">הצמד/בטל הצמדה של רשימת השמעה</string>
@@ -211,7 +222,7 @@
     <string name="playlist_bookmark_unsupported_message">Cannot bookmark Liked Songs or Episodes playlist</string>
     <string name="playlist_create_dialog_title">Create new playlist</string>
     <string name="playlist_delete_all_confirmation_count_format">Are you sure you want to delete ALL %d playlists?</string>
-    <string name="playlist_delete_confirmation">האם אתה באמת רוצה למחוק את הפלייליסט הזה?</string>
+    <string name="playlist_delete_confirmation">Do you really want to delete this playlist?</string>
     <string name="playlist_delete_dialog_title">Delete playlist</string>
     <string name="playlist_delete_multiple_dialog_title">Delete playlists</string>
     <string name="playlist_delete_selected_confirmation_count_format">Are you sure you want to delete these %d playlists?</string>
@@ -231,7 +242,7 @@
     <string name="playlist_left_swipe">Playlist Left Swipe</string>
     <string name="playlist_like_all_dialog_title">Like all songs</string>
     <string name="playlist_like_all_duration_confirmation_suffix">(estimated time) is required to like all the songs. You need to close the app to cancel this process. Do you want to continue?</string>
-    <string name="playlist_name_input_hint">הזינו שם לרשימת השמעה</string>
+    <string name="playlist_name_input_hint">Enter the playlist name</string>
     <string name="playlist_operation_wait_message">Please wait, this may take few minutes...</string>
     <string name="playlist_pinned_title">Pinned</string>
     <string name="playlist_positions_shuffled">%d positions shuffled</string>
@@ -252,8 +263,10 @@
     <string name="playlist_top_show_description">Show your top-played playlist in Quick Picks.</string>
     <string name="playlist_youtube_song_limit_message">Youtube Playlists are Limited to 5000 songs</string>
     <string name="playlist_youtube_title">YouTube Playlist</string>
+    <!-- Podcast -->
     <string name="podcast_episodes_title">Episodes</string>
-    <string name="podcast_title">פודקאסטים</string>
+    <string name="podcast_title">Podcasts</string>
+    <!-- Radio -->
     <string name="radio_action_start">הפעל רדיו</string>
     <string name="radio_action_start_hint">הפעל רדיו</string>
     <string name="radio_action_stop">Stop radio</string>
@@ -265,15 +278,17 @@
     <string name="radio_discovery_requires_radio_or_autofill_message">Turn on Radio or Auto-fill to use Discover</string>
     <string name="radio_fetch_empty_queue_preserved_message">Radio: no songs loaded (Queue kept)</string>
     <string name="radio_stopped_message">Radio stopped (Return to normal)</string>
+    <!-- Recognition -->
     <string name="recognition_action_more_details">More details</string>
     <string name="recognition_audio_hint">Play some music for the analysis to work</string>
     <string name="recognition_error_microphone_permission">Microphone permission is needed for Find.</string>
     <string name="recognition_error_no_match">Couldn\'t identify that song. Try a louder or cleaner sample.</string>
     <string name="recognition_listening_duration">Analysing %1$ds of audio</string>
     <string name="recognition_ready_message">Hold your phone near the music</string>
+    <!-- Recommendations -->
     <string name="recommendations_action_reset_quick_picks">Reset Quick Picks</string>
     <string name="recommendations_adaptive">Adaptive</string>
-    <string name="recommendations_adaptive_description">Adaptive: Scales with playlist size (10-150 recommendations)</string>
+    <string name="recommendations_adaptive_description">Adaptive: Scales with playlist size (10-120 recommendations)</string>
     <string name="recommendations_albums_for_you_title">Albums for you</string>
     <string name="recommendations_all_hits_title">All hits</string>
     <string name="recommendations_charts_title">Charts</string>
@@ -287,7 +302,7 @@
     <string name="recommendations_followed_artists_new_albums_title">New albums from your artists</string>
     <string name="recommendations_followed_artists_no_new_releases">There are no new releases for your favorite artists</string>
     <string name="recommendations_for_you_title">For You</string>
-    <string name="recommendations_forgotten_favorites_title">מועדפים שנשכחו</string>
+    <string name="recommendations_forgotten_favorites_title">Forgotten favorites</string>
     <string name="recommendations_fresh_finds_old_favorites_title">Fresh finds, old favorites</string>
     <string name="recommendations_fresh_new_music_title">Fresh new music</string>
     <string name="recommendations_history_source_description">Choose which listening events are used to build Quick Picks recommendations.</string>
@@ -297,20 +312,20 @@
     <string name="recommendations_minimum_listening_time_description">Minimum playback duration for a song to be suggested in Quick Picks</string>
     <string name="recommendations_minimum_playback_duration_label">Min playback duration</string>
     <string name="recommendations_mixed_for_you_title">Mixed for you</string>
-    <string name="recommendations_moods_and_genres_title">מצבי רוח וז\'אנרים</string>
+    <string name="recommendations_moods_and_genres_title">Moods and genres</string>
     <string name="recommendations_moods_title">Moods</string>
     <string name="recommendations_music_videos_title">Music videos for you</string>
-    <string name="recommendations_new_albums_title">אלבומים חדשים</string>
+    <string name="recommendations_new_albums_title">New albums</string>
     <string name="recommendations_new_releases_title">New releases</string>
     <string name="recommendations_number">Number of recommendations</string>
     <string name="recommendations_page_enabled_description">Show the Quick Picks page with recommendations based on your listening activity.</string>
     <string name="recommendations_personal_top_title">My Top</string>
-    <string name="recommendations_playlists_title">רשימות השמעה שאולי תאהבו</string>
-    <string name="recommendations_reset_complete">בחירות מהירות נמחקות</string>
+    <string name="recommendations_playlists_title">Playlists you might like</string>
+    <string name="recommendations_reset_complete">Quick picks are cleared</string>
     <string name="recommendations_reset_description">Delete the playback events used to generate local Quick Picks recommendations.</string>
     <string name="recommendations_section_other_youtube_title">Other sections</string>
-    <string name="recommendations_section_visibility_description">השבת אם אינך רוצה לראות</string>
-    <string name="recommendations_show_section_label">הצג</string>
+    <string name="recommendations_section_visibility_description">Disable if you do not want to see</string>
+    <string name="recommendations_show_section_label">Show</string>
     <string name="recommendations_smart_song_count_description">Set the number of smart recommendations, or let the app adjust it automatically.</string>
     <string name="recommendations_title">Quick Picks</string>
     <string name="recommendations_todays_biggest_hits_title">Today\'s biggest hits</string>
@@ -318,6 +333,7 @@
     <string name="recommendations_trending_community_playlists_title">Trending community playlists</string>
     <string name="recommendations_trending_shorts_title">Trending in Shorts</string>
     <string name="recommendations_trending_songs_title">Trending songs for you</string>
+    <!-- Search -->
     <string name="search_content_type_all">הכל</string>
     <string name="search_content_type_official">Official</string>
     <string name="search_content_type_user_generated">User Generated</string>
@@ -325,7 +341,7 @@
     <string name="search_display_order_description">Choose which appears first in search results</string>
     <string name="search_display_order_saved_searches_first">Saved searches first</string>
     <string name="search_display_order_suggestions_first">Suggestions first</string>
-    <string name="search_featured_title">מומלץ</string>
+    <string name="search_featured_title">Featured</string>
     <string name="search_history_action_clear">לנקות היסטוריית חיפושים</string>
     <string name="search_history_close">Close</string>
     <string name="search_history_empty_message">ההיסטוריה ריקה</string>
@@ -337,37 +353,45 @@
     <string name="search_history_pause_label">השהה את היסטוריית החיפושים</string>
     <string name="search_history_settings_page">Settings › %1$s</string>
     <string name="search_items_empty_message">No items found</string>
-    <string name="search_lyrics_online">חפש מילים באינטרנט</string>
-    <string name="search_mood_title">מצב רוח</string>
+    <string name="search_lyrics_online">Search lyrics online</string>
+    <string name="search_mood_title">Mood</string>
     <string name="search_music_action_start">Music search</string>
-    <string name="search_no_results_message">לא נמצאו תוצאות. נסה שאילתה או קטגוריה אחרת</string>
-    <string name="search_online">מקוון</string>
-    <string name="search_queries">" שאילתות חיפוש"</string>
+    <string name="search_no_results_message">No results found. Please try a different query or category</string>
+    <string name="search_online">Online</string>
+    <string name="search_queries">" search queries"</string>
     <string name="search_results_for">Search results for:</string>
     <string name="search_saved_history_title">Search history</string>
-    <string name="search_suggestions_empty_message">אין הצעות</string>
+    <string name="search_suggestions_empty_message">No suggestions</string>
     <string name="search_suggestions_title">Suggestions</string>
-    <string name="search_title">לחפש</string>
+    <string name="search_title">Search</string>
     <string name="search_video_download_unsupported_message">Downloading videos not supported</string>
-    <string name="search_videos_title">סרטונים</string>
+    <string name="search_videos_title">Videos</string>
     <string name="search_voice_action_start">Voice search</string>
     <string name="search_voice_microphone_permission_error">Microphone permission required</string>
     <string name="search_voice_no_match_message">I didn\'t understand, try again</string>
-    <string name="search_youtube_action_open_url">עבור לקישור</string>
-    <string name="search_youtube_url_input_hint">הדבק או הקלד כתובת אתר חוקית</string>
-    <string name="search_youtube_url_supported_types_description">אתה יכול לשים קישור שלם של פלייליסט, אלבום, ערוץ או שיר בודד ביוטיוב או ביוטיוב מיוזיק</string>
+    <string name="search_youtube_action_open_url">Go to link</string>
+    <string name="search_youtube_url_input_hint">Paste or type a valid url</string>
+    <string name="search_youtube_url_supported_types_description">You can put a complete link of a playlist, an album, a channel or a single song on YouTube or YouTube Music</string>
     <string name="voice_search_listening">Listening...</string>
     <string name="voice_search_retry">Retry</string>
     <string name="voice_search_speak_now">Speak now</string>
+    <!-- Song -->
     <string name="song_delete_confirmation">Do you really want to delete this song? It will be deleted from database.\nThis action is irreversible.</string>
     <string name="song_delete_dialog_title">Delete songs</string>
     <string name="song_metadata_update_action_open">Open update dialog</string>
     <string name="song_metadata_updated_count">Updated %1$d songs</string>
     <string name="song_play_time_action_reset">Reset total play time</string>
+    <!-- Song Matching -->
     <string name="song_matching_action_open">Match Album/Audio version</string>
     <string name="song_matching_all_confirmation">Do you want to match %d unmatched songs?</string>
     <string name="song_matching_dialog_title">Match songs</string>
     <string name="song_matching_progress_title">Matching songs</string>
     <string name="song_matching_running_message">Matching Songs. Please Wait. Do not Minimize or Exit the App</string>
     <string name="song_matching_unmatched_label">Unmatched song</string>
+    <string name="metadata_musicbrainz_rating">Rating</string>
+    <string name="metadata_cover_art">Cover art</string>
+    <string name="metadata_file_path_unavailable">Cannot resolve file path</string>
+    <string name="metadata_save_failed">Failed to save metadata</string>
+    <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
+    <string name="recommendations_charts_global">Global</string>
 </resources>
