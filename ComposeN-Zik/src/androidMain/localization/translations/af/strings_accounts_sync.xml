@@ -78,7 +78,7 @@
     <string name="discord_preview_state_paused">Paused</string>
     <string name="discord_preview_state_playing">Playing</string>
     <string name="discord_preview_title">Rich Presence preview</string>
-    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates stopped until the next media change or manual reconnect</string>
+    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates are paused</string>
     <string name="discord_second_button_enabled_description">Show the second link button on your Discord activity.</string>
     <string name="discord_second_button_label_description">Set the text displayed on the second Discord activity button.</string>
     <string name="discord_second_button_url_description">Set the web address opened by the second Discord activity button.</string>
@@ -127,7 +127,7 @@
     <string name="profile_data_status_all_separate">Separate: database, settings, sessions, downloads, media cache, images, waveforms</string>
     <string name="profile_data_status_shared">Separate: database, settings, sessions%1$s · Shared: %2$s</string>
     <string name="profile_data_waveforms">waveforms</string>
-    <string name="profile_database">Database</string>
+    <string name="profile_database">Databasis</string>
     <string name="profile_description">Each profile has its own database, settings and face. Switching profiles requires a restart</string>
     <string name="profile_display_name_preview_label">Shown as</string>
     <string name="profile_display_name_source_description">Choose which profile or connected account supplies your displayed name.</string>
@@ -162,7 +162,7 @@
     <string name="profile_photo_remove_description">Remove the saved photo from the current local profile.</string>
     <string name="profile_photo_set">Set</string>
     <string name="profile_remove_confirmation">Remove this profile?</string>
-    <string name="profile_rename">Rename</string>
+    <string name="profile_rename">Hernoem</string>
     <string name="profile_restart_required">This required a restart of the app</string>
     <string name="profile_share_downloads">Share downloads</string>
     <string name="profile_share_downloads_description">Use the base profile\'s downloads folder and index instead of this profile\'s own. Applies at the next app restart; data already written in this profile\'s own folder stays there</string>
@@ -175,7 +175,7 @@
     <string name="profile_switch_dialog_title">Switch profile</string>
     <string name="profile_title">Profiles</string>
     <!-- Sync -->
-    <string name="sync_action_sync">Sync</string>
+    <string name="sync_action_sync">Sinchroniseer</string>
     <string name="sync_albums">Auto Sync Saved Albums</string>
     <string name="sync_albums_description">Auto-import liked albums from YouTube Music</string>
     <string name="sync_background_guard">Background Guard</string>
