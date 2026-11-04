@@ -7,13 +7,13 @@
     <string name="common_clipboard_copy_success">Copied</string>
     <string name="common_color_black">Black</string>
     <string name="common_color_custom">Custom Color</string>
-    <string name="common_color_source_artwork">Artwork</string>
+    <string name="common_color_source_artwork">Cover color</string>
     <string name="common_color_source_theme">Theme</string>
     <string name="common_color_white">White</string>
-    <string name="common_debug_background">background</string>
+    <string name="common_debug_background">bakgrund</string>
     <string name="common_debug_width">width</string>
     <string name="common_delete_success">Deleted</string>
-    <string name="common_description_unavailable">No description available</string>
+    <string name="common_description_unavailable">Ingen beskrivning tillgänglig</string>
     <string name="common_duration_milliseconds_format">%1$s ms</string>
     <string name="common_empty_items">No items</string>
     <string name="common_external_link_loading_suffix">is loading...</string>
