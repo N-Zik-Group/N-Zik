@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="about_action_report_issue">Αναφορά προβλήματος</string>
-    <string name="about_action_request_feature">Προτείνετε μια ιδέα ή ένα χαρακτηριστικό</string>
-    <string name="about_action_view_source">Προβολή Πηγαίου Κώδικα</string>
-    <string name="about_authorship_preposition">από</string>
-    <string name="about_contributors_alphabetical_order_label">Με αλφαβητική σειρά:</string>
-    <string name="about_debug_developers_rotation">προγραμματιστές_περιστροφή</string>
+    <!-- About -->
+    <string name="about_action_report_issue">Report an issue</string>
+    <string name="about_action_request_feature">Request a feature or suggest an idea</string>
+    <string name="about_action_view_source">View the source code</string>
+    <string name="about_authorship_preposition">by</string>
+    <string name="about_contributors_alphabetical_order_label">In alphabetical order:</string>
+    <string name="about_debug_developers_rotation">developers_rotation</string>
     <string name="about_debug_translators_rotation">translators_rotation</string>
     <string name="about_developers_description">Show or hide the developers and designers who contributed to the app.</string>
     <string name="about_developers_designers_title">Developers / Designers</string>
-    <string name="about_github_link_description">Θα μεταφερθείτε στο GitHub</string>
+    <string name="about_github_link_description">You will be redirected to GitHub</string>
     <string name="about_report_issue_description">Open the GitHub bug report form to describe a problem.</string>
     <string name="about_request_feature_description">Open the GitHub feature request form to suggest an improvement.</string>
     <string name="about_source_code_description">Open the source code repository on GitHub.</string>
-    <string name="about_title">Σχετικά</string>
+    <string name="about_title">About</string>
     <string name="about_translators_description">Show or hide the people who translated the app.</string>
     <string name="about_translators_title">Translators</string>
 </resources>
