@@ -142,7 +142,7 @@
     <string name="player_action_bar_transparent_background_description">删除播放器动作按钮背后的固有背景。</string>
     <string name="player_action_enqueue">添加到播放队列</string>
     <string name="player_action_like">赞</string>
-    <string name="player_action_listen_on_invidious">在Invidious上收听</string>
+    <string name="player_action_listen_on_invidious">在%1$s上收听</string>
     <string name="player_action_listen_on_youtube">在YouTube上收听</string>
     <string name="player_action_listen_on_youtube_music">在YouTube音乐上收听</string>
     <string name="player_action_locate_current_song">查找正在播放的歌曲</string>
@@ -277,7 +277,7 @@
     <string name="player_queue_duration_visible_description">在播放队列中显示曲目的合并持续时间。</string>
     <string name="player_queue_preview_artwork_description">在播放器预览中包含即将播放的曲目旁边的专辑艺术作品。</string>
     <string name="player_queue_preview_song_count_description">选择在播放器预览中显示多少曲目。</string>
-    <string name="player_queue_remove_selected_confirmation_format">从队列中删除 %d 首歌曲吗？</string>
+    <string name="player_queue_remove_selected_confirmation_format">从队列中删除选择吗？选中的曲目： %d</string>
     <string name="player_queue_shuffled_count_format">队列已随机播放(%d 歌曲)</string>
     <string name="player_remaining_time_visible_description">显示当前曲目的剩余时间。</string>
     <string name="player_restart_required_message">播放器必须重启才能使更改生效！</string>
