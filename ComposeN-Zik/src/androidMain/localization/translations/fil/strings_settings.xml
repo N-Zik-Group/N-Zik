@@ -215,7 +215,7 @@
     <string name="settings_interface_corner_radius_label">UI Roundness</string>
     <string name="settings_interface_hide_status_bar_label">Hide status bar</string>
     <string name="settings_interface_page_description">The user interface section contains settings to modify the global interface and navigation</string>
-    <string name="settings_interface_page_title">User Interface</string>
+    <string name="settings_interface_page_title">UI</string>
     <string name="settings_interface_title">User interface</string>
     <string name="settings_languages_title">Languages</string>
     <string name="settings_lastfm_scrobbling_description">Scrobble your music to Last.fm</string>
@@ -423,7 +423,7 @@
     <string name="settings_section_backup_and_restore_title">Backup and restore</string>
     <string name="settings_section_contributors_title">Contributors</string>
     <string name="settings_section_fullscreen_lyrics_title">Fullscreen lyrics components</string>
-    <string name="settings_section_notification_player_title">Notification player</string>
+    <string name="settings_section_notification_player_title">Notification Player</string>
     <string name="settings_section_player_action_bar_title">Player action bar</string>
     <string name="settings_section_proxy_title">Proxy</string>
     <string name="settings_section_service_lifetime_title">Service lifetime</string>
@@ -481,7 +481,7 @@
     <string name="settings_visualizer_remember_state_label">Save visualizer state</string>
     <string name="settings_youtube_authenticated_browsing_description">Use login for browse requests (home, explore, etc.)</string>
     <string name="settings_youtube_authenticated_browsing_label">Login for Browse</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest without your account, so they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Use account for searches</string>
     <string name="settings_youtube_clear_synced_data_confirmation">Clear all data synced from YouTube? This will remove liked songs, albums, artists, and playlists imported from YouTube.</string>
     <string name="settings_youtube_clear_synced_data_dialog_title">Clear YouTube synced data</string>
