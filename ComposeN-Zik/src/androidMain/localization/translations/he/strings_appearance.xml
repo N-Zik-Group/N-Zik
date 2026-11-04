@@ -46,7 +46,7 @@
     <string name="glass_effect_mini_player">Mini player · surface and controls</string>
     <string name="glass_effect_mini_player_description">The small player with the song cover and playback buttons.</string>
     <string name="glass_effect_mode_contour_only">Contour only</string>
-    <string name="glass_effect_mode_disabled">Disabled</string>
+    <string name="glass_effect_mode_disabled">מושבת</string>
     <string name="glass_effect_mode_glass_and_contour">Glass and contour</string>
     <string name="glass_effect_mode_glass_only">Glass only</string>
     <string name="glass_effect_mode_inherited">Following the shared element mode</string>
@@ -62,7 +62,7 @@
     <string name="glass_effect_quality_balanced">Balanced</string>
     <string name="glass_effect_quality_fastest">Fastest</string>
     <string name="glass_effect_quality_fastest_description">A tinted film, with nothing sampled from behind it. Costs about as much as drawing a rectangle.</string>
-    <string name="glass_effect_quality_high">Quality</string>
+    <string name="glass_effect_quality_high">איכות</string>
     <string name="glass_effect_refraction_amount">Bend</string>
     <string name="glass_effect_refraction_depth">Edge depth</string>
     <string name="glass_effect_refraction_unsupported">Edge refraction, colour splitting and depth require Android 13 or later. Frost remains available.</string>
@@ -126,9 +126,9 @@
     <string name="glass_effect_switches_description">Use liquid Glass switches with the shared material and interaction effects when Glass is enabled.</string>
     <string name="glass_effect_switches_title">Glass switches</string>
     <string name="glass_effect_tint">Tint</string>
-    <string name="glass_effect_tint_none">None</string>
+    <string name="glass_effect_tint_none">כלום</string>
     <string name="glass_effect_tint_source">Glass color source</string>
-    <string name="glass_effect_tint_source_custom">Custom</string>
+    <string name="glass_effect_tint_source_custom">התאמה אישית</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
     <string name="glass_effect_unsupported">This phone has no hardware blur, so every surface uses the tinted film.</string>
     <string name="glass_effect_where_action_buttons">Action buttons</string>
@@ -164,19 +164,19 @@
     <string name="interface_show_floating_icon_description">Display a floating shortcut that opens search.</string>
     <string name="interface_transition_effect_description">Choose the animation used when moving between screens.</string>
     <!-- Player Appearance -->
-    <string name="player_controls_style_essential">Essential</string>
-    <string name="player_controls_style_modern">Modern</string>
+    <string name="player_controls_style_essential">חיוני</string>
+    <string name="player_controls_style_modern">מודרני</string>
     <string name="player_cover_style_cd">CD</string>
     <string name="player_cover_style_cd_with_cover">CD with Cover</string>
     <string name="player_cover_style_vinyl">Vinyl</string>
-    <string name="player_like_icon_apple">Apple</string>
-    <string name="player_like_icon_brilliant">Brilliant</string>
+    <string name="player_like_icon_apple">תפוח</string>
+    <string name="player_like_icon_brilliant">מבריק</string>
     <string name="player_like_icon_broken">Broken</string>
     <string name="player_like_icon_cute">Cute</string>
-    <string name="player_like_icon_gift">Gift</string>
+    <string name="player_like_icon_gift">מתנה</string>
     <string name="player_like_icon_striped">Striped</string>
-    <string name="player_progress_both">Both</string>
-    <string name="player_progress_mini_player">Minimized player</string>
+    <string name="player_progress_both">שניהם</string>
+    <string name="player_progress_mini_player">נגן ממוזער</string>
     <string name="settings_action_bar_show_lyrics_button">Lyrics button</string>
     <!-- Player Background -->
     <string name="player_background_black_cherry_cosmos">Black Cherry Cosmos</string>
@@ -215,12 +215,12 @@
     <string name="theme_light_palette_text_secondary_description">Choose the color for secondary text in the light palette.</string>
     <string name="theme_mode_description">Choose when the app uses its light or dark palette.</string>
     <string name="theme_mode_pitch_black">Pitch Black</string>
-    <string name="theme_palette_custom">Customized</string>
+    <string name="theme_palette_custom">מותאם אישית</string>
     <string name="theme_palette_description">Choose the color palette used throughout the app.</string>
-    <string name="theme_palette_dynamic">Dynamic</string>
-    <string name="theme_palette_modern_black">Modern Black</string>
-    <string name="theme_palette_pure_black">Pure Black</string>
-    <string name="theme_shake_sensitivity_disabled">Disabled</string>
+    <string name="theme_palette_dynamic">דינמי</string>
+    <string name="theme_palette_modern_black">שחור מודרני</string>
+    <string name="theme_palette_pure_black">שחור נקי</string>
+    <string name="theme_shake_sensitivity_disabled">מושבת</string>
     <string name="theme_shake_sensitivity_high">High (2.2G)</string>
     <string name="theme_shake_sensitivity_low">Low (5.0G)</string>
     <string name="theme_shake_sensitivity_medium">Medium (3.5G)</string>
