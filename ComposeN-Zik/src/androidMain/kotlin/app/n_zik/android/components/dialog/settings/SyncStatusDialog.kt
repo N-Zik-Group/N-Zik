@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
@@ -28,6 +29,7 @@ import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.InteractiveDialog
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.utils.SyncStatusDetail
 import app.it.fast4x.rimusic.utils.medium
 import app.it.fast4x.rimusic.utils.syncStatus
 
@@ -66,7 +68,13 @@ object SyncStatusDialog : InteractiveDialog {
         ) {
             statusItems.forEach { (name, syncItemStatus) ->
                 val isExpanded = expandedItem == name
-                val hasDetail = !syncItemStatus.detailMessage.isNullOrBlank()
+                val detail = when (val result = syncItemStatus.detail) {
+                    is SyncStatusDetail.Text -> stringResource(result.resource)
+                    is SyncStatusDetail.Count -> pluralStringResource(result.resource, result.count, result.count)
+                    is SyncStatusDetail.PushResult -> stringResource(R.string.sync_detail_push_result, result.succeeded, result.failed)
+                    null -> null
+                }
+                val hasDetail = detail != null
                 val rotation by androidx.compose.animation.core.animateFloatAsState(if (isExpanded) 180f else 0f)
 
                 Column(
@@ -120,7 +128,7 @@ object SyncStatusDialog : InteractiveDialog {
 
                     androidx.compose.animation.AnimatedVisibility(visible = isExpanded && hasDetail) {
                         BasicText(
-                            text = syncItemStatus.detailMessage ?: "",
+                            text = detail.orEmpty(),
                             style = typography().xxs.copy(color = if (syncItemStatus.state == "error") colorPalette().red else colorPalette().textDisabled),
                             modifier = Modifier.padding(top = 8.dp)
                         )

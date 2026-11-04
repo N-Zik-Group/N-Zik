@@ -69,7 +69,7 @@
     <string name="rewind_days_peak_sub">DAY %1$s HIT THE HARDEST.</string>
     <string name="rewind_deep_cuts_empty_body">Songs ranked 6–10 will appear here once there is enough listening history.</string>
     <string name="rewind_deep_cuts_empty_title">YOUR TOP TEN IS STILL FORMING</string>
-    <string name="rewind_deep_cuts_heading">SONGS 6–10.</string>
+    <string name="rewind_deep_cuts_heading">SONGS 6–%1$d.</string>
     <string name="rewind_deep_cuts_kicker">DEEP CUTS • %1$s</string>
     <string name="rewind_deep_cuts_sub">Your next five most-played songs.</string>
     <string name="rewind_discovery_heading">HOW MUCH YOU\nDISCOVERED.</string>
@@ -258,7 +258,7 @@
     <string name="rewind_top_songs_empty_body">Your top five will appear here once there is enough listening history.</string>
     <string name="rewind_top_songs_empty_title">NO TRACK CHART YET</string>
     <string name="rewind_top_songs_heading">YOUR TOP 5\nSONGS.</string>
-    <string name="rewind_top_songs_next">Next: songs 6–10.</string>
+    <string name="rewind_top_songs_next">Next: songs 6–%1$d.</string>
     <string name="rewind_top_sort">Rewind Top</string>
     <string name="rewind_totals_heading">YOU LISTENED FOR</string>
     <string name="rewind_totals_kicker">YOUR LISTENING TIME • %1$s</string>

@@ -273,4 +273,13 @@
     <string name="sync_background_notification">Syncing in background...</string>
     <string name="sync_aborted_network_error">Sync aborted due to network error.</string>
     <string name="sync_start_service_failed">Failed to start sync service</string>
+    <string name="sync_fetch_subscribed_channels_failed">Failed to fetch subscribed channels</string>
+    <string name="sync_fetch_liked_albums_failed">Failed to fetch liked albums</string>
+    <string name="sync_fetch_liked_songs_failed">Failed to fetch liked songs</string>
+    <string name="sync_fetch_playlists_failed">Failed to fetch playlists</string>
+    <string name="sync_fetch_library_songs_failed">Failed to fetch library songs</string>
+    <string name="sync_fetch_uploaded_songs_failed">Failed to fetch uploaded songs</string>
+    <string name="sync_fetch_uploaded_albums_failed">Failed to fetch uploaded albums</string>
+    <string name="sync_fetch_episodes_failed">Failed to fetch episodes</string>
+    <string name="sync_detail_push_result">%1$d succeeded, %2$d failed</string>
 </resources>

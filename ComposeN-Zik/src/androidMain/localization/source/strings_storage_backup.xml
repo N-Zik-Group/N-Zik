@@ -156,5 +156,6 @@
     <string name="storage_samsung_advice_message">Samsung\'s automatic memory management can delete N-Zik\'s downloads and cache files, even when you did not ask for it. To keep your downloads safe, use the private (app) storage location instead of system storage.</string>
     <string name="storage_samsung_advice_title">Samsung storage advice</string>
     <string name="storage_samsung_system_usage_message">You currently have %1$s of downloads and cache on system storage.</string>
-    <string name="backup_import_failed">Import failed: %1$s</string>
+    <string name="backup_import_failed">Import failed</string>
+    <string name="export_no_songs">No songs exported</string>
 </resources>

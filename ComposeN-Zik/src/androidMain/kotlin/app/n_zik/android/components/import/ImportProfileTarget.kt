@@ -11,7 +11,6 @@ import app.it.fast4x.rimusic.utils.readProfileIds
 import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
 import app.it.fast4x.rimusic.utils.writeProfileEntries
 import app.it.fast4x.rimusic.utils.ytCookieExpiredKey
-import app.n_zik.android.appContext
 import app.n_zik.android.MainApplication
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
@@ -140,7 +139,7 @@ object ImportChainRunner {
                 dbSettingsFailed = true
                 Timber.tag("ImportChain").e(e, "Import chain failed (target: $target)")
                 withContext(NzikDispatchers.UI) {
-                    Toaster.e(R.string.backup_import_failed, e.message ?: appContext().getString(R.string.common_error_unknown))
+                    Toaster.e(R.string.backup_import_failed)
                 }
             },
             isDatabaseClosed = { importDb && Database.isClosed },

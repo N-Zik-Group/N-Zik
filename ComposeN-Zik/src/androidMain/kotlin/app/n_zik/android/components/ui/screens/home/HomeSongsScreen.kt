@@ -223,7 +223,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
             onComplete = { successCount, failCount ->
                 isExportingCache = false
                 if (successCount > 0) Toaster.done()
-                else Toaster.e(R.string.export_cached_songs_failed, "No songs exported")
+                else Toaster.e(R.string.export_cached_songs_failed, appContext().getString(R.string.export_no_songs))
             }
         )
     }

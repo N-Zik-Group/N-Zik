@@ -201,4 +201,5 @@
     <string name="network_proxy_username_placeholder">Username (optional)</string>
     <string name="network_proxy_password_placeholder">Password (optional)</string>
     <string name="network_proxy_region_placeholder">e.g. US, FR, DE (empty = auto)</string>
+    <string name="listen_together_server_request_failed">The Listen Together server could not complete the request.</string>
 </resources>

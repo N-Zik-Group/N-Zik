@@ -66,6 +66,9 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.it.fast4x.rimusic.enums.Countries
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.core.os.ConfigurationCompat
+import java.util.Locale
 import app.it.fast4x.rimusic.enums.DownloadedStateMedia
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.PlayEventsType
@@ -892,7 +895,7 @@ fun ChartsSection(
                 displayedSectionTitles.add("Charts")
                 Column {
                     HomeSectionTitle(
-                        title = "${stringResource(R.string.recommendations_charts_title)} (${selectedCountryCode.countryName})",
+                        title = stringResource(R.string.recommendations_charts_country_format, stringResource(R.string.recommendations_charts_title), selectedCountryCode.displayLabel()),
                         onClick = {
                             menuState.display {
                                 ListMenu.Menu(title = stringResource(R.string.recommendations_charts_title)) {
@@ -916,7 +919,7 @@ fun ChartsSection(
                                                     )
                                                 }
                                             },
-                                            text = country.countryName,
+                                            text = country.displayLabel(),
                                             onClick = {
                                                 onCountryChange(country)
                                                 menuState.hide()
@@ -1417,4 +1420,11 @@ fun GenericYtmSections(
         }
     }
 } // GenericYtmSections
+}
+
+@Composable
+private fun Countries.displayLabel(): String {
+    if (this == Countries.ZZ) return stringResource(R.string.recommendations_charts_global)
+    val locale = ConfigurationCompat.getLocales(LocalConfiguration.current)[0] ?: Locale.getDefault()
+    return Locale.Builder().setRegion(name).build().getDisplayCountry(locale).ifBlank { countryName }
 }

@@ -219,6 +219,7 @@ fun ListenTogetherScreen(
     val invalidRoomCodeText = stringResource(R.string.listen_together_invalid_room_code)
     val joinRequestDeniedText = stringResource(R.string.listen_together_join_request_denied)
     val connectionLostText = stringResource(R.string.listen_together_error)
+    val serverErrorText = stringResource(R.string.listen_together_server_request_failed)
 
     // Restore the saved username into the input field on first composition
     LaunchedEffect(usernamePref.value) {
@@ -227,7 +228,7 @@ fun ListenTogetherScreen(
         }
     }
 
-    LaunchedEffect(listenTogetherManager) {
+    LaunchedEffect(listenTogetherManager, connectionLostText, serverErrorText) {
         listenTogetherManager.events.collect { event ->
             when (event) {
                 is ListenTogetherEvent.JoinRejected -> {
@@ -259,8 +260,8 @@ fun ListenTogetherScreen(
                     if (isCreatingRoom || isJoiningRoom) {
                         isCreatingRoom = false
                         isJoiningRoom = false
-                        joinErrorMessage = event.message
-                        Toaster.e(event.message)
+                        joinErrorMessage = serverErrorText
+                        Toaster.e(serverErrorText)
                     }
                 }
 
@@ -268,9 +269,8 @@ fun ListenTogetherScreen(
                     if (isCreatingRoom || isJoiningRoom) {
                         isCreatingRoom = false
                         isJoiningRoom = false
-                        joinErrorMessage = event.error
-                        // A5d (offline audit, 2026-10-22): localized "No Connection" instead of the raw
-                        // network string — the detail stays in the UI (joinErrorMessage).
+                        joinErrorMessage = connectionLostText
+
                         Toaster.noInternet()
                     }
                 }

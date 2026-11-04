@@ -582,7 +582,7 @@ class EditMetadataDialog private constructor(
                 }
             } catch (e: Exception) {
                 Timber.tag("EditMetadata").e(e, "Failed to write tags")
-                withContext(NzikDispatchers.UI) { Toaster.e(R.string.metadata_save_failed, e.message ?: appContext().getString(R.string.common_error_unknown)) }
+                withContext(NzikDispatchers.UI) { Toaster.e(R.string.metadata_save_failed) }
             } finally {
                 if (pendingTempFile == null) {
                     tempFile.delete()
@@ -606,7 +606,7 @@ class EditMetadataDialog private constructor(
             } catch (e: Exception) {
                 Timber.tag("EditMetadata").e(e, "Failed to write after permission")
                 tempFile.delete()
-                withContext(NzikDispatchers.UI) { Toaster.e(R.string.metadata_save_failed, e.message ?: appContext().getString(R.string.common_error_unknown)) }
+                withContext(NzikDispatchers.UI) { Toaster.e(R.string.metadata_save_failed) }
             } finally {
                 pendingTempFile = null
                 pendingMediaStoreUri = null
