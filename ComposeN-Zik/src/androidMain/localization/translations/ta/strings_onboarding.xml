@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Onboarding -->
     <string name="onboarding_accounts_discord_description">Show what you are listening to in Discord (beta)</string>
     <string name="onboarding_accounts_done">I\'m done</string>
     <string name="onboarding_accounts_skip">Skip</string>
     <string name="onboarding_accounts_title">Connect your accounts</string>
     <string name="onboarding_accounts_youtube">YouTube</string>
     <string name="onboarding_accounts_youtube_account">Logged in as %1$s</string>
-    <string name="onboarding_accounts_youtube_description">Optional — browse the app with your YouTube account (home, explore, etc.)</string>
+    <string name="onboarding_accounts_youtube_description">Optional: browse the app with your YouTube account (home, explore, etc.)</string>
     <string name="onboarding_greeting">Hello! Let\'s set up NZik for the perfect music experience. Every permission below is optional.</string>
     <string name="onboarding_permission_battery">Battery optimization</string>
     <string name="onboarding_permission_battery_description">Prevent the system from stopping the background music</string>
