@@ -31,8 +31,8 @@
     <string name="artist_songs_unavailable_message">Pas encore de titres</string>
     <string name="artist_title">Artiste</string>
     <!-- History -->
-    <string name="history_clear_listen_history_description">Delete saved playback events from listening history.</string>
-    <string name="history_clear_search_history_description">Delete saved searches from every search-history page without changing history preferences.</string>
+    <string name="history_clear_listen_history_description">Supprimer les événements de lecture enregistrés de l\'historique d\'écoute.</string>
+    <string name="history_clear_search_history_description">Supprimer les recherches enregistrées de chaque page d’historique de recherche sans modifier les préférences de l’historique.</string>
     <!-- Home -->
     <string name="home_albums_settings">Accueil Albums</string>
     <string name="home_artists_settings">Accueil Artistes</string>
@@ -80,9 +80,9 @@
     <string name="library_matching_merged_count_format">%d a été fusionné avec l\'élément existant</string>
     <string name="library_matching_results_title">Correspondance terminée</string>
     <string name="library_matching_success_failure_count_format">%1$d correspondant, %2$d a échoué</string>
-    <string name="library_on_device_start_folder_description">Choose the starting folder for the on-device music browser.</string>
+    <string name="library_on_device_start_folder_description">Choisissez le dossier de démarrage pour le navigateur de musique sur le périphérique.</string>
     <string name="library_on_device_title">Sur l\'appareil</string>
-    <string name="library_playlists_title">Playlists</string>
+    <string name="library_playlists_title">Listes de lecture</string>
     <string name="library_songs_title">Titres</string>
     <string name="library_sort_history_alphabetical">Par ordre alphabétique</string>
     <string name="library_sort_history_date">Date</string>
@@ -179,7 +179,7 @@
     <string name="metadata_musicbrainz_insights_members_collabs">Membres &amp; Collaborations</string>
     <string name="metadata_musicbrainz_insights_other_albums">Autres albums</string>
     <string name="metadata_musicbrainz_insights_popularity">Popularité</string>
-    <string name="metadata_musicbrainz_insights_singles_eps">Singles &amp; EPs</string>
+    <string name="metadata_musicbrainz_insights_singles_eps">Singles &amp; EP</string>
     <string name="metadata_musicbrainz_insights_tags_genres">Mots-clés &amp; Genres</string>
     <string name="metadata_musicbrainz_insights_top_albums">Meilleurs albums</string>
     <string name="metadata_musicbrainz_insights_top_songs">Meilleurs titres</string>
@@ -209,7 +209,7 @@
     <string name="playlist_action_export">Exporter la playlist</string>
     <string name="playlist_action_import">Importer une playlist</string>
     <string name="playlist_action_import_favorites">Importer les favoris</string>
-    <string name="playlist_action_like_favorites_on_youtube">J\'aime les titres aimés de RiMusic sur YouTube</string>
+    <string name="playlist_action_like_favorites_on_youtube">Ajouter les titres favoris de N-Zik aux titres aimés sur YouTube</string>
     <string name="playlist_action_remove_songs">Supprimer de la playlist </string>
     <string name="playlist_action_remove_songs_outside_library">Supprimer les titres qui ne sont pas dans la bibliothèque</string>
     <string name="playlist_action_rename">Renommer</string>
@@ -237,17 +237,17 @@
     <string name="playlist_insertion_end">Fin</string>
     <string name="playlist_insertion_position">Classement des nouveaux titres</string>
     <string name="playlist_left_swipe">Balayage vers la gauche de la playlist</string>
-    <string name="playlist_like_all_dialog_title">Like all songs</string>
+    <string name="playlist_like_all_dialog_title">Aimer toutes les chansons</string>
     <string name="playlist_like_all_duration_confirmation_suffix">(temps estimé) est nécessaire pour aimer tous les titres. Vous devez fermer l\'application pour annuler ce processus. Voulez-vous continuer ?</string>
     <string name="playlist_name_input_hint">Entrez le nom de la playlist</string>
     <string name="playlist_operation_wait_message">Attendez, cela peut prendre quelques minutes...</string>
     <string name="playlist_pinned_title">Playlists Épinglées</string>
     <string name="playlist_positions_shuffled">%d positions ont été mélangées</string>
     <string name="playlist_refresh_on_open">Actualiser à l\'ouverture</string>
-    <string name="playlist_refresh_on_open_disable">Disable refresh on opening</string>
+    <string name="playlist_refresh_on_open_disable">Désactiver l\'actualisation à l\'ouverture</string>
     <string name="playlist_refresh_on_open_enable">Activer l\'actualisation à l\'ouverture</string>
     <string name="playlist_remove_selected_confirmation">Souhaitez-vous supprimer les morceaux sélectionnés de cette playlist ?</string>
-    <string name="playlist_remove_songs_confirmation">Êtes-vous sûr de vouloir supprimer ces %d titres de la playlist ?</string>
+    <string name="playlist_remove_songs_confirmation">Retirer la sélection de la playlist ? Nombre de titres : %d</string>
     <string name="playlist_rename_dialog_title">Renommer la playlist</string>
     <string name="playlist_reorder_ascending_sort_required_message">La réorganisation est possible uniquement dans le tri ascendant</string>
     <string name="playlist_reorder_lock_toggle_label">Verrouiller / Déverrouiller la réorganisation des titres</string>
@@ -256,8 +256,8 @@
     <string name="playlist_shuffle_positions_confirmation">Voulez-vous vraiment renuméroter les positions dans cette playlist ?</string>
     <string name="playlist_song_already_present">Le titre est présent dans une des playlists</string>
     <string name="playlist_top">Top de la playlist</string>
-    <string name="playlist_top_maximum_items_description">Limit how many songs are included in your top-played playlist.</string>
-    <string name="playlist_top_show_description">Show your top-played playlist in Quick Picks.</string>
+    <string name="playlist_top_maximum_items_description">Limite le nombre de chansons incluses dans votre liste de lecture préférée.</string>
+    <string name="playlist_top_show_description">Affichez votre playlist dans Quick Picks.</string>
     <string name="playlist_youtube_song_limit_message">Les playlists YouTube sont limitées à 5000 titres.</string>
     <string name="playlist_youtube_title">Playlist YouTube</string>
     <!-- Podcast -->
@@ -302,10 +302,10 @@
     <string name="recommendations_forgotten_favorites_title">Coups de cœur oubliés</string>
     <string name="recommendations_fresh_finds_old_favorites_title">Nouvelles découvertes, grands classiques</string>
     <string name="recommendations_fresh_new_music_title">Musique Récente</string>
-    <string name="recommendations_history_source_description">Choose which listening events are used to build Quick Picks recommendations.</string>
+    <string name="recommendations_history_source_description">Choisissez quels événements d\'écoute sont utilisés pour construire des recommandations de Quick Picks.</string>
     <string name="recommendations_live_performances_title">Concerts</string>
     <string name="recommendations_load_failed_message">La page n\'a pas été chargée correctement, essayez de rafraîchir la page.</string>
-    <string name="recommendations_local_song_count_description">Set how many locally recommended songs appear in Quick Picks.</string>
+    <string name="recommendations_local_song_count_description">Définissez le nombre de chansons recommandées localement dans les sélections rapides.</string>
     <string name="recommendations_minimum_listening_time_description">Durée minimale de lecture d\'un morceau pour qu\'il soit proposé dans la « Sélection Rapide »</string>
     <string name="recommendations_minimum_playback_duration_label">Durée d\'écoute minimale</string>
     <string name="recommendations_mixed_for_you_title">Une sélection rien que pour vous</string>
@@ -315,15 +315,15 @@
     <string name="recommendations_new_albums_title">Nouveaux Albums</string>
     <string name="recommendations_new_releases_title">Nouveautés</string>
     <string name="recommendations_number">Nombre de recommandations</string>
-    <string name="recommendations_page_enabled_description">Show the Quick Picks page with recommendations based on your listening activity.</string>
+    <string name="recommendations_page_enabled_description">Affichez la page Quick Picks avec des recommandations basées sur votre activité d\'écoute.</string>
     <string name="recommendations_personal_top_title">Mon Top</string>
     <string name="recommendations_playlists_title">Playlists que vous pourriez aimer</string>
     <string name="recommendations_reset_complete">La « Sélection Rapide » a été effacée avec succès</string>
-    <string name="recommendations_reset_description">Delete the playback events used to generate local Quick Picks recommendations.</string>
+    <string name="recommendations_reset_description">Supprimez les événements de lecture utilisés pour générer des recommandations locales de sélections rapides.</string>
     <string name="recommendations_section_other_youtube_title">Autres rubriques</string>
     <string name="recommendations_section_visibility_description">Désactiver si vous ne souhaitez pas voir</string>
     <string name="recommendations_show_section_label">Afficher</string>
-    <string name="recommendations_smart_song_count_description">Set the number of smart recommendations, or let the app adjust it automatically.</string>
+    <string name="recommendations_smart_song_count_description">Définissez le nombre de recommandations intelligentes, ou laissez l\'application l\'ajuster automatiquement.</string>
     <string name="recommendations_title">Sélection Rapide</string>
     <string name="recommendations_todays_biggest_hits_title">Les plus grands succès du moment</string>
     <string name="recommendations_top_music_videos_title">Meilleurs Clips Musicaux</string>
@@ -340,7 +340,6 @@
     <string name="search_display_order_suggestions_first">Suggestions d\'abord</string>
     <string name="search_featured_title">En Vedette</string>
     <string name="search_history_action_clear">Effacer l’historique de recherche</string>
-    <string name="search_history_close">Fermer</string>
     <string name="search_history_empty_message">L’historique est vide</string>
     <string name="search_history_local">Recherche locale</string>
     <string name="search_history_online">Recherche en ligne</string>
@@ -381,14 +380,17 @@
     <!-- Song Matching -->
     <string name="song_matching_action_open">Version de l\'album/de l\'audio</string>
     <string name="song_matching_all_confirmation">Voulez-vous faire correspondre %d chansons sans correspondance?</string>
-    <string name="song_matching_dialog_title">Match songs</string>
-    <string name="song_matching_progress_title">Matching songs</string>
+    <string name="song_matching_dialog_title">Faire correspondre les chansons</string>
+    <string name="song_matching_progress_title">Chansons correspondantes</string>
     <string name="song_matching_running_message">Titres correspondants. Veuillez patienter. Ne réduisez pas ou ne quittez pas l\'application</string>
     <string name="song_matching_unmatched_label">Chanson sans correspondance</string>
-    <string name="metadata_musicbrainz_rating">Rating</string>
-    <string name="metadata_cover_art">Cover art</string>
-    <string name="metadata_file_path_unavailable">Cannot resolve file path</string>
-    <string name="metadata_save_failed">Failed to save metadata</string>
+    <string name="metadata_musicbrainz_rating">Évaluation</string>
+    <string name="metadata_cover_art">Pochette</string>
+    <string name="metadata_file_path_unavailable">Impossible de résoudre le chemin d\'accès au fichier</string>
+    <string name="metadata_save_failed">Échec de l\'enregistrement des métadonnées</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
-    <string name="recommendations_charts_global">Global</string>
+    <string name="recommendations_charts_global">Globale</string>
+    <string name="playlist_like_all_duration_confirmation_format">Aimer toutes les chansons prendra environ %1$s. Fermer l\'application pour annuler. Voulez-vous continuer ?</string>
+    <string name="library_on_device_permission_request_failed">Impossible de demander l\'accès à la musique sur cet appareil.</string>
+    <string name="library_on_device_permission_settings_failed">Impossible d\'ouvrir les paramètres d\'autorisation.</string>
 </resources>
