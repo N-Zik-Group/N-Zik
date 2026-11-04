@@ -7,7 +7,7 @@
     <string name="account_youtube_login_enabled_description">Allow YouTube account sign-in for personalized browsing and synchronization.</string>
     <!-- Account Youtube -->
     <string name="account_youtube_cookie_invalid">YouTube cookie is invalid, please log in again</string>
-    <string name="account_youtube_login_success">YouTube login successful</string>
+    <string name="account_youtube_login_success">Accesso a YouTube riuscito</string>
     <string name="account_youtube_session_expired">YouTube session expired, please sign in again</string>
     <!-- Discord -->
     <string name="discord_activity_competing">Competing</string>
@@ -53,10 +53,10 @@
     <string name="discord_advanced_show_timestamps_description">Show the playing progress bar with the timestamps</string>
     <string name="discord_advanced_state">State template</string>
     <string name="discord_artwork_tooltip_description">Set the tooltip shown over the large artwork image on Discord.</string>
-    <string name="discord_beta_warning">This is still in Beta and may contain bugs and crash</string>
-    <string name="discord_connected_to_discord_account">Connected to Discord account</string>
+    <string name="discord_beta_warning">Questo è ancora in Beta e può contenere bug e crash</string>
+    <string name="discord_connected_to_discord_account">Connesso all\'account Discord</string>
     <string name="discord_details_template_description">Set the main activity line using track information placeholders.</string>
-    <string name="discord_enable_rich_presence">Enable Rich Presence</string>
+    <string name="discord_enable_rich_presence">Abilita Rich Presence</string>
     <string name="discord_enabled_description">Share your current listening activity on your Discord profile.</string>
     <string name="discord_error_banner_title">Discord RPC problem</string>
     <string name="discord_error_dismiss">Dismiss</string>
@@ -72,19 +72,19 @@
     <string name="discord_pause_template_description">Set the activity text shown when playback is paused.</string>
     <string name="discord_presence_button_get_nzik">Get N-Zik</string>
     <string name="discord_presence_button_listen_ytmusic">Listen to YTMusic</string>
-    <string name="discord_presence_closed">Discord presence closed</string>
+    <string name="discord_presence_closed">Presenza di Discord chiusa</string>
     <string name="discord_presence_pause_default">⏸︎ Paused: {song.name}</string>
     <string name="discord_preview_state_actual">Actual state</string>
     <string name="discord_preview_state_paused">Paused</string>
     <string name="discord_preview_state_playing">Playing</string>
     <string name="discord_preview_title">Rich Presence preview</string>
-    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates stopped until the next media change or manual reconnect</string>
+    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates are paused</string>
     <string name="discord_second_button_enabled_description">Show the second link button on your Discord activity.</string>
     <string name="discord_second_button_label_description">Set the text displayed on the second Discord activity button.</string>
     <string name="discord_second_button_url_description">Set the web address opened by the second Discord activity button.</string>
     <string name="discord_state_template_description">Set the secondary activity line using track information placeholders.</string>
     <string name="discord_template_unknown_album">Unknown Album</string>
-    <string name="discord_token_text_invalid">Your Discord token is invalid, please login again</string>
+    <string name="discord_token_text_invalid">Il tuo token Discord non è valido, per favore accedi di nuovo</string>
     <!-- Lastfm -->
     <string name="lastfm_action_failed">Last.fm request failed</string>
     <string name="lastfm_auth_failed">Login failed, check your Last.fm credentials</string>
@@ -109,7 +109,7 @@
     <string name="lastfm_show_password">Show password</string>
     <string name="lastfm_unlove">Unlove on Last.fm</string>
     <string name="lastfm_unloved">Removed from loved tracks</string>
-    <string name="lastfm_username">Username</string>
+    <string name="lastfm_username">Nome utente</string>
     <!-- Profile -->
     <string name="profile_action_add">Add profile</string>
     <string name="profile_action_export">Export profiles</string>
@@ -162,7 +162,7 @@
     <string name="profile_photo_remove_description">Remove the saved photo from the current local profile.</string>
     <string name="profile_photo_set">Set</string>
     <string name="profile_remove_confirmation">Remove this profile?</string>
-    <string name="profile_rename">Rename</string>
+    <string name="profile_rename">Rinomina</string>
     <string name="profile_restart_required">This required a restart of the app</string>
     <string name="profile_share_downloads">Share downloads</string>
     <string name="profile_share_downloads_description">Use the base profile\'s downloads folder and index instead of this profile\'s own. Applies at the next app restart; data already written in this profile\'s own folder stays there</string>
@@ -175,17 +175,17 @@
     <string name="profile_switch_dialog_title">Switch profile</string>
     <string name="profile_title">Profiles</string>
     <!-- Sync -->
-    <string name="sync_action_sync">Sync</string>
-    <string name="sync_albums">Auto Sync Saved Albums</string>
+    <string name="sync_action_sync">Sincronizza</string>
+    <string name="sync_albums">Sincronizzazione automatica degli album salvati</string>
     <string name="sync_albums_description">Auto-import liked albums from YouTube Music</string>
     <string name="sync_background_guard">Background Guard</string>
     <string name="sync_background_guard_description">Pause auto-sync when app is in background</string>
-    <string name="sync_channels">Auto Sync Subscribed Channels</string>
+    <string name="sync_channels">Sincronizzazione automatica dei canali iscritti</string>
     <string name="sync_channels_description">Auto-import subscribed artists from YouTube Music</string>
     <string name="sync_completed_with_errors">Sync completed with errors</string>
     <string name="sync_cooldown">Sync Cooldown</string>
     <string name="sync_cooldown_description">Minimum time between auto-syncs (in minutes)</string>
-    <string name="sync_data_with_ytm_account">Sync data with YTM account</string>
+    <string name="sync_data_with_ytm_account">Sincronizza i dati con l\'account YTM</string>
     <string name="sync_direction">Sync Direction</string>
     <string name="sync_direction_app_to_yt">App → YouTube only</string>
     <string name="sync_direction_description">Choose whether synchronization imports from YouTube, sends local changes, or works in both directions.</string>
@@ -206,7 +206,7 @@
     <string name="sync_import_uploaded_albums_description">Import albums you uploaded to YouTube Music</string>
     <string name="sync_import_uploaded_songs">Import Uploaded Songs</string>
     <string name="sync_import_uploaded_songs_description">Import songs you uploaded to YouTube Music</string>
-    <string name="sync_imported_playlists_automatic_title">Auto Sync Imported Playlists</string>
+    <string name="sync_imported_playlists_automatic_title">Sincronizzazione Automatica Playlist Importate</string>
     <string name="sync_likes">Auto Sync Liked Songs</string>
     <string name="sync_likes_description">Auto-import liked songs from YouTube Music</string>
     <string name="sync_no_items">No items to sync</string>
@@ -239,7 +239,7 @@
     <string name="sync_status_detail">Sync Status Detail</string>
     <string name="sync_status_detail_description">View status of each sync operation</string>
     <string name="sync_status_last">Last sync: %1$dmin ago</string>
-    <string name="sync_status_never">Never synced</string>
+    <string name="sync_status_never">Mai sincronizzato</string>
     <string name="sync_status_running">Syncing: %1$s</string>
     <string name="sync_success_notification_albums">Successfully synchronized all albums.</string>
     <string name="sync_success_notification_artists">Successfully synchronized all artists.</string>
@@ -247,20 +247,20 @@
     <string name="sync_successful">Sync successful</string>
     <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">Do you want to retry syncing the %1$d failed items?</string>
-    <string name="sync_running_status">Syncing...</string>
-    <string name="sync_youtube_history_title">YTM History</string>
-    <string name="sync_youtube_like_failed">Failed to like the song in YouTube</string>
+    <string name="sync_running_status">Sincronizzazione...</string>
+    <string name="sync_youtube_history_title">Cronologia YTM</string>
+    <string name="sync_youtube_like_failed">Impossibile mettere mi piace alla canzone su YouTube</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Song(s) are Liked in YouTube</string>
-    <string name="sync_youtube_playlist_add_failed">Failed to add the song in the YouTube Playlist</string>
-    <string name="sync_youtube_playlist_add_success">Added the song in the YouTube Playlist</string>
-    <string name="sync_youtube_playlist_batch_failed">Error occurred for the next 50 songs. Adding songs to the playlist one by one</string>
-    <string name="sync_youtube_playlist_songs_added_suffix">songs are added in the YouTube Playlist. Repeat the process if there are any Missing Songs</string>
-    <string name="sync_youtube_playlist_songs_adding_suffix">songs will be added in the YTM playlist</string>
-    <string name="sync_youtube_playlists_title">YTM Playlists</string>
-    <string name="sync_youtube_songs_remaining">%1$s Songs Remaining</string>
-    <string name="sync_youtube_unlike_failed">Failed to unlike the song in YouTube</string>
-    <string name="sync_youtube_unlike_success">Song is Unliked in YouTube</string>
+    <string name="sync_youtube_like_success">Canzone apprezzata su YouTube</string>
+    <string name="sync_youtube_playlist_add_failed">Impossibile aggiungere il brano alla playlist di YouTube</string>
+    <string name="sync_youtube_playlist_add_success">Aggiunta il brano alla playlist di YouTube</string>
+    <string name="sync_youtube_playlist_batch_failed">Si è verificato un errore per i prossimi 50 brani. Aggiunta di brani alla playlist uno alla volta</string>
+    <string name="sync_youtube_playlist_songs_added_suffix">le canzoni vengono aggiunte alla playlist di YouTube. Ripeti il ​​processo se ci sono delle canzoni mancanti</string>
+    <string name="sync_youtube_playlist_songs_adding_suffix">i brani verranno aggiunti alla playlist YTM</string>
+    <string name="sync_youtube_playlists_title">Playlist di YTM</string>
+    <string name="sync_youtube_songs_remaining">Canzoni Rimanenti %1$s</string>
+    <string name="sync_youtube_unlike_failed">Impossibile togliere mi piace alla canzone su YouTube</string>
+    <string name="sync_youtube_unlike_success">Canzone non apprezzata su YouTube</string>
     <string name="sync_starting_notification">Starting sync...</string>
     <string name="sync_background_notification">Syncing in background...</string>
     <string name="sync_aborted_network_error">Sync aborted due to network error.</string>
