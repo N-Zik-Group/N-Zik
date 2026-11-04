@@ -1,66 +1,69 @@
-YouTube Musici mitmekeelne esiosa Androidile: jõudlus, UI/UX lihvimine, funktsioonide laiendamine, pikaajaline tugi.
+A multilingual YouTube Music frontend for Android, focused on performance, UI/UX refinements, feature expansion, and long-term support.
 
-<b>N-Zik</b> on avatud lähtekoodiga <a href="https://github.com/knighthat/Kreate">Kreate</a> haru.
+<b>N-Zik</b> is an open-source fork of <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Märkus:</b> N-Zik sai alguse kõrvalprojektina. Küpsemad alternatiivid: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> või <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Note:</b> N-Zik started as a side project. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>KI kasutus:</b> Koodi loon genereeriva KI-ga (kud <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), vaatan üle ja testin enne avalikustamist.
+<b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), reviewed and tested before shipping.
 
-✨ <b>MIKS N-ZIK?</b> Ilma reklaamita, esitus taustal, võrguta vahemälu, kohandatav UI - alati tasuta.
+✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI - free, always.
 
-🎨 <b>Kohandatav UI</b>
-- Teemad: AMOLED, Deep Dark, Crisp Light + värvilised aktsendid
-- 3D Carousel Player, avakuva vidinad, ühtne mängija ja minimängija
-- Artisti profiilid, avastamine ja meeleolud, kokkupandavad avakuva päised
+🎨 <b>Customizable UI</b>
+- Jetpack Compose interface
+- Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
+- 3D Carousel Player, home widgets, unified player and mini-player
+- Artist profiles, Discovery and moods, collapsible home headers
 
-<b>Valikuline Glass (BETA)</b>
-Uuel paigaldusel väljas; lülita sisse seadetes. Kategooriati: tavaline, ainult kontuurid või Glass; vali kvaliteet. Võib koormata renderdust ja akut; vähenda kvaliteeti või lülita välja.
-Tänuavaldused: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+🫧 <b>Glass Effect (BETA, optional)</b>
+Disabled on fresh installs. Enable in Settings: native, contour-only or Glass by category, with adjustable quality. May increase rendering work and battery use; reduce quality or disable if needed.
+Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
-🎵 <b>Helikogemus</b>
-- Premiumkvaliteet YouTube Music Premiumi kaudu, automaatselt
-- Sünkroonitud laulusõnad redigeerimis- ja reaalajatõlkega
-- Laulude tuvastamine (Shazam-sarnane), häälotsing, helivisualiseerija
-- Pro-kontrollid: kiirus, toon, normaliseerimine, crossfade, helitugevus- ja bassivõimendus, reverb
-- Audio Bar lainevormi liugur täpseks navigeerimiseks
+🎵 <b>Audio Experience</b>
+- Premium quality via YouTube Music Premium, applied automatically
+- Synced lyrics with editing and real-time translation
+- Song recognition (Shazam-like), voice search, audio visualizer
+- Pro controls: speed, pitch, normalization, crossfade, volume boost, bass boost, reverb
+- Audio Bar waveform seekbar for precise navigation
 
-💾 <b>Võrguta, metaandmed ja privaatsus</b>
-- Nutikas vahemälu ja allalaadimised laulude ja esitusloendile, kvaliteet valitav
-- FFmpegil põhinev eksport, täis metaandmed (ainult standardversioonid)
-- Metaandmete redaktor rakenduses (AAC/Opus, kaanepilt)
-- Kohalikud kuulamisstatistikad ja ajalugu
-- Automaatne varundamine, kohandatud vahemikud ja säilitus
+💾 <b>Offline, Metadata & Privacy</b>
+- Smart caching and downloads for tracks and playlists, with selectable download quality
+- FFmpeg-powered export with full metadata (FFmpeg is a downloadable extension, installed on first use)
+- In-app metadata editor (AAC/Opus, cover art)
+- Local listening stats and history
+- Auto-backup with custom intervals and retention
 
-🔗 <b>Integratsioonid</b>
-- YouTube sisselogimine soovituste ja video esitamiseks, lisaks eksperimentaalne kahesuunaline sünkroonmootor
-- Last.fm scrobbling Now Playing ja love/unlove toel
-- MusicBrainzi esitajate ja albumite teave
-- Discord Rich Presence, sealhulgas tõhustatud režiim otsevaatega
-- Invidiousi integratsioon YouTube'i alternatiivseks vooesituseks
-- Esitusloendite import/eksport: RiPlay, Spotify, YouTube Music, N-Zik
+🔗 <b>Integrations</b>
+- YouTube sign-in for recommendations and video playback, plus an experimental two-way sync engine
+- Last.fm scrobbling with Now Playing and love/unlove
+- MusicBrainz artist and album insights
+- Discord Rich Presence, including advanced mode with live preview
+- Invidious integration for alternative YouTube streaming
+- Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
-👥 <b>Koos kuulamine</b>
-- Liitu või korralda teiste kasutajatega reaalajas sessioone, koodi või kutsulinki kaudu
+👥 <b>Listen Together</b>
+- Join or host live listening sessions with other users via code or invite link
 
 🗓️ <b>Rewind</b>
-- Aasta- ja kuumekokkuvõtted automaatselt loodud Rewindi esitusloenditega
+- Yearly and monthly listening recaps with auto-generated Rewind playlists
 
-📱 <b>Esita igal pool:</b> Android Auto, Automotive, TV ja Tablets
+📱 <b>Play Anywhere:</b> Android Auto, Automotive, TV, and Tablets
 
-🛠️ <b>Kogenud kasutaja funktsioonid</b>
-- Mitme profiili tugi: eraldatud andmebaas ja seaded iga profiili kohta
-- Automaatne jätkamine Bluetoothi ühendumisel, püsiv ja automaatselt täituv esitusjärjekord
-- Nutikas prügikast, peidetud laulud, mittemeeldmise süsteem, vanemkontroll
-- Proksitugi, kohastumine võrgukvaliteedile, logide eksport
-- Rescue Center, hoolduskuvar, sisseviimine, rakenduse lühendid
-- OTA uuendused GitHubist, unetaimer, esitus taustal
+🛠️ <b>Power User Features</b>
+- Multi-profile: isolated database and settings per profile
+- Auto-resume on Bluetooth connect, persistent queue, auto-fill queue
+- Smart trash, hidden songs, dislike system, parental control
+- Proxy support, network quality adaptation, log export
+- Rescue Center, maintenance screen, onboarding, app shortcuts
+- OTA updates from GitHub, sleep timer, background playback
 
-📦 <b>Saadaval olevad versioonid</b>
-- Release64/Beta64 (`com.nevar.nzik`): Täielik versioon, ainult 64-bit seadmetele
-- Release32/Beta32 (`com.nevar.nzik`): Täielik versioon, ainult 32-bit seadmetele
-- Minified64 (`com.nevar.nzik`): Kerge R8 versioon, madala võimekusega seadmetele (64-bit)
-- Minified32 (`com.nevar.nzik`): Kerge R8 versioon (32-bit)
-- FOSS (`com.nevar.nzik.foss`): Ilma automaatse uuendaja, F-Droidi jaoks (kõik arhitektuurid)
-- Dev64/Dev32 (`com.nevar.nzik.dev`): Arendusversioonid, ainult testimiseks
+📦 <b>Available Builds</b>
+- Release64/Beta64 (`com.nevar.nzik`): Complete build, 64-bit devices only
+- Release32/Beta32 (`com.nevar.nzik`): Complete build, 32-bit devices only
+- Minified64 (`com.nevar.nzik`): Lightweight R8 build, for low-end devices (64-bit)
+- Minified32 (`com.nevar.nzik`): Lightweight R8 build (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Without auto-updater, for F-Droid (all architectures)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Development builds, testing only
 
-Ükski versioon ei sisalda FFmpeg-i: see on alla laaditav laiendus (installitakse esmakordsel kasutamisel, haldatud Seaded → Laiendused). Ainult FOSS on F-Droidis.
+No build bundles FFmpeg: it is a downloadable extension (installed on first use, managed in Settings → Extensions). Only FOSS is on F-Droid.
+
+Historical project credits include ViMusic.
