@@ -7,7 +7,7 @@
     <string name="account_youtube_login_enabled_description">Allow YouTube account sign-in for personalized browsing and synchronization.</string>
     <!-- Account Youtube -->
     <string name="account_youtube_cookie_invalid">YouTube cookie is invalid, please log in again</string>
-    <string name="account_youtube_login_success">YouTube login successful</string>
+    <string name="account_youtube_login_success">YouTube login succesvol</string>
     <string name="account_youtube_session_expired">YouTube session expired, please sign in again</string>
     <!-- Discord -->
     <string name="discord_activity_competing">Competing</string>
@@ -53,8 +53,8 @@
     <string name="discord_advanced_show_timestamps_description">Show the playing progress bar with the timestamps</string>
     <string name="discord_advanced_state">State template</string>
     <string name="discord_artwork_tooltip_description">Set the tooltip shown over the large artwork image on Discord.</string>
-    <string name="discord_beta_warning">This is still in Beta and may contain bugs and crash</string>
-    <string name="discord_connected_to_discord_account">Connected to Discord account</string>
+    <string name="discord_beta_warning">Dit is nog steeds in Bèta en kan bugs en crash bevatten</string>
+    <string name="discord_connected_to_discord_account">Verbonden met Discord-account</string>
     <string name="discord_details_template_description">Set the main activity line using track information placeholders.</string>
     <string name="discord_enable_rich_presence">Enable Rich Presence</string>
     <string name="discord_enabled_description">Share your current listening activity on your Discord profile.</string>
@@ -72,19 +72,19 @@
     <string name="discord_pause_template_description">Set the activity text shown when playback is paused.</string>
     <string name="discord_presence_button_get_nzik">Get N-Zik</string>
     <string name="discord_presence_button_listen_ytmusic">Listen to YTMusic</string>
-    <string name="discord_presence_closed">Discord presence closed</string>
+    <string name="discord_presence_closed">Discord aanwezigheidsstatus gesloten</string>
     <string name="discord_presence_pause_default">⏸︎ Paused: {song.name}</string>
     <string name="discord_preview_state_actual">Actual state</string>
     <string name="discord_preview_state_paused">Paused</string>
     <string name="discord_preview_state_playing">Playing</string>
     <string name="discord_preview_title">Rich Presence preview</string>
-    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates stopped until the next media change or manual reconnect</string>
+    <string name="discord_rpc_reconnect_failed">Discord RPC could not reconnect, status updates are paused</string>
     <string name="discord_second_button_enabled_description">Show the second link button on your Discord activity.</string>
     <string name="discord_second_button_label_description">Set the text displayed on the second Discord activity button.</string>
     <string name="discord_second_button_url_description">Set the web address opened by the second Discord activity button.</string>
     <string name="discord_state_template_description">Set the secondary activity line using track information placeholders.</string>
     <string name="discord_template_unknown_album">Unknown Album</string>
-    <string name="discord_token_text_invalid">Your Discord token is invalid, please login again</string>
+    <string name="discord_token_text_invalid">Je Discord token is ongeldig, log opnieuw in</string>
     <!-- Lastfm -->
     <string name="lastfm_action_failed">Last.fm request failed</string>
     <string name="lastfm_auth_failed">Login failed, check your Last.fm credentials</string>
@@ -162,7 +162,7 @@
     <string name="profile_photo_remove_description">Remove the saved photo from the current local profile.</string>
     <string name="profile_photo_set">Set</string>
     <string name="profile_remove_confirmation">Remove this profile?</string>
-    <string name="profile_rename">Rename</string>
+    <string name="profile_rename">Hernoem</string>
     <string name="profile_restart_required">This required a restart of the app</string>
     <string name="profile_share_downloads">Share downloads</string>
     <string name="profile_share_downloads_description">Use the base profile\'s downloads folder and index instead of this profile\'s own. Applies at the next app restart; data already written in this profile\'s own folder stays there</string>
@@ -185,7 +185,7 @@
     <string name="sync_completed_with_errors">Sync completed with errors</string>
     <string name="sync_cooldown">Sync Cooldown</string>
     <string name="sync_cooldown_description">Minimum time between auto-syncs (in minutes)</string>
-    <string name="sync_data_with_ytm_account">Sync data with YTM account</string>
+    <string name="sync_data_with_ytm_account">Gegevens synchroniseren met YTM account</string>
     <string name="sync_direction">Sync Direction</string>
     <string name="sync_direction_app_to_yt">App → YouTube only</string>
     <string name="sync_direction_description">Choose whether synchronization imports from YouTube, sends local changes, or works in both directions.</string>
@@ -258,7 +258,7 @@
     <string name="sync_youtube_playlist_songs_added_suffix">songs are added in the YouTube Playlist. Repeat the process if there are any Missing Songs</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">songs will be added in the YTM playlist</string>
     <string name="sync_youtube_playlists_title">YTM Playlists</string>
-    <string name="sync_youtube_songs_remaining">%1$s Songs Remaining</string>
+    <string name="sync_youtube_songs_remaining">%1$s Nummers resterend</string>
     <string name="sync_youtube_unlike_failed">Failed to unlike the song in YouTube</string>
     <string name="sync_youtube_unlike_success">Song is Unliked in YouTube</string>
     <string name="sync_starting_notification">Starting sync...</string>
