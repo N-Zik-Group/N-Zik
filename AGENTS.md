@@ -29,7 +29,7 @@
 - Match user's language for communication
 - Code comments & commits in English
 - Removing a source key requires removing it from the corresponding localized XML files too (a dead key left in a locale degrades translator context; Crowdin then drops it from its side) - see rules/CODE.md "Translations"
-- Add Android source strings to the matching thematic XML under `ComposeN-Zik/src/androidMain/localization/res/values/`. Keep screen-specific copy with its feature, reusable copy in the shared files, and plurals in `plurals.xml`. Crowdin exports matching filenames to `src/androidMain/res/values-*/`.
+- Add Android source strings to the matching thematic XML under `ComposeN-Zik/src/androidMain/localization/source/`. Keep screen-specific copy with its feature, reusable copy in the shared files, and plurals in `plurals.xml`. Crowdin exports matching filenames to `src/androidMain/localization/translations/<locale>/`.
 - Edit the English Fastlane listing sources (`title.txt`, `short_description.txt`, `full_description.txt`) in `fastlane/source/`. Crowdin exports the listing files to `fastlane/metadata/android/<locale>/`, including English. Use 30, 80, and 4,000 characters respectively. Release changelogs live in `fastlane/metadata/android/en-US/changelogs/` and are managed by the release workflow.
 
 ## ⚠️ Ask First
@@ -43,7 +43,7 @@
 ## 🚫 Never Do
 
 - Create files under `app.it.fast4x.*` or `app.kreate.android.*` (legacy tests go under `app.n_zik.android.legacyoffmain.*` — see rules/BUILD.md: 3 pre-existing test files live under the legacy namespace and are grandfathered, do NOT move them)
-- Edit translation values by hand (source: `ComposeN-Zik/src/androidMain/localization/res/values/`). Structural migration without value changes and removal of deleted source keys are allowed in the corresponding localized XML files (a dead key in a locale degrades translator context) - see rules/CODE.md "Translations"
+- Edit translation values by hand (source: `ComposeN-Zik/src/androidMain/localization/source/`). Structural migration without value changes and removal of deleted source keys are allowed in the corresponding localized XML files (a dead key in a locale degrades translator context) - see rules/CODE.md "Translations"
 - Write code before completing full BMAD workflow
 - Skip BMAD workflow steps
 - Skip the Step 8b code-review gate, or edit `fastlane/`/`Updater/`/`Done.txt` before the user chose a commit mode (Step 8d) — exception: doc-only edits (rules/WORKFLOW.md "Doc-Only Exception") follow their own commit-approval flow and are NOT subject to the Step 8d mode question
@@ -95,7 +95,7 @@
 ```
 N-Zik/                     ← git repo root (run gradlew/git from here)
 ├── ComposeN-Zik/src/
-│   ├── androidMain/           AndroidManifest.xml + res (values, values-*, drawable, mipmap, font, raw, xml…) + kotlin/ (app/n_zik/android/ ★ NEW code + legacy `app.it.*`/`app.kreate.*` read-only)
+│   ├── androidMain/           AndroidManifest.xml + res (themes, drawables, fonts, raw, XML…) + localization/ (source/ and translations/<locale>/) + kotlin/ (app/n_zik/android/ ★ NEW code + legacy `app.it.*`/`app.kreate.*` read-only)
 │   ├── commonMain/            KMP shared logic (effectively one file — `app/it/fast4x/rimusic/Utils.kt`)
 │   ├── main/                  res (drawables, mipmap) + proto/listentogether.proto (protobuf source set for Listen Together)
 │   ├── test/                  Tests

@@ -1,6 +1,6 @@
 files:
-  - source: /ComposeN-Zik/src/androidMain/localization/res/values/*.xml
-    translation: /ComposeN-Zik/src/androidMain/res/values-%two_letters_code%/%original_file_name%
+  - source: /ComposeN-Zik/src/androidMain/localization/source/*.xml
+    translation: /ComposeN-Zik/src/androidMain/localization/translations/%two_letters_code%/%original_file_name%
     languages_mapping:
       two_letters_code:
         pt-BR: pt-rBR

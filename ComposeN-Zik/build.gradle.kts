@@ -117,6 +117,15 @@ android {
     }
 
     androidComponents {
+        onVariants { variant ->
+            val localization = tasks.register<GenerateLocalizedResources>(
+                "generate${variant.name.replaceFirstChar { it.uppercaseChar() }}LocalizedResources"
+            ) {
+                inputDirectory.set(layout.projectDirectory.dir("src/androidMain/localization"))
+                outputDirectory.set(layout.buildDirectory.dir("generated/localizedResources/${variant.name}"))
+            }
+            variant.sources.res?.addGeneratedSourceDirectory(localization, GenerateLocalizedResources::outputDirectory)
+        }
         beforeVariants(selector().withBuildType("release")) {
             it.enable = false
         }
@@ -418,8 +427,6 @@ android {
             }
     }
 
-    sourceSets.getByName("main").res.srcDir("src/androidMain/localization/res")
-
     sourceSets.all {
         kotlin.srcDirs("src/$name/kotlin")
     }
@@ -551,4 +558,30 @@ tasks.withType<Test> {
 
 tasks.register("assembleFossRelease") {
     dependsOn("assembleFoss")
+}
+
+abstract class GenerateLocalizedResources : DefaultTask() {
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val inputDirectory: DirectoryProperty
+
+    @get:OutputDirectory
+    abstract val outputDirectory: DirectoryProperty
+
+    @get:javax.inject.Inject
+    abstract val fileSystem: FileSystemOperations
+
+    @TaskAction
+    fun generate() {
+        fileSystem.sync {
+            into(outputDirectory)
+            from(inputDirectory.dir("source")) {
+                into("values")
+            }
+            from(inputDirectory.dir("translations")) {
+                includeEmptyDirs = false
+                eachFile { path = "values-$path" }
+            }
+        }
+    }
 }

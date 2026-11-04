@@ -39,7 +39,7 @@ Use this format every session — keep it SHORT:
 6. NEVER skip BMAD workflow — complete FULL workflow before coding (exception: trivial doc-only edits, see "Doc-Only Exception")
 7. User suggestions ≠ shortcut (still complete workflow)
 8. Ask IDE ONE at a time (path depends on IDE)
-9. Edit source strings in localization/res/values/. Crowdin manages localized strings_*.xml and plurals.xml
+9. Edit source strings in localization/source/. Crowdin manages localized strings_*.xml and plurals.xml
 10. NEVER edit DB schema without explicit instruction
 11. NEVER skip ahead to later steps — follow Step 1→2→3... in order
 12. After any interruption, re-announce current step before continuing
