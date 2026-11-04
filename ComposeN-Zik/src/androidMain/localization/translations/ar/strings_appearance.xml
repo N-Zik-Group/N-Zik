@@ -16,7 +16,7 @@
     <string name="glass_effect_depth_enabled">Depth</string>
     <string name="glass_effect_destination_navigation">Navigation</string>
     <string name="glass_effect_destination_pages">Pages</string>
-    <string name="glass_effect_destination_playback">Playback</string>
+    <string name="glass_effect_destination_playback">تشغيل</string>
     <string name="glass_effect_destination_shared">Shared elements</string>
     <string name="glass_effect_destination_windows">Windows and messages</string>
     <string name="glass_effect_dialog_dimming">Dialog background dimming</string>
@@ -126,7 +126,7 @@
     <string name="glass_effect_switches_description">Use liquid Glass switches with the shared material and interaction effects when Glass is enabled.</string>
     <string name="glass_effect_switches_title">Glass switches</string>
     <string name="glass_effect_tint">Tint</string>
-    <string name="glass_effect_tint_none">None</string>
+    <string name="glass_effect_tint_none">بدون</string>
     <string name="glass_effect_tint_source">Glass color source</string>
     <string name="glass_effect_tint_source_custom">Custom</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
@@ -171,13 +171,13 @@
     <string name="player_cover_style_vinyl">Vinyl</string>
     <string name="player_like_icon_apple">Apple</string>
     <string name="player_like_icon_brilliant">Brilliant</string>
-    <string name="player_like_icon_broken">Broken</string>
-    <string name="player_like_icon_cute">Cute</string>
+    <string name="player_like_icon_broken">Breaked</string>
+    <string name="player_like_icon_cute">Shape</string>
     <string name="player_like_icon_gift">Gift</string>
     <string name="player_like_icon_striped">Striped</string>
     <string name="player_progress_both">Both</string>
     <string name="player_progress_mini_player">Minimized player</string>
-    <string name="settings_action_bar_show_lyrics_button">Lyrics button</string>
+    <string name="settings_action_bar_show_lyrics_button">Show Lyrics button</string>
     <!-- Player Background -->
     <string name="player_background_black_cherry_cosmos">Black Cherry Cosmos</string>
     <string name="player_background_glossy_gradient">Glossy Gradient</string>
