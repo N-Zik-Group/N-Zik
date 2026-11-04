@@ -142,7 +142,7 @@
     <string name="player_action_bar_transparent_background_description">إزالة الخلفية الصلبة خلف أزرار إجراء اللاعب.</string>
     <string name="player_action_enqueue">قائمة الإنتظار</string>
     <string name="player_action_like">إعجاب</string>
-    <string name="player_action_listen_on_invidious">الاستماع على دعوة</string>
+    <string name="player_action_listen_on_invidious">الاستماع على %1$s</string>
     <string name="player_action_listen_on_youtube">الاستماع على اليوتيوب</string>
     <string name="player_action_listen_on_youtube_music">الاستماع إلى موسيقى اليوتيوب</string>
     <string name="player_action_locate_current_song">Find the song that is playing</string>
@@ -277,7 +277,7 @@
     <string name="player_queue_duration_visible_description">عرض المدة المجمعة للمسارات في قائمة انتظار اللعب.</string>
     <string name="player_queue_preview_artwork_description">تضمين الأعمال الفنية الألبوم إلى جانب المسارات القادمة في معاينة اللاعب.</string>
     <string name="player_queue_preview_song_count_description">اختر عدد المسارات القادمة التي تظهر في معاينة اللاعب.</string>
-    <string name="player_queue_remove_selected_confirmation_format">إزالة أغاني %d من قائمة الانتظار؟</string>
+    <string name="player_queue_remove_selected_confirmation_format">إزالة التحديد من قائمة الانتظار؟ المسارات المحددة: %d</string>
     <string name="player_queue_shuffled_count_format">قائمة الانتظار تملأ ( أغاني%d)</string>
     <string name="player_remaining_time_visible_description">إظهار الوقت المتبقي في المسار الحالي.</string>
     <string name="player_restart_required_message">Player has to be restarted for the changes to be effective!</string>
