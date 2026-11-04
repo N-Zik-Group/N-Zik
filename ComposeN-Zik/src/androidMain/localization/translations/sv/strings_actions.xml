@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_action_apply">Apply</string>
     <string name="common_action_cancel">Cancel</string>
     <string name="common_action_clear">Clear</string>
@@ -11,7 +12,7 @@
     <string name="common_action_export">Export</string>
     <string name="common_action_import">Import</string>
     <string name="common_action_next">Next</string>
-    <string name="common_action_ok">Ok</string>
+    <string name="common_action_ok">OK</string>
     <string name="common_action_paste">Paste</string>
     <string name="common_action_previous">Previous</string>
     <string name="common_action_remove">Remove</string>
