@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="common_error_connection_timeout">Sospensione connessione</string>
-    <string name="common_error_no_connection">Nessuna connessione</string>
+    <!-- Common -->
+    <string name="common_error_connection_timeout">Connection timeout</string>
+    <string name="common_error_no_connection">No Connection</string>
     <string name="common_error_no_internet">Nessuna connessione internet</string>
-    <string name="common_error_title">C\'è stato un errore.</string>
-    <string name="common_error_unknown">Errore sconosciuto</string>
+    <string name="common_error_title">An error has occurred.</string>
+    <string name="common_error_unknown">Unknown error</string>
 </resources>
