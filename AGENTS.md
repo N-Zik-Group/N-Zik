@@ -30,7 +30,7 @@
 - Code comments & commits in English
 - Removing a source key requires removing it from the corresponding localized XML files too (a dead key left in a locale degrades translator context; Crowdin then drops it from its side) - see rules/CODE.md "Translations"
 - Add Android source strings to the matching thematic XML under `ComposeN-Zik/src/androidMain/localization/res/values/`. Keep screen-specific copy with its feature, reusable copy in the shared files, and plurals in `plurals.xml`. Crowdin exports matching filenames to `src/androidMain/res/values-*/`.
-- Edit the English Fastlane listing sources (`title.txt`, `short_description.txt`, `full_description.txt`) in `fastlane/source/en-US/`. Crowdin exports the listing files to `fastlane/metadata/android/<locale>/`, including English. Use 30, 80, and 4,000 characters respectively. Release changelogs live in `fastlane/metadata/android/en-US/changelogs/` and are managed by the release workflow.
+- Edit the English Fastlane listing sources (`title.txt`, `short_description.txt`, `full_description.txt`) in `fastlane/source/`. Crowdin exports the listing files to `fastlane/metadata/android/<locale>/`, including English. Use 30, 80, and 4,000 characters respectively. Release changelogs live in `fastlane/metadata/android/en-US/changelogs/` and are managed by the release workflow.
 
 ## ⚠️ Ask First
 
@@ -104,7 +104,7 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 ├── modules/                 Feature submodules — `betterlyrics`, `discordrpc`, `nextvisualizer` are **git submodules**: after a fresh clone run `git submodule update --init --recursive` or Gradle sync fails
 ├── gradle/libs.versions.toml  Version catalog
 ├── assets/notes/              Done.txt + Changelog_Template.txt + TODO.txt (repo-root working files — NOT an Android assets source set)
-├── fastlane/                  Crowdin listing sources in source/en-US/, store exports in metadata/android/<locale>/, release changelogs in metadata/android/en-US/changelogs/
+├── fastlane/                  Crowdin listing sources in source/, store exports in metadata/android/<locale>/, release changelogs in metadata/android/en-US/changelogs/
 ├── Updater/                   Released changelogs by versionCode in `Updater/changelogs/` (auto-updater)
 ├── opencode.json + .devin/wiki.json   Tracked agent-tooling config (not app code)
 └── (WORKSPACE ROOT, one level above N-Zik/: `docs/` reference projects, Reference READ-ONLY · `N-Zik-Website/` separate project — NOT part of this repo)

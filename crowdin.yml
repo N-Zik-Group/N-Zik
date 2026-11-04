@@ -9,7 +9,7 @@ files:
         zh-CN: zh-rCN
         zh-TW: zh-rTW
 
-  - source: /fastlane/source/en-US/short_description.txt
+  - source: /fastlane/source/short_description.txt
     translation: /fastlane/metadata/android/%locale%/short_description.txt
     languages_mapping:
       locale:
@@ -27,7 +27,7 @@ files:
         tr: tr
         vi: vi
 
-  - source: /fastlane/source/en-US/full_description.txt
+  - source: /fastlane/source/full_description.txt
     translation: /fastlane/metadata/android/%locale%/full_description.txt
     languages_mapping:
       locale:
@@ -45,7 +45,7 @@ files:
         tr: tr
         vi: vi
 
-  - source: /fastlane/source/en-US/title.txt
+  - source: /fastlane/source/title.txt
     translation: /fastlane/metadata/android/%locale%/title.txt
     languages_mapping:
       locale:
