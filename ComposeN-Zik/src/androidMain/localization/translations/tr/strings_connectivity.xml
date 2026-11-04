@@ -17,7 +17,6 @@
     <string name="bridge_disconnect">Bağlantıyı kes</string>
     <string name="bridge_disconnected">%1$s bağlantısı kesildi</string>
     <string name="bridge_pair_camera_denied">Kamera erişimi reddedildi: Yukarıdaki adres ve kodla manuel olarak eşleştirin</string>
-    <string name="bridge_pair_close">Kapalı</string>
     <string name="bridge_pair_code_label">Eşleştirme kodu</string>
     <string name="bridge_pair_confirm">%2$s kodunu kullanarak “%1$s” ile eşleştirmek ister misiniz?</string>
     <string name="bridge_pair_confirm_action">Eşleştir</string>
@@ -192,9 +191,11 @@
     <string name="network_stream_error_retrying">Tekrar deniyor: %1$s</string>
     <string name="network_stream_still_retrying">Hala yükleniyor… Deneme %1$s</string>
     <string name="network_stream_unexpected_skip">Beklenmedik bir parça değişikliği tespit edildi</string>
-    <string name="network_proxy_region_auto">Auto (from phone)</string>
-    <string name="network_proxy_username_placeholder">Username (optional)</string>
-    <string name="network_proxy_password_placeholder">Password (optional)</string>
-    <string name="network_proxy_region_placeholder">e.g. US, FR, DE (empty = auto)</string>
-    <string name="listen_together_server_request_failed">The Listen Together server could not complete the request.</string>
+    <string name="network_proxy_region_auto">Otomatik (telefondan)</string>
+    <string name="network_proxy_username_placeholder">Kullanıcı adı (isteğe bağlı)</string>
+    <string name="network_proxy_password_placeholder">Parola (isteğe bağlı)</string>
+    <string name="network_proxy_region_placeholder">örn. US, FR, DE (boş = otomatik)</string>
+    <string name="listen_together_server_request_failed">Birlikte Dinle sunucusu isteği tamamlayamadı.</string>
+    <string name="network_stream_retrying_playback">Oynatmayı yeniden deniyorum…</string>
+    <string name="listen_together_invite_link">Birlikte Dinle davet bağlantısı</string>
 </resources>
