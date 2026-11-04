@@ -19,4 +19,16 @@
     <plurals name="sync_detail_episodes">
         <item quantity="other">%1$d episodes</item>
     </plurals>
+    <plurals name="library_song_count">
+        <item quantity="other">%1$d songs</item>
+    </plurals>
+    <plurals name="about_translator_count">
+        <item quantity="other">%1$d translators</item>
+    </plurals>
+    <plurals name="about_developer_designer_count">
+        <item quantity="other">%1$d developers / designers</item>
+    </plurals>
+    <plurals name="statistics_songs_heard_count">
+        <item quantity="other">%1$d songs heard</item>
+    </plurals>
 </resources>
