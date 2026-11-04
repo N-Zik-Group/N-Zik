@@ -17,6 +17,7 @@
     <string name="network_stream_client_tv_simply">TV Simply</string>
     <string name="network_stream_client_visionos">visionOS</string>
     <string name="network_stream_error_retrying">Forsøg: %1$s</string>
+    <string name="network_stream_retrying_playback">Forsøger at genoptage afspilningen…</string>
     <string name="network_stream_still_retrying">Indlæser stadig… Forsøg %1$s</string>
     <string name="network_stream_unexpected_skip">Uventet sporændring registreret</string>
 </resources>

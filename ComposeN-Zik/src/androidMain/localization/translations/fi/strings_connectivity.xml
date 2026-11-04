@@ -17,5 +17,6 @@
     <string name="network_stream_client_tv_simply">TV Simply</string>
     <string name="network_stream_client_visionos">visionOS</string>
     <string name="network_stream_error_retrying">Toistetaan: %1$s</string>
+    <string name="network_stream_retrying_playback">Yritetään jatkaa toistoa…</string>
     <string name="network_stream_unexpected_skip">Odottamaton reitin muutos havaittu</string>
 </resources>

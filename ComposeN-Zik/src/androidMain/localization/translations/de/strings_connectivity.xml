@@ -35,6 +35,7 @@
     <string name="network_stream_client_web_creator">Webentwickler</string>
     <string name="network_stream_client_web_remix">Web-Remix</string>
     <string name="network_stream_error_retrying">Wiederholung: %1$s</string>
+    <string name="network_stream_retrying_playback">Versuche, die Wiedergabe fortzusetzen…</string>
     <string name="network_stream_still_retrying">Lade noch… Versuch %1$s</string>
     <string name="network_stream_unexpected_skip">Unerwartete Titeländerung erkannt</string>
 </resources>

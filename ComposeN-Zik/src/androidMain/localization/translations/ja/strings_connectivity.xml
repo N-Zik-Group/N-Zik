@@ -17,5 +17,6 @@
     <string name="network_stream_client_tv_simply">TV Simply</string>
     <string name="network_stream_client_visionos">visionOS</string>
     <string name="network_stream_error_retrying">再試行: %1$s</string>
+    <string name="network_stream_retrying_playback">再生を再試行しています…</string>
     <string name="network_stream_unexpected_skip">予期しないトラックの変更が検出されました</string>
 </resources>

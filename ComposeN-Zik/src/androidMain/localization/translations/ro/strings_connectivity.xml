@@ -17,6 +17,7 @@
     <string name="network_stream_client_tv_simply">TV Simply</string>
     <string name="network_stream_client_visionos">visionOS</string>
     <string name="network_stream_error_retrying">Reîncercare: %1$s</string>
+    <string name="network_stream_retrying_playback">Se încearcă reluarea redării…</string>
     <string name="network_stream_still_retrying">Încă se încarcă… Încercarea %1$s</string>
     <string name="network_stream_unexpected_skip">Modificare neașteptată a traseului detectată</string>
 </resources>

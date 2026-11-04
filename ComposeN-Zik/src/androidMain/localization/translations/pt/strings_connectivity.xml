@@ -18,6 +18,7 @@
     <string name="network_stream_client_tv_simply">TV Simply</string>
     <string name="network_stream_client_visionos">visionOS</string>
     <string name="network_stream_error_retrying">Repetindo: %1$s</string>
+    <string name="network_stream_retrying_playback">A tentar retomar a reprodução…</string>
     <string name="network_stream_still_retrying">Ainda carregando… Tentativa %1$s</string>
     <string name="network_stream_unexpected_skip">Mudança na faixa inesperada detectada</string>
 </resources>

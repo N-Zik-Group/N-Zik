@@ -18,6 +18,7 @@
     <string name="network_stream_client_tv_simply">TV Simply</string>
     <string name="network_stream_client_visionos">visionOS</string>
     <string name="network_stream_error_retrying">Riprovando: %1$s</string>
+    <string name="network_stream_retrying_playback">Tentativo di riprendere la riproduzione…</string>
     <string name="network_stream_still_retrying">Sto ancora caricando… Tentativo %1$s</string>
     <string name="network_stream_unexpected_skip">Rilevato cambiamento di traccia inatteso</string>
 </resources>

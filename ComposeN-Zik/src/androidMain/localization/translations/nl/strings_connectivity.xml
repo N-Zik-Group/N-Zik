@@ -16,6 +16,7 @@
     <string name="network_stream_client_tv_simply">TV Simply</string>
     <string name="network_stream_client_visionos">visionOS</string>
     <string name="network_stream_error_retrying">Opnieuw proberen: %1$s</string>
+    <string name="network_stream_retrying_playback">Afspelen wordt opnieuw geprobeerd…</string>
     <string name="network_stream_still_retrying">Nog steeds laden… Poging %1$s</string>
     <string name="network_stream_unexpected_skip">Onverwachte wijziging van track gedetecteerd</string>
 </resources>

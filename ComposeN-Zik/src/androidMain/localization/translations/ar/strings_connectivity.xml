@@ -14,6 +14,7 @@
     <string name="network_stream_client_tv_simply">TV Simply</string>
     <string name="network_stream_client_visionos">visionOS</string>
     <string name="network_stream_error_retrying">إعادة المحاولة: %1$s</string>
+    <string name="network_stream_retrying_playback">جارٍ إعادة محاولة التشغيل…</string>
     <string name="network_stream_still_retrying">لا يزال تحميل… محاولة %1$s</string>
     <string name="network_stream_unexpected_skip">تم اكتشاف تغيير غير متوقع في المسار</string>
 </resources>

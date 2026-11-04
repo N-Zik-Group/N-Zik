@@ -176,6 +176,7 @@
     <string name="network_stream_client_tv_simply">TV Simply</string>
     <string name="network_stream_client_visionos">visionOS</string>
     <string name="network_stream_error_retrying">Tekrar deniyor: %1$s</string>
+    <string name="network_stream_retrying_playback">Oynatma sürdürülmeye çalışılıyor…</string>
     <string name="network_stream_still_retrying">Hala yükleniyor… Deneme %1$s</string>
     <string name="network_stream_unexpected_skip">Beklenmedik bir parça değişikliği tespit edildi</string>
 </resources>

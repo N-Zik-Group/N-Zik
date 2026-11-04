@@ -17,6 +17,7 @@
     <string name="network_stream_client_tv_simply">TV Simply</string>
     <string name="network_stream_client_visionos">visionOS</string>
     <string name="network_stream_error_retrying">Prøv igjen: %1$s</string>
+    <string name="network_stream_retrying_playback">Prøver å gjenoppta avspillingen…</string>
     <string name="network_stream_still_retrying">Laster fortsatt… Forsøk %1$s</string>
     <string name="network_stream_unexpected_skip">Uventet sporendring oppdaget</string>
 </resources>
