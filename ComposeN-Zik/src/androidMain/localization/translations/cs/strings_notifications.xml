@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">Notifications for Listen Together events</string>
+    <string name="listen_together_notification_channel_description">Oznámení pro události v rámci společného poslechnutí</string>
     <!-- Listen Together -->
     <string name="listen_together_notification_channel_name">Poslouchat společně</string>
     <!-- Player Notification -->
