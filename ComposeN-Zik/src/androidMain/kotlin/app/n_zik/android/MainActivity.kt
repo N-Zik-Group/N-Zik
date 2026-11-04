@@ -1845,15 +1845,18 @@ class MainActivity :
 //
                 // landscape screens.
                 val railWidth = if (areBarsHidden) 0.dp else Dimensions.navigationRailWidth
-                val playerSafeStartInset = with(density) { safeDrawingInsets.getLeft(density, LayoutDirection.Ltr).toDp() }
-                val playerSafeEndInset = with(density) { safeDrawingInsets.getRight(density, LayoutDirection.Ltr).toDp() }
+                val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+                val leftSafeInset = with(density) { safeDrawingInsets.getLeft(density, LayoutDirection.Ltr).toDp() }
+                val rightSafeInset = with(density) { safeDrawingInsets.getRight(density, LayoutDirection.Ltr).toDp() }
+                val playerSafeStartInset = if (isRtl) rightSafeInset else leftSafeInset
+                val playerSafeEndInset = if (isRtl) leftSafeInset else rightSafeInset
                 val playerStartInset = miniPlayerSideInset(
-                    railWidth = if (NavigationBarPosition.Left.isCurrent()) railWidth else 0.dp,
-                    safeInset = with(density) { safeDrawingInsets.getLeft(density, LayoutDirection.Ltr).toDp() },
+                    railWidth = if ((if (isRtl) NavigationBarPosition.Right else NavigationBarPosition.Left).isCurrent()) railWidth else 0.dp,
+                    safeInset = playerSafeStartInset,
                 )
                 val playerEndInset = miniPlayerSideInset(
-                    railWidth = if (NavigationBarPosition.Right.isCurrent()) railWidth else 0.dp,
-                    safeInset = with(density) { safeDrawingInsets.getRight(density, LayoutDirection.Ltr).toDp() },
+                    railWidth = if ((if (isRtl) NavigationBarPosition.Left else NavigationBarPosition.Right).isCurrent()) railWidth else 0.dp,
+                    safeInset = playerSafeEndInset,
                 )
                 // Only the header leaves; the top navigation row remains below the status bar.
                 val headerHideRangePx = with(density) { appHeaderHeight.toPx() }
@@ -2152,7 +2155,6 @@ class MainActivity :
                             LocalHomeTopMiniPlayerAnchor provides homeTopMiniAnchor,
                             app.n_zik.android.components.ui.screens.home.LocalHomeHeaderMotionRegistry provides homeHeaderMotionRegistry,
                             LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
-                            LocalLayoutDirection provides LayoutDirection.Ltr,
                             LocalDownloadHelper provides downloadHelper,
                             LocalPlayerSheetState provides playerSheetState,
                             LocalMonetCompat provides monet,

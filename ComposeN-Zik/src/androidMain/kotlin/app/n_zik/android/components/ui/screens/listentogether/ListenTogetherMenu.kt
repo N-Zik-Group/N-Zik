@@ -169,7 +169,7 @@ fun ListenTogetherMenu() {
                 is ListenTogetherEvent.RoomCreated -> {
                     isCreatingRoom = false
                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    clipboard.setPrimaryClip(ClipData.newPlainText("ListenTogetherRoom", event.roomCode))
+                    clipboard.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.listen_together_room_code), event.roomCode))
                 }
 
                 // A failure must end the waiting state instead of leaving it stuck:
@@ -277,7 +277,7 @@ fun ListenTogetherMenu() {
             onCopyCode = {
                 roomCode?.let { code ->
                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    clipboard.setPrimaryClip(ClipData.newPlainText("Room Code", code))
+                    clipboard.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.listen_together_room_code), code))
                     Toaster.i(R.string.listen_together_copied_to_clipboard)
                 }
             },
@@ -286,7 +286,7 @@ fun ListenTogetherMenu() {
                     val link = "$LISTEN_INVITE_LINK_BASE?code=$code"
                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     clipboard.setPrimaryClip(
-                        ClipData.newPlainText("Listen Together Invite Link", link),
+                        ClipData.newPlainText(context.getString(R.string.listen_together_invite_link), link),
                     )
                     Toaster.i(R.string.listen_together_copied_to_clipboard)
                 }

@@ -248,7 +248,7 @@ fun ListenTogetherScreen(
                 is ListenTogetherEvent.RoomCreated -> {
                     isCreatingRoom = false
                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    clipboard.setPrimaryClip(ClipData.newPlainText("ListenTogetherRoom", event.roomCode))
+                    clipboard.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.listen_together_room_code), event.roomCode))
                 }
 
                 // A failure must end the waiting state instead of leaving it stuck: the server
@@ -738,7 +738,7 @@ internal fun RoomStatusCard(
                     icon = R.drawable.copy,
                     onClick = {
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        clipboard.setPrimaryClip(ClipData.newPlainText("Room Code", roomCode))
+                        clipboard.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.listen_together_room_code), roomCode))
                         Toaster.i(R.string.listen_together_copied_to_clipboard)
                     },
                 )
@@ -751,7 +751,7 @@ internal fun RoomStatusCard(
                     icon = R.drawable.link,
                     onClick = {
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        clipboard.setPrimaryClip(ClipData.newPlainText("Listen Together Invite Link", inviteLink))
+                        clipboard.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.listen_together_invite_link), inviteLink))
                         Toaster.i(R.string.listen_together_copied_to_clipboard)
                     },
                 )
@@ -1323,7 +1323,7 @@ fun ListenTogetherLogsMenu(
                         }
                     }
                 val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                cm.setPrimaryClip(ClipData.newPlainText("ListenTogetherLogs", textToCopy))
+                cm.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.listen_together_logs), textToCopy))
                 Toaster.i(R.string.listen_together_copied_to_clipboard)
                 menuState.hide()
             },

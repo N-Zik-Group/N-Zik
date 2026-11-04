@@ -1896,7 +1896,7 @@ class PlayerServiceModern : MediaLibraryService(),
                         player.play()
                     }
                 }
-                Toaster.w(R.string.network_stream_error_retrying, formatArgs = arrayOf(errorDetail.take(80)))
+                Toaster.w(R.string.network_stream_retrying_playback)
                 return
             } else {
                 Timber.tag("PlayerServiceModern").e("onPlayerError recovery exhausted ($MAX_RECOVERY_ATTEMPTS attempts) for $currentMediaId")
@@ -1906,9 +1906,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
         // Non-recoverable, non-network error: only skip if the option is ON
         if (!preferences.getBoolean(skipMediaOnErrorKey, false) || !player.hasNextMediaItem()) {
-            // Show error toast with code name for debugging
-            val codeName = getErrorCodeName(error.errorCode)
-            Toaster.e(R.string.player_error_playback_code_format, formatArgs = arrayOf(errorDetail.take(80), codeName))
+            Toaster.e(R.string.player_error_unknown)
             return
         }
 
