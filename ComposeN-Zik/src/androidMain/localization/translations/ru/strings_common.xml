@@ -2,7 +2,7 @@
 <resources>
     <!-- Common -->
     <string name="common_answer_no">Нет</string>
-    <string name="common_artist_conjunction_and">and</string>
+    <string name="common_artist_conjunction_and">и</string>
     <string name="common_clipboard_copy_failed">Не удалось скопировать текст в буфер обмена, попробуйте еще раз</string>
     <string name="common_clipboard_copy_success">Скопировано</string>
     <string name="common_color_black">Чёрный</string>
@@ -17,8 +17,8 @@
     <string name="common_duration_milliseconds_format"> %1$s мс</string>
     <string name="common_empty_items">Нет элементов</string>
     <string name="common_external_link_loading_suffix">загружается...</string>
-    <string name="common_load_failed">Unable to load</string>
-    <string name="common_load_failed_no_connection">Unable to load, no connection</string>
+    <string name="common_load_failed">Не удалось загрузить</string>
+    <string name="common_load_failed_no_connection">Не удалось загрузить, нет соединения</string>
     <string name="common_log_unavailable">Журнал недоступен</string>
     <string name="common_option_all">Всё</string>
     <string name="common_option_custom">Пользовательский</string>
@@ -26,7 +26,7 @@
     <string name="common_option_disabled">Отключено</string>
     <string name="common_option_none">Нет</string>
     <string name="common_option_random">Случайный</string>
-    <string name="common_restart_required_message">Please open %s again after!</string>
+    <string name="common_restart_required_message">Пожалуйста, откройте %s снова после!</string>
     <string name="common_size_big">Большой</string>
     <string name="common_size_biggest">Очень большой</string>
     <string name="common_size_expanded">Развернутый</string>
@@ -39,8 +39,8 @@
     <string name="common_validation_empty_value">Значение не может быть пустым</string>
     <string name="common_validation_invalid_input">Invalid input!</string>
     <string name="common_validation_minimum_value">"Значение должно быть больше 0"</string>
-    <string name="common_validation_name_in_use">Name already in use</string>
+    <string name="common_validation_name_in_use">Имя уже используется</string>
     <string name="common_value_input_hint">Введите значение</string>
     <string name="common_unknown">Неизвестен</string>
-    <string name="common_duration_minutes_short">%1$d min</string>
+    <string name="common_duration_minutes_short">%1$d мин</string>
 </resources>
