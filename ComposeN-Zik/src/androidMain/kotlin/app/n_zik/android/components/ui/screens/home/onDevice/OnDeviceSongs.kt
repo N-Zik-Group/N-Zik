@@ -53,6 +53,7 @@ import androidx.core.content.ContextCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
+import timber.log.Timber
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
@@ -220,7 +221,8 @@ fun OnDeviceSong(
                 PermissionUsageJournal.record(context, PermissionFeature.LOCAL_LIBRARY, JournalPermission.MEDIA_AUDIO, PermissionEventKind.REQUESTED)
                 permissionLauncher.launch( permission )
             } catch ( e: Exception ) {
-                e.message?.let( Toaster::e )
+                Timber.tag("OnDeviceSongs").w(e, "Could not request media access")
+                Toaster.e(R.string.library_on_device_permission_request_failed)
             }
     }
 
@@ -308,7 +310,8 @@ fun OnDeviceSong(
                                     }
                                     settingsLauncher.launch( intent )
                                 } catch ( e: Exception ) {
-                                    e.message?.let( Toaster::e )
+                                    Timber.tag("OnDeviceSongs").w(e, "Could not open permission settings")
+                                    Toaster.e(R.string.library_on_device_permission_settings_failed)
                                 }
                             }
                         ) {
