@@ -1,69 +1,69 @@
-A multilingual YouTube Music frontend for Android, focused on performance, UI/UX refinements, feature expansion, and long-term support.
+Ένα πολύγλωσσο frontend YouTube Music για το Android, επικεντρώθηκε στην απόδοση, UI / UX βελτιώσεις, επέκταση χαρακτηριστικών και μακροπρόθεσμη υποστήριξη.
 
-<b>N-Zik</b> is an open-source fork of <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+<b>N-Zik</b> είναι ένα πιρούνι ανοιχτού κώδικα του <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Note:</b> N-Zik started as a side project. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Σημείωση:</b> Το N-Zik ξεκίνησε ως δευτερεύον έργο. Για πιο ώριμες εναλλακτικές λύσεις, ελέγξτε το <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, ή <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), reviewed and tested before shipping.
+<b>AI Χρήση:</b> Χρησιμοποιώ γενετική τεχνητή νοημοσύνη για κώδικα (μέσω <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Μέθοδος</a>), επανεξετάστηκε και δοκιμάστηκε πριν από την αποστολή.
 
-✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI - free, always.
+✨ <b>WHY N-ZIK?</b> Χωρίς διαφημίσεις, αναπαραγωγή φόντου, προσωρινή αποθήκευση εκτός σύνδεσης, προσαρμόσιμη UI - δωρεάν, πάντα.
 
-🎨 <b>Customizable UI</b>
+🎨 <b>Προσαρμόσιμο UI</b>
 - Jetpack Compose interface
-- Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
-- 3D Carousel Player, home widgets, unified player and mini-player
-- Artist profiles, Discovery and moods, collapsible home headers
+- Θέματα: AMOLED, Deep Dark, Crisp Light + βαμμένες πινελιές
+- 3D Carousel Player, widgets, ενοποιημένος παίκτης και mini-player
+- Προφίλ καλλιτέχνη, Ανακάλυψη και διάθεση, πτυσσόμενες κεφαλίδες στο σπίτι
 
-🫧 <b>Glass Effect (BETA, optional)</b>
-Disabled on fresh installs. Enable in Settings: native, contour-only or Glass by category, with adjustable quality. May increase rendering work and battery use; reduce quality or disable if needed.
-Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+🫧 <b>Γυάλινη Επίδραση (BETA, προαιρετικό)</b>
+Απενεργοποιήθηκε σε νέες εγκαταστάσεις. Ενεργοποίηση στις Ρυθμίσεις: εγγενής, μόνο περιγράμματος ή Γυαλί ανά κατηγορία, με ρυθμιζόμενη ποιότητα. Μπορεί να αυξήσει την απόδοση εργασίας και τη χρήση της μπαταρίας. Μειώστε την ποιότητα ή απενεργοποιήστε αν χρειαστεί.
+Γυάλινες μονάδες: Τετράγωνο / έργο Convx (GPL-3.0), Kyant0 AndroidLiquidGlass / Υπόβαθρο (Apache-2.0).
 
-🎵 <b>Audio Experience</b>
-- Premium quality via YouTube Music Premium, applied automatically
-- Synced lyrics with editing and real-time translation
-- Song recognition (Shazam-like), voice search, audio visualizer
-- Pro controls: speed, pitch, normalization, crossfade, volume boost, bass boost, reverb
-- Audio Bar waveform seekbar for precise navigation
+🎵 <b>Ηχητική Εμπειρία</b>
+- Premium ποιότητα μέσω του YouTube Music Premium, εφαρμόζεται αυτόματα
+- Συγχρονισμένοι στίχοι με επεξεργασία και μετάφραση σε πραγματικό χρόνο
+- Αναγνώριση τραγουδιού (Shazam-like), φωνητική αναζήτηση, οπτικό ήχου
+- Pro ελέγχους: ταχύτητα, βήμα, κανονικοποίηση, crossfade, αύξηση της έντασης, ενίσχυση μπάσο
+- Γραμμή αναζήτησης κυματομορφής μπάρας ήχου για ακριβή πλοήγηση
 
-💾 <b>Offline, Metadata & Privacy</b>
-- Smart caching and downloads for tracks and playlists, with selectable download quality
-- FFmpeg-powered export with full metadata (FFmpeg is a downloadable extension, installed on first use)
-- In-app metadata editor (AAC/Opus, cover art)
-- Local listening stats and history
-- Auto-backup with custom intervals and retention
+💾 <b>Offline, Μεταδεδομένα & Privacy</b>
+- Έξυπνη προσωρινή αποθήκευση και λήψεις για κομμάτια και λίστες αναπαραγωγής, με δυνατότητα επιλογής ποιότητας λήψης
+- FFmpeg-powered εξαγωγή με πλήρη μεταδεδομένα (FFmpeg είναι μια downloadable επέκταση, που έχει εγκατασταθεί κατά την πρώτη χρήση)
+- In-app επεξεργαστής μεταδεδομένων (AAC/Opus, εξώφυλλο)
+- Στατιστικά και ιστορικό τοπικής ακρόασης
+- Αυτόματη δημιουργία αντιγράφων ασφαλείας με προσαρμοσμένα διαστήματα και διατήρηση
 
-🔗 <b>Integrations</b>
-- YouTube sign-in for recommendations and video playback, plus an experimental two-way sync engine
-- Last.fm scrobbling with Now Playing and love/unlove
-- MusicBrainz artist and album insights
-- Discord Rich Presence, including advanced mode with live preview
-- Invidious integration for alternative YouTube streaming
-- Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
+🔗 <b>Ενσωματώσεις</b>
+- Σύνδεση στο YouTube για συστάσεις και αναπαραγωγή βίντεο, καθώς και μια πειραματική αμφίδρομη μηχανή συγχρονισμού
+- Last.fm scrobbling με τώρα Παίζοντας και αγάπη/unlove
+- MusicBrainz καλλιτέχνη και πληροφορίες άλμπουμ
+- Discord Rich Presence, συμπεριλαμβανομένης της προηγμένης λειτουργίας με ζωντανή προεπισκόπηση
+- Invidious ενσωμάτωση για την εναλλακτική ροή YouTube
+- Εισαγωγή / εξαγωγή λίστας αναπαραγωγής: RiPlay, Spotify, Μουσική YouTube, N-Zik
 
 👥 <b>Listen Together</b>
-- Join or host live listening sessions with other users via code or invite link
+- Εγγραφείτε ή φιλοξενήστε ζωντανές συνεδρίες ακρόασης με άλλους χρήστες μέσω κώδικα ή συνδέσμου πρόσκλησης
 
 🗓️ <b>Rewind</b>
-- Yearly and monthly listening recaps with auto-generated Rewind playlists
+- Ετήσια και μηνιαία ακρόαση ανακεφαλαιώνεται με αυτόματη δημιουργία Rewind playlists
 
-📱 <b>Play Anywhere:</b> Android Auto, Automotive, TV, and Tablets
+📱 <b>Παίξτε οπουδήποτε:</b> Android Auto, Αυτοκίνητη, τηλεόραση και ταμπλέτες
 
-🛠️ <b>Power User Features</b>
-- Multi-profile: isolated database and settings per profile
-- Auto-resume on Bluetooth connect, persistent queue, auto-fill queue
-- Smart trash, hidden songs, dislike system, parental control
-- Proxy support, network quality adaptation, log export
-- Rescue Center, maintenance screen, onboarding, app shortcuts
-- OTA updates from GitHub, sleep timer, background playback
+🛠️ <b>Χαρακτηριστικά Χρήστη Ισχύος</b>
+- Πολυπροφίλ: απομονωμένη βάση δεδομένων και ρυθμίσεις ανά προφίλ
+- Αυτόματη συνέχιση σε σύνδεση Bluetooth, επίμονη ουρά, ουρά αυτόματης συμπλήρωσης
+- Έξυπνα σκουπίδια, κρυμμένα τραγούδια, αντιπαθές σύστημα, γονικός έλεγχος
+- Υποστήριξη μεσολάβησης, προσαρμογή ποιότητας δικτύου, εξαγωγή αρχείου καταγραφής
+- Κέντρο διάσωσης, οθόνη συντήρησης, κατά την επιβίβαση, συντομεύσεις εφαρμογών
+- Ενημερώσεις OTA από το GitHub, χρονόμετρο ύπνου, αναπαραγωγή φόντου
 
-📦 <b>Available Builds</b>
-- Release64/Beta64 (`com.nevar.nzik`): Complete build, 64-bit devices only
-- Release32/Beta32 (`com.nevar.nzik`): Complete build, 32-bit devices only
-- Minified64 (`com.nevar.nzik`): Lightweight R8 build, for low-end devices (64-bit)
-- Minified32 (`com.nevar.nzik`): Lightweight R8 build (32-bit)
-- FOSS (`com.nevar.nzik.foss`): Without auto-updater, for F-Droid (all architectures)
-- Dev64/Dev32 (`com.nevar.nzik.dev`): Development builds, testing only
+📦 <b>Διαθέσιμες Κατασκευές</b>
+- Κυκλοφορία64/Beta64 (`com.nevar.nzik`): Πλήρης κατασκευή, μόνο 64-bit συσκευές
+- Κυκλοφορία32/Beta32 (`com.nevar.nzik`): Πλήρης κατασκευή, 32-bit συσκευές μόνο
+- Minified64 (`com.nevar.nzik`): Ελαφριά R8 κατασκευή, για συσκευές χαμηλού επιπέδου (64-bit)
+- Minified32 (`com.nevar.nzik`): Ελαφριά κατασκευή R8 (32 bit)
+- FOSS (`com.nevar.nzik.foss`): Χωρίς auto-updater, για το F-Droid (όλες οι αρχιτεκτονικές)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Ανάπτυξη κατασκευών, έλεγχος μόνο
 
-No build bundles FFmpeg: it is a downloadable extension (installed on first use, managed in Settings → Extensions). Only FOSS is on F-Droid.
+Δεν υπάρχουν δέσμες κατασκευής FFmpeg: είναι μια επέκταση με δυνατότητα λήψης (εγκατεστημένη κατά την πρώτη χρήση, που διαχειρίζεται στις Ρυθμίσεις → επεκτάσεις). Μόνο το FOSS είναι στο F-Droid.
 
-Historical project credits include ViMusic.
+Ιστορικά έργα πίστωσης περιλαμβάνουν ViMusic.
