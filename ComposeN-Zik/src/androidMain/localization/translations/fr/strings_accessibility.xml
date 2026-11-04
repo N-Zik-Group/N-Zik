@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="accessibility_app_icon">Icône de l\'application</string>
-    <string name="accessibility_app_icon_in_player">icône de l\'application dans le lecteur</string>
-    <string name="accessibility_arrow_down">flèche_bas</string>
-    <string name="accessibility_arrow_up">flèche_vers le haut</string>
-    <string name="accessibility_background_image">Image d\'arrière-plan</string>
-    <string name="accessibility_blurred_background">arrière-plan flou</string>
-    <string name="accessibility_disc_background">fond de disque</string>
-    <string name="accessibility_filter">Filtre</string>
-    <string name="accessibility_import_playlist_name">Importer le nom de la liste de lecture</string>
-    <string name="accessibility_loading">chargement en cours...</string>
-    <string name="accessibility_new_playlist_name">nouveau nom de la playlist</string>
-    <string name="accessibility_number_of_songs_in_queue">Nombre de chansons en file d\'attente</string>
-    <string name="accessibility_origin_indicator">indicateur_origine</string>
-    <string name="accessibility_recenter">Récupération</string>
-    <string name="accessibility_rename_dialog_text_box_icon">Renommer l\'icône de la boîte de texte</string>
-    <string name="accessibility_reset">Réinitialiser</string>
-    <string name="accessibility_song_album_cover">pochette de l\'album de la chanson</string>
-    <string name="accessibility_switch_mode">Changer de Mode</string>
-    <string name="accessibility_youtube_playlist">Playlist Youtube</string>
+    <!-- Accessibility -->
+    <string name="accessibility_app_icon">App\'s icon</string>
+    <string name="accessibility_app_icon_in_player">app icon in player</string>
+    <string name="accessibility_arrow_down">arrow_down</string>
+    <string name="accessibility_arrow_up">arrow_up</string>
+    <string name="accessibility_background_image">Background Image</string>
+    <string name="accessibility_blurred_background">blurred_background</string>
+    <string name="accessibility_disc_background">disc background</string>
+    <string name="accessibility_filter">Filter</string>
+    <string name="accessibility_import_playlist_name">import playlist name</string>
+    <string name="accessibility_loading">loading...</string>
+    <string name="accessibility_new_playlist_name">new playlist name</string>
+    <string name="accessibility_number_of_songs_in_queue">Number of songs in queue</string>
+    <string name="accessibility_origin_indicator">origin_indicator</string>
+    <string name="accessibility_recenter">Recenter</string>
+    <string name="accessibility_rename_dialog_text_box_icon">Rename dialog text box icon</string>
+    <string name="accessibility_reset">Reset</string>
+    <string name="accessibility_song_album_cover">song album cover</string>
+    <string name="accessibility_switch_mode">Switch Mode</string>
+    <string name="accessibility_youtube_playlist">Youtube Playlist</string>
 </resources>
