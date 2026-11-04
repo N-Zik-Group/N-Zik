@@ -8,13 +8,13 @@
     <string name="about_contributors_alphabetical_order_label">Em ordem alfabética:</string>
     <string name="about_debug_developers_rotation">rotação_do_desenvolvedores</string>
     <string name="about_debug_translators_rotation">rotação_de_tradutores</string>
-    <string name="about_developers_description">Show or hide the developers and designers who contributed to the app.</string>
+    <string name="about_developers_description">Exibir ou ocultar os desenvolvedores e designers que contribuíram para o app.</string>
     <string name="about_developers_designers_title">Desenvolvedores / Designers</string>
     <string name="about_github_link_description">Você vai ser redirecionado para o GitHub</string>
-    <string name="about_report_issue_description">Open the GitHub bug report form to describe a problem.</string>
-    <string name="about_request_feature_description">Open the GitHub feature request form to suggest an improvement.</string>
-    <string name="about_source_code_description">Open the source code repository on GitHub.</string>
+    <string name="about_report_issue_description">Abra o formulário de relatório de bug do GitHub para descrever um problema.</string>
+    <string name="about_request_feature_description">Abra o formulário de solicitação do recurso GitHub para sugerir uma melhoria.</string>
+    <string name="about_source_code_description">Abrir o repositório de código fonte no GitHub.</string>
     <string name="about_title">Sobre</string>
-    <string name="about_translators_description">Show or hide the people who translated the app.</string>
+    <string name="about_translators_description">Exibir ou ocultar as pessoas que traduziram o aplicativo.</string>
     <string name="about_translators_title">Tradutores</string>
 </resources>
