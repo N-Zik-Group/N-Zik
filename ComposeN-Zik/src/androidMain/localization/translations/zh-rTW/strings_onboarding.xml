@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Onboarding -->
     <string name="onboarding_accounts_discord_description">Show what you are listening to in Discord (beta)</string>
     <string name="onboarding_accounts_done">I\'m done</string>
     <string name="onboarding_accounts_skip">Skip</string>
