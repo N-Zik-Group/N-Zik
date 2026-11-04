@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Maintenance -->
     <plurals name="maintenance_systems_need_attention">
         <item quantity="zero">%d systems need attention</item>
         <item quantity="one">%d system needs attention</item>
@@ -7,5 +8,45 @@
         <item quantity="few">%d systems need attention</item>
         <item quantity="many">%d systems need attention</item>
         <item quantity="other">%d systems need attention</item>
+    </plurals>
+    <plurals name="sync_detail_songs_liked">
+        <item quantity="zero">%1$d songs liked</item>
+        <item quantity="one">%1$d song liked</item>
+        <item quantity="two">%1$d songs liked</item>
+        <item quantity="few">%1$d songs liked</item>
+        <item quantity="many">%1$d songs liked</item>
+        <item quantity="other">%1$d songs liked</item>
+    </plurals>
+    <plurals name="sync_detail_playlists_synced">
+        <item quantity="zero">%1$d playlists synced</item>
+        <item quantity="one">%1$d playlist synced</item>
+        <item quantity="two">%1$d playlists synced</item>
+        <item quantity="few">%1$d playlists synced</item>
+        <item quantity="many">%1$d playlists synced</item>
+        <item quantity="other">%1$d playlists synced</item>
+    </plurals>
+    <plurals name="sync_detail_songs_imported">
+        <item quantity="zero">%1$d songs imported</item>
+        <item quantity="one">%1$d song imported</item>
+        <item quantity="two">%1$d songs imported</item>
+        <item quantity="few">%1$d songs imported</item>
+        <item quantity="many">%1$d songs imported</item>
+        <item quantity="other">%1$d songs imported</item>
+    </plurals>
+    <plurals name="sync_detail_albums_imported">
+        <item quantity="zero">%1$d albums imported</item>
+        <item quantity="one">%1$d album imported</item>
+        <item quantity="two">%1$d albums imported</item>
+        <item quantity="few">%1$d albums imported</item>
+        <item quantity="many">%1$d albums imported</item>
+        <item quantity="other">%1$d albums imported</item>
+    </plurals>
+    <plurals name="sync_detail_episodes">
+        <item quantity="zero">%1$d episodes</item>
+        <item quantity="one">%1$d episode</item>
+        <item quantity="two">%1$d episodes</item>
+        <item quantity="few">%1$d episodes</item>
+        <item quantity="many">%1$d episodes</item>
+        <item quantity="other">%1$d episodes</item>
     </plurals>
 </resources>
