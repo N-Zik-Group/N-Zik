@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="accessibility_app_icon">Значок приложения</string>
-    <string name="accessibility_app_icon_in_player">значок приложения в плеере</string>
-    <string name="accessibility_arrow_down">стрелка вниз</string>
-    <string name="accessibility_arrow_up">стрелка в_вверх</string>
-    <string name="accessibility_background_image">Фоновое изображение</string>
-    <string name="accessibility_blurred_background">размытый фон</string>
-    <string name="accessibility_disc_background">фон диска</string>
-    <string name="accessibility_filter">Фильтр</string>
-    <string name="accessibility_import_playlist_name">Импортировать имя плейлиста</string>
-    <string name="accessibility_loading">загрузка...</string>
-    <string name="accessibility_new_playlist_name">новое имя плейлиста</string>
-    <string name="accessibility_number_of_songs_in_queue">Количество треков в очереди</string>
-    <string name="accessibility_origin_indicator">origin_индикатор</string>
-    <string name="accessibility_recenter">Рекорд</string>
-    <string name="accessibility_rename_dialog_text_box_icon">Переименовать значок в диалоговом окне</string>
-    <string name="accessibility_reset">Сбросить</string>
-    <string name="accessibility_song_album_cover">обложка альбома</string>
-    <string name="accessibility_switch_mode">Переключить режим</string>
-    <string name="accessibility_youtube_playlist">Плейлист YouTube</string>
+    <!-- Accessibility -->
+    <string name="accessibility_app_icon">App\'s icon</string>
+    <string name="accessibility_app_icon_in_player">app icon in player</string>
+    <string name="accessibility_arrow_down">arrow_down</string>
+    <string name="accessibility_arrow_up">arrow_up</string>
+    <string name="accessibility_background_image">Background Image</string>
+    <string name="accessibility_blurred_background">blurred_background</string>
+    <string name="accessibility_disc_background">disc background</string>
+    <string name="accessibility_filter">Filter</string>
+    <string name="accessibility_import_playlist_name">import playlist name</string>
+    <string name="accessibility_loading">loading...</string>
+    <string name="accessibility_new_playlist_name">new playlist name</string>
+    <string name="accessibility_number_of_songs_in_queue">Number of songs in queue</string>
+    <string name="accessibility_origin_indicator">origin_indicator</string>
+    <string name="accessibility_recenter">Recenter</string>
+    <string name="accessibility_rename_dialog_text_box_icon">Rename dialog text box icon</string>
+    <string name="accessibility_reset">Reset</string>
+    <string name="accessibility_song_album_cover">song album cover</string>
+    <string name="accessibility_switch_mode">Switch Mode</string>
+    <string name="accessibility_youtube_playlist">Youtube Playlist</string>
 </resources>
