@@ -1,1 +1,1 @@
-عميل YT Music متعدد اللغات
+Multilingual YT Music client with optional Glass effect (BETA)
