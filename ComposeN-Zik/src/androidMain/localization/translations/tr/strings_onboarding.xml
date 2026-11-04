@@ -4,7 +4,6 @@
     <string name="onboarding_accounts_done">Bitirdim</string>
     <string name="onboarding_accounts_skip">Atla</string>
     <string name="onboarding_accounts_title">Hesaplarınızı bağlayın</string>
-    <string name="onboarding_accounts_youtube">YouTube</string>
     <string name="onboarding_accounts_youtube_account">%1$s olarak oturum açıldı</string>
     <string name="onboarding_accounts_youtube_description">İsteğe bağlı: YouTube hesabınızla uygulamada gezinin (ana sayfa, keşfet vb.)</string>
     <string name="onboarding_greeting">Merhaba! Mükemmel bir müzik deneyimi için N-Zik\'i kuralım. Aşağıdaki izinlerin tümü isteğe bağlıdır.</string>

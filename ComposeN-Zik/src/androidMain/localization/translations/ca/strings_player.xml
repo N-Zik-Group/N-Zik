@@ -34,7 +34,7 @@
     <string name="lyrics_provider_found_format">Lletra trobada a %s</string>
     <string name="lyrics_provider_missing_format">No s\'ha trobat la lletra a %s</string>
     <string name="lyrics_provider_missing_try_another_format">No s\'ha trobat la lletra a %1$s, prova a %2$s</string>
-    <string name="lyrics_provider_picker_label">Tria de</string>
+    <string name="lyrics_provider_picker_label">Tria de %1$s</string>
     <string name="lyrics_provider_tracks_found_format">Pistes de lletres trobades a %s</string>
     <string name="lyrics_size">Mida de la lletra</string>
     <string name="lyrics_style_fluid_rainbow_label">Esquema de l\'arc de Sant Martí fluid</string>

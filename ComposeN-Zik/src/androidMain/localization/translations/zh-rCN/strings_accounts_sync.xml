@@ -3,7 +3,6 @@
     <string name="discord_advanced_button_url">URL</string>
     <string name="discord_connected_to_discord_account">已连接到 Discord 帐户</string>
     <string name="discord_enable_rich_presence">启用Rich Presence</string>
-    <string name="discord_presence_name">N-Zik</string>
     <string name="profile_channel_name">%1$s - %2$s</string>
     <string name="profile_database">数据库</string>
     <string name="profile_rename">重命名</string>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="automotive_title">Android Auto</string>
     <string name="language_name_english">Tiếng Anh</string>
     <string name="language_name_italian">Italiano (Tiếng Ý)</string>
     <string name="language_system_default">Ngôn ngữ hệ thống</string>
@@ -14,14 +13,12 @@
     <string name="settings_cache_title">Bộ nhớ đệm</string>
     <string name="settings_category_player">Trình phát</string>
     <string name="settings_category_system">Hệ thống</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_font_include_padding_description">Thêm khoảng trống giữa các chữ</string>
     <string name="settings_font_include_padding_label">Áp dụng đệm cho phông chữ</string>
     <string name="settings_font_use_system_description">Sử dụng phông chữ của hệ thống</string>
     <string name="settings_font_use_system_label">Sử dụng phông chữ hệ thống</string>
     <string name="settings_interface_page_title">UI</string>
     <string name="settings_languages_title">Ngôn ngữ</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_player_artwork_corner_radius_label">Bo tròn góc hình thu nhỏ</string>
     <string name="settings_player_expanded_artwork_size_label">Size of Carousel</string>
     <string name="settings_player_stop_on_task_removal_label">Đóng trình phát nền</string>
@@ -33,6 +30,5 @@
     <string name="settings_theme_dark_mode_label">Tối</string>
     <string name="settings_theme_light_mode_label">Sáng</string>
     <string name="settings_theme_mode_label">Kiểu giao diện</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
-    <string name="settings_youtube_music_title">YouTube Music</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
 </resources>

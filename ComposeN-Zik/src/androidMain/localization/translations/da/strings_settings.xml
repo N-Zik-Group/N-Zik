@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="automotive_action_lucky_shuffle">Jeg føler mig heldig</string>
-    <string name="automotive_title">Android Auto</string>
     <string name="language_name_afrikaans">Afrikaans</string>
     <string name="language_name_arabic">Arabisk</string>
     <string name="language_name_azerbaijani">Aserbajdsjansk</string>
@@ -104,7 +103,6 @@
     <string name="settings_category_player">Afspiller</string>
     <string name="settings_data_page_description">Datafeltet indeholder indstillinger, der ændrer, hvordan appen håndterer data lokalt og eksternt</string>
     <string name="settings_debug_title">Indstillinger</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_automatic_description">Download automatisk sange baseret på dine præferencer</string>
     <string name="settings_downloads_on_album_bookmark_description">Download automatisk sange, når du bogmærker et album</string>
     <string name="settings_downloads_on_like_description">Download automatisk sange når du kan lide dem</string>
@@ -131,7 +129,6 @@
     <string name="settings_interface_page_title">UI</string>
     <string name="settings_interface_title">Brugergrænseflade</string>
     <string name="settings_languages_title">Sprog</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_library_now_playing_indicator_label">\'Afspiller nu\'-indikator</string>
     <string name="settings_library_playlist_indicator_description">Indikerer, om sangen allerede er føjet til en playliste</string>
     <string name="settings_library_playlist_indicator_label">Playlisteindikator</string>
@@ -328,8 +325,7 @@
     <string name="settings_visualizer_artwork_visible_label">Vis miniaturebillede for visualisering</string>
     <string name="settings_visualizer_remember_state_description">Behold visualiserings tilstand mellem sessioner</string>
     <string name="settings_visualizer_remember_state_label">Gem visualiserings tilstand</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_library_sync_content_description">Spillelister, album, kunstnere, historie, lignende osv.</string>
     <string name="settings_youtube_login_enabled_label">Aktivér Youtube Musik-login</string>
-    <string name="settings_youtube_music_title">YouTube Musik</string>
 </resources>

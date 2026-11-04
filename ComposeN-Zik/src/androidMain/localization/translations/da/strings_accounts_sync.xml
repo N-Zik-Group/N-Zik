@@ -6,12 +6,11 @@
     <string name="discord_connected_to_discord_account">Forbundet til Discord konto</string>
     <string name="discord_enable_rich_presence">Aktivér aktivitetsstatus</string>
     <string name="discord_presence_closed">Discord tilstedeværelse lukket</string>
-    <string name="discord_presence_name">N-Zik</string>
     <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
     <string name="discord_token_text_invalid">Din Discord token er ugyldig, log venligst ind igen</string>
     <string name="lastfm_password">Adgangskode</string>
     <string name="lastfm_username">Brugernavn</string>
-    <string name="profile_channel_name">%1$s — %2$s</string>
+    <string name="profile_channel_name">%1$s - %2$s</string>
     <string name="profile_rename">Omdøb</string>
     <string name="sync_action_sync">Synkroniser</string>
     <string name="sync_albums">Auto-synkroniser gemte album</string>

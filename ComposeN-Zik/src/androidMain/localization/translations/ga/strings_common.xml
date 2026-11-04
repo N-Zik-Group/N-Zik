@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="common_brand_github">GitHub</string>
     <string name="common_color_source_artwork">Cover color</string>
     <string name="common_color_source_theme">Téama</string>
     <string name="common_log_unavailable">No log available</string>

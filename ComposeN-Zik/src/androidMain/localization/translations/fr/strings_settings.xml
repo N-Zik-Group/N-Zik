@@ -2,7 +2,6 @@
 <resources>
     <string name="automotive_action_lucky_shuffle">Je me sens chanceux</string>
     <string name="automotive_action_play_all">Tout lire</string>
-    <string name="automotive_title">Android Auto</string>
     <string name="gestures_album_track_swipe_left_description">Choisissez l\'action à effectuer en faisant glisser vers la gauche un morceau de l\'album.</string>
     <string name="gestures_album_track_swipe_right_description">Choisissez l\'action à effectuer en faisant glisser vers la droite un morceau de l\'album.</string>
     <string name="gestures_playlist_track_swipe_left_description">Choisissez l\'action à effectuer en faisant glisser vers la gauche un titre de la playlist.</string>
@@ -128,7 +127,6 @@
     <string name="settings_data_page_description">La section « Données » contient des paramètres qui modifient la manière dont l\'application gère les données en local et à distance.</string>
     <string name="settings_data_title">Données</string>
     <string name="settings_debug_title">Paramètres</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_download_quality">Qualité du téléchargement</string>
     <string name="settings_download_status">État de la qualité</string>
     <string name="settings_downloads_automatic_description">Télécharger automatiquement les chansons en fonction de vos préférences</string>
@@ -163,7 +161,6 @@ Volume BAS : titre précédent</string>
     <string name="settings_interface_title">Interface Utilisateur</string>
     <string name="settings_languages_title">Langues</string>
     <string name="settings_lastfm_scrobbling_description">Partagez votre musique sur Last.fm</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_launcher_shortcuts_description">Sélectionner et réorganiser les raccourcis du lanceur d\'applications</string>
     <string name="settings_launcher_shortcuts_limit_message">Le nombre maximal de raccourcis actifs (%1$d) a été atteint</string>
     <string name="settings_launcher_shortcuts_recovery_required_message">La fonction « Rescue » ne peut pas être désactivée</string>
@@ -411,5 +408,4 @@ Volume BAS : titre précédent</string>
     <string name="settings_youtube_connection_required_description">Connectez-vous d\'abord à YouTube pour activer cette option</string>
     <string name="settings_youtube_library_sync_content_description">Playlists, albums, artistes, histoire, etc.</string>
     <string name="settings_youtube_login_enabled_label">Activer la connexion à YouTube Music</string>
-    <string name="settings_youtube_music_title">YouTube Music</string>
 </resources>

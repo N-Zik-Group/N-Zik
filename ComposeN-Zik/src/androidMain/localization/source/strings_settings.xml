@@ -4,7 +4,7 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">I\'m feeling lucky</string>
     <string name="automotive_action_play_all">Play All</string>
-    <string name="automotive_title">Android Auto</string>
+    <string name="automotive_title" translatable="false">Android Auto</string>
 
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Choose the action performed by swiping an album track left.</string>
@@ -190,7 +190,7 @@
     <string name="settings_discord_advanced_button1_url">First Discord button URL</string>
     <string name="settings_discord_advanced_button2_label">Second Discord button label</string>
     <string name="settings_discord_advanced_button2_url">Second Discord button URL</string>
-    <string name="settings_discord_title">Discord</string>
+    <string name="settings_discord_title" translatable="false">Discord</string>
     <string name="settings_dock_compact_first_action_label">Compact dock: first action</string>
     <string name="settings_dock_compact_second_action_label">Compact dock: second action</string>
     <string name="settings_dock_expanded_tab_order_description">Reorder dock tabs. Search stays on the right; compact Home and Search keep their positions.</string>
@@ -229,7 +229,7 @@
     <string name="settings_interface_title">User interface</string>
     <string name="settings_languages_title">Languages</string>
     <string name="settings_lastfm_scrobbling_description">Scrobble your music to Last.fm</string>
-    <string name="settings_lastfm_title">Last.fm</string>
+    <string name="settings_lastfm_title" translatable="false">Last.fm</string>
     <string name="settings_launcher_shortcuts_description">Choose and reorder launcher shortcuts</string>
     <string name="settings_launcher_shortcuts_limit_message">Maximum of %1$d active shortcuts reached</string>
     <string name="settings_launcher_shortcuts_recovery_required_message">Rescue cannot be disabled</string>
@@ -499,5 +499,5 @@
     <string name="settings_youtube_connection_required_description">Connect to YouTube first to enable this option</string>
     <string name="settings_youtube_library_sync_content_description">Playlists, albums, artists, history, like, etc.</string>
     <string name="settings_youtube_login_enabled_label">Enable YouTube Music login</string>
-    <string name="settings_youtube_music_title">YouTube Music</string>
+    <string name="settings_youtube_music_title" translatable="false">YouTube Music</string>
 </resources>

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="common_answer_no">아니요</string>
-    <string name="common_brand_github">GitHub</string>
     <string name="common_clipboard_copy_success">복사됨</string>
     <string name="common_color_black">검은색</string>
     <string name="common_color_custom">맞춤 색상</string>

@@ -45,13 +45,12 @@
     <string name="metadata_cover">Borító</string>
     <string name="metadata_info_title_label">Cím</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">Cím</string>
     <string name="metadata_wikipedia_attribution">A Wikipédiáról a Creative Commons Attribution CC-BY-SA 3.0 által</string>
     <string name="metadata_year">Év</string>
     <string name="metadata_musicbrainz_insights_top_songs">Legjobb dalok</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">Albumok</string>
     <string name="metadata_musicbrainz_stat_songs">Dal</string>
     <string name="playlist_action_add">Hozzáadás a lejátszási listához</string>
@@ -64,7 +63,6 @@
     <string name="playlist_action_rename">Átnevez</string>
     <string name="playlist_action_toggle_pinned">Lejátszási lista rögzítése/eltávolítása</string>
     <string name="playlist_delete_confirmation">Biztosan törölni szeretnéd ezt a lejátszási listát?</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_name_input_hint">Add meg a lejátszási lista nevét</string>
     <string name="playlist_reorder_lock_toggle_label">Zenék újrarendezésének a lezárása/felnyitása</string>
     <string name="playlist_selection_action_deselect">Törölje a kijelölést</string>

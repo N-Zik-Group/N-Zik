@@ -82,7 +82,6 @@
     <string name="metadata_description_title">Опис</string>
     <string name="metadata_info_title_label">Назва</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">Назва</string>
     <string name="metadata_unknown_artist">Невідомий виконавець</string>
     <string name="metadata_unknown_title">Невідомий заголовок</string>
@@ -92,8 +91,8 @@
     <string name="metadata_wikipedia_attribution">З Вікіпедії за ліцензією Creative Commons Attribution CC-BY-SA 3.0</string>
     <string name="metadata_year">Рік</string>
     <string name="metadata_musicbrainz_insights_top_songs">Топ пісень</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">Альбоми</string>
     <string name="metadata_musicbrainz_stat_songs">Композиції</string>
     <string name="playlist_action_add">Додати до плейлиста</string>
@@ -117,8 +116,6 @@
     <string name="playlist_error_action_on_disliked_song">Неможливо виконати цю дію з піснями, що не сподобалися.</string>
     <string name="playlist_import_default_name">Імпортовано список відтворення</string>
     <string name="playlist_import_failed">Помилка при імпорті локального плейлиста</string>
-    <string name="playlist_import_format_exportify_csv">Експортування CSV (Spotify)</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_import_unsupported_format">Формат не підтримується</string>
     <string name="playlist_import_youtube_link">Імпортувати з використанням посилання YouTube</string>
     <string name="playlist_left_swipe">Плейлист Свайп вліво</string>

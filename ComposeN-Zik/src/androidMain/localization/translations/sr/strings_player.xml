@@ -29,7 +29,7 @@
     <string name="lyrics_provider_found_format">Stihovi pronađeni na %s</string>
     <string name="lyrics_provider_missing_format">Stihovi nisu pronađeni na %s</string>
     <string name="lyrics_provider_missing_try_another_format">Stihovi pronađeni na %1$s, probaj na %2$s</string>
-    <string name="lyrics_provider_picker_label">Odaberi iz</string>
+    <string name="lyrics_provider_picker_label">Odaberi iz %1$s</string>
     <string name="lyrics_provider_tracks_found_format">Stihovi pesme pronađeni na %s</string>
     <string name="lyrics_size">Veličina Stihova</string>
     <string name="lyrics_style_fluid_rainbow_label">Arcoiris fluido</string>

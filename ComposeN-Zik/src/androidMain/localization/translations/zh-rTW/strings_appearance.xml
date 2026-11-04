@@ -15,7 +15,6 @@
     <string name="theme_mode_pitch_black">純黑</string>
     <string name="theme_palette_custom">自訂</string>
     <string name="theme_palette_dynamic">動態</string>
-    <string name="theme_palette_material_you">Material You</string>
     <string name="theme_palette_modern_black">現代黑</string>
     <string name="theme_palette_pure_black">純黑</string>
 </resources>

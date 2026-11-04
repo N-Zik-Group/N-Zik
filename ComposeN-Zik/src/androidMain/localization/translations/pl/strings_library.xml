@@ -71,7 +71,6 @@
     <string name="metadata_description_title">Opis</string>
     <string name="metadata_info_title_label">Tytuł</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">Tytuł</string>
     <string name="metadata_unknown_artist">Nieznany Artysta</string>
     <string name="metadata_unknown_title">Nieznany tytuł</string>
@@ -81,8 +80,8 @@
     <string name="metadata_wikipedia_attribution">Z Wikipedii pod licencją Creative Commons Attribution CC-BY-SA 3.0</string>
     <string name="metadata_year">Rok</string>
     <string name="metadata_musicbrainz_insights_top_songs">Najpopularniejsze utwory</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">Albumy</string>
     <string name="metadata_musicbrainz_stat_songs">Utwory</string>
     <string name="playlist_action_add">Dodaj do playlisty</string>
@@ -102,8 +101,6 @@
     <string name="playlist_error_action_on_all_disliked_songs">Nie można wykonać tej akcji, gdy wszystkie piosenki są polubione</string>
     <string name="playlist_import_default_name">Zaimportowano playlistę</string>
     <string name="playlist_import_failed">Wystąpił błąd podczas importowania lokalnej listy odtwarzania</string>
-    <string name="playlist_import_format_exportify_csv">Eksportuj CSV (Spotify)</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_import_unsupported_format">Nieobsługiwany format</string>
     <string name="playlist_import_youtube_link">Importuj przez link YouTube</string>
     <string name="playlist_name_input_hint">Wpisz nazwę playlisty</string>

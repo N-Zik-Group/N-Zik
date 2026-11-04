@@ -21,7 +21,7 @@
     <string name="network_stream_client_tv_html5_description">TV HTML5 Player Client.</string>
     <string name="network_stream_client_visionos_description">VisionOS-Client.</string>
     <string name="network_stream_client_web_creator_description">Webentwickler-Client.</string>
-    <string name="network_stream_client_youtube_music_web_description">Langsamer, unterstützt jedoch Premium-Formate. Verwendet die Entschlüsselung per JavaScript-Signatur (Verzögerung von ca. 5–10 Sekunden). Empfohlen für Premium-Nutzer.</string>
+    <string name="network_stream_client_youtube_music_web_description">Langsamer, unterstützt jedoch Premium-Formate. Verwendet die Entschlüsselung per JavaScript-Signatur (Verzögerung von ca. 5-10 Sekunden). Empfohlen für Premium-Nutzer.</string>
     <string name="network_proxy_invalid_hostname">Ihr Proxy Hostname ist ungültig, bitte überprüfen Sie ihn</string>
     <string name="network_stream_client">Stream-Client</string>
     <string name="network_stream_client_android">Android</string>

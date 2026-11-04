@@ -55,13 +55,12 @@
     <string name="metadata_cover">커버</string>
     <string name="metadata_info_title_label">제목</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">제목</string>
     <string name="metadata_wikipedia_attribution">CCA CC-BY-SA 3.0에 따라 위키피디아에서 가져옴</string>
     <string name="metadata_year">연도</string>
     <string name="metadata_musicbrainz_insights_top_songs">인기 곡</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">앨범</string>
     <string name="metadata_musicbrainz_stat_songs">곡</string>
     <string name="playlist_action_add">재생목록에 추가</string>
@@ -78,7 +77,6 @@
     <string name="playlist_create_dialog_title">새 재생목록 만들기</string>
     <string name="playlist_delete_confirmation">정말로 이 재생목록을 삭제하실건가요?</string>
     <string name="playlist_error_action_on_disliked_song">이 행동을 싫어요 표시된 곡에 수행할 수 없습니다</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_left_swipe">재생목록 왼쪽으로 스와이프</string>
     <string name="playlist_name_input_hint">재생목록 이름</string>
     <string name="playlist_reorder_lock_toggle_label">곡 재정렬 잠금/해제</string>

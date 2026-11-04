@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="onboarding_accounts_youtube">YouTube</string>
-    <string name="onboarding_accounts_youtube_description">Optional — browse the app with your YouTube account (home, explore, etc.)</string>
+    <string name="onboarding_accounts_youtube_description">Optional - browse the app with your YouTube account (home, explore, etc.)</string>
     <string name="onboarding_permission_settings">Setări</string>
 </resources>

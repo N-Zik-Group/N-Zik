@@ -6,12 +6,11 @@
     <string name="discord_connected_to_discord_account">Подключено к учётной записи Discord</string>
     <string name="discord_enable_rich_presence">Включить Rich Presence</string>
     <string name="discord_presence_closed">Присутствие Discord закрыто</string>
-    <string name="discord_presence_name">N-Zik</string>
     <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
     <string name="discord_token_text_invalid">Ваш Discord токен недействителен, пожалуйста, войдите снова</string>
     <string name="lastfm_password">Пароль</string>
     <string name="lastfm_username">Логин</string>
-    <string name="profile_channel_name">%1$s — %2$s</string>
+    <string name="profile_channel_name">%1$s - %2$s</string>
     <string name="profile_database">Данные</string>
     <string name="profile_rename">Переименовать</string>
     <string name="sync_action_sync">Синхронизация</string>

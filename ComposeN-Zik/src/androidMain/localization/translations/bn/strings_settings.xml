@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="automotive_title">অ্যান্ড্রয়েড অটো</string>
     <string name="language_name_afrikaans">আফ্রিকান</string>
     <string name="language_name_arabic">আরবি</string>
     <string name="language_name_bashkir">বাশকির</string>
@@ -84,7 +83,6 @@
     <string name="settings_category_system">সিস্টেম</string>
     <string name="settings_data_title">ডাটা</string>
     <string name="settings_debug_title">সেটিংস</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_storage_limit_label">গান ডাওনলোডের সর্বোচ্চ আকার</string>
     <string name="settings_enable_autodownload_song">Enable auto download song</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
@@ -100,7 +98,6 @@
     <string name="settings_interface_page_title">ইউ-আই</string>
     <string name="settings_interface_title">ব্যাবহারকারীর ইন্টারফেস</string>
     <string name="settings_languages_title">ভাষা গুলো</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_library_playlist_indicator_description">Indicates if the song is already added to a Playlist</string>
     <string name="settings_library_playlist_indicator_label">Playlist Indicator</string>
     <string name="settings_local_music_action_add_blocked_folder">ফোল্ডার যোগ করুন</string>
@@ -244,7 +241,6 @@
     <string name="settings_transition_slide_vertical">উলম্ব স্লাইড</string>
     <string name="settings_use_font_type">ফন্ট টাইপ ব্যাবহার করুন</string>
     <string name="settings_visualizer_artwork_visible_label">ভিজ্যুয়ালাইজারের জন্য থাম্বনেইল দেখান</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_login_enabled_label">Enable YouTube Music Login</string>
-    <string name="settings_youtube_music_title">YouTube Music</string>
 </resources>

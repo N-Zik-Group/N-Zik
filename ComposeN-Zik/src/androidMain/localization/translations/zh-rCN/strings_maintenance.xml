@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="maintenance_discord">Discord RPC</string>
     <string name="maintenance_library">库</string>
     <string name="maintenance_migration_done">完成</string>
     <string name="maintenance_section_database">数据库</string>

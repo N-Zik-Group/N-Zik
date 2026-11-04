@@ -85,7 +85,6 @@
     <string name="metadata_description_title">Descrizione</string>
     <string name="metadata_info_title_label">Titolo</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">Titolo</string>
     <string name="metadata_unknown_artist">Artista Sconosciuto</string>
     <string name="metadata_unknown_title">Titolo Sconosciuto</string>
@@ -102,8 +101,8 @@
     <string name="metadata_musicbrainz_last_sync_failed">Sincronizzazione fallita: %1$s</string>
     <string name="metadata_musicbrainz_last_sync_never">Mai sincronizzato</string>
     <string name="metadata_musicbrainz_no_rating">Nessuna valutazione disponibile</string>
-    <string name="metadata_musicbrainz_resync_error">Risincronizzazione fallita — MusicBrainz potrebbe essere occupato, riprova più tardi</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Risincronizzazione fallita - MusicBrainz potrebbe essere occupato, riprova più tardi</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">Album</string>
     <string name="metadata_musicbrainz_stat_listens">Ascolti</string>
     <string name="metadata_musicbrainz_stat_songs">Brani</string>
@@ -128,8 +127,6 @@
     <string name="playlist_error_action_on_disliked_song">Impossibile eseguire questa azione con i brani non piaciuti</string>
     <string name="playlist_import_default_name">Scaletta Importata</string>
     <string name="playlist_import_failed">Si verifica un errore durante l\'importazione della scaletta locale</string>
-    <string name="playlist_import_format_exportify_csv">Esporta CSV (Spotify)</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_import_unsupported_format">Formato non supportato</string>
     <string name="playlist_import_youtube_link">Importa tramite link YouTube</string>
     <string name="playlist_left_swipe">Scorrimento a sinistra nella playlist</string>

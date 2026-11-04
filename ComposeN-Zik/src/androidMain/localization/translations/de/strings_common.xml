@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="common_answer_no">Nein</string>
-    <string name="common_brand_github">GitHub</string>
     <string name="common_clipboard_copy_failed">Fehler beim Kopieren des Textes in die Zwischenablage, erneut versuchen</string>
     <string name="common_clipboard_copy_success">Kopiert</string>
     <string name="common_color_black">Schwarz</string>

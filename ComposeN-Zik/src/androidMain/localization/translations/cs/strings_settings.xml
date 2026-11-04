@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="automotive_action_lucky_shuffle">Cítím se štěstí</string>
-    <string name="automotive_title">Android Auto</string>
     <string name="language_name_afrikaans">Afrikánština (Afrikaans)</string>
     <string name="language_name_arabic">Arabština (العربية)</string>
     <string name="language_name_azerbaijani">Ázerbájdžánština (Azərbaycanca)</string>
@@ -100,7 +99,6 @@
     <string name="settings_category_system">Systémové</string>
     <string name="settings_data_page_description">Datová sekce obsahuje nastavení, která upravují, jak aplikace zpracovává místní a vzdálené údaje</string>
     <string name="settings_debug_title">Nastavení</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_automatic_description">Automaticky stahovat skladby na základě vašich preferencí</string>
     <string name="settings_downloads_on_album_bookmark_description">Automaticky stahovat skladby při přidání alba</string>
     <string name="settings_downloads_on_like_description">Automaticky stahovat skladby, když se vám je líbí</string>
@@ -128,7 +126,6 @@
     <string name="settings_interface_page_title">UI</string>
     <string name="settings_interface_title">Uživatelské prostředí</string>
     <string name="settings_languages_title">Jazyky</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_library_now_playing_indicator_label">Indikátor právě přehrávaného</string>
     <string name="settings_library_playlist_indicator_description">Označení skladeb přidaných do playlistu</string>
     <string name="settings_library_playlist_indicator_label">Indikátor playlistu</string>
@@ -323,8 +320,7 @@
     <string name="settings_visualizer_artwork_visible_label">Zobrazit miniaturu pro vizualizér</string>
     <string name="settings_visualizer_remember_state_description">Zachovat stav vizualizace mezi relacemi</string>
     <string name="settings_visualizer_remember_state_label">Uložit stav vizualizéru</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_library_sync_content_description">Playlisty, alba, umělci, historie, atd.</string>
     <string name="settings_youtube_login_enabled_label">Povolení přihlášení k službě YouTube Music</string>
-    <string name="settings_youtube_music_title">YouTube hudba</string>
 </resources>

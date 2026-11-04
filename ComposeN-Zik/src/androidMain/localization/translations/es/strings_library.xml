@@ -88,7 +88,6 @@
     <string name="metadata_description_title">Descripción</string>
     <string name="metadata_info_title_label">Título</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">Título</string>
     <string name="metadata_unknown_artist">Artista desconocido</string>
     <string name="metadata_unknown_title">Título desconocido</string>
@@ -98,8 +97,8 @@
     <string name="metadata_wikipedia_attribution">De Wikipedia bajo Creative Commons Attribution CC-BY-SA 3.0</string>
     <string name="metadata_year">Año</string>
     <string name="metadata_musicbrainz_insights_top_songs">Las mejores canciones</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">Álbumes</string>
     <string name="metadata_musicbrainz_stat_songs">Canciones</string>
     <string name="playlist_action_add">Añadir a lista de reproducción</string>
@@ -123,7 +122,6 @@
     <string name="playlist_error_action_on_disliked_song">No se puede realizar esta acción con las canciones con un no me gusta</string>
     <string name="playlist_import_default_name">Lista de reproducción importada</string>
     <string name="playlist_import_failed">Error al importar la lista de reproducción local</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_import_format_riplay_csv">CSV RiPlay</string>
     <string name="playlist_import_unsupported_format">Formato no soportado</string>
     <string name="playlist_import_youtube_link">Importar a través del enlace de YouTube</string>

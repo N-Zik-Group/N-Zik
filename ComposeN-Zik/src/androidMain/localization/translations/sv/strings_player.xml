@@ -9,11 +9,11 @@
     <string name="lyrics_debug_interval_progress">låttexterIntervalProgress</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_not_available">Inga texter tillgängliga. Försök igen eller ange dem manuellt.</string>
-    <string name="lyrics_provider_betterlyrics_synced_label">BetterLyrics (synkroniserad)</string>
-    <string name="lyrics_provider_kugou_synced_label">KuGou.com (synkroniserad)</string>
-    <string name="lyrics_provider_lrclib_synced_label">LrcLib.net (synkroniserad)</string>
-    <string name="lyrics_provider_lrclib_unsynced_label">LrcLib.net (osynkad)</string>
-    <string name="lyrics_provider_youtube_unsynced_label">YouTube (osynkad)</string>
+    <string name="lyrics_provider_betterlyrics_synced_label">%1$s (synkroniserad)</string>
+    <string name="lyrics_provider_kugou_synced_label">%1$s (synkroniserad)</string>
+    <string name="lyrics_provider_lrclib_synced_label">%1$s (synkroniserad)</string>
+    <string name="lyrics_provider_lrclib_unsynced_label">%1$s (osynkad)</string>
+    <string name="lyrics_provider_youtube_unsynced_label">%1$s (osynkad)</string>
     <string name="lyrics_title">Låttext</string>
     <string name="player_action_play">Spela</string>
     <string name="player_action_seek_forward">Framåt</string>

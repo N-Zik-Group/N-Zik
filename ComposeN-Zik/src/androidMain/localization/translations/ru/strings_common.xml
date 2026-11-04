@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="common_answer_no">Нет</string>
-    <string name="common_brand_github">GitHub</string>
     <string name="common_clipboard_copy_failed">Не удалось скопировать текст в буфер обмена, попробуйте еще раз</string>
     <string name="common_clipboard_copy_success">Скопировано</string>
     <string name="common_color_black">Чёрный</string>

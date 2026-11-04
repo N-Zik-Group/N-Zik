@@ -38,7 +38,6 @@
     <string name="maintenance_dedup_flagged">%d satır işaretlendi</string>
     <string name="maintenance_dedup_merged">%d satır birleştirildi</string>
     <string name="maintenance_dedup_merged_flagged">%1$d satır birleştirildi · %2$d satır işaretlendi</string>
-    <string name="maintenance_discord">Discord RPC</string>
     <string name="maintenance_discord_invalid_token">Geçersiz token</string>
     <string name="maintenance_discord_ok">Tamam</string>
     <string name="maintenance_discord_reconnect_failed">Yeniden bağlanma başarısız oldu</string>

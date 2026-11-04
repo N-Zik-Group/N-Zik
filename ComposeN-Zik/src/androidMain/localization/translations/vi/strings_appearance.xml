@@ -2,5 +2,4 @@
 <resources>
     <string name="glass_effect_tint_none">Không</string>
     <string name="theme_palette_dynamic">Động</string>
-    <string name="theme_palette_material_you">Material You</string>
 </resources>

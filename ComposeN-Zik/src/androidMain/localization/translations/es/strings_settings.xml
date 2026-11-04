@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="automotive_action_lucky_shuffle">Me siento afortunado</string>
-    <string name="automotive_title">Android Auto</string>
     <string name="language_name_afrikaans">Afrikáans</string>
     <string name="language_name_arabic">Árabe</string>
     <string name="language_name_azerbaijani">Azerí</string>
@@ -107,7 +106,6 @@
     <string name="settings_data_page_description">La sección de datos contiene ajustes que modifican la forma en que la aplicación maneja los datos de forma local y remota</string>
     <string name="settings_data_title">Datos</string>
     <string name="settings_debug_title">Ajustes</string>
-    <string name="settings_discord_title">Discordia</string>
     <string name="settings_downloads_automatic_description">Descarga automáticamente canciones basadas en tus preferencias</string>
     <string name="settings_downloads_on_album_bookmark_description">Descargar automáticamente canciones al marcar un álbum</string>
     <string name="settings_downloads_on_like_description">Descargar automáticamente canciones cuando te gusten</string>
@@ -134,7 +132,6 @@
     <string name="settings_interface_page_title">Interfaz</string>
     <string name="settings_interface_title">Interfaz</string>
     <string name="settings_languages_title">Idiomas</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_library_now_playing_indicator_label">Indicador de reproduciendo ahora</string>
     <string name="settings_library_playlist_indicator_description">Indica si la canción ya está añadida a una lista de reproducción</string>
     <string name="settings_library_playlist_indicator_label">Indicador de lista de reproducción</string>
@@ -332,8 +329,7 @@
     <string name="settings_visualizer_artwork_visible_label">Mostrar miniatura en el visualizador</string>
     <string name="settings_visualizer_remember_state_description">Mantener el estado del visualizador entre sesiones</string>
     <string name="settings_visualizer_remember_state_label">Guardar estado del visualizador</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_library_sync_content_description">Listas de reproducción, álbumes, artistas, historia, etc.</string>
     <string name="settings_youtube_login_enabled_label">Habilitar inicio de sesión en YouTube Music</string>
-    <string name="settings_youtube_music_title">Música de YouTube</string>
 </resources>

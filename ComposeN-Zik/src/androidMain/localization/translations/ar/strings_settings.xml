@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="automotive_action_lucky_shuffle">أشعر بالحظ</string>
-    <string name="automotive_title">Android Auto</string>
     <string name="language_name_afrikaans">Afrikaans</string>
     <string name="language_name_arabic">Arabic</string>
     <string name="language_name_bashkir">Bashkir</string>
@@ -69,7 +68,6 @@
     <string name="settings_cache_eviction_description">عند نفاد المساحة من الذاكرة المؤقتة، يتم مسح الموارد التي لم يتم الوصول إليها لأطول وقت</string>
     <string name="settings_cache_title">ذاكرة التخزين المؤقت</string>
     <string name="settings_data_page_description">قسم البيانات يحتوي على إعدادات تعدّل كيفية تعامل التطبيق مع البيانات محليا وعن بعد</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_automatic_description">تحميل الأغاني تلقائياً بناءً على تفضيلاتك</string>
     <string name="settings_downloads_on_album_bookmark_description">تحميل الأغاني تلقائياً عند وضع علامة مرجعية على الألبوم</string>
     <string name="settings_downloads_on_like_description">تحميل الأغاني تلقائياً عندما تحبها</string>
@@ -91,7 +89,6 @@
     <string name="settings_interface_page_title">واجهة المستخدم</string>
     <string name="settings_interface_title">واجهة المستخدم</string>
     <string name="settings_languages_title">اللغات</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_library_playlist_indicator_description">Indicates if the song is already added to a Playlist</string>
     <string name="settings_library_playlist_indicator_label">Playlist Indicator</string>
     <string name="settings_local_music_blocked_folder_exists_message">This folder already exists.</string>
@@ -190,8 +187,7 @@
     <string name="settings_visualizer_artwork_visible_label">Show Thumbnail for visualizer</string>
     <string name="settings_visualizer_remember_state_description">الحفاظ على حالة المرئيات بين الجلسات</string>
     <string name="settings_visualizer_remember_state_label">حفظ حالة المرئيات</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_library_sync_content_description">المشغلين، الألبومات، الفنانين، التاريخ، مثل، إلخ.</string>
     <string name="settings_youtube_login_enabled_label">Enable YouTube Music Login</string>
-    <string name="settings_youtube_music_title">موسيقى اليوتيوب</string>
 </resources>

@@ -34,7 +34,7 @@
     <string name="lyrics_provider_found_format">Letras encontradas em %s</string>
     <string name="lyrics_provider_missing_format">Letras não encontradas em %s</string>
     <string name="lyrics_provider_missing_try_another_format">Letras não encontradas em %1$s, tente em %2$s</string>
-    <string name="lyrics_provider_picker_label">Selecionar de</string>
+    <string name="lyrics_provider_picker_label">Selecionar de %1$s</string>
     <string name="lyrics_provider_tracks_found_format">Músicas com letras encontradas em %s</string>
     <string name="lyrics_size">Tamanho da letra</string>
     <string name="lyrics_style_fluid_rainbow_label">Arco-íris Fluido</string>

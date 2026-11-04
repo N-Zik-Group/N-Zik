@@ -55,7 +55,6 @@
     <string name="metadata_bpm">BPM</string>
     <string name="metadata_info_title_label">標題</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">標題</string>
     <string name="metadata_wikipedia_attribution">擷取自維基百科 在創用CC-BY-SA 3.0協議之條款下提供</string>
     <string name="metadata_musicbrainz_stat_albums">專輯</string>
@@ -73,7 +72,6 @@
     <string name="playlist_action_toggle_pinned">釘選/取消釘選 播放清單</string>
     <string name="playlist_create_dialog_title">建立新的播放清單</string>
     <string name="playlist_delete_confirmation">你真的要移除此播放清單嗎?</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_name_input_hint">輸入播放清單名稱</string>
     <string name="playlist_operation_wait_message">請稍後，可能需要數分鐘...</string>
     <string name="playlist_pinned_title">已釘選的播放清單</string>

@@ -6,12 +6,11 @@
     <string name="discord_connected_to_discord_account">Conectado à conta do Discord</string>
     <string name="discord_enable_rich_presence">Ativar Presença Rica</string>
     <string name="discord_presence_closed">Presença do Discord fechada</string>
-    <string name="discord_presence_name">N-Zik</string>
     <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
     <string name="discord_token_text_invalid">Seu token do Discord é inválido, faça o login novamente</string>
     <string name="lastfm_password">Palavra-passe</string>
     <string name="lastfm_username">Nome de utilizador</string>
-    <string name="profile_channel_name">%1$s — %2$s</string>
+    <string name="profile_channel_name">%1$s - %2$s</string>
     <string name="profile_database">Base de dados</string>
     <string name="profile_rename">Renomear</string>
     <string name="sync_action_sync">Sincronização</string>

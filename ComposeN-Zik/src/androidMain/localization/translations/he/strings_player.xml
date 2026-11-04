@@ -21,7 +21,7 @@
     <string name="lyrics_provider_found_format">מילות השיר נמצאו ב %s</string>
     <string name="lyrics_provider_missing_format">מילות השיר לא נמצאו ב %s</string>
     <string name="lyrics_provider_missing_try_another_format">מילות השיר לא נמצאו ב %1$s, נסה ב %2$s</string>
-    <string name="lyrics_provider_picker_label">לאסוף מ</string>
+    <string name="lyrics_provider_picker_label">לאסוף מ %1$s</string>
     <string name="lyrics_provider_tracks_found_format">רצועות מילים נמצאו ב %s</string>
     <string name="lyrics_size">גודל כתוביות</string>
     <string name="lyrics_text_glow_label">זוהר</string>

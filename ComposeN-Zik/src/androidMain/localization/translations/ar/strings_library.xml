@@ -40,15 +40,14 @@
     <string name="metadata_bpm">BPM</string>
     <string name="metadata_description_title">الوصف</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_unknown_artist">فنان مجهول</string>
     <string name="metadata_unknown_title">عنوان غير معروف</string>
     <string name="metadata_video_likes_label">إعجاب</string>
     <string name="metadata_video_subscribers_label">المشتركون</string>
     <string name="metadata_video_views_label">المشاهدات</string>
     <string name="metadata_wikipedia_attribution">من ويكيبيديا تحت عنوان المشاع الإبداعي إسناد CC-BY-SA 3.0</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">ألبومات</string>
     <string name="metadata_musicbrainz_stat_songs">الأغاني</string>
     <string name="playlist_action_add">إضافة إلى قائمة التشغيل</string>
@@ -63,8 +62,6 @@
     <string name="playlist_error_action_on_all_disliked_songs">لا يمكن تنفيذ هذا الإجراء عندما تكون جميع الأغاني غير معجوبة</string>
     <string name="playlist_import_default_name">قائمة التشغيل المستوردة</string>
     <string name="playlist_import_failed">حدث خطأ أثناء استيراد قائمة التشغيل المحلية</string>
-    <string name="playlist_import_format_exportify_csv">تصدير CSV (Spotify)</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_import_format_riplay_csv">RPlay CSV</string>
     <string name="playlist_import_unsupported_format">تنسيق غير مدعوم</string>
     <string name="playlist_import_youtube_link">استيراد عبر رابط يوتيوب</string>

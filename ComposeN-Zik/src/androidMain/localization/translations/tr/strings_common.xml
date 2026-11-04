@@ -2,7 +2,6 @@
 <resources>
     <string name="common_answer_no">Hayır</string>
     <string name="common_artist_conjunction_and">ve</string>
-    <string name="common_brand_github">GitHub</string>
     <string name="common_clipboard_copy_failed">Metin panoya kopyalanamadı, lütfen tekrar deneyin</string>
     <string name="common_clipboard_copy_success">Kopyalandı</string>
     <string name="common_color_black">Siyah</string>

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="discord_advanced_button_url">URL</string>
-    <string name="discord_presence_name">N-Zik</string>
     <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
     <string name="lastfm_password">Contrasigno</string>
     <string name="lastfm_username">Nomine de usator</string>
-    <string name="profile_channel_name">%1$s — %2$s</string>
+    <string name="profile_channel_name">%1$s - %2$s</string>
     <string name="profile_database">Base de datos</string>
     <string name="profile_rename">Renominar</string>
     <string name="sync_action_sync">Synchronisar</string>

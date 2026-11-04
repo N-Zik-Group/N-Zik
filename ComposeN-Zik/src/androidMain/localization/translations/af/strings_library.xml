@@ -39,11 +39,10 @@
     <string name="metadata_artist">Kunstenaar</string>
     <string name="metadata_bpm">BPM</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_wikipedia_attribution">Van Wikipedia onder Creative Commons Attribution CC-BY-SA 3.0</string>
     <string name="metadata_year">Jaar</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_songs">Liedjies</string>
     <string name="playlist_action_add">Voeg by speellys</string>
     <string name="playlist_action_add_hint">Add in playlist</string>
@@ -53,7 +52,6 @@
     <string name="playlist_action_rename">Hernoem</string>
     <string name="playlist_action_shuffle_positions">Renumber positions</string>
     <string name="playlist_delete_confirmation">Wil jy regtig hierdie speellys verwyder?</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_name_input_hint">Voer die speellys se naam in</string>
     <string name="playlist_operation_wait_message">Wait, it may take a few minutes...</string>
     <string name="playlist_pinned_title">Pinned Playlists</string>

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="common_answer_no">Όχι</string>
-    <string name="common_brand_github">GitHub</string>
     <string name="common_clipboard_copy_failed">Αποτυχία αντιγραφής κειμένου στο πρόχειρο, προσπαθήστε ξανά</string>
     <string name="common_color_source_artwork">Χρώμα εξωφύλλου</string>
     <string name="common_color_source_theme">Θέμα</string>

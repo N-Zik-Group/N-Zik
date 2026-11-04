@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="automotive_action_lucky_shuffle">Ik voel me geluk</string>
-    <string name="automotive_title">Android Auto</string>
     <string name="language_name_afrikaans">Afrikaanse (Afrikaans)</string>
     <string name="language_name_arabic">Arabisch (½ ½ ľľľ~)</string>
     <string name="language_name_bengali">Bengali (½ ½ ~)</string>
@@ -73,7 +72,6 @@
     <string name="settings_category_system">Systeem</string>
     <string name="settings_data_page_description">De gegevenssectie bevat instellingen die aanpassen hoe de app gegevens lokaal en op afstand behandelt</string>
     <string name="settings_data_title">Gegevens</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_automatic_description">Download automatisch nummers gebaseerd op je voorkeuren</string>
     <string name="settings_downloads_on_album_bookmark_description">Download nummers automatisch wanneer je een album aan je favorieten toevoegt</string>
     <string name="settings_downloads_on_like_description">Download automatisch nummers als je ze leuk vindt</string>
@@ -97,7 +95,6 @@
     <string name="settings_interface_page_title">UI</string>
     <string name="settings_interface_title">Gebruikersinterface</string>
     <string name="settings_languages_title">Talen</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_library_playlist_indicator_description">Markeer nummers die zijn toegevoegd aan je afspeellijst</string>
     <string name="settings_library_playlist_indicator_label">Afspeellijst indicator</string>
     <string name="settings_local_music_action_add_blocked_folder">Map toevoegen</string>
@@ -225,8 +222,7 @@
     <string name="settings_visualizer_artwork_visible_label">Toon miniatuur voor visualizer</string>
     <string name="settings_visualizer_remember_state_description">Visalizerstatus behouden tussen sessies</string>
     <string name="settings_visualizer_remember_state_label">Bewaar visualizerstatus</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_library_sync_content_description">Afspeellijsten, albums, artiesten, geschiedenis, enz.</string>
     <string name="settings_youtube_login_enabled_label">YouTube-muziek-login inschakelen</string>
-    <string name="settings_youtube_music_title">YouTube muziek</string>
 </resources>

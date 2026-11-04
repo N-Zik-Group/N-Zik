@@ -29,7 +29,7 @@
     <string name="lyrics_provider_found_format">%s에서 가사 발견됨</string>
     <string name="lyrics_provider_missing_format">%s에서 가사 발견되지 않음</string>
     <string name="lyrics_provider_missing_try_another_format">%1$s에 가사 없음, %2$s를 시도 중</string>
-    <string name="lyrics_provider_picker_label">다음 중에서 선택:</string>
+    <string name="lyrics_provider_picker_label">다음 중에서 선택: %1$s</string>
     <string name="lyrics_provider_tracks_found_format">%s에서 가사 트랙 발견됨</string>
     <string name="lyrics_size">가사 크기</string>
     <string name="lyrics_style_fluid_rainbow_label">유동적인 무지개</string>

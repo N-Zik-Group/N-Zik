@@ -206,7 +206,6 @@
     <string name="theme_palette_custom">Özelleştirilmiş</string>
     <string name="theme_palette_description">Uygulamanın genelinde kullanılacak renk paletini seçin.</string>
     <string name="theme_palette_dynamic">Dinamik</string>
-    <string name="theme_palette_material_you">Material You</string>
     <string name="theme_palette_modern_black">Modern Siyah</string>
     <string name="theme_palette_pure_black">Saf Siyah</string>
     <string name="theme_shake_sensitivity_disabled">Devre dışı</string>

@@ -59,7 +59,6 @@
     <string name="metadata_bpm">BPM</string>
     <string name="metadata_info_title_label">标题</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">标题</string>
     <string name="metadata_wikipedia_attribution">来自于维基百科， 基于Creative Commons Attribution CC-BY-SA 3.0许可</string>
     <string name="metadata_musicbrainz_insights_top_songs">热门歌曲</string>
@@ -78,7 +77,6 @@
     <string name="playlist_action_toggle_pinned">固定/取消固定播放列表</string>
     <string name="playlist_create_dialog_title">创建播放列表</string>
     <string name="playlist_delete_confirmation">你真的想要删除这个播放列表吗？</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_left_swipe">播放列表 左滑动</string>
     <string name="playlist_name_input_hint">输入播放列表名称</string>
     <string name="playlist_operation_wait_message">请稍后，可能需要几分钟...</string>

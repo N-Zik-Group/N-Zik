@@ -44,15 +44,14 @@
     <string name="metadata_bpm">BPM</string>
     <string name="metadata_description_title">Περιγραφή</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_unknown_artist">Άγνωστος Καλλιτέχνης</string>
     <string name="metadata_unknown_title">Άγνωστος Τίτλος</string>
     <string name="metadata_video_likes_label">Αρέσει</string>
     <string name="metadata_video_subscribers_label">Συνδρομητές</string>
     <string name="metadata_video_views_label">Προβολές</string>
     <string name="metadata_wikipedia_attribution">Από τη Βικιπαίδεια υπό άδεια αναφοράς προέλευσης Creative Commons CC-BY-SA 3.0</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">Άλμπουμ</string>
     <string name="metadata_musicbrainz_stat_songs">Τραγούδια</string>
     <string name="playlist_action_add">Προσθήκη σε playlist</string>
@@ -67,8 +66,6 @@
     <string name="playlist_error_action_on_all_disliked_songs">Δεν είναι δυνατή η εκτέλεση αυτής της ενέργειας όταν όλα τα τραγούδια είναι Dislikked</string>
     <string name="playlist_import_default_name">Λίστα Αναπαραγωγής</string>
     <string name="playlist_import_failed">Παρουσιάστηκε σφάλμα κατά την εισαγωγή της τοπικής λίστας αναπαραγωγής</string>
-    <string name="playlist_import_format_exportify_csv">Εξαγωγέας CSV (Spotify)</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_import_unsupported_format">Μη υποστηριζόμενη μορφή</string>
     <string name="playlist_import_youtube_link">Εισαγωγή μέσω συνδέσμου YouTube</string>
     <string name="playlist_name_input_hint">Εισάγετε το όνομα του playlist</string>

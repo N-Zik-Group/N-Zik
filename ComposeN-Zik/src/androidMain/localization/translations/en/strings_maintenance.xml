@@ -38,7 +38,6 @@
     <string name="maintenance_dedup_flagged">Flagged %d row(s)</string>
     <string name="maintenance_dedup_merged">Merged %d row(s)</string>
     <string name="maintenance_dedup_merged_flagged">Merged %1$d row(s) · Flagged %2$d row(s)</string>
-    <string name="maintenance_discord">Discord RPC</string>
     <string name="maintenance_discord_invalid_token">Invalid token</string>
     <string name="maintenance_discord_ok">OK</string>
     <string name="maintenance_discord_reconnect_failed">Reconnection failed</string>
@@ -133,7 +132,6 @@
     <string name="modules_download_needed">Module needs download (~25 MB). Check connection.</string>
     <string name="modules_downloading">Downloading module</string>
     <string name="modules_edit_unavailable">Edit metadata unavailable: %1$s</string>
-    <string name="modules_ffmpeg">FFmpeg</string>
     <string name="modules_ffmpeg_description">Needed to export cached songs and to edit song metadata. Downloaded on first use.</string>
     <string name="modules_info">Info</string>
     <string name="modules_insufficient_space">This feature needs about 70 MB of free space</string>

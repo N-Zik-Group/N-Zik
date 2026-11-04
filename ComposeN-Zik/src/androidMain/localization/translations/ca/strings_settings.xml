@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="automotive_title">Android Auto</string>
     <string name="language_name_afrikaans">Afrikaans</string>
     <string name="language_name_arabic">Àrab</string>
     <string name="language_name_azerbaijani">Azerbaijaní</string>
@@ -94,7 +93,6 @@
     <string name="settings_category_system">Sistema</string>
     <string name="settings_data_title">Dades</string>
     <string name="settings_debug_title">Paràmetres</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_storage_limit_label">Mida màxima de la descàrrega de la cançó</string>
     <string name="settings_enable_autodownload_song">Activa la baixada automàtica de la cançó</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Baixa automàticament la cançó quan l\'àlbum es marca com a preferit</string>
@@ -112,7 +110,6 @@
     <string name="settings_interface_page_title">IU</string>
     <string name="settings_interface_title">Interfície d\'usuari</string>
     <string name="settings_languages_title">Idiomes</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_library_now_playing_indicator_label">Indicador de reproducció ara</string>
     <string name="settings_library_playlist_indicator_description">Indica si la cançó ja s\'ha afegit a una llista de reproducció</string>
     <string name="settings_library_playlist_indicator_label">Indicador de llista de reproducció</string>
@@ -279,7 +276,6 @@
     <string name="settings_transition_slide_vertical">Desplaça vertical</string>
     <string name="settings_use_font_type">Utilitzeu el tipus de lletra</string>
     <string name="settings_visualizer_artwork_visible_label">Mostra la miniatura per al visualitzador</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_login_enabled_label">Activa l\'inici de sessió de YouTube Music</string>
-    <string name="settings_youtube_music_title">YouTube Music</string>
 </resources>

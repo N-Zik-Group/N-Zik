@@ -10,6 +10,5 @@
     <string name="player_progress_mini_player">Geminimaliseerde speler</string>
     <string name="settings_action_bar_show_lyrics_button">Songtekst knop</string>
     <string name="theme_palette_dynamic">Dynamisch</string>
-    <string name="theme_palette_material_you">Material You</string>
     <string name="theme_shake_sensitivity_disabled">Uitgeschakeld</string>
 </resources>

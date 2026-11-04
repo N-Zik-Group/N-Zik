@@ -73,7 +73,6 @@
     <string name="theme_palette_custom">Personnalisé</string>
     <string name="theme_palette_description">Choisissez la palette de couleurs à utiliser dans l\'ensemble de l\'application.</string>
     <string name="theme_palette_dynamic">Dynamique</string>
-    <string name="theme_palette_material_you">Material You</string>
     <string name="theme_palette_modern_black">Noir Moderne</string>
     <string name="theme_palette_pure_black">Noir Pur</string>
     <string name="theme_shake_sensitivity_disabled">Désactivé</string>

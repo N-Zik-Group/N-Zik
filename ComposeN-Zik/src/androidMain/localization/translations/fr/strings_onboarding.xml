@@ -4,9 +4,8 @@
     <string name="onboarding_accounts_done">J\'ai fini</string>
     <string name="onboarding_accounts_skip">Passer</string>
     <string name="onboarding_accounts_title">Connectez vos comptes</string>
-    <string name="onboarding_accounts_youtube">YouTube</string>
     <string name="onboarding_accounts_youtube_account">Connecté en tant que %1$s</string>
-    <string name="onboarding_accounts_youtube_description">Facultatif — naviguez dans l\'application avec votre compte YouTube (page d\'accueil, « Explorer », etc.)</string>
+    <string name="onboarding_accounts_youtube_description">Facultatif - naviguez dans l\'application avec votre compte YouTube (page d\'accueil, « Explorer », etc.)</string>
     <string name="onboarding_greeting">Bonjour ! Configurons N-Zik pour profiter d\'une expérience musicale optimale. Toutes les autorisations ci-dessous sont facultatives.</string>
     <string name="onboarding_permission_battery">Optimisation de la batterie</string>
     <string name="onboarding_permission_battery_description">Empêchez le système d\'interrompre la musique de fond</string>

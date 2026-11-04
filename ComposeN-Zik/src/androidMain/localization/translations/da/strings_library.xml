@@ -85,7 +85,6 @@
     <string name="metadata_description_title">Varebeskrivelse</string>
     <string name="metadata_info_title_label">Titel</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">Titel</string>
     <string name="metadata_unknown_artist">Ukendt Kunstner</string>
     <string name="metadata_unknown_title">Ukendt Titel</string>
@@ -94,8 +93,8 @@
     <string name="metadata_wikipedia_attribution">Fra Wikipedia under Creative Commons Attribution CC-BY-SA 3.0</string>
     <string name="metadata_year">År</string>
     <string name="metadata_musicbrainz_insights_top_songs">Top sange</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">Album</string>
     <string name="metadata_musicbrainz_stat_songs">Sange</string>
     <string name="playlist_action_add">Føj til playliste</string>
@@ -119,8 +118,6 @@
     <string name="playlist_error_action_on_disliked_song">Kan ikke udføre denne handling med \'Kan ikke lide\'-sange</string>
     <string name="playlist_import_default_name">Importeret Spilleliste</string>
     <string name="playlist_import_failed">Der opstod en fejl under import af lokal spilleliste</string>
-    <string name="playlist_import_format_exportify_csv">Eksporter CSV (Spotify)</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_import_unsupported_format">Formatet understøttes ikke</string>
     <string name="playlist_import_youtube_link">Importer via YouTube link</string>
     <string name="playlist_left_swipe">Venstre stryg for playlister</string>

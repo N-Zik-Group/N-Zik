@@ -87,7 +87,6 @@
     <string name="metadata_description_title">Descrição:</string>
     <string name="metadata_info_title_label">Título</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">Título</string>
     <string name="metadata_unknown_artist">Artista Desconhecido</string>
     <string name="metadata_unknown_title">Título Desconhecido</string>
@@ -97,8 +96,8 @@
     <string name="metadata_wikipedia_attribution">A partir da Wikipédia sob \"Creative Commons Attribution CC-BY-SA 3.0\"</string>
     <string name="metadata_year">Ano</string>
     <string name="metadata_musicbrainz_insights_top_songs">Músicas populares</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">Álbuns</string>
     <string name="metadata_musicbrainz_stat_songs">Músicas</string>
     <string name="playlist_action_add">Adicionar à lista de reprodução</string>
@@ -122,7 +121,6 @@
     <string name="playlist_error_action_on_disliked_song">Não é possível executar esta ação com as Músicas Descurtidas</string>
     <string name="playlist_import_default_name">Playlist importada</string>
     <string name="playlist_import_failed">Ocorreu um erro ao importar a playlist local</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_import_format_riplay_csv">CSV da RiPlay</string>
     <string name="playlist_import_unsupported_format">Formato não suportado</string>
     <string name="playlist_import_youtube_link">Importar via link do YouTube</string>

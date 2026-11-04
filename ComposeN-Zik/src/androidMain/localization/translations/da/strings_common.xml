@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="common_answer_no">Nej</string>
-    <string name="common_brand_github">GitHub</string>
     <string name="common_clipboard_copy_failed">Kunne ikke kopiere tekst til udklipsholderen, prøv igen</string>
     <string name="common_clipboard_copy_success">Kopieret</string>
     <string name="common_color_black">Sort</string>

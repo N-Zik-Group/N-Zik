@@ -3,7 +3,6 @@
     <string name="discord_advanced_button_url">URL</string>
     <string name="discord_connected_to_discord_account">Conectado à conta do Discord</string>
     <string name="discord_enable_rich_presence">Ativar Presença Rica</string>
-    <string name="discord_presence_name">N-Zik</string>
     <string name="profile_channel_name">%1$s - %2$s</string>
     <string name="profile_database">Base de dados</string>
     <string name="profile_rename">Renomear</string>

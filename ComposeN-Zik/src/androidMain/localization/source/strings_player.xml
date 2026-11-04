@@ -109,17 +109,20 @@
     <string name="lyrics_not_available">No lyrics available. Please try again or enter them manually.</string>
     <string name="lyrics_offset">Lyrics Offset</string>
     <string name="lyrics_popup_messages_description">Display lyric-related popup messages in the player.</string>
-    <string name="lyrics_provider_betterlyrics_karaoke_label">BetterLyrics (karaoke)</string>
-    <string name="lyrics_provider_betterlyrics_synced_label">BetterLyrics (synced)</string>
+    <string name="lyrics_brand_betterlyrics" translatable="false">BetterLyrics</string>
+    <string name="lyrics_brand_kugou" translatable="false">KuGou.com</string>
+    <string name="lyrics_brand_lrclib" translatable="false">LrcLib.net</string>
+    <string name="lyrics_provider_betterlyrics_karaoke_label">%1$s (karaoke)</string>
+    <string name="lyrics_provider_betterlyrics_synced_label">%1$s (synced)</string>
     <string name="lyrics_provider_found_format">Lyrics found on %s</string>
-    <string name="lyrics_provider_kugou_synced_label">KuGou.com (synced)</string>
-    <string name="lyrics_provider_lrclib_synced_label">LrcLib.net (synced)</string>
-    <string name="lyrics_provider_lrclib_unsynced_label">LrcLib.net (unsynced)</string>
+    <string name="lyrics_provider_kugou_synced_label">%1$s (synced)</string>
+    <string name="lyrics_provider_lrclib_synced_label">%1$s (synced)</string>
+    <string name="lyrics_provider_lrclib_unsynced_label">%1$s (unsynced)</string>
     <string name="lyrics_provider_missing_format">Lyrics not found on %s</string>
     <string name="lyrics_provider_missing_try_another_format">Lyrics not found on %1$s, try on %2$s</string>
-    <string name="lyrics_provider_picker_label">Pick from</string>
+    <string name="lyrics_provider_picker_label">Pick from %1$s</string>
     <string name="lyrics_provider_tracks_found_format">Lyrics tracks found on %s</string>
-    <string name="lyrics_provider_youtube_unsynced_label">YouTube (unsynced)</string>
+    <string name="lyrics_provider_youtube_unsynced_label">%1$s (unsynced)</string>
     <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="lyrics_size">Lyrics Size</string>
     <string name="lyrics_style_fluid_rainbow_label">Fluid Rainbow</string>

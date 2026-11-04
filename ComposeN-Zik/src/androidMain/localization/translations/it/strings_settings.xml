@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="automotive_action_lucky_shuffle">Mi sento fortunato</string>
-    <string name="automotive_title">Android Auto</string>
     <string name="language_name_arabic">Arabo (Tariffe رب&lt;unk&gt; )</string>
     <string name="language_name_azerbaijani">Azerbaijano</string>
     <string name="language_name_bengali">Bengali (&lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; )</string>
@@ -90,7 +89,6 @@
     <string name="settings_data_page_description">La sezione dati contiene impostazioni che modificano il modo in cui l\'app gestisce i dati localmente e in remoto</string>
     <string name="settings_data_title">Dati</string>
     <string name="settings_debug_title">Impostazioni</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_automatic_description">Scarica automaticamente i brani in base alle tue preferenze</string>
     <string name="settings_downloads_on_album_bookmark_description">Scarica automaticamente i brani quando si segnala un album</string>
     <string name="settings_downloads_on_like_description">Scarica automaticamente le canzoni quando ti piacciono</string>
@@ -118,7 +116,6 @@
     <string name="settings_interface_page_title">Interfaccia</string>
     <string name="settings_interface_title">Interfaccia</string>
     <string name="settings_languages_title">Lingue</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_library_now_playing_indicator_label">Indicatore Ora In Riproduzione</string>
     <string name="settings_library_playlist_indicator_description">Segna i brani che sono stati aggiunti alla tua Playlist</string>
     <string name="settings_library_playlist_indicator_label">Indicatore playlist</string>
@@ -312,8 +309,7 @@
     <string name="settings_visualizer_artwork_visible_label">Mostra miniatura per visualizzatore</string>
     <string name="settings_visualizer_remember_state_description">Mantieni lo stato del visualizzatore tra le sessioni</string>
     <string name="settings_visualizer_remember_state_label">Salva stato visualizzatore</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_library_sync_content_description">Playlist, album, artisti, storia, come, ecc.</string>
     <string name="settings_youtube_login_enabled_label">Abilita l\'accesso a YouTube Music</string>
-    <string name="settings_youtube_music_title">Musica Di YouTube</string>
 </resources>

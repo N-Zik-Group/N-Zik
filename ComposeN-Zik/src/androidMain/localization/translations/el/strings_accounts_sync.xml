@@ -5,10 +5,9 @@
     <string name="discord_beta_warning">Αυτό είναι ακόμα σε Beta και μπορεί να περιέχει σφάλματα και συντριβή</string>
     <string name="discord_connected_to_discord_account">Συνδέθηκε σε λογαριασμό Discord</string>
     <string name="discord_presence_closed">Παρουσία του Discord έκλεισε</string>
-    <string name="discord_presence_name">N-Zik</string>
     <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
     <string name="discord_token_text_invalid">Το διακριτικό σας Discord δεν είναι έγκυρο, παρακαλώ συνδεθείτε ξανά</string>
-    <string name="profile_channel_name">%1$s — %2$s</string>
+    <string name="profile_channel_name">%1$s - %2$s</string>
     <string name="profile_database">Δεδομένα</string>
     <string name="profile_rename">Μετονομασία</string>
     <string name="sync_action_sync">Συγχρονισμός</string>

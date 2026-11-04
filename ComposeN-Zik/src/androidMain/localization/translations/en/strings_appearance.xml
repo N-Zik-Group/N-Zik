@@ -213,7 +213,6 @@
     <string name="theme_palette_custom">Customized</string>
     <string name="theme_palette_description">Choose the color palette used throughout the app.</string>
     <string name="theme_palette_dynamic">Dynamic</string>
-    <string name="theme_palette_material_you">Material You</string>
     <string name="theme_palette_modern_black">Modern Black</string>
     <string name="theme_palette_pure_black">Pure Black</string>
     <string name="theme_shake_sensitivity_disabled">Disabled</string>

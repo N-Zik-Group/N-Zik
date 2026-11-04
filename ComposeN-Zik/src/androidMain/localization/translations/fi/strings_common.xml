@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="common_answer_no">Ei</string>
-    <string name="common_brand_github">GitHub</string>
     <string name="common_clipboard_copy_failed">Tekstin kopiointi leikepöydälle epäonnistui, yritä uudelleen</string>
     <string name="common_clipboard_copy_success">Kopioitu</string>
     <string name="common_color_black">Musta</string>

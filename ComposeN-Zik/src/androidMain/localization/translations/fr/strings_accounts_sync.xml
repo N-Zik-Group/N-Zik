@@ -66,7 +66,6 @@
     <string name="discord_presence_button_get_nzik">Télécharger N-Zik</string>
     <string name="discord_presence_button_listen_ytmusic">Écoutez YouTube Music</string>
     <string name="discord_presence_closed">Présence de Discord fermée</string>
-    <string name="discord_presence_name">N-Zik</string>
     <string name="discord_presence_pause_default">⏸︎ En pause : {song.name}</string>
     <string name="discord_preview_state_actual">État actuel</string>
     <string name="discord_preview_state_paused">En pause</string>
@@ -108,7 +107,7 @@
     <string name="profile_add_description">Créer un nouveau profil avec sa propre base de données et ses propres paramètres</string>
     <string name="profile_avatar_source">Source de l\'avatar</string>
     <string name="profile_base_name">Fan de N-Zik</string>
-    <string name="profile_channel_name">%1$s — %2$s</string>
+    <string name="profile_channel_name">%1$s - %2$s</string>
     <string name="profile_data_downloads">téléchargements</string>
     <string name="profile_data_media_cache">cache multimédia</string>
     <string name="profile_data_status_all_separate">Séparer : base de données, paramètres, sessions, téléchargements, cache multimédia, images, formes d\'onde</string>

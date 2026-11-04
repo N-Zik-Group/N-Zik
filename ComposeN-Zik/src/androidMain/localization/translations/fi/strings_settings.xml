@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="automotive_action_lucky_shuffle">Minulla on onnea</string>
-    <string name="automotive_title">Android Auto</string>
     <string name="language_name_arabic">Arabialainen (- Pannaan Pannaan Vannaan Vann)</string>
     <string name="language_name_azerbaijani">azeri</string>
     <string name="language_name_bengali">Bengali (Entä- Pannaan)</string>
@@ -92,7 +91,6 @@
     <string name="settings_data_page_description">Tiedot osio sisältää asetukset, jotka muokkaavat miten sovellus käsittelee tietoja paikallisesti ja etänä</string>
     <string name="settings_data_title">Tiedot</string>
     <string name="settings_debug_title">Asetukset</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_automatic_description">Lataa kappaleet automaattisesti asetuksesi perusteella</string>
     <string name="settings_downloads_on_album_bookmark_description">Lataa kappaleet automaattisesti kun kirjoitat albumin</string>
     <string name="settings_downloads_on_like_description">Lataa kappaleet automaattisesti, kun pidät niistä</string>
@@ -120,7 +118,6 @@
     <string name="settings_interface_page_title">Käyttöliittymä</string>
     <string name="settings_interface_title">Käyttöliittymä</string>
     <string name="settings_languages_title">Kielet</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_library_now_playing_indicator_label">Toiston ilmaisin</string>
     <string name="settings_library_playlist_indicator_description">Merkitse kappaleet jotka on lisätty soittolistaan</string>
     <string name="settings_library_playlist_indicator_label">Soittolistan osoitin</string>
@@ -315,8 +312,7 @@
     <string name="settings_visualizer_artwork_visible_label">Näytä pienoiskuva visualisoijalle</string>
     <string name="settings_visualizer_remember_state_description">Pidä visualisoijan tila istuntojen välillä</string>
     <string name="settings_visualizer_remember_state_label">Tallenna visualisoijan tila</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_library_sync_content_description">Soittolistat, albumit, artistit, historia, tykkää jne.</string>
     <string name="settings_youtube_login_enabled_label">Ota YouTube-musiikin kirjautuminen käyttöön</string>
-    <string name="settings_youtube_music_title">YouTube Musiikki</string>
 </resources>

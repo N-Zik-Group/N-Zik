@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="automotive_title">Android Autó</string>
     <string name="language_name_czech">Cseh (Čeština)</string>
     <string name="language_name_english">Angol</string>
     <string name="language_name_french">Francia (Français)</string>
@@ -46,7 +45,6 @@
     <string name="settings_category_system">Rendszer</string>
     <string name="settings_data_title">Adat</string>
     <string name="settings_debug_title">Beállítások</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_storage_limit_label">Dal letöltés maximális mérete</string>
     <string name="settings_font_include_padding_description">Szóköz hozzáadása a szövegek köré</string>
     <string name="settings_font_include_padding_label">Betűtípus kitöltés alkalmazása</string>
@@ -58,7 +56,6 @@
     <string name="settings_interface_page_title">Felület</string>
     <string name="settings_interface_title">Felhasználói felület</string>
     <string name="settings_languages_title">Nyelvek</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_local_music_action_add_blocked_folder">Mappa hozzáadása</string>
     <string name="settings_local_music_blocked_folders_title">Feketelistás mappák</string>
     <string name="settings_local_music_folders_label">Mappák</string>
@@ -141,6 +138,5 @@
     <string name="settings_transition_scale">Mérték</string>
     <string name="settings_transition_slide_horizontal">Elcsúsztatás horizontálisan</string>
     <string name="settings_transition_slide_vertical">Elcsúsztatás vertikálisan</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
-    <string name="settings_youtube_music_title">YouTube Music</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
 </resources>

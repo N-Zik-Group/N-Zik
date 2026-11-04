@@ -8,6 +8,5 @@
     <string name="player_like_icon_cute">Shape</string>
     <string name="settings_action_bar_show_lyrics_button">Show Lyrics button</string>
     <string name="theme_palette_dynamic">Δυναμικό</string>
-    <string name="theme_palette_material_you">Material You</string>
     <string name="theme_shake_sensitivity_disabled">Ανενεργό</string>
 </resources>

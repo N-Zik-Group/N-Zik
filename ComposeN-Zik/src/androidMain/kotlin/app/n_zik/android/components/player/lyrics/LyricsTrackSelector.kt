@@ -108,6 +108,7 @@ fun LyricsTrackSelector(
     onSearchRetry: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val providerName = stringResource(R.string.lyrics_brand_lrclib)
     val menuState = LocalMenuState.current
     var loading by remember { mutableStateOf(true) }
     val tracks = remember { mutableStateListOf<Track>() }
@@ -131,7 +132,7 @@ fun LyricsTrackSelector(
                     coroutineScope.launch {
                         Toaster.s(
                             R.string.lyrics_provider_tracks_found_format,
-                            "LrcLib.net",
+                            providerName,
                             duration = Toast.LENGTH_LONG
                         )
                     }
@@ -140,7 +141,7 @@ fun LyricsTrackSelector(
                         coroutineScope.launch {
                             Toaster.e(
                                 R.string.lyrics_provider_missing_format,
-                                "LrcLib.net",
+                                providerName,
                                 duration = Toast.LENGTH_LONG
                             )
                         }
@@ -209,7 +210,7 @@ fun LyricsTrackSelector(
                     coroutineScope.launch {
                         Toaster.e(
                             R.string.lyrics_fetch_error_message,
-                            "KuGou.com",
+                            providerName,
                             duration = Toast.LENGTH_LONG
                         )
                     }

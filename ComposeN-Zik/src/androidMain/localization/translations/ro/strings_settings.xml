@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="automotive_action_lucky_shuffle">Mă simt norocos</string>
-    <string name="automotive_title">Android auto</string>
     <string name="language_name_afrikaans">Afrikană (Afrikaans)</string>
     <string name="language_name_arabic">Arabă (العربية)</string>
     <string name="language_name_azerbaijani">Azeră (Azərbaycan)</string>
@@ -97,7 +96,6 @@
     <string name="settings_data_page_description">Secțiunea de date conține setări care modifică modul în care aplicația gestionează datele local și de la distanță</string>
     <string name="settings_data_title">Date</string>
     <string name="settings_debug_title">Setări</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_automatic_description">Descarcă melodiile automat în funcție de preferințele tale</string>
     <string name="settings_downloads_on_album_bookmark_description">Descarcă automat melodiile atunci când marci un album</string>
     <string name="settings_downloads_on_like_description">Descarcă automat melodiile când îți plac</string>
@@ -124,7 +122,6 @@
     <string name="settings_interface_page_title">Interfață</string>
     <string name="settings_interface_title">Interfața utilizatorului</string>
     <string name="settings_languages_title">Limbi</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_library_now_playing_indicator_label">Indicator de „Se redă acum”</string>
     <string name="settings_library_playlist_indicator_description">Marchează melodiile care au fost adăugate în un playlist</string>
     <string name="settings_library_playlist_indicator_label">Indicator de „În playlist”</string>
@@ -319,8 +316,7 @@
     <string name="settings_visualizer_artwork_visible_label">Afișează miniatura pentru vizualizator</string>
     <string name="settings_visualizer_remember_state_description">Păstrați starea vizualizatorului între sesiuni</string>
     <string name="settings_visualizer_remember_state_label">Salvează starea vizualizatorului</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_library_sync_content_description">Liste de redare, albume, artiști, istorie, lucruri similare etc.</string>
     <string name="settings_youtube_login_enabled_label">Activează conectarea la YouTube Music</string>
-    <string name="settings_youtube_music_title">Muzică YouTube</string>
 </resources>

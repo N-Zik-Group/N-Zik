@@ -586,7 +586,7 @@ class LyricsSettingsMenu private constructor(
             if (lyricsType == LyricsType.Synced || lyricsType == LyricsType.Unsynced) {
                 if (!offlineMode) {
                     ActionSettingEntry(
-                        title = stringResource(R.string.lyrics_provider_picker_label) + " LrcLib.net",
+                        title = stringResource(R.string.lyrics_provider_picker_label, stringResource(R.string.lyrics_brand_lrclib)),
                         icon = R.drawable.search,
                         onClick = {
                             menuState.hide()
@@ -1066,7 +1066,7 @@ class LyricsSettingsMenu private constructor(
                 if (!offlineMode) {
                     item {
                         ActionSettingEntry(
-                            title = stringResource(R.string.lyrics_provider_picker_label) + " LrcLib.net",
+                            title = stringResource(R.string.lyrics_provider_picker_label, stringResource(R.string.lyrics_brand_lrclib)),
                             icon = R.drawable.search,
                             onClick = {
                                 menuState.hide()

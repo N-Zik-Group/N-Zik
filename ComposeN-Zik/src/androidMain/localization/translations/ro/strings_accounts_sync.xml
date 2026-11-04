@@ -6,12 +6,11 @@
     <string name="discord_connected_to_discord_account">Conectat la contul Discord</string>
     <string name="discord_enable_rich_presence">Activează Rich Presence</string>
     <string name="discord_presence_closed">Prezență Discord închisă</string>
-    <string name="discord_presence_name">N-Zik</string>
     <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
     <string name="discord_token_text_invalid">Token-ul tău Discord este invalid, te rugăm să te autentifici din nou</string>
     <string name="lastfm_password">Parolă</string>
     <string name="lastfm_username">Nume de utilizator</string>
-    <string name="profile_channel_name">%1$s — %2$s</string>
+    <string name="profile_channel_name">%1$s - %2$s</string>
     <string name="profile_database">Bază de date</string>
     <string name="profile_rename">Redenumește</string>
     <string name="sync_action_sync">Sincronizează</string>

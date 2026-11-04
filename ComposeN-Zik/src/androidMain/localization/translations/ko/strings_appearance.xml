@@ -30,7 +30,6 @@
     <string name="theme_mode_pitch_black">새까만 검정</string>
     <string name="theme_palette_custom">사용자 지정</string>
     <string name="theme_palette_dynamic">다이나믹</string>
-    <string name="theme_palette_material_you">Material You</string>
     <string name="theme_palette_modern_black">일반 검정</string>
     <string name="theme_palette_pure_black">순수한 검정</string>
     <string name="theme_shake_sensitivity_disabled">비활성화</string>

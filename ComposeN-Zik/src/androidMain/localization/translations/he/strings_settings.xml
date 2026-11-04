@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="automotive_title">אנדרואיד אוטו</string>
     <string name="language_name_czech">צ\'כית (Čeština)</string>
     <string name="language_name_english">אנגלית</string>
     <string name="language_name_french">צרפתית (Français)</string>
@@ -43,7 +42,6 @@
     <string name="settings_category_system">מערכת</string>
     <string name="settings_data_title">נתונים</string>
     <string name="settings_debug_title">הגדרות</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_storage_limit_label">גודל מקסימלי להורדה של שיר</string>
     <string name="settings_font_include_padding_description">הוסף מרווחים מסביב לטקסטים</string>
     <string name="settings_font_use_system_description">השתמש בגופן שהוחל על ידי המערכת</string>
@@ -53,7 +51,6 @@
     <string name="settings_interface_page_title">מצב ממשק</string>
     <string name="settings_interface_title">ממשק משתמש</string>
     <string name="settings_languages_title">שפה</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_local_music_action_add_blocked_folder">הוספת תיקייה</string>
     <string name="settings_local_music_blocked_folders_title">תיקיות ברשימה השחורה</string>
     <string name="settings_local_music_folders_label">תיקיות</string>
@@ -127,6 +124,5 @@
     <string name="settings_transition_scale">שינוי הגודל</string>
     <string name="settings_transition_slide_horizontal">החלק אופקי</string>
     <string name="settings_transition_slide_vertical">החלק אנכית</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
-    <string name="settings_youtube_music_title">YouTube Music</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
 </resources>

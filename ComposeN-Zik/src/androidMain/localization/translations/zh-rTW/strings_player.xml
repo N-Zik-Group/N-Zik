@@ -28,7 +28,7 @@
     <string name="lyrics_provider_found_format">在 %s 找到了歌詞</string>
     <string name="lyrics_provider_missing_format">在 %s 找不到歌詞</string>
     <string name="lyrics_provider_missing_try_another_format">在 %1$s 找不到歌詞，嘗試在 %2$s 尋找</string>
-    <string name="lyrics_provider_picker_label">挑選</string>
+    <string name="lyrics_provider_picker_label">挑選 %1$s</string>
     <string name="lyrics_size">歌詞大小</string>
     <string name="lyrics_translation_second_line_label">Show Translation in the Second Line</string>
     <string name="common_action_stop">停止</string>

@@ -32,7 +32,7 @@
     <string name="lyrics_provider_found_format">在 %s 上找到了歌词</string>
     <string name="lyrics_provider_missing_format">在 %s 上找不到歌词</string>
     <string name="lyrics_provider_missing_try_another_format">%1$s上找不到歌词，请尝试 %2$s</string>
-    <string name="lyrics_provider_picker_label">选择自</string>
+    <string name="lyrics_provider_picker_label">选择自 %1$s</string>
     <string name="lyrics_provider_tracks_found_format">在 %s 上找到了歌词曲目</string>
     <string name="lyrics_size">歌词大小</string>
     <string name="lyrics_style_fluid_rainbow_label">液态彩虹</string>

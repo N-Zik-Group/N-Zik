@@ -140,7 +140,6 @@
     <string name="metadata_loading">Chargement en cours…</string>
     <string name="metadata_lyricist">Parolier</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">%1$d votes sur MusicBrainz</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_playlist_action_change_browse_id">Modifier l\'identifiant de navigation de la playlist</string>
     <string name="metadata_publisher">Éditeur</string>
     <string name="metadata_remixer">Remixeur</string>
@@ -170,8 +169,8 @@
     <string name="metadata_musicbrainz_last_sync_paused">En pause (trop d\'échecs) : nouvelle tentative dans %1$d min</string>
     <string name="metadata_musicbrainz_no_rating">Aucune note disponible</string>
     <string name="metadata_musicbrainz_resync">Resynchronisation</string>
-    <string name="metadata_musicbrainz_resync_error">Échec de la resynchronisation — MusicBrainz est peut-être occupé, veuillez réessayer plus tard</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz s\'est mis en pause après plusieurs échecs — nouvelle tentative dans %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Échec de la resynchronisation - MusicBrainz est peut-être occupé, veuillez réessayer plus tard</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz s\'est mis en pause après plusieurs échecs - nouvelle tentative dans %1$d min</string>
     <string name="metadata_musicbrainz_resync_success">Données MusicBrainz synchronisées</string>
     <string name="metadata_musicbrainz_stat_bookmarked_albums">Albums ajoutés aux favoris</string>
     <string name="metadata_musicbrainz_stat_liked_songs">Titres favoris</string>
@@ -206,7 +205,6 @@
     <string name="playlist_error_action_on_disliked_song">Impossible d\'effectuer cette action lorsque tous les titres ne sont pas appréciés</string>
     <string name="playlist_import_default_name">Playlist importée</string>
     <string name="playlist_import_failed">Erreur lors de l\'importation de la playlist locale</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_import_unsupported_format">Format non pris en charge</string>
     <string name="playlist_import_youtube_link">Importer via un lien YouTube</string>
     <string name="playlist_insertion_beginning">Début</string>

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="automotive_action_lucky_shuffle">私は幸運を感じています</string>
-    <string name="automotive_title">Android Auto</string>
     <string name="language_name_afrikaans">アフリカーンス語(アフリカーンス語)</string>
     <string name="language_name_arabic">アラビア語(&lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; )</string>
     <string name="language_name_azerbaijani">アゼルバイジャン語</string>
@@ -88,7 +87,6 @@
     <string name="settings_data_page_description">データセクションには、アプリがデータをローカルおよびリモートでどのように処理するかを変更する設定が含まれています</string>
     <string name="settings_data_title">データ</string>
     <string name="settings_debug_title">設定</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_automatic_description">設定に基づいて曲を自動的にダウンロードする</string>
     <string name="settings_downloads_on_album_bookmark_description">アルバムをブックマークしたときに曲を自動的にダウンロードする</string>
     <string name="settings_downloads_on_like_description">好きなときに曲を自動的にダウンロードする</string>
@@ -116,7 +114,6 @@
     <string name="settings_interface_page_title">UI</string>
     <string name="settings_interface_title">ユーザーインターフェイス</string>
     <string name="settings_languages_title">言語</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_library_now_playing_indicator_label">再生中のインジケーター</string>
     <string name="settings_library_playlist_indicator_description">プレイリストに追加された曲をマークする</string>
     <string name="settings_library_playlist_indicator_label">プレイリスト表示</string>
@@ -309,8 +306,7 @@
     <string name="settings_visualizer_artwork_visible_label">ビジュアライザーのサムネイルを表示</string>
     <string name="settings_visualizer_remember_state_description">セッション間のビジュアライザーの状態を維持する</string>
     <string name="settings_visualizer_remember_state_label">ビジュアライザーの状態を保存</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_library_sync_content_description">プレイリスト、アルバム、アーティスト、歴史、などなど</string>
     <string name="settings_youtube_login_enabled_label">YouTube音楽ログインを有効にする</string>
-    <string name="settings_youtube_music_title">YouTube音楽</string>
 </resources>

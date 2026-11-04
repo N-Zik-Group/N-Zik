@@ -2,7 +2,6 @@
 <resources>
     <string name="maintenance_backup_disabled">비활성화</string>
     <string name="maintenance_crash_none">없음</string>
-    <string name="maintenance_discord">Discord RPC</string>
     <string name="maintenance_library">라이브러리</string>
     <string name="maintenance_migration_done">완료</string>
     <string name="maintenance_section_database">데이터베이스</string>
@@ -18,12 +17,12 @@
     <string name="recovery_group_database">데이터베이스</string>
     <string name="recovery_group_settings">설정</string>
     <string name="recovery_main_process_running">Close the main app before performing this action</string>
-    <string name="recovery_profiles_deleted_active_restart">The current profile was deleted: the base profile is now active — relaunch the app</string>
-    <string name="recovery_profiles_reset_count">Reset %1$d profile(s) — relaunch the app</string>
-    <string name="recovery_profiles_restored_count">Restored %1$d profile(s) — relaunch the app</string>
-    <string name="recovery_reset_profiles_description">Factory-reset user profiles: their database, settings, name and photo are deleted — they stay in the list</string>
+    <string name="recovery_profiles_deleted_active_restart">The current profile was deleted: the base profile is now active - relaunch the app</string>
+    <string name="recovery_profiles_reset_count">Reset %1$d profile(s) - relaunch the app</string>
+    <string name="recovery_profiles_restored_count">Restored %1$d profile(s) - relaunch the app</string>
+    <string name="recovery_reset_profiles_description">Factory-reset user profiles: their database, settings, name and photo are deleted - they stay in the list</string>
     <string name="recovery_restore_profiles_description">Restore user profiles reset earlier: their database, settings, name and photo come back from the last reset</string>
-    <string name="recovery_status_main_process_stopped">The app is stopped — no kill action needed</string>
+    <string name="recovery_status_main_process_stopped">The app is stopped - no kill action needed</string>
     <string name="recovery_success">완료</string>
     <string name="updates_action_check">업데이트 확인</string>
     <string name="updates_available">업데이트 가능</string>

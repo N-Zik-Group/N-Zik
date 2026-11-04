@@ -2,7 +2,6 @@
 <resources>
     <string name="automotive_action_lucky_shuffle">Ich fühle mich glücklich</string>
     <string name="automotive_action_play_all">Alle abspielen</string>
-    <string name="automotive_title">Android Auto</string>
     <string name="language_name_afrikaans">Afrikanisch (Afrikaans)</string>
     <string name="language_name_arabic">Arabisch (اَلْعَرَبِيَّة)</string>
     <string name="language_name_azerbaijani">Aserbaidschanisch (Azərbaycanca)</string>
@@ -108,7 +107,6 @@
     <string name="settings_data_page_description">Der Daten-Abschnitt enthält Einstellungen, die ändern, wie die App mit Daten lokal und ferngesteuert umgeht</string>
     <string name="settings_data_title">Daten</string>
     <string name="settings_debug_title">Einstellungen</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_automatic_description">Lade Songs basierend auf deinen Einstellungen automatisch herunter</string>
     <string name="settings_downloads_on_album_bookmark_description">Lade Titel automatisch herunter, wenn du ein Album Bookmark markiert hast</string>
     <string name="settings_downloads_on_like_description">Lade Songs automatisch herunter, wenn du sie magst</string>
@@ -136,7 +134,6 @@
     <string name="settings_interface_page_title">UI</string>
     <string name="settings_interface_title">Benutzeroberfläche</string>
     <string name="settings_languages_title">Sprachen</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_library_now_playing_indicator_label">Aktuell-Gespielt-Indikator</string>
     <string name="settings_library_playlist_indicator_description">Zeigt an, ob der Titel bereits zur Playliste hinzugefügt wurde</string>
     <string name="settings_library_playlist_indicator_label">Playlisten-Indikator</string>
@@ -342,8 +339,7 @@
     <string name="settings_visualizer_artwork_visible_label">Visualizer im Thumbnail anzeigen</string>
     <string name="settings_visualizer_remember_state_description">Visualizer-Status zwischen Sitzungen beibehalten</string>
     <string name="settings_visualizer_remember_state_label">Visualizer-Status speichern</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_library_sync_content_description">Wiedergabelisten, Alben, Künstler, Geschichte, etc.</string>
     <string name="settings_youtube_login_enabled_label">YouTube Music Login aktivieren</string>
-    <string name="settings_youtube_music_title">YouTube Musik</string>
 </resources>

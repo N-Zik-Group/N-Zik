@@ -4,7 +4,7 @@
     <!-- Common -->
     <string name="common_answer_no">No</string>
     <string name="common_artist_conjunction_and">and</string>
-    <string name="common_brand_github">GitHub</string>
+    <string name="common_brand_github" translatable="false">GitHub</string>
     <string name="common_clipboard_copy_failed">Failed to copy text to clipboard, try again</string>
     <string name="common_clipboard_copy_success">Copied</string>
     <string name="common_color_black">Black</string>

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="common_answer_no">否</string>
-    <string name="common_brand_github">GitHub</string>
     <string name="common_clipboard_copy_success">已复制</string>
     <string name="common_color_black">黑色</string>
     <string name="common_color_source_theme">主题</string>

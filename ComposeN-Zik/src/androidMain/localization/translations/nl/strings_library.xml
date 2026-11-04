@@ -61,7 +61,6 @@
     <string name="metadata_description_title">Beschrijving</string>
     <string name="metadata_info_title_label">Titel</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">Titel</string>
     <string name="metadata_unknown_artist">Onbekende artiest</string>
     <string name="metadata_unknown_title">Onbekende titel</string>
@@ -70,8 +69,8 @@
     <string name="metadata_video_views_label">Weergaven</string>
     <string name="metadata_wikipedia_attribution">Van Wikipedia onder Creative Commons Attribution CC-BY-SA 3.0</string>
     <string name="metadata_year">Jaar</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_songs">Nummers</string>
     <string name="playlist_action_add">Toevoegen aan afspeellijst</string>
     <string name="playlist_action_add_hint">Toevoegen aan afspeellijst</string>
@@ -87,8 +86,6 @@
     <string name="playlist_error_action_on_all_disliked_songs">Kan deze actie niet uitvoeren als alle nummers niet leuk zijn</string>
     <string name="playlist_import_default_name">Geïmporteerde afspeellijst</string>
     <string name="playlist_import_failed">Er is een fout opgetreden tijdens het importeren van lokale afspeellijst</string>
-    <string name="playlist_import_format_exportify_csv">CSV-bestand exporteren (Spotify)</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_import_unsupported_format">Niet-ondersteunde indeling</string>
     <string name="playlist_import_youtube_link">Importeer via YouTube-link</string>
     <string name="playlist_name_input_hint">Afspeellijstnaam invoeren</string>

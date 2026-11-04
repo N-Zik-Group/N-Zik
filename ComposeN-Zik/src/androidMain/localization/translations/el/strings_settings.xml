@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="automotive_action_lucky_shuffle">Νιώθω τυχερός</string>
-    <string name="automotive_title">Android Auto</string>
     <string name="language_name_afrikaans">Afrikaans</string>
     <string name="language_name_arabic">Arabic</string>
     <string name="language_name_bashkir">Μπασκίρ</string>
@@ -84,7 +83,6 @@
     <string name="settings_category_player">Αναπαραγωγή</string>
     <string name="settings_category_system">Σύστημα</string>
     <string name="settings_data_page_description">Η ενότητα δεδομένων περιέχει ρυθμίσεις που τροποποιούν τον τρόπο με τον οποίο η εφαρμογή χειρίζεται τα δεδομένα τοπικά και απομακρυσμένα</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_automatic_description">Αυτόματη λήψη τραγουδιών με βάση τις προτιμήσεις σας</string>
     <string name="settings_downloads_on_album_bookmark_description">Αυτόματη λήψη τραγουδιών όταν κάνετε σελιδοδείκτη ενός άλμπουμ</string>
     <string name="settings_downloads_on_like_description">Αυτόματη λήψη τραγουδιών όταν σας αρέσουν</string>
@@ -105,7 +103,6 @@
     <string name="settings_interface_page_title">Διεπαφή</string>
     <string name="settings_interface_title">Διεπαφή</string>
     <string name="settings_languages_title">Γλώσσες</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_library_playlist_indicator_description">Indicates if the song is already added to a Playlist</string>
     <string name="settings_library_playlist_indicator_label">Playlist Indicator</string>
     <string name="settings_local_music_blocked_folder_exists_message">This folder already exists.</string>
@@ -221,8 +218,7 @@
     <string name="settings_visualizer_artwork_visible_label">Show Thumbnail for visualizer</string>
     <string name="settings_visualizer_remember_state_description">Διατήρηση της κατάστασης απεικόνισης μεταξύ των συνεδριών</string>
     <string name="settings_visualizer_remember_state_label">Αποθήκευση κατάστασης οπτικού εφέ</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_library_sync_content_description">Playlists, άλμπουμ, καλλιτέχνες, ιστορία, όπως, κλπ.</string>
     <string name="settings_youtube_login_enabled_label">Enable YouTube Music Login</string>
-    <string name="settings_youtube_music_title">Μουσική YouTube</string>
 </resources>

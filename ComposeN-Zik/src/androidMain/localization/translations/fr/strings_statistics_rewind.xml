@@ -67,7 +67,7 @@
     <string name="rewind_days_peak_sub">C\'EST LE JOUR %1$s QUI A ÉTÉ LE PLUS DUREMENT TOUCHÉ.</string>
     <string name="rewind_deep_cuts_empty_body">Les titres les plus écoutés suivants s\'afficheront ici dès que l\'historique d\'écoute sera suffisamment complet.</string>
     <string name="rewind_deep_cuts_empty_title">DES CREUX PROFONDS SE FORMENT</string>
-    <string name="rewind_deep_cuts_heading">TITRES 6–%1$d.</string>
+    <string name="rewind_deep_cuts_heading">TITRES 6-%1$d.</string>
     <string name="rewind_deep_cuts_kicker">REMISES IMPORTANTES • %1$s</string>
     <string name="rewind_deep_cuts_sub">Vos prochains titres les plus écoutés.</string>
     <string name="rewind_discovery_heading">TOUT CE QUE VOUS\nAVEZ DÉCOUVERT.</string>
@@ -110,7 +110,6 @@
     <string name="rewind_home_month_empty_spam_6">Un mois bien triste.</string>
     <string name="rewind_home_months_of">MOIS DE %1$s</string>
     <string name="rewind_home_tagline">Chaque année. Chaque mois. Pour vous.</string>
-    <string name="rewind_home_title">RÉTROSPECTIVE N-ZIK</string>
     <string name="rewind_home_year_stats">%1$s · %2$s lus</string>
     <string name="rewind_home_years">ANNÉES</string>
     <string name="rewind_intro_opening">OUVERTURE…</string>

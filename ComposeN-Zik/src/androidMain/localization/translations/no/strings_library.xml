@@ -66,7 +66,6 @@
     <string name="metadata_description_title">Beskrivelse</string>
     <string name="metadata_info_title_label">Tittel</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">Tittel</string>
     <string name="metadata_unknown_artist">Ukjent artist</string>
     <string name="metadata_unknown_title">Ukjent tittel</string>
@@ -76,8 +75,8 @@
     <string name="metadata_wikipedia_attribution">Fra Wikipedia under Creative Commons Attribution CC-BY-SA 3.0</string>
     <string name="metadata_year">År</string>
     <string name="metadata_musicbrainz_insights_top_songs">Topp sanger</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">Album</string>
     <string name="metadata_musicbrainz_stat_songs">Sanger</string>
     <string name="playlist_action_add">Legg til spilleliste</string>
@@ -97,7 +96,6 @@
     <string name="playlist_error_action_on_all_disliked_songs">Kan ikke utføre denne handlingen når alle sanger ikke er interessert</string>
     <string name="playlist_import_default_name">Importert Spilleliste</string>
     <string name="playlist_import_failed">Feil oppstod under import av lokal spilleliste</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_import_unsupported_format">Ustøttet format</string>
     <string name="playlist_import_youtube_link">Importer via YouTube-lenke</string>
     <string name="playlist_name_input_hint">Skriv inn navn på spillelisten</string>

@@ -81,7 +81,6 @@
     <string name="metadata_description_title">Kuvaus</string>
     <string name="metadata_info_title_label">Nimi</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">Nimi</string>
     <string name="metadata_unknown_artist">Tuntematon Esittäjä</string>
     <string name="metadata_unknown_title">Tuntematon Otsikko</string>
@@ -91,8 +90,8 @@
     <string name="metadata_wikipedia_attribution">Wikipediasta Creative Commons Attribution CC-BY-SA 3.0 kohdasta</string>
     <string name="metadata_year">Julkaisuvuosi</string>
     <string name="metadata_musicbrainz_insights_top_songs">Suosituimmat kappaleet</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">Albumit</string>
     <string name="metadata_musicbrainz_stat_songs">Kappaleet</string>
     <string name="playlist_action_add">Lisää soittolistaan</string>
@@ -116,8 +115,6 @@
     <string name="playlist_error_action_on_disliked_song">Tätä toimintoa ei voi suorittaa inhokkikappaleilla</string>
     <string name="playlist_import_default_name">Tuotu Soittolista</string>
     <string name="playlist_import_failed">Paikallista soittolistaa tuodessa tapahtui virhe</string>
-    <string name="playlist_import_format_exportify_csv">Vie CSV (Spotify)</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_import_unsupported_format">Muotoa ei tueta</string>
     <string name="playlist_import_youtube_link">Tuo YouTube-linkin kautta</string>
     <string name="playlist_left_swipe">Soittolista pyyhkäisemällä vasemmalle</string>

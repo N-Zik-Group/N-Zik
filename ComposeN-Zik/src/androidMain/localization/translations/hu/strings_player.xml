@@ -24,7 +24,7 @@
     <string name="lyrics_provider_found_format">Dalszöveg megtalálva a(z) %s-n</string>
     <string name="lyrics_provider_missing_format">Dalszöveg nem található a(z) %s-n</string>
     <string name="lyrics_provider_missing_try_another_format">Dalszöveg nem található a(z) %1$s-n, próbáld meg a(z) %2$s-n</string>
-    <string name="lyrics_provider_picker_label">Válassz innen</string>
+    <string name="lyrics_provider_picker_label">Válassz innen %1$s</string>
     <string name="lyrics_provider_tracks_found_format">Dalszövegek találhatók a következőn: %s</string>
     <string name="lyrics_size">Dalszöveg mérete</string>
     <string name="lyrics_style_fluid_rainbow_label">Fluid szivárvány</string>

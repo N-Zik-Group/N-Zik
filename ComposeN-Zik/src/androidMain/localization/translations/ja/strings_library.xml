@@ -79,7 +79,6 @@
     <string name="metadata_description_title">説明</string>
     <string name="metadata_info_title_label">題名</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">題名</string>
     <string name="metadata_unknown_artist">不明なアーティスト</string>
     <string name="metadata_unknown_title">不明なタイトル</string>
@@ -88,8 +87,8 @@
     <string name="metadata_wikipedia_attribution">ウィキペディアから Creative Commons Attribution CC-BY-SA 3.0 で継承</string>
     <string name="metadata_year">年</string>
     <string name="metadata_musicbrainz_insights_top_songs">上位の曲</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">アルバム</string>
     <string name="metadata_musicbrainz_stat_songs">曲</string>
     <string name="playlist_action_add">プレイリストに追加</string>
@@ -111,8 +110,6 @@
     <string name="playlist_error_action_on_disliked_song">嫌いな曲ではこのアクションを実行できません</string>
     <string name="playlist_import_default_name">インポートされたプレイリスト</string>
     <string name="playlist_import_failed">ローカルプレイリストのインポート中にエラーが発生しました</string>
-    <string name="playlist_import_format_exportify_csv">CSVファイルのエクスポート (Spotify)</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_import_unsupported_format">サポートされていないフォーマット</string>
     <string name="playlist_import_youtube_link">YouTubeリンクからインポート</string>
     <string name="playlist_left_swipe">プレイリスト 左スワイプ</string>

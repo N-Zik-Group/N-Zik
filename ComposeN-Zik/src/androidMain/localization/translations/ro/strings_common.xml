@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="common_answer_no">Nu</string>
-    <string name="common_brand_github">GitHub</string>
     <string name="common_clipboard_copy_failed">Copierea textului în clipboard a eșuat, încercați din nou</string>
     <string name="common_clipboard_copy_success">Copiat</string>
     <string name="common_color_black">Negru</string>

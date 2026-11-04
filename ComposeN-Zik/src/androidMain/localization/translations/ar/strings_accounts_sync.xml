@@ -5,10 +5,9 @@
     <string name="discord_beta_warning">هذا لا يزال في بيتا وقد يحتوي على أخطاء وتحطم</string>
     <string name="discord_connected_to_discord_account">متصل بحساب ديسكورد</string>
     <string name="discord_presence_closed">وجود ديسكورد مغلق</string>
-    <string name="discord_presence_name">N-Zik</string>
     <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
     <string name="discord_token_text_invalid">رمز ديسكورد غير صالح، يرجى تسجيل الدخول مرة أخرى</string>
-    <string name="profile_channel_name">%1$s — %2$s</string>
+    <string name="profile_channel_name">%1$s - %2$s</string>
     <string name="profile_database">قاعدة البيانات</string>
     <string name="profile_rename">إعادة تسمية</string>
     <string name="sync_action_sync">مزامنة</string>

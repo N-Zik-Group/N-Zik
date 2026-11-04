@@ -44,12 +44,11 @@
     <string name="metadata_cover">כיסוי</string>
     <string name="metadata_info_title_label">כותרת</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">כותרת</string>
     <string name="metadata_wikipedia_attribution">מוויקיפדיה תחת Creative Commons Attribution CC-BY-SA 3.0</string>
     <string name="metadata_year">שנה</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">אלבומים</string>
     <string name="metadata_musicbrainz_stat_songs">שירים</string>
     <string name="playlist_action_add">הוספה לרשימת השמעה</string>
@@ -62,7 +61,6 @@
     <string name="playlist_action_rename">שנה שם</string>
     <string name="playlist_action_toggle_pinned">הצמד/בטל הצמדה של רשימת השמעה</string>
     <string name="playlist_delete_confirmation">האם אתה באמת רוצה למחוק את הפלייליסט הזה?</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_name_input_hint">הזינו שם לרשימת השמעה</string>
     <string name="playlist_reorder_lock_toggle_label">נעילה/ביטול נעילה סידור מחדש של שירים</string>
     <string name="playlist_selection_action_deselect">ביטול הבחירה</string>

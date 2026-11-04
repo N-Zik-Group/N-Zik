@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="automotive_action_lucky_shuffle">Я чувствую удачу</string>
-    <string name="automotive_title">Android Auto</string>
     <string name="language_name_afrikaans">Африкаанс (Afrikaans)</string>
     <string name="language_name_arabic">Арабский (العربي&lt;unk&gt; )</string>
     <string name="language_name_azerbaijani">Азербайджанский</string>
@@ -94,7 +93,6 @@
     <string name="settings_data_page_description">Раздел данных содержит настройки, изменяющие работу приложения с данными локально и удаленно</string>
     <string name="settings_data_title">Данные</string>
     <string name="settings_debug_title">Настройки</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_automatic_description">Автоматически загружать песни на основе ваших предпочтений</string>
     <string name="settings_downloads_on_album_bookmark_description">Автоматически загружать песни при добавлении в закладки альбома</string>
     <string name="settings_downloads_on_like_description">Автоматически загружать песни, когда вам нравится</string>
@@ -122,7 +120,6 @@
     <string name="settings_interface_page_title">Интерфейс</string>
     <string name="settings_interface_title">Пользовательский интерфейс</string>
     <string name="settings_languages_title">Языки</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_library_now_playing_indicator_label">Индикатор воспроизведения</string>
     <string name="settings_library_playlist_indicator_description">Отметить песни, которые были добавлены в ваш плейлист</string>
     <string name="settings_library_playlist_indicator_label">Индикатор плейлиста</string>
@@ -317,8 +314,7 @@
     <string name="settings_visualizer_artwork_visible_label">Показать эскиз визуализатора</string>
     <string name="settings_visualizer_remember_state_description">Сохранять состояние визуализации между сессиями</string>
     <string name="settings_visualizer_remember_state_label">Сохранить состояние визуализатора</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_library_sync_content_description">Списки воспроизведения, альбомы, исполнители, история, подобные и т.д.</string>
     <string name="settings_youtube_login_enabled_label">Включить вход в YouTube Music</string>
-    <string name="settings_youtube_music_title">Музыка YouTube</string>
 </resources>

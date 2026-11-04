@@ -28,7 +28,7 @@
     <string name="lyrics_provider_found_format">%s এ লিরিক পাওয়া গেছে</string>
     <string name="lyrics_provider_missing_format">%s এ লিরিক পাওয়া যায় নি</string>
     <string name="lyrics_provider_missing_try_another_format">%1$s এ লিরিক পাওয় যায় নি, %2$s এ দেখুন</string>
-    <string name="lyrics_provider_picker_label">থেকে পিক করুন</string>
+    <string name="lyrics_provider_picker_label">থেকে পিক করুন %1$s</string>
     <string name="lyrics_provider_tracks_found_format">%s এ লিরিক ট্র‍্যাক পাওয়া গেছে</string>
     <string name="lyrics_size">লিরিকের আকার</string>
     <string name="lyrics_style_fluid_rainbow_label">তরল রংধনু</string>

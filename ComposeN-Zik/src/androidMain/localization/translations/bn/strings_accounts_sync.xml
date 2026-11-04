@@ -2,11 +2,10 @@
 <resources>
     <string name="discord_advanced_button_url">URL</string>
     <string name="discord_connected_to_discord_account">Connected to Discord Account</string>
-    <string name="discord_presence_name">N-Zik</string>
     <string name="discord_rpc_reconnect_failed">Discord Rich Presence could not reconnect, status updates are paused</string>
     <string name="lastfm_password">পাসওয়ার্ড</string>
     <string name="lastfm_username">ইউজার নেম</string>
-    <string name="profile_channel_name">%1$s — %2$s</string>
+    <string name="profile_channel_name">%1$s - %2$s</string>
     <string name="profile_database">ডাটাবেস</string>
     <string name="profile_rename">নতুন নাম দিন</string>
     <string name="sync_action_sync">সিঙ্ক</string>

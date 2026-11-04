@@ -167,7 +167,7 @@
     <string name="metadata_loading">Loading…</string>
     <string name="metadata_lyricist">Lyricist</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">%1$d votes on MusicBrainz</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
+    <string name="metadata_musicbrainz_title" translatable="false">MusicBrainz</string>
     <string name="metadata_playlist_action_change_browse_id">Change Playlist Browse ID</string>
     <string name="metadata_publisher">Publisher</string>
     <string name="metadata_remixer">Remixer</string>
@@ -241,8 +241,8 @@
     <string name="playlist_error_action_on_disliked_song">Cannot Perform this Action with the Disliked Songs</string>
     <string name="playlist_import_default_name">Imported Playlist</string>
     <string name="playlist_import_failed">Error occurs while importing local playlist</string>
-    <string name="playlist_import_format_exportify_csv">Exportify CSV (Spotify)</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
+    <string name="playlist_import_format_exportify_csv" translatable="false">Exportify CSV (Spotify)</string>
+    <string name="playlist_import_format_nzik_csv" translatable="false">N-Zik CSV</string>
     <string name="playlist_import_format_riplay_csv">RiPlay CSV</string>
     <string name="playlist_import_unsupported_format">Unsupported format</string>
     <string name="playlist_import_youtube_link">Import via YouTube link</string>

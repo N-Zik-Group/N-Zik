@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="automotive_title">Android Auto</string>
     <string name="navigation_action_picture_in_picture">PIP</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_interface_page_title">UI</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_preference_saved_message">Preferens sparad</string>
     <string name="settings_section_notification_player_title">Notification Player</string>
     <string name="settings_service_battery_status_message_format">%1$s %2$s</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
-    <string name="settings_youtube_music_title">YouTube Music</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
 </resources>

@@ -61,7 +61,6 @@
     <string name="metadata_bpm">BPM</string>
     <string name="metadata_info_title_label">Título</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">Título</string>
     <string name="metadata_wikipedia_attribution">A partir da Wikipédia sob \"Creative Commons Attribution CC-BY-SA 3.0\"</string>
     <string name="metadata_musicbrainz_insights_top_songs">Músicas populares</string>
@@ -83,7 +82,6 @@
     <string name="playlist_delete_confirmation">Você realmente quer deletar esta lista de reprodução?</string>
     <string name="playlist_error_action_on_all_disliked_songs">Não é possível executar esta ação quando todas as músicas estiverem Descurtidas ou Não combinadas</string>
     <string name="playlist_error_action_on_disliked_song">Não é possível executar esta ação com as Músicas Descurtidas</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_left_swipe">Lista de reprodução, Deslize para Esquerda</string>
     <string name="playlist_name_input_hint">Digite o nome da lista de reprodução</string>
     <string name="playlist_operation_wait_message">Aguarde, pode levar alguns minutos...</string>

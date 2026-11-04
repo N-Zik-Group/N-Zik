@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="common_brand_github">GitHub</string>
     <string name="common_color_source_artwork">Cover color</string>
     <string name="common_debug_background">bakgrund</string>
     <string name="common_description_unavailable">Ingen beskrivning tillgänglig</string>

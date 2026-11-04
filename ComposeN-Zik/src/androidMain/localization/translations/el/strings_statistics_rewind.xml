@@ -9,7 +9,7 @@
     <string name="calendar_today">Σήμερα</string>
     <string name="rewind_badge_tier_1_sub">You tried a lot this year.</string>
     <string name="rewind_badge_tier_4_sub">Music ran through your whole year.</string>
-    <string name="rewind_deep_cuts_empty_body">Songs ranked 6–10 will appear here once there is enough listening history.</string>
+    <string name="rewind_deep_cuts_empty_body">Songs ranked 6-10 will appear here once there is enough listening history.</string>
     <string name="rewind_deep_cuts_empty_title">YOUR TOP TEN IS STILL FORMING</string>
     <string name="rewind_deep_cuts_sub">Your next five most-played songs.</string>
     <string name="rewind_finale_share">SHARE REWIND</string>

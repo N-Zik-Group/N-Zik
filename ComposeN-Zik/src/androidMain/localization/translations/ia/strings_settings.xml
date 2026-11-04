@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="automotive_title">Android Auto</string>
     <string name="language_name_czech">Checo (Čeština)</string>
     <string name="language_name_english">Anglese (English)</string>
     <string name="language_name_french">Francese (Français)</string>
@@ -38,7 +37,6 @@
     <string name="settings_category_system">Systema</string>
     <string name="settings_data_title">Datos</string>
     <string name="settings_debug_title">Parametros</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_storage_limit_label">Dimension maxime del discargamento de cantos</string>
     <string name="settings_font_use_system_description">Usa le typo de littera applicate per le systema</string>
     <string name="settings_font_use_system_label">Usar le typo de litteras del systema</string>
@@ -47,7 +45,6 @@
     <string name="settings_interface_page_title">IU</string>
     <string name="settings_interface_title">Interfacie de usator</string>
     <string name="settings_languages_title">Linguas</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_local_music_action_add_blocked_folder">Adder un dossier</string>
     <string name="settings_local_music_blocked_folders_title">Dossieres in lista nigre</string>
     <string name="settings_local_music_folders_label">Dossieres</string>
@@ -108,6 +105,5 @@
     <string name="settings_transition_scale">Scala</string>
     <string name="settings_transition_slide_horizontal">Glissamento horizontal</string>
     <string name="settings_transition_slide_vertical">Glissamento vertical</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
-    <string name="settings_youtube_music_title">YouTube Music</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
 </resources>

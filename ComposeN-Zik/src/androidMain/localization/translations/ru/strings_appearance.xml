@@ -35,7 +35,6 @@
     <string name="theme_mode_pitch_black"> Чёрный</string>
     <string name="theme_palette_custom">Пользовательская</string>
     <string name="theme_palette_dynamic">Динамически</string>
-    <string name="theme_palette_material_you">Material You</string>
     <string name="theme_shake_sensitivity_disabled">Отключено</string>
     <string name="thumbnail_action_edit">Редактировать миниатюру</string>
     <string name="thumbnail_action_reset">Сброс миниатюры</string>

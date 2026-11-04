@@ -45,13 +45,12 @@
     <string name="metadata_cover">Copertura</string>
     <string name="metadata_info_title_label">Titulo</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">Titulo</string>
     <string name="metadata_wikipedia_attribution">De Wikipedia sub Creative Commons Attribution CC-BY-SA 3.0</string>
     <string name="metadata_year">Anno</string>
     <string name="metadata_musicbrainz_insights_top_songs">Le melior cantos</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">Albumes</string>
     <string name="metadata_musicbrainz_stat_songs">Cantos</string>
     <string name="playlist_action_add">Adder al lista de reproduction</string>
@@ -65,7 +64,6 @@
     <string name="playlist_action_rename">Renominar</string>
     <string name="playlist_create_dialog_title">Crear un nove lista de reproduction</string>
     <string name="playlist_delete_confirmation">Desira tu vermente deler iste lista de reproduction?</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_name_input_hint">Insere le nomine del lista de reproduction</string>
     <string name="playlist_selection_action_deselect">Disselectionar</string>
     <string name="playlist_song_already_present">Le canto es presente in un del listas de reproduction</string>

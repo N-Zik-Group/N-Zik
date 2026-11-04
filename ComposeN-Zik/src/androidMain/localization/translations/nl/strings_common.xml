@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="common_answer_no">Nee</string>
-    <string name="common_brand_github">GitHub</string>
     <string name="common_clipboard_copy_failed">Kan tekst niet kopiëren naar klembord, probeer het opnieuw</string>
     <string name="common_clipboard_copy_success">Gekopieerd</string>
     <string name="common_color_source_artwork">Omslag kleur</string>

@@ -2,7 +2,6 @@
 <resources>
     <string name="automotive_action_lucky_shuffle">Kendimi şanslı hissediyorum</string>
     <string name="automotive_action_play_all">Tümünü Oynat</string>
-    <string name="automotive_title">Android Auto</string>
     <string name="gestures_album_track_swipe_left_description">Bir albüm parçasını sola kaydırarak gerçekleştirilecek eylemi seçin.</string>
     <string name="gestures_album_track_swipe_right_description">Bir albüm parçasını sağa kaydırarak gerçekleştirilecek eylemi seçin.</string>
     <string name="gestures_playlist_track_swipe_left_description">Bir çalma listesi parçasını sola kaydırarak gerçekleştirilecek eylemi seçin.</string>
@@ -170,7 +169,6 @@
     <string name="settings_discord_advanced_button1_url">Birinci Discord düğme URL’si</string>
     <string name="settings_discord_advanced_button2_label">İkinci Discord düğme etiketi</string>
     <string name="settings_discord_advanced_button2_url">İkinci Discord düğme URL\'si</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_dock_compact_first_action_label">Kompakt bağlantı: ilk adım</string>
     <string name="settings_dock_compact_second_action_label">Kompakt bağlantı: ikinci işlem</string>
     <string name="settings_dock_expanded_tab_order_description">Bağlantı sekmelerini yeniden sıralayın. Arama sekmesi sağda kalır; kompakt Ana Sayfa ve Arama sekmeleri konumlarını korur.</string>
@@ -209,7 +207,6 @@
     <string name="settings_interface_title">Kullanıcı arayüzü</string>
     <string name="settings_languages_title">Diller</string>
     <string name="settings_lastfm_scrobbling_description">Müziğinizi Last.fm’e kaydedin</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_launcher_shortcuts_description">Başlatıcı kısayollarını seçin ve sırasını değiştirin</string>
     <string name="settings_launcher_shortcuts_limit_message">Aktif kısayolların sayısı %1$d sınırına ulaştı</string>
     <string name="settings_launcher_shortcuts_recovery_required_message">Kurtarma işlevi devre dışı bırakılamaz</string>
@@ -476,5 +473,4 @@
     <string name="settings_youtube_connection_required_description">Bu seçeneği etkinleştirmek için önce YouTube\'a bağlanın</string>
     <string name="settings_youtube_library_sync_content_description">Çalma listeleri, albümler, sanatçılar, geçmiş, beğeniler vb.</string>
     <string name="settings_youtube_login_enabled_label">YouTube Music girişini etkinleştir</string>
-    <string name="settings_youtube_music_title">YouTube Music</string>
 </resources>

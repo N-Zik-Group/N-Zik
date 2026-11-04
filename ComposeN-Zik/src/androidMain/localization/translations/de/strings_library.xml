@@ -124,7 +124,6 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_loading">Lädt…</string>
     <string name="metadata_lyricist">Textautor</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_playlist_action_change_browse_id">Playlist-ID ändern</string>
     <string name="metadata_publisher">Herausgeber</string>
     <string name="metadata_title">Song</string>
@@ -135,8 +134,8 @@
     <string name="metadata_wikipedia_attribution">Von Wikipedia unter Creative Commons Namensnennung CC-BY-SA 3.0</string>
     <string name="metadata_year">Jahr</string>
     <string name="metadata_musicbrainz_insights_top_songs">Angesagte Songs</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">Alben</string>
     <string name="playlist_action_add">Zu Playlist hinzufügen</string>
     <string name="playlist_action_add_hint">Zu Playlist hinzufügen</string>
@@ -159,8 +158,6 @@
     <string name="playlist_error_action_on_disliked_song">Diese Aktion kann nicht mit den mit \"Mag ich nicht\" markierten Titeln durchgeführt werden</string>
     <string name="playlist_import_default_name">Importierte Playlist</string>
     <string name="playlist_import_failed">Fehler beim Importieren der lokalen Wiedergabeliste</string>
-    <string name="playlist_import_format_exportify_csv">CSV exportieren (Spotify)</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_import_unsupported_format">Nicht unterstütztes Format</string>
     <string name="playlist_import_youtube_link">Über YouTube-Link importieren</string>
     <string name="playlist_left_swipe">Wiedergabeliste links wischen</string>

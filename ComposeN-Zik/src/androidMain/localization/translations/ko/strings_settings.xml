@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="automotive_title">안드로이드 오토</string>
     <string name="language_name_azerbaijani">아제르바이잔어</string>
     <string name="language_name_czech">체코어 (Čeština)</string>
     <string name="language_name_english">영어 (English)</string>
@@ -50,7 +49,6 @@
     <string name="settings_category_system">시스템</string>
     <string name="settings_data_title">데이터</string>
     <string name="settings_debug_title">설정</string>
-    <string name="settings_discord_title">디스코드</string>
     <string name="settings_downloads_storage_limit_label">음악 다운로드 최대 크기</string>
     <string name="settings_enable_autodownload_song_when_liked">곡이 \'좋아요\' 되었을 때 자동 다운로드</string>
     <string name="settings_font_include_padding_description">글자 주변에 간격 추가</string>
@@ -64,7 +62,6 @@
     <string name="settings_interface_page_title">UI</string>
     <string name="settings_interface_title">사용자 인터페이스</string>
     <string name="settings_languages_title">언어</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_library_now_playing_indicator_label">현재 재생 중 표시</string>
     <string name="settings_library_queue_playlist_swipe_left_label">대기열 및 기기 재생목록 왼쪽으로 스와이프</string>
     <string name="settings_library_queue_playlist_swipe_right_label">대기열 및 기기 재생목록 오른쪽으로 스와이프</string>
@@ -172,6 +169,5 @@
     <string name="settings_transition_scale">키우기</string>
     <string name="settings_transition_slide_horizontal">수평 회전하기</string>
     <string name="settings_transition_slide_vertical">수직 회전하기</string>
-    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account — they stay out of your YouTube search history and suggestions</string>
-    <string name="settings_youtube_music_title">YouTube Music</string>
+    <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
 </resources>

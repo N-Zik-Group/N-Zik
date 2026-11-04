@@ -70,7 +70,6 @@
     <string name="discord_presence_button_get_nzik">Get N-Zik</string>
     <string name="discord_presence_button_listen_ytmusic">Listen to YTMusic</string>
     <string name="discord_presence_closed">Discord presence closed</string>
-    <string name="discord_presence_name">N-Zik</string>
     <string name="discord_presence_pause_default">⏸︎ Paused: {song.name}</string>
     <string name="discord_preview_state_actual">Actual state</string>
     <string name="discord_preview_state_paused">Paused</string>

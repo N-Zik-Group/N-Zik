@@ -55,12 +55,11 @@
     <string name="metadata_cover">কভার</string>
     <string name="metadata_info_title_label">টাইটেল</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">টাইটেল</string>
     <string name="metadata_wikipedia_attribution">উইকিপিডিয়া থেকে ক্রিয়েটিভ কমনস এর অধীন এট্রিবিউশন সিসি-বিওয়াই-এসএ ৩.০</string>
     <string name="metadata_year">বছর</string>
-    <string name="metadata_musicbrainz_resync_error">Resync failed — MusicBrainz may be busy, try again later</string>
-    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures — retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
+    <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
     <string name="metadata_musicbrainz_stat_albums">এলবামস</string>
     <string name="metadata_musicbrainz_stat_songs">গানগুলো</string>
     <string name="playlist_action_add">প্লে-লিস্টে রাখুন</string>
@@ -74,7 +73,6 @@
     <string name="playlist_action_shuffle_positions">পজিশন চেঞ্জ করুন</string>
     <string name="playlist_action_toggle_pinned">পিন/আনপিন প্লে-লিস্ট</string>
     <string name="playlist_delete_confirmation">আপনি কি সত্যিই এই প্লে-লিস্ট মুছে ফেলতে চান?</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_name_input_hint">প্লে-লিস্টের নাম দিন</string>
     <string name="playlist_operation_wait_message">অপেক্ষা করুন, কিছু মিনিট সময় লাগবে...</string>
     <string name="playlist_pinned_title">পিন করা প্লে-লিস্ট</string>

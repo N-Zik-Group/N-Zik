@@ -2,7 +2,6 @@
 <resources>
     <string name="common_answer_no">Non</string>
     <string name="common_artist_conjunction_and">et</string>
-    <string name="common_brand_github">GitHub</string>
     <string name="common_clipboard_copy_failed">Impossible de copier le texte dans le presse-papiers, réessayez</string>
     <string name="common_clipboard_copy_success">Copié</string>
     <string name="common_color_black">Noir</string>

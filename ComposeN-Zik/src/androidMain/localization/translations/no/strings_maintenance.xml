@@ -4,7 +4,6 @@
     <string name="maintenance_crash_none">Ingen</string>
     <string name="maintenance_debug_off">Av</string>
     <string name="maintenance_debug_on">På</string>
-    <string name="maintenance_discord">Discord RPC</string>
     <string name="maintenance_discord_ok">Ok</string>
     <string name="maintenance_library">Bibliotek</string>
     <string name="maintenance_mb_ok">Ok</string>
@@ -21,12 +20,12 @@
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_group_settings">Innstillinger</string>
     <string name="recovery_main_process_running">Close the main app before performing this action</string>
-    <string name="recovery_profiles_deleted_active_restart">The current profile was deleted: the base profile is now active — relaunch the app</string>
-    <string name="recovery_profiles_reset_count">Reset %1$d profile(s) — relaunch the app</string>
-    <string name="recovery_profiles_restored_count">Restored %1$d profile(s) — relaunch the app</string>
-    <string name="recovery_reset_profiles_description">Factory-reset user profiles: their database, settings, name and photo are deleted — they stay in the list</string>
+    <string name="recovery_profiles_deleted_active_restart">The current profile was deleted: the base profile is now active - relaunch the app</string>
+    <string name="recovery_profiles_reset_count">Reset %1$d profile(s) - relaunch the app</string>
+    <string name="recovery_profiles_restored_count">Restored %1$d profile(s) - relaunch the app</string>
+    <string name="recovery_reset_profiles_description">Factory-reset user profiles: their database, settings, name and photo are deleted - they stay in the list</string>
     <string name="recovery_restore_profiles_description">Restore user profiles reset earlier: their database, settings, name and photo come back from the last reset</string>
-    <string name="recovery_status_main_process_stopped">The app is stopped — no kill action needed</string>
+    <string name="recovery_status_main_process_stopped">The app is stopped - no kill action needed</string>
     <string name="recovery_success">Ferdig</string>
     <string name="updates_action_check">Se etter oppdatering</string>
     <string name="updates_action_check_now">Sjekk nå</string>

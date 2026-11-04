@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="automotive_title">Android Auto</string>
     <string name="language_name_afrikaans">南非語 (Afrikaans)</string>
     <string name="language_name_arabic">阿拉伯語 (العربية)</string>
     <string name="language_name_azerbaijani">阿塞拜疆語</string>
@@ -87,7 +86,6 @@
     <string name="settings_category_player">播放器</string>
     <string name="settings_category_system">系統</string>
     <string name="settings_data_title">資料</string>
-    <string name="settings_discord_title">Discord</string>
     <string name="settings_downloads_storage_limit_label">歌曲下載容量上限</string>
     <string name="settings_enable_autodownload_song">Enable auto download song</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
@@ -103,7 +101,6 @@
     <string name="settings_interface_page_title">介面</string>
     <string name="settings_interface_title">使用者介面</string>
     <string name="settings_languages_title">語言</string>
-    <string name="settings_lastfm_title">Last.fm</string>
     <string name="settings_library_playlist_indicator_description">Indicates if the song is already added to a Playlist</string>
     <string name="settings_library_playlist_indicator_label">Playlist Indicator</string>
     <string name="settings_local_music_action_add_blocked_folder">新增資料夾</string>
@@ -245,5 +242,4 @@
     <string name="settings_use_font_type">使用的字型類別</string>
     <string name="settings_visualizer_artwork_visible_label">Show Thumbnail for visualizer</string>
     <string name="settings_youtube_login_enabled_label">啟用 YouTube Music 登入</string>
-    <string name="settings_youtube_music_title">YouTube Music</string>
 </resources>

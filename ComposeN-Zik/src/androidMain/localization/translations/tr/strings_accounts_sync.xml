@@ -70,7 +70,6 @@
     <string name="discord_presence_button_get_nzik">N-Zik\'i edinin</string>
     <string name="discord_presence_button_listen_ytmusic">YT Music\'te dinleyin</string>
     <string name="discord_presence_closed">Discord\'da durum bilgisi kapatıldı</string>
-    <string name="discord_presence_name">N-Zik</string>
     <string name="discord_presence_pause_default">⏸︎ Duraklatıldı: {song.name}</string>
     <string name="discord_preview_state_actual">Gerçek durum</string>
     <string name="discord_preview_state_paused">Duraklatıldı</string>
@@ -116,7 +115,7 @@
     <string name="profile_avatar_source">Avatar kaynağı</string>
     <string name="profile_avatar_source_description">Avatarınızı hangi profilin veya bağlı hesabın sağlayacağını seçin.</string>
     <string name="profile_base_name">N-Zik Hayranı</string>
-    <string name="profile_channel_name">%1$s — %2$s</string>
+    <string name="profile_channel_name">%1$s - %2$s</string>
     <string name="profile_data_downloads">indirmeler</string>
     <string name="profile_data_images">resimler</string>
     <string name="profile_data_media_cache">medya önbelleği</string>

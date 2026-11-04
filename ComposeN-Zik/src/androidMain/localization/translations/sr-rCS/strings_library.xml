@@ -51,7 +51,6 @@
     <string name="metadata_bpm">BPM</string>
     <string name="metadata_info_title_label">Naslov</string>
     <string name="metadata_isrc">ISRC</string>
-    <string name="metadata_musicbrainz_title">MusicBrainz</string>
     <string name="metadata_title">Naslov</string>
     <string name="metadata_wikipedia_attribution">Sa Vikipedije pod Creative Commons Attribution CC-BI-SA 3.0</string>
     <string name="metadata_musicbrainz_stat_albums">Albumi</string>
@@ -67,7 +66,6 @@
     <string name="playlist_action_shuffle_positions">Promeni numeraciju pozicija</string>
     <string name="playlist_action_toggle_pinned">Zakači/Otkači plejlistu</string>
     <string name="playlist_delete_confirmation">Da li zaista želite da obrišete ovu plejlistu?</string>
-    <string name="playlist_import_format_nzik_csv">N-Zik CSV</string>
     <string name="playlist_name_input_hint">Unesite ime za plejlistu</string>
     <string name="playlist_operation_wait_message">Sačekajte, može potrajati nekoliko minuta...</string>
     <string name="playlist_pinned_title">Zakačene Plejliste</string>

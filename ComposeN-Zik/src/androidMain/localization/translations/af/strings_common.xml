@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="common_answer_no">Nee</string>
-    <string name="common_brand_github">GitHub</string>
     <string name="common_color_source_artwork">Cover color</string>
     <string name="common_color_source_theme">Tema</string>
     <string name="common_external_link_loading_suffix">besig om te laai...</string>

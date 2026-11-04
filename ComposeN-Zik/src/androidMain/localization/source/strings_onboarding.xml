@@ -6,7 +6,7 @@
     <string name="onboarding_accounts_done">I\'m done</string>
     <string name="onboarding_accounts_skip">Skip</string>
     <string name="onboarding_accounts_title">Connect your accounts</string>
-    <string name="onboarding_accounts_youtube">YouTube</string>
+    <string name="onboarding_accounts_youtube" translatable="false">YouTube</string>
     <string name="onboarding_accounts_youtube_account">Logged in as %1$s</string>
     <string name="onboarding_accounts_youtube_description">Optional: browse the app with your YouTube account (home, explore, etc.)</string>
     <string name="onboarding_greeting">Hello! Let\'s set up NZik for the perfect music experience. Every permission below is optional.</string>
