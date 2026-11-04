@@ -29,9 +29,9 @@
     <string name="backup_include_proxy_password">Include the proxy password</string>
     <string name="backup_include_youtube_credentials">Include YouTube identity credentials</string>
     <string name="backup_legacy_migration_description">For old users before conversion.\nUse old app to make a backup for migration.</string>
-    <string name="backup_restore_overwrite_and_restart_warning">Existing data will be overwritten. %1$s will automatically close itself after restoring the database.</string>
+    <string name="backup_restore_overwrite_and_restart_warning">Bestaande data sal oorskryf word. %1$s sal outomaties toe maak na die herstel van die databasis.</string>
     <string name="backup_target_database_and_settings_label">Database + Settings</string>
-    <string name="backup_target_database_label">Database</string>
+    <string name="backup_target_database_label">Databasis</string>
     <!-- Backup Auto -->
     <string name="backup_auto_custom_interval_unit">Custom Interval Unit</string>
     <string name="backup_auto_custom_interval_value">Custom Interval Value</string>
@@ -39,8 +39,8 @@
     <string name="backup_auto_interval_custom">Custom</string>
     <string name="backup_auto_interval_daily">Daily</string>
     <string name="backup_auto_interval_hourly">Hourly</string>
-    <string name="backup_auto_interval_monthly">Monthly</string>
-    <string name="backup_auto_interval_none">Disabled</string>
+    <string name="backup_auto_interval_monthly">Monthly playlists</string>
+    <string name="backup_auto_interval_none">Gedeaktiveer</string>
     <string name="backup_auto_interval_weekly">Weekly</string>
     <string name="backup_auto_location">Auto Backup Location</string>
     <string name="backup_auto_location_not_set">Not set</string>
@@ -86,7 +86,7 @@
     <string name="cache_image_max_size_description">Limit disk space used by cached artwork. The trash button clears downloaded images from this cache.</string>
     <string name="cache_location_description">Choose where the app stores its song playback cache.</string>
     <string name="cache_location_private">Private</string>
-    <string name="cache_location_system">System</string>
+    <string name="cache_location_system">Stelsel</string>
     <string name="cache_streaming_max_size_description">Limit disk space used to cache streamed songs. The trash button clears this playback cache.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Download all songs</string>
@@ -100,12 +100,12 @@
     <string name="downloads_delete_all_confirmation">Do you really want to delete download?</string>
     <string name="downloads_delete_all_count_confirmation">Delete all %d downloads?</string>
     <string name="downloads_delete_dialog_title">Delete downloads</string>
-    <string name="downloads_download_all_confirmation">Do you really want to download all?</string>
+    <string name="downloads_download_all_confirmation">Wil jy regtig alles aflaai?</string>
     <string name="downloads_download_all_count_confirmation">Download all %d songs?</string>
     <string name="downloads_download_dialog_title">Download songs</string>
     <string name="downloads_empty_message">Nothing to download</string>
-    <string name="downloads_error_network">A network error has occurred</string>
-    <string name="downloads_error_server_restriction">This song cannot be played due to server restrictions</string>
+    <string name="downloads_error_network">\'n Netwerk fout het plaasgevind</string>
+    <string name="downloads_error_server_restriction">Hierdie liedjie kan nie gespeel word nie as gevolg van server beperkings</string>
     <string name="downloads_failed">Download failed</string>
     <string name="downloads_in_progress">%1$d in progress</string>
     <string name="downloads_nothing_to_delete">Nothing to Delete</string>
