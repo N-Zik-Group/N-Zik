@@ -1,69 +1,69 @@
-Client YouTube Music multilingue et open source pour Android.
+A multilingual YouTube Music frontend for Android, focused on performance, UI/UX refinements, feature expansion, and long-term support.
 
-<b>N-Zik</b> est un fork open source de <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+<b>N-Zik</b> is an open-source fork of <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Note :</b> N-Zik est né comme un projet personnel. Pour des alternatives plus matures, voir <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ou <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Note:</b> N-Zik started as a side project. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Utilisation de l'IA :</b> J'utilise l'IA générative pour le code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), révisé et testé avant publication.
+<b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), reviewed and tested before shipping.
 
-✨ <b>POURQUOI N-ZIK ?</b> Sans publicité, lecture en arrière-plan, cache hors ligne, UI personnalisable - gratuit, toujours.
+✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI - free, always.
 
-🎨 <b>UI personnalisable</b>
-- Interface Jetpack Compose
-- Thèmes : AMOLED, Deep Dark, Crisp Light + accents colorés
-- 3D Carousel Player, widgets d'accueil, lecteur unifié + mini-lecteur
-- Profils d'artistes, Discovery et ambiances, en-têtes pliables
+🎨 <b>Customizable UI</b>
+- Jetpack Compose interface
+- Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
+- 3D Carousel Player, home widgets, unified player and mini-player
+- Artist profiles, Discovery and moods, collapsible home headers
 
-🫧 <b>Effet Glass (BETA, facultatif)</b>
-Désactivé à l’installation. Activez dans Paramètres : natif, contour seul ou Glass par catégorie, qualité réglable. Peut alourdir le rendu et consommer plus de batterie ; réduisez la qualité ou désactivez si besoin.
-Crédits Glass : Square / Convx Project (GPL-3.0) ; Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+🫧 <b>Glass Effect (BETA, optional)</b>
+Disabled on fresh installs. Enable in Settings: native, contour-only or Glass by category, with adjustable quality. May increase rendering work and battery use; reduce quality or disable if needed.
+Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
-🎵 <b>Expérience audio</b>
-- Qualité premium via YouTube Music Premium, auto-appliquée
-- Paroles synchronisées avec édition et traduction en temps réel
-- Reconnaissance musicale (type Shazam), recherche vocale, visualiseur audio
-- Contrôles pro : vitesse, pitch, normalisation, crossfade, boost volume, bass boost, réverbération
-- Barre ondulée Audio Bar pour une navigation précise
+🎵 <b>Audio Experience</b>
+- Premium quality via YouTube Music Premium, applied automatically
+- Synced lyrics with editing and real-time translation
+- Song recognition (Shazam-like), voice search, audio visualizer
+- Pro controls: speed, pitch, normalization, crossfade, volume boost, bass boost, reverb
+- Audio Bar waveform seekbar for precise navigation
 
-💾 <b>Hors ligne, métadonnées et confidentialité</b>
-- Cache intelligent et téléchargements pistes/playlist, qualité au choix
-- Export FFmpeg avec métadonnées complètes (builds standards uniquement)
-- Éditeur de métadonnées intégré (AAC/Opus, pochette)
-- Statistiques d'écoute et historiques locaux
-- Sauvegarde auto, intervalles et rétention personnalisés
+💾 <b>Offline, Metadata & Privacy</b>
+- Smart caching and downloads for tracks and playlists, with selectable download quality
+- FFmpeg-powered export with full metadata (FFmpeg is a downloadable extension, installed on first use)
+- In-app metadata editor (AAC/Opus, cover art)
+- Local listening stats and history
+- Auto-backup with custom intervals and retention
 
-🔗 <b>Intégrations</b>
-- Connexion YouTube : recommandations, vidéo, moteur de synchro bidirectionnel expérimental
-- Scrobbling Last.fm avec Now Playing et love/unlove
-- Analyses MusicBrainz des artistes et des albums
-- Discord Rich Presence, mode avancé avec aperçu en direct
-- Invidious pour streaming YouTube alternatif
-- Import/export de playlists : RiPlay, Spotify, YouTube Music, N-Zik
+🔗 <b>Integrations</b>
+- YouTube sign-in for recommendations and video playback, plus an experimental two-way sync engine
+- Last.fm scrobbling with Now Playing and love/unlove
+- MusicBrainz artist and album insights
+- Discord Rich Presence, including advanced mode with live preview
+- Invidious integration for alternative YouTube streaming
+- Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
-👥 <b>Écouter ensemble</b>
-- Rejoignez ou créez des sessions d'écoute live via code ou lien d'invitation
+👥 <b>Listen Together</b>
+- Join or host live listening sessions with other users via code or invite link
 
 🗓️ <b>Rewind</b>
-- Récapitulatifs annuels et mensuels d'écoute, playlists Rewind auto-générées
+- Yearly and monthly listening recaps with auto-generated Rewind playlists
 
-📱 <b>Écoutez n'importe où :</b> Android Auto, Automotive, TV et Tablets
+📱 <b>Play Anywhere:</b> Android Auto, Automotive, TV, and Tablets
 
-🛠️ <b>Fonctionnalités avancées</b>
-- Multi-profils : base de données et réglages distincts
-- Reprise auto Bluetooth, file persistante et auto-remplie
-- Corbeille intelligente, morceaux cachés, système de dislike, contrôle parental
-- Proxy, adaptation qualité réseau, export des journaux
-- Rescue Center, écran de maintenance, onboarding, raccourcis app
-- Mises à jour OTA GitHub, minuteur, lecture en arrière-plan
+🛠️ <b>Power User Features</b>
+- Multi-profile: isolated database and settings per profile
+- Auto-resume on Bluetooth connect, persistent queue, auto-fill queue
+- Smart trash, hidden songs, dislike system, parental control
+- Proxy support, network quality adaptation, log export
+- Rescue Center, maintenance screen, onboarding, app shortcuts
+- OTA updates from GitHub, sleep timer, background playback
 
-📦 <b>Builds disponibles</b>
-- Release64/Beta64 (`com.nevar.nzik`): Build complet, appareils 64-bit uniquement
-- Release32/Beta32 (`com.nevar.nzik`): Build complet, appareils 32-bit uniquement
-- Minified64 (`com.nevar.nzik`): Build R8 léger, pour appareils bas de gamme (64-bit)
-- Minified32 (`com.nevar.nzik`): Build R8 léger (32-bit)
-- FOSS (`com.nevar.nzik.foss`): Sans auto-updater, pour F-Droid (toutes architectures)
-- Dev64/Dev32 (`com.nevar.nzik.dev`): Builds de développement, tests uniquement
+📦 <b>Available Builds</b>
+- Release64/Beta64 (`com.nevar.nzik`): Complete build, 64-bit devices only
+- Release32/Beta32 (`com.nevar.nzik`): Complete build, 32-bit devices only
+- Minified64 (`com.nevar.nzik`): Lightweight R8 build, for low-end devices (64-bit)
+- Minified32 (`com.nevar.nzik`): Lightweight R8 build (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Without auto-updater, for F-Droid (all architectures)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Development builds, testing only
 
-Aucun build n'embarque FFmpeg : c'est une extension téléchargeable (installée à la première utilisation, gérée dans Paramètres → Extensions). Seul FOSS est sur F-Droid.
+No build bundles FFmpeg: it is a downloadable extension (installed on first use, managed in Settings → Extensions). Only FOSS is on F-Droid.
 
-ViMusic reste crédité pour les origines du projet.
+Historical project credits include ViMusic.
