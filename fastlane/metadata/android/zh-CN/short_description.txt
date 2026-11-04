@@ -1,1 +1,1 @@
-Multilingual YT Music client with optional Glass effect (BETA)
+多语言的 YT 音乐客户端，带有可选玻璃效果 (BETA)
