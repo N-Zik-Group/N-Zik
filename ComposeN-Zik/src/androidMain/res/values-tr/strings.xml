@@ -2402,6 +2402,8 @@
     <string name="settings_parental_age_restriction_description">Yaş sınırlamalı şarkıların çalınmasını önle</string>
     <string name="settings_picture_in_picture_android_12_auto_description">Android 12\'den itibaren pip otomatik olarak etkinleştirilebilir</string>
     <string name="settings_picture_in_picture_artwork_module_label">Kapak</string>
+    <string name="settings_picture_in_picture_open">Open picture-in-picture</string>
+    <string name="settings_picture_in_picture_open_failed">Couldn’t open picture-in-picture. Check app info settings on your android to allows it for N-Zik.</string>
     <string name="settings_picture_in_picture_title">Resim içinde Resim</string>
     <string name="settings_pip_module">Pip modülü</string>
     <string name="settings_playback_duration_limit_description">Sınırı aşan şarkılar, En İyi şarkılardan ve oynatma kuyruğundan hariç tutulacaktır</string>
