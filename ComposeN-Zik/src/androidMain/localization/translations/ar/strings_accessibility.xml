@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="accessibility_app_icon">أيقونة التطبيق</string>
-    <string name="accessibility_app_icon_in_player">أيقونة التطبيق في المشغل</string>
-    <string name="accessibility_arrow_down">السهم_لأسفل</string>
-    <string name="accessibility_arrow_up">السهم_لأعلى</string>
-    <string name="accessibility_background_image">صورة الخلفية</string>
-    <string name="accessibility_blurred_background">خلفية_ضبابية</string>
-    <string name="accessibility_disc_background">خلفية القرص</string>
-    <string name="accessibility_filter">تصفية</string>
-    <string name="accessibility_import_playlist_name">استيراد اسم قائمة التشغيل</string>
-    <string name="accessibility_loading">تحميل...</string>
-    <string name="accessibility_new_playlist_name">اسم جديد لقائمة التشغيل</string>
-    <string name="accessibility_number_of_songs_in_queue">عدد الأغاني في قائمة الانتظار</string>
-    <string name="accessibility_origin_indicator">مصدر_مؤشر</string>
-    <string name="accessibility_recenter">المُسجل</string>
-    <string name="accessibility_rename_dialog_text_box_icon">إعادة تسمية أيقونة مربع النص</string>
+    <!-- Accessibility -->
+    <string name="accessibility_app_icon">App\'s icon</string>
+    <string name="accessibility_app_icon_in_player">app icon in player</string>
+    <string name="accessibility_arrow_down">arrow_down</string>
+    <string name="accessibility_arrow_up">arrow_up</string>
+    <string name="accessibility_background_image">Background Image</string>
+    <string name="accessibility_blurred_background">blurred_background</string>
+    <string name="accessibility_disc_background">disc background</string>
+    <string name="accessibility_filter">Filter</string>
+    <string name="accessibility_import_playlist_name">import playlist name</string>
+    <string name="accessibility_loading">loading...</string>
+    <string name="accessibility_new_playlist_name">new playlist name</string>
+    <string name="accessibility_number_of_songs_in_queue">Number of songs in queue</string>
+    <string name="accessibility_origin_indicator">origin_indicator</string>
+    <string name="accessibility_recenter">Recenter</string>
+    <string name="accessibility_rename_dialog_text_box_icon">Rename dialog text box icon</string>
     <string name="accessibility_reset">Reset</string>
-    <string name="accessibility_song_album_cover">غلاف ألبوم الأغنية</string>
-    <string name="accessibility_switch_mode">تبديل الوضع</string>
-    <string name="accessibility_youtube_playlist">قائمة تشغيل اليوتيوب</string>
+    <string name="accessibility_song_album_cover">song album cover</string>
+    <string name="accessibility_switch_mode">Switch Mode</string>
+    <string name="accessibility_youtube_playlist">Youtube Playlist</string>
 </resources>
