@@ -273,10 +273,9 @@
     <string name="statistics_listening_totals_description">Show total number of songs heard and playback duration</string>
     <string name="statistics_max_number_of_items">Max number of items</string>
     <string name="statistics_maximum_items_description">Limit the number of entries shown in listening statistics.</string>
-    <string name="statistics_of_time_taken">time spent</string>
     <string name="statistics_open_desc">Open the Statistics screen</string>
     <string name="statistics_playback_duration_label">Playback duration</string>
-    <string name="statistics_songs_heard">songs heard</string>
     <string name="statistics_title">Statistics</string>
     <string name="statistics_top_period_title">Top %s of …</string>
+    <string name="statistics_time_spent_format">%1$s time spent</string>
 </resources>
