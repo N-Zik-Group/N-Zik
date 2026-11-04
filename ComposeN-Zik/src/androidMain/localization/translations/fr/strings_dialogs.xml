@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="common_remove_item_dialog_title">Supprimer l\'élément</string>
+    <!-- Common -->
+    <string name="common_remove_item_dialog_title">Remove item</string>
 </resources>
