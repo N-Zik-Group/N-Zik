@@ -48,11 +48,11 @@
     <string name="bridge_server_permission_denied">Allow access to devices on the local network to start the PC server</string>
     <string name="bridge_server_running_address">Listening on %1$s:%2$d</string>
     <string name="bridge_server_start">Start</string>
-    <string name="bridge_server_starting">Starting…</string>
+    <string name="bridge_server_starting">Iniciando…</string>
     <string name="bridge_server_state_running">Running</string>
     <string name="bridge_server_state_stopping">Stopping…</string>
     <string name="bridge_server_status">Server status</string>
-    <string name="bridge_server_stop">Stop</string>
+    <string name="bridge_server_stop">Detener</string>
     <string name="bridge_server_stopped">PC server stopped</string>
     <string name="bridge_server_stopped_auto">Stopped automatically (auto-stop)</string>
     <string name="bridge_server_stopped_timeout">Android background time limit reached, restart it from the app</string>
@@ -130,7 +130,7 @@
     <string name="listen_together_unblock">Unblock</string>
     <string name="listen_together_use_custom_server">Use custom server</string>
     <string name="listen_together_user_blocked_by_host">Blocked by host</string>
-    <string name="listen_together_username">Username</string>
+    <string name="listen_together_username">Usuario</string>
     <string name="listen_together_username_hint">Your username</string>
     <string name="listen_together_view_logs">View logs</string>
     <string name="listen_together_waiting_for_approval">Waiting for host approval…</string>
@@ -150,13 +150,13 @@
     <string name="network_proxy_password_description">Set the optional proxy password. The saved value is encrypted and hidden here.</string>
     <string name="network_proxy_port_description">Enter the port on which the proxy server accepts connections.</string>
     <string name="network_proxy_username_description">Set the optional username required to authenticate with the proxy.</string>
-    <string name="network_quality_high">High</string>
-    <string name="network_quality_low">Low</string>
-    <string name="network_quality_medium">Medium</string>
+    <string name="network_quality_high">Alta</string>
+    <string name="network_quality_low">Baja</string>
+    <string name="network_quality_medium">Mediano</string>
     <string name="network_region_override_description">Override the country used for requests; leave it empty to use the phone region.</string>
-    <string name="network_settings">Connection Settings</string>
-    <string name="network_settings_description">The network section contains settings to optimize the app\'s performance and data usage</string>
-    <string name="network_status">Quality Status</string>
+    <string name="network_settings">Configuración de conexión</string>
+    <string name="network_settings_description">La sección de red contiene ajustes para optimizar el rendimiento de la aplicación y el uso de datos</string>
+    <string name="network_status">Estado de calidad</string>
     <string name="network_stream_audio_quality_description">Choose the audio quality used for streaming. Automatic adapts to the current connection.</string>
     <string name="network_stream_client_android_creator_description">Android creator client. Requires authentication.</string>
     <string name="network_stream_client_android_description">Standard Android client without SDK.</string>
@@ -172,7 +172,7 @@
     <string name="network_stream_client_web_description">Standard web client.</string>
     <string name="network_stream_client_youtube_music_web_description">Slower but supports premium formats. Uses JavaScript signature decryption (~5-10s delay). Recommended for premium users.</string>
     <!-- Network Proxy -->
-    <string name="network_proxy_invalid_hostname">Your Proxy Hostname is invalid, please check it</string>
+    <string name="network_proxy_invalid_hostname">El nombre de host del proxy no es válido, por favor compruébalo</string>
     <!-- Network Stream -->
     <string name="network_stream_client">Stream Client</string>
     <string name="network_stream_client_android">Android</string>
@@ -189,9 +189,9 @@
     <string name="network_stream_client_web">Web</string>
     <string name="network_stream_client_web_creator">Web Creator</string>
     <string name="network_stream_client_web_remix">Web Remix</string>
-    <string name="network_stream_error_retrying">Retrying: %1$s</string>
-    <string name="network_stream_still_retrying">Still loading… Attempt %1$s</string>
-    <string name="network_stream_unexpected_skip">Unexpected track change detected</string>
+    <string name="network_stream_error_retrying">Reintentando: %1$s</string>
+    <string name="network_stream_still_retrying">Todavía cargando… Intento %1$s</string>
+    <string name="network_stream_unexpected_skip">Cambio inesperado de pista detectado</string>
     <string name="network_proxy_region_auto">Auto (from phone)</string>
     <string name="network_proxy_username_placeholder">Username (optional)</string>
     <string name="network_proxy_password_placeholder">Password (optional)</string>
