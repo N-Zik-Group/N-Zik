@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Audio -->
     <string name="audio_bass_boost_description">Enhance low frequencies during playback.</string>
     <string name="audio_bass_boost_level_description">Adjust the strength of the low-frequency boost.</string>
     <string name="audio_bass_boost_unavailable_message">Can\'t enable bass boost</string>
@@ -30,13 +31,15 @@
     <string name="audio_waveform_updated_message">Waveform updated successfully</string>
     <string name="audio_waveform_updating_message">Updating waveform in progress…</string>
     <string name="audio_waveform_waiting_for_download_message">Waveform will be updated as soon as the download finishes</string>
-    <string name="audio_reverb_large_hall">Stor sal</string>
-    <string name="audio_reverb_large_room">Stort rum</string>
-    <string name="audio_reverb_medium_hall">Medelstor sal</string>
-    <string name="audio_reverb_medium_room">Medelstort rum</string>
+    <!-- Audio Reverb -->
+    <string name="audio_reverb_large_hall">Large Hall</string>
+    <string name="audio_reverb_large_room">Large Room</string>
+    <string name="audio_reverb_medium_hall">Medium Hall</string>
+    <string name="audio_reverb_medium_room">Medium Room</string>
     <string name="audio_reverb_none">None</string>
-    <string name="audio_reverb_plate">Tallrik</string>
-    <string name="audio_reverb_small_room">Litet rum</string>
+    <string name="audio_reverb_plate">Plate</string>
+    <string name="audio_reverb_small_room">Small Room</string>
+    <!-- Listen -->
     <string name="listen_together_auto_approval_joins_description">Automatically approve join requests without reviewing them manually</string>
     <string name="listen_together_auto_approval_suggestions_description">Automatically approve and queue song suggestions from guests</string>
     <string name="listen_together_blocked_users_description">View and manage the participants blocked from your listening rooms.</string>
@@ -51,6 +54,7 @@
     <string name="listen_together_transfer_ownership_description">Make this person the host of the room</string>
     <string name="listen_together_username_description">Set the name other participants see in shared listening rooms.</string>
     <string name="listen_together_view_logs_description">Debug connection events and messages</string>
+    <!-- Lyrics -->
     <string name="lyrics_action_choose_translation_language">Translate to other language</string>
     <string name="lyrics_action_copy">Copy lyrics</string>
     <string name="lyrics_action_edit">Edit lyrics</string>
@@ -73,7 +77,7 @@
     <string name="lyrics_color_white">White</string>
     <string name="lyrics_current_state_format">Current state: %1$s</string>
     <string name="lyrics_custom_color_description">Choose the custom color used by this component.</string>
-    <string name="lyrics_debug_interval_progress">låttexterIntervalProgress</string>
+    <string name="lyrics_debug_interval_progress">lyricsIntervalProgress</string>
     <string name="lyrics_display_section_title">Display</string>
     <string name="lyrics_editor_title">Enter the lyrics</string>
     <string name="lyrics_empty">No lyrics</string>
@@ -94,24 +98,24 @@
     <string name="lyrics_karaoke">Karaoke (word-level)</string>
     <string name="lyrics_karaoke_respect_agent_position_label">Respect agent position</string>
     <string name="lyrics_karaoke_unavailable_synced_fallback_format">Karaoke not found on %1$s, showing synced from %2$s</string>
-    <string name="lyrics_mode_automatic_label">Auto</string>
+    <string name="lyrics_mode_automatic_label">auto lyrics</string>
     <string name="lyrics_mode_karaoke_label">karaoke lyrics</string>
     <string name="lyrics_mode_synchronized_label">synchronized lyrics</string>
     <string name="lyrics_mode_unsynchronized_label">unsynchronized lyrics</string>
-    <string name="lyrics_not_available">Inga texter tillgängliga. Försök igen eller ange dem manuellt.</string>
+    <string name="lyrics_not_available">No lyrics available. Please try again or enter them manually.</string>
     <string name="lyrics_offset">Lyrics Offset</string>
     <string name="lyrics_popup_messages_description">Display lyric-related popup messages in the player.</string>
     <string name="lyrics_provider_betterlyrics_karaoke_label">BetterLyrics (karaoke)</string>
-    <string name="lyrics_provider_betterlyrics_synced_label">BetterLyrics (synkroniserad)</string>
+    <string name="lyrics_provider_betterlyrics_synced_label">BetterLyrics (synced)</string>
     <string name="lyrics_provider_found_format">Lyrics found on %s</string>
-    <string name="lyrics_provider_kugou_synced_label">KuGou.com (synkroniserad)</string>
-    <string name="lyrics_provider_lrclib_synced_label">LrcLib.net (synkroniserad)</string>
-    <string name="lyrics_provider_lrclib_unsynced_label">LrcLib.net (osynkad)</string>
+    <string name="lyrics_provider_kugou_synced_label">KuGou.com (synced)</string>
+    <string name="lyrics_provider_lrclib_synced_label">LrcLib.net (synced)</string>
+    <string name="lyrics_provider_lrclib_unsynced_label">LrcLib.net (unsynced)</string>
     <string name="lyrics_provider_missing_format">Lyrics not found on %s</string>
     <string name="lyrics_provider_missing_try_another_format">Lyrics not found on %1$s, try on %2$s</string>
     <string name="lyrics_provider_picker_label">Pick from</string>
     <string name="lyrics_provider_tracks_found_format">Lyrics tracks found on %s</string>
-    <string name="lyrics_provider_youtube_unsynced_label">YouTube (osynkad)</string>
+    <string name="lyrics_provider_youtube_unsynced_label">YouTube (unsynced)</string>
     <string name="lyrics_show_clip_rects">Show karaoke clip rects (debug)</string>
     <string name="lyrics_size">Lyrics Size</string>
     <string name="lyrics_style_fluid_rainbow_label">Fluid Rainbow</string>
@@ -128,6 +132,7 @@
     <string name="lyrics_translation_section_title">Translation</string>
     <string name="lyrics_translation_success_message">Translation successful</string>
     <string name="lyrics_unsynced">Plain text</string>
+    <!-- Player -->
     <string name="common_action_stop">Stop</string>
     <string name="player_action_bar_buttons">Button visibility</string>
     <string name="player_action_bar_buttons_description">Configure which buttons appear in the player action bar</string>
@@ -175,11 +180,11 @@
     <string name="player_background_action_bar_gradient_description">Add a gradient behind the player action bar.</string>
     <string name="player_background_animated_gradient_label">Animated Gradient</string>
     <string name="player_background_animation_description">Choose the animation pattern for the player background gradient.</string>
-    <string name="player_background_artwork_blurred_label">Blurred song cover</string>
-    <string name="player_background_artwork_fluid_gradient_label">Fluid gradient from song cover</string>
-    <string name="player_background_artwork_gradient_label">Gradient from song cover</string>
+    <string name="player_background_artwork_blurred_label">Artwork blurred</string>
+    <string name="player_background_artwork_fluid_gradient_label">Artwork Fluid gradient</string>
+    <string name="player_background_artwork_gradient_label">Artwork gradient</string>
     <string name="player_background_artwork_label">Match song cover</string>
-    <string name="player_background_artwork_m3e_morphing_label">Morphing shapes from cover</string>
+    <string name="player_background_artwork_m3e_morphing_label">Artwork M3E morphing shapes</string>
     <string name="player_background_artwork_rotation_description">Rotate the album artwork shown in the player background.</string>
     <string name="player_background_dark_gradient_description">Darken the lower part of the player with a black gradient.</string>
     <string name="player_background_palette_label">Color Palette</string>
@@ -188,10 +193,10 @@
     <string name="player_background_shake_sensitivity_description">Adjust how much device movement changes the animated theme.</string>
     <string name="player_background_style_description">Choose the source and style of the player background colors.</string>
     <string name="player_background_text_outline_description">Outline player text to improve contrast against the background.</string>
-    <string name="player_background_theme_fluid_gradient_label">Fluid gradient from theme</string>
-    <string name="player_background_theme_gradient_label">Gradient from theme</string>
+    <string name="player_background_theme_fluid_gradient_label">Theme Fluid gradient</string>
+    <string name="player_background_theme_gradient_label">Theme gradient</string>
     <string name="player_background_theme_label">Match theme</string>
-    <string name="player_background_theme_m3e_morphing_label">Morphing shapes from theme</string>
+    <string name="player_background_theme_m3e_morphing_label">Theme M3E morphing shapes</string>
     <string name="player_behavior_and_visuals">Player Behavior &amp; Visuals</string>
     <string name="player_collapsed_disable_swiping_down">Disable swiping down</string>
     <string name="player_controls">Player Controls</string>
@@ -214,7 +219,7 @@
     <string name="player_crossfade_duration_description">Set how long the outgoing and incoming tracks overlap.</string>
     <string name="player_current_song_not_in_list">Could not find playing song on current list</string>
     <string name="player_debug_play_pause_roundness">playPauseRoundness</string>
-    <string name="player_debug_should_be_playing">bör, spelas</string>
+    <string name="player_debug_should_be_playing">shouldBePlaying</string>
     <string name="player_effects">Player Effects</string>
     <string name="player_enable_lyrics_popup_message">Enable lyrics popup message</string>
     <string name="player_enable_rotation_buttons">Enable button rotation upon click</string>
@@ -313,6 +318,7 @@
     <string name="player_top_spacing_description">Keep empty space at the top when the top actions bar is hidden.</string>
     <string name="player_track_swipe_sensitivity_description">Adjust how easily a swipe changes tracks in the player.</string>
     <string name="player_type">Player type</string>
+    <!-- Player Mini -->
     <string name="player_mini_button_discover">Discover</string>
     <string name="player_mini_button_download">Download</string>
     <string name="player_mini_button_play_pause">Play/Pause</string>
@@ -324,17 +330,20 @@
     <string name="player_mini_button_visualizer">Visualizer</string>
     <string name="player_mini_buttons_config">MiniPlayer buttons</string>
     <string name="player_mini_buttons_config_description">Configure the 4 buttons in the miniplayer</string>
+    <!-- Player Sleep Timer -->
     <string name="player_sleep_timer_action_set">Set sleep timer</string>
     <string name="player_sleep_timer_end_of_song">(end of song)</string>
     <string name="player_sleep_timer_remaining">%1$s left</string>
     <string name="player_sleep_timer_set_to">Set to</string>
     <string name="player_sleep_timer_stop_confirmation">Do you want to stop the sleep timer?</string>
     <string name="player_sleep_timer_title">Sleep timer</string>
+    <!-- Queue -->
     <string name="queue_discover_description">Remove songs from the queue if included in favorites or playlists</string>
     <string name="queue_discover_title">Discover</string>
     <string name="queue_max_songs_in_queue_android_auto_description">Limit the number of tracks exposed to the Android Auto queue.</string>
     <string name="queue_max_songs_in_queue_description">Limit the number of tracks added to the play queue.</string>
     <string name="queue_now_playing_indicator_description">Choose the indicator displayed beside the currently playing track.</string>
+    <!-- Visualizer -->
     <string name="visualizer_action_open_permission_settings">Open permission settings</string>
     <string name="visualizer_animation_bars">Bars</string>
     <string name="visualizer_animation_bubbles">Bubbles</string>
@@ -349,12 +358,13 @@
     <string name="visualizer_custom_color_description">Choose the custom color used by this component.</string>
     <string name="visualizer_dark_background_description">Use a black background behind the audio visualization.</string>
     <string name="visualizer_dark_background_title">Dark background for visualizer</string>
-    <string name="visualizer_debug_background">VisualizerBakgrund</string>
+    <string name="visualizer_debug_background">VisualizerBackground</string>
     <string name="visualizer_enabled_description">Display an animated visualization that responds to the audio.</string>
     <string name="visualizer_line_thickness">Visualizer Line Thickness</string>
     <string name="visualizer_line_thickness_description">Adjust the width of the lines in the audio visualization.</string>
     <string name="visualizer_microphone_permission_message">Visualizer effect require mic permission, grant please.</string>
     <string name="visualizer_title">Visualizer</string>
+    <!-- Widget -->
     <string name="widget_action_play_pause">Play / Pause</string>
     <string name="widget_action_tap_to_play">Tap to play</string>
     <string name="widget_configuration_choose_item_hint">Choose something below</string>
@@ -362,4 +372,9 @@
     <string name="widget_not_playing_status">Not playing</string>
     <string name="widget_playlists_description">N-Zik Playlists</string>
     <string name="widget_turntable_description">N-Zik Turntable</string>
+    <string name="audio_device_battery_format">Battery: %1$d%%</string>
+    <string name="audio_output_bluetooth_device_label">Bluetooth device</string>
+    <string name="audio_output_usb_audio_label">USB audio</string>
+    <string name="audio_output_external_speaker_label">External speaker</string>
+    <string name="audio_output_load_failed">Failed to load devices: %1$s</string>
 </resources>
