@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- About -->
     <string name="about_action_report_issue">Report an issue</string>
     <string name="about_action_request_feature">Request a feature or suggest an idea</string>
     <string name="about_action_view_source">View the source code</string>
     <string name="about_authorship_preposition">by</string>
     <string name="about_contributors_alphabetical_order_label">In alphabetical order:</string>
-    <string name="about_debug_developers_rotation">rotation</string>
-    <string name="about_debug_translators_rotation">Översättare_rotation</string>
+    <string name="about_debug_developers_rotation">developers_rotation</string>
+    <string name="about_debug_translators_rotation">translators_rotation</string>
     <string name="about_developers_description">Show or hide the developers and designers who contributed to the app.</string>
     <string name="about_developers_designers_title">Developers / Designers</string>
     <string name="about_github_link_description">You will be redirected to GitHub</string>
