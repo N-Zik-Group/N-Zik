@@ -1,66 +1,69 @@
-ఆండ్రాయిడ్‌కు బహుభాషా YouTube Music ఫ్రాంట్‌ఎండ్: పనీతీరో, UI/UX మెరుగుదల, ఫీచర్ల విస్తరణ, దీర్ఘకాలిక మద్దతుపై ఫ౉స్.
+A multilingual YouTube Music frontend for Android, focused on performance, UI/UX refinements, feature expansion, and long-term support.
 
-<b>N-Zik</b> అనేది <a href="https://github.com/knighthat/Kreate">Kreate</a> యొక్క ఒక ఓపెన్‌సోర్స్ ఫోర్క్.
+<b>N-Zik</b> is an open-source fork of <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>గమనిక:</b> N-Zik ఒక సైడ్ ప్రాజెక్ట్‌గా మొదలైంది. ఇంకా పరిపక్వ ప్రత్యామ్నాయాల కోసం <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> లేదా <a href="https://github.com/fast4x/RiPlay">RiPlay</a> చూడండి.
+<b>Note:</b> N-Zik started as a side project. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>AI వాడకం:</b> కోడ్‌కు జనరేటివ్ AIని ఉపయోగిస్తాం (BMAD Method ద్వారా), రిలీజ్ ముందు సమీక్షించి పరీక్షిస్తాం.
+<b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), reviewed and tested before shipping.
 
-✨ <b>ఎందుకు N-ZIK?</b> ప్రకటనలు లేవు, బ్యాక్‌గ్రౌండ్ ప్లేబ్యాక్, ఆఫ్‌లైన్ క్యాషింగ్, కస్టమైజ్ చేయదగిన UI - ఉచితం, ఎల్లప్పుడూ.
+✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI - free, always.
 
-🎨 <b>కస్టమైజ్ చేయదగిన UI</b>
-- థీమ్‌లు: AMOLED, Deep Dark, Crisp Light + టింటెడ్ అకసెంట్లు
-- 3D Carousel Player, హోమ్ విడ్జెట్లు, యూనిఫైడ్ ప్లేయర్ మరియు మిని ప్లేయర్
-- ఆర్టిస్ట్ ప్రొఫైళ్లు, Discovery మరియు మూడ్లు, కుదించదగిన హోమ్ హెడర్లు
+🎨 <b>Customizable UI</b>
+- Jetpack Compose interface
+- Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
+- 3D Carousel Player, home widgets, unified player and mini-player
+- Artist profiles, Discovery and moods, collapsible home headers
 
-🫧 <b>Glass ప్రభావం (BETA, ఐచ్ఛికం)</b>
-కొత్త ఇన్‌స్టాలేషన్‌లో ఆఫ్‌లో ఉంటుంది. సెట్టింగ్‌లలో ఆన్ చేయండి: వర్గం వారీగా సాధారణ రూపం, అంచు మాత్రమే లేదా Glass, నాణ్యత సర్దుబాటు. రెండరింగ్ భారం, బ్యాటరీ వినియోగం పెరగవచ్చు: నాణ్యత తగ్గించండి లేదా ఆఫ్ చేయండి.
-Glass క్రెడిట్లు: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+🫧 <b>Glass Effect (BETA, optional)</b>
+Disabled on fresh installs. Enable in Settings: native, contour-only or Glass by category, with adjustable quality. May increase rendering work and battery use; reduce quality or disable if needed.
+Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
-🎵 <b>ఆడియో అనుభవం</b>
-- YouTube Music Premium ద్వారా ప్రీమియం నాణ్యత, స్వయంగా వర్తించబడుతుంది
-- ఎడిటింగ్ మరియు రియల్‌టైమ్ అనువాదంతో సింక్ చేయబడిన లిరిక్స్
-- పాట గుర్తించడం (Shazam వంటి), వాయిస్ సెర్చ్, ఆడియో విజువలైజర్
-- ప్రో కంట్రోల్స్: వేగం, పిచ్, నార్మలైజేషన్, క్రాస్‌ఫేడ్, వాల్యూమ్ బూస్ట్, బేస్ బూస్ట్, రీవర్బ్
-- ఖచ్చితమైన నావిగేషన్ కోసం Audio Bar వేవ్‌ఫార్మ్ సీక్‌బార్
+🎵 <b>Audio Experience</b>
+- Premium quality via YouTube Music Premium, applied automatically
+- Synced lyrics with editing and real-time translation
+- Song recognition (Shazam-like), voice search, audio visualizer
+- Pro controls: speed, pitch, normalization, crossfade, volume boost, bass boost, reverb
+- Audio Bar waveform seekbar for precise navigation
 
-💾 <b>ఆఫ్‌లైన్, మెటాడేటా & గోప్యత</b>
-- ట్రాక్‌లు, ప్లే‌లిస్టుల కోసం స్మార్ట్ క్యాషింగ్/డౌన్‌లోడ్, ఎంచుకోదగిన డౌన్‌లోడ్ నాణ్యతతో
-- పూర్తి మెటాడేటాతో FFmpeg ఎగుమతి (ప్రమాణ బిల్డ్‌లు మాత్రమే)
-- అప్-ఇన్‌ మెటాడేటా ఎడిటర్ (AAC/Opus, కవర్ ఆర్ట్)
-- స్థానిక వినే గణాంకాలు మరియు చరిత్ర
-- కస్టమ్ అంతరాలు మరియు నిల్వ కాలంతో ఆటో-బ్యాక్‌అప్
+💾 <b>Offline, Metadata & Privacy</b>
+- Smart caching and downloads for tracks and playlists, with selectable download quality
+- FFmpeg-powered export with full metadata (FFmpeg is a downloadable extension, installed on first use)
+- In-app metadata editor (AAC/Opus, cover art)
+- Local listening stats and history
+- Auto-backup with custom intervals and retention
 
-🔗 <b>ఇంటిగ్రేషన్‌లు</b>
-- సిఫార్సులు మరియు వీడియో ప్లేబ్యాక్ కోసం YouTube సైన్-ఇన్, ప్లస్ ప్రయోగిక ద్విదిశ సింక్ ఇంజిన్
-- Now Playing మరియు love/unlove తో Last.fm స్క్రాబ్లింగ్
-- MusicBrainzతో ఆర్టిస్ట్ మరియు అల్బం వివరాలు
-- Discord Rich Presence, లైవ్ ప్రీవ్యూతో అడ్వాన్స్డ్ మోడ్
-- ప్రత్యామ్నాయ YouTube స్ట్రీమింగ్‌కు Invidious ఇంటిగ్రేషన్
-- ప్లే‌లిస్ట్ ఐంపోర్ట్/ఎగుమతి: RiPlay, Spotify, YouTube Music, N-Zik
+🔗 <b>Integrations</b>
+- YouTube sign-in for recommendations and video playback, plus an experimental two-way sync engine
+- Last.fm scrobbling with Now Playing and love/unlove
+- MusicBrainz artist and album insights
+- Discord Rich Presence, including advanced mode with live preview
+- Invidious integration for alternative YouTube streaming
+- Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
-👥 <b>కలిసి వినండి</b>
-- కోడ్ లేదా ఇన్‌వైట్ లింక్ ద్వారా ఇతర వాడుకదారులతో లైవ్ లిస్టెనింగ్ సెషన్‌లలో చేరండి లేదా హోస్ట్ చేయండి
+👥 <b>Listen Together</b>
+- Join or host live listening sessions with other users via code or invite link
 
 🗓️ <b>Rewind</b>
-- ఆటో-జనరేటెడ్ Rewind ప్లే‌లిస్టులతో వార్షిక/మాస వినే సారాంశాలు
+- Yearly and monthly listening recaps with auto-generated Rewind playlists
 
-📱 <b>ఎక్కడైనా ప్లే:</b> Android Auto, Automotive, TV మరియు Tablets
+📱 <b>Play Anywhere:</b> Android Auto, Automotive, TV, and Tablets
 
-🛠️ <b>పవర్ యూజర్ ఫీచర్లు</b>
-- మల్టి-ప్రొఫైల్: ప్రొఫైల్‌కు పీరి డేటాబేస్, సెట్టింగ్‌లు
-- Bluetooth కనెక్ట్‌పై ఆటో-రిజ్యూమ్, శాశ్వత క్యూ, ఆటో-ఫిల్ క్యూ
-- స్మార్ట్ ట్రాష్, దాచిన పాటలు, డిస్‌లైక్ సిస్టమ్, పేరెంటల్ కంట్రోల్
-- ప్రాక్సీ మద్దతు, నెట్‌వర్క్ నాణ్యత అనుకూలీకరణ, లాగ్ ఎగుమతి
-- Rescue Center, మెయింటెనెన్స్ స్క్రీన్, ఆన్‌బోర్డింగ్, అప్ షార్ట్‌కట్‌లు
-- GitHub నుండి OTA అప్‌డేట్లు, స్లీప్ టైమర్, బ్యాక్‌గ్రౌండ్ ప్లేబ్యాక్
+🛠️ <b>Power User Features</b>
+- Multi-profile: isolated database and settings per profile
+- Auto-resume on Bluetooth connect, persistent queue, auto-fill queue
+- Smart trash, hidden songs, dislike system, parental control
+- Proxy support, network quality adaptation, log export
+- Rescue Center, maintenance screen, onboarding, app shortcuts
+- OTA updates from GitHub, sleep timer, background playback
 
-📦 <b>అందుబాటులో ఉన్న బిల్డ్లు</b>
-- Release64/Beta64 (`com.nevar.nzik`): పూర్తి బిల్డ్, 64-bit డివైస్‌లకు మాత్రమే
-- Release32/Beta32 (`com.nevar.nzik`): పూర్తి బిల్డ్, 32-bit డివైస్‌లకు మాత్రమే
-- Minified64 (`com.nevar.nzik`): తేలికైన R8 బిల్డ్, తక్కువ-గ్రేడ్ డివైస్‌లకు (64-bit)
-- Minified32 (`com.nevar.nzik`): తేలికైన R8 బిల్డ్ (32-bit)
-- FOSS (`com.nevar.nzik.foss`): ఆటో-అప్‌డేటర్ లేకుండా, F-Droid కోసం (అన్ని ఆర్కిటెక్చర్లు)
-- Dev64/Dev32 (`com.nevar.nzik.dev`): డెవలప్‌మెంట్ బిల్డ్లు, పరీక్ష కోసం మాత్రమే
+📦 <b>Available Builds</b>
+- Release64/Beta64 (`com.nevar.nzik`): Complete build, 64-bit devices only
+- Release32/Beta32 (`com.nevar.nzik`): Complete build, 32-bit devices only
+- Minified64 (`com.nevar.nzik`): Lightweight R8 build, for low-end devices (64-bit)
+- Minified32 (`com.nevar.nzik`): Lightweight R8 build (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Without auto-updater, for F-Droid (all architectures)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Development builds, testing only
 
-ఏ బిల్డ్‌లోనూ FFmpeg ఉండదు: ఇది డౌన్‌లోడ్ చేయగల ఎక్స్టెన్షన్ (మొదటిసారి ఉపయోగించినప్పుడు ఇన్స్టాల్ అవుతుంది, సెట్టింగ్‌లు → ఎక్స్టెన్షన్లు లో నిర్వహించబడుతుంది). F-Droid‌లో FOSS మాత్రమే ఉంది.
+No build bundles FFmpeg: it is a downloadable extension (installed on first use, managed in Settings → Extensions). Only FOSS is on F-Droid.
+
+Historical project credits include ViMusic.
