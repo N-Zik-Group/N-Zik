@@ -2,11 +2,11 @@
 <resources>
     <!-- Common -->
     <string name="common_answer_no">Nei</string>
-    <string name="common_artist_conjunction_and">and</string>
+    <string name="common_artist_conjunction_and">og</string>
     <string name="common_clipboard_copy_failed">Kan ikke kopiere tekst til utklippstavle, prøv igjen</string>
     <string name="common_clipboard_copy_success">Kopiert</string>
     <string name="common_color_black">Svart</string>
-    <string name="common_color_custom">Custom Color</string>
+    <string name="common_color_custom">Egendefinert farge</string>
     <string name="common_color_source_artwork">Dekningsfarge</string>
     <string name="common_color_source_theme">Tema</string>
     <string name="common_color_white">Hvit</string>
@@ -17,20 +17,20 @@
     <string name="common_duration_milliseconds_format">%1$s ms</string>
     <string name="common_empty_items">Ingen elementer</string>
     <string name="common_external_link_loading_suffix">laster inn...</string>
-    <string name="common_load_failed">Unable to load</string>
-    <string name="common_load_failed_no_connection">Unable to load, no connection</string>
+    <string name="common_load_failed">Kunne ikke laste</string>
+    <string name="common_load_failed_no_connection">Kan ikke laste, ingen tilkobling</string>
     <string name="common_log_unavailable">Logg utilgjengelig</string>
     <string name="common_option_all">All tid</string>
     <string name="common_option_custom">Egendefinert</string>
     <string name="common_option_default">Standard</string>
     <string name="common_option_disabled">Deaktivert</string>
     <string name="common_option_none">Ingen</string>
-    <string name="common_option_random">Random</string>
-    <string name="common_restart_required_message">Please open %s again after!</string>
+    <string name="common_option_random">Tilfeldig</string>
+    <string name="common_restart_required_message">Vennligst åpne %s igjen etter!</string>
     <string name="common_size_big">Stor</string>
     <string name="common_size_biggest">Størst</string>
     <string name="common_size_expanded">Utvidet</string>
-    <string name="common_size_medium">Medium</string>
+    <string name="common_size_medium">Middels</string>
     <string name="common_size_small">Liten</string>
     <string name="common_state_enabled">Aktivert</string>
     <string name="common_state_off">Av</string>
@@ -39,7 +39,7 @@
     <string name="common_validation_empty_value">Verdien kan ikke være tom</string>
     <string name="common_validation_invalid_input">Invalid input!</string>
     <string name="common_validation_minimum_value">"Verdien må være større enn "</string>
-    <string name="common_validation_name_in_use">Name already in use</string>
+    <string name="common_validation_name_in_use">Navnet er allerede i bruk</string>
     <string name="common_value_input_hint">Angi verdien</string>
     <string name="common_unknown">Ukjent</string>
     <string name="common_duration_minutes_short">%1$d min</string>
