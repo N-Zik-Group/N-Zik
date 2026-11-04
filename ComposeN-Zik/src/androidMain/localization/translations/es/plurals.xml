@@ -1,7 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Maintenance -->
     <plurals name="maintenance_systems_need_attention">
         <item quantity="one">%d system needs attention</item>
         <item quantity="other">%d systems need attention</item>
+    </plurals>
+    <plurals name="sync_detail_songs_liked">
+        <item quantity="one">%1$d song liked</item>
+        <item quantity="other">%1$d songs liked</item>
+    </plurals>
+    <plurals name="sync_detail_playlists_synced">
+        <item quantity="one">%1$d playlist synced</item>
+        <item quantity="other">%1$d playlists synced</item>
+    </plurals>
+    <plurals name="sync_detail_songs_imported">
+        <item quantity="one">%1$d song imported</item>
+        <item quantity="other">%1$d songs imported</item>
+    </plurals>
+    <plurals name="sync_detail_albums_imported">
+        <item quantity="one">%1$d album imported</item>
+        <item quantity="other">%1$d albums imported</item>
+    </plurals>
+    <plurals name="sync_detail_episodes">
+        <item quantity="one">%1$d episode</item>
+        <item quantity="other">%1$d episodes</item>
     </plurals>
 </resources>
