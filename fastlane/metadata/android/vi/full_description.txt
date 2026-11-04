@@ -1,66 +1,69 @@
-Giao diện YouTube Music đa ngôn ngữ cho Android: hiệu suất, tinh chỉnh UI/UX, mở rộng tính năng, hỗ trợ lâu dài.
+A multilingual YouTube Music frontend for Android, focused on performance, UI/UX refinements, feature expansion, and long-term support.
 
-<b>N-Zik</b> là bản fork mã nguồn mở của <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+<b>N-Zik</b> is an open-source fork of <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Lưu ý:</b> N-Zik bắt đầu như một dự án cá nhân. Để có các lựa chọn hoàn thiện hơn, hãy xem <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> hoặc <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Note:</b> N-Zik started as a side project. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Sử dụng AI:</b> Tôi sử dụng AI tạo sinh cho code (thông qua <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), mọi thứ được xem xét và kiểm tra trước khi phát hành.
+<b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), reviewed and tested before shipping.
 
-✨ <b>TẠI SAO N-ZIK?</b> Không quảng cáo, phát nền, bộ nhớ đệm ngoại tuyến, giao diện tùy chỉnh - luôn miễn phí.
+✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI - free, always.
 
-🎨 <b>Giao diện tùy chỉnh</b>
-- Chủ đề: AMOLED, Deep Dark, Crisp Light + điểm nhấn màu sắc
-- 3D Carousel Player, tiện ích màn hình chính, trình phát thống nhất và mini-player
-- Hồ sơ nghệ sĩ, Khám phá và tâm trạng, tiêu đề thu gọn
+🎨 <b>Customizable UI</b>
+- Jetpack Compose interface
+- Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
+- 3D Carousel Player, home widgets, unified player and mini-player
+- Artist profiles, Discovery and moods, collapsible home headers
 
-🫧 <b>Hiệu ứng Glass (BETA, tùy chọn)</b>
-Tắt khi cài mới. Bật trong Cài đặt: giao diện gốc, chỉ viền hoặc Glass theo danh mục, tùy chỉnh chất lượng. Có thể tăng tải kết xuất và hao pin; giảm chất lượng hoặc tắt nếu cần.
-Ghi công Glass: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+🫧 <b>Glass Effect (BETA, optional)</b>
+Disabled on fresh installs. Enable in Settings: native, contour-only or Glass by category, with adjustable quality. May increase rendering work and battery use; reduce quality or disable if needed.
+Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
-🎵 <b>Trải nghiệm âm thanh</b>
-- Chất lượng cao cấp qua YouTube Music Premium, tự động
-- Lời bài hát đồng bộ với chỉnh sửa và dịch thời gian thực
-- Nhận diện bài hát (giống Shazam), tìm kiếm bằng giọng nói, trực quan hóa âm thanh
-- Điều khiển chuyên nghiệp: tốc độ, cao độ, chuẩn hóa, crossfade, tăng âm lượng/trầm, tiếng vang
-- Thanh tìm kiếm dạng sóng Audio Bar để điều hướng chính xác
+🎵 <b>Audio Experience</b>
+- Premium quality via YouTube Music Premium, applied automatically
+- Synced lyrics with editing and real-time translation
+- Song recognition (Shazam-like), voice search, audio visualizer
+- Pro controls: speed, pitch, normalization, crossfade, volume boost, bass boost, reverb
+- Audio Bar waveform seekbar for precise navigation
 
-💾 <b>Ngoại tuyến, Siêu dữ liệu & Quyền riêng tư</b>
-- Caching và tải xuống thông minh cho bài hát/danh sách phát, chất lượng tải tùy chọn
-- Xuất tệp bằng FFmpeg với siêu dữ liệu đầy đủ (chỉ bản dựng tiêu chuẩn)
-- Trình chỉnh sửa siêu dữ liệu trong ứng dụng (AAC/Opus, ảnh bìa)
-- Thống kê và lịch sử nghe nhạc cục bộ
-- Sao lưu tự động, khoảng cách và thời gian lưu tùy chỉnh
+💾 <b>Offline, Metadata & Privacy</b>
+- Smart caching and downloads for tracks and playlists, with selectable download quality
+- FFmpeg-powered export with full metadata (FFmpeg is a downloadable extension, installed on first use)
+- In-app metadata editor (AAC/Opus, cover art)
+- Local listening stats and history
+- Auto-backup with custom intervals and retention
 
-🔗 <b>Tích hợp</b>
-- Đăng nhập YouTube để nhận đề xuất và phát video, cùng bộ đồng bộ hai chiều thử nghiệm
-- Last.fm scrobbling: Now Playing, love/unlove
-- Insight nghệ sĩ/album từ MusicBrainz
-- Discord Rich Presence; chế độ nâng cao, xem trước trực tiếp
-- Invidious cho stream YouTube thay thế
-- Nhập/xuất danh sách phát: RiPlay, Spotify, YouTube Music, N-Zik
+🔗 <b>Integrations</b>
+- YouTube sign-in for recommendations and video playback, plus an experimental two-way sync engine
+- Last.fm scrobbling with Now Playing and love/unlove
+- MusicBrainz artist and album insights
+- Discord Rich Presence, including advanced mode with live preview
+- Invidious integration for alternative YouTube streaming
+- Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
-👥 <b>Nghe cùng nhau</b>
-- Tham gia hoặc chủ trì phiên nghe trực tiếp cùng người dùng khác qua mã hoặc link mời
+👥 <b>Listen Together</b>
+- Join or host live listening sessions with other users via code or invite link
 
 🗓️ <b>Rewind</b>
-- Tổng kết năm/tháng với danh sách phát Rewind tạo tự động
+- Yearly and monthly listening recaps with auto-generated Rewind playlists
 
-📱 <b>Phát ở mọi nơi:</b> Android Auto, Automotive, TV và Tablets
+📱 <b>Play Anywhere:</b> Android Auto, Automotive, TV, and Tablets
 
-🛠️ <b>Tính năng cho người dùng nâng cao</b>
-- Đa hồ sơ: CSDL và cài đặt riêng cho từng hồ sơ
-- Tự động tiếp tục khi kết nối Bluetooth, hàng đợi được giữ, tự lấp đầy
-- Thùng rác thông minh, bài hát ẩn, hệ thống bỏ thích, kiểm soát của phụ huynh
-- Hỗ trợ proxy, thích ứng chất lượng mạng, xuất nhật ký
-- Rescue Center, màn hình bảo trì, hướng dẫn ban đầu, phím tắt ứng dụng
-- Cập nhật OTA từ GitHub, hẹn giờ ngủ, phát nền
+🛠️ <b>Power User Features</b>
+- Multi-profile: isolated database and settings per profile
+- Auto-resume on Bluetooth connect, persistent queue, auto-fill queue
+- Smart trash, hidden songs, dislike system, parental control
+- Proxy support, network quality adaptation, log export
+- Rescue Center, maintenance screen, onboarding, app shortcuts
+- OTA updates from GitHub, sleep timer, background playback
 
-📦 <b>Các bản dựng hiện có</b>
-- Release64/Beta64 (`com.nevar.nzik`): Bản dựng đầy đủ, chỉ dành cho thiết bị 64-bit
-- Release32/Beta32 (`com.nevar.nzik`): Bản dựng đầy đủ, chỉ dành cho thiết bị 32-bit
-- Minified64 (`com.nevar.nzik`): Bản dựng R8 nhẹ, cho thiết bị cấu hình thấp (64-bit)
-- Minified32 (`com.nevar.nzik`): Bản dựng R8 nhẹ (32-bit)
-- FOSS (`com.nevar.nzik.foss`): Không có trình cập nhật tự động, cho F-Droid (mọi kiến trúc)
-- Dev64/Dev32 (`com.nevar.nzik.dev`): Bản dựng phát triển, chỉ để thử nghiệm
+📦 <b>Available Builds</b>
+- Release64/Beta64 (`com.nevar.nzik`): Complete build, 64-bit devices only
+- Release32/Beta32 (`com.nevar.nzik`): Complete build, 32-bit devices only
+- Minified64 (`com.nevar.nzik`): Lightweight R8 build, for low-end devices (64-bit)
+- Minified32 (`com.nevar.nzik`): Lightweight R8 build (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Without auto-updater, for F-Droid (all architectures)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Development builds, testing only
 
-Không có bản dựng nào đóng gói FFmpeg: đây là một phần mở rộng có thể tải xuống (cài đặt khi dùng lần đầu, quản lý trong Cài đặt → Mở rộng). Chỉ FOSS trên F-Droid.
+No build bundles FFmpeg: it is a downloadable extension (installed on first use, managed in Settings → Extensions). Only FOSS is on F-Droid.
+
+Historical project credits include ViMusic.
