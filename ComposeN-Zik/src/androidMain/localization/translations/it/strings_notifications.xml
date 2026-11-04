@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Listen -->
-    <string name="listen_together_notification_channel_description">Notifications for Listen Together events</string>
+    <string name="listen_together_notification_channel_description">Notifiche per ascoltare insieme eventi</string>
     <!-- Listen Together -->
-    <string name="listen_together_notification_channel_name">Listen Together</string>
+    <string name="listen_together_notification_channel_name">Ascolta Insieme</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">Pausa</string>
 </resources>
