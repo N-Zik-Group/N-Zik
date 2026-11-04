@@ -1,7 +1,8 @@
 package app.n_zik.android.components.settings.general
 
-import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.components.settings.common.settingsSearchTarget
+import android.app.PictureInPictureParams
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -13,20 +14,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import app.it.fast4x.compose.persist.findActivityNullable
 import app.it.fast4x.rimusic.enums.PipModule
-import app.it.fast4x.rimusic.utils.RestartActivity
 import app.it.fast4x.rimusic.utils.enablePictureInPictureAutoKey
 import app.it.fast4x.rimusic.utils.enablePictureInPictureKey
 import app.it.fast4x.rimusic.utils.isAtLeastAndroid12
 import app.it.fast4x.rimusic.utils.pipModuleKey
 import app.it.fast4x.rimusic.utils.rememberPreference
+import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
+import app.n_zik.android.components.settings.common.RestartActivity
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import timber.log.Timber
 
 /**
  * Picture in Picture card. [onCardTopYChanged] reports the card's root Y so the
@@ -111,9 +118,33 @@ fun GeneralPipCard(
                             icon = R.drawable.logo_youtube
                         )
                     }
-                    RestartActivity(restartActivity, onRestart = { onRestartActivityClear() })
+                    OpenPipButton(enabled = enablePictureInPicture)
                 }
             }
         }
+    )
+}
+
+@Composable
+private fun OpenPipButton(enabled: Boolean) {
+    val context = LocalContext.current
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
+        !context.packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
+    ) return
+
+    val activity = remember(context) { context.findActivityNullable() } ?: return
+    OtherSettingsEntry(
+        modifier = Modifier.settingsSearchTarget("general.picture_in_picture.open"),
+        title = stringResource(R.string.modules_open),
+        text = stringResource(R.string.settings_picture_in_picture_open),
+        icon = R.drawable.chevron_forward,
+        isEnabled = enabled,
+        onClick = {
+            val entered = runCatching {
+                activity.enterPictureInPictureMode(PictureInPictureParams.Builder().build())
+            }.onFailure { Timber.tag("PictureInPicture").w(it, "Unable to enter PiP from settings") }
+                .getOrDefault(false)
+            if (!entered) Toaster.e(R.string.settings_picture_in_picture_open_failed)
+        },
     )
 }

@@ -28,6 +28,16 @@ class SettingsDetailedSearchTest {
         Configuration(context.resources.configuration).apply { setLocale(locale) },
     )
 
+    @Test fun openPipIsSearchableGloballyAndOnItsPage() {
+        val target = AllSettingsEntryTargets.single { it.id == "general.picture_in_picture.open" }
+        listOf(Locale.ENGLISH to "open pip", Locale.FRENCH to "ouvrir pip").forEach { (locale, query) ->
+            val localized = localized(locale)
+            assertTrue(searchSettingsEntries(localized, query).contains(target))
+            assertTrue(visibleCardTitleRes(localized, target.tab, query).contains(target.cardTitleRes))
+            assertTrue(searchSettingsCards(localized, query).contains(target.parentCard()))
+        }
+    }
+
     @Test fun allEntriesHaveUniqueIdsAndReachableParentCards() {
         assertTrue(SettingsEntryTargets.isNotEmpty())
         assertTrue(EmbeddedSettingsEntryTargets.isNotEmpty())

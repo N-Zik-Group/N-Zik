@@ -21,7 +21,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.Text
-import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.R

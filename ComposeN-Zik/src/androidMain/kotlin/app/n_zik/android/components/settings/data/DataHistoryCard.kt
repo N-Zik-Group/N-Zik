@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.data
 
+import app.n_zik.android.components.settings.common.RestartPlayerService
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -16,7 +17,6 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.it.fast4x.rimusic.enums.NavRoutes
-import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.pauseListenHistoryKey
 import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey

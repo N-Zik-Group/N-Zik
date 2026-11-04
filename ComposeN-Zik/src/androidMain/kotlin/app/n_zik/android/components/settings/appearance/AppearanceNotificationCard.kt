@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.settings.common.RestartPlayerService
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -11,7 +12,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.it.fast4x.rimusic.enums.NotificationButtons
-import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.it.fast4x.rimusic.utils.notificationPlayerFirstIconKey
 import app.it.fast4x.rimusic.utils.notificationPlayerSecondIconKey
 import app.it.fast4x.rimusic.utils.rememberPreference

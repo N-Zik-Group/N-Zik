@@ -35,6 +35,7 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget("general.picture_in_picture.settings_enable_pip", 0, R.string.settings_picture_in_picture_title, R.string.settings_enable_pip),
     SettingsEntryTarget("general.picture_in_picture.settings_pip_module", 0, R.string.settings_picture_in_picture_title, R.string.settings_pip_module, listOf(R.string.settings_picture_in_picture_artwork_module_label)),
     SettingsEntryTarget("general.picture_in_picture.settings_enable_pip_auto", 0, R.string.settings_picture_in_picture_title, R.string.settings_enable_pip_auto, listOf(R.string.settings_picture_in_picture_android_12_auto_description)),
+    SettingsEntryTarget("general.picture_in_picture.open", 0, R.string.settings_picture_in_picture_title, R.string.modules_open, listOf(R.string.settings_picture_in_picture_open, R.string.navigation_action_picture_in_picture)),
     SettingsEntryTarget("general.playback.jump_previous", 0, R.string.common_playback_section_title, R.string.settings_playback_previous_restart_threshold_label),
     SettingsEntryTarget("general.playback.min_listening_time", 0, R.string.common_playback_section_title, R.string.recommendations_minimum_playback_duration_label),
     SettingsEntryTarget("general.playback.exclude_songs_with_duration_limit", 0, R.string.common_playback_section_title, R.string.settings_playback_duration_limit_label, listOf(R.string.common_option_disabled)),

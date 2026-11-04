@@ -104,9 +104,10 @@ internal fun PageButtonFeedback(
     shape: Shape,
     interactionSource: MutableInteractionSource?,
     settings: GlassSettings = rememberGlassSettings(),
+    animateContentLayer: Boolean = false,
     content: @Composable (Modifier, MutableInteractionSource?) -> Unit,
 ) {
-    PageButtonFeedbackImpl(material, enabled, shape, interactionSource, settings, null, content)
+    PageButtonFeedbackImpl(material, enabled, shape, interactionSource, settings, null, animateContentLayer, content)
 }
 
 /** Known native adapters export actual surface coordinates without changing caller layout. */
@@ -120,7 +121,7 @@ internal fun NativePageButtonFeedback(
     settings: GlassSettings = rememberGlassSettings(),
     content: @Composable (Modifier, MutableInteractionSource?) -> Unit,
 ) {
-    PageButtonFeedbackImpl(material, enabled, shape, interactionSource, settings, nativeBounds, content)
+    PageButtonFeedbackImpl(material, enabled, shape, interactionSource, settings, nativeBounds, false, content)
 }
 
 /** A zero-size sibling preserves the native content's Box/RowScope and all of its measurements. */
@@ -141,6 +142,7 @@ private fun PageButtonFeedbackImpl(
     interactionSource: MutableInteractionSource?,
     settings: GlassSettings,
     nativeBounds: GlassNativeSurfaceBounds?,
+    animateContentLayer: Boolean,
     content: @Composable (Modifier, MutableInteractionSource?) -> Unit,
 ) {
     // Native adapters draw their indication on the content probe under M3's own clip.
@@ -159,7 +161,7 @@ private fun PageButtonFeedbackImpl(
     }
     if (material) {
         val feedback = Modifier.retainGlassButtonGesture().glassButtonFeedback(source, shape,
-            drawMotionOnly = true, retainPressUntilUp = true, settings = settings)
+            drawMotionOnly = !animateContentLayer, retainPressUntilUp = true, settings = settings)
         CompositionLocalProvider(LocalRippleConfiguration provides null) {
             GlassArtworkContent(settings, material) { content(feedback, source) }
         }

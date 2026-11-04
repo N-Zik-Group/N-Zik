@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.network
 
+import app.n_zik.android.components.settings.common.RestartPlayerService
 import app.n_zik.android.components.settings.common.settingsTopContentPadding
 
 import app.n_zik.android.components.tab.Search
@@ -40,7 +41,6 @@ import app.n_zik.android.components.settings.common.visibleCardTitleRes
 import app.n_zik.android.components.settings.common.settingsSearchContent
 import app.n_zik.android.components.settings.common.settingsSearchDescription
 import app.n_zik.android.components.settings.common.settingsSearchTitle
-import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.preferences
 import androidx.compose.runtime.remember

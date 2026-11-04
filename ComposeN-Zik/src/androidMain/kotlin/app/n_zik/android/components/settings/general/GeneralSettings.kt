@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.general
 
+import app.n_zik.android.components.settings.common.RestartPlayerService
 import app.n_zik.android.components.settings.common.settingsTopContentPadding
 
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -24,7 +25,6 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.settings.AppShortcutsSettingsDialog

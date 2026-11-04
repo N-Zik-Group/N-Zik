@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -68,6 +69,57 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class UpdaterGlassComponentsTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `Jelly moves the updater glyph inside a fixed touch target`() {
+        val settings = GlassSettings(enabled = true, quality = GlassQuality.Performance,
+            jellyEnabled = true, rippleEnabled = false,
+            areaModes = mapOf(GlassArea.ActionButtons to GlassAreaMode.GlassAndContour))
+        var clicks = 0
+        compose.setContent {
+            val shape = RoundedCornerShape(12.dp)
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(DefaultDarkColorPalette, Typography.fallback, shape, shape, shape),
+                LocalGlassPreviewSettings provides settings,
+            ) {
+                Box(Modifier.size(100.dp).background(Color.Black), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                    UpdaterIconAction(onClick = { clicks++ }, modifier = Modifier.size(48.dp).testTag("icon")) {
+                        Box(Modifier.size(16.dp).background(Color.Red))
+                    }
+                }
+            }
+        }
+        fun glyphCenterX(pixels: androidx.compose.ui.graphics.PixelMap): Double {
+            var sum = 0
+            var count = 0
+            for (y in 0 until pixels.height) for (x in 0 until pixels.width) {
+                val color = pixels[x, y]
+                if (color.red > .8f && color.green < .4f && color.blue < .4f) {
+                    sum += x
+                    count++
+                }
+            }
+            assertTrue("Glyph is visible", count > 0)
+            return sum.toDouble() / count
+        }
+        val icon = compose.onNodeWithTag("icon")
+        val bounds = icon.fetchSemanticsNode().boundsInRoot
+        val idle = compose.onRoot().captureToImage().toPixelMap()
+        compose.mainClock.autoAdvance = false
+        icon.performTouchInput { down(center) }
+        icon.performTouchInput { moveTo(Offset(width * .85f, center.y)) }
+        compose.mainClock.advanceTimeBy(250)
+        val held = compose.onRoot().captureToImage().toPixelMap()
+        assertTrue("Glyph follows the press motion", glyphCenterX(held) > glyphCenterX(idle) + .5)
+        val row = (bounds.center.y - bounds.height / 4).toInt()
+        assertTrue("The chip edge moves with the glyph",
+            (bounds.left.toInt() - 4..bounds.left.toInt() + 4).any { x -> held[x, row] != idle[x, row] })
+        assertEquals(bounds, icon.fetchSemanticsNode().boundsInRoot)
+        icon.performTouchInput { up() }
+        compose.mainClock.autoAdvance = true
+        compose.runOnIdle { assertEquals(0, clicks) }
+        icon.performTouchInput { click() }
+        compose.runOnIdle { assertEquals(1, clicks) }
+    }
 
     @Test fun `footer actions and status cards sample their rendered parent film`() {
         val film = mutableStateOf(.45f)

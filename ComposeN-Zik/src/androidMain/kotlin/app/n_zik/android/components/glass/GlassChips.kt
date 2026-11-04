@@ -154,7 +154,7 @@ private fun GlassChipFeedback(
     content: @Composable (Modifier, MutableInteractionSource?) -> Unit,
 ) {
     if (!material) {
-        PageButtonFeedback(false, enabled, shape, null, settings, content)
+        PageButtonFeedback(false, enabled, shape, null, settings, content = content)
         return
     }
     val source = remember { MutableInteractionSource() }

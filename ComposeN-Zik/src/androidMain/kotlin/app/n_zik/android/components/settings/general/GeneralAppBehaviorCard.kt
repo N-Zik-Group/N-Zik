@@ -6,11 +6,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import app.it.fast4x.rimusic.utils.RestartActivity
 import app.it.fast4x.rimusic.utils.closeWithBackButtonKey
 import app.it.fast4x.rimusic.utils.closebackgroundPlayerKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.RestartActivity
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsSearchTarget

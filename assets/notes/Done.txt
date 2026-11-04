@@ -3,3 +3,10 @@ Fixed:
   - Reuse the original ExplicitBadge renderers in Glass and Material while letting the mini-player handle taps without badge Jelly feedback.
   - Reduce the Glass control gap to 8 dp in the mini-player and settings preview through shared geometry.
   - Cover taps on the badge in Glass and Material with Compose regression tests.
+- fix(updater): animate Glass action icons with their Jelly feedback
+  - Move the icon and chip surface together for the overflow and translation actions while keeping their touch targets fixed.
+  - Preserve translation long-press behavior and verify glyph motion, chip motion, and touch input.
+- fix(settings): restore direct PiP access and improve search navigation
+  - Add a profile-style Open row to the PiP card, index it in global and page search, and report when Android refuses entry.
+  - Scroll from the top to search destinations and fade the four highlight pulses on rows and fallback cards.
+  - Apply the shared Glass chip style to Restart player actions across settings.

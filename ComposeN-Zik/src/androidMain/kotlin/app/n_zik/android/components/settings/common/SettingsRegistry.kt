@@ -149,6 +149,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.settings_picture_in_picture_title, R.string.settings_enable_pip, R.string.settings_pip_module,
             R.string.settings_picture_in_picture_artwork_module_label, R.string.settings_enable_pip_auto,
             R.string.settings_picture_in_picture_android_12_auto_description,
+            R.string.modules_open, R.string.settings_picture_in_picture_open, R.string.navigation_action_picture_in_picture,
         )),
     SettingsCardRegistryEntry(0, R.string.settings_launcher_shortcuts_title, R.drawable.shortcut_rescue,
         keywordRes = listOf(R.string.settings_launcher_shortcuts_title)),

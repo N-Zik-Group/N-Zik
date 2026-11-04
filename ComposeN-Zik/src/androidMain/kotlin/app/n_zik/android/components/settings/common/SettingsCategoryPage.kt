@@ -163,7 +163,8 @@ fun SettingsCategoryPage(
         }
         if (item != null) {
             // Lazy cards must be composed before exact-row availability can be evaluated.
-            scroll.scrollToItem(item)
+            scroll.scrollToItem(0)
+            scroll.animateScrollToItem(item)
             withFrameNanos { }
             withFrameNanos { }
         }

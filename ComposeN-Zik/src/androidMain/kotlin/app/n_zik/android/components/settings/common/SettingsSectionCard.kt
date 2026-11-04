@@ -76,7 +76,8 @@ fun SettingsSectionCard(
     }
     val isHighlighted = highlightedCard != null && title == stringResource(highlightedCard.titleRes)
     val cardColor = surfaceColor(colorPalette().background1)
-    val containerColor = if (isHighlighted) lerp(cardColor, colorPalette().accent, 0.22f) else cardColor
+    val highlightStrength = if (LocalSettingsTargets.current != null) settingsTargetHighlightStrength(isHighlighted) else 0f
+    val containerColor = lerp(cardColor, colorPalette().accent, highlightStrength)
     val resetScope = LocalSettingsResetScope.current
     val displayTitle = if (resetScope != null && title == stringResource(R.string.settings_reset))
         stringResource(R.string.settings_reset_scope, stringResource(resetScope)) else title

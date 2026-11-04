@@ -6,6 +6,7 @@ import app.n_zik.android.LocalPlayerAwareWindowInsets
 
 import android.app.Application
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Looper
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
@@ -26,6 +27,7 @@ import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.it.fast4x.rimusic.utils.playerBackgroundColorsKey
+import app.it.fast4x.rimusic.utils.enablePictureInPictureKey
 import app.it.fast4x.rimusic.utils.playerTypeKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
@@ -133,6 +135,18 @@ class SettingsSearchTargetTest {
         pumpUntil("the offscreen contributors row must be composed and highlighted") { highlighted(target, true) }
         assertTrue("an uncomposed lazy card must not be reported unavailable", messages.isEmpty())
         assertEquals(before, context.preferences.all)
+    }
+
+    @Test fun openPipSearchResultHighlightsItsRowAfterScrolling() {
+        Shadows.shadowOf(context.packageManager)
+            .setSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE, true)
+        context.preferences.edit().putBoolean(enablePictureInPictureKey, true).commit()
+        val target = "general.picture_in_picture.open"
+        val entry = AllSettingsEntryTargets.single { it.id == target }
+        show("player", target, settingsCardTargetId(context, entry.tab, entry.cardTitleRes))
+        pumpUntil("PiP search must reach the exact Open row") { highlighted(target, true) }
+        composeRule.onNodeWithTag("settings.target.$target", useUnmergedTree = true).assertIsDisplayed()
+        assertTrue(messages.isEmpty())
     }
 
     @Test fun playerTargetNavigationDoesNotNormalizeStoredThumbnailPreferences() {

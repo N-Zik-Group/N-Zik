@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.data
 
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.settings.common.RestartPlayerService
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import android.text.format.Formatter
 import androidx.compose.runtime.Composable
@@ -26,7 +27,6 @@ import app.it.fast4x.rimusic.enums.ExoPlayerCacheLocation
 import app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize
 import app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize
 import app.it.fast4x.rimusic.ui.components.themed.CacheSpaceIndicator
-import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.coilCustomDiskCacheKey
 import app.it.fast4x.rimusic.utils.coilDiskCacheMaxSizeKey

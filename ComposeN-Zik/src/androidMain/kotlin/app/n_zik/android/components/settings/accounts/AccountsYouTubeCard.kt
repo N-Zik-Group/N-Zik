@@ -39,7 +39,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 import app.it.fast4x.rimusic.extensions.youtubelogin.YouTubeLogin
-import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.it.fast4x.rimusic.utils.autosyncAlbumsKey
 import app.it.fast4x.rimusic.utils.autosyncArtistsKey
 import app.it.fast4x.rimusic.utils.autosyncLikesKey
@@ -88,6 +87,7 @@ import app.n_zik.android.components.dialog.settings.clearAudioCache
 import app.n_zik.android.components.glass.CustomModalBottomSheet
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.settings.YtSearchAccountToggle
+import app.n_zik.android.components.settings.common.RestartPlayerService
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard

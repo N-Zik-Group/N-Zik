@@ -72,7 +72,7 @@ internal class SettingsEntrySearchIndex(
                 label == needle -> 0
                 label.startsWith(needle) -> 1
                 label.contains(needle) -> 2
-                entry.keywords.any { it.contains(needle) } -> 3
+                entry.keywords.any { it.contains(needle) || "$label $it" == needle } -> 3
                 entry.choices.any { choice ->
                     choice.contains(needle) || tokens.all { label.contains(it) || choice.contains(it) }
                 } -> 4

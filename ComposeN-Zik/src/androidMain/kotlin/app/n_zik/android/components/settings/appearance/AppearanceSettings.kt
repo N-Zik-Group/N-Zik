@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.settings.common.RestartPlayerService
 import app.n_zik.android.components.settings.common.settingsTopContentPadding
 
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -44,7 +45,6 @@ import app.n_zik.android.components.settings.common.visibleCardTitleRes
 import app.n_zik.android.components.settings.common.settingsSearchContent
 import app.n_zik.android.components.settings.common.settingsSearchDescription
 import app.n_zik.android.components.settings.common.settingsSearchTitle
-import app.it.fast4x.rimusic.utils.RestartPlayerService
 import app.it.fast4x.rimusic.utils.playerBackgroundColorsKey
 import app.it.fast4x.rimusic.utils.playerTypeKey
 import app.it.fast4x.rimusic.utils.rememberPreference

@@ -1,6 +1,13 @@
 package app.n_zik.android.components.settings
 
 import androidx.compose.foundation.layout.WindowInsets
+import android.app.Activity
+import android.content.pm.PackageManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.test.click
+import androidx.compose.ui.test.performTouchInput
+import app.it.fast4x.compose.persist.findActivityNullable
+import app.n_zik.android.components.settings.general.GeneralPipCard
 
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 
@@ -99,6 +106,27 @@ class GeneralSettingsWiringTest {
             }
         }
         composeRule.waitForIdle()
+    }
+
+    @Test
+    fun `manual PiP opens from settings when enabled on a supported device`() {
+        Shadows.shadowOf(context.packageManager)
+            .setSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE, true)
+        lateinit var activity: Activity
+        composeRule.setContent {
+            activity = requireNotNull(LocalContext.current.findActivityNullable())
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    GeneralPipCard(true, false, {}, {}, {})
+                }
+            }
+        }
+
+        val open = composeRule.onNodeWithText(context.getString(R.string.settings_picture_in_picture_open))
+        open.assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.settings_enable_pip)).performClick()
+        open.performScrollTo().performTouchInput { click() }
+        composeRule.runOnIdle { assertTrue(activity.isInPictureInPictureMode) }
     }
 
     /**

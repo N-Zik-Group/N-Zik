@@ -134,7 +134,8 @@ internal fun GlassSettingsContent(
         if (option == null) return@LaunchedEffect
         val keys = listOf("header", "master", "interactions", "material", "colour", "readability", "edges") +
             GlassDestinationGroup.entries.map { "destination.${it.name}" }
-        scroll.scrollToItem(keys.indexOf(option.section))
+        scroll.scrollToItem(0)
+        scroll.animateScrollToItem(keys.indexOf(option.section))
         // Expanded cards animate into layout before registering their exact control.
         val found = withTimeoutOrNull(1500) {
             snapshotFlow { registry.targets[target] }.first { it != null }
@@ -143,7 +144,7 @@ internal fun GlassSettingsContent(
             showMessage(unavailableMessage)
             option.fallback ?: return@LaunchedEffect
         }
-        if (found == null && option.fallback == "glass.quality") scroll.scrollToItem(keys.indexOf("material"))
+        if (found == null && option.fallback == "glass.quality") scroll.animateScrollToItem(keys.indexOf("material"))
         withFrameNanos { }
         val requester = withTimeoutOrNull(1500) {
             snapshotFlow { registry.targets[resolved] }.first { it != null }

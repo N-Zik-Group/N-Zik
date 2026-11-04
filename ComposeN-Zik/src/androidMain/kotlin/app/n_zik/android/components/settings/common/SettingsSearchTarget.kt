@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.common
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
@@ -14,7 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
@@ -52,6 +53,16 @@ internal class SettingsTargetRegistry {
 internal val LocalSettingsTargets = staticCompositionLocalOf<SettingsTargetRegistry?> { null }
 internal val LocalSettingsResetScope = staticCompositionLocalOf<Int?> { null }
 
+@Composable
+internal fun settingsTargetHighlightStrength(highlighted: Boolean): Float {
+    val strength by animateFloatAsState(
+        targetValue = if (highlighted) 0.22f else 0f,
+        animationSpec = tween(160),
+        label = "settingsTargetPulse",
+    )
+    return strength
+}
+
 /** Keeps a search request inside its owning dialog and consumes it on dismissal. */
 @Composable
 internal fun SettingsDialogSearchScope(dialog: Dialog, content: @Composable () -> Unit) {
@@ -76,9 +87,11 @@ fun Modifier.settingsSearchTarget(id: String): Modifier {
     DisposableEffect(registry, id) {
         onDispose { if (registry.targets[id] === requester) registry.targets.remove(id) }
     }
-    val highlight = if (registry.highlighted == id) colorPalette().accent.copy(alpha = 0.22f) else Color.Transparent
     val shape = uiRoundnessShape()
-    val painted = if (id.startsWith("card.")) this else clip(shape).background(highlight, shape)
+    val painted = if (id.startsWith("card.")) this else {
+        val highlight = colorPalette().accent.copy(alpha = settingsTargetHighlightStrength(registry.highlighted == id))
+        clip(shape).background(highlight, shape)
+    }
     return painted.testTag("settings.target.$id")
         .semantics {
             this[SettingsTargetId] = id
