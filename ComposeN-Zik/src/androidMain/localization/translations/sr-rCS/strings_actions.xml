@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_action_apply">Apply</string>
-    <string name="common_action_cancel">Otkaži</string>
-    <string name="common_action_clear">Obriši</string>
+    <string name="common_action_cancel">Cancel</string>
+    <string name="common_action_clear">Clear</string>
     <string name="common_action_close">Close</string>
     <string name="common_action_close_app">Close app</string>
-    <string name="common_action_confirm">Potvrdi</string>
-    <string name="common_action_delete">Obriši</string>
-    <string name="common_action_done">Gotovo</string>
+    <string name="common_action_confirm">Confirm</string>
+    <string name="common_action_delete">Delete</string>
+    <string name="common_action_done">Done</string>
     <string name="common_action_export">Export</string>
     <string name="common_action_import">Import</string>
     <string name="common_action_next">Next</string>
@@ -18,11 +19,11 @@
     <string name="common_action_reset">Reset</string>
     <string name="common_action_retry">Retry</string>
     <string name="common_action_save">Save</string>
-    <string name="common_action_select">Izabеri</string>
+    <string name="common_action_select">Select</string>
     <string name="common_action_show_less">Show less</string>
     <string name="common_action_show_more">Show more</string>
-    <string name="common_action_translate">Prevedi</string>
-    <string name="common_action_turn_off">Isključi</string>
+    <string name="common_action_translate">Translate</string>
+    <string name="common_action_turn_off">Turn off</string>
     <string name="common_action_unlink">Unlink</string>
     <string name="common_action_update">Update</string>
     <string name="common_menu_label">Menu</string>
