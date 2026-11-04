@@ -1,66 +1,69 @@
-Frontend YouTube Music multilingv pentru Android: performanță, rafinarea UI/UX, extinderea funcțiilor, suport pe termen lung.
+A multilingual YouTube Music frontend for Android, focused on performance, UI/UX refinements, feature expansion, and long-term support.
 
-<b>N-Zik</b> este un fork open-source al <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+<b>N-Zik</b> is an open-source fork of <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Notă:</b> N-Zik a început ca proiect secundar. Alternative mai mature: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> sau <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Note:</b> N-Zik started as a side project. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Utilizarea AI:</b> Folosesc AI generativ pentru cod (prin <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), revizuit și testat înainte de lansare.
+<b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), reviewed and tested before shipping.
 
-✨ <b>DE CE N-ZIK?</b> Fără reclame, redare în fundal, cache offline, interfață personalizabilă - gratuit, întotdeauna.
+✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI - free, always.
 
-🎨 <b>Interfață personalizabilă</b>
-- Teme: AMOLED, Deep Dark, Crisp Light + accente colorate
-- 3D Carousel Player, widget-uri pe home, player unificat și mini-player
-- Profiluri de artiști, Discovery și stări de spirit, anteturi pliabile pe home
+🎨 <b>Customizable UI</b>
+- Jetpack Compose interface
+- Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
+- 3D Carousel Player, home widgets, unified player and mini-player
+- Artist profiles, Discovery and moods, collapsible home headers
 
-🫧 <b>Efect Glass (BETA, opțional)</b>
-Dezactivat la instalare. Activați în Setări: nativ, doar contur sau Glass pe categorii, calitate reglabilă. Poate crește sarcina de randare și consumul bateriei: reduceți calitatea sau dezactivați.
-Credite Glass: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+🫧 <b>Glass Effect (BETA, optional)</b>
+Disabled on fresh installs. Enable in Settings: native, contour-only or Glass by category, with adjustable quality. May increase rendering work and battery use; reduce quality or disable if needed.
+Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
-🎵 <b>Experiență audio</b>
-- Calitate premium prin YouTube Music Premium, aplicată automat
-- Versuri sincronizate cu editare și traducere în timp real
-- Recunoaștere muzicală (gen Shazam), căutare vocală, vizualizator audio
-- Comenzi avansate: viteză, pitch, normalizare, crossfade, boost volum, boost bas, reverb
-- Audio Bar cu seekbar în formă de undă, navigare precisă
+🎵 <b>Audio Experience</b>
+- Premium quality via YouTube Music Premium, applied automatically
+- Synced lyrics with editing and real-time translation
+- Song recognition (Shazam-like), voice search, audio visualizer
+- Pro controls: speed, pitch, normalization, crossfade, volume boost, bass boost, reverb
+- Audio Bar waveform seekbar for precise navigation
 
-💾 <b>Offline, Metadate și Confidențialitate</b>
-- Cache inteligent, descărcări de piese și liste, calitate aleasă
-- Export prin FFmpeg cu metadate complete (doar versiuni standard)
-- Editor de metadate în aplicație (AAC/Opus, copertă)
-- Statistici și istoric local de ascultare
-- Backup automat: intervale personalizate, durată de păstrare
+💾 <b>Offline, Metadata & Privacy</b>
+- Smart caching and downloads for tracks and playlists, with selectable download quality
+- FFmpeg-powered export with full metadata (FFmpeg is a downloadable extension, installed on first use)
+- In-app metadata editor (AAC/Opus, cover art)
+- Local listening stats and history
+- Auto-backup with custom intervals and retention
 
-🔗 <b>Integrări</b>
-- Conectare YouTube: recomandări, redare video, motor experimental de sync bidirecțional
-- Scrobbling Last.fm cu Now Playing și love/unlove
-- Informații despre artiști și albume din MusicBrainz
-- Discord Rich Presence, modul avansat cu previzualizare live
-- Integrare Invidious pentru streaming alternativ YouTube
-- Import/export liste de redare: RiPlay, Spotify, YouTube Music, N-Zik
+🔗 <b>Integrations</b>
+- YouTube sign-in for recommendations and video playback, plus an experimental two-way sync engine
+- Last.fm scrobbling with Now Playing and love/unlove
+- MusicBrainz artist and album insights
+- Discord Rich Presence, including advanced mode with live preview
+- Invidious integration for alternative YouTube streaming
+- Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
-👥 <b>Ascultă împreună</b>
-- Alătură-te sau găzduiește sesiuni live de ascultare cu alți utilizatori prin cod sau link de invitație
+👥 <b>Listen Together</b>
+- Join or host live listening sessions with other users via code or invite link
 
 🗓️ <b>Rewind</b>
-- Recapitulări anuale și lunare de ascultare, cu liste Rewind generate automat
+- Yearly and monthly listening recaps with auto-generated Rewind playlists
 
-📱 <b>Redă oriunde:</b> Android Auto, Automotive, TV și Tablets
+📱 <b>Play Anywhere:</b> Android Auto, Automotive, TV, and Tablets
 
-🛠️ <b>Funcții pentru utilizatori avansați</b>
-- Multi-profil: bază de date și setări izolate pe profil
-- Reluare automată la conectare Bluetooth, coadă persistentă, auto-umplere
-- Coș inteligent, piese ascunse, sistem de dezaprecieri, control parental
-- Suport proxy, adaptarea calității rețelei, export de jurnale
-- Rescue Center, ecran de menținere, onboarding, scurtături
-- Actualizări OTA de pe GitHub, temporizator de somn, redare în fundal
+🛠️ <b>Power User Features</b>
+- Multi-profile: isolated database and settings per profile
+- Auto-resume on Bluetooth connect, persistent queue, auto-fill queue
+- Smart trash, hidden songs, dislike system, parental control
+- Proxy support, network quality adaptation, log export
+- Rescue Center, maintenance screen, onboarding, app shortcuts
+- OTA updates from GitHub, sleep timer, background playback
 
-📦 <b>Versiuni disponibile</b>
-- Release64/Beta64 (`com.nevar.nzik`): Versiune completă, doar dispozitive 64-bit
-- Release32/Beta32 (`com.nevar.nzik`): Versiune completă, doar dispozitive 32-bit
-- Minified64 (`com.nevar.nzik`): Versiune R8 ușoară, pentru dispozitive entry-level (64-bit)
-- Minified32 (`com.nevar.nzik`): Versiune R8 ușoară (32-bit)
-- FOSS (`com.nevar.nzik.foss`): Fără actualizator automat, pentru F-Droid (toate arhitecturile)
-- Dev64/Dev32 (`com.nevar.nzik.dev`): Versiuni de dezvoltare, doar pentru testare
+📦 <b>Available Builds</b>
+- Release64/Beta64 (`com.nevar.nzik`): Complete build, 64-bit devices only
+- Release32/Beta32 (`com.nevar.nzik`): Complete build, 32-bit devices only
+- Minified64 (`com.nevar.nzik`): Lightweight R8 build, for low-end devices (64-bit)
+- Minified32 (`com.nevar.nzik`): Lightweight R8 build (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Without auto-updater, for F-Droid (all architectures)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Development builds, testing only
 
-Nicio versiune nu include FFmpeg: este o extensie descărcabilă (installată la prima utilizare, gestionată în Setări → Extensii). Doar FOSS pe F-Droid.
+No build bundles FFmpeg: it is a downloadable extension (installed on first use, managed in Settings → Extensions). Only FOSS is on F-Droid.
+
+Historical project credits include ViMusic.
