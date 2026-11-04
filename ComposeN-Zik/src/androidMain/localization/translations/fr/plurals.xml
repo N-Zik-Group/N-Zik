@@ -2,8 +2,8 @@
 <resources>
     <!-- Maintenance -->
     <plurals name="maintenance_systems_need_attention">
-        <item quantity="one">%d system needs attention</item>
-        <item quantity="other">%d systems need attention</item>
+        <item quantity="one">Le système %d nécessite une intervention</item>
+        <item quantity="other">%d systèmes nécessitent une intervention</item>
     </plurals>
     <plurals name="sync_detail_songs_liked">
         <item quantity="one">%1$d song liked</item>
