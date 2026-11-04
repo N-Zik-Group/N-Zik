@@ -10,3 +10,7 @@ Fixed:
   - Add a profile-style Open row to the PiP card, index it in global and page search, and report when Android refuses entry.
   - Scroll from the top to search destinations and fade the four highlight pulses on rows and fallback cards.
   - Apply the shared Glass chip style to Restart player actions across settings.
+
+- fix(localization): finish the Android catalog and Fastlane audit
+  - Preserve Bridge message identities, localize export failures, and isolate status details per YouTube Music sync operation.
+  - Repair placeholders across the Android catalogs and consolidate Fastlane listings under one Crowdin rule.

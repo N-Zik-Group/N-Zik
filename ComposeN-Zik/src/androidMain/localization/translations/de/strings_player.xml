@@ -93,7 +93,7 @@
     <string name="lyrics_interval_loader_label">Zeige einen Loader für Lücken zwischen den Songtexten</string>
     <string name="lyrics_karaoke">Karaoke (word-level)</string>
     <string name="lyrics_karaoke_respect_agent_position_label">Position des Agenten respektieren</string>
-    <string name="lyrics_karaoke_unavailable_synced_fallback_format">Karaoke wurde nicht auf %sgefunden, wird von %s synchronisiert</string>
+    <string name="lyrics_karaoke_unavailable_synced_fallback_format">Karaoke wurde nicht auf %1$sgefunden, wird von %2$s synchronisiert</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">karaoke Songtexte</string>
     <string name="lyrics_mode_synchronized_label">Synchronisierte Songtexte</string>
@@ -222,7 +222,7 @@
     <string name="player_error_local_file_not_found">Lokale Musikdatei nicht gefunden</string>
     <string name="player_error_login_required_format">Anmeldung erforderlich: %1$s</string>
     <string name="player_error_no_playable_format">Kein abspielbares Audio-Format gefunden</string>
-    <string name="player_error_playback_code_format">Wiedergabe fehlgeschlagen: %1$s</string>
+    <string name="player_error_playback_code_format">Wiedergabe fehlgeschlagen: %1$s [%2$s]</string>
     <string name="player_error_source_deleted">Die ursprüngliche Videoquelle zu diesem Song wurde gelöscht</string>
     <string name="player_error_unknown">Ein unbekannter Wiedergabefehler ist aufgetreten</string>
     <string name="player_error_unsupported_format">Diese Datei scheint ein nicht unterstütztes Format zu haben</string>

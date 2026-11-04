@@ -93,7 +93,7 @@
     <string name="lyrics_interval_loader_label">Şarkı sözleri arasındaki boşluklarda yükleme simgesi göster</string>
     <string name="lyrics_karaoke">Karaoke (kelime düzeyinde)</string>
     <string name="lyrics_karaoke_respect_agent_position_label">Temsilcinin konumuna saygı gösterin</string>
-    <string name="lyrics_karaoke_unavailable_synced_fallback_format">%s\'de karaoke bulunamadı, %s\'den senkronize edilmiş olarak gösteriliyor</string>
+    <string name="lyrics_karaoke_unavailable_synced_fallback_format">%1$s\'de karaoke bulunamadı, %2$s\'den senkronize edilmiş olarak gösteriliyor</string>
     <string name="lyrics_mode_automatic_label">otomatik şarkı sözleri</string>
     <string name="lyrics_mode_karaoke_label">karaoke şarkı sözleri</string>
     <string name="lyrics_mode_synchronized_label">senkronize edilmiş şarkı sözleri</string>

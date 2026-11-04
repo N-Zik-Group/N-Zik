@@ -41,6 +41,10 @@ import app.it.fast4x.rimusic.utils.syncBackgroundGuardKey
 import app.n_zik.android.appRunningInBackground
 import app.it.fast4x.rimusic.enums.SyncDirection
 import app.n_zik.android.utils.SyncStatusDetail
+import kotlin.coroutines.AbstractCoroutineContextElement
+import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.update
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -137,7 +141,7 @@ suspend fun importYTMSubscribedChannels(force: Boolean = false, showDetails: Boo
 
         val page = Innertube.library("FEmusic_library_corpus_artists").completed().getOrThrowRetriable()
         if (page == null) {
-            latestSyncDetail = SyncStatusDetail.Text(R.string.sync_fetch_subscribed_channels_failed)
+            coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Text(R.string.sync_fetch_subscribed_channels_failed)
             if (showDetails) Toaster.e(R.string.sync_failed)
             return@withContext false
         }
@@ -197,7 +201,7 @@ suspend fun importYTMLikedAlbums(force: Boolean = false, showDetails: Boolean = 
 
         val page = Innertube.library("FEmusic_liked_albums").completed().getOrThrowRetriable()
         if (page == null) {
-            latestSyncDetail = SyncStatusDetail.Text(R.string.sync_fetch_liked_albums_failed)
+            coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Text(R.string.sync_fetch_liked_albums_failed)
             if (showDetails) Toaster.e(R.string.sync_failed)
             return@withContext false
         }
@@ -283,7 +287,7 @@ suspend fun importYTMLikedSongs(force: Boolean = false, showDetails: Boolean = t
 
     val page = YtMusic.getPlaylist(playlistId = "LM").completed().getOrThrowRetriable()
     if (page == null) {
-        latestSyncDetail = SyncStatusDetail.Text(R.string.sync_fetch_liked_songs_failed)
+        coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Text(R.string.sync_fetch_liked_songs_failed)
         if (showDetails) Toaster.e(R.string.sync_failed)
         return@withContext false
     }
@@ -302,7 +306,7 @@ suspend fun importYTMLikedSongs(force: Boolean = false, showDetails: Boolean = t
         Timber.tag("SyncYTMusicUtils").d("Liked song: ${song.title}")
     }
 
-    latestSyncDetail = SyncStatusDetail.Count(R.plurals.sync_detail_songs_liked, ytmLikedSongs.size)
+    coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Count(R.plurals.sync_detail_songs_liked, ytmLikedSongs.size)
 
     Timber.tag("SyncYTMusicUtils").d("importYTMLikedSongs completed: ${ytmLikedSongs.size} songs liked")
     if (showDetails) Toaster.done()
@@ -332,7 +336,7 @@ suspend fun removeYTMLikedSongs(): Boolean = withContext(NzikDispatchers.DATA) {
             Toaster.done()
         }
         result.onFailure {
-            latestSyncDetail = SyncStatusDetail.Text(R.string.common_error_unknown)
+            coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Text(R.string.common_error_unknown)
             Timber.tag("SyncYTMusicUtils").e(it, "removeYTMLikedSongs failed")
             Toaster.e(R.string.sync_failed)
         }
@@ -353,7 +357,7 @@ suspend fun importYTMPlaylists(force: Boolean = false, showDetails: Boolean = tr
 
     val page = Innertube.library("FEmusic_liked_playlists").completed().getOrThrowRetriable()
     if (page == null) {
-        latestSyncDetail = SyncStatusDetail.Text(R.string.sync_fetch_playlists_failed)
+        coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Text(R.string.sync_fetch_playlists_failed)
         if (showDetails) Toaster.e(R.string.sync_failed)
         return@withContext false
     }
@@ -402,7 +406,7 @@ suspend fun importYTMPlaylists(force: Boolean = false, showDetails: Boolean = tr
         }
     }
 
-    latestSyncDetail = SyncStatusDetail.Count(R.plurals.sync_detail_playlists_synced, ytmPlaylists.size)
+    coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Count(R.plurals.sync_detail_playlists_synced, ytmPlaylists.size)
 
     Timber.tag("SyncYTMusicUtils").d("importYTMPlaylists completed: ${ytmPlaylists.size} playlists synced")
     if (showDetails) Toaster.done()
@@ -440,7 +444,7 @@ suspend fun importYTMLibrarySongs(force: Boolean = false, showDetails: Boolean =
 
     val page = Innertube.library("FEmusic_liked_videos").completed().getOrThrowRetriable()
     if (page == null) {
-        latestSyncDetail = SyncStatusDetail.Text(R.string.sync_fetch_library_songs_failed)
+        coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Text(R.string.sync_fetch_library_songs_failed)
         if (showDetails) Toaster.e(R.string.sync_failed)
         return@withContext false
     }
@@ -453,7 +457,7 @@ suspend fun importYTMLibrarySongs(force: Boolean = false, showDetails: Boolean =
         Timber.tag("SyncYTMusicUtils").d("Library song: ${song.title}")
     }
 
-    latestSyncDetail = SyncStatusDetail.Count(R.plurals.sync_detail_songs_imported, ytmSongs.size)
+    coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Count(R.plurals.sync_detail_songs_imported, ytmSongs.size)
 
     Timber.tag("SyncYTMusicUtils").d("importYTMLibrarySongs completed: ${ytmSongs.size} songs imported")
     if (showDetails) Toaster.done()
@@ -474,7 +478,7 @@ suspend fun importYTMUploadedSongs(force: Boolean = false, showDetails: Boolean 
 
     val page = Innertube.library("FEmusic_library_privately_owned_tracks").completed().getOrThrowRetriable()
     if (page == null) {
-        latestSyncDetail = SyncStatusDetail.Text(R.string.sync_fetch_uploaded_songs_failed)
+        coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Text(R.string.sync_fetch_uploaded_songs_failed)
         if (showDetails) Toaster.e(R.string.sync_failed)
         return@withContext false
     }
@@ -487,7 +491,7 @@ suspend fun importYTMUploadedSongs(force: Boolean = false, showDetails: Boolean 
         Timber.tag("SyncYTMusicUtils").d("Uploaded song: ${song.title}")
     }
 
-    latestSyncDetail = SyncStatusDetail.Count(R.plurals.sync_detail_songs_imported, ytmSongs.size)
+    coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Count(R.plurals.sync_detail_songs_imported, ytmSongs.size)
 
     Timber.tag("SyncYTMusicUtils").d("importYTMUploadedSongs completed: ${ytmSongs.size} songs imported")
     if (showDetails) Toaster.done()
@@ -508,7 +512,7 @@ suspend fun importYTMUploadedAlbums(force: Boolean = false, showDetails: Boolean
 
     val page = Innertube.library("FEmusic_library_privately_owned_releases").completed().getOrThrowRetriable()
     if (page == null) {
-        latestSyncDetail = SyncStatusDetail.Text(R.string.sync_fetch_uploaded_albums_failed)
+        coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Text(R.string.sync_fetch_uploaded_albums_failed)
         if (showDetails) Toaster.e(R.string.sync_failed)
         return@withContext false
     }
@@ -547,7 +551,7 @@ suspend fun importYTMUploadedAlbums(force: Boolean = false, showDetails: Boolean
             .map { it.copy( isYoutubeAlbum = false ) }
             .also( Database.albumTable::updateReplace )
 
-    latestSyncDetail = SyncStatusDetail.Count(R.plurals.sync_detail_albums_imported, ytmAlbums.size)
+    coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Count(R.plurals.sync_detail_albums_imported, ytmAlbums.size)
 
     Timber.tag("SyncYTMusicUtils").d("importYTMUploadedAlbums completed: ${ytmAlbums.size} albums imported")
     if (showDetails) Toaster.done()
@@ -568,7 +572,7 @@ suspend fun importYTMEpisodesForLater(force: Boolean = false, showDetails: Boole
 
     val page = YtMusic.getPlaylist(playlistId = "SE").completed().getOrThrowRetriable()
     if (page == null) {
-        latestSyncDetail = SyncStatusDetail.Text(R.string.sync_fetch_episodes_failed)
+        coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Text(R.string.sync_fetch_episodes_failed)
         if (showDetails) Toaster.e(R.string.sync_failed)
         return@withContext false
     }
@@ -581,7 +585,7 @@ suspend fun importYTMEpisodesForLater(force: Boolean = false, showDetails: Boole
         Timber.tag("SyncYTMusicUtils").d("Episode: ${episode.title}")
     }
 
-    latestSyncDetail = SyncStatusDetail.Count(R.plurals.sync_detail_episodes, episodes.size)
+    coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Count(R.plurals.sync_detail_episodes, episodes.size)
 
     Timber.tag("SyncYTMusicUtils").d("importYTMEpisodesForLater completed: ${episodes.size} episodes")
     if (showDetails) Toaster.done()
@@ -662,7 +666,11 @@ private val syncScope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
 @Volatile private var processingJob: kotlinx.coroutines.Job? = null
 private val syncMutex = Mutex()
 private val startLock = Any()
-private var latestSyncDetail: SyncStatusDetail? = null
+private class SyncDetailCapture : AbstractCoroutineContextElement(Key) {
+    companion object Key : CoroutineContext.Key<SyncDetailCapture>
+
+    var detail: SyncStatusDetail? = null
+}
 
 // Coalescing: track queued operation keys to prevent duplicates
 private val queuedOperationKeys = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
@@ -708,7 +716,7 @@ private suspend fun <T> withRetry(
         try {
             return block()
         } catch (e: Exception) {
-            if (e is kotlinx.coroutines.CancellationException) throw e
+            if (e is CancellationException) throw e
             Timber.tag("SyncYTMusicUtils").w("Retry ${attempt + 1}/$maxRetries after ${currentDelay}ms: ${e.message}")
             kotlinx.coroutines.delay(currentDelay)
             currentDelay *= 2
@@ -741,6 +749,8 @@ private fun startSyncQueue() {
             try {
                 _syncStatus.value = _syncStatus.value.copy(isRunning = true, currentOperation = operation::class.simpleName ?: "")
                 executeOperation(operation)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Timber.tag("SyncYTMusicUtils").e(e, "Sync operation failed: $operation")
             } finally {
@@ -776,34 +786,41 @@ fun cancelAllSyncs() {
     Timber.tag("SyncYTMusicUtils").d("All sync operations cancelled")
 }
 
+private suspend fun trackSyncItem(
+    replace: SyncStatus.(SyncItemStatus) -> SyncStatus,
+    operation: suspend () -> Boolean,
+) {
+    val capture = SyncDetailCapture()
+    _syncStatus.update { it.replace(SyncItemStatus("syncing")) }
+    try {
+        val succeeded = withContext(capture) {
+            withRetry {
+                capture.detail = null
+                operation()
+            }
+        }
+        val state = if (succeeded) "idle" else "error"
+        _syncStatus.update { it.replace(SyncItemStatus(state, capture.detail)) }
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        val detail = capture.detail ?: SyncStatusDetail.Text(R.string.common_error_unknown)
+        _syncStatus.update { it.replace(SyncItemStatus("error", detail)) }
+        throw e
+    }
+}
+
 private suspend fun executeOperation(operation: SyncOperation) {
     when (operation) {
         is SyncOperation.FullSync -> {
-            _syncStatus.value = _syncStatus.value.copy(likedSongs = SyncItemStatus("syncing"))
-            latestSyncDetail = null
-            val s1 = withRetry { importYTMLikedSongs(force = true) }
-            _syncStatus.value = _syncStatus.value.copy(likedSongs = if (s1) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail), librarySongs = SyncItemStatus("syncing"))
-            latestSyncDetail = null
-            val s2 = withRetry { importYTMLibrarySongs(force = true) }
-            _syncStatus.value = _syncStatus.value.copy(librarySongs = if (s2) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail), uploadedSongs = SyncItemStatus("syncing"))
-            latestSyncDetail = null
-            val s3 = withRetry { importYTMUploadedSongs(force = true) }
-            _syncStatus.value = _syncStatus.value.copy(uploadedSongs = if (s3) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail), likedAlbums = SyncItemStatus("syncing"))
-            latestSyncDetail = null
-            val s4 = withRetry { importYTMLikedAlbums(force = true) }
-            _syncStatus.value = _syncStatus.value.copy(likedAlbums = if (s4) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail), uploadedAlbums = SyncItemStatus("syncing"))
-            latestSyncDetail = null
-            val s5 = withRetry { importYTMUploadedAlbums(force = true) }
-            _syncStatus.value = _syncStatus.value.copy(uploadedAlbums = if (s5) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail), artists = SyncItemStatus("syncing"))
-            latestSyncDetail = null
-            val s6 = withRetry { importYTMSubscribedChannels(force = true) }
-            _syncStatus.value = _syncStatus.value.copy(artists = if (s6) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail), playlists = SyncItemStatus("syncing"))
-            latestSyncDetail = null
-            val s7 = withRetry { importYTMPlaylists(force = true) }
-            _syncStatus.value = _syncStatus.value.copy(playlists = if (s7) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail), episodes = SyncItemStatus("syncing"))
-            latestSyncDetail = null
-            val s8 = withRetry { importYTMEpisodesForLater(force = true) }
-            _syncStatus.value = _syncStatus.value.copy(episodes = if (s8) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail))
+            trackSyncItem({ item -> copy(likedSongs = item) }) { importYTMLikedSongs(force = true) }
+            trackSyncItem({ item -> copy(librarySongs = item) }) { importYTMLibrarySongs(force = true) }
+            trackSyncItem({ item -> copy(uploadedSongs = item) }) { importYTMUploadedSongs(force = true) }
+            trackSyncItem({ item -> copy(likedAlbums = item) }) { importYTMLikedAlbums(force = true) }
+            trackSyncItem({ item -> copy(uploadedAlbums = item) }) { importYTMUploadedAlbums(force = true) }
+            trackSyncItem({ item -> copy(artists = item) }) { importYTMSubscribedChannels(force = true) }
+            trackSyncItem({ item -> copy(playlists = item) }) { importYTMPlaylists(force = true) }
+            trackSyncItem({ item -> copy(episodes = item) }) { importYTMEpisodesForLater(force = true) }
             withRetry { cleanupDuplicatePlaylists() }
             setLastSyncTime()
         }
@@ -818,35 +835,20 @@ private suspend fun executeOperation(operation: SyncOperation) {
         }
 
         // Push operations (App → YTM) — respect direction + individual toggles
-        is SyncOperation.PushLikedSongs -> {
-            _syncStatus.value = _syncStatus.value.copy(pushLikedSongs = SyncItemStatus("syncing"))
-            latestSyncDetail = null
-            val s = withRetry { pushYTMLikedSongs(force = operation.force) }
-            _syncStatus.value = _syncStatus.value.copy(pushLikedSongs = if (s) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail))
+        is SyncOperation.PushLikedSongs -> trackSyncItem({ item -> copy(pushLikedSongs = item) }) {
+            pushYTMLikedSongs(force = operation.force)
         }
-        is SyncOperation.PushAlbumBookmarks -> {
-            _syncStatus.value = _syncStatus.value.copy(pushAlbumBookmarks = SyncItemStatus("syncing"))
-            latestSyncDetail = null
-            val s = withRetry { pushYTMAlbumBookmarks(force = operation.force) }
-            _syncStatus.value = _syncStatus.value.copy(pushAlbumBookmarks = if (s) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail))
+        is SyncOperation.PushAlbumBookmarks -> trackSyncItem({ item -> copy(pushAlbumBookmarks = item) }) {
+            pushYTMAlbumBookmarks(force = operation.force)
         }
-        is SyncOperation.PushArtistFollows -> {
-            _syncStatus.value = _syncStatus.value.copy(pushArtistFollows = SyncItemStatus("syncing"))
-            latestSyncDetail = null
-            val s = withRetry { pushYTMArtistFollows(force = operation.force) }
-            _syncStatus.value = _syncStatus.value.copy(pushArtistFollows = if (s) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail))
+        is SyncOperation.PushArtistFollows -> trackSyncItem({ item -> copy(pushArtistFollows = item) }) {
+            pushYTMArtistFollows(force = operation.force)
         }
-        is SyncOperation.PushPlaylists -> {
-            _syncStatus.value = _syncStatus.value.copy(pushPlaylists = SyncItemStatus("syncing"))
-            latestSyncDetail = null
-            val s = withRetry { pushYTMPlaylists(force = operation.force) }
-            _syncStatus.value = _syncStatus.value.copy(pushPlaylists = if (s) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail))
+        is SyncOperation.PushPlaylists -> trackSyncItem({ item -> copy(pushPlaylists = item) }) {
+            pushYTMPlaylists(force = operation.force)
         }
-        is SyncOperation.PushEpisodes -> {
-            _syncStatus.value = _syncStatus.value.copy(pushEpisodes = SyncItemStatus("syncing"))
-            latestSyncDetail = null
-            val s = withRetry { pushYTMSavedEpisodes(force = operation.force) }
-            _syncStatus.value = _syncStatus.value.copy(pushEpisodes = if (s) SyncItemStatus("idle", latestSyncDetail) else SyncItemStatus("error", latestSyncDetail))
+        is SyncOperation.PushEpisodes -> trackSyncItem({ item -> copy(pushEpisodes = item) }) {
+            pushYTMSavedEpisodes(force = operation.force)
         }
     }
 }
@@ -936,7 +938,7 @@ suspend fun pushYTMLikedSongs(force: Boolean = false): Boolean = withContext(Nzi
         }
         kotlinx.coroutines.delay(50L)
     }
-    latestSyncDetail = SyncStatusDetail.PushResult(success, failed)
+    coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.PushResult(success, failed)
 
     Timber.tag("SyncYTMusicUtils").d("pushYTMLikedSongs completed: $success success, $failed failed")
     failed == 0
@@ -970,7 +972,7 @@ suspend fun pushYTMAlbumBookmarks(force: Boolean = false): Boolean = withContext
         }
         kotlinx.coroutines.delay(50L)
     }
-    latestSyncDetail = SyncStatusDetail.PushResult(success, failed)
+    coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.PushResult(success, failed)
 
     Timber.tag("SyncYTMusicUtils").d("pushYTMAlbumBookmarks completed: $success success, $failed failed")
     failed == 0
@@ -1000,7 +1002,7 @@ suspend fun pushYTMArtistFollows(force: Boolean = false): Boolean = withContext(
         }
         kotlinx.coroutines.delay(50L)
     }
-    latestSyncDetail = SyncStatusDetail.PushResult(success, failed)
+    coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.PushResult(success, failed)
 
     Timber.tag("SyncYTMusicUtils").d("pushYTMArtistFollows completed: $success success, $failed failed")
     failed == 0
@@ -1042,7 +1044,7 @@ suspend fun pushYTMPlaylists(force: Boolean = false): Boolean = withContext(Nzik
             Timber.tag("SyncYTMusicUtils").e(e, "pushYTMPlaylists failed for playlist: ${playlist.name}")
         }
     }
-    latestSyncDetail = SyncStatusDetail.PushResult(success, failed)
+    coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.PushResult(success, failed)
 
     Timber.tag("SyncYTMusicUtils").d("pushYTMPlaylists completed: $success success, $failed failed")
     failed == 0
@@ -1076,7 +1078,7 @@ suspend fun pushYTMSavedEpisodes(force: Boolean = false): Boolean = withContext(
             Timber.tag("SyncYTMusicUtils").e(e, "pushYTMSavedEpisodes failed for episode: ${episode.title}")
         }
     }
-    latestSyncDetail = SyncStatusDetail.PushResult(success, failed)
+    coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.PushResult(success, failed)
 
     Timber.tag("SyncYTMusicUtils").d("pushYTMSavedEpisodes completed: $success success, $failed failed")
     failed == 0

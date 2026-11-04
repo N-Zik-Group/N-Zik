@@ -235,7 +235,7 @@ object AppShortcutsSettingsDialog : ContentFramedDialog {
                 if (newValue) {
                     val currentActive = workingToggles.count { it }
                     if (currentActive >= MAX_ACTIVE_SHORTCUTS) {
-                        Toaster.s(context.getString(R.string.settings_launcher_shortcuts_limit_message, MAX_ACTIVE_SHORTCUTS))
+                        Toaster.s(R.string.settings_launcher_shortcuts_limit_message, formatArgs = arrayOf(MAX_ACTIVE_SHORTCUTS))
                         return@ToggleListDialog
                     }
                 }

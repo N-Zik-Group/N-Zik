@@ -101,7 +101,7 @@
     <string name="library_sync_artist_retry_count_format">Failed to find %1$d artists, retrying</string>
     <string name="library_sync_artists_complete_message">Found all artists</string>
     <string name="library_sync_current_item_format">Syncing: %1$s</string>
-    <string name="library_sync_failed_count_suffix">Sync failed</string>
+    <string name="library_sync_failed_count_suffix">Sync failed (%1$d)</string>
     <string name="library_sync_playlist_refresh_count_format">Refreshing %1$d playlists</string>
     <string name="library_sync_playlist_retry_count_format">Failed to find %1$d playlists, retrying</string>
     <string name="library_sync_playlists_complete_message">Found all playlists</string>

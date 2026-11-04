@@ -89,7 +89,7 @@
     <string name="library_sync_artist_retry_count_format">Impossible de trouver %1$d artistes, nouvelle tentative</string>
     <string name="library_sync_artists_complete_message">Tous les artistes ont été trouvés</string>
     <string name="library_sync_current_item_format">Synchronisation : %1$s</string>
-    <string name="library_sync_failed_count_suffix">Échec de la synchronisation</string>
+    <string name="library_sync_failed_count_suffix">Échec de la synchronisation (%1$d)</string>
     <string name="library_sync_playlist_refresh_count_format">Actualisation de %1$d playlists</string>
     <string name="library_sync_playlist_retry_count_format">Impossible de trouver %1$d playlists, nouvelle tentative</string>
     <string name="library_sync_playlists_complete_message">Toutes les playlists ont été trouvées</string>

@@ -93,7 +93,7 @@
     <string name="lyrics_interval_loader_label">Afficher un loader pour les pauses entre les paroles</string>
     <string name="lyrics_karaoke">Karaoké (au niveau des mots)</string>
     <string name="lyrics_karaoke_respect_agent_position_label">Respecter la position des chanteurs dans les paroles</string>
-    <string name="lyrics_karaoke_unavailable_synced_fallback_format">Karaoké introuvable sur %s, affichage synchronisé depuis %s</string>
+    <string name="lyrics_karaoke_unavailable_synced_fallback_format">Karaoké introuvable sur %1$s, affichage synchronisé depuis %2$s</string>
     <string name="lyrics_mode_automatic_label">paroles automatiques</string>
     <string name="lyrics_mode_karaoke_label">paroles de karaoké</string>
     <string name="lyrics_mode_synchronized_label">Paroles synchronisées</string>

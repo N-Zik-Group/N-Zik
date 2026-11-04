@@ -93,7 +93,7 @@
     <string name="lyrics_interval_loader_label">Mostra un caricatore per le lacune tra i testi</string>
     <string name="lyrics_karaoke">Karaoke (word-level)</string>
     <string name="lyrics_karaoke_respect_agent_position_label">Rispetto della posizione dell\'agente</string>
-    <string name="lyrics_karaoke_unavailable_synced_fallback_format">Karaoke not found on %s, showing synced from %s</string>
+    <string name="lyrics_karaoke_unavailable_synced_fallback_format">Karaoke not found on %1$s, showing synced from %2$s</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">testi di karaoke</string>
     <string name="lyrics_mode_synchronized_label">lyrics sincronizzate</string>

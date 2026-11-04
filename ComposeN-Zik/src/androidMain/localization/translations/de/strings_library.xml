@@ -58,7 +58,7 @@
     <string name="library_cached_title">Zwischengespeichert</string>
     <string name="library_disliked_title">Disliked</string>
     <string name="library_downloaded_title">Offline-Songs</string>
-    <string name="library_export_cached_songs_confirmation_format">Zwischengespeicherte/Heruntergeladene Songs exportieren?</string>
+    <string name="library_export_cached_songs_confirmation_format">%1$d zwischengespeicherte/heruntergeladene Songs exportieren?</string>
     <string name="library_favorites_title">Favoriten</string>
     <string name="library_filter_by_title">Filtern nach</string>
     <string name="library_filter_online_songs_label">Online Titel</string>

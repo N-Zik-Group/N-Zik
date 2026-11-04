@@ -179,7 +179,7 @@ fun ListenTogetherMenu() {
                         isCreatingRoom = false
                         isJoiningRoom = false
                         joinErrorMessage = serverErrorText
-                        Toaster.e(serverErrorText)
+                        Toaster.e(R.string.listen_together_server_request_failed)
                     }
                 }
 

@@ -95,7 +95,10 @@ class ExportCacheDialog(
             if (moduleState !is ModuleState.READY) {
                 withContext(NzikDispatchers.UI) {
                     isExporting.value = false
-                    if (moduleState is ModuleState.FAILED) Toaster.e(R.string.export_cached_songs_error, moduleState.message)
+                    if (moduleState is ModuleState.FAILED) {
+                        Timber.tag("ExportCache").w("FFmpeg module unavailable: %s", moduleState.message)
+                        Toaster.e(R.string.export_cached_songs_generic_error)
+                    }
                 }
                 try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (_: Exception) {}
                 return@launch
@@ -293,7 +296,7 @@ class ExportCacheDialog(
                     Timber.tag("ExportCache").e(e, "Export overall error")
                     kotlinx.coroutines.withContext(NzikDispatchers.UI) {
                         isExporting.value = false
-                        if (showResultToast) Toaster.e(R.string.export_cached_songs_failed, e.message)
+                        if (showResultToast) Toaster.e(R.string.export_cached_songs_generic_error)
                     }
                     try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (_: Exception) {}
                 } finally {
@@ -306,7 +309,7 @@ class ExportCacheDialog(
                 Timber.tag("ExportCache").e(e, "Export init error")
                 kotlinx.coroutines.withContext(NzikDispatchers.UI) {
                     isExporting.value = false
-                    if (showResultToast) Toaster.e(R.string.export_cached_songs_error, e.message)
+                    if (showResultToast) Toaster.e(R.string.export_cached_songs_generic_error)
                 }
                 try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (_: Exception) {}
             }
@@ -403,7 +406,7 @@ class ExportCacheDialog(
                         Timber.tag("ExportCache").e(e, "Single export failed")
                         kotlinx.coroutines.withContext(NzikDispatchers.UI) {
                             isExporting.value = false
-                            Toaster.e(R.string.export_cached_songs_failed, e.message)
+                            Toaster.e(R.string.export_cached_songs_generic_error)
                         }
                     }
                 }
@@ -434,7 +437,10 @@ class ExportCacheDialog(
             val moduleState = FfmpegModule.ensureReady()
             if (moduleState !is ModuleState.READY) {
                 withContext(NzikDispatchers.UI) {
-                    if (moduleState is ModuleState.FAILED) Toaster.e(R.string.export_cached_songs_failed, moduleState.message)
+                    if (moduleState is ModuleState.FAILED) {
+                        Timber.tag("ExportCache").w("FFmpeg module unavailable: %s", moduleState.message)
+                        Toaster.e(R.string.export_cached_songs_generic_error)
+                    }
                     onComplete(0, 0)
                 }
                 return@launch

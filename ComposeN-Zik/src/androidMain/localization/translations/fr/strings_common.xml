@@ -14,7 +14,7 @@
     <string name="common_debug_width">largeur</string>
     <string name="common_delete_success">Supprimé</string>
     <string name="common_description_unavailable">Aucune description disponible</string>
-    <string name="common_duration_milliseconds_format">%1$d ms</string>
+    <string name="common_duration_milliseconds_format">%1$s ms</string>
     <string name="common_empty_items">Aucun élément</string>
     <string name="common_external_link_loading_suffix">est entrain de charger...</string>
     <string name="common_load_failed">Impossible de charger</string>

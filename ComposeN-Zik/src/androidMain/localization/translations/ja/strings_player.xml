@@ -93,7 +93,7 @@
     <string name="lyrics_interval_loader_label">歌詞間のギャップをローダーで表示する</string>
     <string name="lyrics_karaoke">Karaoke (word-level)</string>
     <string name="lyrics_karaoke_respect_agent_position_label">尊重エージェントの位置</string>
-    <string name="lyrics_karaoke_unavailable_synced_fallback_format">Karaoke not found on %s, showing synced from %s</string>
+    <string name="lyrics_karaoke_unavailable_synced_fallback_format">Karaoke not found on %1$s, showing synced from %2$s</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">カラオケの歌詞</string>
     <string name="lyrics_mode_synchronized_label">同期している歌詞</string>

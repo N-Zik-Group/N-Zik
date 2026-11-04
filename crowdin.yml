@@ -9,44 +9,8 @@ files:
         zh-CN: zh-rCN
         zh-TW: zh-rTW
 
-  - source: /fastlane/source/short_description.txt
-    translation: /fastlane/metadata/android/%locale%/short_description.txt
-    languages_mapping:
-      locale:
-        af: af
-        ar: ar
-        bn: bn
-        ca: ca
-        es-ES: es
-        et: et
-        fil: fil
-        id: id
-        it: it
-        pt-PT: pt
-        ro: ro
-        tr: tr
-        vi: vi
-
-  - source: /fastlane/source/full_description.txt
-    translation: /fastlane/metadata/android/%locale%/full_description.txt
-    languages_mapping:
-      locale:
-        af: af
-        ar: ar
-        bn: bn
-        ca: ca
-        es-ES: es
-        et: et
-        fil: fil
-        id: id
-        it: it
-        pt-PT: pt
-        ro: ro
-        tr: tr
-        vi: vi
-
-  - source: /fastlane/source/title.txt
-    translation: /fastlane/metadata/android/%locale%/title.txt
+  - source: /fastlane/source/*.txt
+    translation: /fastlane/metadata/android/%locale%/%original_file_name%
     languages_mapping:
       locale:
         af: af

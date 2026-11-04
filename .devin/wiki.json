@@ -4,7 +4,7 @@
     "Prioritize documentation for 'composeApp' (UI/Core), 'modules' (Shared Logic), and 'extensions' (Data Providers).",
     "Tone: Technical yet pedagogical, suitable for contributors learning Kotlin/Compose.",
     "Extensions are mapped in settings.gradle.kts and reside in 'extensions/' and 'modules/'.",
-    "Localization is automated via Crowdin and GitHub Actions (sync-crowdin-translations.yaml).",
+    "Crowdin's GitHub integration uses crowdin.yml. Android reads the English XML catalogs from ComposeN-Zik/src/androidMain/localization/source/ and translations from localization/translations/<locale>/. Gradle generates the Android resource directories at build time.",
     "EXCLUDE: Do not document Desktop-specific logic or VLCJ implementations (Desktop support is out of scope).",
     "Highlight differences with the original Kreate fork where relevant."
   ],
@@ -163,7 +163,7 @@
       "parent": "Localization System",
       "page_notes": [
         {
-          "content": "Documentation for 'sync-crowdin-translations.yaml' and weekly build flavors."
+          "content": "Document weekly build flavors separately from Crowdin. The Fastlane Crowdin rule reads fastlane/source/*.txt and exports by locale under fastlane/metadata/android/. The title, short description and full description have limits of 30, 80 and 4000 characters in Crowdin."
         }
       ]
     },
