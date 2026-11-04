@@ -1,69 +1,69 @@
-A multilingual YouTube Music frontend for Android, focused on performance, UI/UX refinements, feature expansion, and long-term support.
+Een meertalige YouTube Music frontend voor Android, gericht op prestaties, UI/UX raffinaderijen, feature expansie en langdurige ondersteuning.
 
-<b>N-Zik</b> is an open-source fork of <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+<b>N-Zik</b> is een open-source vork van <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Note:</b> N-Zik started as a side project. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Opmerking:</b> N-Zik begon als een zijproject. Voor meer volwassen alternatieven, bekijk <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>of <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), reviewed and tested before shipping.
+<b>AI gebruik:</b> Ik gebruik generative AI voor code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), herzien en getest voor verzending.
 
-✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI - free, always.
+✨ <b>WHY N-ZIK?</b> Geen advertenties, afspelen, offline caching, aanpasbare UI - gratis, altijd.
 
-🎨 <b>Customizable UI</b>
-- Jetpack Compose interface
-- Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
-- 3D Carousel Player, home widgets, unified player and mini-player
-- Artist profiles, Discovery and moods, collapsible home headers
+🎨 <b>Aanpasbare UI</b>
+- Jetpack stelt interface
+- Thema's: AMOLED, Deep Dark, Crisp Licht + getinteerde accenten
+- 3D Carrousel Speler, home widgets, verenigde speler en mini-speler
+- Kunstenaar profielen, ontdekking en spoelen, inklapbare huiskoppen
 
-🫧 <b>Glass Effect (BETA, optional)</b>
-Disabled on fresh installs. Enable in Settings: native, contour-only or Glass by category, with adjustable quality. May increase rendering work and battery use; reduce quality or disable if needed.
-Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+🫧 <b>Glazen Effect (BETA, optioneel)</b>
+Uitgeschakeld met verse installaties. Inschakelen in Instellingen: natieve, enkel contouren of glas per categorie, met verstelbare kwaliteit. Kan het rendering en accugebruik vergroten; kwaliteit verminderen of uitschakelen indien nodig.
+Glazen credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Achtergrond (Apache-2.0).
 
-🎵 <b>Audio Experience</b>
-- Premium quality via YouTube Music Premium, applied automatically
-- Synced lyrics with editing and real-time translation
-- Song recognition (Shazam-like), voice search, audio visualizer
-- Pro controls: speed, pitch, normalization, crossfade, volume boost, bass boost, reverb
-- Audio Bar waveform seekbar for precise navigation
+🎵 <b>Audio-ervaring</b>
+- Premiumkwaliteit via YouTube Music Premium, automatisch toegepast
+- Synchroniseerde songteksten met bewerking en real-time vertaling
+- Liedherkenning (Shazam-like), spraakzoek, audio visualizer
+- Pro besturingen: snelheid, pitch, normalisatie, crossfade, volume boost, bass boost, reverb
+- Audiobalk golveform zoekbalk voor nauwkeurige navigatie
 
 💾 <b>Offline, Metadata & Privacy</b>
-- Smart caching and downloads for tracks and playlists, with selectable download quality
-- FFmpeg-powered export with full metadata (FFmpeg is a downloadable extension, installed on first use)
-- In-app metadata editor (AAC/Opus, cover art)
-- Local listening stats and history
-- Auto-backup with custom intervals and retention
+- Slimme caching en downloads voor tracks en afspeellijsten, met selecteerbare downloadkwaliteit
+- Exporteer op FFmpeg-powered met volledige metadata (FFmpeg is een downloadbare extensie, geïnstalleerd op eerste gebruik)
+- In-app metadata editor (AAC/Opus, cover kunst)
+- Lokale luisterstatistieken en geschiedenis
+-Automatische back-up met aangepaste intervallen en retentie
 
-🔗 <b>Integrations</b>
-- YouTube sign-in for recommendations and video playback, plus an experimental two-way sync engine
-- Last.fm scrobbling with Now Playing and love/unlove
-- MusicBrainz artist and album insights
-- Discord Rich Presence, including advanced mode with live preview
-- Invidious integration for alternative YouTube streaming
-- Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
+🔗 <b>Integraties</b>
+- YouTube-login voor aanbevelingen en het afspelen van video's, plus een experimentele tweewegse sync engine
+- Last.fm scrobblen met nu spelen en liefde/los
+- MusicBrainz artiest en album inzichten
+- Discord Rich Presence, inclusief geavanceerde modus met live voorbeeld
+- Onbenauwde integratie voor alternatieve YouTube streaming
+- Afspeellijst import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
-👥 <b>Listen Together</b>
-- Join or host live listening sessions with other users via code or invite link
+👥 <b>Luister samen</b>
+- Deelnemen aan of hosten van live luistersessies met andere gebruikers via code of uitnodigingslink
 
-🗓️ <b>Rewind</b>
-- Yearly and monthly listening recaps with auto-generated Rewind playlists
+🗓️ <b>Terugspoelen</b>
+- Jaarlijkse en maandelijkse luisterherhalingen met automatisch gegenereerde Rewind afspeellijsten
 
-📱 <b>Play Anywhere:</b> Android Auto, Automotive, TV, and Tablets
+📱 <b>Speel overal in:</b> Android Auto, Automotive, TV en Tablets
 
-🛠️ <b>Power User Features</b>
-- Multi-profile: isolated database and settings per profile
-- Auto-resume on Bluetooth connect, persistent queue, auto-fill queue
-- Smart trash, hidden songs, dislike system, parental control
-- Proxy support, network quality adaptation, log export
-- Rescue Center, maintenance screen, onboarding, app shortcuts
-- OTA updates from GitHub, sleep timer, background playback
+🛠️ <b>Stroom-gebruiker functies</b>
+- Multi-profiel: geïsoleerde database en instellingen per profiel
+- Auto-doorgaan op Bluetooth-verbinding, aanhoudende wachtrij, automatisch aanvullen van wachtrij
+- Slimme afgrond, verborgen nummers, afwijkend systeem, ouderlijk toezicht
+- Proxyondersteuning, netwerkkwaliteit adaptatie, log export
+- Reddingscentrum, onderhoudsscherm, onboarding, app snelkoppelingen
+- OTA updates vanaf GitHub, slaap timer, achtergrond afspelen
 
-📦 <b>Available Builds</b>
-- Release64/Beta64 (`com.nevar.nzik`): Complete build, 64-bit devices only
-- Release32/Beta32 (`com.nevar.nzik`): Complete build, 32-bit devices only
-- Minified64 (`com.nevar.nzik`): Lightweight R8 build, for low-end devices (64-bit)
-- Minified32 (`com.nevar.nzik`): Lightweight R8 build (32-bit)
-- FOSS (`com.nevar.nzik.foss`): Without auto-updater, for F-Droid (all architectures)
-- Dev64/Dev32 (`com.nevar.nzik.dev`): Development builds, testing only
+📦 <b>Beschikbare Builds</b>
+- Release64/Beta64 (`com.nevar.nzik`): Complete build, alleen 64-bit apparaten
+- Release32/Beta32 (`com.nevar.nzik`): Complete build, 32-bit apparaten alleen
+- Minified64 (`com.nevar.nzik`): Lichtgewicht R8 gebouwd, voor low-end apparaten (64-bit)
+- Minified32 (`com.nevar.nzik`): Lichtgewicht R8 build (32-bit)
+- FOSS (`com.nevar.nzik.fos`): Zonder automatische updater, voor F-Droid (alle architectures)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Ontwikkeling builds, alleen testen
 
-No build bundles FFmpeg: it is a downloadable extension (installed on first use, managed in Settings → Extensions). Only FOSS is on F-Droid.
+Geen build bundles FFmpeg: het is een downloadbare extensie (geïnstalleerd op het eerste gebruik, beheerd in Instellingen → Extensies). Alleen FOSS is op F-Droid.
 
-Historical project credits include ViMusic.
+Onder andere ViMusic historische projectobligaties.
