@@ -2401,6 +2401,8 @@
     <string name="settings_parental_age_restriction_description">연령 제한 곡들을 막습니다</string>
     <string name="settings_picture_in_picture_android_12_auto_description">안드로이드 12부터, PIP가 자동적으로 활성화될 수 있습니다</string>
     <string name="settings_picture_in_picture_artwork_module_label">커버</string>
+    <string name="settings_picture_in_picture_open">Open picture-in-picture</string>
+    <string name="settings_picture_in_picture_open_failed">Couldn’t open picture-in-picture. Check app info settings on your android to allows it for N-Zik.</string>
     <string name="settings_picture_in_picture_title">Picture in Picture</string>
     <string name="settings_pip_module">PIP 모듈</string>
     <string name="settings_playback_duration_limit_description">Songs with duration exceeding the limit will be excluded from the Top songs and playback queue</string>
