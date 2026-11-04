@@ -142,7 +142,7 @@
     <string name="player_action_bar_transparent_background_description">Remove the solid background behind the player action buttons.</string>
     <string name="player_action_enqueue">Dodaj u red</string>
     <string name="player_action_like">Like</string>
-    <string name="player_action_listen_on_invidious">Slusaj na Invidious</string>
+    <string name="player_action_listen_on_invidious">Slusaj na %1$s</string>
     <string name="player_action_listen_on_youtube">Slušaj na YouTube</string>
     <string name="player_action_listen_on_youtube_music">Slušaj na YouTube Music</string>
     <string name="player_action_locate_current_song">Pronađi pesmu koja svira</string>
@@ -277,7 +277,7 @@
     <string name="player_queue_duration_visible_description">Display the combined duration of tracks in the play queue.</string>
     <string name="player_queue_preview_artwork_description">Include album artwork beside upcoming tracks in the player preview.</string>
     <string name="player_queue_preview_song_count_description">Choose how many upcoming tracks appear in the player preview.</string>
-    <string name="player_queue_remove_selected_confirmation_format">Remove %d songs from queue?</string>
+    <string name="player_queue_remove_selected_confirmation_format">Remove the selection from the queue? Selected tracks: %d</string>
     <string name="player_queue_shuffled_count_format">Queue shuffled (%d songs)</string>
     <string name="player_remaining_time_visible_description">Show the time remaining in the current track.</string>
     <string name="player_restart_required_message">Player has to be restarted for the changes to be effective!</string>
