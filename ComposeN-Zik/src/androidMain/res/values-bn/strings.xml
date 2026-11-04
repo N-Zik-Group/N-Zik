@@ -2402,6 +2402,8 @@
     <string name="settings_parental_age_restriction_description">বয়স সীমা থাকা গান বাজানো থেকে বিরত রাখুন</string>
     <string name="settings_picture_in_picture_android_12_auto_description">From Android 12 pip can be automatically enabled</string>
     <string name="settings_picture_in_picture_artwork_module_label">কভার</string>
+    <string name="settings_picture_in_picture_open">Open picture-in-picture</string>
+    <string name="settings_picture_in_picture_open_failed">Couldn’t open picture-in-picture. Check app info settings on your android to allows it for N-Zik.</string>
     <string name="settings_picture_in_picture_title">Picture in Picture</string>
     <string name="settings_pip_module">Pip module</string>
     <string name="settings_playback_duration_limit_description">যদি চালু করা হয় তাহলে ডিউরেশন লিমিট থাকা গান বাদ যাবে, আমার প্রিয় আর প্লে ব্যাক কিউ থে এপ্লাই করা হবে।</string>
