@@ -86,9 +86,9 @@
     <string name="maintenance_open">Ouvrir</string>
     <string name="maintenance_open_desc">Ouvrir la fiche d\'entretien complète</string>
     <string name="maintenance_pass_clean">Rien à nettoyer</string>
-    <string name="maintenance_pass_cleaned">%d item(s) cleaned</string>
-    <string name="maintenance_pass_deferred">%d item(s) deferred</string>
-    <string name="maintenance_pass_skipped">%d item(s) skipped</string>
+    <string name="maintenance_pass_cleaned">%d élément(s) nettoyé(s)</string>
+    <string name="maintenance_pass_deferred">%d élément(s) mis en attente</string>
+    <string name="maintenance_pass_skipped">%d élément(s) ignoré(s)</string>
     <string name="maintenance_refresh">Actualiser</string>
     <string name="maintenance_section_caches_downloads">Caches &amp; Téléchargements</string>
     <string name="maintenance_section_database">Base de données</string>
