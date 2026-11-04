@@ -1,69 +1,69 @@
-A multilingual YouTube Music frontend for Android, focused on performance, UI/UX refinements, feature expansion, and long-term support.
+Багатомовний YouTube інтерфейс для Android, зосереджений на швидкодії, утилізаціях, розширенні функцій та довгостроковій підтримці.
 
-<b>N-Zik</b> is an open-source fork of <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+<b>N-Zik</b> є відкритим вихідним форком <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Note:</b> N-Zik started as a side project. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Примітка:</b> N-Zik запущено як сторонній проект. For more mature alternatives, check <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, or <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), reviewed and tested before shipping.
+<b>Використання AI:</b> я використовую генеративний AI код (через <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD метод</a>), перегляд та тестування перед доставкою.
 
-✨ <b>WHY N-ZIK?</b> No ads, background playback, offline caching, customizable UI - free, always.
+✨ <b>WHY N-ZIK?</b> Без реклами, фонові відтворення в автономному режимі кешування, настроювані інтерфейсу - безкоштовні завжди.
 
-🎨 <b>Customizable UI</b>
-- Jetpack Compose interface
-- Themes: AMOLED, Deep Dark, Crisp Light + tinted accents
-- 3D Carousel Player, home widgets, unified player and mini-player
-- Artist profiles, Discovery and moods, collapsible home headers
+🎨 <b>Настроюваний інтерфейс</b>
+- Компусний інтерфейс Jetpack
+- Теми: AMOLED, Deep Dark, Crisp Light + відмічені акценти
+- 3D Player карусель, домашній віджет, єдиний гравець і міні-плеєр
+- Виконавець профілів, відкритти та настрій, розумні заголовки головного екрану
 
-🫧 <b>Glass Effect (BETA, optional)</b>
-Disabled on fresh installs. Enable in Settings: native, contour-only or Glass by category, with adjustable quality. May increase rendering work and battery use; reduce quality or disable if needed.
-Glass credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+🫧 <b>Ефект скла (BETA, необов'язково)</b>
+Вимкнено у нових інсталяціях. Вмикання в налаштуваннях: номінальна, контекстне або скло по категорії, з регульованою якістю. Може збільшити споживання роботи та акумулятора; зменшити якість або відключити, якщо це необхідно.
+Кредити, скло: Square / Convx Проект (GPL-3.0); Kant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
-🎵 <b>Audio Experience</b>
-- Premium quality via YouTube Music Premium, applied automatically
-- Synced lyrics with editing and real-time translation
-- Song recognition (Shazam-like), voice search, audio visualizer
-- Pro controls: speed, pitch, normalization, crossfade, volume boost, bass boost, reverb
-- Audio Bar waveform seekbar for precise navigation
+🎵 <b>аудіо досвід</b>
+- Преміум якість через YouTube Music Premium, застосовується автоматично
+- Синхронізовані слова з редагуванням і перекладом в режимі реального часу
+- Розпізнавання пісень (Shazam-like), пошук голосу, аудіо візуалізатор
+- Pro керування: швидкість, висота, нормалізація, перехресна затухання, підйомність гучності, баски підвищуються, ревербі
+- Відображення шкали аудіо бару для точної навігації
 
-💾 <b>Offline, Metadata & Privacy</b>
-- Smart caching and downloads for tracks and playlists, with selectable download quality
-- FFmpeg-powered export with full metadata (FFmpeg is a downloadable extension, installed on first use)
-- In-app metadata editor (AAC/Opus, cover art)
-- Local listening stats and history
-- Auto-backup with custom intervals and retention
+💾 <b>Офлайн, Метадані та Конфіденційність</b>
+- Розумне кешування і завантаження пісень і списків відтворення з виділеною якістю завантаження
+- FFmpeg-powered експорт з повними метаданими (FFmpeg є завантажувальним розширенням, встановленим при першому)
+- Редактор метаданих додатку (AAC/Opus, обкладинка)
+- Локальна статистика та історія прослуховування
+- Автоматичне резервне копіювання з користувацькими інтервали та утримання
 
-🔗 <b>Integrations</b>
-- YouTube sign-in for recommendations and video playback, plus an experimental two-way sync engine
-- Last.fm scrobbling with Now Playing and love/unlove
-- MusicBrainz artist and album insights
-- Discord Rich Presence, including advanced mode with live preview
-- Invidious integration for alternative YouTube streaming
-- Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
+🔗 <b>Інтеграція</b>
+- Ввійти YouTube для рекомендацій та відтворення відео, плюс експериментальна двовимірна синхронізація
+- Last.fm скроблінг з зараз ігри і любов/нелюбов
+- Статистика виконавця MusicBrainz і альбому
+- Discord Rich Presence, включаючи розширений режим з попереднім переглядом
+- Це прихована інтеграція для альтернативного потокового передавання YouTube
+- Імпорт відтворення/експорт: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Listen Together</b>
-- Join or host live listening sessions with other users via code or invite link
+- Приєднуйтесь до або зберігайте сесії з іншими користувачами через код або запросіть посилання
 
-🗓️ <b>Rewind</b>
-- Yearly and monthly listening recaps with auto-generated Rewind playlists
+🗓️ <b>Перемотати</b>
+- Автоматичне і щомісячне прослуховування повторюваних плейлистів
 
-📱 <b>Play Anywhere:</b> Android Auto, Automotive, TV, and Tablets
+📱 <b>грати в будь-якому місці:</b> Android Auto, Automotive, TV і планшети
 
 🛠️ <b>Power User Features</b>
-- Multi-profile: isolated database and settings per profile
-- Auto-resume on Bluetooth connect, persistent queue, auto-fill queue
-- Smart trash, hidden songs, dislike system, parental control
-- Proxy support, network quality adaptation, log export
-- Rescue Center, maintenance screen, onboarding, app shortcuts
-- OTA updates from GitHub, sleep timer, background playback
+- Мульти-профіль: ізольована база даних і налаштування в профілі
+- Автоматичне відновлення при підключенні Bluetooth, постійна черга, автозаповнення
+- Розумний відрізок, приховані пісні, не подобається система, батьківський контроль
+- Підтримка проксі, адаптація якості, експорт журналу,
+- Навігаційний центр, екран обслуговування, ярлики додатків
+- OTA оновлення з GitHub, таймера сплячого режиму, фонове відтворення
 
-📦 <b>Available Builds</b>
-- Release64/Beta64 (`com.nevar.nzik`): Complete build, 64-bit devices only
-- Release32/Beta32 (`com.nevar.nzik`): Complete build, 32-bit devices only
-- Minified64 (`com.nevar.nzik`): Lightweight R8 build, for low-end devices (64-bit)
-- Minified32 (`com.nevar.nzik`): Lightweight R8 build (32-bit)
-- FOSS (`com.nevar.nzik.foss`): Without auto-updater, for F-Droid (all architectures)
-- Dev64/Dev32 (`com.nevar.nzik.dev`): Development builds, testing only
+📦 <b>Доступні збірки</b>
+- Версія e64/Beta64 (`com.nevar.nzik`): Завершення збірки, 64-розрядні пристрої лише
+- Версія e32/Beta32 (`com.nevar.nzik`): Завершення збірки, лише 32-розрядні пристрої
+- Minified64 (`com.nevar.nzik`): Збірка легкої ваги, для пристроїв з низьким рівнем покриття (64-розрядна версія)
+- Minified32 (`com.nevar.nzik`): Легка збірка R8 (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Без автооновлення для F-Droid (всі архітектури)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Збірки розробки, тестуючі тільки
 
-No build bundles FFmpeg: it is a downloadable extension (installed on first use, managed in Settings → Extensions). Only FOSS is on F-Droid.
+Немає пакетів збірки FFmpeg: це розширення, яке можна завантажити (встановлене на початку, кероване в Налаштуваннях → Розширення). Тільки FOSS знаходиться на F-Droid.
 
-Historical project credits include ViMusic.
+Історичні кредити проекту включають ViMusic.
