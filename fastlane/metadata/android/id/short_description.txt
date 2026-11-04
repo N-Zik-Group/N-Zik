@@ -1,1 +1,1 @@
-Klien YT Music multibahasa
+Multilingual YT Music client with optional Glass effect (BETA)
