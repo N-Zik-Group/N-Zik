@@ -8,13 +8,13 @@
     <string name="about_contributors_alphabetical_order_label">In alfabetische volgorde:</string>
     <string name="about_debug_developers_rotation">ontwikkelaars_rotatie</string>
     <string name="about_debug_translators_rotation">vertalers_rotatie</string>
-    <string name="about_developers_description">Show or hide the developers and designers who contributed to the app.</string>
-    <string name="about_developers_designers_title">Developers / Designers</string>
+    <string name="about_developers_description">Toon of verberg de ontwikkelaars en ontwerpers die hebben bijgedragen aan de app.</string>
+    <string name="about_developers_designers_title">Ontwikkelaars / ontwerpers</string>
     <string name="about_github_link_description">U wordt doorgestuurd naar GitHub</string>
-    <string name="about_report_issue_description">Open the GitHub bug report form to describe a problem.</string>
-    <string name="about_request_feature_description">Open the GitHub feature request form to suggest an improvement.</string>
-    <string name="about_source_code_description">Open the source code repository on GitHub.</string>
+    <string name="about_report_issue_description">Open het GitHub bugrapport formulier om een probleem te beschrijven.</string>
+    <string name="about_request_feature_description">Open het GitHub functie aanvraagformulier om een verbetering voor te stellen.</string>
+    <string name="about_source_code_description">Open de broncode repository op GitHub.</string>
     <string name="about_title">Over</string>
-    <string name="about_translators_description">Show or hide the people who translated the app.</string>
-    <string name="about_translators_title">Translators</string>
+    <string name="about_translators_description">Toon of verberg de mensen die de app hebben vertaald.</string>
+    <string name="about_translators_title">Vertalers</string>
 </resources>
