@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Glass -->
     <string name="glass_effect_action_play_all">Play all quick picks</string>
     <string name="glass_effect_action_shuffle">Shuffle quick picks</string>
     <string name="glass_effect_active_tab_indicator">Active tab</string>
@@ -149,7 +150,9 @@
     <string name="glass_effect_where_search_bars">Glass on search bars</string>
     <string name="glass_effect_where_search_bars_description">The boxes where you type a search, including settings searches.</string>
     <string name="glass_effect_windows_summary">Change menus, pop-up windows and short messages.</string>
-    <string name="image_error_unknown">Error desconegut</string>
+    <!-- Image -->
+    <string name="image_error_unknown">Unknown error</string>
+    <!-- Interface -->
     <string name="interface_artist_image_roundness_description">Adjust the corner rounding of artist images.</string>
     <string name="interface_corner_roundness_description">Adjust the rounding of interface cards and controls.</string>
     <string name="interface_default_page_description">Choose which page opens when the app starts.</string>
@@ -161,20 +164,22 @@
     <string name="interface_player_position_description">Choose where the player is placed in the interface.</string>
     <string name="interface_show_floating_icon_description">Display a floating shortcut that opens search.</string>
     <string name="interface_transition_effect_description">Choose the animation used when moving between screens.</string>
+    <!-- Player Appearance -->
     <string name="player_controls_style_essential">Essencial</string>
     <string name="player_controls_style_modern">Modern</string>
     <string name="player_cover_style_cd">CD</string>
     <string name="player_cover_style_cd_with_cover">CD amb portada</string>
     <string name="player_cover_style_vinyl">Vinil</string>
     <string name="player_like_icon_apple">Apple</string>
-    <string name="player_like_icon_brilliant">Brillant</string>
-    <string name="player_like_icon_broken">Trencat</string>
-    <string name="player_like_icon_cute">Forma</string>
-    <string name="player_like_icon_gift">Regal</string>
-    <string name="player_like_icon_striped">Ratllat</string>
-    <string name="player_progress_both">Ambdós</string>
+    <string name="player_like_icon_brilliant">Brilliant</string>
+    <string name="player_like_icon_broken">Broken</string>
+    <string name="player_like_icon_cute">Cute</string>
+    <string name="player_like_icon_gift">Gift</string>
+    <string name="player_like_icon_striped">Striped</string>
+    <string name="player_progress_both">Both</string>
     <string name="player_progress_mini_player">Reproductor minimitzat</string>
-    <string name="settings_action_bar_show_lyrics_button">Mostra el botó de Lletres</string>
+    <string name="settings_action_bar_show_lyrics_button">Lyrics button</string>
+    <!-- Player Background -->
     <string name="player_background_black_cherry_cosmos">Cosmos de cirera negra</string>
     <string name="player_background_glossy_gradient">Degradat brillant</string>
     <string name="player_background_golden_magma">Magma daurat</string>
@@ -187,6 +192,7 @@
     <string name="player_background_oil_flow">Flux d\'oli</string>
     <string name="player_background_purple_liquid">Líquid morat</string>
     <string name="player_background_stage">Etapa</string>
+    <!-- Theme -->
     <string name="theme_custom_accent_description">Choose the custom accent color used by this theme.</string>
     <string name="theme_dark_palette_accent_description">Choose the color for accented controls and highlights in the dark palette.</string>
     <string name="theme_dark_palette_background_1_description">Choose the color for main app background in the dark palette.</string>
@@ -209,24 +215,26 @@
     <string name="theme_light_palette_text_disabled_description">Choose the color for disabled text in the light palette.</string>
     <string name="theme_light_palette_text_secondary_description">Choose the color for secondary text in the light palette.</string>
     <string name="theme_mode_description">Choose when the app uses its light or dark palette.</string>
-    <string name="theme_mode_pitch_black">Negre com el carbó</string>
-    <string name="theme_palette_custom">Personalitzat</string>
+    <string name="theme_mode_pitch_black">Pitch Black</string>
+    <string name="theme_palette_custom">Customized</string>
     <string name="theme_palette_description">Choose the color palette used throughout the app.</string>
     <string name="theme_palette_dynamic">Dinàmic</string>
     <string name="theme_palette_material_you">Material You</string>
-    <string name="theme_palette_modern_black">Negre modern</string>
-    <string name="theme_palette_pure_black">Negre pur</string>
+    <string name="theme_palette_modern_black">Modern Black</string>
+    <string name="theme_palette_pure_black">Pure Black</string>
     <string name="theme_shake_sensitivity_disabled">Inhabilitat</string>
     <string name="theme_shake_sensitivity_high">High (2.2G)</string>
     <string name="theme_shake_sensitivity_low">Low (5.0G)</string>
     <string name="theme_shake_sensitivity_medium">Medium (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Very High (1.0G)</string>
+    <!-- Thumbnail -->
     <string name="thumbnail_action_edit">Edita la miniatura</string>
     <string name="thumbnail_action_pick_from_gallery">Pick from gallery</string>
     <string name="thumbnail_action_reset">Restableix la miniatura</string>
-    <string name="thumbnail_empty">No hi ha miniatura present</string>
+    <string name="thumbnail_empty">No Thumbnail Present</string>
     <string name="thumbnail_layout_dialog_title">Thumbnail layout</string>
-    <string name="thumbnail_not_selected">Miniatura no seleccionada</string>
-    <string name="thumbnail_remove_failed">No s\'ha pogut eliminar la miniatura</string>
-    <string name="thumbnail_remove_success">Miniatura eliminada</string>
+    <string name="thumbnail_not_selected">Thumbnail Not Selected</string>
+    <string name="thumbnail_remove_failed">Failed to Remove Thumbnail</string>
+    <string name="thumbnail_remove_success">Removed Thumbnail</string>
+    <string name="glass_effect_rendering_quality">Rendering quality</string>
 </resources>
