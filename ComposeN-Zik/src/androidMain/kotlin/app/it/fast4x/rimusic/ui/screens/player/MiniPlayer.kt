@@ -62,8 +62,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
-import app.n_zik.android.components.glass.explicitBadgeIconId
-import app.n_zik.android.components.glass.glassExplicitBadgeBackground
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
@@ -185,6 +183,8 @@ import kotlin.math.absoluteValue
 import androidx.compose.runtime.LaunchedEffect
 import app.n_zik.android.core.coil.thumbnail
 import app.n_zik.android.components.player.MiniPlayerSwipeAction
+import app.n_zik.android.components.ExplicitBadge
+import app.n_zik.android.components.player.miniPlayerButtonSpacing
 import app.n_zik.android.components.player.GlassMiniPlayerIconButton
 import app.n_zik.android.components.player.rememberPlayerSkipAvailability
 import app.n_zik.android.playback.utils.playNextIfAvailable
@@ -753,9 +753,10 @@ private fun MiniPlayerContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if ( mediaItem.isExplicit )
-                        app.n_zik.android.components.ExplicitBadge(
-                            color = colorPalette().text,
+                        ExplicitBadge(
+                            color = colorPalette.text,
                             modifier = Modifier.size(14.dp),
+                            passive = true,
                         )
                     BasicText(
                         text = cleanPrefix( mediaItem.titleWithFallback() ),
@@ -781,8 +782,9 @@ private fun MiniPlayerContent(
                 modifier = Modifier.width(2.dp * (1f - compactProgress))
             )
 
+            val buttonSpacing = miniPlayerButtonSpacing(useGlass)
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp * (1f - compactProgress)),
+                horizontalArrangement = Arrangement.spacedBy(buttonSpacing * (1f - compactProgress)),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .height(miniContentHeight)

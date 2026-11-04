@@ -61,24 +61,33 @@ fun GlassDescriptionExpansion(
 
 /** Glass implementation only; the common ExplicitBadge selects the renderer. */
 @Composable
-internal fun GlassExplicitBadge(modifier: Modifier, settings: GlassSettings) {
+internal fun GlassExplicitBadge(
+    modifier: Modifier,
+    settings: GlassSettings,
+    passive: Boolean,
+    contentDescription: String?,
+) {
     // Rows can expose both a raw scene and their processed surface. The mini-player's
     // original badge samples the processed surface; keep that same source everywhere.
     val container = LocalGlassContainerBackdrop.current
     val rendered = container?.let {
         if (it is RenderedMaterialBackdrop) it else remember(it) { RenderedMaterialBackdrop(it) }
     }
-    val interaction = remember { MutableInteractionSource() }
     val shape = uiRoundnessShape()
-    CompositionLocalProvider(LocalGlassContainerBackdrop provides rendered) {
-        // The spring surrounds the clipped pane, so the complete badge can move.
-        // A native IconButton clips outside its modifier and would cut off this motion.
-        Box(modifier.retainGlassButtonGesture().glassButtonFeedback(
+    val badgeModifier = if (passive) {
+        modifier
+    } else {
+        val interaction = remember { MutableInteractionSource() }
+        // Apply motion outside the clip so it moves the whole badge.
+        modifier.retainGlassButtonGesture().glassButtonFeedback(
             interaction, shape, enabled = isGlassMotionAllowed(), retainPressUntilUp = true,
             drawHighlight = false, settings = settings,
-        )) {
+        )
+    }
+    CompositionLocalProvider(LocalGlassContainerBackdrop provides rendered) {
+        Box(badgeModifier) {
             Image(
-                painter = painterResource(R.drawable.explicit_glass_glyph), contentDescription = null,
+                painter = painterResource(R.drawable.explicit_glass_glyph), contentDescription = contentDescription,
                 colorFilter = ColorFilter.tint(glassArtworkForeground(settings, colorPalette().text,
                     settings.usesGlassMaterial(GlassArea.ActionButtons))),
                 modifier = Modifier.matchParentSize().clip(shape)

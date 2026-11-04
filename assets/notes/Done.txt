@@ -1,0 +1,5 @@
+Fixed:
+- fix(player): make the mini-player explicit badge open the full player
+  - Reuse the original ExplicitBadge renderers in Glass and Material while letting the mini-player handle taps without badge Jelly feedback.
+  - Reduce the Glass control gap to 8 dp in the mini-player and settings preview through shared geometry.
+  - Cover taps on the badge in Glass and Material with Compose regression tests.

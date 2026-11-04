@@ -2,6 +2,7 @@ package app.n_zik.android.legacyoffmain.player
 
 import android.app.Application
 import android.content.Context
+import android.os.Bundle
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,10 +22,13 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
@@ -144,6 +148,32 @@ class CompactMiniPlayerInteractionTest {
     }
 
     @After fun tearDown() = unmockkAll()
+
+    @Test
+    fun tappingExplicitBadgeOpensPlayerInGlass() = assertExplicitBadgeOpensPlayer(glassEnabled = true)
+
+    @Test
+    fun tappingExplicitBadgeOpensPlayerWithoutGlass() = assertExplicitBadgeOpensPlayer(glassEnabled = false)
+
+    private fun assertExplicitBadgeOpensPlayer(glassEnabled: Boolean) {
+        progress = 0f
+        val item = requireNotNull(player.currentMediaItem)
+        every { player.currentMediaItem } returns item.buildUpon()
+            .setMediaMetadata(item.mediaMetadata.buildUpon().setExtras(Bundle().apply {
+                putBoolean("androidx.media3.session.EXTRAS_KEY_IS_EXPLICIT", true)
+            }).build())
+            .build()
+        renderMini(glassSettings = GlassSettings(enabled = glassEnabled))
+
+        val badge = compose.onNodeWithContentDescription(
+            context.getString(R.string.common_content_explicit_label),
+            useUnmergedTree = true,
+        )
+        badge.assert(!hasClickAction())
+        if (glassEnabled) badge.assert(hasTestTag("glass.explicit.glyph"))
+        badge.performTouchInput { click() }
+        compose.runOnIdle { assertEquals(1, playerOpens) }
+    }
 
     @Test
     @Config(sdk = [32])

@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.dp
 /** Action geometry is independent from its glyph and from the seat reserved by its row. */
 internal data class MiniPlayerControlGeometry(val canvas: Dp, val seatWidth: Dp, val seatHeight: Dp)
 
+internal fun miniPlayerButtonSpacing(glass: Boolean): Dp = if (glass) 8.dp else 12.dp
+
 internal fun miniPlayerControlSize(fold: Float, dockPresentation: Boolean, glass: Boolean = false): Dp =
     if (glass) 36.dp else if (dockPresentation) 42.dp - 6.dp * fold else if (fold > .5f) 48.dp else 42.dp
 

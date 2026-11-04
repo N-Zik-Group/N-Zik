@@ -70,6 +70,7 @@ import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import app.n_zik.android.components.glass.glassMiniPlayerBackground
 import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.player.miniPlayerButtonSpacing
 import app.n_zik.android.components.player.GlassMiniPlayerIconButton
 import app.n_zik.android.components.player.GlassMiniPlayerPlayPauseButton
 import app.n_zik.android.components.player.monochromeControlsColor
@@ -217,7 +218,11 @@ internal fun GlassMiniPlayerPreview(
                         BasicText(title, style = typography().xxs.semiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         BasicText(artist, style = typography().xxs.semiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    val buttonSpacing = miniPlayerButtonSpacing(settings.usesGlassMaterial(GlassArea.MiniPlayer))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(buttonSpacing),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         buttons.forEach { button ->
                             when (button) {
                                 MiniPlayerButton.PlayPause -> GlassMiniPlayerPlayPauseButton(
