@@ -1,17 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
+    <string name="common_action_apply">Použít</string>
     <string name="common_action_cancel">Zrušit</string>
     <string name="common_action_clear">Vymazat</string>
+    <string name="common_action_close">Zavřít</string>
+    <string name="common_action_close_app">Zavřít aplikaci</string>
     <string name="common_action_confirm">Potvrdit</string>
     <string name="common_action_delete">Smazat</string>
     <string name="common_action_done">Hotovo</string>
+    <string name="common_action_export">Exportovat</string>
+    <string name="common_action_import">Importovat</string>
+    <string name="common_action_next">Další</string>
+    <string name="common_action_ok">OK</string>
     <string name="common_action_paste">Vložit</string>
+    <string name="common_action_previous">Předchozí</string>
+    <string name="common_action_remove">Odebrat</string>
     <string name="common_action_reset">Obnovit</string>
     <string name="common_action_retry">Opakovat</string>
+    <string name="common_action_save">Uložit</string>
     <string name="common_action_select">Vybrat</string>
     <string name="common_action_show_less">Zobrazit méně</string>
     <string name="common_action_show_more">Zobrazit více</string>
     <string name="common_action_translate">Překlad</string>
     <string name="common_action_turn_off">Vypnout</string>
+    <string name="common_action_unlink">Odpojit</string>
     <string name="common_action_update">Aktualizace</string>
+    <string name="common_menu_label">Menu</string>
 </resources>
