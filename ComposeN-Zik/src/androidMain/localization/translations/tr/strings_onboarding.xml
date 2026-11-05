@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Onboarding -->
     <string name="onboarding_accounts_discord_description">Discord (beta)\'da ne dinlediğini göster</string>
     <string name="onboarding_accounts_done">Bitirdim</string>
     <string name="onboarding_accounts_skip">Atla</string>
@@ -9,6 +10,7 @@
     <string name="onboarding_greeting">Merhaba! Mükemmel bir müzik deneyimi için N-Zik\'i kuralım. Aşağıdaki izinlerin tümü isteğe bağlıdır.</string>
     <string name="onboarding_permission_battery">Pil optimizasyonu</string>
     <string name="onboarding_permission_battery_description">Sistemin arka plan müziğini durdurmasını önleyin</string>
+    <string name="onboarding_permission_bluetooth">Bluetooth</string>
     <string name="onboarding_permission_bluetooth_description">Kulaklığı algılayarak müziği duraklat veya devam ettir</string>
     <string name="onboarding_permission_camera_description">Bir bilgisayarla eşleştirmek için N-Zik Masaüstü Yardımcısı uygulamasının QR kodunu tarayın</string>
     <string name="onboarding_permission_grant">İzin ver</string>
