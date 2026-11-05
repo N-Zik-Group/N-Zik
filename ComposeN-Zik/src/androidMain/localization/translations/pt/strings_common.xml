@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_answer_no">Não</string>
+    <string name="common_artist_conjunction_and">e</string>
     <string name="common_clipboard_copy_failed">Falha ao copiar texto para área de transferência, tente novamente</string>
     <string name="common_clipboard_copy_success">Copiado</string>
     <string name="common_color_black">Preto</string>
@@ -9,11 +11,14 @@
     <string name="common_color_source_theme">Tema</string>
     <string name="common_color_white">Branco</string>
     <string name="common_debug_background">fundo</string>
+    <string name="common_debug_width">width</string>
     <string name="common_delete_success">Apagado</string>
     <string name="common_description_unavailable">Descrição não disponível</string>
     <string name="common_duration_milliseconds_format">%1$s Ms</string>
     <string name="common_empty_items">Nenhum item</string>
     <string name="common_external_link_loading_suffix">está carregando...</string>
+    <string name="common_load_failed">Não foi possível carregar</string>
+    <string name="common_load_failed_no_connection">Não é possível carregar, sem conexão</string>
     <string name="common_log_unavailable">Não há registros disponíveis</string>
     <string name="common_option_all">Todos</string>
     <string name="common_option_custom">Personalizado</string>
@@ -34,5 +39,8 @@
     <string name="common_validation_empty_value">Valor não pode ser vazio</string>
     <string name="common_validation_invalid_input">Entrada inválida!</string>
     <string name="common_validation_minimum_value">"Valor deve ser superior a "</string>
+    <string name="common_validation_name_in_use">Nome já em uso</string>
     <string name="common_value_input_hint">Insira o Valor</string>
+    <string name="common_unknown">Desconhecido</string>
+    <string name="common_duration_minutes_short">%1$d min</string>
 </resources>
