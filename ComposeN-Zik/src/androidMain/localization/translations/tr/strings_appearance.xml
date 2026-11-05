@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Glass -->
     <string name="glass_effect_action_play_all">Tüm hızlı seçimleri oynat</string>
     <string name="glass_effect_action_shuffle">Hızlı seçimleri karıştır</string>
     <string name="glass_effect_active_tab_indicator">Etkin sekme</string>
@@ -25,6 +26,7 @@
     <string name="glass_effect_enable_warning_title">Cam efekti etkinleştirilsin mi?</string>
     <string name="glass_effect_enabled_description">Tema renklerinizi koruyarak yarı saydam yüzeyleri ve dış hatları özelleştirin.</string>
     <string name="glass_effect_enabled_title">Cam efekti kullan</string>
+    <string name="glass_effect_film">Film</string>
     <string name="glass_effect_frost">Don</string>
     <string name="glass_effect_frost_strength">Don gücü</string>
     <string name="glass_effect_group_color">Renk</string>
@@ -53,6 +55,8 @@
     <string name="glass_effect_navigation_header">Başlık kontrolleri</string>
     <string name="glass_effect_navigation_header_description">N-Zik logosunun yanındaki Geri, Arama ve Profil düğmeleri.</string>
     <string name="glass_effect_navigation_summary">N-Zik logosunun yanındaki sekme çubuğunu ve düğmeleri değiştirin.</string>
+    <string name="glass_effect_optimization_description">Menü, iletişim kutusu veya başka bir üst katman açıkken, kaynak tüketen bulanıklık ve kırılma efektlerinin üst üste binmesini önlemek için arka plandaki Cam efektlerini azaltın veya devre dışı bırakın. Devre dışı bırakırken dikkatli olun: uygulama önemli ölçüde yavaşlayabilir.</string>
+    <string name="glass_effect_optimization_title">Cam optimizasyonu</string>
     <string name="glass_effect_pages_summary">Ana Sayfa, Arama ve diğer sayfalar için bir görünüm seçin.</string>
     <string name="glass_effect_playback_summary">Küçük oynatıcıyı, tam ekran oynatıcıyı ve kuyruğu değiştirin.</string>
     <string name="glass_effect_quality_balanced">Dengeli</string>
@@ -119,6 +123,8 @@
     <string name="glass_effect_role_visualizer_description">Görselleştiriciyle birlikte kullanılan oklar ve Ayarlar düğmesi.</string>
     <string name="glass_effect_shared_summary">Uygulama için standart görünümü seçin. Diğer gruplar, belirli kısımları değiştirmenize olanak tanır.</string>
     <string name="glass_effect_summary">Cam efekti yüzeylerini, renklerini, kenarlarını ve kalitesini özelleştirin.</string>
+    <string name="glass_effect_switches_description">Cam özelliği etkinleştirildiğinde, ortak materyal ve etkileşim efektlerine sahip sıvı Cam anahtarlarını kullanın.</string>
+    <string name="glass_effect_switches_title">Cam anahtarlar</string>
     <string name="glass_effect_tint">Renk tonu</string>
     <string name="glass_effect_tint_none">Yok</string>
     <string name="glass_effect_tint_source">Cam rengi kaynağı</string>
@@ -143,7 +149,9 @@
     <string name="glass_effect_where_search_bars">Arama çubuklarındaki cam</string>
     <string name="glass_effect_where_search_bars_description">Ayar aramaları da dahil olmak üzere, arama yaptığınız kutular.</string>
     <string name="glass_effect_windows_summary">Menüleri, açılır pencereleri ve kısa mesajları değiştirin.</string>
+    <!-- Image -->
     <string name="image_error_unknown">Bilinmeyen hata</string>
+    <!-- Interface -->
     <string name="interface_artist_image_roundness_description">Sanatçı resimlerinin köşe yuvarlaklığını ayarlayın.</string>
     <string name="interface_corner_roundness_description">Arayüz kartlarının ve kontrollerinin yuvarlama ayarlarını yapın.</string>
     <string name="interface_default_page_description">Uygulama başlatıldığında hangi sayfanın açılacağını seçin.</string>
@@ -155,7 +163,10 @@
     <string name="interface_player_position_description">Oynatıcının arayüzde nereye yerleştirileceğini seçin.</string>
     <string name="interface_show_floating_icon_description">Arama penceresini açan bir yüzen kısayol görüntüle.</string>
     <string name="interface_transition_effect_description">Ekranlar arasında geçiş yaparken kullanılacak animasyonu seçin.</string>
+    <!-- Player Appearance -->
     <string name="player_controls_style_essential">Temel</string>
+    <string name="player_controls_style_modern">Modern</string>
+    <string name="player_cover_style_cd">CD</string>
     <string name="player_cover_style_cd_with_cover">Kapaklı CD</string>
     <string name="player_cover_style_vinyl">Vinil</string>
     <string name="player_like_icon_apple">Elma</string>
@@ -167,6 +178,7 @@
     <string name="player_progress_both">Her ikisi</string>
     <string name="player_progress_mini_player">Küçültülmüş oynatıcı</string>
     <string name="settings_action_bar_show_lyrics_button">Şarkı sözleri düğmesi</string>
+    <!-- Player Background -->
     <string name="player_background_black_cherry_cosmos">Siyah Kiraz Kozmosu</string>
     <string name="player_background_glossy_gradient">Parlak Gradyan</string>
     <string name="player_background_golden_magma">Altın Magma</string>
@@ -179,6 +191,7 @@
     <string name="player_background_oil_flow">Yağ Akışı</string>
     <string name="player_background_purple_liquid">Mor Sıvı</string>
     <string name="player_background_stage">Sahne</string>
+    <!-- Theme -->
     <string name="theme_custom_accent_description">Bu temada kullanılacak özel vurgu rengini seçin.</string>
     <string name="theme_dark_palette_accent_description">Koyu renk paletinden vurgu yapılan kontrol öğeleri ve vurgular için rengi seçin.</string>
     <string name="theme_dark_palette_background_1_description">Koyu renk paletinden uygulamanın ana arka plan rengini seçin.</string>
@@ -212,6 +225,7 @@
     <string name="theme_shake_sensitivity_low">Düşük (5,0G)</string>
     <string name="theme_shake_sensitivity_medium">Orta (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Çok Yüksek (1,0G)</string>
+    <!-- Thumbnail -->
     <string name="thumbnail_action_edit">Küçük Resmi Düzenle</string>
     <string name="thumbnail_action_pick_from_gallery">Galeriden seçin</string>
     <string name="thumbnail_action_reset">Küçük Resmi Sıfırla</string>
@@ -220,4 +234,5 @@
     <string name="thumbnail_not_selected">Küçük Resim Seçilmedi</string>
     <string name="thumbnail_remove_failed">Küçük Resmi Kaldırma Başarısız</string>
     <string name="thumbnail_remove_success">Küçük Resim Kaldırıldı</string>
+    <string name="glass_effect_rendering_quality">İşleme kalitesi</string>
 </resources>
