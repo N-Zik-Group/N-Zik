@@ -1,8 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Maintenance -->
     <plurals name="maintenance_systems_need_attention">
-        <item quantity="one">%d system needs attention</item>
-        <item quantity="few">%d systems need attention</item>
-        <item quantity="other">%d systems need attention</item>
+        <item quantity="one">Sistemul %d are nevoie de atenție</item>
+        <item quantity="few">Sistemele %d au nevoie de atenție</item>
+        <item quantity="other">Sistemele %d au nevoie de atenție</item>
+    </plurals>
+    <plurals name="sync_detail_songs_liked">
+        <item quantity="one">Cântecului %1$d îi place</item>
+        <item quantity="few">Cântecelor %1$d le place</item>
+        <item quantity="other">Cântecelor %1$d le place</item>
+    </plurals>
+    <plurals name="sync_detail_playlists_synced">
+        <item quantity="one">Listă de redare %1$d sincronizată</item>
+        <item quantity="few">Liste de redare %1$d sincronizate</item>
+        <item quantity="other">Liste de redare %1$d sincronizate</item>
+    </plurals>
+    <plurals name="sync_detail_songs_imported">
+        <item quantity="one">%1$d melodie importată</item>
+        <item quantity="few">%1$d melodii importate</item>
+        <item quantity="other">%1$d melodii importate</item>
+    </plurals>
+    <plurals name="sync_detail_albums_imported">
+        <item quantity="one">%1$d album imported</item>
+        <item quantity="few">Albume %1$d importate</item>
+        <item quantity="other">Albume %1$d importate</item>
+    </plurals>
+    <plurals name="sync_detail_episodes">
+        <item quantity="one">Episod %1$d</item>
+        <item quantity="few">Episoade %1$d</item>
+        <item quantity="other">Episoade %1$d</item>
+    </plurals>
+    <plurals name="library_song_count">
+        <item quantity="one">Melodie %1$d</item>
+        <item quantity="few">%1$d melodii</item>
+        <item quantity="other">%1$d melodii</item>
+    </plurals>
+    <plurals name="about_translator_count">
+        <item quantity="one">Traducător %1$d</item>
+        <item quantity="few">Traducători %1$d</item>
+        <item quantity="other">Traducători %1$d</item>
+    </plurals>
+    <plurals name="about_developer_designer_count">
+        <item quantity="one">Dezvoltator %1$d / designer</item>
+        <item quantity="few">Dezvoltatori %1$d / designeri</item>
+        <item quantity="other">Dezvoltatori %1$d / designeri</item>
+    </plurals>
+    <plurals name="statistics_songs_heard_count">
+        <item quantity="one">%1$d melodie auzită</item>
+        <item quantity="few">%1$d melodii auzite</item>
+        <item quantity="other">%1$d melodii auzite</item>
     </plurals>
 </resources>
