@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">Je me sens chanceux</string>
     <string name="automotive_action_play_all">Tout lire</string>
+    <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Choisissez l\'action à effectuer en faisant glisser vers la gauche un morceau de l\'album.</string>
     <string name="gestures_album_track_swipe_right_description">Choisissez l\'action à effectuer en faisant glisser vers la droite un morceau de l\'album.</string>
     <string name="gestures_playlist_track_swipe_left_description">Choisissez l\'action à effectuer en faisant glisser vers la gauche un titre de la playlist.</string>
     <string name="gestures_playlist_track_swipe_right_description">Choisissez l\'action à effectuer en faisant glisser vers la droite un titre de la playlist.</string>
     <string name="gestures_queue_item_swipe_left_description">Choisissez l\'action à effectuer en faisant glisser un élément de la file d\'attente vers la gauche.</string>
     <string name="gestures_queue_item_swipe_right_description">Choisissez l\'action à effectuer en faisant glisser vers la droite un élément de la file d\'attente.</string>
+    <!-- Language -->
+    <string name="language_app_selection_description">Choisissez la langue utilisée pour les libellés et les messages des applications.</string>
     <string name="language_name_afrikaans">Africain (Afrikaans)</string>
     <string name="language_name_arabic">Arabe (عرب)</string>
     <string name="language_name_azerbaijani">Azerbaïdjanais (Azərbaycan)</string>
@@ -57,6 +61,7 @@
     <string name="language_name_ukrainian">Ukrainien (українська)</string>
     <string name="language_name_vietnamese">Vietnamien (Tiếng Việt)</string>
     <string name="language_system_default">Langue du système</string>
+    <!-- Navigation -->
     <string name="navigation_action_picture_in_picture">PIP</string>
     <string name="navigation_back_again_to_exit_message">Appuyez à nouveau pour quitter</string>
     <string name="navigation_position_bottom_floating_label">Bas flottant</string>
@@ -64,12 +69,49 @@
     <string name="navigation_position_top_label">En haut</string>
     <string name="navigation_style_icon_and_text_label">Texte et icône</string>
     <string name="navigation_style_icon_only_label">Icône uniquement</string>
+    <!-- Parental -->
     <string name="parental_control">Contrôle parental</string>
     <string name="parental_control_is_enabled">Le contrôle parental est activé</string>
+    <!-- Permissions -->
+    <string name="permissions_event_denied">Autorisation refusée</string>
     <string name="permissions_event_granted">Autorisation accordée</string>
+    <string name="permissions_event_requested">Autorisation demandée</string>
+    <string name="permissions_event_used">Opération protégée terminée</string>
+    <string name="permissions_feature_audio_devices">Sélection de l\'appareil audio</string>
+    <string name="permissions_feature_downloads">Téléchargements et mises à jour des applications</string>
     <string name="permissions_feature_listen_together">Écoutons Ensemble</string>
+    <string name="permissions_feature_local_library">Librairie de l\'appareil</string>
+    <string name="permissions_feature_music_recognition">Reconnaissance musicale</string>
+    <string name="permissions_feature_onboarding">Configuration de l\'application</string>
+    <string name="permissions_feature_pc_pairing">Scanner QR de l\'appairage PC</string>
+    <string name="permissions_feature_pc_server">Serveur PC local</string>
+    <string name="permissions_feature_playback">Notifications de lecture</string>
+    <string name="permissions_feature_rewind">Rewind reminders</string>
+    <string name="permissions_feature_visualizer">Visualiseur audio</string>
     <string name="permissions_feature_voice_search">Recherche vocale</string>
+    <string name="permissions_journal_busy">L\'historique des permissions est occupé. Veuillez essayer de le vider à nouveau.</string>
+    <string name="permissions_journal_clear">Effacer l\'historique des autorisations</string>
+    <string name="permissions_journal_clear_confirm">Supprimer tous les événements d\'activité de permission pour le profil actif ?</string>
+    <string name="permissions_journal_clear_description">Supprimer les événements de permission enregistrés pour ce profil. Cela ne révoque pas les autorisations Android.</string>
+    <string name="permissions_journal_description">Historique local pour le profil actif, enregistré à partir des opérations N-Zik prises en charge après l\'installation de cette fonctionnalité. Les demandes et les utilisations réelles sont séparées. Conserve les derniers 200 événements ; les utilisations répétées sont regroupées dans les 30 secondes. Il ne reconstruit pas l\'activité passée ou ne surveille pas les autres applications.</string>
+    <string name="permissions_journal_empty">Aucun événement de permission n\'a encore été enregistré.</string>
+    <string name="permissions_journal_entries">Afficher l\'activité des permissions</string>
+    <string name="permissions_journal_entries_description">Voir les demandes de permission et les utilisations par la fonction N-Zik.</string>
+    <string name="permissions_journal_event">%1$s · %2$s\n%3$s · %4$s</string>
+    <string name="permissions_journal_pause">Mettre en pause l\'historique des autorisations</string>
+    <string name="permissions_journal_pause_description">Arrêter d\'ajouter des événements de permission pour ce profil sans supprimer les événements déjà enregistrés.</string>
+    <string name="permissions_label_bluetooth">Périphériques Bluetooth à proximité</string>
     <string name="permissions_label_camera">Appareil photo</string>
+    <string name="permissions_label_local_network">Réseau local</string>
+    <string name="permissions_label_media_audio">Fichiers audio et audio</string>
+    <string name="permissions_label_microphone">Capture de microphone / audio</string>
+    <string name="permissions_label_notifications">Notifications</string>
+    <string name="permissions_usage_journal">Activité de la permission</string>
+    <!-- Privacy -->
+    <string name="privacy_block_screenshots">Bloquer les captures d\'écran</string>
+    <string name="privacy_block_screenshots_description">Empêcher les captures d\'écran et les enregistrements d\'écran de N-Zik et masquer son contenu sur des écrans non sécurisés. S\'applique immédiatement pour ce profil.</string>
+    <string name="privacy_screen_protection">Protection de l\'écran</string>
+    <!-- Settings -->
     <string name="audio_loudness_boost_level">Niveau d\'amplification de la sonorité</string>
     <string name="common_error_no_document_handler">Impossible de trouver une application pour ouvrir les documents</string>
     <string name="common_translation_title">Traduction</string>
@@ -118,15 +160,32 @@
     <string name="settings_cache_location_label">Emplacement du cache</string>
     <string name="settings_cache_private_location_description">L\'emplacement du cache privé, ne peut pas être nettoyé par le système</string>
     <string name="settings_cache_song_size_limit_label">Taille maximale du cache des titres</string>
+    <string name="settings_cache_title">Cache</string>
     <string name="settings_category_ai">IA / Sélection Rapide</string>
+    <string name="settings_category_audio">Audio</string>
     <string name="settings_category_behavior">Comportement</string>
     <string name="settings_category_interface">Thème &amp; Interface</string>
+    <string name="settings_category_maintenance">Extensions de maintenance &amp;</string>
     <string name="settings_category_player">Lecteur</string>
+    <string name="settings_category_privacy">Confidentialité</string>
+    <string name="settings_category_services">Services</string>
     <string name="settings_category_system">Système</string>
     <string name="settings_current_value">Valeur actuelle : %1$s</string>
     <string name="settings_data_page_description">La section « Données » contient des paramètres qui modifient la manière dont l\'application gère les données en local et à distance.</string>
     <string name="settings_data_title">Données</string>
     <string name="settings_debug_title">Paramètres</string>
+    <string name="settings_debug_updater_preview_description">Autoriser l\'ouverture de la mise à jour depuis les paramètres globaux dans cette version de débogage. Les mises à jour automatiques restent désactivées.</string>
+    <string name="settings_debug_updater_preview_label">Aperçu de la mise à jour</string>
+    <string name="settings_description_with_value">%1$s\n%2$s</string>
+    <string name="settings_discord_advanced_button1_label">Étiquette du premier bouton Discord</string>
+    <string name="settings_discord_advanced_button1_url">URL du premier bouton Discord</string>
+    <string name="settings_discord_advanced_button2_label">Deuxième étiquette de bouton Discord</string>
+    <string name="settings_discord_advanced_button2_url">URL du deuxième bouton Discord</string>
+    <string name="settings_dock_compact_first_action_label">Amarrage compact : première action</string>
+    <string name="settings_dock_compact_second_action_label">Amarrage compact : deuxième action</string>
+    <string name="settings_dock_expanded_tab_order_description">Réorganiser les onglets du quai. La recherche reste sur la droite; la maison compacte et la recherche gardent leurs positions.</string>
+    <string name="settings_dock_expanded_tab_order_label">Ordre des onglets du dock élargi</string>
+    <string name="settings_dock_title">Dock flottant</string>
     <string name="settings_download_quality">Qualité du téléchargement</string>
     <string name="settings_download_status">État de la qualité</string>
     <string name="settings_downloads_automatic_description">Télécharger automatiquement les chansons en fonction de vos préférences</string>
@@ -201,6 +260,11 @@ Volume BAS : titre précédent</string>
     <string name="settings_miscellaneous_title">Divers</string>
     <string name="settings_navigation_back_to_home_description">Lorsque cette option est activée, la pression sur Retour saute les pages intermédiaires et retourne directement à l\'écran d\'accueil</string>
     <string name="settings_navigation_back_to_home_label">Retourner directement à la page d\'accueil</string>
+    <string name="settings_navigation_menu_action_add_separator">Ajouter un séparateur</string>
+    <string name="settings_navigation_menu_customization_description">Personnaliser le menu burger</string>
+    <string name="settings_navigation_menu_separator_instance_format">Séparateur (%1$d)</string>
+    <string name="settings_navigation_menu_separator_label">Séparateur</string>
+    <string name="settings_navigation_menu_title">Menu Burger</string>
     <string name="settings_navigation_position_label">Position de la barre de navigation</string>
     <string name="settings_navigation_style_label">Type de barre de navigation</string>
     <string name="settings_navigation_transition_effect_label">Effet de transition</string>
@@ -211,11 +275,17 @@ Volume BAS : titre précédent</string>
     <string name="settings_network_offline_mode_label">Mode hors ligne complet</string>
     <string name="settings_network_quality_title">Qualité</string>
     <string name="settings_network_title">Réseau</string>
+    <string name="settings_page_about_description">En savoir plus sur N-Zik, ses contributeurs et les moyens de soutenir le projet.</string>
     <string name="settings_page_ai_description">Personnalisez les recommandations, la « Sélection Rapide » et les analyses d\'écoute.</string>
+    <string name="settings_page_audio_description">Ajuster le traitement du son et les effets audio.</string>
+    <string name="settings_page_behavior_description">Personnalisez les gestes et les actions lors de la navigation et de l\'écoute.</string>
     <string name="settings_page_data_description">Gérer la musique stockée localement, les caches, les sauvegardes et les données d\'application enregistrées.</string>
     <string name="settings_page_downloads_description">Choisissez la qualité et les options de téléchargement des morceaux.</string>
+    <string name="settings_page_interface_description">Personnalisez le thème, les polices, la navigation et la disposition de l\'interface.</string>
     <string name="settings_page_maintenance_description">Assurer la maintenance de l\'application, gérer les extensions et accéder aux outils de récupération.</string>
     <string name="settings_page_network_description">Configurez la connectivité, la qualité de diffusion et les paramètres de proxy.</string>
+    <string name="settings_page_playback_description">Choisissez comment la lecture démarre, continue et gère votre file d\'attente.</string>
+    <string name="settings_page_player_description">Personnalisez l\'apparence du lecteur, les contrôles, les paroles et les notifications.</string>
     <string name="settings_page_privacy_description">Gérer l\'historique des activités enregistrées, l\'historique des autorisations et la protection de l\'écran.</string>
     <string name="settings_page_profiles_description">Gérez votre profil, vos informations d\'identité et vos préférences.</string>
     <string name="settings_page_rewind_description">Personnalisez vos résumés d\'écoute et vos playlists « Rétrospective ».</string>
@@ -225,6 +295,9 @@ Volume BAS : titre précédent</string>
     <string name="settings_parental_age_restriction_description">Empêcher la lecture de titres avec une limite d\'âge</string>
     <string name="settings_picture_in_picture_android_12_auto_description">À partir d\'Android 12, PIP peut être activé automatiquement</string>
     <string name="settings_picture_in_picture_artwork_module_label">Pochette</string>
+    <string name="settings_picture_in_picture_open">Ouvrir une image en image</string>
+    <string name="settings_picture_in_picture_open_failed">Impossible d\'ouvrir l\'image. Vérifiez les paramètres d\'information de l\'application sur votre Android pour l\'autoriser pour N-Zik.</string>
+    <string name="settings_picture_in_picture_title">Image dans l\'image</string>
     <string name="settings_pip_module">Module Pip</string>
     <string name="settings_playback_duration_limit_description">Si activé, les titres dont la durée dépasse la limite seront exclues, se sera appliqué à la file d\'attente de Mon Top et pour la fille d\'attente</string>
     <string name="settings_playback_duration_limit_label">Exclure les titres avec une limite de durée</string>
@@ -328,12 +401,19 @@ Volume BAS : titre précédent</string>
     <string name="settings_proxy_enabled_label">Activer le proxy</string>
     <string name="settings_proxy_host_label">Hôte du proxy</string>
     <string name="settings_proxy_mode_label">Mode du proxy</string>
+    <string name="settings_proxy_password">Mot de passe du proxy</string>
     <string name="settings_proxy_port_label">Port du proxy</string>
+    <string name="settings_proxy_username">Nom d\'utilisateur du proxy</string>
     <string name="settings_queue_management_title">Gestion de la file d\'attente</string>
     <string name="settings_recommendations_quick_picks_enabled_label">Activer la page de « Sélection Rapide »</string>
     <string name="settings_recommendations_song_count_description">Choisissez le nombre de titres recommandés à afficher dans la « Sélection Rapide »</string>
     <string name="settings_recommendations_title">Recommandations AI</string>
+    <string name="settings_region_override">Surcharge de région</string>
     <string name="settings_reset">Réinitialiser</string>
+    <string name="settings_reset_all">Réinitialiser tous les paramètres</string>
+    <string name="settings_reset_all_confirm">Tout réinitialiser</string>
+    <string name="settings_reset_all_confirmation">Réinitialiser tous les paramètres de l\'application ? Les comptes enregistrés, les identifiants, les profils, les listes de lecture, les téléchargements et les fichiers seront conservés.</string>
+    <string name="settings_reset_all_description">Restaurer tous les paramètres de l\'application par défaut.</string>
     <string name="settings_reset_choose_scope">Choisissez les paramètres à restaurer</string>
     <string name="settings_reset_choose_scope_description">Sélectionnez une section des paramètres, puis rétablissez ses paramètres par défaut.</string>
     <string name="settings_reset_scope">Réinitialiser tous les paramètres %1$s (toutes catégories confondues)</string>
@@ -346,6 +426,7 @@ Volume BAS : titre précédent</string>
     <string name="settings_section_fullscreen_lyrics_title">Composants des paroles en plein écran</string>
     <string name="settings_section_notification_player_title">Lecteur de notification</string>
     <string name="settings_section_player_action_bar_title">Barre d\'action du lecteur</string>
+    <string name="settings_section_proxy_title">Proxy</string>
     <string name="settings_section_service_lifetime_title">Durée de vie du service</string>
     <string name="settings_section_smart_recommendations_title">Recommandations Intelligentes</string>
     <string name="settings_section_troubleshooting_title">Dépannage</string>
