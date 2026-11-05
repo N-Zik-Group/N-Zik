@@ -1,9 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Maintenance -->
     <plurals name="maintenance_systems_need_attention">
-        <item quantity="one">%d system needs attention</item>
-        <item quantity="few">%d systems need attention</item>
-        <item quantity="many">%d systems need attention</item>
-        <item quantity="other">%d systems need attention</item>
+        <item quantity="one">%d system wymaga uwagi</item>
+        <item quantity="few">%d systemy wymagają uwagi</item>
+        <item quantity="many">%d systemy wymagają uwagi</item>
+        <item quantity="other">%d systemy wymagają uwagi</item>
+    </plurals>
+    <plurals name="sync_detail_songs_liked">
+        <item quantity="one">%1$d piosenki lubione</item>
+        <item quantity="few">%1$d utworów polubionych</item>
+        <item quantity="many">%1$d utworów polubionych</item>
+        <item quantity="other">%1$d utworów polubionych</item>
+    </plurals>
+    <plurals name="sync_detail_playlists_synced">
+        <item quantity="one">%1$d zsynchronizowana lista odtwarzania</item>
+        <item quantity="few">%1$d zsynchronizowanych list odtwarzania</item>
+        <item quantity="many">%1$d zsynchronizowanych list odtwarzania</item>
+        <item quantity="other">%1$d zsynchronizowanych list odtwarzania</item>
+    </plurals>
+    <plurals name="sync_detail_songs_imported">
+        <item quantity="one">%1$d piosenki zaimportowane</item>
+        <item quantity="few">%1$d utworów zaimportowanych</item>
+        <item quantity="many">%1$d utworów zaimportowanych</item>
+        <item quantity="other">%1$d utworów zaimportowanych</item>
+    </plurals>
+    <plurals name="sync_detail_albums_imported">
+        <item quantity="one">%1$d album zaimportowany</item>
+        <item quantity="few">%1$d albumów zaimportowanych</item>
+        <item quantity="many">%1$d albumów zaimportowanych</item>
+        <item quantity="other">%1$d albumów zaimportowanych</item>
+    </plurals>
+    <plurals name="sync_detail_episodes">
+        <item quantity="one">%1$d odcinek</item>
+        <item quantity="few">%1$d odcinków</item>
+        <item quantity="many">%1$d odcinków</item>
+        <item quantity="other">%1$d odcinków</item>
+    </plurals>
+    <plurals name="library_song_count">
+        <item quantity="one">%1$d utwór</item>
+        <item quantity="few">%1$d utworów</item>
+        <item quantity="many">%1$d utworów</item>
+        <item quantity="other">%1$d utworów</item>
+    </plurals>
+    <plurals name="about_translator_count">
+        <item quantity="one">%1$d tłumacz</item>
+        <item quantity="few">%1$d tłumaczy</item>
+        <item quantity="many">%1$d tłumaczy</item>
+        <item quantity="other">%1$d tłumaczy</item>
+    </plurals>
+    <plurals name="about_developer_designer_count">
+        <item quantity="one">%1$d programista / projektant</item>
+        <item quantity="few">%1$d deweloperów / projektantów</item>
+        <item quantity="many">%1$d deweloperów / projektantów</item>
+        <item quantity="other">%1$d deweloperów / projektantów</item>
+    </plurals>
+    <plurals name="statistics_songs_heard_count">
+        <item quantity="one">%1$d utwór słyszany</item>
+        <item quantity="few">%1$d utworów słyszanych</item>
+        <item quantity="many">%1$d utworów słyszanych</item>
+        <item quantity="other">%1$d utworów słyszanych</item>
     </plurals>
 </resources>
