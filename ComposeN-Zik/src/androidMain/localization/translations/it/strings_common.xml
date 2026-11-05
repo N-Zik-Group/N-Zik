@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
+    <string name="common_answer_no">No</string>
+    <string name="common_artist_conjunction_and">e</string>
     <string name="common_clipboard_copy_failed">Copia del testo negli appunti non riuscita, riprova</string>
     <string name="common_clipboard_copy_success">Copiato</string>
     <string name="common_color_black">Nero</string>
@@ -8,10 +11,14 @@
     <string name="common_color_source_theme">Tema</string>
     <string name="common_color_white">Bianco</string>
     <string name="common_debug_background">sfondo</string>
+    <string name="common_debug_width">width</string>
     <string name="common_delete_success">Eliminato</string>
     <string name="common_description_unavailable">Nessuna descrizione disponibile</string>
+    <string name="common_duration_milliseconds_format">%1$s ms</string>
     <string name="common_empty_items">Nessun elemento</string>
     <string name="common_external_link_loading_suffix">sta caricando...</string>
+    <string name="common_load_failed">Impossibile caricare</string>
+    <string name="common_load_failed_no_connection">Impossibile caricare, nessuna connessione</string>
     <string name="common_log_unavailable">Log non disponibile</string>
     <string name="common_option_all">Tutto</string>
     <string name="common_option_custom">Personalizzata</string>
@@ -26,10 +33,14 @@
     <string name="common_size_medium">Medio</string>
     <string name="common_size_small">Piccolo</string>
     <string name="common_state_enabled">Abilitato</string>
+    <string name="common_state_off">Off</string>
     <string name="common_state_on">Acceso</string>
     <string name="common_storage_used_suffix">" usato"</string>
     <string name="common_validation_empty_value">Il valore non può essere vuoto</string>
     <string name="common_validation_invalid_input">Inserimento non valido!</string>
     <string name="common_validation_minimum_value">"Il valore deve essere maggiore di "</string>
+    <string name="common_validation_name_in_use">Nome già in uso</string>
     <string name="common_value_input_hint">Inserisci il valore</string>
+    <string name="common_unknown">Sconosciuta</string>
+    <string name="common_duration_minutes_short">%1$d min</string>
 </resources>
