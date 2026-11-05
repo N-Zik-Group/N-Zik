@@ -1,3 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Onboarding -->
+    <string name="onboarding_accounts_discord_description">Mostre o que você está ouvindo no Discord (beta)</string>
+    <string name="onboarding_accounts_done">Estou pronto</string>
+    <string name="onboarding_accounts_skip">Ignorar</string>
+    <string name="onboarding_accounts_title">Conecte suas contas</string>
+    <string name="onboarding_accounts_youtube_account">Sessão iniciada como %1$s</string>
+    <string name="onboarding_accounts_youtube_description">Opcional: navegar no aplicativo com sua conta do YouTube (casa, explorar, etc.)</string>
+    <string name="onboarding_greeting">Olá! Vamos configurar o N-Zik para uma experiência de música perfeita. Cada permissão abaixo é opcional.</string>
+    <string name="onboarding_permission_battery">Otimização da bateria</string>
+    <string name="onboarding_permission_battery_description">Impedir que o sistema pare a música de fundo</string>
+    <string name="onboarding_permission_bluetooth">Bluetooth</string>
+    <string name="onboarding_permission_bluetooth_description">Detectar fones de ouvido para pausar ou continuar a música</string>
+    <string name="onboarding_permission_camera_description">Digitalize o código QR do Compagnon de N-Zik Desktop para emparelhar um PC</string>
+    <string name="onboarding_permission_grant">Conceder</string>
+    <string name="onboarding_permission_granted">Permissão concedida</string>
+    <string name="onboarding_permission_media">Acesso à mídia</string>
+    <string name="onboarding_permission_media_description">Ler sua biblioteca de música local</string>
+    <string name="onboarding_permission_microphone">Microfone</string>
+    <string name="onboarding_permission_microphone_description">Use o microfone para comandos de voz, o visualizador e outros recursos</string>
+    <string name="onboarding_permission_notifications_description">Ver o reprodutor e controlar a música a partir da notificação</string>
+    <string name="onboarding_permission_settings">Confirgurações</string>
+    <string name="onboarding_permissions_section">Permissões</string>
+    <string name="onboarding_profile_continue">Continuar</string>
+    <string name="onboarding_profile_description">Este nome é mostrado no aplicativo. Você também pode escolher de onde vem o nome e o avatar e definir uma foto.</string>
+    <string name="onboarding_profile_field_hint">Seu Nome</string>
+    <string name="onboarding_profile_title">Nomeie seu clone</string>
+    <string name="onboarding_restore_description">Traga sua biblioteca e suas configurações de volta de uma versão anterior do aplicativo. Esta etapa é opcional.</string>
+    <string name="onboarding_restore_restart_note">Uma importação bem sucedida reinicia o aplicativo.</string>
+    <string name="onboarding_restore_skip">Ignorar por enquanto</string>
+    <string name="onboarding_restore_skip_button">Ignorar</string>
+    <string name="onboarding_restore_skip_description">Você pode restaurar um backup mais tarde a partir das configurações do aplicativo</string>
+    <string name="onboarding_restore_title">Restaurar um backup</string>
+    <string name="onboarding_start">Iniciar</string>
 </resources>
