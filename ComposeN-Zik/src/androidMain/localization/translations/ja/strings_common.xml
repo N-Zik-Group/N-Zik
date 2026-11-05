@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_answer_no">いいえ</string>
+    <string name="common_artist_conjunction_and">と</string>
     <string name="common_clipboard_copy_failed">クリップボードにテキストをコピーできませんでした。もう一度やり直してください。</string>
     <string name="common_clipboard_copy_success">コピーしました</string>
     <string name="common_color_black">黒</string>
@@ -9,11 +11,14 @@
     <string name="common_color_source_theme">テーマ</string>
     <string name="common_color_white">白</string>
     <string name="common_debug_background">背景</string>
+    <string name="common_debug_width">width</string>
     <string name="common_delete_success">削除済み</string>
     <string name="common_description_unavailable">説明はありません</string>
     <string name="common_duration_milliseconds_format">%1$s ミリ秒</string>
     <string name="common_empty_items">アイテムがありません</string>
     <string name="common_external_link_loading_suffix">読み込み中...</string>
+    <string name="common_load_failed">読み込めません</string>
+    <string name="common_load_failed_no_connection">読み込みができません。接続がありません。</string>
     <string name="common_log_unavailable">ログを利用できません</string>
     <string name="common_option_all">すべて</string>
     <string name="common_option_custom">カスタム</string>
@@ -21,6 +26,7 @@
     <string name="common_option_disabled">無効</string>
     <string name="common_option_none">なし</string>
     <string name="common_option_random">ランダム</string>
+    <string name="common_restart_required_message">あとで %s を開いてください！</string>
     <string name="common_size_big">大</string>
     <string name="common_size_biggest">最大</string>
     <string name="common_size_expanded">展開済み</string>
@@ -31,6 +37,10 @@
     <string name="common_state_on">オン</string>
     <string name="common_storage_used_suffix">" 使用"</string>
     <string name="common_validation_empty_value">値を空にすることはできません。</string>
+    <string name="common_validation_invalid_input">Invalid input!</string>
     <string name="common_validation_minimum_value">"これより大きい数字にしてください "</string>
+    <string name="common_validation_name_in_use">名前は既に使用されています</string>
     <string name="common_value_input_hint">値を入力してください</string>
+    <string name="common_unknown">不明</string>
+    <string name="common_duration_minutes_short">%1$d 分</string>
 </resources>
