@@ -1,4 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
+    <string name="common_action_apply">Tillämpa</string>
+    <string name="common_action_cancel">Avbryt</string>
+    <string name="common_action_clear">Rensa</string>
+    <string name="common_action_close">Stäng</string>
+    <string name="common_action_close_app">Stäng appen</string>
+    <string name="common_action_confirm">Bekräfta</string>
+    <string name="common_action_delete">Radera</string>
+    <string name="common_action_done">Klar</string>
+    <string name="common_action_export">Exportera</string>
+    <string name="common_action_import">Importera</string>
+    <string name="common_action_next">Nästa</string>
     <string name="common_action_ok">Ok</string>
+    <string name="common_action_paste">Klistra in</string>
+    <string name="common_action_previous">Föregående</string>
+    <string name="common_action_remove">Radera</string>
+    <string name="common_action_reset">Reset</string>
+    <string name="common_action_retry">Försök igen</string>
+    <string name="common_action_save">Spara</string>
+    <string name="common_action_select">Välj</string>
+    <string name="common_action_show_less">Visa mindre</string>
+    <string name="common_action_show_more">Visa mer</string>
+    <string name="common_action_translate">Översätt</string>
+    <string name="common_action_turn_off">Stäng av</string>
+    <string name="common_action_unlink">Avlänka</string>
+    <string name="common_action_update">Uppdatera</string>
+    <string name="common_menu_label">Meny</string>
 </resources>
