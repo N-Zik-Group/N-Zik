@@ -1,19 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
+    <string name="common_action_apply">Bruk</string>
     <string name="common_action_cancel">Avbryt</string>
     <string name="common_action_clear">Tøm</string>
+    <string name="common_action_close">Lukk</string>
+    <string name="common_action_close_app">Lukk app</string>
     <string name="common_action_confirm">Bekreft</string>
     <string name="common_action_delete">Slett</string>
     <string name="common_action_done">Ferdig</string>
+    <string name="common_action_export">Eksporter</string>
+    <string name="common_action_import">Importer</string>
+    <string name="common_action_next">Neste</string>
     <string name="common_action_ok">Ok</string>
     <string name="common_action_paste">Lim inn</string>
+    <string name="common_action_previous">Forrige</string>
+    <string name="common_action_remove">Fjern</string>
     <string name="common_action_reset">Tilbakestill</string>
     <string name="common_action_retry">Prøv igjen</string>
+    <string name="common_action_save">Lagre</string>
     <string name="common_action_select">Velg</string>
     <string name="common_action_show_less">Vis mindre</string>
     <string name="common_action_show_more">Vis mer</string>
     <string name="common_action_translate">Oversett</string>
     <string name="common_action_turn_off">Slå av</string>
+    <string name="common_action_unlink">Frakoble</string>
     <string name="common_action_update">Oppdater</string>
     <string name="common_menu_label">Meny</string>
 </resources>
