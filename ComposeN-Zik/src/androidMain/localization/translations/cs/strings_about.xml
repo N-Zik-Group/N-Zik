@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- About -->
     <string name="about_action_report_issue">Nahlásit problém</string>
     <string name="about_action_request_feature">Žádost o funkci nebo návrh nápadu</string>
     <string name="about_action_view_source">Zobrazit zdrojový kód</string>
@@ -7,8 +8,13 @@
     <string name="about_contributors_alphabetical_order_label">V abecedním pořadí:</string>
     <string name="about_debug_developers_rotation">Otočení vývojářů</string>
     <string name="about_debug_translators_rotation">rotace překladatelů</string>
+    <string name="about_developers_description">Zvolte, zda zobrazit nebo schovat vývojáře a návrháře, kteří přispěli k aplikaci.</string>
     <string name="about_developers_designers_title">Vývojáři / Designéři</string>
     <string name="about_github_link_description">Budete přesměrováni na GitHub.</string>
+    <string name="about_report_issue_description">Otevřete GitHub formulář zprávy o chybách pro popis problému.</string>
+    <string name="about_request_feature_description">Otevřete formulář žádosti o funkci GitHub a navrhněte zlepšení.</string>
+    <string name="about_source_code_description">Otevřete úložiště zdrojových kódů na GitHubu.</string>
     <string name="about_title">O aplikaci</string>
+    <string name="about_translators_description">Zvolte, zda zobrazit nebo schovat lidi, kteří aplikaci přeložili.</string>
     <string name="about_translators_title">Překladatelé</string>
 </resources>
