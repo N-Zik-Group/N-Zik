@@ -1,7 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Maintenance -->
     <plurals name="maintenance_systems_need_attention">
-        <item quantity="one">%d system needs attention</item>
-        <item quantity="other">%d systems need attention</item>
+        <item quantity="one">Το σύστημα %d χρειάζεται προσοχή</item>
+        <item quantity="other">%d συστήματα χρειάζονται προσοχή</item>
+    </plurals>
+    <plurals name="sync_detail_songs_liked">
+        <item quantity="one">%1$d song liked</item>
+        <item quantity="other">%1$d τραγούδια άρεσε</item>
+    </plurals>
+    <plurals name="sync_detail_playlists_synced">
+        <item quantity="one">%1$d playlist synced</item>
+        <item quantity="other">%1$d playlists synced</item>
+    </plurals>
+    <plurals name="sync_detail_songs_imported">
+        <item quantity="one">%1$d τραγούδι εισήχθη</item>
+        <item quantity="other">%1$d τραγούδια εισήχθησαν</item>
+    </plurals>
+    <plurals name="sync_detail_albums_imported">
+        <item quantity="one">%1$d album imported</item>
+        <item quantity="other">%1$d albums imported</item>
+    </plurals>
+    <plurals name="sync_detail_episodes">
+        <item quantity="one">%1$d επεισόδιο</item>
+        <item quantity="other">%1$d επεισόδια</item>
+    </plurals>
+    <plurals name="library_song_count">
+        <item quantity="one">%1$d τραγούδι</item>
+        <item quantity="other">%1$d τραγούδια</item>
+    </plurals>
+    <plurals name="about_translator_count">
+        <item quantity="one">%1$d μεταφραστής</item>
+        <item quantity="other">%1$d μεταφραστές</item>
+    </plurals>
+    <plurals name="about_developer_designer_count">
+        <item quantity="one">%1$d developer / designer</item>
+        <item quantity="other">%1$d προγραμματιστές / σχεδιαστές</item>
+    </plurals>
+    <plurals name="statistics_songs_heard_count">
+        <item quantity="one">%1$d song heard</item>
+        <item quantity="other">%1$d τραγούδια που ακούστηκαν</item>
     </plurals>
 </resources>
