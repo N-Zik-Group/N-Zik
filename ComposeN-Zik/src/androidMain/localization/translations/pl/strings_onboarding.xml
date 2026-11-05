@@ -1,5 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Onboarding -->
+    <string name="onboarding_accounts_discord_description">Pokaż co słuchasz w Discordzie (beta)</string>
+    <string name="onboarding_accounts_done">Jestem gotowy</string>
+    <string name="onboarding_accounts_skip">Pomiń</string>
+    <string name="onboarding_accounts_title">Połącz swoje konta</string>
+    <string name="onboarding_accounts_youtube_account">Zalogowano jako %1$s</string>
     <string name="onboarding_accounts_youtube_description">Optional - browse the app with your YouTube account (home, explore, etc.)</string>
+    <string name="onboarding_greeting">Witaj! Skonfigurujmy N-Zik dla idealnego doświadczenia muzycznego. Każde zezwolenie poniżej jest opcjonalne.</string>
+    <string name="onboarding_permission_battery">Optymalizacja baterii</string>
+    <string name="onboarding_permission_battery_description">Zablokuj systemowi zatrzymanie muzyki w tle</string>
+    <string name="onboarding_permission_bluetooth">Bluetooth</string>
+    <string name="onboarding_permission_bluetooth_description">Wykryj słuchawki do wstrzymania lub wznowienia muzyki</string>
+    <string name="onboarding_permission_camera_description">Zeskanuj kod QR komputera N-Zik Compagnon aby sparować komputer</string>
+    <string name="onboarding_permission_grant">Przyznanie</string>
+    <string name="onboarding_permission_granted">Przyznano uprawnienia</string>
+    <string name="onboarding_permission_media">Dostęp do mediów</string>
+    <string name="onboarding_permission_media_description">Odczytuj swoją lokalną bibliotekę muzyczną</string>
+    <string name="onboarding_permission_microphone">Mikrofon</string>
+    <string name="onboarding_permission_microphone_description">Użyj mikrofonu dla komend głosowych, wizualizatora i innych funkcji</string>
+    <string name="onboarding_permission_notifications_description">Zobacz odtwarzacze i kontroluj muzykę z powiadomień</string>
     <string name="onboarding_permission_settings">Ustawienia</string>
+    <string name="onboarding_permissions_section">Uprawnienia</string>
+    <string name="onboarding_profile_continue">Kontynuuj</string>
+    <string name="onboarding_profile_description">Ta nazwa jest wyświetlana w aplikacji. Możesz również wybrać skąd pochodzą nazwa i awatar i ustawić zdjęcie.</string>
+    <string name="onboarding_profile_field_hint">Twoje imię</string>
+    <string name="onboarding_profile_title">Nazwij swój klon</string>
+    <string name="onboarding_restore_description">Przywróć swoją bibliotekę i ustawienia z poprzedniej wersji aplikacji. Ten krok jest opcjonalny.</string>
+    <string name="onboarding_restore_restart_note">Pomyślnie zaimportowano ponownie aplikację.</string>
+    <string name="onboarding_restore_skip">Na razie pomiń</string>
+    <string name="onboarding_restore_skip_button">Pomiń</string>
+    <string name="onboarding_restore_skip_description">Możesz później przywrócić kopię zapasową z ustawień aplikacji</string>
+    <string name="onboarding_restore_title">Przywróć kopię zapasową</string>
+    <string name="onboarding_start">Rozpocznij</string>
 </resources>
