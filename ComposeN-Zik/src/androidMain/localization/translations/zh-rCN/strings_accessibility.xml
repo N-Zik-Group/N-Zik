@@ -1,3 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Accessibility -->
+    <string name="accessibility_app_icon">应用程序图标</string>
+    <string name="accessibility_app_icon_in_player">播放器中的应用图标</string>
+    <string name="accessibility_arrow_down">箭头</string>
+    <string name="accessibility_arrow_up">向上箭头</string>
+    <string name="accessibility_background_image">背景图像</string>
+    <string name="accessibility_blurred_background">模糊背景</string>
+    <string name="accessibility_disc_background">盘片背景</string>
+    <string name="accessibility_filter">筛选器</string>
+    <string name="accessibility_import_playlist_name">导入播放列表名称</string>
+    <string name="accessibility_loading">正在加载...</string>
+    <string name="accessibility_new_playlist_name">新播放列表名称</string>
+    <string name="accessibility_number_of_songs_in_queue">队列中歌曲数</string>
+    <string name="accessibility_origin_indicator">原始指示器</string>
+    <string name="accessibility_recenter">Recenter</string>
+    <string name="accessibility_rename_dialog_text_box_icon">重命名对话框文本图标</string>
+    <string name="accessibility_reset">Reset</string>
+    <string name="accessibility_song_album_cover">歌曲专辑封面</string>
+    <string name="accessibility_switch_mode">切换模式</string>
+    <string name="accessibility_youtube_playlist">Youtube 播放列表</string>
 </resources>
