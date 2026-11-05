@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Accessibility -->
     <string name="accessibility_app_icon">Sovelluksen kuvake</string>
     <string name="accessibility_app_icon_in_player">sovelluksen kuvake soittimessa</string>
     <string name="accessibility_arrow_down">arrow_alas</string>
