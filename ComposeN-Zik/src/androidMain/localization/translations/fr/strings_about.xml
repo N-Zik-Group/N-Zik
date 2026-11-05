@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- About -->
     <string name="about_action_report_issue">Signaler un problème</string>
     <string name="about_action_request_feature">Demander une fonctionnalité ou nous suggérer une idée</string>
     <string name="about_action_view_source">Afficher le code source</string>
