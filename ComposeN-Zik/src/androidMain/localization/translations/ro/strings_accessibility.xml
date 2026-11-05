@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Accessibility -->
     <string name="accessibility_app_icon">Pictograma aplicaţiei</string>
     <string name="accessibility_app_icon_in_player">pictograma aplicatiei in player</string>
     <string name="accessibility_arrow_down">săgeata_jos</string>
