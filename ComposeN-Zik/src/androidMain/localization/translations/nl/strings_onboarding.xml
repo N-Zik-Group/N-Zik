@@ -1,4 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Onboarding -->
+    <string name="onboarding_accounts_discord_description">Toon waar je naar luistert in Discord (bèta)</string>
+    <string name="onboarding_accounts_done">Ik ben klaar</string>
+    <string name="onboarding_accounts_skip">Overslaan</string>
+    <string name="onboarding_accounts_title">Verbind je accounts</string>
+    <string name="onboarding_accounts_youtube_account">Ingelogd als %1$s</string>
     <string name="onboarding_accounts_youtube_description">Optional - browse the app with your YouTube account (home, explore, etc.)</string>
+    <string name="onboarding_greeting">Hallo! Laten we N-Zik instellen voor de perfecte muziekervaring. Elke toestemming hieronder is optioneel.</string>
+    <string name="onboarding_permission_battery">Batterij optimalisatie</string>
+    <string name="onboarding_permission_battery_description">Voorkom dat het systeem de achtergrondmuziek stopt</string>
+    <string name="onboarding_permission_bluetooth">Bluetooth</string>
+    <string name="onboarding_permission_bluetooth_description">Detecteer koptelefoon om de muziek te pauzeren of te hervatten</string>
+    <string name="onboarding_permission_camera_description">Scan de QR-code van N-Zik Desktop Compagnon om een PC te koppelen</string>
+    <string name="onboarding_permission_grant">Toestaan</string>
+    <string name="onboarding_permission_granted">Toestemming verleend</string>
+    <string name="onboarding_permission_media">Media toegang</string>
+    <string name="onboarding_permission_media_description">Lees uw lokale muziekbibliotheek</string>
+    <string name="onboarding_permission_microphone">Microfoon</string>
+    <string name="onboarding_permission_microphone_description">Gebruik de microfoon voor spraakopdrachten, visualizer en andere functies</string>
+    <string name="onboarding_permission_notifications_description">Bekijk de speler en bedien de muziek van de notificatie</string>
+    <string name="onboarding_permission_settings">Instellingen</string>
+    <string name="onboarding_permissions_section">Machtigingen</string>
+    <string name="onboarding_profile_continue">Doorgaan</string>
+    <string name="onboarding_profile_description">Deze naam wordt weergegeven in de app. U kunt ook kiezen waar de naam en de avatar vandaan komen en een foto instellen.</string>
+    <string name="onboarding_profile_field_hint">Uw naam</string>
+    <string name="onboarding_profile_title">Noem uw kloon</string>
+    <string name="onboarding_restore_description">Breng je bibliotheek en instellingen terug vanaf een vorige versie van de app. Deze stap is optioneel.</string>
+    <string name="onboarding_restore_restart_note">Een succesvolle import herstart de app.</string>
+    <string name="onboarding_restore_skip">Sla over voor nu</string>
+    <string name="onboarding_restore_skip_button">Overslaan</string>
+    <string name="onboarding_restore_skip_description">Je kunt later een back-up terugzetten vanuit de app instellingen</string>
+    <string name="onboarding_restore_title">Back-up terugzetten</string>
+    <string name="onboarding_start">Beginnen</string>
 </resources>
