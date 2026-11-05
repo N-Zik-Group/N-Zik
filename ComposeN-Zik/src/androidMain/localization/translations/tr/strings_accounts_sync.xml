@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Account -->
     <string name="account_action_login">Giriş yap</string>
     <string name="account_action_logout">Oturumu kapat</string>
     <string name="account_youtube_login_description">YouTube hesabınızı bağlayın veya mevcut oturumdan çıkış yapın.</string>
     <string name="account_youtube_login_enabled_description">Kişiselleştirilmiş gezinme ve senkronizasyon için YouTube hesabıyla oturum açmaya izin verin.</string>
+    <!-- Account Youtube -->
     <string name="account_youtube_cookie_invalid">YouTube çerezi geçersiz, lütfen tekrar oturum açın</string>
     <string name="account_youtube_login_success">YouTube\'da oturum açma işlemi başarıyla tamamlandı</string>
     <string name="account_youtube_session_expired">YouTube oturumunuzun süresi doldu, lütfen tekrar oturum açın</string>
+    <!-- Discord -->
     <string name="discord_activity_competing">Yarışıyor</string>
     <string name="discord_activity_listening">Dinleniyor</string>
     <string name="discord_activity_name_description">Discord etkinliklerinde görüntülenecek uygulama adını belirleyin.</string>
@@ -82,6 +85,7 @@
     <string name="discord_state_template_description">Parça bilgisi yer tutucularını kullanarak ikincil aktivite satırını ayarlayın.</string>
     <string name="discord_template_unknown_album">Bilinmeyen Albüm</string>
     <string name="discord_token_text_invalid">Discord tokeniniz geçersiz, lütfen tekrar giriş yapın</string>
+    <!-- Lastfm -->
     <string name="lastfm_action_failed">Last.fm isteği başarısız oldu</string>
     <string name="lastfm_auth_failed">Giriş başarısız oldu, Last.fm kimlik bilgilerinizi kontrol edin</string>
     <string name="lastfm_connected">Last.fm hesabına bağlı</string>
@@ -106,6 +110,7 @@
     <string name="lastfm_unlove">Last.fm\'de beğenme</string>
     <string name="lastfm_unloved">Sevilen şarkılar listesinden kaldırıldı</string>
     <string name="lastfm_username">Kullanıcı adı</string>
+    <!-- Profile -->
     <string name="profile_action_add">Profil ekle</string>
     <string name="profile_action_export">Profilleri dışa aktar</string>
     <string name="profile_action_import">Profilleri içe aktar</string>
@@ -169,6 +174,7 @@
     <string name="profile_share_waveforms_description">Bu profilin kendi klasörü yerine temel profilin waveformları klasörünü kullanın. Bu ayar, uygulamanın bir sonraki yeniden başlatılmasında geçerli olur; bu profilin kendi klasörüne önceden yazılmış veriler orada kalır</string>
     <string name="profile_switch_dialog_title">Profili değiştirin</string>
     <string name="profile_title">Profiller</string>
+    <!-- Sync -->
     <string name="sync_action_sync">Senkronize et</string>
     <string name="sync_albums">Kaydedilen Albümleri Otomatik Senkronize Et</string>
     <string name="sync_albums_description">YouTube Music\'ten beğenilen albümleri otomatik olarak içe aktar</string>
@@ -239,6 +245,7 @@
     <string name="sync_success_notification_artists">Tüm sanatçılar başarıyla senkronize edildi.</string>
     <string name="sync_success_notification_playlists">Tüm çalma listeleri başarıyla senkronize edildi.</string>
     <string name="sync_successful">Senkronizasyon başarıyla tamamlandı</string>
+    <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">%1$d adet başarısız olan öğenin senkronizasyonunu yeniden denemek ister misiniz?</string>
     <string name="sync_running_status">Senkronize ediliyor...</string>
     <string name="sync_youtube_history_title">YTM Geçmişi</string>
@@ -254,4 +261,17 @@
     <string name="sync_youtube_songs_remaining">%1$s şarkı kaldı</string>
     <string name="sync_youtube_unlike_failed">Şarkı YouTube\'da beğenilmedi</string>
     <string name="sync_youtube_unlike_success">Şarkı YouTube\'da Beğenilmedi</string>
+    <string name="sync_starting_notification">Senkronizasyon başlıyor...</string>
+    <string name="sync_background_notification">Arka planda senkronizasyon devam ediyor...</string>
+    <string name="sync_aborted_network_error">Ağ hatası nedeniyle senkronizasyon iptal edildi.</string>
+    <string name="sync_start_service_failed">Senkronizasyon hizmeti başlatılamadı</string>
+    <string name="sync_fetch_subscribed_channels_failed">Abone olunan kanallar alınamadı</string>
+    <string name="sync_fetch_liked_albums_failed">Beğenilen albümler alınamadı</string>
+    <string name="sync_fetch_liked_songs_failed">Beğenilen şarkılar alınamadı</string>
+    <string name="sync_fetch_playlists_failed">Çalma listeleri alınamadı</string>
+    <string name="sync_fetch_library_songs_failed">Kütüphanedeki şarkılar alınamadı</string>
+    <string name="sync_fetch_uploaded_songs_failed">Yüklenen şarkılar alınamadı</string>
+    <string name="sync_fetch_uploaded_albums_failed">Yüklenen albümler alınamadı</string>
+    <string name="sync_fetch_episodes_failed">Bölümler alınamadı</string>
+    <string name="sync_detail_push_result">%1$d başarılı, %2$d başarısız</string>
 </resources>
