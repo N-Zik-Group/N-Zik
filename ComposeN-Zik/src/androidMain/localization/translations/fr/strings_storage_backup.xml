@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Backup -->
     <string name="backup_action_export">Exporter la sauvegarde</string>
     <string name="backup_action_import">Importer une sauvegarde</string>
     <string name="backup_action_import_legacy_migration">Importer un fichier de migration.</string>
@@ -31,6 +32,7 @@
     <string name="backup_restore_overwrite_and_restart_warning">Les données existantes seront écrasées. %1$s se fermera automatiquement après la restauration de la base de données.</string>
     <string name="backup_target_database_and_settings_label">Base de données + Paramètres</string>
     <string name="backup_target_database_label">Base de données</string>
+    <!-- Backup Auto -->
     <string name="backup_auto_custom_interval_unit">Unité d\'intervalle personnalisée</string>
     <string name="backup_auto_custom_interval_value">Valeur d\'intervalle personnalisée</string>
     <string name="backup_auto_interval">Intervalle de sauvegarde automatique</string>
@@ -53,8 +55,10 @@
     <string name="backup_auto_title">Sauvegarde automatique</string>
     <string name="backup_auto_unit_days">Jours</string>
     <string name="backup_auto_unit_hours">Heures</string>
+    <string name="backup_auto_unit_minutes">Minutes</string>
     <string name="backup_auto_unit_months">Mois</string>
     <string name="backup_auto_unit_weeks">Semaines</string>
+    <!-- Backup Export -->
     <string name="backup_export_accounts_description">Exporter la liste des profils et les photos de visage dans un seul fichier .txt</string>
     <string name="backup_export_all">Tout exporter</string>
     <string name="backup_export_all_description">Exporter la base de données, les paramètres et l\'état du profil</string>
@@ -62,6 +66,7 @@
     <string name="backup_export_database_description">Exporter la base de données contenant les titres, les playlists et l\'historique</string>
     <string name="backup_export_profile_state_failed">Échec de l\'exportation de l\'état du profil</string>
     <string name="backup_export_settings_description">Exporter les paramètres et les préférences de l\'application</string>
+    <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importer la liste des profils et les photos de visage à partir d\'un fichier .txt</string>
     <string name="backup_import_all">Tout importer</string>
     <string name="backup_import_all_description">Importer la base de données, les paramètres et l\'état du profil</string>
@@ -74,6 +79,7 @@
     <string name="backup_import_settings_description">Importer les paramètres et les préférences de l\'application</string>
     <string name="backup_import_target_from_file">À partir du fichier</string>
     <string name="backup_import_target_profile_title">Dans quel profil l\'importer ?</string>
+    <!-- Cache -->
     <string name="cache_action_reset">Réinitialiser le cache</string>
     <string name="cache_clear_song_dialog_title">Vider le cache des morceaux</string>
     <string name="cache_downloads_max_size_description">Choisissez l\'espace disque à allouer aux morceaux téléchargés. Le bouton « Corbeille » permet de supprimer les fichiers audio téléchargés.</string>
@@ -82,6 +88,7 @@
     <string name="cache_location_private">Privé</string>
     <string name="cache_location_system">Système</string>
     <string name="cache_streaming_max_size_description">Limitez l\'espace disque utilisé pour mettre en cache les morceaux diffusés en streaming. Le bouton « Corbeille » permet de vider ce cache de lecture.</string>
+    <!-- Downloads -->
     <string name="downloads_action_download_all">Télécharger tous les titres</string>
     <string name="downloads_action_refresh_quality">Téléchargements de mises à jour</string>
     <string name="downloads_action_remove_all">Supprimer tous les titres téléchargés</string>
@@ -111,6 +118,7 @@
     <string name="downloads_stale_removed">Les données de téléchargement de %1$s sont manquantes et ont été supprimées. Veuillez les télécharger à nouveau.</string>
     <string name="downloads_stale_startup_removed">%1$d morceaux téléchargés ne disposent plus de leurs fichiers et ont été supprimés. Veuillez les télécharger à nouveau.</string>
     <string name="downloads_title">Télécharger</string>
+    <!-- Export -->
     <string name="export_cached_song_action">Exporter le titre mis en cache ou téléchargé</string>
     <string name="export_cached_songs_action">Exporter en cache</string>
     <string name="export_cached_songs_error">Erreur d\'exportation : %s</string>
@@ -119,6 +127,7 @@
     <string name="export_file_name_dialog_title">Nommez votre exportation</string>
     <string name="export_running_status">Exportation en cours…</string>
     <string name="export_song_unavailable_message">Le titre doit être mis en cache ou téléchargé pour être exporté</string>
+    <!-- Smart Trash -->
     <string name="library_cleanup_all_downloads_confirmation">Souhaitez-vous supprimer tous les fichiers téléchargés (%d titres) ?</string>
     <string name="library_cleanup_all_favorites_confirmation">Voulez-vous supprimer tous les favoris %d?</string>
     <string name="library_cleanup_all_listening_history_confirmation">Voulez-vous réinitialiser l\'historique d\'écoute pour les chansons %d?</string>
@@ -132,9 +141,13 @@
     <string name="library_cleanup_title">Corbeille intelligente</string>
     <string name="library_favorites_remove_dialog_title">Supprimer des favoris</string>
     <string name="library_listening_history_reset_dialog_title">Réinitialiser l\'historique d\'écoute</string>
+    <!-- Storage -->
     <string name="storage_samsung_action_keep_system">Conserver l\'espace de stockage du système</string>
     <string name="storage_samsung_action_use_private">Utiliser un espace de stockage privé</string>
     <string name="storage_samsung_advice_message">La gestion automatique de la mémoire de Samsung peut supprimer les fichiers téléchargés et mis en cache par N-Zik, même si vous ne l\'avez pas demandé. Pour protéger vos téléchargements, utilisez l\'espace de stockage privé (de l\'application) plutôt que l\'espace de stockage système.</string>
     <string name="storage_samsung_advice_title">Conseils de Samsung en matière de stockage</string>
     <string name="storage_samsung_system_usage_message">Vous disposez actuellement de %1$s de fichiers téléchargés et mis en cache sur le stockage système.</string>
+    <string name="backup_import_failed">Importation échouée</string>
+    <string name="export_no_songs">Aucune chanson exportée</string>
+    <string name="export_cached_songs_generic_error">L\'exportation a échoué</string>
 </resources>
