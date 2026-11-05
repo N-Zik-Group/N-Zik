@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_answer_no">Non</string>
     <string name="common_artist_conjunction_and">et</string>
     <string name="common_clipboard_copy_failed">Impossible de copier le texte dans le presse-papiers, réessayez</string>
@@ -13,6 +14,7 @@
     <string name="common_debug_width">largeur</string>
     <string name="common_delete_success">Supprimé</string>
     <string name="common_description_unavailable">Aucune description disponible</string>
+    <string name="common_duration_milliseconds_format">%1$s ms</string>
     <string name="common_empty_items">Aucun élément</string>
     <string name="common_external_link_loading_suffix">est entrain de charger...</string>
     <string name="common_load_failed">Impossible de charger</string>
@@ -39,4 +41,6 @@
     <string name="common_validation_minimum_value">"La valeur doit être supérieure à "</string>
     <string name="common_validation_name_in_use">Ce nom est déjà utilisé</string>
     <string name="common_value_input_hint">Entrez la valeur</string>
+    <string name="common_unknown">Inconnu</string>
+    <string name="common_duration_minutes_short">%1$d min</string>
 </resources>
