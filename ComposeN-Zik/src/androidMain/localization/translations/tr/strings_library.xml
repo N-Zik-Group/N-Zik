@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Album -->
     <string name="album_action_bookmark">Albümü yer imlerine ekle</string>
     <string name="album_action_open">Albüme git</string>
     <string name="album_alternative_versions">Alternatif versiyonlar</string>
@@ -13,6 +14,7 @@
     <string name="album_not_found">Albüm bulunamadı</string>
     <string name="album_related_title">İlgili albümler</string>
     <string name="album_right_swipe">Albüm Sağa Kaydırma</string>
+    <!-- Artist -->
     <string name="artist_action_follow">Takip et</string>
     <string name="artist_action_play_local_songs">Tüm yerel şarkıları çal</string>
     <string name="artist_deduplication_result">%d adet yinelenen sanatçı, doğru sanatçıyla birleştirildi</string>
@@ -28,8 +30,10 @@
     <string name="artist_songs_count_duration">%1$d Şarkı • %2$s</string>
     <string name="artist_songs_unavailable_message">Şarkılar bulunamadı</string>
     <string name="artist_title">Sanatçı</string>
+    <!-- History -->
     <string name="history_clear_listen_history_description">Dinleme geçmişinden kaydedilmiş çalma olaylarını sil.</string>
     <string name="history_clear_search_history_description">Arama geçmişi tercihlerini değiştirmeden, her arama geçmişi sayfasından kaydedilmiş aramaları silin.</string>
+    <!-- Home -->
     <string name="home_albums_settings">Ana Sayfa Albümler</string>
     <string name="home_artists_settings">Ana Sayfa Sanatçılar</string>
     <string name="home_chart_top_artists_title">En iyi sanatçılar</string>
@@ -47,10 +51,12 @@
     <string name="home_tabs_settings_description">Sekmeleri yeniden sıralama ve gösterme/gizleme</string>
     <string name="home_title">Ana Sayfa</string>
     <string name="home_youtube_login_description">Daha fazla içerik için YTM hesabınıza giriş yapın</string>
+    <!-- Home Easter Egg -->
     <string name="home_easter_egg_click_message">Tıklamayı sever misiniz? Öyleyse devam edin...</string>
     <string name="home_easter_egg_keep_going">Tamam, bir şey arıyorsun, devam et...</string>
     <string name="home_easter_egg_last">Sen bir numarasın, uzun bas ve sürprizin tadını çıkar</string>
     <string name="home_easter_egg_number_one">Sen bir numarasın, tıkla ve sürprizin tadını çıkar</string>
+    <!-- Library -->
     <string name="library_action_bookmark">Yer imi</string>
     <string name="library_action_randomize">Rastgeleleştirme</string>
     <string name="library_albums_title">Albümler</string>
@@ -96,11 +102,14 @@
     <string name="library_sync_progress_format">%1$d / %2$d</string>
     <string name="library_title">Kütüphane</string>
     <string name="library_youtube_music_title">YTM Kütüphanesi</string>
+    <string name="library_youtube_playlists_label">YT/YTM</string>
+    <!-- Library Favorites -->
     <string name="library_dislikes_added">%s Beğenilmeyenlere eklendi</string>
     <string name="library_dislikes_removed">%s Beğenilmeyenlerden çıkarıldı</string>
     <string name="library_favorites_action_add">Favorilere ekle</string>
     <string name="library_favorites_added">Favorilere eklendi</string>
     <string name="library_favorites_removed">Favorilerden çıkarıldı</string>
+    <!-- Library Sort -->
     <string name="library_sort_album">Albüm</string>
     <string name="library_sort_album_year">Albüm Yılı</string>
     <string name="library_sort_artist">Sanatçı</string>
@@ -116,6 +125,7 @@
     <string name="library_sort_play_count">Oynatma Sayısı</string>
     <string name="library_sort_songs_number">Şarkı sayısı</string>
     <string name="library_sort_title">Başlık</string>
+    <!-- Metadata -->
     <string name="metadata_action_change_artists">Yazarları Değiştir</string>
     <string name="metadata_action_change_cover">Kapağı Değiştir</string>
     <string name="metadata_action_change_title">Başlığı Değiştir</string>
@@ -161,6 +171,7 @@
     <string name="metadata_video_views_label">Görüntülemeler</string>
     <string name="metadata_wikipedia_attribution">Creative Commons Attribution CC-BY-SA 3.0 lisansı altında Wikipedia\'dan</string>
     <string name="metadata_year">Yıl</string>
+    <!-- Metadata Musicbrainz -->
     <string name="metadata_musicbrainz_insights">Bilgiler</string>
     <string name="metadata_musicbrainz_insights_biography">Biyografi</string>
     <string name="metadata_musicbrainz_insights_links">Linkler</string>
@@ -189,6 +200,8 @@
     <string name="metadata_musicbrainz_stat_listens">Dinler</string>
     <string name="metadata_musicbrainz_stat_songs">Şarkılar</string>
     <string name="metadata_musicbrainz_stat_time">Toplam süre</string>
+    <string name="metadata_musicbrainz_wikipedia">Wikipedia</string>
+    <!-- Playlist -->
     <string name="playlist_action_add">Çalma listesine ekle</string>
     <string name="playlist_action_add_hint">Çalma listesine ekle</string>
     <string name="playlist_action_create">Yeni çalma listesi</string>
@@ -196,7 +209,7 @@
     <string name="playlist_action_export">Çalma listesini dışa aktar</string>
     <string name="playlist_action_import">Çalma listesini içe aktar</string>
     <string name="playlist_action_import_favorites">Favorileri içe aktar</string>
-    <string name="playlist_action_like_favorites_on_youtube">N-Zik Beğenilen Şarkıları YouTube\'da Beğen</string>
+    <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="playlist_action_remove_songs">Çalma listesinden kaldır</string>
     <string name="playlist_action_remove_songs_outside_library">Kütüphanede Olmayan Şarkıları Sil</string>
     <string name="playlist_action_rename">Yeniden adlandır</string>
@@ -216,6 +229,7 @@
     <string name="playlist_error_action_on_disliked_song">Beğenilmeyen Şarkılarla Bu Eylem Gerçekleştirilemez</string>
     <string name="playlist_import_default_name">İçe aktarılan çalma listesi</string>
     <string name="playlist_import_failed">Yerel çalma listesi içe aktarılırken hata oluştu</string>
+    <string name="playlist_import_format_riplay_csv">RiPlay CSV</string>
     <string name="playlist_import_unsupported_format">Desteklenmeyen format</string>
     <string name="playlist_import_youtube_link">YouTube bağlantısı üzerinden içe aktar</string>
     <string name="playlist_insertion_beginning">Başlangıç</string>
@@ -233,7 +247,7 @@
     <string name="playlist_refresh_on_open_disable">Açıldığında yenilemeyi devre dışı bırak</string>
     <string name="playlist_refresh_on_open_enable">Açıldığında yenilemeyi etkinleştir</string>
     <string name="playlist_remove_selected_confirmation">Seçili şarkıları bu çalma listesinden silmek ister misiniz?</string>
-    <string name="playlist_remove_songs_confirmation">Bu %d şarkıyı çalma listesinden silmek istediğinizden emin misiniz?</string>
+    <string name="playlist_remove_songs_confirmation">Remove the selection from the playlist? Selected tracks: %d</string>
     <string name="playlist_rename_dialog_title">Çalma listesini yeniden adlandır</string>
     <string name="playlist_reorder_ascending_sort_required_message">Yeniden sıralama sadece artan sıralamada mümkündür</string>
     <string name="playlist_reorder_lock_toggle_label">Şarkıları kilitle/aç ve yeniden sırala</string>
@@ -246,8 +260,10 @@
     <string name="playlist_top_show_description">En çok dinlediğiniz çalma listesini Hızlı Seçimlerde göster</string>
     <string name="playlist_youtube_song_limit_message">YouTube Çalma Listeleri 5000 şarkı ile sınırlıdır</string>
     <string name="playlist_youtube_title">YouTube Çalma Listesi</string>
+    <!-- Podcast -->
     <string name="podcast_episodes_title">Bölümler</string>
     <string name="podcast_title">Podcast\'ler</string>
+    <!-- Radio -->
     <string name="radio_action_start">Radyo başlat</string>
     <string name="radio_action_start_hint">Radyo başlat</string>
     <string name="radio_action_stop">Radyoyu durdur</string>
@@ -259,12 +275,14 @@
     <string name="radio_discovery_requires_radio_or_autofill_message">Keşif özelliğini kullanmak için Radyo veya Otomatik Doldurma seçeneğini etkinleştirin</string>
     <string name="radio_fetch_empty_queue_preserved_message">Radyo: yüklenmiş şarkı yok (Kuyruk korunuyor)</string>
     <string name="radio_stopped_message">Radyo durdu (Normal duruma geri dön)</string>
+    <!-- Recognition -->
     <string name="recognition_action_more_details">Daha fazla ayrıntı</string>
     <string name="recognition_audio_hint">Analizin çalışması için biraz müzik çalın</string>
     <string name="recognition_error_microphone_permission">Bul uygulaması için mikrofon izni gereklidir.</string>
     <string name="recognition_error_no_match">Bu şarkıyı tanıyamadım. Daha yüksek sesli veya daha net bir örnek deneyin.</string>
     <string name="recognition_listening_duration">Ses kaydının %1$d saniyesini analiz ediyor</string>
     <string name="recognition_ready_message">Telefonunuzu müziğin yakınına tutun</string>
+    <!-- Recommendations -->
     <string name="recommendations_action_reset_quick_picks">Hızlı Seçimleri sıfırla</string>
     <string name="recommendations_adaptive">Uyarlanabilir</string>
     <string name="recommendations_adaptive_description">Uyarlanabilir: Çalma listesinin büyüklüğüne göre ölçeklenir (10-150 öneri)</string>
@@ -312,6 +330,7 @@
     <string name="recommendations_trending_community_playlists_title">Popüler topluluk çalma listeleri</string>
     <string name="recommendations_trending_shorts_title">Shorts\'larda Popüler Olanlar</string>
     <string name="recommendations_trending_songs_title">Sizin için popüler olan şarkılar</string>
+    <!-- Search -->
     <string name="search_content_type_all">Tümü</string>
     <string name="search_content_type_official">Resmi</string>
     <string name="search_content_type_user_generated">Kullanıcı Tarafından Oluşturulan</string>
@@ -352,15 +371,26 @@
     <string name="voice_search_listening">Dinleniyor...</string>
     <string name="voice_search_retry">Tekrar dene</string>
     <string name="voice_search_speak_now">Şimdi konuşun</string>
+    <!-- Song -->
     <string name="song_delete_confirmation">Bu şarkıyı gerçekten silmek istiyor musunuz? Veritabanından silinecek.\nBu işlem geri alınamaz.</string>
     <string name="song_delete_dialog_title">Şarkıları sil</string>
     <string name="song_metadata_update_action_open">Güncelleme iletişim kutusunu aç</string>
     <string name="song_metadata_updated_count">%1$d adet şarkı güncellendi</string>
     <string name="song_play_time_action_reset">Toplam çalma süresini sıfırla</string>
+    <!-- Song Matching -->
     <string name="song_matching_action_open">Albüm/Ses versiyon</string>
     <string name="song_matching_all_confirmation">%d adet eşleşmemiş şarkıyı eşleştirmek ister misiniz?</string>
     <string name="song_matching_dialog_title">Şarkıları eşleştir</string>
     <string name="song_matching_progress_title">Eşleşen şarkılar</string>
     <string name="song_matching_running_message">Şarkılar Eşleştiriliyor. Lütfen Bekleyin. Uygulamayı Küçültmeyin veya Çıkmayın</string>
     <string name="song_matching_unmatched_label">Eşleşmeyen şarkılar</string>
+    <string name="metadata_musicbrainz_rating">Derecelendirme</string>
+    <string name="metadata_cover_art">Kapak resmi</string>
+    <string name="metadata_file_path_unavailable">Dosya yolu çözümlenemiyor</string>
+    <string name="metadata_save_failed">Meta veri kaydedilemedi</string>
+    <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
+    <string name="recommendations_charts_global">Global</string>
+    <string name="playlist_like_all_duration_confirmation_format">Tüm şarkıları beğenmek yaklaşık %1$s sürecektir. İptal etmek için uygulamayı kapatın. Devam etmek istiyor musunuz?</string>
+    <string name="library_on_device_permission_request_failed">Bu cihazdaki müziklere erişim talebi gönderilemedi.</string>
+    <string name="library_on_device_permission_settings_failed">İzin ayarları açılamadı.</string>
 </resources>
