@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- About -->
     <string name="about_action_report_issue">Повідомити про проблему</string>
     <string name="about_action_request_feature">Попросіть функцію або запропонуйте ідею</string>
     <string name="about_action_view_source">Переглянути вихідний код</string>
@@ -7,8 +8,13 @@
     <string name="about_contributors_alphabetical_order_label">В алфавітному порядку:</string>
     <string name="about_debug_developers_rotation">обертання розробників</string>
     <string name="about_debug_translators_rotation">переклад_обертання</string>
+    <string name="about_developers_description">Показати або приховати розробників і дизайнерів, які внесли свій застосунок.</string>
     <string name="about_developers_designers_title">Розробники / Дизайнери</string>
     <string name="about_github_link_description">Вас буде перенаправлено на GitHub</string>
+    <string name="about_report_issue_description">Відкрийте форму звіту про помилку GitHub, щоб описати проблему.</string>
+    <string name="about_request_feature_description">Відкрийте форму запиту функції GitHub, щоб запропонувати покращення.</string>
+    <string name="about_source_code_description">Відкрийте репозиторій вихідного коду на GitHub.</string>
     <string name="about_title">Про нас</string>
+    <string name="about_translators_description">Показати або приховати людей, які перекладали додаток.</string>
     <string name="about_translators_title">Перекладачі</string>
 </resources>
