@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Logs -->
     <string name="logs_action_export">Günlükleri dışa aktar</string>
     <string name="logs_action_export_both">Her iki günlüğü de dışa aktar</string>
     <string name="logs_action_export_crash">Çökme günlüğünü dışarı aktar</string>
@@ -7,6 +8,7 @@
     <string name="logs_export_both_description">Hata ayıklama ve çökme günlüğünü bir dosyaya aktar</string>
     <string name="logs_export_crash_description">Çökme günlüğünü bir dosyaya aktar</string>
     <string name="logs_export_debug_description">Hata ayıklama günlüğünü bir dosyaya aktar</string>
+    <!-- Maintenance -->
     <string name="maintenance_all_systems_ok">Tüm sistemler çalışıyor</string>
     <string name="maintenance_auto_update">Otomatik güncelleme</string>
     <string name="maintenance_backup">Otomatik yedekleme</string>
@@ -122,6 +124,7 @@
     <string name="maintenance_yt_invalid">Geçersiz</string>
     <string name="maintenance_yt_session">YouTube oturumu</string>
     <string name="maintenance_yt_valid">Geçerli</string>
+    <!-- Modules -->
     <string name="modules_abi">ABI</string>
     <string name="modules_already_installed">Zaten yüklü</string>
     <string name="modules_bundled_libraries">Paket halinde sunulan kütüphaneler</string>
@@ -154,9 +157,10 @@
     <string name="modules_update_available_body">%1$s sürümü yüklü. Uygulama artık %2$s sürümüyle birlikte sunuluyor.</string>
     <string name="modules_updating">Modülü güncelle</string>
     <string name="modules_version">Sürüm</string>
+    <!-- Recovery -->
     <string name="recovery_accounts_exported">Profil durumu dışa aktarıldı</string>
     <string name="recovery_accounts_imported_base">İçe aktarılan profil durumu: temel profil</string>
-    <string name="recovery_accounts_imported_count">İçe aktarılan profil durumu: %1$d profil</string>
+    <string name="recovery_accounts_imported_count">Profile state import complete. Profile count: %1$d</string>
     <string name="recovery_category_all">Tümü</string>
     <string name="recovery_category_profile">Profil başına</string>
     <string name="recovery_center">Kurtarma Merkezi</string>
@@ -248,6 +252,7 @@
     <string name="recovery_status_main_process_stopped">Uygulama durduruldu</string>
     <string name="recovery_status_main_process_stopping">Uygulama kapanıyor…</string>
     <string name="recovery_success">Tamam</string>
+    <!-- Updates -->
     <string name="updates_action_check">Güncellemeyi kontrol et</string>
     <string name="updates_action_check_now">Şimdi kontrol et</string>
     <string name="updates_action_download_current_version">Son güncellemeyi tekrar indir</string>
@@ -264,6 +269,8 @@
     <string name="updates_build_beta_label">BETA</string>
     <string name="updates_build_debug_label">HATA AYIKLAMA</string>
     <string name="updates_build_dev_label">GELİŞTİRİCİ</string>
+    <string name="updates_build_minified_label">MINIFIED</string>
+    <string name="updates_build_release_label">RELEASE</string>
     <string name="updates_cache_cleared">Önbellek temizlendi</string>
     <string name="updates_changelog_title">%s sürümündeki yenilikler</string>
     <string name="updates_channel_name">Uygulama Güncellemeleri</string>
@@ -302,4 +309,6 @@
     <string name="updates_unavailable_build_description">Bu mesajı görüyorsanız, derlemenizde otomatik güncelleme özelliği etkin değil demektir, lütfen uygulamayı GitHub\'dan manuel olarak güncelleyin.</string>
     <string name="updates_up_to_date">Güncel</string>
     <string name="updates_warning_acknowledge">Anlıyorum</string>
+    <string name="updates_check_failed">Güncellemeler kontrol edilemedi.</string>
+    <string name="updates_install_generic_error">Güncelleme yüklenemedi.</string>
 </resources>
