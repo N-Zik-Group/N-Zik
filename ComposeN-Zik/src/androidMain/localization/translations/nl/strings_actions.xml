@@ -1,14 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
+    <string name="common_action_apply">Toepassen</string>
     <string name="common_action_cancel">Annuleer</string>
     <string name="common_action_clear">Wissen</string>
+    <string name="common_action_close">Afsluiten</string>
+    <string name="common_action_close_app">Sluit app</string>
     <string name="common_action_confirm">Bevestigen</string>
     <string name="common_action_delete">Verwijder</string>
     <string name="common_action_done">Klaar</string>
+    <string name="common_action_export">Exporteren</string>
+    <string name="common_action_import">Importeren</string>
+    <string name="common_action_next">Volgende</string>
     <string name="common_action_ok">Ok</string>
+    <string name="common_action_paste">Plakken</string>
+    <string name="common_action_previous">named@@0</string>
+    <string name="common_action_remove">Verwijderen</string>
+    <string name="common_action_reset">Reset</string>
     <string name="common_action_retry">Opnieuw</string>
+    <string name="common_action_save">Opslaan</string>
     <string name="common_action_select">Selecteren</string>
     <string name="common_action_show_less">Minder weergeven</string>
     <string name="common_action_show_more">Toon meer</string>
+    <string name="common_action_translate">Vertalen</string>
     <string name="common_action_turn_off">Uitschakelen</string>
+    <string name="common_action_unlink">Ontkoppelen</string>
+    <string name="common_action_update">Vernieuwen</string>
+    <string name="common_menu_label">Menu</string>
 </resources>
