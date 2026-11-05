@@ -1,18 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
+    <string name="common_action_apply">Aplicar</string>
     <string name="common_action_cancel">Cancelar</string>
     <string name="common_action_clear">Limpar</string>
+    <string name="common_action_close">FECHAR</string>
+    <string name="common_action_close_app">Fechar aplicativo</string>
     <string name="common_action_confirm">Confirmar</string>
     <string name="common_action_delete">Eliminar</string>
     <string name="common_action_done">Terminar</string>
+    <string name="common_action_export">Exportação</string>
+    <string name="common_action_import">Importação</string>
+    <string name="common_action_next">Próximo</string>
     <string name="common_action_ok">Certo</string>
     <string name="common_action_paste">Colar</string>
+    <string name="common_action_previous">Anterior</string>
+    <string name="common_action_remove">Excluir</string>
     <string name="common_action_reset">Reiniciar</string>
     <string name="common_action_retry">Repetir</string>
+    <string name="common_action_save">Guardar</string>
     <string name="common_action_select">Selecionar</string>
     <string name="common_action_show_less">Mostre menos</string>
     <string name="common_action_show_more">Mostre mais</string>
     <string name="common_action_translate">Traduzir</string>
     <string name="common_action_turn_off">Desligar</string>
+    <string name="common_action_unlink">Desvincular</string>
     <string name="common_action_update">Atualização</string>
+    <string name="common_menu_label">Menu</string>
 </resources>
