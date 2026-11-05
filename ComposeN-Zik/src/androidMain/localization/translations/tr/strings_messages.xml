@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_error_connection_timeout">Bağlantı zaman aşımı</string>
     <string name="common_error_no_connection">Bağlantı Yok</string>
     <string name="common_error_no_internet">Ağ bağlantısı yok</string>
