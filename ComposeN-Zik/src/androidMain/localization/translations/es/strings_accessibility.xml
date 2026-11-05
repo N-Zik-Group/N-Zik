@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Accessibility -->
     <string name="accessibility_app_icon">Icono de la aplicación</string>
     <string name="accessibility_app_icon_in_player">icono de la aplicación en el reproductor</string>
     <string name="accessibility_arrow_down">flecha_abajo</string>
