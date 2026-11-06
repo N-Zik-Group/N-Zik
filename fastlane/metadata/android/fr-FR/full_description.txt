@@ -1,4 +1,4 @@
-Client YouTube Music multilingue et open source pour Android.
+Un frontend multilingue YouTube Music pour Android, axé sur les performances, les raffinements UI/UX, l'expansion des fonctionnalités et le support à long terme.
 
 <b>N-Zik</b> est un fork open source de <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
@@ -43,7 +43,7 @@ Crédits Glass : Square / Convx Project (GPL-3.0) ; Kyant0 AndroidLiquidGlass / 
 👥 <b>Écouter ensemble</b>
 - Rejoignez ou créez des sessions d'écoute live via code ou lien d'invitation
 
-🗓️ <b>Rewind</b>
+🗓️ <b>Rembobiner</b>
 - Récapitulatifs annuels et mensuels d'écoute, playlists Rewind auto-générées
 
 📱 <b>Écoutez n'importe où :</b> Android Auto, Automotive, TV et Tablets
