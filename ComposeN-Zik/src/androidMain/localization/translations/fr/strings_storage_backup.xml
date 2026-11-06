@@ -147,7 +147,7 @@
     <string name="storage_samsung_advice_message">La gestion automatique de la mémoire de Samsung peut supprimer les fichiers téléchargés et mis en cache par N-Zik, même si vous ne l\'avez pas demandé. Pour protéger vos téléchargements, utilisez l\'espace de stockage privé (de l\'application) plutôt que l\'espace de stockage système.</string>
     <string name="storage_samsung_advice_title">Conseils de Samsung en matière de stockage</string>
     <string name="storage_samsung_system_usage_message">Vous disposez actuellement de %1$s de fichiers téléchargés et mis en cache sur le stockage système.</string>
-    <string name="backup_import_failed">Importation échouée</string>
+    <string name="backup_import_failed">Échec de l\'importation</string>
     <string name="export_no_songs">Aucune chanson exportée</string>
     <string name="export_cached_songs_generic_error">L\'exportation a échoué</string>
 </resources>
