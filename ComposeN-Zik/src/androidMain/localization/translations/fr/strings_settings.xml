@@ -79,7 +79,7 @@
     <string name="permissions_event_used">Opération protégée terminée</string>
     <string name="permissions_feature_audio_devices">Sélection de l\'appareil audio</string>
     <string name="permissions_feature_downloads">Téléchargements et mises à jour des applications</string>
-    <string name="permissions_feature_listen_together">Écoutons Ensemble</string>
+    <string name="permissions_feature_listen_together">Écouter Ensemble</string>
     <string name="permissions_feature_local_library">Librairie de l\'appareil</string>
     <string name="permissions_feature_music_recognition">Reconnaissance musicale</string>
     <string name="permissions_feature_onboarding">Configuration de l\'application</string>
