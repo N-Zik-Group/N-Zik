@@ -264,7 +264,7 @@
     <string name="sync_starting_notification">Démarrage de la synchronisation...</string>
     <string name="sync_background_notification">Synchronisation en arrière-plan...</string>
     <string name="sync_aborted_network_error">La synchronisation a été interrompue en raison d\'une erreur réseau.</string>
-    <string name="sync_start_service_failed">Impossible de démarrer le service de synchronisation</string>
+    <string name="sync_start_service_failed">Échec du démarrage du service de synchronisation</string>
     <string name="sync_fetch_subscribed_channels_failed">Impossible de récupérer les canaux abonnés</string>
     <string name="sync_fetch_liked_albums_failed">Impossible de récupérer les albums aimés</string>
     <string name="sync_fetch_liked_songs_failed">Impossible de récupérer les chansons aimées</string>
