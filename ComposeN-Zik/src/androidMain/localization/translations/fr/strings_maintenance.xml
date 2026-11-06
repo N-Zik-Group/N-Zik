@@ -110,7 +110,7 @@
     <string name="maintenance_status_song_resolved">Résolution au niveau des notes</string>
     <string name="maintenance_sync_ytm">Synchronisation YouTube Music</string>
     <string name="maintenance_sync_ytm_running">Synchronisation en cours</string>
-    <string name="maintenance_title">Entretien</string>
+    <string name="maintenance_title">Maintenance</string>
     <string name="maintenance_update_completed">Prêt pour la mise à jour</string>
     <string name="maintenance_update_downloading">Téléchargement de %s</string>
     <string name="maintenance_update_failed">Échec du téléchargement</string>
