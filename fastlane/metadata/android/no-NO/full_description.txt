@@ -1,0 +1,69 @@
+En flerspråklig YouTube Music frontend for Android, fokusert på ytelse, UI/UX-raffinasjoner, utvidelse, langsiktig støtte.
+
+<b>N-Zik</b> er en åpen kilde fork av <a href="https://github.com/knighthat/Kreate">Kreat</a>.
+
+<b>Viktig:</b> N-Zik startet som et sideprosjekt. For mer modne alternativer, sjekk <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, eller <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+
+<b>AI Bruk:</b> Jeg bruker generativ AI for kode (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMOD-metode</a>), vurdert og testet før frakt.
+
+✨ <b>VED N-ZIK?</b> ingen annonser, bakgrunnsavspilling, offline caching, tilpasselig brukergrensesnitt - gratis, alltid.
+
+🎨 <b>Tilpassbart brukergrensesnitt</b>
+- Jetpack Compose interface
+- Temaer: AMOLED, Dyp Dark, Crisp Light + tinted accents
+- 3D Karousel Spiller, Hjem-moduler, enhetlig spiller og mini spiller
+– Artistens profiler, Oppdagelse og humør, sammenleggbare husoverskrifter
+
+🫧 <b>Glass Effect (BETA, optional)</b>
+Deaktivert på friske installasjoner. Aktiver i Innstillinger: native, kontekst-bare eller Glass etter kategori, med justerbar kvalitet. Kan øke kjøring av rendering av arbeid og batteribruk, redusere kvaliteten eller deaktivere hvis nødvendig.
+Glasskreditter: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+
+🎵 <b>Lydopplevelse</b>
+- Premiumkvalitet via YouTube Music Premium, anvendt automatisk
+- Synkroniserte tekster med redigering og sanntids oversettelse
+- Sang gjenkjenning (Shazam-lik), stemmesøk, lydvisualiserer
+– Pro-kontroller: hastighet, pitch, normalisering, crossfade, volumøkning, bass økning, revers
+- søkbar for lydlinje for nøyaktig navigasjon
+
+💾 <b>Offline, Metadata og Personvern</b>
+- Smart caching og nedlasting for spor og spillelister, med valgbar nedlastingskvalitet
+- FFmpeg-drevet eksport med full metadata (FFmpeg er en nedlastbar utvidelse, installert ved første bruk)
+- Metalledigering i app (AAC/Opus, forside)
+- Lokale lytteverdier og historikk
+-Automatisk sikkerhetskopiering med egendefinerte intervaller og tilbakeholdelse
+
+🔗 <b>Integrasjoner</b>
+- YouTube-innlogging for anbefalinger og videospilling, samt en eksperimentell 2-veis synkroniseringsmotor
+-Last.fm scrobbling med nå Spill og kjærlighet/ukjærlighet
+- MusicBrainz artist og album innsikt
+- Discord Rich Presence, inkludert avansert modus med live forhåndsvisning
+- Inviverdig integrasjon for alternative YouTube-strømming
+-Spilleliste import/eksport: RiPlay, Spotify, YouTube Musikk, N-Zik
+
+👥 <b>Listen Together</b>
+– Bli med eller vert direkte lytter-økter med andre brukere via kode eller invitasjonslenke
+
+🗓️ <b>Rewind</b>
+-Årlig og månedlig lytterapport med automatisk genererte Motvind spillelister
+
+📱 <b>Spill Hvem som helst:</b> Android Automotive, TV og Tablets
+
+🛠️ <b>Strømbrukerfunksjoner</b>
+- Multi-profil: isolert database og innstillinger per profil
+- Automatisk gjenoppta Bluetooth-tilkobling, vedvarende kø, auto-utfylling køen
+- Smart papirkurv, skjulte sanger, misliker system, foreldrekontroll
+- Proxy støtte, tilpasning av nettkvalitet, loggeksport
+-Redningssenter, vedlikeholdsskjerm, oppstartsprogram, app snarveier
+- OTA oppdateringer fra GitHub, sovestere, bakgrunnsavspilling
+
+📦 <b>Tilgjengelige versjoner</b>
+- Utgivelse64/Beta64 (`com.nevar.nzik`): Fullfør bygningen, bare 64-biters enheter
+- Utgivelse32/Beta32 (`com.nevar.nzik`): Fullfør bygningen, kun 32-biters enheter
+- Minified64 (`com.nevar.nzik`): Lysvekt R8 build, for enheter med lav vekt (64-bit)
+- Minified32 (`com.nevar.nzik`): Lysvektig R8-versjon (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Uten automatisk oppdatering for F-Droid (alle arkitekturer)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Utviklingsbygg, kun testing
+
+Ingen build bundles FFmpeg: it er en nedlastbar utvidelse (installert ved første bruk, administrert i Innstillinger → Utvidelser). Bare FOSS står på F-Droid.
+
+Norges Bank Investment Management har studiepoeng med Norges musikkhøgskole.
