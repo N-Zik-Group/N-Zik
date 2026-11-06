@@ -44,9 +44,9 @@
     <string name="listen_together_auto_approval_suggestions_description">Approuver et mettre en file d\'attente automatiquement les suggestions de titres des invités</string>
     <string name="listen_together_blocked_users_description">Voir et gérer les participants bloqués de vos salles d\'écoute.</string>
     <string name="listen_together_create_room_description">Créez une salle et partagez le code avec vos amis</string>
-    <string name="listen_together_history_description">Enregistrez des morceaux de « Listen Together » dans votre historique locale</string>
+    <string name="listen_together_history_description">Enregistrez des morceaux de « Écouter Ensemble » dans votre historique locale</string>
     <string name="listen_together_kick_user_description">Exclure cette personne de la session</string>
-    <string name="listen_together_open_description">Ouvrez l\'écran « Écouter Ensemble »</string>
+    <string name="listen_together_open_description">Ouvrez l\'écran « Écoutons Ensemble »</string>
     <string name="listen_together_permanently_kick_user_description">Bloquer les demandes d\'ajout à la liste d\'amis de cette personne et masquer ses suggestions</string>
     <string name="listen_together_server_url_description">Choisissez le serveur utilisé pour héberger et rejoindre les salles d\'écoute partagées.</string>
     <string name="listen_together_settings_description">Configurer le serveur, le nom d\'utilisateur et bien plus encore</string>
