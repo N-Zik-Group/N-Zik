@@ -82,7 +82,7 @@
     <string name="library_matching_success_failure_count_format">%1$d correspondant, %2$d a échoué</string>
     <string name="library_on_device_start_folder_description">Choisissez le dossier de démarrage pour le navigateur de musique sur le périphérique.</string>
     <string name="library_on_device_title">Sur l\'appareil</string>
-    <string name="library_playlists_title">Listes de lecture</string>
+    <string name="library_playlists_title">Playlists</string>
     <string name="library_songs_title">Titres</string>
     <string name="library_sort_history_alphabetical">Par ordre alphabétique</string>
     <string name="library_sort_history_date">Date</string>
