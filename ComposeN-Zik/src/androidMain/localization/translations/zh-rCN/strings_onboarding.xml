@@ -1,3 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Onboarding -->
+    <string name="onboarding_accounts_discord_description">在Discord中显示您正在收听的内容 (测试版)</string>
+    <string name="onboarding_accounts_done">我已完成</string>
+    <string name="onboarding_accounts_skip">跳过</string>
+    <string name="onboarding_accounts_title">连接您的帐户</string>
+    <string name="onboarding_accounts_youtube_account">以 %1$s 身份登录</string>
+    <string name="onboarding_accounts_youtube_description">可选：使用您的 YouTube 帐户浏览应用程序(家居、探索等)</string>
+    <string name="onboarding_greeting">你好！让我们设置N-Zik来获得完美的音乐体验。下面的每个权限都是可选的。</string>
+    <string name="onboarding_permission_battery">电池优化</string>
+    <string name="onboarding_permission_battery_description">阻止系统停止背景音乐</string>
+    <string name="onboarding_permission_bluetooth">蓝牙</string>
+    <string name="onboarding_permission_bluetooth_description">检测耳机暂停或恢复音乐</string>
+    <string name="onboarding_permission_camera_description">扫描N-Zik 桌面Compagnon 的二维码以配对 PC</string>
+    <string name="onboarding_permission_grant">授权</string>
+    <string name="onboarding_permission_granted">已授予权限</string>
+    <string name="onboarding_permission_media">媒体访问</string>
+    <string name="onboarding_permission_media_description">读取本地音乐库</string>
+    <string name="onboarding_permission_microphone">麦克风</string>
+    <string name="onboarding_permission_microphone_description">使用麦克风作为语音命令、可视化器和其他功能</string>
+    <string name="onboarding_permission_notifications_description">查看播放器并控制通知中的音乐</string>
+    <string name="onboarding_permission_settings">设置</string>
+    <string name="onboarding_permissions_section">权限</string>
+    <string name="onboarding_profile_continue">继续</string>
+    <string name="onboarding_profile_description">此名称在应用中显示。您也可以选择名称和头像来自哪里并设置照片。</string>
+    <string name="onboarding_profile_field_hint">您的姓名</string>
+    <string name="onboarding_profile_title">给你的克隆命名</string>
+    <string name="onboarding_restore_description">将您的知识库和设置从之前版本的应用程序返回。此步骤是可选的。</string>
+    <string name="onboarding_restore_restart_note">导入成功重启应用程序。</string>
+    <string name="onboarding_restore_skip">暂时跳过</string>
+    <string name="onboarding_restore_skip_button">跳过</string>
+    <string name="onboarding_restore_skip_description">您可以稍后从应用设置中还原备份</string>
+    <string name="onboarding_restore_title">还原备份</string>
+    <string name="onboarding_start">开始</string>
 </resources>

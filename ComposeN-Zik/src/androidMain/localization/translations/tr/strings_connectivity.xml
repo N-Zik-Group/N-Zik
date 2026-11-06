@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Bridge -->
     <string name="bridge_audio_output_pc_subtitle">Bilgisayarda ses (N-Zik Masaüstü Yardımcısı)</string>
     <string name="bridge_audio_output_pc_unavailable">Bu bilgisayar mevcut değil</string>
     <string name="bridge_auto_stop">Otomatik durdurma</string>
@@ -57,6 +58,7 @@
     <string name="bridge_server_stopped_user">Telefonla durduruldu</string>
     <string name="bridge_server_stopped_wifi">Wi-Fi ağı veya erişim noktası yok</string>
     <string name="bridge_server_via_hotspot">Bu telefonun erişim noktası aracılığıyla</string>
+    <!-- Listen Together -->
     <string name="listen_together_action_approve">Onayla</string>
     <string name="listen_together_action_reject">Reddet</string>
     <string name="listen_together_auto_approval_joins">Katılma isteklerini otomatik onayla</string>
@@ -134,6 +136,7 @@
     <string name="listen_together_you_are_guest">Misafirsiniz</string>
     <string name="listen_together_you_are_host">Oda sahibisiniz</string>
     <string name="listen_together_you_label">Siz</string>
+    <!-- Network -->
     <string name="network_action_disable_offline_mode">Tam çevrimdışı modunu devre dışı bırak</string>
     <string name="network_action_enable_offline_mode">Tam çevrimdışı modunu etkinleştir</string>
     <string name="network_artwork_quality_description">Görsel kalitesini seçin. Daha yüksek kalite daha fazla veri kullanır; Otomatik seçeneği bağlantı hızına göre ayarlanır.</string>
@@ -162,21 +165,37 @@
     <string name="network_stream_client_mobile_description">Mobil istemcisi.</string>
     <string name="network_stream_client_tv_embedded_description">TV\'ye entegre oynatıcı istemcisi.</string>
     <string name="network_stream_client_tv_html5_description">TV HTML5 oynatıcı istemcisi.</string>
+    <string name="network_stream_client_tv_simply_description">TV Simply client. Lightweight TV variant.</string>
     <string name="network_stream_client_visionos_description">VisionOS istemcisi.</string>
     <string name="network_stream_client_web_creator_description">Web tasarımcısı istemcisi.</string>
     <string name="network_stream_client_web_description">Standart web istemcisi.</string>
     <string name="network_stream_client_youtube_music_web_description">Daha yavaştır ancak premium formatları destekler. JavaScript imzalı şifre çözme kullanır (~5-10 saniye gecikme). Premium kullanıcılara önerilir.</string>
+    <!-- Network Proxy -->
     <string name="network_proxy_invalid_hostname">Proxy sunucu adınız geçersiz, lütfen kontrol edin</string>
+    <!-- Network Stream -->
     <string name="network_stream_client">Akış İstemcisi</string>
     <string name="network_stream_client_android">Android</string>
+    <string name="network_stream_client_android_creator">Android Creator</string>
     <string name="network_stream_client_android_vr">Android VR</string>
     <string name="network_stream_client_ios">iOS</string>
     <string name="network_stream_client_ipados">iPadOS</string>
+    <string name="network_stream_client_mobile">Mobile</string>
     <string name="network_stream_client_redownload_recommendation">Şarkıları yeni kalitede yeniden indirin (özellikle Web Remix/YTB Premium hesabıyla)</string>
+    <string name="network_stream_client_tv_embedded">TV Embedded</string>
+    <string name="network_stream_client_tv_html5">TV HTML5</string>
     <string name="network_stream_client_tv_simply">TV Simply</string>
     <string name="network_stream_client_visionos">visionOS</string>
+    <string name="network_stream_client_web">Web</string>
+    <string name="network_stream_client_web_creator">Web Creator</string>
+    <string name="network_stream_client_web_remix">Web Remix</string>
     <string name="network_stream_error_retrying">Tekrar deniyor: %1$s</string>
-    <string name="network_stream_retrying_playback">Oynatma sürdürülmeye çalışılıyor…</string>
     <string name="network_stream_still_retrying">Hala yükleniyor… Deneme %1$s</string>
     <string name="network_stream_unexpected_skip">Beklenmedik bir parça değişikliği tespit edildi</string>
+    <string name="network_proxy_region_auto">Otomatik (telefondan)</string>
+    <string name="network_proxy_username_placeholder">Kullanıcı adı (isteğe bağlı)</string>
+    <string name="network_proxy_password_placeholder">Parola (isteğe bağlı)</string>
+    <string name="network_proxy_region_placeholder">örn. US, FR, DE (boş = otomatik)</string>
+    <string name="listen_together_server_request_failed">Birlikte Dinle sunucusu isteği tamamlayamadı.</string>
+    <string name="network_stream_retrying_playback">Oynatmayı yeniden deniyorum…</string>
+    <string name="listen_together_invite_link">Birlikte Dinle davet bağlantısı</string>
 </resources>

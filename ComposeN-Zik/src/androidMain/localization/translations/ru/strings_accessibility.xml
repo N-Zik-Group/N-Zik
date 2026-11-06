@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Accessibility -->
     <string name="accessibility_app_icon">Значок приложения</string>
     <string name="accessibility_app_icon_in_player">значок приложения в плеере</string>
     <string name="accessibility_arrow_down">стрелка вниз</string>

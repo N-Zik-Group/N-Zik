@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Accessibility -->
     <string name="accessibility_app_icon">App pictogram</string>
     <string name="accessibility_app_icon_in_player">app-pictogram in de speler</string>
     <string name="accessibility_arrow_down">Pijl_omlaag</string>
@@ -12,8 +13,10 @@
     <string name="accessibility_loading">laden...</string>
     <string name="accessibility_new_playlist_name">nieuwe naam van de afspeellijst</string>
     <string name="accessibility_number_of_songs_in_queue">Aantal nummers in wachtrij</string>
+    <string name="accessibility_origin_indicator">origin_indicator</string>
     <string name="accessibility_recenter">Hernieuwen</string>
     <string name="accessibility_rename_dialog_text_box_icon">Tekstvak pictogram hernoemen</string>
+    <string name="accessibility_reset">Reset</string>
     <string name="accessibility_song_album_cover">Albumhoes nummer</string>
     <string name="accessibility_switch_mode">Wissel modus</string>
     <string name="accessibility_youtube_playlist">Youtube afspeellijst</string>

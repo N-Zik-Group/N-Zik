@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Accessibility -->
     <string name="accessibility_app_icon">Ikona aplikacji</string>
     <string name="accessibility_app_icon_in_player">ikona aplikacji w odtwarzaczu</string>
     <string name="accessibility_arrow_down">strzałka_w dół</string>
@@ -15,6 +16,7 @@
     <string name="accessibility_origin_indicator">wskaźnik pochodzenia</string>
     <string name="accessibility_recenter">Wyśrodkuj</string>
     <string name="accessibility_rename_dialog_text_box_icon">Zmień nazwę ikony okna tekstowego</string>
+    <string name="accessibility_reset">Reset</string>
     <string name="accessibility_song_album_cover">okładka albumu piosenki</string>
     <string name="accessibility_switch_mode">Przełącz tryb</string>
     <string name="accessibility_youtube_playlist">Lista odtwarzania Youtube</string>

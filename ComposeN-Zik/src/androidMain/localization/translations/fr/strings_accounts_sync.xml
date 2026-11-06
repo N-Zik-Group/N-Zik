@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Account -->
     <string name="account_action_login">Se connecter</string>
     <string name="account_action_logout">Se déconnecter</string>
     <string name="account_youtube_login_description">Connectez-vous à votre compte YouTube ou déconnectez-vous de la session en cours.</string>
     <string name="account_youtube_login_enabled_description">Autorisez la connexion à votre compte YouTube pour bénéficier d\'une navigation personnalisée et de la synchronisation.</string>
+    <!-- Account Youtube -->
     <string name="account_youtube_cookie_invalid">Le cookie YouTube n\'est pas valide. Veuillez vous reconnecter.</string>
     <string name="account_youtube_login_success">Connexion à YouTube réussie</string>
     <string name="account_youtube_session_expired">La session YouTube a expiré. Veuillez vous reconnecter.</string>
+    <!-- Discord -->
     <string name="discord_activity_competing">Compétition</string>
     <string name="discord_activity_listening">Écouter</string>
+    <string name="discord_activity_name_description">Définissez le nom de l\'application affiché dans votre activité Discord.</string>
     <string name="discord_activity_playing">Jouer</string>
     <string name="discord_activity_type">Type d\'activité</string>
     <string name="discord_activity_type_description">Choisissez la catégorie d\'activité qui apparaît sur votre profil Discord.</string>
@@ -21,6 +25,7 @@
     <string name="discord_advanced_group_buttons">Boutons</string>
     <string name="discord_advanced_group_connection">Connexion</string>
     <string name="discord_advanced_group_identity">Identité</string>
+    <string name="discord_advanced_group_images">Images</string>
     <string name="discord_advanced_group_lines">Lignes</string>
     <string name="discord_advanced_group_progress">Barre de progression</string>
     <string name="discord_advanced_idle_close">Fermer après 10 minutes d\'inactivité</string>
@@ -61,8 +66,10 @@
     <string name="discord_first_button_label_description">Définissez le texte qui s\'affiche sur le premier bouton d\'activité de Discord.</string>
     <string name="discord_first_button_url_description">Définissez l\'adresse Web ouverte par le premier bouton d\'activité Discord.</string>
     <string name="discord_login_description">Connectez-vous à votre compte Discord ou déconnectez-vous de la session en cours.</string>
+    <string name="discord_logo_tooltip_description">Définissez l\'infobulle affichée sur le petit logo de Discord.</string>
     <string name="discord_pause_presence">Afficher la présence en pause</string>
     <string name="discord_pause_presence_description">Afficher l\'état « en pause » (⏸︎) lorsque la musique est en pause</string>
+    <string name="discord_pause_template_description">Définir le texte d\'activité affiché lorsque la lecture est en pause.</string>
     <string name="discord_presence_button_get_nzik">Télécharger N-Zik</string>
     <string name="discord_presence_button_listen_ytmusic">Écoutez YouTube Music</string>
     <string name="discord_presence_closed">Présence de Discord fermée</string>
@@ -74,14 +81,17 @@
     <string name="discord_rpc_reconnect_failed">La fonctionnalité « Rich Presence » de Discord n\'a pas pu se reconnecter ; les mises à jour de statut sont suspendues jusqu\'au prochain changement de média ou à une reconnexion manuelle.</string>
     <string name="discord_second_button_enabled_description">Affichez le bouton du deuxième lien dans votre historique d\'activité sur Discord.</string>
     <string name="discord_second_button_label_description">Définissez le texte qui s\'affiche sur le deuxième bouton d\'activité de Discord.</string>
+    <string name="discord_second_button_url_description">Définissez l\'adresse web ouverte par le deuxième bouton d\'activité Discord.</string>
     <string name="discord_state_template_description">Définissez la ligne d\'activité secondaire à l\'aide des espaces réservés d\'informations de piste.</string>
     <string name="discord_template_unknown_album">Album inconnu</string>
     <string name="discord_token_text_invalid">Votre jeton Discord n\'est pas valide, veuillez vous reconnecter</string>
+    <!-- Lastfm -->
     <string name="lastfm_action_failed">Échec de la requête Last.fm</string>
     <string name="lastfm_auth_failed">Échec de la connexion. Vérifiez vos identifiants Last.fm.</string>
     <string name="lastfm_connected">Connecté à un compte Last.fm</string>
     <string name="lastfm_enable_scrobbling">Activer le scrobbling</string>
     <string name="lastfm_login">Se connecter</string>
+    <string name="lastfm_login_description">Connectez votre compte Last.fm ou déconnectez-vous de la session scrobbling actuelle.</string>
     <string name="lastfm_love">Aimer sur Last.fm</string>
     <string name="lastfm_loved">Ajouté aux favoris sur Last.fm</string>
     <string name="lastfm_max_scrobble_delay">Délai maximal de scrobble</string>
@@ -91,6 +101,7 @@
     <string name="lastfm_now_playing">En cours de lecture</string>
     <string name="lastfm_now_playing_description">Envoyer une mise à jour « En cours de lecture » lorsqu\'un morceau démarre</string>
     <string name="lastfm_password">Mot de passe</string>
+    <string name="lastfm_scrobble">Défilement</string>
     <string name="lastfm_scrobble_description">Enregistrer les morceaux après le délai défini</string>
     <string name="lastfm_scrobble_threshold">Délai de scrobble (%)</string>
     <string name="lastfm_scrobble_threshold_description">Enregistrer ce morceau à partir de ce pourcentage</string>
@@ -99,6 +110,7 @@
     <string name="lastfm_unlove">Retirer des favoris sur Last.fm</string>
     <string name="lastfm_unloved">Supprimé de la liste des titres préférés</string>
     <string name="lastfm_username">Nom d’utilisateur</string>
+    <!-- Profile -->
     <string name="profile_action_add">Ajouter un profil</string>
     <string name="profile_action_export">Exporter des profils</string>
     <string name="profile_action_import">Importer des profils</string>
@@ -106,9 +118,11 @@
     <string name="profile_active">Actif</string>
     <string name="profile_add_description">Créer un nouveau profil avec sa propre base de données et ses propres paramètres</string>
     <string name="profile_avatar_source">Source de l\'avatar</string>
+    <string name="profile_avatar_source_description">Choisissez quel profil ou compte connecté fournit votre avatar.</string>
     <string name="profile_base_name">Fan de N-Zik</string>
     <string name="profile_channel_name">%1$s - %2$s</string>
     <string name="profile_data_downloads">téléchargements</string>
+    <string name="profile_data_images">images</string>
     <string name="profile_data_media_cache">cache multimédia</string>
     <string name="profile_data_status_all_separate">Séparer : base de données, paramètres, sessions, téléchargements, cache multimédia, images, formes d\'onde</string>
     <string name="profile_data_status_shared">Séparés : base de données, paramètres, sessions%1$s · Partagés : %2$s</string>
@@ -116,6 +130,7 @@
     <string name="profile_database">Base de données</string>
     <string name="profile_description">Chaque profil dispose de sa propre base de données, de ses propres paramètres et de son propre thème. Le changement de profil nécessite un redémarrage.</string>
     <string name="profile_display_name_preview_label">Affiché sous la forme de</string>
+    <string name="profile_display_name_source_description">Choisissez quel profil ou compte connecté fournit votre nom affiché.</string>
     <string name="profile_display_name_source_youtube">Compte YouTube</string>
     <string name="profile_error_dialog_title">Erreur de profil</string>
     <string name="profile_face">Face de profil</string>
@@ -131,16 +146,20 @@
     <string name="profile_last_used_now">À l\'instant</string>
     <string name="profile_last_used_weeks">Il y a %d semaines</string>
     <string name="profile_local_name">Nom du profil</string>
+    <string name="profile_local_name_description">Renommer le profil local actuel.</string>
     <string name="profile_name_input_hint">Saisissez le nom du profil</string>
     <string name="profile_name_invalid_or_taken">Ce nom n\'est pas valide ou est déjà pris.</string>
     <string name="profile_name_source">Source du nom</string>
     <string name="profile_name_source_local">Nom du profil</string>
     <string name="profile_never_used">Jamais</string>
     <string name="profile_no_data">Aucune donnée</string>
+    <string name="profile_open_desc">Ouvrir l\'écran des profils</string>
     <string name="profile_photo">Photo de profil</string>
+    <string name="profile_photo_description">Choisissez une photo pour l\'avatar du profil local actuel ou supprimez-la avec le bouton corbeille.</string>
     <string name="profile_photo_failed">Impossible d\'enregistrer la photo</string>
     <string name="profile_photo_not_set">Non défini</string>
     <string name="profile_photo_remove">Supprimer la photo</string>
+    <string name="profile_photo_remove_description">Retirer la photo enregistrée du profil local actuel.</string>
     <string name="profile_photo_set">Définir</string>
     <string name="profile_remove_confirmation">Supprimer ce profil ?</string>
     <string name="profile_rename">Renommer</string>
@@ -155,6 +174,7 @@
     <string name="profile_share_waveforms_description">Utiliser le dossier « formes d\'onde » du profil de base à la place de celui de ce profil. Cette modification s\'appliquera au prochain redémarrage de l\'application ; les données déjà enregistrées dans le dossier de ce profil y resteront.</string>
     <string name="profile_switch_dialog_title">Changer de profil</string>
     <string name="profile_title">Profils</string>
+    <!-- Sync -->
     <string name="sync_action_sync">Synchronise</string>
     <string name="sync_albums">Synchronisation automatique des albums enregistrés</string>
     <string name="sync_albums_description">Importer automatiquement les albums que vous avez aimés depuis YouTube Music</string>
@@ -225,6 +245,7 @@
     <string name="sync_success_notification_artists">Tous les artistes ont été synchronisés avec succès.</string>
     <string name="sync_success_notification_playlists">Toutes les playlists ont été synchronisées avec succès.</string>
     <string name="sync_successful">Synchronisation réussie</string>
+    <!-- Sync Youtube -->
     <string name="sync_retry_failed_items_confirmation">Souhaitez-vous réessayer de synchroniser les %1$d éléments pour lesquels la synchronisation a échoué ?</string>
     <string name="sync_running_status">Synchronisation...</string>
     <string name="sync_youtube_history_title">Historique de YouTube Music</string>
@@ -240,4 +261,17 @@
     <string name="sync_youtube_songs_remaining">%1$s Chansons restantes</string>
     <string name="sync_youtube_unlike_failed">Impossible de ne pas aimer le titre sur YouTube</string>
     <string name="sync_youtube_unlike_success">Le titre n\'est pas apprécié sur YouTube</string>
+    <string name="sync_starting_notification">Démarrage de la synchronisation...</string>
+    <string name="sync_background_notification">Synchronisation en arrière-plan...</string>
+    <string name="sync_aborted_network_error">La synchronisation a été interrompue en raison d\'une erreur réseau.</string>
+    <string name="sync_start_service_failed">Impossible de démarrer le service de synchronisation</string>
+    <string name="sync_fetch_subscribed_channels_failed">Impossible de récupérer les canaux abonnés</string>
+    <string name="sync_fetch_liked_albums_failed">Impossible de récupérer les albums aimés</string>
+    <string name="sync_fetch_liked_songs_failed">Impossible de récupérer les chansons aimées</string>
+    <string name="sync_fetch_playlists_failed">Impossible de récupérer les listes de lecture</string>
+    <string name="sync_fetch_library_songs_failed">Impossible de récupérer les chansons de la bibliothèque</string>
+    <string name="sync_fetch_uploaded_songs_failed">Impossible de récupérer les chansons téléchargées</string>
+    <string name="sync_fetch_uploaded_albums_failed">Impossible de récupérer les albums téléchargés</string>
+    <string name="sync_fetch_episodes_failed">Impossible de récupérer les épisodes</string>
+    <string name="sync_detail_push_result">%1$d a réussi, %2$d a échoué</string>
 </resources>

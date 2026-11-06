@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_error_connection_timeout">Forbindelsen udløb</string>
     <string name="common_error_no_connection">Ingen forbindelse</string>
     <string name="common_error_no_internet">Ingen netværksforbindelse</string>

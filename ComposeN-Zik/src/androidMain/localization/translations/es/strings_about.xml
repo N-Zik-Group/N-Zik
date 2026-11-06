@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- About -->
     <string name="about_action_report_issue">Reportar un error</string>
     <string name="about_action_request_feature">Solicitar una función o sugerir una idea</string>
     <string name="about_action_view_source">Ver el código fuente</string>
@@ -7,8 +8,13 @@
     <string name="about_contributors_alphabetical_order_label">En orden alfabético:</string>
     <string name="about_debug_developers_rotation">Desarrollador_rotación</string>
     <string name="about_debug_translators_rotation">traductores_rotación</string>
+    <string name="about_developers_description">Mostrar u ocultar a los desarrolladores y diseñadores que contribuyeron a la aplicación.</string>
     <string name="about_developers_designers_title">Desarrolladores / Diseñadores</string>
     <string name="about_github_link_description">Serás redirigido a GitHub</string>
+    <string name="about_report_issue_description">Abra el formulario de informe de errores de GitHub para describir un problema.</string>
+    <string name="about_request_feature_description">Abra el formulario de solicitud de funcionalidad de GitHub para sugerir una mejora.</string>
+    <string name="about_source_code_description">Abre el repositorio de código fuente en GitHub.</string>
     <string name="about_title">Acerca de</string>
+    <string name="about_translators_description">Mostrar u ocultar a las personas que tradujeron la aplicación.</string>
     <string name="about_translators_title">Traductores</string>
 </resources>

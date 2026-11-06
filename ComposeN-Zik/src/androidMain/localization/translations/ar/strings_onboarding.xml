@@ -1,4 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Onboarding -->
+    <string name="onboarding_accounts_discord_description">إظهار ما تستمع إليه في ديسكورد (بيتا)</string>
+    <string name="onboarding_accounts_done">لقد انتهيت</string>
+    <string name="onboarding_accounts_skip">تخطي</string>
+    <string name="onboarding_accounts_title">ربط حساباتك</string>
+    <string name="onboarding_accounts_youtube_account">تم تسجيل الدخول كـ %1$s</string>
     <string name="onboarding_accounts_youtube_description">Optional - browse the app with your YouTube account (home, explore, etc.)</string>
+    <string name="onboarding_greeting">مرحبًا! دعونا نعد N-Zik لتجربة الموسيقى المثالية. كل إذن أدناه اختياري.</string>
+    <string name="onboarding_permission_battery">تحسين البطارية</string>
+    <string name="onboarding_permission_battery_description">منع النظام من إيقاف موسيقى الخلفية</string>
+    <string name="onboarding_permission_bluetooth">البلوتوث</string>
+    <string name="onboarding_permission_bluetooth_description">اكتشف سماعات الرأس للإيقاف المؤقت أو استئناف الموسيقى</string>
+    <string name="onboarding_permission_camera_description">مسح رمز QR الخاص بـ N-Zik سطح المكتب المدمج لإقران جهاز كمبيوتر</string>
+    <string name="onboarding_permission_grant">منح</string>
+    <string name="onboarding_permission_granted">تم منح الإذن</string>
+    <string name="onboarding_permission_media">الوصول إلى الوسائط</string>
+    <string name="onboarding_permission_media_description">اقرأ مكتبة الموسيقى المحلية الخاصة بك</string>
+    <string name="onboarding_permission_microphone">الميكروفون</string>
+    <string name="onboarding_permission_microphone_description">استخدام الميكروفون للأوامر الصوتية، و المرئيات و الميزات الأخرى</string>
+    <string name="onboarding_permission_notifications_description">مشاهدة اللاعب والتحكم في الموسيقى من الإشعار</string>
+    <string name="onboarding_permission_settings">الإعدادات</string>
+    <string name="onboarding_permissions_section">الأذونات</string>
+    <string name="onboarding_profile_continue">متابعة</string>
+    <string name="onboarding_profile_description">هذا الاسم يظهر في التطبيق. يمكنك أيضًا اختيار المكان الذي يأتي منه الاسم والصورة الرمزية، وتعيين صورة.</string>
+    <string name="onboarding_profile_field_hint">اسمك</string>
+    <string name="onboarding_profile_title">اسم استنساخك</string>
+    <string name="onboarding_restore_description">إعادة المكتبة الخاصة بك والإعدادات الخاصة بك من إصدار سابق من التطبيق. هذه الخطوة اختيارية.</string>
+    <string name="onboarding_restore_restart_note">إعادة تشغيل التطبيق بنجاح عند الاستيراد.</string>
+    <string name="onboarding_restore_skip">تخطي الآن</string>
+    <string name="onboarding_restore_skip_button">تخطي</string>
+    <string name="onboarding_restore_skip_description">يمكنك استعادة نسخة احتياطية لاحقاً من إعدادات التطبيق</string>
+    <string name="onboarding_restore_title">استعادة نسخة احتياطية</string>
+    <string name="onboarding_start">ابدأ</string>
 </resources>

@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
+    <string name="common_error_connection_timeout">Connectie time-out</string>
+    <string name="common_error_no_connection">Geen verbinding</string>
+    <string name="common_error_no_internet">Geen netwerkverbinding</string>
     <string name="common_error_title">Er is een fout opgetreden.</string>
+    <string name="common_error_unknown">Onbekende fout.</string>
 </resources>

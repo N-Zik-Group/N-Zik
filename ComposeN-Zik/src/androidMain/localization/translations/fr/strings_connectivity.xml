@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Bridge -->
     <string name="bridge_audio_output_pc_subtitle">Son sur PC (N-Zik Desktop Compagnon)</string>
     <string name="bridge_audio_output_pc_unavailable">Cet ordinateur n\'est pas disponible</string>
     <string name="bridge_auto_stop">Arrêt automatique</string>
     <string name="bridge_auto_stop_description">Arrête automatiquement le serveur PC pour économiser la batterie</string>
     <string name="bridge_auto_stop_inactivity">Arrêt après une période d\'inactivité</string>
     <string name="bridge_auto_stop_inactivity_hint">Seules les commandes de lecture et de mise en file d\'attente provenant du PC sont considérées comme une activité</string>
+    <string name="bridge_auto_stop_minutes">%1$d min</string>
     <string name="bridge_auto_stop_never">Jamais</string>
     <string name="bridge_auto_stop_no_client">Arrêt sans PC connecté</string>
     <string name="bridge_battery_action">Désactiver l\'optimisation de la batterie</string>
@@ -56,6 +58,7 @@
     <string name="bridge_server_stopped_user">Interrompu depuis le téléphone</string>
     <string name="bridge_server_stopped_wifi">Aucun réseau Wi-Fi ni point d\'accès</string>
     <string name="bridge_server_via_hotspot">Via le point d\'accès de ce téléphone</string>
+    <!-- Listen Together -->
     <string name="listen_together_action_approve">Approuver</string>
     <string name="listen_together_action_reject">Refuser</string>
     <string name="listen_together_auto_approval_joins">Approuver automatiquement les demandes d\'adhésion</string>
@@ -112,7 +115,7 @@
     <string name="listen_together_room_code">Code de la salle</string>
     <string name="listen_together_room_created">Salle créée : %s</string>
     <string name="listen_together_server_url">URL du serveur</string>
-    <string name="listen_together_server_url_hint">https://server:port</string>
+    <string name="listen_together_server_url_hint">https://serveur:port</string>
     <string name="listen_together_suggest">Proposer d\'accueillir</string>
     <string name="listen_together_suggestion_approved">Suggestion approuvée et ajoutée à la file d\'attente</string>
     <string name="listen_together_suggestion_received">%1$s a suggéré %2$s</string>
@@ -133,13 +136,27 @@
     <string name="listen_together_you_are_guest">Vous êtes un invité</string>
     <string name="listen_together_you_are_host">Vous êtes l\'hôte</string>
     <string name="listen_together_you_label">Vous</string>
+    <!-- Network -->
+    <string name="network_action_disable_offline_mode">Désactiver le mode hors ligne complet</string>
     <string name="network_action_enable_offline_mode">Activer le mode hors ligne complet</string>
+    <string name="network_artwork_quality_description">Choisissez la qualité de l\'illustration. Une meilleure qualité utilise plus de données; s\'adapte automatiquement à la connexion.</string>
+    <string name="network_current_artwork_quality_description">Affiche la qualité de l\'illustration actuellement sélectionnée pour cette connexion.</string>
+    <string name="network_current_download_audio_quality_description">Affiche la qualité audio de téléchargement actuellement sélectionnée pour cette connexion.</string>
+    <string name="network_current_stream_audio_quality_description">Affiche la qualité audio de streaming actuellement sélectionnée pour cette connexion.</string>
+    <string name="network_proxy_enabled_description">Router les requêtes réseau prises en charge par le biais de votre proxy configuré. Désactiver cette option supprime également le remplacement de région.</string>
+    <string name="network_proxy_host_description">Entrez le nom d\'hôte ou l\'adresse IP du serveur proxy.</string>
+    <string name="network_proxy_mode_description">Choisissez le protocole de connexion utilisé par le serveur proxy.</string>
+    <string name="network_proxy_password_description">Définissez le mot de passe facultatif du proxy. La valeur enregistrée est chiffrée et masquée ici.</string>
+    <string name="network_proxy_port_description">Entrez le port sur lequel le serveur proxy accepte les connexions.</string>
+    <string name="network_proxy_username_description">Définissez le nom d\'utilisateur optionnel requis pour s\'authentifier avec le proxy.</string>
     <string name="network_quality_high">Haute</string>
     <string name="network_quality_low">Basse</string>
     <string name="network_quality_medium">Moyenne</string>
+    <string name="network_region_override_description">Remplacer le pays utilisé pour les requêtes; laisser vide pour utiliser la région du téléphone.</string>
     <string name="network_settings">Paramètres de connexion</string>
     <string name="network_settings_description">La section « Réseau » contient des paramètres permettant d\'optimiser les performances de l\'application et l\'utilisation des données.</string>
     <string name="network_status">État de la qualité</string>
+    <string name="network_stream_audio_quality_description">Choisissez la qualité audio utilisée pour le streaming. Adapte automatiquement à la connexion actuelle.</string>
     <string name="network_stream_client_android_creator_description">Client de création Android. Authentification requise.</string>
     <string name="network_stream_client_android_description">Client Android standard sans SDK.</string>
     <string name="network_stream_client_android_vr_description">Option la plus rapide. URL de streaming directes sans décryptage de signature. Recommandée pour les utilisateurs non premium.</string>
@@ -153,21 +170,32 @@
     <string name="network_stream_client_web_creator_description">Client de création de sites Web.</string>
     <string name="network_stream_client_web_description">Client Web standard.</string>
     <string name="network_stream_client_youtube_music_web_description">Plus lent, mais prend en charge les formats premium. Utilise le décryptage de signature via JavaScript (délai d\'environ 5 à 10 s). Recommandé pour les utilisateurs premium.</string>
+    <!-- Network Proxy -->
     <string name="network_proxy_invalid_hostname">Le nom d\'hôte de votre proxy n\'est pas valide. Veuillez le vérifier</string>
+    <!-- Network Stream -->
     <string name="network_stream_client">Client de streaming</string>
     <string name="network_stream_client_android">Android</string>
     <string name="network_stream_client_android_creator">Créateur d\'applications Android</string>
     <string name="network_stream_client_android_vr">Android VR</string>
     <string name="network_stream_client_ios">iOS</string>
     <string name="network_stream_client_ipados">iPadOS</string>
+    <string name="network_stream_client_mobile">Téléphone mobile</string>
     <string name="network_stream_client_redownload_recommendation">Télécharger à nouveau les morceaux pour bénéficier d\'une meilleure qualité (notamment avec Web Remix ou un compte YTB Premium)</string>
     <string name="network_stream_client_tv_embedded">Télévision intégrée</string>
     <string name="network_stream_client_tv_html5">Télévision HTML5</string>
-    <string name="network_stream_client_tv_simply">TV Simply</string>
+    <string name="network_stream_client_tv_simply">Télévision Simplement</string>
     <string name="network_stream_client_visionos">visionOS</string>
+    <string name="network_stream_client_web">Web</string>
     <string name="network_stream_client_web_creator">Créateur de sites web</string>
+    <string name="network_stream_client_web_remix">Remix Web</string>
     <string name="network_stream_error_retrying">Réessayer : %1$s</string>
-    <string name="network_stream_retrying_playback">Tentative de reprise de la lecture…</string>
     <string name="network_stream_still_retrying">Chargement en cours… Tentative %1$s</string>
     <string name="network_stream_unexpected_skip">Changement de piste inattendu détecté</string>
+    <string name="network_proxy_region_auto">Auto (à partir du téléphone)</string>
+    <string name="network_proxy_username_placeholder">Nom d\'utilisateur (facultatif)</string>
+    <string name="network_proxy_password_placeholder">Mot de passe (facultatif)</string>
+    <string name="network_proxy_region_placeholder">par exemple US, FR, DE (vide = auto)</string>
+    <string name="listen_together_server_request_failed">Le serveur Listen Together n\'a pas pu compléter la requête.</string>
+    <string name="network_stream_retrying_playback">Tentative de reprise de la lecture…</string>
+    <string name="listen_together_invite_link">Écouter le lien d\'invitation ensemble</string>
 </resources>

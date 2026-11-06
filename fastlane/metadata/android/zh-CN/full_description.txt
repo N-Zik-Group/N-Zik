@@ -1,0 +1,69 @@
+Android的多语言YouTube音乐前端，侧重于性能，UI/UX精炼，功能扩展和长期支持。
+
+<b>N-Zik</b> 是 <a href="https://github.com/knighthat/Kreate">Kreate</a> 的开源叉。
+
+<b>注意：</b> N-Zik开始作为一个侧边项目。更成熟的替代品，请检查 <a href="https://github.com/MetrolistGroup/Metrolist">计量列表</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI 音乐</a>, 或 <a href="https://github.com/fast4x/RiPlay">RiPlay</a>。
+
+<b>AI 用法：</b> 我使用生成的 AI 代码(通过 <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD 方法</a>)，在发货前经过审查和测试。
+
+✨ <b>是什么是 N-ZIK?</b> 没有广告, 背景播放, 脱机缓存, 可定制界面界面-一律免费。
+
+:artis_调色板: <b>可自定义UI</b>
+- Jetpack Compose 接口
+- 主题: AMOLEDD, 深深暗，Crisp Light + 细分的音调
+- 3D 旋转滚珠、家居小部件、统一玩家和小型播放器
+- 艺术家的简档、发现和心情，可折叠的主页头
+
+:bubles: <b>玻璃效果 (BETA, 可选)</b>
+在新安装上禁用。在设置中启用：按类别开列，只等距或玻璃，有可调整的质量。可能会增加渲染工作和电池使用量；降低质量或在需要时禁用。
+玻璃积分：正方形/Convx 项目(GPL-3.0)；Kyant0 AndroidLiquidGlass / 返回(Apache-2.0)。
+
+🎵 <b>音频体验</b>
+- 通过YouTube音乐高级版自动应用高级版
+- 同步歌词与编辑和实时翻译
+- 歌曲识别(类似于Shazam)，语音搜索，音频可视化
+- 专业控制：速度、坑洞、正常化、交叉淡化、音量增强、低音增强、混音、混音、混音器
+- 用于精确导航的音频条波形搜索栏
+
+💾 <b>离线、 Metadata & Privacy</b>
+- 智能缓存并下载曲目和播放列表，并且可以选择下载质量
+- FFmpeg驱动导出完整元数据(FFmpeg 是一个可下载的扩展，第一次安装)
+- 应用内元数据编辑器 (AAC/Opus, 封面艺术)
+- 本地监听统计和历史
+- 自定义间隔和保留自动备份
+
+🔗 <b>Integrations</b>
+- YouTube 登录建议和视频回放，外加双向实验同步引擎
+- Last.fm 正在播放和爱情/取消爱情游戏
+- 音乐Brainz艺术家和专辑洞见解。
+- Discord Rich Presence，包括高级模式和实时预览
+- 替代的 YouTube 串流的邀请集成
+- 播放列表导入/导出：Riplay、Spotify、YouTube Music、N-Zik
+
+👥 <b>Listen Together</b>
+- 通过代码或邀请链接加入或主持与其他用户的现场监听会话
+
+🗓️ <b>返回</b>
+- 使用自动生成的回风播放列表的每年和每月监听recaps
+
+📱 <b>随时播放:</b> Android Auto、 Automotive、 TV 和 Tablets
+
+🛠️ <b>电源用户功能</b>
+- 多个配置文件：每个配置文件单独的数据库和设置
+- 在蓝牙连接上自动恢复，持续队列，自动填充队列
+- 智能陷阱，隐藏歌曲，系统不喜欢，家长控制
+- 代理支持、 网络质量调整、 日志导出
+- 救援中心、维护屏幕、登载、应用快捷方式
+- OTA从 GitHub 更新，睡眠计时器，背景播放
+
+📦 <b>可用版本</b>
+- 发布64/Beta64 (`com.nevar.nzik`): 完全构建，64位设备
+- 发布32/Beta32 (`com.nevar.nzik`): 只完成构建，32位设备
+- Minified64 (`com.nevar.nzik`)：轻量R8 构建，用于低端设备(64位)
+- Minified32 (`com.nevar.nzik`)：轻量R8 build(32位)
+- 自由和开放源码软件(“com.nevar.nzik.foss”)：F-Droid (所有建筑师)
+- Dev64/Dev32 (`com.nevar.nzik.dev`)：开发版本，只测试
+
+没有构建包 FFmpeg: 它是一个可下载的扩展 (安装在首次使用中，管理在 设置 -> 扩展)。 F-Droid上只有自由和开放源码软件。
+
+历史项目信贷包括ViMusic。

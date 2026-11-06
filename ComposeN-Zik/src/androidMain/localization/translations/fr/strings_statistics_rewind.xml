@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Calendar -->
     <string name="calendar_days_ago">Il y a %d jours</string>
     <string name="calendar_last_week">Semaine dernière</string>
     <string name="calendar_last_year">L\'année dernière</string>
@@ -23,6 +24,7 @@
     <string name="calendar_this_month">Le mois dernier</string>
     <string name="calendar_today">Aujourd\'hui</string>
     <string name="calendar_yesterday">Hier</string>
+    <!-- Rewind -->
     <string name="rewind_albums_empty_body">Vos albums préférés s\'afficheront ici dès que votre historique d\'écoute sera suffisamment complet.</string>
     <string name="rewind_albums_empty_title">VOTRE PILE D\'ALBUMS EST VIDE</string>
     <string name="rewind_albums_heading">VOS MEILLEURS\nALBUMS.</string>
@@ -33,6 +35,7 @@
     <string name="rewind_artist_spotlight_empty_title">AUCUN ARTISTE PHARE POUR L\'INSTANT</string>
     <string name="rewind_artist_spotlight_kicker">VOTRE ARTISTE N° 1 • %1$s</string>
     <string name="rewind_artist_spotlight_see_more">EN SAVOIR PLUS</string>
+    <string name="rewind_background_music_description">Jouer de la musique de fond en regardant les récits.</string>
     <string name="rewind_background_music_title">Musique de fond</string>
     <string name="rewind_background_music_toggle_accessibility">Activer/désactiver la musique de fond</string>
     <string name="rewind_background_music_volume_accessibility">Volume de la musique d\'ambiance</string>
@@ -89,6 +92,7 @@
     <string name="rewind_finale_top_playlist">MEILLEURE PLAYLIST</string>
     <string name="rewind_finale_top_song">MEILLEUR TITRE</string>
     <string name="rewind_home_all_time">TOUT LE TEMPS</string>
+    <string name="rewind_home_duration">%1$d h %2$d</string>
     <string name="rewind_home_empty">Pas de rétrospective pour l\'instant. Mettez d\'abord un peu de musique.</string>
     <string name="rewind_home_locked">VERROUILLÉ</string>
     <string name="rewind_home_locked_spam_1">Bien essayé.</string>
@@ -108,6 +112,8 @@
     <string name="rewind_home_tagline">Chaque année. Chaque mois. Pour vous.</string>
     <string name="rewind_home_year_stats">%1$s · %2$s lus</string>
     <string name="rewind_home_years">ANNÉES</string>
+    <string name="rewind_hour_am">Am</string>
+    <string name="rewind_hour_pm">MM</string>
     <string name="rewind_intro_opening">OUVERTURE…</string>
     <string name="rewind_intro_start">DÉMARRER</string>
     <string name="rewind_intro_tagline">Une année de musique. La vôtre.</string>
@@ -116,9 +122,12 @@
     <string name="rewind_intro_tap_to_begin">APPUYEZ POUR COMMENCER</string>
     <string name="rewind_intro_this_is_your">VOICI VOTRE</string>
     <string name="rewind_intro_word_rewind">RÉTROSPECTIVE.</string>
+    <string name="rewind_label_albums">ALBUMES</string>
     <string name="rewind_label_artists">ARTISTES</string>
     <string name="rewind_label_days">JOURS</string>
     <string name="rewind_label_hours">HEURES</string>
+    <string name="rewind_label_minutes">MINUTES</string>
+    <string name="rewind_label_playlists">JOUEURS</string>
     <string name="rewind_label_plays">LECTURES</string>
     <string name="rewind_label_songs">TITRES</string>
     <string name="rewind_label_unique_albums">ALBUMS UNIQUES</string>
@@ -153,6 +162,7 @@
     <string name="rewind_level_song_anthem_tagline">C\'est votre hymne</string>
     <string name="rewind_level_song_eternal_flame_name">FLAMME ÉTERNELLE</string>
     <string name="rewind_level_song_eternal_flame_tagline">Vous êtes une flamme éternelle</string>
+    <string name="rewind_level_song_obsession_name">OBSSESSION</string>
     <string name="rewind_level_song_obsession_tagline">Vous avez une obsession</string>
     <string name="rewind_level_song_soundtrack_name">BANDE ORIGINALE</string>
     <string name="rewind_level_song_soundtrack_tagline">C\'est votre bande originale</string>
@@ -167,6 +177,7 @@
     <string name="rewind_loader_status_counting_plays">COMPTAGE DES LECTURES</string>
     <string name="rewind_loader_status_counting_songs">TITRES À COMPTER</string>
     <string name="rewind_loader_status_days">%1$s JOURNÉES D\'ÉCOUTE</string>
+    <string name="rewind_loader_status_minutes">%1$s MINUTES</string>
     <string name="rewind_loader_status_plays">%1$s LECTURES</string>
     <string name="rewind_loader_status_ready">PRÊT POUR LA RÉTROSPECTIVE</string>
     <string name="rewind_loader_status_songs">%1$s TITRES UNIQUES</string>
@@ -176,6 +187,7 @@
     <string name="rewind_loader_word_year">ANNÉE</string>
     <string name="rewind_loader_word_your">VOTRE</string>
     <string name="rewind_meta_songs">%1$s titres</string>
+    <string name="rewind_minutes_compact">%1$s min</string>
     <string name="rewind_monthly_default_sub">DOUZE CHAPITRES. UNE BANDE ORIGINALE.</string>
     <string name="rewind_monthly_heading">MOIS PAR\nMOIS.</string>
     <string name="rewind_monthly_kicker">L\'ANNÉE, MOIS PAR MOIS • %1$s</string>
@@ -184,6 +196,7 @@
     <string name="rewind_monthly_peak_month">MOIS DE POINTE</string>
     <string name="rewind_monthly_peak_sub">%1$s FRAPPE LE PLUS FORT.</string>
     <string name="rewind_notification_title">Votre rétrospective %1$s est prête</string>
+    <string name="rewind_open_desc">Ouvrir l\'écran d\'accueil Reretour</string>
     <string name="rewind_peak_time_by_day">ÉCOUTER EN JOURNÉE</string>
     <string name="rewind_peak_time_heading">VOTRE TEMPS\nD\'ÉCOUTE MAXIMUM.</string>
     <string name="rewind_peak_time_kicker">QUAND VOUS AVEZ ÉCOUTÉ • %1$s</string>
@@ -250,6 +263,7 @@
     <string name="rewind_years_kicker">VOS ANNÉES • %1$s</string>
     <string name="rewind_years_peak_sub">%1$s FRAPPE LE PLUS FORT.</string>
     <string name="rewind_years_peak_year">ANNÉE RECORD</string>
+    <!-- Statistics -->
     <string name="statistics_action_delete_playback_events_count">Supprimer %1$s événements de la lecture</string>
     <string name="statistics_delete_playback_events_confirmation">Voulez-vous vraiment supprimer tous les événements de lecture ?</string>
     <string name="statistics_delete_playback_events_dialog_title">Supprimer les événements de lecture</string>
@@ -263,4 +277,5 @@
     <string name="statistics_playback_duration_label">Durée d’écoute</string>
     <string name="statistics_title">Statistiques</string>
     <string name="statistics_top_period_title">Voir le top %s de …</string>
+    <string name="statistics_time_spent_format">%1$s de temps passé</string>
 </resources>

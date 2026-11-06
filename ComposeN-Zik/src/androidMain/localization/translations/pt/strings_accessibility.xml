@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Accessibility -->
     <string name="accessibility_app_icon">Ícone do aplicativo</string>
     <string name="accessibility_app_icon_in_player">ícone do app no player</string>
     <string name="accessibility_arrow_down">seta_para baixo</string>

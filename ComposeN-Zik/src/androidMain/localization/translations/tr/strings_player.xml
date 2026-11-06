@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Audio -->
     <string name="audio_bass_boost_description">Çalma sırasında düşük frekansları güçlendirin.</string>
     <string name="audio_bass_boost_level_description">Düşük frekans güçlendirmesinin şiddetini ayarlayın.</string>
     <string name="audio_bass_boost_unavailable_message">Bas güçlendirme özelliğini etkinleştiremiyorum</string>
@@ -30,13 +31,15 @@
     <string name="audio_waveform_updated_message">Waveform başarıyla güncellendi</string>
     <string name="audio_waveform_updating_message">Waveform güncelleniyor…</string>
     <string name="audio_waveform_waiting_for_download_message">İndirme işlemi biter bitmez Waveform güncellenecektir</string>
+    <!-- Audio Reverb -->
     <string name="audio_reverb_large_hall">Büyük Salon</string>
     <string name="audio_reverb_large_room">Geniş Oda</string>
-    <string name="audio_reverb_medium_hall">Orta Salon </string>
+    <string name="audio_reverb_medium_hall">Orta Salon</string>
     <string name="audio_reverb_medium_room">Orta Boy Oda</string>
     <string name="audio_reverb_none">Yok</string>
     <string name="audio_reverb_plate">Plaka</string>
     <string name="audio_reverb_small_room">Küçük Oda</string>
+    <!-- Listen -->
     <string name="listen_together_auto_approval_joins_description">Katılma isteklerini manuel olarak incelemeden otomatik olarak onayla</string>
     <string name="listen_together_auto_approval_suggestions_description">Misafirlerden gelen şarkı önerilerini otomatik onayla ve sıraya al</string>
     <string name="listen_together_blocked_users_description">Dinleme odalarınızdan engellenen katılımcıları görüntüleyin ve yönetin.</string>
@@ -51,6 +54,7 @@
     <string name="listen_together_transfer_ownership_description">Bu kişiyi odanın oda sahibi yapın</string>
     <string name="listen_together_username_description">Paylaşımlı dinleme odalarında diğer katılımcıların göreceği adı belirleyin.</string>
     <string name="listen_together_view_logs_description">Bağlantı olaylarını ve mesajlarını hata ayıklama</string>
+    <!-- Lyrics -->
     <string name="lyrics_action_choose_translation_language">Başka bir dile çevir</string>
     <string name="lyrics_action_copy">Şarkı sözlerini kopyala</string>
     <string name="lyrics_action_edit">Şarkı sözlerini düzenle</string>
@@ -73,6 +77,7 @@
     <string name="lyrics_color_white">Beyaz</string>
     <string name="lyrics_current_state_format">Mevcut durum: %1$s</string>
     <string name="lyrics_custom_color_description">Bu bileşenin kullandığı özel rengi seçin.</string>
+    <string name="lyrics_debug_interval_progress">lyricsIntervalProgress</string>
     <string name="lyrics_display_section_title">Ekran</string>
     <string name="lyrics_editor_title">Şarkı sözlerini girin</string>
     <string name="lyrics_empty">Şarkı sözü yok</string>
@@ -100,6 +105,7 @@
     <string name="lyrics_not_available">Şarkı sözleri mevcut değil. Lütfen tekrar deneyin veya şarkı sözlerini elle girin.</string>
     <string name="lyrics_offset">Şarkı Sözleri</string>
     <string name="lyrics_popup_messages_description">Oynatıcıda şarkı sözleriyle ilgili açılır mesajları göster.</string>
+    <string name="lyrics_provider_betterlyrics_karaoke_label">%1$s (karaoke)</string>
     <string name="lyrics_provider_betterlyrics_synced_label">%1$s (senkronize)</string>
     <string name="lyrics_provider_found_format">%s üzerinde şarkı sözleri bulundu</string>
     <string name="lyrics_provider_kugou_synced_label">%1$s (senkronize)</string>
@@ -126,6 +132,7 @@
     <string name="lyrics_translation_section_title">Çeviri</string>
     <string name="lyrics_translation_success_message">Çeviri tamamlandı</string>
     <string name="lyrics_unsynced">Düz metin</string>
+    <!-- Player -->
     <string name="common_action_stop">Durdur</string>
     <string name="player_action_bar_buttons">Düğmenin görünürlüğü</string>
     <string name="player_action_bar_buttons_description">Oynatıcı eylem çubuğunda hangi düğmelerin görüneceğini ayarlayın</string>
@@ -211,6 +218,8 @@
     <string name="player_controls_timeline_size_description">Oynatıcı zaman çizelgesinin boyutunu seçin.</string>
     <string name="player_crossfade_duration_description">Giden ve gelen parçaların ne kadar süreyle üst üste bineceğini ayarlayın.</string>
     <string name="player_current_song_not_in_list">Mevcut listede çalan şarkı bulunamadı</string>
+    <string name="player_debug_play_pause_roundness">playPauseRoundness</string>
+    <string name="player_debug_should_be_playing">shouldBePlaying</string>
     <string name="player_effects">Oyuncu Efektleri</string>
     <string name="player_enable_lyrics_popup_message">Şarkı sözleri açılır mesajını etkinleştir</string>
     <string name="player_enable_rotation_buttons">Tıklandığında düğmeyi döndür</string>
@@ -223,6 +232,7 @@
     <string name="player_error_unknown">Bilinmeyen bir çalma hatası oluştu</string>
     <string name="player_error_unsupported_format">Dosya biçimi desteklenmiyor</string>
     <string name="player_error_video_id_mismatch">Dönen video kimliği istenenle eşleşmiyor</string>
+    <string name="player_error_youtube_authentication">Error YoutubeLogin</string>
     <string name="player_exclude_disliked_albums_description">Beğenmediğiniz albümlerdeki parçaların nasıl hariç tutulacağını seçin.</string>
     <string name="player_exclude_disliked_artists_description">Beğenmediğiniz sanatçıların şarkılarının nasıl hariç tutulacağını seçin.</string>
     <string name="player_exclude_disliked_songs_description">Beğenmediğiniz parçaların çalma önerilerinden nasıl hariç tutulacağını seçin.</string>
@@ -285,6 +295,7 @@
     <string name="player_statistics_bitrate_label">Bit hızı</string>
     <string name="player_statistics_codec_label">Kodek</string>
     <string name="player_statistics_container_label">Medya Türü</string>
+    <string name="player_statistics_itag_label">Itag</string>
     <string name="player_statistics_loudness_label">Ses yüksekliği</string>
     <string name="player_statistics_media_id_label">Kimlik</string>
     <string name="player_statistics_perceptual_loudness_label">Algısal Ses Yüksekliği</string>
@@ -307,6 +318,7 @@
     <string name="player_top_spacing_description">Üstteki eylem çubuğu gizlendiğinde üst kısımda boşluk bırakın.</string>
     <string name="player_track_swipe_sensitivity_description">Oynatıcıda kaydırma hareketiyle parça değiştirme hassasiyetini ayarlayın.</string>
     <string name="player_type">Oynatıcı türü</string>
+    <!-- Player Mini -->
     <string name="player_mini_button_discover">Keşfet</string>
     <string name="player_mini_button_download">İndir</string>
     <string name="player_mini_button_play_pause">Oynat/Duraklat</string>
@@ -314,20 +326,24 @@
     <string name="player_mini_button_radio">Radyo</string>
     <string name="player_mini_button_share">Paylaş</string>
     <string name="player_mini_button_sleep_timer">Uyku zamanlayıcısı</string>
+    <string name="player_mini_button_video">Video</string>
     <string name="player_mini_button_visualizer">Görselleştirme</string>
     <string name="player_mini_buttons_config">Mini Oynatıcı düğmeleri</string>
     <string name="player_mini_buttons_config_description">Mini oynatıcıdaki 4 düğmeyi yapılandırın</string>
+    <!-- Player Sleep Timer -->
     <string name="player_sleep_timer_action_set">Uyku zamanlayıcısını ayarla</string>
     <string name="player_sleep_timer_end_of_song">(şarkı sonu)</string>
     <string name="player_sleep_timer_remaining">%1$s kaldı</string>
     <string name="player_sleep_timer_set_to">Ayarla</string>
     <string name="player_sleep_timer_stop_confirmation">Uyku zamanlayıcısını durdurmak istiyor musunuz?</string>
     <string name="player_sleep_timer_title">Uyku zamanlayıcısı</string>
+    <!-- Queue -->
     <string name="queue_discover_description">Favorilerde veya çalma listelerinde bulunan şarkıları kuyruktan kaldır</string>
     <string name="queue_discover_title">Keşfet</string>
     <string name="queue_max_songs_in_queue_android_auto_description">Android Auto kuyruğuna eklenecek parça sayısını sınırlayın.</string>
     <string name="queue_max_songs_in_queue_description">Çalma kuyruğuna eklenen parça sayısını sınırlayın.</string>
     <string name="queue_now_playing_indicator_description">Şu anda çalmakta olan parçanın yanında görüntülenen göstergeyi seçin.</string>
+    <!-- Visualizer -->
     <string name="visualizer_action_open_permission_settings">İzin ayarlarını aç</string>
     <string name="visualizer_animation_bars">Çubuklar</string>
     <string name="visualizer_animation_bubbles">Kabarcıklar</string>
@@ -348,6 +364,7 @@
     <string name="visualizer_line_thickness_description">Ses görselleştirmesindeki çizgilerin genişliğini ayarlayın.</string>
     <string name="visualizer_microphone_permission_message">Görselleştirici efekti mikrofon izni gerektirir, lütfen izin ver.</string>
     <string name="visualizer_title">Görselleştirme</string>
+    <!-- Widget -->
     <string name="widget_action_play_pause">Oynat / Duraklat</string>
     <string name="widget_action_tap_to_play">Oynatmak için dokunun</string>
     <string name="widget_configuration_choose_item_hint">Aşağıdakilerden birini seçin</string>
@@ -355,4 +372,9 @@
     <string name="widget_not_playing_status">Oynatılmıyor</string>
     <string name="widget_playlists_description">N-Zik Çalma Listeleri</string>
     <string name="widget_turntable_description">N-Zik Plak Çalar</string>
+    <string name="audio_device_battery_format">Pil: %1$d%%</string>
+    <string name="audio_output_bluetooth_device_label">Bluetooth cihazı</string>
+    <string name="audio_output_usb_audio_label">USB ses</string>
+    <string name="audio_output_external_speaker_label">Harici hoparlör</string>
+    <string name="audio_output_load_failed">Aygıtlar yüklenemedi: %1$s</string>
 </resources>

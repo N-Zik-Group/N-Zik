@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_action_apply">Uygula</string>
     <string name="common_action_cancel">İptal</string>
     <string name="common_action_clear">Temizle</string>

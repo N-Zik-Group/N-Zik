@@ -1,7 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Maintenance -->
     <plurals name="maintenance_systems_need_attention">
-        <item quantity="one">%d system needs attention</item>
-        <item quantity="other">%d systems need attention</item>
+        <item quantity="one">%d systeem vereist aandacht</item>
+        <item quantity="other">%d systemen vereisen aandacht</item>
+    </plurals>
+    <plurals name="sync_detail_songs_liked">
+        <item quantity="one">%1$d nummer leuk</item>
+        <item quantity="other">%1$d nummers leuk gevonden</item>
+    </plurals>
+    <plurals name="sync_detail_playlists_synced">
+        <item quantity="one">%1$d afspeellijst gesynchroniseerd</item>
+        <item quantity="other">%1$d afspeellijsten gesynchroniseerd</item>
+    </plurals>
+    <plurals name="sync_detail_songs_imported">
+        <item quantity="one">%1$d nummer geïmporteerd</item>
+        <item quantity="other">%1$d nummers geïmporteerd</item>
+    </plurals>
+    <plurals name="sync_detail_albums_imported">
+        <item quantity="one">%1$d album geïmporteerd</item>
+        <item quantity="other">%1$d albums geïmporteerd</item>
+    </plurals>
+    <plurals name="sync_detail_episodes">
+        <item quantity="one">%1$d aflevering</item>
+        <item quantity="other">%1$d afleveringen</item>
+    </plurals>
+    <plurals name="library_song_count">
+        <item quantity="one">%1$d nummer</item>
+        <item quantity="other">%1$d nummers</item>
+    </plurals>
+    <plurals name="about_translator_count">
+        <item quantity="one">%1$d vertaler</item>
+        <item quantity="other">%1$d vertalers</item>
+    </plurals>
+    <plurals name="about_developer_designer_count">
+        <item quantity="one">%1$d ontwikkelaar / ontwerper</item>
+        <item quantity="other">%1$d ontwikkelaars / ontwerpers</item>
+    </plurals>
+    <plurals name="statistics_songs_heard_count">
+        <item quantity="one">%1$d nummer gehoord</item>
+        <item quantity="other">%1$d nummers gehoord</item>
     </plurals>
 </resources>

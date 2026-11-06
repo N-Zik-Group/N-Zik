@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_error_connection_timeout">Connection timeout</string>
     <string name="common_error_no_connection">No Connection</string>
     <string name="common_error_no_internet">No network connection</string>

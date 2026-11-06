@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- About -->
     <string name="about_action_report_issue">报告问题</string>
     <string name="about_action_request_feature">请求一个功能或提出一个想法</string>
     <string name="about_action_view_source">查看源代码</string>
+    <string name="about_authorship_preposition">由</string>
     <string name="about_contributors_alphabetical_order_label">按字母顺序：</string>
+    <string name="about_debug_developers_rotation">开发者旋转</string>
+    <string name="about_debug_translators_rotation">翻译器旋转</string>
+    <string name="about_developers_description">显示或隐藏为应用程序贡献力量的开发者和设计师。</string>
     <string name="about_developers_designers_title">开发者 / 设计师</string>
     <string name="about_github_link_description">您将被重定向到GitHub</string>
+    <string name="about_report_issue_description">打开 GitHub 错误报告表单来描述一个问题。</string>
+    <string name="about_request_feature_description">打开 GitHub 功能请求表单以建议改进。</string>
+    <string name="about_source_code_description">在 GitHub 上打开源代码仓库.</string>
     <string name="about_title">关于</string>
+    <string name="about_translators_description">是否显示翻译应用程序的人。</string>
     <string name="about_translators_title">翻译人员</string>
 </resources>

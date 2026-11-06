@@ -1,5 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Onboarding -->
+    <string name="onboarding_accounts_discord_description">Näytä mitä olet kuuntelemassa Discordissa (beta)</string>
+    <string name="onboarding_accounts_done">Olen valmis</string>
+    <string name="onboarding_accounts_skip">Ohita</string>
+    <string name="onboarding_accounts_title">Yhdistä tilejäsi</string>
+    <string name="onboarding_accounts_youtube_account">Kirjautunut sisään nimellä %1$s</string>
     <string name="onboarding_accounts_youtube_description">Optional - browse the app with your YouTube account (home, explore, etc.)</string>
+    <string name="onboarding_greeting">Hei! Perustetaan N-Zik täydelliseen musiikkikokemukseen. Jokainen alla oleva lupa on valinnainen.</string>
+    <string name="onboarding_permission_battery">Akun optimointi</string>
+    <string name="onboarding_permission_battery_description">Estä järjestelmä pysäyttämästä taustamusiikkia</string>
+    <string name="onboarding_permission_bluetooth">Bluetooth</string>
+    <string name="onboarding_permission_bluetooth_description">Tunnista kuulokkeet musiikin pysäyttämiseksi tai jatkamiseksi</string>
+    <string name="onboarding_permission_camera_description">Skannaa QR-koodi N-Zik Desktop Compagnon pariin PC</string>
+    <string name="onboarding_permission_grant">Myönnä</string>
+    <string name="onboarding_permission_granted">Lupa myönnetty</string>
+    <string name="onboarding_permission_media">Median käyttö</string>
+    <string name="onboarding_permission_media_description">Lue paikallinen musiikkikirjastosi</string>
+    <string name="onboarding_permission_microphone">Mikrofoni</string>
+    <string name="onboarding_permission_microphone_description">Käytä mikrofonia äänikomentoihin, visualisointilaitteeseen ja muihin ominaisuuksiin</string>
+    <string name="onboarding_permission_notifications_description">Katso soitin ja hallitse musiikkia ilmoituksesta</string>
     <string name="onboarding_permission_settings">Asetukset</string>
+    <string name="onboarding_permissions_section">Käyttöoikeudet</string>
+    <string name="onboarding_profile_continue">Jatka</string>
+    <string name="onboarding_profile_description">Tämä nimi näytetään sovelluksessa. Voit myös valita, mistä nimi ja hahmo ovat peräisin, ja asettaa kuvan.</string>
+    <string name="onboarding_profile_field_hint">Sinun nimesi</string>
+    <string name="onboarding_profile_title">Nimeä kloonisi</string>
+    <string name="onboarding_restore_description">Tuo kirjaston ja asetuksesi takaisin sovelluksen edellisestä versiosta. Tämä vaihe on valinnainen.</string>
+    <string name="onboarding_restore_restart_note">Sovelluksen tuonti käynnistyy onnistuneesti.</string>
+    <string name="onboarding_restore_skip">Ohita toistaiseksi</string>
+    <string name="onboarding_restore_skip_button">Ohita</string>
+    <string name="onboarding_restore_skip_description">Voit palauttaa varmuuskopion myöhemmin sovelluksen asetuksista</string>
+    <string name="onboarding_restore_title">Palauta varmuuskopio</string>
+    <string name="onboarding_start">Aloita</string>
 </resources>

@@ -1,0 +1,69 @@
+Ett flerspråkigt YouTube Music-skal för Android, fokuserat på prestanda, UI/UX-förbättringar, funktionsexpansion och långsiktigt stöd.
+
+<b>N-Zik</b> är en öppen källkodsgaffel för <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+
+<b>Obs:</b> N-Zik startade som ett sidoprojekt. För mer mogna alternativ, se <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, eller <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+
+<b>AI-användning:</b> Jag använder generativ AI för kod (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD metod</a>), granskas och testas innan frakt.
+
+✨ <b>VARFÖR N-ZIK?</b> Inga annonser, bakgrundsuppspelning, offline caching, anpassningsbart gränssnitt - gratis, alltid.
+
+🎨 <b>Anpassningsbart användargränssnitt</b>
+- Jetpack Komponera gränssnitt
+- Teman: AMOLED, Deep Dark, Crisp Light + tonade accenter
+- 3D Carousel Player, hemwidgets, enhetlig spelare och minispelare
+- Konstnärsprofiler, Upptäckt och stämningar, kollapsbara hem rubriker
+
+:bubblor: <b>Glaseffekt (BETA, valfritt)</b>
+Inaktiverad vid nya installationer. Aktivera i Inställningar: inföding, endast kontur eller glas per kategori, med justerbar kvalitet. Kan öka rendering arbete och batterianvändning; minska kvaliteten eller inaktivera om det behövs.
+Glaskrediter: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2,0).
+
+🎵 <b>Audio Experience</b>
+- Premiumkvalitet via YouTube Music Premium, tillämpas automatiskt
+- Synkroniserade låttexter med redigering och realtidsöversättning
+- Låtigenkänning (Shazam-liknande), röstsökning, ljudvisualiserare
+- Pro-kontroller: hastighet, tonhöjd, normalisering, övertoning, volym boost, bas boost, reverb
+- Audio Bar waveform sökfält för exakt navigering
+
+💾 <b>Offline, Metadata & Sekretess</b>
+- Smart caching och nedladdningar för spår och spellistor, med valbar nedladdningskvalitet
+- FFmpeg-driven export med full metadata (FFmpeg är ett nedladdningsbart tillägg, installerat vid första användning)
+- Redigerare för metadata i appen (AAC/Opus, omslagsbild)
+- Lokal lyssningsstatistik och historik
+- Automatisk säkerhetskopiering med anpassade intervall och lagring
+
+🔗 <b>Integrationer</b>
+- YouTube inloggning för rekommendationer och videouppspelning, plus en experimentell tvåvägs-synkroniseringsmotor
+- Last.fm scrobbling med Nu Spela och kärlek/okärlek
+- MusikBrainz artist och album insikter
+- Discord Rich Presence, inklusive avancerat läge med live förhandsgranskning
+- Oavundsvärd integration för alternativ YouTube-streaming
+- Import/export av spellistor: RiPlay, Spotify, YouTube Musik, N-Zik
+
+:busts_in_siluett: <b>Lyssna tillsammans</b>
+- Gå med i eller värd live lyssningssessioner med andra användare via kod eller inbjudningslänk
+
+:spiral_kalender: <b>Rewind</b>
+- Årligt och månatligt lyssnande återkommer med auto-genererade Rewind spellistor
+
+:mobile_telefon: <b>Spela varsomhelst:</b> Android Auto, Automotive, TV och surfplattor
+
+🛠️ <b>Ström Användarfunktioner</b>
+- Multiprofil: isolerad databas och inställningar per profil
+- Auto-återuppta vid Bluetooth-anslutning, ihållande kö, auto-fyll kö
+- Smart papperskorg, dolda låtar, ogillar system, föräldrakontroll
+- Proxystöd, nätverkskvalitetsanpassning, loggexport
+- Räddningscentral, underhållsskärm, ombordstigning, appgenvägar
+- OTA-uppdateringar från GitHub, sömntimer, bakgrundsuppspelning
+
+📦 <b>Tillgängliga byggen</b>
+- Release64/Beta64 (`com.nevar.nzik`): Bygg färdigt, endast 64-bitarsenheter
+- Release32/Beta32 (`com.nevar.nzik`): Komplett bygga, 32-bitars enheter endast
+- Minified64 (`com.nevar.nzik`): Lätt R8 byggd, för låg-end enheter (64-bit)
+- Minified32 (`com.nevar.nzik`): Lätt R8 bygga (32-bitars)
+- FOSS (`com.nevar.nzik.foss`): Utan automatisk uppdatering, för F-Droid (alla arkitekturer)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Utvecklingsbyggen, testar endast
+
+Inga byggpaket FFmpeg: det är ett nedladdningsbart tillägg (installerat vid första användningen, hanteras i Inställningar → Tillägg). Endast FOSS är på F-Droid.
+
+I det historiska projektet ingår bl.a. ViMusic.

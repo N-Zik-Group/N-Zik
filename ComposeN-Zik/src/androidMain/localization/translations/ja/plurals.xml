@@ -1,6 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Maintenance -->
     <plurals name="maintenance_systems_need_attention">
-        <item quantity="other">%d systems need attention</item>
+        <item quantity="other">%d システムに注意が必要です</item>
+    </plurals>
+    <plurals name="sync_detail_songs_liked">
+        <item quantity="other">%1$d 曲がいいねされました</item>
+    </plurals>
+    <plurals name="sync_detail_playlists_synced">
+        <item quantity="other">%1$d プレイリストが同期されました</item>
+    </plurals>
+    <plurals name="sync_detail_songs_imported">
+        <item quantity="other">%1$d 曲をインポートしました</item>
+    </plurals>
+    <plurals name="sync_detail_albums_imported">
+        <item quantity="other">%1$d アルバムをインポートしました</item>
+    </plurals>
+    <plurals name="sync_detail_episodes">
+        <item quantity="other">%1$d エピソード</item>
+    </plurals>
+    <plurals name="library_song_count">
+        <item quantity="other">%1$d 曲</item>
+    </plurals>
+    <plurals name="about_translator_count">
+        <item quantity="other">%1$d 翻訳</item>
+    </plurals>
+    <plurals name="about_developer_designer_count">
+        <item quantity="other">%1$d 開発者/デザイナー</item>
+    </plurals>
+    <plurals name="statistics_songs_heard_count">
+        <item quantity="other">%1$d の曲が聴こえました</item>
     </plurals>
 </resources>

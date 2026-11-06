@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_answer_no">Nej</string>
+    <string name="common_artist_conjunction_and">og</string>
     <string name="common_clipboard_copy_failed">Kunne ikke kopiere tekst til udklipsholderen, prøv igen</string>
     <string name="common_clipboard_copy_success">Kopieret</string>
     <string name="common_color_black">Sort</string>
@@ -9,10 +11,14 @@
     <string name="common_color_source_theme">Tema</string>
     <string name="common_color_white">Hvid</string>
     <string name="common_debug_background">baggrund</string>
+    <string name="common_debug_width">width</string>
     <string name="common_delete_success">Slettet</string>
     <string name="common_description_unavailable">Ingen beskrivelse tilgængelig</string>
+    <string name="common_duration_milliseconds_format">%1$s ms</string>
     <string name="common_empty_items">Ingen elementer</string>
     <string name="common_external_link_loading_suffix">indlæser...</string>
+    <string name="common_load_failed">Kan ikke indlæse</string>
+    <string name="common_load_failed_no_connection">Kan ikke indlæse, ingen forbindelse</string>
     <string name="common_log_unavailable">Ingen log tilgængelig</string>
     <string name="common_option_all">Alle</string>
     <string name="common_option_custom">Tilpasset</string>
@@ -33,5 +39,8 @@
     <string name="common_validation_empty_value">Værdi må ikke være tom</string>
     <string name="common_validation_invalid_input">Ugyldigt input!</string>
     <string name="common_validation_minimum_value">"Værdi skal være større end "</string>
+    <string name="common_validation_name_in_use">Navn er allerede i brug</string>
     <string name="common_value_input_hint">Indtast værdien</string>
+    <string name="common_unknown">Ukendt</string>
+    <string name="common_duration_minutes_short">%1$d min</string>
 </resources>

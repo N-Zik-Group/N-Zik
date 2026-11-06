@@ -1,11 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Maintenance -->
     <plurals name="maintenance_systems_need_attention">
-        <item quantity="zero">%d systems need attention</item>
+        <item quantity="zero">تحتاج أنظمة %d إلى الاهتمام</item>
         <item quantity="one">%d system needs attention</item>
-        <item quantity="two">%d systems need attention</item>
-        <item quantity="few">%d systems need attention</item>
-        <item quantity="many">%d systems need attention</item>
-        <item quantity="other">%d systems need attention</item>
+        <item quantity="two">تحتاج أنظمة %d إلى الاهتمام</item>
+        <item quantity="few">تحتاج أنظمة %d إلى الاهتمام</item>
+        <item quantity="many">تحتاج أنظمة %d إلى الاهتمام</item>
+        <item quantity="other">تحتاج أنظمة %d إلى الاهتمام</item>
+    </plurals>
+    <plurals name="sync_detail_songs_liked">
+        <item quantity="zero">%1$d songs liked</item>
+        <item quantity="one">أحببت أغنية %1$d</item>
+        <item quantity="two">%1$d songs liked</item>
+        <item quantity="few">%1$d songs liked</item>
+        <item quantity="many">%1$d songs liked</item>
+        <item quantity="other">%1$d songs liked</item>
+    </plurals>
+    <plurals name="sync_detail_playlists_synced">
+        <item quantity="zero">%1$d قوائم تشغيل مزامنة</item>
+        <item quantity="one">%1$d قائمة تشغيل مزامنة</item>
+        <item quantity="two">%1$d قوائم تشغيل مزامنة</item>
+        <item quantity="few">%1$d قوائم تشغيل مزامنة</item>
+        <item quantity="many">%1$d قوائم تشغيل مزامنة</item>
+        <item quantity="other">%1$d قوائم تشغيل مزامنة</item>
+    </plurals>
+    <plurals name="sync_detail_songs_imported">
+        <item quantity="zero">تم استيراد %1$d أغنية</item>
+        <item quantity="one">تم استيراد %1$d أغنية</item>
+        <item quantity="two">تم استيراد %1$d أغنية</item>
+        <item quantity="few">تم استيراد %1$d أغنية</item>
+        <item quantity="many">تم استيراد %1$d أغنية</item>
+        <item quantity="other">تم استيراد %1$d أغنية</item>
+    </plurals>
+    <plurals name="sync_detail_albums_imported">
+        <item quantity="zero">%1$d ألبومات مستوردة</item>
+        <item quantity="one">تم استيراد ألبوم %1$d</item>
+        <item quantity="two">%1$d ألبومات مستوردة</item>
+        <item quantity="few">%1$d ألبومات مستوردة</item>
+        <item quantity="many">%1$d ألبومات مستوردة</item>
+        <item quantity="other">%1$d ألبومات مستوردة</item>
+    </plurals>
+    <plurals name="sync_detail_episodes">
+        <item quantity="zero">%1$d حلقات</item>
+        <item quantity="one">حلقة %1$d</item>
+        <item quantity="two">%1$d حلقات</item>
+        <item quantity="few">%1$d حلقات</item>
+        <item quantity="many">%1$d حلقات</item>
+        <item quantity="other">%1$d حلقات</item>
+    </plurals>
+    <plurals name="library_song_count">
+        <item quantity="zero">%1$d songs</item>
+        <item quantity="one">أغنية %1$d</item>
+        <item quantity="two">%1$d songs</item>
+        <item quantity="few">%1$d songs</item>
+        <item quantity="many">%1$d songs</item>
+        <item quantity="other">%1$d songs</item>
+    </plurals>
+    <plurals name="about_translator_count">
+        <item quantity="zero">مترجمون %1$d</item>
+        <item quantity="one">مترجم %1$d</item>
+        <item quantity="two">مترجمون %1$d</item>
+        <item quantity="few">مترجمون %1$d</item>
+        <item quantity="many">مترجمون %1$d</item>
+        <item quantity="other">مترجمون %1$d</item>
+    </plurals>
+    <plurals name="about_developer_designer_count">
+        <item quantity="zero">%1$d مطورين / مصممين</item>
+        <item quantity="one">%1$d مطور / مصمم</item>
+        <item quantity="two">%1$d مطورين / مصممين</item>
+        <item quantity="few">%1$d مطورين / مصممين</item>
+        <item quantity="many">%1$d مطورين / مصممين</item>
+        <item quantity="other">%1$d مطورين / مصممين</item>
+    </plurals>
+    <plurals name="statistics_songs_heard_count">
+        <item quantity="zero">أسمع %1$d أغنية</item>
+        <item quantity="one">سمعت أغنية %1$d</item>
+        <item quantity="two">أسمع %1$d أغنية</item>
+        <item quantity="few">أسمع %1$d أغنية</item>
+        <item quantity="many">أسمع %1$d أغنية</item>
+        <item quantity="other">أسمع %1$d أغنية</item>
     </plurals>
 </resources>

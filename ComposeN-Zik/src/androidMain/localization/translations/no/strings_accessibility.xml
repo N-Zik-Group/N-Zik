@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Accessibility -->
     <string name="accessibility_app_icon">Appens ikon</string>
     <string name="accessibility_app_icon_in_player">app ikon i spiller</string>
+    <string name="accessibility_arrow_down">arrow_down</string>
     <string name="accessibility_arrow_up">pil_opp</string>
     <string name="accessibility_background_image">Bakgrunns bilde</string>
     <string name="accessibility_blurred_background">uklar_bakgrunn</string>
@@ -17,4 +19,5 @@
     <string name="accessibility_reset">Tilbakestill</string>
     <string name="accessibility_song_album_cover">sang albumomslag</string>
     <string name="accessibility_switch_mode">Bytt modus</string>
+    <string name="accessibility_youtube_playlist">Youtube Playlist</string>
 </resources>

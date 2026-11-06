@@ -1,6 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
+    <string name="common_answer_no">Nej</string>
+    <string name="common_artist_conjunction_and">och</string>
+    <string name="common_clipboard_copy_failed">Det gick inte att kopiera text till urklipp, försök igen</string>
+    <string name="common_clipboard_copy_success">Kopierad</string>
+    <string name="common_color_black">Svart</string>
+    <string name="common_color_custom">Anpassad färg</string>
     <string name="common_color_source_artwork">Cover color</string>
+    <string name="common_color_source_theme">Tema</string>
+    <string name="common_color_white">Vit</string>
     <string name="common_debug_background">bakgrund</string>
+    <string name="common_debug_width">width</string>
+    <string name="common_delete_success">Borttagen</string>
     <string name="common_description_unavailable">Ingen beskrivning tillgänglig</string>
+    <string name="common_duration_milliseconds_format">%1$s ms</string>
+    <string name="common_empty_items">Inga objekt</string>
+    <string name="common_external_link_loading_suffix">laddar...</string>
+    <string name="common_load_failed">Kunde inte ladda</string>
+    <string name="common_load_failed_no_connection">Det gick inte att ladda, ingen anslutning</string>
+    <string name="common_log_unavailable">Logg ej tillgänglig</string>
+    <string name="common_option_all">Alla</string>
+    <string name="common_option_custom">Anpassad</string>
+    <string name="common_option_default">Standard</string>
+    <string name="common_option_disabled">Inaktiverad</string>
+    <string name="common_option_none">Ingen</string>
+    <string name="common_option_random">Slumpmässig</string>
+    <string name="common_restart_required_message">Vänligen öppna %s igen efter!</string>
+    <string name="common_size_big">Stor</string>
+    <string name="common_size_biggest">Största</string>
+    <string name="common_size_expanded">Utökat</string>
+    <string name="common_size_medium">Medel</string>
+    <string name="common_size_small">Liten</string>
+    <string name="common_state_enabled">Aktiverad</string>
+    <string name="common_state_off">Av</string>
+    <string name="common_state_on">På</string>
+    <string name="common_storage_used_suffix">" använd"</string>
+    <string name="common_validation_empty_value">Värdet kan inte vara tomt</string>
+    <string name="common_validation_invalid_input">Invalid input!</string>
+    <string name="common_validation_minimum_value">"Värdet måste vara större än "</string>
+    <string name="common_validation_name_in_use">Namnet används redan</string>
+    <string name="common_value_input_hint">Ange värde</string>
+    <string name="common_unknown">Okänd</string>
+    <string name="common_duration_minutes_short">%1$d min</string>
 </resources>

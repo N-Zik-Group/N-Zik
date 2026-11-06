@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- About -->
     <string name="about_action_report_issue">Ein Problem melden</string>
     <string name="about_action_request_feature">Fordere eine Funktion an oder schlage eine Idee vor</string>
     <string name="about_action_view_source">Den Quellcode ansehen</string>
@@ -7,8 +8,13 @@
     <string name="about_contributors_alphabetical_order_label">In alphabetischer Reihenfolge:</string>
     <string name="about_debug_developers_rotation">entwickler_rotation</string>
     <string name="about_debug_translators_rotation">übersetzer_rotation</string>
+    <string name="about_developers_description">Zeige oder verstecke die Entwickler und Designer, die zur App beigetragen haben.</string>
     <string name="about_developers_designers_title">Entwickler / Designer</string>
     <string name="about_github_link_description">Du wirst zu GitHub weitergeleitet</string>
+    <string name="about_report_issue_description">Öffnen Sie das GitHub Fehlerberichtsformular, um ein Problem zu beschreiben.</string>
+    <string name="about_request_feature_description">Öffne das GitHub Feature-Anfrageformular, um eine Verbesserung vorzuschlagen.</string>
+    <string name="about_source_code_description">Öffne das Quellcode-Repository auf GitHub.</string>
     <string name="about_title">Info</string>
+    <string name="about_translators_description">Zeige oder verstecke die Leute, die die App übersetzt haben.</string>
     <string name="about_translators_title">Übersetzer</string>
 </resources>

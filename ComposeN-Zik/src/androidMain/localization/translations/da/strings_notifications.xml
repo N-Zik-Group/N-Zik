@@ -1,3 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Listen -->
+    <string name="listen_together_notification_channel_description">Notifikationer til Lyt sammen begivenheder</string>
+    <!-- Listen Together -->
+    <string name="listen_together_notification_channel_name">Lyt Sammen</string>
+    <!-- Player Notification -->
+    <string name="player_notification_pause">Pause</string>
 </resources>

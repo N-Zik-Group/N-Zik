@@ -1,7 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Maintenance -->
     <plurals name="maintenance_systems_need_attention">
-        <item quantity="one">Le système %d nécessite une intervention</item>
+        <item quantity="one">%d système nécessite une intervention</item>
         <item quantity="other">%d systèmes nécessitent une intervention</item>
+    </plurals>
+    <plurals name="sync_detail_songs_liked">
+        <item quantity="one">%1$d titre aimé</item>
+        <item quantity="other">%1$d titres aimés</item>
+    </plurals>
+    <plurals name="sync_detail_playlists_synced">
+        <item quantity="one">%1$d playlist synchronisée</item>
+        <item quantity="other">%1$d playlists synchronisées</item>
+    </plurals>
+    <plurals name="sync_detail_songs_imported">
+        <item quantity="one">%1$d titre importé</item>
+        <item quantity="other">%1$d titres importés</item>
+    </plurals>
+    <plurals name="sync_detail_albums_imported">
+        <item quantity="one">%1$d album importé</item>
+        <item quantity="other">%1$d albums importés</item>
+    </plurals>
+    <plurals name="sync_detail_episodes">
+        <item quantity="one">%1$d épisode</item>
+        <item quantity="other">%1$d épisodes</item>
+    </plurals>
+    <plurals name="library_song_count">
+        <item quantity="one">%1$d titre</item>
+        <item quantity="other">%1$d titres</item>
+    </plurals>
+    <plurals name="about_translator_count">
+        <item quantity="one">%1$d traducteur</item>
+        <item quantity="other">%1$d traducteurs</item>
+    </plurals>
+    <plurals name="about_developer_designer_count">
+        <item quantity="one">%1$d développeur / concepteur</item>
+        <item quantity="other">%1$d développeurs / concepteurs</item>
+    </plurals>
+    <plurals name="statistics_songs_heard_count">
+        <item quantity="one">%1$d titre écouté</item>
+        <item quantity="other">%1$d titres écoutés</item>
     </plurals>
 </resources>

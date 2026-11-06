@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
+    <string name="common_error_connection_timeout">مهلة الاتصال</string>
+    <string name="common_error_no_connection">لا يوجد اتصال</string>
+    <string name="common_error_no_internet">لا يوجد اتصال بالشبكة</string>
     <string name="common_error_title">حدث خطأ ما.</string>
+    <string name="common_error_unknown">خطأ غير معروف</string>
 </resources>

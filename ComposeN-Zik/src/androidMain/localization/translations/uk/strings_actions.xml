@@ -1,19 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
+    <string name="common_action_apply">Прийняти</string>
     <string name="common_action_cancel">Скасовувати</string>
     <string name="common_action_clear">Очистити</string>
+    <string name="common_action_close">Закрити</string>
+    <string name="common_action_close_app">Закрити додаток</string>
     <string name="common_action_confirm">Підтвердити</string>
     <string name="common_action_delete">Видалити</string>
     <string name="common_action_done">Зроблено</string>
+    <string name="common_action_export">Експорт</string>
+    <string name="common_action_import">Імпорт</string>
+    <string name="common_action_next">Уперед</string>
     <string name="common_action_ok">Гаразд</string>
     <string name="common_action_paste">Вставити</string>
+    <string name="common_action_previous">Попереднє</string>
+    <string name="common_action_remove">Видалити</string>
     <string name="common_action_reset">Скинути</string>
     <string name="common_action_retry">Повторити спробу</string>
+    <string name="common_action_save">Зберегти</string>
     <string name="common_action_select">Вибрати</string>
     <string name="common_action_show_less">Показати менше</string>
     <string name="common_action_show_more">Показати більше</string>
     <string name="common_action_translate">Перекласти</string>
     <string name="common_action_turn_off">Вимкнути</string>
+    <string name="common_action_unlink">Розірвання зв\'язку</string>
     <string name="common_action_update">Оновити</string>
     <string name="common_menu_label">Меню</string>
 </resources>

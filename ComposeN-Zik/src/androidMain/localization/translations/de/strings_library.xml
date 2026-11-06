@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Album -->
     <string name="album_action_bookmark">Album merken</string>
     <string name="album_action_open">Album anzeigen</string>
     <string name="album_alternative_versions">Alternative Versionen</string>
+    <string name="album_art">Albumcover</string>
     <string name="album_found_online_verify">Album online gefunden! Bitte überprüfen Sie, ob es das richtige ist.</string>
     <string name="album_left_swipe">Album links wischen</string>
     <string name="album_loading_song_count_format">Lade %1$d Lieder…</string>
@@ -12,17 +14,26 @@
     <string name="album_not_found">Album nicht gefunden</string>
     <string name="album_related_title">Ähnliche Alben</string>
     <string name="album_right_swipe">Album rechts wischen</string>
+    <!-- Artist -->
     <string name="artist_action_follow">Folgen</string>
     <string name="artist_action_play_local_songs">Alle lokalen Titel abspielen</string>
+    <string name="artist_deduplication_result">%d Duplikat(e) mit dem richtigen Künstler zusammengeführt</string>
     <string name="artist_following_status">Gefolgt</string>
     <string name="artist_found_online_verify">Künstler online gefunden! Bitte überprüfen Sie, ob es sich um den richtigen handelt.</string>
+    <string name="artist_link_cleanup_result">%d falsche Interpretenlink(s) entfernt</string>
     <string name="artist_lookup_failed">Abruf des Künstlers fehlgeschlagen</string>
     <string name="artist_lookup_running">Online nach %s suchen...</string>
     <string name="artist_more_from">Mehr von</string>
     <string name="artist_overview_title">Übersicht</string>
+    <string name="artist_roundness">Künstlerrundung</string>
     <string name="artist_similar_title">Ähnliche Künstler</string>
+    <string name="artist_songs_count_duration">%1$d Songs • %2$s</string>
     <string name="artist_songs_unavailable_message">Bisher keine Titel</string>
     <string name="artist_title">Künstler</string>
+    <!-- History -->
+    <string name="history_clear_listen_history_description">Gespeicherte Wiedergabe-Ereignisse aus dem Abhörverlauf löschen.</string>
+    <string name="history_clear_search_history_description">Gespeicherte Suchanfragen von jeder Seite löschen, ohne die Verlaufseinstellungen zu ändern.</string>
+    <!-- Home -->
     <string name="home_albums_settings">Alben</string>
     <string name="home_artists_settings">Künstler</string>
     <string name="home_chart_top_artists_title">Angesagte Künstler</string>
@@ -40,15 +51,18 @@
     <string name="home_tabs_settings_description">Tabs neu anordnen und ein-/ausblenden</string>
     <string name="home_title">Homepage</string>
     <string name="home_youtube_login_description">Melden Sie sich bei Ihrem YTM-Konto für weitere Inhalte an</string>
+    <!-- Home Easter Egg -->
     <string name="home_easter_egg_click_message">Möchten Sie klicken? Dann fortfahren...</string>
     <string name="home_easter_egg_keep_going">Okay, du suchst nach etwa, behalten...</string>
     <string name="home_easter_egg_last">Du bist eine Nummer eins, lange Klicke und genieße die Überraschung</string>
     <string name="home_easter_egg_number_one">Du bist ein Nummer Eins, klicke und genieße die Überraschung</string>
+    <!-- Library -->
     <string name="library_action_bookmark">Lesezeichen</string>
     <string name="library_action_randomize">Zufallsgenerator</string>
     <string name="library_albums_title">Alben</string>
     <string name="library_artists_title">Künstler</string>
     <string name="library_cached_title">Zwischengespeichert</string>
+    <string name="library_disliked_title">Ungefällt</string>
     <string name="library_downloaded_title">Offline-Songs</string>
     <string name="library_export_cached_songs_confirmation_format">%1$d zwischengespeicherte/heruntergeladene Songs exportieren?</string>
     <string name="library_favorites_title">Favoriten</string>
@@ -59,14 +73,17 @@
     <string name="library_layout_grid_label">Raster</string>
     <string name="library_layout_list_label">Liste</string>
     <string name="library_local_media_permission_message">Medienberechtigung erforderlich, bitte erteilen.</string>
+    <string name="library_management_section_title">Management</string>
     <string name="library_matching_action_retry">Spiel wiederholen</string>
     <string name="library_matching_all_success_message">Alle Lieder wurden erfolgreich übereinstimmen!</string>
     <string name="library_matching_failed_songs_description">Die folgenden Lieder konnten nicht übereinstimmen:</string>
     <string name="library_matching_merged_count_format">%d wurde mit existierenden zusammengeführt</string>
     <string name="library_matching_results_title">Passend abgeschlossen</string>
     <string name="library_matching_success_failure_count_format">%1$d übereinstimmend, %2$d fehlgeschlagen</string>
+    <string name="library_on_device_start_folder_description">Wählen Sie den Startordner für den Musik-Browser auf dem Gerät.</string>
     <string name="library_on_device_title">Lokal</string>
     <string name="library_playlists_title">Playlisten</string>
+    <string name="library_songs_title">Titel</string>
     <string name="library_sort_history_alphabetical">Alphabetisch</string>
     <string name="library_sort_history_date">Datum</string>
     <string name="library_sort_relative_listening_time">Relative Wiedergabedauer</string>
@@ -85,11 +102,15 @@
     <string name="library_sync_progress_format">%1$d / %2$d</string>
     <string name="library_title">Bibliothek</string>
     <string name="library_youtube_music_title">YTM-Bibliothek</string>
+    <string name="library_youtube_playlists_label">YT/YTM</string>
+    <!-- Library Favorites -->
     <string name="library_dislikes_added">%s gefällt mir nicht</string>
     <string name="library_dislikes_removed">%s von \"Gefällt mir nicht\" entfernt</string>
     <string name="library_favorites_action_add">Den Favoriten hinzufügen</string>
     <string name="library_favorites_added">Zu Favoriten hinzugefügt</string>
     <string name="library_favorites_removed">Von Favoriten entfernt</string>
+    <!-- Library Sort -->
+    <string name="library_sort_album">Album</string>
     <string name="library_sort_album_year">Album-Jahr</string>
     <string name="library_sort_artist">Künstler</string>
     <string name="library_sort_custom_order">Benutzerdefinierte Reinfolge</string>
@@ -104,42 +125,87 @@
     <string name="library_sort_play_count">Wiedergabeanzahl</string>
     <string name="library_sort_songs_number">Anzahl der Songs</string>
     <string name="library_sort_title">Song</string>
+    <!-- Metadata -->
     <string name="metadata_action_change_artists">Künstler ändern</string>
     <string name="metadata_action_change_cover">Cover aktualisieren</string>
     <string name="metadata_action_change_title">Song aktualisieren</string>
     <string name="metadata_action_edit">Metadaten bearbeiten</string>
+    <string name="metadata_action_refresh_artists_from_youtube">Autoren von YouTube Musik aktualisieren</string>
+    <string name="metadata_action_refresh_cover_from_youtube">Miniaturansicht von YouTube Musik aktualisieren</string>
+    <string name="metadata_action_refresh_title_from_youtube">Titel von YouTube Musik aktualisieren</string>
+    <string name="metadata_album">Album</string>
     <string name="metadata_album_action_change_browse_id">Album-ID ändern</string>
     <string name="metadata_album_artist">Album Künstler</string>
     <string name="metadata_artist">Künstler</string>
     <string name="metadata_artist_action_change_browse_id">Künstler-ID ändern</string>
+    <string name="metadata_biography_title">Bio</string>
     <string name="metadata_bpm">BPM</string>
     <string name="metadata_comment">Kommentare</string>
     <string name="metadata_composer">Komponist</string>
     <string name="metadata_conductor">Dirigent</string>
     <string name="metadata_copyright">Urheberrecht (Copyright)</string>
+    <string name="metadata_cover">Cover</string>
     <string name="metadata_description_title">Beschreibung</string>
     <string name="metadata_disc_number">CD-Nummer</string>
+    <string name="metadata_encoder">Codierer</string>
     <string name="metadata_exported">Exportiert</string>
+    <string name="metadata_external_links_title">Externe Links</string>
+    <string name="metadata_genre">Genre</string>
+    <string name="metadata_info_and_community_title">Info und Community</string>
     <string name="metadata_info_title_label">Song</string>
     <string name="metadata_isrc">ISRC</string>
+    <string name="metadata_keywords_title">Stichwörter</string>
     <string name="metadata_loading">Lädt…</string>
     <string name="metadata_lyricist">Textautor</string>
+    <string name="metadata_musicbrainz_rating_votes_attribution">%1$d Stimmen über MusicBrainz</string>
     <string name="metadata_playlist_action_change_browse_id">Playlist-ID ändern</string>
     <string name="metadata_publisher">Herausgeber</string>
+    <string name="metadata_remixer">Remixer</string>
     <string name="metadata_title">Song</string>
+    <string name="metadata_track">Spur</string>
     <string name="metadata_unknown_artist">Unbekannter Künstler</string>
     <string name="metadata_unknown_title">Unbekannter Titel</string>
+    <string name="metadata_video_dislikes_label">Dislikes</string>
+    <string name="metadata_video_likes_label">Gefällt</string>
     <string name="metadata_video_subscribers_label">Abonnenten</string>
     <string name="metadata_video_views_label">Aufrufe</string>
     <string name="metadata_wikipedia_attribution">Von Wikipedia unter Creative Commons Namensnennung CC-BY-SA 3.0</string>
     <string name="metadata_year">Jahr</string>
+    <!-- Metadata Musicbrainz -->
+    <string name="metadata_musicbrainz_insights">Einblicke</string>
+    <string name="metadata_musicbrainz_insights_biography">Biographie</string>
+    <string name="metadata_musicbrainz_insights_links">Links</string>
+    <string name="metadata_musicbrainz_insights_local_library">Lokale Bibliothek</string>
+    <string name="metadata_musicbrainz_insights_members_collabs">Mitglieder &amp; Kollaborationen</string>
+    <string name="metadata_musicbrainz_insights_other_albums">Andere Alben</string>
+    <string name="metadata_musicbrainz_insights_popularity">Popularität</string>
+    <string name="metadata_musicbrainz_insights_singles_eps">Einzelt &amp; EPs</string>
+    <string name="metadata_musicbrainz_insights_tags_genres">Tags &amp; Genres</string>
+    <string name="metadata_musicbrainz_insights_top_albums">Top Alben</string>
     <string name="metadata_musicbrainz_insights_top_songs">Angesagte Songs</string>
+    <string name="metadata_musicbrainz_insights_your_listening">Ihr Zuhören</string>
+    <string name="metadata_musicbrainz_last_sync">Letzter Sync: %1$s</string>
+    <string name="metadata_musicbrainz_last_sync_failed">Sync fehlgeschlagen: %1$s</string>
+    <string name="metadata_musicbrainz_last_sync_never">Niemals synchronisiert</string>
+    <string name="metadata_musicbrainz_last_sync_paused">Pausiert (zu viele Fehler): Erneut in %1$d min</string>
+    <string name="metadata_musicbrainz_no_rating">Keine Bewertung verfügbar</string>
+    <string name="metadata_musicbrainz_rating_votes">(%1$d votes)</string>
+    <string name="metadata_musicbrainz_resync">Resync</string>
     <string name="metadata_musicbrainz_resync_error">Resync failed - MusicBrainz may be busy, try again later</string>
     <string name="metadata_musicbrainz_resync_paused">MusicBrainz paused after repeated failures - retry in %1$d min</string>
+    <string name="metadata_musicbrainz_resync_success">MusicBrainz Daten synchronisiert</string>
     <string name="metadata_musicbrainz_stat_albums">Alben</string>
+    <string name="metadata_musicbrainz_stat_bookmarked_albums">Lesezeichen</string>
+    <string name="metadata_musicbrainz_stat_liked_songs">Geiked Lieder</string>
+    <string name="metadata_musicbrainz_stat_listens">Hören</string>
+    <string name="metadata_musicbrainz_stat_songs">Titel</string>
+    <string name="metadata_musicbrainz_stat_time">Gesamtzeit</string>
+    <string name="metadata_musicbrainz_wikipedia">Wikipedia</string>
+    <!-- Playlist -->
     <string name="playlist_action_add">Zu Playlist hinzufügen</string>
     <string name="playlist_action_add_hint">Zu Playlist hinzufügen</string>
     <string name="playlist_action_create">Neue Playlist</string>
+    <string name="playlist_action_delete_selected">Wiedergabelisten löschen</string>
     <string name="playlist_action_export">Playlist exportieren</string>
     <string name="playlist_action_import">Playlist importieren</string>
     <string name="playlist_action_import_favorites">Favoriten importieren</string>
@@ -152,19 +218,36 @@
     <string name="playlist_action_toggle_pinned">Wiedergabeliste anpinnen/lösen</string>
     <string name="playlist_action_unlink_youtube">Von YouTube entkoppeln</string>
     <string name="playlist_action_unlink_youtube_library">Von der YouTube Bibliothek entkoppeln</string>
+    <string name="playlist_bookmark_unsupported_message">Kann Liked Songs oder Episoden Wiedergabeliste nicht speichern</string>
     <string name="playlist_create_dialog_title">Neue Wiedergabeliste erstellen</string>
+    <string name="playlist_delete_all_confirmation_count_format">Bist du sicher, dass du ALLE %d Wiedergabelisten löschen möchtest?</string>
     <string name="playlist_delete_confirmation">Möchtest du diese Wiedergabeliste wirklich löschen?</string>
+    <string name="playlist_delete_dialog_title">Playlist löschen</string>
+    <string name="playlist_delete_multiple_dialog_title">Wiedergabelisten löschen</string>
+    <string name="playlist_delete_selected_confirmation_count_format">Sind Sie sicher, dass Sie diese %d Wiedergabelisten löschen möchten?</string>
     <string name="playlist_error_action_on_all_disliked_songs">Diese Aktion kann nicht ausgeführt werden, wenn alle Lieder nicht gefällt werden</string>
     <string name="playlist_error_action_on_disliked_song">Diese Aktion kann nicht mit den mit \"Mag ich nicht\" markierten Titeln durchgeführt werden</string>
     <string name="playlist_import_default_name">Importierte Playlist</string>
     <string name="playlist_import_failed">Fehler beim Importieren der lokalen Wiedergabeliste</string>
+    <string name="playlist_import_format_riplay_csv">RiPlay CSV</string>
     <string name="playlist_import_unsupported_format">Nicht unterstütztes Format</string>
     <string name="playlist_import_youtube_link">Über YouTube-Link importieren</string>
+    <string name="playlist_insertion_beginning">Anfang</string>
+    <string name="playlist_insertion_description">Wählen Sie, wo neue Lieder in der benutzerdefinierten Reihenfolge hinzugefügt werden. Vorhandene Lieder und Anzeige-Sortierung bleiben unverändert.</string>
+    <string name="playlist_insertion_end">Ende</string>
+    <string name="playlist_insertion_position">Neue Lieder Position</string>
     <string name="playlist_left_swipe">Wiedergabeliste links wischen</string>
+    <string name="playlist_like_all_dialog_title">Wie alle Lieder</string>
     <string name="playlist_like_all_duration_confirmation_suffix">(geschätzte Zeit) ist erforderlich um alle Titel mit \"Gefällt mir\" zu markieren. Um diesen Vorgang abzubrechen, muss die App geschlossen werden. Möchtest du fortfahren?</string>
     <string name="playlist_name_input_hint">Name der Playlist eingeben</string>
     <string name="playlist_operation_wait_message">Warte, es kann einige Minuten dauern...</string>
     <string name="playlist_pinned_title">Angeheftete Playlisten</string>
+    <string name="playlist_positions_shuffled">%d Positionen gemischt</string>
+    <string name="playlist_refresh_on_open">Beim Öffnen aktualisieren</string>
+    <string name="playlist_refresh_on_open_disable">Deaktiviere Aktualisierung beim Öffnen</string>
+    <string name="playlist_refresh_on_open_enable">Aktualisieren beim Öffnen aktivieren</string>
+    <string name="playlist_remove_selected_confirmation">Ausgewählte Lieder von dieser Wiedergabeliste entfernen?</string>
+    <string name="playlist_remove_songs_confirmation">Auswahl aus der Wiedergabeliste entfernen? Ausgewählte Stücke: %d</string>
     <string name="playlist_rename_dialog_title">Wiedergabeliste umbenennen</string>
     <string name="playlist_reorder_ascending_sort_required_message">Neuordnung ist nur in aufsteigender Sortierung möglich</string>
     <string name="playlist_reorder_lock_toggle_label">Umsortieren der Titel sperren/entsperren</string>
@@ -173,9 +256,14 @@
     <string name="playlist_shuffle_positions_confirmation">Möchtest du wirklich die Positionen in dieser Wiedergabeliste neu nummerieren?</string>
     <string name="playlist_song_already_present">Titel ist in einer der Playliste vorhanden</string>
     <string name="playlist_top">Top-Playlist</string>
+    <string name="playlist_top_maximum_items_description">Begrenzen, wie viele Lieder in Ihrer Top-Playlist enthalten sind.</string>
+    <string name="playlist_top_show_description">Zeige deine Top-Playlist in Quick Picks.</string>
     <string name="playlist_youtube_song_limit_message">YouTube Wiedergabelisten sind auf 5000 Titel begrenzt</string>
     <string name="playlist_youtube_title">YouTube-Playlist</string>
+    <!-- Podcast -->
     <string name="podcast_episodes_title">Episoden</string>
+    <string name="podcast_title">Podcasts</string>
+    <!-- Radio -->
     <string name="radio_action_start">Radio starten</string>
     <string name="radio_action_start_hint">Radio starten</string>
     <string name="radio_action_stop">Radio stoppen</string>
@@ -185,12 +273,22 @@
     <string name="radio_discovery_disabled_message">Entdeckungsmodus AUS (Enthält bekannte Songs und neue Entdeckungen)</string>
     <string name="radio_discovery_enabled_message">Entdeckungsmodus EIN (Filtert bekannte Songs und fügt neue Entdeckungen hinzu)</string>
     <string name="radio_discovery_requires_radio_or_autofill_message">Aktivieren Sie „Radio“ oder „Automatisches hinzufügen “, um „Entdecken “ zu nutzen</string>
+    <string name="radio_fetch_empty_queue_preserved_message">Radio: keine geladenen Lieder (Warteschlange gespeichert)</string>
     <string name="radio_stopped_message">Radio gestoppt (Zurück zur Normal)</string>
+    <!-- Recognition -->
+    <string name="recognition_action_more_details">Mehr Details</string>
+    <string name="recognition_audio_hint">Musik abspielen, damit die Analyse funktioniert</string>
+    <string name="recognition_error_microphone_permission">Mikrofon-Berechtigung wird für die Suche benötigt.</string>
+    <string name="recognition_error_no_match">Dieses Lied konnte nicht identifiziert werden. Versuchen Sie eine lautere oder sauberere Probe.</string>
+    <string name="recognition_listening_duration">Analyse von %1$ds von Audio</string>
+    <string name="recognition_ready_message">Halte dein Telefon in der Nähe der Musik</string>
+    <!-- Recommendations -->
     <string name="recommendations_action_reset_quick_picks">Empfehlungen zurücksetzen</string>
     <string name="recommendations_adaptive">Adaptiv</string>
     <string name="recommendations_adaptive_description">Adaptiv: Skalen mit Playlist-Größe (10-150 Empfehlungen)</string>
     <string name="recommendations_albums_for_you_title">Alben für dich</string>
     <string name="recommendations_all_hits_title">Alle Hits</string>
+    <string name="recommendations_charts_title">Karten</string>
     <string name="recommendations_community_title">Von der Community</string>
     <string name="recommendations_content">Schnellauswahl-Bereiche</string>
     <string name="recommendations_content_description">Wählen Sie aus, welche Bereiche auf der Startseite angezeigt werden</string>
@@ -204,8 +302,10 @@
     <string name="recommendations_forgotten_favorites_title">Vergessene Favoriten</string>
     <string name="recommendations_fresh_finds_old_favorites_title">Neue Entdeckungen, alte Favoriten</string>
     <string name="recommendations_fresh_new_music_title">Neue Musik</string>
+    <string name="recommendations_history_source_description">Wählen Sie aus, welche Hörereignisse verwendet werden, um Schnellauswahl-Empfehlungen zu erstellen.</string>
     <string name="recommendations_live_performances_title">Live-Auftritte</string>
     <string name="recommendations_load_failed_message">Die Seite wurde nicht korrekt geladen, versuche die Seite zu aktualisieren.</string>
+    <string name="recommendations_local_song_count_description">Legen Sie fest, wie viele lokal empfohlene Lieder in Schnellauswahl angezeigt werden.</string>
     <string name="recommendations_minimum_listening_time_description">Minimale Wiedergabedauer, um den Song in den Empfehlungen zu berücksichtigen</string>
     <string name="recommendations_minimum_playback_duration_label">Minimale Wiedergabedauer</string>
     <string name="recommendations_mixed_for_you_title">Für dich zusammengestellt</string>
@@ -215,18 +315,22 @@
     <string name="recommendations_new_albums_title">Neue Alben</string>
     <string name="recommendations_new_releases_title">Neue Veröffentlichungen</string>
     <string name="recommendations_number">Anzahl der Empfehlungen</string>
+    <string name="recommendations_page_enabled_description">Zeige die Schnellauswahl-Seite mit Empfehlungen basierend auf deiner Höraktivität.</string>
     <string name="recommendations_personal_top_title">Mein Top</string>
     <string name="recommendations_playlists_title">Playlisten, die dir gefallen könnten</string>
     <string name="recommendations_reset_complete">Empfehlungen werden gelöscht</string>
+    <string name="recommendations_reset_description">Löschen Sie die Wiedergabe-Ereignisse, die verwendet werden, um lokale Schnellauswahl-Empfehlungen zu generieren.</string>
     <string name="recommendations_section_other_youtube_title">Andere Bereiche</string>
     <string name="recommendations_section_visibility_description">Deaktiviere diese Option, wenn Du Folgendes nicht sehen möchtest:</string>
     <string name="recommendations_show_section_label">Zeige</string>
+    <string name="recommendations_smart_song_count_description">Legen Sie die Anzahl der intelligenten Empfehlungen fest oder lassen Sie die App automatisch anpassen.</string>
     <string name="recommendations_title">Startseite</string>
     <string name="recommendations_todays_biggest_hits_title">Die größten Hits von heute</string>
     <string name="recommendations_top_music_videos_title">Top-Musikvideos</string>
     <string name="recommendations_trending_community_playlists_title">Interessante Community-Playlisten</string>
     <string name="recommendations_trending_shorts_title">Trends in Shorts</string>
     <string name="recommendations_trending_songs_title">Aktuelle Songs für dich</string>
+    <!-- Search -->
     <string name="search_content_type_all">Gesamt</string>
     <string name="search_content_type_official">Offiziell</string>
     <string name="search_content_type_user_generated">Benutzer generiert</string>
@@ -237,12 +341,19 @@
     <string name="search_featured_title">Vorgestellt</string>
     <string name="search_history_action_clear">Suchverlauf löschen</string>
     <string name="search_history_empty_message">Verlauf ist leer</string>
+    <string name="search_history_local">Lokale Suche</string>
+    <string name="search_history_online">Online-Suche</string>
+    <string name="search_history_pages">Verlauf nach Seite suchen</string>
+    <string name="search_history_pages_description">Wählen Sie aus, welche Seiten die gesendeten Suchanfragen anzeigen und speichern können</string>
     <string name="search_history_pause_description">Keine neuen Suchanfragen speichern oder den Verlauf anzeigen</string>
     <string name="search_history_pause_label">Suchverlauf pausieren</string>
+    <string name="search_history_settings_page">Einstellungen › %1$s</string>
     <string name="search_items_empty_message">Keine Elemente gefunden</string>
     <string name="search_lyrics_online">Songtext online suchen</string>
     <string name="search_mood_title">Stimmung</string>
+    <string name="search_music_action_start">Musiksuche</string>
     <string name="search_no_results_message">Keine Ergebnisse gefunden. Bitte versuche eine andere Suchanfrage oder Kategorie</string>
+    <string name="search_online">Online</string>
     <string name="search_queries">" Suchanfragen"</string>
     <string name="search_results_for">Suchergebnisse für:</string>
     <string name="search_saved_history_title">Gespeicherte Suchanfragen</string>
@@ -250,6 +361,8 @@
     <string name="search_suggestions_title">Vorschläge</string>
     <string name="search_title">Suche</string>
     <string name="search_video_download_unsupported_message">Herunterladen von Videos nicht unterstützt</string>
+    <string name="search_videos_title">Videos</string>
+    <string name="search_voice_action_start">Sprachsuche</string>
     <string name="search_voice_microphone_permission_error">Mikrofonberechtigung erforderlich</string>
     <string name="search_voice_no_match_message">Ich habe nicht verstanden, versuche es erneut</string>
     <string name="search_youtube_action_open_url">Link</string>
@@ -258,9 +371,26 @@
     <string name="voice_search_listening">Zuhören...</string>
     <string name="voice_search_retry">Wiederholen</string>
     <string name="voice_search_speak_now">Jetzt sprechen</string>
+    <!-- Song -->
+    <string name="song_delete_confirmation">Möchten Sie dieses Lied wirklich löschen? Es wird aus der Datenbank gelöscht.\nDiese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="song_delete_dialog_title">Titel löschen</string>
+    <string name="song_metadata_update_action_open">Update-Dialog öffnen</string>
+    <string name="song_metadata_updated_count">Aktualisierte %1$d Lieder</string>
     <string name="song_play_time_action_reset">Gesamtspielzeit zurücksetzen</string>
+    <!-- Song Matching -->
     <string name="song_matching_action_open">Album/Audio-Version anpassen</string>
     <string name="song_matching_all_confirmation">Möchten Sie %d unvergleichliche Lieder treffen?</string>
+    <string name="song_matching_dialog_title">Titel abgleichen</string>
+    <string name="song_matching_progress_title">Passende Lieder</string>
     <string name="song_matching_running_message">Titel werden abgeglichen. Bitte warten. Die App nicht minimieren oder beenden</string>
     <string name="song_matching_unmatched_label">Unübertroffener Titel</string>
+    <string name="metadata_musicbrainz_rating">Bewertung</string>
+    <string name="metadata_cover_art">Cover</string>
+    <string name="metadata_file_path_unavailable">Dateipfad kann nicht aufgelöst werden</string>
+    <string name="metadata_save_failed">Fehler beim Speichern der Metadaten</string>
+    <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
+    <string name="recommendations_charts_global">Globale</string>
+    <string name="playlist_like_all_duration_confirmation_format">Gefällt Ihnen alle Lieder werden etwa %1$sdauern. Schließen Sie die App um abzubrechen. Möchten Sie fortfahren?</string>
+    <string name="library_on_device_permission_request_failed">Zugriff auf Musik auf diesem Gerät konnte nicht angefordert werden.</string>
+    <string name="library_on_device_permission_settings_failed">Konnte die Berechtigungseinstellungen nicht öffnen.</string>
 </resources>

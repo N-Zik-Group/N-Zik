@@ -1,4 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Onboarding -->
+    <string name="onboarding_accounts_discord_description">Visa vad du lyssnar på i Discord (beta)</string>
+    <string name="onboarding_accounts_done">Jag är klar</string>
+    <string name="onboarding_accounts_skip">Hoppa</string>
+    <string name="onboarding_accounts_title">Anslut dina konton</string>
+    <string name="onboarding_accounts_youtube_account">Inloggad som %1$s</string>
     <string name="onboarding_accounts_youtube_description">Optional - browse the app with your YouTube account (home, explore, etc.)</string>
+    <string name="onboarding_greeting">Hej! Låt oss sätta upp N-Zik för den perfekta musikupplevelsen. Varje tillstånd nedan är valfritt.</string>
+    <string name="onboarding_permission_battery">Batterioptimering</string>
+    <string name="onboarding_permission_battery_description">Förhindra systemet från att stoppa bakgrundsmusiken</string>
+    <string name="onboarding_permission_bluetooth">Bluetooth</string>
+    <string name="onboarding_permission_bluetooth_description">Upptäck hörlurar för att pausa eller återuppta musiken</string>
+    <string name="onboarding_permission_camera_description">Skanna QR-koden för N-Zik Desktop Compagnon för att koppla en dator</string>
+    <string name="onboarding_permission_grant">Bevilja</string>
+    <string name="onboarding_permission_granted">Behörighet beviljad</string>
+    <string name="onboarding_permission_media">Åtkomst till media</string>
+    <string name="onboarding_permission_media_description">Läs ditt lokala musikbibliotek</string>
+    <string name="onboarding_permission_microphone">Mikrofon</string>
+    <string name="onboarding_permission_microphone_description">Använd mikrofonen för röstkommandon, visualiserare och andra funktioner</string>
+    <string name="onboarding_permission_notifications_description">Se spelaren och kontrollera musiken från anmälan</string>
+    <string name="onboarding_permission_settings">Inställningar</string>
+    <string name="onboarding_permissions_section">Behörigheter</string>
+    <string name="onboarding_profile_continue">Fortsätt</string>
+    <string name="onboarding_profile_description">Detta namn visas i appen. Du kan också välja var namnet och avataren kommer ifrån, och ange ett foto.</string>
+    <string name="onboarding_profile_field_hint">Ditt namn</string>
+    <string name="onboarding_profile_title">Namnge klonen</string>
+    <string name="onboarding_restore_description">Ta tillbaka ditt bibliotek och dina inställningar från en tidigare version av appen. Detta steg är valfritt.</string>
+    <string name="onboarding_restore_restart_note">En lyckad import startar om appen.</string>
+    <string name="onboarding_restore_skip">Hoppa över för nu</string>
+    <string name="onboarding_restore_skip_button">Hoppa</string>
+    <string name="onboarding_restore_skip_description">Du kan återställa en säkerhetskopia senare från appinställningarna</string>
+    <string name="onboarding_restore_title">Återställ en säkerhetskopia</string>
+    <string name="onboarding_start">Starta</string>
 </resources>

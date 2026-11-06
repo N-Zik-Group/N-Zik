@@ -1,22 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_answer_no">Nee</string>
+    <string name="common_artist_conjunction_and">en</string>
     <string name="common_clipboard_copy_failed">Kan tekst niet kopiëren naar klembord, probeer het opnieuw</string>
     <string name="common_clipboard_copy_success">Gekopieerd</string>
+    <string name="common_color_black">Zwart</string>
+    <string name="common_color_custom">Aangepaste kleur</string>
     <string name="common_color_source_artwork">Omslag kleur</string>
     <string name="common_color_source_theme">Thema</string>
+    <string name="common_color_white">wit</string>
     <string name="common_debug_background">achtergrond</string>
+    <string name="common_debug_width">width</string>
+    <string name="common_delete_success">Verwijderd</string>
     <string name="common_description_unavailable">Geen beschrijving beschikbaar</string>
+    <string name="common_duration_milliseconds_format">%1$s ms</string>
     <string name="common_empty_items">Geen artikelen</string>
     <string name="common_external_link_loading_suffix">laadt...</string>
+    <string name="common_load_failed">Kan niet laden</string>
+    <string name="common_load_failed_no_connection">Kan niet laden, geen verbinding</string>
     <string name="common_log_unavailable">Log niet beschikbaar</string>
     <string name="common_option_all">Alles</string>
     <string name="common_option_custom">Aangepast</string>
     <string name="common_option_default">Standaard</string>
     <string name="common_option_disabled">Uitgeschakeld</string>
     <string name="common_option_none">Geen</string>
+    <string name="common_option_random">Willekeurig</string>
+    <string name="common_restart_required_message">Open %s later opnieuw alstublieft!</string>
     <string name="common_size_big">Groot</string>
     <string name="common_size_biggest">Grootste</string>
+    <string name="common_size_expanded">Uitgebreid</string>
     <string name="common_size_medium">Normaal</string>
     <string name="common_size_small">Klein</string>
     <string name="common_state_enabled">Ingeschakeld</string>
@@ -24,6 +37,10 @@
     <string name="common_state_on">op</string>
     <string name="common_storage_used_suffix">" gebruikt"</string>
     <string name="common_validation_empty_value">Waarde kan niet leeg zijn</string>
+    <string name="common_validation_invalid_input">Invalid input!</string>
     <string name="common_validation_minimum_value">"Waarde moet groter zijn dan "</string>
+    <string name="common_validation_name_in_use">Naam is al in gebruik</string>
     <string name="common_value_input_hint">Voer de waarde in</string>
+    <string name="common_unknown">Onbekend</string>
+    <string name="common_duration_minutes_short">%1$d min</string>
 </resources>

@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
+    <string name="common_error_connection_timeout">Χρονικό όριο σύνδεσης</string>
+    <string name="common_error_no_connection">Καμία Σύνδεση</string>
+    <string name="common_error_no_internet">Χωρίς σύνδεση δικτύου</string>
     <string name="common_error_title">Προέκυψε κάποιο σφάλμα.</string>
+    <string name="common_error_unknown">Άγνωστο σφάλμα</string>
 </resources>

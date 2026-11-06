@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
     <string name="common_error_connection_timeout">Conexão expirada</string>
     <string name="common_error_no_connection">Sem conexão</string>
     <string name="common_error_no_internet">Sem conexão com a internet</string>

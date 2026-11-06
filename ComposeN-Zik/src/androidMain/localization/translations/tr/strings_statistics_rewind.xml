@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Calendar -->
     <string name="calendar_days_ago">%d gün önce</string>
     <string name="calendar_last_week">Geçen hafta</string>
     <string name="calendar_last_year">Geçen yıl</string>
@@ -23,6 +24,7 @@
     <string name="calendar_this_month">Bu ay</string>
     <string name="calendar_today">Bugün</string>
     <string name="calendar_yesterday">Dün</string>
+    <!-- Rewind -->
     <string name="rewind_albums_empty_body">En çok dinlediğiniz albümler yeterli dinleme geçmişi oluştuğunda burada görünecektir.</string>
     <string name="rewind_albums_empty_title">ALBÜM YIĞININIZ BOŞ</string>
     <string name="rewind_albums_heading">EN İYİ\nALBÜMLERİNİZ.</string>
@@ -261,6 +263,7 @@
     <string name="rewind_years_kicker">YILLARINIZ • %1$s</string>
     <string name="rewind_years_peak_sub">%1$s EN ÇOK ETKİLİ OLDU.</string>
     <string name="rewind_years_peak_year">EN İYİ YIL</string>
+    <!-- Statistics -->
     <string name="statistics_action_delete_playback_events_count">%1$s çalma olayını sil</string>
     <string name="statistics_delete_playback_events_confirmation">Tüm çalma olaylarını gerçekten silmek istiyor musunuz?</string>
     <string name="statistics_delete_playback_events_dialog_title">Çalma olaylarını sil</string>
@@ -274,4 +277,5 @@
     <string name="statistics_playback_duration_label">Oynatma süresi</string>
     <string name="statistics_title">İstatistikler</string>
     <string name="statistics_top_period_title">… içindeki en iyi %s</string>
+    <string name="statistics_time_spent_format">%1$s harcanan zaman</string>
 </resources>

@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Listen -->
+    <string name="listen_together_notification_channel_description">Ilmoitukset Kuuntele yhdessä tapahtumia</string>
+    <!-- Listen Together -->
+    <string name="listen_together_notification_channel_name">Kuuntele Yhdessä</string>
+    <!-- Player Notification -->
     <string name="player_notification_pause">Tauko</string>
 </resources>

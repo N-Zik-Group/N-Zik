@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Accessibility -->
     <string name="accessibility_app_icon">App-Symbol</string>
     <string name="accessibility_app_icon_in_player">app-Symbol im Player</string>
     <string name="accessibility_arrow_down">pfeile_runter</string>
@@ -18,4 +19,5 @@
     <string name="accessibility_reset">Zurücksetzen</string>
     <string name="accessibility_song_album_cover">Albumcover des Songs</string>
     <string name="accessibility_switch_mode">Wechselmodus</string>
+    <string name="accessibility_youtube_playlist">Youtube Playlist</string>
 </resources>

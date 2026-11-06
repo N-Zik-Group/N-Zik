@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- About -->
     <string name="about_action_report_issue">Αναφορά προβλήματος</string>
     <string name="about_action_request_feature">Προτείνετε μια ιδέα ή ένα χαρακτηριστικό</string>
     <string name="about_action_view_source">Προβολή Πηγαίου Κώδικα</string>
     <string name="about_authorship_preposition">από</string>
     <string name="about_contributors_alphabetical_order_label">Με αλφαβητική σειρά:</string>
     <string name="about_debug_developers_rotation">προγραμματιστές_περιστροφή</string>
+    <string name="about_debug_translators_rotation">translators_rotation</string>
+    <string name="about_developers_description">Εμφάνιση ή απόκρυψη των προγραμματιστών και των σχεδιαστών που συνέβαλαν στην εφαρμογή.</string>
+    <string name="about_developers_designers_title">Προγραμματιστές / Σχεδιαστές</string>
     <string name="about_github_link_description">Θα μεταφερθείτε στο GitHub</string>
+    <string name="about_report_issue_description">Ανοίξτε τη φόρμα αναφοράς σφάλματος GitHub για να περιγράψετε ένα πρόβλημα.</string>
+    <string name="about_request_feature_description">Ανοίξτε την φόρμα αιτημάτων λειτουργιών GitHub για να προτείνετε μια βελτίωση.</string>
+    <string name="about_source_code_description">Ανοίξτε το αποθετήριο πηγαίου κώδικα στο GitHub.</string>
     <string name="about_title">Σχετικά</string>
+    <string name="about_translators_description">Εμφάνιση ή απόκρυψη των ατόμων που μετέφρασαν την εφαρμογή.</string>
+    <string name="about_translators_title">Μεταφραστές</string>
 </resources>

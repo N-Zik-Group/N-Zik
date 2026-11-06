@@ -1,0 +1,69 @@
+Een meertalige YouTube Music frontend voor Android, gericht op prestaties, UI/UX raffinaderijen, feature expansie en langdurige ondersteuning.
+
+<b>N-Zik</b> is een open-source vork van <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+
+<b>Opmerking:</b> N-Zik begon als een zijproject. Voor meer volwassen alternatieven, bekijk <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>of <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+
+<b>AI gebruik:</b> Ik gebruik generative AI voor code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), herzien en getest voor verzending.
+
+✨ <b>WHY N-ZIK?</b> Geen advertenties, afspelen, offline caching, aanpasbare UI - gratis, altijd.
+
+🎨 <b>Aanpasbare UI</b>
+- Jetpack stelt interface
+- Thema's: AMOLED, Deep Dark, Crisp Licht + getinteerde accenten
+- 3D Carrousel Speler, home widgets, verenigde speler en mini-speler
+- Kunstenaar profielen, ontdekking en spoelen, inklapbare huiskoppen
+
+🫧 <b>Glazen Effect (BETA, optioneel)</b>
+Uitgeschakeld met verse installaties. Inschakelen in Instellingen: natieve, enkel contouren of glas per categorie, met verstelbare kwaliteit. Kan het rendering en accugebruik vergroten; kwaliteit verminderen of uitschakelen indien nodig.
+Glazen credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Achtergrond (Apache-2.0).
+
+🎵 <b>Audio-ervaring</b>
+- Premiumkwaliteit via YouTube Music Premium, automatisch toegepast
+- Synchroniseerde songteksten met bewerking en real-time vertaling
+- Liedherkenning (Shazam-like), spraakzoek, audio visualizer
+- Pro besturingen: snelheid, pitch, normalisatie, crossfade, volume boost, bass boost, reverb
+- Audiobalk golveform zoekbalk voor nauwkeurige navigatie
+
+💾 <b>Offline, Metadata & Privacy</b>
+- Slimme caching en downloads voor tracks en afspeellijsten, met selecteerbare downloadkwaliteit
+- Exporteer op FFmpeg-powered met volledige metadata (FFmpeg is een downloadbare extensie, geïnstalleerd op eerste gebruik)
+- In-app metadata editor (AAC/Opus, cover kunst)
+- Lokale luisterstatistieken en geschiedenis
+-Automatische back-up met aangepaste intervallen en retentie
+
+🔗 <b>Integraties</b>
+- YouTube-login voor aanbevelingen en het afspelen van video's, plus een experimentele tweewegse sync engine
+- Last.fm scrobblen met nu spelen en liefde/los
+- MusicBrainz artiest en album inzichten
+- Discord Rich Presence, inclusief geavanceerde modus met live voorbeeld
+- Onbenauwde integratie voor alternatieve YouTube streaming
+- Afspeellijst import/export: RiPlay, Spotify, YouTube Music, N-Zik
+
+👥 <b>Luister samen</b>
+- Deelnemen aan of hosten van live luistersessies met andere gebruikers via code of uitnodigingslink
+
+🗓️ <b>Terugspoelen</b>
+- Jaarlijkse en maandelijkse luisterherhalingen met automatisch gegenereerde Rewind afspeellijsten
+
+📱 <b>Speel overal in:</b> Android Auto, Automotive, TV en Tablets
+
+🛠️ <b>Stroom-gebruiker functies</b>
+- Multi-profiel: geïsoleerde database en instellingen per profiel
+- Auto-doorgaan op Bluetooth-verbinding, aanhoudende wachtrij, automatisch aanvullen van wachtrij
+- Slimme afgrond, verborgen nummers, afwijkend systeem, ouderlijk toezicht
+- Proxyondersteuning, netwerkkwaliteit adaptatie, log export
+- Reddingscentrum, onderhoudsscherm, onboarding, app snelkoppelingen
+- OTA updates vanaf GitHub, slaap timer, achtergrond afspelen
+
+📦 <b>Beschikbare Builds</b>
+- Release64/Beta64 (`com.nevar.nzik`): Complete build, alleen 64-bit apparaten
+- Release32/Beta32 (`com.nevar.nzik`): Complete build, 32-bit apparaten alleen
+- Minified64 (`com.nevar.nzik`): Lichtgewicht R8 gebouwd, voor low-end apparaten (64-bit)
+- Minified32 (`com.nevar.nzik`): Lichtgewicht R8 build (32-bit)
+- FOSS (`com.nevar.nzik.fos`): Zonder automatische updater, voor F-Droid (alle architectures)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Ontwikkeling builds, alleen testen
+
+Geen build bundles FFmpeg: het is een downloadbare extensie (geïnstalleerd op het eerste gebruik, beheerd in Instellingen → Extensies). Alleen FOSS is op F-Droid.
+
+Onder andere ViMusic historische projectobligaties.

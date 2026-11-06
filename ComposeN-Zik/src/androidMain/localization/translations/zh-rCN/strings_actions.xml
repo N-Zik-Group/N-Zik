@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Common -->
+    <string name="common_action_apply">应用</string>
     <string name="common_action_cancel">取消</string>
     <string name="common_action_clear">清空</string>
+    <string name="common_action_close">关闭</string>
+    <string name="common_action_close_app">关闭应用</string>
     <string name="common_action_confirm">确认</string>
     <string name="common_action_delete">删除</string>
     <string name="common_action_done">完成</string>
+    <string name="common_action_export">导出</string>
+    <string name="common_action_import">导入</string>
+    <string name="common_action_next">下一个</string>
+    <string name="common_action_ok">好的</string>
     <string name="common_action_paste">粘贴</string>
+    <string name="common_action_previous">上一个</string>
+    <string name="common_action_remove">删除</string>
+    <string name="common_action_reset">Reset</string>
+    <string name="common_action_retry">重试</string>
+    <string name="common_action_save">保存</string>
     <string name="common_action_select">选择</string>
+    <string name="common_action_show_less">显示更少的</string>
+    <string name="common_action_show_more">显示更多</string>
     <string name="common_action_translate">翻译</string>
     <string name="common_action_turn_off">关闭</string>
+    <string name="common_action_unlink">取消链接</string>
     <string name="common_action_update">更新</string>
+    <string name="common_menu_label">菜单</string>
 </resources>
