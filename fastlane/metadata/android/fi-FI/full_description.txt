@@ -1,0 +1,69 @@
+Monikielinen YouTube-musiikkikonsertti Androidille, joka keskittyy suorituskykyyn, UI/UX-ominaisuuksiin, laajenemiseen ja pitkäaikaiseen tukeen.
+
+<b>N-Zik</b> on <a href="https://github.com/knighthat/Kreate">Kreate</a> -luokan avoimen lähdekoodin haarukka.
+
+<b>Huomautus:</b> N-Zik alkoi sivuprojektina. Jos haluat lisää kypsiä vaihtoehtoja, tarkista <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, tai <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+
+<b>tekoälyn käyttö:</b> Käytän generatiivista tekoälyn koodin ( <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD-menetelmän</a>kautta), tarkistetaan ja testataan ennen toimitusta.
+
+✨ <b>MITÄ N-ZIK?</b> Ei mainoksia, taustan toisto, offline välimuisti, muokattavissa oleva UI - ilmaiseksi, aina.
+
+🎨 <b>Muokattava Käyttöliittymä</b>
+- Jetpack Compose käyttöliittymä
+- Teemat: AMOLED, Syvä Tumma, Crisp Light + sävytetyt aksentit
+- 3D Carousel Player, koti-widgetit, yhtenäinen pelaaja ja mini-soitin
+- Taiteilijan profiilit, löytö ja tunnelmat, kodin kodin otsikot
+
+🫧 <b>lasitefektit (BETA, valinnainen)</b>
+Poistettu käytöstä tuoreissa asennuksissa. Ota käyttöön asetukset: natiivinen, ääriviivat tai lasi luokittain säädettävällä laadulla. Voi lisätä renderointityötä ja akun käyttöä; vähentää laatua tai poistaa käytöstä tarvittaessa.
+Lasiluotot: Neliö / Convx projekti (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+
+🎵 <b>Audio Experience</b>
+- Premium laatu YouTube Music Premiumin kautta automaattisesti
+- Synkronoidut sanoitukset editoinnin ja reaaliaikaisen käännöksen kanssa
+- Kappaleen tunnistus (Shazam-like), äänihaku, audio visualisoija
+- Pro-ohjaukset: nopeus, pikki, normalisointi, ristikkäisfade, äänenvoimakkuuden lisääminen, bassotehostus, kaiu
+- Audio Bar aaltomuodon seekbar tarkkaa navigointia
+
+💾 <b>Offline, Metatiedot Ja Yksityisyys</b>
+- Älykäs välimuisti ja lataukset kappaleita ja soittolistoja varten valittavissa oleva latauslaatu
+- FFmpeg-käyttöinen vienti täydellä metatiedolla (FFmpeg on ladattava laajennus, asennettu ensimmäiseen käyttöön)
+- Sovelluksen sisäinen metadatan editori (AAC/Opus, kansi taide)
+- Paikallinen kuuntelu tilastot ja historia
+- Automaattinen varmuuskopiointi mukautetuilla aikaväleillä ja säilyttämisellä
+
+🔗 <b>Integraatiot</b>
+- YouTube-sisäänkirjautuminen suosituksiin ja videon toistoon sekä kokeellinen kaksisuuntainen synkronointimoottori
+- Last.fm scrobbling nyt pelaaminen ja rakkaus / unlove
+- MusicBrainz-taiteilijan ja levyn oivalluksia
+- Discord Rich Presence, mukaan lukien edistynyt tila live esikatselu
+- Invidious integraatio vaihtoehtoiseen YouTube-suoratoistoon
+- Soittolistan tuonti/vienti: RiPlay, Spotify, YouTube Music, N-Zik
+
+👥 <b>Kuuntele Yhdessä</b>
+- Liity tai isännöi live-kuunteluistuntoja muiden käyttäjien kanssa koodin tai kutsulinkin kautta
+
+🗓️ <b>Rewind</b>
+- Vuosittaiset ja kuukausittaiset kuuntelukerrat automaattisella rewind-soittolistoilla
+
+📱 <b>Pelaa missä tahansa:</b> Android Auto, Automotive, TV ja Tabletit
+
+🛠️ <b>Tehon Käyttäjän Ominaisuudet</b>
+- Moniprofiili: eristetty tietokanta ja asetukset profiilia kohti
+- Automaattinen jatkaminen Bluetooth-yhteyden yhteydessä, pysyvä jono, automaattinen täyttöjono
+- Älykäs roskakori, piilotetut kappaleet, vastenmielinen järjestelmä, vanhempien ohjaus
+- Välityspalvelimen tuki, verkon laadun mukauttaminen, lokin vienti
+- Pelastuskeskus, huoltoruutu, perehdytys, sovelluksen pikakuvakkeet
+- OTA päivitykset GitHubista, lepotilaajastin, taustasoiton
+
+📦 <b>Saatavilla Olevat Rakennukset</b>
+- Release64/Beta64 (`com.nevar.nzik`): Suorita rakennus, 64-bittiset laitteet vain
+- Release32/Beta32 (`com.nevar.nzik`): Vain 32-bittiset laitteet
+- Minified64 (`com.nevar.nzik`): Kevyt R8-rakennus, pieniulotteisille laitteille (64-bit)
+- Minified32 (`com.nevar.nzik`): Kevyt R8 versio (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Ilman automaattista päivitystä, F-Droidille (kaikki arkkitehtuuri)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Kehitys rakentuu, vain testaus
+
+Ei rakentaa nippuja FFmpeg: se on ladattava lisäosa (asennettu ensimmäiseen käyttöön, hallitaan Asetukset → Lisäosat). Vain FOSS on F-Droidissa.
+
+Historiallisia projektipisteitä ovat ViMusic.
