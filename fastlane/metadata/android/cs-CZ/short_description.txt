@@ -1,1 +1,1 @@
-Multijazyčný YT Music klient
+Vícejazyčný YT hudební klient s volitelným skleněným efektem (BETA)
