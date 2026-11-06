@@ -1,16 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Backup -->
     <string name="backup_action_export">Backup exportieren</string>
     <string name="backup_action_import">Backup importieren</string>
     <string name="backup_action_import_legacy_migration">Migrationsdatei importieren.</string>
+    <string name="backup_auto_custom_interval_unit_description">Wählen Sie die Zeiteinheit für das benutzerdefinierte Backup-Intervall.</string>
+    <string name="backup_auto_custom_interval_value_description">Legen Sie die Anzahl der Zeiteinheiten zwischen den automatischen Sicherungen fest.</string>
+    <string name="backup_auto_include_discord_credentials_description">Gespeicherte Discord Account-Zugangsdaten in die automatischen Einstellungen Sicherungen einbinden.</string>
+    <string name="backup_auto_include_lastfm_credentials_description">Gespeicherte Last.fm-Kontodaten in die automatischen Sicherungskopien einbinden.</string>
+    <string name="backup_auto_include_proxy_credentials_description">Gespeicherte Proxy-Anmeldedaten in die automatischen Sicherungen einbinden.</string>
+    <string name="backup_auto_include_youtube_credentials_description">Gespeicherte YouTube-Zugangsdaten in die automatischen Sicherungskopien einbinden.</string>
+    <string name="backup_auto_interval_description">Wählen Sie, wie oft automatische Sicherungen geplant sind.</string>
+    <string name="backup_auto_location_description">Wählen Sie den Ordner, in dem automatische Sicherungen gespeichert werden.</string>
+    <string name="backup_auto_maximum_backups_description">Limitiert die Anzahl der automatischen Sicherungen, die im ausgewählten Ordner gespeichert werden.</string>
+    <string name="backup_auto_schedule_day_of_month_description">Wählen Sie den Tag des Monats für monatliche automatische Sicherungen.</string>
+    <string name="backup_auto_schedule_day_of_week_description">Wählen Sie den Wochentag für wöchentliche automatische Backups.</string>
+    <string name="backup_auto_schedule_time_description">Wählen Sie die Uhrzeit, zu der geplante automatische Sicherungen ausgeführt werden sollen.</string>
+    <string name="backup_auto_target_description">Wählen Sie, ob automatische Sicherungen die Datenbank, die Einstellungen oder beide enthalten.</string>
+    <string name="backup_before_update_description">Daten vor der Installation eines Updates automatisch sichern</string>
+    <string name="backup_before_update_failed">Backup fehlgeschlagen</string>
+    <string name="backup_before_update_running_message">Daten vor der Installation sichern…</string>
+    <string name="backup_before_update_running_title">Sicherung läuft</string>
     <string name="backup_excluded_preferences_and_cache_description">Persönliche Einstellungen (z.B. das Farbschema) und der Cache sind ausgeschlossen.</string>
     <string name="backup_export_description">Datenbank oder Einstellungen in eine Datei exportieren</string>
     <string name="backup_import_description">Datenbank oder Einstellungen aus einer Datei importieren</string>
     <string name="backup_include_discord_credentials">Discord-Zugangsdaten einbeziehen</string>
+    <string name="backup_include_lastfm_credentials">Last.fm Identitätsnachweis einbeziehen</string>
+    <string name="backup_include_proxy_password">Das Proxy-Passwort einfügen</string>
     <string name="backup_include_youtube_credentials">YouTube-Zugangsdaten einbeziehen</string>
     <string name="backup_legacy_migration_description">Für alte Benutzer vor der Konvertierung.\nalte App verwenden, um eine Sicherung für die Migration zu erstellen.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Vorhandene Daten werden überschrieben. %1$s schließt sich automatisch nach dem Wiederherstellen der Datenbank.</string>
+    <string name="backup_target_database_and_settings_label">Datenbank + Einstellungen</string>
     <string name="backup_target_database_label">Datenbank</string>
+    <!-- Backup Auto -->
     <string name="backup_auto_custom_interval_unit">Benutzerdefiniertes Intervall</string>
     <string name="backup_auto_custom_interval_value">Benutzerdefinierter Intervallwert</string>
     <string name="backup_auto_interval">Auto-Backup-Intervall</string>
@@ -36,31 +58,67 @@
     <string name="backup_auto_unit_minutes">Minuten</string>
     <string name="backup_auto_unit_months">Monate</string>
     <string name="backup_auto_unit_weeks">Wochen</string>
+    <!-- Backup Export -->
+    <string name="backup_export_accounts_description">Exportieren Sie die Profilliste und die Gesichtsfotos in einer einzigen .txt-Datei</string>
+    <string name="backup_export_all">Alle exportieren</string>
+    <string name="backup_export_all_description">Datenbank, Einstellungen und Profilstatus exportieren</string>
     <string name="backup_export_both_description">Datenbank und Einstellungen als separate Dateien exportieren</string>
     <string name="backup_export_database_description">Exportiere Datenbank mit Songs, Wiedergabelisten und Verlauf</string>
+    <string name="backup_export_profile_state_failed">Export des Profilstatus fehlgeschlagen</string>
     <string name="backup_export_settings_description">Einstellungen und Einstellungen der App exportieren</string>
+    <!-- Backup Import -->
+    <string name="backup_import_accounts_description">Importiere die Profilliste und die Gesichtsfotos aus einer .txt-Datei</string>
+    <string name="backup_import_all">Alle importieren</string>
+    <string name="backup_import_all_description">Importiere Datenbank, Einstellungen und Profilstatus</string>
     <string name="backup_import_both_description">Importiere Datenbank und Einstellungen aus separaten Dateien</string>
+    <string name="backup_import_completed_profile">Importiert in %1$s</string>
     <string name="backup_import_database_description">Importiere Datenbank mit Songs, Wiedergabelisten und Verlauf</string>
+    <string name="backup_import_profile_state_complete">Profilstatus importiert: %1$d Profile</string>
+    <string name="backup_import_profile_state_complete_base">Profilstatus importiert: Basisprofil</string>
+    <string name="backup_import_profile_state_failed">Import des Profilstatus fehlgeschlagen</string>
     <string name="backup_import_settings_description">Importiere App-Einstellungen und Einstellungen</string>
+    <string name="backup_import_target_from_file">Aus der Datei</string>
+    <string name="backup_import_target_profile_title">In welchem Profil importieren?</string>
+    <!-- Cache -->
     <string name="cache_action_reset">Cache zurücksetzen</string>
+    <string name="cache_clear_song_dialog_title">Song-Cache leeren</string>
+    <string name="cache_downloads_max_size_description">Legen Sie fest, wie viel Speicherplatz für heruntergeladene Songs zur Verfügung steht. Der Papierkorb entfernt das heruntergeladene Audio.</string>
+    <string name="cache_image_max_size_description">Beschränken Sie den Speicherplatz, der von zwischengespeicherten Kunstwerken genutzt wird. Der Papierkorb löscht heruntergeladene Bilder aus diesem Cache.</string>
+    <string name="cache_location_description">Wählen Sie, wo die App ihren Song-Wiedergabe-Cache speichert.</string>
     <string name="cache_location_private">Privat</string>
+    <string name="cache_location_system">System</string>
+    <string name="cache_streaming_max_size_description">Speicherplatz für gestreamte Songs einschränken. Der Papierkorb löscht diesen Wiedergabe-Cache.</string>
+    <!-- Downloads -->
     <string name="downloads_action_download_all">Alle Titel herunterladen</string>
+    <string name="downloads_action_refresh_quality">Downloads aktualisieren</string>
     <string name="downloads_action_remove_all">Alle heruntergeladenen Titel entfernen</string>
     <string name="downloads_action_resume">Fortsetzen</string>
+    <string name="downloads_audio_quality_description">Wählen Sie das bevorzugte Audioformat und die Qualität für neue Downloads.</string>
     <string name="downloads_cancelled">Download abgebrochen</string>
     <string name="downloads_completed">%1$d abgeschlossen</string>
     <string name="downloads_completed_with_failed">%1$d abgeschlossen, %2$d fehlgeschlagen</string>
     <string name="downloads_delete_all_confirmation">Möchtest Du den Download wirklich löschen?</string>
     <string name="downloads_delete_all_count_confirmation">Alle %d Downloads löschen?</string>
+    <string name="downloads_delete_dialog_title">Downloads löschen</string>
     <string name="downloads_download_all_confirmation">Willst du wirklich alle herunterladen?</string>
     <string name="downloads_download_all_count_confirmation">Alle %d Songs herunterladen?</string>
+    <string name="downloads_download_dialog_title">Titel herunterladen</string>
+    <string name="downloads_empty_message">Nichts zum Herunterladen</string>
     <string name="downloads_error_network">Ein Netzwerkfehler ist aufgetreten</string>
     <string name="downloads_error_server_restriction">Dieser Song kann aufgrund von Serverbeschränkungen nicht abgespielt werden</string>
     <string name="downloads_failed">Download fehlgeschlagen</string>
     <string name="downloads_in_progress">%1$d im Gange</string>
     <string name="downloads_nothing_to_delete">Nichts zu löschen</string>
     <string name="downloads_progress">%1$d / %2$d</string>
+    <string name="downloads_quality">Downloadqualität</string>
+    <string name="downloads_quality_format">Downloadqualität</string>
+    <string name="downloads_refresh_quality_already_current">Alle Downloads stimmen bereits mit der gewählten Qualität überein</string>
+    <string name="downloads_refresh_quality_confirmation">%d Downloads erneut herunterladen?</string>
+    <string name="downloads_refresh_quality_description">Lade die Lieder erneut herunter, die mit einer anderen Qualität heruntergeladen wurden</string>
+    <string name="downloads_stale_removed">%1$s Downloaddaten fehlen und wurden entfernt. Bitte laden Sie sie erneut herunter.</string>
+    <string name="downloads_stale_startup_removed">%1$d heruntergeladene Song(s) fehlen ihre Dateien und wurden entfernt. Bitte laden Sie sie erneut herunter.</string>
     <string name="downloads_title">Herunterladen</string>
+    <!-- Export -->
     <string name="export_cached_song_action">Zwischengespeicherte oder Heruntergeladene Titel exportieren</string>
     <string name="export_cached_songs_action">Zwischenspeicher exportieren</string>
     <string name="export_cached_songs_error">Exportfehler: %s</string>
@@ -69,6 +127,7 @@
     <string name="export_file_name_dialog_title">Name des Exports</string>
     <string name="export_running_status">Exportieren...</string>
     <string name="export_song_unavailable_message">Zum Exportieren muss der Titel zwischengespeichert oder heruntergeladen sein</string>
+    <!-- Smart Trash -->
     <string name="library_cleanup_all_downloads_confirmation">Möchten Sie alle Downloads löschen (%d Songs?</string>
     <string name="library_cleanup_all_favorites_confirmation">Möchten Sie alle %d Favoriten entfernen?</string>
     <string name="library_cleanup_all_listening_history_confirmation">Möchten Sie den Hörverlauf für %d Lieder zurücksetzen?</string>
@@ -80,4 +139,15 @@
     <string name="library_cleanup_selected_listening_history_confirmation">Möchten Sie den Hörverlauf für diese %d Lieder zurücksetzen?</string>
     <string name="library_cleanup_selected_songs_confirmation">:Warnung: WARNUNG: Diese Aktion wird diese %d Lieder LÖSCHEN UND sie von allen Wiedergabelisten entfernen. Diese Aktion kann nicht rückgängig gemacht werden!</string>
     <string name="library_cleanup_title">Intelligenter Papierkorb</string>
+    <string name="library_favorites_remove_dialog_title">Aus Favoriten entfernen</string>
+    <string name="library_listening_history_reset_dialog_title">Verlauf zurücksetzen</string>
+    <!-- Storage -->
+    <string name="storage_samsung_action_keep_system">Systemspeicher behalten</string>
+    <string name="storage_samsung_action_use_private">Privaten Speicher verwenden</string>
+    <string name="storage_samsung_advice_message">Die automatische Speicherverwaltung von Samsung kann die Downloads und Cache-Dateien von N-Zik löschen, auch wenn Sie nicht danach gefragt haben. Um Ihre Downloads sicher zu halten, verwenden Sie den privaten (App-)Speicherort anstelle des Systemspeichers.</string>
+    <string name="storage_samsung_advice_title">Samsung Speicherberatung</string>
+    <string name="storage_samsung_system_usage_message">Sie haben derzeit %1$s der Downloads und des Caches auf dem Systemspeicher.</string>
+    <string name="backup_import_failed">Import fehlgeschlagen</string>
+    <string name="export_no_songs">Keine Titel exportiert</string>
+    <string name="export_cached_songs_generic_error">Export fehlgeschlagen</string>
 </resources>
