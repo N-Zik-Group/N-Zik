@@ -1,0 +1,69 @@
+En flersproget YouTube Music frontend til Android, fokuseret på ydeevne, UI/UX raffineringer, funktion ekspansion og langsigtet support.
+
+<b>N-Zik</b> er en open source gaffel af <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+
+<b>Bemærk:</b> N-Zik startede som et sideprojekt. For mere modne alternativer, tjek <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>eller <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+
+<b>AI Usage:</b> I use generative AI for code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), gennemgået og testet før afsendelse.
+
+:gnister: <b>HVORFOR N-ZIK?</b> Ingen annoncer, baggrundsafspilning, offline caching, tilpasselig UI - gratis, altid.
+
+🎨 <b>Brugerdefineret UI</b>
+- Jetpack Compose interface
+- Temaer: AMOLED, Deep Dark, Crisp Light + tonede accenter
+- 3D Carousel Player, home widgets, samlet spiller og mini-player
+- Kunstnerprofiler, Opdagelse og stemninger, sammenklappelige hjemmesidehoveder
+
+🫧 <b>Glas Effekt (BETA, valgfri)</b>
+Deaktiveret på friske installationer. Aktiver i Indstillinger: indfødt, kontur-only eller Glas efter kategori, med justerbar kvalitet. Kan øge rendering arbejde og batteri brug; reducere kvalitet eller deaktivere hvis nødvendigt.
+Glas credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
+
+🎵 <b>Lydoplevelse</b>
+- Premium kvalitet via YouTube Music Premium, anvendes automatisk
+- Synkroniserede sangtekster med redigering og realtidsoversættelse
+- Sanggenkendelse (Shazam-lignende), stemmesøgning, lydvisualisering
+- Pro kontrol: hastighed, pitch, normalisering, crossfade, volumen boost, bas boost, reverb
+- Lyd Bar bølgeform søger bar for præcis navigation
+
+💾 <b>Offline, Metadata & Privacy</b>
+- Smart caching og downloads til spor og afspilningslister, med valgbar downloadkvalitet
+- FFmpeg-drevet eksport med fuld metadata (FFmpeg er en downloadbar udvidelse, installeret ved første brug)
+- In-app metadata editor (AAC/Opus, cover art)
+- Lokal lyttestatistik og -historie
+- Auto-backup med brugerdefinerede intervaller og retention
+
+🔗 <b>Integrationer</b>
+- YouTube-login til anbefalinger og videoafspilning, plus en eksperimentel tovejs synkroniseringsmotor
+- Last.fm scrobbling med Nu Spille og kærlighed/handske
+- MusicBrainz kunstner og album indsigt
+- Discord Rich Presence, herunder avanceret tilstand med live preview
+- Invidious integration for alternative YouTube-streaming
+- Spilleliste import/eksport: RiPlay, Spotify, YouTube Music, N-Zik
+
+👥 <b>Lyt Sammen</b>
+- Deltag i eller vært live lytter sessioner med andre brugere via kode eller invitere link
+
+🗓️ <b>Rewind</b>
+- Årlige og månedlige lyttegengange med auto-genererede Rewind afspilningslister
+
+📱 <b>Spil hvor som helst:</b> Android Auto, Automotive, TV og Tabletter
+
+🛠️ <b>Power User Features</b>
+- Multi-profil: isoleret database og indstillinger pr. profil
+- Auto-genoptag ved Bluetooth-forbindelse, vedvarende kø, auto-udfyld kø
+- Smart papirkurv, skjulte sange, ulig system, forældrekontrol
+- Proxy support, netværk kvalitet tilpasning, log export
+- Redningscenter, vedligeholdelsesskærm, onboarding, app genveje
+- OTA opdateringer fra GitHub, søvntimer, baggrundsafspilning
+
+📦 <b>Tilgængelige Bygninger</b>
+- Release64/Beta64 (`com.nevar.nzik`): Komplet opbygning, kun 64-bit enheder
+- Release32/Beta32 (`com.nevar.nzik`): Komplet opbygning, kun 32-bit enheder
+- Minified64 (`com.nevar.nzik`): Letvægts R8 bygget, for low-end enheder (64-bit)
+- Minified32 (`com.nevar.nzik`): Letvægts R8 build (32-bit)
+- FOSS (`com.nevar.nzik.foss`): Uden auto-updater, for F-Droid (alle arkitekturer)
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Udvikling bygger, test kun
+
+Ingen build bundter FFmpeg: det er en downloadbar udvidelse (installeret ved første brug, forvaltes i Indstillinger → Udvidelser). Kun FOSS er på F-Droid.
+
+Historiske projektkreditter omfatter ViMusic.
