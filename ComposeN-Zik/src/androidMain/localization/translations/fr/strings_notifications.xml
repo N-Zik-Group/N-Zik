@@ -3,7 +3,7 @@
     <!-- Listen -->
     <string name="listen_together_notification_channel_description">Notifications concernant les événements « Écoutons Ensemble »</string>
     <!-- Listen Together -->
-    <string name="listen_together_notification_channel_name">Écoutons Ensemble</string>
+    <string name="listen_together_notification_channel_name">Écouter Ensemble</string>
     <!-- Player Notification -->
     <string name="player_notification_pause">Mettre en pause</string>
 </resources>

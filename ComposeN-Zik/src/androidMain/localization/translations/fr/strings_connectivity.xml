@@ -124,7 +124,7 @@
     <string name="listen_together_suggestion_sent">Suggestion envoyée à l\'animateur !</string>
     <string name="listen_together_switch_room_confirmation">Quitter la salle dans laquelle vous vous trouvez actuellement et ouvrir l\'invitation %1$s ?</string>
     <string name="listen_together_sync_volume">Synchroniser le volume hôte</string>
-    <string name="listen_together_title">Écoutons Ensemble</string>
+    <string name="listen_together_title">Écouter Ensemble</string>
     <string name="listen_together_transfer_ownership">Transférer la propriété</string>
     <string name="listen_together_unblock">Débloquer</string>
     <string name="listen_together_use_custom_server">Utiliser un serveur personnalisé</string>
@@ -195,7 +195,7 @@
     <string name="network_proxy_username_placeholder">Nom d\'utilisateur (facultatif)</string>
     <string name="network_proxy_password_placeholder">Mot de passe (facultatif)</string>
     <string name="network_proxy_region_placeholder">par exemple US, FR, DE (vide = auto)</string>
-    <string name="listen_together_server_request_failed">Le serveur Listen Together n\'a pas pu compléter la requête.</string>
+    <string name="listen_together_server_request_failed">Le serveur « Écouter Ensemble » n\'a pas pu compléter la requête.</string>
     <string name="network_stream_retrying_playback">Tentative de reprise de la lecture…</string>
     <string name="listen_together_invite_link">Écouter le lien d\'invitation ensemble</string>
 </resources>
