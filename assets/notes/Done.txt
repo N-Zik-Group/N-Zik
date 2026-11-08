@@ -14,3 +14,7 @@ Fixed:
 - fix(localization): finish the Android catalog and Fastlane audit
   - Preserve Bridge message identities, localize export failures, and isolate status details per YouTube Music sync operation.
   - Repair placeholders across the Android catalogs and consolidate Fastlane listings under one Crowdin rule.
+
+- fix(storage): make the Samsung storage advice readable
+  - Stack the warning and optional usage summary in a scrollable body so the paragraphs stay separate on short screens.
+  - Allow both storage action labels to wrap in place and cover the rendered popup with a Compose regression test.

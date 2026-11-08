@@ -44,7 +44,8 @@ data class DialogButton(
     val enabled: Boolean = true,
     val icon: Int? = null,
     val textColor: Color? = null,
-    val placement: DialogButtonPlacement = DialogButtonPlacement.Auto
+    val placement: DialogButtonPlacement = DialogButtonPlacement.Auto,
+    val wrapLabel: Boolean = false,
 )
 
 /** Each row shares its width equally; the final row preserves semantic action order. */
@@ -123,11 +124,12 @@ private fun DialogPill(button: DialogButton, modifier: Modifier) {
                 if (!iconOnly) Spacer(Modifier.width(6.dp))
             }
             if (!iconOnly) {
+                val labelModifier = Modifier.weight(1f)
                 BasicText(
                     text = button.text,
-                    maxLines = 1,
+                    maxLines = if (button.wrapLabel) Int.MAX_VALUE else 1,
                     style = style,
-                    modifier = Modifier.weight(1f).basicMarquee(iterations = Int.MAX_VALUE),
+                    modifier = if (button.wrapLabel) labelModifier else labelModifier.basicMarquee(iterations = Int.MAX_VALUE),
                 )
             }
         }

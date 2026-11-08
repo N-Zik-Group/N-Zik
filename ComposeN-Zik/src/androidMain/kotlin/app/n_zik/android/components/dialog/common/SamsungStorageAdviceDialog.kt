@@ -2,8 +2,11 @@ package app.n_zik.android.components.dialog.common
 
 import android.content.Context
 import android.os.Build
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -100,12 +103,14 @@ object SamsungStorageAdviceDialog : ConfirmDialog {
             buttons = listOf(
                 DialogButton(
                     text = stringResource(R.string.storage_samsung_action_keep_system),
-                    onClick = ::hideDialog
+                    onClick = ::hideDialog,
+                    wrapLabel = true,
                 ),
                 DialogButton(
                     text = stringResource(R.string.storage_samsung_action_use_private),
                     onClick = { onConfirm(binder) },
-                    primary = true
+                    primary = true,
+                    wrapLabel = true,
                 )
             )
         )
@@ -114,16 +119,20 @@ object SamsungStorageAdviceDialog : ConfirmDialog {
     @Composable
     override fun DialogBody() {
         val palette = colorPalette()
-        BasicText(
-            text = stringResource(R.string.storage_samsung_advice_message),
-            style = typography().xs.copy(color = palette.text),
-            modifier = Modifier.padding(bottom = if (storageBytes >= SUMMARY_MIN_BYTES) 20.dp else 0.dp)
-        )
-        if (storageBytes >= SUMMARY_MIN_BYTES) {
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
             BasicText(
-                text = stringResource(R.string.storage_samsung_system_usage_message, formatBytes(storageBytes)),
-                style = typography().xs.copy(color = palette.textSecondary)
+                text = stringResource(R.string.storage_samsung_advice_message),
+                style = typography().xs.copy(color = palette.text)
             )
+            if (storageBytes >= SUMMARY_MIN_BYTES) {
+                BasicText(
+                    text = stringResource(R.string.storage_samsung_system_usage_message, formatBytes(storageBytes)),
+                    style = typography().xs.copy(color = palette.textSecondary)
+                )
+            }
         }
     }
 }
