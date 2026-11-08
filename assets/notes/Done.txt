@@ -1,4 +1,8 @@
 Fixed:
+- fix(player): restore portrait timeline spacing and center swapped playback controls
+  - Let the portrait controller use its bounded viewport height after the natural-height probe so the weighted timeline gaps expand.
+  - Center portrait controls above the timeline between the metadata and progress track in Material and Glass.
+  - Verify timeline spacing and transport placement across both control orders and multiple portrait heights.
 - fix(player): make the mini-player explicit badge open the full player
   - Reuse the original ExplicitBadge renderers in Glass and Material while letting the mini-player handle taps without badge Jelly feedback.
   - Reduce the Glass control gap to 8 dp in the mini-player and settings preview through shared geometry.

@@ -144,14 +144,19 @@ fun PlayerTransportCenter(content: @Composable () -> Unit) {
             .values.minOfOrNull { it.top }?.let { it + (origin ?: 0f) - panePadding }
             else listOfNotNull(geometry.actionPanel?.top, (geometry.visibleToolbar ?: geometry.toolbar)?.top).minOrNull()
         val offset = if (above != null && below != null && slotTop != null && origin != null) {
-            val durationCenter = information.duration?.center?.y?.plus(origin)
-            // The information plate is the visible upper neighbor in Glass. Native
-            // controls instead balance against the centered time labels.
-            val anchorAbove = if (!swapped) {
-                if (optical) information.surfaceBounds()?.bottom?.plus(origin) ?: above
-                else durationCenter ?: above
-            } else above
-            val anchorBelow = if (swapped && !optical) durationCenter ?: below else below
+            val duration = information.duration
+            val portraitTrack = information.seekBar?.takeUnless { information.landscape }
+            val anchorAbove = when {
+                swapped && portraitTrack != null -> above - panePadding
+                swapped -> above
+                optical -> information.surfaceBounds()?.bottom?.plus(origin) ?: above
+                else -> duration?.center?.y?.plus(origin) ?: above
+            }
+            val anchorBelow = when {
+                swapped && portraitTrack != null -> portraitTrack.center.y + origin
+                swapped && !optical -> duration?.center?.y?.plus(origin) ?: below
+                else -> below
+            }
             val requested = (anchorAbove + anchorBelow - child.height) / 2f
             val lower = if (optical && !swapped)
                 information.surfaceBounds()?.bottom?.plus(origin) ?: above else above

@@ -39,5 +39,5 @@ fun Modifier.playerInfoAwareContentSize(
     // PlayerTransportCenter can move the transport beyond this measured controls box.
     // Essential metadata and hidden icon rails need that overflow just as Modern rails do.
     return if (settings.enabled || railVisible || LocalPlayerTransportGeometry.current != null)
-        unclippedGlassContentSize() else animateContentSize()
+        unclippedGlassContentSize(useBoundedHeightAfterNaturalLookahead = true) else animateContentSize()
 }

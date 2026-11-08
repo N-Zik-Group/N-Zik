@@ -349,10 +349,17 @@ class PlayerControlsTimelineLayoutTest {
                     val context = "portrait=$portrait glass=$enabled size=$size info=$info controls=$controls swap=$swapped " +
                         "above=$above below=$below transport=$transport toolbar=$toolbar"
                     val duration = bounds("player.timeline.duration")
-                    val anchorAbove = if (!swapped) {
-                        if (enabled) bounds("player.informationBlock.surface").bottom else duration.center.y
-                    } else above
-                    val anchorBelow = if (!enabled && swapped) duration.center.y else below
+                    val anchorAbove = when {
+                        swapped && portrait -> above - padding
+                        swapped -> above
+                        enabled -> bounds("player.informationBlock.surface").bottom
+                        else -> duration.center.y
+                    }
+                    val anchorBelow = when {
+                        swapped && portrait -> bounds("player.seekBar.track").center.y
+                        swapped && !enabled -> duration.center.y
+                        else -> below
+                    }
                     val requestedTop = (anchorAbove + anchorBelow - transport.height) / 2f
                     val expectedTop = if (below - transport.height >= above)
                         requestedTop.coerceIn(above, below - transport.height) else requestedTop
@@ -424,7 +431,16 @@ class PlayerControlsTimelineLayoutTest {
 
     @Test @Config(qualifiers = "w800dp-h1200dp-port")
     @OptIn(androidx.compose.animation.ExperimentalAnimationApi::class, androidx.compose.ui.text.ExperimentalTextApi::class)
-    fun `real portrait controls keep artwork and metadata at identical positions across materials and dynamic budgets`() {
+    fun `real portrait controls keep artwork and metadata at identical positions across materials and dynamic budgets`() =
+        verifyPortraitBudget(swappedPreset = false)
+
+    @Test @Config(qualifiers = "w800dp-h1200dp-port")
+    @OptIn(androidx.compose.animation.ExperimentalAnimationApi::class, androidx.compose.ui.text.ExperimentalTextApi::class)
+    fun `swapped Essential preset distributes extra portrait height around the timeline`() =
+        verifyPortraitBudget(swappedPreset = true)
+
+    @OptIn(androidx.compose.animation.ExperimentalAnimationApi::class, androidx.compose.ui.text.ExperimentalTextApi::class)
+    private fun verifyPortraitBudget(swappedPreset: Boolean) {
         val glass = mutableStateOf(false)
         val viewportHeight = mutableStateOf(700.dp)
         val headerHeight = mutableStateOf(44.dp)
@@ -492,24 +508,41 @@ class PlayerControlsTimelineLayoutTest {
             }
         } }
         fun bounds(tag: String) = compose.onNodeWithTag(tag, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-        for (height in listOf(700.dp, 800.dp, 900.dp)) for (info in PlayerInfoType.entries)
-            for (type in PlayerType.entries) {
+        val heights = if (swappedPreset) listOf(800.dp, 900.dp) else listOf(700.dp, 800.dp, 900.dp)
+        val infoTypes = if (swappedPreset) listOf(PlayerInfoType.Modern) else PlayerInfoType.entries
+        val playerTypes = if (swappedPreset) listOf(PlayerType.Essential) else PlayerType.entries
+        val naturalTimelineOffsets = mutableMapOf<Boolean, Float>()
+        val naturalBottomGaps = mutableMapOf<Boolean, Float>()
+        for (height in heights) for (info in infoTypes)
+            for (type in playerTypes) {
                 val native = mutableMapOf<String, androidx.compose.ui.geometry.Rect>()
                 var nativeInformationTop = 0f
                 for (enabled in listOf(false, true, false)) {
                     compose.runOnIdle {
                         viewportHeight.value = height
                         headerHeight.value = if (height == 700.dp) 64.dp else 44.dp
-                        nextTrack.value = height == 900.dp
+                        nextTrack.value = !swappedPreset && height == 900.dp
                         playerType.value = type
                         glass.value = enabled
                         preferences.edit().putBoolean(glassEnabledKey, enabled)
                             .putString(app.it.fast4x.rimusic.utils.playerTypeKey, type.name)
                             .putString(app.it.fast4x.rimusic.utils.playerInfoTypeKey, info.name)
-                            .putBoolean(app.it.fast4x.rimusic.utils.playerSwapControlsWithTimelineKey, false).commit()
+                            .putBoolean(app.it.fast4x.rimusic.utils.playerSwapControlsWithTimelineKey, swappedPreset)
+                            .apply {
+                                if (swappedPreset) {
+                                    putString(app.it.fast4x.rimusic.utils.playerControlsTypeKey,
+                                        app.it.fast4x.rimusic.enums.PlayerControlsType.Essential.name)
+                                    putString(app.it.fast4x.rimusic.utils.playerTimelineSizeKey, PlayerTimelineSize.Expanded.name)
+                                    putString(app.it.fast4x.rimusic.utils.playerTimelineTypeKey,
+                                        app.it.fast4x.rimusic.enums.PlayerTimelineType.Default.name)
+                                    putString(app.it.fast4x.rimusic.utils.playerPlayButtonTypeKey, PlayerPlayButtonType.Disabled.name)
+                                    putBoolean(app.it.fast4x.rimusic.utils.playerInfoShowIconsKey, false)
+                                }
+                            }.commit()
                         Snapshot.sendApplyNotifications()
                     }
-                    if (native.isEmpty()) {
+                    if (swappedPreset || native.isEmpty()) {
+                        compose.mainClock.autoAdvance = true
                         compose.waitForIdle()
                         compose.mainClock.autoAdvance = false
                     } else {
@@ -536,6 +569,27 @@ class PlayerControlsTimelineLayoutTest {
                     assertEquals("A constrained cover uses its whole slot $context", expectedArtwork, cover.height, 1f)
                     assertEquals("Only surplus space may fund the Glass separation $context", informationTop,
                         bounds("parity.controls").top, 1f)
+                    if (swappedPreset) {
+                        assertTrue("The square cover leaves extra height for both weighted gaps", surplus > 0f)
+                        val timeline = bounds("player.informationRegion.timeline")
+                        val transport = bounds("player.transport.row")
+                        val offset = timeline.top - informationTop - surplus * (0.5f / 0.9f)
+                        naturalTimelineOffsets.putIfAbsent(enabled, offset)?.let {
+                            assertEquals("The gap above the timeline receives five ninths of the surplus", it, offset, 2f)
+                        }
+                        val bottomGap = bounds("parity.toolbar").top - timeline.bottom - surplus * (0.4f / 0.9f)
+                        naturalBottomGaps.putIfAbsent(enabled, bottomGap)?.let {
+                            assertEquals("The gap below the timeline receives four ninths of the surplus", it, bottomGap, 2f)
+                        }
+                        val metadata = bounds("player.informationRegion.info")
+                        val track = bounds("player.seekBar.track")
+                        val padding = with(compose.density) { if (enabled) 10.dp.toPx() else 0f }
+                        val centeredTop = (metadata.bottom + track.center.y - transport.height) / 2f
+                        assertEquals("Buttons balance the metadata and progress track in either theme",
+                            centeredTop.coerceIn(metadata.bottom + padding, timeline.top - padding - transport.height),
+                            transport.top, 2f)
+                        continue
+                    }
                     if (expectedArtwork < bounds("parity.viewport").width - 1f)
                         assertEquals("Shrunk artwork leaves no arbitrary flexible control whitespace $context",
                             minimumControlsHeight.toFloat(), bounds("parity.controls").height, 1f)

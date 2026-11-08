@@ -51,15 +51,25 @@ fun Modifier.glassAwareContentSize(
 internal fun Modifier.unclippedGlassContentSize(
     animationSpec: FiniteAnimationSpec<IntSize> = spring(stiffness = Spring.StiffnessMediumLow,
         visibilityThreshold = IntSize.VisibilityThreshold),
-): Modifier = then(GlassContentSizeElement(animationSpec))
+    useBoundedHeightAfterNaturalLookahead: Boolean = false,
+): Modifier = then(GlassContentSizeElement(animationSpec, useBoundedHeightAfterNaturalLookahead))
 
-private data class GlassContentSizeElement(val spec: FiniteAnimationSpec<IntSize>) : ModifierNodeElement<GlassContentSizeNode>() {
-    override fun create() = GlassContentSizeNode(spec)
-    override fun update(node: GlassContentSizeNode) { node.spec = spec }
+private data class GlassContentSizeElement(
+    val spec: FiniteAnimationSpec<IntSize>,
+    val useBoundedHeightAfterNaturalLookahead: Boolean,
+) : ModifierNodeElement<GlassContentSizeNode>() {
+    override fun create() = GlassContentSizeNode(spec, useBoundedHeightAfterNaturalLookahead)
+    override fun update(node: GlassContentSizeNode) {
+        node.spec = spec
+        node.useBoundedHeightAfterNaturalLookahead = useBoundedHeightAfterNaturalLookahead
+    }
     override fun InspectorInfo.inspectableProperties() { name = "glassUnclippedContentSize" }
 }
 
-private class GlassContentSizeNode(var spec: FiniteAnimationSpec<IntSize>) : Modifier.Node(), LayoutModifierNode {
+private class GlassContentSizeNode(
+    var spec: FiniteAnimationSpec<IntSize>,
+    var useBoundedHeightAfterNaturalLookahead: Boolean,
+) : Modifier.Node(), LayoutModifierNode {
     private data class Animation(val value: Animatable<IntSize, AnimationVector2D>)
     private var animation by mutableStateOf<Animation?>(null)
     private var lookaheadSize: IntSize? = null
@@ -72,8 +82,19 @@ private class GlassContentSizeNode(var spec: FiniteAnimationSpec<IntSize>) : Mod
     }
 
     override fun MeasureScope.measure(measurable: Measurable, constraints: Constraints): MeasureResult {
-        val child = measurable.measure(if (isLookingAhead) constraints else lookaheadConstraints ?: constraints)
+        // A natural-height probe cannot allocate the weighted gaps in the bounded player.
+        val useActualHeight = !isLookingAhead && useBoundedHeightAfterNaturalLookahead &&
+            constraints.hasBoundedHeight && lookaheadConstraints?.hasBoundedHeight == false
+        val child = measurable.measure(
+            if (isLookingAhead || useActualHeight) constraints else lookaheadConstraints ?: constraints
+        )
         val measured = IntSize(child.width, child.height)
+        if (useActualHeight) {
+            // This height belongs to the parent's viewport budget. Do not carry
+            // its surplus into the natural height when the viewport shrinks.
+            animation = null
+            return layout(measured.width, measured.height) { child.placeRelative(0, 0) }
+        }
         val size = if (isLookingAhead) {
             lookaheadConstraints = constraints
             lookaheadSize = measured
