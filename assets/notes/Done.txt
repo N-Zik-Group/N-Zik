@@ -1,4 +1,8 @@
 Fixed:
+- fix(player): honor timeline and controls swap in the compact portrait player
+  - Apply the saved order in the compact expanded and lyrics layouts while retaining the existing spacing.
+  - Keep timeline and playback controls independently visible in lyrics mode and avoid recreating the other block when visibility changes.
+  - Verify both orders and independent visibility in Material and Glass with Compose tests.
 - fix(player): restore portrait timeline spacing and center swapped playback controls
   - Let the portrait controller use its bounded viewport height after the natural-height probe so the weighted timeline gaps expand.
   - Center portrait controls above the timeline between the metadata and progress track in Material and Glass.

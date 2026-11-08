@@ -258,23 +258,22 @@ fun Controls(
                             .height(10.dp)
                     )
                 }
-                if (!isShowingLyrics || timelineExpanded) {
-                PlayerInformationGlassRegion("timeline", vertical = true, horizontalContentInset = 10.dp) {
-                    GetSeekBar(
-                        position = position,
-                        duration = duration,
-                        media = media,
-                        mediaId = mediaId,
-                        shouldBePlaying = shouldBePlaying,
-                        isBuffering = isBuffering
-                    )
+                val showTimeline = !isShowingLyrics || timelineExpanded
+                val showControls = !isShowingLyrics || controlsExpanded
+                val timelineGap = if (playerPlayButtonType != PlayerPlayButtonType.Disabled) 10.dp else 5.dp
+                val timeline: @Composable () -> Unit = {
+                    PlayerInformationGlassRegion("timeline", vertical = true, horizontalContentInset = 10.dp) {
+                        GetSeekBar(
+                            position = position,
+                            duration = duration,
+                            media = media,
+                            mediaId = mediaId,
+                            shouldBePlaying = shouldBePlaying,
+                            isBuffering = isBuffering
+                        )
+                    }
                 }
-                    Spacer(
-                        modifier = Modifier
-                            .height(if (playerPlayButtonType != PlayerPlayButtonType.Disabled) 10.dp else 5.dp)
-                    )
-                }
-                if (!isShowingLyrics || controlsExpanded) {
+                val transport: @Composable () -> Unit = {
                     GetControls(
                         timelineHorizontalInset = playerTimelineSize.size.dp,
                         dynamicColorPalette = dynamicColorPalette,
@@ -286,10 +285,25 @@ fun Controls(
                         mediaId = mediaId,
                         onBlurScaleChange = onBlurScaleChange
                     )
-                    Spacer(
-                        modifier = Modifier
-                            .height(5.dp)
-                    )
+                }
+                if (playerSwapControlsWithTimeline) {
+                    if (showControls) {
+                        transport()
+                        Spacer(Modifier.height(if (showTimeline) timelineGap else 5.dp))
+                    }
+                    if (showTimeline) {
+                        timeline()
+                        Spacer(Modifier.height(if (showControls) 5.dp else timelineGap))
+                    }
+                } else {
+                    if (showTimeline) {
+                        timeline()
+                        Spacer(Modifier.height(timelineGap))
+                    }
+                    if (showControls) {
+                        transport()
+                        Spacer(Modifier.height(5.dp))
+                    }
                 }
                 if (((playerControlsType == PlayerControlsType.Modern) || (!transparentBackgroundActionBarPlayer)) && (playerPlayButtonType != PlayerPlayButtonType.Disabled)) {
                     Spacer(

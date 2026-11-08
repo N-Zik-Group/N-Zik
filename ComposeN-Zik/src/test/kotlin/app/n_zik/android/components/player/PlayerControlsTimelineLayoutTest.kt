@@ -808,6 +808,63 @@ class PlayerControlsTimelineLayoutTest {
     @OptIn(androidx.compose.animation.ExperimentalAnimationApi::class, androidx.compose.ui.text.ExperimentalTextApi::class)
     fun `information edge and native time labels remain the references through first frame orientation changes`() = verifyBalancedTransport(true, focused = true)
 
+    @Test @Config(qualifiers = "w800dp-h1200dp-port")
+    @OptIn(androidx.compose.animation.ExperimentalAnimationApi::class, androidx.compose.ui.text.ExperimentalTextApi::class)
+    fun `compact portrait respects timeline order and lyrics visibility in both themes`() {
+        val lyrics = mutableStateOf(false)
+        val showTimeline = mutableStateOf(true)
+        val showControls = mutableStateOf(true)
+        val nav = mockk<androidx.navigation.NavController>(relaxed = true)
+        val media = UiMedia("compact-swap", "Panel title", "Panel artist", 120_000L, true)
+        preferences.edit().putBoolean(app.it.fast4x.rimusic.utils.showlyricsthumbnailKey, false)
+            .putString(app.it.fast4x.rimusic.utils.playerTimelineTypeKey,
+                app.it.fast4x.rimusic.enums.PlayerTimelineType.Default.name).commit()
+        compose.setContent { AppearanceProvider {
+            CompositionLocalProvider(LocalPlayerServiceBinder provides binder,
+                LocalPlayerTransportGeometry provides remember { PlayerTransportGeometry() }) {
+                Box(Modifier.size(360.dp, 420.dp).playerTransportGeometryHost()) {
+                    app.it.fast4x.rimusic.ui.screens.player.Controls(
+                        navController = nav, onCollapse = {}, onBlurScaleChange = {},
+                        expandedplayer = !lyrics.value, titleExpanded = true, timelineExpanded = showTimeline.value,
+                        controlsExpanded = showControls.value, isShowingLyrics = lyrics.value, media = media,
+                        mediaId = media.id, title = media.title, artist = media.artist, artistIds = null, albumId = null,
+                        shouldBePlaying = false, isBuffering = false, position = { 30_000L }, duration = { 120_000L },
+                        isExplicit = false, dynamicColorPalette = DefaultDarkColorPalette,
+                    )
+                }
+            }
+        } }
+        val timeline = compose.onNodeWithTag("player.informationRegion.timeline", useUnmergedTree = true)
+        val controls = compose.onNodeWithTag("player.transport.row", useUnmergedTree = true)
+        val surface = compose.onNodeWithTag("player.informationBlock.surface", useUnmergedTree = true)
+        for (glass in listOf(false, true)) {
+            for (showingLyrics in listOf(false, true)) {
+                for (swapped in listOf(false, true)) {
+                    compose.runOnIdle {
+                        lyrics.value = showingLyrics
+                        showTimeline.value = true
+                        showControls.value = true
+                        preferences.edit().putBoolean(glassEnabledKey, glass)
+                            .putBoolean(app.it.fast4x.rimusic.utils.playerSwapControlsWithTimelineKey, swapped).commit()
+                    }
+                    if (glass) surface.assertExists() else surface.assertDoesNotExist()
+                    val track = timeline.fetchSemanticsNode().boundsInRoot
+                    val buttons = controls.fetchSemanticsNode().boundsInRoot
+                    assertTrue("Compact order glass=$glass lyrics=$showingLyrics swapped=$swapped track=$track buttons=$buttons",
+                        if (swapped) buttons.bottom <= track.top + 1f else track.bottom <= buttons.top + 1f)
+                    if (showingLyrics) {
+                        compose.runOnIdle { showTimeline.value = false }
+                        timeline.assertDoesNotExist()
+                        controls.assertExists()
+                        compose.runOnIdle { showTimeline.value = true; showControls.value = false }
+                        timeline.assertExists()
+                        controls.assertDoesNotExist()
+                    }
+                }
+            }
+        }
+    }
+
     private fun Modifier.recordNaturalPlayerHeight(onHeight: (Int) -> Unit): Modifier = layout { measurable, constraints ->
         val child = measurable.measure(constraints)
         if (!constraints.hasBoundedHeight) onHeight(child.height)
