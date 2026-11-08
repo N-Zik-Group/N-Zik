@@ -31,7 +31,7 @@ androidCmake = "3.22.1"
 
 
 compose-plugin = "1.12.2"
-agp = "9.5.0"
+agp = "9.5.1"
 composeMarkdownVersion = "0.7.2"
 kotlin = "2.4.21"
 kotlin-ksp = "2.3.6"
