@@ -15,6 +15,7 @@
     <string name="common_delete_success">Deleted</string>
     <string name="common_description_unavailable">No description available</string>
     <string name="common_duration_milliseconds_format">%1$s ms</string>
+    <string name="common_duration_milliseconds_unit">ms</string>
     <string name="common_empty_items">No items</string>
     <string name="common_external_link_loading_suffix">besig om te laai...</string>
     <string name="common_load_failed">Unable to load</string>
@@ -39,8 +40,11 @@
     <string name="common_validation_empty_value">Value cannot be empty</string>
     <string name="common_validation_invalid_input">Invalid input!</string>
     <string name="common_validation_minimum_value">"Value must be greater than "</string>
+    <string name="common_validation_minimum_value_format">Value must be at least %1$d</string>
     <string name="common_validation_name_in_use">Name already in use</string>
     <string name="common_value_input_hint">Enter The Value</string>
     <string name="common_unknown">Onbekend</string>
     <string name="common_duration_minutes_short">%1$d min</string>
+    <string name="common_external_link_loading_format">%1$s is loading…</string>
+    <string name="common_loading_message">Loading…</string>
 </resources>
