@@ -139,6 +139,7 @@ private fun UpdateScreenContent(navController: NavController) {
         if (otherLanguageApp != Languages.System) otherLanguageApp
         else Languages.entries.firstOrNull { it.code == appLang } ?: Languages.English
     }
+    val changelogTranslationTarget = activeTranslateLang.changelogTranslationTarget
     var isTranslationActive by rememberPreference("updateTranslationActive", appLang != "en")
     var showLanguageDialog by remember { mutableStateOf(false) }
 
@@ -647,7 +648,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                             showLanguageDialog = false
                                         },
                                         valueText = { it.text },
-                                        values = Languages.entries.toList(),
+                                        values = Languages.entries.filter { it == Languages.System || it.changelogTranslationTarget != null },
                                         onDismiss = { showLanguageDialog = false }
                                     )
                                 }
@@ -804,20 +805,18 @@ private fun UpdateScreenContent(navController: NavController) {
                 val translator = remember { Translator(NetworkClientFactory.getTranslatorClient()) }
                 var translatedText by remember { mutableStateOf<String?>(null) }
 
-                LaunchedEffect(changelogTextToDisplay, isTranslationActive, activeTranslateLang) {
-                    if (isTranslationActive && changelogTextToDisplay.isNotBlank()) {
-                        val destLanguage = activeTranslateLang.translatorLanguage
-                        if (destLanguage != Language.ENGLISH) {
-                            try {
-                                val res = withContext(NzikDispatchers.DATA) {
-                                    translator.translate(changelogTextToDisplay, destLanguage, Language.ENGLISH).translatedText
-                                }
-                                translatedText = res
-                            } catch (e: Exception) {
-                                Timber.tag("UpdateScreen").e(e, "Translation failed")
+                LaunchedEffect(changelogTextToDisplay, isTranslationActive, changelogTranslationTarget) {
+                    translatedText = null
+                    val destination = changelogTranslationTarget
+                    if (isTranslationActive && changelogTextToDisplay.isNotBlank() &&
+                        destination != null && destination != Language.ENGLISH
+                    ) {
+                        try {
+                            translatedText = withContext(NzikDispatchers.DATA) {
+                                translator.translate(changelogTextToDisplay, destination, Language.ENGLISH).translatedText
                             }
-                        } else {
-                            translatedText = changelogTextToDisplay
+                        } catch (e: Exception) {
+                            Timber.tag("UpdateScreen").e(e, "Translation failed")
                         }
                     }
                 }
@@ -858,13 +857,18 @@ private fun UpdateScreenContent(navController: NavController) {
                                     )
                                     UpdaterIconAction(
                                         modifier = Modifier.size(NativeIconActionSize),
-                                        onClick = { isTranslationActive = !isTranslationActive },
+                                        onClick = {
+                                            if (changelogTranslationTarget == null) showLanguageDialog = true
+                                            else isTranslationActive = !isTranslationActive
+                                        },
                                         onLongClick = { showLanguageDialog = true },
                                     ) {
                                         Icon(
                                             painter = painterResource(R.drawable.translate),
                                             contentDescription = stringResource(R.string.common_action_translate),
-                                            tint = if (isTranslationActive) colorPalette().accent else colorPalette().textSecondary,
+                                            tint = if (isTranslationActive && changelogTranslationTarget != null) {
+                                                colorPalette().accent
+                                            } else colorPalette().textSecondary,
                                             modifier = Modifier.size(20.dp)
                                         )
                                     }
@@ -882,7 +886,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                 } else {
                                     ChangelogCard(
                                         rawText = changelogTextToDisplay,
-                                        translatedText = if (isTranslationActive) translatedText else null,
+                                        translatedText = if (isTranslationActive && changelogTranslationTarget != null) translatedText else null,
                                         colorPaletteMode = colorPaletteMode
                                     )
                                 }
@@ -940,6 +944,12 @@ private fun UpdateScreenContent(navController: NavController) {
         }
     }
 }
+
+internal val Languages.changelogTranslationTarget: Language?
+    get() = when (this) {
+        Languages.System, Languages.Bashkir, Languages.Interlingua -> null
+        else -> translatorLanguage
+    }
 
 /**
  * Reads the bundled local changelog (`R.raw.release_notes`), used as a last-resort fallback by
