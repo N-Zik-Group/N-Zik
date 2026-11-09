@@ -41,4 +41,60 @@
         <item quantity="one">%1$d kappaletta kuultu</item>
         <item quantity="other">%1$d songs heard</item>
     </plurals>
+    <plurals name="profile_last_used_minute_count">
+        <item quantity="one">%1$d minuutti sitten</item>
+        <item quantity="other">%1$d minuuttia sitten</item>
+    </plurals>
+    <plurals name="profile_last_used_hour_count">
+        <item quantity="one">%1$d tuntia sitten</item>
+        <item quantity="other">%1$d tuntia sitten</item>
+    </plurals>
+    <plurals name="profile_last_used_day_count">
+        <item quantity="one">%1$d päivää sitten</item>
+        <item quantity="other">%1$d päivää sitten</item>
+    </plurals>
+    <plurals name="profile_last_used_week_count">
+        <item quantity="one">%1$d viikko sitten</item>
+        <item quantity="other">%1$d weeks ago</item>
+    </plurals>
+    <plurals name="profile_last_used_month_count">
+        <item quantity="one">%1$d month ago</item>
+        <item quantity="other">%1$d kuukautta sitten</item>
+    </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Poista %1$d hakuhaku</item>
+        <item quantity="other">Poista %1$d hakuhaku</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Poista %1$d toistotapahtuma</item>
+        <item quantity="other">Poista %1$d toistotapahtumaa</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d jakso · %2$s</item>
+        <item quantity="other">%1$d jaksoa · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">%1$d kappaleen lisääminen YouTube-soittolistaan</item>
+        <item quantity="other">%1$d kappaleen lisääminen YouTube-soittolistaan</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">Lisätty %1$d kappale YouTube-soittolistaan</item>
+        <item quantity="other">Lisätty %1$d kappaletta YouTube-soittolistaan</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Profiilin tila tuotu: %1$d profiili</item>
+        <item quantity="other">Profiilin tila tuotu: %1$d profiilia</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">%1$d albumia ei voitu synkronoida. Yritä uudelleen palataksesi albumivälilehteen.</item>
+        <item quantity="other">%1$d albumia ei voitu synkronoida. Yritä uudelleen Palaa Albumit -välilehdelle.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Vie %1$d välimuisti/ladattu kappale?</item>
+        <item quantity="other">Vie %1$d välimuisti/ladatut kappaleet?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">%1$d ladattu kappale puuttuu sen tiedostosta ja se poistettiin. Ole hyvä ja lataa se uudelleen.</item>
+        <item quantity="other">%1$d ladatuista kappaleista puuttuu heidän tiedostojaan ja ne poistettiin. Ole hyvä ja lataa ne uudelleen.</item>
+    </plurals>
 </resources>
