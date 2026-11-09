@@ -137,6 +137,9 @@
     <string name="modules_download_needed">Il modulo deve essere scaricato (~25 MB). Controlla la connessione.</string>
     <string name="modules_downloading">Scaricamento modulo</string>
     <string name="modules_edit_unavailable">Modifica metadati non disponibili: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Preparazione FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">Scaricamento FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">È necessario esportare i brani memorizzati nella cache e modificare i metadati del brano. Scaricati al primo utilizzo.</string>
     <string name="modules_info">Informazioni</string>
     <string name="modules_insufficient_space">Questa funzione ha bisogno di circa 70 MB di spazio libero</string>
