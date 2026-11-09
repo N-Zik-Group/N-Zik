@@ -11,16 +11,5 @@ YouTube Sync (Revamp)
 Features & UI
 - Build the Desktop version of the application.
 
-Lyrics
-- Translation and romanization is broken
-
-Visual
-- Color palette will be off, I'm on it trying to find the right spot.
-
-Backup / Rescue (latent bugs found by static audit 22/09)
-- ZIP migration DB import (ImportMigration) overwrites data.db without deleting the leftover -wal/-shm side files — a stale WAL can replay onto the imported database (corruption / data loss). The rescue import deletes the side files first; the ZIP path doesn't.
-- Auto-backup database export: the wal_checkpoint(FULL) result is never checked — if the checkpoint fails (busy), the copy proceeds anyway and produces a silent incomplete DB backup. The rescue path throws DatabaseBusyException; auto-backup should at least warn.
-- Import settings, app path (ImportSettings.onImport): no encryptedSkipped counter and no keystore-unavailable warning (the rescue path has both), and a failed parse logs the raw value (may be a credential). Combined with the global encryptedPreferences helper that deletes & recreates secure_preferences.xml on keystore failure, an import with a broken keystore can silently wipe existing credentials.
-
 Futur
 - Finish Nzik Desktop for windows, then linux and macos
