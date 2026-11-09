@@ -137,6 +137,9 @@
     <string name="modules_download_needed">تحتاج الوحدة النمطية للتنزيل (~25 ميغابايت). تحقق من الاتصال.</string>
     <string name="modules_downloading">تنزيل الوحدة</string>
     <string name="modules_edit_unavailable">تعديل بيانات التعريف غير متوفرة: %1$s</string>
+    <string name="modules_ffmpeg_preparation">إعداد FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">تحميل FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">تحتاج لتصدير الأغاني المخزنة مؤقتاً ولتعديل بيانات التعريف للأغنية. تم تنزيلها عند الاستخدام الأول.</string>
     <string name="modules_info">معلومات</string>
     <string name="modules_insufficient_space">هذه الميزة تحتاج حوالي 70 ميغابايت من المساحة الحرة</string>
