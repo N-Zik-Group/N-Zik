@@ -226,6 +226,8 @@
     <string name="theme_shake_sensitivity_medium">Gemiddeld (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Zeer Hoog (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Afbeelding bewerken</string>
+    <string name="image_editor_failed">De afbeelding kon niet bewerkt worden. Je huidige afbeelding is bewaard.</string>
     <string name="thumbnail_action_edit">Edit Thumbnail</string>
     <string name="thumbnail_action_pick_from_gallery">Kies uit galerij</string>
     <string name="thumbnail_action_reset">Reset Thumbnail</string>
@@ -235,4 +237,7 @@
     <string name="thumbnail_remove_failed">Verwijderen van miniatuur mislukt</string>
     <string name="thumbnail_remove_success">Thumbnail verwijderd</string>
     <string name="glass_effect_rendering_quality">Rendering kwaliteit</string>
+    <string name="image_editor_original">Oorspronkelijke verhouding</string>
+    <string name="image_editor_cancel">Annuleer</string>
+    <string name="image_editor_apply">Afbeelding gebruiken</string>
 </resources>
