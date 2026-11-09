@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm アカウント</string>
     <string name="profile_identity_source_not_connected">ログインしていません</string>
     <string name="profile_last_used">最後に使用したもの</string>
-    <string name="profile_last_used_days">%d 日前</string>
-    <string name="profile_last_used_hours">%d 時間前</string>
-    <string name="profile_last_used_minutes">%d 分前</string>
-    <string name="profile_last_used_months">%d ヶ月前</string>
     <string name="profile_last_used_now">現在</string>
-    <string name="profile_last_used_weeks">%d 週間前</string>
     <string name="profile_local_name">プロフィール名</string>
     <string name="profile_local_name_description">現在のローカルプロファイルの名前を変更します。</string>
     <string name="profile_name_input_hint">プロファイル名を入力</string>
@@ -255,10 +250,11 @@
     <string name="sync_youtube_playlist_add_failed">YouTubeプレイリストに曲を追加できませんでした</string>
     <string name="sync_youtube_playlist_add_success">YouTubeプレイリストに曲を追加しました</string>
     <string name="sync_youtube_playlist_batch_failed">次の50曲に対してエラーが発生しました。1曲ずつプレイリストに曲を追加しています</string>
+    <string name="sync_youtube_playlist_no_songs_added">YouTubeプレイリストに曲が追加されていません</string>
     <string name="sync_youtube_playlist_songs_added_suffix">曲はYouTubeプレイリストに追加されます。不明な曲がある場合はプロセスを繰り返します。</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">YTMプレイリストに曲が追加されます</string>
     <string name="sync_youtube_playlists_title">YTM プレイリスト</string>
-    <string name="sync_youtube_songs_remaining">Songs remaining: %1$s</string>
+    <string name="sync_youtube_songs_remaining">%1$s 曲残ります。</string>
     <string name="sync_youtube_unlike_failed">YouTubeの曲と違って失敗しました</string>
     <string name="sync_youtube_unlike_success">YouTubeでは曲がお気に入りではありません</string>
     <string name="sync_starting_notification">同期を開始中...</string>
