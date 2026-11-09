@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Оберіть, як треки від небажаних артистів виключаються.</string>
     <string name="player_exclude_disliked_songs_description">Виберіть, як не сподобалися треки виключені з пропозицій відтворення.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Виключити треки, що перевищують обмеження на обрану тривалість.</string>
-    <string name="player_excluded_song_count_format">Виключено %s пісень</string>
+    <string name="player_excluded_song_count_format">Не виключено: %s</string>
     <string name="player_keep_minimized">Згорнути</string>
     <string name="player_layout_artwork_style_description">Виберіть, як гравець відображає роботу треку.</string>
     <string name="player_layout_controls_style_description">Виберіть схему керування гравцем.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Додати обкладинку альбому поруч із майбутніми треками у попередній перегляд гравця.</string>
     <string name="player_queue_preview_song_count_description">Виберіть кількість треків у попередньому перегляді гравця.</string>
     <string name="player_queue_remove_selected_confirmation_format">Видалити виділення з черги? Вибрані треки: %d</string>
-    <string name="player_queue_shuffled_count_format">Queue shuffled (%d songs)</string>
+    <string name="player_queue_shuffled_count_format">Змішана черга (треки: %d)</string>
     <string name="player_remaining_time_visible_description">Показувати час, що залишився в поточній композиції.</string>
     <string name="player_restart_required_message">Гравець повинен бути перезапущений для ефективних змін!</string>
     <string name="player_rotating_buttons">Поворотні кнопки</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Відображати попередній перегляд майбутніх композицій у плеєрі.</string>
     <string name="player_show_player_top_actions_bar_description">Відображати рядок дій гравця над основним вмістом.</string>
     <string name="player_shuffle_empty_message">Немає пісні для перемішування</string>
-    <string name="player_shuffled_song_count_format">Перетасовані пісні %d suffled</string>
+    <string name="player_shuffled_song_count_format">Переташується трек: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Таймер сну встановлено в кінець цієї пісні</string>
     <string name="player_sleep_timer_finished_message">Таймер сну завершено</string>
     <string name="player_song_playback_error_format">Сталася помилка під час відтворення пісні %1$s</string>
