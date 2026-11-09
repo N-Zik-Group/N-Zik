@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">اختر كيف يتم استبعاد المسارات من الفنانين غير المحبوبين.</string>
     <string name="player_exclude_disliked_songs_description">اختر كيف يتم استبعاد المسارات غير المحببة من اقتراحات التشغيل.</string>
     <string name="player_exclude_songs_with_duration_limit_description">استبعاد المسارات التي تتجاوز حد المدة المحددة.</string>
-    <string name="player_excluded_song_count_format">مستبعد أغاني %s</string>
+    <string name="player_excluded_song_count_format">الأغاني المستبعدة: %s</string>
     <string name="player_keep_minimized">الحفاظ على التصغير</string>
     <string name="player_layout_artwork_style_description">اختر كيف يعرض اللاعب عمل المسار الفني.</string>
     <string name="player_layout_controls_style_description">اختر تخطيط عناصر تحكم اللاعب.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">تضمين الأعمال الفنية الألبوم إلى جانب المسارات القادمة في معاينة اللاعب.</string>
     <string name="player_queue_preview_song_count_description">اختر عدد المسارات القادمة التي تظهر في معاينة اللاعب.</string>
     <string name="player_queue_remove_selected_confirmation_format">إزالة التحديد من قائمة الانتظار؟ المسارات المحددة: %d</string>
-    <string name="player_queue_shuffled_count_format">قائمة الانتظار تملأ ( أغاني%d)</string>
+    <string name="player_queue_shuffled_count_format">قائمة الانتظار (المسارات: %d)</string>
     <string name="player_remaining_time_visible_description">إظهار الوقت المتبقي في المسار الحالي.</string>
     <string name="player_restart_required_message">Player has to be restarted for the changes to be effective!</string>
     <string name="player_rotating_buttons">أزرار الدوران</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">عرض معاينة للمسارات القادمة داخل اللاعب.</string>
     <string name="player_show_player_top_actions_bar_description">عرض صف إجراءات اللاعب فوق المحتوى الرئيسي.</string>
     <string name="player_shuffle_empty_message">لا توجد أغنية للخلط</string>
-    <string name="player_shuffled_song_count_format">أغاني %d محيطة</string>
+    <string name="player_shuffled_song_count_format">المسارات الملغطة: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Sleep timer delayed at end of song</string>
     <string name="player_sleep_timer_finished_message">انتهت مدة النوم</string>
     <string name="player_song_playback_error_format">The media %1$s went wrong</string>
