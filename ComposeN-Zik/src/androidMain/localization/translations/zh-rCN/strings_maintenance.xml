@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">上次崩溃了</string>
     <string name="maintenance_lastfm_active">会话已启用</string>
     <string name="maintenance_library">库</string>
-    <string name="maintenance_library_albums">%d 相册</string>
-    <string name="maintenance_library_artists">%d 艺人</string>
+    <string name="maintenance_library_albums">Albums: %d</string>
+    <string name="maintenance_library_artists">Artists: %d</string>
     <string name="maintenance_library_listened">%d 已聆听。</string>
-    <string name="maintenance_library_playlists">%d 播放列表</string>
-    <string name="maintenance_library_songs">%d 歌曲</string>
+    <string name="maintenance_library_playlists">Playlists: %d</string>
+    <string name="maintenance_library_songs">Songs: %d</string>
     <string name="maintenance_live_subsystems">实时子系统</string>
     <string name="maintenance_log_view">查看</string>
     <string name="maintenance_lt_connected">已连接</string>
