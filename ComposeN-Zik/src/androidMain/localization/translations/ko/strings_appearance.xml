@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">Pages</string>
     <string name="glass_effect_destination_playback">Playback</string>
     <string name="glass_effect_destination_shared">Shared elements</string>
+    <string name="glass_effect_loading_indicators">Loading indicators</string>
+    <string name="glass_effect_loading_indicators_description">Style loading animations on pages and in cards and dialogs.</string>
+    <string name="glass_effect_pull_to_refresh">Pull to refresh</string>
+    <string name="glass_effect_pull_to_refresh_description">Style the indicator that appears when you pull down to refresh.</string>
     <string name="glass_effect_destination_windows">Windows and messages</string>
     <string name="glass_effect_dialog_dimming">Dialog background dimming</string>
     <string name="glass_effect_dispersion">Colour splitting</string>
@@ -121,6 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">The cards that group settings and show your profiles.</string>
     <string name="glass_effect_role_visualizer">Visualizer · controls</string>
     <string name="glass_effect_role_visualizer_description">The arrows and Settings button used with the visualizer.</string>
+    <string name="glass_effect_shared_components_summary">Choose how Glass looks on components used across the app, including loading indicators and pull to refresh.</string>
     <string name="glass_effect_summary">Customize Glass effect surfaces, colors, outlines and quality.</string>
     <string name="glass_effect_switches_description">Use liquid Glass switches with the shared material and interaction effects when Glass is enabled.</string>
     <string name="glass_effect_switches_title">Glass switches</string>
@@ -225,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Medium (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Very High (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Edit image</string>
+    <string name="image_editor_failed">Could not edit the image. Your current image was kept.</string>
     <string name="thumbnail_action_edit">썸네일 편집</string>
     <string name="thumbnail_action_pick_from_gallery">Pick from gallery</string>
     <string name="thumbnail_action_reset">썸네일 초기화</string>
@@ -234,4 +241,6 @@
     <string name="thumbnail_remove_failed">썸네일을 제거하지 못했습니다.</string>
     <string name="thumbnail_remove_success">썸네일이 삭제됨</string>
     <string name="glass_effect_rendering_quality">Rendering quality</string>
+    <string name="image_editor_original">Original ratio</string>
+    <string name="image_editor_apply">Use image</string>
 </resources>
