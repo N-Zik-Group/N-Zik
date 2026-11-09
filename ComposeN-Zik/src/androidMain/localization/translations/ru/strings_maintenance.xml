@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">Последний сбой</string>
     <string name="maintenance_lastfm_active">Сеанс активен</string>
     <string name="maintenance_library">Библиотека</string>
-    <string name="maintenance_library_albums">%d альбомов</string>
-    <string name="maintenance_library_artists">%d исполнителей</string>
+    <string name="maintenance_library_albums">Albums: %d</string>
+    <string name="maintenance_library_artists">Artists: %d</string>
     <string name="maintenance_library_listened">Прослушано %d</string>
-    <string name="maintenance_library_playlists">Плейлисты %d</string>
-    <string name="maintenance_library_songs">%d songs</string>
+    <string name="maintenance_library_playlists">Playlists: %d</string>
+    <string name="maintenance_library_songs">Songs: %d</string>
     <string name="maintenance_live_subsystems">Онлайн подсистемы</string>
     <string name="maintenance_log_view">Вид</string>
     <string name="maintenance_lt_connected">Подключено</string>
