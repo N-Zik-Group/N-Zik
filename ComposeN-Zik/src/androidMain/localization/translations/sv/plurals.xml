@@ -41,4 +41,60 @@
         <item quantity="one">%1$d låt hörde</item>
         <item quantity="other">%1$d låtar hörde</item>
     </plurals>
+    <plurals name="profile_last_used_minute_count">
+        <item quantity="one">%1$d minut sedan</item>
+        <item quantity="other">%1$d minuter sedan</item>
+    </plurals>
+    <plurals name="profile_last_used_hour_count">
+        <item quantity="one">%1$d timme sedan</item>
+        <item quantity="other">%1$d timmar sedan</item>
+    </plurals>
+    <plurals name="profile_last_used_day_count">
+        <item quantity="one">%1$d dag sedan</item>
+        <item quantity="other">%1$d dagar sedan</item>
+    </plurals>
+    <plurals name="profile_last_used_week_count">
+        <item quantity="one">%1$d vecka sedan</item>
+        <item quantity="other">%1$d veckor sedan</item>
+    </plurals>
+    <plurals name="profile_last_used_month_count">
+        <item quantity="one">%1$d månad sedan</item>
+        <item quantity="other">%1$d månader sedan</item>
+    </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Ta bort %1$d sökfråga</item>
+        <item quantity="other">Ta bort %1$d sökfrågor</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Ta bort %1$d uppspelningshändelse</item>
+        <item quantity="other">Ta bort %1$d uppspelningshändelser</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d avsnitt · %2$s</item>
+        <item quantity="other">%1$d avsnitt · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">Lägger till %1$d låt till YouTube spellista</item>
+        <item quantity="other">Lägga till %1$d låtar till YouTube spellista</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">Lade till %1$d låt till YouTube spellista</item>
+        <item quantity="other">Lade till %1$d låtar till YouTube spellista</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Profilstatus importerad: %1$d profil</item>
+        <item quantity="other">Profilstatus importerad: %1$d profiler</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Det gick inte att synkronisera %1$d album. Gå tillbaka till fliken album för att försöka igen.</item>
+        <item quantity="other">Det gick inte att synkronisera %1$d album. Gå tillbaka till fliken album för att försöka igen.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Exportera %1$d cachad/hämtad låt?</item>
+        <item quantity="other">Exportera %1$d cachade/hämtade låtar?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">%1$d hämtade låten saknar sin fil och togs bort. Ladda ner den igen.</item>
+        <item quantity="other">%1$d hämtade låtar saknar sina filer och togs bort. Ladda ner dem igen.</item>
+    </plurals>
 </resources>
