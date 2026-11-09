@@ -50,3 +50,9 @@ Added:
   - Open uCrop from cover and profile pickers with readable application colors and crop/rotate controls.
   - Edit owned temporary copies and publish only after confirmation; clean cancellation/orphans and retain the captured profile/entity target.
   - Refresh local artwork revisions after saves and protect playlist/image-editor results against stale targets.
+
+Fixed:
+- fix(artwork): apply video cropping consistently across displays (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Resolve original video artwork and apply the saved fit/crop choice in shared image and painter paths, including the full player.
+  - Avoid stale Coil crossfade geometry and refresh artwork when the crop preference changes.
+  - Keep the video-cropping setting visible for all appearance configurations.

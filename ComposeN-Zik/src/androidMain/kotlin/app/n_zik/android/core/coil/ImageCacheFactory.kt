@@ -76,7 +76,7 @@ object ImageCacheFactory {
     /**
      * The Coil disk-cache dir of the ACTIVE profile (spec-profile-data-separation):
      * `coil` (base) or `coil_<id>` (separate), under that profile's location setting
-     * (a shared item follows the BASE profile's setting â€” see [coilImageCacheDir]).
+     * (a shared item follows the BASE profile's setting — see [coilImageCacheDir]).
      * Extracted from the [DISK_CACHE] lazy so the selection is unit-testable.
      */
     internal fun coilDiskCacheDir(context: Context): File =
@@ -203,7 +203,7 @@ object ImageCacheFactory {
             // but the Rewind share screenshot replays the view tree on a software canvas,
 //
             // where hardware bitmaps cannot be drawn at all (IllegalArgumentException:
-            // "Software rendering doesn't support hardware bitmaps") â€” the legacy mini
+            // "Software rendering doesn't support hardware bitmaps") — the legacy mini
 //
             // player's cover goes through this factory too. loadBitmap() keeps its
             // per-request allowHardware override.
@@ -339,8 +339,10 @@ object ImageCacheFactory {
         modifier: Modifier = Modifier.clip(thumbnailShape()).fillMaxSize(),
         shape: Shape? = thumbnailShape(),
     ) {
+        val sourceUrl = rememberDisplayArtworkSource(thumbnailUrl)
+        val resolvedScale = rememberVideoArtworkContentScale(sourceUrl, contentScale)
         val imageModifier = if (shape == null) modifier else modifier.glassImageRim(shape)
-        val cleanedUrl = thumbnailUrl?.let { cleanPrefix(it) }
+        val cleanedUrl = sourceUrl?.let { cleanPrefix(it) }
         val validUrl = if (cleanedUrl.isNullOrBlank() || cleanedUrl == "null") null else cleanedUrl
         val decision = getDownloadDecision(validUrl)
         val version by storeVersion.collectAsStateWithLifecycle()
@@ -361,7 +363,7 @@ object ImageCacheFactory {
                 painter = painterResource(if (showFallback) R.drawable.ic_launcher_box else R.drawable.loader),
                 contentDescription = null,
                 modifier = imageModifier.fillMaxSize(),
-                contentScale = contentScale
+                contentScale = resolvedScale
             )
             return
         }
@@ -414,7 +416,7 @@ object ImageCacheFactory {
             model = request,
             imageLoader = LOADER,
             contentDescription = contentDescription,
-            contentScale = contentScale,
+            contentScale = resolvedScale,
             modifier = imageModifier,
             placeholder = painterResource(R.drawable.loader),
             error = painterResource(R.drawable.ic_launcher_box),
@@ -433,7 +435,9 @@ object ImageCacheFactory {
         onSuccess: ((State.Success) -> Unit)? = null,
         onError: ((State.Error) -> Unit)? = null
     ): AsyncImagePainter {
-        val cleanedUrl = thumbnailUrl?.let { cleanPrefix(it) }
+        val sourceUrl = rememberDisplayArtworkSource(thumbnailUrl)
+        val transformArtwork = rememberVideoArtworkPainterTransform(sourceUrl, contentScale)
+        val cleanedUrl = sourceUrl?.let { cleanPrefix(it) }
         val validUrl = if (cleanedUrl.isNullOrBlank() || cleanedUrl == "null") null else cleanedUrl
         val decision = getDownloadDecision(validUrl)
         val version by storeVersion.collectAsStateWithLifecycle()
@@ -502,18 +506,33 @@ object ImageCacheFactory {
             )
             .build()
 
+        // Coil's CrossfadePainter freezes intrinsicSize and keeps applying its original Crop
+        // after the fade ends, preventing this painter's live Crop/Fit geometry from taking over.
+        val painterRequest = if (isVideoArtwork(sourceUrl) && contentScale == ContentScale.Crop) {
+            request.newBuilder().crossfade(false).build()
+        } else request
+        val loadingPainter = painterResource(placeholder ?: R.drawable.loader)
+        val errorPainter = painterResource(error)
         return rememberAsyncImagePainter(
-            model = request,
+            model = painterRequest,
             imageLoader = LOADER,
             contentScale = contentScale,
-            placeholder = painterResource(placeholder ?: R.drawable.loader),
-            error = painterResource(error),
-            fallback = painterResource(fallback),
-            onLoading = onLoading,
-            onSuccess = onSuccess,
-            onError = { state ->
-                onError?.invoke(state)
-            }
+            transform = { state ->
+                when (state) {
+                    is State.Loading -> state.copy(painter = loadingPainter)
+                    is State.Success -> state.copy(painter = transformArtwork(state.painter))
+                    is State.Error -> state.copy(painter = errorPainter)
+                    State.Empty -> state
+                }
+            },
+            onState = { state ->
+                when (state) {
+                    is State.Loading -> onLoading?.invoke(state)
+                    is State.Success -> onSuccess?.invoke(state)
+                    is State.Error -> onError?.invoke(state)
+                    State.Empty -> Unit
+                }
+            },
         )
     }
 
@@ -526,8 +545,10 @@ object ImageCacheFactory {
         @DrawableRes error: Int = R.drawable.ic_launcher_box,
         shape: Shape = RectangleShape,
     ) {
+        val sourceUrl = rememberDisplayArtworkSource(thumbnailUrl)
+        val resolvedScale = rememberVideoArtworkContentScale(sourceUrl, contentScale)
         val imageModifier = modifier.glassImageRim(shape)
-        val cleanedUrl = thumbnailUrl?.let { cleanPrefix(it) }
+        val cleanedUrl = sourceUrl?.let { cleanPrefix(it) }
         val validUrl = if (cleanedUrl.isNullOrBlank() || cleanedUrl == "null") null else cleanedUrl
         val decision = getDownloadDecision(validUrl)
         val version by storeVersion.collectAsStateWithLifecycle()
@@ -546,7 +567,7 @@ object ImageCacheFactory {
                 painter = painterResource(if (showFallback) R.drawable.ic_launcher_box else R.drawable.loader),
                 contentDescription = null,
                 modifier = imageModifier.fillMaxSize(),
-                contentScale = contentScale
+                contentScale = resolvedScale
             )
             return
         }
@@ -585,14 +606,14 @@ object ImageCacheFactory {
             model = request,
             imageLoader = LOADER,
             contentDescription = contentDescription,
-            contentScale = contentScale,
+            contentScale = resolvedScale,
             modifier = imageModifier,
             loading = {
                 Image(
                     painter = painterResource(R.drawable.loader),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = contentScale
+                    contentScale = resolvedScale
                 )
             },
             error = {
@@ -600,7 +621,7 @@ object ImageCacheFactory {
                     painter = painterResource(error),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = contentScale
+                    contentScale = resolvedScale
                 )
             }
         )
@@ -617,8 +638,10 @@ object ImageCacheFactory {
         onError: ((State.Error) -> Unit)? = null,
         shape: Shape? = RectangleShape,
     ) {
+        val sourceUrl = rememberDisplayArtworkSource(thumbnailUrl)
+        val resolvedScale = rememberVideoArtworkContentScale(sourceUrl, contentScale)
         val imageModifier = if (shape == null) modifier else modifier.glassImageRim(shape)
-        val cleanedUrl = thumbnailUrl?.let { cleanPrefix(it) }
+        val cleanedUrl = sourceUrl?.let { cleanPrefix(it) }
         val validUrl = if (cleanedUrl.isNullOrBlank() || cleanedUrl == "null") null else cleanedUrl
         val decision = getDownloadDecision(validUrl)
         val version by storeVersion.collectAsStateWithLifecycle()
@@ -639,7 +662,7 @@ object ImageCacheFactory {
                 painter = painterResource(if (showFallback) R.drawable.ic_launcher_box else R.drawable.loader),
                 contentDescription = null,
                 modifier = imageModifier.fillMaxSize(),
-                contentScale = contentScale
+                contentScale = resolvedScale
             )
             return
         }
@@ -690,7 +713,7 @@ object ImageCacheFactory {
             model = request,
             imageLoader = LOADER,
             contentDescription = contentDescription,
-            contentScale = contentScale,
+            contentScale = resolvedScale,
             modifier = imageModifier,
             placeholder = painterResource(R.drawable.loader),
             error = painterResource(R.drawable.ic_launcher_box),
@@ -719,7 +742,7 @@ object ImageCacheFactory {
      *
      * [cacheKey] (when provided) is used as both the memory and disk cache key, so a
      * content replacement behind a stable path (a re-downloaded file at the same URI)
-     * forces Coil to re-read it â€” a bare file:// URI is string-equal across rewrites,
+     * forces Coil to re-read it — a bare file:// URI is string-equal across rewrites,
      * which would otherwise keep the previously decoded bitmap.
      */
     @Composable
@@ -1071,5 +1094,3 @@ private fun String.getYouTubeQualityScore(): Int {
 }
 
 private fun String.isYouTubeHighRes(): Boolean = getYouTubeQualityScore() >= 5
-
-

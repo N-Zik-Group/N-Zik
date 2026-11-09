@@ -7,6 +7,7 @@ import androidx.core.graphics.applyCanvas
 import app.n_zik.android.appContext
 import timber.log.Timber
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.coil.displayArtworkSource
 import kotlinx.coroutines.CoroutineScope
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.Job
@@ -86,7 +87,7 @@ class BitmapProvider(
 
         loadJob = scope.launch(NzikDispatchers.DATA) {
             try {
-                val loadedBitmap: Bitmap? = ImageCacheFactory.loadBitmap(uri.toString(), allowHardware = false)
+                val loadedBitmap: Bitmap? = ImageCacheFactory.loadBitmap(displayArtworkSource(uri.toString()), allowHardware = false)
                 
                 withContext(NzikDispatchers.UI) {
                     if (loadedBitmap != null) {

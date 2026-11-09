@@ -100,8 +100,10 @@ internal fun AppearanceCoverCard(search: Search) {
     var coverThumbnailAnimation by rememberPreference(coverThumbnailAnimationKey, ThumbnailCoverType.Vinyl)
     var swipeAnimationNoThumbnail by rememberPreference(swipeAnimationsNoThumbnailKey, SwipeAnimationNoThumbnail.Sliding)
     val searchCtx_0_2 = search.inputValue.isBlank() || stringResource(R.string.settings_player_artwork_section_title).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_visible_label).contains(search.inputValue, true) || stringResource(R.string.player_artwork_hidden_swipe_animation).contains(search.inputValue, true) || stringResource(R.string.settings_transition_slide_vertical).contains(search.inputValue, true) || stringResource(R.string.settings_transition_fade).contains(search.inputValue, true) || stringResource(R.string.settings_transition_scale).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_carousel_label).contains(search.inputValue, true) || stringResource(R.string.player_artwork_transition_circular).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_fading_edge_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_expanded_artwork_size_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_shrink_when_paused_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_artwork_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_visualizer_artwork_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_animation_enabled_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_animation_style_label).contains(search.inputValue, true) || stringResource(R.string.player_thumbnail_size).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_corner_radius_label).contains(search.inputValue, true) || stringResource(R.string.artist_roundness).contains(search.inputValue, true) || stringResource(R.string.settings_player_background_blur_disabled_without_lyrics_label).contains(search.inputValue, true) || stringResource(R.string.player_artwork_technical_info_title).contains(search.inputValue, true)
+    val matchesVideoCrop = search.inputValue.isBlank() ||
+        stringResource(R.string.settings_player_crop_video_artwork_label).contains(search.inputValue, true)
     AnimatedVisibility(
-                visible = searchCtx_0_2,
+                visible = searchCtx_0_2 || matchesVideoCrop,
                 enter = settingsCardEnter,
                 exit = settingsCardExit
             ) {
@@ -110,6 +112,17 @@ internal fun AppearanceCoverCard(search: Search) {
             title = stringResource(R.string.settings_player_artwork_section_title),
             icon = R.drawable.album,
             content = {
+            // This preference also controls lists, widgets and external media artwork.
+            if (matchesVideoCrop) {
+                OtherSwitchSettingEntry(
+                    icon = R.drawable.images_sharp,
+                    title = stringResource(R.string.settings_player_crop_video_artwork_label),
+                    text = stringResource(R.string.player_artwork_crop_video_thumbnails_description),
+                    isChecked = cropVideoThumbnails,
+                    onCheckedChange = { cropVideoThumbnails = it },
+                    modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.crop_video_thumbnails")
+                )
+            }
             if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) {
                 if (search.inputValue.isBlank() || stringResource(R.string.settings_player_artwork_visible_label).contains(
                         search.inputValue,
@@ -231,17 +244,6 @@ internal fun AppearanceCoverCard(search: Search) {
                                 )
                             }
 
-                    }
-
-                    if (search.inputValue.isBlank() || stringResource(R.string.settings_player_crop_video_artwork_label).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                            icon = R.drawable.images_sharp,
-                            title = stringResource(R.string.settings_player_crop_video_artwork_label),
-                            text = stringResource(R.string.player_artwork_crop_video_thumbnails_description),
-                            isChecked = cropVideoThumbnails,
-                            onCheckedChange = { cropVideoThumbnails = it },
-                            modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.crop_video_thumbnails")
-                        )
                     }
 
                     if (search.inputValue.isBlank() || stringResource(R.string.settings_player_artwork_animation_enabled_label).contains(

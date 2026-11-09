@@ -33,7 +33,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
+import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
+import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.coil.isVideoArtwork
+import app.n_zik.android.core.coil.rememberDisplayArtworkSource
 import coil3.compose.asPainter
 import kotlin.math.sqrt
 
@@ -61,16 +65,20 @@ internal const val PLAYER_COVER_FADE_MS = 500
 
 @Composable
 internal fun PlayerCoverCrossfade(frame: PlayerCoverFrame<Painter>, modifier: Modifier = Modifier) {
+    val cropVideo by rememberPreference(cropVideoThumbnailsKey, true)
     Crossfade(
         targetState = frame,
         modifier = modifier,
         animationSpec = tween(PLAYER_COVER_FADE_MS, easing = FastOutSlowInEasing),
         label = "playerCoverFade",
     ) { visible ->
+        val source = rememberDisplayArtworkSource(visible.identity.artworkUri)
         Image(
             painter = visible.image,
             contentDescription = stringResource(R.string.accessibility_blurred_background),
-            contentScale = ContentScale.Fit,
+            // The theme covers the whole rotation-safe surface; a fitted video leaves
+            // empty strips above and below the player even when its foreground is cropped.
+            contentScale = if (cropVideo && isVideoArtwork(source)) ContentScale.Crop else ContentScale.Fit,
             modifier = Modifier.fillMaxSize(),
         )
     }
