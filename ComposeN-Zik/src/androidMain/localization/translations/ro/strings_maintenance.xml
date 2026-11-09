@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">Ultima prăbușire</string>
     <string name="maintenance_lastfm_active">Sesiune activă</string>
     <string name="maintenance_library">Bibliotecă</string>
-    <string name="maintenance_library_albums">Albume %d</string>
-    <string name="maintenance_library_artists">%d artiști</string>
+    <string name="maintenance_library_albums">Albume: %d</string>
+    <string name="maintenance_library_artists">Artişti: %d</string>
     <string name="maintenance_library_listened">%d ascultat</string>
-    <string name="maintenance_library_playlists">Playlisturi %d</string>
-    <string name="maintenance_library_songs">%d melodii</string>
+    <string name="maintenance_library_playlists">Liste de redare: %d</string>
+    <string name="maintenance_library_songs">Melodii: %d</string>
     <string name="maintenance_live_subsystems">Subsisteme live</string>
     <string name="maintenance_log_view">Vizualizare</string>
     <string name="maintenance_lt_connected">Conectat</string>
