@@ -1,4 +1,10 @@
 Fixed:
+- fix(artwork): unify cover editing and export
+  - Use the shared cover dialog for playlist thumbnails, album details and embedded audio artwork.
+  - Recrop existing covers or drafts, reuse cached remote artwork and export to an Android document chosen by the user.
+  - Keep the embedded cover preview in the metadata editor and stage images imported from HTTPS links until tags are saved.
+  - Preserve playlist thumbnail storage and track-specific album artwork, and verify confirmation and export recovery with regression tests.
+
 - fix(glass): keep playlist import and audio device headers inside shared menus
   - Use the shared list and grid headers for playlist import so the title, drag handle and options share one Glass surface.
   - Show audio device loading and retry states inside the shared menu, including initial load failures.

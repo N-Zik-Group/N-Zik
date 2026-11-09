@@ -3,10 +3,14 @@ package app.n_zik.android.components.image
 import java.io.Closeable
 import java.io.File
 import java.io.IOException
+import java.io.InputStream
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.coroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -16,12 +20,17 @@ import android.net.Uri
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.network.client.NetworkClientFactory
+import okhttp3.Request
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 /** Owns the edited copy until the caller saves or discards its draft. */
@@ -71,7 +80,34 @@ internal object PickedImageEditor {
     }
 
     /** Returns a staged result, or null when editing was cancelled or unavailable. */
-    suspend fun edit(context: Context, source: Uri): PreparedImage? = withContext(NzikDispatchers.UI) {
+    suspend fun edit(context: Context, source: Uri): PreparedImage? =
+        edit(context) { app, directory -> copyImage(app, source, directory, "input") }
+
+    suspend fun edit(context: Context, source: ByteArray): PreparedImage? =
+        edit(context) { _, directory -> copyImage(source, directory, "input") }
+
+    /** Stages a validated source without opening the crop activity. The caller owns the result. */
+    suspend fun prepareSource(context: Context, source: Uri): PreparedImage {
+        val app = context.applicationContext
+        val id = UUID.randomUUID().toString()
+        retainDirectory(id)
+        var delivered = false
+        try {
+            val file = withContext(NzikDispatchers.DATA) {
+                copyImage(app, source, directory(app, id), "input").first
+            }
+            val prepared = PreparedImage(file, app)
+            delivered = true
+            return prepared
+        } finally {
+            if (!delivered) withContext(NonCancellable + NzikDispatchers.DATA) { discard(app, id) }
+        }
+    }
+
+    private suspend fun edit(
+        context: Context,
+        copy: suspend (Context, File) -> Pair<File, String>,
+    ): PreparedImage? = withContext(NzikDispatchers.UI) {
         val activity = context.activity()
         if (activity == null || activity.isFinishing || activity.isDestroyed) return@withContext null
         val app = context.applicationContext
@@ -82,7 +118,7 @@ internal object PickedImageEditor {
         try {
             session = withContext(NzikDispatchers.DATA) {
                 cleanupOrphans(app)
-                val copied = copyImage(app, source, directory(app, id), "input")
+                val copied = copy(app, directory(app, id))
                 EditSession(id, app, copied.first, copied.second)
             }
             sessions[id] = session
@@ -132,7 +168,7 @@ internal object PickedImageEditor {
         ownedDirectories.remove(id)
     }
 
-    private fun directory(context: Context, id: String): File = File(File(context.cacheDir, "image_edit"), id)
+    internal fun directory(context: Context, id: String): File = File(File(context.cacheDir, "image_edit"), id)
 
     internal fun retainDirectory(id: String) {
         ownedDirectories.add(id)
@@ -146,12 +182,73 @@ internal object PickedImageEditor {
     }
 
     internal suspend fun copyImage(context: Context, source: Uri, directory: File, name: String): Pair<File, String> {
-        require(source.scheme == "content" || source.scheme == "file") { "Unsupported image URI" }
+        return when (source.scheme?.lowercase()) {
+            "content", "file" -> copyImage(directory, name) {
+                context.contentResolver.openInputStream(source) ?: throw IOException("Cannot open image")
+            }
+            "http", "https" -> copyRemoteImage(source.toString(), directory, name)
+            else -> throw IOException("Unsupported image URI")
+        }
+    }
+
+    internal suspend fun copyImage(bytes: ByteArray, directory: File, name: String): Pair<File, String> =
+        copyImage(directory, name) { bytes.inputStream() }
+
+    private suspend fun copyRemoteImage(url: String, directory: File, name: String): Pair<File, String> {
+        try {
+            val cached = ImageCacheFactory.readCachedCover(url) { input ->
+                try {
+                    copyImage(directory, name) { input }
+                } catch (error: IOException) {
+                    Timber.tag(TAG).w(error, "Could not use cached cover bytes")
+                    null
+                }
+            }
+            if (cached != null) return cached
+        } catch (error: IOException) {
+            Timber.tag(TAG).w(error, "Could not read the artwork disk cache")
+        }
+
+        for (candidate in ImageCacheFactory.coverSourceCandidates(url)) {
+            val copied = fetchRemoteImage(candidate, directory, name)
+            if (copied != null) return copied
+        }
+        throw IOException("Image request failed")
+    }
+
+    private suspend fun fetchRemoteImage(url: String, directory: File, name: String): Pair<File, String>? = coroutineScope {
+        suspendCancellableCoroutine { continuation ->
+            val request = Request.Builder().url(url).build()
+            val call = NetworkClientFactory.getClient().newCall(request)
+            call.timeout().timeout(30, TimeUnit.SECONDS)
+            // Keep cancellation registered until the entire body has been copied and closed.
+            continuation.invokeOnCancellation { call.cancel() }
+            launch(NzikDispatchers.DATA) {
+                try {
+                    val result = call.execute().use { response ->
+                        if (response.code in RETRYABLE_COVER_STATUSES) return@use null
+                        if (!response.isSuccessful) throw IOException("Image request failed")
+                        val body = response.body
+                        if (body.contentLength() > MAX_IMAGE_BYTES) throw IOException("Image exceeds the editor size limit")
+                        copyImage(directory, name, body::byteStream)
+                    }
+                    continuation.resume(result)
+                } catch (error: CancellationException) {
+                    continuation.cancel(error)
+                } catch (error: Exception) {
+                    continuation.resumeWithException(error)
+                }
+            }
+        }
+    }
+
+    private val RETRYABLE_COVER_STATUSES = setOf(403, 404, 410)
+
+    private suspend fun copyImage(directory: File, name: String, open: () -> InputStream): Pair<File, String> {
         check(directory.isDirectory || directory.mkdirs()) { "Cannot create image edit directory" }
         val pending = File(directory, "$name.pending")
         try {
-            val input = context.contentResolver.openInputStream(source) ?: throw IOException("Cannot open image")
-            input.use { stream ->
+            open().use { stream ->
                 pending.outputStream().use { output ->
                     val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                     var count = 0L

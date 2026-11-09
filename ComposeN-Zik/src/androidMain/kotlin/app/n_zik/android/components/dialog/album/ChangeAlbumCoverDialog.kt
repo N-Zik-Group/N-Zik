@@ -22,6 +22,7 @@ class ChangeAlbumCoverDialog private constructor(
     valueState: MutableState<TextFieldValue>,
     context: Context,
     scope: CoroutineScope,
+    updateTrackCovers: Boolean,
     getAlbum: () -> Album?,
 ) : StagedCoverDialog(
     activeState, valueState, context, scope,
@@ -30,7 +31,7 @@ class ChangeAlbumCoverDialog private constructor(
             CoverEditTarget(item.id, item.thumbnailUrl) { url ->
                 albumTable.insertIgnore(item)
                 albumTable.updateCover(item.id, url)
-                songTable.updateCoverForAlbum(item.id, url)
+                if (updateTrackCovers) songTable.updateCoverForAlbum(item.id, url)
             }
         }
     },
@@ -38,12 +39,26 @@ class ChangeAlbumCoverDialog private constructor(
 ) {
     companion object {
         @Composable
-        operator fun invoke(getAlbum: () -> Album?): ChangeAlbumCoverDialog {
+        operator fun invoke(getAlbum: () -> Album?): ChangeAlbumCoverDialog =
+            rememberDialog(updateTrackCovers = true, getAlbum = getAlbum)
+
+        /** Uses the album details save behavior, preserving artwork set on individual tracks. */
+        @Composable
+        internal fun forAlbumDetails(getAlbum: () -> Album?): ChangeAlbumCoverDialog =
+            rememberDialog(updateTrackCovers = false, getAlbum = getAlbum)
+
+        @Composable
+        private fun rememberDialog(
+            updateTrackCovers: Boolean,
+            getAlbum: () -> Album?,
+        ): ChangeAlbumCoverDialog {
             val current = rememberUpdatedState(getAlbum)
             val context = LocalContext.current
             val scope = rememberCoroutineScope()
-            val dialog = remember(context, scope) {
-                ChangeAlbumCoverDialog(mutableStateOf(false), mutableStateOf(TextFieldValue()), context, scope) { current.value() }
+            val dialog = remember(context, scope, updateTrackCovers) {
+                ChangeAlbumCoverDialog(
+                    mutableStateOf(false), mutableStateOf(TextFieldValue()), context, scope, updateTrackCovers,
+                ) { current.value() }
             }
             DisposableEffect(dialog) { onDispose { dialog.hideDialog() } }
             return dialog

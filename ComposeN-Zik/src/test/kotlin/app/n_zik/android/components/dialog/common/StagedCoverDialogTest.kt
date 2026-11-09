@@ -1,13 +1,25 @@
 package app.n_zik.android.components.dialog.common
 
+import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.input.TextFieldValue
 import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.components.image.PickedImageEditor
+import app.n_zik.android.components.image.PreparedImage
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import io.mockk.verify
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.yield
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -29,8 +41,8 @@ class StagedCoverDialogTest {
     private var currentId = "song-one"
     private var writes = 0
 
-    private fun dialog() = object : StagedCoverDialog(
-        mutableStateOf(false), mutableStateOf(TextFieldValue()), context, scope,
+    private fun dialog(editScope: CoroutineScope = scope) = object : StagedCoverDialog(
+        mutableStateOf(false), mutableStateOf(TextFieldValue()), context, editScope,
         getTarget = { CoverEditTarget(currentId, "https://example.com/original.jpg") { writes++ } },
         save = { _, _, _, _, _ -> writes++; error("Unexpected file save") },
     ) {}
@@ -46,6 +58,40 @@ class StagedCoverDialogTest {
         assertEquals(0, writes)
         assertTrue(dialog.isActive)
         assertEquals("draft", source.readText())
+    }
+
+    @Test
+    fun `recropping opens the live draft and cancelling keeps it until the dialog is dismissed`() {
+        mockkObject(PickedImageEditor)
+        try {
+            val original = Uri.parse("https://example.com/original.jpg")
+            val stagedUri = Uri.fromFile(File(context.cacheDir, "staged.jpg"))
+            val staged = mockk<PreparedImage>(relaxed = true)
+            every { staged.uri } returns stagedUri
+            coEvery { PickedImageEditor.edit(context, original) } returns staged
+            coEvery { PickedImageEditor.edit(context, stagedUri) } returns null
+
+            // JUnit is synchronous; the dialog jobs share this test event loop.
+            runBlocking {
+                val dialog = dialog(this).apply { showDialog() }
+                dialog.editCurrentCover()
+                yield()
+                assertEquals(stagedUri.toString(), dialog.value.text)
+
+                dialog.editCurrentCover()
+                yield()
+                coVerify(exactly = 1) { PickedImageEditor.edit(context, stagedUri) }
+                verify(exactly = 0) { staged.close() }
+                assertEquals(stagedUri.toString(), dialog.value.text)
+
+                dialog.hideDialog()
+                verify(exactly = 1) { staged.close() }
+                assertEquals(original.toString(), dialog.value.text)
+                assertEquals(0, writes)
+            }
+        } finally {
+            unmockkObject(PickedImageEditor)
+        }
     }
 
     @Test

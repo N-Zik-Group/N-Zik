@@ -54,28 +54,28 @@ class EditMetadataDialogCoverArtLayoutTest {
     )
 
     @Test
-    fun `long gallery label wraps readably beside an existing cover in a narrow editor`() {
+    fun `long cover action label wraps readably beside an existing cover in a narrow editor`() {
         val bitmap = Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888)
         val bytes = ByteArrayOutputStream().use { output ->
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
             output.toByteArray()
         }
         bitmap.recycle()
-        checkGalleryLayout(coverBytes = bytes, fontScale = 1f)
+        checkCoverActionLayout(coverBytes = bytes, fontScale = 1f)
     }
 
     @Test
-    fun `gallery label remains readable and clickable at enlarged font size without a cover`() {
-        checkGalleryLayout(coverBytes = null, fontScale = 1.5f)
+    fun `cover action label remains readable and clickable at enlarged font size without a cover`() {
+        checkCoverActionLayout(coverBytes = null, fontScale = 1.5f)
     }
 
-    private fun checkGalleryLayout(coverBytes: ByteArray?, fontScale: Float) {
+    private fun checkCoverActionLayout(coverBytes: ByteArray?, fontScale: Float) {
         var picks = 0
         var label = ""
         var coverDescription = ""
         composeRule.setContent {
             val density = LocalDensity.current
-            label = LocalContext.current.getString(R.string.thumbnail_action_pick_from_gallery)
+            label = LocalContext.current.getString(R.string.metadata_action_change_cover)
             coverDescription = LocalContext.current.getString(R.string.metadata_cover_art)
             CompositionLocalProvider(
                 LocalAppearance provides appearance,
@@ -84,7 +84,7 @@ class EditMetadataDialogCoverArtLayoutTest {
                 // The real editor leaves a narrow content area after dialog and body padding.
                 Box(Modifier.width(240.dp)) {
                     val dialog = EditMetadataDialog { null }
-                    dialog.CoverArtField(coverBytes, onPickImage = { picks++ })
+                    dialog.CoverArtField(coverBytes, onChangeCover = { picks++ })
                 }
             }
         }
@@ -98,14 +98,14 @@ class EditMetadataDialogCoverArtLayoutTest {
         val text = composeRule.onNodeWithText(label, useUnmergedTree = true)
         text.assertIsDisplayed()
         val bounds = text.getBoundsInRoot()
-        assertTrue("gallery label needs usable horizontal space: $bounds", bounds.right - bounds.left >= 100.dp)
+        assertTrue("cover action label needs usable horizontal space: $bounds", bounds.right - bounds.left >= 100.dp)
         val layouts = mutableListOf<TextLayoutResult>()
         text.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
         val layout = layouts.single()
-        assertTrue("the French gallery label should wrap", layout.lineCount > 1)
+        assertTrue("the French cover action label should wrap", layout.lineCount > 1)
         assertTrue("wrapping must not degrade to a vertical letter column", layout.lineCount <= 6)
-        assertTrue("all gallery text remains visible", !layout.hasVisualOverflow)
+        assertTrue("all cover action text remains visible", !layout.hasVisualOverflow)
         composeRule.onNodeWithText(label).performClick()
-        composeRule.runOnIdle { assertEquals("gallery picker still opens once", 1, picks) }
+        composeRule.runOnIdle { assertEquals("cover dialog opens once", 1, picks) }
     }
 }

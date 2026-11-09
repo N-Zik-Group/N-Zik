@@ -25,8 +25,6 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.core.database.*
 
 import android.annotation.SuppressLint
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -180,8 +178,7 @@ import app.it.fast4x.rimusic.utils.queueSwipeRightActionKey
 import androidx.compose.runtime.CompositionLocalProvider
 
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.n_zik.android.utils.playlist.savePlaylistThumbnail
+import app.n_zik.android.components.dialog.playlist.ChangePlaylistCoverDialog
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.showFloatingIconKey
 import app.it.fast4x.rimusic.utils.syncPushPlaylistKey
@@ -299,9 +296,9 @@ fun LocalPlaylistSongs(
 
     // Non-vital
 
-    val thumbnailUrl = remember { mutableStateOf("") }
+    val thumbnailUrl = remember(playlistId) { mutableStateOf("") }
 
-    val playlist by remember {
+    val playlist by remember(playlistId) {
         Database.playlistTable
                 .findById( playlistId )
     }.collectAsStateWithLifecycle( null, context = NzikDispatchers.DATA )
@@ -847,31 +844,6 @@ fun LocalPlaylistSongs(
     val renumberDialog = Reposition(playlistId)
     val downloadAllDialog = DownloadAllSongsDialog ( ::getSongs )
     val deleteDownloadsDialog = DeleteAllDownloadedSongsDialog ( ::getSongs )
-    val thumbnailPickTarget = remember { mutableStateOf<Pair<Long, String>?>(null) }
-    val currentThumbnailPlaylistId by rememberUpdatedState(playlistId)
-    val editThumbnailLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri ->
-        // Callback is invoked after the user selects a media item or closes the
-        // photo picker.
-        if (uri != null) {
-            val target = thumbnailPickTarget.value ?: return@rememberLauncherForActivityResult
-            val isCurrentTarget = {
-                currentThumbnailPlaylistId == target.first && playlist?.id == target.first &&
-                    getActiveProfile(context) == target.second
-            }
-            if (!isCurrentTarget()) return@rememberLauncherForActivityResult
-            val thumbnailName = "playlist_${target.first}"
-            coroutineScope.launch {
-                // Issue #606 M2: the decode/scale/write no longer runs on Main; a failed save
-                // keeps the current thumbnail instead of storing the string "null".
-                val permaUri = savePlaylistThumbnail(context, uri, thumbnailName, isCurrentTarget = isCurrentTarget)
-                if (permaUri != null && isCurrentTarget()) thumbnailUrl.value = permaUri.toString()
-            }
-        } else {
-            Toaster.w( R.string.thumbnail_not_selected )
-        }
-    }
     val pin = PinPlaylist( playlist )
     val positionLock = remember( sort.sortOrder ) { PositionLock(sort.sortOrder) }
     LaunchedEffect( itemSelector.isActive ) {
@@ -947,12 +919,12 @@ fun LocalPlaylistSongs(
     }
     val updateSongsDialog = UpdateSongDialog( batchTargets = ::getSongs )
 
-    fun openEditThumbnailPicker() {
-        val targetId = playlist?.id ?: return
-        thumbnailPickTarget.value = targetId to getActiveProfile(context)
-        editThumbnailLauncher.launch("image/*")
-    }
-    val thumbnailPicker = ThumbnailPicker { openEditThumbnailPicker() }
+    val changePlaylistCover = ChangePlaylistCoverDialog(
+        getPlaylistId = { playlistId.takeIf { playlist?.id == it } },
+        getThumbnail = { thumbnailUrl.value.takeIf(String::isNotBlank) },
+        setThumbnail = { thumbnailUrl.value = it },
+    )
+    val thumbnailPicker = ThumbnailPicker { changePlaylistCover.showDialog() }
 
     fun resetThumbnail() {
         if(thumbnailUrl.value == "") {
@@ -1099,7 +1071,7 @@ fun LocalPlaylistSongs(
         empty = itemsOnDisplay.isEmpty(),
         loading = loadedItems == null || filteredQuery != search.inputValue
     )
-    LaunchedEffect( playlist?.name ) {
+    LaunchedEffect( playlistId, playlist?.name ) {
         val thumbnailName = "thumbnail/playlist_${playlistId}"
         val presentThumbnailUrl: String? = checkFileExists(context, thumbnailName)
         if (presentThumbnailUrl != null) {
@@ -1134,6 +1106,7 @@ fun LocalPlaylistSongs(
         }
     }
 
+    changePlaylistCover.Render()
     renameDialog.Render()
     exportDialog.Render()
     deleteDialog.Render()

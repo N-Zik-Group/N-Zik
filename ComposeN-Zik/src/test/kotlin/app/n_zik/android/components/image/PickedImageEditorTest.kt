@@ -10,11 +10,15 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
+import coil3.annotation.ExperimentalCoilApi
+import coil3.disk.DiskCache
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -25,8 +29,26 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import app.n_zik.android.core.network.client.NetworkClientFactory
+import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Protocol
+import okhttp3.Response
+import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
+import okio.Buffer
+import okio.Path.Companion.toOkioPath
+import okio.Source
+import okio.Timeout
+import okio.buffer
 
+@OptIn(ExperimentalCoilApi::class)
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -182,6 +204,134 @@ class PickedImageEditorTest {
                 original.delete()
             }
         }
+    }
+
+    @Test
+    fun `remote source uses the shared client and validates the actual image type`() {
+        val source = imageFile("remote-source.png", Color.RED)
+        val bytes = source.readBytes()
+        val folder = editDirectory()
+        val uri = Uri.parse("https://example.com/cover")
+        mockkObject(NetworkClientFactory)
+        mockEmptyArtworkCache()
+        try {
+            val client = OkHttpClient.Builder().addInterceptor { chain ->
+                assertEquals(uri.toString(), chain.request().url.toString())
+                Response.Builder()
+                    .request(chain.request())
+                    .protocol(Protocol.HTTP_1_1)
+                    .code(200)
+                    .message("OK")
+                    .body(bytes.toResponseBody("application/octet-stream".toMediaType()))
+                    .build()
+            }.build()
+            every { NetworkClientFactory.getClient() } returns client
+            // JUnit waits for the same source copy used by the crop editor.
+            runBlocking {
+                val (file, mime) = withContext(NzikDispatchers.DATA) {
+                    PickedImageEditor.copyImage(context, uri, folder, "input")
+                }
+                assertEquals("image/png", mime)
+                assertArrayEquals(bytes, file.readBytes())
+            }
+        } finally {
+            unmockkObject(NetworkClientFactory)
+            unmockkObject(ImageCacheFactory)
+            PickedImageEditor.discard(context, folder.name)
+            source.delete()
+        }
+    }
+
+    @Test
+    fun `cached fallback cover preserves encoded bytes without transport`() {
+        val source = imageFile("cached-cover.png", Color.GREEN)
+        val bytes = source.readBytes()
+        val cacheDir = File(context.cacheDir, UUID.randomUUID().toString())
+        val cache = DiskCache.Builder().directory(cacheDir.toOkioPath()).maxSizeBytes(1024 * 1024).build()
+        val folder = editDirectory()
+        val uri = Uri.parse("https://i.ytimg.com/vi/example/maxresdefault.jpg")
+        val fallback = "https://i.ytimg.com/vi/example/hqdefault.jpg"
+        val key = ImageCacheFactory.generateCacheKeySync(fallback, ImageCacheFactory.NetworkQuality.LOW)
+        val entry = requireNotNull(cache.openEditor(key))
+        cache.fileSystem.write(entry.data) { write(bytes) }
+        cache.fileSystem.write(entry.metadata) { writeUtf8("fixture") }
+        entry.commit()
+        mockkObject(ImageCacheFactory, NetworkClientFactory)
+        every { ImageCacheFactory.getDiskCache() } returns cache
+        every { NetworkClientFactory.getClient() } throws AssertionError("Cache hit must not fetch")
+        try {
+            // The synchronous JUnit entry point waits for the DATA dispatcher.
+            runBlocking {
+                val (file, mimeType) = withContext(NzikDispatchers.DATA) {
+                    PickedImageEditor.copyImage(context, uri, folder, "input")
+                }
+                assertEquals("image/png", mimeType)
+                assertArrayEquals(bytes, file.readBytes())
+            }
+        } finally {
+            unmockkObject(NetworkClientFactory, ImageCacheFactory)
+            PickedImageEditor.discard(context, folder.name)
+            cache.shutdown()
+            cacheDir.deleteRecursively()
+            source.delete()
+        }
+    }
+
+    @Test
+    fun `cancelling a remote copy cancels its blocked response body`() {
+        val folder = editDirectory()
+        val reading = CompletableDeferred<Unit>()
+        val cancelled = CompletableDeferred<Boolean>()
+        val client = OkHttpClient.Builder().addInterceptor { chain ->
+            val call = chain.call()
+            val body = object : ResponseBody() {
+                private val input = object : Source {
+                    override fun read(sink: Buffer, byteCount: Long): Long {
+                        reading.complete(Unit)
+                        val deadline = System.nanoTime() + 5_000_000_000L
+                        while (!call.isCanceled() && System.nanoTime() < deadline) Thread.sleep(5)
+                        cancelled.complete(call.isCanceled())
+                        throw IOException("Stopped test body")
+                    }
+
+                    override fun timeout(): Timeout = Timeout.NONE
+                    override fun close() = Unit
+                }.buffer()
+
+                override fun contentType() = "image/png".toMediaType()
+                override fun contentLength() = -1L
+                override fun source() = input
+            }
+            Response.Builder().request(chain.request()).protocol(Protocol.HTTP_1_1)
+                .code(200).message("OK").body(body).build()
+        }.build()
+        mockkObject(NetworkClientFactory)
+        mockEmptyArtworkCache()
+        every { NetworkClientFactory.getClient() } returns client
+        try {
+            // JUnit waits for the suspended copy to stop before inspecting its output directory.
+            runBlocking {
+                val copying = launch(NzikDispatchers.DATA) {
+                    PickedImageEditor.copyImage(context, Uri.parse("https://example.com/blocked"), folder, "input")
+                }
+                withTimeout(10_000) {
+                    reading.await()
+                    copying.cancelAndJoin()
+                    assertTrue(cancelled.await())
+                }
+                assertTrue(folder.listFiles().orEmpty().isEmpty())
+            }
+        } finally {
+            unmockkObject(NetworkClientFactory, ImageCacheFactory)
+            PickedImageEditor.discard(context, folder.name)
+        }
+    }
+
+    private fun mockEmptyArtworkCache() {
+        mockkObject(ImageCacheFactory)
+        val cache = mockk<DiskCache>()
+        every { cache.openSnapshot(any()) } returns null
+        every { ImageCacheFactory.getDiskCache() } returns cache
     }
 
     @Test

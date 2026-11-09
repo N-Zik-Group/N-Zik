@@ -62,6 +62,7 @@ import okhttp3.OkHttpClient
 import okio.Path.Companion.toOkioPath
 // import Timber
 import java.io.File
+import java.io.InputStream
 import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
@@ -69,6 +70,8 @@ import app.n_zik.android.core.network.client.GlobalNetworkLogger
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import androidx.compose.foundation.Image
 import okhttp3.Request
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import okio.buffer
 import timber.log.Timber
 
 @OptIn(ExperimentalCoilApi::class)
@@ -934,6 +937,40 @@ object ImageCacheFactory {
     fun isImageCached(thumbnailUrl: String?): Boolean = CacheMetadataStore.get(thumbnailUrl ?: "") != null
 
     fun getDiskCache(): DiskCache = DISK_CACHE
+
+    /** Reads encoded cover bytes while the cache snapshot prevents eviction. */
+    internal suspend fun <T : Any> readCachedCover(url: String, read: suspend (InputStream) -> T?): T? {
+        val cache = getDiskCache()
+        val sources = coverSourceCandidates(url)
+        val tried = mutableSetOf<String>()
+        for (quality in NetworkQuality.entries.asReversed()) {
+            for (source in sources) {
+                val key = generateCacheKeySync(source, quality)
+                if (!tried.add(key)) continue
+                val snapshot = cache.openSnapshot(key) ?: continue
+                snapshot.use {
+                    val result = cache.fileSystem.source(snapshot.data).buffer().inputStream().use { read(it) }
+                    if (result != null) return result
+                }
+            }
+        }
+        return null
+    }
+
+    /** Includes the original URL and the variants the artwork renderer can display. */
+    internal fun coverSourceCandidates(url: String): List<String> = buildList {
+        add(url)
+        val host = url.toHttpUrl().host
+        if (host != "i.ytimg.com" && host != "yt3.ggpht.com" &&
+            host != "googleusercontent.com" && !host.endsWith(".googleusercontent.com")
+        ) return@buildList
+
+        for (quality in NetworkQuality.entries.asReversed()) {
+            generateSequence(url.thumbnail(quality.size)) { it.getNextYouTubeFallback() }.forEach {
+                if (it !in this) add(it)
+            }
+        }
+    }
 
     fun clearImageCache() {
         try {

@@ -97,11 +97,13 @@ import com.arthenica.ffmpegkit.FFmpegKit
 import android.content.Context
 import android.util.Base64
 import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.n_zik.android.components.image.PickedImageEditor
+import app.n_zik.android.components.dialog.common.CoverEditTarget
+import app.n_zik.android.components.dialog.common.StagedCoverDialog
 
-class EditMetadataDialog private constructor(
+class EditMetadataDialog internal constructor(
     activeState: MutableState<Boolean>,
     private val getSong: () -> Song?,
+    private val context: Context,
     private val coroutineScope: kotlinx.coroutines.CoroutineScope
 ) : InteractiveDialog, InputDialog, MenuIcon, Descriptive {
 
@@ -110,13 +112,34 @@ class EditMetadataDialog private constructor(
     private var fields = mutableStateListOf<EditableField>()
     private var isLoading by mutableStateOf(false)
     private var filePath: String? = null
-    private var coverArtBytes: ByteArray? = null
+    private var coverArtBytes by mutableStateOf<ByteArray?>(null)
     private var dialogSong: Song? = null
     private var dialogProfile: String? = null
     private var generation = 0
-    private var pickedGeneration = 0
-    private var editJob: Job? = null
     private var saveJob: Job? = null
+    internal val coverDialog: StagedCoverDialog = object : StagedCoverDialog(
+        mutableStateOf(false), mutableStateOf(TextFieldValue()), context, coroutineScope,
+        getTarget = {
+            generation.takeIf(::currentTarget)?.let {
+                CoverEditTarget(it.toString(), null, currentBytes = coverArtBytes)
+            }
+        },
+        applyDraft = { _, uri, isCurrent ->
+            val bytes = withContext(NzikDispatchers.DATA) { readCoverArtBytes(context, uri) }
+            if (bytes != null && isCurrent()) {
+                coverArtBytes = bytes
+                true
+            } else {
+                false
+            }
+        },
+        allowRemoteImport = true,
+    ) {
+        @Composable
+        override fun TextPlaceholder() {
+            Text(stringResource(R.string.metadata_cover_url_hint))
+        }
+    }
     private val pendingWrites = PendingMetadataWriteStore()
 
     private var writePermissionLauncher: ActivityResultLauncher<IntentSenderRequest>? = null
@@ -211,19 +234,16 @@ class EditMetadataDialog private constructor(
         operator fun invoke(getSong: () -> Song?): EditMetadataDialog {
             val coroutineScope = rememberCoroutineScope()
             val currentSong = rememberUpdatedState(getSong)
-            val dialog = remember(coroutineScope) {
-                EditMetadataDialog(mutableStateOf(false), { currentSong.value() }, coroutineScope)
+            val context = LocalContext.current
+            val dialog = remember(context, coroutineScope) {
+                EditMetadataDialog(mutableStateOf(false), { currentSong.value() }, context, coroutineScope)
             }
             DisposableEffect(dialog) { onDispose { dialog.hideDialog() } }
             return dialog
         }
 
         /**
-         * Reads the full content of a picked cover-art [uri] (issue #606 M7b). Extracted so the
-         * `pickerLauncher` callback in [DialogBody] can dispatch it via
-         * `withContext(NzikDispatchers.DATA)` instead of running synchronously on Main (the
-         * thread an `ActivityResultLauncher` callback resumes on), and so it is unit-testable
-         * without instantiating the dialog.
+         * Reads the confirmed, bounded editor result. The cover dialog calls this on DATA.
          */
         internal fun readCoverArtBytes(context: Context, uri: Uri): ByteArray? =
             context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
@@ -255,7 +275,7 @@ class EditMetadataDialog private constructor(
     override fun showDialog() {
         generation++
         dialogSong = getSong() ?: return
-        dialogProfile = getActiveProfile(appContext())
+        dialogProfile = getActiveProfile(context)
         filePath = null
         super<InteractiveDialog>.showDialog()
     }
@@ -263,7 +283,7 @@ class EditMetadataDialog private constructor(
     override fun hideDialog() {
         isActive = false
         generation++
-        editJob?.cancel()
+        coverDialog.hideDialog()
         saveJob?.cancel()
         coverArtBytes = null
         filePath = null
@@ -274,10 +294,10 @@ class EditMetadataDialog private constructor(
 
     private fun currentTarget(token: Int): Boolean =
         isActive && token == generation && dialogSong?.id == getSong()?.id &&
-            dialogProfile == getActiveProfile(appContext())
+            dialogProfile == getActiveProfile(context)
 
     private fun currentTarget(request: MetadataSaveRequest): Boolean = request.matches(
-        isActive, generation, getSong()?.id, getActiveProfile(appContext())
+        isActive, generation, getSong()?.id, getActiveProfile(context)
     )
 
     @Composable
@@ -285,32 +305,7 @@ class EditMetadataDialog private constructor(
         val context = LocalContext.current
         val song = dialogSong
 
-        val pickerLauncher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.GetContent()
-        ) { uri: Uri? ->
-            val token = pickedGeneration
-            if (uri != null && currentTarget(token)) {
-                editJob?.cancel()
-                editJob = coroutineScope.launch {
-                    try {
-                        val edited = PickedImageEditor.edit(context, uri) ?: return@launch
-                        edited.use {
-                            val bytes = withContext(NzikDispatchers.DATA) { readCoverArtBytes(context, edited.uri) }
-                            if (bytes != null && currentTarget(token)) {
-                                coverArtBytes = bytes
-                                val idx = fields.indexOfFirst { it.isCoverArt }
-                                if (idx >= 0) fields[idx] = fields[idx].copy(value = TextFieldValue(context.getString(R.string.metadata_cover)))
-                            }
-                        }
-                    } catch (cancelled: CancellationException) {
-                        throw cancelled
-                    } catch (error: Exception) {
-                        Timber.tag("EditMetadata").e(error, "Could not read edited cover")
-                        Toaster.e(R.string.metadata_save_failed)
-                    }
-                }
-            }
-        }
+        coverDialog.Render()
 
         val writePermLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.StartIntentSenderForResult()
@@ -380,12 +375,8 @@ class EditMetadataDialog private constructor(
                     if (field.isCoverArt) {
                         CoverArtField(
                             coverBytes = coverArtBytes,
-                            onPickImage = {
-                                if (saveJob?.isActive != true) {
-                                    editJob?.cancel()
-                                    pickedGeneration = ++generation
-                                    pickerLauncher.launch("image/*")
-                                }
+                            onChangeCover = {
+                                if (saveJob?.isActive != true) coverDialog.showDialog()
                             }
                         )
                     } else {
@@ -403,7 +394,7 @@ class EditMetadataDialog private constructor(
     }
 
     @Composable
-    internal fun CoverArtField(coverBytes: ByteArray?, onPickImage: () -> Unit) {
+    internal fun CoverArtField(coverBytes: ByteArray?, onChangeCover: () -> Unit) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -440,7 +431,7 @@ class EditMetadataDialog private constructor(
             }
 
             OutlinedButton(
-                onClick = onPickImage,
+                onClick = onChangeCover,
                 modifier = Modifier
                     .weight(1f)
                     .glassDialogButtonBackground(
@@ -455,7 +446,7 @@ class EditMetadataDialog private constructor(
                 border = glassDialogButtonBorder(BorderStroke(1.dp, colorPalette().accent)),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
             ) {
-                Text(stringResource(R.string.thumbnail_action_pick_from_gallery))
+                Text(stringResource(R.string.metadata_action_change_cover))
             }
         }
     }
@@ -489,12 +480,17 @@ class EditMetadataDialog private constructor(
         )
     )
 
+    internal fun captureSaveRequest(path: String): MetadataSaveRequest? {
+        val song = dialogSong ?: return null
+        val token = generation
+        if (!currentTarget(token) || coverDialog.isActive || saveJob?.isActive == true || pendingWrites.hasPending()) return null
+        return MetadataSaveRequest(song, dialogProfile ?: return null, token, path, fields.toList(), coverArtBytes?.copyOf())
+    }
+
     private fun saveToFile() {
         val path = filePath ?: run { Toaster.e(R.string.metadata_file_path_unavailable); return }
-        val song = dialogSong ?: return
-        val token = generation
-        if (!currentTarget(token) || editJob?.isActive == true || saveJob?.isActive == true || pendingWrites.hasPending()) return
-        val request = MetadataSaveRequest(song, dialogProfile ?: return, token, path, fields.toList(), coverArtBytes?.copyOf())
+        val request = captureSaveRequest(path) ?: return
+        val song = request.song
         val selectedCoverBytes = request.coverBytes
         val selectedFields = request.fields
         saveJob = coroutineScope.launch(NzikDispatchers.DATA) {

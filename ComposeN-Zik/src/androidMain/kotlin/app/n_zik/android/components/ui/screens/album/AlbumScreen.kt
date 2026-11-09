@@ -151,6 +151,7 @@ import app.n_zik.android.appContext
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.shuffleButtonIcon
 import app.n_zik.android.components.album.AlbumModifier
+import app.n_zik.android.components.dialog.album.ChangeAlbumCoverDialog
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
@@ -531,13 +532,7 @@ fun AlbumDetails(
     ) {
         updateAuthors(browseId, "$MODIFIED_PREFIX$it")
     }
-    val changeCover = AlbumModifier(
-        iconId = R.drawable.cover_edit,
-        messageId = R.string.metadata_action_change_cover,
-        getDefaultValue = { album?.thumbnailUrl ?: "" },
-    ) {
-        updateCover(browseId, "$MODIFIED_PREFIX$it")
-    }
+    val changeCover = ChangeAlbumCoverDialog.forAlbumDetails { album }
     var showTranslateLanguageDialog by remember { mutableStateOf(false) }
     val translate = Translate.init(onLongClick = { showTranslateLanguageDialog = true })
     val translator = Translator(NetworkClientFactory.getTranslatorClient())
