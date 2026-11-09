@@ -31,4 +31,46 @@
     <plurals name="statistics_songs_heard_count">
         <item quantity="other">%1$d の曲が聴こえました</item>
     </plurals>
+    <plurals name="profile_last_used_minute_count">
+        <item quantity="other">%1$d 分前</item>
+    </plurals>
+    <plurals name="profile_last_used_hour_count">
+        <item quantity="other">%1$d 時間前</item>
+    </plurals>
+    <plurals name="profile_last_used_day_count">
+        <item quantity="other">%1$d 日前</item>
+    </plurals>
+    <plurals name="profile_last_used_week_count">
+        <item quantity="other">%1$d 週間前</item>
+    </plurals>
+    <plurals name="profile_last_used_month_count">
+        <item quantity="other">%1$d ヶ月前</item>
+    </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="other">%1$d 検索クエリを削除</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="other">%1$d 再生イベントを削除</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="other">%1$d エピソード · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="other">YouTubeプレイリストに %1$d 曲を追加中</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="other">YouTubeプレイリストに %1$d 曲を追加しました</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="other">プロファイルの状態がインポートされました: %1$d プロファイル</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="other">%1$d アルバムの同期に失敗しました。アルバムタブに戻って再試行してください。</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="other">%1$d キャッシュ/ダウンロードした曲をエクスポートしますか？</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="other">%1$d ダウンロードした曲にファイルがありません。もう一度ダウンロードしてください。</item>
+    </plurals>
 </resources>
