@@ -38,7 +38,6 @@
     <!-- Backup -->
     <string name="backup_action_export">Exportă backup</string>
     <string name="backup_action_import">Importă copia de rezervă</string>
-    <string name="backup_action_import_legacy_migration">Fișier migrare importat.</string>
     <string name="backup_auto_custom_interval_unit_description">Alegeți unitatea de timp pentru intervalul de backup personalizat.</string>
     <string name="backup_auto_custom_interval_value_description">Setaţi numărul de unităţi de timp între backup-urile automate. (Automatic Translation)</string>
     <string name="backup_auto_include_discord_credentials_description">Include acreditările contului Discord salvate în copiile de rezervă automate.</string>
@@ -51,19 +50,18 @@
     <string name="backup_auto_schedule_day_of_month_description">Alege ziua lunii pentru copii de rezervă automate lunare.</string>
     <string name="backup_auto_schedule_day_of_week_description">Alege ziua săptămânii pentru backup-uri automate săptămânale.</string>
     <string name="backup_auto_schedule_time_description">Alege ora la care trebuie să ruleze copiile de rezervă automate programate.</string>
-    <string name="backup_auto_target_description">Alegeți dacă copiile de rezervă automate includ baza de date, setările sau ambele.</string>
+    <string name="backup_auto_content_format_description">Alegeți ce să faceți backup automat. Baza de date de rezervă utilizează ZIP atunci când includ coperte personalizate.</string>
     <string name="backup_before_update_description">Copie de rezervă automată înainte de instalarea unei actualizări</string>
     <string name="backup_before_update_failed">Backup pre-instalare eșuat</string>
     <string name="backup_before_update_running_message">Se salvează datele înainte de instalarea…</string>
     <string name="backup_before_update_running_title">Backup în curs</string>
     <string name="backup_excluded_preferences_and_cache_description">Preferințele personale (de exemplu, modul tematic) și memoria cache sunt excluse.</string>
-    <string name="backup_export_description">Exportă baza de date sau setările într-un fişier</string>
-    <string name="backup_import_description">Importă baza de date sau setări dintr-un fişier</string>
+    <string name="backup_export_library_options_description">Exportă baza de date cu copertele, setările sau profilurile sale personalizate</string>
+    <string name="backup_import_library_options_description">Restaurează o copie de rezervă a bazei de date SQLite sau ZIP</string>
     <string name="backup_include_discord_credentials">Include acreditările de identitate Discord</string>
     <string name="backup_include_lastfm_credentials">Include acreditările de identitate Last.fm</string>
     <string name="backup_include_proxy_password">Include parola proxy</string>
     <string name="backup_include_youtube_credentials">Include acreditările de identitate YouTube</string>
-    <string name="backup_legacy_migration_description">Pentru utilizatorii în vârstă înainte de conversie.\nUtilizează o aplicație veche pentru a face o copie de rezervă pentru migrare.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Datele existente vor fi suprascrise. %1$s se va închide automat după restaurarea bazei de date.</string>
     <string name="backup_target_database_and_settings_label">Baza de date + Setări</string>
     <string name="backup_target_database_label">Bază de date</string>
@@ -96,18 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Exportă lista de profil și fotografiile feței într-un singur fișier .txt</string>
     <string name="backup_export_all">Exportă tot</string>
-    <string name="backup_export_all_description">Exportă baza de date, setări și starea profilului</string>
-    <string name="backup_export_both_description">Exportă baza de date şi setările ca fişiere separate</string>
-    <string name="backup_export_database_description">Exportă baza de date cu melodii, liste de redare și istoric</string>
+    <string name="backup_export_all_with_covers_description">Exporta baza de date, setarile si starea profilului separat. Baza de date foloseste ZIP daca include coperte personalizate.</string>
+    <string name="backup_export_database_with_covers_and_settings_description">Exporta baza de date si setarile separat. Baza de date foloseste ZIP daca include coperte personalizate.</string>
+    <string name="backup_export_database_with_covers_description">Salvează melodiile, listele de redare și istoricul ca SQLite. Dacă ai coperte personalizate, exportul este un ZIP cu baza de date și coperte.</string>
     <string name="backup_export_profile_state_failed">Export stare profil eșuat</string>
     <string name="backup_export_settings_description">Exportă setările și preferințele aplicației</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importă lista de profil și fotografiile feței dintr-un fișier .txt</string>
     <string name="backup_import_all">Importați toate</string>
-    <string name="backup_import_all_description">Importă baza de date, setări, starea profilului</string>
-    <string name="backup_import_both_description">Importă baza de date şi setările din fişiere separate</string>
+    <string name="backup_import_all_with_covers_description">Restaurați o copie de rezervă a bazei de date SQLite sau ZIP, setări și starea profilului din fișiere separate.</string>
+    <string name="backup_import_database_with_covers_and_settings_description">Restaurează o bază de date SQLite sau ZIP și un fișier de setări separat.</string>
     <string name="backup_import_completed_profile">Importat în %1$s</string>
-    <string name="backup_import_database_description">Importă baza de date cu melodii, liste de redare și istoric</string>
+    <string name="backup_import_database_with_covers_description">Restaurați melodiile, listele de redare și istoricul din SQLite sau ZIP. Copiile de rezervă ZIP restaură, de asemenea, copertele personalizate incluse.</string>
     <string name="backup_import_profile_state_complete">Starea profilului importat: %1$d profiluri</string>
     <string name="backup_import_profile_state_complete_base">Stare profil importat: profil de bază</string>
     <string name="backup_import_profile_state_failed">Importarea stării profilului a eșuat</string>
@@ -117,15 +115,15 @@
     <!-- Cache -->
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Golește cache-ul melodiei</string>
-    <string name="cache_downloads_max_size_description">Alegeți cât spațiu pe disc este disponibil pentru melodiile descărcate.</string>
-    <string name="cache_downloads_limit_description">Alegeți cât spațiu pe disc este disponibil pentru melodiile descărcate.</string>
-    <string name="cache_image_max_size_description">Limita de spaţiu pe disc folosită de opera de artă geocuţionată.</string>
-    <string name="cache_image_limit_description">Limita de spaţiu pe disc folosită de opera de artă geocuţionată.</string>
+    <string name="cache_downloads_max_size_description">Alegeţi cât spaţiu pe disc este disponibil pentru melodiile descărcate. Butonul de gunoi elimină fişierele audio descărcate.</string>
+    <string name="cache_downloads_limit_description">Alegeţi cât spaţiu pe disc este disponibil pentru melodiile descărcate. Butonul de gunoi elimină fişierele audio descărcate.</string>
+    <string name="cache_image_max_size_description">Spațiu limită pe disc folosit de lucrările de artă din cache Butonul de gunoi curăță imaginile descărcate din această geocutie.</string>
+    <string name="cache_image_limit_description">Spațiu limită pe disc folosit de lucrările de artă din cache Butonul de gunoi curăță imaginile descărcate din această geocutie.</string>
     <string name="cache_location_description">Alegeţi locul în care aplicația îşi stochează memoria cache.</string>
     <string name="cache_location_private">Privat</string>
     <string name="cache_location_system">Sistem</string>
-    <string name="cache_streaming_max_size_description">Limita de spaţiu pe disc folosită pentru a cacheza melodiile transmisibile.</string>
-    <string name="cache_streaming_limit_description">Limita de spaţiu pe disc folosită pentru a cacheza melodiile transmisibile.</string>
+    <string name="cache_streaming_max_size_description">Limita de spaţiu pe disc folosită pentru a cache-ul melodiilor transmisibile. Butonul de gunoi şterge această memorie cache de redare.</string>
+    <string name="cache_streaming_limit_description">Limita de spaţiu pe disc folosită pentru a cache-ul melodiilor transmisibile. Butonul de gunoi şterge această memorie cache de redare.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Descarcă toate melodiile</string>
     <string name="downloads_action_refresh_quality">Actualizare descărcări</string>
@@ -139,7 +137,7 @@
     <string name="downloads_delete_all_count_confirmation">Ştergeţi toate descărcările %d?</string>
     <string name="downloads_delete_dialog_title">Șterge descărcările</string>
     <string name="downloads_download_all_confirmation">Vrei cu adevărat să descarci toate melodiile?</string>
-    <string name="downloads_download_all_count_confirmation">Descărcați totul? (Songs: %d)</string>
+    <string name="downloads_download_all_count_confirmation">Descărcați toate melodiile %d?</string>
     <string name="downloads_download_dialog_title">Descarcă melodii</string>
     <string name="downloads_empty_message">Nimic de descărcat</string>
     <string name="downloads_error_network">A apărut o eroare de rețea</string>
@@ -166,16 +164,16 @@
     <string name="export_running_status">Se exportă…</string>
     <string name="export_song_unavailable_message">Melodia trebuie să fie cache sau descărcată pentru a fi exportată</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Ştergeţi toate descărcările? (melodii: %d)</string>
+    <string name="library_cleanup_all_downloads_confirmation">Doriți să ștergeți toate descărcările (%d melodii)?</string>
     <string name="library_cleanup_all_favorites_confirmation">Doriți să eliminați toate favoritele %d?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Resetați istoricul de ascultare? (melodii: %d)</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ ATENŢIE: Aceasta va şterge definitiv melodiile şi le va şterge din toate listele de redare. (Melodii: %d) Această acţiune nu poate fi anulată!</string>
-    <string name="library_cleanup_entire_cache_confirmation">Curăță întreaga geocutie? (melodii: %d)</string>
-    <string name="library_cleanup_selected_cache_confirmation">Eliminați selecția din cache? (Songs: %d)</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Doriți să resetați istoricul de ascultare pentru piesele %d?</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ ATENŢIE: Aceasta va şterge definitiv toate melodiile %d şi le va şterge din toate listele de redare. Această acţiune nu poate fi anulată!</string>
+    <string name="library_cleanup_entire_cache_confirmation">Vrei să ştergi întreaga geocutie (%d melodii)?</string>
+    <string name="library_cleanup_selected_cache_confirmation">Vrei să elimini aceste melodii %d din cache?</string>
     <string name="library_cleanup_selected_downloads_confirmation">Doriți să ștergeți aceste descărcări %d?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Eliminați selecția de la favorite? (Songs: %d)</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Resetați istoricul de ascultare pentru selecție? (Songs: %d)</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ AVERTISMENT: Aceasta va șterge definitiv selecția și o va elimina din toate listele de redare. (Song-uri: %d) Această acțiune nu poate fi anulată!</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Doriți să eliminați aceste melodii %d din favorite?</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Vrei să resetezi istoricul de ascultare pentru aceste melodii %d?</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ ATENŢIE: Aceasta va şterge definitiv aceste melodii %d şi le va şterge din toate listele de redare. Această acţiune nu poate fi anulată!</string>
     <string name="library_cleanup_title">Gunoi inteligent</string>
     <string name="library_favorites_remove_dialog_title">Elimină din favorite</string>
     <string name="library_listening_history_reset_dialog_title">Resetează istoricul de ascultare</string>
@@ -185,7 +183,10 @@
     <string name="storage_samsung_advice_message">Managementul automat al memoriei Samsung poate șterge descărcările și fișierele N-Zik, chiar dacă nu le-ai cerut. Pentru a păstra descărcările în siguranță, utilizați locația privată (aplicația) de stocare în locul stocării sistemului.</string>
     <string name="storage_samsung_advice_title">Aviz pentru stocarea Samsung</string>
     <string name="storage_samsung_system_usage_message">În prezent aveți %1$s descărcări și cache pe stocarea sistemului.</string>
+    <string name="backup_export_database_failed">Exportarea bazei de date a eșuat</string>
     <string name="backup_import_failed">Importare eșuată</string>
     <string name="export_no_songs">Nicio melodie exportată</string>
     <string name="export_cached_songs_generic_error">Exportul a eșuat</string>
+    <string name="backup_startup_preparing_library">Pregătește-ți biblioteca…</string>
+    <string name="backup_startup_recovery_failed">Nu s-a putut finaliza restaurarea bibliotecii tale.</string>
 </resources>
