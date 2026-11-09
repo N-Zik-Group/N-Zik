@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.colorPalette
@@ -39,6 +40,7 @@ internal fun GlassCustomChip(
     enabled: Boolean = true,
     shape: Shape = uiRoundnessShape(),
     settings: GlassSettings = rememberGlassSettings(),
+    role: Role? = null,
     content: @Composable (Modifier) -> Unit,
 ) {
     val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
@@ -46,7 +48,7 @@ internal fun GlassCustomChip(
         GlassArtworkContent(settings, material) { content(modifier.then(if (material) Modifier else Modifier.clip(shape)).then(feedback)
             .glassChipBackground(color, shape, settings)
             .clickable(interactionSource = source, indication = if (source == null) LocalIndication.current else null,
-                enabled = enabled, onClick = onClick)) }
+                enabled = enabled, role = role, onClick = onClick)) }
     }
 }
 

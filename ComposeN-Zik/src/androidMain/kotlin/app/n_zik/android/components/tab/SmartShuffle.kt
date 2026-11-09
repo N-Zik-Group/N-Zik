@@ -2,7 +2,6 @@ package app.n_zik.android.components.tab
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import app.n_zik.android.components.ui.UiIconButton as IconButton
 import androidx.compose.runtime.Composable
@@ -18,6 +17,7 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassToolbarIcon
 import app.n_zik.android.components.glass.GlassToolbarLoading
+import app.n_zik.android.components.ui.InlineCircularLoader
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.utils.isRecommendationEnabledKey
@@ -71,7 +71,7 @@ class SmartShuffle private constructor(
             contentAlignment = Alignment.Center
         ) {
             if (isRecommendationsLoading()) {
-                CircularProgressIndicator(
+                InlineCircularLoader(
                     modifier = Modifier.size(24.dp),
                     color = colorPalette().text,
                     strokeWidth = 2.dp

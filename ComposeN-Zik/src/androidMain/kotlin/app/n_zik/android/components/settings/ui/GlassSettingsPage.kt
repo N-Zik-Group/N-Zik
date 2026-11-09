@@ -22,7 +22,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -65,6 +65,7 @@ import app.n_zik.android.components.dialog.common.DialogColorPicker
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.glass.GlassQuality
 import app.n_zik.android.components.glass.GlassRenderer
+import app.n_zik.android.components.glass.GlassRippleProvider
 import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassTintSource
@@ -91,6 +92,7 @@ import app.n_zik.android.components.glass.glassTintStrengthKey
 import app.n_zik.android.components.glass.glassVibrancyKey
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.rememberGlassStore
+import app.n_zik.android.components.navigation.nav.GlassNavigationBarHeight
 import app.n_zik.android.components.navigation.nav.GlassNavigationPlayerGap
 import app.n_zik.android.components.pullrefresh.rememberPullRefreshOverlayInsetProvider
 import app.n_zik.android.components.settings.common.LocalSettingsSearchMessage
@@ -326,8 +328,11 @@ private fun GlassPreviewPane(config: GlassSettings, maxPaneHeight: Dp) {
     val accent = LocalGlassArtworkColor.current ?: LocalGlassMenuHost.current?.artworkColor ?: colorPalette().accent
     BoxWithConstraints(Modifier.fillMaxWidth().clip(uiRoundnessShape())) {
         val nativeWidth = 360.dp
-        val scale = minOf(maxWidth / nativeWidth, maxPaneHeight / 166.dp, 1f)
-        Box(Modifier.fillMaxWidth().height(166.dp * scale), contentAlignment = Alignment.Center) {
+        val verticalPadding = 12.dp
+        val nativeHeight = Dimensions.miniPlayerHeight + GlassNavigationBarHeight +
+            GlassNavigationPlayerGap + verticalPadding * 2
+        val scale = minOf(maxWidth / nativeWidth, maxPaneHeight / nativeHeight, 1f)
+        Box(Modifier.fillMaxWidth().height(nativeHeight * scale), contentAlignment = Alignment.Center) {
             Box(Modifier.matchParentSize()
                 .then(if (glassRenderer(config) != GlassRenderer.Tint) Modifier.layerBackdrop(stage) else Modifier)
                 .background(Brush.linearGradient(listOf(accent, Color(0xFFFF7A45), Color(0xFF2ED3C6), Color(0xFF1B1B1B))))) {
@@ -339,15 +344,22 @@ private fun GlassPreviewPane(config: GlassSettings, maxPaneHeight: Dp) {
                 }
             }
             CompositionLocalProvider(LocalGlassBackdrop provides stage, LocalGlassPreviewSettings provides config) {
-                Column(
-                    Modifier.requiredWidth(nativeWidth).height(166.dp)
-                        .graphicsLayer { scaleX = scale; scaleY = scale }
-                        .padding(vertical = 12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    GlassMiniPlayerPreview(config = config, modifier = Modifier.padding(horizontal = 8.dp))
-                    GlassNavigationPreview(config = config, modifier = Modifier.padding(top = GlassNavigationPlayerGap))
+                // Both bars are measured at their native size before the preview transform.
+                Box(Modifier.requiredSize(nativeWidth, nativeHeight).graphicsLayer { scaleX = scale; scaleY = scale }) {
+                    GlassRippleProvider(config) {
+                        Column(
+                            Modifier.fillMaxSize().padding(vertical = verticalPadding),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                        ) {
+                            GlassMiniPlayerPreview(config = config, modifier = Modifier.padding(horizontal = 8.dp))
+                            GlassNavigationPreview(
+                                config = config,
+                                modifier = Modifier.padding(top = GlassNavigationPlayerGap)
+                                    .testTag("settings.glass.navigationPreview"),
+                            )
+                        }
+                    }
                 }
             }
         }

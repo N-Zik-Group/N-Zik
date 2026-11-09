@@ -32,7 +32,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -146,6 +145,7 @@ import app.n_zik.android.components.ui.screens.DynamicOrientationLayout
 import app.n_zik.android.components.ui.screens.album.Translate
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.components.OfflineAwareLoader
+import app.n_zik.android.components.ui.InlineCircularLoader
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
@@ -654,7 +654,7 @@ fun ArtistOverview(
                                     followButton?.ToolBarButton()
                                     Box(Modifier.size(176.dp, 40.dp),
                                         contentAlignment = Alignment.Center) {
-                                        CircularProgressIndicator(
+                                        InlineCircularLoader(
                                             modifier = Modifier.size(24.dp),
                                             strokeWidth = 2.dp,
                                             color = colorPalette().accent,
@@ -743,7 +743,7 @@ fun ArtistOverview(
                                 Modifier.padding(end = 12.dp).size(24.dp)
                             else Modifier.size(NativeIconActionSize * 2, NativeIconActionSize)
                             Box(loadingModifier, contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator(
+                                InlineCircularLoader(
                                     modifier = Modifier.size(24.dp),
                                     strokeWidth = 2.dp,
                                     color = colorPalette().textSecondary,

@@ -65,7 +65,6 @@ import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Speaker
 import androidx.compose.material.icons.outlined.Error
 import app.n_zik.android.components.ui.UiButton as Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -105,6 +104,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.AnimatedVisibility
 import app.n_zik.android.components.glass.glassAwareContentSize
+import app.n_zik.android.components.ui.InlineCircularLoader
 import android.media.AudioDeviceCallback
 import androidx.car.app.connection.CarConnection
 import app.n_zik.android.utils.isCar
@@ -686,7 +686,7 @@ internal fun AudioDeviceStatusMenu(error: String?, onRetry: () -> Unit) {
             ) {
                 // The app's theming does not remap the M3 colorScheme tokens (spec-achromatic-ramp-luminance-cap):
                 // key on the effective palette instead, so the spinner stays readable in both tones
-                CircularProgressIndicator(
+                InlineCircularLoader(
                     modifier = Modifier.size(48.dp),
                     strokeWidth = 3.dp,
                     color = colorPalette().text

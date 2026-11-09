@@ -1,7 +1,6 @@
 package app.n_zik.android.components.ui.header
 
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -28,6 +27,7 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.typography
 import app.n_zik.android.updater.services.Updater
+import app.n_zik.android.components.glass.GlassCustomChip
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.ui.iconBadgeBackground
@@ -84,37 +84,28 @@ internal fun HeaderBadgeBox(
     val maxWidth = clampedLabelMaxWidth(HEADER_BADGE_REF_TITLE, style)
     val shape = uiRoundnessShape()
     val fill = color.copy(alpha = 0.2f)
-    val background = Modifier.iconBadgeBackground(fill, shape, glassSettings)
-
-    Box(
-        modifier = modifier
-            .then(background)
-            .clip(shape)
-            // Only the interactive debug badge gets the click modifier: even a
-            // disabled clickable would enforce the 48dp minimum touch target and
-//
-            // inflate the badge box (see short-badge test).
-            .conditional(onToggle != null) {
-                clickable(onClick = { onToggle?.invoke() })
-            }
-            .padding(
+    val label: @Composable (Modifier) -> Unit = { badgeModifier ->
+        Box(badgeModifier.padding(
                 horizontal = HEADER_BADGE_H_PADDING.dp,
                 vertical = HEADER_BADGE_V_PADDING.dp
+        )) {
+            BasicText(
+                text = text,
+                style = style,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+                modifier = Modifier
+                    .widthIn(max = maxWidth)
+                    .conditional(!isScrollingTextDisabled) {
+                        basicMarquee(iterations = HEADER_BADGE_MARQUEE_ITERATIONS)
+                    }
             )
-    ) {
-        BasicText(
-            text = text,
-            style = style,
-            overflow = TextOverflow.Ellipsis,
-            maxLines = 1,
-            modifier = Modifier
-                .widthIn(max = maxWidth)
-                .conditional(!isScrollingTextDisabled) {
-                    // Finite marquee: scrolls a few full passes, then stops on the start
-                    // position (BasicMarquee snaps the offset back to zero when done).
-                    basicMarquee(iterations = HEADER_BADGE_MARQUEE_ITERATIONS)
-                }
-        )
+        }
+    }
+    if (onToggle != null) {
+        GlassCustomChip(fill, onToggle, modifier, shape = shape, settings = glassSettings, content = label)
+    } else {
+        label(modifier.iconBadgeBackground(fill, shape, glassSettings).clip(shape))
     }
 }
 

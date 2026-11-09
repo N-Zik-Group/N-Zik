@@ -2,7 +2,6 @@ package app.n_zik.android.components.menu.header
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -26,6 +25,7 @@ import app.it.fast4x.rimusic.utils.logDebugEnabledKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.components.menu.DropdownMenuRowFeedback
 import app.n_zik.android.components.ui.LeadingIconBadge
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.header.clampedLabelMaxWidth
@@ -52,42 +52,43 @@ fun DebugLogsMenuItem(
     // off, "Disable" while on (flips without a restart, like the header badge).
     val labelRes = if (logDebugEnabled) R.string.settings_logging_disabled_label else R.string.maintenance_debug_logging_title
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .combinedClickable(
-                onClick = {
-                    logDebugEnabled = !logDebugEnabled
-                    if (logDebugEnabled) {
-                        Toaster.i(R.string.settings_restart_required_message)
-                    } else {
-                        purgeDebugLogs(File(context.filesDir, "logs"))
-                    }
-                    onConsume()
-                },
-                onLongClick = onLongClick
+    DropdownMenuRowFeedback(
+        modifier = modifier.fillMaxWidth(),
+        onClick = {
+            logDebugEnabled = !logDebugEnabled
+            if (logDebugEnabled) {
+                Toaster.i(R.string.settings_restart_required_message)
+            } else {
+                purgeDebugLogs(File(context.filesDir, "logs"))
+            }
+            onConsume()
+        },
+        onLongClick = onLongClick,
+    ) { rowModifier ->
+        Row(
+            modifier = rowModifier
+                .sizeIn(minHeight = 48.dp)
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            LeadingIconBadge(
+                iconRes = R.drawable.bugs,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
             )
-            .sizeIn(minHeight = 48.dp)
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        LeadingIconBadge(
-            iconRes = R.drawable.bugs,
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-        )
-        Text(
-            text = stringResource(labelRes),
-            style = labelStyle,
-            color = colorPalette().textSecondary,
-            overflow = TextOverflow.Ellipsis,
-            maxLines = 1,
-            modifier = Modifier
-                .padding(start = 12.dp)
-                .widthIn(max = labelMaxWidth)
-                .conditional(!isScrollingTextDisabled) {
-                    basicMarquee(iterations = Int.MAX_VALUE)
-                }
-        )
+            Text(
+                text = stringResource(labelRes),
+                style = labelStyle,
+                color = colorPalette().textSecondary,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+                modifier = Modifier
+                    .padding(start = 12.dp)
+                    .widthIn(max = labelMaxWidth)
+                    .conditional(!isScrollingTextDisabled) {
+                        basicMarquee(iterations = Int.MAX_VALUE)
+                    }
+            )
+        }
     }
 }

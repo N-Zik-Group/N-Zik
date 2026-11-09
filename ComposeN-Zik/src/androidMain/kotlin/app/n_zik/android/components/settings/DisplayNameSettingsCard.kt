@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
-import app.n_zik.android.components.ui.UiIconButton as IconButton
+import app.n_zik.android.components.glass.PageIconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -286,7 +286,7 @@ fun ProfileFaceCard(
                 },
                 trailingContent = if (hasPhoto) {
                     {
-                        IconButton(
+                        PageIconButton(
                             modifier = Modifier.settingsSearchTarget("embedded.profile.face_photo_remove"),
                             onClick = {
                                 val previousPhotoJob = photoJob

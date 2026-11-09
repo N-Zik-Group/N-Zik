@@ -38,7 +38,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -69,6 +68,7 @@ import app.n_zik.android.R
 import app.n_zik.android.core.network.utils.isNetworkConnected
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.FmWaveformVisualizer
+import app.n_zik.android.components.ui.InlineCircularLoader
 import app.n_zik.android.recognition.AudioRecorder
 import app.n_zik.android.recognition.RecognizedTrack
 import app.n_zik.android.recognition.ShazamRepository
@@ -468,7 +468,7 @@ private fun RecognizedTrackCard(
                         contentAlignment = Alignment.Center
                     ) {
                         if (isPlaying) {
-                            CircularProgressIndicator(
+                            InlineCircularLoader(
                                 modifier = Modifier.size(18.dp),
                                 color = colorPalette().onAccent,
                                 strokeWidth = 2.dp

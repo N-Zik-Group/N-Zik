@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -98,6 +97,7 @@ import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.song.UpdateSongDialog
 import app.n_zik.android.components.song.PeriodSelector
+import app.n_zik.android.components.ui.InlineCircularLoader
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.enums.SongSortBy
 import app.it.fast4x.rimusic.utils.homeSongsDownloadedToolbarOrderKey
@@ -607,7 +607,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                                     )
                                     if (isRecommendationsLoading) {
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        CircularProgressIndicator(
+                                        InlineCircularLoader(
                                             modifier = Modifier.size(12.dp),
                                             strokeWidth = 1.5.dp,
                                             color = colorPalette().textSecondary

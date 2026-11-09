@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TextFieldColors
@@ -29,6 +28,7 @@ import app.n_zik.android.components.dialog.common.DefaultDialog
 import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import androidx.compose.material3.Icon
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.ui.InlineCircularLoader
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.uiRoundnessShape
 import it.fast4x.lrclib.LrcLib
@@ -230,7 +230,7 @@ fun LyricsTrackSelector(
                 onDismiss()
             }
         ) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            InlineCircularLoader(modifier = Modifier.align(Alignment.CenterHorizontally))
         }
     }
 

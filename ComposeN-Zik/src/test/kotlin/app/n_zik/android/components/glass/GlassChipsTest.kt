@@ -38,6 +38,10 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
@@ -169,10 +173,14 @@ class GlassChipsTest {
                         enabled = enabled.value, settings = settings)
                     GlassSuggestionChip({ clicks++ }, { Text("Keyword") }, Modifier.testTag("keyword"),
                         enabled = enabled.value, settings = settings)
+                    GlassCustomChip(Color.Red, { clicks++ }, Modifier.testTag("custom"),
+                        enabled = enabled.value, settings = settings, role = Role.Button) { modifier ->
+                        Box(modifier.size(32.dp))
+                    }
                 }
             }
         }
-        val tags = listOf("filter", "keyword")
+        val tags = listOf("filter", "keyword", "custom")
         val original = tags.associateWith { compose.onNodeWithTag(it).fetchSemanticsNode().boundsInRoot.size }
         GlassAreaMode.entries.forEach { value ->
             compose.runOnIdle { mode.value = value; enabled.value = true }
@@ -181,9 +189,13 @@ class GlassChipsTest {
             }
             compose.onNodeWithText("Selected").assertIsSelected().performTouchInput { click() }
             compose.onNodeWithText("Keyword").performTouchInput { click() }
+            compose.onNodeWithTag("custom")
+                .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+                .performTouchInput { click() }
             compose.runOnIdle { enabled.value = false }
             compose.onNodeWithText("Selected").assertIsNotEnabled().performTouchInput { click() }
             compose.onNodeWithText("Keyword").assertIsNotEnabled().performTouchInput { click() }
+            compose.onNodeWithTag("custom").assertIsNotEnabled().performTouchInput { click() }
         }
         compose.runOnIdle { assertEquals(GlassAreaMode.entries.size * tags.size, clicks) }
     }

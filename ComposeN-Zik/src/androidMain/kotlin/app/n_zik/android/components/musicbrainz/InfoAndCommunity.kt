@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,6 +42,7 @@ import app.n_zik.android.components.glass.GlassTitleActionRow
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.ui.screens.album.Translate
+import app.n_zik.android.components.ui.InlineCircularLoader
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.utils.align
@@ -151,7 +151,7 @@ fun InfoAndCommunity(
                 nativeContent = {
                     if (isSyncing) {
                         Box(Modifier.size(NativeIconActionSize), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(
+                            InlineCircularLoader(
                                 modifier = Modifier.size(18.dp),
                                 color = colorPalette().textSecondary,
                                 strokeWidth = 2.dp,

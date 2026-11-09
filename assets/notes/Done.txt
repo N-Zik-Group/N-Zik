@@ -1,4 +1,10 @@
 Fixed:
+- fix(glass): resolve interaction and rendering audit findings
+  - Give the Storage info and debug badges Jelly feedback, keep searched settings below the header, and preserve native profile-action geometry.
+  - Track the finger with the profile menu ripple and isolate the On and Off preview interactions while keeping both preview bars visible.
+  - Draw one Storage chart contour, close the floating toast outline, and keep loading indicators visible in Glass-only mode with zero film.
+  - Cover preview sizing and presses, menu gestures, profile photo removal, and loader rendering with regression tests.
+
 - fix(artwork): unify cover editing and export
   - Use the shared cover dialog for playlist thumbnails, album details and embedded audio artwork.
   - Recrop existing covers or drafts, reuse cached remote artwork and export to an Android document chosen by the user.

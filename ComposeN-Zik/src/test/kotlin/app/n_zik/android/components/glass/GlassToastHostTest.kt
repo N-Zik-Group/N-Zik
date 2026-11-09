@@ -81,6 +81,41 @@ class GlassToastHostTest {
         compose.onNodeWithTag("glassToast").assertExists()
     }
 
+    @Test fun `floating toast shows the bottom contour in native and glass modes`() {
+        val mode = mutableStateOf(GlassAreaMode.ContourOnly)
+        lateinit var view: View
+        compose.setContent {
+            view = LocalView.current
+            val shape = RoundedCornerShape(12.dp)
+            CompositionLocalProvider(LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                typographyOf(Color.White, true, false, FontType.Rubik), shape, shape, shape)) {
+                Box(Modifier.size(360.dp, 640.dp).background(Color.Black)) {
+                    GlassToastHost(null, 24.dp, settings = GlassSettings(
+                        quality = GlassQuality.Performance,
+                        source = GlassTintSource.None,
+                        film = 0f,
+                        rim = 1f,
+                        areaModes = mapOf(GlassArea.Menus to mode.value),
+                    ))
+                }
+            }
+        }
+        compose.runOnIdle {
+            val info = ReflectionHelpers.getField<Any>(view, "mAttachInfo")
+            ReflectionHelpers.setField(info, "mWindowVisibility", View.VISIBLE)
+            assertTrue(GlassToastDispatcher.tryShow("Floating toast", Toast.LENGTH_LONG, null,
+                android.graphics.Color.BLACK, android.graphics.Color.WHITE))
+        }
+        compose.mainClock.advanceTimeBy(500)
+        for (selected in listOf(GlassAreaMode.ContourOnly, GlassAreaMode.GlassAndContour)) {
+            compose.runOnIdle { mode.value = selected }
+            val pixels = compose.onNodeWithTag("glassToast").captureToImage().toPixelMap()
+            val x = pixels.width / 2
+            assertTrue("Bottom edge must be visible in ${selected.name}",
+                pixels[x, pixels.height - 1].red > pixels[x, pixels.height - 4].red + .05f)
+        }
+    }
+
     @Test fun `toast pixels fade in and out while queued messages retain their full lifetime`() {
         val enabled = mutableStateOf(true)
         val presence = mutableListOf<Boolean>()

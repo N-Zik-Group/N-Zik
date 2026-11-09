@@ -55,6 +55,7 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.glassSettingsCardBackground
 import app.n_zik.android.components.glass.glassSettingsCardRim
+import app.n_zik.android.components.glass.glassTint
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.typography
@@ -185,14 +186,15 @@ internal fun StorageChart(snapshot: StorageBreakdown) {
             Modifier.fillMaxWidth().height(8.dp)
                 .testTag("data.storage.chart.bar")
                 .onGloballyPositioned { bar = it.storageChartBounds() }
+                // Draw the sole rim over the chart segments in either contour mode.
+                .glassSettingsCardRim(settings, CircleShape, glassTint(settings))
                 .glassSettingsCardBackground(
                     backgroundColor = palette.background0,
                     cardColor = palette.background1,
                     shape = CircleShape,
-                    settings = settings,
+                    settings = settings.copy(rim = 0f),
                     sourceBackdrop = LocalGlassContainerBackdrop.current,
                 )
-                .glassSettingsCardRim(CircleShape)
                 .clip(CircleShape),
         ) {
             for (segment in segments) {

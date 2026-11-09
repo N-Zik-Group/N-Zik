@@ -41,6 +41,7 @@ import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.InteractiveDialog
+import app.n_zik.android.components.ui.InlineCircularLoader
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
@@ -161,7 +162,7 @@ class ChangePlaylistBrowseIdDialog private constructor(
             }
 
             if (isSearching) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally).padding(20.dp))
+                InlineCircularLoader(modifier = Modifier.align(Alignment.CenterHorizontally).padding(20.dp))
             } else if (results?.isEmpty() == true) {
                 Spacer(Modifier.height(160.dp))
             } else if (results != null) {

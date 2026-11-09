@@ -26,10 +26,10 @@ internal fun GlassIndicatorSilhouette(
     modifier: Modifier = Modifier,
     indicator: @Composable (Modifier) -> Unit,
 ) {
-    // The tint renderer has no backdrop optics to keep a film-free glyph visible.
-    val material = settings.usesGlassMaterial(area) &&
-        (settings.film > 0f || glassRenderer(settings) != GlassRenderer.Tint)
     val contour = settings.usesGlassContour(area)
+    // Refraction cannot distinguish a film-free glyph from a uniform backdrop.
+    val material = settings.usesGlassMaterial(area) &&
+        (settings.film > 0f || contour && glassRenderer(settings) != GlassRenderer.Tint)
     if (!material && !contour) {
         indicator(modifier)
         return
@@ -61,7 +61,10 @@ internal fun GlassIndicatorSilhouette(
     if (material) {
         val palette = colorPalette()
         val backdrop = rememberInlineGlassBackdrop(palette.background0)
-        Box(modifier.graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }) {
+        Box(
+            modifier.graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen },
+            propagateMinConstraints = true,
+        ) {
             Box(Modifier.matchParentSize().glassMaterial(
                 settings.forArea(area).copy(rim = 0f),
                 CircleShape,

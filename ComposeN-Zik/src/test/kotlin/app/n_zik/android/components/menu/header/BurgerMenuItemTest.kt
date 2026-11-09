@@ -2,17 +2,25 @@ package app.n_zik.android.components.menu.header
 
 import android.app.Application
 import android.content.Context
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.FontType
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
@@ -22,6 +30,8 @@ import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.n_zik.android.R
+import app.n_zik.android.components.glass.GlassRippleProvider
+import app.n_zik.android.components.glass.GlassSettings
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -71,18 +81,49 @@ class BurgerMenuItemTest {
     private fun showItem(counters: Counters, consumeOnShortTap: Boolean) {
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
-                BurgerMenuItem(
-                    iconRes = R.drawable.history,
-                    label = "History",
-                    onShortTap = { counters.shortTaps++ },
-                    onLongTap = { counters.longTaps++ },
-                    onConsume = if (consumeOnShortTap) {
-                        { counters.consumes++ }
-                    } else {
-                        { }
-                    }
-                )
+                GlassRippleProvider(GlassSettings(enabled = true)) {
+                    MenuItem(counters, consumeOnShortTap)
+                }
             }
+        }
+    }
+
+    @Composable
+    private fun MenuItem(counters: Counters, consumeOnShortTap: Boolean = true) {
+        BurgerMenuItem(
+            iconRes = R.drawable.history,
+            label = "History",
+            onShortTap = { counters.shortTaps++ },
+            onLongTap = { counters.longTaps++ },
+            onConsume = { if (consumeOnShortTap) counters.consumes++ },
+        )
+    }
+
+    @Test
+    fun scrollingFromARealMenuRowCancelsBothCallbacks() {
+        val counters = Counters()
+        val scroll = ScrollState(0)
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                GlassRippleProvider(GlassSettings(enabled = true)) {
+                    Column(Modifier.height(160.dp).verticalScroll(scroll)) {
+                        Spacer(Modifier.height(68.dp))
+                        MenuItem(counters)
+                        Spacer(Modifier.height(320.dp))
+                    }
+                }
+            }
+        }
+        composeRule.onNodeWithText("History").performTouchInput {
+            down(center)
+            moveTo(center - Offset(0f, 64.dp.toPx()), delayMillis = 100)
+            up()
+        }
+        composeRule.runOnIdle {
+            assertTrue(scroll.value > 0)
+            assertEquals(0, counters.shortTaps)
+            assertEquals(0, counters.longTaps)
+            assertEquals(0, counters.consumes)
         }
     }
 

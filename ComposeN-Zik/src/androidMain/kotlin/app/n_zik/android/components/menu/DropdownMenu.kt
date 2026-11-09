@@ -1,5 +1,7 @@
 package app.n_zik.android.components.menu
 
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MenuItemColors
@@ -8,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -16,6 +19,7 @@ import app.n_zik.android.components.ui.LeadingIconBadge
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassMenuTriggerState
 import app.n_zik.android.components.glass.LocalGlassMenuTrigger
+import app.n_zik.android.components.glass.PageButtonFeedback
 import app.n_zik.android.uiRoundnessShape
 
 class DropdownMenu(
@@ -89,16 +93,39 @@ class DropdownMenu(
                 )
             }
 
-            DropdownMenuItem(
-                enabled = enabled,
-                colors = colors ?: colors(),
-                text = { Text( customText ?: if (textId != 0) stringResource(textId) else "" ) },
-                leadingIcon = icon,
-                onClick = onClick
-            )
+            PageButtonFeedback(false, enabled, RectangleShape, null) { feedback, source ->
+                DropdownMenuItem(
+                    enabled = enabled,
+                    colors = colors ?: colors(),
+                    text = { Text( customText ?: if (textId != 0) stringResource(textId) else "" ) },
+                    leadingIcon = icon,
+                    onClick = onClick,
+                    modifier = feedback,
+                    interactionSource = source,
+                )
+            }
         }
     }
 }
 
+/** Keeps the header menu's native click and long-click on the row that owns the halo. */
+@Composable
+internal fun DropdownMenuRowFeedback(
+    modifier: Modifier,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    content: @Composable (Modifier) -> Unit,
+) {
+    PageButtonFeedback(false, true, RectangleShape, null) { feedback, source ->
+        content(
+            modifier.then(feedback).combinedClickable(
+                interactionSource = source,
+                indication = if (source == null) LocalIndication.current else null,
+                onClick = onClick,
+                onLongClick = onLongClick,
+            )
+        )
+    }
+}
 
 

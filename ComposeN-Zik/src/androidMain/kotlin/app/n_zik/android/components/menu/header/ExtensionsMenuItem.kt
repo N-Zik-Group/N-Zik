@@ -2,7 +2,6 @@ package app.n_zik.android.components.menu.header
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,6 +24,7 @@ import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.n_zik.android.R
+import app.n_zik.android.components.menu.DropdownMenuRowFeedback
 import app.n_zik.android.components.ui.LeadingIconBadge
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.header.clampedLabelMaxWidth
@@ -44,37 +44,38 @@ fun ExtensionsMenuItem(
     val labelStyle = MaterialTheme.typography.labelLarge
     val labelMaxWidth = clampedLabelMaxWidth(stringResource(R.string.recovery_center), labelStyle)
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .combinedClickable(
-                onClick = {
-                    onOpen()
-                    onConsume()
-                },
-                onLongClick = onLongClick
+    DropdownMenuRowFeedback(
+        modifier = modifier.fillMaxWidth(),
+        onClick = {
+            onOpen()
+            onConsume()
+        },
+        onLongClick = onLongClick,
+    ) { rowModifier ->
+        Row(
+            modifier = rowModifier
+                .sizeIn(minHeight = 48.dp)
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            LeadingIconBadge(
+                iconRes = R.drawable.extension,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
             )
-            .sizeIn(minHeight = 48.dp)
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        LeadingIconBadge(
-            iconRes = R.drawable.extension,
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-        )
-        Text(
-            text = stringResource(R.string.modules_title),
-            style = labelStyle,
-            color = colorPalette().textSecondary,
-            overflow = TextOverflow.Ellipsis,
-            maxLines = 1,
-            modifier = Modifier
-                .padding(start = 12.dp)
-                .widthIn(max = labelMaxWidth)
-                .conditional(!isScrollingTextDisabled) {
-                    basicMarquee(iterations = Int.MAX_VALUE)
-                }
-        )
+            Text(
+                text = stringResource(R.string.modules_title),
+                style = labelStyle,
+                color = colorPalette().textSecondary,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+                modifier = Modifier
+                    .padding(start = 12.dp)
+                    .widthIn(max = labelMaxWidth)
+                    .conditional(!isScrollingTextDisabled) {
+                        basicMarquee(iterations = Int.MAX_VALUE)
+                    }
+            )
+        }
     }
 }

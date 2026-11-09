@@ -3,6 +3,17 @@ package app.n_zik.android.components.onboarding
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Bitmap
+import androidx.compose.ui.test.click
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.performTouchInput
+import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
+import app.n_zik.android.Dependenciesimport app.n_zik.android.MainApplicationimport app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassQuality
+import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.LocalGlassPreviewSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.ui.screens.profiles.profileAvatarFile
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
@@ -108,14 +119,42 @@ class OnboardingProfileScreenWiringTest {
         every { profileSecurePrefs(any(), "default") } returns secure
     }
 
-    private fun showScreen() {
+    private fun showScreen(settings: GlassSettings? = null) {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(
+                LocalAppearance provides appearance,
+                LocalGlassPreviewSettings provides settings,
+            ) {
                 OnboardingProfileScreen(onComplete = { completed = true })
             }
         }
     }
 
+    @Test
+    fun glassPhotoRemovalDeletesTheLocalAvatar() {
+        mockSecurePrefs("")
+        val application = mockk<MainApplication>()        every { application.applicationContext } returns context        Dependencies.init(application)        val settings = GlassSettings(enabled = true, quality = GlassQuality.Performance)
+        assertTrue(settings.usesGlassMaterial(GlassArea.ActionButtons))
+        val avatar = profileAvatarFile(context, DEFAULT_PROFILE_ID)
+        avatar.parentFile?.mkdirs()
+        val bitmap = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888)
+        avatar.outputStream().use { assertTrue(bitmap.compress(Bitmap.CompressFormat.JPEG, 85, it)) }
+        bitmap.recycle()
+
+        try {
+            showScreen(settings)
+            composeRule.onNodeWithContentDescription(context.getString(R.string.profile_photo_remove))
+                .performScrollTo().assertIsDisplayed().performTouchInput { click() }
+            composeRule.waitUntil(5_000) { !avatar.exists() }
+            composeRule.waitUntil(5_000) {
+                composeRule.onAllNodesWithText(context.getString(R.string.profile_photo_not_set))
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+        } finally {
+            avatar.delete()
+        }
+    }
+
     /** Waits for the one-shot account state load to settle: [lockedCount] "Not logged in" badges. */
     private fun waitForLockState(lockedCount: Int) {
         val locked = context.getString(R.string.profile_identity_source_not_connected)

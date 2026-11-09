@@ -13,11 +13,16 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import app.it.fast4x.rimusic.enums.FontType
 import app.it.fast4x.rimusic.enums.PlayerBackgroundColors
@@ -38,9 +43,12 @@ import app.it.fast4x.rimusic.utils.skipSilenceKey
 import app.it.fast4x.rimusic.utils.thumbnailpauseKey
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
+import app.n_zik.android.R
 import app.n_zik.android.components.dialog.settings.HomeSongsSortSettingsDialog
 import app.n_zik.android.components.dialog.settings.HomeSongsToolbarSettingsDialog
 import app.n_zik.android.components.dialog.settings.HomeArtistsToolbarSettingsDialog
+import app.n_zik.android.components.navigation.LocalAppHeaderContentInset
+import app.n_zik.android.components.navigation.LocalAppHeaderOverlayInset
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Duration
@@ -83,9 +91,15 @@ class SettingsSearchTargetTest {
 
     private val messages = mutableListOf<String>()
 
-    private fun show(category: String, target: String, parent: String) {
+    private fun show(category: String, target: String, parent: String, chrome: Dp = 0.dp) {
         composeRule.setContent {
-            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance, LocalSettingsSearchMessage provides { messages += it }) {
+            CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+                LocalAppearance provides appearance,
+                LocalSettingsSearchMessage provides { messages += it },
+                LocalAppHeaderContentInset provides { chrome },
+                LocalAppHeaderOverlayInset provides { chrome },
+            ) {
                 SettingsCategoryPage(category, mockk(relaxed = true), target, parent)
             }
         }
@@ -137,15 +151,28 @@ class SettingsSearchTargetTest {
         assertEquals(before, context.preferences.all)
     }
 
+    @Test fun storageCardSearchLeavesItsInfoActionBelowChrome() {
+        val chrome = 64.dp
+        val target = settingsCardTargetId(context, 4, R.string.storage_breakdown_title)
+        show("data", target, "", chrome)
+        pumpUntil("Storage card must be positioned and highlighted") { highlighted(target, true) }
+        val info = composeRule.onNodeWithContentDescription(context.getString(R.string.storage_breakdown_info_title))
+        info.assertIsDisplayed().assertHasClickAction()
+        assertTrue(info.fetchSemanticsNode().boundsInRoot.top >= with(composeRule.density) { chrome.toPx() })
+        assertTrue(messages.isEmpty())
+    }
+
     @Test fun openPipSearchResultHighlightsItsRowAfterScrolling() {
         Shadows.shadowOf(context.packageManager)
             .setSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE, true)
         context.preferences.edit().putBoolean(enablePictureInPictureKey, true).commit()
         val target = "general.picture_in_picture.open"
         val entry = AllSettingsEntryTargets.single { it.id == target }
-        show("player", target, settingsCardTargetId(context, entry.tab, entry.cardTitleRes))
+        val chrome = 64.dp
+        show("player", target, settingsCardTargetId(context, entry.tab, entry.cardTitleRes), chrome)
         pumpUntil("PiP search must reach the exact Open row") { highlighted(target, true) }
-        composeRule.onNodeWithTag("settings.target.$target", useUnmergedTree = true).assertIsDisplayed()
+        val row = composeRule.onNodeWithTag("settings.target.$target", useUnmergedTree = true).assertIsDisplayed()
+        assertTrue(row.fetchSemanticsNode().boundsInRoot.top >= with(composeRule.density) { chrome.toPx() })
         assertTrue(messages.isEmpty())
     }
 

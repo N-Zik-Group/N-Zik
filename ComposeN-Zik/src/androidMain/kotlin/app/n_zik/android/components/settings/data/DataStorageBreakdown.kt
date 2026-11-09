@@ -14,7 +14,6 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -63,11 +61,10 @@ import app.n_zik.android.components.settings.common.CardCategoryLabel
 import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.ui.InlineLoader
-import app.n_zik.android.components.ui.iconBadgeBackground
+import app.n_zik.android.components.glass.GlassCustomChip
 import app.n_zik.android.core.profiles.ProfileDataDirNames
 import app.n_zik.android.core.profiles.resolveProfileDataDirNames
 import app.n_zik.android.typography
-import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import java.io.File
 import java.io.IOException
@@ -307,20 +304,20 @@ internal fun DataStorageCard() {
             // Center on the row chevrons: 12 dp inset plus half of a 16 dp icon.
             Box(Modifier.width(40.dp), contentAlignment = Alignment.Center) {
                 val accent = colorPalette().accent
-                val shape = uiRoundnessShape()
-                Box(
-                    modifier = Modifier.size(32.dp)
-                        .iconBadgeBackground(accent.copy(alpha = 0.1f), shape)
-                        .clip(shape)
-                        .clickable(role = Role.Button, onClick = { showStorageInfo = true }),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.information),
-                        contentDescription = label,
-                        tint = accent,
-                        modifier = Modifier.size(18.dp),
-                    )
+                GlassCustomChip(
+                    color = accent.copy(alpha = 0.1f),
+                    modifier = Modifier.size(32.dp),
+                    role = Role.Button,
+                    onClick = { showStorageInfo = true },
+                ) { chipModifier ->
+                    Box(chipModifier, contentAlignment = Alignment.Center) {
+                        Icon(
+                            painter = painterResource(R.drawable.information),
+                            contentDescription = label,
+                            tint = accent,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
                 }
             }
         },

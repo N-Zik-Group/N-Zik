@@ -82,9 +82,9 @@ internal fun rememberMiniPlayerControlBackdrop(
 fun Modifier.glassAreaContour(settings: GlassSettings, area: GlassArea, shape: Shape): Modifier {
     if (!settings.usesGlassContour(area)) return this
     val tint = glassTint(settings)
-    return if (area == GlassArea.Menus) {
+    return if (area == GlassArea.Menus && settings.scope != GlassScope.Toast) {
         glassMenuRim(shape, glassEdgeLightBrush(settings, tint))
-    } else if (area == GlassArea.Dropdowns) {
+    } else if (area == GlassArea.Dropdowns || area == GlassArea.Menus) {
         border(GlassRimWidth, glassEdgeLightBrush(settings, tint), shape)
     } else glassEdgeRim(settings, shape, tint)
 }

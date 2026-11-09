@@ -71,6 +71,7 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.glassChipBackground
 import app.n_zik.android.components.glass.GlassSectionAction
 import app.n_zik.android.components.glass.GlassSectionActions
+import app.n_zik.android.components.glass.PageIconButton
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.profiles.ProfileDataItem
 import app.n_zik.android.core.profiles.clearProfileShareFlags
@@ -599,7 +600,7 @@ fun ProfileCard(
                         )
                     }
                     if (onDelete != null) {
-                        IconButton(onClick = onDelete) {
+                        PageIconButton(onClick = onDelete) {
                             Icon(
                                 painter = painterResource(R.drawable.trash),
                                 contentDescription = stringResource(R.string.profile_action_remove),

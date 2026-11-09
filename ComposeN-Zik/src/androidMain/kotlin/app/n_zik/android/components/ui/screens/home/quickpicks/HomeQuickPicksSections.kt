@@ -88,7 +88,7 @@ import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.HomePage
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import timber.log.Timber
-import androidx.compose.material3.CircularProgressIndicator
+import app.n_zik.android.components.ui.InlineCircularLoader
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.material3.Text
@@ -183,7 +183,7 @@ fun QuickPicksHeader(
                 GlassActionGroup(glass, GlassArea.ActionButtons, separatorBefore = setOf(2)) {
                     if (isLoading) {
                         Box(Modifier.size(GlassActionCellWidth * 2, GlassActionCellHeight), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(Modifier.size(GlassActionIconSize), strokeWidth = 2.dp, color = colorPalette().textSecondary)
+                            InlineCircularLoader(Modifier.size(GlassActionIconSize), strokeWidth = 2.dp, color = colorPalette().textSecondary)
                         }
                     } else {
                         GlassActionGroupItem(onClick = onDiceClick) {
@@ -200,7 +200,7 @@ fun QuickPicksHeader(
             } else {
                 if (isLoading) {
                     Box(Modifier.size(NativeIconActionSize * 2, NativeIconActionSize), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp, color = colorPalette().textSecondary)
+                        InlineCircularLoader(Modifier.size(24.dp), strokeWidth = 2.dp, color = colorPalette().textSecondary)
                     }
                 } else {
                     NativeSectionIconAction(R.drawable.dice, stringResource(R.string.glass_effect_action_shuffle),

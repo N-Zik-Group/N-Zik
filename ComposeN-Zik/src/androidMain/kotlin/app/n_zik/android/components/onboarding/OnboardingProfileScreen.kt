@@ -1,5 +1,7 @@
 package app.n_zik.android.components.onboarding
 
+import app.n_zik.android.components.glass.PageIconButton
+
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -541,7 +543,7 @@ fun OnboardingProfileScreen(
 
                     if (profilePhoto != null) {
                         Spacer(modifier = Modifier.width(8.dp))
-                        OnboardingPhotoRemoveButton(
+                        PageIconButton(
                             onClick = {
                                 val previousPhotoJob = photoJob
                                 previousPhotoJob?.cancel()

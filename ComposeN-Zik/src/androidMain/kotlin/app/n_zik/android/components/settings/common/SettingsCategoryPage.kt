@@ -3,12 +3,17 @@ package app.n_zik.android.components.settings.common
 import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.BringIntoViewSpec
+import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -20,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberUpdatedState
@@ -29,7 +35,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -39,6 +48,7 @@ import androidx.navigation.NavController
 import app.n_zik.android.components.glass.GlassFloatingActions
 import app.n_zik.android.components.glass.glassFloatingActionContent
 import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
+import app.n_zik.android.components.pullrefresh.rememberPullRefreshOverlayInsetProvider
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.utils.pauseSearchHistoryKey
 import app.it.fast4x.rimusic.utils.preferences
@@ -65,12 +75,13 @@ import app.n_zik.android.components.tab.Search
 import app.n_zik.android.utils.StringResourceIdentity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.math.roundToInt
 
 fun settingsCardTargetId(context: android.content.Context, tab: Int, titleRes: Int): String =
     "card.$tab.${settingsSectionNavigationName(titleRes) ?: StringResourceIdentity.legacyName(context.resources.getResourceEntryName(titleRes))}"
 
 /** Detailed search uses the settings host graph; source content retains app-level navigation. */
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun SettingsCategoryPage(
@@ -99,6 +110,29 @@ fun SettingsCategoryPage(
     val floatingBackdrop = rememberGlassFloatingActionBackdrop()
     var pinnedFooterHeightPx by remember(categoryId) { mutableIntStateOf(0) }
     var hasPinnedFooter by remember(categoryId) { mutableStateOf(false) }
+    val listPadding = rememberSettingsContentPadding(
+        base = PaddingValues(bottom = Dimensions.bottomSpacer),
+        bottomInsetHandledByFooter = hasPinnedFooter,
+    )
+    val density = LocalDensity.current
+    var listTopPx by remember { mutableFloatStateOf(0f) }
+    val visibleChromeInset = rememberPullRefreshOverlayInsetProvider()
+    val statusTopPx = WindowInsets.safeDrawing.getTop(density)
+    val searchClearancePx by rememberUpdatedState {
+        (maxOf(statusTopPx.toFloat(), with(density) { visibleChromeInset().toPx() }) - listTopPx)
+            .coerceAtLeast(0f)
+    }
+    var targetingListRow by remember { mutableStateOf(false) }
+    val defaultScrollSpec = LocalBringIntoViewSpec.current
+    val targetScrollSpec = remember(defaultScrollSpec) {
+        object : BringIntoViewSpec by defaultScrollSpec {
+            override fun calculateScrollDistance(offset: Float, size: Float, containerSize: Float): Float {
+                val clearance = if (targetingListRow) searchClearancePx().coerceAtMost(containerSize) else 0f
+                if (clearance > 0f && size > containerSize - clearance) return offset - clearance
+                return defaultScrollSpec.calculateScrollDistance(offset - clearance, size, containerSize - clearance)
+            }
+        }
+    }
     val overscroll = rememberOverscrollEffect()
     val showMessage = LocalSettingsSearchMessage.current
     val unavailableMessage = stringResource(R.string.settings_target_unavailable)
@@ -164,7 +198,8 @@ fun SettingsCategoryPage(
         if (item != null) {
             // Lazy cards must be composed before exact-row availability can be evaluated.
             scroll.scrollToItem(0)
-            scroll.animateScrollToItem(item)
+            val paddingPx = with(density) { listPadding.calculateTopPadding().roundToPx() }
+            scroll.animateScrollToItem(item, scrollOffset = paddingPx - searchClearancePx().roundToInt())
             withFrameNanos { }
             withFrameNanos { }
         }
@@ -192,11 +227,23 @@ fun SettingsCategoryPage(
         val resolved = if (!unavailable) requestedTarget else parentTarget
         withFrameNanos { }
         registry.targets[resolved]?.let {
-            it.bringIntoView()
+            // A tall card is already positioned by the list. Bringing the full card into view
+            // again can move its header behind the overlay to reveal more of its body.
+            if (item == null || resolved != cardId) {
+                targetingListRow = nested == null || unavailable
+                try {
+                    it.bringIntoView()
+                } finally {
+                    targetingListRow = false
+                }
+            }
             registry.blink(resolved)
         }
     }
-    CompositionLocalProvider(LocalSettingsTargets provides registry) {
+    CompositionLocalProvider(
+        LocalSettingsTargets provides registry,
+        LocalBringIntoViewSpec provides targetScrollSpec,
+    ) {
         Box {
             Column(Modifier.glassFloatingActionContent(floatingBackdrop).testTag("settings.category.$categoryId").background(colorPalette().background0).fillMaxWidth().fillMaxHeight()) {
                 // One source composition owns shared restart state and singleton dialogs.
@@ -216,12 +263,10 @@ fun SettingsCategoryPage(
                 }
                 LazyColumn(
                     state = scroll,
-                    contentPadding = rememberSettingsContentPadding(
-                        base = PaddingValues(bottom = Dimensions.bottomSpacer),
-                        bottomInsetHandledByFooter = hasPinnedFooter,
-                    ),
+                    contentPadding = listPadding,
                     overscrollEffect = if (scroll.canScrollForward || scroll.canScrollBackward) overscroll else null,
-                    modifier = Modifier.weight(1f).fillMaxWidth().testTag("settings.category.list.$categoryId"),
+                    modifier = Modifier.weight(1f).fillMaxWidth().testTag("settings.category.list.$categoryId")
+                        .onGloballyPositioned { listTopPx = it.positionInWindow().y },
                 ) {
                     item(key = "header", contentType = "header") {
                         Column {

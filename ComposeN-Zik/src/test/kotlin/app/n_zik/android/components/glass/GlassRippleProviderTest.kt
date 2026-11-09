@@ -74,6 +74,43 @@ import java.util.concurrent.TimeUnit
 class GlassRippleProviderTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun `nested panes use their own ripple settings and off restores native locals`() {
+        val nativeConfiguration = RippleConfiguration(Color.Black)
+        val nativeIndication = ripple(color = Color.Black)
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalRippleConfiguration provides nativeConfiguration,
+                LocalIndication provides nativeIndication,
+            ) {
+                GlassRippleProvider(GlassSettings(enabled = true, rippleIntensity = .25f)) {
+                    val outer = LocalIndication.current
+                    val outerAlpha = requireNotNull(LocalRippleConfiguration.current?.rippleAlpha)
+                    GlassRippleProvider(GlassSettings(enabled = true, rippleIntensity = .75f)) {
+                        val indication = LocalIndication.current
+                        val active = LocalGlassRippleActive.current
+                        val alpha = requireNotNull(LocalRippleConfiguration.current?.rippleAlpha)
+                        SideEffect {
+                            assertTrue(active)
+                            assertTrue(indication !== outer)
+                            assertEquals(.03f, outerAlpha.pressedAlpha, .001f)
+                            assertEquals(.09f, alpha.pressedAlpha, .001f)
+                        }
+                    }
+                    GlassRippleProvider(GlassSettings(enabled = false)) {
+                        val configuration = LocalRippleConfiguration.current
+                        val indication = LocalIndication.current
+                        val active = LocalGlassRippleActive.current
+                        SideEffect {
+                            assertTrue(!active)
+                            assertSame(nativeConfiguration, configuration)
+                            assertSame(nativeIndication, indication)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @Test fun `off preserves native local identities and foundation pressed pixels`() {
         val source = MutableInteractionSource()
         val wrapped = mutableStateOf(false)

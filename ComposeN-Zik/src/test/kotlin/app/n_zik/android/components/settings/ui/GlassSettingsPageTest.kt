@@ -11,6 +11,12 @@ import java.time.Duration
 import org.robolectric.Shadows
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.IndicationNodeFactory
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.InteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.MutableState
@@ -36,6 +42,7 @@ import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasAnySibling
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -46,6 +53,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
@@ -60,6 +68,9 @@ import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.it.fast4x.rimusic.utils.showMiniPlayerAudioOutputKey
+import app.it.fast4x.rimusic.utils.showMiniPlayerSkipBackKey
+import app.it.fast4x.rimusic.utils.showMiniPlayerSkipForwardKey
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.components.settings.common.SettingsTargetId
@@ -70,6 +81,7 @@ import app.n_zik.android.components.onboarding.OnboardingGlassScreen
 import app.n_zik.android.components.navigation.LocalAppHeaderContentInset
 import app.n_zik.android.components.navigation.LocalAppHeaderOverlayInset
 import app.n_zik.android.components.navigation.appHeaderOverlayTopPx
+import app.n_zik.android.components.navigation.nav.GlassNavigationBarHeight
 import app.n_zik.android.LocalTopBarOffset
 import app.n_zik.android.core.navigation.ScaffoldBarVisibilityState
 import app.n_zik.android.components.ui.screens.home.HomeHeaderMotionRegistry
@@ -111,6 +123,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.launch
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class, qualifiers = "w360dp-h800dp")
@@ -522,6 +536,86 @@ class GlassSettingsPageTest {
 
     @Test fun `settings provides simultaneous local ON and OFF previews and every Glass group`() {
         assertCompleteGlassSurface(onboarding = false)
+    }
+
+    @Test
+    @Config(qualifiers = "w320dp-h640dp-port")
+    fun `narrow comparison fits both native bars in each preview pane`() {
+        context.preferences.edit()
+            .putBoolean(showMiniPlayerSkipBackKey, false)
+            .putBoolean(showMiniPlayerSkipForwardKey, false)
+            .putBoolean(showMiniPlayerAudioOutputKey, false)
+            .commit()
+        showPage()
+        listOf(true, false).forEach { enabled ->
+            val paneTag = "settings.glass.preview.$enabled"
+            val pane = composeRule.onNodeWithTag(paneTag).fetchSemanticsNode().boundsInRoot
+            fun bar(tag: String) = composeRule.onNode(
+                hasTestTag(tag) and hasAnyAncestor(hasTestTag(paneTag)),
+                useUnmergedTree = true,
+            ).assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+            val mini = bar("settings.glass.miniPlayer")
+            val nav = bar("settings.glass.navigationPreview")
+            val nativeWidth = with(composeRule.density) { 360.dp.toPx() }
+            val scale = pane.width / nativeWidth
+            // The default floating dock uses the 72dp native mini-player seat.
+            assertEquals(with(composeRule.density) { 72.dp.toPx() } * scale, mini.height, 1f)
+            assertEquals(with(composeRule.density) { GlassNavigationBarHeight.toPx() } * scale, nav.height, 1f)
+            assertTrue(mini.top >= pane.top)
+            assertTrue(mini.bottom <= nav.top + 1f)
+            assertTrue(nav.bottom <= pane.bottom + 1f)
+        }
+    }
+
+    @Test
+    @Config(sdk = [32])
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `real preview buttons use their panel ripple with the opposite global policy`() {
+        val globalEnabled = mutableStateOf(false)
+        var nativePresses = 0
+        val nativeIndication = object : IndicationNodeFactory {
+            override fun create(interactionSource: InteractionSource): DelegatableNode = object : Modifier.Node() {
+                override fun onAttach() {
+                    coroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                        interactionSource.interactions.collect { if (it is PressInteraction.Press) nativePresses++ }
+                    }
+                }
+            }
+
+            override fun equals(other: Any?) = this === other
+            override fun hashCode() = System.identityHashCode(this)
+        }
+        composeRule.setContent {
+            val settings = GlassSettings(
+                quality = GlassQuality.Performance,
+                jellyEnabled = false,
+                rippleIntensity = .85f,
+                areaModes = mapOf(GlassArea.MiniPlayer to GlassAreaMode.Disabled),
+            )
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalIndication provides nativeIndication) {
+                GlassRippleProvider(settings.copy(enabled = globalEnabled.value, rippleIntensity = .25f)) {
+                    GlassPreview(settings)
+                }
+            }
+        }
+        fun playButton(enabled: Boolean) = composeRule.onNode(
+            hasContentDescription(context.getString(R.string.player_action_play)) and
+                hasAnyAncestor(hasTestTag("settings.glass.preview.$enabled")),
+        )
+        val on = playButton(true)
+        val idle = on.captureToImage().toPixelMap()
+        on.performTouchInput { down(center) }
+        composeRule.mainClock.advanceTimeBy(350)
+        val held = on.captureToImage().toPixelMap()
+        assertTrue((0 until held.height).any { y -> (0 until held.width).any { x -> held[x, y] != idle[x, y] } })
+        composeRule.runOnIdle { assertEquals(0, nativePresses) }
+        on.performTouchInput { up() }
+
+        composeRule.runOnIdle { globalEnabled.value = true }
+        val off = playButton(false)
+        off.performTouchInput { down(center) }
+        composeRule.runOnIdle { assertEquals(1, nativePresses) }
+        off.performTouchInput { up() }
     }
 
     @Test fun `pinned comparison follows shared header hide and reveal without losing scroll`() {

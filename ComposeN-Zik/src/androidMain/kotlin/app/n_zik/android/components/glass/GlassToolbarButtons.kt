@@ -28,7 +28,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
-import androidx.compose.material3.CircularProgressIndicator
+import app.n_zik.android.components.ui.InlineCircularLoader
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -240,7 +240,7 @@ fun GlassToolbarLoading(): Boolean {
     val style = LocalToolbarStyle.current ?: return false
     Box(Modifier.size(if (style.count == 1) GlassStandaloneActionSize else style.cellWidth, GlassActionCellHeight),
         contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(Modifier.size(GlassActionIconSize), color = glassArtworkForeground(style.settings, colorPalette().text, style.settings.usesGlassMaterial(GlassArea.ActionButtons)), strokeWidth = 2.dp)
+        InlineCircularLoader(Modifier.size(GlassActionIconSize), color = glassArtworkForeground(style.settings, colorPalette().text, style.settings.usesGlassMaterial(GlassArea.ActionButtons)), strokeWidth = 2.dp)
     }
     return true
 }

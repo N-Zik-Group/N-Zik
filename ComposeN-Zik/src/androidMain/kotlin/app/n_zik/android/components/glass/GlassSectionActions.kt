@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
-import androidx.compose.material3.CircularProgressIndicator
+import app.n_zik.android.components.ui.InlineCircularLoader
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
@@ -92,7 +92,7 @@ internal fun GlassSectionActions(
                         Modifier.size(if (actions.size == 1) GlassStandaloneActionSize else GlassActionCellWidth, GlassActionCellHeight),
                         contentAlignment = Alignment.Center,
                     ) {
-                        CircularProgressIndicator(Modifier.size(18.dp), color = colorPalette().textSecondary, strokeWidth = 2.dp)
+                        InlineCircularLoader(Modifier.size(18.dp), color = colorPalette().textSecondary, strokeWidth = 2.dp)
                     }
                 } else {
                     GlassActionGroupItem(
@@ -121,7 +121,7 @@ internal fun GlassSectionActions(
                     if (action.loading) {
                         Box(Modifier.padding(end = nativeSectionEndPadding(action.nativeIconSize, action.nativeEndPadding))
                             .size(NativeIconActionSize), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(Modifier.size(18.dp),
+                            InlineCircularLoader(Modifier.size(18.dp),
                                 color = colorPalette().textSecondary, strokeWidth = 2.dp)
                         }
                     } else {
