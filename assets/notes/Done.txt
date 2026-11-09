@@ -56,3 +56,9 @@ Fixed:
   - Resolve original video artwork and apply the saved fit/crop choice in shared image and painter paths, including the full player.
   - Avoid stale Coil crossfade geometry and refresh artwork when the crop preference changes.
   - Keep the video-cropping setting visible for all appearance configurations.
+
+Fixed:
+- fix(metadata): refresh edited names throughout library and menus (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Observe current song/entity rows and reopen editing dialogs with fresh values instead of retained menu snapshots.
+  - Hide internal metadata prefixes in menus, info/history, notifications, matching, maintenance and exported labels while preserving stored identities.
+  - Preserve playlist markers when renaming and publish coherent album/artist metadata changes.

@@ -2,7 +2,6 @@ package app.n_zik.android.components.menu.artist
 
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,10 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -58,18 +55,22 @@ import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
 import app.it.fast4x.rimusic.utils.forcePlayAtIndex
 import app.it.fast4x.rimusic.utils.menuStyleKey
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
+import app.n_zik.android.appContext
 import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.artist.ChangeArtistBrowseIdDialog
 import app.n_zik.android.components.dialog.artist.ChangeArtistCoverDialog
 import app.n_zik.android.components.dialog.artist.ChangeArtistTitleDialog
 import app.n_zik.android.components.glass.GlassHorizontalSeparator
+import app.n_zik.android.components.menu.EntityMenuSnapshot
+import app.n_zik.android.components.menu.ObserveEntityMenuSnapshot
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuSheetDragHandle
@@ -85,10 +86,13 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 @UnstableApi
 @OptIn(ExperimentalFoundationApi::class)
 class LocalArtistItemMenu private constructor(
-    private val artist: Artist,
+    artist: Artist,
     override val menuState: MenuState,
     styleState: MutableState<MenuStyle>
 ) : Menu {
+
+    private val snapshot = EntityMenuSnapshot(artist, getActiveProfile(appContext()), Artist::id)
+    private val artist: Artist get() = snapshot.value
 
     companion object {
         @Composable
@@ -327,21 +331,10 @@ class LocalArtistItemMenu private constructor(
 
     @Composable
     override fun MenuComponent() {
+        if (!ObserveEntityMenuSnapshot(snapshot, { Database.artistTable.findById(it) }, menuState::hide)) return
         val changeTitle = ChangeArtistTitleDialog { artist }
         val changeCover = ChangeArtistCoverDialog { artist }
         val changeId = ChangeArtistBrowseIdDialog(menuState = menuState) { artist }
-
-        var displayTitle by remember { mutableStateOf(artist.name) }
-        var displayThumbnailUrl by remember { mutableStateOf(artist.thumbnailUrl) }
-
-        val dbArtist by Database.artistTable.findById(artist.id).collectAsStateWithLifecycle(initialValue = artist, context = NzikDispatchers.DATA)
-
-        LaunchedEffect(dbArtist) {
-            dbArtist?.let {
-                displayTitle = it.name
-                displayThumbnailUrl = it.thumbnailUrl
-            }
-        }
 
         val binder = LocalPlayerServiceBinder.current
         val songs by Database.artistSongs(artist.id).collectAsStateWithLifecycle(initialValue = emptyList(), context = NzikDispatchers.DATA)
@@ -377,8 +370,8 @@ class LocalArtistItemMenu private constructor(
             changeCover.Render()
             changeId.Render()
             ArtistItemDisplay(
-                title = displayTitle,
-                thumbnailUrl = displayThumbnailUrl,
+                title = artist.name,
+                thumbnailUrl = artist.thumbnailUrl,
                 subscribersCount = "${songs.size} ${stringResource(R.string.library_songs_title)}"
             )
 

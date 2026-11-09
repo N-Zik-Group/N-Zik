@@ -64,6 +64,7 @@ import app.it.fast4x.rimusic.utils.durationTextToMillis
 import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
 import app.it.fast4x.rimusic.utils.forcePlay
 import app.it.fast4x.rimusic.utils.getDownloadStateMedia
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.playerTimelineTypeKey
 import app.it.fast4x.rimusic.utils.rememberEncryptedPreference
@@ -89,6 +90,7 @@ import app.n_zik.android.components.dialog.song.EditMetadataDialog
 import app.n_zik.android.components.dialog.song.RenameSongDialog
 import app.n_zik.android.components.dialog.song.UpdateSongDialog
 import app.n_zik.android.components.dialog.tab.DeleteSongDialog
+import app.n_zik.android.components.menu.artistMoreFromTitle
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
@@ -117,10 +119,13 @@ import app.n_zik.android.utils.player.enqueueOffMain
 @ExperimentalFoundationApi
 class SongItemMenu private constructor(
     private val navController: NavController,
-    private val song: Song,
+    song: Song,
     override val menuState: MenuState,
     styleState: MutableState<MenuStyle>
 ): Menu {
+
+    private val snapshot = SongMenuSnapshot(song, getActiveProfile(appContext()))
+    private val song: Song get() = snapshot.song
 
     companion object {
         @Composable
@@ -319,6 +324,7 @@ class SongItemMenu private constructor(
     @Composable
     override fun MenuComponent() {
         val context = LocalContext.current
+        ObserveSongMenuSnapshot(snapshot, onProfileChanged = menuState::hide)
         val binder = LocalPlayerServiceBinder.current
         val coroutineScope = rememberCoroutineScope()
 
@@ -464,10 +470,10 @@ class SongItemMenu private constructor(
             Database.artistTable.findBySongId(song.id)
         }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
-        val goToArtistFallback = remember {
+        val goToArtistFallback = remember(song) {
             GoToArtist( navController, song, menuState )
         }
-        val goToAlbum = remember {
+        val goToAlbum = remember(song) {
             GoToAlbum( navController, song, menuState )
         }
         val updateDialog = UpdateSongDialog( song )
@@ -572,7 +578,7 @@ class SongItemMenu private constructor(
                                 override val iconId: Int = R.drawable.people
                                 override val messageId: Int = R.string.library_artists_title
                                 @get:Composable
-                                override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " $artistName"
+                                override val menuIconTitle: String get() = artistMoreFromTitle(artistName)
                                 override fun onShortClick() {
                                     menuState.hide()
                                     coroutineScope.launch(NzikDispatchers.DATA) {
@@ -608,7 +614,7 @@ class SongItemMenu private constructor(
                             override val iconId: Int = R.drawable.people
                             override val messageId: Int = R.string.library_artists_title
                             @get:Composable
-                            override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " ${artist.name ?: ""}"
+                            override val menuIconTitle: String get() = artistMoreFromTitle(artist.name)
                             override fun onShortClick() {
                                 menuState.hide()
                                 navController.navigate("${NavRoutes.artist.name}/${artist.id}")

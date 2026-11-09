@@ -132,6 +132,10 @@ interface SongTable {
     @Query("SELECT DISTINCT * FROM Song WHERE id IN (:songIds)")
     fun findByIdsDirect( songIds: List<String> ): List<Song>
 
+    /** Observes metadata for a bounded batch of menu song identities. */
+    @Query("SELECT DISTINCT * FROM Song WHERE id IN (:songIds)")
+    fun findByIds(songIds: List<String>): Flow<List<Song>>
+
     @Query("SELECT COUNT(*) FROM Song WHERE id = :songId")
     fun countById( songId: String ): Int
 

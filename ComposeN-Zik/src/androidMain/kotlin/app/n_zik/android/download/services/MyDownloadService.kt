@@ -20,6 +20,7 @@ import app.n_zik.android.download.utils.MyDownloadHelper.batchTotal
 import app.n_zik.android.download.utils.MyDownloadHelper.batchCompleted
 import app.n_zik.android.download.utils.MyDownloadHelper.incrementBatchCompleted
 import app.n_zik.android.download.utils.MyDownloadHelper.resetBatch
+import app.n_zik.android.download.utils.downloadDisplayName
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
@@ -177,7 +178,7 @@ class MyDownloadService : DownloadService(
                     .setSmallIcon(if (failedCount == 0) R.drawable.downloaded else R.drawable.alert_circle_not_filled)
                     .setContentTitle(context.getString(R.string.downloads_title))
                     .setContentText(title)
-                    .setSubText(lastName)
+                    .setSubText(downloadDisplayName(lastName))
                     .setAutoCancel(true)
                     .setOnlyAlertOnce(true)
                     .build()

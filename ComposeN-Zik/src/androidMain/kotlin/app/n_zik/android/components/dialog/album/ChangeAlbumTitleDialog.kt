@@ -5,14 +5,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.models.Album
-import app.n_zik.android.components.dialog.song.RenameDialog
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.components.dialog.song.RenameDialog
 import app.n_zik.android.core.database.Database
 
 class ChangeAlbumTitleDialog private constructor(
@@ -23,14 +24,12 @@ class ChangeAlbumTitleDialog private constructor(
 
     companion object {
         @Composable
-        operator fun invoke( getAlbum: () -> Album? ): ChangeAlbumTitleDialog =
-            ChangeAlbumTitleDialog(
-                remember { mutableStateOf(false) },
-                remember {
-                    mutableStateOf( TextFieldValue(cleanPrefix(getAlbum()?.title ?: "")) )
-                },
-                getAlbum
-            )
+        operator fun invoke(getAlbum: () -> Album?): ChangeAlbumTitleDialog {
+            val current = rememberUpdatedState(getAlbum)
+            return remember(getAlbum()?.id) {
+                ChangeAlbumTitleDialog(mutableStateOf(false), mutableStateOf(TextFieldValue())) { current.value() }
+            }
+        }
     }
 
     override val keyboardOption: KeyboardOptions = KeyboardOptions.Default
@@ -43,9 +42,10 @@ class ChangeAlbumTitleDialog private constructor(
         @Composable
         get() = menuIconTitle
 
-    override fun hideDialog() {
-        super.hideDialog()
+    override fun showDialog() {
         value = TextFieldValue(cleanPrefix(getAlbum()?.title ?: ""))
+        errorMessage = ""
+        super.showDialog()
     }
 
     override fun onSet( newValue: String ) {

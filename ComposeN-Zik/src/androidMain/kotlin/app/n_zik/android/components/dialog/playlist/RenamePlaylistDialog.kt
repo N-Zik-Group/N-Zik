@@ -1,19 +1,18 @@
 package app.n_zik.android.components.dialog.playlist
 
-import app.n_zik.android.core.database.*
-
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
-import app.n_zik.android.R
-import app.n_zik.android.core.database.Database
 import app.it.fast4x.rimusic.models.Playlist
+import app.it.fast4x.rimusic.cleanPrefix
+import app.n_zik.android.R
 import app.n_zik.android.components.dialog.song.RenameDialog
-import java.util.UUID
+import app.n_zik.android.core.database.Database
 
 class RenamePlaylistDialog private constructor(
     activeState: MutableState<Boolean>,
@@ -24,15 +23,12 @@ class RenamePlaylistDialog private constructor(
 
     companion object {
         @Composable
-        operator fun invoke( getPlaylist: () -> Playlist? ) =
-            RenamePlaylistDialog(
-                remember { mutableStateOf(false) },
-                remember( getPlaylist()?.name ) {
-                    mutableStateOf( TextFieldValue(getPlaylist()?.name ?: "") )
-                },
-
-                getPlaylist
-            )
+        operator fun invoke(getPlaylist: () -> Playlist?): RenamePlaylistDialog {
+            val current = rememberUpdatedState(getPlaylist)
+            return remember(getPlaylist()?.id) {
+                RenamePlaylistDialog(mutableStateOf(false), mutableStateOf(TextFieldValue())) { current.value() }
+            }
+        }
     }
 
     override val iconId: Int = R.drawable.title_edit
@@ -45,11 +41,10 @@ class RenamePlaylistDialog private constructor(
         @Composable
         get() = stringResource( messageId )
 
-    override fun hideDialog() {
-        super.hideDialog()
-        // Always reset string so when dialog turns
-        // back on it will not show previous value.
-        value = TextFieldValue(getPlaylist()?.name ?: "")
+    override fun showDialog() {
+        value = TextFieldValue(getPlaylist()?.cleanName().orEmpty())
+        errorMessage = ""
+        super.showDialog()
     }
 
     override fun onSet( newValue: String ) {
@@ -57,14 +52,13 @@ class RenamePlaylistDialog private constructor(
         if( errorMessage.isNotEmpty() ) return
 
         val playlist = getPlaylist() ?: return
+        val storedPrefixes = playlist.name.dropLast(cleanPrefix(playlist.name).length)
 
         Database.asyncTransaction {
-            playlist.copy( name = newValue )
+            playlist.copy( name = storedPrefixes + newValue )
                     .let( playlistTable::update )
         }
 
         hideDialog()
     }
 }
-
-

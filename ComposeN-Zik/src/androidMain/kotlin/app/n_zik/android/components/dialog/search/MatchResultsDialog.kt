@@ -20,6 +20,7 @@ import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.typography
 import app.it.fast4x.rimusic.models.Song
+import app.it.fast4x.rimusic.cleanPrefix
 
 /**
  * Centralized match results dialog: matched/failed counts and the list of failed songs
@@ -96,7 +97,7 @@ fun MatchResultsDialog(
                 Column(Modifier.fillMaxWidth()) {
                     failedSongs.forEach { song ->
                         BasicText(
-                            text = "${song.title} - ${song.artistsText ?: ""}",
+                            text = "${cleanPrefix(song.title)} - ${cleanPrefix(song.artistsText.orEmpty())}",
                             style = typography().xs.copy(color = colorPalette().text),
                             modifier = Modifier
                                 .fillMaxWidth()

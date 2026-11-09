@@ -41,7 +41,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-
 import app.it.fast4x.rimusic.enums.DownloadedStateMedia
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.enums.NavRoutes
@@ -65,6 +64,7 @@ import app.it.fast4x.rimusic.ui.styling.favoritesIcon
 import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.durationTextToMillis
 import app.it.fast4x.rimusic.utils.forcePlay
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.getDownloadStateMedia
 import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.playerTimelineTypeKey
@@ -88,11 +88,14 @@ import app.n_zik.android.components.dialog.song.ChangeAuthorDialog
 import app.n_zik.android.components.dialog.song.ChangeCoverDialog
 import app.n_zik.android.components.dialog.song.RenameSongDialog
 import app.n_zik.android.components.glass.GlassHorizontalSeparator
+import app.n_zik.android.components.menu.artistMoreFromTitle
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.menu.MenuSheetSurface
 import app.n_zik.android.components.menu.menuSheetSectionBackground
+import app.n_zik.android.components.menu.song.ObserveSongMenuSnapshot
+import app.n_zik.android.components.menu.song.SongMenuSnapshot
 import app.n_zik.android.components.song.GoToArtist
 import app.n_zik.android.components.tab.Radio
 import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherMenu
@@ -117,10 +120,13 @@ import app.n_zik.android.utils.player.enqueueOffMain
 @ExperimentalFoundationApi
 class VideoItemMenu private constructor(
     private val navController: NavController,
-    private val song: Song,
+    song: Song,
     override val menuState: MenuState,
     styleState: MutableState<MenuStyle>
 ): Menu {
+
+    private val snapshot = SongMenuSnapshot(song, getActiveProfile(appContext()))
+    private val song: Song get() = snapshot.song
 
     companion object {
         @Composable
@@ -248,6 +254,7 @@ class VideoItemMenu private constructor(
 
     @Composable
     override fun MenuComponent() {
+        ObserveSongMenuSnapshot(snapshot, onProfileChanged = menuState::hide)
         val context = LocalContext.current
         offlineMode = OfflineMode.enabled(context)
         val uriHandler = LocalUriHandler.current
@@ -394,7 +401,7 @@ class VideoItemMenu private constructor(
             Database.artistTable.findBySongId(song.id)
         }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
-        val goToArtistFallback = remember {
+        val goToArtistFallback = remember(song) {
             GoToArtist( navController, song, menuState )
         }
 
@@ -490,7 +497,7 @@ class VideoItemMenu private constructor(
                             override val iconId: Int = R.drawable.people
                             override val messageId: Int = R.string.library_artists_title
                             @get:Composable
-                            override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " $artistName"
+                            override val menuIconTitle: String get() = artistMoreFromTitle(artistName)
                             override fun onShortClick() {
                                 menuState.hide()
                                 coroutineScope.launch(NzikDispatchers.DATA) {
@@ -526,7 +533,7 @@ class VideoItemMenu private constructor(
                         override val iconId: Int = R.drawable.people
                         override val messageId: Int = R.string.library_artists_title
                         @get:Composable
-                        override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " ${artist.name ?: ""}"
+                        override val menuIconTitle: String get() = artistMoreFromTitle(artist.name)
                         override fun onShortClick() {
                             menuState.hide()
                             navController.navigate("${app.it.fast4x.rimusic.enums.NavRoutes.artist.name}/${artist.id}")
@@ -672,7 +679,3 @@ class VideoItemMenu private constructor(
         )
     }
 }
-
-
-
-

@@ -2,7 +2,6 @@ package app.n_zik.android.components.menu.artist
 
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -68,18 +67,21 @@ import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.excludeDislikedArtistsKey
 import app.it.fast4x.rimusic.utils.forcePlayAtIndex
 import app.it.fast4x.rimusic.utils.menuStyleKey
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
+import app.n_zik.android.appContext
 import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.artist.ChangeArtistBrowseIdDialog
 import app.n_zik.android.components.dialog.artist.ChangeArtistCoverDialog
 import app.n_zik.android.components.dialog.artist.ChangeArtistTitleDialog
 import app.n_zik.android.components.glass.GlassHorizontalSeparator
+import app.n_zik.android.components.menu.ObserveMenuProfile
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuSheetDragHandle
@@ -102,6 +104,8 @@ class OnlineArtistItemMenu private constructor(
     override val menuState: MenuState,
     styleState: MutableState<MenuStyle>
 ) : Menu {
+
+    private val ownerProfile = getActiveProfile(appContext())
 
     companion object {
         @Composable
@@ -353,16 +357,15 @@ class OnlineArtistItemMenu private constructor(
 
     @Composable
     override fun MenuComponent() {
-        val dbArtist by Database.artistTable.findById(artist.key).collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
-
-        var displayTitle by remember { mutableStateOf(artist.info?.name) }
-        var displayThumbnailUrl by remember { mutableStateOf(artist.thumbnail?.url) }
+        if (!ObserveMenuProfile(ownerProfile, menuState::hide)) return
+        val dbArtist by remember(artist.key) { Database.artistTable.findById(artist.key) }
+            .collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
 
         val artistProvider = {
             dbArtist ?: Artist(
                 id = artist.key,
-                name = displayTitle,
-                thumbnailUrl = displayThumbnailUrl,
+                name = artist.info?.name,
+                thumbnailUrl = artist.thumbnail?.url,
                 timestamp = System.currentTimeMillis(),
                 isYoutubeArtist = true
             )
@@ -370,13 +373,6 @@ class OnlineArtistItemMenu private constructor(
         val changeTitle = ChangeArtistTitleDialog(artistProvider)
         val changeCover = ChangeArtistCoverDialog(artistProvider)
         val changeId = ChangeArtistBrowseIdDialog(menuState = menuState, getArtist = artistProvider)
-
-        LaunchedEffect(dbArtist) {
-            dbArtist?.let {
-                displayTitle = it.name.takeIf { !it.isNullOrBlank() } ?: displayTitle
-                displayThumbnailUrl = it.thumbnailUrl.takeIf { !it.isNullOrBlank() } ?: displayThumbnailUrl
-            }
-        }
 
         val binder = LocalPlayerServiceBinder.current
 
@@ -395,7 +391,7 @@ class OnlineArtistItemMenu private constructor(
         }
 
         val playRadio = object : MenuIcon, Descriptive, Clickable {
-            // Issue #866 (gh-866): state icon — radio_stop while the radio is active.
+            // Issue #866 (gh-866): state icon - radio_stop while the radio is active.
             override val iconId: Int get() = radioButtonIconRes(binder)
             override val color: androidx.compose.ui.graphics.Color
                 @Composable
@@ -429,7 +425,7 @@ class OnlineArtistItemMenu private constructor(
         }
 
         val shuffle = object : MenuIcon, Descriptive, Clickable {
-            // Issue #866 (gh-866): app-wide shuffle confirmation flash — the icon follows the
+            // Issue #866 (gh-866): app-wide shuffle confirmation flash - the icon follows the
             // binder's flash state (shuffle_ok ~1 s), triggered in onShortClick below.
             override val iconId: Int get() = shuffleButtonIconRes(binder)
             override val color: androidx.compose.ui.graphics.Color
@@ -477,8 +473,8 @@ class OnlineArtistItemMenu private constructor(
 
         MenuSheetSurface {
             ArtistItemDisplay(
-                title = displayTitle,
-                thumbnailUrl = displayThumbnailUrl,
+                title = artistProvider().name,
+                thumbnailUrl = artistProvider().thumbnailUrl,
                 subscribersCount = artist.subscribersCountText
             )
 

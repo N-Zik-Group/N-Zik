@@ -3,7 +3,6 @@ package app.n_zik.android.components.menu.playlist
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,6 +66,7 @@ import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.conditional
 import app.it.fast4x.rimusic.utils.disableScrollingTextKey
 import app.it.fast4x.rimusic.utils.menuStyleKey
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
@@ -80,6 +80,9 @@ import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.glass.GlassHorizontalSeparator
+import app.n_zik.android.components.menu.artistMoreFromTitle
+import app.n_zik.android.components.menu.rememberMenuSongs
+import app.n_zik.android.components.menu.ObserveMenuProfile
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuSheetDragHandle
@@ -108,6 +111,8 @@ class OnlinePlaylistItemMenu private constructor(
     override val menuState: MenuState,
     styleState: MutableState<MenuStyle>
 ) : Menu {
+
+    private val ownerProfile = getActiveProfile(appContext())
 
     companion object {
         @Composable
@@ -257,7 +262,7 @@ class OnlinePlaylistItemMenu private constructor(
                     )
 
                     BasicText(
-                        text = authorText ?: "",
+                        text = cleanPrefix(authorText.orEmpty()),
                         style = typography().xs.semiBold.secondary.copy(
                             color = colorPalette().textSecondary,
                         ),
@@ -365,11 +370,12 @@ class OnlinePlaylistItemMenu private constructor(
 
     @Composable
     override fun MenuComponent() {
+        if (!ObserveMenuProfile(ownerProfile, menuState::hide)) return
         val binder = LocalPlayerServiceBinder.current
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
 
-        var songs by remember { mutableStateOf<List<Song>?>(null) }
+        var fetchedSongs by remember { mutableStateOf<List<Song>?>(null) }
         var contentLoaded by remember(playlist.key) { mutableStateOf(false) }
         
         var displayTitle by remember { mutableStateOf(playlist.title ?: playlist.info?.name) }
@@ -378,9 +384,10 @@ class OnlinePlaylistItemMenu private constructor(
 
         val localPlaylistFlow = remember(playlist.key) { Database.playlistTable.findByBrowseId(playlist.key) }
         val localPlaylist by localPlaylistFlow.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
-        val changePlaylistId = localPlaylist?.let { lp ->
-            ChangePlaylistBrowseIdDialog(menuState = menuState) { lp }
-        }
+        val songs by rememberMenuSongs(fetchedSongs)
+        val changePlaylistId = if (localPlaylist != null) {
+            ChangePlaylistBrowseIdDialog(menuState = menuState) { localPlaylist }
+        } else null
 
         LaunchedEffect(playlist.key) {
             withContext(NzikDispatchers.DATA) {
@@ -389,10 +396,10 @@ class OnlinePlaylistItemMenu private constructor(
                     displayTitle = result.title.takeIf { !it.isNullOrBlank() } ?: displayTitle
                     displayAuthor = result.author.takeIf { !it.isNullOrBlank() } ?: displayAuthor
                     displayThumbnailUrl = result.thumbnailUrl.takeIf { !it.isNullOrBlank() } ?: displayThumbnailUrl
-                    songs = result.songs
+                    fetchedSongs = result.songs
                     contentLoaded = true
                 } else {
-                    songs = emptyList() // Failed to fetch or no songs
+                    fetchedSongs = emptyList() // Failed to fetch or no songs
                 }
             }
         }
@@ -402,10 +409,7 @@ class OnlinePlaylistItemMenu private constructor(
             if (currentSongs == null) {
                 Toaster.w(R.string.common_external_link_loading_suffix)
             } else if (currentSongs.isNotEmpty()) {
-                // Launch on a scope independent of the popup menu's lifecycle: MenuComponent.kt hides the menu
-                // (cancelling its rememberCoroutineScope()) right after onShortClick() returns, so a scope owned
-//
-                // by the popup could cancel this coroutine before the add ever runs, silently dropping the tap.
+                // Queue changes must survive the popup closing.
                 NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                     val mediaItems = withContext(NzikDispatchers.DATA) { currentSongs.map { it.asMediaItem } }
                     binder?.player?.addNextOffMain(mediaItems, appContext())
@@ -484,7 +488,7 @@ class OnlinePlaylistItemMenu private constructor(
         }
         
         val importDialog = ImportPlaylistDialog(
-            initialValue = cleanPrefix(playlist.title ?: "")
+            initialValue = cleanPrefix(localPlaylist?.name ?: displayTitle ?: "")
         ) { text ->
             coroutineScope.launch(NzikDispatchers.DATA) {
                 Database.asyncTransaction {
@@ -538,7 +542,7 @@ class OnlinePlaylistItemMenu private constructor(
             add(object : MenuIcon, Descriptive, Clickable {
                     override val iconId: Int = R.drawable.people
                     override val messageId: Int = R.string.library_artists_title
-                    @get:Composable override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " $artistName"
+                    @get:Composable override val menuIconTitle: String get() = artistMoreFromTitle(artistName)
                     override fun onShortClick() {
                         menuState.hide()
                         val path = "$browseId?params=${playlist.channel?.endpoint?.params.orEmpty()}"
@@ -570,7 +574,7 @@ class OnlinePlaylistItemMenu private constructor(
             deleteAllDialog.Render()
             changePlaylistId?.Render()
             PlaylistItemDisplay(
-                title = displayTitle,
+                title = localPlaylist?.name ?: displayTitle,
                 authorText = displayAuthor,
                 thumbnailUrl = displayThumbnailUrl,
                 songs = songs,

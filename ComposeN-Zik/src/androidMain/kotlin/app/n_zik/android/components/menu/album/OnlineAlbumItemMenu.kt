@@ -2,7 +2,6 @@ package app.n_zik.android.components.menu.album
 
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -76,6 +75,7 @@ import app.it.fast4x.rimusic.utils.getSyncDirection
 import app.it.fast4x.rimusic.utils.isNetworkConnected
 import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
@@ -92,6 +92,9 @@ import app.n_zik.android.components.dialog.album.ChangeAlbumTitleDialog
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.glass.GlassHorizontalSeparator
+import app.n_zik.android.components.menu.artistMoreFromTitle
+import app.n_zik.android.components.menu.rememberMenuSongs
+import app.n_zik.android.components.menu.ObserveMenuProfile
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuSheetDragHandle
@@ -118,6 +121,8 @@ class OnlineAlbumItemMenu private constructor(
     override val menuState: MenuState,
     styleState: MutableState<MenuStyle>
 ) : Menu {
+
+    private val ownerProfile = getActiveProfile(appContext())
 
     companion object {
         @Composable
@@ -425,18 +430,23 @@ class OnlineAlbumItemMenu private constructor(
 
     @Composable
     override fun MenuComponent() {
+        if (!ObserveMenuProfile(ownerProfile, menuState::hide)) return
         val binder = LocalPlayerServiceBinder.current
         val context = LocalContext.current
 
-        var songs by remember { mutableStateOf<List<Song>?>(null) }
+        var fetchedSongs by remember { mutableStateOf<List<Song>?>(null) }
 
         var displayTitle by remember { mutableStateOf(album.title ?: album.info?.name) }
         var displayAuthors by remember { mutableStateOf(album.authors.artistEntryNames().joinToString(", ")) }
         var displayYear by remember { mutableStateOf(album.year) }
         var displayThumbnailUrl by remember { mutableStateOf(album.thumbnail?.url) }
 
+        val dbAlbum by remember(album.key) { Database.albumTable.findById(album.key) }
+            .collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
+        val songs by rememberMenuSongs(fetchedSongs)
+
         val albumProvider = {
-            Album(
+            dbAlbum ?: Album(
                 id = album.key,
                 title = displayTitle,
                 thumbnailUrl = displayThumbnailUrl,
@@ -454,7 +464,7 @@ class OnlineAlbumItemMenu private constructor(
         LaunchedEffect(album.key) {
             withContext(NzikDispatchers.DATA) {
                 if (album.key.startsWith("LOCAL_ALBUM_")) {
-                    songs = emptyList()
+                    fetchedSongs = emptyList()
                     return@withContext
                 }
                 
@@ -464,7 +474,7 @@ class OnlineAlbumItemMenu private constructor(
                     displayAuthors = result.authors.artistEntryNames().joinToString(", ").takeIf { it.isNotBlank() } ?: displayAuthors
                     displayYear = result.year.takeIf { !it.isNullOrBlank() } ?: displayYear
                     displayThumbnailUrl = result.thumbnail?.url.takeIf { !it.isNullOrBlank() } ?: displayThumbnailUrl
-                    songs = result.songsPage?.items?.mapNotNull { it.asSong } ?: emptyList()
+                    fetchedSongs = result.songsPage?.items?.mapNotNull { it.asSong } ?: emptyList()
                     Database.asyncTransaction {
                         Database.albumTable.insertIgnore(Album(
                             id = album.key,
@@ -475,7 +485,7 @@ class OnlineAlbumItemMenu private constructor(
                             shareUrl = result.url,
                             timestamp = System.currentTimeMillis()
                         ))
-                        songs?.forEachIndexed { index, song ->
+                        fetchedSongs?.forEachIndexed { index, song ->
                             Database.insertIgnore(song.asMediaItem)
                             Database.songAlbumMapTable.upsert(
                                 listOf(SongAlbumMap(songId = song.id, albumId = album.key, position = index))
@@ -483,7 +493,7 @@ class OnlineAlbumItemMenu private constructor(
                         }
                     }
                 } else {
-                    songs = emptyList() // Failed to fetch or no songs
+                    fetchedSongs = emptyList() // Failed to fetch or no songs
                 }
             }
         }
@@ -493,10 +503,7 @@ class OnlineAlbumItemMenu private constructor(
             if (currentSongs == null) {
                 Toaster.w(R.string.common_external_link_loading_suffix)
             } else if (currentSongs.isNotEmpty()) {
-                // Launch on a scope independent of the popup menu's lifecycle: MenuComponent.kt hides the menu
-                // (cancelling its rememberCoroutineScope()) right after onShortClick() returns, so a scope owned
-//
-                // by the popup could cancel this coroutine before the add ever runs, silently dropping the tap.
+                // Queue changes must survive the popup closing.
                 NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                     val mediaItems = withContext(NzikDispatchers.DATA) { currentSongs.map { it.asMediaItem } }
                     binder?.player?.addNextOffMain(mediaItems, appContext())
@@ -575,7 +582,7 @@ class OnlineAlbumItemMenu private constructor(
         }
 
         val shuffle = object : MenuIcon, Descriptive, Clickable {
-            // Issue #866 (gh-866): app-wide shuffle confirmation flash — the icon follows the
+            // Issue #866 (gh-866): app-wide shuffle confirmation flash - the icon follows the
             // binder's flash state (shuffle_ok ~1 s), triggered in onShortClick below.
             override val iconId: Int get() = shuffleButtonIconRes(binder)
             override val color: androidx.compose.ui.graphics.Color
@@ -613,7 +620,7 @@ class OnlineAlbumItemMenu private constructor(
                     add(object : MenuIcon, Descriptive, Clickable {
                         override val iconId: Int = R.drawable.people
                         override val messageId: Int = R.string.library_artists_title
-                        @get:Composable override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " $artistName"
+                        @get:Composable override val menuIconTitle: String get() = artistMoreFromTitle(artistName)
                         override fun onShortClick() {
                             menuState.hide()
                             val path = "$browseId?params=${artist.endpoint?.params.orEmpty()}"
@@ -638,10 +645,10 @@ class OnlineAlbumItemMenu private constructor(
             downloadAllDialog.Render()
             deleteAllDialog.Render()
             AlbumItemDisplay(
-                title = displayTitle,
-                authorsText = displayAuthors,
-                year = displayYear,
-                thumbnailUrl = displayThumbnailUrl
+                title = albumProvider().title,
+                authorsText = albumProvider().authorsText,
+                year = albumProvider().year,
+                thumbnailUrl = albumProvider().thumbnailUrl
             )
 
             if (menuStyle == MenuStyle.List)

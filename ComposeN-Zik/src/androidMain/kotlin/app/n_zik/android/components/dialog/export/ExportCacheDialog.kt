@@ -31,6 +31,7 @@ import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.appContext
 import app.it.fast4x.rimusic.models.Song
+import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
@@ -178,7 +179,7 @@ class ExportCacheDialog(
                     }
 
                     val parsed = parseDescription(description)
-                    val finalAlbum = album?.title ?: parsed.album
+                    val finalAlbum = (album?.title ?: parsed.album)?.let(::cleanPrefix)
                     val finalYear = album?.year?.toString() ?: parsed.year
                     
                     Timber.tag("ExportCache").i("Parsed from description: composers=${parsed.composers}, copyright=${parsed.copyright}, genre=${parsed.genre}, descAlbum=${parsed.album}, descYear=${parsed.year}")
@@ -228,7 +229,7 @@ class ExportCacheDialog(
                             .replace(Regex("[\\x00-\\x08\\x0E-\\x1F]"), "")
                     }
 
-                    commandBuilder.append("-metadata title=\"${escape(song.title)}\" ")
+                    commandBuilder.append("-metadata title=\"${escape(song.cleanTitle())}\" ")
                     commandBuilder.append("-metadata artist=\"${escape(song.cleanArtistsText())}\" ")
                     finalAlbum?.let { commandBuilder.append("-metadata album=\"${escape(it)}\" ") }
                     finalYear?.let { commandBuilder.append("-metadata date=\"${escape(it)}\" ") }
@@ -372,7 +373,7 @@ class ExportCacheDialog(
 
                         val ext = if (isOpus) "ogg" else "m4a"
                         val mimeType = if (isOpus) "audio/ogg" else "audio/mp4"
-                        val baseName = "${currentSong.title} - ${currentSong.cleanArtistsText()}"
+                        val baseName = "${currentSong.cleanTitle()} - ${currentSong.cleanArtistsText()}"
                             .replace(Regex("[\\\\/:*?\"<>|]"), "_")
 
                         val audioUri = DocumentsContract.createDocument(
@@ -462,7 +463,7 @@ class ExportCacheDialog(
 
             songs.forEachIndexed { index, song ->
                 kotlinx.coroutines.withContext(NzikDispatchers.UI) {
-                    onProgress(index + 1, songs.size, song.title)
+                    onProgress(index + 1, songs.size, song.cleanTitle())
                 }
                 Timber.tag("ExportCache").i("batchExport: [${index + 1}/${songs.size}] ${song.title}")
                 try {
@@ -499,7 +500,7 @@ class ExportCacheDialog(
                     }
                     val ext = if (actualIsOpus) "ogg" else "m4a"
                     val mimeType = if (actualIsOpus) "audio/ogg" else "audio/mp4"
-                    val baseName = "${song.title} - ${song.cleanArtistsText()}"
+                    val baseName = "${song.cleanTitle()} - ${song.cleanArtistsText()}"
                         .replace(Regex("[\\\\/:*?\"<>|]"), "_")
                     val fileName = "$baseName.$ext"
                     val docUri = DocumentsContract.createDocument(cr, parentUri, mimeType, fileName)

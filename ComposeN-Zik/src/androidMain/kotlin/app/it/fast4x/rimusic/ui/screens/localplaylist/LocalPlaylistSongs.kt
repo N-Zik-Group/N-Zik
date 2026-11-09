@@ -1512,7 +1512,7 @@ fun LocalPlaylistSongs(
                                         songPlaylistMapTable.deleteBySongId(song.id, playlistId)
                                     }) {
                                         Toaster.s(
-                                            "${context.resources.getString(R.string.common_delete_success)} \"${song.title}\""
+                                            "${context.resources.getString(R.string.common_delete_success)} \"${cleanPrefix(song.title)}\""
                                         )
                                     }
                                 }

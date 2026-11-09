@@ -2,7 +2,6 @@ package app.n_zik.android.components.menu.album
 
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -71,6 +70,7 @@ import app.it.fast4x.rimusic.utils.getSyncDirection
 import app.it.fast4x.rimusic.utils.isNetworkConnected
 import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
@@ -88,6 +88,9 @@ import app.n_zik.android.components.dialog.artist.ChangeArtistBrowseIdDialog
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.glass.GlassHorizontalSeparator
+import app.n_zik.android.components.menu.artistMoreFromTitle
+import app.n_zik.android.components.menu.EntityMenuSnapshot
+import app.n_zik.android.components.menu.ObserveEntityMenuSnapshot
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuSheetDragHandle
@@ -111,11 +114,14 @@ import app.n_zik.android.utils.player.enqueueOffMain
 @OptIn(ExperimentalFoundationApi::class)
 class AlbumItemMenu private constructor(
     private val navController: NavController,
-    private val album: Album,
+    album: Album,
     private val binder: PlayerServiceModern.Binder?,
     override val menuState: MenuState,
     styleState: MutableState<MenuStyle>
 ) : Menu {
+
+    private val snapshot = EntityMenuSnapshot(album, getActiveProfile(appContext()), Album::id)
+    private val album: Album get() = snapshot.value
 
     companion object {
         @Composable
@@ -413,6 +419,7 @@ class AlbumItemMenu private constructor(
 
     @Composable
     override fun MenuComponent() {
+        if (!ObserveEntityMenuSnapshot(snapshot, { Database.albumTable.findById(it) }, menuState::hide)) return
         offlineMode = OfflineMode.enabled(appContext())
         val coroutineScope = rememberCoroutineScope()
         val changeTitle = ChangeAlbumTitleDialog { album }
@@ -449,10 +456,7 @@ class AlbumItemMenu private constructor(
         // Initialize buttons
         val playNext = PlayNext {
             val currentSongs = songs
-            // Launch on a scope independent of the popup menu's lifecycle: MenuComponent.kt hides the menu
-            // (cancelling its rememberCoroutineScope()) right after onShortClick() returns, so a scope owned
-//
-            // by the popup could cancel this coroutine before the add ever runs, silently dropping the tap.
+            // Queue changes must survive the popup closing.
             NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                 val mediaItems = withContext(NzikDispatchers.DATA) { currentSongs.map { it.asMediaItem } }
                 binder?.player?.addNextOffMain(mediaItems, appContext())
@@ -497,7 +501,7 @@ class AlbumItemMenu private constructor(
                                 override val iconId: Int = R.drawable.people
                                 override val messageId: Int = R.string.library_artists_title
                                 @get:Composable
-                                override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " $artistName"
+                                override val menuIconTitle: String get() = artistMoreFromTitle(artistName)
                                 override fun onShortClick() {
                                     menuState.hide()
                                     coroutineScope.launch(NzikDispatchers.DATA) {
@@ -525,7 +529,7 @@ class AlbumItemMenu private constructor(
                         override val iconId: Int = R.drawable.people
                         override val messageId: Int = R.string.library_artists_title
                         @get:Composable
-                        override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " ${artist.name ?: ""}"
+                        override val menuIconTitle: String get() = artistMoreFromTitle(artist.name)
                         override fun onShortClick() {
                             menuState.hide()
                             navController.navigate("${NavRoutes.artist.name}/${artist.id}")

@@ -13,6 +13,7 @@ import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.n_zik.android.R
 import app.n_zik.android.core.notifications.channelId
 import app.n_zik.android.download.utils.MyDownloadHelper.DOWNLOAD_NOTIFICATION_CHANNEL_ID
+import app.n_zik.android.download.utils.downloadDisplayName
 
 /** Builds both service and paused notifications without retaining a service instance. */
 @UnstableApi
@@ -23,7 +24,7 @@ internal class DownloadProgressNotification(context: Context) {
 
         // Calculate progress for active downloads
         val activeDownload = downloads.firstOrNull { it.state == Download.STATE_DOWNLOADING } ?: downloads.firstOrNull()
-        val currentDownloadName = activeDownload?.request?.data?.let { Util.fromUtf8Bytes(it) }
+        val currentDownloadName = activeDownload?.request?.data?.let { downloadDisplayName(Util.fromUtf8Bytes(it)) }
 
         // Calculate overall progress from all active downloads
         val totalBytes = downloads.sumOf { it.contentLength }.coerceAtLeast(1)

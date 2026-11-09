@@ -4,7 +4,6 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,7 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,13 +39,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.innertube.YtMusic
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
+import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.enums.NavRoutes
@@ -75,6 +72,7 @@ import app.it.fast4x.rimusic.utils.getSyncDirection
 import app.it.fast4x.rimusic.utils.isNetworkConnected
 import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.it.fast4x.rimusic.utils.secondary
 import app.it.fast4x.rimusic.utils.semiBold
@@ -91,6 +89,8 @@ import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.glass.GlassHorizontalSeparator
 import app.n_zik.android.components.glass.glassImageRim
+import app.n_zik.android.components.menu.EntityMenuSnapshot
+import app.n_zik.android.components.menu.ObserveEntityMenuSnapshot
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuSheetDragHandle
@@ -111,6 +111,7 @@ import app.n_zik.android.core.database.isPodcastBrowseId
 import app.n_zik.android.core.database.playlistLinkKind
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.rewind.RewindPlaylists
+import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
@@ -123,10 +124,16 @@ import app.n_zik.android.utils.playlist.supportsInsertionPosition
 @OptIn(ExperimentalFoundationApi::class)
 class LocalPlaylistItemMenu private constructor(
     private val navController: NavController,
-    private val playlistPreview: PlaylistPreview,
+    playlistPreview: PlaylistPreview,
     override val menuState: MenuState,
     styleState: MutableState<MenuStyle>
 ) : Menu {
+
+    private val initialPreview = playlistPreview
+    private val snapshot = EntityMenuSnapshot(playlistPreview.playlist, getActiveProfile(appContext())) { it.id }
+    private var songs by mutableStateOf<List<Song>?>(null)
+    private val playlistPreview: PlaylistPreview
+        get() = initialPreview.copy(playlist = snapshot.value, songCount = songs?.size ?: initialPreview.songCount)
 
     companion object {
         @Composable
@@ -231,19 +238,14 @@ class LocalPlaylistItemMenu private constructor(
                 Box(
                     Modifier.size(Dimensions.thumbnails.album / 2)
                 ) {
-                    val thumbnails by remember {
-                        val customThumbnail = checkFileExists( context, "thumbnail/playlist_${playlistPreview.playlist.id}" )
-
-                        if( customThumbnail != null )
-                            kotlinx.coroutines.flow.flowOf( listOf( customThumbnail ) )
-                        else
-                            Database.songPlaylistMapTable
-                                    .sortSongsByPlayTime( playlistPreview.playlist.id )
-                                    .distinctUntilChanged()
-                                    .map { list: List<Song> ->
-                                        list.mapNotNull( Song::thumbnailUrl ).takeLast( 4 )
-                                    }
-                    }.collectAsStateWithLifecycle( emptyList(), context = NzikDispatchers.DATA )
+                    val thumbnails by remember(snapshot) {
+                        playlistMenuThumbnails(
+                            songs = Database.songPlaylistMapTable.sortSongsByPlayTime(snapshot.id),
+                            revisions = ArtworkRevisions.changes,
+                            ownsProfile = { getActiveProfile(context) == snapshot.profile },
+                            customThumbnail = { checkFileExists(context, "thumbnail/playlist_${snapshot.id}") }
+                        )
+                    }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
                     // Clipped thumbnail content
                     Box(
@@ -306,7 +308,7 @@ class LocalPlaylistItemMenu private constructor(
                 ) {
                     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
                     BasicText(
-                        text = playlistPreview.playlist.name,
+                        text = cleanPrefix(playlistPreview.playlist.name),
                         style = typography().xs.semiBold.copy(color = colorPalette().text),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -364,21 +366,14 @@ class LocalPlaylistItemMenu private constructor(
 
     @Composable
     override fun MenuComponent() {
+        if (!ObserveEntityMenuSnapshot(snapshot, { Database.playlistTable.findById(it) }, menuState::hide)) return
+        val observedSongs = remember(snapshot) { Database.songPlaylistMapTable.allSongsOf(snapshot.id) }
+            .collectAsStateWithLifecycle<List<Song>?>(null, context = NzikDispatchers.DATA).value
+        SideEffect { songs = observedSongs }
         val context = LocalContext.current
         offlineMode = OfflineMode.enabled(context)
         val binder = LocalPlayerServiceBinder.current
         val coroutineScope = rememberCoroutineScope()
-        
-        // Options like Play Next, Enqueue, Rename, Delete...
-        var showRenameDialog by remember { mutableStateOf(false) }
-        
-        var songs by remember { mutableStateOf<List<Song>?>(null) }
-        
-        LaunchedEffect(playlistPreview.playlist.id) {
-            kotlinx.coroutines.withContext(NzikDispatchers.DATA) {
-                songs = Database.songPlaylistMapTable.allSongsOf(playlistPreview.playlist.id).firstOrNull() ?: emptyList()
-            }
-        }
         
         val insertionDialog = PlaylistInsertionDialog { playlistPreview.playlist }
 
@@ -435,10 +430,7 @@ class LocalPlaylistItemMenu private constructor(
             if (currentSongs == null) {
                 Toaster.w(R.string.common_external_link_loading_suffix)
             } else if (currentSongs.isNotEmpty()) {
-                // Launch on a scope independent of the popup menu's lifecycle: MenuComponent.kt hides the menu
-                // (cancelling its rememberCoroutineScope()) right after onShortClick() returns, so a scope owned
-//
-                // by the popup could cancel this coroutine before the add ever runs, silently dropping the tap.
+                // Queue changes must survive the popup closing.
                 NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                     val mediaItems = withContext(NzikDispatchers.DATA) { currentSongs.map { it.asMediaItem } }
                     binder?.player?.addNextOffMain(mediaItems, context)
@@ -519,7 +511,7 @@ class LocalPlaylistItemMenu private constructor(
         }
 
         // Define buttons
-        buttons = remember(playlistPreview, isBookmarked, offlineMode, refreshOnOpen) {
+        buttons = run {
             val list = mutableListOf<Button>()
             
             list.add(shuffle)
@@ -532,7 +524,7 @@ class LocalPlaylistItemMenu private constructor(
             if (playlistPreview.playlist.supportsInsertionPosition()) list.add(insertionDialog)
 
             if (playlistPreview.playlist.isEditable) {
-                // Spec 2: generated rewind-* playlists keep their language-neutral name — no rename
+                // Spec 2: generated rewind-* playlists keep their language-neutral name - no rename
                 if (!RewindPlaylists.isRewind(playlistPreview.playlist.name)) {
                     list.add(rename)
                 }

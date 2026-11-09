@@ -5,18 +5,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
+import timber.log.Timber
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.models.Artist
-import app.n_zik.android.components.dialog.song.RenameDialog
 import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.components.dialog.song.RenameDialog
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.migration.NameConvergence
-import kotlinx.coroutines.launch
-import timber.log.Timber
 
 class ChangeArtistTitleDialog private constructor(
     activeState: MutableState<Boolean>,
@@ -26,14 +26,12 @@ class ChangeArtistTitleDialog private constructor(
 
     companion object {
         @Composable
-        operator fun invoke( getArtist: () -> Artist? ): ChangeArtistTitleDialog =
-            ChangeArtistTitleDialog(
-                remember { mutableStateOf(false) },
-                remember {
-                    mutableStateOf( TextFieldValue(cleanPrefix(getArtist()?.name ?: "")) )
-                },
-                getArtist
-            )
+        operator fun invoke(getArtist: () -> Artist?): ChangeArtistTitleDialog {
+            val current = rememberUpdatedState(getArtist)
+            return remember(getArtist()?.id) {
+                ChangeArtistTitleDialog(mutableStateOf(false), mutableStateOf(TextFieldValue())) { current.value() }
+            }
+        }
     }
 
     override val keyboardOption: KeyboardOptions = KeyboardOptions.Default
@@ -46,9 +44,10 @@ class ChangeArtistTitleDialog private constructor(
         @Composable
         get() = menuIconTitle
 
-    override fun hideDialog() {
-        super.hideDialog()
+    override fun showDialog() {
         value = TextFieldValue(cleanPrefix(getArtist()?.name ?: ""))
+        errorMessage = ""
+        super.showDialog()
     }
 
     override fun onSet( newValue: String ) {
@@ -61,10 +60,6 @@ class ChangeArtistTitleDialog private constructor(
         // Normalize the user input (clean tokens, no prefix ever at a token
         // position) before it is stored or propagated.
         val cleanNew = NameConvergence.normalizeText( newValue )
-        // A row name is ONE name: blank input would store a bare "modified:"
-        // row, and a comma (multi-token) input would break the whole-token
-
-        // matching rules for every copy of the row.
         if (cleanNew.isEmpty()) {
             Timber.tag("NameConvergence").d("artist rename skipped: blank input for row %s", artist.id)
             return
@@ -79,10 +74,6 @@ class ChangeArtistTitleDialog private constructor(
         // full propagation scan is skipped.
         if (cleanNew.equals(oldName, ignoreCase = true)) return
         Database.asyncTransaction {
-            // The row rename and every propagated copy must land in ONE real
-            // SQLite transaction (asyncTransaction alone retries on lock
-
-            // exceptions but does not group the writes atomically).
             syncTransaction {
                 artistTable.insertIgnore( artist )
                 artistTable.update( artist.copy(name = "$MODIFIED_PREFIX$cleanNew") )

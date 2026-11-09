@@ -18,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.ui.components.themed.Loader
 import app.n_zik.android.R
@@ -391,7 +392,7 @@ private fun InfoRow(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = value,
+                text = cleanPrefix(value),
                 style = typography().xs,
                 color = colorPalette().text,
                 maxLines = 2,

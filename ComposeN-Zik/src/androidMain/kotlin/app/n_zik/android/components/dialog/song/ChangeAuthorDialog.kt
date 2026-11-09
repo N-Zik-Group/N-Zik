@@ -1,22 +1,20 @@
 package app.n_zik.android.components.dialog.song
 
-import app.n_zik.android.core.database.*
-
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
+import timber.log.Timber
+import app.it.fast4x.rimusic.MODIFIED_PREFIX
+import app.it.fast4x.rimusic.models.Song
+import app.kreate.android.me.knighthat.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.migration.NameConvergence
-import app.it.fast4x.rimusic.MODIFIED_PREFIX
-import app.it.fast4x.rimusic.models.Song
-import app.n_zik.android.components.dialog.song.RenameDialog
-import app.kreate.android.me.knighthat.utils.Toaster
-import timber.log.Timber
 
 class ChangeAuthorDialog private constructor(
     activeState: MutableState<Boolean>,
@@ -26,14 +24,12 @@ class ChangeAuthorDialog private constructor(
 
     companion object {
         @Composable
-        operator fun invoke( getSong: () -> Song? ): ChangeAuthorDialog =
-            ChangeAuthorDialog(
-                remember { mutableStateOf(false) },
-                remember {
-                    mutableStateOf( TextFieldValue(getSong()?.cleanArtistsText() ?: "") )
-                },
-                getSong
-            )
+        operator fun invoke(getSong: () -> Song?): ChangeAuthorDialog {
+            val current = rememberUpdatedState(getSong)
+            return remember(getSong()?.id) {
+                ChangeAuthorDialog(mutableStateOf(false), mutableStateOf(TextFieldValue())) { current.value() }
+            }
+        }
     }
 
     override val keyboardOption: KeyboardOptions = KeyboardOptions.Default
@@ -46,11 +42,10 @@ class ChangeAuthorDialog private constructor(
         @Composable
         get() = menuIconTitle
 
-    override fun hideDialog() {
-        super.hideDialog()
-        // Always reset string so when dialog turns
-        // back on it will not show previous value.
+    override fun showDialog() {
         value = TextFieldValue(getSong()?.cleanArtistsText() ?: "")
+        errorMessage = ""
+        super.showDialog()
     }
 
     override fun onSet( newValue: String ) {
@@ -58,11 +53,6 @@ class ChangeAuthorDialog private constructor(
         if( errorMessage.isNotEmpty() ) return
 
         val song = getSong() ?: return
-        // A 1:1 rename (exactly one token changed) that matches exactly one linked
-        // row renames that row (modified:) and propagates to all of its copies —
-        //
-        // before the local write, in the same transaction. 0 or 2+ candidate rows:
-        // nothing moves on the rows, the local custom write happens only.
         val rename = NameConvergence.diffSingleRename( song.cleanArtistsText(), newValue )
         // Normalize the user input for the local custom write: clean tokens, no
         // prefix ever at a token position (single leading marker).
@@ -92,4 +82,3 @@ class ChangeAuthorDialog private constructor(
     }
 
 }
-

@@ -80,6 +80,7 @@ import kotlinx.coroutines.asExecutor
 import timber.log.Timber
 import kotlin.io.path.createTempDirectory
 import app.it.fast4x.rimusic.EXPLICIT_PREFIX
+import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.R
 import app.it.fast4x.rimusic.utils.parentalControlEnabledKey
 
@@ -576,7 +577,7 @@ object MyDownloadHelper {
         downloadPreparationSemaphore.withPermit {
             val artistTextRaw = mediaItem.artistTextOrDb()
             val artistText = if (artistTextRaw == "null" || artistTextRaw.isBlank()) context.getString(R.string.metadata_unknown_artist) else artistTextRaw
-            val titleTextRaw = mediaItem.mediaMetadata.title?.toString() ?: ""
+            val titleTextRaw = cleanPrefix(mediaItem.mediaMetadata.title?.toString().orEmpty())
             val titleText = if (titleTextRaw == "null" || titleTextRaw.isBlank()) context.getString(R.string.metadata_unknown_title) else titleTextRaw
             val notificationTitle = "$artistText - $titleText"
 

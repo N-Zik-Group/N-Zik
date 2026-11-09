@@ -54,6 +54,7 @@ import androidx.media3.exoplayer.offline.Download
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import app.it.fast4x.rimusic.enums.ExoPlayerDiskCacheMaxSize
+import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.enums.ExoPlayerDiskDownloadCacheMaxSize
 import app.n_zik.android.components.glass.SampledMenuSheet
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
@@ -105,6 +106,7 @@ import app.n_zik.android.core.maintenance.MaintenanceStateStore
 import app.n_zik.android.core.migration.ConvergenceSummary
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.download.utils.downloadDisplayName
 import app.n_zik.android.extensions.discord.DiscordRpcError
 import app.n_zik.android.extensions.discord.DiscordRpcErrorState
 import app.n_zik.android.extensions.lastfm.LastFmActions
@@ -172,7 +174,7 @@ internal fun workStateResId(state: WorkInfo.State): Int = when (state) {
 
 /** The expansion lines of the artist-link-cleanup row: one line per removed link (song title + removed artist name), mirroring the dedup group lines — so the five Database rows share the same "summary on top, detail list underneath" shape when opened or closed. */
 internal fun dbCleanupLines(state: MaintenanceDbCleanupState?): List<GroupLine> =
-    state?.removedLinks?.map { link -> GroupLine(link.songTitle, link.artistName.orEmpty()) }
+    state?.removedLinks?.map { link -> GroupLine(cleanPrefix(link.songTitle), cleanPrefix(link.artistName.orEmpty())) }
         ?: emptyList()
 
 /** The expanded artist-link-cleanup message when there are no per-link lines: "No data" without a state, the shared clean sentence on a clean run, the shared counter sentence on a state predating per-link records (one version cycle). */
@@ -244,7 +246,7 @@ internal fun dbCleanupStatusRes(state: MaintenanceDbCleanupState?): PassStatus =
 
 /** The expansion lines of the "Download re-validation" row: one line per stale track removed by the last startup (title + mediaId), mirroring the dedup group lines and the cleanup link lines. */
 internal fun downloadRevalidationLines(state: MaintenanceDownloadRevalidationState?): List<GroupLine> =
-    state?.removedTracks?.map { track -> GroupLine(track.title, track.mediaId) }
+    state?.removedTracks?.map { track -> GroupLine(downloadDisplayName(track.title), track.mediaId) }
         ?: emptyList()
 
 /** The expanded download re-validation message when there are no per-track lines: "No data" without a state, the shared clean sentence on a clean run, the shared counter sentence on a state predating per-track records (one version cycle). */
@@ -264,7 +266,7 @@ internal fun downloadRevalidationStatusRes(state: MaintenanceDownloadRevalidatio
 
 /** The expansion lines of the "Download self-heal" row: the single healed track (title + mediaId); the startup clean run (empty mediaId) has no lines — the expanded row shows the clean sentence instead (see [downloadSelfHealStatusRes]). */
 internal fun downloadSelfHealLines(state: MaintenanceDownloadSelfHealState?): List<GroupLine> =
-    state?.takeIf { it.mediaId.isNotEmpty() }?.let { listOf(GroupLine(it.title, it.mediaId)) }
+    state?.takeIf { it.mediaId.isNotEmpty() }?.let { listOf(GroupLine(cleanPrefix(it.title), it.mediaId)) }
         ?: emptyList()
 
 /** The trailing status of the "Download self-heal" row: "No data" before the first startup run, the clean part on a startup run with nothing to heal, the single "1 item(s) cleaned" part once a real self-heal overwrote the startup state. */
@@ -1039,7 +1041,7 @@ fun MaintenanceSheet(
                 detailArgs != null -> ": ${stringResource(detailResId, detailArgs)}"
                 else -> ": ${stringResource(detailResId)}"
             }
-            dedupGroups.add(GroupLine(record.name, stringResource(display.statusResId) + detail))
+            dedupGroups.add(GroupLine(cleanPrefix(record.name), stringResource(display.statusResId) + detail))
         }
     }
     val convergence = snap?.convergence
@@ -1190,7 +1192,7 @@ fun MaintenanceSheet(
     // Expanded downloads detail: one line per download (title + state), alphabetical —
     // failed in RED, waiting/in-progress in accent, paused in blue, completed neutral
     val downloadDetails = downloads.values.map { download ->
-        val title = download.request.data.decodeToString()
+        val title = downloadDisplayName(download.request.data.decodeToString())
         val line = downloadDetailLine(title, download.state)
         DownloadDetail(
             name = line.titleResId?.let { stringResource(it) } ?: (title.orEmpty()),

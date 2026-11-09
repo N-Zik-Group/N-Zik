@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.searchPage
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
+import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
@@ -90,7 +91,7 @@ class ChangeArtistBrowseIdDialog private constructor(
     @Composable
     override fun DialogBody() {
         val artist = getArtist() ?: return
-        var query by remember { mutableStateOf(artist.name ?: "") }
+        var query by remember { mutableStateOf(cleanPrefix(artist.name.orEmpty())) }
         var isSearching by remember { mutableStateOf(false) }
         var results by remember { mutableStateOf<List<Innertube.ArtistItem>?>(null) }
         val coroutineScope = rememberCoroutineScope()

@@ -1,5 +1,8 @@
 package app.it.fast4x.rimusic.ui.screens.history
 
+import app.n_zik.android.components.history.historyArtistGroups
+import app.n_zik.android.components.history.historyTitleGroups
+
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.navigation.TopOverlayContentPadding
 import app.n_zik.android.components.navigation.LocalSideRailContentInsets
@@ -219,10 +222,10 @@ fun HistoryList(
                             }
                         }
                         HistorySortOrder.ALPHABETICAL -> {
-                            sorted.sortedBy { it.song.title }.groupBy { it.song.title.firstOrNull()?.uppercase() ?: "#" }
+                            historyTitleGroups(sorted)
                         }
                         HistorySortOrder.ARTIST -> {
-                            sorted.sortedBy { it.song.artistsText }.groupBy { it.song.artistsText?.split(",")?.first()?.trim() ?: "Unknown" }
+                            historyArtistGroups(sorted)
                         }
                     }
                 }

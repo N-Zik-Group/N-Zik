@@ -36,6 +36,7 @@ import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.it.fast4x.rimusic.MONTHLY_PREFIX
 import app.it.fast4x.rimusic.PINNED_PREFIX
+import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
@@ -140,7 +141,7 @@ class PlaylistsMenu private constructor(
         val playlist = playlistPreview.playlist
 
         ListMenu.Entry(
-            text = playlist.name.substringAfter( PINNED_PREFIX ),
+            text = cleanPrefix(playlist.name),
             icon = { SettingIcon(R.drawable.add_in_playlist) },
             subtitle = pluralStringResource(R.plurals.library_song_count, playlistPreview.songCount, playlistPreview.songCount),
             onClick = {

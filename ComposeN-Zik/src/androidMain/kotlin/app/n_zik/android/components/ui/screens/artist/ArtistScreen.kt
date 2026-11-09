@@ -239,42 +239,45 @@ fun ArtistScreen(
                     artistPage = online
 
                     Database.asyncTransaction {
-                        val now = System.currentTimeMillis()
-                        val inserted = artistTable.insertMetadata(
-                            id = browseId,
-                            name = online.artist.title,
-                            thumbnailUrl = online.artist.thumbnail?.url,
-                            timestamp = now,
-                            isYoutubeArtist = false,
-                            position = -1
-                        )
-                        if (inserted == -1L) {
-                            artistTable.updateMetadata(
+                        syncTransaction {
+                            val now = System.currentTimeMillis()
+                            val inserted = artistTable.insertMetadata(
                                 id = browseId,
-                                name = PropUtils.retainIfModified(localArtist?.name, online.artist.title),
-                                thumbnailUrl = PropUtils.retainIfModified(localArtist?.thumbnailUrl, online.artist.thumbnail?.url),
-                                isYoutubeArtist = localArtist?.isYoutubeArtist == true,
-                                position = localArtist?.position ?: -1
+                                name = online.artist.title,
+                                thumbnailUrl = online.artist.thumbnail?.url,
+                                timestamp = now,
+                                isYoutubeArtist = false,
+                                position = -1
                             )
-                        }
-
-                        online.sections
-                            .fastFirstOrNull { section ->
-                                section.items.fastAll { it is Innertube.SongItem }
+                            if (inserted == -1L) {
+                                val current = artistTable.findByIdDirect(browseId)
+                                artistTable.updateMetadata(
+                                    id = browseId,
+                                    name = PropUtils.retainIfModified(current?.name, online.artist.title),
+                                    thumbnailUrl = PropUtils.retainIfModified(current?.thumbnailUrl, online.artist.thumbnail?.url),
+                                    isYoutubeArtist = current?.isYoutubeArtist == true,
+                                    position = current?.position ?: -1
+                                )
                             }
-                            ?.items
-                            ?.map { (it as Innertube.SongItem).asMediaItem }
-                            ?.also {
-                                localArtist?.let { artist -> mapIgnore(artist, *it.toTypedArray()) }
-                            }
 
-                        // Store the YouTube description so the Insights page can reuse it
-                        // as a bio fallback without refetching the artist page.
-                        val ytDescription = online.description?.takeIf { it.isNotBlank() }
-                        if (ytDescription != null) {
-                            artistTable.findByIdDirect(browseId)?.let { current ->
-                                if (current.description != ytDescription) {
-                                    artistTable.update(current.copy(description = ytDescription))
+                            online.sections
+                                .fastFirstOrNull { section ->
+                                    section.items.fastAll { it is Innertube.SongItem }
+                                }
+                                ?.items
+                                ?.map { (it as Innertube.SongItem).asMediaItem }
+                                ?.also {
+                                    artistTable.findByIdDirect(browseId)?.let { artist -> mapIgnore(artist, *it.toTypedArray()) }
+                                }
+
+                            // Store the YouTube description so the Insights page can reuse it
+                            // as a bio fallback without refetching the artist page.
+                            val ytDescription = online.description?.takeIf { it.isNotBlank() }
+                            if (ytDescription != null) {
+                                artistTable.findByIdDirect(browseId)?.let { current ->
+                                    if (current.description != ytDescription) {
+                                        artistTable.update(current.copy(description = ytDescription))
+                                    }
                                 }
                             }
                         }
@@ -307,8 +310,11 @@ fun ArtistScreen(
         try {
             withContext(NzikDispatchers.DATA) {
                 val channelId = browseId.removePrefix(MODIFIED_PREFIX)
-                if (artist.youtubeChannelId != channelId) {
-                    Database.artistTable.update(artist.copy(youtubeChannelId = channelId))
+                Database.transaction {
+                    val current = artistTable.findByIdDirect(artist.id)
+                    if (current != null && current.youtubeChannelId != channelId) {
+                        artistTable.update(current.copy(youtubeChannelId = channelId))
+                    }
                 }
                 MBMetadataHelper.Default.onArtistViewed(artist.id)
             }
@@ -407,7 +413,7 @@ fun ArtistOverview(
     var isGlobalLoading by remember { mutableStateOf(false) }
     var sectionLoadingId by remember { mutableStateOf<String?>(null) }
 
-    val songs = remember(parentalControlEnabled) {
+    val songs = remember(artistPage, parentalControlEnabled) {
         artistPage.sections
             .fastFirstOrNull { section ->
                 section.items.fastAll { it is Innertube.SongItem }

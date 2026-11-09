@@ -233,54 +233,57 @@ fun AlbumScreen(
                 val authorsText: String? = onlineAlbum.authors.artistEntryNames().joinToString(", ")
 
                 Database.asyncTransaction {
-                    val now = System.currentTimeMillis()
-                    val inserted = albumTable.insertMetadata(
-                        id = browseId,
-                        title = onlineAlbum.title,
-                        thumbnailUrl = onlineAlbum.thumbnail?.url,
-                        year = onlineAlbum.year,
-                        authorsText = authorsText,
-                        shareUrl = online.url,
-                        timestamp = now,
-                        isYoutubeAlbum = false,
-                        position = -1,
-                        lastFetch = now
-                    )
-                    if (inserted == -1L) {
-                        albumTable.updateMetadata(
+                    syncTransaction {
+                        val now = System.currentTimeMillis()
+                        val inserted = albumTable.insertMetadata(
                             id = browseId,
-                            title = PropUtils.retainIfModified(album?.title, onlineAlbum.title),
-                            thumbnailUrl = PropUtils.retainIfModified(album?.thumbnailUrl, onlineAlbum.thumbnail?.url),
-                            year = onlineAlbum.year ?: album?.year,
-                            authorsText = PropUtils.retainIfModified(album?.authorsText, authorsText),
+                            title = onlineAlbum.title,
+                            thumbnailUrl = onlineAlbum.thumbnail?.url,
+                            year = onlineAlbum.year,
+                            authorsText = authorsText,
                             shareUrl = online.url,
-                            isYoutubeAlbum = album?.isYoutubeAlbum == true,
-                            position = album?.position ?: -1,
+                            timestamp = now,
+                            isYoutubeAlbum = false,
+                            position = -1,
                             lastFetch = now
                         )
-                    }
-
-                    songAlbumMapTable.clear(browseId)
-
-                    online.songs
-                        .map(Innertube.SongItem::asMediaItem)
-                        .onEach(::insertIgnore)
-                        .mapIndexed { position, mediaItem ->
-                            SongAlbumMap(
-                                songId = mediaItem.mediaId,
-                                albumId = browseId,
-                                position = position
+                        if (inserted == -1L) {
+                            val current = albumTable.findByIdDirect(browseId)
+                            albumTable.updateMetadata(
+                                id = browseId,
+                                title = PropUtils.retainIfModified(current?.title, onlineAlbum.title),
+                                thumbnailUrl = PropUtils.retainIfModified(current?.thumbnailUrl, onlineAlbum.thumbnail?.url),
+                                year = onlineAlbum.year ?: current?.year,
+                                authorsText = PropUtils.retainIfModified(current?.authorsText, authorsText),
+                                shareUrl = online.url,
+                                isYoutubeAlbum = current?.isYoutubeAlbum == true,
+                                position = current?.position ?: -1,
+                                lastFetch = now
                             )
                         }
-                        .also(songAlbumMapTable::upsert)
 
-                    // Store the YouTube description so the Insights page can reuse it
-                    // as a bio fallback without refetching the album page.
-                    val ytDescription = online.description?.takeIf { it.isNotBlank() }
-                    if (ytDescription != null) {
-                        albumTable.findByIdDirect(browseId)?.let { current ->
-                            if (current.description != ytDescription) {
-                                albumTable.updateReplace(current.copy(description = ytDescription))
+                        songAlbumMapTable.clear(browseId)
+
+                        online.songs
+                            .map(Innertube.SongItem::asMediaItem)
+                            .onEach(::insertIgnore)
+                            .mapIndexed { position, mediaItem ->
+                                SongAlbumMap(
+                                    songId = mediaItem.mediaId,
+                                    albumId = browseId,
+                                    position = position
+                                )
+                            }
+                            .also(songAlbumMapTable::upsert)
+
+                        // Store the YouTube description so the Insights page can reuse it
+                        // as a bio fallback without refetching the album page.
+                        val ytDescription = online.description?.takeIf { it.isNotBlank() }
+                        if (ytDescription != null) {
+                            albumTable.findByIdDirect(browseId)?.let { current ->
+                                if (current.description != ytDescription) {
+                                    albumTable.updateReplace(current.copy(description = ytDescription))
+                                }
                             }
                         }
                     }
@@ -297,8 +300,11 @@ fun AlbumScreen(
         try {
             withContext(NzikDispatchers.DATA) {
                 val albumId = browseId.removePrefix(MODIFIED_PREFIX)
-                if (albumEntity.youtubeAlbumId != albumId) {
-                    Database.albumTable.updateReplace(albumEntity.copy(youtubeAlbumId = albumId))
+                Database.transaction {
+                    val current = albumTable.findByIdDirect(albumEntity.id)
+                    if (current != null && current.youtubeAlbumId != albumId) {
+                        albumTable.updateReplace(current.copy(youtubeAlbumId = albumId))
+                    }
                 }
                 MBMetadataHelper.Default.onAlbumViewed(albumEntity.id)
             }

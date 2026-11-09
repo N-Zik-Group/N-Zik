@@ -99,6 +99,7 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.components.tab.ItemSelector
+import app.n_zik.android.components.song.rememberSongDisplayMetadata
 import app.n_zik.android.components.glass.GlassSongRowSurface
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.ui.platform.LocalDensity
@@ -219,7 +220,10 @@ fun SongItem(
     val isPlaying = currentMediaId == song.id
     val rowShape = uiRoundnessShape()
 
-    val displaySong = song
+    val storedSongs = remember(song.id) {
+        Database.songTable.findById(song.id).distinctUntilChanged()
+    }
+    val displaySong = rememberSongDisplayMetadata(song, storedSongs)
 
     val menu = if( navController != null && onLongClick == null ) SongItemMenu( navController, displaySong ) else null
     GlassSongRowSurface(backgroundColor, if (isPlaying) colorPalette.favoritesOverlay else null, rowShape) { rowBackground ->
@@ -396,7 +400,7 @@ fun SongItem(
                                     Database.asyncTransaction {
                                         formatTable.deleteBySongId( song.id )
                                     }
-                                    MyDownloadHelper.handleDownload( context, song, true )
+                                    MyDownloadHelper.handleDownload( context, displaySong, true )
                                 },
                             contentAlignment = Alignment.Center
                         ) {
@@ -436,7 +440,7 @@ fun SongItem(
                                 Database.asyncTransaction {
                                     formatTable.deleteBySongId( song.id )
                                 }
-                                MyDownloadHelper.handleDownload( context, song, true )
+                                MyDownloadHelper.handleDownload( context, displaySong, true )
                             }
                         )
                     }

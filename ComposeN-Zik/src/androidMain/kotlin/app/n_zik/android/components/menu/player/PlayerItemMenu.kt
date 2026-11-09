@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.player
 
+import java.util.Optional
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.media.audiofx.AudioEffect
@@ -39,19 +40,18 @@ import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.requests.nextPage
-import java.util.Optional
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-
 import app.it.fast4x.rimusic.enums.DislikeMode
 import app.it.fast4x.rimusic.enums.DownloadedStateMedia
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.PlayerTimelineType
+import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.ui.components.MenuState
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Button
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Clickable
@@ -62,11 +62,11 @@ import app.it.fast4x.rimusic.ui.components.themed.IconButton
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
 import app.it.fast4x.rimusic.ui.screens.info.VideoOrSongInfoScreen
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
-import app.it.fast4x.rimusic.utils.asMediaItem
 import app.it.fast4x.rimusic.utils.asSong
 import app.it.fast4x.rimusic.utils.durationTextToMillis
 import app.it.fast4x.rimusic.utils.excludeDislikedSongsKey
 import app.it.fast4x.rimusic.utils.forcePlay
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.getDownloadStateMedia
 import app.it.fast4x.rimusic.utils.playerTimelineTypeKey
 import app.it.fast4x.rimusic.utils.rememberEncryptedPreference
@@ -93,11 +93,14 @@ import app.n_zik.android.components.dialog.song.RenameSongDialog
 import app.n_zik.android.components.dialog.song.UpdateSongDialog
 import app.n_zik.android.components.dialog.tab.DeleteSongDialog
 import app.n_zik.android.components.glass.GlassHorizontalSeparator
+import app.n_zik.android.components.menu.artistMoreFromTitle
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.menu.MenuSheetSurface
 import app.n_zik.android.components.menu.menuSheetSectionBackground
+import app.n_zik.android.components.menu.song.ObserveSongMenuSnapshot
+import app.n_zik.android.components.menu.song.SongMenuSnapshot
 import app.n_zik.android.components.song.GoToAlbum
 import app.n_zik.android.components.song.GoToArtist
 import app.n_zik.android.components.tab.LikeComponent
@@ -135,6 +138,10 @@ class PlayerItemMenu private constructor(
     private val onShowSleepTimer: () -> Unit
 ): Menu {
 
+    private val snapshot = SongMenuSnapshot(mediaItem.asSong.copy(id = playerMenuSongId(mediaItem)), getActiveProfile(appContext()))
+    private val song: Song get() = snapshot.song
+    private val currentMediaItem: MediaItem get() = playerMenuMediaItem(mediaItem, song)
+
     companion object {
         fun create(
             navController: NavController,
@@ -170,7 +177,6 @@ class PlayerItemMenu private constructor(
 
     @Composable
     override fun ListMenu() {
-        val song = remember(mediaItem) { mediaItem.asSong }
         val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
         ListMenu.Menu(title = null, showDragHandle = false) {
             val lastFmSectionSize = if (showLastFmSection) 2 else 0
@@ -243,7 +249,6 @@ class PlayerItemMenu private constructor(
 
     @Composable
     override fun GridMenu() {
-        val song = remember(mediaItem) { mediaItem.asSong }
         val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
         GridMenu.Menu(title = null, showDragHandle = false) {
             val lastFmSectionSize = if (showLastFmSection) 2 else 0
@@ -330,21 +335,21 @@ class PlayerItemMenu private constructor(
 
     @Composable
     override fun MenuComponent() {
+        ObserveSongMenuSnapshot(snapshot, onProfileChanged = menuState::hide)
         val mContext = LocalContext.current
         offlineMode = OfflineMode.enabled(mContext)
         val uriHandler = LocalUriHandler.current
         val coroutineScope = rememberCoroutineScope()
-        val song = remember(mediaItem) { mediaItem.asSong }
         val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
         val showDisliked by rememberPreference(excludeDislikedSongsKey, DislikeMode.Enabled)
 
         // Reactively collect Album and Artists (like the old menu)
         val albumData by remember(mediaItem.mediaId) {
-            Database.albumTable.findBySongId(mediaItem.mediaId)
+            Database.albumTable.findBySongId(snapshot.songId)
         }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
         
         val artistsData by remember(mediaItem.mediaId) {
-            Database.artistTable.findBySongId(mediaItem.mediaId)
+            Database.artistTable.findBySongId(snapshot.songId)
         }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
         // Pre-create GoTo objects to avoid race condition on channelId lookup
@@ -480,7 +485,7 @@ class PlayerItemMenu private constructor(
         // Add to Playlist
         val addToPlaylist = PlaylistsMenu.init(
             navController = navController,
-            mediaItems = { _ -> listOf(song.asMediaItem) },
+            mediaItems = { _ -> listOf(currentMediaItem) },
             onFailure = { throwable, preview ->
                 Timber.tag("PlayerItemMenu").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
             },
@@ -517,7 +522,7 @@ class PlayerItemMenu private constructor(
                 override fun onShortClick() {
                     menuState.display {
                         VideoOrSongInfoScreen(
-                            videoId = mediaItem.mediaId,
+                            videoId = song.id,
                             songTitle = song.title,
                             songArtist = song.artistsText ?: "",
                             songThumbnailUrl = song.thumbnailUrl ?: "",
@@ -528,7 +533,7 @@ class PlayerItemMenu private constructor(
                             onClose = { menuState.hide() },
                             onPlay = {
                                 coroutineScope.launch {
-                                    val mediaItem = withContext(NzikDispatchers.DATA) { song.asMediaItem }
+                                    val mediaItem = withContext(NzikDispatchers.DATA) { currentMediaItem }
                                     binder.player.forcePlay(mediaItem)
                                 }
                             }
@@ -540,7 +545,7 @@ class PlayerItemMenu private constructor(
         }
 
         val deleteSongDialog = DeleteSongDialog().apply {
-            this.song = Optional.of(this@PlayerItemMenu.mediaItem.asSong)
+            this.song = Optional.of(this@PlayerItemMenu.song)
         }
         val exportCacheDialog = ExportCacheDialog(binder) { song }
         
@@ -725,7 +730,7 @@ class PlayerItemMenu private constructor(
                                     override val iconId: Int = R.drawable.people
                                     override val messageId: Int = R.string.library_artists_title
                                     @get:Composable
-                                    override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " $artistName"
+                                    override val menuIconTitle: String get() = artistMoreFromTitle(artistName)
                                     override fun onShortClick() {
                                         menuState.hide()
                                         onClosePlayer()
@@ -753,7 +758,7 @@ class PlayerItemMenu private constructor(
                                 override val iconId: Int = R.drawable.people
                                 override val messageId: Int = R.string.library_artists_title
                                 @get:Composable
-                                override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " ${artist.name ?: ""}"
+                                override val menuIconTitle: String get() = artistMoreFromTitle(artist.name)
                                 override fun onShortClick() {
                                     menuState.hide()
                                     onClosePlayer()
@@ -852,9 +857,9 @@ class PlayerItemMenu private constructor(
                             onClick = {
                                 coroutineScope.launch(NzikDispatchers.DATA) {
                                     if (showDisliked.isEnabled) {
-                                        YouTubeSync.rotateSongLikeState( mContext, song.asMediaItem )
+                                        YouTubeSync.rotateSongLikeState( mContext, currentMediaItem )
                                     } else {
-                                        YouTubeSync.toggleSongLikeState( mContext, song.asMediaItem )
+                                        YouTubeSync.toggleSongLikeState( mContext, currentMediaItem )
                                     }
                                 }
                             },

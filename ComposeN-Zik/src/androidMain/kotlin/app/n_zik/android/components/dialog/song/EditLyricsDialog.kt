@@ -1,29 +1,30 @@
 package app.n_zik.android.components.dialog.song
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.InputDialog
-import app.n_zik.android.components.dialog.common.TextInputDialog
 import app.n_zik.android.components.dialog.common.InputDialogConstraints
+import app.n_zik.android.components.dialog.common.TextInputDialog
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.models.Lyrics
 import app.n_zik.android.enums.lyrics.LyricsType
-import androidx.compose.material3.Text
+import app.n_zik.android.models.Lyrics
 
 class EditLyricsDialog private constructor(
     activeState: MutableState<Boolean>,
@@ -51,17 +52,14 @@ class EditLyricsDialog private constructor(
             getLyrics: () -> Lyrics?,
             ensureSongInserted: () -> Unit
         ): EditLyricsDialog {
-            val lyrics = getLyrics()
-            val initialText = lyrics?.data
-            
-            return EditLyricsDialog(
-                remember { mutableStateOf(false) },
-                remember(initialText) { mutableStateOf(TextFieldValue(initialText ?: "")) },
-                mediaId,
-                lyricsType,
-                getLyrics,
-                ensureSongInserted
-            )
+            val currentLyrics = rememberUpdatedState(getLyrics)
+            val currentEnsureSongInserted = rememberUpdatedState(ensureSongInserted)
+            return remember(mediaId, lyricsType) {
+                EditLyricsDialog(
+                    mutableStateOf(false), mutableStateOf(TextFieldValue()), mediaId, lyricsType,
+                    { currentLyrics.value() }, { currentEnsureSongInserted.value() }
+                )
+            }
         }
     }
 
@@ -75,11 +73,10 @@ class EditLyricsDialog private constructor(
 
     fun onShortClick() = showDialog()
 
-    override fun hideDialog() {
-        super.hideDialog()
-        val lyrics = getLyrics()
-        val text = lyrics?.data
-        value = TextFieldValue(text ?: "")
+    override fun showDialog() {
+        value = TextFieldValue(getLyrics()?.data.orEmpty())
+        errorMessage = ""
+        super.showDialog()
     }
 
     @Composable
@@ -105,14 +102,12 @@ class EditLyricsDialog private constructor(
 
     override fun onSet(newValue: String) {
         super.onSet(newValue)
-        val lyrics = getLyrics()
+        if (errorMessage.isNotEmpty()) return
+        val insertSong = ensureSongInserted
         Database.asyncTransaction {
-            ensureSongInserted()
+            insertSong()
             Database.lyricsTable.upsert(editedLyrics(mediaId, lyricsType, newValue))
         }
         hideDialog()
     }
 }
-
-
-

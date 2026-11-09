@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
+import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.models.Album
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
@@ -89,7 +90,7 @@ class ChangeAlbumBrowseIdDialog private constructor(
     @Composable
     override fun DialogBody() {
         val album = getAlbum() ?: return
-        var query by remember { mutableStateOf(album.title ?: "") }
+        var query by remember { mutableStateOf(cleanPrefix(album.title.orEmpty())) }
         var isSearching by remember { mutableStateOf(false) }
         var results by remember { mutableStateOf<List<Innertube.AlbumItem>?>(null) }
         val coroutineScope = rememberCoroutineScope()

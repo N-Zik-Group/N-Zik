@@ -21,14 +21,15 @@ object AutoMediaItemMapper {
         path: String = ""
     ): MediaItem {
         val cleanTitle = cleanPrefix(title)
+        val cleanSubtitle = subtitle?.let(::cleanPrefix)
         
         return MediaItem.Builder()
             .setMediaId(id)
             .setMediaMetadata(
                 MediaMetadata.Builder()
                     .setTitle(cleanTitle)
-                    .setSubtitle(subtitle)
-                    .setArtist(subtitle)
+                    .setSubtitle(cleanSubtitle)
+                    .setArtist(cleanSubtitle)
                     .setArtworkUri(iconUri)
                     .setIsPlayable(false)
                     .setIsBrowsable(true)
