@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">Αντιστοιχισμένο τραγούδι</string>
     <string name="metadata_musicbrainz_rating">Βαθμολογία</string>
     <string name="metadata_cover_art">Εξώφυλλο</string>
+    <string name="metadata_cover_url_hint">Επικόλληση ενός συνδέσμου εικόνας</string>
     <string name="metadata_file_path_unavailable">Αδυναμία επίλυσης διαδρομής αρχείου</string>
     <string name="metadata_save_failed">Αποτυχία αποθήκευσης μεταδεδομένων</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
