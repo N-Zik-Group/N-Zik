@@ -41,4 +41,60 @@
         <item quantity="one">%1$d Lied gehört</item>
         <item quantity="other">%1$d Lieder gefunden</item>
     </plurals>
+    <plurals name="profile_last_used_minute_count">
+        <item quantity="one">%1$d Minute</item>
+        <item quantity="other">%1$d Minuten</item>
+    </plurals>
+    <plurals name="profile_last_used_hour_count">
+        <item quantity="one">%1$d Stunde</item>
+        <item quantity="other">%1$d Stunden</item>
+    </plurals>
+    <plurals name="profile_last_used_day_count">
+        <item quantity="one">%1$d Tag</item>
+        <item quantity="other">%1$d Tage</item>
+    </plurals>
+    <plurals name="profile_last_used_week_count">
+        <item quantity="one">%1$d Woche</item>
+        <item quantity="other">%1$d Wochen</item>
+    </plurals>
+    <plurals name="profile_last_used_month_count">
+        <item quantity="one">%1$d Monat</item>
+        <item quantity="other">%1$d Monate</item>
+    </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">%1$d Suchabfrage löschen</item>
+        <item quantity="other">%1$d Suchabfragen löschen</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">%1$d Wiedergabe-Ereignis löschen</item>
+        <item quantity="other">%1$d Wiedergabe-Ereignisse löschen</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d Episode · %2$s</item>
+        <item quantity="other">%1$d Episoden · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">%1$d Lied zur YouTube-Wiedergabeliste hinzufügen</item>
+        <item quantity="other">%1$d Songs zur YouTube-Wiedergabeliste hinzufügen</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">%1$d Lied zur YouTube-Playlist hinzugefügt</item>
+        <item quantity="other">%1$d Songs zur YouTube-Wiedergabeliste hinzugefügt</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Profilstatus importiert: %1$d Profil</item>
+        <item quantity="other">Profilstatus importiert: %1$d Profile</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Fehler beim Synchronisieren von %1$d Album. Gehen Sie zurück zum Album-Tab um es erneut zu versuchen.</item>
+        <item quantity="other">Fehler beim Synchronisieren von %1$d Alben. Gehen Sie zurück zum Album-Tab um es erneut zu versuchen.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">%1$d Cache/heruntergeladenes Lied exportieren?</item>
+        <item quantity="other">Exportiere %1$d zwischengespeicherte/heruntergeladene Songs?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">%1$d heruntergeladenes Lied fehlt seine Datei und wurde entfernt. Bitte laden Sie es erneut herunter.</item>
+        <item quantity="other">%1$d heruntergeladene Lieder fehlen ihre Dateien und wurden entfernt. Bitte laden Sie sie erneut herunter.</item>
+    </plurals>
 </resources>
