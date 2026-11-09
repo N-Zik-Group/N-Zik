@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Вподобання всіх пісень пройде про %1$s. Закрийте програму, щоб відмінити. Бажаєте продовжити?</string>
     <string name="library_on_device_permission_request_failed">Не вдалося надіслати запит на доступ до музики на цьому пристрої.</string>
     <string name="library_on_device_permission_settings_failed">Не вдалося відкрити налаштування дозволів.</string>
+    <string name="artist_more_from_format">Більше з %1$s</string>
+    <string name="playlist_top_show_title_format">Показати %1$s</string>
 </resources>
