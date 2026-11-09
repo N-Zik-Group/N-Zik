@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">存储</string>
+    <string name="storage_breakdown_info_title">关于存储</string>
+    <string name="storage_breakdown_nzik_total">NZik共使用</string>
+    <string name="storage_breakdown_subtitle">存储分解</string>
+    <string name="storage_breakdown_waiting">测量存储…</string>
+    <string name="storage_breakdown_cached_images">缓存图像</string>
+    <string name="storage_breakdown_streamed_audio">串流音频</string>
+    <string name="storage_breakdown_downloaded_audio">下载的音频</string>
+    <string name="storage_breakdown_custom_covers">自定义封面</string>
+    <string name="storage_breakdown_waveforms">波形</string>
+    <string name="storage_breakdown_other_nzik_data">其他NZI克数据</string>
+    <string name="storage_breakdown_other_used_space">系统、应用 &amp; 文件</string>
+    <string name="storage_breakdown_free_space">空闲空间</string>
+    <string name="storage_info_images">美工和其他图像缓存以便更快显示。</string>
+    <string name="storage_info_streaming">串流后暂时保持音频，因此可以在不获取相同数据的情况下重新播放音频。</string>
+    <string name="storage_info_downloads">音频保存在NZik以便离线监听。</string>
+    <string name="storage_info_waveforms">生成用于在播放器中绘制音频波形的文件。</string>
+    <string name="storage_info_covers">您选择或导入的艺术作品作为自定义封面。</string>
+    <string name="storage_info_other_nzik">NZik的其他私人数据，包括其数据库、设置、索引、扩展和日志。</string>
+    <string name="storage_info_other_used">内部卷上剩余的空间已使用，包括Android、已安装的应用程序和个人文件。</string>
+    <string name="storage_info_free">内部卷上的应用和文件可用的空间。</string>
+    <string name="storage_cleanup_title">清理</string>
+    <string name="storage_cleanup_failed">无法完成存储清理。</string>
+    <string name="storage_cleanup_images_description">清除由 NZiki 缓存的艺术作品。</string>
+    <string name="storage_cleanup_streaming_description">在串流时清除音频缓存。</string>
+    <string name="storage_cleanup_downloads_description">删除离线音频并取消活动配置文件下载存储的等待下载。</string>
+    <string name="storage_cleanup_waveforms_description">清除生成的波形文件。</string>
+    <string name="storage_cleanup_waveforms_dialog_title">清除波形</string>
+    <string name="storage_cleanup_diagnostic_logs">清除诊断日志</string>
+    <string name="storage_cleanup_diagnostic_logs_description">删除调试和崩溃日志文件。您的日志设置保持不变。</string>
+    <string name="storage_cleanup_temporary_files">移除丢弃的临时文件</string>
+    <string name="storage_cleanup_temporary_files_description">删除废弃的图像编辑器草稿和超过24小时的退缩共享捕获。</string>
+    <string name="storage_cleanup_all">全部清除</string>
+    <string name="storage_cleanup_all_description">清除图像和流缓存并生成动态配置文件，包括它与其他配置文件共享的存储。 删除离线音频并取消活动配置文件下载存储的等待下载。 删除诊断日志、被遗弃的图像编辑器草稿和过期的退货分享抓取。您的库、自定义封面和设置被保存。</string>
     <!-- Backup -->
     <string name="backup_action_export">导出备份</string>
     <string name="backup_action_import">导入备份</string>
@@ -82,12 +117,15 @@
     <!-- Cache -->
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">清除歌曲缓存</string>
-    <string name="cache_downloads_max_size_description">选择下载的歌曲有多少磁盘空间。回收站按钮可以删除下载的音频。</string>
-    <string name="cache_image_max_size_description">限制缓存艺术品使用的磁盘空间。回收站按钮清除从缓存中下载的图像。</string>
+    <string name="cache_downloads_max_size_description">选择下载的歌曲有多少磁盘空间。</string>
+    <string name="cache_downloads_limit_description">选择下载的歌曲有多少磁盘空间。</string>
+    <string name="cache_image_max_size_description">限制缓存艺术品使用的磁盘空间。</string>
+    <string name="cache_image_limit_description">限制缓存艺术品使用的磁盘空间。</string>
     <string name="cache_location_description">选择应用存储播放缓存的位置。</string>
     <string name="cache_location_private">本地</string>
     <string name="cache_location_system">系统</string>
-    <string name="cache_streaming_max_size_description">限制用于缓存流歌曲的磁盘空间。回收站按钮将清除此回放缓存。</string>
+    <string name="cache_streaming_max_size_description">限制用于缓存流歌曲的磁盘空间。</string>
+    <string name="cache_streaming_limit_description">限制用于缓存流歌曲的磁盘空间。</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">下载所有歌曲</string>
     <string name="downloads_action_refresh_quality">更新下载</string>
