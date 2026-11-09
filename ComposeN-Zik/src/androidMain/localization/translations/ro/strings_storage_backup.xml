@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Depozitare</string>
+    <string name="storage_breakdown_info_title">Despre stocare</string>
+    <string name="storage_breakdown_nzik_total">Total utilizat de NZik</string>
+    <string name="storage_breakdown_subtitle">Depozitare defalcată</string>
+    <string name="storage_breakdown_waiting">Măsurarea stocării…</string>
+    <string name="storage_breakdown_cached_images">Imagini cache</string>
+    <string name="storage_breakdown_streamed_audio">Audio streaming</string>
+    <string name="storage_breakdown_downloaded_audio">Audio descărcat</string>
+    <string name="storage_breakdown_custom_covers">Argumente personalizate</string>
+    <string name="storage_breakdown_waveforms">Waveforme</string>
+    <string name="storage_breakdown_other_nzik_data">Alte date NZik</string>
+    <string name="storage_breakdown_other_used_space">Sistem, aplicații &amp; fișiere</string>
+    <string name="storage_breakdown_free_space">Spațiu liber</string>
+    <string name="storage_info_images">Artwork şi alte imagini cached pentru afişare mai rapidă.</string>
+    <string name="storage_info_streaming">Audio ținut temporar după streaming, astfel încât să poată fi redat fără a prelua aceleași date.</string>
+    <string name="storage_info_downloads">Audio salvat în NZik pentru ascultare offline.</string>
+    <string name="storage_info_waveforms">Fișiere generate utilizate pentru a desena formularul de undă audio în player.</string>
+    <string name="storage_info_covers">Artwork pe care l-ai ales sau importat ca coperte personalizate.</string>
+    <string name="storage_info_other_nzik">Restul datelor private ale NZik, inclusiv bazele sale de date, setările, indexurile, extensiile și jurnalele.</string>
+    <string name="storage_info_other_used">Spațiul utilizat rămas pe volumul intern, inclusiv Android, aplicații instalate și fișiere personale.</string>
+    <string name="storage_info_free">Spaţiu disponibil pentru aplicaţii şi fişiere pe volumul intern.</string>
+    <string name="storage_cleanup_title">Curățare</string>
+    <string name="storage_cleanup_failed">Nu s-a putut finaliza curățarea stocării.</string>
+    <string name="storage_cleanup_images_description">Curăță lucrările de artă memorate de NZik.</string>
+    <string name="storage_cleanup_streaming_description">Șterge memoria cache în timpul streaming-ului.</string>
+    <string name="storage_cleanup_downloads_description">Șterge audio offline și anulează descărcările în așteptare pentru spațiul de stocare activ al profilului.</string>
+    <string name="storage_cleanup_waveforms_description">Ştergeţi fişierele de tip waveform generate.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Golește formularele de undă</string>
+    <string name="storage_cleanup_diagnostic_logs">Curăță jurnalele de diagnostic</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Ștergeți fișierele de depanare și de blocare. Setarea de logare rămâne aceeași.</string>
+    <string name="storage_cleanup_temporary_files">Elimină fișierele temporare abandonate</string>
+    <string name="storage_cleanup_temporary_files_description">Elimină schițele editorului de imagini abandonate și Rewind share capturează mai mult de 24 de ore.</string>
+    <string name="storage_cleanup_all">Șterge tot</string>
+    <string name="storage_cleanup_all_description">Șterge imaginea și geocutiile de streaming și formularele de undă generate pentru profilul activ, inclusiv stocarea pe care o împarte cu alte profiluri. Șterge audio offline și anulează descărcările în așteptare pentru spațiul de stocare activ al profilului. Ștergeți jurnalele de diagnostic, schițele editorului de imagini abandonate și capturele de partajare Rewind expirate. Biblioteca dvs., copertele personalizate și setările sunt păstrate.</string>
     <!-- Backup -->
     <string name="backup_action_export">Exportă backup</string>
     <string name="backup_action_import">Importă copia de rezervă</string>
@@ -82,12 +117,15 @@
     <!-- Cache -->
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Golește cache-ul melodiei</string>
-    <string name="cache_downloads_max_size_description">Alegeţi cât spaţiu pe disc este disponibil pentru melodiile descărcate. Butonul de gunoi elimină fişierele audio descărcate.</string>
-    <string name="cache_image_max_size_description">Spațiu limită pe disc folosit de lucrările de artă din cache Butonul de gunoi curăță imaginile descărcate din această geocutie.</string>
+    <string name="cache_downloads_max_size_description">Alegeți cât spațiu pe disc este disponibil pentru melodiile descărcate.</string>
+    <string name="cache_downloads_limit_description">Alegeți cât spațiu pe disc este disponibil pentru melodiile descărcate.</string>
+    <string name="cache_image_max_size_description">Limita de spaţiu pe disc folosită de opera de artă geocuţionată.</string>
+    <string name="cache_image_limit_description">Limita de spaţiu pe disc folosită de opera de artă geocuţionată.</string>
     <string name="cache_location_description">Alegeţi locul în care aplicația îşi stochează memoria cache.</string>
     <string name="cache_location_private">Privat</string>
     <string name="cache_location_system">Sistem</string>
-    <string name="cache_streaming_max_size_description">Limita de spaţiu pe disc folosită pentru a cache-ul melodiilor transmisibile. Butonul de gunoi şterge această memorie cache de redare.</string>
+    <string name="cache_streaming_max_size_description">Limita de spaţiu pe disc folosită pentru a cacheza melodiile transmisibile.</string>
+    <string name="cache_streaming_limit_description">Limita de spaţiu pe disc folosită pentru a cacheza melodiile transmisibile.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Descarcă toate melodiile</string>
     <string name="downloads_action_refresh_quality">Actualizare descărcări</string>
