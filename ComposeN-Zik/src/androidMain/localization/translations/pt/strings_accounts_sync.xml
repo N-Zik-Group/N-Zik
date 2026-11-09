@@ -258,7 +258,7 @@
     <string name="sync_youtube_playlist_songs_added_suffix">as músicas são adicionadas na playlist do YouTube. Repita o processo se houver alguma música faltando</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">músicas serão adicionadas na playlist YTM</string>
     <string name="sync_youtube_playlists_title">Playlists do YTM</string>
-    <string name="sync_youtube_songs_remaining">%1$s músicas restantes</string>
+    <string name="sync_youtube_songs_remaining">Músicas restantes: %1$s</string>
     <string name="sync_youtube_unlike_failed">Falha ao descurtir a música no YouTube</string>
     <string name="sync_youtube_unlike_success">Música não está curtida no YouTube</string>
     <string name="sync_starting_notification">Iniciando sincronização...</string>
