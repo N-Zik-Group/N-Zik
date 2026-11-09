@@ -258,7 +258,7 @@
     <string name="sync_youtube_playlist_songs_added_suffix">canciones se han añadido a la lista de reproducción de YouTube. Repite el proceso si faltan canciones</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">canciones se añadirán a la lista de reproducción de YTM</string>
     <string name="sync_youtube_playlists_title">Listas de reproducción de YTM</string>
-    <string name="sync_youtube_songs_remaining">%1$s sobrantes</string>
+    <string name="sync_youtube_songs_remaining">Canciones restantes: %1$s</string>
     <string name="sync_youtube_unlike_failed">Error al dar un no me gusta a la canción en YouTube</string>
     <string name="sync_youtube_unlike_success">La canción tiene un no me gusta en YouTube</string>
     <string name="sync_starting_notification">Iniciando sincronización...</string>
