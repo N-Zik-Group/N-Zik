@@ -242,6 +242,5 @@
     <string name="thumbnail_remove_success">Miniatura eliminada</string>
     <string name="glass_effect_rendering_quality">Calidad de renderizado</string>
     <string name="image_editor_original">Relación original</string>
-    <string name="image_editor_cancel">Cancelar</string>
     <string name="image_editor_apply">Usar imagen</string>
 </resources>
