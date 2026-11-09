@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Het verzamelen van alle liedjes zal %1$sduren. Sluit de app om te annuleren. Wilt u doorgaan?</string>
     <string name="library_on_device_permission_request_failed">Kon geen toegang vragen tot muziek op dit apparaat.</string>
     <string name="library_on_device_permission_settings_failed">Kan machtigingsinstellingen niet openen.</string>
+    <string name="artist_more_from_format">Meer van %1$s</string>
+    <string name="playlist_top_show_title_format">Toon %1$s</string>
 </resources>
