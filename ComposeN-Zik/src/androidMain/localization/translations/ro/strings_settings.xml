@@ -17,7 +17,7 @@
     <string name="language_name_azerbaijani">Azeră (Azərbaycan)</string>
     <string name="language_name_bashkir">Bașchiri (Башҡорт)</string>
     <string name="language_name_bengali">Bengalez (&lt;unk&gt; &lt;unk&gt; Ε)</string>
-    <string name="language_name_catalan">Catalană (Català)</string>
+    <string name="language_name_catalan">Catalană (Catala)</string>
     <string name="language_name_chinese_simplified">Chineză Simplificată (简体中文)</string>
     <string name="language_name_chinese_traditional">Chineză Traditională (繁體中文)</string>
     <string name="language_name_czech">Cehă (Čeština)</string>
@@ -27,7 +27,7 @@
     <string name="language_name_esperanto">Esperanto (Esperanto)</string>
     <string name="language_name_estonian">Estonă (Eesti keel)</string>
     <string name="language_name_filipino">Filipino (Tagalog)</string>
-    <string name="language_name_finnish">Finlandeză (Suomalainen)</string>
+    <string name="language_name_finnish">Finnish (Suomi)</string>
     <string name="language_name_french">Franceză (Français)</string>
     <string name="language_name_galician">Galiciană (Galego)</string>
     <string name="language_name_german">Germană (Deutsch)</string>
@@ -35,12 +35,12 @@
     <string name="language_name_hebrew">Hebrew (Ebraică)</string>
     <string name="language_name_hindi">Hindi (corespunzator)</string>
     <string name="language_name_hungarian">Maghiară (Magyar)</string>
-    <string name="language_name_indonesian">Indoneziană (Indonésio)</string>
+    <string name="language_name_indonesian">Indoneziană (Bahasa Indonezia)</string>
     <string name="language_name_interlingua">Interlingua</string>
     <string name="language_name_irish">Irlandeză (Gaeilge)</string>
     <string name="language_name_italian">Italiană (Italiano)</string>
     <string name="language_name_japanese">Japanese (Japoneză)</string>
-    <string name="language_name_korean">Coreeană (한국어)</string>
+    <string name="language_name_korean">Coreeană (ΕΤηλογία προγια)</string>
     <string name="language_name_malayalam">Malayalam (മലയാളം)</string>
     <string name="language_name_norwegian">Norvegiană (Norsk)</string>
     <string name="language_name_odia">Odia (ଓଡ଼ିଆ)</string>
@@ -50,8 +50,8 @@
     <string name="language_name_portuguese_brazilian">Portugheză, Brazilia (Português, Brasileiro)</string>
     <string name="language_name_romanian">Română</string>
     <string name="language_name_russian">Rusă (Русский)</string>
-    <string name="language_name_serbian_cyrillic">Sârba chirilică (Српска)</string>
-    <string name="language_name_serbian_latin">Sârbă Latină (Gajeva latinica)</string>
+    <string name="language_name_serbian_cyrillic">Serbian Cyrillic (Српски)</string>
+    <string name="language_name_serbian_latin">Serbian Latin (Srpski)</string>
     <string name="language_name_sinhala">Sinhală (සිංහල)</string>
     <string name="language_name_spanish">Spanishă (Español)</string>
     <string name="language_name_swedish">Suedeză (Svenska)</string>
@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Conectați-vă mai întâi la YouTube pentru a activa această opțiune</string>
     <string name="settings_youtube_library_sync_content_description">Liste de redare, albume, artiști, istorie, lucruri similare etc.</string>
     <string name="settings_youtube_login_enabled_label">Activează conectarea la YouTube Music</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Sortare</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Bară de instrumente</string>
 </resources>
