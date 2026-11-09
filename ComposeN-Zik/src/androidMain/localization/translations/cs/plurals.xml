@@ -61,4 +61,88 @@
         <item quantity="many">%1$d vyslyšených skladeb</item>
         <item quantity="other">%1$d vyslyšených skladeb</item>
     </plurals>
+    <plurals name="profile_last_used_minute_count">
+        <item quantity="one">%1$d minutou</item>
+        <item quantity="few">%1$d minut</item>
+        <item quantity="many">%1$d minut</item>
+        <item quantity="other">%1$d minut</item>
+    </plurals>
+    <plurals name="profile_last_used_hour_count">
+        <item quantity="one">%1$d hodinu</item>
+        <item quantity="few">%1$d hodin</item>
+        <item quantity="many">%1$d hodin</item>
+        <item quantity="other">%1$d hodin</item>
+    </plurals>
+    <plurals name="profile_last_used_day_count">
+        <item quantity="one">%1$d den</item>
+        <item quantity="few">%1$d dny</item>
+        <item quantity="many">%1$d dny</item>
+        <item quantity="other">%1$d dny</item>
+    </plurals>
+    <plurals name="profile_last_used_week_count">
+        <item quantity="one">%1$d týden</item>
+        <item quantity="few">%1$d týdny</item>
+        <item quantity="many">%1$d týdny</item>
+        <item quantity="other">%1$d týdny</item>
+    </plurals>
+    <plurals name="profile_last_used_month_count">
+        <item quantity="one">%1$d před měsíci</item>
+        <item quantity="few">%1$d měsíců</item>
+        <item quantity="many">%1$d měsíců</item>
+        <item quantity="other">%1$d měsíců</item>
+    </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Delete %1$d search query</item>
+        <item quantity="few">Delete %1$d search queries</item>
+        <item quantity="many">Delete %1$d search queries</item>
+        <item quantity="other">Delete %1$d search queries</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Smazat %1$d událost přehrávání</item>
+        <item quantity="few">Smazat události přehrávání %1$d</item>
+        <item quantity="many">Smazat události přehrávání %1$d</item>
+        <item quantity="other">Smazat události přehrávání %1$d</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d epizoda · %2$s</item>
+        <item quantity="few">%1$d epizod · %2$s</item>
+        <item quantity="many">%1$d epizod · %2$s</item>
+        <item quantity="other">%1$d epizod · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">Přidávám %1$d skladbu do YouTube playlistu</item>
+        <item quantity="few">Přidávání %1$d skladeb do YouTube playlistu</item>
+        <item quantity="many">Přidávání %1$d skladeb do YouTube playlistu</item>
+        <item quantity="other">Přidávání %1$d skladeb do YouTube playlistu</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">Přidána %1$d skladba do YouTube playlistu</item>
+        <item quantity="few">Přidáno %1$d skladeb do YouTube playlistu</item>
+        <item quantity="many">Přidáno %1$d skladeb do YouTube playlistu</item>
+        <item quantity="other">Přidáno %1$d skladeb do YouTube playlistu</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Stav profilu importován: %1$d profil</item>
+        <item quantity="few">Stav profilu importován: %1$d profily</item>
+        <item quantity="many">Stav profilu importován: %1$d profily</item>
+        <item quantity="other">Stav profilu importován: %1$d profily</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Nepodařilo se synchronizovat %1$d alba. Vraťte se zpět na kartu Album a zkuste to znovu.</item>
+        <item quantity="few">Synchronizace %1$d alb se nezdařila. Vraťte se zpět na kartu Album a zkuste to znovu.</item>
+        <item quantity="many">Synchronizace %1$d alb se nezdařila. Vraťte se zpět na kartu Album a zkuste to znovu.</item>
+        <item quantity="other">Synchronizace %1$d alb se nezdařila. Vraťte se zpět na kartu Album a zkuste to znovu.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Export %1$d cached/downloaded song?</item>
+        <item quantity="few">Export %1$d cached/downloaded songs?</item>
+        <item quantity="many">Export %1$d cached/downloaded songs?</item>
+        <item quantity="other">Export %1$d cached/downloaded songs?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">%1$d stažená skladba chybí její soubor a byla odstraněna. Stáhněte si jej znovu.</item>
+        <item quantity="few">%1$d stažené skladby chybí jejich soubory a byly odstraněny. Stáhněte je prosím znovu.</item>
+        <item quantity="many">%1$d stažené skladby chybí jejich soubory a byly odstraněny. Stáhněte je prosím znovu.</item>
+        <item quantity="other">%1$d stažené skladby chybí jejich soubory a byly odstraněny. Stáhněte je prosím znovu.</item>
+    </plurals>
 </resources>
