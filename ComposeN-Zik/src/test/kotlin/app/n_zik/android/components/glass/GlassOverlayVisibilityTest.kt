@@ -48,8 +48,10 @@ class GlassOverlayVisibilityTest {
         val host = GlassMenuHostState()
         var covered = false
         var optics = true
+        val shape = RoundedCornerShape(0.dp)
+        val appearance = Appearance(ColorPalette.fallback, Typography.fallback, shape, shape, shape)
         compose.setContent {
-            CompositionLocalProvider(LocalGlassMenuHost provides host) {
+            CompositionLocalProvider(LocalGlassMenuHost provides host, LocalAppearance provides appearance) {
                 GlassModalContent(host, manageFocus = false) {
                     covered = LocalGlassUnderlayCovered.current
                     optics = glassOpticsEnabled()

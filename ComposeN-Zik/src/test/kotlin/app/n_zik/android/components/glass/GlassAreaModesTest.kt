@@ -20,7 +20,11 @@ class GlassAreaModesTest {
     @Before fun clear() { preferences.edit().clear().commit() }
 
     @Test fun `each legacy area retains enabled and disabled appearance without rewriting preferences`() {
-        GlassArea.entries.filterNot { it == GlassArea.SettingsCards || it == GlassArea.Images || it == GlassArea.MoodCards }.forEach { area ->
+        // Switches and mood cards were introduced with typed modes, not legacy booleans.
+        GlassArea.entries.filterNot {
+            it == GlassArea.SettingsCards || it == GlassArea.Images ||
+                it == GlassArea.MoodCards || it == GlassArea.Switches
+        }.forEach { area ->
             preferences.edit().clear().putBoolean(area.legacyKey, false).commit()
             assertEquals(area.name, GlassAreaMode.Disabled, GlassStore(context).read().mode(area))
             preferences.edit().putBoolean(area.legacyKey, true).commit()

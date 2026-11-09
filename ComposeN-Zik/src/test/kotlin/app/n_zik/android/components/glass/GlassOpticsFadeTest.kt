@@ -90,7 +90,7 @@ class GlassOpticsFadeTest {
         step(GLASS_OPTICS_FADE_MILLIS / 2L)
         val fading = center()
         assertTrue("weight=$weight", weight > 0f && weight < 1f)
-        assertTrue("fading=$fading", fading.red > .26f && fading.red < .99f)
+        assertTrue("fading=$fading weight=$weight", fading.red > .26f && fading.red < .99f)
         assertEquals(.25f, fading.blue, .03f)
         step(GLASS_OPTICS_FADE_MILLIS + 32L)
         val cheap = center()

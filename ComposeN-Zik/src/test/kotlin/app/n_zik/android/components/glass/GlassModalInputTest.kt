@@ -26,6 +26,10 @@ import androidx.compose.ui.test.swipe
 import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import app.it.fast4x.rimusic.ui.styling.Appearance
+import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
+import app.it.fast4x.rimusic.ui.styling.LocalAppearance
+import app.it.fast4x.rimusic.ui.styling.Typography
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -72,7 +76,12 @@ class GlassModalInputTest {
             }
         }.excludingGlassOverlays(host)
         composeRule.setContent {
-            CompositionLocalProvider(LocalGlassMenuHost provides host) {
+            val shape = RoundedCornerShape(16.dp)
+            CompositionLocalProvider(
+                LocalGlassMenuHost provides host,
+                LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                    Typography.fallback, shape, shape, shape),
+            ) {
                 pageScroll = rememberScrollState()
                 dialogScroll = rememberScrollState()
                 Box(Modifier.size(300.dp, 500.dp).nestedScroll(scaffold)) {

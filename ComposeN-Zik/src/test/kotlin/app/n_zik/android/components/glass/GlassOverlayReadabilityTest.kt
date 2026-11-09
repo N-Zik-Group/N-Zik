@@ -55,6 +55,11 @@ class GlassOverlayReadabilityTest {
     })
     private val context: Context = ApplicationProvider.getApplicationContext()
     private lateinit var store: GlassStore
+    private val appearance = Appearance(
+        colorPalette = DefaultDarkColorPalette, typography = Typography.fallback,
+        thumbnailShape = RectangleShape, uiRoundnessShape = RectangleShape,
+        artistThumbnailShape = RectangleShape,
+    )
 
     @Before fun clearSettings() {
         context.preferences.edit().clear().putBoolean(glassEnabledKey, true).commit()
@@ -87,7 +92,7 @@ class GlassOverlayReadabilityTest {
         compose.setContent {
             val white = rememberCanvasBackdrop { drawRect(Color.White) }
             SideEffect { host.backdrop = white }
-            CompositionLocalProvider(LocalGlassMenuHost provides host) {
+            CompositionLocalProvider(LocalGlassMenuHost provides host, LocalAppearance provides appearance) {
                 Box(Modifier.size(240.dp).background(Color.White).testTag("scene")) {
                     val window: @Composable () -> Unit = {
                         GlassDialogWindow(true, {}, DialogProperties(), area = area, scrimVisible = visible) { Sample() }
@@ -178,7 +183,7 @@ class GlassOverlayReadabilityTest {
         compose.setContent {
             val white = rememberCanvasBackdrop { drawRect(Color.White) }
             SideEffect { host.backdrop = white }
-            CompositionLocalProvider(LocalGlassMenuHost provides host) {
+            CompositionLocalProvider(LocalGlassMenuHost provides host, LocalAppearance provides appearance) {
                 Box(Modifier.size(240.dp).background(Color.White).testTag("scene")) {
                     GlassDialogWindow(true, {}, DialogProperties(), area = area) {
                         Sample()
@@ -250,7 +255,7 @@ class GlassOverlayReadabilityTest {
         compose.setContent {
             val white = rememberCanvasBackdrop { drawRect(Color.White) }
             SideEffect { host.backdrop = white }
-            CompositionLocalProvider(LocalGlassMenuHost provides host) {
+            CompositionLocalProvider(LocalGlassMenuHost provides host, LocalAppearance provides appearance) {
                 Box(Modifier.size(240.dp).background(Color.White).testTag("scene")) {
                     GlassDialogWindow(true, {}, DialogProperties()) {
                         Sample("outer")
@@ -266,7 +271,7 @@ class GlassOverlayReadabilityTest {
     @Test fun `Glass dialog dims the live page while preserving its own content`() {
         val host = GlassMenuHostState()
         compose.setContent {
-            CompositionLocalProvider(LocalGlassMenuHost provides host) {
+            CompositionLocalProvider(LocalGlassMenuHost provides host, LocalAppearance provides appearance) {
                 Box(Modifier.size(240.dp).background(Color.White).testTag("scene")) {
                     GlassDialogWindow(true, {}, DialogProperties()) {
                         Box(Modifier.size(80.dp).background(Color.Green))

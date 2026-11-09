@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
@@ -18,6 +19,10 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import app.it.fast4x.rimusic.ui.styling.Appearance
+import app.it.fast4x.rimusic.ui.styling.ColorPalette
+import app.it.fast4x.rimusic.ui.styling.LocalAppearance
+import app.it.fast4x.rimusic.ui.styling.Typography
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
@@ -45,10 +50,12 @@ class GlassToastOverlaySceneTest {
         val toastPresent = mutableStateOf(true)
         var scene: Backdrop? = null
         var sampled: Backdrop? = null
+        val shape = RoundedCornerShape(0.dp)
+        val appearance = Appearance(ColorPalette.fallback, Typography.fallback, shape, shape, shape)
         compose.setContent {
             val source = rememberLayerBackdrop()
             SideEffect { scene = source; host.sceneBackdrop = source }
-            CompositionLocalProvider(LocalGlassMenuHost provides host) {
+            CompositionLocalProvider(LocalGlassMenuHost provides host, LocalAppearance provides appearance) {
                 Box(Modifier.size(200.dp).testTag("root")) {
                     Box(Modifier.fillMaxSize().layerBackdrop(source).background(Color.Blue)) {
                         if (dialogVisible.value) GlassDialogWindow(true, {}, DialogProperties()) {

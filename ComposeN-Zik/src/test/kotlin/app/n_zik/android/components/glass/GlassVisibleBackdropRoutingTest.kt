@@ -54,6 +54,8 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassVisibleBackdropRoutingTest {
     @get:Rule val compose = createComposeRule()
+    private val shape = RoundedCornerShape(0.dp)
+    private val appearance = Appearance(ColorPalette.fallback, Typography.fallback, shape, shape, shape)
 
     @Before fun isolateBackdropRoutingFromModalDimming() {
         val store = GlassStore(ApplicationProvider.getApplicationContext())
@@ -71,7 +73,7 @@ class GlassVisibleBackdropRoutingTest {
         lateinit var player: LayerBackdrop
         compose.setContent {
             player = rememberLayerBackdrop()
-            CompositionLocalProvider(LocalGlassMenuHost provides host) {
+            CompositionLocalProvider(LocalGlassMenuHost provides host, LocalAppearance provides appearance) {
                 Box(Modifier.size(240.dp).testTag("testScene")) {
                     GlassSceneContent(host, enabled = true) {
                         Box(Modifier.fillMaxSize().graphicsLayer().background(pageColor))
@@ -120,7 +122,7 @@ class GlassVisibleBackdropRoutingTest {
         val host = GlassMenuHostState()
         var foreground by mutableStateOf(Color.Red)
         compose.setContent {
-            CompositionLocalProvider(LocalGlassMenuHost provides host) {
+            CompositionLocalProvider(LocalGlassMenuHost provides host, LocalAppearance provides appearance) {
                 Box(Modifier.size(240.dp).testTag("testScene")) {
                     GlassSceneContent(host, enabled = true) {
                         Box(Modifier.fillMaxSize().graphicsLayer().background(foreground))
@@ -141,7 +143,7 @@ class GlassVisibleBackdropRoutingTest {
         var childVisible by mutableStateOf(false)
         var dialogVisible by mutableStateOf(false)
         compose.setContent {
-            CompositionLocalProvider(LocalGlassMenuHost provides host) {
+            CompositionLocalProvider(LocalGlassMenuHost provides host, LocalAppearance provides appearance) {
                 Box(Modifier.size(240.dp).testTag("testScene")) {
                     GlassSceneContent(host, enabled = true) {
                         Box(Modifier.fillMaxSize().background(background)) {
@@ -186,7 +188,7 @@ class GlassVisibleBackdropRoutingTest {
             val page = rememberLayerBackdrop()
             val mini = rememberLayerBackdrop()
             SideEffect { host.backdrop = page }
-            CompositionLocalProvider(LocalGlassMenuHost provides host) {
+            CompositionLocalProvider(LocalGlassMenuHost provides host, LocalAppearance provides appearance) {
                 Box(Modifier.size(240.dp).testTag("testScene")) {
                     GlassSceneContent(host, enabled = true) {
                         Box(Modifier.fillMaxSize().layerBackdrop(page).background(Color.Blue))
@@ -219,7 +221,7 @@ class GlassVisibleBackdropRoutingTest {
         compose.setContent {
             val page = rememberLayerBackdrop()
             SideEffect { host.backdrop = page; host.overlayBackdrop = page }
-            CompositionLocalProvider(LocalGlassMenuHost provides host) {
+            CompositionLocalProvider(LocalGlassMenuHost provides host, LocalAppearance provides appearance) {
                 Box(Modifier.size(240.dp).testTag("testScene")) {
                     GlassSceneContent(host, enabled = true, refreshKey = playerVisible to miniVisible) {
                         Box(Modifier.fillMaxSize().layerBackdrop(page).background(Color.Blue))
@@ -296,7 +298,7 @@ class GlassVisibleBackdropRoutingTest {
             val page = rememberLayerBackdrop()
             val player = rememberLayerBackdrop()
             SideEffect { host.backdrop = page; host.overlayBackdrop = page }
-            CompositionLocalProvider(LocalGlassMenuHost provides host) {
+            CompositionLocalProvider(LocalGlassMenuHost provides host, LocalAppearance provides appearance) {
                 Box(Modifier.size(240.dp).testTag("testScene")) {
                     Box(Modifier.fillMaxSize().layerBackdrop(page).background(Color.Blue))
                     if (playerVisible) {
@@ -329,7 +331,7 @@ class GlassVisibleBackdropRoutingTest {
         compose.setContent {
             val page = rememberLayerBackdrop()
             SideEffect { host.backdrop = page }
-            CompositionLocalProvider(LocalGlassMenuHost provides host) {
+            CompositionLocalProvider(LocalGlassMenuHost provides host, LocalAppearance provides appearance) {
                 Box(Modifier.size(240.dp)) {
                     Box(Modifier.fillMaxSize().layerBackdrop(page).background(Color.Blue))
                     GlassDialogWindow(true, {}, DialogProperties()) {

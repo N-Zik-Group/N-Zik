@@ -191,7 +191,7 @@ class GlassExportedOpticsFadeTest {
         val live = snapshot()
         frame(GLASS_OPTICS_FADE_MILLIS.toLong())
         val complete = snapshot()
-        assertTrue("Export must show intermediate pixels, early=$early middle=$middle live=$live complete=$complete; " +
+        assertTrue("Export must show intermediate pixels, initial=$initial early=$early middle=$middle live=$live complete=$complete; " +
             "parent and child come from the same root draw",
             middle.child.red > .28f && middle.child.red < .98f && middle.child.red > early.child.red)
         assertEquals("Export follows its parent within the same Android draw", middle.parent.red,

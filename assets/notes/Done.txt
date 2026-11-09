@@ -99,3 +99,9 @@ Fixed:
   - Move the mini-player heart with its entire action canvas so it remains visible above the cover edge.
   - Choose the proper Glass backdrop for mini-player control film without sampling it twice.
   - Cover badge rendering and mini-player interaction behavior.
+
+Fixed:
+- fix(glass): stabilize optics and clip controls to card bounds (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Read optics composition locals consistently before visibility decisions to keep animation groups stable.
+  - Use the measured card surface bounds when clipping control decoration in fixed-height cards.
+  - Update focused optical, overlay and information-card rendering regressions.

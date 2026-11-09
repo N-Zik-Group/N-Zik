@@ -1,6 +1,7 @@
 package app.n_zik.android.components.player
 
 import android.app.Application
+import android.os.Build
 import androidx.compose.ui.test.hasText
 import androidx.media3.common.Player
 import androidx.test.core.app.ApplicationProvider
@@ -40,6 +41,7 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasTestTag
@@ -66,16 +68,27 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.ExternalResource
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import org.robolectric.shadows.ShadowView
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [32], application = Application::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class PlayerInformationGlassBlockTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule(order = 0) val nativeTraversals = object : ExternalResource() {
+        override fun before() {
+            if (Build.VERSION.SDK_INT >= 33) ShadowView.setUseRealDrawTraversals(true)
+        }
+
+        override fun after() {
+            if (Build.VERSION.SDK_INT >= 33) ShadowView.setUseRealDrawTraversals(false)
+        }
+    }
+    @get:Rule(order = 1) val compose = createComposeRule()
 
     @org.junit.Before fun enableGlassFixture() {
         ApplicationProvider.getApplicationContext<Application>().preferences.edit()
@@ -328,7 +341,9 @@ class PlayerInformationGlassBlockTest {
         assertEquals(gated, pixel())
     }
 
-    @Test fun `information children reflect the rendered surrounding plate and its live film updates`() {
+    // Nested material pixels require Robolectric's real drawing traversal, available from API 33.
+    @Test @Config(sdk = [35])
+    fun `information children reflect the rendered surrounding plate and its live film updates`() {
         val headerEnabled = mutableStateOf(false)
         val headerFilm = mutableStateOf(.5f)
         compose.setContent { AppearanceProvider {
@@ -336,7 +351,7 @@ class PlayerInformationGlassBlockTest {
             val child = GlassSettings(enabled = true, blur = 0f, film = .5f, rim = 0f,
                 amount = 0f, depth = 0f, vibrancy = 1f)
             CompositionLocalProvider(LocalGlassContainerBackdrop provides source, LocalGlassBackdrop provides source) {
-                Box(Modifier.size(300.dp).background(Color.Blue)) {
+                Box(Modifier.size(300.dp).background(Color.Blue).testTag("information.scene")) {
                     PlayerInformationGlassBlock(
                         Modifier.padding(30.dp),
                         settings = child.copy(enabled = headerEnabled.value, film = headerFilm.value),
@@ -369,21 +384,27 @@ class PlayerInformationGlassBlockTest {
         } }
         val tags = listOf("player.queueDuration.material", "player.skipTime.material",
             "player.infoRail.surface", "player.informationFavorite.surface")
-        fun centers() = tags.map { tag ->
-            compose.onNodeWithTag(tag, useUnmergedTree = true).captureToImage().toPixelMap().let {
-                it[it.width / 2, it.height / 2]
+        fun centers(): List<Color> {
+            // Draw the exporting plate and its consumers together, in their actual paint order.
+            val scene = compose.onNodeWithTag("information.scene")
+            val bounds = scene.fetchSemanticsNode().boundsInRoot
+            val pixels = scene.captureToImage().toPixelMap()
+            return tags.map { tag ->
+                val center = compose.onNodeWithTag(tag, useUnmergedTree = true)
+                    .fetchSemanticsNode().boundsInRoot.center - bounds.topLeft
+                pixels[center.x.toInt(), center.y.toInt()]
             }
         }
         val withoutPlate = centers()
         var previous = withoutPlate
         for (film in listOf(.5f, .9f)) {
             compose.runOnIdle { headerEnabled.value = true; headerFilm.value = film }
-            compose.onNodeWithTag("player.informationBlock.surface").assertExists()
+            compose.onNodeWithTag("player.informationBlock.surface").assertIsDisplayed()
             val current = centers()
             current.zip(previous).forEachIndexed { index, (actual, expected) ->
                 val difference = kotlin.math.abs(expected.red - actual.red) +
                     kotlin.math.abs(expected.green - actual.green) + kotlin.math.abs(expected.blue - actual.blue)
-                assertTrue("${tags[index]} must reflect the changed parent plate film=$film", difference > .025f)
+                assertTrue("${tags[index]} must reflect the changed parent plate film=$film: before=$expected after=$actual", difference > .025f)
             }
             previous = current
         }

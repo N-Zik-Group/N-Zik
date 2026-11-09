@@ -335,7 +335,9 @@ class GlassQueueRowSceneTest {
     }
 
     @Test
-    @Config(sdk = [33])
+    // Robolectric's SDK 26-34 native renderer uses Android 31 Skia, which lacks child shader eval.
+    // SDK 35 exercises the real lens program (robolectric/robolectric#9691).
+    @Config(sdk = [35])
     fun `retained queue with two current occurrences keeps optics finite badge export and foreground sharp`() {
         val artwork = mutableStateOf(Color.Green)
         val elevated = mutableStateOf(-1)
