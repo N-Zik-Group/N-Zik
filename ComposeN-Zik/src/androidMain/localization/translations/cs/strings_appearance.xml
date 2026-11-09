@@ -226,6 +226,8 @@
     <string name="theme_shake_sensitivity_medium">Střední (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Velmi vysoká (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Upravit obrázek</string>
+    <string name="image_editor_failed">Nelze upravit obrázek. Aktuální obrázek byl zachován.</string>
     <string name="thumbnail_action_edit">Upravit miniaturu</string>
     <string name="thumbnail_action_pick_from_gallery">Vybrat z galerie</string>
     <string name="thumbnail_action_reset">Obnovit miniaturu</string>
@@ -235,4 +237,7 @@
     <string name="thumbnail_remove_failed">Nepodařilo se odstranit miniaturu</string>
     <string name="thumbnail_remove_success">Odstraněná miniatura</string>
     <string name="glass_effect_rendering_quality">Kvalita vykreslování</string>
+    <string name="image_editor_original">Původní poměr</string>
+    <string name="image_editor_cancel">Zrušit</string>
+    <string name="image_editor_apply">Použít obrázek</string>
 </resources>
