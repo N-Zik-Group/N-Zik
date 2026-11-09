@@ -258,7 +258,7 @@
     <string name="sync_youtube_playlist_songs_added_suffix">sanger er lagt til i YouTube Spillelisten. Gjenta prosessen hvis det er noen som ikke er sanger</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">sanger vil bli lagt til i YTM spillelisten</string>
     <string name="sync_youtube_playlists_title">YTM Spillelister</string>
-    <string name="sync_youtube_songs_remaining">%1$s Sanger igjen</string>
+    <string name="sync_youtube_songs_remaining">Sanger igjen: %1$s</string>
     <string name="sync_youtube_unlike_failed">Kunne ikke avvise sangen på YouTube</string>
     <string name="sync_youtube_unlike_success">Sangen er ikke likt i YouTube</string>
     <string name="sync_starting_notification">Starter synkronisering...</string>
