@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Come tutti i brani prenderanno circa %1$s. Chiudere l\'app per annullare. Vuoi continuare?</string>
     <string name="library_on_device_permission_request_failed">Impossibile richiedere l\'accesso alla musica su questo dispositivo.</string>
     <string name="library_on_device_permission_settings_failed">Impossibile aprire le impostazioni dei permessi.</string>
+    <string name="artist_more_from_format">Altro da %1$s</string>
+    <string name="playlist_top_show_title_format">Mostra %1$s</string>
 </resources>
