@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Valitse, miten kappaleita ei-pidetyistä artisteista suljetaan.</string>
     <string name="player_exclude_disliked_songs_description">Valitse, miten disliked kappaleet on suljettu soittoehdoista.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Jätä pois raidat, jotka ylittävät valitun keston rajan.</string>
-    <string name="player_excluded_song_count_format">Poisjätetty %s kappale(tta)</string>
+    <string name="player_excluded_song_count_format">Pois lukien kappaleet: %s</string>
     <string name="player_keep_minimized">Pidä pienennettynä</string>
     <string name="player_layout_artwork_style_description">Valitse, miten pelaaja näyttää kappaleen taidetta.</string>
     <string name="player_layout_controls_style_description">Valitse soittimen ohjainten asettelu.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Sisällytä albumin taideteokset tulevien kappaleiden viereen soittimen esikatselussa.</string>
     <string name="player_queue_preview_song_count_description">Valitse kuinka monta tulevaa kappaletta näkyvät pelaajan esikatselussa.</string>
     <string name="player_queue_remove_selected_confirmation_format">Poistetaanko valinta jonosta? Valitut kappaleet: %d</string>
-    <string name="player_queue_shuffled_count_format">Jono sekoitettu (%d kappaletta)</string>
+    <string name="player_queue_shuffled_count_format">Jono sekoitettu (kappaleet: %d)</string>
     <string name="player_remaining_time_visible_description">Näytä aika, joka on jäljellä nykyisessä kappaleessa.</string>
     <string name="player_restart_required_message">Pelaaja on käynnistettävä uudelleen tehokkaiden muutosten vuoksi!</string>
     <string name="player_rotating_buttons">Pyörivät painikkeet</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Näytä esikatselu tulevista kappaleista soittimen sisällä.</string>
     <string name="player_show_player_top_actions_bar_description">Näytä pelaajan toimintojen rivi pääsisällön yläpuolella.</string>
     <string name="player_shuffle_empty_message">Ei kappaletta sekoittaaksesi</string>
-    <string name="player_shuffled_song_count_format">%d kappaletta sekoitettu</string>
+    <string name="player_shuffled_song_count_format">Kappaleet sekoitettu: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Nukkumisajastin asetettu tämän kappaleen loppuun</string>
     <string name="player_sleep_timer_finished_message">Uniajastin päättyi</string>
     <string name="player_song_playback_error_format">Tapahtui virhe soitettaessa kappaletta %1$s</string>
