@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Vyberte si, jak jsou vyloučeny skladby od neradých umělců.</string>
     <string name="player_exclude_disliked_songs_description">Vyberte si, jak jsou neoblíbené skladby vyloučeny z návrhů přehrávání.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Vyloučit skladby přesahující vybraný limit trvání.</string>
-    <string name="player_excluded_song_count_format">Vyloučeno %s skladeb</string>
+    <string name="player_excluded_song_count_format">Vyloučeny skladby: %s</string>
     <string name="player_keep_minimized">Ponechat minimalizované</string>
     <string name="player_layout_artwork_style_description">Vyberte si, jak hráč zobrazuje obrázek trasy.</string>
     <string name="player_layout_controls_style_description">Vyberte rozložení ovládacích prvků hráče.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Zahrnout obal alba vedle nadcházejících skladeb do náhledu hráče.</string>
     <string name="player_queue_preview_song_count_description">Vyberte, kolik nadcházejících skladeb se objeví v náhledu hráče.</string>
     <string name="player_queue_remove_selected_confirmation_format">Odstranit výběr z fronty? Vybrané skladby: %d</string>
-    <string name="player_queue_shuffled_count_format">Fronta zamíchána (%d skladeb)</string>
+    <string name="player_queue_shuffled_count_format">Fronta zamíchána (skladby: %d)</string>
     <string name="player_remaining_time_visible_description">Zobrazit zbývající čas v aktuální skladbě.</string>
     <string name="player_restart_required_message">Aby se změny projevily, musí být přehrávač restartován!</string>
     <string name="player_rotating_buttons">Otáčení tlačítek</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Zobrazit náhled nadcházejících skladeb uvnitř hráče.</string>
     <string name="player_show_player_top_actions_bar_description">Zobrazí řadu akcí hráče nad hlavním obsahem.</string>
     <string name="player_shuffle_empty_message">Žádná skladba k zamíchání</string>
-    <string name="player_shuffled_song_count_format">%d skladeb zamícháno</string>
+    <string name="player_shuffled_song_count_format">Skladby zamíchány: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Časovač spánku byl odložen na konec skladby</string>
     <string name="player_sleep_timer_finished_message">Časovač spánku ukončen</string>
     <string name="player_song_playback_error_format">Média %1$s selhala</string>
