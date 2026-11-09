@@ -230,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Mellan (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Mycket hög (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">Hämta</string>
+    <string name="cover_download_failed">Kunde inte ladda ner omslaget.</string>
     <string name="image_editor_title">Redigera bild</string>
     <string name="image_editor_failed">Kunde inte redigera bilden. Din nuvarande bild sparades.</string>
     <string name="thumbnail_action_edit">Edit Thumbnail</string>
