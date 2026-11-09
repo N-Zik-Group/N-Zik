@@ -27,7 +27,7 @@ Lasiluotot: Neliö / Convx projekti (GPL-3.0); Kyant0 AndroidLiquidGlass / Backd
 
 💾 <b>Offline, Metatiedot Ja Yksityisyys</b>
 - Älykäs välimuisti ja lataukset kappaleita ja soittolistoja varten valittavissa oleva latauslaatu
-- FFmpeg-käyttöinen vienti täydellä metatiedolla (FFmpeg on ladattava laajennus, asennettu ensimmäiseen käyttöön)
+- FFmpeg-käyttöinen vienti täydellä metatiedolla (ladattavissa ensimmäisessä käytössä; ei saatavilla 32-bittisillä x86-laitteilla)
 - Sovelluksen sisäinen metadatan editori (AAC/Opus, kansi taide)
 - Paikallinen kuuntelu tilastot ja historia
 - Automaattinen varmuuskopiointi mukautetuilla aikaväleillä ja säilyttämisellä
