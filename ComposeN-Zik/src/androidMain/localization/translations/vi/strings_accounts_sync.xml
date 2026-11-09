@@ -258,7 +258,7 @@
     <string name="sync_youtube_playlist_songs_added_suffix">songs are added in the YouTube Playlist. Repeat the process if there are any Missing Songs</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">songs will be added in the YTM playlist</string>
     <string name="sync_youtube_playlists_title">YTM Playlists</string>
-    <string name="sync_youtube_songs_remaining">%1$s Songs Remaining</string>
+    <string name="sync_youtube_songs_remaining">Songs remaining: %1$s</string>
     <string name="sync_youtube_unlike_failed">Failed to unlike the song in YouTube</string>
     <string name="sync_youtube_unlike_success">Song is Unliked in YouTube</string>
     <string name="sync_starting_notification">Starting sync...</string>
