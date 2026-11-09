@@ -41,4 +41,60 @@
         <item quantity="one">%1$d sang hørt</item>
         <item quantity="other">%1$d sanger hørt</item>
     </plurals>
+    <plurals name="profile_last_used_minute_count">
+        <item quantity="one">%1$d minutt siden</item>
+        <item quantity="other">%1$d minutter siden</item>
+    </plurals>
+    <plurals name="profile_last_used_hour_count">
+        <item quantity="one">%1$d time siden</item>
+        <item quantity="other">%1$d timer siden</item>
+    </plurals>
+    <plurals name="profile_last_used_day_count">
+        <item quantity="one">%1$d dag siden</item>
+        <item quantity="other">%1$d dager siden</item>
+    </plurals>
+    <plurals name="profile_last_used_week_count">
+        <item quantity="one">%1$d uke siden</item>
+        <item quantity="other">%1$d uker siden</item>
+    </plurals>
+    <plurals name="profile_last_used_month_count">
+        <item quantity="one">%1$d måned siden</item>
+        <item quantity="other">%1$d måneder siden</item>
+    </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Slett %1$d søk</item>
+        <item quantity="other">Slett %1$d søkespørringer</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Slett %1$d avspillingshendelse</item>
+        <item quantity="other">Slett %1$d avspillingshendelser</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d episode · %2$s</item>
+        <item quantity="other">%1$d episoder · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">Legger til %1$d sang til YouTube-spillelisten</item>
+        <item quantity="other">Legger til %1$d sanger til YouTube-spillelisten</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">La til %1$d sang til YouTube-spillelisten</item>
+        <item quantity="other">La til %1$d sanger til YouTube-spillelisten</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Profiltilstand importert: %1$d profil</item>
+        <item quantity="other">Profiltilstand importert: %1$d profiler</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Kan ikke synkronisere %1$d albumet. Gå tilbake til Albuma-fanen for å prøve på nytt.</item>
+        <item quantity="other">Kunne ikke synkronisere %1$d albumer. Gå tilbake til Albumfanen for å prøve på nytt.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Eksporter %1$d cached/lastet ned sang?</item>
+        <item quantity="other">Eksporter %1$d cached/nedlastede sanger?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">%1$d nedlastet sang mangler filen og ble fjernet. Vennligst last den ned på nytt.</item>
+        <item quantity="other">%1$d nedlastede sanger mangler sine filer og ble fjernet. Vennligst last dem ned på nytt.</item>
+    </plurals>
 </resources>
