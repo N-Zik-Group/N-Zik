@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Μου αρέσουν όλα τα τραγούδια θα πάρει περίπου %1$s. Κλείστε την εφαρμογή για ακύρωση. Θέλετε να συνεχίσετε?</string>
     <string name="library_on_device_permission_request_failed">Δεν ήταν δυνατή η αίτηση πρόσβασης στη μουσική σε αυτήν τη συσκευή.</string>
     <string name="library_on_device_permission_settings_failed">Αδύνατο το άνοιγμα των ρυθμίσεων δικαιωμάτων.</string>
+    <string name="artist_more_from_format">Περισσότερα από %1$s</string>
+    <string name="playlist_top_show_title_format">Εμφάνιση %1$s</string>
 </resources>
