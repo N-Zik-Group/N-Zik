@@ -198,4 +198,5 @@
     <string name="listen_together_server_request_failed">Serverul Ascultare Împreună nu a putut finaliza cererea.</string>
     <string name="network_stream_retrying_playback">Se încearcă reluarea redării…</string>
     <string name="listen_together_invite_link">Ascultă link-ul de invitație împreună</string>
+    <string name="listen_together_server_location_poland">Polonia</string>
 </resources>
