@@ -15,6 +15,7 @@
     <string name="common_delete_success">Видалено</string>
     <string name="common_description_unavailable">Опис відсутній</string>
     <string name="common_duration_milliseconds_format">%1$s мс</string>
+    <string name="common_duration_milliseconds_unit">мс</string>
     <string name="common_empty_items">Товарів немає</string>
     <string name="common_external_link_loading_suffix">завантажується...</string>
     <string name="common_load_failed">Не вдалося завантажити</string>
@@ -43,4 +44,6 @@
     <string name="common_value_input_hint">Введіть значення</string>
     <string name="common_unknown">Невідомо</string>
     <string name="common_duration_minutes_short">%1$d хв</string>
+    <string name="common_external_link_loading_format">%1$s is loading…</string>
+    <string name="common_loading_message">Завантаження…</string>
 </resources>
