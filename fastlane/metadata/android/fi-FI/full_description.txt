@@ -1,69 +1,69 @@
-Monikielinen YouTube Music -sovellus Androidille, jossa painotetaan suorituskykyä, käyttöliittymää, uusia toimintoja ja pitkäaikaista tukea.
+Monikielinen YouTube-musiikkikonsertti Androidille, joka keskittyy suorituskykyyn, UI/UX-ominaisuuksiin, laajenemiseen ja pitkäaikaiseen tukeen.
 
-<b>N-Zik</b> on avoimen lähdekoodin haara sovelluksesta <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+<b>N-Zik</b> on <a href="https://github.com/knighthat/Kreate">Kreate</a> -luokan avoimen lähdekoodin haarukka.
 
-<b>Huom:</b> N-Zik alkoi sivuprojektina. Kypsempiä vaihtoehtoja ovat <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ja <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Huomautus:</b> N-Zik alkoi sivuprojektina. Jos haluat lisää kypsiä vaihtoehtoja, tarkista <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, tai <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Tekoäly:</b> Käytän generatiivista tekoälyä koodaukseen <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD-menetelmällä</a>. Tarkistan ja testaan koodin ennen julkaisua.
+<b>tekoälyn käyttö:</b> Käytän generatiivista tekoälyn koodin ( <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD-menetelmän</a>kautta), tarkistetaan ja testataan ennen toimitusta.
 
-✨ <b>MIKSI N-ZIK?</b> Ei mainoksia. Taustatoisto, offline-välimuisti ja muokattava käyttöliittymä. Aina ilmainen.
+✨ <b>MITÄ N-ZIK?</b> Ei mainoksia, taustan toisto, offline välimuisti, muokattavissa oleva UI - ilmaiseksi, aina.
 
 🎨 <b>Muokattava Käyttöliittymä</b>
-- Jetpack Compose -käyttöliittymä
-- Teemat AMOLED, Deep Dark ja Crisp Light sekä korostusvärit
-- 3D-karuselli, aloitusnäytön widgetit, yhteinen soitin ja minisoitin
-- Artistiprofiilit, löydöt, tunnelmat ja taittuvat otsikot
+- Jetpack Compose käyttöliittymä
+- Teemat: AMOLED, Syvä Tumma, Crisp Light + sävytetyt aksentit
+- 3D Carousel Player, koti-widgetit, yhtenäinen pelaaja ja mini-soitin
+- Taiteilijan profiilit, löytö ja tunnelmat, kodin kodin otsikot
 
-🫧 <b>Glass (BETA, valinnainen)</b>
-Ei oletuksena käytössä. Valitse asetuksista luokittain natiivityyli, ääriviivat tai Glass ja säädä laatua. Jos tehoste kuormittaa laitetta tai akkua, laske laatua tai poista se käytöstä.
+🫧 <b>lasitefektit (BETA, valinnainen)</b>
+Poistettu käytöstä tuoreissa asennuksissa. Ota käyttöön asetukset: natiivinen, ääriviivat tai lasi luokittain säädettävällä laadulla. Voi lisätä renderointityötä ja akun käyttöä; vähentää laatua tai poistaa käytöstä tarvittaessa.
 Lasiluotot: Neliö / Convx projekti (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Audio Experience</b>
 - Premium laatu YouTube Music Premiumin kautta automaattisesti
-- Synkronoidut sanoitukset, muokkaus ja reaaliaikainen käännös
-- Shazamin kaltainen tunnistus, äänihaku ja visualisaattori
-- Säädöt: nopeus, sävelkorkeus, normalisointi, ristihäivytys, äänenvoimakkuus, basso ja kaiku
-- Aaltomuoto toistopalkissa helpottaa tarkkaa siirtymistä
+- Synkronoidut sanoitukset editoinnin ja reaaliaikaisen käännöksen kanssa
+- Kappaleen tunnistus (Shazam-like), äänihaku, audio visualisoija
+- Pro-ohjaukset: nopeus, pikki, normalisointi, ristikkäisfade, äänenvoimakkuuden lisääminen, bassotehostus, kaiu
+- Audio Bar aaltomuodon seekbar tarkkaa navigointia
 
 💾 <b>Offline, Metatiedot Ja Yksityisyys</b>
-- Älykäs välimuisti ja lataukset kappaleille ja soittolistoille valitulla laadulla
-- FFmpeg-vienti täydellisine metatietoineen (ei 32-bittisessä x86:ssa)
-- Metatietojen muokkaus sovelluksessa (AAC/Opus, kansikuva)
+- Älykäs välimuisti ja lataukset kappaleita ja soittolistoja varten valittavissa oleva latauslaatu
+- FFmpeg-käyttöinen vienti täydellä metatiedolla (ladattavissa ensimmäisessä käytössä; ei saatavilla 32-bittisillä x86-laitteilla)
+- Sovelluksen sisäinen metadatan editori (AAC/Opus, kansi taide)
 - Paikallinen kuuntelu tilastot ja historia
-- Automaattiset varmuuskopiot säädettävin välein ja säilytysajoin
+- Automaattinen varmuuskopiointi mukautetuilla aikaväleillä ja säilyttämisellä
 
 🔗 <b>Integraatiot</b>
-- YouTube-kirjautuminen suosituksiin ja videoihin sekä kokeellinen kaksisuuntainen synkronointi
-- Last.fm: scrobbaus, nyt soi ja suosikit
-- MusicBrainzin artisti- ja albumitiedot
-- Discord Rich Presence, edistynyt tila ja reaaliaikainen esikatselu
+- YouTube-sisäänkirjautuminen suosituksiin ja videon toistoon sekä kokeellinen kaksisuuntainen synkronointimoottori
+- Last.fm scrobbling nyt pelaaminen ja rakkaus / unlove
+- MusicBrainz-taiteilijan ja levyn oivalluksia
+- Discord Rich Presence, mukaan lukien edistynyt tila live esikatselu
 - Invidious integraatio vaihtoehtoiseen YouTube-suoratoistoon
 - Soittolistan tuonti/vienti: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Kuuntele Yhdessä</b>
-- Liity yhteiskuunteluun tai aloita istunto koodilla tai kutsulinkillä
+- Liity tai isännöi live-kuunteluistuntoja muiden käyttäjien kanssa koodin tai kutsulinkin kautta
 
 🗓️ <b>Rewind</b>
-- Vuosi- ja kuukausikoosteet sekä automaattiset Rewind-soittolistat
+- Vuosittaiset ja kuukausittaiset kuuntelukerrat automaattisella rewind-soittolistoilla
 
-📱 <b>Kuuntele kaikkialla:</b> Android Auto, Automotive, TV ja tabletit
+📱 <b>Pelaa missä tahansa:</b> Android Auto, Automotive, TV ja Tabletit
 
-🛠️ <b>Lisätoiminnot</b>
-- Profiilikohtaiset tietokannat ja asetukset
-- Jatkaminen Bluetooth-yhteydessä sekä pysyvä ja automaattisesti täydentyvä jono
-- Älykäs roskakori, piilotetut kappaleet, ei-tykkäykset ja lapsilukko
+🛠️ <b>Tehon Käyttäjän Ominaisuudet</b>
+- Moniprofiili: eristetty tietokanta ja asetukset profiilia kohti
+- Automaattinen jatkaminen Bluetooth-yhteyden yhteydessä, pysyvä jono, automaattinen täyttöjono
+- Älykäs roskakori, piilotetut kappaleet, vastenmielinen järjestelmä, vanhempien ohjaus
 - Välityspalvelimen tuki, verkon laadun mukauttaminen, lokin vienti
 - Pelastuskeskus, huoltoruutu, perehdytys, sovelluksen pikakuvakkeet
 - OTA päivitykset GitHubista, lepotilaajastin, taustasoiton
 
 📦 <b>Saatavilla Olevat Rakennukset</b>
-- Release64/Beta64 (`com.nevar.nzik`): Täysi versio 64-bittisille laitteille
-- Release32/Beta32 (`com.nevar.nzik`): Täysi versio 32-bittisille laitteille
-- Minified64 (`com.nevar.nzik`): Kevyt R8 heikkotehoisille 64-bittisille laitteille
-- Minified32 (`com.nevar.nzik`): Kevyt R8 32-bittisille laitteille
+- Release64/Beta64 (`com.nevar.nzik`): Suorita rakennus, 64-bittiset laitteet vain
+- Release32/Beta32 (`com.nevar.nzik`): Vain 32-bittiset laitteet
+- Minified64 (`com.nevar.nzik`): Kevyt R8-rakennus, pieniulotteisille laitteille (64-bit)
+- Minified32 (`com.nevar.nzik`): Kevyt R8 versio (32-bit)
 - FOSS (`com.nevar.nzik.foss`): Ilman automaattista päivitystä, F-Droidille (kaikki arkkitehtuuri)
-- Dev64/Dev32 (`com.nevar.nzik.dev`): Kehitysversiot vain testaukseen
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Kehitys rakentuu, vain testaus
 
-FFmpeg ei sisälly koontiversioihin. Se ladataan ensi käytöllä. Hallinta: Asetukset → Laajennukset. F-Droidissa on vain FOSS.
+Ei rakentaa nippuja FFmpeg: se on ladattava lisäosa (asennettu ensimmäiseen käyttöön, hallitaan Asetukset → Lisäosat). Vain FOSS on F-Droidissa.
 
-Aiempiin projekteihin kuuluu ViMusic.
+Historiallisia projektipisteitä ovat ViMusic.
