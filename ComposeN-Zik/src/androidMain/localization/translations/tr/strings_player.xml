@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Beğenmediğiniz sanatçıların şarkılarının nasıl hariç tutulacağını seçin.</string>
     <string name="player_exclude_disliked_songs_description">Beğenmediğiniz parçaların çalma önerilerinden nasıl hariç tutulacağını seçin.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Seçilen süre sınırını aşan parçaları hariç tutun.</string>
-    <string name="player_excluded_song_count_format">%s şarkı hariç tutuldu</string>
+    <string name="player_excluded_song_count_format">Songs excluded: %s</string>
     <string name="player_keep_minimized">Küçültülmüş tut</string>
     <string name="player_layout_artwork_style_description">Oynatıcının parça kapak resimlerini nasıl göstereceğini seçin.</string>
     <string name="player_layout_controls_style_description">Oynatıcı kontrollerinin düzenini seçin.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Oynatıcı önizlemesinde çalınacak parçaların yanına albüm kapak resimlerini ekleyin.</string>
     <string name="player_queue_preview_song_count_description">Oynatıcı önizlemesinde kaç tane gelecek parça gösterileceğini seçin.</string>
     <string name="player_queue_remove_selected_confirmation_format">%d şarkıyı kuyruktan silmek istiyor musunuz?</string>
-    <string name="player_queue_shuffled_count_format">Kuyruk karıştırıldı (%d şarkı)</string>
+    <string name="player_queue_shuffled_count_format">Kuyruk karıştırıldı (parçalar: %d)</string>
     <string name="player_remaining_time_visible_description">Mevcut parçada kalan süreyi göster.</string>
     <string name="player_restart_required_message">Değişikliklerin etkili olması için oynatıcının yeniden başlatılması gerekiyor!</string>
     <string name="player_rotating_buttons">Döner düğmeler</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Oynatıcıda sonraki parçaların önizlemesini göster.</string>
     <string name="player_show_player_top_actions_bar_description">Oynatıcıların eylemlerini içeren satırı ana içeriğin üstünde göster.</string>
     <string name="player_shuffle_empty_message">Karıştırılacak şarkı yok</string>
-    <string name="player_shuffled_song_count_format">%d şarkı rastgele çalındı</string>
+    <string name="player_shuffled_song_count_format">Karıştırılan parçalar: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Uyku zamanlayıcısı bu şarkının sonuna ayarlandı</string>
     <string name="player_sleep_timer_finished_message">Uyku zamanlayıcısı sona erdi</string>
     <string name="player_song_playback_error_format">%1$s şarkısı çalınırken bir hata oluştu</string>
