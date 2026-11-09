@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">páginas</string>
     <string name="glass_effect_destination_playback">Reprodução</string>
     <string name="glass_effect_destination_shared">Elementos compartilhados</string>
+    <string name="glass_effect_loading_indicators">Carregando indicadores</string>
+    <string name="glass_effect_loading_indicators_description">Estilo de carregamento de animações nas páginas e em cartões e diálogos.</string>
+    <string name="glass_effect_pull_to_refresh">Puxe para atualizar</string>
+    <string name="glass_effect_pull_to_refresh_description">Estilo, o indicador que aparece quando você puxa para baixo para atualizar.</string>
     <string name="glass_effect_destination_windows">Janelas e mensagens</string>
     <string name="glass_effect_dialog_dimming">Fundo de diálogo escurecido</string>
     <string name="glass_effect_dispersion">Divisão da cor</string>
@@ -121,7 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">Os cartões que agrupam as configurações e mostram seus perfis.</string>
     <string name="glass_effect_role_visualizer">Visualizador · controles</string>
     <string name="glass_effect_role_visualizer_description">O botão de setas e configurações é usado com o visualizador.</string>
-    <string name="glass_effect_shared_summary">Escolha a aparência habitual para o app. Os outros grupos permitem que você altere partes específicas.</string>
+    <string name="glass_effect_shared_components_summary">Escolha como o Vidro é exibido em componentes usados ao longo do aplicativo, incluindo indicadores de carregamento e pull para atualizar.</string>
     <string name="glass_effect_summary">Personalize as superfícies de efeito de Vidro, cores, contornos e qualidade.</string>
     <string name="glass_effect_switches_description">Usar interruptores de vidro líquido com os efeitos materiais e interação compartilhados quando o Vidro estiver ativado.</string>
     <string name="glass_effect_switches_title">Interruptores de vidro</string>
