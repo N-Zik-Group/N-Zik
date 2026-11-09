@@ -27,7 +27,7 @@ Glaskrediter: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Back
 
 💾 <b>Offline, Metadata & Sekretess</b>
 - Smart caching och nedladdningar för spår och spellistor, med valbar nedladdningskvalitet
-- FFmpeg-driven export med full metadata (FFmpeg är ett nedladdningsbart tillägg, installerat vid första användning)
+- FFmpeg-driven export med full metadata (nedladdningsbar vid första användningen, otillgänglig på 32-bitars x86-enheter)
 - Redigerare för metadata i appen (AAC/Opus, omslagsbild)
 - Lokal lyssningsstatistik och historik
 - Automatisk säkerhetskopiering med anpassade intervall och lagring
