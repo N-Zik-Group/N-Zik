@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Выберите, как исключаются треки из непонравившихся исполнителей.</string>
     <string name="player_exclude_disliked_songs_description">Выберите, как не понравились треки исключены из вариантов воспроизведения.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Исключить треки, которые превышают выбранный лимит продолжительности.</string>
-    <string name="player_excluded_song_count_format">Исключено %s песен</string>
+    <string name="player_excluded_song_count_format">Исключены треки: %s</string>
     <string name="player_keep_minimized">Оставить свёрнутым</string>
     <string name="player_layout_artwork_style_description">Выберите, как игрок отображает трек изображения.</string>
     <string name="player_layout_controls_style_description">Выберите макет управления плеера.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Включать обложку альбома рядом с предстоящими треками в предварительный просмотр плеера.</string>
     <string name="player_queue_preview_song_count_description">Выберите, сколько предстоящих треков появится в предпросмотре игрока.</string>
     <string name="player_queue_remove_selected_confirmation_format">Удалить выбранное из очереди? Выбранные треки: %d</string>
-    <string name="player_queue_shuffled_count_format">Очередь перемешивается (%d песен)</string>
+    <string name="player_queue_shuffled_count_format">Очередь перемешивается (треки: %d)</string>
     <string name="player_remaining_time_visible_description">Показать оставшееся время в текущем треке.</string>
     <string name="player_restart_required_message">Необходимо перезапустить игрок, чтобы внести изменения</string>
     <string name="player_rotating_buttons">Поворот кнопок</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Отображение предварительного просмотра предстоящих треков внутри плеера.</string>
     <string name="player_show_player_top_actions_bar_description">Отображать строку действий игрока над основным содержанием.</string>
     <string name="player_shuffle_empty_message">Нет треков для перемешивания</string>
-    <string name="player_shuffled_song_count_format">%d songs shuffled</string>
+    <string name="player_shuffled_song_count_format">Перемещено треков: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Таймер сна установлен в конец этой песни</string>
     <string name="player_sleep_timer_finished_message">Таймер сна завершен</string>
     <string name="player_song_playback_error_format">Произошла ошибка при воспроизведении песни %1$s</string>
