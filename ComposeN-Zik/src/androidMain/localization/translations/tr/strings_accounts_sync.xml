@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm hesabı</string>
     <string name="profile_identity_source_not_connected">Giriş yapılmadı</string>
     <string name="profile_last_used">Son kullanım</string>
-    <string name="profile_last_used_days">%d gün önce</string>
-    <string name="profile_last_used_hours">%d saat önce</string>
-    <string name="profile_last_used_minutes">%d dakika önce</string>
-    <string name="profile_last_used_months">%d ay önce</string>
     <string name="profile_last_used_now">Az önce</string>
-    <string name="profile_last_used_weeks">%d hafta önce</string>
     <string name="profile_local_name">Profil adı</string>
     <string name="profile_local_name_description">Mevcut yerel profilin adını değiştirin.</string>
     <string name="profile_name_input_hint">Profil adı girin</string>
@@ -255,10 +250,11 @@
     <string name="sync_youtube_playlist_add_failed">Şarkı YouTube Çalma Listesine Eklenemedi</string>
     <string name="sync_youtube_playlist_add_success">Şarkı YouTube Çalma Listesine Eklendi</string>
     <string name="sync_youtube_playlist_batch_failed">Sonraki 50 şarkı için hata oluştu. Şarkılar çalma listesine tek tek ekleniyor</string>
+    <string name="sync_youtube_playlist_no_songs_added">YouTube çalma listesine hiçbir şarkı eklenmedi</string>
     <string name="sync_youtube_playlist_songs_added_suffix">şarkılar YouTube Çalma Listesine eklendi. Eksik Şarkılar Varsa İşlemi Tekrarlayın</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">şarkılar YTM çalma listesine eklenecek</string>
     <string name="sync_youtube_playlists_title">YTM Çalma Listeleri</string>
-    <string name="sync_youtube_songs_remaining">Songs remaining: %1$s</string>
+    <string name="sync_youtube_songs_remaining">Kalan şarkılar: %1$s</string>
     <string name="sync_youtube_unlike_failed">Şarkı YouTube\'da beğenilmedi</string>
     <string name="sync_youtube_unlike_success">Şarkı YouTube\'da Beğenilmedi</string>
     <string name="sync_starting_notification">Senkronizasyon başlıyor...</string>
