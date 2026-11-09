@@ -226,6 +226,8 @@
     <string name="theme_shake_sensitivity_medium">Medium (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Very High (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Edit image</string>
+    <string name="image_editor_failed">Could not edit the image. Your current image was kept.</string>
     <string name="thumbnail_action_edit">썸네일 편집</string>
     <string name="thumbnail_action_pick_from_gallery">Pick from gallery</string>
     <string name="thumbnail_action_reset">썸네일 초기화</string>
@@ -235,4 +237,7 @@
     <string name="thumbnail_remove_failed">썸네일을 제거하지 못했습니다.</string>
     <string name="thumbnail_remove_success">썸네일이 삭제됨</string>
     <string name="glass_effect_rendering_quality">Rendering quality</string>
+    <string name="image_editor_original">Original ratio</string>
+    <string name="image_editor_cancel">취소</string>
+    <string name="image_editor_apply">Use image</string>
 </resources>
