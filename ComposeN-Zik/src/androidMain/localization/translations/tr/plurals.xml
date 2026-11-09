@@ -66,187 +66,187 @@
         <item quantity="other">YouTube çalma listesine %1$d şarkılar eklendi</item>
     </plurals>
     <plurals name="backup_import_profile_state_complete_count">
-        <item quantity="one">Profile state imported: %1$d profile</item>
-        <item quantity="other">Profile state imported: %1$d profiles</item>
+        <item quantity="one">İçe aktarılan profil durumu: %1$d profil</item>
+        <item quantity="other">İçe aktarılan profil durumu: %1$d profiller</item>
     </plurals>
     <plurals name="sync_failed_notification_album_count">
-        <item quantity="one">Failed to sync %1$d album. Go back to the Albums tab to retry.</item>
-        <item quantity="other">Failed to sync %1$d albums. Go back to the Albums tab to retry.</item>
+        <item quantity="one">%1$d albümün senkronizasyonu başarısız oldu. Tekrar denemek için Albümler sekmesine geri dönün.</item>
+        <item quantity="other">%1$d albümlerin senkronizasyonu başarısız oldu. Tekrar denemek için Albümler sekmesine geri dönün.</item>
     </plurals>
     <plurals name="library_export_cached_song_confirmation_count">
-        <item quantity="one">Export %1$d cached/downloaded song?</item>
-        <item quantity="other">Export %1$d cached/downloaded songs?</item>
+        <item quantity="one">Önbelleğe alınmış/indirilmiş %1$d şarkıyı dışa aktarmak ister misiniz?</item>
+        <item quantity="other">Önbelleğe alınmış/indirilmiş %1$d şarkıları dışa aktarmak ister misiniz?</item>
     </plurals>
     <plurals name="downloads_stale_startup_removed_count">
-        <item quantity="one">%1$d downloaded song is missing its file and was removed. Please download it again.</item>
-        <item quantity="other">%1$d downloaded songs are missing their files and were removed. Please download them again.</item>
+        <item quantity="one">%1$d indirilen şarkının dosyası bulunamadı ve kaldırıldı. Lütfen yeniden indirin.</item>
+        <item quantity="other">%1$d indirilen şarkıların dosyası bulunamadı ve kaldırıldı. Lütfen yeniden indirin.</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
-        <item quantity="one">%1$d recommended song</item>
-        <item quantity="other">%1$d recommended songs</item>
+        <item quantity="one">%1$d önerilen şarkı</item>
+        <item quantity="other">%1$d önerilen şarkılar</item>
     </plurals>
     <plurals name="listen_together_blocked_user_count">
-        <item quantity="one">%1$d user blocked</item>
-        <item quantity="other">%1$d users blocked</item>
+        <item quantity="one">%1$d kullanıcı engellendi</item>
+        <item quantity="other">%1$d kullanıcılar engellendi</item>
     </plurals>
     <plurals name="sync_failed_notification_artist_count">
-        <item quantity="one">Failed to sync %1$d artist. Go back to the Artists tab to retry.</item>
-        <item quantity="other">Failed to sync %1$d artists. Go back to the Artists tab to retry.</item>
+        <item quantity="one">%1$d sanatçının senkronizasyonu başarısız oldu. Tekrar denemek için Sanatçılar sekmesine geri dönün.</item>
+        <item quantity="other">%1$d sanatçıların senkronizasyonu başarısız oldu. Tekrar denemek için Sanatçılar sekmesine geri dönün.</item>
     </plurals>
     <plurals name="sync_failed_notification_playlist_count">
-        <item quantity="one">Failed to sync %1$d playlist. Go back to the Playlists tab to retry.</item>
-        <item quantity="other">Failed to sync %1$d playlists. Go back to the Playlists tab to retry.</item>
+        <item quantity="one">%1$d çalma listesi senkronize edilemedi. Tekrar denemek için Çalma listeleri sekmesine geri dönün.</item>
+        <item quantity="other">%1$d çalma listeleri senkronize edilemedi. Tekrar denemek için Çalma listeleri sekmesine geri dönün.</item>
     </plurals>
     <plurals name="sync_retry_failed_item_confirmation">
-        <item quantity="one">Do you want to retry syncing the %1$d failed item?</item>
-        <item quantity="other">Do you want to retry syncing the %1$d failed items?</item>
+        <item quantity="one">%1$d başarısız olan öğenin senkronizasyonunu yeniden denemek ister misiniz?</item>
+        <item quantity="other">%1$d başarısız olan öğelerin senkronizasyonunu yeniden denemek ister misiniz?</item>
     </plurals>
     <plurals name="sync_progress_artist_count">
-        <item quantity="one">Syncing artist... (%1$d/%2$d)</item>
-        <item quantity="other">Syncing artists... (%1$d/%2$d)</item>
+        <item quantity="one">Sanatçı senkronize ediliyor... (%1$d/%2$d)</item>
+        <item quantity="other">Sanatçılar senkronize ediliyor... (%1$d/%2$d)</item>
     </plurals>
     <plurals name="library_sync_artist_refresh_count">
-        <item quantity="one">Refreshing %1$d artist</item>
-        <item quantity="other">Refreshing %1$d artists</item>
+        <item quantity="one">%1$d sanatçı yenileniyor</item>
+        <item quantity="other">%1$d sanatçılar yenileniyor</item>
     </plurals>
     <plurals name="library_sync_artist_retry_count">
-        <item quantity="one">Failed to find %1$d artist, retrying</item>
-        <item quantity="other">Failed to find %1$d artists, retrying</item>
+        <item quantity="one">%1$d sanatçı bulunamadı, yeniden deneniyor</item>
+        <item quantity="other">%1$d sanatçılar bulunamadı, yeniden deneniyor</item>
     </plurals>
     <plurals name="sync_progress_album_count">
-        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
-        <item quantity="other">Syncing albums... (%1$d/%2$d)</item>
+        <item quantity="one">Albüm senkronize ediliyor... (%1$d/%2$d)</item>
+        <item quantity="other">Albümler senkronize ediliyor... (%1$d/%2$d)</item>
     </plurals>
     <plurals name="library_sync_album_refresh_count">
-        <item quantity="one">Refreshing %1$d album</item>
-        <item quantity="other">Refreshing %1$d albums</item>
+        <item quantity="one">%1$d albüm yenileniyor</item>
+        <item quantity="other">%1$d albümler yenileniyor</item>
     </plurals>
     <plurals name="library_sync_album_retry_count">
-        <item quantity="one">Failed to find %1$d album, retrying</item>
-        <item quantity="other">Failed to find %1$d albums, retrying</item>
+        <item quantity="one">%1$d albüm bulunamadı, yeniden deneniyor</item>
+        <item quantity="other">%1$d albümler bulunamadı, yeniden deneniyor</item>
     </plurals>
     <plurals name="sync_progress_playlist_count">
-        <item quantity="one">Syncing playlist... (%1$d/%2$d)</item>
-        <item quantity="other">Syncing playlists... (%1$d/%2$d)</item>
+        <item quantity="one">Çalma listesi senkronize ediliyor... (%1$d/%2$d)</item>
+        <item quantity="other">Çalma listeleri senkronize ediliyor... (%1$d/%2$d)</item>
     </plurals>
     <plurals name="library_sync_playlist_refresh_count">
-        <item quantity="one">Refreshing %1$d playlist</item>
-        <item quantity="other">Refreshing %1$d playlists</item>
+        <item quantity="one">%1$d çalma listesi yenileniyor</item>
+        <item quantity="other">%1$d çalma listeleri yenileniyor</item>
     </plurals>
     <plurals name="library_sync_playlist_retry_count">
-        <item quantity="one">Failed to find %1$d playlist, retrying</item>
-        <item quantity="other">Failed to find %1$d playlists, retrying</item>
+        <item quantity="one">%1$d çalma listesi bulunamadı, yeniden deneniyor</item>
+        <item quantity="other">%1$d çalma listeleri bulunamadı, yeniden deneniyor</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
-        <item quantity="one">%1$d item cleaned</item>
-        <item quantity="other">%1$d items cleaned</item>
+        <item quantity="one">%1$d öğe temizlendi</item>
+        <item quantity="other">%1$d öğeler temizlendi</item>
     </plurals>
     <plurals name="maintenance_pass_deferred_count">
-        <item quantity="one">%1$d item deferred</item>
-        <item quantity="other">%1$d items deferred</item>
+        <item quantity="one">%1$d öğe ertelendi</item>
+        <item quantity="other">%1$d öğeler ertelendi</item>
     </plurals>
     <plurals name="maintenance_pass_skipped_count">
-        <item quantity="one">%1$d item skipped</item>
-        <item quantity="other">%1$d items skipped</item>
+        <item quantity="one">%1$d öğe atlandı</item>
+        <item quantity="other">%1$d öğeler atlandı</item>
     </plurals>
     <plurals name="maintenance_dedup_flagged_count">
-        <item quantity="one">Flagged %1$d row</item>
-        <item quantity="other">Flagged %1$d rows</item>
+        <item quantity="one">%1$d satır işaretlendi</item>
+        <item quantity="other">%1$d satırlar işaretlendi</item>
     </plurals>
     <plurals name="maintenance_dedup_merged_count">
-        <item quantity="one">Merged %1$d row</item>
-        <item quantity="other">Merged %1$d rows</item>
+        <item quantity="one">%1$d satır birleştirildi</item>
+        <item quantity="other">%1$d satırlar birleştirildi</item>
     </plurals>
     <plurals name="recovery_profile_deleted_count">
-        <item quantity="one">Deleted %1$d profile</item>
-        <item quantity="other">Deleted %1$d profiles</item>
+        <item quantity="one">%1$d profil silindi</item>
+        <item quantity="other">%1$d profiller silindi</item>
     </plurals>
     <plurals name="recovery_profile_reset_count">
-        <item quantity="one">Reset %1$d profile. Relaunch the app</item>
-        <item quantity="other">Reset %1$d profiles. Relaunch the app</item>
+        <item quantity="one">%1$d profili sıfırla. Uygulamayı yeniden başlat</item>
+        <item quantity="other">%1$d profilleri sıfırla. Uygulamayı yeniden başlat</item>
     </plurals>
     <plurals name="recovery_profile_restored_count">
-        <item quantity="one">Restored %1$d profile: relaunch the app</item>
-        <item quantity="other">Restored %1$d profiles: relaunch the app</item>
+        <item quantity="one">%1$d profil geri yüklendi: uygulamayı yeniden başlatın</item>
+        <item quantity="other">%1$d profiller geri yüklendi: uygulamayı yeniden başlatın</item>
     </plurals>
     <plurals name="album_loading_song_count">
-        <item quantity="one">Loading %1$d song…</item>
-        <item quantity="other">Loading %1$d songs…</item>
+        <item quantity="one">%1$d şarkı yükleniyor…</item>
+        <item quantity="other">%1$d şarkılar yükleniyor…</item>
     </plurals>
     <plurals name="artist_deduplication_result_count">
-        <item quantity="one">Merged %1$d duplicate artist with the right artist</item>
-        <item quantity="other">Merged %1$d duplicate artists with the right artist</item>
+        <item quantity="one">%1$d yinelenen sanatçı, doğru sanatçıyla birleştirildi</item>
+        <item quantity="other">%1$d yinelenen sanatçılar, doğru sanatçıyla birleştirildi</item>
     </plurals>
     <plurals name="artist_link_cleanup_result_count">
-        <item quantity="one">Removed %1$d incorrect artist link</item>
-        <item quantity="other">Removed %1$d incorrect artist links</item>
+        <item quantity="one">%1$d yanlış sanatçı bağlantısı kaldırıldı</item>
+        <item quantity="other">%1$d yanlış sanatçı bağlantıları kaldırıldı</item>
     </plurals>
     <plurals name="library_song_count_with_duration">
-        <item quantity="one">%1$d song • %2$s</item>
-        <item quantity="other">%1$d songs • %2$s</item>
+        <item quantity="one">%1$d şarkı • %2$s</item>
+        <item quantity="other">%1$d şarkılar • %2$s</item>
     </plurals>
     <plurals name="metadata_musicbrainz_rating_vote_count">
-        <item quantity="one">(%1$d vote)</item>
-        <item quantity="other">(%1$d votes)</item>
+        <item quantity="one">(%1$d oy)</item>
+        <item quantity="other">(%1$d oylar)</item>
     </plurals>
     <plurals name="metadata_musicbrainz_rating_vote_count_attribution">
-        <item quantity="one">%1$d vote on MusicBrainz</item>
-        <item quantity="other">%1$d votes on MusicBrainz</item>
+        <item quantity="one">MusicBrainz\'de %1$d oy</item>
+        <item quantity="other">MusicBrainz\'de %1$d oylar</item>
     </plurals>
     <plurals name="playlist_delete_all_confirmation_count">
-        <item quantity="one">Are you sure you want to delete the only playlist (%1$d)?</item>
-        <item quantity="other">Are you sure you want to delete ALL %1$d playlists?</item>
+        <item quantity="one">Sadece çalma listesini (%1$d) silmek istediğinizden emin misiniz?</item>
+        <item quantity="other">%1$d adet çalma listesinin TÜMÜNÜ silmek istediğinizden emin misiniz?</item>
     </plurals>
     <plurals name="playlist_delete_selected_confirmation_count">
-        <item quantity="one">Are you sure you want to delete this playlist (%1$d)?</item>
-        <item quantity="other">Are you sure you want to delete these %1$d playlists?</item>
+        <item quantity="one">Bu çalma listesini (%1$d) silmek istediğinizden emin misiniz?</item>
+        <item quantity="other">Bu %1$d çalma listelerini silmek istediğinizden emin misiniz?</item>
     </plurals>
     <plurals name="playlist_positions_shuffled_count">
-        <item quantity="one">%1$d position shuffled</item>
-        <item quantity="other">%1$d positions shuffled</item>
+        <item quantity="one">%1$d sıra karıştırıldı</item>
+        <item quantity="other">%1$d sıralar karıştırıldı</item>
     </plurals>
     <plurals name="song_metadata_updated_song_count">
-        <item quantity="one">Updated %1$d song</item>
-        <item quantity="other">Updated %1$d songs</item>
+        <item quantity="one">%1$d şarkı güncellendi</item>
+        <item quantity="other">%1$d şarkılar güncellendi</item>
     </plurals>
     <plurals name="rewind_home_year_play_count">
-        <item quantity="one">%1$s · %2$s play</item>
-        <item quantity="other">%1$s · %2$s plays</item>
+        <item quantity="one">%1$s · %2$s oynatma</item>
+        <item quantity="other">%1$s · %2$s oynatmalar</item>
     </plurals>
     <plurals name="rewind_listening_day_count_without">
-        <item quantity="one">%1$s day without listening.</item>
-        <item quantity="other">%1$s days without listening.</item>
+        <item quantity="one">%1$s gün müzik dinlemedim</item>
+        <item quantity="other">%1$s gündür müzik dinlemedim</item>
     </plurals>
     <plurals name="rewind_loader_status_day_count">
-        <item quantity="one">%1$s LISTENING DAY</item>
-        <item quantity="other">%1$s LISTENING DAYS</item>
+        <item quantity="one">%1$s DİNLEME GÜNÜ</item>
+        <item quantity="other">%1$s DİNLEME GÜNLERİ</item>
     </plurals>
     <plurals name="rewind_loader_status_minute_count">
-        <item quantity="one">%1$s MINUTE</item>
-        <item quantity="other">%1$s MINUTES</item>
+        <item quantity="one">%1$s DAKİKA</item>
+        <item quantity="other">%1$s DAKİKALAR</item>
     </plurals>
     <plurals name="rewind_loader_status_play_count">
-        <item quantity="one">%1$s PLAY</item>
-        <item quantity="other">%1$s PLAYS</item>
+        <item quantity="one">%1$s OYNATMA</item>
+        <item quantity="other">%1$s OYNATMALAR</item>
     </plurals>
     <plurals name="rewind_loader_status_song_count">
-        <item quantity="one">%1$s UNIQUE SONG</item>
-        <item quantity="other">%1$s UNIQUE SONGS</item>
+        <item quantity="one">%1$s EŞSİZ ŞARKI</item>
+        <item quantity="other">%1$s EŞSİZ ŞARKILAR</item>
     </plurals>
     <plurals name="rewind_meta_song_count">
-        <item quantity="one">%1$s song</item>
-        <item quantity="other">%1$s songs</item>
+        <item quantity="one">%1$s şarkı</item>
+        <item quantity="other">%1$s şarkılar</item>
     </plurals>
     <plurals name="rewind_play_count_label">
-        <item quantity="one">%1$s play</item>
-        <item quantity="other">%1$s plays</item>
+        <item quantity="one">%1$s oynatma</item>
+        <item quantity="other">%1$s oynatmalar</item>
     </plurals>
     <plurals name="rewind_top_song_teaser_count">
-        <item quantity="one">%1$d SONG.\nONE WINNER.</item>
-        <item quantity="other">%1$d SONGS.\nONE WINNER.</item>
+        <item quantity="one">%1$d ŞARKI.\nBİR KAZANAN</item>
+        <item quantity="other">%1$d ŞARKILAR.\nBİR KAZANAN</item>
     </plurals>
     <plurals name="maintenance_abnormal_job_count">
-        <item quantity="one">%1$d job not finished</item>
-        <item quantity="other">%1$d jobs not finished</item>
+        <item quantity="one">%1$d iş tamamlanmadı</item>
+        <item quantity="other">%1$d işler tamamlanmadı</item>
     </plurals>
 </resources>
