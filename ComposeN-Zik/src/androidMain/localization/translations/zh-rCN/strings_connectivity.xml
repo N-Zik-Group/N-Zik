@@ -198,4 +198,5 @@
     <string name="listen_together_server_request_failed">共同监听服务器无法完成请求。</string>
     <string name="network_stream_retrying_playback">Retrying playback…</string>
     <string name="listen_together_invite_link">监听一下邀请链接</string>
+    <string name="listen_together_server_location_poland">波兰</string>
 </resources>
