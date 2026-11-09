@@ -38,7 +38,6 @@
     <!-- Backup -->
     <string name="backup_action_export">Экспорт резервной копии</string>
     <string name="backup_action_import">Импорт резервной копии</string>
-    <string name="backup_action_import_legacy_migration">Импортировать файл миграции.</string>
     <string name="backup_auto_custom_interval_unit_description">Выберите единицу времени для пользовательского интервала резервного копирования.</string>
     <string name="backup_auto_custom_interval_value_description">Установить количество единиц времени между автоматическими резервными копиями.</string>
     <string name="backup_auto_include_discord_credentials_description">Включать сохраненные учетные данные учётной записи Discord в резервные копии автоматических настроек.</string>
@@ -51,19 +50,18 @@
     <string name="backup_auto_schedule_day_of_month_description">Выберите день месяца для ежемесячных автоматических резервных копий.</string>
     <string name="backup_auto_schedule_day_of_week_description">Выберите будние для еженедельных автоматических резервных копий.</string>
     <string name="backup_auto_schedule_time_description">Выберите час, в течение которого должны выполняться запланированные автоматические резервные копии.</string>
-    <string name="backup_auto_target_description">Выберите, включают ли автоматические резервные копии базы данных, настройки или и то и другое.</string>
+    <string name="backup_auto_content_format_description">Выберите, что делать для резервного копирования автоматически. Резервные копии баз данных используют ZIP, когда они включают пользовательские обложки.</string>
     <string name="backup_before_update_description">Автоматическое резервное копирование данных перед установкой обновления</string>
     <string name="backup_before_update_failed">Ошибка предварительной установки резервной копии</string>
     <string name="backup_before_update_running_message">Резервное копирование данных перед установкой…</string>
     <string name="backup_before_update_running_title">Идёт резервное копирование</string>
     <string name="backup_excluded_preferences_and_cache_description">Личные настройки (например, режим темы) и кэш исключены.</string>
-    <string name="backup_export_description">Экспорт базы данных или настроек в файл</string>
-    <string name="backup_import_description">Импортировать базу данных или настройки из файла</string>
+    <string name="backup_export_library_options_description">Экспортировать базу данных с ее обложками, настройками или профилями</string>
+    <string name="backup_import_library_options_description">Восстановить резервную копию базы данных SQLite или ZIP, настройки или профили</string>
     <string name="backup_include_discord_credentials">Включить учетные данные Discord</string>
     <string name="backup_include_lastfm_credentials">Включить учетные данные Last.fm</string>
     <string name="backup_include_proxy_password">Включить пароль прокси-сервера</string>
     <string name="backup_include_youtube_credentials">Включить идентификационные данные YouTube</string>
-    <string name="backup_legacy_migration_description">For old users before conversion.\nUse old app to make a backup for migration.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Existing data will be overwritten. %1$s will automatically close itself after restoring the database.</string>
     <string name="backup_target_database_and_settings_label">База данных + Настройки</string>
     <string name="backup_target_database_label">Данные</string>
@@ -96,18 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Экспортировать список профилей и фото лица в один .txt файл</string>
     <string name="backup_export_all">Экспортировать все</string>
-    <string name="backup_export_all_description">Экспорт базы данных, настроек и состояния профиля</string>
-    <string name="backup_export_both_description">Экспортировать базу данных и настройки как отдельные файлы</string>
-    <string name="backup_export_database_description">Экспортировать базу данных с песнями, плейлистами и историей</string>
+    <string name="backup_export_all_with_covers_description">Экспорт базы данных, настроек и состояния профиля отдельно. База данных использует ZIP, если она включает пользовательские обложки.</string>
+    <string name="backup_export_database_with_covers_and_settings_description">Экспортировать базу данных и настройки отдельно. База данных использует ZIP, если она включает пользовательские обложки.</string>
+    <string name="backup_export_database_with_covers_description">Сохраняйте песни, плейлисты и историю как SQLite. Если у вас есть пользовательские обложки, экспорт является ZIP с базой данных и обложек.</string>
     <string name="backup_export_profile_state_failed">Не удалось экспортировать состояние профиля</string>
     <string name="backup_export_settings_description">Экспорт настроек и настроек приложения</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Импортировать список профилей и фото лица из файла .txt</string>
     <string name="backup_import_all">Импортировать все</string>
-    <string name="backup_import_all_description">Импортировать базу данных, настройки и состояние профиля</string>
-    <string name="backup_import_both_description">Импортировать базу данных и настройки из отдельных файлов</string>
+    <string name="backup_import_all_with_covers_description">Восстановить резервную копию базы данных SQLite или ZIP, настройки и состояние профиля из отдельных файлов.</string>
+    <string name="backup_import_database_with_covers_and_settings_description">Восстановить резервную копию базы данных SQLite или ZIP и отдельный файл настроек.</string>
     <string name="backup_import_completed_profile">Импортировано в %1$s</string>
-    <string name="backup_import_database_description">Импортировать базу данных с песнями, плейлистами и историей</string>
+    <string name="backup_import_database_with_covers_description">Восстановление композиций, плейлистов и истории из SQLite или ZIP.</string>
     <string name="backup_import_profile_state_complete">Импорт состояния профиля: %1$d профилей</string>
     <string name="backup_import_profile_state_complete_base">Состояние профиля импортировано: базовый профиль</string>
     <string name="backup_import_profile_state_failed">Не удалось импортировать состояние профиля</string>
@@ -117,15 +115,15 @@
     <!-- Cache -->
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Очистить кэш песен</string>
-    <string name="cache_downloads_max_size_description">Выберите, сколько дискового пространства доступно для скачанных песен.</string>
-    <string name="cache_downloads_limit_description">Выберите, сколько дискового пространства доступно для скачанных песен.</string>
-    <string name="cache_image_max_size_description">Ограничить дисковое пространство, используемое кэшированным файлом.</string>
-    <string name="cache_image_limit_description">Ограничить дисковое пространство, используемое кэшированным файлом.</string>
+    <string name="cache_downloads_max_size_description">Выберите, сколько дискового пространства доступно для скачанных песен. Кнопка \"Мусор\" удаляет загруженное аудио.</string>
+    <string name="cache_downloads_limit_description">Выберите, сколько дискового пространства доступно для скачанных песен. Кнопка \"Мусор\" удаляет загруженное аудио.</string>
+    <string name="cache_image_max_size_description">Ограничить дисковое пространство, используемое кэшированным изображением. Кнопка \"Мусор\" очищает загруженные изображения из кэша.</string>
+    <string name="cache_image_limit_description">Ограничить дисковое пространство, используемое кэшированным изображением. Кнопка \"Мусор\" очищает загруженные изображения из кэша.</string>
     <string name="cache_location_description">Выберите, где приложение сохраняет кэш воспроизведения песен.</string>
     <string name="cache_location_private">Внутри файлов приложения</string>
     <string name="cache_location_system">Стандартное (внутри системы)</string>
-    <string name="cache_streaming_max_size_description">Ограничить дисковое пространство, используемое для кэширования потоковых песен.</string>
-    <string name="cache_streaming_limit_description">Ограничить дисковое пространство, используемое для кэширования потоковых песен.</string>
+    <string name="cache_streaming_max_size_description">Ограничить дисковое пространство, используемое для кэширования потоковых песен. Кнопка \"Мусор\" очищает кэш воспроизведения.</string>
+    <string name="cache_streaming_limit_description">Ограничить дисковое пространство, используемое для кэширования потоковых песен. Кнопка \"Мусор\" очищает кэш воспроизведения.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Скачать все песни</string>
     <string name="downloads_action_refresh_quality">Обновить загрузки</string>
@@ -139,7 +137,7 @@
     <string name="downloads_delete_all_count_confirmation">Удалить все %d загрузки?</string>
     <string name="downloads_delete_dialog_title">Удалить загрузки</string>
     <string name="downloads_download_all_confirmation">Вы действительно хотите загрузить все?</string>
-    <string name="downloads_download_all_count_confirmation">Скачать все? (Треки: %d)</string>
+    <string name="downloads_download_all_count_confirmation">Скачать все %d песни?</string>
     <string name="downloads_download_dialog_title">Скачать песни</string>
     <string name="downloads_empty_message">Нечего загружать</string>
     <string name="downloads_error_network">Произошла сетевая ошибка</string>
@@ -166,16 +164,16 @@
     <string name="export_running_status">Экспорт…</string>
     <string name="export_song_unavailable_message">Песня должна быть кэширована или загружена для экспорта</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Удалить все загрузки? (Треки: %d)</string>
+    <string name="library_cleanup_all_downloads_confirmation">Do you want to delete all downloads (%d songs)?</string>
     <string name="library_cleanup_all_favorites_confirmation">Вы хотите удалить все избранные %d?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Сбросить историю прослушивания? (Треки: %d)</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ ПРЕДУПРЕЖДЕНИЕ: Это НЕОБХОДИМО УДАЛИТЬ ваши песни и удалить их из всех плейлистов (песни: %d) Это действие не может быть отменено!</string>
-    <string name="library_cleanup_entire_cache_confirmation">Очистить весь кэш? (Треки: %d)</string>
-    <string name="library_cleanup_selected_cache_confirmation">Удалить выбранное из кэша? (Треки: %d)</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Вы хотите сбросить историю прослушивания %d песен?</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ ВНИМАНИЕ: НЕОБХОДИМО УДАЛИТЬ все %d песни и удалить их из всех плейлистов. Это действие не может быть отменено!</string>
+    <string name="library_cleanup_entire_cache_confirmation">Do you want to clear the entire cache (%d songs)?</string>
+    <string name="library_cleanup_selected_cache_confirmation">Вы хотите удалить эти %d песни из кэша?</string>
     <string name="library_cleanup_selected_downloads_confirmation">Вы хотите удалить эти %d загрузки?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Удалить выделение из избранного? (Треки: %d)</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Сбросить историю прослушивания выделения? (Треки: %d)</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ ПРЕДУПРЕЖДЕНИЕ: Это УДАЛИТЬ выделение и удалить его из всех плейлистов (песни: %d) Это действие не может быть отменено!</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Do you want to remove these %d songs from favorites?</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Вы хотите сбросить историю прослушивания этих %d песен?</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ ВНИМАНИЕ: НЕОБХОДИМО УДАЛИТЬ эти %d песни и удалить их из всех плейлистов. Это действие не может быть отменено!</string>
     <string name="library_cleanup_title">Умная корзина</string>
     <string name="library_favorites_remove_dialog_title">Удалить из избранного</string>
     <string name="library_listening_history_reset_dialog_title">Сбросить историю прослушивания</string>
@@ -185,7 +183,10 @@
     <string name="storage_samsung_advice_message">Samsung автоматическое управление памятью может удалить загрузки и файлы кэша N-Zik, даже если вы не просили об этом. Для обеспечения безопасности загрузки используйте место хранения личных данных (приложения) вместо системного хранилища.</string>
     <string name="storage_samsung_advice_title">Советы Samsung</string>
     <string name="storage_samsung_system_usage_message">В настоящее время у вас есть %1$s загрузок и кэш на системном хранилище.</string>
+    <string name="backup_export_database_failed">Не удалось экспортировать базу данных</string>
     <string name="backup_import_failed">Не удалось импортировать</string>
     <string name="export_no_songs">Нет экспортированных песен</string>
     <string name="export_cached_songs_generic_error">Не удалось экспортировать</string>
+    <string name="backup_startup_preparing_library">Подготовка вашей библиотеки…</string>
+    <string name="backup_startup_recovery_failed">Не удалось завершить восстановление вашей библиотеки.</string>
 </resources>
