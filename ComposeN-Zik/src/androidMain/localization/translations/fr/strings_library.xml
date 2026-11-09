@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">Chanson sans correspondance</string>
     <string name="metadata_musicbrainz_rating">Évaluation</string>
     <string name="metadata_cover_art">Pochette</string>
+    <string name="metadata_cover_url_hint">Coller un lien image</string>
     <string name="metadata_file_path_unavailable">Impossible de résoudre le chemin d\'accès au fichier</string>
     <string name="metadata_save_failed">Échec de l\'enregistrement des métadonnées</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
