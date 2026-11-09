@@ -3,7 +3,7 @@
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Сховище</string>
     <string name="storage_breakdown_info_title">Про сховище</string>
-    <string name="storage_breakdown_nzik_total">Всього використано NZik</string>
+    <string name="storage_breakdown_nzik_total">Всього використано N-Zik</string>
     <string name="storage_breakdown_subtitle">Робочий простір</string>
     <string name="storage_breakdown_waiting">Measuring storage…</string>
     <string name="storage_breakdown_cached_images">Кешовані зображення</string>
@@ -11,20 +11,20 @@
     <string name="storage_breakdown_downloaded_audio">Завантажене аудіо</string>
     <string name="storage_breakdown_custom_covers">Користувацькі обкладинки</string>
     <string name="storage_breakdown_waveforms">Хвильові форми</string>
-    <string name="storage_breakdown_other_nzik_data">Інші дані NZik</string>
+    <string name="storage_breakdown_other_nzik_data">Інші дані N-Zik</string>
     <string name="storage_breakdown_other_used_space">Система, додатки &amp; файли</string>
     <string name="storage_breakdown_free_space">Вільний простір</string>
     <string name="storage_info_images">Ілюстрація обкладинки та інші зображення, кешовані для швидшого показу.</string>
     <string name="storage_info_streaming">Аудіо збереження тимчасово після потоку, тому воно може бути відтворене знову без завантаження тих самих даних.</string>
-    <string name="storage_info_downloads">Аудіо збережено в NZik для автономного прослуховування.</string>
+    <string name="storage_info_downloads">Аудіо збережено в N-Zik для автономного прослуховування.</string>
     <string name="storage_info_waveforms">Створені файли, які використовуються для малювання аудіо довжини хвиль у плеєрі.</string>
     <string name="storage_info_covers">Ілюстрація, яку ви обрали або імпортувала як користувацькі обкладинки.</string>
-    <string name="storage_info_other_nzik">Решта приватних даних NZik, включаючи його бази даних, налаштування, індексування, розширення та журнали.</string>
+    <string name="storage_info_other_nzik">Решта конфіденційних даних N-Zik, включаючи його бази, налаштування, індексатори та журнали.</string>
     <string name="storage_info_other_used">Залишилося використаного простору у внутрішньому гучності, включаючи встановленні програми та особисті файли.</string>
     <string name="storage_info_free">Простір, доступний для додатків та файлів у внутрішньому томі.</string>
     <string name="storage_cleanup_title">Очищення</string>
     <string name="storage_cleanup_failed">Не вдалося завершити очищення пам’яті.</string>
-    <string name="storage_cleanup_images_description">Очистити файли кешовано від NZZk.</string>
+    <string name="storage_cleanup_images_description">Очистити файли кешовані за N-Ціком.</string>
     <string name="storage_cleanup_streaming_description">Очищення кешованого аудіо під час потоку.</string>
     <string name="storage_cleanup_downloads_description">Видаліть оффлайн аудіо і скасуйте завантаження, для збереження активних профілів.</string>
     <string name="storage_cleanup_waveforms_description">Очистити створені файли хвиль.</string>
@@ -139,7 +139,7 @@
     <string name="downloads_delete_all_count_confirmation">Delete all %d downloads?</string>
     <string name="downloads_delete_dialog_title">Видалити завантаження</string>
     <string name="downloads_download_all_confirmation">Ви дійсно хочете завантажити все?</string>
-    <string name="downloads_download_all_count_confirmation">Завантажити всі пісні %d?</string>
+    <string name="downloads_download_all_count_confirmation">Download everything? (Songs: %d)</string>
     <string name="downloads_download_dialog_title">Завантажити пісні</string>
     <string name="downloads_empty_message">Нічого завантажувати</string>
     <string name="downloads_error_network">Виникла мережева помилка</string>
@@ -166,16 +166,16 @@
     <string name="export_running_status">Експорт…</string>
     <string name="export_song_unavailable_message">Для експорту повинен бути збережена або завантажена пісня</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Ви хочете видалити всі завантаження (%d пісні)?</string>
+    <string name="library_cleanup_all_downloads_confirmation">Видалити всі завантаження? (Songs: %d)</string>
     <string name="library_cleanup_all_favorites_confirmation">Do you want to remove all %d favorites?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Чи хочете ви скинути історію прослуховування пісень %d?</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ УВАГА: Буде ОСТАТОЧНА ВИДАЛИТИ всі %d пісні і видалити їх з ВСІХ списків відтворення. Цю дію неможливо скасувати!</string>
-    <string name="library_cleanup_entire_cache_confirmation">Ви хочете очистити весь кеш (%d пісні)?</string>
-    <string name="library_cleanup_selected_cache_confirmation">Ви хочете видалити ці композиції %d з кешу?</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Скинути історію прослуховування? (Songs: %d)</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ УВАГА: Буде застосовано PERMANENTLY видалити ваші пісні і видалити їх з усіх плейлістів. (ongs: %d) Цю дію неможливо скасувати!</string>
+    <string name="library_cleanup_entire_cache_confirmation">Очистити весь кеш? (Songs: %d)</string>
+    <string name="library_cleanup_selected_cache_confirmation">Видалити вибір з кешу? (пінг: %d)</string>
     <string name="library_cleanup_selected_downloads_confirmation">Ви бажаєте видалити ці завантаження %d?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Чи бажаєте Ви видалити ці улюблені пісні %d з обраного?</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Ви хочете скинути історію прослуховування цих %d пісень?</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ УВАГА: Буде ОСТАТОЧНО ВИДАЛИТИ ці %d пісні і видалити їх з ВСІХ списків відтворення. Цю дію неможливо скасувати!</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Remove the selection from favorites? (Songs: %d)</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Скинути історію прослуховування за вибір? (пінг: %d)</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ УВАГА: Буде застосовано PERMANENTLY видалити вибір і видалити його з усіх списків відтворення. (Здар: %d) Цю дію неможливо скасувати!</string>
     <string name="library_cleanup_title">Розумний смітник</string>
     <string name="library_favorites_remove_dialog_title">Видалити з улюблених</string>
     <string name="library_listening_history_reset_dialog_title">Скинути історію прослуховування</string>
