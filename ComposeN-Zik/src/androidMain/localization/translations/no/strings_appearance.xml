@@ -242,6 +242,5 @@
     <string name="thumbnail_remove_success">Fjernet miniatyrbilde</string>
     <string name="glass_effect_rendering_quality">Render kvalitet</string>
     <string name="image_editor_original">Opprinnelig forhold</string>
-    <string name="image_editor_cancel">Avbryt</string>
     <string name="image_editor_apply">Bruk bilde</string>
 </resources>
