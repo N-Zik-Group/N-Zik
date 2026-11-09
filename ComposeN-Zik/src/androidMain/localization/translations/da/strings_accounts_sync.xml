@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm konto</string>
     <string name="profile_identity_source_not_connected">Ikke logget ind</string>
     <string name="profile_last_used">Sidst brugt</string>
-    <string name="profile_last_used_days">%d dage siden</string>
-    <string name="profile_last_used_hours">%d h siden</string>
-    <string name="profile_last_used_minutes">%d min siden</string>
-    <string name="profile_last_used_months">%d måneder siden</string>
     <string name="profile_last_used_now">Lige nu</string>
-    <string name="profile_last_used_weeks">%d uger siden</string>
     <string name="profile_local_name">Profilnavn</string>
     <string name="profile_local_name_description">Omdøb den aktuelle lokale profil.</string>
     <string name="profile_name_input_hint">Indtast profilnavn</string>
@@ -255,10 +250,11 @@
     <string name="sync_youtube_playlist_add_failed">Kunne ikke tilføje sangen i YouTube-playlisten</string>
     <string name="sync_youtube_playlist_add_success">Tilføjet sangen i YouTube-playlisten</string>
     <string name="sync_youtube_playlist_batch_failed">Der opstod en fejl for de næste 50 sange. Sange føjes til playlisten én ad gangen</string>
+    <string name="sync_youtube_playlist_no_songs_added">Ingen sange blev tilføjet til YouTube-afspilningslisten</string>
     <string name="sync_youtube_playlist_songs_added_suffix">sange tilføjes i YouTube-playlisten. Gentag processen, hvis der mangler sange</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">sange tilføjes i YTM-playlisten</string>
     <string name="sync_youtube_playlists_title">YTM-playlister</string>
-    <string name="sync_youtube_songs_remaining">Sange tilbage: %1$s</string>
+    <string name="sync_youtube_songs_remaining">%1$s Sange Resterende</string>
     <string name="sync_youtube_unlike_failed">Kunne ikke fjerne like fra sangen i YouTube</string>
     <string name="sync_youtube_unlike_success">Sangen er ikke længere liket på YouTube</string>
     <string name="sync_starting_notification">Starter synkronisering...</string>
