@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">Canción inigualable</string>
     <string name="metadata_musicbrainz_rating">Valoración</string>
     <string name="metadata_cover_art">Portada</string>
+    <string name="metadata_cover_url_hint">Pegar un enlace de imagen</string>
     <string name="metadata_file_path_unavailable">No se puede resolver la ruta del archivo</string>
     <string name="metadata_save_failed">Error al guardar los metadatos</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
