@@ -38,7 +38,6 @@
     <!-- Backup -->
     <string name="backup_action_export">Exportar backup</string>
     <string name="backup_action_import">Importar backup</string>
-    <string name="backup_action_import_legacy_migration">Importar arquivo de migração.</string>
     <string name="backup_auto_custom_interval_unit_description">Escolha a unidade de tempo para o intervalo de backup personalizado.</string>
     <string name="backup_auto_custom_interval_value_description">Defina o número de unidades de tempo entre backups automáticos.</string>
     <string name="backup_auto_include_discord_credentials_description">Incluir credenciais salvas da conta do Discord em backups de configurações automáticas.</string>
@@ -51,19 +50,18 @@
     <string name="backup_auto_schedule_day_of_month_description">Escolha o dia do mês para backups automáticos mensais.</string>
     <string name="backup_auto_schedule_day_of_week_description">Escolha o dia da semana para backups automáticos semanais.</string>
     <string name="backup_auto_schedule_time_description">Escolha a hora em que os backups automáticos agendados devem ser executados.</string>
-    <string name="backup_auto_target_description">Escolha se os backups automáticos incluem o banco de dados, as configurações ou ambos.</string>
+    <string name="backup_auto_content_format_description">Escolha o que fazer o backup automaticamente. Backups de banco de dados usam ZIP quando eles incluem capas personalizadas.</string>
     <string name="backup_before_update_description">Fazer backup dos dados automaticamente antes de instalar uma atualização</string>
     <string name="backup_before_update_failed">Falha no backup de pré-instalação</string>
     <string name="backup_before_update_running_message">Fazendo backup dos dados antes da instalação…</string>
     <string name="backup_before_update_running_title">Backup em andamento</string>
     <string name="backup_excluded_preferences_and_cache_description">Preferências pessoais (ou seja, o modo de tema) e o cache são excluídos.</string>
-    <string name="backup_export_description">Exportar banco de dados ou configurações para um arquivo</string>
-    <string name="backup_import_description">Importar banco de dados ou configurações de um arquivo</string>
+    <string name="backup_export_library_options_description">Exportar o banco de dados com suas capas, configurações ou perfis personalizados</string>
+    <string name="backup_import_library_options_description">Restaurar um backup de banco de dados SQLite ou ZIP, configurações ou perfis</string>
     <string name="backup_include_discord_credentials">Incluir credenciais de identidade do Discord</string>
     <string name="backup_include_lastfm_credentials">Incluir credenciais de identidade Last.fm</string>
     <string name="backup_include_proxy_password">Incluir a senha do proxy</string>
     <string name="backup_include_youtube_credentials">Incluir credenciais de identidade do YouTube</string>
-    <string name="backup_legacy_migration_description">For old users before conversion.\nUse old app to make a backup for migration.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Os dados existentes serão substituídos. %1$s Será automaticamente fechado após a restauração do banco de dados.</string>
     <string name="backup_target_database_and_settings_label">Banco de dados + configurações</string>
     <string name="backup_target_database_label">Base de dados</string>
@@ -96,18 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Exportar a lista de perfil e as fotos de rosto em um único arquivo .txt</string>
     <string name="backup_export_all">Exportar tudo</string>
-    <string name="backup_export_all_description">Exportar banco de dados, configurações e estado do perfil</string>
-    <string name="backup_export_both_description">Exportar banco de dados e configurações em arquivos separados</string>
-    <string name="backup_export_database_description">Exportar banco de dados com músicas, listas de reprodução e histórico</string>
+    <string name="backup_export_all_with_covers_description">Exporta o banco de dados, configurações e estado do perfil separadamente. O banco de dados usa ZIP se inclui capas personalizadas.</string>
+    <string name="backup_export_database_with_covers_and_settings_description">Exporte o banco de dados e as configurações separadamente. O banco de dados usa ZIP se inclui capas personalizadas.</string>
+    <string name="backup_export_database_with_covers_description">Salve músicas, listas de reprodução e histórico como SQLite. Se você tiver capas personalizadas, a exportação é um ZIP com o banco de dados e capas.</string>
     <string name="backup_export_profile_state_failed">Falha ao exportar estado do perfil</string>
     <string name="backup_export_settings_description">Exportar configurações e preferências do aplicativo</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importar a lista de perfil e as fotos de rosto de um arquivo .txt</string>
     <string name="backup_import_all">Importar tudo</string>
-    <string name="backup_import_all_description">Importar banco de dados, configurações e estado do perfil</string>
-    <string name="backup_import_both_description">Importar banco de dados e configurações de arquivos separados</string>
+    <string name="backup_import_all_with_covers_description">Restaurar um backup SQLite ou ZIP, configurações e estado do perfil a partir de arquivos separados.</string>
+    <string name="backup_import_database_with_covers_and_settings_description">Restaurar um backup SQLite ou ZIP de um arquivo de configurações separado.</string>
     <string name="backup_import_completed_profile">Importado para %1$s</string>
-    <string name="backup_import_database_description">Importar banco de dados com músicas, listas de reprodução e histórico</string>
+    <string name="backup_import_database_with_covers_description">Restaurar músicas, playlists e histórico de SQLite ou ZIP. Backups ZIP também restauram as capas personalizadas incluídas.</string>
     <string name="backup_import_profile_state_complete">Estado do perfil importado: perfis %1$d</string>
     <string name="backup_import_profile_state_complete_base">Estado do perfil importado: perfil base</string>
     <string name="backup_import_profile_state_failed">Falha ao importar estado do perfil</string>
@@ -117,15 +115,15 @@
     <!-- Cache -->
     <string name="cache_action_reset">Limpar cache</string>
     <string name="cache_clear_song_dialog_title">Limpar cache de música</string>
-    <string name="cache_downloads_max_size_description">Escolha quanto espaço em disco está disponível para músicas baixadas.</string>
-    <string name="cache_downloads_limit_description">Escolha quanto espaço em disco está disponível para músicas baixadas.</string>
-    <string name="cache_image_max_size_description">Limitar espaço em disco usado pela arte em cache.</string>
-    <string name="cache_image_limit_description">Limitar espaço em disco usado pela arte em cache.</string>
+    <string name="cache_downloads_max_size_description">Escolha quanto espaço em disco está disponível para músicas baixadas. O botão do lixo remove o áudio baixado.</string>
+    <string name="cache_downloads_limit_description">Escolha quanto espaço em disco está disponível para músicas baixadas. O botão do lixo remove o áudio baixado.</string>
+    <string name="cache_image_max_size_description">Limita espaço em disco usado pela arte em cache. O botão de lixo limpa as imagens baixadas deste cache.</string>
+    <string name="cache_image_limit_description">Limita espaço em disco usado pela arte em cache. O botão de lixo limpa as imagens baixadas deste cache.</string>
     <string name="cache_location_description">Escolha onde o app armazena seu cache de reprodução de músicas.</string>
     <string name="cache_location_private">Privado</string>
     <string name="cache_location_system">Sistema</string>
-    <string name="cache_streaming_max_size_description">Limite de espaço em disco usado para armazenar músicas transmitidas em cache.</string>
-    <string name="cache_streaming_limit_description">Limite de espaço em disco usado para armazenar músicas transmitidas em cache.</string>
+    <string name="cache_streaming_max_size_description">Limite o espaço em disco usado para armazenar músicas transmitidas no cache. O botão de lixo limpa este cache de reprodução.</string>
+    <string name="cache_streaming_limit_description">Limite o espaço em disco usado para armazenar músicas transmitidas no cache. O botão de lixo limpa este cache de reprodução.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Baixar todas as músicas</string>
     <string name="downloads_action_refresh_quality">Atualizar downloads</string>
@@ -139,7 +137,7 @@
     <string name="downloads_delete_all_count_confirmation">Excluir todos os downloads do %d?</string>
     <string name="downloads_delete_dialog_title">Excluir downloads</string>
     <string name="downloads_download_all_confirmation">Você realmente quer baixar tudo?</string>
-    <string name="downloads_download_all_count_confirmation">Baixar tudo? (Músicas: %d)</string>
+    <string name="downloads_download_all_count_confirmation">Transferir todas as músicas %d?</string>
     <string name="downloads_download_dialog_title">Baixar músicas</string>
     <string name="downloads_empty_message">Nada para baixar</string>
     <string name="downloads_error_network">Ocorreu um erro de rede</string>
@@ -166,16 +164,16 @@
     <string name="export_running_status">Exportando…</string>
     <string name="export_song_unavailable_message">A música deve ser armazenada em cache ou baixada para exportar</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Excluir todos os downloads? (Músicas: %d)</string>
+    <string name="library_cleanup_all_downloads_confirmation">Você deseja excluir todos os downloads (%d músicas)?</string>
     <string name="library_cleanup_all_favorites_confirmation">Você deseja remover todos os favoritos %d?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Redefinir histórico de escutas? (Músicas: %d)</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ ATENÇÃO: Isto irá EXCLUIR todas as músicas e removê-las de TODAS as playlists. (Músicas: %d) Esta ação não pode ser desfeita!</string>
-    <string name="library_cleanup_entire_cache_confirmation">Limpar o cache inteiro? (Músicas: %d)</string>
-    <string name="library_cleanup_selected_cache_confirmation">Remover a seleção do cache? (Músicas: %d)</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Você deseja redefinir o histórico de escutas de músicas %d?</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ WARNING: This will PERMANENTLY DELETE all %d songs AND remove them from ALL playlists. This action cannot be undone!</string>
+    <string name="library_cleanup_entire_cache_confirmation">Do you want to clear the entire cache (%d songs)?</string>
+    <string name="library_cleanup_selected_cache_confirmation">Você deseja remover estas músicas de %d do cache?</string>
     <string name="library_cleanup_selected_downloads_confirmation">Você deseja excluir os downloads do %d?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Remover a seleção dos favoritos? (Músicas: %d)</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Redefinir o histórico de escuta da seleção? (Músicas: %d)</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ AVISO: Isto irá PERMANENTEMENTE a seleção E removê-la de TODAS as listas de reprodução. (Músicas: %d) Esta ação não pode ser desfeita!</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Deseja remover essas músicas do %d dos favoritos?</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Deseja redefinir o histórico de escutas destas músicas %d?</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ ATENÇÃO: Isto irá EXCLUIR estas músicas %d e removê-las de TODAS as listas de reprodução. Esta ação não pode ser desfeita!</string>
     <string name="library_cleanup_title">Lixeira inteligente</string>
     <string name="library_favorites_remove_dialog_title">Remover dos favoritos</string>
     <string name="library_listening_history_reset_dialog_title">Redefinir histórico de escutas</string>
@@ -185,7 +183,10 @@
     <string name="storage_samsung_advice_message">O gerenciamento automático de memória do Samsung pode excluir os downloads e os arquivos de cache do N-Zik, mesmo quando você não pediu. Para manter seus downloads seguros, use a localização privada (app) de armazenamento em vez do armazenamento do sistema.</string>
     <string name="storage_samsung_advice_title">Recomendação para armazenamento Samsung</string>
     <string name="storage_samsung_system_usage_message">Você tem atualmente %1$s de downloads e cache no armazenamento do sistema.</string>
+    <string name="backup_export_database_failed">Exportação do banco de dados falhou</string>
     <string name="backup_import_failed">Falha na importação</string>
     <string name="export_no_songs">Nenhuma música exportada</string>
     <string name="export_cached_songs_generic_error">Exportação falhou</string>
+    <string name="backup_startup_preparing_library">Preparando sua biblioteca…</string>
+    <string name="backup_startup_recovery_failed">Não foi possível terminar de restaurar sua biblioteca.</string>
 </resources>
