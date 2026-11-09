@@ -242,6 +242,5 @@
     <string name="thumbnail_remove_success">Μικρογραφία Που Αφαιρέθηκε</string>
     <string name="glass_effect_rendering_quality">Ποιότητα απόδοσης</string>
     <string name="image_editor_original">Αρχικός λόγος</string>
-    <string name="image_editor_cancel">Άκυρο</string>
     <string name="image_editor_apply">Χρήση εικόνας</string>
 </resources>
