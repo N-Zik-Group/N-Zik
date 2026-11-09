@@ -61,4 +61,88 @@
         <item quantity="many">%1$d utworów słyszanych</item>
         <item quantity="other">%1$d utworów słyszanych</item>
     </plurals>
+    <plurals name="profile_last_used_minute_count">
+        <item quantity="one">%1$d minutę temu</item>
+        <item quantity="few">%1$d minut temu</item>
+        <item quantity="many">%1$d minut temu</item>
+        <item quantity="other">%1$d minut temu</item>
+    </plurals>
+    <plurals name="profile_last_used_hour_count">
+        <item quantity="one">%1$d godzinę temu</item>
+        <item quantity="few">%1$d godzin temu</item>
+        <item quantity="many">%1$d godzin temu</item>
+        <item quantity="other">%1$d godzin temu</item>
+    </plurals>
+    <plurals name="profile_last_used_day_count">
+        <item quantity="one">%1$d dzień temu</item>
+        <item quantity="few">%1$d dni temu</item>
+        <item quantity="many">%1$d dni temu</item>
+        <item quantity="other">%1$d dni temu</item>
+    </plurals>
+    <plurals name="profile_last_used_week_count">
+        <item quantity="one">%1$d tydzień temu</item>
+        <item quantity="few">%1$d tygodni temu</item>
+        <item quantity="many">%1$d tygodni temu</item>
+        <item quantity="other">%1$d tygodni temu</item>
+    </plurals>
+    <plurals name="profile_last_used_month_count">
+        <item quantity="one">%1$d miesiąc temu</item>
+        <item quantity="few">%1$d miesięcy temu</item>
+        <item quantity="many">%1$d miesięcy temu</item>
+        <item quantity="other">%1$d miesięcy temu</item>
+    </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Usuń zapytanie %1$d</item>
+        <item quantity="few">Usuń %1$d zapytania</item>
+        <item quantity="many">Usuń %1$d zapytania</item>
+        <item quantity="other">Usuń %1$d zapytania</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Usuń %1$d zdarzenie odtwarzania</item>
+        <item quantity="few">Usuń %1$d zdarzenia odtwarzania</item>
+        <item quantity="many">Usuń %1$d zdarzenia odtwarzania</item>
+        <item quantity="other">Usuń %1$d zdarzenia odtwarzania</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d odcinek · %2$s</item>
+        <item quantity="few">%1$d odcinków · %2$s</item>
+        <item quantity="many">%1$d odcinków · %2$s</item>
+        <item quantity="other">%1$d odcinków · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">Dodawanie utworu %1$d do listy odtwarzania YouTube</item>
+        <item quantity="few">Dodawanie utworów %1$d do listy odtwarzania YouTube</item>
+        <item quantity="many">Dodawanie utworów %1$d do listy odtwarzania YouTube</item>
+        <item quantity="other">Dodawanie utworów %1$d do listy odtwarzania YouTube</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">Dodano %1$d utwór do listy odtwarzania YouTube</item>
+        <item quantity="few">Dodano %1$d utworów do listy odtwarzania YouTube</item>
+        <item quantity="many">Dodano %1$d utworów do listy odtwarzania YouTube</item>
+        <item quantity="other">Dodano %1$d utworów do listy odtwarzania YouTube</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Zaimportowano stan profilu: %1$d profil</item>
+        <item quantity="few">Zaimportowano stan profilu: %1$d profili</item>
+        <item quantity="many">Zaimportowano stan profilu: %1$d profili</item>
+        <item quantity="other">Zaimportowano stan profilu: %1$d profili</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Nie udało się zsynchronizować %1$d album. Wróć do zakładki Albumy, aby spróbować ponownie.</item>
+        <item quantity="few">Nie udało się zsynchronizować %1$d albumów. Wróć do zakładki Albumy, aby spróbować ponownie.</item>
+        <item quantity="many">Nie udało się zsynchronizować %1$d albumów. Wróć do zakładki Albumy, aby spróbować ponownie.</item>
+        <item quantity="other">Nie udało się zsynchronizować %1$d albumów. Wróć do zakładki Albumy, aby spróbować ponownie.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Eksport %1$d cached/Pobrany utwor?</item>
+        <item quantity="few">Eksport %1$d cached/Pobranych utworów?</item>
+        <item quantity="many">Eksport %1$d cached/Pobranych utworów?</item>
+        <item quantity="other">Eksport %1$d cached/Pobranych utworów?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">%1$d pobrany utwór nie zawiera pliku i został usunięty. Pobierz go ponownie.</item>
+        <item quantity="few">%1$d pobranych utworów brakuje ich plików i zostały usunięte. Proszę pobrać je ponownie.</item>
+        <item quantity="many">%1$d pobranych utworów brakuje ich plików i zostały usunięte. Proszę pobrać je ponownie.</item>
+        <item quantity="other">%1$d pobranych utworów brakuje ich plików i zostały usunięte. Proszę pobrać je ponownie.</item>
+    </plurals>
 </resources>
