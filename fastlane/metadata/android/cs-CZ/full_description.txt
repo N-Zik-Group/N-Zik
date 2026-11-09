@@ -27,7 +27,7 @@ Skleněné kredity: Square / Convx projekt (GPL-3.0); Kyant0 AndroidLiquidGlass 
 
 💾 <b>Offline, Metadata & Privacy</b>
 - Chytré ukládání do mezipaměti a stahování pro skladby a skladby s volitelnou kvalitou stahování
-- export na FFmpeg-powered s plnými metadaty (FFmpeg je rozšíření ke stažení, nainstalováno při prvním použití)
+- export na FFmpeg-powered s úplnými metadaty (ke stažení při prvním použití; není dostupný na 32bitových x86 zařízeních)
 - Editor metadat v aplikaci (AAC/Opus, obálka)
 - Místní statistiky poslech a historie
 - Automatická záloha s vlastními intervaly a uchováním
