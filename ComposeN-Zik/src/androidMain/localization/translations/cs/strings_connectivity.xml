@@ -198,4 +198,5 @@
     <string name="listen_together_server_request_failed">Server poslouchat společně nemohl dokončit požadavek.</string>
     <string name="network_stream_retrying_playback">Probíhá pokus o obnovení přehrávání…</string>
     <string name="listen_together_invite_link">Poslouchat společně odkaz pozvánky</string>
+    <string name="listen_together_server_location_poland">Polsko</string>
 </resources>
