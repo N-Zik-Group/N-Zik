@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">Ostatnia awaria</string>
     <string name="maintenance_lastfm_active">Sesja aktywna</string>
     <string name="maintenance_library">Biblioteka</string>
-    <string name="maintenance_library_albums">%d albumów</string>
-    <string name="maintenance_library_artists">%d wykonawców</string>
+    <string name="maintenance_library_albums">Albums: %d</string>
+    <string name="maintenance_library_artists">Artists: %d</string>
     <string name="maintenance_library_listened">%d słuchane</string>
-    <string name="maintenance_library_playlists">%d playlisty</string>
-    <string name="maintenance_library_songs">%d utworów</string>
+    <string name="maintenance_library_playlists">Playlists: %d</string>
+    <string name="maintenance_library_songs">Songs: %d</string>
     <string name="maintenance_live_subsystems">Podsystemy na żywo</string>
     <string name="maintenance_log_view">Widok</string>
     <string name="maintenance_lt_connected">Połączono</string>
