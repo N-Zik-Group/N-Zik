@@ -137,6 +137,9 @@
     <string name="modules_download_needed">模块需要下载 (~25 MB)。请检查连接。</string>
     <string name="modules_downloading">正在下载模块</string>
     <string name="modules_edit_unavailable">编辑元数据不可用： %1$s</string>
+    <string name="modules_ffmpeg_preparation">正在准备 FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">正在下载 FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">需要导出缓存的歌曲并编辑歌曲元数据。已下载到首次使用。</string>
     <string name="modules_info">信息</string>
     <string name="modules_insufficient_space">此功能需要大约70 MB 可用空间</string>
