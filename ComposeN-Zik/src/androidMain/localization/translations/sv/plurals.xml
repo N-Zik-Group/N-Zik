@@ -41,4 +41,208 @@
         <item quantity="one">%1$d låt hörde</item>
         <item quantity="other">%1$d låtar hörde</item>
     </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Ta bort %1$d sökfråga</item>
+        <item quantity="other">Ta bort %1$d sökfrågor</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Ta bort %1$d uppspelningshändelse</item>
+        <item quantity="other">Ta bort %1$d uppspelningshändelser</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d avsnitt · %2$s</item>
+        <item quantity="other">%1$d avsnitt · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">Lägger till %1$d låt till YouTube spellista</item>
+        <item quantity="other">Lägga till %1$d låtar till YouTube spellista</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">Lade till %1$d låt till YouTube spellista</item>
+        <item quantity="other">Lade till %1$d låtar till YouTube spellista</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Profilstatus importerad: %1$d profil</item>
+        <item quantity="other">Profilstatus importerad: %1$d profiler</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Det gick inte att synkronisera %1$d album. Gå tillbaka till fliken album för att försöka igen.</item>
+        <item quantity="other">Det gick inte att synkronisera %1$d album. Gå tillbaka till fliken album för att försöka igen.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Exportera %1$d cachad/hämtad låt?</item>
+        <item quantity="other">Exportera %1$d cachade/hämtade låtar?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">%1$d hämtade låten saknar sin fil och togs bort. Ladda ner den igen.</item>
+        <item quantity="other">%1$d hämtade låtar saknar sina filer och togs bort. Ladda ner dem igen.</item>
+    </plurals>
+    <plurals name="recommendations_quick_picks_song_count">
+        <item quantity="one">%1$d rekommenderad låt</item>
+        <item quantity="other">%1$d rekommenderade låtar</item>
+    </plurals>
+    <plurals name="listen_together_blocked_user_count">
+        <item quantity="one">%1$d användare blockerad</item>
+        <item quantity="other">%1$d användare blockerade</item>
+    </plurals>
+    <plurals name="sync_failed_notification_artist_count">
+        <item quantity="one">Det gick inte att synkronisera %1$d artist. Gå tillbaka till fliken Artister för att försöka igen.</item>
+        <item quantity="other">Det gick inte att synkronisera %1$d konstnärer. Gå tillbaka till fliken Artister för att försöka igen.</item>
+    </plurals>
+    <plurals name="sync_failed_notification_playlist_count">
+        <item quantity="one">Det gick inte att synkronisera %1$d spellista. Gå tillbaka till fliken Spellistor för att försöka igen.</item>
+        <item quantity="other">Misslyckades att synkronisera %1$d spellistor. Gå tillbaka till fliken Spellistor för att försöka igen.</item>
+    </plurals>
+    <plurals name="sync_retry_failed_item_confirmation">
+        <item quantity="one">Vill du försöka återsynkronisera %1$d misslyckade objekt?</item>
+        <item quantity="other">Vill du försöka synkronisera misslyckade objekt igen med %1$d?</item>
+    </plurals>
+    <plurals name="sync_progress_artist_count">
+        <item quantity="one">Synkroniserar konstnär... (%1$d/%2$d)</item>
+        <item quantity="other">Synkroniserar artister... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_artist_refresh_count">
+        <item quantity="one">Uppdaterar %1$d artist</item>
+        <item quantity="other">Uppdaterar %1$d artister</item>
+    </plurals>
+    <plurals name="library_sync_artist_retry_count">
+        <item quantity="one">Det gick inte att hitta %1$d artist, försöker igen</item>
+        <item quantity="other">Det gick inte att hitta %1$d artister, försöker igen</item>
+    </plurals>
+    <plurals name="sync_progress_album_count">
+        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
+        <item quantity="other">Synkroniserar album... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_album_refresh_count">
+        <item quantity="one">Uppdaterar %1$d album</item>
+        <item quantity="other">Uppdaterar %1$d album</item>
+    </plurals>
+    <plurals name="library_sync_album_retry_count">
+        <item quantity="one">Det gick inte att hitta %1$d album, försöker igen</item>
+        <item quantity="other">Det gick inte att hitta %1$d album, försöker igen</item>
+    </plurals>
+    <plurals name="sync_progress_playlist_count">
+        <item quantity="one">Synkroniserar spellista... (%1$d/%2$d)</item>
+        <item quantity="other">Synkroniserar spellistor... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_playlist_refresh_count">
+        <item quantity="one">Uppdaterar %1$d spellista</item>
+        <item quantity="other">Uppdaterar %1$d spellistor</item>
+    </plurals>
+    <plurals name="library_sync_playlist_retry_count">
+        <item quantity="one">Det gick inte att hitta %1$d spellista, försöker igen</item>
+        <item quantity="other">Det gick inte att hitta %1$d spellistor, försöker igen</item>
+    </plurals>
+    <plurals name="maintenance_pass_cleaned_count">
+        <item quantity="one">%1$d objekt rengöras</item>
+        <item quantity="other">%1$d objekt rensade</item>
+    </plurals>
+    <plurals name="maintenance_pass_deferred_count">
+        <item quantity="one">%1$d objekt uppskjutet</item>
+        <item quantity="other">%1$d objekt uppskjutna</item>
+    </plurals>
+    <plurals name="maintenance_pass_skipped_count">
+        <item quantity="one">%1$d objekt hoppade över</item>
+        <item quantity="other">%1$d objekt hoppade över</item>
+    </plurals>
+    <plurals name="maintenance_dedup_flagged_count">
+        <item quantity="one">Flaggad %1$d rad</item>
+        <item quantity="other">Flaggade %1$d rader</item>
+    </plurals>
+    <plurals name="maintenance_dedup_merged_count">
+        <item quantity="one">Sammanfogad %1$d rad</item>
+        <item quantity="other">Sammanfogade %1$d rader</item>
+    </plurals>
+    <plurals name="recovery_profile_deleted_count">
+        <item quantity="one">Raderad %1$d profil</item>
+        <item quantity="other">Raderade %1$d profiler</item>
+    </plurals>
+    <plurals name="recovery_profile_reset_count">
+        <item quantity="one">Återställ %1$d profil. Starta om appen</item>
+        <item quantity="other">Återställ %1$d profiler. Starta om appen</item>
+    </plurals>
+    <plurals name="recovery_profile_restored_count">
+        <item quantity="one">Återställt %1$d profil: starta om appen</item>
+        <item quantity="other">Återskapade %1$d profiler: starta om appen</item>
+    </plurals>
+    <plurals name="album_loading_song_count">
+        <item quantity="one">Laddar %1$d låt…</item>
+        <item quantity="other">Laddar %1$d låtar…</item>
+    </plurals>
+    <plurals name="artist_deduplication_result_count">
+        <item quantity="one">Sammanfogad %1$d duplicerad artist med rätt artist</item>
+        <item quantity="other">Sammanfogade %1$d dublettartister med rätt artist</item>
+    </plurals>
+    <plurals name="artist_link_cleanup_result_count">
+        <item quantity="one">Tog bort %1$d felaktig artistlänk</item>
+        <item quantity="other">Tog bort %1$d felaktiga artistlänkar</item>
+    </plurals>
+    <plurals name="library_song_count_with_duration">
+        <item quantity="one">%1$d låt • %2$s</item>
+        <item quantity="other">%1$d låtar • %2$s</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count">
+        <item quantity="one">(%1$d omröstning)</item>
+        <item quantity="other">(%1$d röster)</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count_attribution">
+        <item quantity="one">%1$d omröstning om MusicBrainz</item>
+        <item quantity="other">%1$d röster på MusicBrainz</item>
+    </plurals>
+    <plurals name="playlist_delete_all_confirmation_count">
+        <item quantity="one">Är du säker på att du vill ta bort den enda spellistan (%1$d)?</item>
+        <item quantity="other">Är du säker på att du vill ta bort ALLA %1$d spellistor?</item>
+    </plurals>
+    <plurals name="playlist_delete_selected_confirmation_count">
+        <item quantity="one">Är du säker på att du vill ta bort denna spellista (%1$d)?</item>
+        <item quantity="other">Är du säker på att du vill ta bort dessa %1$d spellistor?</item>
+    </plurals>
+    <plurals name="playlist_positions_shuffled_count">
+        <item quantity="one">%1$d position blandas</item>
+        <item quantity="other">%1$d positioner blandas</item>
+    </plurals>
+    <plurals name="song_metadata_updated_song_count">
+        <item quantity="one">Uppdaterad %1$d låt</item>
+        <item quantity="other">Uppdaterade %1$d låtar</item>
+    </plurals>
+    <plurals name="rewind_home_year_play_count">
+        <item quantity="one">%1$s · %2$s spela</item>
+        <item quantity="other">%1$s · %2$s pjäser</item>
+    </plurals>
+    <plurals name="rewind_listening_day_count_without">
+        <item quantity="one">%1$s dag utan att lyssna.</item>
+        <item quantity="other">%1$s dagar utan att lyssna.</item>
+    </plurals>
+    <plurals name="rewind_loader_status_day_count">
+        <item quantity="one">%1$s LISTENING DAG</item>
+        <item quantity="other">%1$s LISTENING DAGAR</item>
+    </plurals>
+    <plurals name="rewind_loader_status_minute_count">
+        <item quantity="one">%1$s MINUT</item>
+        <item quantity="other">%1$s MINUTER</item>
+    </plurals>
+    <plurals name="rewind_loader_status_play_count">
+        <item quantity="one">%1$s SPELA</item>
+        <item quantity="other">%1$s SPELAR</item>
+    </plurals>
+    <plurals name="rewind_loader_status_song_count">
+        <item quantity="one">%1$s UNIKT SONG</item>
+        <item quantity="other">%1$s UNIKA SÅNG</item>
+    </plurals>
+    <plurals name="rewind_meta_song_count">
+        <item quantity="one">%1$s låt</item>
+        <item quantity="other">%1$s låtar</item>
+    </plurals>
+    <plurals name="rewind_play_count_label">
+        <item quantity="one">%1$s spela</item>
+        <item quantity="other">%1$s pjäser</item>
+    </plurals>
+    <plurals name="rewind_top_song_teaser_count">
+        <item quantity="one">%1$d SONG.\nEN WINNER.</item>
+        <item quantity="other">%1$d SONGS.\nETT VINNER.</item>
+    </plurals>
+    <plurals name="maintenance_abnormal_job_count">
+        <item quantity="one">%1$d jobb är inte klart</item>
+        <item quantity="other">%1$d jobb är inte färdiga</item>
+    </plurals>
 </resources>
