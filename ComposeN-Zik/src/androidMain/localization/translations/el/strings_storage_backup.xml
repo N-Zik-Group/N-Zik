@@ -3,7 +3,7 @@
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Αποθήκευση</string>
     <string name="storage_breakdown_info_title">Σχετικά με τον αποθηκευτικό χώρο</string>
-    <string name="storage_breakdown_nzik_total">Σύνολο που χρησιμοποιήθηκε από το NZik</string>
+    <string name="storage_breakdown_nzik_total">Σύνολο που χρησιμοποιείται από N-Zik</string>
     <string name="storage_breakdown_subtitle">Ανάλυση αποθηκευτικού χώρου</string>
     <string name="storage_breakdown_waiting">Αποθήκευση μέτρησης…</string>
     <string name="storage_breakdown_cached_images">Προσωρινές εικόνες</string>
@@ -11,20 +11,20 @@
     <string name="storage_breakdown_downloaded_audio">Λήφθηκε ήχος</string>
     <string name="storage_breakdown_custom_covers">Προσαρμοσμένα καλύμματα</string>
     <string name="storage_breakdown_waveforms">Κυματομορφές</string>
-    <string name="storage_breakdown_other_nzik_data">Άλλα δεδομένα NZik</string>
+    <string name="storage_breakdown_other_nzik_data">Άλλα δεδομένα N-Zik</string>
     <string name="storage_breakdown_other_used_space">Σύστημα, εφαρμογές &amp; αρχεία</string>
     <string name="storage_breakdown_free_space">Ελεύθερο χώρο</string>
     <string name="storage_info_images">Έργα τέχνης και άλλες εικόνες προσωρινά αποθηκευμένες για ταχύτερη οθόνη.</string>
     <string name="storage_info_streaming">Ο ήχος διατηρείται προσωρινά μετά τη ροή, έτσι ώστε να μπορεί να αναπαραχθεί ξανά χωρίς να λαμβάνονται τα ίδια δεδομένα.</string>
-    <string name="storage_info_downloads">Ο ήχος αποθηκεύτηκε στο NZik για ακρόαση εκτός σύνδεσης.</string>
+    <string name="storage_info_downloads">Ο ήχος αποθηκεύτηκε στο N-Zik για ακρόαση εκτός σύνδεσης.</string>
     <string name="storage_info_waveforms">Δημιουργημένα αρχεία που χρησιμοποιούνται για τη σχεδίαση της κυματομορφής ήχου στον παίκτη.</string>
     <string name="storage_info_covers">Έργο τέχνης που επιλέξατε ή εισάγατε ως προσαρμοσμένα καλύμματα.</string>
-    <string name="storage_info_other_nzik">Τα υπόλοιπα προσωπικά δεδομένα του NZik, συμπεριλαμβανομένων των βάσεων δεδομένων του, των ρυθμίσεων, των ευρετηρίων, των επεκτάσεων και των αρχείων καταγραφής.</string>
+    <string name="storage_info_other_nzik">Τα υπόλοιπα προσωπικά δεδομένα του N-Zik, συμπεριλαμβανομένων των βάσεων δεδομένων του, των ρυθμίσεων, των ευρετηρίων, των επεκτάσεων και των αρχείων καταγραφής.</string>
     <string name="storage_info_other_used">Ο υπόλοιπος χώρος που χρησιμοποιείται για την εσωτερική ένταση, συμπεριλαμβανομένου του Android, εγκατεστημένες εφαρμογές και προσωπικά αρχεία.</string>
     <string name="storage_info_free">Διαθέσιμος χώρος για εφαρμογές και αρχεία στην εσωτερική ένταση ήχου.</string>
     <string name="storage_cleanup_title">Εκκαθάριση</string>
     <string name="storage_cleanup_failed">Αδύνατη η ολοκλήρωση της εκκαθάρισης του αποθηκευτικού χώρου.</string>
-    <string name="storage_cleanup_images_description">Εκκαθάριση έργων τέχνης από τον NZik.</string>
+    <string name="storage_cleanup_images_description">Καθαρισμός έργων τέχνης που έχουν αποθηκευτεί προσωρινά από το N-Zik.</string>
     <string name="storage_cleanup_streaming_description">Εκκαθάριση προσωρινά αποθηκευμένου ήχου κατά τη ροή.</string>
     <string name="storage_cleanup_downloads_description">Διαγραφή ήχου εκτός σύνδεσης και ακύρωση λήψεων εν αναμονή της λήψης για το ενεργό προφίλ του χώρου αποθήκευσης λήψεων.</string>
     <string name="storage_cleanup_waveforms_description">Εκκαθάριση αρχείων κυματομορφής που δημιουργήθηκαν.</string>
@@ -139,7 +139,7 @@
     <string name="downloads_delete_all_count_confirmation">Διαγραφή όλων των %d λήψεων?</string>
     <string name="downloads_delete_dialog_title">Διαγραφή λήψεων</string>
     <string name="downloads_download_all_confirmation">Θέλετε πραγματικά να κατεβάσετε όλα?</string>
-    <string name="downloads_download_all_count_confirmation">Λήψη όλων των %d τραγουδιών?</string>
+    <string name="downloads_download_all_count_confirmation">Κατεβάστε τα πάντα? (τραγούδια: %d)</string>
     <string name="downloads_download_dialog_title">Λήψη τραγουδιών</string>
     <string name="downloads_empty_message">Τίποτα για λήψη</string>
     <string name="downloads_error_network">Παρουσιάστηκε ένα σφάλμα δικτύου</string>
@@ -166,16 +166,16 @@
     <string name="export_running_status">Εξαγωγή…</string>
     <string name="export_song_unavailable_message">Το τραγούδι πρέπει να αποθηκεύεται προσωρινά ή να μεταφορτωθεί για εξαγωγή</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Θέλετε να διαγράψετε όλες τις λήψεις (%d τραγούδια)?</string>
+    <string name="library_cleanup_all_downloads_confirmation">Διαγραφή όλων των λήψεων? (τραγούδια: %d)</string>
     <string name="library_cleanup_all_favorites_confirmation">Do you want to remove all %d favorites?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Θέλετε να επαναφέρετε το ιστορικό ακρόασης για %d τραγούδια?</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Αυτό θα διαγράψει όλα τα %d τραγούδια και θα τα αφαιρέσει από όλες τις λίστες αναπαραγωγής. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί!</string>
-    <string name="library_cleanup_entire_cache_confirmation">Θέλετε να καθαρίσετε ολόκληρη τη μνήμη cache (%d τραγούδια)?</string>
-    <string name="library_cleanup_selected_cache_confirmation">Θέλετε να αφαιρέσετε αυτά τα %d τραγούδια από την μνήμη cache?</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Επαναφορά ιστορικού ακρόασης? (τραγούδια: %d)</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ ΠΡΟΣΟΧΗ: Αυτό θα διαγράψει τα τραγούδια σας και θα τα αφαιρέσει από όλες τις λίστες αναπαραγωγής. (τραγούδια: %d) Αυτή η ενέργεια δεν μπορεί να αναιρεθεί!</string>
+    <string name="library_cleanup_entire_cache_confirmation">Καθαρίστε ολόκληρη την cache? (τραγούδια: %d)</string>
+    <string name="library_cleanup_selected_cache_confirmation">Αφαιρέστε την επιλογή από την μνήμη cache? (τραγούδια: %d)</string>
     <string name="library_cleanup_selected_downloads_confirmation">Θέλετε να διαγράψετε αυτές τις λήψειςchar@@0 %d λήψεις?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Θέλετε να αφαιρέσετε αυτά τα %d τραγούδια από τα αγαπημένα?</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Θέλετε να επαναφέρετε το ιστορικό ακρόασης για αυτά τα τραγούδια %d της?</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Αυτό θα τελειώσει τα τραγούδια %d και θα τα αφαιρέσει από όλες τις λίστες αναπαραγωγής. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί!</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Αφαίρεση της επιλογής από τα αγαπημένα? (τραγούδια: %d)</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Επαναφορά ιστορικού ακρόασης για την επιλογή? (τραγούδια: %d)</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Αυτό θα διαγράψει την επιλογή και θα την αφαιρέσει από όλες τις λίστες αναπαραγωγής. (τραγούδια: %d) Αυτή η ενέργεια δεν μπορεί να αναιρεθεί!</string>
     <string name="library_cleanup_title">Έξυπνα σκουπίδια</string>
     <string name="library_favorites_remove_dialog_title">Αφαίρεση από τα αγαπημένα</string>
     <string name="library_listening_history_reset_dialog_title">Επαναφορά ιστορικού ακρόασης</string>
