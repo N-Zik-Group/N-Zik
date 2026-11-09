@@ -15,6 +15,7 @@
     <string name="common_delete_success">Διαγράφηκε</string>
     <string name="common_description_unavailable">Δεν υπάρχει διαθέσιμη περιγραφή</string>
     <string name="common_duration_milliseconds_format">%1$s ms</string>
+    <string name="common_duration_milliseconds_unit">ms</string>
     <string name="common_empty_items">Δεν υπάρχουν στοιχεία</string>
     <string name="common_external_link_loading_suffix">φορτώνει...</string>
     <string name="common_load_failed">Αδυναμία φόρτωσης</string>
@@ -43,4 +44,6 @@
     <string name="common_value_input_hint">Enter The Value</string>
     <string name="common_unknown">Άγνωστο</string>
     <string name="common_duration_minutes_short">%1$d λεπτά</string>
+    <string name="common_external_link_loading_format">Το %1$s φορτώνει το…</string>
+    <string name="common_loading_message">Φόρτωση…</string>
 </resources>
