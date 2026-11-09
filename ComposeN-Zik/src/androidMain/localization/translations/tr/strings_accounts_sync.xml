@@ -246,7 +246,7 @@
     <string name="sync_youtube_history_title">YTM Geçmişi</string>
     <string name="sync_youtube_like_failed">Şarkı YouTube\'da beğenilemedi</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Added to YouTube likes</string>
+    <string name="sync_youtube_like_success">YouTube beğenilerine eklendi</string>
     <string name="sync_youtube_playlist_add_failed">Şarkı YouTube Çalma Listesine Eklenemedi</string>
     <string name="sync_youtube_playlist_add_success">Şarkı YouTube Çalma Listesine Eklendi</string>
     <string name="sync_youtube_playlist_batch_failed">Sonraki 50 şarkı için hata oluştu. Şarkılar çalma listesine tek tek ekleniyor</string>
