@@ -258,7 +258,7 @@
     <string name="sync_youtube_playlist_songs_added_suffix">nummers worden toegevoegd aan de YouTube afspeellijst. Herhaal het proces als er ontbrekende nummers zijn</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">nummers zullen worden toegevoegd aan de YTM afspeellijst</string>
     <string name="sync_youtube_playlists_title">YTM Afspeellijsten</string>
-    <string name="sync_youtube_songs_remaining">%1$s Nummers resterend</string>
+    <string name="sync_youtube_songs_remaining">Resterende nummers: %1$s</string>
     <string name="sync_youtube_unlike_failed">Vergelijking van het nummer in YouTube mislukt</string>
     <string name="sync_youtube_unlike_success">Nummer wordt niet leuk gevonden in YouTube</string>
     <string name="sync_starting_notification">Synchronisatie wordt gestart...</string>
