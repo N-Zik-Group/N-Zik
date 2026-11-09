@@ -38,7 +38,6 @@
     <!-- Backup -->
     <string name="backup_action_export">Overfør sikkerhetskopi</string>
     <string name="backup_action_import">Innfør sikkerhetskopi</string>
-    <string name="backup_action_import_legacy_migration">Importer overføringsfil.</string>
     <string name="backup_auto_custom_interval_unit_description">Velg tidsrom for egendefinerte sikkerhetskopier.</string>
     <string name="backup_auto_custom_interval_value_description">Angi antall tidsenheter mellom automatisk sikkerhetskopiering.</string>
     <string name="backup_auto_include_discord_credentials_description">Inkluder lagrede Discord konto legitimasjon i automatiske innstillinger sikkerhetskopier.</string>
@@ -51,19 +50,18 @@
     <string name="backup_auto_schedule_day_of_month_description">Velg dagen i måneden for månedlige automatiske sikkerhetskopier.</string>
     <string name="backup_auto_schedule_day_of_week_description">Velg ukedag for ukentlige automatiske sikkerhetskopier.</string>
     <string name="backup_auto_schedule_time_description">Velg tiden på hvilke planlagte automatiske sikkerhetskopier som skal kjøres.</string>
-    <string name="backup_auto_target_description">Velg om automatiske sikkerhetskopier inkluderer databasen, innstillinger eller begge deler.</string>
+    <string name="backup_auto_content_format_description">Velg hva som skal sikkerhetskopieres automatisk. Databasesikkerhetskopier bruker ZIP når de inkluderer egendefinerte forside.</string>
     <string name="backup_before_update_description">Automatisk sikkerhetskopier data før du installerer en oppdatering</string>
     <string name="backup_before_update_failed">Forhåndsinstallasjon av sikkerhetskopi mislyktes</string>
     <string name="backup_before_update_running_message">Sikkerhetskopierer data før installasjon…</string>
     <string name="backup_before_update_running_title">Sikkerhetskopiering pågår</string>
     <string name="backup_excluded_preferences_and_cache_description">Personlige innstillinger (f.eks. temamodus) og mellomlager er ekskludert.</string>
-    <string name="backup_export_description">Eksporter database eller innstillinger til en fil</string>
-    <string name="backup_import_description">Importer database eller innstillinger fra en fil</string>
+    <string name="backup_export_library_options_description">Eksporter databasen med egendefinerte omslag, innstillinger eller profiler</string>
+    <string name="backup_import_library_options_description">Gjenopprett en SQLite eller ZIP database sikkerhetskopiering, innstillinger eller profiler</string>
     <string name="backup_include_discord_credentials">Inkluder Discord identitetsopplysninger</string>
     <string name="backup_include_lastfm_credentials">Inkluder Last.fm identitet påloggingsinformasjon</string>
     <string name="backup_include_proxy_password">Oppgi proxypassordet</string>
     <string name="backup_include_youtube_credentials">Inkluder YouTube-identitet påloggingsinformasjon</string>
-    <string name="backup_legacy_migration_description">For old users before conversion.\nUse old app to make a backup for migration.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Eksisterende data vil bli overskrevet. %1$s vil automatisk bli stengt selv ved gjenoppretting av databasen.</string>
     <string name="backup_target_database_and_settings_label">Database + Innstillinger</string>
     <string name="backup_target_database_label">Databasen</string>
@@ -96,18 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Eksporter profillisten og ansiktsbilder i en enkel .txt fil</string>
     <string name="backup_export_all">Eksporter alt</string>
-    <string name="backup_export_all_description">Eksporter database, innstillinger og profilstatus</string>
-    <string name="backup_export_both_description">Eksporter databasen og innstillinger som separate filer</string>
-    <string name="backup_export_database_description">Eksporter databasen med sanger, spillelister og historie</string>
+    <string name="backup_export_all_with_covers_description">Eksporter databasen, innstillinger og profilstatus separat. Databasen bruker ZIP hvis den inkluderer egendefinerte omslag.</string>
+    <string name="backup_export_database_with_covers_and_settings_description">Eksporter database og innstillinger separat. Databasen bruker ZIP dersom den inkluderer egendefinerte forslag.</string>
+    <string name="backup_export_database_with_covers_description">Lagre sanger, spillelister og historie som SQLite. Dersom du har tilpasset forslag, er eksporten en ZIP med databasen og omslagene.</string>
     <string name="backup_export_profile_state_failed">Eksport av profilstatus feilet</string>
     <string name="backup_export_settings_description">Eksporter appinnstillinger og -innstillinger</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importer profillisten og ansiktsbilder fra en .txt-fil</string>
     <string name="backup_import_all">Importer alle</string>
-    <string name="backup_import_all_description">Importer database, innstillinger og profilstatus</string>
-    <string name="backup_import_both_description">Importer database og innstillinger fra separate filer</string>
+    <string name="backup_import_all_with_covers_description">Gjenopprett en SQLite eller ZIP database sikkerhetskopiering, innstillinger og profilstatus fra separate filer.</string>
+    <string name="backup_import_database_with_covers_and_settings_description">Gjenopprett en SQLite eller ZIP database sikkerhetskopi og en separat innstillingsfil.</string>
     <string name="backup_import_completed_profile">Importerte til %1$s</string>
-    <string name="backup_import_database_description">Importer database med sanger, spillelister og historie</string>
+    <string name="backup_import_database_with_covers_description">Gjenopprett sanger, spillelister og historie fra SQLite eller ZIP. ZIP-sikkerhetskopier gjenoppretter også de medfølgende egendefinerte omslagene.</string>
     <string name="backup_import_profile_state_complete">Profiltilstand importert: %1$d profiler</string>
     <string name="backup_import_profile_state_complete_base">Status importert: basisprofil</string>
     <string name="backup_import_profile_state_failed">Import av profilstatus feilet</string>
@@ -117,15 +115,15 @@
     <!-- Cache -->
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Tøm sangbuffer</string>
-    <string name="cache_downloads_max_size_description">Velg hvor mye diskplass som er tilgjengelig for nedlastede sanger.</string>
-    <string name="cache_downloads_limit_description">Velg hvor mye diskplass som er tilgjengelig for nedlastede sanger.</string>
-    <string name="cache_image_max_size_description">Begrens diskplass som brukes av hurtigbufrede kunstverk.</string>
-    <string name="cache_image_limit_description">Begrens diskplass som brukes av hurtigbufrede kunstverk.</string>
+    <string name="cache_downloads_max_size_description">Velg hvor mye diskplass som er tilgjengelig for nedlastede sanger. Papirkursknappen fjerner nedlastet lyd.</string>
+    <string name="cache_downloads_limit_description">Velg hvor mye diskplass som er tilgjengelig for nedlastede sanger. Papirkursknappen fjerner nedlastet lyd.</string>
+    <string name="cache_image_max_size_description">Begrens diskplass brukt etter hurtiglager kunstverk. Papirkursknappen tømmer nedlastede bilder fra dette hurtiglageret.</string>
+    <string name="cache_image_limit_description">Begrens diskplass brukt etter hurtiglager kunstverk. Papirkursknappen tømmer nedlastede bilder fra dette hurtiglageret.</string>
     <string name="cache_location_description">Velg hvor appen lagrer sin sangavspillingscache.</string>
     <string name="cache_location_private">Privat</string>
     <string name="cache_location_system">Systemadministrasjon</string>
-    <string name="cache_streaming_max_size_description">Begrens diskplass som brukes til cachesporte sanger.</string>
-    <string name="cache_streaming_limit_description">Begrens diskplass som brukes til cachesporte sanger.</string>
+    <string name="cache_streaming_max_size_description">Begrens diskplass som brukes til hurtigbufferet på sanger. Papirkursknappen tømmer denne avspillingsbufferen.</string>
+    <string name="cache_streaming_limit_description">Begrens diskplass som brukes til hurtigbufferet på sanger. Papirkursknappen tømmer denne avspillingsbufferen.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Last ned alle sanger</string>
     <string name="downloads_action_refresh_quality">Oppdater nedlastinger</string>
@@ -139,7 +137,7 @@
     <string name="downloads_delete_all_count_confirmation">Delete all %d downloads?</string>
     <string name="downloads_delete_dialog_title">Fjern nedlastinger</string>
     <string name="downloads_download_all_confirmation">Ønsker du virkelig å laste ned alt?</string>
-    <string name="downloads_download_all_count_confirmation">Laste ned alt? (Spretter: %d)</string>
+    <string name="downloads_download_all_count_confirmation">Last ned alle %d sanger?</string>
     <string name="downloads_download_dialog_title">Last ned sanger</string>
     <string name="downloads_empty_message">Ingenting å laste ned</string>
     <string name="downloads_error_network">Det har oppstått en nettverksfeil</string>
@@ -166,16 +164,16 @@
     <string name="export_running_status">Eksporterer…</string>
     <string name="export_song_unavailable_message">Sangen må mellomlagres eller lastes ned for å eksportere</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Slette alle nedlastinger? ( %d)</string>
+    <string name="library_cleanup_all_downloads_confirmation">Vil du slette alle nedlastinger (%d sanger)?</string>
     <string name="library_cleanup_all_favorites_confirmation">Vil du fjerne alle %d favoritter?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Tilbakestille høre på historikk? (Kanoner: %d)</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ ADVARSEL: Dette vil PERMANENT SLETTE dine sanger OG fjerne dem fra ALLE spillelister. (Song: %d) Denne handlingen kan ikke angres!</string>
-    <string name="library_cleanup_entire_cache_confirmation">Slett hele hurtiglageret? (lange: %d)</string>
-    <string name="library_cleanup_selected_cache_confirmation">Fjerne utvalget fra hurtiglageret? (Song: %d)</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Vil du tilbakestille lytteloggen for %d sanger?</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ ADVARSEL: Dette vil PERMANENT SLETTE alle %d sanger OG fjern dem fra ALLE spillelister. Denne handlingen kan ikke angres!</string>
+    <string name="library_cleanup_entire_cache_confirmation">Vil du slette hele cachen (%d sanger)?</string>
+    <string name="library_cleanup_selected_cache_confirmation">Vil du fjerne disse %d sangene fra cache?</string>
     <string name="library_cleanup_selected_downloads_confirmation">Vil du slette disse %d nedlastninger?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Fjern utvalget fra favoritter? (Songs: %d)</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Tilbakestill lyttehistorikk for utvalget? (langt: %d)</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ ADVARSEL: Dette vil PERMANENT SLETS utvalget OG fjern det fra ALLE spillelister. (lang: %d) Denne handlingen kan ikke angres!</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Vil du fjerne disse %d sangene fra favorittene?</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Vil du tilbakestille lytteloggen for disse %d sangene?</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ ADVARSEL: Dette vil PERMANENT SLETTE disse %d sanger OG fjern dem fra ALLE spillelister. Denne handlingen kan ikke angres!</string>
     <string name="library_cleanup_title">Smart papirkurv</string>
     <string name="library_favorites_remove_dialog_title">Fjern fra favoritter</string>
     <string name="library_listening_history_reset_dialog_title">Tilbakestill lyttehistorikk</string>
@@ -185,7 +183,10 @@
     <string name="storage_samsung_advice_message">Samsungs automatiske minnestyring kan slette N-ziks nedlastinger og mellomlagerfiler, selv når du ikke spurte om det. Bruk privat (app) lagringsplass i stedet for systemlagring for å holde nedlastingene dine trygt.</string>
     <string name="storage_samsung_advice_title">Samsung råd om oppbevaring</string>
     <string name="storage_samsung_system_usage_message">Du har for tiden %1$s nedlastinger og hurtigbuffer på systemlagring.</string>
+    <string name="backup_export_database_failed">Databaseeksporten mislyktes</string>
     <string name="backup_import_failed">Import feilet</string>
     <string name="export_no_songs">Ingen sanger eksportert</string>
     <string name="export_cached_songs_generic_error">Eksportering feilet</string>
+    <string name="backup_startup_preparing_library">Forbereder ditt bibliotek…</string>
+    <string name="backup_startup_recovery_failed">Kunne ikke fullføre gjenopprettingen av biblioteket ditt.</string>
 </resources>
