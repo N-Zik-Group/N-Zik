@@ -230,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Μεσαία (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Πολύ Υψηλή (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">Λήψη</string>
+    <string name="cover_download_failed">Δεν ήταν δυνατή η λήψη του εξώφυλλου</string>
     <string name="image_editor_title">Επεξεργασία εικόνας</string>
     <string name="image_editor_failed">Δεν ήταν δυνατή η επεξεργασία της εικόνας. Η τρέχουσα εικόνα σας διατηρήθηκε.</string>
     <string name="thumbnail_action_edit">Edit Thumbnail</string>
