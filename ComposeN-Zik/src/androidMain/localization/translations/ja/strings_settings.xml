@@ -17,7 +17,7 @@
     <string name="language_name_azerbaijani">アゼルバイジャン語</string>
     <string name="language_name_bashkir">Bashkir (Башҡурт)</string>
     <string name="language_name_bengali">ベンガル語 (&lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; )</string>
-    <string name="language_name_catalan">カタロニア語</string>
+    <string name="language_name_catalan">カタロニア語 (Catala&lt;unk&gt; )</string>
     <string name="language_name_chinese_simplified">簡体字中国語 (&lt;unk&gt; &lt;unk&gt; )</string>
     <string name="language_name_chinese_traditional">繁体字中国語（&lt;unk&gt; &lt;unk&gt; ）</string>
     <string name="language_name_czech">チェコ語 (Čeština)</string>
@@ -27,7 +27,7 @@
     <string name="language_name_esperanto">Esperanto (Esperanto)</string>
     <string name="language_name_estonian">Estonian (eesti keel)</string>
     <string name="language_name_filipino">Filipino (Tagalog)</string>
-    <string name="language_name_finnish">Finnish (Suomalainen)</string>
+    <string name="language_name_finnish">Finnish (Suomi)</string>
     <string name="language_name_french">フランス語 (Français)</string>
     <string name="language_name_galician">Galician (galego)</string>
     <string name="language_name_german">ドイツ語 (Deutsch)</string>
@@ -35,13 +35,13 @@
     <string name="language_name_hebrew">Hebrew (עִברִית)</string>
     <string name="language_name_hindi">ヒンディー語（&lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; ）</string>
     <string name="language_name_hungarian">ハンガリー語(マグヤール)</string>
-    <string name="language_name_indonesian">インドネシア語(インドネシア)</string>
+    <string name="language_name_indonesian">Indonesian (Bahasa Indonesia)</string>
     <string name="language_name_interlingua">インターリングア語</string>
     <string name="language_name_irish">Irish (Gaeilge)</string>
     <string name="language_name_italian">イタリア語 (Italiano)</string>
     <string name="language_name_japanese">日本語 (&lt;unk&gt; &lt;unk&gt; )</string>
-    <string name="language_name_korean">朝鮮語 (&lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; )</string>
-    <string name="language_name_malayalam">Malayam (മലയാളം)</string>
+    <string name="language_name_korean">朝鮮語 (&lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; )</string>
+    <string name="language_name_malayalam">Malayalam (മലയാളം)</string>
     <string name="language_name_norwegian">Norwegian (norsk)</string>
     <string name="language_name_odia">Odia (ଓଡ଼ିଆ)</string>
     <string name="language_name_persian">ペルシャ語（&lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; ）</string>
@@ -50,8 +50,8 @@
     <string name="language_name_portuguese_brazilian">ポルトガル語、ブラジル語 (Portugue&lt;unk&gt; s, Brasileiro)</string>
     <string name="language_name_romanian">ルーマニア語 (Română)</string>
     <string name="language_name_russian">ロシア語 (Русский)</string>
-    <string name="language_name_serbian_cyrillic">Serbian Cyrillic (Српска)</string>
-    <string name="language_name_serbian_latin">Serbian Latin (Gajeva latinica)</string>
+    <string name="language_name_serbian_cyrillic">Serbian Cyrillic (Српски)</string>
+    <string name="language_name_serbian_latin">Serbian Latin (Srpski)</string>
     <string name="language_name_sinhala">Sinhala (සිංහල)</string>
     <string name="language_name_spanish">スペイン語 (Español)</string>
     <string name="language_name_swedish">スウェーデン語 (スベンスカ)</string>
@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">このオプションを有効にするにはまずYouTubeに接続してください</string>
     <string name="settings_youtube_library_sync_content_description">プレイリスト、アルバム、アーティスト、歴史、などなど</string>
     <string name="settings_youtube_login_enabled_label">YouTube音楽ログインを有効にする</string>
+    <string name="settings_dialog_sort_title_format">%1$s: 並べ替え</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: ツールバー</string>
 </resources>
