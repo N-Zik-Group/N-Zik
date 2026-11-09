@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
     <string name="logs_action_export">Export logs</string>
     <string name="logs_action_export_both">Export both logs</string>
@@ -40,6 +41,7 @@
     <string name="maintenance_dedup_flagged">Flagged %d row(s)</string>
     <string name="maintenance_dedup_merged">Merged %d row(s)</string>
     <string name="maintenance_dedup_merged_flagged">Merged %1$d row(s) · Flagged %2$d row(s)</string>
+    <string name="maintenance_dedup_counts_format">%1$s · %2$s</string>
     <string name="maintenance_discord_invalid_token">Invalid token</string>
     <string name="maintenance_discord_ok">OK</string>
     <string name="maintenance_discord_reconnect_failed">Reconnection failed</string>
@@ -197,6 +199,7 @@
     <string name="recovery_error">An error occurred: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Export database</string>
+    <string name="recovery_export_database_with_covers_description">Save your library, playlists, and history as SQLite. If you have custom covers, the export is a ZIP with the database and covers.</string>
     <string name="recovery_export_logs">Export logs</string>
     <string name="recovery_export_logs_description">Save crash and debug logs for a bug report</string>
     <string name="recovery_export_profiles_description">The profile list and the face photos in a single .txt file</string>
@@ -209,6 +212,7 @@
     <string name="recovery_group_settings">Parametros</string>
     <string name="recovery_group_storage">Storage</string>
     <string name="recovery_import_database">Import database</string>
+    <string name="recovery_import_database_with_covers_description">Restore a SQLite or ZIP database backup, including any custom covers in the ZIP.</string>
     <string name="recovery_import_profiles_description">Restore the profile list and the face photos from a .txt file</string>
     <string name="recovery_import_settings">Import settings</string>
     <string name="recovery_import_settings_description">Restore preferences from a CSV file</string>
@@ -309,4 +313,5 @@
     <string name="updates_warning_acknowledge">I understand</string>
     <string name="updates_check_failed">Could not check for updates.</string>
     <string name="updates_install_generic_error">Could not install the update.</string>
+    <string name="updates_channel_available_format">%1$s update available</string>
 </resources>
