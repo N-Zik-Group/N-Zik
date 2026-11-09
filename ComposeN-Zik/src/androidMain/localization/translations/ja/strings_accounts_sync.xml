@@ -258,7 +258,7 @@
     <string name="sync_youtube_playlist_songs_added_suffix">曲はYouTubeプレイリストに追加されます。不明な曲がある場合はプロセスを繰り返します。</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">YTMプレイリストに曲が追加されます</string>
     <string name="sync_youtube_playlists_title">YTM プレイリスト</string>
-    <string name="sync_youtube_songs_remaining">%1$s 曲残ります。</string>
+    <string name="sync_youtube_songs_remaining">Songs remaining: %1$s</string>
     <string name="sync_youtube_unlike_failed">YouTubeの曲と違って失敗しました</string>
     <string name="sync_youtube_unlike_success">YouTubeでは曲がお気に入りではありません</string>
     <string name="sync_starting_notification">同期を開始中...</string>
