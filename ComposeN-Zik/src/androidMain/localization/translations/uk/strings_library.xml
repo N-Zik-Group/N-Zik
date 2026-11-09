@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">Невідповідна пісня</string>
     <string name="metadata_musicbrainz_rating">Рейтинг</string>
     <string name="metadata_cover_art">Обкладинка</string>
+    <string name="metadata_cover_url_hint">Вставити посилання на зображення</string>
     <string name="metadata_file_path_unavailable">Неможливо визначити шлях до файлу</string>
     <string name="metadata_save_failed">Не вдалося зберегти метадані</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
