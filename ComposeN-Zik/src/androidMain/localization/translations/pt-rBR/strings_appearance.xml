@@ -226,6 +226,8 @@
     <string name="theme_shake_sensitivity_medium">Médio (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Muito Alto (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Editar imagem</string>
+    <string name="image_editor_failed">Não foi possível editar a imagem. A sua imagem atual foi mantida.</string>
     <string name="thumbnail_action_edit">Editar Miniatura</string>
     <string name="thumbnail_action_pick_from_gallery">Escolher da galeria</string>
     <string name="thumbnail_action_reset">Resetar Miniatura</string>
@@ -235,4 +237,7 @@
     <string name="thumbnail_remove_failed">Falha ao Remover a Miniatura</string>
     <string name="thumbnail_remove_success">Miniatura Removida</string>
     <string name="glass_effect_rendering_quality">Qualidade de renderização</string>
+    <string name="image_editor_original">Proporção original</string>
+    <string name="image_editor_cancel">Cancelar</string>
+    <string name="image_editor_apply">Usar imagem</string>
 </resources>
