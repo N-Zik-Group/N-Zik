@@ -41,4 +41,64 @@
         <item quantity="one">%1$d şarkı dinlendi</item>
         <item quantity="other">%1$d şarkılar dinlendi</item>
     </plurals>
+    <plurals name="profile_last_used_minute_count">
+        <item quantity="one">%1$d dakika önce</item>
+        <item quantity="other">%1$d dakikalar önce</item>
+    </plurals>
+    <plurals name="profile_last_used_hour_count">
+        <item quantity="one">%1$d saat önce</item>
+        <item quantity="other">%1$d saatler önce</item>
+    </plurals>
+    <plurals name="profile_last_used_day_count">
+        <item quantity="one">%1$d gün önce</item>
+        <item quantity="other">%1$d günler önce</item>
+    </plurals>
+    <plurals name="profile_last_used_week_count">
+        <item quantity="one">%1$d hafta önce</item>
+        <item quantity="other">%1$d haftalar önce</item>
+    </plurals>
+    <plurals name="profile_last_used_month_count">
+        <item quantity="one">%1$d ay önce</item>
+        <item quantity="other">%1$d aylar önce</item>
+    </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">%1$d arama sorgusunu sil
+</item>
+        <item quantity="other">%1$d arama sorgularını sil
+</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">%1$d çalma olayını sil</item>
+        <item quantity="other">%1$d çalma olaylarını sil</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d bölüm · %2$s
+</item>
+        <item quantity="other">%1$d bölümler · %2$s
+</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">YouTube çalma listesine %1$d şarkısını ekleme</item>
+        <item quantity="other">YouTube çalma listesine %1$d şarkılarını ekleme</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">YouTube çalma listesine %1$d şarkı eklendi</item>
+        <item quantity="other">YouTube çalma listesine %1$d şarkılar eklendi</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Profile state imported: %1$d profile</item>
+        <item quantity="other">Profile state imported: %1$d profiles</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Failed to sync %1$d album. Go back to the Albums tab to retry.</item>
+        <item quantity="other">Failed to sync %1$d albums. Go back to the Albums tab to retry.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Export %1$d cached/downloaded song?</item>
+        <item quantity="other">Export %1$d cached/downloaded songs?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">%1$d downloaded song is missing its file and was removed. Please download it again.</item>
+        <item quantity="other">%1$d downloaded songs are missing their files and were removed. Please download them again.</item>
+    </plurals>
 </resources>
