@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">Ongeëvenaard nummer</string>
     <string name="metadata_musicbrainz_rating">Beoordeling</string>
     <string name="metadata_cover_art">Omslag kunst</string>
+    <string name="metadata_cover_url_hint">Plak een afbeeldingslink</string>
     <string name="metadata_file_path_unavailable">Kan bestandspad niet oplossen</string>
     <string name="metadata_save_failed">Opslaan van metagegevens mislukt</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
