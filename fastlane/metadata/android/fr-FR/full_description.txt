@@ -27,7 +27,7 @@ Crédits Glass : Square / Convx Project (GPL-3.0) ; Kyant0 AndroidLiquidGlass / 
 
 💾 <b>Hors ligne, métadonnées et confidentialité</b>
 - Cache intelligent et téléchargements pistes/playlist, qualité au choix
-- Export FFmpeg avec métadonnées complètes (builds standards uniquement)
+- Exportation via FFmpeg avec toutes les métadonnées (téléchargeables lors de la première utilisation ; indisponible sur les appareils x86 32 bits)
 - Éditeur de métadonnées intégré (AAC/Opus, pochette)
 - Statistiques d'écoute et historiques locaux
 - Sauvegarde auto, intervalles et rétention personnalisés
