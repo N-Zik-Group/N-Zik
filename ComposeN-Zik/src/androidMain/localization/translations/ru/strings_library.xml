@@ -377,6 +377,27 @@
     <string name="song_metadata_update_action_open">Открыть диалог обновления</string>
     <string name="song_metadata_updated_count">Updated %1$d songs</string>
     <string name="song_play_time_action_reset">Сброс всего времени игры</string>
+    <string name="song_like_status_action_reset">Сброс лайков/не нравится статус</string>
+    <string name="song_update_action_clear_playback_cache">Очистить кэш воспроизведения</string>
+    <string name="song_update_action_remove_offline_download">Удалить загрузку оффлайн</string>
+    <string name="song_update_result_partial">Partially updated. %1$s</string>
+    <string name="song_update_result_failed">Not updated. %1$s</string>
+    <string name="song_update_error_metadata_unavailable">Информация о YouTube недоступна.</string>
+    <string name="song_update_error_network">Не удалось подключиться к YouTube. Проверьте подключение.</string>
+    <string name="song_update_error_missing_title">YouTube не вернул название.</string>
+    <string name="song_update_error_missing_artists">YouTube не вернул исполнителей.</string>
+    <string name="song_update_error_incomplete_artists">Информация об исполнителе YouTube не полна.</string>
+    <string name="song_update_error_missing_cover">YouTube не вернул обложку.</string>
+    <string name="song_update_error_wrong_song">YouTube вернул другую песню. Его информация была проигнорирована.</string>
+    <string name="song_update_error_cache_unavailable">Кэш воспроизведения недоступен. Переоткройте плеер и повторите попытку.</string>
+    <string name="song_update_error_profile_changed">Обновление остановлено, потому что активный профиль изменен.</string>
+    <string name="song_update_error_storage">Не удалось сохранить изменения на этом устройстве.</string>
+    <string name="song_update_error_cache_clear">Не удалось завершить очистку кэша воспроизведения.</string>
+    <string name="song_update_error_download_remove">Не удалось удалить автономную загрузку.</string>
+    <string name="song_update_error_cover_reset">Не удалось завершить сброс обложки.</string>
+    <string name="song_update_error_playback_refresh">Изменения сохранены, но игрок не может обновить.</string>
+    <string name="song_update_batch_result">Обновлено: %1$d · Частично обновлено: %2$d · Не обновлено: %3$d</string>
+    <string name="song_update_batch_reason_count">%1$s (%2$d)</string>
     <!-- Song Matching -->
     <string name="song_matching_action_open">Версия альбома/аудио матча</string>
     <string name="song_matching_all_confirmation">Вы хотите совпадать с %d песнями?</string>
