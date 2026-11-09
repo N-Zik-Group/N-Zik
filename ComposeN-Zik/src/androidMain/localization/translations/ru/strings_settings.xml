@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Подключитесь к YouTube для включения этой опции</string>
     <string name="settings_youtube_library_sync_content_description">Списки воспроизведения, альбомы, исполнители, история, подобные и т.д.</string>
     <string name="settings_youtube_login_enabled_label">Включить вход в YouTube Music</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Сортировка</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Панель инструментов</string>
 </resources>
