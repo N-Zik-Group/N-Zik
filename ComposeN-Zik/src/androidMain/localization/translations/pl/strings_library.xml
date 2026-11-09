@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Polubienie wszystkich piosenek zajmie %1$s. Zamknij aplikację, aby anulować. Czy chcesz kontynuować?</string>
     <string name="library_on_device_permission_request_failed">Nie można poprosić o dostęp do muzyki na tym urządzeniu.</string>
     <string name="library_on_device_permission_settings_failed">Nie można otworzyć ustawień uprawnień.</string>
+    <string name="artist_more_from_format">Więcej od %1$s</string>
+    <string name="playlist_top_show_title_format">Pokaż %1$s</string>
 </resources>
