@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">Seiten</string>
     <string name="glass_effect_destination_playback">Wiedergabe</string>
     <string name="glass_effect_destination_shared">Freigegebene Elemente</string>
+    <string name="glass_effect_loading_indicators">Ladeanzeigen</string>
+    <string name="glass_effect_loading_indicators_description">Stile zum Laden von Animationen auf Seiten und in Karten und Dialogen.</string>
+    <string name="glass_effect_pull_to_refresh">Zum Aktualisieren ziehen</string>
+    <string name="glass_effect_pull_to_refresh_description">Schreibe den Indikator, der erscheint, wenn du nach unten ziehst, um ihn zu aktualisieren.</string>
     <string name="glass_effect_destination_windows">Fenster und Nachrichten</string>
     <string name="glass_effect_dialog_dimming">Dialog Hintergrund dimmen</string>
     <string name="glass_effect_dispersion">Farbspaltung</string>
@@ -121,7 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">Die Karten, die die Gruppeneinstellungen und zeigen Ihre Profile.</string>
     <string name="glass_effect_role_visualizer">Visualizer · Steuerelemente</string>
     <string name="glass_effect_role_visualizer_description">Die Pfeil- und Einstellungen-Schaltfläche, die mit dem Visualizer verwendet wird.</string>
-    <string name="glass_effect_shared_summary">Wähle die übliche Suche für die App. Die anderen Gruppen erlauben dir, bestimmte Teile zu ändern.</string>
+    <string name="glass_effect_shared_components_summary">Wählen Sie, wie Glas auf Komponenten in der gesamten App verwendet wird, einschließlich der Ladeindikatoren und Ziehen zum Aktualisieren.</string>
     <string name="glass_effect_summary">Passen Sie Oberflächen, Farben, Umrisse und Qualität an.</string>
     <string name="glass_effect_switches_description">Verwenden Sie flüssige Glasschalter mit den gemeinsam genutzten Material- und Interaktionseffekten, wenn Glas aktiviert ist.</string>
     <string name="glass_effect_switches_title">Glasschalter</string>
