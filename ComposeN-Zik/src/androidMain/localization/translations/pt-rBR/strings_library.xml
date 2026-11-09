@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Curtindo todas as músicas levará sobre %1$s. Feche o aplicativo para cancelar. Deseja continuar?</string>
     <string name="library_on_device_permission_request_failed">Não foi possível solicitar o acesso à música neste dispositivo.</string>
     <string name="library_on_device_permission_settings_failed">Não foi possível abrir as configurações de permissão.</string>
+    <string name="artist_more_from_format">Mais de %1$s</string>
+    <string name="playlist_top_show_title_format">Mostrar %1$s</string>
 </resources>
