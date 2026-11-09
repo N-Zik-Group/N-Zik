@@ -132,4 +132,15 @@ class ReconcileArtistLinksTest {
         assertEquals(setOf(SongArtistMap("song_1", "NEW_A")), linksOf("song_1"))
         assertEquals("Stored Fresh Name", db.artistTable.findByIdDirect("NEW_A")?.name)
     }
+    @Test
+    fun coverUpdatePreservesArtistFieldsRefreshedWhileEditing() {
+        val stale = Artist(id = "ARTIST", name = "Old name")
+        val current = stale.copy(name = "Refreshed name", bookmarkedAt = 42L, lastFetch = 100L)
+        db.artistTable.upsert(current)
+
+        db.artistTable.insertIgnore(stale)
+        db.artistTable.updateCover(stale.id, "modified:file:///new-cover.jpg")
+
+        assertEquals(current.copy(thumbnailUrl = "modified:file:///new-cover.jpg"), db.artistTable.findByIdDirect(stale.id))
+    }
 }

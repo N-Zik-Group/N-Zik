@@ -111,3 +111,7 @@ Other:
   - Refresh window-inset, localized-title, settings semantics and import/profile fixtures for current application behavior.
   - Synchronize Compose and Robolectric event delivery where tests observe asynchronous UI updates.
   - Keep these test-only changes separate from playback and UI product changes.
+
+Fixed:
+- fix(metadata): preserve artist fields when saving covers (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Update only the cover column and verify a concurrent metadata refresh survives.

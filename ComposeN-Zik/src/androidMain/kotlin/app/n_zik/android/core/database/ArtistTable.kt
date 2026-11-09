@@ -314,6 +314,9 @@ interface ArtistTable {
     @Throws(SQLException::class)
     fun update( artist: Artist )
 
+    @Query("UPDATE Artist SET thumbnailUrl = :url WHERE id = :id")
+    fun updateCover(id: String, url: String)
+
     /**
      * Toggles [Artist.bookmarkedAt]: not followed → current time (millis),
      * followed → NULL. Returns the number of rows updated.

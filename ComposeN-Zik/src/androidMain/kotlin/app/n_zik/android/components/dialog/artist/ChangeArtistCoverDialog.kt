@@ -29,7 +29,7 @@ class ChangeArtistCoverDialog private constructor(
         getArtist()?.let { item ->
             CoverEditTarget(item.id, item.thumbnailUrl) { url ->
                 artistTable.insertIgnore(item)
-                artistTable.update(item.copy(thumbnailUrl = url))
+                artistTable.updateCover(item.id, url)
             }
         }
     },
