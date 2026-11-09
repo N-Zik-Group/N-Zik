@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm účet</string>
     <string name="profile_identity_source_not_connected">Nepřihlášen</string>
     <string name="profile_last_used">Naposledy použito</string>
-    <string name="profile_last_used_days">%d dny</string>
-    <string name="profile_last_used_hours">%d před h</string>
-    <string name="profile_last_used_minutes">%d min</string>
-    <string name="profile_last_used_months">%d měsíců</string>
     <string name="profile_last_used_now">Právě teď</string>
-    <string name="profile_last_used_weeks">%d týdny</string>
     <string name="profile_local_name">Název profilu</string>
     <string name="profile_local_name_description">Přejmenovat aktuální místní profil.</string>
     <string name="profile_name_input_hint">Zadejte název profilu</string>
@@ -255,10 +250,11 @@
     <string name="sync_youtube_playlist_add_failed">Nepodařilo se přidat skladbu do YouTube Playlist</string>
     <string name="sync_youtube_playlist_add_success">Přidána skladba v YouTube Playlist</string>
     <string name="sync_youtube_playlist_batch_failed">Došlo k chybě pro dalších 50 skladeb. Přidání skladeb do jednoho seznamu skladeb</string>
+    <string name="sync_youtube_playlist_no_songs_added">Do YouTube playlistu nebyly přidány žádné skladby</string>
     <string name="sync_youtube_playlist_songs_added_suffix">Skladby jsou přidány do YouTube Playlistu. Pokud existují nějaké chybějící skladby, opakujte proces</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">skladby budou přidány do seznamu skladeb YTM</string>
     <string name="sync_youtube_playlists_title">YTM playlist</string>
-    <string name="sync_youtube_songs_remaining">Zbývá skladeb: %1$s</string>
+    <string name="sync_youtube_songs_remaining">%1$s Zbývající skladby</string>
     <string name="sync_youtube_unlike_failed">Nepodařilo se odpojit od skladby na YouTube</string>
     <string name="sync_youtube_unlike_success">Skladba se nelíbí na YouTube</string>
     <string name="sync_starting_notification">Spouštění synchronizace...</string>
