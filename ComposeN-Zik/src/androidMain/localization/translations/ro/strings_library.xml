@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Apreciind că toate melodiile vor avea nevoie de %1$s. Închideți aplicația pentru a anula. Doriți să continuați?</string>
     <string name="library_on_device_permission_request_failed">Nu s-a putut solicita accesul la muzică pe acest dispozitiv.</string>
     <string name="library_on_device_permission_settings_failed">Nu s-au putut deschide setările permisiunilor.</string>
+    <string name="artist_more_from_format">Mai multe de la %1$s</string>
+    <string name="playlist_top_show_title_format">Arată %1$s</string>
 </resources>
