@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">Stránky</string>
     <string name="glass_effect_destination_playback">Přehrát</string>
     <string name="glass_effect_destination_shared">Sdílené prvky</string>
+    <string name="glass_effect_loading_indicators">Načítání indikátorů</string>
+    <string name="glass_effect_loading_indicators_description">Styl načítání animací na stránkách a v kartách a dialogech.</string>
+    <string name="glass_effect_pull_to_refresh">Tažením obnovíte</string>
+    <string name="glass_effect_pull_to_refresh_description">Styl indikátoru, který se objeví při obnovení.</string>
     <string name="glass_effect_destination_windows">Okna a zprávy</string>
     <string name="glass_effect_dialog_dimming">Stmívání pozadí panelu</string>
     <string name="glass_effect_dispersion">Rozdělení barev</string>
@@ -121,7 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">Karty, které seskupují nastavení a zobrazují vaše profily.</string>
     <string name="glass_effect_role_visualizer">Vizualizér · ovládání</string>
     <string name="glass_effect_role_visualizer_description">Šipky a tlačítko Nastavení použité s vizualizátorem.</string>
-    <string name="glass_effect_shared_summary">Vyberte si obvyklé hledání aplikace. Ostatní skupiny vám umožní změnit konkrétní části.</string>
+    <string name="glass_effect_shared_components_summary">Vyberte si, jak sklo vypadá na komponenty používané napříč aplikací, včetně načtení indikátorů a tažení k obnovení.</string>
     <string name="glass_effect_summary">Přizpůsobte si plochy, barvy, obrysy a kvalitu.</string>
     <string name="glass_effect_switches_description">Používejte kapalné skleněné přepínače se sdíleným materiálem a interakčními efekty, když je sklo zapnuto.</string>
     <string name="glass_effect_switches_title">Skleněné vypínače</string>
