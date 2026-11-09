@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm konto</string>
     <string name="profile_identity_source_not_connected">Ikke logget ind</string>
     <string name="profile_last_used">Sidst brugt</string>
-    <string name="profile_last_used_days">%d dage siden</string>
-    <string name="profile_last_used_hours">%d h siden</string>
-    <string name="profile_last_used_minutes">%d min siden</string>
-    <string name="profile_last_used_months">%d måneder siden</string>
     <string name="profile_last_used_now">Lige nu</string>
-    <string name="profile_last_used_weeks">%d uger siden</string>
     <string name="profile_local_name">Profilnavn</string>
     <string name="profile_local_name_description">Omdøb den aktuelle lokale profil.</string>
     <string name="profile_name_input_hint">Indtast profilnavn</string>

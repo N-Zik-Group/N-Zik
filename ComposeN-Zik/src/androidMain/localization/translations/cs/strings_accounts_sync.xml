@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm účet</string>
     <string name="profile_identity_source_not_connected">Nepřihlášen</string>
     <string name="profile_last_used">Naposledy použito</string>
-    <string name="profile_last_used_days">%d dny</string>
-    <string name="profile_last_used_hours">%d před h</string>
-    <string name="profile_last_used_minutes">%d min</string>
-    <string name="profile_last_used_months">%d měsíců</string>
     <string name="profile_last_used_now">Právě teď</string>
-    <string name="profile_last_used_weeks">%d týdny</string>
     <string name="profile_local_name">Název profilu</string>
     <string name="profile_local_name_description">Přejmenovat aktuální místní profil.</string>
     <string name="profile_name_input_hint">Zadejte název profilu</string>

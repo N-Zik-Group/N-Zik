@@ -23,6 +23,15 @@ class HistoryDisplayGroupsTest {
         assertEquals("modified:e:Alpha", edited.song.title)
     }
 
+    @Test fun `missing or blank artists remain separate from an artist named like the fallback`() {
+        val missing = entry("a", "Alpha", null)
+        val blank = entry("b", "Beta", " ")
+        val named = entry("c", "Gamma", "Inconnu")
+        val groups = historyArtistGroups(listOf(missing, blank, named))
+        assertEquals(listOf(missing, blank), groups.getValue(null))
+        assertEquals(listOf(named), groups.getValue("Inconnu"))
+    }
+
     @Test fun `artist groups merge displayed names while preserving internal colons and source values`() {
         val edited = entry("a", "Alpha", "modified:Tangerl, Guest")
         val original = entry("b", "Beta", "Tangerl")

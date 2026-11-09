@@ -48,7 +48,7 @@ class PickedImageEditorActivity : UCropActivity() {
         completion = request.result.invokeOnCompletion { runOnUiThread { if (!isFinishing) finish() } }
         if (request.result.isCompleted) return
         colors.applyControls(window.decorView)
-        findViewById<Toolbar>(CropR.id.toolbar).navigationContentDescription = getString(R.string.image_editor_cancel)
+        findViewById<Toolbar>(CropR.id.toolbar).navigationContentDescription = getString(R.string.common_action_cancel)
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() { request.result.complete(null) }
         })

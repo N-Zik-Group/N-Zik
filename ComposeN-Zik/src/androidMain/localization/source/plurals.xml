@@ -82,4 +82,20 @@
         <item quantity="one">Added %1$d song to the YouTube playlist</item>
         <item quantity="other">Added %1$d songs to the YouTube playlist</item>
     </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Profile state imported: %1$d profile</item>
+        <item quantity="other">Profile state imported: %1$d profiles</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Failed to sync %1$d album. Go back to the Albums tab to retry.</item>
+        <item quantity="other">Failed to sync %1$d albums. Go back to the Albums tab to retry.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Export %1$d cached/downloaded song?</item>
+        <item quantity="other">Export %1$d cached/downloaded songs?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">%1$d downloaded song is missing its file and was removed. Please download it again.</item>
+        <item quantity="other">%1$d downloaded songs are missing their files and were removed. Please download them again.</item>
+    </plurals>
 </resources>

@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm Konto</string>
     <string name="profile_identity_source_not_connected">Nicht angemeldet</string>
     <string name="profile_last_used">Zuletzt verwendet</string>
-    <string name="profile_last_used_days">vor %d Tagen</string>
-    <string name="profile_last_used_hours">%d h ago</string>
-    <string name="profile_last_used_minutes">%d min ago</string>
-    <string name="profile_last_used_months">%d Monate</string>
     <string name="profile_last_used_now">Gerade jetzt</string>
-    <string name="profile_last_used_weeks">%d Wochen</string>
     <string name="profile_local_name">Profilname</string>
     <string name="profile_local_name_description">Das aktuelle lokale Profil umbenennen.</string>
     <string name="profile_name_input_hint">Profilnamen eingeben</string>

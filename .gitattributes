@@ -1,0 +1,4 @@
+# Keep Fastlane character counts consistent across checkouts.
+fastlane/source/*.txt text eol=lf
+fastlane/metadata/android/*/*.txt text eol=lf
+fastlane/metadata/android/en-US/changelogs/*.txt text eol=lf

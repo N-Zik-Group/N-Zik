@@ -94,6 +94,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.playback.utils.Shuffler
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
+import app.n_zik.android.utils.ToastRelay
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 @UnstableApi
@@ -400,7 +401,7 @@ class OnlineArtistItemMenu private constructor(
             @get:Composable override val menuIconTitle: String get() = stringResource(binder?.radioActionTextRes ?: messageId)
             override fun onShortClick() {
                 if (isFetching) {
-                    Toaster.w(R.string.common_external_link_loading_suffix)
+                    ToastRelay.loadingWarning()
                 } else {
                     val allMediaItems = mutableListOf<MediaItem>()
                     artistPage?.sections?.forEach { section ->
@@ -435,7 +436,7 @@ class OnlineArtistItemMenu private constructor(
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() {
                 if (isFetching) {
-                    Toaster.w(R.string.common_external_link_loading_suffix)
+                    ToastRelay.loadingWarning()
                 } else {
                     val allMediaItems = mutableListOf<MediaItem>()
                     artistPage?.sections?.forEach { section ->

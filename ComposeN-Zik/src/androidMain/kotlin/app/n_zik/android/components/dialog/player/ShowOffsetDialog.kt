@@ -158,7 +158,7 @@ class ShowOffsetDialog private constructor(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 BasicText(
-                    text = "ms",
+                    text = stringResource(R.string.common_duration_milliseconds_unit),
                     style = typography().s.medium.copy(
                         color = palette.textSecondary
                     )
@@ -249,11 +249,11 @@ class ShowOffsetDialog private constructor(
                     .padding(horizontal = 48.dp)
             ) {
                 BasicText(
-                    text = "-3000ms",
+                    text = stringResource(R.string.common_duration_milliseconds_format, "-3000"),
                     style = typography().xxs.copy(color = palette.textSecondary)
                 )
                 BasicText(
-                    text = "+3000ms",
+                    text = stringResource(R.string.common_duration_milliseconds_format, "+3000"),
                     style = typography().xxs.copy(color = palette.textSecondary)
                 )
             }

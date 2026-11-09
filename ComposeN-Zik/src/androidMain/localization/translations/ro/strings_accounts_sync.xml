@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Cont Last.fm</string>
     <string name="profile_identity_source_not_connected">Nu ești conectat</string>
     <string name="profile_last_used">Ultima utilizare</string>
-    <string name="profile_last_used_days">%d zile în urmă</string>
-    <string name="profile_last_used_hours">%d h în urmă</string>
-    <string name="profile_last_used_minutes">%d min în urmă</string>
-    <string name="profile_last_used_months">%d luni în urmă</string>
     <string name="profile_last_used_now">Chiar acum</string>
-    <string name="profile_last_used_weeks">%d săptămâni în urmă</string>
     <string name="profile_local_name">Nume profil</string>
     <string name="profile_local_name_description">Redenumește profilul local curent.</string>
     <string name="profile_name_input_hint">Introduceți numele profilului</string>

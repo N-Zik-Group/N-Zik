@@ -437,4 +437,5 @@
     <string name="library_on_device_permission_request_failed">Could not request access to music on this device.</string>
     <string name="library_on_device_permission_settings_failed">Could not open permission settings.</string>
     <string name="artist_more_from_format">More from %1$s</string>
+    <string name="playlist_top_show_title_format">Show %1$s</string>
 </resources>

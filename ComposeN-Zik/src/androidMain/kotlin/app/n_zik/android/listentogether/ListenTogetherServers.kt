@@ -2,34 +2,25 @@
 
 package app.n_zik.android.listentogether
 
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
+import androidx.annotation.StringRes
+import app.n_zik.android.R
 
-@Serializable
 data class ListenTogetherServer(
     val name: String,
     val url: String,
-    val location: String,
+    @StringRes val locationRes: Int,
     val operator: String
 )
 
 object ListenTogetherServers {
-    private const val ServersJson = """
-        [
-          {
-            "name": "The Meowery",
-            "url": "wss://metroserverx.meowery.eu/ws",
-            "location": "Poland",
-            "operator": "Nyx"
-          }
-        ]
-    """
-
-    private val json = Json { ignoreUnknownKeys = true }
-
-    val servers: List<ListenTogetherServer> by lazy {
-        json.decodeFromString(ServersJson)
-    }
+    val servers: List<ListenTogetherServer> = listOf(
+        ListenTogetherServer(
+            name = "The Meowery",
+            url = "wss://metroserverx.meowery.eu/ws",
+            locationRes = R.string.listen_together_server_location_poland,
+            operator = "Nyx",
+        ),
+    )
 
     val defaultServerUrl: String
         get() = servers.first().url

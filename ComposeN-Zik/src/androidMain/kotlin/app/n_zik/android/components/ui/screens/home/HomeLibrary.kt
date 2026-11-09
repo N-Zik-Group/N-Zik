@@ -308,7 +308,7 @@ fun HomeLibrary(
                 coroutineScope.launch(NzikDispatchers.DATA) {
                     val browseId = if (playlistId.startsWith("VL")) playlistId else "VL$playlistId"
                     Innertube.playlistPage(browseId = browseId)?.getOrNull()?.let { playlistPage ->
-                        val playlistName = playlistPage.title ?: "YouTube Playlist"
+                        val playlistName = playlistPage.title ?: appContext().getString(R.string.playlist_youtube_title)
                         val playlist = Playlist(name = playlistName, browseId = browseId)
                         val playlistRowId = Database.playlistTable.insert(playlist)
                         

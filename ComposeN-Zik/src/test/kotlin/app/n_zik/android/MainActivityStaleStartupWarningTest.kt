@@ -26,9 +26,8 @@ import org.robolectric.annotation.Config
  * pinned here: shown (and the counter reset) only while the window has focus, exactly once,
  * with the parked count. The focus trigger is the real [MainActivity.onWindowFocusChanged]
  * (robolectric.properties pins a plain Application — same harness as
- * MainActivityProfileShortcutLifecycleTest). The Toaster call is stubbed with concrete
- * arguments (the vararg overload does not match via anyVararg), and the controller is
- * destroyed in teardown so the activity's lifecycleScope collector cannot fire in the next
+ * MainActivityProfileShortcutLifecycleTest). The controller is destroyed in teardown
+ * so the activity's lifecycleScope collector cannot fire in the next
  * test (statics persist across methods in the same sandbox).
  */
 @RunWith(RobolectricTestRunner::class)
@@ -39,11 +38,13 @@ class MainActivityStaleStartupWarningTest {
 
     private val activity get() = controller.get()
 
+    private fun staleWarning(count: Int): String =
+        activity.resources.getQuantityString(R.plurals.downloads_stale_startup_removed_count, count, count)
+
     @Before
     fun setUp() {
         mockkObject(Toaster)
-        every { Toaster.w(R.string.downloads_stale_startup_removed, 2, duration = Toast.LENGTH_LONG) } just Runs
-        every { Toaster.w(R.string.downloads_stale_startup_removed, 1, duration = Toast.LENGTH_LONG) } just Runs
+        every { Toaster.w(any<String>(), duration = Toast.LENGTH_LONG) } just Runs
     }
 
     @After
@@ -60,13 +61,13 @@ class MainActivityStaleStartupWarningTest {
 
         activity.onWindowFocusChanged(true)
 
-        verify(exactly = 1) { Toaster.w(R.string.downloads_stale_startup_removed, 2, duration = Toast.LENGTH_LONG) }
+        verify(exactly = 1) { Toaster.w(staleWarning(2), duration = Toast.LENGTH_LONG) }
         assertEquals(0, MyDownloadHelper.pendingStaleStartupCount.value)
 
         // A second focus cycle with an empty parking lot adds no toast.
         activity.onWindowFocusChanged(false)
         activity.onWindowFocusChanged(true)
-        verify(exactly = 1) { Toaster.w(R.string.downloads_stale_startup_removed, 2, duration = Toast.LENGTH_LONG) }
+        verify(exactly = 1) { Toaster.w(staleWarning(2), duration = Toast.LENGTH_LONG) }
     }
 
     @Test
@@ -76,11 +77,11 @@ class MainActivityStaleStartupWarningTest {
 
         MyDownloadHelper.pendingStaleStartupCount.value = 1
 
-        verify(exactly = 0) { Toaster.w(R.string.downloads_stale_startup_removed, 1, duration = Toast.LENGTH_LONG) }
+        verify(exactly = 0) { Toaster.w(staleWarning(1), duration = Toast.LENGTH_LONG) }
         assertEquals(1, MyDownloadHelper.pendingStaleStartupCount.value)
 
         activity.onWindowFocusChanged(true)
-        verify(exactly = 1) { Toaster.w(R.string.downloads_stale_startup_removed, 1, duration = Toast.LENGTH_LONG) }
+        verify(exactly = 1) { Toaster.w(staleWarning(1), duration = Toast.LENGTH_LONG) }
         assertEquals(0, MyDownloadHelper.pendingStaleStartupCount.value)
     }
 }

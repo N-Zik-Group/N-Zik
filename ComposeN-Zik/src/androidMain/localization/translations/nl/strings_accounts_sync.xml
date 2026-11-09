@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm account</string>
     <string name="profile_identity_source_not_connected">Niet ingelogd</string>
     <string name="profile_last_used">Laatst gebruikt</string>
-    <string name="profile_last_used_days">%d dagen geleden</string>
-    <string name="profile_last_used_hours">%d uur geleden</string>
-    <string name="profile_last_used_minutes">%d min geleden</string>
-    <string name="profile_last_used_months">%d maanden geleden</string>
     <string name="profile_last_used_now">Op dit moment</string>
-    <string name="profile_last_used_weeks">%d weken geleden</string>
     <string name="profile_local_name">Profiel naam</string>
     <string name="profile_local_name_description">Hernoem het huidige lokale profiel.</string>
     <string name="profile_name_input_hint">Profielnaam invoeren</string>

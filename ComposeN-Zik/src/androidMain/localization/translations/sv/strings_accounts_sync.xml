@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm konto</string>
     <string name="profile_identity_source_not_connected">Inte inloggad</string>
     <string name="profile_last_used">Senast använd</string>
-    <string name="profile_last_used_days">%d dagar sedan</string>
-    <string name="profile_last_used_hours">%d h sedan</string>
-    <string name="profile_last_used_minutes">%d min sedan</string>
-    <string name="profile_last_used_months">%d månader sedan</string>
     <string name="profile_last_used_now">Just nu</string>
-    <string name="profile_last_used_weeks">%d veckor sedan</string>
     <string name="profile_local_name">Profilens namn</string>
     <string name="profile_local_name_description">Byt namn på aktuell lokal profil.</string>
     <string name="profile_name_input_hint">Ange profilnamn</string>

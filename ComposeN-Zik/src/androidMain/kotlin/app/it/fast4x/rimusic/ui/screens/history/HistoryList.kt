@@ -478,7 +478,7 @@ fun HistoryList(
                         filteredEvents.forEach { (headerStr, details) ->
                             stickyHeader {
                                 Title(
-                                    title = headerStr,
+                                    title = headerStr ?: stringResource(R.string.common_unknown),
                                     modifier = Modifier
                                         .graphicsLayer { alpha = searchFocus.contentAlpha }
                                         // 16dp horizontal keeps the banner's edges on the

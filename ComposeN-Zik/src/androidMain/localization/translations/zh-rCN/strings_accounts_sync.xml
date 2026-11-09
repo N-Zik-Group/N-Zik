@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm 帐户</string>
     <string name="profile_identity_source_not_connected">未登录</string>
     <string name="profile_last_used">上次使用</string>
-    <string name="profile_last_used_days">%d 天前</string>
-    <string name="profile_last_used_hours">%d 小时前</string>
-    <string name="profile_last_used_minutes">%d 分钟前</string>
-    <string name="profile_last_used_months">%d 个月前</string>
     <string name="profile_last_used_now">马上开始</string>
-    <string name="profile_last_used_weeks">%d 周前</string>
     <string name="profile_local_name">配置文件名称</string>
     <string name="profile_local_name_description">重命名当前本地配置文件。</string>
     <string name="profile_name_input_hint">输入配置文件名称</string>

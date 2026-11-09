@@ -102,6 +102,7 @@ import app.n_zik.android.components.glass.GlassRippleProvider
 import app.n_zik.android.components.glass.GlassDialogOverlayHost
 import app.n_zik.android.components.glass.GlassModalContent
 import app.n_zik.android.components.glass.GlassSceneContent
+import app.n_zik.android.utils.ToastRelay
 import app.n_zik.android.utils.toast.trackToastObstruction
 import app.n_zik.android.components.glass.GlassRenderer
 import app.n_zik.android.components.glass.glassRenderer
@@ -2754,7 +2755,7 @@ class MainActivity :
                 }
 
                 Toaster.n(
-                    "${BuildConfig.APP_NAME} ${this@MainActivity.resources.getString( R.string.common_external_link_loading_suffix )}",
+                    getString(R.string.common_external_link_loading_format, BuildConfig.APP_NAME),
                     duration = Toast.LENGTH_LONG
                 )
 
@@ -2920,7 +2921,8 @@ class MainActivity :
         val count = MyDownloadHelper.pendingStaleStartupCount.value
         if (count > 0 && hasWindowFocus) {
             MyDownloadHelper.pendingStaleStartupCount.value = 0
-            Toaster.w(
+            ToastRelay.warningWithResourceIdentity(
+                resources.getQuantityString(R.plurals.downloads_stale_startup_removed_count, count, count),
                 R.string.downloads_stale_startup_removed,
                 count,
                 duration = Toast.LENGTH_LONG

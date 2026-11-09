@@ -543,7 +543,11 @@ class HomeSyncService : Service() {
             } else if (failedCount > 0) {
                 HomeSyncState.failedAlbumsList = failedList
                 val errorMessage = appContext().getString(R.string.library_sync_album_retry_count_format, failedCount)
-                val notificationMessage = appContext().getString(R.string.sync_failed_notification_albums, failedCount)
+                val notificationMessage = appContext().resources.getQuantityString(
+                    R.plurals.sync_failed_notification_album_count,
+                    failedCount,
+                    failedCount,
+                )
                 Toaster.e(errorMessage)
                 HomeSyncState.showSyncNotification(
                     title = appContext().getString(R.string.sync_completed_with_errors),

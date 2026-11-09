@@ -31,7 +31,11 @@ internal fun AiTopPlaylistsCard(search: Search) {
     var showMyTopPlaylist by rememberPreference(showMyTopPlaylistKey, true)
     var maxTopPlaylistItems by rememberPreference(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`)
     var maxTopPlaylistItemsCustomValue by rememberPreference(MaxTopPlaylistItemsCustomValueKey, 10)
-    val searchCtx_6 = search.inputValue.isBlank() || stringResource(R.string.playlist_top).contains(search.inputValue, true) || stringResource(R.string.statistics_max_number_of_items).contains(search.inputValue, true) || stringResource(R.string.recommendations_personal_top_title).contains(search.inputValue, true)
+    val showMyTopPlaylistTitle = stringResource(
+        R.string.playlist_top_show_title_format,
+        stringResource(R.string.recommendations_personal_top_title),
+    )
+    val searchCtx_6 = search.inputValue.isBlank() || stringResource(R.string.playlist_top).contains(search.inputValue, true) || stringResource(R.string.statistics_max_number_of_items).contains(search.inputValue, true) || showMyTopPlaylistTitle.contains(search.inputValue, true)
     SettingsSectionCard(
         title = stringResource(R.string.playlist_top),
         icon = R.drawable.playlist,
@@ -80,10 +84,10 @@ internal fun AiTopPlaylistsCard(search: Search) {
                 }
             }
 
-            if (search.inputValue.isBlank() || "${stringResource(R.string.recommendations_show_section_label)} ${stringResource(R.string.recommendations_personal_top_title)}".contains(search.inputValue, true)) {
+            if (search.inputValue.isBlank() || showMyTopPlaylistTitle.contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("ai.playlist_top.show"),
-                    title = "${stringResource(R.string.recommendations_show_section_label)} ${stringResource(R.string.recommendations_personal_top_title)}",
+                    title = showMyTopPlaylistTitle,
                     text = stringResource(R.string.playlist_top_show_description),
                     isChecked = showMyTopPlaylist,
                     onCheckedChange = {

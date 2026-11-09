@@ -50,23 +50,23 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.scaleIn
 import android.content.Context
 
-open class Sort<T: Enum<T>> (
+open class Sort<T> (
     override val menuState: MenuState,
     sortByState: MutableState<T>,
     sortOrderState: MutableState<SortOrder>,
     styleState: MutableState<MenuStyle>,
     private val sortMenuOrderKey: String? = null,
     private val sortMenuPrefix: String? = null
-): MenuIcon, Clickable, Menu {
+): MenuIcon, Clickable, Menu where T : Enum<T>, T : TextView {
 
     companion object {
         @Composable
-        inline operator fun<reified T: Enum<T>> invoke(
+        inline operator fun<reified T> invoke(
             sortByPrefKey: Preference.Key<T>,
             sortOrderPrefKey: Preference.Key<SortOrder>,
             sortMenuOrderKey: String? = null,
             sortMenuPrefix: String? = null
-        ) = Sort(
+        ): Sort<T> where T : Enum<T>, T : TextView = Sort(
             LocalMenuState.current,
             Preference.remember( sortByPrefKey ),
             Preference.remember( sortOrderPrefKey ),
@@ -161,7 +161,7 @@ open class Sort<T: Enum<T>> (
             sortedConstants.forEach {
                 val isSelected = it == sortBy
                 ListMenu.Entry(
-                    text = if (it is TextView) it.text else it.name,
+                    text = it.text,
                     icon = {
                         Box(
                             modifier = Modifier
@@ -178,7 +178,7 @@ open class Sort<T: Enum<T>> (
                                         it.icon
                                     else
                                         painterResource( R.drawable.close ),
-                                contentDescription = it.name,
+                                contentDescription = null,
                                 tint = colorPalette().accent,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -220,7 +220,7 @@ open class Sort<T: Enum<T>> (
             ) {
                 val isSelected = it == sortBy
                 GridMenu.Entry(
-                    text = if (it is TextView) it.text else it.name,
+                    text = it.text,
                     icon = {
                         Box(
                             modifier = Modifier
@@ -237,7 +237,7 @@ open class Sort<T: Enum<T>> (
                                         it.icon
                                     else
                                         painterResource( R.drawable.close ),
-                                contentDescription = it.name,
+                                contentDescription = null,
                                 tint = colorPalette().accent,
                                 modifier = Modifier.size(18.dp)
                             )

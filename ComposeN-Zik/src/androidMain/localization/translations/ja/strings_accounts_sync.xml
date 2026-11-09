@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm アカウント</string>
     <string name="profile_identity_source_not_connected">ログインしていません</string>
     <string name="profile_last_used">最後に使用したもの</string>
-    <string name="profile_last_used_days">%d 日前</string>
-    <string name="profile_last_used_hours">%d 時間前</string>
-    <string name="profile_last_used_minutes">%d 分前</string>
-    <string name="profile_last_used_months">%d ヶ月前</string>
     <string name="profile_last_used_now">現在</string>
-    <string name="profile_last_used_weeks">%d 週間前</string>
     <string name="profile_local_name">プロフィール名</string>
     <string name="profile_local_name_description">現在のローカルプロファイルの名前を変更します。</string>
     <string name="profile_name_input_hint">プロファイル名を入力</string>

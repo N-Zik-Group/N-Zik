@@ -116,6 +116,7 @@ import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
+import app.n_zik.android.utils.ToastRelay
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.player.addNextOffMain
 import app.n_zik.android.utils.player.enqueueOffMain
@@ -383,7 +384,7 @@ class LocalPlaylistItemMenu private constructor(
             override fun onShortClick() {
                 val currentSongs = songs
                 if (currentSongs == null) {
-                    Toaster.w(R.string.common_external_link_loading_suffix)
+                    ToastRelay.loadingWarning()
                 } else if (currentSongs.isNotEmpty()) {
                     downloadAllDialog.onShortClick()
                 } else {
@@ -400,7 +401,7 @@ class LocalPlaylistItemMenu private constructor(
             override fun onShortClick() {
                 val currentSongs = songs
                 if (currentSongs == null) {
-                    Toaster.w(R.string.common_external_link_loading_suffix)
+                    ToastRelay.loadingWarning()
                 } else if (currentSongs.isNotEmpty()) {
                     deleteAllDialog.onShortClick()
                 } else {
@@ -429,7 +430,7 @@ class LocalPlaylistItemMenu private constructor(
         val playNext = PlayNext {
             val currentSongs = songs
             if (currentSongs == null) {
-                Toaster.w(R.string.common_external_link_loading_suffix)
+                ToastRelay.loadingWarning()
             } else if (currentSongs.isNotEmpty()) {
                 // Queue changes must survive the popup closing.
                 NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
@@ -445,7 +446,7 @@ class LocalPlaylistItemMenu private constructor(
         val enqueue = Enqueue {
             val currentSongs = songs
             if (currentSongs == null) {
-                Toaster.w(R.string.common_external_link_loading_suffix)
+                ToastRelay.loadingWarning()
             } else if (currentSongs.isNotEmpty()) {
                 NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                     val mediaItems = withContext(NzikDispatchers.DATA) { currentSongs.map { it.asMediaItem } }

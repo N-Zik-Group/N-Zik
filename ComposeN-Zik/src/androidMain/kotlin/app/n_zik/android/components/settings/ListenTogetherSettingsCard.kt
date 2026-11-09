@@ -166,7 +166,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
             modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_server_url"),
             title = stringResource(R.string.listen_together_server_url),
             text = stringResource(R.string.listen_together_server_url_description),
-            selectedValueText = selectedServer?.let { server -> "${server.name} — ${server.location}" }
+            selectedValueText = selectedServer?.let { server -> "${server.name} - ${stringResource(server.locationRes)}" }
                 ?: serverUrl,
             icon = R.drawable.server,
             onClick = { showServerChooserSheet = true },
@@ -369,7 +369,7 @@ internal fun ServerChooserSheet(
                         val isSelected = server.url == currentUrl
                         ListMenu.Entry(
                             text = server.name,
-                            subtitle = "${server.location} · ${server.operator}",
+                            subtitle = "${stringResource(server.locationRes)} · ${server.operator}",
                             icon = { SettingIcon(R.drawable.server, palette.accent) },
                             trailingContent = {
                                 if (isSelected) {

@@ -8,6 +8,8 @@ internal fun historyTitleGroups(events: List<EventWithSong>): Map<String, List<E
     events.sortedBy { cleanPrefix(it.song.title) }
         .groupBy { cleanPrefix(it.song.title).firstOrNull()?.uppercase() ?: "#" }
 
-internal fun historyArtistGroups(events: List<EventWithSong>): Map<String, List<EventWithSong>> =
+internal fun historyArtistGroups(events: List<EventWithSong>): Map<String?, List<EventWithSong>> =
     events.sortedBy { it.song.artistsText?.let(::cleanPrefix) }
-        .groupBy { it.song.artistsText?.let(::cleanPrefix)?.split(",")?.first()?.trim() ?: "Unknown" }
+        .groupBy { event ->
+            event.song.artistsText?.let(::cleanPrefix)?.substringBefore(',')?.trim()?.takeIf(String::isNotEmpty)
+        }

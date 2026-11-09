@@ -1,6 +1,6 @@
 # Code Quality Rules
 
-**Version:** 1.10.1 | **Last updated:** 2026-10-25
+**Version:** 1.10.2 | **Last updated:** 2026-11-09
 
 ## Naming Conventions
 
@@ -363,10 +363,10 @@ class LyricsScreenTest {
 ## Translations (Crowdin)
 
 - Source strings live in thematic XML files under `ComposeN-Zik/src/androidMain/localization/source/`. Use the feature's file for feature-specific copy and shared files for reusable text
-- NEVER hand-edit a translation VALUE in any Crowdin-managed `localization/translations/<locale>/strings_*.xml` or `localization/translations/<locale>/plurals.xml` file - these are managed by the Crowdin sync; manual value edits get overwritten and cause merge conflicts with translator work. (Removing an entire dead key element across all locales is a structural cleanup, not a value edit - see the "Removing a string key" rule below.)
-- If a Crowdin sync commit/PR appears (bot-authored, touches only Crowdin-managed localized XML), it is exempt from the full BMAD workflow and from code review — merge as-is after a diff sanity check (human commit approval from AGENTS.md still applies: show the diff, ask before merging/committing)
+- Manage translated values in Crowdin. Structural changes in `localization/translations/` may move unchanged values or remove dead keys across all locales. Direct placeholder corrections require explicit approval.
+- If a Crowdin sync commit/PR appears (bot-authored, touches only Crowdin-managed localized XML or Fastlane listing exports), it is exempt from the full BMAD workflow and from code review — merge as-is after a diff sanity check (human commit approval from AGENTS.md still applies: show the diff, ask before merging/committing)
 - Adding a NEW string key: add it to the appropriate source XML only; Crowdin will propagate it to other locales automatically
-- Removing a string key: check for usages in code first (a stale key breaks translator context, not just compilation), then remove the element from its source XML and corresponding localized XML files so no stale copy lingers in a locale
+- Removing a string key: check code usage, runtime lookups, and published Bridge identities first. Preserve published keys. For unused and unpublished keys, remove the element from its source XML and corresponding localized XML files so no stale copy lingers in a locale
 - Never assume a translated string is wrong because it "reads oddly" in English — flag it to the user/translation team instead of editing it directly
 
 ## Dependency Injection

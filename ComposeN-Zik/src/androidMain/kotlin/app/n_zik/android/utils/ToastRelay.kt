@@ -1,7 +1,10 @@
 package app.n_zik.android.utils
 
+import android.content.res.Resources
+import android.widget.Toast
 import androidx.annotation.StringRes
 import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.R
 import app.n_zik.android.appContext
 import java.util.concurrent.CopyOnWriteArrayList
 import timber.log.Timber
@@ -37,14 +40,44 @@ object ToastRelay {
         // A stale key left by a toast that threw before its hook never tags the next one
         pendingResource.remove()
         val resources = appContext().resources
-        val message = resources.getString(messageId, *formatArgs)
+        return resources.getString(messageId, *formatArgs).also {
+            rememberResource(messageId, formatArgs, resources)
+        }
+    }
+
+    /** Shows a warning with localized text and an existing resource identity for the bridge. */
+    internal fun warningWithResourceIdentity(
+        message: String,
+        @StringRes messageId: Int,
+        vararg formatArgs: Any?,
+        duration: Int = Toast.LENGTH_SHORT,
+    ) {
+        pendingResource.remove()
+        try {
+            rememberResource(messageId, formatArgs)
+            Toaster.w(message, duration)
+        } finally {
+            pendingResource.remove()
+        }
+    }
+
+    /** Shows loading text while retaining the published loading warning identity. */
+    internal fun loadingWarning() = warningWithResourceIdentity(
+        appContext().getString(R.string.common_loading_message),
+        R.string.common_external_link_loading_suffix,
+    )
+
+    private fun rememberResource(
+        @StringRes messageId: Int,
+        formatArgs: Array<out Any?>,
+        resources: Resources? = null,
+    ) {
         if (listeners.isNotEmpty()) {
-            val key = runCatching { resources.getResourceEntryName(messageId) }
+            val key = runCatching { (resources ?: appContext().resources).getResourceEntryName(messageId) }
                 .onFailure { Timber.tag("ToastRelay").w(it, "Could not resolve a toast resource key") }
                 .getOrNull()
             pendingResource.set(key?.let { it to formatArgs.map(Any?::toString) })
         }
-        return message
     }
 
     /** Called by the legacy [Toaster]'s base `toast(message, …)` for every toast it shows. */

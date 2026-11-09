@@ -289,7 +289,7 @@ private fun InstalledModuleCard(
             ModuleInfoRow(stringResource(R.string.modules_size), module.sizeText)
             (module.update as? ModuleUpdateStatus.UpdateAvailable)?.let { updateStatus ->
                 OtherSettingsEntry(
-                    title = stringResource(R.string.modules_update),
+                    title = stringResource(R.string.common_action_update),
                     text = stringResource(
                         R.string.modules_update_available_body,
                         updateStatus.installedVersion,

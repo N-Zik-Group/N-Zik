@@ -99,6 +99,7 @@ import app.n_zik.android.core.database.isPodcastBrowseId
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
+import app.n_zik.android.utils.ToastRelay
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.player.addNextOffMain
 import app.n_zik.android.utils.player.enqueueOffMain
@@ -292,7 +293,7 @@ class OnlinePlaylistItemMenu private constructor(
                             if (bookmarkBusy) return@IconButton
                             if (isPodcastBrowseId(playlist.key)) {
                                 if (localPlaylist == null && !contentLoaded) {
-                                    Toaster.w(if (songs == null) R.string.common_external_link_loading_suffix else R.string.player_no_song_found)
+                                    if (songs == null) ToastRelay.loadingWarning() else Toaster.w(R.string.player_no_song_found)
                                     return@IconButton
                                 }
                                 bookmarkBusy = true
@@ -407,7 +408,7 @@ class OnlinePlaylistItemMenu private constructor(
         val playNext = PlayNext {
             val currentSongs = songs
             if (currentSongs == null) {
-                Toaster.w(R.string.common_external_link_loading_suffix)
+                ToastRelay.loadingWarning()
             } else if (currentSongs.isNotEmpty()) {
                 // Queue changes must survive the popup closing.
                 NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
@@ -423,7 +424,7 @@ class OnlinePlaylistItemMenu private constructor(
         val enqueue = Enqueue {
             val currentSongs = songs
             if (currentSongs == null) {
-                Toaster.w(R.string.common_external_link_loading_suffix)
+                ToastRelay.loadingWarning()
             } else if (currentSongs.isNotEmpty()) {
                 NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                     val mediaItems = withContext(NzikDispatchers.DATA) { currentSongs.map { it.asMediaItem } }
@@ -447,7 +448,7 @@ class OnlinePlaylistItemMenu private constructor(
             override fun onShortClick() {
                 val currentSongs = songs
                 if (currentSongs == null) {
-                    Toaster.w(R.string.common_external_link_loading_suffix)
+                    ToastRelay.loadingWarning()
                 } else if (currentSongs.isNotEmpty()) {
                     playlistsMenu.onShortClick()
                 } else {
@@ -462,7 +463,7 @@ class OnlinePlaylistItemMenu private constructor(
             override fun onShortClick() {
                 val currentSongs = songs
                 if (currentSongs == null) {
-                    Toaster.w(R.string.common_external_link_loading_suffix)
+                    ToastRelay.loadingWarning()
                 } else if (currentSongs.isNotEmpty()) {
                     downloadAllDialog.onShortClick()
                 } else {
@@ -477,7 +478,7 @@ class OnlinePlaylistItemMenu private constructor(
             override fun onShortClick() {
                 val currentSongs = songs
                 if (currentSongs == null) {
-                    Toaster.w(R.string.common_external_link_loading_suffix)
+                    ToastRelay.loadingWarning()
                 } else if (currentSongs.isNotEmpty()) {
                     deleteAllDialog.onShortClick()
                 } else {
@@ -511,7 +512,7 @@ class OnlinePlaylistItemMenu private constructor(
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() {
                 if (songs == null) {
-                    Toaster.w(R.string.common_external_link_loading_suffix)
+                    ToastRelay.loadingWarning()
                 } else if (songs?.isNotEmpty() == true) {
                     importDialog.onShortClick()
                 } else {

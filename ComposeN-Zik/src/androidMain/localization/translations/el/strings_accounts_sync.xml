@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm λογαριασμός</string>
     <string name="profile_identity_source_not_connected">Δεν έχετε συνδεθεί</string>
     <string name="profile_last_used">Τελευταία χρήση</string>
-    <string name="profile_last_used_days">%d ημέρες πριν</string>
-    <string name="profile_last_used_hours">%d h πριν</string>
-    <string name="profile_last_used_minutes">%d λεπτά πριν</string>
-    <string name="profile_last_used_months">%d μήνες πριν</string>
     <string name="profile_last_used_now">Μόλις τώρα</string>
-    <string name="profile_last_used_weeks">%d εβδομάδες πριν</string>
     <string name="profile_local_name">Όνομα προφίλ</string>
     <string name="profile_local_name_description">Μετονομασία του τρέχοντος τοπικού προφίλ.</string>
     <string name="profile_name_input_hint">Εισάγετε όνομα προφίλ</string>

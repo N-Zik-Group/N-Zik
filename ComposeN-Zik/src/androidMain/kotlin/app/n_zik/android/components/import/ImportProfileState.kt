@@ -97,7 +97,7 @@ class ImportProfileState private constructor(
                         val names = applied?.names ?: 0
                         val message = when {
                             profiles > 0 ->
-                                context.getString(R.string.backup_import_profile_state_complete, profiles)
+                                context.resources.getQuantityString(R.plurals.backup_import_profile_state_complete_count, profiles, profiles)
                             // A base-only archive (empty list + base face and/or name) imports
                             // 0 profiles: say the base profile was restored instead of
 //
@@ -105,7 +105,7 @@ class ImportProfileState private constructor(
                             faces > 0 || names > 0 ->
                                 context.getString(R.string.backup_import_profile_state_complete_base)
                             else ->
-                                context.getString(R.string.backup_import_profile_state_complete, 0)
+                                context.resources.getQuantityString(R.plurals.backup_import_profile_state_complete_count, 0, 0)
                         }
                         Toaster.i(message)
                         onDone()

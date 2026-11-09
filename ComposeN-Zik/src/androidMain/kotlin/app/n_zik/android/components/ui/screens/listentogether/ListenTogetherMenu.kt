@@ -261,7 +261,7 @@ fun ListenTogetherMenu() {
             joinErrorMessage = joinErrorMessage,
             pendingJoinRequests = pendingJoinRequests,
             pendingSuggestions = pendingSuggestions,
-            serverLabel = selectedServer?.let { server -> "${server.name} — ${server.location}" } ?: serverUrl,
+            serverLabel = selectedServer?.let { server -> "${server.name} - ${stringResource(server.locationRes)}" } ?: serverUrl,
             usernameLabel = username.ifEmpty { stringResource(R.string.listen_together_not_set) },
             autoApprovalJoins = autoApprovalJoins,
             autoApproveSuggestions = autoApproveSuggestions,
