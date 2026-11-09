@@ -226,6 +226,8 @@
     <string name="theme_shake_sensitivity_medium">Moyenne (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Très élevée (1,0 G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Modifier l\'image</string>
+    <string name="image_editor_failed">Impossible d\'éditer l\'image. Votre image actuelle a été conservée.</string>
     <string name="thumbnail_action_edit">Éditer la miniature</string>
     <string name="thumbnail_action_pick_from_gallery">Choisissez une photo dans la galerie</string>
     <string name="thumbnail_action_reset">Réinitialiser la miniature</string>
@@ -235,4 +237,7 @@
     <string name="thumbnail_remove_failed">Échec de la suppression de la miniature</string>
     <string name="thumbnail_remove_success">Supprimer la miniature</string>
     <string name="glass_effect_rendering_quality">Qualité de rendu</string>
+    <string name="image_editor_original">Ratio d\'origine</string>
+    <string name="image_editor_cancel">Annuler</string>
+    <string name="image_editor_apply">Utiliser l\'image</string>
 </resources>
