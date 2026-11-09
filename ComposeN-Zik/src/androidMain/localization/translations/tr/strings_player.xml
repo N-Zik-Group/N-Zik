@@ -82,6 +82,7 @@
     <string name="lyrics_editor_title">Şarkı sözlerini girin</string>
     <string name="lyrics_empty">Şarkı sözü yok</string>
     <string name="lyrics_fetch_error_message">Şarkı sözleri getirilirken bir hata oluştu</string>
+    <string name="lyrics_provider_fetch_error_message">Could not fetch lyrics from %1$s</string>
     <string name="lyrics_font_size_animation_label">Şarkı Sözleri Boyutunu Canlandır</string>
     <string name="lyrics_font_size_extra_large_label">Ekstra büyük</string>
     <string name="lyrics_font_size_large_label">Büyük</string>
@@ -237,7 +238,7 @@
     <string name="player_exclude_disliked_artists_description">Beğenmediğiniz sanatçıların şarkılarının nasıl hariç tutulacağını seçin.</string>
     <string name="player_exclude_disliked_songs_description">Beğenmediğiniz parçaların çalma önerilerinden nasıl hariç tutulacağını seçin.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Seçilen süre sınırını aşan parçaları hariç tutun.</string>
-    <string name="player_excluded_song_count_format">%s şarkı hariç tutuldu</string>
+    <string name="player_excluded_song_count_format">Hariç tutulan şarkılar: %s</string>
     <string name="player_keep_minimized">Küçültülmüş tut</string>
     <string name="player_layout_artwork_style_description">Oynatıcının parça kapak resimlerini nasıl göstereceğini seçin.</string>
     <string name="player_layout_controls_style_description">Oynatıcı kontrollerinin düzenini seçin.</string>
@@ -296,10 +297,14 @@
     <string name="player_statistics_codec_label">Kodek</string>
     <string name="player_statistics_container_label">Medya Türü</string>
     <string name="player_statistics_itag_label">Itag</string>
+    <string name="player_playback_speed_value">%1$.1fx</string>
+    <string name="player_decibels_value">%1$.2f dB</string>
     <string name="player_statistics_loudness_label">Ses yüksekliği</string>
     <string name="player_statistics_media_id_label">Kimlik</string>
     <string name="player_statistics_perceptual_loudness_label">Algısal Ses Yüksekliği</string>
     <string name="player_statistics_sample_rate_label">Örnekleme Hızı</string>
+    <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
+    <string name="player_statistics_cache_status">%1$s: %2$s</string>
     <string name="player_statistics_volume_label">Ses</string>
     <string name="player_swap_controls_with_timeline">Kontrolleri zaman çizelgesiyle değiştir</string>
     <string name="player_swipe_sensitivity">Oynatıcı Kaydırma Hassasiyeti</string>
