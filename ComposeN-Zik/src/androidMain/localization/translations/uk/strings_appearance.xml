@@ -242,6 +242,5 @@
     <string name="thumbnail_remove_success">Мініатюру видалено</string>
     <string name="glass_effect_rendering_quality">Якість візуалізації</string>
     <string name="image_editor_original">Початкове співвідношення</string>
-    <string name="image_editor_cancel">Скасовувати</string>
     <string name="image_editor_apply">Використовувати зображення</string>
 </resources>
