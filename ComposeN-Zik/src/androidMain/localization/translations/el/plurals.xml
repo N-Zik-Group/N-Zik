@@ -41,4 +41,60 @@
         <item quantity="one">%1$d song heard</item>
         <item quantity="other">%1$d τραγούδια που ακούστηκαν</item>
     </plurals>
+    <plurals name="profile_last_used_minute_count">
+        <item quantity="one">%1$d πριν από λεπτό</item>
+        <item quantity="other">%1$d λεπτά πριν</item>
+    </plurals>
+    <plurals name="profile_last_used_hour_count">
+        <item quantity="one">%1$d ώρα πριν</item>
+        <item quantity="other">%1$d ώρες πριν</item>
+    </plurals>
+    <plurals name="profile_last_used_day_count">
+        <item quantity="one">%1$d ημέρα πριν</item>
+        <item quantity="other">%1$d ημέρες πριν</item>
+    </plurals>
+    <plurals name="profile_last_used_week_count">
+        <item quantity="one">%1$d εβδομάδα πριν</item>
+        <item quantity="other">%1$d εβδομάδες πριν</item>
+    </plurals>
+    <plurals name="profile_last_used_month_count">
+        <item quantity="one">%1$d μήνα πριν</item>
+        <item quantity="other">%1$d μήνες πριν</item>
+    </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Διαγραφή ερωτήματος %1$d αναζήτησης</item>
+        <item quantity="other">Διαγραφή ερωτημάτων %1$d αναζήτησης</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Διαγραφή συμβάντος %1$d αναπαραγωγής</item>
+        <item quantity="other">Διαγραφή συμβάντων %1$d αναπαραγωγής</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d επεισόδιο · %2$s</item>
+        <item quantity="other">%1$d επεισόδια · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">Προσθήκη τραγουδιού %1$d στη λίστα αναπαραγωγής YouTube</item>
+        <item quantity="other">Προσθήκη %1$d τραγουδιών στη λίστα αναπαραγωγής YouTube</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">Προστέθηκε το τραγούδι %1$d στο YouTube playlist</item>
+        <item quantity="other">Προστέθηκε το %1$d τραγούδια στη λίστα αναπαραγωγής του YouTube</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Κατάσταση προφίλ εισήχθη: %1$d προφίλ</item>
+        <item quantity="other">Κατάσταση προφίλ εισήχθη: %1$d προφίλ</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Αποτυχία συγχρονισμού του άλμπουμ %1$d Επιστρέψτε στην καρτέλα Άλμπουμ για να ξαναδοκιμάσετε.</item>
+        <item quantity="other">Αποτυχία συγχρονισμού του άλμπουμ %1$d και επιστροφή στην καρτέλα Άλμπουμ για να ξαναδοκιμάσετε.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Εξαγωγή %1$d cached/downloaded song?</item>
+        <item quantity="other">Εξαγωγή %1$d cached/downloaded songs?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">Το %1$d ληφθέν τραγούδι λείπει το αρχείο του και αφαιρέθηκε. Παρακαλώ κατεβάστε το ξανά.</item>
+        <item quantity="other">%1$d τα κατεβασμένα τραγούδια λείπουν από τα αρχεία τους και αφαιρέθηκαν. Παρακαλώ κατεβάστε τα ξανά.</item>
+    </plurals>
 </resources>
