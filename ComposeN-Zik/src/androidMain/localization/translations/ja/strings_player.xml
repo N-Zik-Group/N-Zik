@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">嫌われたアーティストのトラックを除外する方法を選択します。</string>
     <string name="player_exclude_disliked_songs_description">嫌いなトラックを再生候補から除外する方法を選択します。</string>
     <string name="player_exclude_songs_with_duration_limit_description">選択した時間制限を超えるトラックを除外します。</string>
-    <string name="player_excluded_song_count_format">%s 曲を除外しました</string>
+    <string name="player_excluded_song_count_format">除外された曲: %s</string>
     <string name="player_keep_minimized">最小化し続ける</string>
     <string name="player_layout_artwork_style_description">プレーヤーがトラックアートワークを表示する方法を選択します。</string>
     <string name="player_layout_controls_style_description">プレイヤーコントロールのレイアウトを選択します。</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">プレーヤーのプレビューに今後のトラックの横にあるアルバムアートワークを含めます。</string>
     <string name="player_queue_preview_song_count_description">プレイヤーのプレビューに表示される今後のトラックの数を選択します。</string>
     <string name="player_queue_remove_selected_confirmation_format">キューから選択を削除しますか? 選択したトラック: %d</string>
-    <string name="player_queue_shuffled_count_format">キューがシャッフルされました (%d 曲)</string>
+    <string name="player_queue_shuffled_count_format">キューをシャッフルしました (トラック: %d)</string>
     <string name="player_remaining_time_visible_description">現在のトラックに残り時間を表示します。</string>
     <string name="player_restart_required_message">有効な変更を行うには、プレイヤーを再起動する必要があります！</string>
     <string name="player_rotating_buttons">回転ボタン</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">プレイヤー内の今後のトラックのプレビューを表示します。</string>
     <string name="player_show_player_top_actions_bar_description">メインコンテンツの上にプレイヤーアクションの行を表示します。</string>
     <string name="player_shuffle_empty_message">シャッフルする曲がありません</string>
-    <string name="player_shuffled_song_count_format">%d 曲がシャッフルされました</string>
+    <string name="player_shuffled_song_count_format">トラックがシャッフルされました: %d</string>
     <string name="player_sleep_timer_end_of_song_message">この曲の最後にスリープタイマーを設定しました</string>
     <string name="player_sleep_timer_finished_message">スリープタイマー終了</string>
     <string name="player_song_playback_error_format">曲 %1$sの再生中にエラーが発生しました</string>
