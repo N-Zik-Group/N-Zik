@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm tili</string>
     <string name="profile_identity_source_not_connected">Ei kirjautunut sisään</string>
     <string name="profile_last_used">Viimeksi käytetty</string>
-    <string name="profile_last_used_days">%d päivää sitten</string>
-    <string name="profile_last_used_hours">%d tuntia sitten</string>
-    <string name="profile_last_used_minutes">%d minuuttia sitten</string>
-    <string name="profile_last_used_months">%d kuukautta sitten</string>
     <string name="profile_last_used_now">Juuri nyt</string>
-    <string name="profile_last_used_weeks">%d weeks ago</string>
     <string name="profile_local_name">Profiilin nimi</string>
     <string name="profile_local_name_description">Nimeä nykyinen paikallinen profiili.</string>
     <string name="profile_name_input_hint">Anna profiilin nimi</string>
@@ -255,10 +250,11 @@
     <string name="sync_youtube_playlist_add_failed">Kappaleen lisääminen YouTube-soittolistaan ei onnistunut</string>
     <string name="sync_youtube_playlist_add_success">Lisätty kappale YouTube-soittolistaan</string>
     <string name="sync_youtube_playlist_batch_failed">Seuraavien 50 kappaleen kohdalla tapahtui virhe. Kappaleiden lisääminen soittolistaan yksi kerrallaan</string>
+    <string name="sync_youtube_playlist_no_songs_added">YouTube-soittolistalle ei ole lisätty yhtään kappaletta</string>
     <string name="sync_youtube_playlist_songs_added_suffix">kappaleet on lisätty YouTube-soittolistalle. Toista prosessi, jos kappaletta puuttuu</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">kappaleet lisätään YTM soittolistaan</string>
     <string name="sync_youtube_playlists_title">YTM-soittolistat</string>
-    <string name="sync_youtube_songs_remaining">Songs remaining: %1$s</string>
+    <string name="sync_youtube_songs_remaining">%1$s Kappaletta Jäljellä</string>
     <string name="sync_youtube_unlike_failed">Kappaleen poisto YouTubessa epäonnistui</string>
     <string name="sync_youtube_unlike_success">Kappale on tykkää YouTubessa</string>
     <string name="sync_starting_notification">Käynnistetään synkronointia...</string>
