@@ -226,6 +226,8 @@
     <string name="theme_shake_sensitivity_medium">Середній (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Дуже високий (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Редагувати зображення</string>
+    <string name="image_editor_failed">Не вдалося змінити зображення. Ваше поточне зображення збережено.</string>
     <string name="thumbnail_action_edit">Редагувати мініатюру</string>
     <string name="thumbnail_action_pick_from_gallery">Вибрати з галереї</string>
     <string name="thumbnail_action_reset">Скидання мініатюри</string>
@@ -235,4 +237,7 @@
     <string name="thumbnail_remove_failed">Не вдалося видалити мініатюру</string>
     <string name="thumbnail_remove_success">Мініатюру видалено</string>
     <string name="glass_effect_rendering_quality">Якість візуалізації</string>
+    <string name="image_editor_original">Початкове співвідношення</string>
+    <string name="image_editor_cancel">Скасовувати</string>
+    <string name="image_editor_apply">Використовувати зображення</string>
 </resources>
