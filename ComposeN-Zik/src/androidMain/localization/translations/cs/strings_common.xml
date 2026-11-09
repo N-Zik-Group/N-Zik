@@ -15,6 +15,7 @@
     <string name="common_delete_success">Odstraněno</string>
     <string name="common_description_unavailable">Žádný popis není k dispozici</string>
     <string name="common_duration_milliseconds_format">%1$s ms</string>
+    <string name="common_duration_milliseconds_unit">ms</string>
     <string name="common_empty_items">Žádné položky</string>
     <string name="common_external_link_loading_suffix">se načítá...</string>
     <string name="common_load_failed">Nelze načíst</string>
@@ -43,4 +44,6 @@
     <string name="common_value_input_hint">Zadat hodnotu</string>
     <string name="common_unknown">Neznámá</string>
     <string name="common_duration_minutes_short">%1$d min</string>
+    <string name="common_external_link_loading_format">%1$s načítá…</string>
+    <string name="common_loading_message">Načítání…</string>
 </resources>
