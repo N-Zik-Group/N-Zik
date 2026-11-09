@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Αποθήκευση</string>
+    <string name="storage_breakdown_info_title">Σχετικά με τον αποθηκευτικό χώρο</string>
+    <string name="storage_breakdown_nzik_total">Σύνολο που χρησιμοποιείται από N-Zik</string>
+    <string name="storage_breakdown_subtitle">Ανάλυση αποθηκευτικού χώρου</string>
+    <string name="storage_breakdown_waiting">Αποθήκευση μέτρησης…</string>
+    <string name="storage_breakdown_cached_images">Προσωρινές εικόνες</string>
+    <string name="storage_breakdown_streamed_audio">Ροή ήχου</string>
+    <string name="storage_breakdown_downloaded_audio">Λήφθηκε ήχος</string>
+    <string name="storage_breakdown_custom_covers">Προσαρμοσμένα καλύμματα</string>
+    <string name="storage_breakdown_waveforms">Κυματομορφές</string>
+    <string name="storage_breakdown_other_nzik_data">Άλλα δεδομένα N-Zik</string>
+    <string name="storage_breakdown_other_used_space">Σύστημα, εφαρμογές &amp; αρχεία</string>
+    <string name="storage_breakdown_free_space">Ελεύθερο χώρο</string>
+    <string name="storage_info_images">Έργα τέχνης και άλλες εικόνες προσωρινά αποθηκευμένες για ταχύτερη οθόνη.</string>
+    <string name="storage_info_streaming">Ο ήχος διατηρείται προσωρινά μετά τη ροή, έτσι ώστε να μπορεί να αναπαραχθεί ξανά χωρίς να λαμβάνονται τα ίδια δεδομένα.</string>
+    <string name="storage_info_downloads">Ο ήχος αποθηκεύτηκε στο N-Zik για ακρόαση εκτός σύνδεσης.</string>
+    <string name="storage_info_waveforms">Δημιουργημένα αρχεία που χρησιμοποιούνται για τη σχεδίαση της κυματομορφής ήχου στον παίκτη.</string>
+    <string name="storage_info_covers">Έργο τέχνης που επιλέξατε ή εισάγατε ως προσαρμοσμένα καλύμματα.</string>
+    <string name="storage_info_other_nzik">Τα υπόλοιπα προσωπικά δεδομένα του N-Zik, συμπεριλαμβανομένων των βάσεων δεδομένων του, των ρυθμίσεων, των ευρετηρίων, των επεκτάσεων και των αρχείων καταγραφής.</string>
+    <string name="storage_info_other_used">Ο υπόλοιπος χώρος που χρησιμοποιείται για την εσωτερική ένταση, συμπεριλαμβανομένου του Android, εγκατεστημένες εφαρμογές και προσωπικά αρχεία.</string>
+    <string name="storage_info_free">Διαθέσιμος χώρος για εφαρμογές και αρχεία στην εσωτερική ένταση ήχου.</string>
+    <string name="storage_cleanup_title">Εκκαθάριση</string>
+    <string name="storage_cleanup_failed">Αδύνατη η ολοκλήρωση της εκκαθάρισης του αποθηκευτικού χώρου.</string>
+    <string name="storage_cleanup_images_description">Καθαρισμός έργων τέχνης που έχουν αποθηκευτεί προσωρινά από το N-Zik.</string>
+    <string name="storage_cleanup_streaming_description">Εκκαθάριση προσωρινά αποθηκευμένου ήχου κατά τη ροή.</string>
+    <string name="storage_cleanup_downloads_description">Διαγραφή ήχου εκτός σύνδεσης και ακύρωση λήψεων εν αναμονή της λήψης για το ενεργό προφίλ του χώρου αποθήκευσης λήψεων.</string>
+    <string name="storage_cleanup_waveforms_description">Εκκαθάριση αρχείων κυματομορφής που δημιουργήθηκαν.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Καθαρισμός κυματομορφών</string>
+    <string name="storage_cleanup_diagnostic_logs">Εκκαθάριση διαγνωστικών αρχείων καταγραφής</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Διαγράψτε τα αρχεία καταγραφής σφαλμάτων και σφαλμάτων. Η ρύθμιση καταγραφής σας παραμένει η ίδια.</string>
+    <string name="storage_cleanup_temporary_files">Αφαίρεση εγκαταλελειμμένων προσωρινών αρχείων</string>
+    <string name="storage_cleanup_temporary_files_description">Αφαιρέστε τα εγκαταλελειμμένα προσχέδια του επεξεργαστή εικόνων και Rewind μοιραστείτε συλλήψεις παλαιότερες από 24 ώρες.</string>
+    <string name="storage_cleanup_all">Εκκαθάριση όλων</string>
+    <string name="storage_cleanup_all_description">Καθαρίστε την εικόνα και τη ροή κρύπτες και δημιουργούνται κυματομορφές για το ενεργό προφίλ, συμπεριλαμβανομένης της αποθήκευσης που μοιράζεται με άλλα προφίλ. Διαγραφή ήχου εκτός σύνδεσης και ακύρωση λήψεων εν αναμονή της λήψης για το ενεργό προφίλ του χώρου αποθήκευσης λήψεων. Διαγράψτε τα διαγνωστικά αρχεία καταγραφής, τα εγκαταλελειμμένα προσχέδια του επεξεργαστή εικόνων και τις λήγεις φωτογραφίες. Η βιβλιοθήκη, τα προσαρμοσμένα καλύμματα και οι ρυθμίσεις φυλάσσονται.</string>
     <!-- Backup -->
     <string name="backup_action_export">Εξαγωγή αντιγράφου ασφαλείας</string>
     <string name="backup_action_import">Εισαγωγή αντιγράφου ασφαλείας</string>
@@ -15,11 +50,14 @@
     <string name="backup_auto_schedule_day_of_month_description">Επιλέξτε την ημέρα του μήνα για μηνιαία αυτόματα αντίγραφα ασφαλείας.</string>
     <string name="backup_auto_schedule_day_of_week_description">Επιλέξτε την ημέρα της εβδομάδας για εβδομαδιαία αυτόματα αντίγραφα ασφαλείας.</string>
     <string name="backup_auto_schedule_time_description">Επιλέξτε την ώρα κατά την οποία θα εκτελούνται αυτόματα αντίγραφα ασφαλείας.</string>
+    <string name="backup_auto_content_format_description">Επιλέξτε τι να δημιουργήσετε αντίγραφα ασφαλείας αυτόματα. Τα αντίγραφα ασφαλείας της βάσης δεδομένων χρησιμοποιούν ZIP όταν περιλαμβάνουν προσαρμοσμένα καλύμματα.</string>
     <string name="backup_before_update_description">Αυτόματη δημιουργία αντιγράφων ασφαλείας δεδομένων πριν από την εγκατάσταση μιας ενημέρωσης</string>
     <string name="backup_before_update_failed">Αποτυχία προεγκατάστασης αντιγράφου ασφαλείας</string>
     <string name="backup_before_update_running_message">Δημιουργία αντιγράφων ασφαλείας δεδομένων πριν από την εγκατάσταση…</string>
     <string name="backup_before_update_running_title">Αντίγραφο ασφαλείας σε εξέλιξη</string>
     <string name="backup_excluded_preferences_and_cache_description">Εξαιρούνται οι προτιμήσεις (π.χ. η λειτουργία θέματος) και η κρυφή μνήμη.</string>
+    <string name="backup_export_library_options_description">Εξαγωγή της βάσης δεδομένων με προσαρμοσμένα καλύμματα, ρυθμίσεις ή προφίλ</string>
+    <string name="backup_import_library_options_description">Επαναφορά αντιγράφου ασφαλείας βάσης δεδομένων SQLite ή ZIP, ρυθμίσεων ή προφίλ</string>
     <string name="backup_include_discord_credentials">Συμπερίληψη διαπιστευτηρίων ταυτότητας Discord</string>
     <string name="backup_include_lastfm_credentials">Συμπερίληψη διαπιστευτηρίων ταυτότητας Last.fm</string>
     <string name="backup_include_proxy_password">Συμπερίληψη του κωδικού πρόσβασης διαμεσολαβητή</string>
@@ -56,12 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Εξαγωγή της λίστας προφίλ και των φωτογραφιών προσώπου σε ένα αρχείο .txt</string>
     <string name="backup_export_all">Εξαγωγή όλων</string>
+    <string name="backup_export_all_with_covers_description">Εξαγωγή της βάσης δεδομένων, των ρυθμίσεων και της κατάστασης του προφίλ ξεχωριστά. Η βάση δεδομένων χρησιμοποιεί ZIP αν περιλαμβάνει προσαρμοσμένα καλύμματα.</string>
+    <string name="backup_export_database_with_covers_and_settings_description">Εξαγωγή της βάσης δεδομένων και των ρυθμίσεων ξεχωριστά. Η βάση δεδομένων χρησιμοποιεί ZIP αν περιλαμβάνει προσαρμοσμένα καλύμματα.</string>
+    <string name="backup_export_database_with_covers_description">Αποθήκευση τραγουδιών, λιστών αναπαραγωγής και ιστορικού ως SQLite. Αν έχετε προσαρμοσμένα εξώφυλλα, η εξαγωγή είναι ZIP με βάση δεδομένων και καλύμματα.</string>
     <string name="backup_export_profile_state_failed">Η εξαγωγή κατάστασης προφίλ απέτυχε</string>
     <string name="backup_export_settings_description">Εξαγωγή ρυθμίσεων και προτιμήσεων εφαρμογής</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Εισαγωγή της λίστας προφίλ και των φωτογραφιών προσώπου από ένα αρχείο .txt</string>
     <string name="backup_import_all">Εισαγωγή όλων</string>
+    <string name="backup_import_all_with_covers_description">Επαναφορά αντιγράφου ασφαλείας βάσης δεδομένων SQLite ή ZIP, ρυθμίσεις και κατάσταση προφίλ από ξεχωριστά αρχεία.</string>
+    <string name="backup_import_database_with_covers_and_settings_description">Επαναφορά ενός αντιγράφου ασφαλείας βάσης δεδομένων SQLite ή ZIP και ενός ξεχωριστού αρχείου ρυθμίσεων.</string>
     <string name="backup_import_completed_profile">Εισήχθη σε %1$s</string>
+    <string name="backup_import_database_with_covers_description">Επαναφορά τραγουδιών, λιστών αναπαραγωγής και ιστορικού από τα αντίγραφα ασφαλείας SQLite ή ZIP.</string>
     <string name="backup_import_profile_state_complete">Κατάσταση προφίλ εισήχθη: %1$d προφίλ</string>
     <string name="backup_import_profile_state_complete_base">Η κατάσταση προφίλ εισήχθη: βασικό προφίλ</string>
     <string name="backup_import_profile_state_failed">Η εισαγωγή προφίλ απέτυχε</string>
@@ -72,11 +116,14 @@
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Εκκαθάριση προσωρινής μνήμης τραγουδιού</string>
     <string name="cache_downloads_max_size_description">Επιλέξτε πόσο χώρο στο δίσκο είναι διαθέσιμος για τα ληφθέντα τραγούδια. Το κουμπί \"απορρίμματα\" αφαιρεί τον κατεβασμένο ήχο.</string>
+    <string name="cache_downloads_limit_description">Επιλέξτε πόσο χώρο στο δίσκο είναι διαθέσιμος για τα ληφθέντα τραγούδια. Το κουμπί \"απορρίμματα\" αφαιρεί τον κατεβασμένο ήχο.</string>
     <string name="cache_image_max_size_description">Περιορισμός χώρου στο δίσκο που χρησιμοποιείται από το έργο τέχνης cached. Το κουμπί \"κάδο\" καθαρίζει τις ληφθείσες εικόνες από αυτή την προσωρινή μνήμη.</string>
+    <string name="cache_image_limit_description">Περιορισμός χώρου στο δίσκο που χρησιμοποιείται από το έργο τέχνης cached. Το κουμπί \"κάδο\" καθαρίζει τις ληφθείσες εικόνες από αυτή την προσωρινή μνήμη.</string>
     <string name="cache_location_description">Επιλέξτε που η εφαρμογή αποθηκεύει την προσωρινή μνήμη αναπαραγωγής τραγουδιού.</string>
     <string name="cache_location_private">Ιδιωτικό</string>
     <string name="cache_location_system">Σύστημα</string>
     <string name="cache_streaming_max_size_description">Περιορισμός χώρου στο δίσκο που χρησιμοποιείται στη λανθάνουσα μνήμη τραγουδιών. Το κουμπί απορρίψεων καθαρίζει αυτήν την προσωρινή μνήμη αναπαραγωγής.</string>
+    <string name="cache_streaming_limit_description">Περιορισμός χώρου στο δίσκο που χρησιμοποιείται στη λανθάνουσα μνήμη τραγουδιών. Το κουμπί απορρίψεων καθαρίζει αυτήν την προσωρινή μνήμη αναπαραγωγής.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Λήψη όλων των τραγουδιών</string>
     <string name="downloads_action_refresh_quality">Ενημέρωση λήψεων</string>
@@ -136,7 +183,10 @@
     <string name="storage_samsung_advice_message">Η αυτόματη διαχείριση μνήμης της Samsung μπορεί να διαγράψει τις λήψεις και τα αρχεία cache του N-Zik, ακόμη και όταν δεν το ζητήσατε. Για να διατηρήσετε τις λήψεις σας ασφαλείς, χρησιμοποιήστε την ιδιωτική τοποθεσία αποθήκευσης (app) αντί του χώρου αποθήκευσης του συστήματος.</string>
     <string name="storage_samsung_advice_title">Συμβουλές αποθήκευσης Samsung</string>
     <string name="storage_samsung_system_usage_message">Αυτή τη στιγμή έχετε %1$s λήψεις και cache στον χώρο αποθήκευσης του συστήματος.</string>
+    <string name="backup_export_database_failed">Η εξαγωγή βάσης δεδομένων απέτυχε</string>
     <string name="backup_import_failed">Η εισαγωγή απέτυχε</string>
     <string name="export_no_songs">Δεν εξήχθησαν τραγούδια</string>
     <string name="export_cached_songs_generic_error">Η εξαγωγή απέτυχε</string>
+    <string name="backup_startup_preparing_library">Preparing your library…</string>
+    <string name="backup_startup_recovery_failed">Αδυναμία ολοκλήρωσης της επαναφοράς της βιβλιοθήκης σας.</string>
 </resources>
