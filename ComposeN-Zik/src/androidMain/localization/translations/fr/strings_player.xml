@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Choisir comment les pistes des artistes peu aimés sont exclues.</string>
     <string name="player_exclude_disliked_songs_description">Choisissez comment les pistes non aimées sont exclues des suggestions de lecture.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Exclure les pistes qui dépassent la limite de durée sélectionnée.</string>
-    <string name="player_excluded_song_count_format">Chansons exclues : %s</string>
+    <string name="player_excluded_song_count_format">Titres exclus : %s</string>
     <string name="player_keep_minimized">Garder minimisé</string>
     <string name="player_layout_artwork_style_description">Choisissez la façon dont le lecteur affiche les illustrations de piste.</string>
     <string name="player_layout_controls_style_description">Choisissez la mise en page des commandes du joueur.</string>
