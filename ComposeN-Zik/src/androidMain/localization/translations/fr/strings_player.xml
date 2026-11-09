@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Choisir comment les pistes des artistes peu aimés sont exclues.</string>
     <string name="player_exclude_disliked_songs_description">Choisissez comment les pistes non aimées sont exclues des suggestions de lecture.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Exclure les pistes qui dépassent la limite de durée sélectionnée.</string>
-    <string name="player_excluded_song_count_format">Titres %s exclus</string>
+    <string name="player_excluded_song_count_format">Chansons exclues : %s</string>
     <string name="player_keep_minimized">Garder minimisé</string>
     <string name="player_layout_artwork_style_description">Choisissez la façon dont le lecteur affiche les illustrations de piste.</string>
     <string name="player_layout_controls_style_description">Choisissez la mise en page des commandes du joueur.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Inclure les pochettes d\'album à côté des pistes à venir dans l\'aperçu du lecteur.</string>
     <string name="player_queue_preview_song_count_description">Choisissez le nombre de pistes à venir qui apparaissent dans l\'aperçu du lecteur.</string>
     <string name="player_queue_remove_selected_confirmation_format">Retirer la sélection de la file d\'attente ? Nombre de titres : %d</string>
-    <string name="player_queue_shuffled_count_format">File d\'attente aléatoire (%d titres)</string>
+    <string name="player_queue_shuffled_count_format">File mélangée (nombre de titres : %d)</string>
     <string name="player_remaining_time_visible_description">Afficher le temps restant dans la piste actuelle.</string>
     <string name="player_restart_required_message">Le lecteur doit être redémarré pour que les modifications soient effectives !</string>
     <string name="player_rotating_buttons">Boutons rotatifs</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Afficher un aperçu des pistes à venir dans le lecteur.</string>
     <string name="player_show_player_top_actions_bar_description">Affiche la ligne des actions du joueur au-dessus du contenu principal.</string>
     <string name="player_shuffle_empty_message">Aucun titre à mélanger</string>
-    <string name="player_shuffled_song_count_format">%d titres en lecture aléatoire</string>
+    <string name="player_shuffled_song_count_format">Titres mélangés : %d</string>
     <string name="player_sleep_timer_end_of_song_message">Délai de mise en veille reporté à la fin du titre</string>
     <string name="player_sleep_timer_finished_message">Minuterie de veille terminée</string>
     <string name="player_song_playback_error_format">Le média %1$s a mal fonctionné</string>
