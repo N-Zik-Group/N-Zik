@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm account</string>
     <string name="profile_identity_source_not_connected">Not logged in</string>
     <string name="profile_last_used">Last used</string>
-    <string name="profile_last_used_days">%d days ago</string>
-    <string name="profile_last_used_hours">%d h ago</string>
-    <string name="profile_last_used_minutes">%d min ago</string>
-    <string name="profile_last_used_months">%d months ago</string>
     <string name="profile_last_used_now">Just now</string>
-    <string name="profile_last_used_weeks">%d weeks ago</string>
     <string name="profile_local_name">Profile name</string>
     <string name="profile_local_name_description">Rename the current local profile.</string>
     <string name="profile_name_input_hint">Enter profile name</string>
@@ -255,6 +250,7 @@
     <string name="sync_youtube_playlist_add_failed">Failed to add the song in the YouTube Playlist</string>
     <string name="sync_youtube_playlist_add_success">Added the song in the YouTube Playlist</string>
     <string name="sync_youtube_playlist_batch_failed">Error occurred for the next 50 songs. Adding songs to the playlist one by one</string>
+    <string name="sync_youtube_playlist_no_songs_added">No songs were added to the YouTube playlist</string>
     <string name="sync_youtube_playlist_songs_added_suffix">songs are added in the YouTube Playlist. Repeat the process if there are any Missing Songs</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">songs will be added in the YTM playlist</string>
     <string name="sync_youtube_playlists_title">YTM Playlists</string>
