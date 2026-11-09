@@ -106,6 +106,9 @@ import app.n_zik.android.core.backup.BackupManager
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import app.it.fast4x.rimusic.utils.lastUpdateCheckKey
+import app.n_zik.android.utils.contentTranslationChoices
+import app.n_zik.android.utils.contentTranslationLanguage
+import app.n_zik.android.utils.contentTranslationTarget
 import java.util.Locale
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -134,10 +137,11 @@ private fun UpdateScreenContent(navController: NavController) {
         Updater.effectiveUpdaterSettings(checkUpdateState, checkBetaUpdates, BuildConfig.IS_AUTOUPDATE)
 
     var otherLanguageApp by rememberPreference(otherLanguageAppUpdateKey, Languages.System)
-    val appLang = Locale.getDefault().language
-    val activeTranslateLang = remember(otherLanguageApp, appLang) {
+    val appLocale = Locale.getDefault()
+    val appLang = appLocale.language
+    val activeTranslateLang = remember(otherLanguageApp, appLocale) {
         if (otherLanguageApp != Languages.System) otherLanguageApp
-        else Languages.entries.firstOrNull { it.code == appLang } ?: Languages.English
+        else contentTranslationLanguage(appLocale)
     }
     val changelogTranslationTarget = activeTranslateLang.changelogTranslationTarget
     var isTranslationActive by rememberPreference("updateTranslationActive", appLang != "en")
@@ -648,7 +652,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                             showLanguageDialog = false
                                         },
                                         valueText = { it.text },
-                                        values = Languages.entries.filter { it == Languages.System || it.changelogTranslationTarget != null },
+                                        values = contentTranslationChoices,
                                         onDismiss = { showLanguageDialog = false }
                                     )
                                 }
@@ -946,10 +950,7 @@ private fun UpdateScreenContent(navController: NavController) {
 }
 
 internal val Languages.changelogTranslationTarget: Language?
-    get() = when (this) {
-        Languages.System, Languages.Bashkir, Languages.Interlingua -> null
-        else -> translatorLanguage
-    }
+    get() = contentTranslationTarget
 
 /**
  * Reads the bundled local changelog (`R.raw.release_notes`), used as a last-resort fallback by

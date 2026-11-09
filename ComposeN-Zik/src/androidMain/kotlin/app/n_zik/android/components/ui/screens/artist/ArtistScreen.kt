@@ -165,6 +165,9 @@ import it.fast4x.innertube.YtMusic
 import it.fast4x.innertube.requests.ArtistPage
 import it.fast4x.innertube.requests.ArtistSection
 import it.fast4x.innertube.requests.queue
+import app.n_zik.android.utils.contentTranslationChoices
+import app.n_zik.android.utils.contentTranslationLanguage
+import app.n_zik.android.utils.contentTranslationTarget
 import java.util.Locale
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
@@ -505,12 +508,12 @@ fun ArtistOverview(
     val translate = Translate.init(onLongClick = { showTranslateLanguageDialog = true })
     val translator = Translator(NetworkClientFactory.getTranslatorClient())
     var otherLanguageApp by rememberPreference(otherLanguageAppArtistKey, Languages.System)
-    val appLang = Locale.getDefault().language
+    val appLang = Locale.getDefault()
     val activeTranslateLang = remember(otherLanguageApp, appLang) {
         if (otherLanguageApp != Languages.System) otherLanguageApp
-        else Languages.entries.firstOrNull { it.code == appLang } ?: Languages.English
+        else contentTranslationLanguage(appLang)
     }
-    val languageDestination = activeTranslateLang.translatorLanguage
+    val languageDestination = activeTranslateLang.contentTranslationTarget
 
     downloadAllDialog.Render()
     deleteAllDownloadsDialog.Render()
@@ -525,7 +528,7 @@ fun ArtistOverview(
                 showTranslateLanguageDialog = false
             },
             valueText = { it.text },
-            values = Languages.entries.toList(),
+            values = contentTranslationChoices,
             onDismiss = { showTranslateLanguageDialog = false }
         )
     }

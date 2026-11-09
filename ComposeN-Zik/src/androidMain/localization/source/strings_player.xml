@@ -246,7 +246,7 @@
     <string name="player_exclude_disliked_artists_description">Choose how tracks from disliked artists are excluded.</string>
     <string name="player_exclude_disliked_songs_description">Choose how disliked tracks are excluded from playback suggestions.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Exclude tracks that exceed the selected duration limit.</string>
-    <string name="player_excluded_song_count_format">Excluded %s songs</string>
+    <string name="player_excluded_song_count_format">Songs excluded: %s</string>
     <string name="player_keep_minimized">Keep minimized</string>
     <string name="player_layout_artwork_style_description">Choose how the player displays track artwork.</string>
     <string name="player_layout_controls_style_description">Choose the layout of the player controls.</string>

@@ -191,6 +191,9 @@ import androidx.media3.exoplayer.offline.Download
 import timber.log.Timber
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.n_zik.android.components.search.UnifiedSearchBar
+import app.n_zik.android.utils.contentTranslationChoices
+import app.n_zik.android.utils.contentTranslationLanguage
+import app.n_zik.android.utils.contentTranslationTarget
 import java.util.Locale
 
 
@@ -305,12 +308,12 @@ fun PlaylistSongList(
 
     val translator = Translator(NetworkClientFactory.getTranslatorClient())
     var otherLanguageApp by rememberPreference(otherLanguageAppPlaylistKey, Languages.System)
-    val appLang = Locale.getDefault().language
+    val appLang = Locale.getDefault()
     val activeTranslateLang = remember(otherLanguageApp, appLang) {
         if (otherLanguageApp != Languages.System) otherLanguageApp
-        else Languages.entries.firstOrNull { it.code == appLang } ?: Languages.English
+        else contentTranslationLanguage(appLang)
     }
-    val languageDestination = activeTranslateLang.translatorLanguage
+    val languageDestination = activeTranslateLang.contentTranslationTarget
 
     val localPlaylist by remember( saveCheck ) {
         Database.playlistTable
@@ -983,8 +986,8 @@ fun PlaylistSongList(
                             }
 
                             var translatedText by remember { mutableStateOf("") }
-                            if (translateEnabled == true) {
-                                LaunchedEffect(Unit) {
+                            if (translateEnabled == true && languageDestination != null) {
+                                LaunchedEffect(nonTranslatedText, languageDestination) {
                                     val result = withContext(NzikDispatchers.DATA) {
                                         try {
                                             translator.translate(
@@ -1037,7 +1040,7 @@ fun PlaylistSongList(
                                                 showTranslateLanguageDialog = false
                                             },
                                             valueText = { it.text },
-                                            values = Languages.entries.toList(),
+                                            values = contentTranslationChoices,
                                             onDismiss = { showTranslateLanguageDialog = false }
                                         )
                                     }

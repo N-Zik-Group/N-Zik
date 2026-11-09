@@ -176,6 +176,9 @@ import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
 import it.fast4x.innertube.Innertube
 import it.fast4x.innertube.YtMusic
+import app.n_zik.android.utils.contentTranslationChoices
+import app.n_zik.android.utils.contentTranslationLanguage
+import app.n_zik.android.utils.contentTranslationTarget
 import java.util.Locale
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
@@ -537,12 +540,12 @@ fun AlbumDetails(
     val translate = Translate.init(onLongClick = { showTranslateLanguageDialog = true })
     val translator = Translator(NetworkClientFactory.getTranslatorClient())
     var otherLanguageApp by rememberPreference(otherLanguageAppAlbumKey, Languages.System)
-    val appLangAlbum = Locale.getDefault().language
+    val appLangAlbum = Locale.getDefault()
     val activeTranslateLang = remember(otherLanguageApp, appLangAlbum) {
         if (otherLanguageApp != Languages.System) otherLanguageApp
-        else Languages.entries.firstOrNull { it.code == appLangAlbum } ?: Languages.English
+        else contentTranslationLanguage(appLangAlbum)
     }
-    val languageDestination = activeTranslateLang.translatorLanguage
+    val languageDestination = activeTranslateLang.contentTranslationTarget
 
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailAlbumSizeDp = Dimensions.thumbnails.album
@@ -569,7 +572,7 @@ fun AlbumDetails(
                 showTranslateLanguageDialog = false
             },
             valueText = { it.text },
-            values = Languages.entries.toList(),
+            values = contentTranslationChoices,
             onDismiss = { showTranslateLanguageDialog = false }
         )
     }

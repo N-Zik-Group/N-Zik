@@ -69,7 +69,7 @@ fun InfoAndCommunity(
     bio: String?,
     translate: Translate,
     translator: Translator,
-    languageDestination: Language,
+    languageDestination: Language?,
     lastSyncAt: Long? = null,
     lastSyncFailed: Boolean = false,
     pausedForSeconds: Long = 0,
@@ -84,16 +84,15 @@ fun InfoAndCommunity(
     val cleanedBio = bio?.cleanWikipediaText()
 
     var translatedBio by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(cleanedBio, translate.isActive) {
-        if (translate.isActive && !cleanedBio.isNullOrBlank()) {
+    LaunchedEffect(cleanedBio, translate.isActive, languageDestination) {
+        translatedBio = null
+        if (translate.isActive && languageDestination != null && !cleanedBio.isNullOrBlank()) {
             val result = withContext(NzikDispatchers.DATA) {
                 runCatching {
                     translator.translate(cleanedBio, languageDestination, Language.AUTO).translatedText
                 }.getOrNull()
             }
             translatedBio = result
-        } else {
-            translatedBio = null
         }
     }
 

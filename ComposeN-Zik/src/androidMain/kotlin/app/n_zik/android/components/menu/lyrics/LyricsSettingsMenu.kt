@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import app.it.fast4x.rimusic.enums.Languages
+import app.n_zik.android.utils.contentTranslationChoices
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.MenuState
@@ -500,7 +501,7 @@ class LyricsSettingsMenu private constructor(
                 title = stringResource(R.string.lyrics_action_choose_translation_language),
                 icon = R.drawable.translate,
                 selectedValue = otherLanguageApp,
-                values = Languages.entries.toList(),
+                values = contentTranslationChoices,
                 valueText = { it.text },
                 onValueSelected = { lang ->
                     otherLanguageApp = lang
@@ -964,7 +965,7 @@ class LyricsSettingsMenu private constructor(
                     title = stringResource(R.string.lyrics_action_choose_translation_language),
                     icon = R.drawable.translate,
                     selectedValue = otherLanguageApp,
-                    values = Languages.entries.toList(),
+                    values = contentTranslationChoices,
                     valueText = { it.text },
                     onValueSelected = { lang ->
                         otherLanguageApp = lang

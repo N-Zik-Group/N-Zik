@@ -651,22 +651,22 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
                 Timber.tag("Utils").e("YtMusic addToPlaylist (list of size ${items.size}) error: ${it.stackTraceToString()}")
                 if(it is ClientRequestException && it.response.status == HttpStatusCode.BadRequest) {
                     Toaster.w( R.string.sync_youtube_playlist_batch_failed )
-                    items.forEach { item ->
+                    items.forEachIndexed { itemIndex, item ->
                         delay(500)
                         PlaylistEditThrottle.throttle(ytplaylistId)
                         addToPlaylist(ytplaylistId, item.mediaId).onFailure {
                             Timber.tag("Utils").e("YtMusic addToPlaylist (list insert backup) error: ${it.stackTraceToString()}")
                                 Toaster.e(
-                                    appContext().resources.getString(R.string.sync_youtube_playlist_add_failed)+"${item.mediaMetadata.title} - ${item.mediaMetadata.artist}"
+                                    appContext().resources.getString(R.string.sync_youtube_playlist_add_failed) + ": ${item.mediaMetadata.title} - ${item.mediaMetadata.artist}"
                                 )
                         }.onSuccess {
                             Database.playlistTable
                                     .findById( localPlaylistId )
                                     .first()
                                     ?.let { playlist ->
-                                        Database.mapIgnore( playlist, *items.toTypedArray() )
+                                        Database.mapIgnore( playlist, item )
                                     }
-                            Toaster.n( appContext().resources.getString(R.string.sync_youtube_songs_remaining, items.size - (index + 1)) )
+                            Toaster.n( appContext().resources.getString(R.string.sync_youtube_songs_remaining, mediaItems.size - index * 50 - itemIndex - 1) )
                         }
                     }
                 }

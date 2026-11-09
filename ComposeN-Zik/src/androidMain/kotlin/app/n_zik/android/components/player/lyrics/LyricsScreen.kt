@@ -86,6 +86,8 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.scaleIn
 import dev.rebelonion.translator.Language
+import app.n_zik.android.utils.contentTranslationLanguage
+import app.n_zik.android.utils.contentTranslationTarget
 import java.util.Locale
 
 
@@ -160,13 +162,10 @@ fun LyricsScreen(
         var showSecondLine by rememberPreference(showSecondLineKey, false)
         var otherLanguageApp by rememberPreference(otherLanguageAppLyricsKey, Languages.System)
         var lyricsBackground by rememberPreference(lyricsBackgroundKey, LyricsBackground.Black)
-        val languageDestination = remember(otherLanguageApp) {
-            if (otherLanguageApp != Languages.System) {
-                otherLanguageApp.translatorLanguage
-            } else {
-                val systemCode = Locale.getDefault().language
-                Languages.entries.find { it.code == systemCode }?.translatorLanguage ?: Language.ENGLISH
-            }
+        val appLocale = Locale.getDefault()
+        val languageDestination = remember(otherLanguageApp, appLocale) {
+            val selection = if (otherLanguageApp == Languages.System) contentTranslationLanguage(appLocale) else otherLanguageApp
+            selection.contentTranslationTarget
         }
 
         var copyToClipboard by remember { mutableStateOf(false) }
@@ -342,9 +341,9 @@ fun LyricsScreen(
                                 forcedCoverBackground = coverDisplay?.takeIf { it.forceDark }?.background,
                                 lyricsBackground = lyricsBackground,
                                 showSecondLine = showSecondLine,
-                                translateEnabled = translateEnabled,
+                                translateEnabled = translateEnabled && languageDestination != null,
                                 romanizationEnabled = romanizationEnabled,
-                                languageDestination = languageDestination,
+                                languageDestination = languageDestination ?: Language.ENGLISH,
                                 translator = translator,
                                 lyricsOutline = lyricsOutline,
                                 colorPaletteMode = colorPaletteMode,
@@ -382,9 +381,9 @@ fun LyricsScreen(
                                 forcedCoverBackground = coverDisplay?.takeIf { it.forceDark }?.background,
                                 lyricsBackground = lyricsBackground,
                                 showSecondLine = showSecondLine,
-                                translateEnabled = translateEnabled,
+                                translateEnabled = translateEnabled && languageDestination != null,
                                 romanizationEnabled = romanizationEnabled,
-                                languageDestination = languageDestination,
+                                languageDestination = languageDestination ?: Language.ENGLISH,
                                 translator = translator,
                                 lyricsOutline = lyricsOutline,
                                 colorPaletteMode = colorPaletteMode,
@@ -413,9 +412,9 @@ fun LyricsScreen(
                                 showlyricsthumbnail = showlyricsthumbnail,
                                 isDisplayed = true,
                                 showSecondLine = showSecondLine,
-                                translateEnabled = translateEnabled,
+                                translateEnabled = translateEnabled && languageDestination != null,
                                 romanizationEnabled = romanizationEnabled,
-                                languageDestination = languageDestination,
+                                languageDestination = languageDestination ?: Language.ENGLISH,
                                 translator = translator,
                                 lyricsBackground = lyricsBackground,
                                 lyricsOutline = lyricsOutline,
