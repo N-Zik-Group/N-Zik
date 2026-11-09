@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Lagerplads</string>
+    <string name="storage_breakdown_info_title">Om lagerplads</string>
+    <string name="storage_breakdown_nzik_total">I alt brugt af NZik</string>
+    <string name="storage_breakdown_subtitle">Opdeling efter oplagring</string>
+    <string name="storage_breakdown_waiting">Måling af lagerplads…</string>
+    <string name="storage_breakdown_cached_images">Cachelagrede billeder</string>
+    <string name="storage_breakdown_streamed_audio">Streaming af lyd</string>
+    <string name="storage_breakdown_downloaded_audio">Downloadet lyd</string>
+    <string name="storage_breakdown_custom_covers">Brugerdefinerede omslag</string>
+    <string name="storage_breakdown_waveforms">Bølgeformer</string>
+    <string name="storage_breakdown_other_nzik_data">Andre NZik data</string>
+    <string name="storage_breakdown_other_used_space">System, apps &amp; filer</string>
+    <string name="storage_breakdown_free_space">Ledig plads</string>
+    <string name="storage_info_images">Artwork og andre billeder cachet for hurtigere visning.</string>
+    <string name="storage_info_streaming">Lyd holdes midlertidigt efter streaming, så den kan afspilles igen uden at hente de samme data.</string>
+    <string name="storage_info_downloads">Lyd gemt i NZik til offline lytning.</string>
+    <string name="storage_info_waveforms">Genererede filer, der bruges til at tegne lydbølgeformen i afspilleren.</string>
+    <string name="storage_info_covers">Artwork du valgte eller importerede som brugerdefinerede omslag.</string>
+    <string name="storage_info_other_nzik">Resten af NZik\'s private data, herunder dens databaser, indstillinger, indekser, udvidelser og logs.</string>
+    <string name="storage_info_other_used">Den resterende brugte plads på den interne volumen, herunder Android, installerede apps og personlige filer.</string>
+    <string name="storage_info_free">Plads til apps og filer på den interne lydstyrke.</string>
+    <string name="storage_cleanup_title">Oprydning</string>
+    <string name="storage_cleanup_failed">Kunne ikke afslutte lagringsoprydning.</string>
+    <string name="storage_cleanup_images_description">Ryd trykfil cachet af NZik.</string>
+    <string name="storage_cleanup_streaming_description">Ryd lyd cachet under streaming.</string>
+    <string name="storage_cleanup_downloads_description">Slet offline lyd og annullere afventende downloads for den aktive profil download lagring.</string>
+    <string name="storage_cleanup_waveforms_description">Ryd genererede bølgeformfiler.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Ryd kurveformer</string>
+    <string name="storage_cleanup_diagnostic_logs">Ryd diagnostiske logfiler</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Slet fejlsøgnings- og nedbrudslogfiler. Din logningsindstilling forbliver den samme.</string>
+    <string name="storage_cleanup_temporary_files">Fjern forladte midlertidige filer</string>
+    <string name="storage_cleanup_temporary_files_description">Fjern forladte billede editor kladder og Rewind share indfanger ældre end 24 timer.</string>
+    <string name="storage_cleanup_all">Ryd alle</string>
+    <string name="storage_cleanup_all_description">Ryd billed- og streamingcacher og genererede bølgeformer for den aktive profil, herunder lagerplads den deler med andre profiler. Slet offline lyd og annullere afventende downloads for den aktive profil download lagring. Slet diagnostiske logs, forladte billede editor kladder og udløbet Rewind share fanger. Dit bibliotek, brugerdefinerede omslag og indstillinger bibeholdes.</string>
     <!-- Backup -->
     <string name="backup_action_export">Eksportér sikkerhedskopi</string>
     <string name="backup_action_import">Importér sikkerhedskopi</string>
@@ -82,12 +117,15 @@
     <!-- Cache -->
     <string name="cache_action_reset">Nulstil cache</string>
     <string name="cache_clear_song_dialog_title">Ryd sang cache</string>
-    <string name="cache_downloads_max_size_description">Vælg, hvor meget diskplads der er tilgængeligt til downloadede sange. Papirkurv-knappen fjerner downloadet lyd.</string>
-    <string name="cache_image_max_size_description">Begræns diskplads brugt af cachet kunstværk. Papirkurv-knappen rydder downloadede billeder fra denne cache.</string>
+    <string name="cache_downloads_max_size_description">Vælg hvor meget diskplads der er til rådighed for downloadede sange.</string>
+    <string name="cache_downloads_limit_description">Vælg hvor meget diskplads der er til rådighed for downloadede sange.</string>
+    <string name="cache_image_max_size_description">Begræns diskplads brugt af cachelagrede illustrationer.</string>
+    <string name="cache_image_limit_description">Begræns diskplads brugt af cachelagrede illustrationer.</string>
     <string name="cache_location_description">Vælg, hvor app gemmer sin sang afspilning cache.</string>
     <string name="cache_location_private">Privat</string>
     <string name="cache_location_system">System</string>
-    <string name="cache_streaming_max_size_description">Begræns diskplads brugt til at cache streamede sange. Papirkurven knappen rydder denne afspilning cache.</string>
+    <string name="cache_streaming_max_size_description">Begræns diskplads brugt til at cache streamede sange.</string>
+    <string name="cache_streaming_limit_description">Begræns diskplads brugt til at cache streamede sange.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Hent alle sange</string>
     <string name="downloads_action_refresh_quality">Opdater downloads</string>
