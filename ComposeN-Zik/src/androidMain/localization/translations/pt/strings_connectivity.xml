@@ -198,4 +198,5 @@
     <string name="listen_together_server_request_failed">O servidor Outen Together não pôde concluir a solicitação.</string>
     <string name="network_stream_retrying_playback">A tentar retomar a reprodução…</string>
     <string name="listen_together_invite_link">Ouça o link de convite juntos</string>
+    <string name="listen_together_server_location_poland">Polônia</string>
 </resources>
