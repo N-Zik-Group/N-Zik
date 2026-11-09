@@ -1,4 +1,4 @@
-Meertalige YouTube Music-app voor Android: snel, aanpasbaar en langdurig ondersteund.
+Een meertalige YouTube Music frontend voor Android, gericht op prestaties, UI/UX raffinaderijen, feature expansie en langdurige ondersteuning.
 
 <b>N-Zik</b> is een open-source vork van <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
@@ -15,7 +15,7 @@ Meertalige YouTube Music-app voor Android: snel, aanpasbaar en langdurig onderst
 - Kunstenaar profielen, ontdekking en spoelen, inklapbare huiskoppen
 
 🫧 <b>Glazen Effect (BETA, optioneel)</b>
-Standaard uit. Kies per categorie natief, alleen contour of Glass en stel de kwaliteit in. Verlaag die of zet het effect uit bij hoger accu- of grafisch verbruik.
+Uitgeschakeld met verse installaties. Inschakelen in Instellingen: natieve, enkel contouren of glas per categorie, met verstelbare kwaliteit. Kan het rendering en accugebruik vergroten; kwaliteit verminderen of uitschakelen indien nodig.
 Glazen credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Achtergrond (Apache-2.0).
 
 🎵 <b>Audio-ervaring</b>
@@ -33,15 +33,15 @@ Glazen credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Ac
 -Automatische back-up met aangepaste intervallen en retentie
 
 🔗 <b>Integraties</b>
-- YouTube-login voor aanbevelingen en video, met experimentele tweerichtingssynchronisatie
+- YouTube-login voor aanbevelingen en het afspelen van video's, plus een experimentele tweewegse sync engine
 - Last.fm scrobblen met nu spelen en liefde/los
 - MusicBrainz artiest en album inzichten
 - Discord Rich Presence, inclusief geavanceerde modus met live voorbeeld
-- Invidious voor alternatieve YouTube-streaming
+- Onbenauwde integratie voor alternatieve YouTube streaming
 - Afspeellijst import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Luister samen</b>
-- Start of volg een live luistersessie via code of uitnodigingslink
+- Deelnemen aan of hosten van live luistersessies met andere gebruikers via code of uitnodigingslink
 
 🗓️ <b>Terugspoelen</b>
 - Jaarlijkse en maandelijkse luisterherhalingen met automatisch gegenereerde Rewind afspeellijsten
@@ -64,6 +64,6 @@ Glazen credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Ac
 - FOSS (`com.nevar.nzik.fos`): Zonder automatische updater, voor F-Droid (alle architectures)
 - Dev64/Dev32 (`com.nevar.nzik.dev`): Ontwikkeling builds, alleen testen
 
-Geen build bevat FFmpeg. Download bij eerste gebruik, beheer via Instellingen → Extensies. Alleen FOSS staat op F-Droid.
+Geen build bundles FFmpeg: het is een downloadbare extensie (geïnstalleerd op het eerste gebruik, beheerd in Instellingen → Extensies). Alleen FOSS is op F-Droid.
 
-Historische credits: ViMusic.
+Onder andere ViMusic historische projectobligaties.
