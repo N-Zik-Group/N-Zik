@@ -40,6 +40,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
 import app.n_zik.android.typography
@@ -108,6 +109,7 @@ internal fun AboutContributorsCard() {
 
 
 
+                    SettingsCardSectionDivider()
                     var developersExpanded by remember { mutableStateOf(false) }
                     val developersRotation by animateFloatAsState(
                         targetValue = if (developersExpanded) 90f else 0f,

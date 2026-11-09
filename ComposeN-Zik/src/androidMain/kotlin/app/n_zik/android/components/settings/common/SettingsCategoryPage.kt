@@ -117,7 +117,7 @@ fun SettingsCategoryPage(
         val preferred = when (categoryId) {
             "player" -> listOf(2, 0)
             "privacy" -> listOf(9, 4, 3)
-            "data" -> listOf(7, 4)
+            "data" -> listOf(4, 7)
             else -> cards.map { it.tab }.distinct()
         }
         preferred.filter { tab -> cards.any { it.tab == tab } }

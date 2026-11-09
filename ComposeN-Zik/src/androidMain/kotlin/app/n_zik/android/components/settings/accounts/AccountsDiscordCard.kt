@@ -88,6 +88,7 @@ import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
 import app.n_zik.android.components.settings.common.settingsSearchTarget
@@ -544,14 +545,16 @@ private fun DiscordRpcErrorBanner(error: DiscordRpcError) {
 private fun DiscordSettingsGroup(
     title: String,
     modifier: Modifier = Modifier,
+    showDivider: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(modifier = modifier) {
+        if (showDivider) SettingsCardSectionDivider()
         Text(
             text = title,
             style = typography().xs.semiBold.copy(colorPalette().textSecondary),
             modifier = Modifier
-                .padding(top = 12.dp)
+                .padding(top = if (showDivider) 0.dp else 12.dp)
                 .padding(start = 12.dp),
         )
         content()
@@ -614,6 +617,7 @@ internal fun DiscordAdvancedSection(search: Search) {
 
     // Exactly like the state/details fields show theirs; there is no longer a
     // "details - state" recovery expression for it.
+    val showGroupDividers = search.inputValue.isBlank()
     Column {
         // Grouped layout (2026-09-22): related entries live under a shared group header —
         // the presence card parts (lines, images, progress bar).
@@ -643,7 +647,7 @@ internal fun DiscordAdvancedSection(search: Search) {
                 )
             }
         }
-        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_lines)) {
+        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_lines), showDivider = showGroupDividers) {
             // Linked visibility: the section toggle comes first, and the linked template
             // entry animates in/out with it (Last.fm card pattern — the app's default
 
@@ -746,7 +750,7 @@ internal fun DiscordAdvancedSection(search: Search) {
                 }
             }
         }
-        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_images)) {
+        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_images), showDivider = showGroupDividers) {
             if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_show_artwork).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_show_artwork"),
@@ -809,7 +813,7 @@ internal fun DiscordAdvancedSection(search: Search) {
                 }
             }
         }
-        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_progress)) {
+        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_progress), showDivider = showGroupDividers) {
             if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_show_timestamps).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_show_timestamps"),
@@ -821,7 +825,7 @@ internal fun DiscordAdvancedSection(search: Search) {
                 )
             }
         }
-        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_buttons)) {
+        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_buttons), showDivider = showGroupDividers) {
             if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_button1).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button1"),
@@ -902,7 +906,7 @@ internal fun DiscordAdvancedSection(search: Search) {
                 }
             }
         }
-        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_connection)) {
+        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_connection), showDivider = showGroupDividers) {
             // Close the RPC connection after 10 min with no media event (advanced option,
             // default on = current behavior) — off keeps the connection open.
             if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_idle_close).contains(search.inputValue, true)) {

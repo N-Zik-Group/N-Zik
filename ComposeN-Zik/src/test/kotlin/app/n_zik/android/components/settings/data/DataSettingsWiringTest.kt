@@ -1,6 +1,9 @@
 package app.n_zik.android.components.settings.data
 
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 
@@ -12,6 +15,7 @@ import android.os.Looper
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
@@ -29,13 +33,19 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.core.app.ApplicationProvider
+import androidx.media3.exoplayer.offline.DownloadService
+import androidx.media3.datasource.cache.Cache
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.mockkStatic
 import io.mockk.unmockkObject
+import io.mockk.unmockkStatic
+import io.mockk.verify
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -54,6 +64,7 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
+import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.backup.ImportBackupDialog
 import app.n_zik.android.components.dialog.common.RestartAppDialog
@@ -62,6 +73,10 @@ import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.EventTable
+import app.n_zik.android.core.profiles.waveformsDir
+import app.n_zik.android.download.services.MyDownloadService
+import app.n_zik.android.playback.services.PlayerServiceModern
+import java.util.concurrent.atomic.AtomicInteger
 
 /** Behavioral wiring for the migrated Data page, using semantic selectors. */
 @RunWith(RobolectricTestRunner::class)
@@ -78,7 +93,7 @@ class DataSettingsWiringTest {
         uiRoundnessShape = CircleShape,
         artistThumbnailShape = CircleShape,
     )
-    private val cardIds = listOf("cache", "backup", "auto-backup", "history", "reset")
+    private val cardIds = listOf("storage", "cache", "backup", "auto-backup", "history", "reset")
 
     @Before fun setUp() {
         searchMessages.clear()
@@ -140,6 +155,64 @@ class DataSettingsWiringTest {
         composeRule.waitForIdle()
         assertEquals(listOf(query), SearchHistoryStore.all(preferences, SearchHistoryStore.PAGE_SETTINGS_DATA))
         assertTrue(SearchHistoryStore.all(preferences, SearchHistoryStore.PAGE_SETTINGS_GENERAL).isEmpty())
+    }
+
+    @Test fun `confirmed storage actions use their own cleanup target`() {
+        val binder = mockk<PlayerServiceModern.Binder>()
+        val cache = mockk<Cache>(relaxed = true)
+        every { binder.cache } returns cache
+        every { cache.keys } returns setOf("first", "second")
+        every { ImageCacheFactory.clearImageCache() } answers { }
+        mockkStatic(DownloadService::class)
+        every { DownloadService.sendRemoveAllDownloads(any(), MyDownloadService::class.java, false) } answers { }
+
+        val activeDirectory = waveformsDir(context, "default").apply { mkdirs() }
+        val inactiveDirectory = waveformsDir(context, "inactive").apply { mkdirs() }
+        val generated = activeDirectory.resolve("generated.json").apply { writeText("{}") }
+        val unrelated = activeDirectory.resolve("keep.txt").apply { writeText("keep") }
+        val inactive = inactiveDirectory.resolve("inactive.json").apply { writeText("{}") }
+        val completed = AtomicInteger()
+        try {
+            composeRule.setContent {
+                CompositionLocalProvider(LocalAppearance provides appearance, LocalPlayerServiceBinder provides binder) {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                        DataStorageCleanup(onCleanupComplete = { completed.incrementAndGet() })
+                    }
+                }
+            }
+
+            fun confirm(action: String, label: Int, expectedCompletions: Int) {
+                composeRule.onNodeWithTag("data.storage.cleanup.$action").performScrollTo().performClick()
+                composeRule.onNodeWithText(context.getString(label)).performClick()
+                composeRule.waitUntil(10_000) {
+                    Shadows.shadowOf(Looper.getMainLooper()).idle()
+                    completed.get() == expectedCompletions
+                }
+            }
+
+            confirm("images", R.string.common_action_clear, 1)
+            verify(exactly = 1) { ImageCacheFactory.clearImageCache() }
+            verify(exactly = 0) { cache.removeResource(any()) }
+            assertTrue(generated.exists())
+
+            confirm("streaming", R.string.common_action_clear, 2)
+            verify(exactly = 1) { cache.removeResource("first") }
+            verify(exactly = 1) { cache.removeResource("second") }
+            assertTrue(generated.exists())
+
+            confirm("downloads", R.string.common_action_delete, 3)
+            verify(exactly = 1) { DownloadService.sendRemoveAllDownloads(any(), MyDownloadService::class.java, false) }
+            verify(exactly = 2) { cache.removeResource(any()) }
+            verify(exactly = 0) { binder.downloadCache }
+            assertTrue(generated.exists())
+
+            confirm("waveforms", R.string.common_action_clear, 4)
+            assertFalse(generated.exists())
+            assertTrue(unrelated.exists())
+            assertTrue(inactive.exists())
+        } finally {
+            unmockkStatic(DownloadService::class)
+        }
     }
 
     @Test fun `unknown query shows empty state and clearing restores all cards`() {

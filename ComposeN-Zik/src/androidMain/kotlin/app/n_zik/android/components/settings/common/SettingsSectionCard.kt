@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -68,6 +69,7 @@ fun SettingsSectionCard(
     expanded: Boolean? = null,
     onHeaderClick: (() -> Unit)? = null,
     headerModifier: Modifier = Modifier,
+    headerAction: (@Composable () -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val highlighted = LocalSettingsTargets.current?.highlighted
@@ -160,6 +162,10 @@ fun SettingsSectionCard(
                                         maxLines = 2, overflow = TextOverflow.Ellipsis,
                                     )
                                 }
+                            }
+                            if (headerAction != null) {
+                                Spacer(Modifier.width(8.dp))
+                                headerAction()
                             }
                             if (expanded != null) {
                                 Spacer(Modifier.width(8.dp))
@@ -300,5 +306,28 @@ fun ImportantSettingsDescription(
         modifier = modifier
             .padding(horizontal = 16.dp)
             .padding(vertical = 8.dp)
+    )
+}
+
+/** Accent category label inside the card (the sheet's MenuSectionTitle pattern, compact 8dp vertical padding for the card layout). */
+@Composable
+internal fun CardCategoryLabel(label: String) {
+    BasicText(
+        text = label,
+        style = typography().xxs.semiBold.copy(
+            color = colorPalette().accent,
+            textAlign = TextAlign.Start,
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 4.dp),
+    )
+}
+
+@Composable
+internal fun SettingsCardSectionDivider() {
+    HorizontalDivider(
+        modifier = Modifier.padding(top = 16.dp, bottom = 4.dp),
+        color = colorPalette().textSecondary.copy(alpha = 0.2f),
     )
 }

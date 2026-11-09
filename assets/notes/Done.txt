@@ -1,3 +1,9 @@
+Added:
+- feat(settings): add a live storage breakdown and cleanup actions
+  - Show internal storage use by category, the total used by NZik, and an explanation of each segment.
+  - Move confirmed cleanup actions to Storage and keep quota and location controls in Cache.
+  - Share the section divider across multi-section settings cards and index Storage in global and page search.
+
 Fixed:
 - fix(player): honor timeline and controls swap in the compact portrait player
   - Apply the saved order in the compact expanded and lyrics layouts while retaining the existing spacing.

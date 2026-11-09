@@ -40,6 +40,17 @@ class SettingsDetailedSearchTest {
         }
     }
 
+    @Test fun storageSectionsAreSearchableGloballyAndInData() {
+        for (locale in listOf(Locale.ENGLISH, Locale.FRENCH)) {
+            val localized = localized(locale)
+            for (section in listOf(R.string.storage_breakdown_subtitle, R.string.storage_cleanup_title)) {
+                val query = localized.getString(section)
+                assertTrue(searchSettingsCardResults(localized, query).any { it.titleRes == R.string.storage_breakdown_title })
+                assertTrue(R.string.storage_breakdown_title in visibleCardTitleRes(localized, 4, query))
+            }
+        }
+    }
+
     @Test fun allEntriesHaveUniqueIdsAndReachableParentCards() {
         assertTrue(SettingsEntryTargets.isNotEmpty())
         assertTrue(EmbeddedSettingsEntryTargets.isNotEmpty())

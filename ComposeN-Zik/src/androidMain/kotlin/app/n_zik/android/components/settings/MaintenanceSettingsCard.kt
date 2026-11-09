@@ -30,11 +30,12 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.components.settings.common.ImportantSettingsDescription
+import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
@@ -211,6 +212,7 @@ fun MaintenanceSettingsCard(
             // + the restart note + the ALWAYS-visible export entry (the dialog greys out
 //
             // the debug-dependent options while the switch is off)
+            SettingsCardSectionDivider()
             CardCategoryLabel(stringResource(R.string.common_debug_title))
             if (BuildConfig.DEBUG) {
                 var updaterLayoutAccess by rememberPreference(DEBUG_UPDATER_ACCESS_KEY, false)
@@ -261,21 +263,6 @@ fun MaintenanceSettingsCard(
                 renderLogsDialog = false,
             )
         },
-    )
-}
-
-/** Accent category label inside the card (the sheet's MenuSectionTitle pattern, compact 8dp vertical padding for the card layout). */
-@Composable
-private fun CardCategoryLabel(label: String) {
-    BasicText(
-        text = label,
-        style = typography().xxs.semiBold.copy(
-            color = colorPalette().accent,
-            textAlign = TextAlign.Start,
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 4.dp),
     )
 }
 

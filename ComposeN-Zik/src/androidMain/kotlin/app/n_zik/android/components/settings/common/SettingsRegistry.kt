@@ -295,6 +295,12 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(3, R.string.settings_reset, R.drawable.refresh,
         keywordRes = listOf(R.string.settings_reset, R.string.settings_restore_default_settings)),
     // Tab 4 - Data
+    SettingsCardRegistryEntry(4, R.string.storage_breakdown_title, R.drawable.server,
+        keywordRes = listOf(
+            R.string.storage_breakdown_subtitle, R.string.storage_cleanup_title,
+            R.string.storage_breakdown_cached_images, R.string.storage_breakdown_streamed_audio,
+            R.string.storage_breakdown_downloaded_audio, R.string.storage_breakdown_waveforms,
+        )),
     SettingsCardRegistryEntry(4, R.string.settings_cache_title, R.drawable.server,
         keywordRes = listOf(
             R.string.settings_cache_title, R.string.settings_cache_eviction_description, R.string.settings_cache_image_size_limit_label,

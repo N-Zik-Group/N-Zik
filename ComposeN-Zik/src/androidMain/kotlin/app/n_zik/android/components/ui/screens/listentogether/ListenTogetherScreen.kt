@@ -43,10 +43,9 @@ import androidx.compose.foundation.shape.CircleShape
 import app.n_zik.android.components.glass.PageButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import app.n_zik.android.components.ui.UiIconButton as IconButton
-import androidx.compose.material3.LoadingIndicator
+import app.n_zik.android.components.ui.InlineLoader
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -1179,16 +1178,6 @@ private fun RoomActionButton(
             style = typography().s.semiBold,
         )
     }
-}
-
-/** Inline variant of the app's themed [Loader] for card-sized containers: the exact same M3 expressive LoadingIndicator (accent color, default 100dp) without the themed wrapper's full-page bottom spacer — that spacer reserves room for the floating nav bar / mini-player and creates a large gap under the spinner inside the LT cards (user-reported). */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-internal fun InlineLoader(modifier: Modifier = Modifier) {
-    LoadingIndicator(
-        color = colorPalette().accent,
-        modifier = modifier.size(100.dp),
-    )
 }
 
 /** Standard menu icon chip (same pattern as the other app menus): tinted rounded 32dp square with an 18dp icon. */
