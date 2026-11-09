@@ -242,6 +242,5 @@
     <string name="thumbnail_remove_success">Miniatura a fost eliminată</string>
     <string name="glass_effect_rendering_quality">Calitate randare</string>
     <string name="image_editor_original">Raportul original</string>
-    <string name="image_editor_cancel">Anulează</string>
     <string name="image_editor_apply">Utilizare imagine</string>
 </resources>
