@@ -119,3 +119,7 @@ Fixed:
 Fixed:
 - fix(downloads): clean legacy labels with artist separators (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
   - Recognize stored title markers in old notifications and preserve display-ready labels for new requests.
+
+Fixed:
+- test(images): cover crop confirmation and activity recreation (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Exercise the actual crop result delivery and verify selected coordinates survive Activity recreation.
