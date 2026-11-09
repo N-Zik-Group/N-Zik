@@ -38,7 +38,6 @@
     <!-- Backup -->
     <string name="backup_action_export">Exportovat zálohu</string>
     <string name="backup_action_import">Importovat zálohu</string>
-    <string name="backup_action_import_legacy_migration">Importovat migrační soubor.</string>
     <string name="backup_auto_custom_interval_unit_description">Vyberte časovou jednotku pro vlastní interval zálohy.</string>
     <string name="backup_auto_custom_interval_value_description">Nastavte počet časových jednotek mezi automatickými zálohami.</string>
     <string name="backup_auto_include_discord_credentials_description">Zahrnout uložené přihlašovací údaje k Discord účtu do automatických záloh nastavení.</string>
@@ -51,19 +50,18 @@
     <string name="backup_auto_schedule_day_of_month_description">Vyberte den měsíce pro automatické měsíční zálohy.</string>
     <string name="backup_auto_schedule_day_of_week_description">Vyberte den v týdnu pro týdenní automatické zálohy.</string>
     <string name="backup_auto_schedule_time_description">Vyberte hodinu, ve které budou automaticky spuštěny zálohy.</string>
-    <string name="backup_auto_target_description">Zvolte, zda automatické zálohy zahrnují databázi, nastavení, nebo obojí.</string>
+    <string name="backup_auto_content_format_description">Zvolte, co se má zálohovat automaticky. Zálohování databáze používá ZIP, když obsahují vlastní obálky.</string>
     <string name="backup_before_update_description">Automaticky zálohovat data před instalací aktualizace</string>
     <string name="backup_before_update_failed">Předinstalování zálohy se nezdařilo</string>
     <string name="backup_before_update_running_message">Zálohování dat před instalací…</string>
     <string name="backup_before_update_running_title">Probíhá zálohování</string>
     <string name="backup_excluded_preferences_and_cache_description">Osobní předvolby (tj. režim tématu) a mezipaměť jsou vynechány.</string>
-    <string name="backup_export_description">Exportovat databázi nebo nastavení do souboru</string>
-    <string name="backup_import_description">Importovat databázi nebo nastavení ze souboru</string>
+    <string name="backup_export_library_options_description">Exportovat databázi s jejími vlastními obálkami, nastaveními nebo profily</string>
+    <string name="backup_import_library_options_description">Obnovit zálohu, nastavení nebo profily SQLite nebo ZIP databáze</string>
     <string name="backup_include_discord_credentials">Zahrnout Discord identitu</string>
     <string name="backup_include_lastfm_credentials">Zahrnout údaje o identitě Last.fm</string>
     <string name="backup_include_proxy_password">Zahrnout heslo proxy serveru</string>
     <string name="backup_include_youtube_credentials">Zahrnout YouTube identitu</string>
-    <string name="backup_legacy_migration_description">Pro staré uživatele před převodem.\nPoužijte starou aplikaci k zálohování pro migraci.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Stávající data budou přepsána. %1$s se po obnovení databáze automaticky uzavře.</string>
     <string name="backup_target_database_and_settings_label">Databáze + Nastavení</string>
     <string name="backup_target_database_label">Databáze</string>
@@ -96,18 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Exportovat seznam profilů a fotky obličeje do jednoho .txt souboru</string>
     <string name="backup_export_all">Exportovat vše</string>
-    <string name="backup_export_all_description">Exportovat databázi, nastavení a stav profilu</string>
-    <string name="backup_export_both_description">Exportovat databázi a nastavení jako samostatné soubory</string>
-    <string name="backup_export_database_description">Exportovat databázi s skladbami, seznamy skladeb a historií</string>
+    <string name="backup_export_all_with_covers_description">Exportovat databázi, nastavení a stav profilu zvlášť. Databáze používá ZIP, pokud obsahuje vlastní obálky.</string>
+    <string name="backup_export_database_with_covers_and_settings_description">Exportovat databázi a nastavení odděleně. Databáze používá ZIP, pokud obsahuje vlastní kryty.</string>
+    <string name="backup_export_database_with_covers_description">Ukládat skladby, playlisty a historii jako SQLite. Pokud máte vlastní obálky, export je ZIP s databází a obálkami.</string>
     <string name="backup_export_profile_state_failed">Export stavu profilu se nezdařil</string>
     <string name="backup_export_settings_description">Exportovat nastavení a předvolby aplikace</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importovat seznam profilů a fotky obličeje ze souboru .txt</string>
     <string name="backup_import_all">Importovat vše</string>
-    <string name="backup_import_all_description">Importovat databázi, nastavení a stav profilu</string>
-    <string name="backup_import_both_description">Importovat databázi a nastavení z oddělených souborů</string>
+    <string name="backup_import_all_with_covers_description">Obnovit zálohu SQLite nebo ZIP databáze, nastavení a stav profilu z oddělených souborů.</string>
+    <string name="backup_import_database_with_covers_and_settings_description">Obnovit zálohu SQLite nebo ZIP databáze a samostatný soubor nastavení.</string>
     <string name="backup_import_completed_profile">Importováno do %1$s</string>
-    <string name="backup_import_database_description">Importovat databázi s skladbami, seznamy skladeb a historií</string>
+    <string name="backup_import_database_with_covers_description">Obnovení skladeb, skladeb a historie z SQLite nebo ZIP. ZIP záloh také obnoví zahrnuté vlastní kryty.</string>
     <string name="backup_import_profile_state_complete">Stav profilu importován: %1$d profily</string>
     <string name="backup_import_profile_state_complete_base">Stav profilu importován: základní profil</string>
     <string name="backup_import_profile_state_failed">Import stavu profilu se nezdařil</string>
@@ -117,15 +115,15 @@
     <!-- Cache -->
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Vymazat mezipaměť skladeb</string>
-    <string name="cache_downloads_max_size_description">Vyberte kolik místa na disku je k dispozici pro stažené písně.</string>
-    <string name="cache_downloads_limit_description">Vyberte kolik místa na disku je k dispozici pro stažené písně.</string>
-    <string name="cache_image_max_size_description">Omezit prostor na disk použitý v mezipaměti.</string>
-    <string name="cache_image_limit_description">Omezit prostor na disk použitý v mezipaměti.</string>
+    <string name="cache_downloads_max_size_description">Vyberte kolik místa na disku je k dispozici pro stažené skladby. Tlačítko Koš odstraní stažené zvuky.</string>
+    <string name="cache_downloads_limit_description">Vyberte kolik místa na disku je k dispozici pro stažené skladby. Tlačítko Koš odstraní stažené zvuky.</string>
+    <string name="cache_image_max_size_description">Omezit prostor na disk použitý v mezipaměti obrázků. Tlačítko koš vymaže stažené obrázky z této keše.</string>
+    <string name="cache_image_limit_description">Omezit prostor na disk použitý v mezipaměti obrázků. Tlačítko koš vymaže stažené obrázky z této keše.</string>
     <string name="cache_location_description">Vyberte, kde aplikace ukládá svou vyrovnávací paměť pro přehrávání skladeb.</string>
     <string name="cache_location_private">Soukromé</string>
     <string name="cache_location_system">Systémové</string>
-    <string name="cache_streaming_max_size_description">Omezit prostor na disk použitý pro ukládání streamovaných skladeb.</string>
-    <string name="cache_streaming_limit_description">Omezit prostor na disk použitý pro ukládání streamovaných skladeb.</string>
+    <string name="cache_streaming_max_size_description">Omezit prostor na disk použitý pro ukládání streamovaných skladeb. Tlačítko koš vymaže tuto vyrovnávací paměť přehrávání.</string>
+    <string name="cache_streaming_limit_description">Omezit prostor na disk použitý pro ukládání streamovaných skladeb. Tlačítko koš vymaže tuto vyrovnávací paměť přehrávání.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Stáhnout všechny skladby</string>
     <string name="downloads_action_refresh_quality">Aktualizovat stahování</string>
@@ -139,7 +137,7 @@
     <string name="downloads_delete_all_count_confirmation">Smazat všechna stažená %d?</string>
     <string name="downloads_delete_dialog_title">Odstranit stahování</string>
     <string name="downloads_download_all_confirmation">Opravdu chcete stahovat vše?</string>
-    <string name="downloads_download_all_count_confirmation">Stáhnout vše? (Songs: %d)</string>
+    <string name="downloads_download_all_count_confirmation">Download all %d songs?</string>
     <string name="downloads_download_dialog_title">Stáhnout skladby</string>
     <string name="downloads_empty_message">Nic ke stažení</string>
     <string name="downloads_error_network">Došlo k chybě sítě</string>
@@ -166,16 +164,16 @@
     <string name="export_running_status">Exportuji…</string>
     <string name="export_song_unavailable_message">Pro export musí být skladba uložena do mezipaměti nebo stažena</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Smazat všechna stahování? (Skladby: %d)</string>
+    <string name="library_cleanup_all_downloads_confirmation">Chcete odstranit všechna stahování (%d skladby)?</string>
     <string name="library_cleanup_all_favorites_confirmation">Chcete odstranit všechny %d oblíbené položky?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Obnovit historii poslechu? (Sklady: %d)</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ VAROVÁNÍ: Toto POVINNÉ VYMAZÍ své skladby a odstraní je ze VŠECH playlistů. (Skladby: %d) Tuto akci nelze vrátit zpět!</string>
-    <string name="library_cleanup_entire_cache_confirmation">Vymazat celou mezipaměť? (Sklady: %d)</string>
-    <string name="library_cleanup_selected_cache_confirmation">Odstranit výběr z mezipaměti? (Sklady: %d)</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Chcete obnovit historii poslechu %d skladeb?</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ VAROVÁNÍ: Toto bude POVOLIT všechny %d skladeb A odebrat je ze VŠECH playlistů. Tuto akci nelze vrátit zpět!</string>
+    <string name="library_cleanup_entire_cache_confirmation">Chcete vymazat celou keš (%d skladby)?</string>
+    <string name="library_cleanup_selected_cache_confirmation">Chcete odstranit tyto %d skladby z mezipaměti?</string>
     <string name="library_cleanup_selected_downloads_confirmation">Do you want to delete these %d downloads?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Odstranit výběr z oblíbených? (Sklady: %d)</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Obnovit historii poslechu pro výběr? (Skladby: %d)</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ VAROVÁNÍ: Toto POVOLIT výběr A odebrat ze VŠECH playlistů. (Skladby: %d) Tuto akci nelze vrátit zpět!</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Chcete odstranit tyto %d skladby z oblíbených?</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Chcete obnovit historii poslechu těchto %d skladeb?</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ VAROVÁNÍ: Toto bude POVOLIT tyto %d skladeb A odebrat je ze VŠECH playlistů. Tuto akci nelze vrátit zpět!</string>
     <string name="library_cleanup_title">Chytrý koš</string>
     <string name="library_favorites_remove_dialog_title">Odebrat z oblíbených</string>
     <string name="library_listening_history_reset_dialog_title">Resetovat historii poslech</string>
@@ -185,7 +183,10 @@
     <string name="storage_samsung_advice_message">Automatická správa paměti společnosti Samsung může odstranit stahování a soubory mezipaměti N-Zik, i když jste o to nepožádali. Chcete-li vaše stahování v bezpečí, použijte místo úložiště systému místo soukromé (aplikace) úložiště úložiště.</string>
     <string name="storage_samsung_advice_title">Doporučení pro úložiště Samsung</string>
     <string name="storage_samsung_system_usage_message">V současné době máte %1$s stahování a cache v úložišti systému.</string>
+    <string name="backup_export_database_failed">Export databáze selhal</string>
     <string name="backup_import_failed">Import se nezdařil</string>
     <string name="export_no_songs">Žádné skladby nebyly exportovány</string>
     <string name="export_cached_songs_generic_error">Export selhal</string>
+    <string name="backup_startup_preparing_library">Příprava tvé knihovny…</string>
+    <string name="backup_startup_recovery_failed">Nepodařilo se dokončit obnovení vaší knihovny.</string>
 </resources>
