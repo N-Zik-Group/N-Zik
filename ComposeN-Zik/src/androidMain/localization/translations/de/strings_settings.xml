@@ -17,7 +17,7 @@
     <string name="language_name_azerbaijani">Aserbaidschanisch (Azərbaycanca)</string>
     <string name="language_name_bashkir">Baschkirisch (Башҡурт)</string>
     <string name="language_name_bengali">Bengali (&lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; )</string>
-    <string name="language_name_catalan">Katalanisch (català)</string>
+    <string name="language_name_catalan">Katalanisch (Catala&lt;unk&gt; )</string>
     <string name="language_name_chinese_simplified">Chinesisch vereinfacht (汉字)</string>
     <string name="language_name_chinese_traditional">Chinesisch traditionell (繁體字)</string>
     <string name="language_name_czech">Tschechisch (Čeština)</string>
@@ -27,7 +27,7 @@
     <string name="language_name_esperanto">Esperanto</string>
     <string name="language_name_estonian">Estnisch (eesti keel)</string>
     <string name="language_name_filipino">Philippinisch (Filipino)</string>
-    <string name="language_name_finnish">Finnisch (Suomi)</string>
+    <string name="language_name_finnish">Finnish (Suomi)</string>
     <string name="language_name_french">Französisch (Français)</string>
     <string name="language_name_galician">Galicisch (galego)</string>
     <string name="language_name_german">Deutsch (German)</string>
@@ -35,12 +35,12 @@
     <string name="language_name_hebrew">Hebräisch (עִבְרִית)</string>
     <string name="language_name_hindi">Hindi (&lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; )</string>
     <string name="language_name_hungarian">Ungarisch (Magyar)</string>
-    <string name="language_name_indonesian">Indonesisch (bahasa Indonesia)</string>
+    <string name="language_name_indonesian">Indonesisch (Bahasa Indonesien)</string>
     <string name="language_name_interlingua">Interlingua</string>
     <string name="language_name_irish">Irisch (Gaeilge)</string>
     <string name="language_name_italian">Italienisch (Italiano)</string>
     <string name="language_name_japanese">Japanisch (日本語)</string>
-    <string name="language_name_korean">Koreanisch (한국어 / 조선말)</string>
+    <string name="language_name_korean">Koreanisch (&lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; &lt;unk&gt; )</string>
     <string name="language_name_malayalam">Malayalam (മലയാളം)</string>
     <string name="language_name_norwegian">Norwegisch (norsk)</string>
     <string name="language_name_odia">Odia (ଓଡିଆ)</string>
@@ -50,8 +50,8 @@
     <string name="language_name_portuguese_brazilian">Portugiesisch (Português do Brasil)</string>
     <string name="language_name_romanian">Rumänisch (Română)</string>
     <string name="language_name_russian">Russisch (Русский)</string>
-    <string name="language_name_serbian_cyrillic">Serbisch - Kyrillisch (Вуковица)</string>
-    <string name="language_name_serbian_latin">Serbisch - Latein (srpski)</string>
+    <string name="language_name_serbian_cyrillic">Serbian Cyrillic (Српски)</string>
+    <string name="language_name_serbian_latin">Serbian Latin (Srpski)</string>
     <string name="language_name_sinhala">Singhalesisch (සිංහල)</string>
     <string name="language_name_spanish">Spanisch (Español)</string>
     <string name="language_name_swedish">Schwedisch (svenska)</string>
@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Zuerst mit YouTube verbinden, um diese Option zu aktivieren</string>
     <string name="settings_youtube_library_sync_content_description">Wiedergabelisten, Alben, Künstler, Geschichte, etc.</string>
     <string name="settings_youtube_login_enabled_label">YouTube Music Login aktivieren</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Sortieren</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Werkzeugleiste</string>
 </resources>
