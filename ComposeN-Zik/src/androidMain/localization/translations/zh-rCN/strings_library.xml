@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">喜欢所有歌曲将需要大约 %1$s。关闭应用程序以取消。您想要继续吗？</string>
     <string name="library_on_device_permission_request_failed">无法请求访问此设备上的音乐。</string>
     <string name="library_on_device_permission_settings_failed">无法打开权限设置。</string>
+    <string name="artist_more_from_format">更多来自 %1$s</string>
+    <string name="playlist_top_show_title_format">显示 %1$s</string>
 </resources>
