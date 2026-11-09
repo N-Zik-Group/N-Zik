@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">ページ</string>
     <string name="glass_effect_destination_playback">再生</string>
     <string name="glass_effect_destination_shared">共有要素</string>
+    <string name="glass_effect_loading_indicators">インジケーターを読み込み中</string>
+    <string name="glass_effect_loading_indicators_description">ページやカードやダイアログでアニメーションを読み込むスタイル。</string>
+    <string name="glass_effect_pull_to_refresh">引っ張って更新</string>
+    <string name="glass_effect_pull_to_refresh_description">下に引いた時に表示されるインジケーターのスタイルを変更します。</string>
     <string name="glass_effect_destination_windows">Windowsとメッセージ</string>
     <string name="glass_effect_dialog_dimming">背景の調光ダイアログ</string>
     <string name="glass_effect_dispersion">色の分割</string>
@@ -121,7 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">設定をグループ化し、プロファイルを表示するカード。</string>
     <string name="glass_effect_role_visualizer">ビジュアライザー・コントロール</string>
     <string name="glass_effect_role_visualizer_description">ビジュアライザーで使用される矢印と設定ボタン。</string>
-    <string name="glass_effect_shared_summary">アプリの通常のルックを選択します。他のグループでは、特定のパーツを変更できます。</string>
+    <string name="glass_effect_shared_components_summary">Glass がアプリ全体で使用されているコンポーネントに対してどのように見えるかを選択します。</string>
     <string name="glass_effect_summary">ガラスエフェクトの表面、色、輪郭、品質をカスタマイズします。</string>
     <string name="glass_effect_switches_description">format@@0が有効になっている場合は、液体のガラススイッチと共有材料の相互作用効果を使用します。</string>
     <string name="glass_effect_switches_title">ガラススイッチ</string>
