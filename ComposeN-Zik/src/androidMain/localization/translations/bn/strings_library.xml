@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">Unmatched song</string>
     <string name="metadata_musicbrainz_rating">Rating</string>
     <string name="metadata_cover_art">Cover art</string>
+    <string name="metadata_cover_url_hint">Paste an image link</string>
     <string name="metadata_file_path_unavailable">Cannot resolve file path</string>
     <string name="metadata_save_failed">Failed to save metadata</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
