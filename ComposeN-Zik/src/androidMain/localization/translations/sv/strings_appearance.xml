@@ -226,6 +226,8 @@
     <string name="theme_shake_sensitivity_medium">Mellan (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Mycket hög (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Redigera bild</string>
+    <string name="image_editor_failed">Kunde inte redigera bilden. Din nuvarande bild sparades.</string>
     <string name="thumbnail_action_edit">Edit Thumbnail</string>
     <string name="thumbnail_action_pick_from_gallery">Välj från galleri</string>
     <string name="thumbnail_action_reset">Reset Thumbnail</string>
@@ -235,4 +237,7 @@
     <string name="thumbnail_remove_failed">Kunde inte ta bort miniatyrbild</string>
     <string name="thumbnail_remove_success">Tog bort miniatyrbild</string>
     <string name="glass_effect_rendering_quality">Renderar kvalitet</string>
+    <string name="image_editor_original">Ursprungligt förhållande</string>
+    <string name="image_editor_cancel">Avbryt</string>
+    <string name="image_editor_apply">Använd bild</string>
 </resources>
