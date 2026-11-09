@@ -230,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">متوسط (3.5 زاي)</string>
     <string name="theme_shake_sensitivity_very_high">عالية جدا (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">تنزيل</string>
+    <string name="cover_download_failed">تعذر تحميل الغلاف.</string>
     <string name="image_editor_title">تعديل الصورة</string>
     <string name="image_editor_failed">تعذر تعديل الصورة. تم حفظ صورتك الحالية.</string>
     <string name="thumbnail_action_edit">Edit Thumbnail</string>
