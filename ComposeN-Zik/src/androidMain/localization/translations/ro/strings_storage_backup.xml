@@ -3,7 +3,7 @@
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Depozitare</string>
     <string name="storage_breakdown_info_title">Despre stocare</string>
-    <string name="storage_breakdown_nzik_total">Total utilizat de NZik</string>
+    <string name="storage_breakdown_nzik_total">Total folosit de N-Zik</string>
     <string name="storage_breakdown_subtitle">Depozitare defalcată</string>
     <string name="storage_breakdown_waiting">Măsurarea stocării…</string>
     <string name="storage_breakdown_cached_images">Imagini cache</string>
@@ -11,20 +11,20 @@
     <string name="storage_breakdown_downloaded_audio">Audio descărcat</string>
     <string name="storage_breakdown_custom_covers">Argumente personalizate</string>
     <string name="storage_breakdown_waveforms">Waveforme</string>
-    <string name="storage_breakdown_other_nzik_data">Alte date NZik</string>
+    <string name="storage_breakdown_other_nzik_data">Alte date N-Zik</string>
     <string name="storage_breakdown_other_used_space">Sistem, aplicații &amp; fișiere</string>
     <string name="storage_breakdown_free_space">Spațiu liber</string>
     <string name="storage_info_images">Artwork şi alte imagini cached pentru afişare mai rapidă.</string>
     <string name="storage_info_streaming">Audio ținut temporar după streaming, astfel încât să poată fi redat fără a prelua aceleași date.</string>
-    <string name="storage_info_downloads">Audio salvat în NZik pentru ascultare offline.</string>
+    <string name="storage_info_downloads">Audio salvat în N-Zik pentru ascultare offline.</string>
     <string name="storage_info_waveforms">Fișiere generate utilizate pentru a desena formularul de undă audio în player.</string>
     <string name="storage_info_covers">Artwork pe care l-ai ales sau importat ca coperte personalizate.</string>
-    <string name="storage_info_other_nzik">Restul datelor private ale NZik, inclusiv bazele sale de date, setările, indexurile, extensiile și jurnalele.</string>
+    <string name="storage_info_other_nzik">Restul datelor private ale N-Zik, inclusiv bazele sale de date, setările, indexurile, extensiile și jurnalele.</string>
     <string name="storage_info_other_used">Spațiul utilizat rămas pe volumul intern, inclusiv Android, aplicații instalate și fișiere personale.</string>
     <string name="storage_info_free">Spaţiu disponibil pentru aplicaţii şi fişiere pe volumul intern.</string>
     <string name="storage_cleanup_title">Curățare</string>
     <string name="storage_cleanup_failed">Nu s-a putut finaliza curățarea stocării.</string>
-    <string name="storage_cleanup_images_description">Curăță lucrările de artă memorate de NZik.</string>
+    <string name="storage_cleanup_images_description">Curăță coperta cache de N-Zik.</string>
     <string name="storage_cleanup_streaming_description">Șterge memoria cache în timpul streaming-ului.</string>
     <string name="storage_cleanup_downloads_description">Șterge audio offline și anulează descărcările în așteptare pentru spațiul de stocare activ al profilului.</string>
     <string name="storage_cleanup_waveforms_description">Ştergeţi fişierele de tip waveform generate.</string>
@@ -139,7 +139,7 @@
     <string name="downloads_delete_all_count_confirmation">Ştergeţi toate descărcările %d?</string>
     <string name="downloads_delete_dialog_title">Șterge descărcările</string>
     <string name="downloads_download_all_confirmation">Vrei cu adevărat să descarci toate melodiile?</string>
-    <string name="downloads_download_all_count_confirmation">Descărcați toate melodiile %d?</string>
+    <string name="downloads_download_all_count_confirmation">Descărcați totul? (Songs: %d)</string>
     <string name="downloads_download_dialog_title">Descarcă melodii</string>
     <string name="downloads_empty_message">Nimic de descărcat</string>
     <string name="downloads_error_network">A apărut o eroare de rețea</string>
@@ -166,16 +166,16 @@
     <string name="export_running_status">Se exportă…</string>
     <string name="export_song_unavailable_message">Melodia trebuie să fie cache sau descărcată pentru a fi exportată</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Doriți să ștergeți toate descărcările (%d melodii)?</string>
+    <string name="library_cleanup_all_downloads_confirmation">Ştergeţi toate descărcările? (melodii: %d)</string>
     <string name="library_cleanup_all_favorites_confirmation">Doriți să eliminați toate favoritele %d?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Doriți să resetați istoricul de ascultare pentru piesele %d?</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ ATENŢIE: Aceasta va şterge definitiv toate melodiile %d şi le va şterge din toate listele de redare. Această acţiune nu poate fi anulată!</string>
-    <string name="library_cleanup_entire_cache_confirmation">Vrei să ştergi întreaga geocutie (%d melodii)?</string>
-    <string name="library_cleanup_selected_cache_confirmation">Vrei să elimini aceste melodii %d din cache?</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Resetați istoricul de ascultare? (melodii: %d)</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ ATENŢIE: Aceasta va şterge definitiv melodiile şi le va şterge din toate listele de redare. (Melodii: %d) Această acţiune nu poate fi anulată!</string>
+    <string name="library_cleanup_entire_cache_confirmation">Curăță întreaga geocutie? (melodii: %d)</string>
+    <string name="library_cleanup_selected_cache_confirmation">Eliminați selecția din cache? (Songs: %d)</string>
     <string name="library_cleanup_selected_downloads_confirmation">Doriți să ștergeți aceste descărcări %d?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Doriți să eliminați aceste melodii %d din favorite?</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Vrei să resetezi istoricul de ascultare pentru aceste melodii %d?</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ ATENŢIE: Aceasta va şterge definitiv aceste melodii %d şi le va şterge din toate listele de redare. Această acţiune nu poate fi anulată!</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Eliminați selecția de la favorite? (Songs: %d)</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Resetați istoricul de ascultare pentru selecție? (Songs: %d)</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ AVERTISMENT: Aceasta va șterge definitiv selecția și o va elimina din toate listele de redare. (Song-uri: %d) Această acțiune nu poate fi anulată!</string>
     <string name="library_cleanup_title">Gunoi inteligent</string>
     <string name="library_favorites_remove_dialog_title">Elimină din favorite</string>
     <string name="library_listening_history_reset_dialog_title">Resetează istoricul de ascultare</string>
