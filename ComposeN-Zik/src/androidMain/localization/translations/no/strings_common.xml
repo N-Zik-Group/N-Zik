@@ -15,6 +15,7 @@
     <string name="common_delete_success">Slettet</string>
     <string name="common_description_unavailable">Ingen beskrivelse tilgjengelig</string>
     <string name="common_duration_milliseconds_format">%1$s ms</string>
+    <string name="common_duration_milliseconds_unit">ms</string>
     <string name="common_empty_items">Ingen elementer</string>
     <string name="common_external_link_loading_suffix">laster inn...</string>
     <string name="common_load_failed">Kunne ikke laste</string>
@@ -39,8 +40,11 @@
     <string name="common_validation_empty_value">Verdien kan ikke være tom</string>
     <string name="common_validation_invalid_input">Invalid input!</string>
     <string name="common_validation_minimum_value">"Verdien må være større enn "</string>
+    <string name="common_validation_minimum_value_format">Verdien må være minst %1$d</string>
     <string name="common_validation_name_in_use">Navnet er allerede i bruk</string>
     <string name="common_value_input_hint">Angi verdien</string>
     <string name="common_unknown">Ukjent</string>
     <string name="common_duration_minutes_short">%1$d min</string>
+    <string name="common_external_link_loading_format">%1$s laster inn…</string>
+    <string name="common_loading_message">Loading…</string>
 </resources>
