@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Elegir cómo se excluyen las canciones de artistas desagradables.</string>
     <string name="player_exclude_disliked_songs_description">Elija cómo las pistas no gustadas están excluidas de las sugerencias de reproducción.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Excluir pistas que excedan el límite de duración seleccionado.</string>
-    <string name="player_excluded_song_count_format">Excluida %s canciones</string>
+    <string name="player_excluded_song_count_format">Causas excluidas: %s</string>
     <string name="player_keep_minimized">Mantener minimizado</string>
     <string name="player_layout_artwork_style_description">Elige cómo el jugador muestra el diseño de la pista.</string>
     <string name="player_layout_controls_style_description">Elige el diseño de los controles del reproductor.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Incluye la ilustración del álbum junto a las próximas pistas en la vista previa del reproductor.</string>
     <string name="player_queue_preview_song_count_description">Elige cuántas pistas futuras aparecen en la vista previa del jugador.</string>
     <string name="player_queue_remove_selected_confirmation_format">¿Eliminar la selección de la cola? Pistas seleccionadas: %d</string>
-    <string name="player_queue_shuffled_count_format">Cola desplazada (canciones%d)</string>
+    <string name="player_queue_shuffled_count_format">Cola encolada (pistas: %d)</string>
     <string name="player_remaining_time_visible_description">Mostrar el tiempo restante en la pista actual.</string>
     <string name="player_restart_required_message">¡Es necesario reiniciar el reproductor para que los cambios surtan efecto!</string>
     <string name="player_rotating_buttons">Rotación de los botones</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Mostrar una vista previa de las próximas pistas dentro del reproductor.</string>
     <string name="player_show_player_top_actions_bar_description">Mostrar la fila de acciones del reproductor sobre el contenido principal.</string>
     <string name="player_shuffle_empty_message">No hay canción aleatoria</string>
-    <string name="player_shuffled_song_count_format">%d canciones barajadas</string>
+    <string name="player_shuffled_song_count_format">Pistas mezcladas: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Temporizador de apagado retrasado al finalizar la canción</string>
     <string name="player_sleep_timer_finished_message">El temporizador de apagado ha finalizado</string>
     <string name="player_song_playback_error_format">Ocurrió un error al reproducir %1$s</string>
