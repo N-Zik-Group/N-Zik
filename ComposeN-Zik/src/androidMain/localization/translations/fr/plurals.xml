@@ -41,4 +41,60 @@
         <item quantity="one">%1$d titre écouté</item>
         <item quantity="other">%1$d titres écoutés</item>
     </plurals>
+    <plurals name="profile_last_used_minute_count">
+        <item quantity="one">Il y a %1$d minute</item>
+        <item quantity="other">Il y a %1$d minutes</item>
+    </plurals>
+    <plurals name="profile_last_used_hour_count">
+        <item quantity="one">Il y a %1$d heure</item>
+        <item quantity="other">Il y a %1$d heures</item>
+    </plurals>
+    <plurals name="profile_last_used_day_count">
+        <item quantity="one">Il y a %1$d jour</item>
+        <item quantity="other">Il y a %1$d jours</item>
+    </plurals>
+    <plurals name="profile_last_used_week_count">
+        <item quantity="one">Il y a %1$d semaine</item>
+        <item quantity="other">Il y a %1$d semaines</item>
+    </plurals>
+    <plurals name="profile_last_used_month_count">
+        <item quantity="one">Il y a %1$d mois</item>
+        <item quantity="other">Il y a %1$d mois</item>
+    </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Supprimer la requête de recherche %1$d</item>
+        <item quantity="other">Supprimer les requêtes de recherche %1$d</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Supprimer l\'événement de lecture %1$d</item>
+        <item quantity="other">Supprimer les événements de lecture %1$d</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d épisode · %2$s</item>
+        <item quantity="other">%1$d épisodes · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">Ajout de %1$d morceau à la playlist YouTube</item>
+        <item quantity="other">Ajout de %1$d morceaux à la playlist YouTube</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">Ajout de %1$d morceau à la playlist YouTube</item>
+        <item quantity="other">Ajout de %1$d morceaux à la playlist YouTube</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">État du profil importé : profil %1$d</item>
+        <item quantity="other">État des profils importés : %1$d profils</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Échec de la synchronisation de %1$d album. Retournez dans l\'onglet « Albums » pour réessayer.</item>
+        <item quantity="other">Échec de la synchronisation de %1$d albums. Retournez dans l\'onglet « Albums » pour réessayer.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Exporter le morceau %1$d mis en cache/téléchargé ?</item>
+        <item quantity="other">Exporter %1$d morceaux mis en cache/téléchargés ?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">%1$d morceau téléchargé ne dispose plus de son fichier et a été supprimé. Veuillez le télécharger à nouveau.</item>
+        <item quantity="other">%1$d morceaux téléchargés ne disposent plus de leurs fichiers et ont été supprimés. Veuillez les télécharger à nouveau.</item>
+    </plurals>
 </resources>
