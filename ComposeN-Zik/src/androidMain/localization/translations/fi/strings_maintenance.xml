@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">Viimeisin kaatuminen</string>
     <string name="maintenance_lastfm_active">Istunto aktiivinen</string>
     <string name="maintenance_library">Kirjasto</string>
-    <string name="maintenance_library_albums">%d albumia</string>
-    <string name="maintenance_library_artists">%d esittäjää</string>
+    <string name="maintenance_library_albums">Albumia: %d</string>
+    <string name="maintenance_library_artists">Esittäjät: %d</string>
     <string name="maintenance_library_listened">%d kuunnellut</string>
-    <string name="maintenance_library_playlists">%d soittolistaa</string>
-    <string name="maintenance_library_songs">%d kappaletta</string>
+    <string name="maintenance_library_playlists">Soittolistat: %d</string>
+    <string name="maintenance_library_songs">Kappaleita: %d</string>
     <string name="maintenance_live_subsystems">Elävät osajärjestelmät</string>
     <string name="maintenance_log_view">Näytä</string>
     <string name="maintenance_lt_connected">Yhdistetty</string>
