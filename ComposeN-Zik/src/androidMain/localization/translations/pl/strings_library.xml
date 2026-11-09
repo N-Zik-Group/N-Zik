@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">Niedopasowana piosenka</string>
     <string name="metadata_musicbrainz_rating">Ocena</string>
     <string name="metadata_cover_art">Okładka</string>
+    <string name="metadata_cover_url_hint">Wklej link do obrazu</string>
     <string name="metadata_file_path_unavailable">Nie można rozwiązać ścieżki pliku</string>
     <string name="metadata_save_failed">Nie udało się zapisać metadanych</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
