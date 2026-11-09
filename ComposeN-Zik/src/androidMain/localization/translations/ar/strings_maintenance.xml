@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">آخر تحطم</string>
     <string name="maintenance_lastfm_active">الجلسة نشطة</string>
     <string name="maintenance_library">المكتبة</string>
-    <string name="maintenance_library_albums">%d ألبومات</string>
-    <string name="maintenance_library_artists">فنانون %d</string>
+    <string name="maintenance_library_albums">الألبومات: %d</string>
+    <string name="maintenance_library_artists">الفنانين: %d</string>
     <string name="maintenance_library_listened">أصغى %d</string>
-    <string name="maintenance_library_playlists">قائمة تشغيل %d</string>
-    <string name="maintenance_library_songs">%d songs</string>
+    <string name="maintenance_library_playlists">قوائم التشغيل: %d</string>
+    <string name="maintenance_library_songs">الأغاني: %d</string>
     <string name="maintenance_live_subsystems">نظم فرعية حية</string>
     <string name="maintenance_log_view">عرض</string>
     <string name="maintenance_lt_connected">متصل</string>
