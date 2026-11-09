@@ -27,7 +27,7 @@ Wyłączone na świeżych instalacjach. Włącz w ustawieniach: natywne, tylko k
 
 💾 <b>Offline, Metadane i Prywatność</b>
 - Inteligentne buforowanie i pobieranie ścieżek i list odtwarzania z wybraną jakością pobierania
-- Eksport zasilany FFmpeg-zasilany pełnymi metadanymi (FFmpeg jest rozszerzeniem do pobrania, zainstalowanym przy pierwszym użyciu)
+- Eksport FFmpeg z pełnymi metadanymi (brak na x86 32-bit)
 - Edytor metadanych w aplikacji (AAC/Opus, okładka sztuki)
 - Lokalne statystyki i historia słuchania
 - Automatyczna kopia zapasowa z niestandardowymi odstępami i zatrzymaniem
