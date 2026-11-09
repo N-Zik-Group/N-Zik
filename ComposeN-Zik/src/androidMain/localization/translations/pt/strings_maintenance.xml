@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
     <string name="logs_action_export">Exportar logs</string>
     <string name="logs_action_export_both">Exportar ambos os logs</string>
@@ -40,6 +41,7 @@
     <string name="maintenance_dedup_flagged">Sinalizado(s) %d linha(s)</string>
     <string name="maintenance_dedup_merged">Mesclado %d linha(s)</string>
     <string name="maintenance_dedup_merged_flagged">Mesclado %1$d linha(s) · Linha(s) %2$d marcada(s)</string>
+    <string name="maintenance_dedup_counts_format">%1$s · %2$s</string>
     <string name="maintenance_discord_invalid_token">Token inválido</string>
     <string name="maintenance_discord_ok">Certo</string>
     <string name="maintenance_discord_reconnect_failed">Reconexão falhou</string>
@@ -197,6 +199,7 @@
     <string name="recovery_error">Ocorreu um erro: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Exportar banco de dados</string>
+    <string name="recovery_export_database_with_covers_description">Salve sua biblioteca, listas de reprodução e histórico como SQLite. Se você tiver capas personalizadas, a exportação é um ZIP com o banco de dados e capas.</string>
     <string name="recovery_export_logs">Exportar logs</string>
     <string name="recovery_export_logs_description">Salvar logs de erro e depurar para um relatório de bug</string>
     <string name="recovery_export_profiles_description">A lista de perfil e as fotos de rosto em um único arquivo .txt</string>
@@ -209,6 +212,7 @@
     <string name="recovery_group_settings">Configurações</string>
     <string name="recovery_group_storage">Armazenamento</string>
     <string name="recovery_import_database">Importar dados</string>
+    <string name="recovery_import_database_with_covers_description">Restaurar um backup SQLite ou ZIP, incluindo quaisquer capas personalizadas no ZIP.</string>
     <string name="recovery_import_profiles_description">Restaurar a lista de perfil e as fotos de rosto a partir de um arquivo .txt</string>
     <string name="recovery_import_settings">Importar configurações</string>
     <string name="recovery_import_settings_description">Restaurar preferências de um arquivo CSV</string>
@@ -309,4 +313,5 @@
     <string name="updates_warning_acknowledge">Eu entendo</string>
     <string name="updates_check_failed">Não foi possível verificar se há atualizações.</string>
     <string name="updates_install_generic_error">Não foi possível instalar a atualização.</string>
+    <string name="updates_channel_available_format">Atualização %1$s disponível</string>
 </resources>
