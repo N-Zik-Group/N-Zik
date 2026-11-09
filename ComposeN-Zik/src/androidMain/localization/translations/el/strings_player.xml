@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Επιλέξτε πώς αποκλείονται τα κομμάτια από τους καλλιτέχνες που δεν τους αρεστεί.</string>
     <string name="player_exclude_disliked_songs_description">Επιλέξτε πώς τα κομμάτια που δεν αρέσουν αποκλείονται από τις προτάσεις αναπαραγωγής.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Εξαίρεση ιχνών που υπερβαίνουν το επιλεγμένο όριο διάρκειας.</string>
-    <string name="player_excluded_song_count_format">Εξαιρούνται τραγούδια %s</string>
+    <string name="player_excluded_song_count_format">Τραγούδια εξαιρούνται: %s</string>
     <string name="player_keep_minimized">Συνεχίστε να ελαχιστοποιείται</string>
     <string name="player_layout_artwork_style_description">Επιλέξτε πώς ο παίκτης εμφανίζει το εξώφυλλο κομματιών.</string>
     <string name="player_layout_controls_style_description">Επιλέξτε τη διάταξη των κουμπιών του παίκτη.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Συμπεριλάβετε εξώφυλλο άλμπουμ δίπλα σε επερχόμενα κομμάτια στην προεπισκόπηση του παίκτη.</string>
     <string name="player_queue_preview_song_count_description">Επιλέξτε πόσα επερχόμενα κομμάτια εμφανίζονται στην προεπισκόπηση του παίκτη.</string>
     <string name="player_queue_remove_selected_confirmation_format">Αφαίρεση της επιλογής από την ουρά? Επιλεγμένα κομμάτια: %d</string>
-    <string name="player_queue_shuffled_count_format">Ανακατέψτε την ουρά (%d τραγούδια)</string>
+    <string name="player_queue_shuffled_count_format">Ανακατέψτε την ουρά (κομμάτια: %d)</string>
     <string name="player_remaining_time_visible_description">Εμφάνιση του χρόνου που απομένει στο τρέχον κομμάτι.</string>
     <string name="player_restart_required_message">Player has to be restarted for the changes to be effective!</string>
     <string name="player_rotating_buttons">Περιστρεφόμενα κουμπιά</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Εμφάνιση προεπισκόπησης των επερχόμενων κομματιών μέσα στον παίκτη.</string>
     <string name="player_show_player_top_actions_bar_description">Εμφάνιση της σειράς ενεργειών του παίκτη πάνω από το κύριο περιεχόμενο.</string>
     <string name="player_shuffle_empty_message">Δεν υπάρχει τραγούδι για ανάμιξη</string>
-    <string name="player_shuffled_song_count_format">%d ανακατευμένα τραγούδια</string>
+    <string name="player_shuffled_song_count_format">Ανακατέματα κομματιών: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Sleep timer delayed at end of song</string>
     <string name="player_sleep_timer_finished_message">Ο χρονοδιακόπτης ύπνου έληξε</string>
     <string name="player_song_playback_error_format">The media %1$s went wrong</string>
