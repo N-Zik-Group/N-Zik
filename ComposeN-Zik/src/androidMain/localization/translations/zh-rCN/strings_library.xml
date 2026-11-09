@@ -377,6 +377,27 @@
     <string name="song_metadata_update_action_open">打开更新对话框</string>
     <string name="song_metadata_updated_count">更新 %1$d 首歌曲</string>
     <string name="song_play_time_action_reset">重置播放总时间</string>
+    <string name="song_like_status_action_reset">重置喜欢/不喜欢的状态</string>
+    <string name="song_update_action_clear_playback_cache">清除播放缓存</string>
+    <string name="song_update_action_remove_offline_download">移除离线下载</string>
+    <string name="song_update_result_partial">部分更新。 %1$s</string>
+    <string name="song_update_result_failed">未更新。 %1$s</string>
+    <string name="song_update_error_metadata_unavailable">YouTube信息不可用。</string>
+    <string name="song_update_error_network">无法连接 YouTube。请检查您的连接。</string>
+    <string name="song_update_error_missing_title">YouTube没有返回标题。</string>
+    <string name="song_update_error_missing_artists">YouTube没有返回艺术家。</string>
+    <string name="song_update_error_incomplete_artists">来自YouTube的艺术家信息不完整。</string>
+    <string name="song_update_error_missing_cover">YouTube没有返回封面。</string>
+    <string name="song_update_error_wrong_song">YouTube返回了另一首歌曲。它的信息被忽略了。</string>
+    <string name="song_update_error_cache_unavailable">播放缓存不可用。重新打开播放器，然后重试。</string>
+    <string name="song_update_error_profile_changed">更新已停止，因为活动配置文件已更改。</string>
+    <string name="song_update_error_storage">无法在此设备上保存更改。</string>
+    <string name="song_update_error_cache_clear">无法清除播放缓存。</string>
+    <string name="song_update_error_download_remove">无法删除离线下载。</string>
+    <string name="song_update_error_cover_reset">无法重置封面。</string>
+    <string name="song_update_error_playback_refresh">更改已保存，但播放器无法刷新。</string>
+    <string name="song_update_batch_result">已更新: %1$d ·部分更新: %2$d ·未更新: %3$d</string>
+    <string name="song_update_batch_reason_count">%1$s (%2$d)</string>
     <!-- Song Matching -->
     <string name="song_matching_action_open">匹配专辑/音频版本</string>
     <string name="song_matching_all_confirmation">您想要匹配 %d 无匹配的歌曲吗？</string>
