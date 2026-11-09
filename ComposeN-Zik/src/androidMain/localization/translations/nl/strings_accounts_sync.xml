@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm account</string>
     <string name="profile_identity_source_not_connected">Niet ingelogd</string>
     <string name="profile_last_used">Laatst gebruikt</string>
-    <string name="profile_last_used_days">%d dagen geleden</string>
-    <string name="profile_last_used_hours">%d uur geleden</string>
-    <string name="profile_last_used_minutes">%d min geleden</string>
-    <string name="profile_last_used_months">%d maanden geleden</string>
     <string name="profile_last_used_now">Op dit moment</string>
-    <string name="profile_last_used_weeks">%d weken geleden</string>
     <string name="profile_local_name">Profiel naam</string>
     <string name="profile_local_name_description">Hernoem het huidige lokale profiel.</string>
     <string name="profile_name_input_hint">Profielnaam invoeren</string>
@@ -255,10 +250,11 @@
     <string name="sync_youtube_playlist_add_failed">Kon het nummer niet toevoegen aan de YouTube afspeellijst</string>
     <string name="sync_youtube_playlist_add_success">Het nummer is toegevoegd in de YouTube afspeellijst</string>
     <string name="sync_youtube_playlist_batch_failed">Er is een fout opgetreden voor de volgende 50 nummers. nummers toevoegen aan de afspeellijst één voor één</string>
+    <string name="sync_youtube_playlist_no_songs_added">Er zijn geen nummers toegevoegd aan de afspeellijst op YouTube</string>
     <string name="sync_youtube_playlist_songs_added_suffix">nummers worden toegevoegd aan de YouTube afspeellijst. Herhaal het proces als er ontbrekende nummers zijn</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">nummers zullen worden toegevoegd aan de YTM afspeellijst</string>
     <string name="sync_youtube_playlists_title">YTM Afspeellijsten</string>
-    <string name="sync_youtube_songs_remaining">Resterende nummers: %1$s</string>
+    <string name="sync_youtube_songs_remaining">%1$s Nummers resterend</string>
     <string name="sync_youtube_unlike_failed">Vergelijking van het nummer in YouTube mislukt</string>
     <string name="sync_youtube_unlike_success">Nummer wordt niet leuk gevonden in YouTube</string>
     <string name="sync_starting_notification">Synchronisatie wordt gestart...</string>
