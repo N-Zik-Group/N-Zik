@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Wybierz sposób wykluczenia utworów z nielubionych artystów.</string>
     <string name="player_exclude_disliked_songs_description">Wybierz jak nielubione ścieżki są wyłączone z sugestii odtwarzania.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Wyklucz utwory, które przekraczają wybrany czas trwania.</string>
-    <string name="player_excluded_song_count_format">Wykluczono %s utworów</string>
+    <string name="player_excluded_song_count_format">Wykluczone utwory: %s</string>
     <string name="player_keep_minimized">Pozostaw zminimalizowany</string>
     <string name="player_layout_artwork_style_description">Wybierz, jak gracz wyświetla grafikę.</string>
     <string name="player_layout_controls_style_description">Wybierz układ sterowania gracza.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Uwzględnij okładkę albumu obok nadchodzących utworów w podglądzie gracza.</string>
     <string name="player_queue_preview_song_count_description">Wybierz ile nadchodzących utworów pojawia się w podglądzie gracza.</string>
     <string name="player_queue_remove_selected_confirmation_format">Usunąć zaznaczenie z kolejki? Wybrane utwory: %d</string>
-    <string name="player_queue_shuffled_count_format">Kolejka losowana (%d utworów)</string>
+    <string name="player_queue_shuffled_count_format">Kolejka losowa (utwory: %d)</string>
     <string name="player_remaining_time_visible_description">Pokaż czas pozostały w bieżącej ścieżce.</string>
     <string name="player_restart_required_message">Gracz musi zostać zrestartowany w celu wprowadzenia skutecznych zmian!</string>
     <string name="player_rotating_buttons">Obracanie przycisków</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Wyświetl podgląd nadchodzących ścieżek wewnątrz gracza.</string>
     <string name="player_show_player_top_actions_bar_description">Wyświetl wiersz akcji gracza nad główną zawartością.</string>
     <string name="player_shuffle_empty_message">Brak utworu do przetasowania</string>
-    <string name="player_shuffled_song_count_format">%d utworów losowanych</string>
+    <string name="player_shuffled_song_count_format">Utwory losowe: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Czas uśpienia ustawiony na koniec tej piosenki</string>
     <string name="player_sleep_timer_finished_message">Minutnik snu zakończony</string>
     <string name="player_song_playback_error_format">Wystąpił błąd podczas odtwarzania utworu %1$s</string>
