@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Opslagruimte</string>
+    <string name="storage_breakdown_info_title">Over opslag</string>
+    <string name="storage_breakdown_nzik_total">Totaal gebruikt door NZik</string>
+    <string name="storage_breakdown_subtitle">Uitsplitsing van opslag</string>
+    <string name="storage_breakdown_waiting">Measuring storage…</string>
+    <string name="storage_breakdown_cached_images">Gebufferde afbeeldingen</string>
+    <string name="storage_breakdown_streamed_audio">Gestroomde audio</string>
+    <string name="storage_breakdown_downloaded_audio">Gedownloade audio</string>
+    <string name="storage_breakdown_custom_covers">Aangepaste covers</string>
+    <string name="storage_breakdown_waveforms">Golfvormen</string>
+    <string name="storage_breakdown_other_nzik_data">Andere NZik gegevens</string>
+    <string name="storage_breakdown_other_used_space">Systeem, apps &amp; bestanden</string>
+    <string name="storage_breakdown_free_space">Vrije ruimte</string>
+    <string name="storage_info_images">Artwork en andere afbeeldingen gecached voor snellere weergave.</string>
+    <string name="storage_info_streaming">Audio tijdelijk bewaard na streamen, zodat het opnieuw kan worden afgespeeld zonder dezelfde gegevens op te halen.</string>
+    <string name="storage_info_downloads">Audio opgeslagen in NZik voor offline luisteren.</string>
+    <string name="storage_info_waveforms">Gegenereerde bestanden worden gebruikt om de audio waveform in de speler te tekenen.</string>
+    <string name="storage_info_covers">Artwork die je hebt gekozen of geïmporteerd als aangepaste covers.</string>
+    <string name="storage_info_other_nzik">De rest van de privégegevens van NZik, inclusief de databases, instellingen, indexen, extensies en logboeken.</string>
+    <string name="storage_info_other_used">De resterende gebruikte ruimte op het interne volume, inclusief Android, geïnstalleerde apps en persoonlijke bestanden.</string>
+    <string name="storage_info_free">Ruimte beschikbaar voor apps en bestanden op het interne volume.</string>
+    <string name="storage_cleanup_title">Opschonen</string>
+    <string name="storage_cleanup_failed">Opschonen kan niet worden voltooid.</string>
+    <string name="storage_cleanup_images_description">Maak artwork cached door NZik.</string>
+    <string name="storage_cleanup_streaming_description">Audiocache wissen tijdens het streamen.</string>
+    <string name="storage_cleanup_downloads_description">Verwijder offline audio en annuleer de openstaande downloads voor de downloadopslag van het actieve profiel.</string>
+    <string name="storage_cleanup_waveforms_description">Wis gegenereerde waveforme bestanden.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Wis waveformen</string>
+    <string name="storage_cleanup_diagnostic_logs">Wis diagnostische logs</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Verwijder de debug en crash logbestanden. Uw log instelling blijft hetzelfde.</string>
+    <string name="storage_cleanup_temporary_files">Verwijder verlaten tijdelijke bestanden</string>
+    <string name="storage_cleanup_temporary_files_description">Verwijder achtergelaten afbeeldingenbewerkers concepten en keer delen opnames ouder dan 24 uur terug.</string>
+    <string name="storage_cleanup_all">Alles wissen</string>
+    <string name="storage_cleanup_all_description">Verwijder afbeeldingen en streaming caches en gegenereerde golfformulieren voor het actieve profiel, inclusief opslag gedeeld met andere profielen. Verwijder offline audio en annuleer de openstaande downloads voor de downloadopslag van het actieve profiel. Verwijder diagnostische logboeken, verlaten beeldbewerkers concepten en verlopen Rewind share opties. Uw bibliotheek, aangepaste covers en instellingen worden bewaard.</string>
     <!-- Backup -->
     <string name="backup_action_export">Back-up exporteren</string>
     <string name="backup_action_import">Back-up importeren</string>
@@ -82,12 +117,15 @@
     <!-- Cache -->
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Nummercache legen</string>
-    <string name="cache_downloads_max_size_description">Kies hoeveel schijfruimte er beschikbaar is voor gedownloade nummers. De prullenbak verwijdert de gedownloade audio.</string>
-    <string name="cache_image_max_size_description">Limiteer schijfruimte gebruikt door gecached artwork. De prullenbak verwijdert gedownloade afbeeldingen uit deze cache.</string>
+    <string name="cache_downloads_max_size_description">Kies hoeveel schijfruimte beschikbaar is voor gedownloade nummers.</string>
+    <string name="cache_downloads_limit_description">Kies hoeveel schijfruimte beschikbaar is voor gedownloade nummers.</string>
+    <string name="cache_image_max_size_description">Beperk schijfruimte gebruikt door gecachte bestanden.</string>
+    <string name="cache_image_limit_description">Beperk schijfruimte gebruikt door gecachte bestanden.</string>
     <string name="cache_location_description">Kies waar de app zijn afspeelcache opslaat.</string>
     <string name="cache_location_private">Privé</string>
     <string name="cache_location_system">Systeem</string>
-    <string name="cache_streaming_max_size_description">Beperk schijfruimte die gebruikt wordt voor het cachen van gestreamde nummers. De prullenbak wist deze afspeelcache.</string>
+    <string name="cache_streaming_max_size_description">Beperk schijfruimte gebruikt om gestreamde nummers te cachen.</string>
+    <string name="cache_streaming_limit_description">Beperk schijfruimte gebruikt om gestreamde nummers te cachen.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Alle nummers downloaden</string>
     <string name="downloads_action_refresh_quality">Downloads bijwerken</string>
