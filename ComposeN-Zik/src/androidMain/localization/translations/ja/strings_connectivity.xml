@@ -198,4 +198,5 @@
     <string name="listen_together_server_request_failed">Listen Togetherサーバーはリクエストを完了できませんでした。</string>
     <string name="network_stream_retrying_playback">再生を再試行しています…</string>
     <string name="listen_together_invite_link">一緒に招待リンクを聴く</string>
+    <string name="listen_together_server_location_poland">ポーランド</string>
 </resources>
