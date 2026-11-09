@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Storage</string>
+    <string name="storage_breakdown_info_title">About storage</string>
+    <string name="storage_breakdown_nzik_total">Total used by N-Zik</string>
+    <string name="storage_breakdown_subtitle">Storage breakdown</string>
+    <string name="storage_breakdown_waiting">Measuring storage…</string>
+    <string name="storage_breakdown_cached_images">Cached images</string>
+    <string name="storage_breakdown_streamed_audio">Streamed audio</string>
+    <string name="storage_breakdown_downloaded_audio">Downloaded audio</string>
+    <string name="storage_breakdown_custom_covers">Custom covers</string>
+    <string name="storage_breakdown_waveforms">Waveforms</string>
+    <string name="storage_breakdown_other_nzik_data">Other N-Zik data</string>
+    <string name="storage_breakdown_other_used_space">System, apps &amp; files</string>
+    <string name="storage_breakdown_free_space">Free space</string>
+    <string name="storage_info_images">Artwork and other images cached for faster display.</string>
+    <string name="storage_info_streaming">Audio kept temporarily after streaming, so it can be played again without fetching the same data.</string>
+    <string name="storage_info_downloads">Audio saved in N-Zik for offline listening.</string>
+    <string name="storage_info_waveforms">Generated files used to draw the audio waveform in the player.</string>
+    <string name="storage_info_covers">Artwork you chose or imported as custom covers.</string>
+    <string name="storage_info_other_nzik">The rest of N-Zik’s private data, including its databases, settings, indexes, extensions and logs.</string>
+    <string name="storage_info_other_used">The remaining used space on the internal volume, including Android, installed apps and personal files.</string>
+    <string name="storage_info_free">Space available for apps and files on the internal volume.</string>
+    <string name="storage_cleanup_title">Cleanup</string>
+    <string name="storage_cleanup_failed">Could not finish storage cleanup.</string>
+    <string name="storage_cleanup_images_description">Clear artwork cached by N-Zik.</string>
+    <string name="storage_cleanup_streaming_description">Clear audio cached while streaming.</string>
+    <string name="storage_cleanup_downloads_description">Delete offline audio and cancel pending downloads for the active profile’s download storage.</string>
+    <string name="storage_cleanup_waveforms_description">Clear generated waveform files.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Clear waveforms</string>
+    <string name="storage_cleanup_diagnostic_logs">Clear diagnostic logs</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Delete the debug and crash log files. Your logging setting stays the same.</string>
+    <string name="storage_cleanup_temporary_files">Remove abandoned temporary files</string>
+    <string name="storage_cleanup_temporary_files_description">Remove abandoned image editor drafts and Rewind share captures older than 24 hours.</string>
+    <string name="storage_cleanup_all">Clear all</string>
+    <string name="storage_cleanup_all_description">Clear image and streaming caches and generated waveforms for the active profile, including storage it shares with other profiles. Delete offline audio and cancel pending downloads for the active profile’s download storage. Delete diagnostic logs, abandoned image editor drafts and expired Rewind share captures. Your library, custom covers and settings are kept.</string>
     <!-- Backup -->
     <string name="backup_action_export">Export backup</string>
     <string name="backup_action_import">Import backup</string>
@@ -15,11 +50,14 @@
     <string name="backup_auto_schedule_day_of_month_description">Choose the day of the month for monthly automatic backups.</string>
     <string name="backup_auto_schedule_day_of_week_description">Choose the weekday for weekly automatic backups.</string>
     <string name="backup_auto_schedule_time_description">Choose the hour at which scheduled automatic backups should run.</string>
+    <string name="backup_auto_content_format_description">Choose what to back up automatically. Database backups use ZIP when they include custom covers.</string>
     <string name="backup_before_update_description">Automatically backup data before installing an update</string>
     <string name="backup_before_update_failed">Pre-install backup failed</string>
     <string name="backup_before_update_running_message">Backing up data before installation…</string>
     <string name="backup_before_update_running_title">Backup in progress</string>
     <string name="backup_excluded_preferences_and_cache_description">העדפות אישיות (כלומר ערכת הנושא) והמטמון אינם נכללים.</string>
+    <string name="backup_export_library_options_description">Export the database with its custom covers, settings, or profiles</string>
+    <string name="backup_import_library_options_description">Restore a SQLite or ZIP database backup, settings, or profiles</string>
     <string name="backup_include_discord_credentials">Include Discord identity credentials</string>
     <string name="backup_include_lastfm_credentials">Include Last.fm identity credentials</string>
     <string name="backup_include_proxy_password">Include the proxy password</string>
@@ -56,12 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Export the profile list and the face photos in a single .txt file</string>
     <string name="backup_export_all">Export all</string>
+    <string name="backup_export_all_with_covers_description">Export the database, settings, and profile state separately. The database uses ZIP if it includes custom covers.</string>
+    <string name="backup_export_database_with_covers_and_settings_description">Export the database and settings separately. The database uses ZIP if it includes custom covers.</string>
+    <string name="backup_export_database_with_covers_description">Save songs, playlists, and history as SQLite. If you have custom covers, the export is a ZIP with the database and covers.</string>
     <string name="backup_export_profile_state_failed">Profile state export failed</string>
     <string name="backup_export_settings_description">Export app settings and preferences</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Import the profile list and the face photos from a .txt file</string>
     <string name="backup_import_all">Import all</string>
+    <string name="backup_import_all_with_covers_description">Restore a SQLite or ZIP database backup, settings, and profile state from separate files.</string>
+    <string name="backup_import_database_with_covers_and_settings_description">Restore a SQLite or ZIP database backup and a separate settings file.</string>
     <string name="backup_import_completed_profile">Imported into %1$s</string>
+    <string name="backup_import_database_with_covers_description">Restore songs, playlists, and history from SQLite or ZIP. ZIP backups also restore the included custom covers.</string>
     <string name="backup_import_profile_state_complete">Profile state imported: %1$d profiles</string>
     <string name="backup_import_profile_state_complete_base">Profile state imported: base profile</string>
     <string name="backup_import_profile_state_failed">Profile state import failed</string>
@@ -72,11 +116,14 @@
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Clear song cache</string>
     <string name="cache_downloads_max_size_description">Choose how much disk space is available for downloaded songs. The trash button removes downloaded audio.</string>
+    <string name="cache_downloads_limit_description">Choose how much disk space is available for downloaded songs. The trash button removes downloaded audio.</string>
     <string name="cache_image_max_size_description">Limit disk space used by cached artwork. The trash button clears downloaded images from this cache.</string>
+    <string name="cache_image_limit_description">Limit disk space used by cached artwork. The trash button clears downloaded images from this cache.</string>
     <string name="cache_location_description">Choose where the app stores its song playback cache.</string>
     <string name="cache_location_private">פרטי</string>
     <string name="cache_location_system">מערכת</string>
     <string name="cache_streaming_max_size_description">Limit disk space used to cache streamed songs. The trash button clears this playback cache.</string>
+    <string name="cache_streaming_limit_description">Limit disk space used to cache streamed songs. The trash button clears this playback cache.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">הורד את כל השירים</string>
     <string name="downloads_action_refresh_quality">Update downloads</string>
@@ -136,7 +183,10 @@
     <string name="storage_samsung_advice_message">Samsung\'s automatic memory management can delete N-Zik\'s downloads and cache files, even when you did not ask for it. To keep your downloads safe, use the private (app) storage location instead of system storage.</string>
     <string name="storage_samsung_advice_title">Samsung storage advice</string>
     <string name="storage_samsung_system_usage_message">You currently have %1$s of downloads and cache on system storage.</string>
+    <string name="backup_export_database_failed">Database export failed</string>
     <string name="backup_import_failed">Import failed</string>
     <string name="export_no_songs">No songs exported</string>
     <string name="export_cached_songs_generic_error">Export failed</string>
+    <string name="backup_startup_preparing_library">Preparing your library…</string>
+    <string name="backup_startup_recovery_failed">Could not finish restoring your library.</string>
 </resources>
