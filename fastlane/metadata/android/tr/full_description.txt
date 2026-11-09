@@ -1,4 +1,4 @@
-Android için çok dilli YouTube Music ön yüzü, performans, UI/UX iyileştirmeleri, özellik genişletme ve uzun vadeli destek.
+Android için hızlı, özelleştirilebilir ve uzun süre desteklenen çok dilli YouTube Music uygulaması.
 
 <b>N-Zik</b>, <a href="https://github.com/knighthat/Kreate">Kreate</a>'nin açık kaynaklı bir çatalıdır.
 
@@ -15,33 +15,33 @@ Android için çok dilli YouTube Music ön yüzü, performans, UI/UX iyileştirm
 - Sanatçı profilleri, Keşif/ruh halleri, katlanabilir ana ekran başlıkları
 
 🫧 <b>Cam efekti (BETA, isteğe bağlı)</b>
-Yeni kurulumlarda kapalıdır. Ayarlardan açın: kategoriye göre yerel , yalnızca kenar veya Cam, ayarlanabilir kalite. İşleme yükünü ve pil tüketimini artırabilir; kaliteyi düşürün veya kapatın.
+Yeni kurulumlarda kapalıdır. Ayarlarda kategoriye göre yerel, yalnızca kenar veya Cam ve kalite seçilir. Grafik yükü veya pil tüketimi artarsa kaliteyi düşürün ya da kapatın.
 Cam katkıları: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Ses Deneyimi</b>
 - YouTube Music Premium aracılığıyla premium ses, otomatik uygulanır
 - Düzenleme ve gerçek zamanlı çeviri özellikleriyle senkronize şarkı sözleri
 - Şarkı tanıma (Shazam benzeri), sesli arama, görselleştirici
-- Profesyonel kontrol seçenekleri: hız, ton, normalizasyon, çapraz geçiş, ses seviyesi artırma, bas artırma, yankı
+- Hız, perde, normalizasyon, çapraz geçiş, ses ve bas artırma, yankı
 - Hassas gezinme için Ses Çubuğu waveform kaydırma çubuğu
 
 💾 <b>Çevrimdışı, Meta Veri ve Gizlilik</b>
 - Parçalar ve listeler için akıllı önbellekleme/indirme, seçilebilir indirme kalitesi
-- FFmpeg tabanlı, tam meta verili dışa aktarma (ilk kullanımda indirilebilir; 32 bit x86 cihazlarda kullanılamaz)
+- Tam meta verili FFmpeg dışa aktarımı, 32 bit x86 hariç
 - Uygulama içi meta veri düzenleyici (AAC/Opus, kapak resmi)
 - Yerel dinleme istatistikleri ve geçmişi
 - Özel aralıklı ve saklama süreli otomatik yedekleme
 
 🔗 <b>Entegrasyonlar</b>
-- Öneriler ve video oynatma için YouTube'da oturum açma, deneysel çift yönlü senkronizasyon motoru
+- Öneriler ve video için YouTube oturumu, deneysel çift yönlü eşitleme
 - Şimdi Çalıyor ve beğenme/beğenme seçenekleriyle Last.fm'e kaydetme
 - MusicBrainz sanatçı ve albüm bilgileri
-- Discord Zengin Varlık, canlı önizleme özelliğine sahip gelişmiş mod dahil
+- Discord Zengin Varlık, canlı önizlemeli gelişmiş mod dahil
 - Alternatif YouTube akışı için Invidious entegrasyonu
 - Çalma listesi içe/dışa aktarma: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Birlikte Dinleyin</b>
-- Kod veya davet bağlantısıyla canlı dinleme oturumlarına katılın ya da ev sahipliği yapın
+- Kod veya davet bağlantısıyla canlı oturum başlatın ya da katılın
 
 🗓️ <b>Geri Sarma</b>
 - Otomatik Geri Sarma listeleriyle yıllık/aylık dinleme özetleri
@@ -64,6 +64,6 @@ Cam katkıları: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / B
 - FOSS (`com.nevar.nzik.foss`): Otomatik güncelleyicisiz, F-Droid için (tüm mimariler)
 - Dev64/Dev32 (`com.nevar.nzik.dev`): Geliştirme yapıları, yalnızca test için
 
-Hiçbir yapı FFmpeg içermez: indirilebilir bir eklentidir (ilk kullanımda kurulur, Ayarlar → Eklentiler içinde yönetilir). F-Droid'de yalnızca FOSS var.
+FFmpeg paketlere dahil değildir. İlk kullanımda indirilir ve Ayarlar → Eklentiler bölümünden yönetilir. F-Droid'de yalnızca FOSS var.
 
 Geçmiş proje kredileri arasında ViMusic yer almaktadır.
