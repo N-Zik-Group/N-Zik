@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">Senaste kraschen</string>
     <string name="maintenance_lastfm_active">Session aktiv</string>
     <string name="maintenance_library">Bibliotek</string>
-    <string name="maintenance_library_albums">Albums: %d</string>
-    <string name="maintenance_library_artists">Artists: %d</string>
+    <string name="maintenance_library_albums">%d album</string>
+    <string name="maintenance_library_artists">%d artister</string>
     <string name="maintenance_library_listened">%d lyssnade</string>
-    <string name="maintenance_library_playlists">Playlists: %d</string>
-    <string name="maintenance_library_songs">Songs: %d</string>
+    <string name="maintenance_library_playlists">%d spellistor</string>
+    <string name="maintenance_library_songs">%d låtar</string>
     <string name="maintenance_live_subsystems">Undersystem live</string>
     <string name="maintenance_log_view">Visa</string>
     <string name="maintenance_lt_connected">Ansluten</string>
@@ -197,7 +197,7 @@
     <string name="recovery_error">Ett fel uppstod: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Exportera databas</string>
-    <string name="recovery_export_database_description">Spara ditt bibliotek, spellistor och historik</string>
+    <string name="recovery_export_database_with_covers_description">Spara ditt bibliotek, spellistor och historik som SQLite. Om du har anpassade omslag, exporteras en ZIP med databasen och omslag.</string>
     <string name="recovery_export_logs">Exportera loggar</string>
     <string name="recovery_export_logs_description">Spara krasch- och felsökningsloggar för en felrapport</string>
     <string name="recovery_export_profiles_description">Profillistan och ansiktsbilderna i en enda .txt-fil</string>
@@ -210,7 +210,7 @@
     <string name="recovery_group_settings">Inställningar</string>
     <string name="recovery_group_storage">Lagring</string>
     <string name="recovery_import_database">Importera databas</string>
-    <string name="recovery_import_database_description">Återställ en tidigare exporterad databas</string>
+    <string name="recovery_import_database_with_covers_description">Återställ en säkerhetskopia av SQLite- eller ZIP-databasen, inklusive eventuella anpassade omslag i ZIP.</string>
     <string name="recovery_import_profiles_description">Återställ profillistan och ansiktsbilderna från en .txt-fil</string>
     <string name="recovery_import_settings">Importera inställningar</string>
     <string name="recovery_import_settings_description">Återställ inställningar från en CSV-fil</string>
@@ -311,4 +311,5 @@
     <string name="updates_warning_acknowledge">Jag förstår</string>
     <string name="updates_check_failed">Kunde inte söka efter uppdateringar.</string>
     <string name="updates_install_generic_error">Kunde inte installera uppdateringen.</string>
+    <string name="updates_channel_available_format">%1$s uppdatering tillgänglig</string>
 </resources>
