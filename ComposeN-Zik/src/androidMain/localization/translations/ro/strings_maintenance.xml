@@ -137,6 +137,9 @@
     <string name="modules_download_needed">Modulul necesită descărcare (~25 MB). Verificați conexiunea.</string>
     <string name="modules_downloading">Se descarca modulul</string>
     <string name="modules_edit_unavailable">Editare metadate indisponibile: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Se pregătește FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">Descărcare FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%</string>
     <string name="modules_ffmpeg_description">Necesar pentru a exporta melodii cache și pentru a edita metadatele melodiei. Descărcat la prima utilizare.</string>
     <string name="modules_info">Info</string>
     <string name="modules_insufficient_space">Această caracteristică are nevoie de aproximativ 70 MB de spațiu liber</string>
