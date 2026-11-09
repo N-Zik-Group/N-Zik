@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Gefällt Ihnen alle Lieder werden etwa %1$sdauern. Schließen Sie die App um abzubrechen. Möchten Sie fortfahren?</string>
     <string name="library_on_device_permission_request_failed">Zugriff auf Musik auf diesem Gerät konnte nicht angefordert werden.</string>
     <string name="library_on_device_permission_settings_failed">Konnte die Berechtigungseinstellungen nicht öffnen.</string>
+    <string name="artist_more_from_format">Mehr von %1$s</string>
+    <string name="playlist_top_show_title_format">Zeige %1$s</string>
 </resources>
