@@ -230,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Medie (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Foarte mare (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">Descărcare</string>
+    <string name="cover_download_failed">Nu s-a putut descărca coperta.</string>
     <string name="image_editor_title">Editare imagine</string>
     <string name="image_editor_failed">Nu s-a putut edita imaginea. Imaginea ta curentă a fost păstrată.</string>
     <string name="thumbnail_action_edit">Editează miniatura</string>
