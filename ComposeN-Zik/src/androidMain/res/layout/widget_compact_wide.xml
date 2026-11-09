@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Compact 4x1 Widget - Single row with album art, song info, like and play buttons -->
+<!-- Compact widget: metadata and controls above a full-width elapsed/duration row. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -14,18 +14,24 @@
     android:id="@android:id/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:paddingStart="12dp"
-    android:paddingEnd="12dp"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
+    android:orientation="vertical"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp"
+    android:paddingTop="0dp"
+    android:paddingBottom="0dp"
     android:gravity="center_vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
     <!-- Album Art - Square -->
     <ImageView
         android:id="@+id/widget_wide_album_art"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:scaleType="centerCrop"
         android:src="@drawable/ic_launcher_box"
         android:contentDescription="@string/album_art" />
@@ -35,8 +41,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="4dp"
         android:orientation="vertical"
         android:gravity="center_vertical">
 
@@ -61,6 +67,8 @@
             android:maxLines="1"
             android:ellipsize="end"
             android:layout_marginTop="2dp" />
+
+
     </LinearLayout>
 
     <!-- Controls Container -->
@@ -69,12 +77,12 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginStart="8dp">
+        android:layout_marginStart="4dp">
 
         <FrameLayout
             android:id="@+id/widget_wide_like_container"
-            android:layout_width="32dp"
-            android:layout_height="32dp">
+            android:layout_width="24dp"
+            android:layout_height="24dp">
             <ImageView
                 android:id="@+id/widget_wide_like_button_bg"
                 android:layout_width="match_parent"
@@ -85,7 +93,7 @@
                 android:id="@+id/widget_wide_like_button"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:padding="6dp"
+                android:padding="3dp"
                 android:scaleType="fitCenter"
                 android:background="@android:color/transparent"
                 android:src="@drawable/ic_widget_heart_outline_nav"
@@ -94,12 +102,13 @@
 
         <FrameLayout
             android:id="@+id/widget_wide_prev_container"
-            android:layout_width="32dp"
-            android:layout_height="32dp">
+            android:layout_width="24dp"
+            android:layout_height="24dp">
             <ImageView
                 android:id="@+id/widget_wide_prev_icon"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="3dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_widget_skip_previous"
                 android:contentDescription="@string/common_action_previous" />
@@ -108,8 +117,8 @@
         <!-- Play Button -->
         <FrameLayout
             android:id="@+id/widget_wide_play_container"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_marginStart="2dp"
             android:layout_marginEnd="2dp">
             <ImageView
@@ -120,8 +129,9 @@
                 android:scaleType="fitXY" />
             <ImageView
                 android:id="@+id/widget_wide_play_pause"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="3dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_widget_play_low"
                 android:contentDescription="@string/widget_action_play_pause" />
@@ -129,17 +139,43 @@
 
         <FrameLayout
             android:id="@+id/widget_wide_next_container"
-            android:layout_width="32dp"
-            android:layout_height="32dp">
+            android:layout_width="24dp"
+            android:layout_height="24dp">
             <ImageView
                 android:id="@+id/widget_wide_next_icon"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="3dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_widget_skip_next"
                 android:contentDescription="@string/common_action_next" />
         </FrameLayout>
     </LinearLayout>
 
+    </LinearLayout>
+        <LinearLayout
+            android:id="@+id/widget_wide_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+            <Chronometer
+                android:id="@+id/widget_wide_chronometer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:includeFontPadding="false"
+                android:singleLine="true"
+                android:textColor="@color/widget_text_secondary"
+                android:format="%s" />
+            <TextView
+                android:id="@+id/widget_wide_total_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:includeFontPadding="false"
+                android:singleLine="true"
+                android:textColor="@color/widget_text_secondary" />
+        </LinearLayout>
 </LinearLayout>
 </FrameLayout>

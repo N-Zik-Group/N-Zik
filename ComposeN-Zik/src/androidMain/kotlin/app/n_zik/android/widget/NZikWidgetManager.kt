@@ -142,13 +142,15 @@ object NZikWidgetManager {
     ): RemoteViews {
         val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
         val minHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
+        val fullHeight = maxOf(160f, 112f + 44f * context.resources.configuration.fontScale)
+        val isShort = minHeight < fullHeight
 
         val views = when {
-            minWidth < 180 && minHeight < 100 -> {
+            minWidth < 180 && isShort -> {
                 createCompactSquareRemoteViews(context, isPlaying, palette)
             }
-            minWidth >= 180 && minHeight < 100 -> {
-                createCompactWideRemoteViews(context, title, artist, isPlaying, isLiked, palette)
+            minWidth >= 180 && isShort -> {
+                createCompactWideRemoteViews(context, title, artist, isPlaying, isLiked, palette, duration, currentPosition)
             }
             else -> {
                 createRemoteViews(context, title, artist, isPlaying, isLiked, duration, currentPosition, palette)
@@ -158,8 +160,17 @@ object NZikWidgetManager {
         // Responsive scaling (Android 12+)
         val maxHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
         val isNarrow = minWidth < 340
-        val isCompactWide = minWidth >= 180 && minHeight < 100
-        val isFullWidget = minHeight >= 100
+        val isCompactWide = minWidth >= 180 && isShort
+        val isFullWidget = !isShort
+
+        if (isCompactWide) {
+            val density = context.resources.displayMetrics.density
+            val verticalPadding = if (minHeight < 56) 0 else 4
+            views.setViewPadding(android.R.id.background, (8 * density).toInt(),
+                (verticalPadding * density).toInt(), (8 * density).toInt(), (verticalPadding * density).toInt())
+            views.setViewVisibility(R.id.widget_wide_artist_name,
+                if (minHeight >= 64 * context.resources.configuration.fontScale) View.VISIBLE else View.GONE)
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (isFullWidget) {
@@ -184,13 +195,16 @@ object NZikWidgetManager {
                 views.setViewLayoutWidth(R.id.widget_next_container, smallBtn, TypedValue.COMPLEX_UNIT_DIP)
                 views.setViewLayoutHeight(R.id.widget_next_container, smallBtn, TypedValue.COMPLEX_UNIT_DIP)
             } else if (isCompactWide) {
-                // Compact wide scaling
-                val artSize = if (isNarrow) 32f else 48f
+                // Reserve a separate time row before sizing artwork and controls.
+                val timeHeight = if (duration > 0) 14f * context.resources.configuration.fontScale else 0f
+                val verticalPadding = if (minHeight < 56) 0f else 8f
+                val rowHeight = (minHeight - verticalPadding - timeHeight).coerceAtLeast(16f)
+                val artSize = minOf(if (isNarrow) 24f else 48f, rowHeight)
                 views.setViewLayoutWidth(R.id.widget_wide_album_art, artSize, TypedValue.COMPLEX_UNIT_DIP)
                 views.setViewLayoutHeight(R.id.widget_wide_album_art, artSize, TypedValue.COMPLEX_UNIT_DIP)
 
-                val btnSize = if (isNarrow) 24f else 32f
-                val playSize = if (isNarrow) 28f else 36f
+                val btnSize = minOf(if (isNarrow) 24f else 32f, rowHeight)
+                val playSize = minOf(if (isNarrow) 24f else 36f, rowHeight)
 
                 views.setViewLayoutWidth(R.id.widget_wide_like_container, btnSize, TypedValue.COMPLEX_UNIT_DIP)
                 views.setViewLayoutHeight(R.id.widget_wide_like_container, btnSize, TypedValue.COMPLEX_UNIT_DIP)
@@ -292,12 +306,18 @@ object NZikWidgetManager {
         artist: String,
         isPlaying: Boolean,
         isLiked: Boolean,
-        palette: ColorPalette
+        palette: ColorPalette,
+        duration: Long,
+        currentPosition: Long,
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_compact_wide)
 
         views.setTextViewText(R.id.widget_wide_song_title, widgetDisplayTitle(title))
         views.setTextViewText(R.id.widget_wide_artist_name, cleanPrefix(artist))
+        views.setViewVisibility(R.id.widget_wide_time, if (duration > 0) View.VISIBLE else View.GONE)
+        views.setChronometer(R.id.widget_wide_chronometer,
+            SystemClock.elapsedRealtime() - currentPosition.coerceAtLeast(0), "%s", isPlaying && duration > 0)
+        views.setTextViewText(R.id.widget_wide_total_duration, " / ${formatDuration(duration.coerceAtLeast(0))}")
 
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause_low else R.drawable.ic_widget_play_low
         views.setImageViewResource(R.id.widget_wide_play_pause, playPauseIcon)
@@ -491,6 +511,8 @@ object NZikWidgetManager {
         // Compact wide widget
         views.setTextColor(R.id.widget_wide_song_title, textArgb)
         views.setTextColor(R.id.widget_wide_artist_name, textArgb)
+        views.setTextColor(R.id.widget_wide_chronometer, textArgb)
+        views.setTextColor(R.id.widget_wide_total_duration, textArgb)
         // Turntable widget
         views.setTextColor(R.id.widget_turntable_chronometer, textArgb)
         views.setTextColor(R.id.widget_turntable_total_duration, textArgb)

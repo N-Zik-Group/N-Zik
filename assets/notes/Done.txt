@@ -75,3 +75,9 @@ Fixed:
   - Render UI, cover and artist roundness from the application preferences with the matching no-image fallback.
   - Refresh widgets on preference changes, preserve circular turntable artwork and apply video artwork preferences.
   - Keep displayed metadata clean without changing widget intents or stored values.
+
+Fixed:
+- fix(widgets): fit compact controls and retain playback time (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Use font-aware compact layout selection and bound artwork/buttons to available height.
+  - Reserve an elapsed/total time row and keep controls usable on small launcher cells.
+  - Cover compact dimensions and font scaling with actual RemoteViews rendering.
