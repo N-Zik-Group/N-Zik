@@ -137,6 +137,9 @@
     <string name="modules_download_needed">Modulen behöver laddas ner (~25 MB). Kontrollera anslutningen.</string>
     <string name="modules_downloading">Laddar ner modul</string>
     <string name="modules_edit_unavailable">Redigera metadata ej tillgänglig: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Förbereder FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">Laddar ner FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Behövs för att exportera cachade låtar och för att redigera sångmetadata. Nedladdad vid första användning.</string>
     <string name="modules_info">Information</string>
     <string name="modules_insufficient_space">Den här funktionen behöver cirka 70 MB ledigt utrymme</string>
