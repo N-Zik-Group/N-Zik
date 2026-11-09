@@ -52,13 +52,21 @@ object WaveformExtractor {
     // the menu within ~300ms, but the bounded retry + native extraction can take seconds.
     private val scope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
 
-    fun deleteWaveform(context: Context, mediaId: String) {
+    fun deleteWaveform(context: Context, mediaId: String) =
+        deleteWaveform(context, mediaId, requireDeletion = false)
+
+    /** Explicit cache resets must report a waveform file that could not be removed. */
+    internal fun deleteWaveformOrThrow(context: Context, mediaId: String) =
+        deleteWaveform(context, mediaId, requireDeletion = true)
+
+    private fun deleteWaveform(context: Context, mediaId: String, requireDeletion: Boolean) {
         Timber.tag(TAG).d("DELETE [$mediaId] Start deleteWaveform")
         val waveformDir = waveformsDir(context, getActiveProfile(context))
         val savedFile = File(waveformDir, "$mediaId.json")
         if (savedFile.exists()) {
             val deleted = savedFile.delete()
             Timber.tag(TAG).d("DELETE [$mediaId] JSON file existed, delete result=$deleted")
+            if (!deleted && requireDeletion) throw IOException("Could not remove song waveform")
         } else {
             Timber.tag(TAG).d("DELETE [$mediaId] JSON file did NOT exist, nothing to delete")
         }

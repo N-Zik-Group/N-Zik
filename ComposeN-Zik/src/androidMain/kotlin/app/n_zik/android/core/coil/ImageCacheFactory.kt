@@ -259,11 +259,21 @@ object ImageCacheFactory {
         if (url == null) return
         val key = generateCacheKeySync(url, quality)
         try {
-            LOADER.memoryCache?.remove(MemoryCache.Key(key))
-            DISK_CACHE.remove(key)
+            evictCacheKey(key)
         } catch (e: Exception) {}
         // Publish only after pixel eviction, so new-generation readers cannot see old cache entries.
         if (invalidateColors) app.n_zik.android.components.player.SharedArtworkColors.invalidate(url)
+    }
+
+    /** Explicit update actions must report failed eviction instead of claiming a complete cover reset. */
+    internal fun clearCacheForKeyOrThrow(url: String, quality: NetworkQuality) {
+        evictCacheKey(generateCacheKeySync(url, quality))
+        app.n_zik.android.components.player.SharedArtworkColors.invalidate(url)
+    }
+
+    private fun evictCacheKey(key: String) {
+        LOADER.memoryCache?.remove(MemoryCache.Key(key))
+        DISK_CACHE.remove(key)
     }
 
     fun getNetworkQuality(): NetworkQuality {
