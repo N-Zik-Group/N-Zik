@@ -42,6 +42,7 @@
     <string name="home_greeting_evening">Dobrý večer</string>
     <string name="home_greeting_morning">Dobré ráno</string>
     <string name="home_greeting_night">Dobrou noc</string>
+    <string name="home_greeting_with_profile_format">%1$s, %2$s</string>
     <string name="home_playlists_settings">Domácí hráči</string>
     <string name="home_songs_settings">Domovské skladby</string>
     <string name="home_sort_last_played_song_label">Podle naposledy přehrávané skladby</string>
@@ -248,6 +249,7 @@
     <string name="playlist_refresh_on_open_enable">Povolit obnovení při otevření</string>
     <string name="playlist_remove_selected_confirmation">Odstranit vybrané skladby z tohoto playlistu?</string>
     <string name="playlist_remove_songs_confirmation">Odstranit výběr ze seznamu skladeb? Vybrané skladby: %d</string>
+    <string name="playlist_remove_songs_success_format">%1$s %2$d</string>
     <string name="playlist_rename_dialog_title">Přejmenovat seznam skladeb</string>
     <string name="playlist_reorder_ascending_sort_required_message">Změna pořadí je možná pouze při vzestupném řazení</string>
     <string name="playlist_reorder_lock_toggle_label">Zamknout/odemknout přeřazené skladby</string>
@@ -377,6 +379,27 @@
     <string name="song_metadata_update_action_open">Otevřít dialog aktualizace</string>
     <string name="song_metadata_updated_count">Aktualizováno %1$d skladeb</string>
     <string name="song_play_time_action_reset">Resetovat celkový čas přehrávání</string>
+    <string name="song_like_status_action_reset">Resetovat stav s líbí nebo se mi nelíbí</string>
+    <string name="song_update_action_clear_playback_cache">Vymazat cache přehrávání</string>
+    <string name="song_update_action_remove_offline_download">Odstranit offline stahování</string>
+    <string name="song_update_result_partial">Částečně aktualizováno. %1$s</string>
+    <string name="song_update_result_failed">Neaktualizováno. %1$s</string>
+    <string name="song_update_error_metadata_unavailable">Informace z YouTube nejsou k dispozici.</string>
+    <string name="song_update_error_network">Nelze se připojit k YouTube. Zkontrolujte připojení.</string>
+    <string name="song_update_error_missing_title">YouTube nevrátil název.</string>
+    <string name="song_update_error_missing_artists">YouTube nevrátil umělce.</string>
+    <string name="song_update_error_incomplete_artists">Informace o umělci z YouTube jsou neúplné.</string>
+    <string name="song_update_error_missing_cover">YouTube nevrátil obal.</string>
+    <string name="song_update_error_wrong_song">YouTube vrátil jinou skladbu. Informace byly ignorovány.</string>
+    <string name="song_update_error_cache_unavailable">Mezipaměť přehrávání není k dispozici. Znovu otevřete přehrávač a zkuste to znovu.</string>
+    <string name="song_update_error_profile_changed">Aktualizace byla zastavena, protože se změnil aktivní profil.</string>
+    <string name="song_update_error_storage">Změny na tomto zařízení nelze uložit.</string>
+    <string name="song_update_error_cache_clear">Nelze dokončit vyprázdnění cache přehrávání.</string>
+    <string name="song_update_error_download_remove">Nepodařilo se odstranit offline stahování.</string>
+    <string name="song_update_error_cover_reset">Nelze dokončit resetování obalu.</string>
+    <string name="song_update_error_playback_refresh">Změny uloženy, ale hráč se nepodařilo aktualizovat.</string>
+    <string name="song_update_batch_result">Aktualizováno: %1$d · Částečně aktualizováno: %2$d · Neaktualizováno: %3$d</string>
+    <string name="song_update_batch_reason_count">%1$s (%2$d)</string>
     <!-- Song Matching -->
     <string name="song_matching_action_open">Odpovídat verzi alba/zvuku</string>
     <string name="song_matching_all_confirmation">Chceš se shodovat s %d neporovnaných skladeb?</string>
@@ -393,4 +416,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Líbí se vám všechny skladby asi %1$s. Zavřete aplikaci pro zrušení. Chcete pokračovat?</string>
     <string name="library_on_device_permission_request_failed">Nelze požádat o přístup k hudbě na tomto zařízení.</string>
     <string name="library_on_device_permission_settings_failed">Nelze otevřít nastavení oprávnění.</string>
+    <string name="artist_more_from_format">Více z %1$s</string>
+    <string name="playlist_top_show_title_format">Zobrazit %1$s</string>
 </resources>
