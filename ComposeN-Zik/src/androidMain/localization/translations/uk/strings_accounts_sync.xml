@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Обліковий запис Last.fm</string>
     <string name="profile_identity_source_not_connected">Вхід не здійснено</string>
     <string name="profile_last_used">Останнє використання</string>
-    <string name="profile_last_used_days">%d days ago</string>
-    <string name="profile_last_used_hours">%d h тому</string>
-    <string name="profile_last_used_minutes">%d min ago</string>
-    <string name="profile_last_used_months">%d months ago</string>
     <string name="profile_last_used_now">Щойно</string>
-    <string name="profile_last_used_weeks">%d тижнів тому</string>
     <string name="profile_local_name">Ім\'я профілю</string>
     <string name="profile_local_name_description">Перейменувати поточний локальний профіль.</string>
     <string name="profile_name_input_hint">Введіть ім\'я профілю</string>
@@ -255,10 +250,11 @@
     <string name="sync_youtube_playlist_add_failed">Не вдалося додати пісню до плейлисту YouTube</string>
     <string name="sync_youtube_playlist_add_success">Додано пісню до плейлисту YouTube</string>
     <string name="sync_youtube_playlist_batch_failed">Виникла помилка для наступних 50 пісень. Додавання пісень до плейлисту по одній. Додайте пісні в плейлист по одній</string>
+    <string name="sync_youtube_playlist_no_songs_added">У плейлист YouTube не було додано жодного пісні</string>
     <string name="sync_youtube_playlist_songs_added_suffix">пісні додані в плейлист YouTube. Повторіть процес, якщо є відсутні пісні</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">пісні будуть додані в плейлист YTM</string>
     <string name="sync_youtube_playlists_title">Плейлисти YTM</string>
-    <string name="sync_youtube_songs_remaining">Залишилося пісень: %1$s</string>
+    <string name="sync_youtube_songs_remaining">%1$s Songs Remaining</string>
     <string name="sync_youtube_unlike_failed">Не вдалося прибрати відмітку «Подобається» під піснею на YouTube</string>
     <string name="sync_youtube_unlike_success">Пісня не подобається у YouTube</string>
     <string name="sync_starting_notification">Запуск синхронізації...</string>
