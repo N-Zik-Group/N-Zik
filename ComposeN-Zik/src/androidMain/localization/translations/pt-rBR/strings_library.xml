@@ -377,6 +377,27 @@
     <string name="song_metadata_update_action_open">Abrir diálogo de atualização</string>
     <string name="song_metadata_updated_count">Músicas %1$d atualizadas</string>
     <string name="song_play_time_action_reset">Redefinir o tempo total de jogo</string>
+    <string name="song_like_status_action_reset">Redefinir status curtido/descurtido</string>
+    <string name="song_update_action_clear_playback_cache">Limpar cache de reprodução</string>
+    <string name="song_update_action_remove_offline_download">Remover download offline</string>
+    <string name="song_update_result_partial">Parcialmente atualizada. %1$s</string>
+    <string name="song_update_result_failed">Não atualizado. %1$s</string>
+    <string name="song_update_error_metadata_unavailable">Informação do YouTube indisponível.</string>
+    <string name="song_update_error_network">Não foi possível acessar o YouTube. Verifique sua conexão.</string>
+    <string name="song_update_error_missing_title">O YouTube não retornou um título.</string>
+    <string name="song_update_error_missing_artists">O YouTube não retornou artistas.</string>
+    <string name="song_update_error_incomplete_artists">As informações do artista do YouTube estão incompletas.</string>
+    <string name="song_update_error_missing_cover">O YouTube não retornou uma capa.</string>
+    <string name="song_update_error_wrong_song">O YouTube retornou uma música diferente. Sua informação foi ignorada.</string>
+    <string name="song_update_error_cache_unavailable">Cache de reprodução indisponível. Reabra o reprodutor e tente novamente.</string>
+    <string name="song_update_error_profile_changed">A atualização parou porque o perfil ativo mudou.</string>
+    <string name="song_update_error_storage">Não foi possível salvar as alterações neste dispositivo.</string>
+    <string name="song_update_error_cache_clear">Não foi possível terminar de limpar o cache de reprodução.</string>
+    <string name="song_update_error_download_remove">Não foi possível remover o download offline.</string>
+    <string name="song_update_error_cover_reset">Não foi possível terminar de redefinir a capa.</string>
+    <string name="song_update_error_playback_refresh">Alterações salvas, mas o jogador não pôde atualizar.</string>
+    <string name="song_update_batch_result">Atualizado: %1$d · Parcialmente atualizada: %2$d · Não atualizada: %3$d</string>
+    <string name="song_update_batch_reason_count">%1$s (%2$d)</string>
     <!-- Song Matching -->
     <string name="song_matching_action_open">Coincidir versão do álbum/áudio</string>
     <string name="song_matching_all_confirmation">Você quer corresponder a %d músicas não correspondentes?</string>
