@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">Oöverträffad låt</string>
     <string name="metadata_musicbrainz_rating">Betyg</string>
     <string name="metadata_cover_art">Omslag konst</string>
+    <string name="metadata_cover_url_hint">Klistra in en bildlänk</string>
     <string name="metadata_file_path_unavailable">Kan inte lösa filsökvägen</string>
     <string name="metadata_save_failed">Det gick inte att spara metadata</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
