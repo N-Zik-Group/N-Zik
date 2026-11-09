@@ -44,3 +44,9 @@ Fixed:
   - Enrich phone and automotive selections with known database durations before publishing the queue.
   - Keep resolved duration and seekable timeline metadata synchronized across buffering and player replacement for Auto and notifications.
   - Guard rapid selections, profile changes and stale duration results; cover actual session state transitions.
+
+Added:
+- feat(images): edit and safely apply covers and profile photos (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Open uCrop from cover and profile pickers with readable application colors and crop/rotate controls.
+  - Edit owned temporary copies and publish only after confirmation; clean cancellation/orphans and retain the captured profile/entity target.
+  - Refresh local artwork revisions after saves and protect playlist/image-editor results against stale targets.

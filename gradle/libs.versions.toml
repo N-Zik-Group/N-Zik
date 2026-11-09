@@ -1,4 +1,5 @@
 [versions]
+ucrop = "2.2.11"
 nzikSuffixAppNameDebug = "-debug"
 nzikSuffixAppIdDebug = ".debug"
 nzikSuffixVersionDebug = "-debug"
@@ -89,6 +90,7 @@ carapp = "1.4.0"
 innertubex = "v0.11.6"
 
 [libraries]
+ucrop = { module = "com.github.yalantis:ucrop", version.ref = "ucrop" }
 # Kotlinx
 github-jeziellago-compose-markdown = { module = "com.github.jeziellago:compose-markdown", version.ref = "composeMarkdownVersion" }
 kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }

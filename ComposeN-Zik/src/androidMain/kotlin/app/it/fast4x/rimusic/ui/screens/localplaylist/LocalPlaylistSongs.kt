@@ -180,6 +180,7 @@ import app.it.fast4x.rimusic.utils.queueSwipeRightActionKey
 import androidx.compose.runtime.CompositionLocalProvider
 
 import app.it.fast4x.rimusic.ui.styling.favoritesIcon
+import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.n_zik.android.utils.playlist.savePlaylistThumbnail
 import app.it.fast4x.rimusic.utils.semiBold
 import app.it.fast4x.rimusic.utils.showFloatingIconKey
@@ -840,18 +841,26 @@ fun LocalPlaylistSongs(
     val renumberDialog = Reposition(playlistId)
     val downloadAllDialog = DownloadAllSongsDialog ( ::getSongs )
     val deleteDownloadsDialog = DeleteAllDownloadedSongsDialog ( ::getSongs )
+    val thumbnailPickTarget = remember { mutableStateOf<Pair<Long, String>?>(null) }
+    val currentThumbnailPlaylistId by rememberUpdatedState(playlistId)
     val editThumbnailLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri ->
         // Callback is invoked after the user selects a media item or closes the
         // photo picker.
         if (uri != null) {
-            val thumbnailName = "playlist_${playlist?.id}"
+            val target = thumbnailPickTarget.value ?: return@rememberLauncherForActivityResult
+            val isCurrentTarget = {
+                currentThumbnailPlaylistId == target.first && playlist?.id == target.first &&
+                    getActiveProfile(context) == target.second
+            }
+            if (!isCurrentTarget()) return@rememberLauncherForActivityResult
+            val thumbnailName = "playlist_${target.first}"
             coroutineScope.launch {
                 // Issue #606 M2: the decode/scale/write no longer runs on Main; a failed save
                 // keeps the current thumbnail instead of storing the string "null".
-                val permaUri = savePlaylistThumbnail(context, uri, thumbnailName)
-                if (permaUri != null) thumbnailUrl.value = permaUri.toString()
+                val permaUri = savePlaylistThumbnail(context, uri, thumbnailName, isCurrentTarget = isCurrentTarget)
+                if (permaUri != null && isCurrentTarget()) thumbnailUrl.value = permaUri.toString()
             }
         } else {
             Toaster.w( R.string.thumbnail_not_selected )
@@ -933,6 +942,8 @@ fun LocalPlaylistSongs(
     val updateSongsDialog = UpdateSongDialog( batchTargets = ::getSongs )
 
     fun openEditThumbnailPicker() {
+        val targetId = playlist?.id ?: return
+        thumbnailPickTarget.value = targetId to getActiveProfile(context)
         editThumbnailLauncher.launch("image/*")
     }
     val thumbnailPicker = ThumbnailPicker { openEditThumbnailPicker() }

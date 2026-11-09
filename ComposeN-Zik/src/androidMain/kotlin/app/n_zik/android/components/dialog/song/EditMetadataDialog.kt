@@ -25,6 +25,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -64,7 +66,10 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.Descriptive
 import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.kreate.android.me.knighthat.utils.Toaster
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ensureActive
+import kotlin.coroutines.coroutineContext
+import java.util.UUID
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -90,6 +95,8 @@ import java.nio.ByteBuffer
 import com.arthenica.ffmpegkit.FFmpegKit
 import android.content.Context
 import android.util.Base64
+import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.components.image.PickedImageEditor
 
 class EditMetadataDialog private constructor(
     activeState: MutableState<Boolean>,
@@ -103,11 +110,15 @@ class EditMetadataDialog private constructor(
     private var isLoading by mutableStateOf(false)
     private var filePath: String? = null
     private var coverArtBytes: ByteArray? = null
+    private var dialogSong: Song? = null
+    private var dialogProfile: String? = null
+    private var generation = 0
+    private var pickedGeneration = 0
+    private var editJob: Job? = null
+    private var saveJob: Job? = null
+    private val pendingWrites = PendingMetadataWriteStore()
 
     private var writePermissionLauncher: ActivityResultLauncher<IntentSenderRequest>? = null
-    private var pendingTempFile: File? = null
-    private var pendingMediaStoreUri: Uri? = null
-    private var pendingSong: Song? = null
 
     override val iconId: Int = R.drawable.cover_edit
     override val messageId: Int = R.string.metadata_action_edit
@@ -198,7 +209,12 @@ class EditMetadataDialog private constructor(
         @Composable
         operator fun invoke(getSong: () -> Song?): EditMetadataDialog {
             val coroutineScope = rememberCoroutineScope()
-            return EditMetadataDialog(remember { mutableStateOf(false) }, getSong, coroutineScope)
+            val currentSong = rememberUpdatedState(getSong)
+            val dialog = remember(coroutineScope) {
+                EditMetadataDialog(mutableStateOf(false), { currentSong.value() }, coroutineScope)
+            }
+            DisposableEffect(dialog) { onDispose { dialog.hideDialog() } }
+            return dialog
         }
 
         /**
@@ -235,32 +251,61 @@ class EditMetadataDialog private constructor(
         return null
     }
 
-    override fun showDialog() { super<InteractiveDialog>.showDialog() }
-    override fun hideDialog() { isActive = false }
+    override fun showDialog() {
+        generation++
+        dialogSong = getSong() ?: return
+        dialogProfile = getActiveProfile(appContext())
+        filePath = null
+        super<InteractiveDialog>.showDialog()
+    }
+
+    override fun hideDialog() {
+        isActive = false
+        generation++
+        editJob?.cancel()
+        saveJob?.cancel()
+        coverArtBytes = null
+        filePath = null
+        clearPendingWrite()
+    }
+
+    private fun clearPendingWrite() = pendingWrites.discard()
+
+    private fun currentTarget(token: Int): Boolean =
+        isActive && token == generation && dialogSong?.id == getSong()?.id &&
+            dialogProfile == getActiveProfile(appContext())
+
+    private fun currentTarget(request: MetadataSaveRequest): Boolean = request.matches(
+        isActive, generation, getSong()?.id, getActiveProfile(appContext())
+    )
 
     @Composable
     override fun DialogBody() {
         val context = LocalContext.current
-        val song = remember(isActive) { if (isActive) getSong() else null }
+        val song = dialogSong
 
         val pickerLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.GetContent()
         ) { uri: Uri? ->
-            if (uri != null) {
-                coroutineScope.launch(NzikDispatchers.DATA) {
+            val token = pickedGeneration
+            if (uri != null && currentTarget(token)) {
+                editJob?.cancel()
+                editJob = coroutineScope.launch {
                     try {
-                        val bytes = readCoverArtBytes(context, uri)
-                        if (bytes != null) {
-                            withContext(NzikDispatchers.UI) {
+                        val edited = PickedImageEditor.edit(context, uri) ?: return@launch
+                        edited.use {
+                            val bytes = withContext(NzikDispatchers.DATA) { readCoverArtBytes(context, edited.uri) }
+                            if (bytes != null && currentTarget(token)) {
                                 coverArtBytes = bytes
                                 val idx = fields.indexOfFirst { it.isCoverArt }
-                                if (idx >= 0) fields[idx] = fields[idx].copy(value = TextFieldValue("New cover selected"))
+                                if (idx >= 0) fields[idx] = fields[idx].copy(value = TextFieldValue(context.getString(R.string.metadata_cover)))
                             }
                         }
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (e: Exception) {
-                        Timber.tag("EditMetadata").e(e, "Failed to read cover image")
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (error: Exception) {
+                        Timber.tag("EditMetadata").e(error, "Could not read edited cover")
+                        Toaster.e(R.string.metadata_save_failed)
                     }
                 }
             }
@@ -271,6 +316,8 @@ class EditMetadataDialog private constructor(
         ) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 performWriteToMediaStore(context)
+            } else {
+                clearPendingWrite()
             }
         }
         writePermissionLauncher = writePermLauncher
@@ -291,7 +338,9 @@ class EditMetadataDialog private constructor(
             fields.clear()
             coverArtBytes = null
 
+            val token = generation
             val result = withContext(NzikDispatchers.DATA) { readTagsFromFile(context, song) }
+            if (!currentTarget(token)) return@LaunchedEffect
 
             filePath = result.path
             coverArtBytes = result.coverBytes
@@ -330,7 +379,13 @@ class EditMetadataDialog private constructor(
                     if (field.isCoverArt) {
                         CoverArtField(
                             coverBytes = coverArtBytes,
-                            onPickImage = { pickerLauncher.launch("image/*") }
+                            onPickImage = {
+                                if (saveJob?.isActive != true) {
+                                    editJob?.cancel()
+                                    pickedGeneration = ++generation
+                                    pickerLauncher.launch("image/*")
+                                }
+                            }
                         )
                     } else {
                         EditField(
@@ -435,9 +490,13 @@ class EditMetadataDialog private constructor(
 
     private fun saveToFile() {
         val path = filePath ?: run { Toaster.e(R.string.metadata_file_path_unavailable); return }
-        val song = getSong() ?: return
-
-        coroutineScope.launch(NzikDispatchers.DATA) {
+        val song = dialogSong ?: return
+        val token = generation
+        if (!currentTarget(token) || editJob?.isActive == true || saveJob?.isActive == true || pendingWrites.hasPending()) return
+        val request = MetadataSaveRequest(song, dialogProfile ?: return, token, path, fields.toList(), coverArtBytes?.copyOf())
+        val selectedCoverBytes = request.coverBytes
+        val selectedFields = request.fields
+        saveJob = coroutineScope.launch(NzikDispatchers.DATA) {
             // The FFmpeg module (spec-ffmpeg-extension-module) must be ready before
             // ANY FFprobeKit/FFmpegKit touch
             val moduleState = FfmpegModule.ensureReady()
@@ -456,7 +515,9 @@ class EditMetadataDialog private constructor(
             Timber.tag("EditMetadata").i("saveToFile: song=${song.title}, path=$path, ext=$ext")
 
             val tempExt = if (ext.equals("opus", ignoreCase = true) || ext.equals("ogg", ignoreCase = true)) "ogg" else ext
-            var tempFile = File(cacheDir, "edit_meta_${song.id.hashCode()}.$tempExt")
+            val tempId = UUID.randomUUID()
+            var tempFile = File(cacheDir, "edit_meta_$tempId.$tempExt")
+            var retainedForPermission = false
             val mediaStoreId = song.id.substringAfter(LOCAL_KEY_PREFIX).toLongOrNull()
             val mediaStoreUri = mediaStoreId?.let {
                 ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, it)
@@ -475,7 +536,7 @@ class EditMetadataDialog private constructor(
                         Timber.tag("EditMetadata").i("Probed codec: $codec")
                         if (codec?.contains("opus", ignoreCase = true) == true) {
                             isOpus = true
-                            tempFile = File(cacheDir, "edit_meta_${song.id.hashCode()}.ogg")
+                            tempFile = File(cacheDir, "edit_meta_$tempId.ogg")
                             Timber.tag("EditMetadata").w("Extension mismatch: file contains Opus but ext=$ext. Overriding, tempFile=${tempFile.name}")
                         }
                     } catch (e: Exception) {
@@ -483,12 +544,12 @@ class EditMetadataDialog private constructor(
                     }
                 }
 
-                Timber.tag("EditMetadata").i("isOpus=$isOpus, hasCover=${coverArtBytes != null}, mediaStoreUri=$mediaStoreUri")
+                Timber.tag("EditMetadata").i("isOpus=$isOpus, hasCover=${selectedCoverBytes != null}, mediaStoreUri=$mediaStoreUri")
                 
                 commandBuilder.append("-y -nostdin -i \"${originalFile.absolutePath}\" ")
                 
-                if (coverArtBytes != null && !isOpus) {
-                    val bytes = coverArtBytes ?: return@launch
+                if (selectedCoverBytes != null && !isOpus) {
+                    val bytes = selectedCoverBytes ?: return@launch
                     val imgOpts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
                     BitmapFactory.decodeByteArray(bytes, 0, bytes.size, imgOpts)
                     val imgCodec = when {
@@ -516,7 +577,7 @@ class EditMetadataDialog private constructor(
                         .replace(Regex("[\\x00-\\x08\\x0E-\\x1F]"), "")
                 }
 
-                fields.forEach { field ->
+                selectedFields.forEach { field ->
                     val value = field.value.text.trim()
                     if (value.isNotEmpty() && field.key != "COVERART") {
                         val ffmpegKey = FFMPEG_KEY_MAP[field.key] ?: field.key.lowercase()
@@ -525,9 +586,9 @@ class EditMetadataDialog private constructor(
                     }
                 }
 
-                if (isOpus && coverArtBytes != null) {
+                if (isOpus && selectedCoverBytes != null) {
                     try {
-                        val bytes = coverArtBytes ?: return@launch
+                        val bytes = selectedCoverBytes ?: return@launch
                         val flacPicBase64 = ExportCacheDialog.generateFlacPictureBase64(bytes)
                         commandBuilder.append("-metadata METADATA_BLOCK_PICTURE=\"$flacPicBase64\" ")
                     } catch (e: Exception) {
@@ -549,6 +610,8 @@ class EditMetadataDialog private constructor(
                 }
                 Timber.tag("EditMetadata").i("FFmpeg success! Tags written to ${tempFile.absolutePath}")
 
+                coroutineContext.ensureActive()
+                if (!currentTarget(request)) return@launch
                 if (mediaStoreUri != null) {
                     Timber.tag("EditMetadata").i("Writing to MediaStore: $mediaStoreUri")
                     try {
@@ -560,16 +623,20 @@ class EditMetadataDialog private constructor(
                             tempFile.inputStream().use { inp -> inp.copyTo(out) }
                         }
                         Timber.tag("EditMetadata").i("MediaStore write successful")
-                        onWriteSuccess(song, tempFile)
+                        onWriteSuccess(request)
                     } catch (e: RecoverableSecurityException) {
                         Timber.tag("EditMetadata").w("RecoverableSecurityException, requesting permission")
-                        pendingTempFile = tempFile
-                        pendingMediaStoreUri = mediaStoreUri
-                        pendingSong = song
                         withContext(NzikDispatchers.UI) {
-                            writePermissionLauncher?.launch(
-                                IntentSenderRequest.Builder(e.userAction.actionIntent.intentSender).build()
-                            )
+                            if (!currentTarget(request)) return@withContext
+                            val launcher = writePermissionLauncher ?: return@withContext
+                            pendingWrites.put(PendingMetadataWrite(request, tempFile, mediaStoreUri))
+                            retainedForPermission = true
+                            try {
+                                launcher.launch(IntentSenderRequest.Builder(e.userAction.actionIntent.intentSender).build())
+                            } catch (error: Exception) {
+                                clearPendingWrite()
+                                throw error
+                            }
                         }
                     }
                 } else {
@@ -578,13 +645,15 @@ class EditMetadataDialog private constructor(
                         tempFile.inputStream().use { inp -> inp.copyTo(out) }
                     }
                     Timber.tag("EditMetadata").i("Direct write successful")
-                    onWriteSuccess(song, tempFile)
+                    onWriteSuccess(request)
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Timber.tag("EditMetadata").e(e, "Failed to write tags")
                 withContext(NzikDispatchers.UI) { Toaster.e(R.string.metadata_save_failed) }
             } finally {
-                if (pendingTempFile == null) {
+                if (!retainedForPermission) {
                     tempFile.delete()
                 }
                 coverFile?.delete()
@@ -593,40 +662,46 @@ class EditMetadataDialog private constructor(
     }
 
     private fun performWriteToMediaStore(context: Context) {
-        val tempFile = pendingTempFile ?: return
-        val uri = pendingMediaStoreUri ?: return
-        val song = pendingSong ?: return
-
-        coroutineScope.launch(NzikDispatchers.DATA) {
+        val pending = pendingWrites.take() ?: return
+        // The worker owns this file from here; dismissing/reopening can only clear the empty store.
+        saveJob = coroutineScope.launch(NzikDispatchers.DATA) {
             try {
-                context.contentResolver.openOutputStream(uri)?.use { out ->
-                    tempFile.inputStream().use { inp -> inp.copyTo(out) }
+                coroutineContext.ensureActive()
+                if (!currentTarget(pending.request)) return@launch
+                requireNotNull(context.contentResolver.openOutputStream(pending.uri)) { "Cannot open media destination" }.use { out ->
+                    pending.file.inputStream().use { inp -> inp.copyTo(out) }
                 }
-                onWriteSuccess(song, tempFile)
-            } catch (e: Exception) {
-                Timber.tag("EditMetadata").e(e, "Failed to write after permission")
-                tempFile.delete()
-                withContext(NzikDispatchers.UI) { Toaster.e(R.string.metadata_save_failed) }
+                onWriteSuccess(pending.request)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Timber.tag("EditMetadata").e(error, "Failed to write after permission")
+                withContext(NzikDispatchers.UI) {
+                    if (currentTarget(pending.request)) Toaster.e(R.string.metadata_save_failed)
+                }
             } finally {
-                pendingTempFile = null
-                pendingMediaStoreUri = null
-                pendingSong = null
+                pending.file.delete()
             }
+        }.also { worker ->
+            // A scope already cancelled before launch never enters the worker's finally block.
+            worker.invokeOnCompletion { pending.file.delete() }
         }
     }
 
-    private suspend fun onWriteSuccess(song: Song, tempFile: File) {
-        tempFile.delete()
-
-        Database.asyncTransaction {
-            songTable.insertIgnore(song)
-            val newTitle = fields.firstOrNull { it.key == "TITLE" }?.value?.text?.trim() ?: ""
-            val newArtist = fields.firstOrNull { it.key == "ARTIST" }?.value?.text?.trim() ?: ""
-            if (newTitle.isNotEmpty()) songTable.updateTitle(song.id, "$MODIFIED_PREFIX$newTitle")
-            if (newArtist.isNotEmpty()) songTable.updateArtists(song.id, "$MODIFIED_PREFIX$newArtist")
+    private suspend fun onWriteSuccess(request: MetadataSaveRequest) {
+        coroutineContext.ensureActive()
+        if (!currentTarget(request)) return
+        Database.transaction {
+            if (!currentTarget(request)) return@transaction
+            songTable.insertIgnore(request.song)
+            val newTitle = request.fields.firstOrNull { it.key == "TITLE" }?.value?.text?.trim().orEmpty()
+            val newArtist = request.fields.firstOrNull { it.key == "ARTIST" }?.value?.text?.trim().orEmpty()
+            if (newTitle.isNotEmpty()) songTable.updateTitle(request.song.id, "$MODIFIED_PREFIX$newTitle")
+            if (newArtist.isNotEmpty()) songTable.updateArtists(request.song.id, "$MODIFIED_PREFIX$newArtist")
         }
-
-        withContext(NzikDispatchers.UI) { Toaster.done(); hideDialog() }
+        withContext(NzikDispatchers.UI) {
+            if (currentTarget(request)) { Toaster.done(); hideDialog() }
+        }
     }
 
     private data class ReadResult(

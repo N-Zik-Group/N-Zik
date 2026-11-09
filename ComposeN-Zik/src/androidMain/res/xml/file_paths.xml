@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
+    <cache-path
+        name="image_edit"
+        path="image_edit/" />
     <external-files-path
         name="nzik_updates"
         path="Download/nzik_updates/" />

@@ -235,6 +235,8 @@
     <string name="theme_shake_sensitivity_very_high">Very High (1.0G)</string>
 
     <!-- Thumbnail -->
+    <string name="image_editor_title">Edit image</string>
+    <string name="image_editor_failed">Could not edit the image. Your current image was kept.</string>
     <string name="thumbnail_action_edit">Edit Thumbnail</string>
     <string name="thumbnail_action_pick_from_gallery">Pick from gallery</string>
     <string name="thumbnail_action_reset">Reset Thumbnail</string>
@@ -244,4 +246,7 @@
     <string name="thumbnail_remove_failed">Failed to Remove Thumbnail</string>
     <string name="thumbnail_remove_success">Removed Thumbnail</string>
     <string name="glass_effect_rendering_quality">Rendering quality</string>
+    <string name="image_editor_original">Original ratio</string>
+    <string name="image_editor_cancel">Cancel</string>
+    <string name="image_editor_apply">Use image</string>
 </resources>

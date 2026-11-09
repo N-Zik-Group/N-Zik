@@ -2,6 +2,7 @@ package app.n_zik.android.components.ui.screens.profiles
 
 import app.n_zik.android.components.glass.GlassProfilePreferences
 
+import app.n_zik.android.components.image.writeOwnedImageAtomically
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
@@ -40,6 +41,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import java.io.File
 import java.io.IOException
 import java.util.Date
@@ -157,10 +160,10 @@ suspend fun saveProfileAvatarFromUri(context: Context, profileId: String, uri: U
             ?: throw IOException("Cannot decode the picked image")
         try {
             val file = profileAvatarFile(context, profileId)
-            file.parentFile?.mkdirs()
-            file.outputStream().use { output ->
-                source.compress(Bitmap.CompressFormat.JPEG, AVATAR_JPEG_QUALITY, output)
+            writeOwnedImageAtomically(file) { output ->
+                check(source.compress(Bitmap.CompressFormat.JPEG, AVATAR_JPEG_QUALITY, output))
             }
+            ArtworkRevisions.invalidate()
             // A new photo changes the face: let the header re-resolve it.
             profileFaceUpdateTrigger++
         } finally {
@@ -359,8 +362,16 @@ fun ProfileFaceAvatar(
             val isUrl = avatar.source.startsWith("http://", ignoreCase = true) ||
                 avatar.source.startsWith("https://", ignoreCase = true)
             val model: Any = remember(avatar.source) { if (isUrl) avatar.source else File(avatar.source) }
+            val revision = ImageCacheFactory.rememberLocalArtworkRevision(avatar.source)
+            val context = LocalContext.current
+            val request = remember(model, revision, context) {
+                if (isUrl) model else {
+                    val key = ImageCacheFactory.generateCacheKeySync(avatar.source, ImageCacheFactory.NetworkQuality.HIGH)
+                    ImageRequest.Builder(context).data(model).memoryCacheKey(key).diskCacheKey(key).build()
+                }
+            }
             AsyncImage(
-                model = model,
+                model = request,
                 imageLoader = ImageCacheFactory.LOADER,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,

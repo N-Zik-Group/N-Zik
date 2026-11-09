@@ -490,6 +490,7 @@ dependencies {
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.datasource.okhttp)
     implementation(libs.androidx.appcompat)
+    implementation(libs.ucrop)
     implementation(libs.androidx.appcompat.resources)
     implementation(libs.material3)
     implementation(libs.androidx.constraintlayout)

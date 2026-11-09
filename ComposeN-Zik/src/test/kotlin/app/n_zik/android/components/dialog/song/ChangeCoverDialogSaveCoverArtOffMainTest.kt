@@ -1,124 +1,56 @@
 package app.n_zik.android.components.dialog.song
 
-import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.unmockkAll
+import java.io.File
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotEquals
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
-import java.io.File
+import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNull
+import org.junit.Test
+import org.junit.runner.RunWith
+import android.app.Application
+import app.n_zik.android.components.image.PosixAtomicFileShadow
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 
-/**
- * Issue #606 H9 -- `ChangeCoverDialog.kt`'s `launcher` callback used to call
- * `File.delete()` and `saveImageToInternalStorage` (decode + scale + compress a bitmap)
- * synchronously, on the Main thread an `ActivityResultLauncher` callback resumes on. That work is
- * now extracted to [ChangeCoverDialog.saveCoverArt] and dispatched via
- * `withContext(NzikDispatchers.DATA)` from `coroutineScope.launch`, with the resulting Compose
- * state write (`value = ...`) happening only after that `withContext` returns -- back on Main.
- *
- * `saveImageToInternalStorage` itself is legacy (`app.it.fast4x.rimusic.utils.FileUtils.kt`, out
- * of scope for editing) and decodes real bitmaps via `BitmapFactory`, which needs a real Android
- * environment to shadow. Mocking it out here (the same technique `ShufflerTest` uses for
- * `Player.kt`'s top-level functions) keeps this test a plain, fast JVM unit test that verifies
- * exactly what [saveCoverArt] is responsible for: deleting the previous cover file before
- * delegating, forwarding its arguments unchanged, and running off the caller's thread once
- * dispatched to `NzikDispatchers.DATA` -- not the pixel-level behavior of the legacy decoder.
- */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [33], application = Application::class, shadows = [PosixAtomicFileShadow::class])
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ChangeCoverDialogSaveCoverArtOffMainTest {
-
-    @AfterEach
-    fun teardown() {
-        unmockkAll()
+    @Test
+    fun `invalid picked image preserves previous cover`() {
+        val context = RuntimeEnvironment.getApplication()
+        val target = File(context.filesDir, "cover-tests/cover_existing.jpg").apply { parentFile?.mkdirs(); writeText("original") }
+        val invalid = File(context.cacheDir, "invalid-cover").apply { writeText("not an image") }
+        val before = target.readBytes()
+        assertNull(ChangeCoverDialog.saveCoverArt(context, Uri.fromFile(invalid), target, "cover-tests", target.name))
+        assertArrayEquals(before, target.readBytes())
+        assertArrayEquals("not an image".toByteArray(), invalid.readBytes())
     }
 
     @Test
-    fun `saveCoverArt deletes an existing old file before delegating to saveImageToInternalStorage`() {
-        val oldFile = File.createTempFile("old_cover", ".jpg")
-        assertTrue(oldFile.exists(), "precondition: temp file must exist before saveCoverArt runs")
-
-        mockkStatic("app.it.fast4x.rimusic.utils.FileUtilsKt")
-        val context = mockk<Context>()
-        val uri = mockk<Uri>()
-        val savedUri = mockk<Uri>()
-        every {
-            app.it.fast4x.rimusic.utils.saveImageToInternalStorage(context, uri, "app_covers", "cover_x.jpg")
-        } returns savedUri
-
-        val result = ChangeCoverDialog.saveCoverArt(context, uri, oldFile, "app_covers", "cover_x.jpg")
-
-        assertFalse(oldFile.exists(), "saveCoverArt must delete the previous cover file before saving the new one")
-        assertEquals(savedUri, result)
-    }
-
-    @Test
-    fun `saveCoverArt still delegates to saveImageToInternalStorage when there is no old file`() {
-        val oldFile = File.createTempFile("missing_cover", ".jpg")
-        oldFile.delete()
-        assertFalse(oldFile.exists(), "precondition: temp file must not exist before saveCoverArt runs")
-
-        mockkStatic("app.it.fast4x.rimusic.utils.FileUtilsKt")
-        val context = mockk<Context>()
-        val uri = mockk<Uri>()
-        val savedUri = mockk<Uri>()
-        every {
-            app.it.fast4x.rimusic.utils.saveImageToInternalStorage(context, uri, "app_covers", "cover_y.jpg")
-        } returns savedUri
-
-        val result = ChangeCoverDialog.saveCoverArt(context, uri, oldFile, "app_covers", "cover_y.jpg")
-
-        assertEquals(savedUri, result)
-    }
-
-    @Test
-    fun `saveCoverArt returns null when saveImageToInternalStorage returns null`() {
-        val oldFile = File.createTempFile("old_cover", ".jpg")
-
-        mockkStatic("app.it.fast4x.rimusic.utils.FileUtilsKt")
-        val context = mockk<Context>()
-        val uri = mockk<Uri>()
-        every {
-            app.it.fast4x.rimusic.utils.saveImageToInternalStorage(context, uri, "app_covers", "cover_z.jpg")
-        } returns null
-
-        val result = ChangeCoverDialog.saveCoverArt(context, uri, oldFile, "app_covers", "cover_z.jpg")
-
-        assertEquals(null, result)
-    }
-
-    @Test
-    fun `saveCoverArt runs off the caller's thread when dispatched to NzikDispatchers DATA`() = runBlocking {
-        val oldFile = File.createTempFile("old_cover", ".jpg")
-        mockkStatic("app.it.fast4x.rimusic.utils.FileUtilsKt")
-        val context = mockk<Context>()
-        val uri = mockk<Uri>()
-        val savedUri = mockk<Uri>()
-        val callerThreadName = Thread.currentThread().name
-        var saveThreadName: String? = null
-        every {
-            app.it.fast4x.rimusic.utils.saveImageToInternalStorage(context, uri, "app_covers", "cover_w.jpg")
-        } answers {
-            saveThreadName = Thread.currentThread().name
-            savedUri
+    fun `confirmed image replaces owned cover off caller thread without deleting source`() = runBlocking {
+        val context = RuntimeEnvironment.getApplication()
+        val target = File(context.filesDir, "cover-tests/cover_saved.jpg")
+        val picked = File(context.cacheDir, "picked-cover.png")
+        Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.BLUE) }.let { bitmap ->
+            picked.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            bitmap.recycle()
         }
-
+        val original = picked.readBytes()
+        val caller = Thread.currentThread()
         val result = withContext(NzikDispatchers.DATA) {
-            ChangeCoverDialog.saveCoverArt(context, uri, oldFile, "app_covers", "cover_w.jpg")
+            assertNotEquals(caller, Thread.currentThread())
+            ChangeCoverDialog.saveCoverArt(context, Uri.fromFile(picked), target, "cover-tests", target.name)
         }
-
-        assertEquals(savedUri, result)
-        assertNotEquals(
-            "saveCoverArt's blocking work must not run on the caller's (UI-simulating) thread once dispatched to DATA",
-            callerThreadName,
-            saveThreadName
-        )
+        assertNotNull(result)
+        assertArrayEquals(original, picked.readBytes())
     }
 }

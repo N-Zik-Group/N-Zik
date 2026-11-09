@@ -72,9 +72,11 @@ class EditMetadataDialogCoverArtLayoutTest {
     private fun checkGalleryLayout(coverBytes: ByteArray?, fontScale: Float) {
         var picks = 0
         var label = ""
+        var coverDescription = ""
         composeRule.setContent {
             val density = LocalDensity.current
             label = LocalContext.current.getString(R.string.thumbnail_action_pick_from_gallery)
+            coverDescription = LocalContext.current.getString(R.string.metadata_cover_art)
             CompositionLocalProvider(
                 LocalAppearance provides appearance,
                 LocalDensity provides Density(density.density, fontScale),
@@ -89,7 +91,7 @@ class EditMetadataDialogCoverArtLayoutTest {
         composeRule.waitForIdle()
         if (coverBytes != null) {
             composeRule.waitUntil(timeoutMillis = 5_000) {
-                composeRule.onAllNodesWithContentDescription("Cover art").fetchSemanticsNodes().size == 1
+                composeRule.onAllNodesWithContentDescription(coverDescription).fetchSemanticsNodes().size == 1
             }
         }
         composeRule.onAllNodesWithText(label).assertCountEquals(1)

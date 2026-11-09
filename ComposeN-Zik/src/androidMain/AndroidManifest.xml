@@ -69,6 +69,11 @@
 
 
         <activity
+            android:name="app.n_zik.android.components.image.PickedImageEditorActivity"
+            android:exported="false"
+            android:theme="@style/Theme.RiMusic" />
+
+        <activity
             android:name="app.n_zik.android.MainActivity"
             android:exported="true"
             android:launchMode="singleTask"

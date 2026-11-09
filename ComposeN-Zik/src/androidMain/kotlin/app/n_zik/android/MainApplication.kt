@@ -4,6 +4,7 @@ import app.n_zik.android.core.settings.readProxyPort
 
 import android.app.ActivityManager
 import android.app.Application
+import app.n_zik.android.components.image.PickedImageEditor
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -178,6 +179,9 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         }
 
         Dependencies.init(this)
+        NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+            PickedImageEditor.cleanupOrphans(applicationContext)
+        }
 
         // Default theme mode (spec-achromatic-ramp-luminance-cap, scope extension 2026-09-28):
         // fresh install / data wipe / profile switch leave `colorPaletteMode` absent from the

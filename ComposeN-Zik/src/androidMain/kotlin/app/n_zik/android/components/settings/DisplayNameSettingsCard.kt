@@ -34,6 +34,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.image.ProfilePhotoWriteQueue
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.cancelAndJoin
+import app.n_zik.android.components.image.PickedImageEditor
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -161,19 +166,35 @@ fun ProfileFaceCard(
             var showErrorPopup by remember { mutableStateOf(false) }
 
             val scope = rememberCoroutineScope()
+            var photoTarget by remember { mutableStateOf<String?>(null) }
+            var photoRequest by remember { mutableStateOf(0) }
+            var photoJob by remember { mutableStateOf<Job?>(null) }
+            val photoWrites = remember { ProfilePhotoWriteQueue() }
             val photoPicker = rememberLauncherForActivityResult(
                 ActivityResultContracts.PickVisualMedia()
             ) { uri ->
-                if (uri == null) return@rememberLauncherForActivityResult
-                scope.launch {
-                    val saved = withContext(NzikDispatchers.DATA) {
-                        saveProfileAvatarFromUri(app, activeId, uri)
-                    }
-                    if (saved) {
-                        photoVersion++
-                        faceVersion++
-                    } else {
-                        Toaster.e(R.string.profile_photo_failed)
+                val target = photoTarget ?: return@rememberLauncherForActivityResult
+                val request = photoRequest
+                if (uri == null || getActiveProfile(app) != target) return@rememberLauncherForActivityResult
+                photoJob?.cancel()
+                photoJob = scope.launch {
+                    val edited = PickedImageEditor.edit(context, uri) ?: return@launch
+                    edited.use {
+                        if (request != photoRequest || getActiveProfile(app) != target) return@launch
+                        val saved = photoWrites.save(
+                            isCurrent = { request == photoRequest && getActiveProfile(app) == target }
+                        ) {
+                            withContext(NzikDispatchers.DATA) {
+                                request == photoRequest && getActiveProfile(app) == target &&
+                                    saveProfileAvatarFromUri(app, target, edited.uri)
+                            }
+                        }
+                        if (saved) {
+                            photoVersion++
+                            faceVersion++
+                        } else {
+                            Toaster.e(R.string.profile_photo_failed)
+                        }
                     }
                 }
             }
@@ -254,6 +275,9 @@ fun ProfileFaceCard(
                 ),
                 icon = R.drawable.image,
                 onClick = {
+                    photoJob?.cancel()
+                    photoRequest++
+                    photoTarget = getActiveProfile(app)
                     photoPicker.launch(
                         PickVisualMediaRequest(
                             mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
@@ -265,11 +289,17 @@ fun ProfileFaceCard(
                         IconButton(
                             modifier = Modifier.settingsSearchTarget("embedded.profile.face_photo_remove"),
                             onClick = {
+                                val previousPhotoJob = photoJob
+                                previousPhotoJob?.cancel()
+                                photoRequest++
                                 // File IO off the main thread — the photo file is
                                 // removed alone (never the whole profile files dir).
-                                scope.launch {
-                                    withContext(NzikDispatchers.DATA) {
-                                        removeProfileAvatarFile(app, activeId)
+                                scope.launch(start = CoroutineStart.UNDISPATCHED) {
+                                    photoWrites.remove {
+                                        previousPhotoJob?.cancelAndJoin()
+                                        withContext(NzikDispatchers.DATA) {
+                                            removeProfileAvatarFile(app, activeId)
+                                        }
                                     }
                                     photoVersion++
                                     faceVersion++

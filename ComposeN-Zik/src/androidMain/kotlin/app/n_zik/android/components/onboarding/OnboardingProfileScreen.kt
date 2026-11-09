@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
@@ -82,6 +81,12 @@ import app.n_zik.android.utils.ProfileFace
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.resolveFaceAvatar
 import app.n_zik.android.utils.resolveFaceName
+import app.n_zik.android.components.image.ProfilePhotoWriteQueue
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.cancelAndJoin
+import app.n_zik.android.components.image.PickedImageEditor
+import app.it.fast4x.rimusic.utils.getActiveProfile
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -239,21 +244,34 @@ fun OnboardingProfileScreen(
     }
 
     val scope = rememberCoroutineScope()
+    var photoProfile by remember { mutableStateOf<String?>(null) }
+    var photoRequest by remember { mutableStateOf(0) }
+    var photoJob by remember { mutableStateOf<Job?>(null) }
+    val photoWrites = remember { ProfilePhotoWriteQueue() }
     val photoPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
-        scope.launch {
-            // The same helper as the settings face card: decode, downsize to at
-            // most 512px, re-encode JPEG, write profiles/default/avatar.jpg
-            val saved = withContext(NzikDispatchers.DATA) {
-                saveProfileAvatarFromUri(app, DEFAULT_PROFILE_ID, uri)
-            }
-            if (saved) {
-                photoVersion++
-                Timber.tag("Onboarding").i("Base clone photo saved")
-            } else {
-                Toaster.e(R.string.profile_photo_failed)
+        val profile = photoProfile ?: return@rememberLauncherForActivityResult
+        val request = photoRequest
+        if (uri == null || getActiveProfile(app) != profile) return@rememberLauncherForActivityResult
+        photoJob?.cancel()
+        photoJob = scope.launch {
+            val edited = PickedImageEditor.edit(context, uri) ?: return@launch
+            edited.use {
+                if (request != photoRequest || getActiveProfile(app) != profile) return@launch
+                val saved = photoWrites.save(
+                    isCurrent = { request == photoRequest && getActiveProfile(app) == profile }
+                ) {
+                    withContext(NzikDispatchers.DATA) {
+                        request == photoRequest && getActiveProfile(app) == profile &&
+                            saveProfileAvatarFromUri(app, DEFAULT_PROFILE_ID, edited.uri)
+                    }
+                }
+                if (saved) {
+                    photoVersion++
+                } else {
+                    Toaster.e(R.string.profile_photo_failed)
+                }
             }
         }
     }
@@ -487,6 +505,9 @@ fun OnboardingProfileScreen(
                         .padding(top = 16.dp)
                         .clip(uiRoundnessShape())
                         .clickable {
+                            photoJob?.cancel()
+                            photoRequest++
+                            photoProfile = getActiveProfile(app)
                             photoPicker.launch(
                                 PickVisualMediaRequest(
                                     mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
@@ -522,13 +543,19 @@ fun OnboardingProfileScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         OnboardingPhotoRemoveButton(
                             onClick = {
+                                val previousPhotoJob = photoJob
+                                previousPhotoJob?.cancel()
+                                photoRequest++
                                 // File IO off the main thread â€” the photo file is
                                 // removed alone (never the whole profile files
 //
                                 // dir), then the preview re-resolves
-                                scope.launch {
-                                    withContext(NzikDispatchers.DATA) {
-                                        removeProfileAvatarFile(app, DEFAULT_PROFILE_ID)
+                                scope.launch(start = CoroutineStart.UNDISPATCHED) {
+                                    photoWrites.remove {
+                                        previousPhotoJob?.cancelAndJoin()
+                                        withContext(NzikDispatchers.DATA) {
+                                            removeProfileAvatarFile(app, DEFAULT_PROFILE_ID)
+                                        }
                                     }
                                     photoVersion++
                                     Timber.tag("Onboarding").i("Base clone photo removed")
