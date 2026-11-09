@@ -12,6 +12,7 @@ import android.os.SystemClock
 import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
+import kotlin.math.roundToInt
 import androidx.compose.ui.graphics.toArgb
 import kotlinx.coroutines.withContext
 
@@ -348,6 +349,17 @@ object NZikWidgetManager {
         artworkUri: String?,
     ): RemoteViews {
         val views = createTurntableRemoteViews(context, isPlaying, isLiked, duration, currentPosition, palette)
+        val density = context.resources.displayMetrics.density
+        val width = (options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 110) * density).roundToInt()
+        val height = (options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 110) * density).roundToInt()
+        val horizontalExcess = (width - height).coerceAtLeast(0)
+        val verticalExcess = (height - width).coerceAtLeast(0)
+        val padding = (4 * density).roundToInt()
+        // Keep the existing controls anchored to the record's square, even in rectangular launcher cells.
+        views.setViewPadding(android.R.id.background,
+            padding + horizontalExcess / 2, padding + verticalExcess / 2,
+            padding + horizontalExcess - horizontalExcess / 2,
+            padding + verticalExcess - verticalExcess / 2)
         WidgetAppearance.apply(context, views, options, duration > 0,
             mapOf(R.id.widget_turntable_album_art to WidgetArtwork(albumArt, source = artworkUri)))
         return views

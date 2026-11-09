@@ -81,3 +81,9 @@ Fixed:
   - Use font-aware compact layout selection and bound artwork/buttons to available height.
   - Reserve an elapsed/total time row and keep controls usable on small launcher cells.
   - Cover compact dimensions and font scaling with actual RemoteViews rendering.
+
+Fixed:
+- fix(widgets): center turntable controls in rectangular cells (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Anchor the existing turntable controls and time display to a centered square inside tall or wide widget cells.
+  - Preserve the circular record artwork and original control arrangement.
+  - Verify square, portrait and landscape launcher dimensions.
