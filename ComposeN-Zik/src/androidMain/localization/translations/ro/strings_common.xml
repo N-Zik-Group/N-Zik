@@ -15,6 +15,7 @@
     <string name="common_delete_success">Șters</string>
     <string name="common_description_unavailable">Nici o descriere disponibilă</string>
     <string name="common_duration_milliseconds_format">%1$s ms</string>
+    <string name="common_duration_milliseconds_unit">Mi</string>
     <string name="common_empty_items">Niciun articol</string>
     <string name="common_external_link_loading_suffix">se încarcă...</string>
     <string name="common_load_failed">Imposibil de încărcat</string>
@@ -43,4 +44,6 @@
     <string name="common_value_input_hint">Introdu valoarea</string>
     <string name="common_unknown">Necunoscut</string>
     <string name="common_duration_minutes_short">%1$d min.</string>
+    <string name="common_external_link_loading_format">%1$s se încarcă…</string>
+    <string name="common_loading_message">Se încarcă…</string>
 </resources>
