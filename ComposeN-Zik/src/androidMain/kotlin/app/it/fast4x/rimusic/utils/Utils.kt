@@ -662,7 +662,7 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
         if ((index + 1) % progressInterval == 0 && index < mediaItems.lastIndex) {
             Toaster.i(
                 R.string.sync_youtube_songs_remaining,
-                formatArgs = arrayOf((mediaItems.size - addedCount).toString())
+                formatArgs = arrayOf((mediaItems.lastIndex - index).toString())
             )
         }
     }
