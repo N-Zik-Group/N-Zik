@@ -226,6 +226,8 @@
     <string name="theme_shake_sensitivity_medium">Medio (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Muy alto (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Editar imagen</string>
+    <string name="image_editor_failed">No se ha podido editar la imagen. Su imagen actual ha sido asumida.</string>
     <string name="thumbnail_action_edit">Editar miniatura</string>
     <string name="thumbnail_action_pick_from_gallery">Elegir de la galería</string>
     <string name="thumbnail_action_reset">Restablecer miniatura</string>
@@ -235,4 +237,7 @@
     <string name="thumbnail_remove_failed">Error al eliminar miniatura</string>
     <string name="thumbnail_remove_success">Miniatura eliminada</string>
     <string name="glass_effect_rendering_quality">Calidad de renderizado</string>
+    <string name="image_editor_original">Relación original</string>
+    <string name="image_editor_cancel">Cancelar</string>
+    <string name="image_editor_apply">Usar imagen</string>
 </resources>
