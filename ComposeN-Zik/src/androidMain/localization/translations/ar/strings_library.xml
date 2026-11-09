@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">إعجاب جميع الأغاني سوف تأخذ حوالي %1$s. أغلق التطبيق لإلغائه. هل تريد الاستمرار؟</string>
     <string name="library_on_device_permission_request_failed">تعذر طلب الوصول إلى الموسيقى على هذا الجهاز.</string>
     <string name="library_on_device_permission_settings_failed">تعذر فتح إعدادات الإذن.</string>
+    <string name="artist_more_from_format">المزيد من %1$s</string>
+    <string name="playlist_top_show_title_format">إظهار %1$s</string>
 </resources>
