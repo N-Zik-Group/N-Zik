@@ -27,7 +27,7 @@ Cam katkıları: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / B
 
 💾 <b>Çevrimdışı, Meta Veri ve Gizlilik</b>
 - Parçalar ve listeler için akıllı önbellekleme/indirme, seçilebilir indirme kalitesi
-- Tam meta veri içeren FFmpeg tabanlı dışa aktarma (FFmpeg ilk kullanımda yüklenen, indirilebilir bir eklentidir)
+- Tam meta verili FFmpeg dışa aktarımı, 32 bit x86 hariç
 - Uygulama içi meta veri düzenleyici (AAC/Opus, kapak resmi)
 - Yerel dinleme istatistikleri ve geçmişi
 - Özel aralıklı ve saklama süreli otomatik yedekleme
