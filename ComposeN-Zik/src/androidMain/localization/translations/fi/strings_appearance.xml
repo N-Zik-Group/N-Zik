@@ -226,6 +226,8 @@
     <string name="theme_shake_sensitivity_medium">Keskikokoinen (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Erittäin Korkea (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Muokkaa kuvaa</string>
+    <string name="image_editor_failed">Kuvaa ei voitu muokata. Nykyinen kuvasi säilytettiin.</string>
     <string name="thumbnail_action_edit">Muokkaa pienoiskuvaa</string>
     <string name="thumbnail_action_pick_from_gallery">Valitse galleriasta</string>
     <string name="thumbnail_action_reset">Palauta pienoiskuva</string>
@@ -235,4 +237,7 @@
     <string name="thumbnail_remove_failed">Pienoiskuvan poisto epäonnistui</string>
     <string name="thumbnail_remove_success">Pienoiskuva poistettu</string>
     <string name="glass_effect_rendering_quality">Laadun tekeminen</string>
+    <string name="image_editor_original">Alkuperäinen suhde</string>
+    <string name="image_editor_cancel">Peruuta</string>
+    <string name="image_editor_apply">Käytä kuvaa</string>
 </resources>
