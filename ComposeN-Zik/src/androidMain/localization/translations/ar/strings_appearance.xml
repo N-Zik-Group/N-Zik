@@ -242,6 +242,5 @@
     <string name="thumbnail_remove_success">الصورة المصغرة المحذوفة</string>
     <string name="glass_effect_rendering_quality">جودة العرض</string>
     <string name="image_editor_original">النسبة الأصلية</string>
-    <string name="image_editor_cancel">إلغاء</string>
     <string name="image_editor_apply">استخدام الصورة</string>
 </resources>
