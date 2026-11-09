@@ -41,4 +41,208 @@
         <item quantity="one">%1$d sang hørt</item>
         <item quantity="other">%1$d sange hørt</item>
     </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Slet %1$d søgeforespørgsel</item>
+        <item quantity="other">Slet %1$d søgeforespørgsler</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Slet %1$d afspilningsbegivenhed</item>
+        <item quantity="other">Slet %1$d afspilningsbegivenheder</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d episode · %2$s</item>
+        <item quantity="other">%1$d episoder · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">Tilføjer %1$d sang til YouTube-afspilningslisten</item>
+        <item quantity="other">Tilføjer %1$d sange til YouTube-afspilningslisten</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">Tilføjet %1$d sang til YouTube-afspilningslisten</item>
+        <item quantity="other">Tilføjet %1$d sange til YouTube-afspilningslisten</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Profil tilstand importeret: %1$d profil</item>
+        <item quantity="other">Profil tilstand importeret: %1$d profiler</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Kunne ikke synkronisere %1$d album. Gå tilbage til fanen Albums for at prøve igen.</item>
+        <item quantity="other">Synkronisering af %1$d albummer mislykkedes. Gå tilbage til fanen Albums for at prøve igen.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Eksporter %1$d cached/downloadet sang?</item>
+        <item quantity="other">Eksporter %1$d cached/downloadede sange?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">%1$d downloadet sang mangler sin fil og blev fjernet. Download den venligst igen.</item>
+        <item quantity="other">%1$d downloadede sange mangler deres filer og blev fjernet. Download dem venligst igen.</item>
+    </plurals>
+    <plurals name="recommendations_quick_picks_song_count">
+        <item quantity="one">%1$d anbefalet sang</item>
+        <item quantity="other">%1$d anbefalede sange</item>
+    </plurals>
+    <plurals name="listen_together_blocked_user_count">
+        <item quantity="one">%1$d bruger blokeret</item>
+        <item quantity="other">%1$d brugere blokeret</item>
+    </plurals>
+    <plurals name="sync_failed_notification_artist_count">
+        <item quantity="one">Kunne ikke synkronisere %1$d kunstner. Gå tilbage til fanen Kunstnere for at prøve igen.</item>
+        <item quantity="other">Synkronisering af %1$d kunstnere. Gå tilbage til fanen Kunstnere for at prøve igen.</item>
+    </plurals>
+    <plurals name="sync_failed_notification_playlist_count">
+        <item quantity="one">Synkronisering af %1$d afspilningsliste. Gå tilbage til fanen Spillelister for at prøve igen.</item>
+        <item quantity="other">Synkronisering af %1$d afspilningslister. Gå tilbage til fanen Spillelister for at prøve igen.</item>
+    </plurals>
+    <plurals name="sync_retry_failed_item_confirmation">
+        <item quantity="one">Vil du genprøve synkronisering af %1$d mislykkedes emne?</item>
+        <item quantity="other">Vil du genprøve synkronisering af %1$d mislykkede emner?</item>
+    </plurals>
+    <plurals name="sync_progress_artist_count">
+        <item quantity="one">Synkroniserer kunstner... (%1$d/%2$d)</item>
+        <item quantity="other">Synkroniserer kunstnere... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_artist_refresh_count">
+        <item quantity="one">Opdaterer %1$d kunstner</item>
+        <item quantity="other">Opdaterer %1$d kunstnere</item>
+    </plurals>
+    <plurals name="library_sync_artist_retry_count">
+        <item quantity="one">Kunne ikke finde %1$d kunstner, prøve igen</item>
+        <item quantity="other">Kunne ikke finde %1$d kunstnere, prøve igen</item>
+    </plurals>
+    <plurals name="sync_progress_album_count">
+        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
+        <item quantity="other">Synkroniserer albums... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_album_refresh_count">
+        <item quantity="one">Opdaterer %1$d album</item>
+        <item quantity="other">Opdaterer %1$d albums</item>
+    </plurals>
+    <plurals name="library_sync_album_retry_count">
+        <item quantity="one">Kunne ikke finde %1$d album, prøve igen</item>
+        <item quantity="other">Kunne ikke finde %1$d albums, prøve igen</item>
+    </plurals>
+    <plurals name="sync_progress_playlist_count">
+        <item quantity="one">Synkroniserer afspilningsliste... (%1$d/%2$d)</item>
+        <item quantity="other">Synkroniserer afspilningslister... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_playlist_refresh_count">
+        <item quantity="one">Opdaterer %1$d afspilningsliste</item>
+        <item quantity="other">Opdaterer %1$d afspilningslister</item>
+    </plurals>
+    <plurals name="library_sync_playlist_retry_count">
+        <item quantity="one">Kunne ikke finde %1$d afspilningsliste, prøve igen</item>
+        <item quantity="other">Kunne ikke finde %1$d afspilningslister, prøv igen</item>
+    </plurals>
+    <plurals name="maintenance_pass_cleaned_count">
+        <item quantity="one">%1$d element renset</item>
+        <item quantity="other">%1$d elementer renset</item>
+    </plurals>
+    <plurals name="maintenance_pass_deferred_count">
+        <item quantity="one">%1$d element udskudt</item>
+        <item quantity="other">%1$d elementer udskudt</item>
+    </plurals>
+    <plurals name="maintenance_pass_skipped_count">
+        <item quantity="one">%1$d element sprunget over</item>
+        <item quantity="other">%1$d elementer sprunget over</item>
+    </plurals>
+    <plurals name="maintenance_dedup_flagged_count">
+        <item quantity="one">Markeret %1$d række</item>
+        <item quantity="other">Markerede %1$d rækker</item>
+    </plurals>
+    <plurals name="maintenance_dedup_merged_count">
+        <item quantity="one">Fusioneret %1$d række</item>
+        <item quantity="other">Fusionerede %1$d rækker</item>
+    </plurals>
+    <plurals name="recovery_profile_deleted_count">
+        <item quantity="one">Slettede %1$d profil</item>
+        <item quantity="other">Slettede %1$d profiler</item>
+    </plurals>
+    <plurals name="recovery_profile_reset_count">
+        <item quantity="one">Nulstil %1$d profil. Genstart app\'en</item>
+        <item quantity="other">Nulstil %1$d profiler. Genstart app\'en</item>
+    </plurals>
+    <plurals name="recovery_profile_restored_count">
+        <item quantity="one">Gendannede %1$d profil: genstart app\'en</item>
+        <item quantity="other">Gendannede %1$d profiler: genstart app\'en</item>
+    </plurals>
+    <plurals name="album_loading_song_count">
+        <item quantity="one">Indlæser %1$d sang…</item>
+        <item quantity="other">Indlæser %1$d sange…</item>
+    </plurals>
+    <plurals name="artist_deduplication_result_count">
+        <item quantity="one">Fusionerede %1$d duplikerede kunstner med den rigtige kunstner</item>
+        <item quantity="other">Fusionerede %1$d duplikerede kunstnere med den rigtige kunstner</item>
+    </plurals>
+    <plurals name="artist_link_cleanup_result_count">
+        <item quantity="one">Fjernet %1$d forkert kunstnerlink</item>
+        <item quantity="other">Fjernede %1$d forkerte kunstner-links</item>
+    </plurals>
+    <plurals name="library_song_count_with_duration">
+        <item quantity="one">%1$d sang • %2$s</item>
+        <item quantity="other">%1$d sange • %2$s</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count">
+        <item quantity="one">(%1$d afstemning)</item>
+        <item quantity="other">(%1$d stemmer)</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count_attribution">
+        <item quantity="one">%1$d stemme på MusicBrainz</item>
+        <item quantity="other">%1$d stemmer på MusicBrainz</item>
+    </plurals>
+    <plurals name="playlist_delete_all_confirmation_count">
+        <item quantity="one">Er du sikker på, at du vil slette den eneste afspilningsliste (%1$d)?</item>
+        <item quantity="other">Er du sikker på du vil slette alle %1$d afspilningslister?</item>
+    </plurals>
+    <plurals name="playlist_delete_selected_confirmation_count">
+        <item quantity="one">Er du sikker på du vil slette denne afspilningsliste (%1$d)?</item>
+        <item quantity="other">Er du sikker på, at du vil slette disse %1$d afspilningslister?</item>
+    </plurals>
+    <plurals name="playlist_positions_shuffled_count">
+        <item quantity="one">%1$d position blandet</item>
+        <item quantity="other">%1$d positioner blandet</item>
+    </plurals>
+    <plurals name="song_metadata_updated_song_count">
+        <item quantity="one">Opdateret %1$d sang</item>
+        <item quantity="other">Opdateret %1$d sange</item>
+    </plurals>
+    <plurals name="rewind_home_year_play_count">
+        <item quantity="one">%1$s · %2$s spil</item>
+        <item quantity="other">%1$s · %2$s spiller</item>
+    </plurals>
+    <plurals name="rewind_listening_day_count_without">
+        <item quantity="one">%1$s dag uden at lytte.</item>
+        <item quantity="other">%1$s dage uden at lytte.</item>
+    </plurals>
+    <plurals name="rewind_loader_status_day_count">
+        <item quantity="one">%1$s LYTNINGSDAG</item>
+        <item quantity="other">%1$s LYDENDE DAGE</item>
+    </plurals>
+    <plurals name="rewind_loader_status_minute_count">
+        <item quantity="one">%1$s MINUTE</item>
+        <item quantity="other">%1$s MINUTTER</item>
+    </plurals>
+    <plurals name="rewind_loader_status_play_count">
+        <item quantity="one">%1$s SPIL</item>
+        <item quantity="other">%1$s SPILLER</item>
+    </plurals>
+    <plurals name="rewind_loader_status_song_count">
+        <item quantity="one">%1$s ENTYDIG SONG</item>
+        <item quantity="other">%1$s ENTYDIG SONGER</item>
+    </plurals>
+    <plurals name="rewind_meta_song_count">
+        <item quantity="one">%1$s sang</item>
+        <item quantity="other">%1$s sange</item>
+    </plurals>
+    <plurals name="rewind_play_count_label">
+        <item quantity="one">%1$s afspil</item>
+        <item quantity="other">%1$s afspiller</item>
+    </plurals>
+    <plurals name="rewind_top_song_teaser_count">
+        <item quantity="one">%1$d SONG.\nEN VINNER.</item>
+        <item quantity="other">%1$d SONGS.\nEn VINNER.</item>
+    </plurals>
+    <plurals name="maintenance_abnormal_job_count">
+        <item quantity="one">%1$d job ikke afsluttet</item>
+        <item quantity="other">%1$d jobs ikke færdige</item>
+    </plurals>
 </resources>
