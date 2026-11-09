@@ -246,10 +246,11 @@
     <string name="sync_youtube_history_title">Historie YTM</string>
     <string name="sync_youtube_like_failed">Nepodařilo se líbit skladbu na YouTube</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Skladby se líbí na YouTube</string>
+    <string name="sync_youtube_like_success">Přidáno na YouTube</string>
     <string name="sync_youtube_playlist_add_failed">Nepodařilo se přidat skladbu do YouTube Playlist</string>
     <string name="sync_youtube_playlist_add_success">Přidána skladba v YouTube Playlist</string>
     <string name="sync_youtube_playlist_batch_failed">Došlo k chybě pro dalších 50 skladeb. Přidání skladeb do jednoho seznamu skladeb</string>
+    <string name="sync_youtube_playlist_no_songs_added">Do YouTube playlistu nebyly přidány žádné skladby</string>
     <string name="sync_youtube_playlist_songs_added_suffix">Skladby jsou přidány do YouTube Playlistu. Pokud existují nějaké chybějící skladby, opakujte proces</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">skladby budou přidány do seznamu skladeb YTM</string>
     <string name="sync_youtube_playlists_title">YTM playlist</string>
