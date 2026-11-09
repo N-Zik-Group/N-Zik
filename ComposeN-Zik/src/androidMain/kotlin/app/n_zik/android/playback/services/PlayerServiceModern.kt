@@ -8,6 +8,9 @@ import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import app.it.fast4x.rimusic.utils.activeProfileKey
 import app.it.fast4x.rimusic.utils.profilePreferences
 import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
+import app.it.fast4x.rimusic.utils.uiRoundnessDpKey
+import app.it.fast4x.rimusic.utils.thumbnailRoundnessDpKey
+import app.it.fast4x.rimusic.utils.artistThumbnailRoundnessDpKey
 import app.n_zik.android.core.network.fullOfflineModeKey
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.PermissionFeature
@@ -1245,8 +1248,10 @@ class PlayerServiceModern : MediaLibraryService(),
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         when (key) {
-            dynamicThemeRespectBrightnessKey, colorPaletteModeKey, null -> refreshArtworkWidgets()
+            dynamicThemeRespectBrightnessKey, colorPaletteModeKey,
+            uiRoundnessDpKey, thumbnailRoundnessDpKey, artistThumbnailRoundnessDpKey, null -> refreshArtworkWidgets()
             cropVideoThumbnailsKey -> coroutineScope.launch(NzikDispatchers.UI) {
+                refreshArtworkWidgets()
                 (mediaSession.player as? SessionArtworkPlayer)?.refreshArtwork()
                 mediaLibrarySessionCallback.refreshArtwork(mediaSession)
             }

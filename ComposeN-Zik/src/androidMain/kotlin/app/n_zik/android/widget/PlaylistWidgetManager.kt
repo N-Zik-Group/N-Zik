@@ -6,42 +6,42 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.RectF
-import android.graphics.Shader
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
+import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
-import app.it.fast4x.rimusic.utils.getActiveProfile
-import app.n_zik.android.components.player.ArtworkColorSnapshot
-import app.n_zik.android.R
+import androidx.compose.ui.graphics.toArgb
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.toBitmap
-import app.n_zik.android.core.coil.ImageCacheFactory
-import androidx.compose.ui.graphics.toArgb
-import app.n_zik.android.MainActivity
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import java.util.concurrent.ConcurrentHashMap
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
+import timber.log.Timber
+
 import app.it.fast4x.rimusic.cleanPrefix
-import android.net.Uri
-import android.os.SystemClock
-import android.util.TypedValue
-import android.os.Build
+import app.it.fast4x.rimusic.ui.styling.ColorPalette
+import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.n_zik.android.MainActivity
+import app.n_zik.android.R
+import app.n_zik.android.components.player.ArtworkColorSnapshot
+import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 object PlaylistWidgetManager {
 
     data class QuickPick(
         val title: String,
         val artworkBitmap: Bitmap?,
-        val targetIntent: PendingIntent
+        val targetIntent: PendingIntent,
+        val isArtist: Boolean = false,
+        val artworkSource: String? = null,
     )
 
     private data class QuickPickCache(val selection: List<PlaylistQuickPickSource.Entry>, val picks: List<QuickPick>)
@@ -72,7 +72,7 @@ object PlaylistWidgetManager {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             val artwork = if (entry.target == PlaylistQuickPickSource.Target.Favorites)
                 getLikedBitmap(context, accentArgb) else loadBitmap(context, entry.artworkSource)
-            QuickPick(entry.title, artwork, pending)
+            QuickPick(entry.title, artwork, pending, entry.target is PlaylistQuickPickSource.Target.Artist, entry.artworkSource)
         }
         quickPickCache = QuickPickCache(selection, picks)
         picks
@@ -85,9 +85,12 @@ object PlaylistWidgetManager {
                 .data(url)
                 .allowHardware(false)
                 .build()
-            val result = getImageLoader(context).execute(request)
+            val result = getImageLoader().execute(request)
             result.image?.toBitmap()
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
+            Timber.tag("PlaylistWidgetManager").w(e, "Unable to load widget artwork")
             null
         }
     }
@@ -104,7 +107,7 @@ object PlaylistWidgetManager {
 
         val drawable = context.getDrawable(R.drawable.ic_widget_heart_nav)
         if (drawable != null) {
-            drawable.setTint(android.graphics.Color.WHITE)
+            drawable.setTint(Color.WHITE)
             val iconSize = (size * 0.5f).toInt()
             val offset = (size - iconSize) / 2
             drawable.setBounds(offset, offset, offset + iconSize, offset + iconSize)
@@ -113,11 +116,7 @@ object PlaylistWidgetManager {
         return bitmap
     }
 
-    private fun getImageLoader(context: Context): ImageLoader = ImageCacheFactory.LOADER
-
-
-    
-    private val roundedAppIconCache = ConcurrentHashMap<Int, Bitmap>()
+    private fun getImageLoader(): ImageLoader = ImageCacheFactory.LOADER
 
     @Volatile
     private var lastWidgetState: WidgetState? = null
@@ -151,9 +150,9 @@ object PlaylistWidgetManager {
             val snapshot = if (state.profileId == getActiveProfile(context)) state.artworkColors
                 else loadWidgetArtworkColors(context, state.artworkUri, null)
             val palette = widgetArtworkPalette(context, snapshot)
-            val views = createRemoteViews(
+            val views = WidgetAppearance.responsive(options) { sizedOptions -> createRemoteViews(
                 context = context,
-                options = options,
+                options = sizedOptions,
                 title = state.title,
                 artist = state.artist,
                 albumArt = albumArt,
@@ -162,7 +161,8 @@ object PlaylistWidgetManager {
                 duration = state.duration,
                 currentPosition = state.currentPosition,
                 palette = palette,
-            )
+                artworkUri = state.artworkUri,
+            ) }
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }
@@ -210,9 +210,9 @@ object PlaylistWidgetManager {
 
             widgetIds.forEach { widgetId ->
                 val options = appWidgetManager.getAppWidgetOptions(widgetId)
-                val views = createRemoteViews(
+                val views = WidgetAppearance.responsive(options) { sizedOptions -> createRemoteViews(
                     context = context,
-                    options = options,
+                    options = sizedOptions,
                     title = title,
                     artist = artist,
                     albumArt = artworkBitmap,
@@ -221,7 +221,8 @@ object PlaylistWidgetManager {
                     duration = duration,
                     currentPosition = currentPosition,
                     palette = resolvedPalette,
-                )
+                    artworkUri = artworkUri,
+                ) }
                 appWidgetManager.updateAppWidget(widgetId, views)
             }
         }
@@ -230,7 +231,7 @@ object PlaylistWidgetManager {
     internal suspend fun extractPalette(context: Context, bitmap: Bitmap?): ColorPalette =
         widgetArtworkPalette(context, loadWidgetArtworkColors(context, null, bitmap))
 
-    private suspend fun createRemoteViews(
+    internal suspend fun createRemoteViews(
         context: Context,
         options: Bundle,
         title: String,
@@ -241,23 +242,12 @@ object PlaylistWidgetManager {
         duration: Long,
         currentPosition: Long,
         palette: ColorPalette,
+        artworkUri: String?,
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_playlist)
 
-        val cleaned = cleanPrefix(title)
-        val finalTitle = if (title.startsWith("e:", true) || title.startsWith("\uD83C\uDD74")) {
-            "\uD83C\uDD74 $cleaned"
-        } else {
-            cleaned
-        }
-        views.setTextViewText(R.id.widget_playlist_song_title, finalTitle)
-        views.setTextViewText(R.id.widget_playlist_artist_name, artist)
-
-        if (albumArt != null) {
-            views.setImageViewBitmap(R.id.widget_playlist_album_art, getRoundedAlbumArt(albumArt))
-        } else {
-            views.setImageViewBitmap(R.id.widget_playlist_album_art, getRoundedAppIcon(context, 36f))
-        }
+        views.setTextViewText(R.id.widget_playlist_song_title, widgetDisplayTitle(title))
+        views.setTextViewText(R.id.widget_playlist_artist_name, cleanPrefix(artist))
 
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
         views.setImageViewResource(R.id.widget_playlist_play_pause, playPauseIcon)
@@ -308,13 +298,12 @@ object PlaylistWidgetManager {
 
         // Unhide quick picks (let them be visible by default)
         views.setViewVisibility(R.id.widget_playlist_quick_picks_section, View.VISIBLE)
-        
+
         // Responsive layout based on available height:
         // ~320dp needed for player + 2 rows, ~220dp for player + 1 row, ~120dp for player only
-//
         // Real device values: Pixel large=345, Xiaomi large=291, Pixel small=226, Xiaomi small=189
-        val widgetMaxHeight = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT) ?: 0
-        
+        val widgetMaxHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
+
         when {
             widgetMaxHeight >= 320 -> {
                 // Large widget (Pixel 4x3 = 345dp): show both rows
@@ -325,10 +314,10 @@ object PlaylistWidgetManager {
                 views.setViewVisibility(R.id.widget_playlist_row_2, View.GONE)
             }
         }
-        
+
         // Responsive width: shrink player controls when widget is narrow
         // Xiaomi narrow = maxW 255dp, controls need ~170dp but only ~227dp available with padding
-        val widgetMaxWidth = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH) ?: 0
+        val widgetMaxWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH)
         if (widgetMaxWidth in 1..299 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val smallBtn = 28f
             val playBtn = 36f
@@ -341,11 +330,11 @@ object PlaylistWidgetManager {
             views.setViewLayoutWidth(R.id.widget_playlist_like_container, smallBtn, TypedValue.COMPLEX_UNIT_DIP)
             views.setViewLayoutHeight(R.id.widget_playlist_like_container, smallBtn, TypedValue.COMPLEX_UNIT_DIP)
         }
-        
+
         // Use pre-extracted accent color for Favorites icon
         val accentArgb = palette.accent.toArgb()
 
-        val quickPicks = getQuickPicks(context, accentArgb)        
+        val quickPicks = getQuickPicks(context, accentArgb)
         val cardIds = listOf(
             R.id.widget_playlist_card_1, R.id.widget_playlist_card_2, R.id.widget_playlist_card_3, R.id.widget_playlist_card_4,
             R.id.widget_playlist_card_5, R.id.widget_playlist_card_6, R.id.widget_playlist_card_7, R.id.widget_playlist_card_8
@@ -362,72 +351,26 @@ object PlaylistWidgetManager {
             R.id.widget_playlist_card_1_play_container, R.id.widget_playlist_card_2_play_container, R.id.widget_playlist_card_3_play_container, R.id.widget_playlist_card_4_play_container,
             R.id.widget_playlist_card_5_play_container, R.id.widget_playlist_card_6_play_container, R.id.widget_playlist_card_7_play_container, R.id.widget_playlist_card_8_play_container
         )
-        
+
         for (i in 0 until 8) {
             if (i < quickPicks.size) {
                 val pick = quickPicks[i]
                 views.setViewVisibility(cardIds[i], View.VISIBLE)
-                val cleanedPick = cleanPrefix(pick.title)
-            val finalPickTitle = if (pick.title.startsWith("e:", true) || pick.title.startsWith("\uD83C\uDD74")) {
-                "\uD83C\uDD74 $cleanedPick"
-            } else {
-                cleanedPick
-            }
-                views.setTextViewText(titleIds[i], finalPickTitle)
-                if (pick.artworkBitmap != null) {
-                    views.setImageViewBitmap(artIds[i], getRoundedCornerBitmap(pick.artworkBitmap, 16f))
-                } else {
-                    views.setImageViewBitmap(artIds[i], getRoundedAppIcon(context, 16f))
-                }
+                views.setTextViewText(titleIds[i], widgetDisplayTitle(pick.title))
                 views.setOnClickPendingIntent(cardIds[i], pick.targetIntent)
                 views.setViewVisibility(playIds[i], View.GONE)
             } else {
                 views.setViewVisibility(cardIds[i], View.INVISIBLE)
             }
         }
-        
-        applyWidgetTheme(views, palette, titleIds, cardIds)
+
+        applyWidgetTheme(views, palette, titleIds)
+        val artwork = mutableMapOf(R.id.widget_playlist_album_art to WidgetArtwork(albumArt, source = artworkUri))
+        quickPicks.take(artIds.size).forEachIndexed { index, pick ->
+            artwork[artIds[index]] = WidgetArtwork(pick.artworkBitmap, pick.isArtist, pick.artworkSource)
+        }
+        WidgetAppearance.apply(context, views, options, duration > 0, artwork)
         return views
-    }
-
-
-    private fun getRoundedAlbumArt(albumArt: Bitmap): Bitmap {
-        return getRoundedCornerBitmap(albumArt, 36f)
-    }
-
-    private fun getRoundedCornerBitmap(bitmap: Bitmap, cornerRadius: Float): Bitmap {
-        val size = minOf(bitmap.width, bitmap.height)
-        val xOffset = (bitmap.width - size) / 2
-        val yOffset = (bitmap.height - size) / 2
-        val squareBitmap = Bitmap.createBitmap(bitmap, xOffset, yOffset, size, size)
-        val output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(output)
-        val paint = Paint().apply {
-            isAntiAlias = true
-            isFilterBitmap = true
-            shader = BitmapShader(squareBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-        }
-        val rect = RectF(0f, 0f, size.toFloat(), size.toFloat())
-        val scaledRadius = size * 0.12f // 12% of the image size perfectly matches the main album art (36f / 300px)
-        canvas.drawRoundRect(rect, scaledRadius, scaledRadius, paint)
-        if (squareBitmap != bitmap) squareBitmap.recycle()
-        return output
-    }
-
-    private fun getRoundedAppIcon(context: Context, cornerRadius: Float): Bitmap {
-        val cacheKey = cornerRadius.toInt()
-        roundedAppIconCache[cacheKey]?.let { return it }
-
-        val drawable = context.packageManager.getApplicationIcon(context.packageName)
-        val size = 300
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        drawable.setBounds(0, 0, size, size)
-        drawable.draw(canvas)
-
-        return getRoundedCornerBitmap(bitmap, cornerRadius).also {
-            roundedAppIconCache[cacheKey] = it
-        }
     }
 
     private fun formatDuration(durationMs: Long): String {
@@ -476,13 +419,13 @@ object PlaylistWidgetManager {
         val profileId: String? = null,
     )
 
-    private fun applyWidgetTheme(views: RemoteViews, palette: ColorPalette, titleIds: List<Int>, cardIds: List<Int>) {
+    private fun applyWidgetTheme(views: RemoteViews, palette: ColorPalette, titleIds: List<Int>) {
         val bgArgb = palette.background1.toArgb()
         // Keyed on the effective palette tone, not isSystemInDarkMode (spec-achromatic-ramp-luminance-cap)
         val textPrimaryArgb = widgetTextArgb(palette)
         val textSecondaryArgb = widgetSecondaryTextArgb(palette)
         val iconTintArgb = widgetIconTintArgb(palette)
-        
+
         // Background
         views.setInt(R.id.widget_bg_image, "setColorFilter", bgArgb)
 
@@ -495,7 +438,7 @@ object PlaylistWidgetManager {
         // Button backgrounds & accent tint
         views.setInt(R.id.widget_playlist_play_pause_bg_image, "setColorFilter", palette.accent.toArgb())
         views.setInt(R.id.widget_playlist_like_button_bg_image, "setColorFilter", palette.accent.toArgb())
-        
+
         // Progress bar
         views.setInt(R.id.widget_progress_track, "setColorFilter", palette.background2.toArgb())
         views.setInt(R.id.widget_playlist_progress_fill, "setColorFilter", palette.accent.toArgb())

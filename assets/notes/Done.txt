@@ -69,3 +69,9 @@ Fixed:
   - Validate exact provider identities, keep stored values when fields are absent and fill missing video credits only from verified channel metadata.
   - Commit selected metadata safely, refresh playback/artwork and report specific failures or partial completion instead of a generic false success.
   - Propagate real cover, image-cache and waveform cleanup failures; retain cancellation and profile guards.
+
+Fixed:
+- fix(widgets): honor artwork and interface roundness preferences (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Render UI, cover and artist roundness from the application preferences with the matching no-image fallback.
+  - Refresh widgets on preference changes, preserve circular turntable artwork and apply video artwork preferences.
+  - Keep displayed metadata clean without changing widget intents or stored values.

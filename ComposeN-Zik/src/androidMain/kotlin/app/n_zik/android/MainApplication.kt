@@ -4,6 +4,7 @@ import app.n_zik.android.core.settings.readProxyPort
 
 import android.app.ActivityManager
 import android.app.Application
+import app.n_zik.android.widget.WidgetAppearance
 import app.n_zik.android.components.image.PickedImageEditor
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -179,6 +180,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         }
 
         Dependencies.init(this)
+        WidgetAppearance.observeIdlePreferences(this)
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
             PickedImageEditor.cleanupOrphans(applicationContext)
         }

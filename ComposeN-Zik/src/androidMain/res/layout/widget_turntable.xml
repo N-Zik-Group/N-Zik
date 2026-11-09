@@ -14,7 +14,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="center"
         android:scaleType="fitCenter"
-        android:src="@drawable/widget_turntable_default_art"
+        android:src="@drawable/ic_launcher_box"
         android:contentDescription="@string/album_art" />
 
     <!-- Navigation Buttons Container - Top Right (Previous & Next) -->

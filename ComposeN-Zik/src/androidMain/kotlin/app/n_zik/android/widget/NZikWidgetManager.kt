@@ -6,31 +6,29 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapShader
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.RectF
-import android.graphics.Shader
+import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
+import android.util.TypedValue
+import android.view.View
 import android.widget.RemoteViews
+import androidx.compose.ui.graphics.toArgb
+import kotlinx.coroutines.withContext
+
+import app.it.fast4x.rimusic.cleanPrefix
+import app.it.fast4x.rimusic.hasExplicitPrefix
+import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.n_zik.android.MainActivity
 import app.n_zik.android.R
-import kotlinx.coroutines.withContext
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import androidx.compose.ui.graphics.toArgb
-import app.it.fast4x.rimusic.ui.styling.ColorPalette
-import app.it.fast4x.rimusic.cleanPrefix
-import android.view.View
-import android.os.SystemClock
-import android.os.Build
-import android.util.TypedValue
+
+/** Keeps the explicit badge while hiding stored metadata markers on every widget layout. */
+internal fun widgetDisplayTitle(title: String): String {
+    val explicit = title.hasExplicitPrefix() || title.startsWith("e:", true) || title.startsWith("\uD83C\uDD74")
+    return (if (explicit) "\uD83C\uDD74 " else "") + cleanPrefix(title)
+}
 
 object NZikWidgetManager {
-
-    // Cache for album art to avoid reloading
-    private var cachedArtworkUri: String? = null
-    private var cachedAlbumArt: Bitmap? = null
-    private var cachedCircularAlbumArt: Bitmap? = null
 
     suspend fun updateIdleWidgets(context: Context) {
         updateWidgets(
@@ -74,17 +72,15 @@ object NZikWidgetManager {
                 }
             }
 
-            val circularAlbumArt: Bitmap? = albumArt?.let { getCircularBitmap(it) }
-
             // Update main music player widgets
             val componentName = ComponentName(context, MusicWidgetReceiver::class.java)
             val widgetIds = appWidgetManager.getAppWidgetIds(componentName)
             if (widgetIds.isNotEmpty()) {
                 widgetIds.forEach { widgetId ->
                     val options = appWidgetManager.getAppWidgetOptions(widgetId)
-                    val views = createRemoteViewsForSize(
+                    val views = WidgetAppearance.responsive(options) { sizedOptions -> createRemoteViewsForSize(
                         context,
-                        options,
+                        sizedOptions,
                         title,
                         artist,
                         albumArt,
@@ -92,8 +88,9 @@ object NZikWidgetManager {
                         isLiked,
                         duration,
                         currentPosition,
-                        palette
-                    )
+                        palette,
+                        artworkUri
+                    ) }
                     appWidgetManager.updateAppWidget(widgetId, views)
                 }
             }
@@ -102,16 +99,12 @@ object NZikWidgetManager {
             val turntableComponentName = ComponentName(context, TurntableWidgetReceiver::class.java)
             val turntableWidgetIds = appWidgetManager.getAppWidgetIds(turntableComponentName)
             if (turntableWidgetIds.isNotEmpty()) {
-                val turntableViews = createTurntableRemoteViews(
-                    context,
-                    circularAlbumArt,
-                    isPlaying,
-                    isLiked,
-                    duration,
-                    currentPosition,
-                    palette
-                )
                 turntableWidgetIds.forEach { widgetId ->
+                    val options = appWidgetManager.getAppWidgetOptions(widgetId)
+                    val turntableViews = WidgetAppearance.responsive(options) { sizedOptions ->
+                        createTurntableRemoteViewsForSize(context, sizedOptions, albumArt, isPlaying,
+                            isLiked, duration, currentPosition, palette, artworkUri)
+                    }
                     appWidgetManager.updateAppWidget(widgetId, turntableViews)
                 }
             }
@@ -134,7 +127,7 @@ object NZikWidgetManager {
         )
     }
 
-    private fun createRemoteViewsForSize(
+    internal suspend fun createRemoteViewsForSize(
         context: Context,
         options: Bundle,
         title: String,
@@ -144,25 +137,25 @@ object NZikWidgetManager {
         isLiked: Boolean,
         duration: Long,
         currentPosition: Long,
-        palette: ColorPalette
+        palette: ColorPalette,
+        artworkUri: String?,
     ): RemoteViews {
         val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
         val minHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
 
         val views = when {
             minWidth < 180 && minHeight < 100 -> {
-                createCompactSquareRemoteViews(context, albumArt, isPlaying, palette)
+                createCompactSquareRemoteViews(context, isPlaying, palette)
             }
             minWidth >= 180 && minHeight < 100 -> {
-                createCompactWideRemoteViews(context, title, artist, albumArt, isPlaying, isLiked, palette)
+                createCompactWideRemoteViews(context, title, artist, isPlaying, isLiked, palette)
             }
             else -> {
-                createRemoteViews(context, title, artist, albumArt, isPlaying, isLiked, duration, currentPosition, palette)
+                createRemoteViews(context, title, artist, isPlaying, isLiked, duration, currentPosition, palette)
             }
         }
 
         // Responsive scaling (Android 12+)
-        val maxWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH)
         val maxHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
         val isNarrow = minWidth < 340
         val isCompactWide = minWidth >= 180 && minHeight < 100
@@ -183,7 +176,7 @@ object NZikWidgetManager {
                 // Controls scaling for narrow vs wide
                 val smallBtn = if (isNarrow) 30f else 38f
                 val playBtn = if (isNarrow) 38f else 48f
-                
+
                 views.setViewLayoutWidth(R.id.widget_prev_container, smallBtn, TypedValue.COMPLEX_UNIT_DIP)
                 views.setViewLayoutHeight(R.id.widget_prev_container, smallBtn, TypedValue.COMPLEX_UNIT_DIP)
                 views.setViewLayoutWidth(R.id.widget_play_pause_container, playBtn, TypedValue.COMPLEX_UNIT_DIP)
@@ -195,10 +188,10 @@ object NZikWidgetManager {
                 val artSize = if (isNarrow) 32f else 48f
                 views.setViewLayoutWidth(R.id.widget_wide_album_art, artSize, TypedValue.COMPLEX_UNIT_DIP)
                 views.setViewLayoutHeight(R.id.widget_wide_album_art, artSize, TypedValue.COMPLEX_UNIT_DIP)
-                
+
                 val btnSize = if (isNarrow) 24f else 32f
                 val playSize = if (isNarrow) 28f else 36f
-                
+
                 views.setViewLayoutWidth(R.id.widget_wide_like_container, btnSize, TypedValue.COMPLEX_UNIT_DIP)
                 views.setViewLayoutHeight(R.id.widget_wide_like_container, btnSize, TypedValue.COMPLEX_UNIT_DIP)
                 views.setViewLayoutWidth(R.id.widget_wide_prev_container, btnSize, TypedValue.COMPLEX_UNIT_DIP)
@@ -210,6 +203,11 @@ object NZikWidgetManager {
             }
         }
 
+        WidgetAppearance.apply(context, views, options, duration > 0, mapOf(
+            R.id.widget_album_art to WidgetArtwork(albumArt, source = artworkUri),
+            R.id.widget_compact_album_art to WidgetArtwork(albumArt, source = artworkUri),
+            R.id.widget_wide_album_art to WidgetArtwork(albumArt, source = artworkUri),
+        ))
         return views
     }
 
@@ -217,7 +215,6 @@ object NZikWidgetManager {
         context: Context,
         title: String,
         artist: String,
-        albumArt: Bitmap?,
         isPlaying: Boolean,
         isLiked: Boolean,
         duration: Long = 0,
@@ -226,21 +223,8 @@ object NZikWidgetManager {
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_music_player)
 
-        val cleaned = cleanPrefix(title)
-        val finalTitle = if (title.startsWith("e:", true) || title.startsWith("\uD83C\uDD74")) {
-            "\uD83C\uDD74 $cleaned"
-        } else {
-            cleaned
-        }
-        views.setTextViewText(R.id.widget_song_title, finalTitle)
-        views.setTextViewText(R.id.widget_artist_name, artist)
-
-        if (albumArt != null) {
-            val roundedAlbumArt = getRoundedCornerBitmap(albumArt, 48f)
-            views.setImageViewBitmap(R.id.widget_album_art, roundedAlbumArt)
-        } else {
-            views.setImageViewBitmap(R.id.widget_album_art, getRoundedDefaultIcon(context, 48f))
-        }
+        views.setTextViewText(R.id.widget_song_title, widgetDisplayTitle(title))
+        views.setTextViewText(R.id.widget_artist_name, cleanPrefix(artist))
 
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
         views.setImageViewResource(R.id.widget_play_pause, playPauseIcon)
@@ -275,71 +259,18 @@ object NZikWidgetManager {
         views.setOnClickPendingIntent(R.id.widget_like_button, getLikeIntent(context))
         views.setOnClickPendingIntent(R.id.widget_prev_container, getPreviousIntent(context))
         views.setOnClickPendingIntent(R.id.widget_next_container, getNextIntent(context))
-        
+
         applyWidgetTheme(views, palette)
 
         return views
     }
 
-    private fun getRoundedCornerBitmap(bitmap: Bitmap, cornerRadius: Float): Bitmap {
-        val size = minOf(bitmap.width, bitmap.height)
-        val xOffset = (bitmap.width - size) / 2
-        val yOffset = (bitmap.height - size) / 2
-        val squareBitmap = Bitmap.createBitmap(bitmap, xOffset, yOffset, size, size)
-
-        val output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(output)
-        val paint = Paint().apply {
-            isAntiAlias = true
-            isFilterBitmap = true
-            shader = BitmapShader(squareBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-        }
-        val rect = RectF(0f, 0f, size.toFloat(), size.toFloat())
-        canvas.drawRoundRect(rect, cornerRadius, cornerRadius, paint)
-        
-        if (squareBitmap != bitmap) {
-            squareBitmap.recycle()
-        }
-        
-        return output
-    }
-
-    private fun getCircularBitmap(bitmap: Bitmap): Bitmap {
-        val size = minOf(bitmap.width, bitmap.height)
-        val xOffset = (bitmap.width - size) / 2
-        val yOffset = (bitmap.height - size) / 2
-        val squareBitmap = Bitmap.createBitmap(bitmap, xOffset, yOffset, size, size)
-
-        val output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(output)
-        val paint = Paint().apply {
-            isAntiAlias = true
-            isFilterBitmap = true
-            shader = BitmapShader(squareBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-        }
-        val radius = size / 2f
-        canvas.drawCircle(radius, radius, radius, paint)
-
-        if (squareBitmap != bitmap) {
-            squareBitmap.recycle()
-        }
-        return output
-    }
-
     private fun createCompactSquareRemoteViews(
         context: Context,
-        albumArt: Bitmap?,
         isPlaying: Boolean,
         palette: ColorPalette
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_compact_square)
-
-        if (albumArt != null) {
-            val roundedAlbumArt = getRoundedCornerBitmap(albumArt, 48f)
-            views.setImageViewBitmap(R.id.widget_compact_album_art, roundedAlbumArt)
-        } else {
-            views.setImageViewBitmap(R.id.widget_compact_album_art, getRoundedDefaultIcon(context, 48f))
-        }
 
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause_low else R.drawable.ic_widget_play_low
         views.setImageViewResource(R.id.widget_compact_play_pause, playPauseIcon)
@@ -359,22 +290,14 @@ object NZikWidgetManager {
         context: Context,
         title: String,
         artist: String,
-        albumArt: Bitmap?,
         isPlaying: Boolean,
         isLiked: Boolean,
         palette: ColorPalette
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_compact_wide)
 
-        views.setTextViewText(R.id.widget_wide_song_title, title)
-        views.setTextViewText(R.id.widget_wide_artist_name, artist)
-
-        if (albumArt != null) {
-            val roundedAlbumArt = getRoundedCornerBitmap(albumArt, 48f)
-            views.setImageViewBitmap(R.id.widget_wide_album_art, roundedAlbumArt)
-        } else {
-            views.setImageViewBitmap(R.id.widget_wide_album_art, getRoundedDefaultIcon(context, 48f))
-        }
+        views.setTextViewText(R.id.widget_wide_song_title, widgetDisplayTitle(title))
+        views.setTextViewText(R.id.widget_wide_artist_name, cleanPrefix(artist))
 
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause_low else R.drawable.ic_widget_play_low
         views.setImageViewResource(R.id.widget_wide_play_pause, playPauseIcon)
@@ -393,9 +316,25 @@ object NZikWidgetManager {
         return views
     }
 
+    internal suspend fun createTurntableRemoteViewsForSize(
+        context: Context,
+        options: Bundle,
+        albumArt: Bitmap?,
+        isPlaying: Boolean,
+        isLiked: Boolean,
+        duration: Long,
+        currentPosition: Long,
+        palette: ColorPalette,
+        artworkUri: String?,
+    ): RemoteViews {
+        val views = createTurntableRemoteViews(context, isPlaying, isLiked, duration, currentPosition, palette)
+        WidgetAppearance.apply(context, views, options, duration > 0,
+            mapOf(R.id.widget_turntable_album_art to WidgetArtwork(albumArt, source = artworkUri)))
+        return views
+    }
+
     private fun createTurntableRemoteViews(
         context: Context,
-        circularAlbumArt: Bitmap?,
         isPlaying: Boolean,
         isLiked: Boolean,
         duration: Long = 0,
@@ -403,12 +342,6 @@ object NZikWidgetManager {
         palette: ColorPalette
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_turntable)
-
-        if (circularAlbumArt != null) {
-            views.setImageViewBitmap(R.id.widget_turntable_album_art, circularAlbumArt)
-        } else {
-            views.setImageViewBitmap(R.id.widget_turntable_album_art, getCircularDefaultIcon(context))
-        }
 
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause_secondary else R.drawable.ic_widget_play_secondary
         views.setImageViewResource(R.id.widget_turntable_play_pause, playPauseIcon)
@@ -436,26 +369,6 @@ object NZikWidgetManager {
         applyWidgetTheme(views, palette)
 
         return views
-    }
-
-    private fun getCircularDefaultIcon(context: Context): Bitmap {
-        val drawable = context.packageManager.getApplicationIcon(context.packageName)
-        val size = 300
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        drawable.setBounds(0, 0, size, size)
-        drawable.draw(canvas)
-        return getCircularBitmap(bitmap)
-    }
-    
-    private fun getRoundedDefaultIcon(context: Context, cornerRadius: Float): Bitmap {
-        val drawable = context.packageManager.getApplicationIcon(context.packageName)
-        val size = 300
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        drawable.setBounds(0, 0, size, size)
-        drawable.draw(canvas)
-        return getRoundedCornerBitmap(bitmap, cornerRadius)
     }
 
     private fun formatDuration(durationMs: Long): String {
@@ -593,12 +506,12 @@ object NZikWidgetManager {
         views.setInt(R.id.widget_compact_bg_image, "setColorFilter", bgArgb)
         views.setInt(R.id.widget_compact_play_pill_bg, "setColorFilter", accentArgb)
         views.setInt(R.id.widget_compact_like_button_bg, "setColorFilter", accentArgb)
-        
+
         // Compact Wide Widget
         views.setInt(R.id.widget_wide_bg_image, "setColorFilter", bgArgb)
         views.setInt(R.id.widget_wide_play_pause_bg, "setColorFilter", accentArgb)
         views.setInt(R.id.widget_wide_like_button_bg, "setColorFilter", accentArgb)
-        
+
         // Turntable Widget
         views.setInt(R.id.widget_turntable_nav_bg_image, "setColorFilter", bgArgb)
         views.setInt(R.id.widget_turntable_play_bg_image, "setColorFilter", accentArgb)
