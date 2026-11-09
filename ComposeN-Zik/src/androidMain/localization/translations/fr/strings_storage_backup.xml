@@ -3,7 +3,7 @@
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Stockage</string>
     <string name="storage_breakdown_info_title">À propos du stockage</string>
-    <string name="storage_breakdown_nzik_total">Total utilisé par NZik</string>
+    <string name="storage_breakdown_nzik_total">Total utilisé par N-Zik</string>
     <string name="storage_breakdown_subtitle">Répartition du stockage</string>
     <string name="storage_breakdown_waiting">Mesurer le stockage…</string>
     <string name="storage_breakdown_cached_images">Images mises en cache</string>
@@ -11,20 +11,20 @@
     <string name="storage_breakdown_downloaded_audio">Audio téléchargé</string>
     <string name="storage_breakdown_custom_covers">Couvertures personnalisées</string>
     <string name="storage_breakdown_waveforms">Formes d\'onde</string>
-    <string name="storage_breakdown_other_nzik_data">Autres données NZik</string>
+    <string name="storage_breakdown_other_nzik_data">Autres données N-Zik</string>
     <string name="storage_breakdown_other_used_space">Système, applications &amp; fichiers</string>
     <string name="storage_breakdown_free_space">Espace libre</string>
     <string name="storage_info_images">Artwork et autres images mises en cache pour un affichage plus rapide.</string>
     <string name="storage_info_streaming">L\'audio a été conservé temporairement après le streaming, de sorte qu\'il peut être rejoué sans récupérer les mêmes données.</string>
-    <string name="storage_info_downloads">Audio enregistré en NZik pour l\'écoute hors ligne.</string>
+    <string name="storage_info_downloads">Audio enregistré en N-Zik pour l\'écoute hors ligne.</string>
     <string name="storage_info_waveforms">Fichiers générés utilisés pour dessiner la forme d\'onde audio dans le lecteur.</string>
     <string name="storage_info_covers">Œuvre que vous avez choisie ou importée en tant que couverture personnalisée.</string>
-    <string name="storage_info_other_nzik">Le reste des données privées de NZik, y compris ses bases de données, ses paramètres, ses index, ses extensions et ses logs.</string>
+    <string name="storage_info_other_nzik">Le reste des données privées de N-Zik, y compris ses bases de données, ses paramètres, ses index, ses extensions et ses logs.</string>
     <string name="storage_info_other_used">Le reste de l\'espace utilisé sur le volume interne, y compris Android, les applications installées et les fichiers personnels.</string>
     <string name="storage_info_free">Espace disponible pour les applications et les fichiers sur le volume interne.</string>
     <string name="storage_cleanup_title">Nettoyage</string>
     <string name="storage_cleanup_failed">Impossible de terminer le nettoyage de la mémoire.</string>
-    <string name="storage_cleanup_images_description">Vider le cache des images par NZik.</string>
+    <string name="storage_cleanup_images_description">Vider le cache des œuvres par N-Zik.</string>
     <string name="storage_cleanup_streaming_description">Vider le cache audio pendant le streaming.</string>
     <string name="storage_cleanup_downloads_description">Supprimez l\'audio hors ligne et annulez les téléchargements en attente pour le stockage de téléchargement du profil actif.</string>
     <string name="storage_cleanup_waveforms_description">Effacer les fichiers de forme d\'onde générés.</string>
@@ -139,7 +139,7 @@
     <string name="downloads_delete_all_count_confirmation">Supprimer les %d téléchargements ?</string>
     <string name="downloads_delete_dialog_title">Supprimer les fichiers téléchargés</string>
     <string name="downloads_download_all_confirmation">Voulez-vous vraiment tout télécharger ?</string>
-    <string name="downloads_download_all_count_confirmation">Télécharger les %d titres ?</string>
+    <string name="downloads_download_all_count_confirmation">Tout télécharger ? (Chansons : %d)</string>
     <string name="downloads_download_dialog_title">Télécharger des morceaux</string>
     <string name="downloads_empty_message">Rien à télécharger</string>
     <string name="downloads_error_network">Une erreur réseau est apparue</string>
@@ -166,16 +166,16 @@
     <string name="export_running_status">Exportation en cours…</string>
     <string name="export_song_unavailable_message">Le titre doit être mis en cache ou téléchargé pour être exporté</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Souhaitez-vous supprimer tous les fichiers téléchargés (%d titres) ?</string>
+    <string name="library_cleanup_all_downloads_confirmation">Supprimer tous les téléchargements ? (Chansons : %d)</string>
     <string name="library_cleanup_all_favorites_confirmation">Voulez-vous supprimer tous les favoris %d?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Voulez-vous réinitialiser l\'historique d\'écoute pour les chansons %d?</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ AVERTISSEMENT : Ceci SUPPRIMER PERMANENTEMENT toutes les chansons %d et les retirera de TOUTES les playlists. Cette action ne peut pas être annulée !</string>
-    <string name="library_cleanup_entire_cache_confirmation">Voulez-vous vider le cache entier (chansons%d ) ?</string>
-    <string name="library_cleanup_selected_cache_confirmation">Voulez-vous supprimer ces chansons %d du cache ?</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Réinitialiser l\'historique d\'écoute ? (Chansons : %d)</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ ATTENTION : Cette action SUPPRIMER vos chansons et les supprimera de TOUTES les playlists. (Chansons : %d) Cette action ne peut pas être annulée !</string>
+    <string name="library_cleanup_entire_cache_confirmation">Vider tout le cache ? (Chansons : %d)</string>
+    <string name="library_cleanup_selected_cache_confirmation">Supprimer la sélection du cache ? (Chansons : %d)</string>
     <string name="library_cleanup_selected_downloads_confirmation">Voulez-vous supprimer ces téléchargements %d?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Voulez-vous supprimer ces chansons %d des favoris ?</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Voulez-vous réinitialiser l\'historique d\'écoute de ces chansons %d?</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ AVERTISSEMENT : Cela supprimera PERMANENTEMENT ces chansons %d et les retirera de TOUTES les playlists. Cette action ne peut pas être annulée !</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Supprimer la sélection des favoris ? (Chansons : %d)</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Réinitialiser l\'historique d\'écoute pour la sélection ? (Chansons : %d)</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ ATTENTION : Cette action SUPPRIMER PERMANENTEMENT la sélection ET la supprimera de TOUTES les playlists. (Chansons : %d) Cette action ne peut pas être annulée !</string>
     <string name="library_cleanup_title">Corbeille intelligente</string>
     <string name="library_favorites_remove_dialog_title">Supprimer des favoris</string>
     <string name="library_listening_history_reset_dialog_title">Réinitialiser l\'historique d\'écoute</string>
