@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">Senaste kraschen</string>
     <string name="maintenance_lastfm_active">Session aktiv</string>
     <string name="maintenance_library">Bibliotek</string>
-    <string name="maintenance_library_albums">%d album</string>
-    <string name="maintenance_library_artists">%d artister</string>
+    <string name="maintenance_library_albums">Albums: %d</string>
+    <string name="maintenance_library_artists">Artists: %d</string>
     <string name="maintenance_library_listened">%d lyssnade</string>
-    <string name="maintenance_library_playlists">%d spellistor</string>
-    <string name="maintenance_library_songs">%d låtar</string>
+    <string name="maintenance_library_playlists">Playlists: %d</string>
+    <string name="maintenance_library_songs">Songs: %d</string>
     <string name="maintenance_live_subsystems">Undersystem live</string>
     <string name="maintenance_log_view">Visa</string>
     <string name="maintenance_lt_connected">Ansluten</string>
