@@ -137,6 +137,9 @@
     <string name="modules_download_needed">Modul vyžaduje stažení (~25 MB). Zkontrolujte připojení.</string>
     <string name="modules_downloading">Stahování modulu</string>
     <string name="modules_edit_unavailable">Upravit metadata nedostupná: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Příprava FFmpg</string>
+    <string name="modules_ffmpeg_downloading">Stahování FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Je třeba exportovat skladby v mezipaměti a upravit metadata skladby. Staženo při prvním použití.</string>
     <string name="modules_info">Info</string>
     <string name="modules_insufficient_space">Tato funkce potřebuje asi 70 MB volného místa</string>
