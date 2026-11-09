@@ -42,4 +42,32 @@
         <item quantity="one">%1$d song heard</item>
         <item quantity="other">%1$d songs heard</item>
     </plurals>
+    <plurals name="profile_last_used_minute_count">
+        <item quantity="one">%1$d minute ago</item>
+        <item quantity="other">%1$d minutes ago</item>
+    </plurals>
+    <plurals name="profile_last_used_hour_count">
+        <item quantity="one">%1$d hour ago</item>
+        <item quantity="other">%1$d hours ago</item>
+    </plurals>
+    <plurals name="profile_last_used_day_count">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+    <plurals name="profile_last_used_week_count">
+        <item quantity="one">%1$d week ago</item>
+        <item quantity="other">%1$d weeks ago</item>
+    </plurals>
+    <plurals name="profile_last_used_month_count">
+        <item quantity="one">%1$d month ago</item>
+        <item quantity="other">%1$d months ago</item>
+    </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Delete %1$d search query</item>
+        <item quantity="other">Delete %1$d search queries</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Delete %1$d playback event</item>
+        <item quantity="other">Delete %1$d playback events</item>
+    </plurals>
 </resources>

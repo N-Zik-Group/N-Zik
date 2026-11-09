@@ -682,7 +682,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                         }
                                         Spacer(modifier = Modifier.height(16.dp))
                                         BasicText(
-                                            text = if (isReinstalling) stringResource(R.string.updates_reinstalling_status) else "$updateBuildTypeLabel ${stringResource(R.string.updates_available)}",
+                                            text = if (isReinstalling) stringResource(R.string.updates_reinstalling_status) else stringResource(R.string.updates_channel_available_format, updateBuildTypeLabel),
                                             modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                             maxLines = 1,
                                             style = typography().l.bold.copy(color = colorPalette().text, textAlign = TextAlign.Center)

@@ -716,7 +716,7 @@ class PlayerItemMenu private constructor(
                                 override val iconId: Int = R.drawable.people
                                 override val messageId: Int = R.string.library_artists_title
                                 @get:Composable
-                                override val menuIconTitle: String get() = stringResource(R.string.artist_more_from) + " ${song.cleanArtistsText()}"
+                                override val menuIconTitle: String get() = stringResource(R.string.artist_more_from_format, song.cleanArtistsText())
                                 override fun onShortClick() {
                                     menuState.hide()
                                     onClosePlayer()

@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -315,7 +316,7 @@ class LocalPlaylistItemMenu private constructor(
                         modifier = Modifier.conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                     )
                     BasicText(
-                        text = "${playlistPreview.songCount} ${stringResource(R.string.library_songs_title)}",
+                        text = pluralStringResource(R.plurals.library_song_count, playlistPreview.songCount, playlistPreview.songCount),
                         style = typography().xs.semiBold.secondary.copy(color = colorPalette().textSecondary),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

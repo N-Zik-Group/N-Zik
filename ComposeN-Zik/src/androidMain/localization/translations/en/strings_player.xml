@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Choose how tracks from disliked artists are excluded.</string>
     <string name="player_exclude_disliked_songs_description">Choose how disliked tracks are excluded from playback suggestions.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Exclude tracks that exceed the selected duration limit.</string>
-    <string name="player_excluded_song_count_format">Excluded %s songs</string>
+    <string name="player_excluded_song_count_format">Songs excluded: %s</string>
     <string name="player_keep_minimized">Keep minimized</string>
     <string name="player_layout_artwork_style_description">Choose how the player displays track artwork.</string>
     <string name="player_layout_controls_style_description">Choose the layout of the player controls.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Include album artwork beside upcoming tracks in the player preview.</string>
     <string name="player_queue_preview_song_count_description">Choose how many upcoming tracks appear in the player preview.</string>
     <string name="player_queue_remove_selected_confirmation_format">Remove the selection from the queue? Selected tracks: %d</string>
-    <string name="player_queue_shuffled_count_format">Queue shuffled (%d songs)</string>
+    <string name="player_queue_shuffled_count_format">Queue shuffled (tracks: %d)</string>
     <string name="player_remaining_time_visible_description">Show the time remaining in the current track.</string>
     <string name="player_restart_required_message">Player has to be restarted for effective changes!</string>
     <string name="player_rotating_buttons">Rotating buttons</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Display a preview of upcoming tracks inside the player.</string>
     <string name="player_show_player_top_actions_bar_description">Display the row of player actions above the main content.</string>
     <string name="player_shuffle_empty_message">No song to shuffle</string>
-    <string name="player_shuffled_song_count_format">%d songs shuffled</string>
+    <string name="player_shuffled_song_count_format">Tracks shuffled: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Sleep timer set to the end of this song</string>
     <string name="player_sleep_timer_finished_message">Sleep timer ended</string>
     <string name="player_song_playback_error_format">An error occurred while playing the song %1$s</string>

@@ -39,7 +39,7 @@ class ArtistMoreFromTitleTest {
     @Test
     fun `list and grid display cleaned names while clicks retain the original artist`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val prefix = context.getString(R.string.artist_more_from)
+        val title = R.string.artist_more_from_format
         val artist = mutableStateOf(Artist(id = "UC-original", name = "Initial"))
         val grid = mutableStateOf(false)
         var selected: Artist? = null
@@ -76,9 +76,9 @@ class ArtistMoreFromTitleTest {
                 grid.value = isGrid
                 selected = null
             }
-            compose.onNodeWithText("$prefix $displayName").assertIsDisplayed().performClick()
+            compose.onNodeWithText(context.getString(title, displayName)).assertIsDisplayed().performClick()
             if (rawName != null && rawName != displayName) {
-                compose.onNodeWithText("$prefix $rawName").assertDoesNotExist()
+                compose.onNodeWithText(context.getString(title, rawName)).assertDoesNotExist()
             }
             compose.runOnIdle {
                 assertSame(target, selected)

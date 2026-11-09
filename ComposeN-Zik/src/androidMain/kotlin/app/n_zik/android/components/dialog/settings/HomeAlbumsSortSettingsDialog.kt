@@ -50,7 +50,7 @@ object HomeAlbumsSortSettingsDialog : ContentFramedDialog {
 
     private val tabs = AlbumTab.entries
 
-    override val dialogTitle: String @Composable get() = stringResource(R.string.home_albums_settings) + " - Sort"
+    override val dialogTitle: String @Composable get() = stringResource(R.string.settings_dialog_sort_title_format, stringResource(R.string.home_albums_settings))
     override var isActive: Boolean by mutableStateOf(false)
 
     private fun parseOrder(s: String, available: List<String>): List<String> {

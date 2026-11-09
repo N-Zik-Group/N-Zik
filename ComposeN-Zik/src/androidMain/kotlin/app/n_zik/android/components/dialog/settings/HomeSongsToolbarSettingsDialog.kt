@@ -98,7 +98,7 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
         else -> "x"
     }
 
-    override val dialogTitle: String @Composable get() = stringResource(R.string.home_songs_settings) + " - Toolbar"
+    override val dialogTitle: String @Composable get() = stringResource(R.string.settings_dialog_toolbar_title_format, stringResource(R.string.home_songs_settings))
     override var isActive: Boolean by mutableStateOf(false)
 
     private fun parseOrder(s: String, tab: BuiltInPlaylist): List<String> {

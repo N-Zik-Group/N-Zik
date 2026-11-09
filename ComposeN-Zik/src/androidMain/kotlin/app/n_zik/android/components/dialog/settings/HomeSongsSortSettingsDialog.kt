@@ -84,7 +84,7 @@ object HomeSongsSortSettingsDialog : ContentFramedDialog {
         else -> homeSongsAllSortMenuOrderKey
     }
 
-    override val dialogTitle: String @Composable get() = stringResource(R.string.home_songs_settings) + " - Sort"
+    override val dialogTitle: String @Composable get() = stringResource(R.string.settings_dialog_sort_title_format, stringResource(R.string.home_songs_settings))
     override var isActive: Boolean by mutableStateOf(false)
 
     // Preserve saved known IDs and append newly available options.

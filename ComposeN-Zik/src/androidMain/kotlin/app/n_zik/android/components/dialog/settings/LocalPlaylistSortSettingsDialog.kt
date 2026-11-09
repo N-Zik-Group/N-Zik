@@ -37,7 +37,7 @@ object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
         "DatePlayed", "DateLiked", "AlbumYear", "Downloaded", "Custom"
     )
 
-    override val dialogTitle: String @Composable get() = stringResource(R.string.settings_local_playlist_title) + " - Sort"
+    override val dialogTitle: String @Composable get() = stringResource(R.string.settings_dialog_sort_title_format, stringResource(R.string.settings_local_playlist_title))
     override var isActive: Boolean by mutableStateOf(false)
 
     private fun parseOrder(s: String): List<String> {

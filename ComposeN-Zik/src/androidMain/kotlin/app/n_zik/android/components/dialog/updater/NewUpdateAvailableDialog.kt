@@ -64,7 +64,7 @@ object NewUpdateAvailableDialog {
         else stringResource(updateLabelModel.resId) + if (updateLabelModel.append32) " 32" else ""
 
         DialogFrame(onDismiss = { onDismiss() },
-            title = "$updateLabel ${stringResource(R.string.updates_available)}",
+            title = stringResource(R.string.updates_channel_available_format, updateLabel),
             bodyPadding = PaddingValues(0.dp),
         footer = {
                 ButtonRow(

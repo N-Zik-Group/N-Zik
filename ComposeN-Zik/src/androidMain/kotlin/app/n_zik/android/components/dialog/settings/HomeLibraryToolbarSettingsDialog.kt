@@ -68,7 +68,7 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
         else -> "all"
     }
 
-    override val dialogTitle: String @Composable get() = stringResource(R.string.library_title) + " - Toolbar"
+    override val dialogTitle: String @Composable get() = stringResource(R.string.settings_dialog_toolbar_title_format, stringResource(R.string.library_title))
     override var isActive: Boolean by mutableStateOf(false)
 
     private fun parseOrder(s: String): List<String> {

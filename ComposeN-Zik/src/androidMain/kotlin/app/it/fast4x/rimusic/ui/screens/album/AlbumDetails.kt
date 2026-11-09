@@ -50,6 +50,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.style.TextAlign
@@ -428,7 +429,7 @@ fun AlbumDetails(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         val year = album?.year ?: "0000"
-                        val songCount = "${items.size} ${stringResource( R.string.library_songs_title )}"
+                        val songCount = pluralStringResource(R.plurals.library_song_count, items.size, items.size)
                         val totalDuration = items.sumOf {
                             durationTextToMillis(it.durationText ?: "")
                         }.let( ::formatAsTime )

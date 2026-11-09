@@ -317,4 +317,5 @@
     <string name="updates_warning_acknowledge">I understand</string>
     <string name="updates_check_failed">Could not check for updates.</string>
     <string name="updates_install_generic_error">Could not install the update.</string>
+    <string name="updates_channel_available_format">%1$s update available</string>
 </resources>

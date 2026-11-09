@@ -37,7 +37,7 @@ class GoToArtist(
     override val messageId: Int = R.string.library_artists_title
     override val menuIconTitle: String
         @Composable
-        get() = stringResource(R.string.artist_more_from) + " ${song.cleanArtistsText()}"
+        get() = stringResource(R.string.artist_more_from_format, song.cleanArtistsText())
 
 
 

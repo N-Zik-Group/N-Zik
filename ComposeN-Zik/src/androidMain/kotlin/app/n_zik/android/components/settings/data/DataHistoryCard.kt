@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
@@ -92,7 +93,7 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
                     title = stringResource(R.string.search_history_action_clear),
                     text = stringResource(R.string.history_clear_search_history_description),
                     selectedValueText = if (queriesCount > 0) {
-                        "${stringResource(R.string.common_action_delete)} " + queriesCount + stringResource(R.string.search_queries)
+                        pluralStringResource(R.plurals.history_delete_search_query_count, queriesCount, queriesCount)
                     } else {
                         stringResource(R.string.search_history_empty_message)
                     },
@@ -110,7 +111,7 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
                     title = stringResource(R.string.settings_history_action_clear_listening),
                     text = stringResource(R.string.history_clear_listen_history_description),
                     selectedValueText = if (eventsCount > 0) {
-                        stringResource(R.string.statistics_action_delete_playback_events_count, eventsCount.toString())
+                        pluralStringResource(R.plurals.history_delete_playback_event_count, eventsCount.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), eventsCount)
                     } else {
                         stringResource(R.string.search_history_empty_message)
                     },

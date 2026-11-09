@@ -311,11 +311,11 @@ fun lastUsedRelativeText(context: Context, lastUsed: Long?, nowMillis: Long = Sy
     val relative = relativeTime(millis, nowMillis)
     return when (relative.unit) {
         RelativeUnit.JustNow -> context.getString(R.string.profile_last_used_now)
-        RelativeUnit.Minutes -> context.getString(R.string.profile_last_used_minutes, relative.value)
-        RelativeUnit.Hours -> context.getString(R.string.profile_last_used_hours, relative.value)
-        RelativeUnit.Days -> context.getString(R.string.profile_last_used_days, relative.value)
-        RelativeUnit.Weeks -> context.getString(R.string.profile_last_used_weeks, relative.value)
-        RelativeUnit.Months -> context.getString(R.string.profile_last_used_months, relative.value)
+        RelativeUnit.Minutes -> context.resources.getQuantityString(R.plurals.profile_last_used_minute_count, relative.value.toInt(), relative.value)
+        RelativeUnit.Hours -> context.resources.getQuantityString(R.plurals.profile_last_used_hour_count, relative.value.toInt(), relative.value)
+        RelativeUnit.Days -> context.resources.getQuantityString(R.plurals.profile_last_used_day_count, relative.value.toInt(), relative.value)
+        RelativeUnit.Weeks -> context.resources.getQuantityString(R.plurals.profile_last_used_week_count, relative.value.toInt(), relative.value)
+        RelativeUnit.Months -> context.resources.getQuantityString(R.plurals.profile_last_used_month_count, relative.value.toInt(), relative.value)
         RelativeUnit.Date -> DateFormat.getDateFormat(context).format(Date(millis)).toString()
     }
 }

@@ -101,7 +101,7 @@
     <string name="downloads_delete_all_count_confirmation">Delete all %d downloads?</string>
     <string name="downloads_delete_dialog_title">Delete downloads</string>
     <string name="downloads_download_all_confirmation">Do you really want to download all?</string>
-    <string name="downloads_download_all_count_confirmation">Download all %d songs?</string>
+    <string name="downloads_download_all_count_confirmation">Download everything? (Songs: %d)</string>
     <string name="downloads_download_dialog_title">Download songs</string>
     <string name="downloads_empty_message">Nothing to download</string>
     <string name="downloads_error_network">A network error has occurred</string>
@@ -128,16 +128,16 @@
     <string name="export_running_status">Exporting…</string>
     <string name="export_song_unavailable_message">Song must be cached or downloaded to export</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Do you want to delete all downloads (%d songs)?</string>
-    <string name="library_cleanup_all_favorites_confirmation">Do you want to remove all %d favorites?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Do you want to reset listening history for %d songs?</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ WARNING: This will PERMANENTLY DELETE all %d songs AND remove them from ALL playlists. This action cannot be undone!</string>
-    <string name="library_cleanup_entire_cache_confirmation">Do you want to clear the entire cache (%d songs)?</string>
-    <string name="library_cleanup_selected_cache_confirmation">Do you want to remove these %d songs from cache?</string>
-    <string name="library_cleanup_selected_downloads_confirmation">Do you want to delete these %d downloads?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Do you want to remove these %d songs from favorites?</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Do you want to reset listening history for these %d songs?</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ WARNING: This will PERMANENTLY DELETE these %d songs AND remove them from ALL playlists. This action cannot be undone!</string>
+    <string name="library_cleanup_all_downloads_confirmation">Delete all downloads? (Songs: %d)</string>
+    <string name="library_cleanup_all_favorites_confirmation">Remove all favorites? (Songs: %d)</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Reset listening history? (Songs: %d)</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ WARNING: This will PERMANENTLY DELETE your songs AND remove them from ALL playlists. (Songs: %d) This action cannot be undone!</string>
+    <string name="library_cleanup_entire_cache_confirmation">Clear the entire cache? (Songs: %d)</string>
+    <string name="library_cleanup_selected_cache_confirmation">Remove the selection from cache? (Songs: %d)</string>
+    <string name="library_cleanup_selected_downloads_confirmation">Delete the selected downloads? (Songs: %d)</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Remove the selection from favorites? (Songs: %d)</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Reset listening history for the selection? (Songs: %d)</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ WARNING: This will PERMANENTLY DELETE the selection AND remove it from ALL playlists. (Songs: %d) This action cannot be undone!</string>
     <string name="library_cleanup_title">Smart trash</string>
     <string name="library_favorites_remove_dialog_title">Remove from favorites</string>
     <string name="library_listening_history_reset_dialog_title">Reset listening history</string>
