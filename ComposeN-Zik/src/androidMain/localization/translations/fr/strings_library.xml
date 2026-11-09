@@ -380,15 +380,15 @@
     <string name="song_like_status_action_reset">Réinitialiser le statut « J\'aime » / « Je n\'aime pas »</string>
     <string name="song_update_action_clear_playback_cache">Vider le cache de lecture</string>
     <string name="song_update_action_remove_offline_download">Supprimer le téléchargement hors ligne</string>
-    <string name="song_update_result_partial">Partiellement mis à jour. %1$s</string>
+    <string name="song_update_result_partial">Mise à jour partielle. %1$s</string>
     <string name="song_update_result_failed">Non mis à jour. %1$s</string>
     <string name="song_update_error_metadata_unavailable">Informations YouTube indisponibles.</string>
     <string name="song_update_error_network">Impossible d\'accéder à YouTube. Vérifiez votre connexion.</string>
-    <string name="song_update_error_missing_title">YouTube n\'a pas retourné de titre.</string>
-    <string name="song_update_error_missing_artists">YouTube n\'a pas rendu d\'artistes.</string>
-    <string name="song_update_error_incomplete_artists">Les informations sur les artistes de YouTube sont incomplètes.</string>
-    <string name="song_update_error_missing_cover">YouTube n\'a pas retourné de couverture.</string>
-    <string name="song_update_error_wrong_song">YouTube a renvoyé une chanson différente. Ses informations ont été ignorées.</string>
+    <string name="song_update_error_missing_title">YouTube n\'a pas renvoyé de titre.</string>
+    <string name="song_update_error_missing_artists">YouTube n\'a renvoyé aucun artiste.</string>
+    <string name="song_update_error_incomplete_artists">Les informations sur l\'artiste provenant de YouTube sont incomplètes.</string>
+    <string name="song_update_error_missing_cover">YouTube n\'a pas renvoyé de couverture.</string>
+    <string name="song_update_error_wrong_song">YouTube a renvoyé un autre morceau. Les informations le concernant ont été ignorées.</string>
     <string name="song_update_error_cache_unavailable">Le cache de lecture n\'est pas disponible. Refermez le lecteur et réessayez.</string>
     <string name="song_update_error_profile_changed">La mise à jour s\'est interrompue car le profil actif a changé.</string>
     <string name="song_update_error_storage">Impossible d\'enregistrer les modifications sur cet appareil.</string>
@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Aimer toutes les chansons prendra environ %1$s. Fermer l\'application pour annuler. Voulez-vous continuer ?</string>
     <string name="library_on_device_permission_request_failed">Impossible de demander l\'accès à la musique sur cet appareil.</string>
     <string name="library_on_device_permission_settings_failed">Impossible d\'ouvrir les paramètres d\'autorisation.</string>
+    <string name="artist_more_from_format">Plus de %1$s</string>
+    <string name="playlist_top_show_title_format">Afficher %1$s</string>
 </resources>
