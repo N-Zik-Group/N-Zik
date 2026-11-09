@@ -377,6 +377,27 @@
     <string name="song_metadata_update_action_open">Apri finestra di aggiornamento</string>
     <string name="song_metadata_updated_count">Canzoni %1$d aggiornate</string>
     <string name="song_play_time_action_reset">Reimposta il tempo totale di riproduzione</string>
+    <string name="song_like_status_action_reset">Resetta lo stato piaciuto/non piaciuto</string>
+    <string name="song_update_action_clear_playback_cache">Cancella cache di riproduzione</string>
+    <string name="song_update_action_remove_offline_download">Rimuovi download offline</string>
+    <string name="song_update_result_partial">Aggiornato parzialmente. %1$s</string>
+    <string name="song_update_result_failed">Non aggiornato. %1$s</string>
+    <string name="song_update_error_metadata_unavailable">Informazioni su YouTube non disponibili.</string>
+    <string name="song_update_error_network">Impossibile raggiungere YouTube. Controlla la tua connessione.</string>
+    <string name="song_update_error_missing_title">YouTube non ha restituito un titolo.</string>
+    <string name="song_update_error_missing_artists">YouTube non ha restituito artisti.</string>
+    <string name="song_update_error_incomplete_artists">Le informazioni sull\'artista da YouTube sono incomplete.</string>
+    <string name="song_update_error_missing_cover">YouTube non ha restituito una copertina.</string>
+    <string name="song_update_error_wrong_song">YouTube ha restituito una canzone diversa. Le sue informazioni sono state ignorate.</string>
+    <string name="song_update_error_cache_unavailable">Cache di riproduzione non disponibile. Riapri il giocatore e riprova.</string>
+    <string name="song_update_error_profile_changed">Aggiornamento interrotto perché il profilo attivo è cambiato.</string>
+    <string name="song_update_error_storage">Impossibile salvare le modifiche su questo dispositivo.</string>
+    <string name="song_update_error_cache_clear">Impossibile terminare la cancellazione della cache di riproduzione.</string>
+    <string name="song_update_error_download_remove">Impossibile rimuovere lo scaricamento fuori rete.</string>
+    <string name="song_update_error_cover_reset">Impossibile terminare il ripristino della copertina.</string>
+    <string name="song_update_error_playback_refresh">Modifiche salvate, ma il giocatore non può aggiornare.</string>
+    <string name="song_update_batch_result">Aggiornato: %1$d · Parzialmente aggiornato: %2$d · Non aggiornato: %3$d</string>
+    <string name="song_update_batch_reason_count">%1$s (%2$d)</string>
     <!-- Song Matching -->
     <string name="song_matching_action_open">Corrispondenza versione Album/Audio</string>
     <string name="song_matching_all_confirmation">Vuoi abbinare le canzoni di %d senza eguali?</string>
