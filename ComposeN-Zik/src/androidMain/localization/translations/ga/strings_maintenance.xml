@@ -137,6 +137,9 @@
     <string name="modules_download_needed">Module needs download (~25 MB). Check connection.</string>
     <string name="modules_downloading">Downloading module</string>
     <string name="modules_edit_unavailable">Edit metadata unavailable: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Preparing FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">Downloading FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Needed to export cached songs and to edit song metadata. Downloaded on first use.</string>
     <string name="modules_info">Info</string>
     <string name="modules_insufficient_space">This feature needs about 70 MB of free space</string>
