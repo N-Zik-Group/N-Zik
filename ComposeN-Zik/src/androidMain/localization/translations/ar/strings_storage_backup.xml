@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">التخزين</string>
+    <string name="storage_breakdown_info_title">حول التخزين</string>
+    <string name="storage_breakdown_nzik_total">المجموع المستخدم من قبل N-Zik</string>
+    <string name="storage_breakdown_subtitle">تفكيك التخزين</string>
+    <string name="storage_breakdown_waiting">قياس التخزين…</string>
+    <string name="storage_breakdown_cached_images">الصور المخزنة مؤقتاً</string>
+    <string name="storage_breakdown_streamed_audio">صوت مذيّل</string>
+    <string name="storage_breakdown_downloaded_audio">تم تنزيل الصوت</string>
+    <string name="storage_breakdown_custom_covers">أغلفة مخصصة</string>
+    <string name="storage_breakdown_waveforms">موجات</string>
+    <string name="storage_breakdown_other_nzik_data">بيانات N-Zik الأخرى</string>
+    <string name="storage_breakdown_other_used_space">النظام والتطبيقات &amp; الملفات</string>
+    <string name="storage_breakdown_free_space">مساحة مجانية</string>
+    <string name="storage_info_images">الأعمال الفنية وغيرها من الصور المخبأة للعرض الأسرع.</string>
+    <string name="storage_info_streaming">الصوت المحتفظ به مؤقتا بعد البث، بحيث يمكن تشغيله مرة أخرى دون جلب نفس البيانات.</string>
+    <string name="storage_info_downloads">تم حفظ الصوت في N-Zik للاستماع دون اتصال.</string>
+    <string name="storage_info_waveforms">الملفات التي تم إنشاؤها تستخدم لرسم شكل الموجة الصوتية في المشغل.</string>
+    <string name="storage_info_covers">الأعمال الفنية التي اخترتها أو استيرادها كأغلفة مخصصة.</string>
+    <string name="storage_info_other_nzik">بقية البيانات الخاصة لـ N-Zik، بما في ذلك قواعد بياناته وإعداداداته وفهرسه وإضافاته وسجلاته.</string>
+    <string name="storage_info_other_used">المساحة المستخدمة المتبقية على المجلد الداخلي، بما في ذلك أندرويد، التطبيقات المثبتة والملفات الشخصية.</string>
+    <string name="storage_info_free">المساحة المتاحة للتطبيقات والملفات على المجلد الداخلي.</string>
+    <string name="storage_cleanup_title">تنظيف</string>
+    <string name="storage_cleanup_failed">لا يمكن إنهاء تنظيف التخزين.</string>
+    <string name="storage_cleanup_images_description">مسح الأعمال الفنية المخبأة من قبل N-Zik.</string>
+    <string name="storage_cleanup_streaming_description">مسح التخزين المؤقت للصوت أثناء البث.</string>
+    <string name="storage_cleanup_downloads_description">حذف الصوت دون اتصال وإلغاء التنزيلات المعلقة لتخزين تحميل الملف الشخصي النشط.</string>
+    <string name="storage_cleanup_waveforms_description">مسح ملفات نموذج الموجة التي تم إنشاؤها.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">مسح الموجات</string>
+    <string name="storage_cleanup_diagnostic_logs">مسح سجلات التشخيص</string>
+    <string name="storage_cleanup_diagnostic_logs_description">حذف ملفات التصحيح وسجل الأعطال. إعداد التسجيل الخاص بك يبقى على حاله.</string>
+    <string name="storage_cleanup_temporary_files">إزالة الملفات المؤقتة المهجورة</string>
+    <string name="storage_cleanup_temporary_files_description">إزالة مسودات محرر الصور المهجورة و Rwind share التقاط أقدم من 24 ساعة.</string>
+    <string name="storage_cleanup_all">مسح الكل</string>
+    <string name="storage_cleanup_all_description">مسح مخبآت الصور والبث وأشكال الموجات المولدة للملف الشخصي النشط، بما في ذلك التخزين الذي يشاركه مع ملفات شخصية أخرى. حذف الصوت دون اتصال وإلغاء التنزيلات المعلقة لتخزين تحميل الملف الشخصي النشط. حذف سجلات التشخيص، ومسودات محرر الصور المتروكة والتقاط مشاركة الريند منتهية الصلاحية. يتم الاحتفاظ بمكتبتك، أغلفة مخصصة وإعدادات.</string>
     <!-- Backup -->
     <string name="backup_action_export">تصدير النسخ الاحتياطي</string>
     <string name="backup_action_import">استيراد النسخ الاحتياطي</string>
@@ -15,11 +50,14 @@
     <string name="backup_auto_schedule_day_of_month_description">اختر يوم الشهر للنسخ الاحتياطية التلقائية الشهرية.</string>
     <string name="backup_auto_schedule_day_of_week_description">اختر يوم الأسبوع للنسخ الاحتياطية التلقائية الأسبوعية.</string>
     <string name="backup_auto_schedule_time_description">اختر الساعة التي يجب أن تعمل فيها النسخ الاحتياطية التلقائية المجدولة.</string>
+    <string name="backup_auto_content_format_description">اختر ما تريد نسخه احتياطياً تلقائياً. تستخدم النسخ الاحتياطية لقاعدة البيانات ZIP عندما تتضمن أغلفة مخصصة.</string>
     <string name="backup_before_update_description">النسخ الاحتياطي التلقائي للبيانات قبل تثبيت التحديث</string>
     <string name="backup_before_update_failed">فشل النسخ الاحتياطي للتثبيت</string>
     <string name="backup_before_update_running_message">جارٍ النسخ الاحتياطي للبيانات قبل التثبيت…</string>
     <string name="backup_before_update_running_title">جارٍ النسخ الاحتياطي</string>
     <string name="backup_excluded_preferences_and_cache_description">يتم استبعاد التفضيلات الشخصية (أي وضع الثيم) وذاكرة التخزين المؤقت.</string>
+    <string name="backup_export_library_options_description">تصدير قاعدة البيانات مع غلاف مخصص أو إعدادات أو ملفات شخصية</string>
+    <string name="backup_import_library_options_description">استعادة نسخة احتياطية لقاعدة بيانات SQLite أو ZIP أو الإعدادات أو الملفات الشخصية</string>
     <string name="backup_include_discord_credentials">تضمين بيانات اعتماد هوية ديسكورد</string>
     <string name="backup_include_lastfm_credentials">قم بتضمين بيانات اعتماد هوية Last.fm</string>
     <string name="backup_include_proxy_password">تضمين كلمة مرور الوكيل</string>
@@ -56,12 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">تصدير قائمة الملف الشخصي وصور الوجه في ملف واحد .txt</string>
     <string name="backup_export_all">تصدير الكل</string>
+    <string name="backup_export_all_with_covers_description">تصدير قاعدة البيانات والإعدادات وحالة الملف الشخصي بشكل منفصل. تستخدم قاعدة البيانات ZIP إذا كانت تحتوي على أغلفة مخصصة.</string>
+    <string name="backup_export_database_with_covers_and_settings_description">تصدير قاعدة البيانات والإعدادات بشكل منفصل. تستخدم قاعدة البيانات الرمز البريدي إذا كان يحتوي على أغلفة مخصصة.</string>
+    <string name="backup_export_database_with_covers_description">حفظ الأغاني وقوائم التشغيل والسجل كـ SQLite. إذا كان لديك أغلفة مخصصة، التصدير هو ZIP مع قاعدة البيانات والغلاف.</string>
     <string name="backup_export_profile_state_failed">فشل تصدير حالة الملف الشخصي</string>
     <string name="backup_export_settings_description">تصدير إعدادات التطبيق والتفضيلات</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">استيراد قائمة الملف الشخصي وصور الوجه من ملف .txt</string>
     <string name="backup_import_all">استيراد الكل</string>
+    <string name="backup_import_all_with_covers_description">استعادة نسخة احتياطية لقاعدة بيانات SQLite أو ZIP والإعدادات وحالة الملف الشخصي من ملفات منفصلة.</string>
+    <string name="backup_import_database_with_covers_and_settings_description">استعادة نسخة احتياطية لقاعدة بيانات SQLite أو ZIP وملف إعدادات منفصلة.</string>
     <string name="backup_import_completed_profile">تم الاستيراد إلى %1$s</string>
+    <string name="backup_import_database_with_covers_description">استعادة الأغاني وقوائم التشغيل والسجل من SQLite أو ZIP. النسخ الاحتياطية ZIP أيضا تستعيد الغلاف المخصص المضمن.</string>
     <string name="backup_import_profile_state_complete">حالة الملف الشخصي المستورد: %1$d ملفات شخصية</string>
     <string name="backup_import_profile_state_complete_base">حالة الملف الشخصي المستورد: الملف الشخصي الأساسي</string>
     <string name="backup_import_profile_state_failed">فشل استيراد الحالة الشخصية</string>
@@ -72,11 +116,14 @@
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">مسح ذاكرة التخزين المؤقت للأغنية</string>
     <string name="cache_downloads_max_size_description">اختر مساحة القرص المتاحة للأغاني التي تم تنزيلها. زر سلة المهملات يزيل الصوت الذي تم تنزيله.</string>
+    <string name="cache_downloads_limit_description">اختر مساحة القرص المتاحة للأغاني التي تم تنزيلها. زر سلة المهملات يزيل الصوت الذي تم تنزيله.</string>
     <string name="cache_image_max_size_description">الحد من مساحة القرص المستخدمة من قبل العمل الفني المخبئ. زر سلة المهملات يمسح الصور التي تم تنزيلها من ذاكرة التخزين المؤقت.</string>
+    <string name="cache_image_limit_description">الحد من مساحة القرص المستخدمة من قبل العمل الفني المخبئ. زر سلة المهملات يمسح الصور التي تم تنزيلها من ذاكرة التخزين المؤقت.</string>
     <string name="cache_location_description">اختر المكان الذي يخزن فيه التطبيق ذاكرة التخزين المؤقت لتشغيل الأغنية.</string>
     <string name="cache_location_private">خاص</string>
     <string name="cache_location_system">النظام</string>
     <string name="cache_streaming_max_size_description">الحد من مساحة القرص المستخدمة في ذاكرة التخزين المؤقت لأغاني البث السريع. زر سلة المهملات يمسح ذاكرة التخزين المؤقت للتشغيل.</string>
+    <string name="cache_streaming_limit_description">الحد من مساحة القرص المستخدمة في ذاكرة التخزين المؤقت لأغاني البث السريع. زر سلة المهملات يمسح ذاكرة التخزين المؤقت للتشغيل.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">تحميل جميع الأغاني</string>
     <string name="downloads_action_refresh_quality">تحديث التنزيلات</string>
@@ -136,7 +183,10 @@
     <string name="storage_samsung_advice_message">يمكن لإدارة سامسونج التلقائية للذاكرة حذف تحميل N-Zik، وملفات ذاكرة التخزين المؤقت، حتى عندما لا تطلب ذلك. للحفاظ على سلامة التنزيلات الخاصة بك، استخدم موقع التخزين الخاص (التطبيق) بدلاً من تخزين النظام.</string>
     <string name="storage_samsung_advice_title">نصائح سامسونج للتخزين</string>
     <string name="storage_samsung_system_usage_message">لديك حاليا %1$s من التنزيلات و ذاكرة التخزين المؤقت على وحدة تخزين النظام.</string>
+    <string name="backup_export_database_failed">فشل تصدير قاعدة البيانات</string>
     <string name="backup_import_failed">فشل الاستيراد</string>
     <string name="export_no_songs">لا توجد أغاني تم تصديرها</string>
     <string name="export_cached_songs_generic_error">فشل التصدير</string>
+    <string name="backup_startup_preparing_library">جارٍ إعداد مكتبتك…</string>
+    <string name="backup_startup_recovery_failed">تعذر إنهاء استعادة مكتبتك.</string>
 </resources>
