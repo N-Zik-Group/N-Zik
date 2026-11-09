@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">Τελευταία κατάρρευση</string>
     <string name="maintenance_lastfm_active">Συνεδρία ενεργή</string>
     <string name="maintenance_library">Βιβλιοθήκη</string>
-    <string name="maintenance_library_albums">%d άλμπουμ</string>
-    <string name="maintenance_library_artists">%d καλλιτέχνες</string>
+    <string name="maintenance_library_albums">Άλμπουμ: %d</string>
+    <string name="maintenance_library_artists">Καλλιτέχνες: %d</string>
     <string name="maintenance_library_listened">%d άκουσε</string>
-    <string name="maintenance_library_playlists">Λίστες αναπαραγωγής %d</string>
-    <string name="maintenance_library_songs">%d τραγούδια</string>
+    <string name="maintenance_library_playlists">Λίστες αναπαραγωγής: %d</string>
+    <string name="maintenance_library_songs">Τραγούδια: %d</string>
     <string name="maintenance_live_subsystems">Ζωντανά υποσυστήματα</string>
     <string name="maintenance_log_view">Προβολή</string>
     <string name="maintenance_lt_connected">Συνδεδεμένο</string>
