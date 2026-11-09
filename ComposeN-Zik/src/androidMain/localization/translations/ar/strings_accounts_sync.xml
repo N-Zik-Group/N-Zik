@@ -258,7 +258,7 @@
     <string name="sync_youtube_playlist_songs_added_suffix">يتم إضافة الأغاني في قائمة تشغيل اليوتيوب. كرر العملية إذا كان هناك أي أغاني مفقودة</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">سيتم إضافة الأغاني في قائمة تشغيل YTM</string>
     <string name="sync_youtube_playlists_title">قوائم تشغيل YTM</string>
-    <string name="sync_youtube_songs_remaining">%1$s Songs Remaining</string>
+    <string name="sync_youtube_songs_remaining">الأغاني المتبقية: %1$s</string>
     <string name="sync_youtube_unlike_failed">فشل في عكس الأغنية في يوتيوب</string>
     <string name="sync_youtube_unlike_success">الأغنية غير معجبة في اليوتيوب</string>
     <string name="sync_starting_notification">بدء المزامنة...</string>
