@@ -137,6 +137,9 @@
     <string name="modules_download_needed">Le module doit être téléchargé (environ 25 Mo). Vérifiez votre connexion.</string>
     <string name="modules_downloading">Module de téléchargement</string>
     <string name="modules_edit_unavailable">Modification des métadonnées impossible : %1$s</string>
+    <string name="modules_ffmpeg_preparation">Préparation de FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">Téléchargement de FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Nécessaire pour exporter les morceaux mis en cache et modifier les métadonnées des morceaux. Téléchargé lors de la première utilisation.</string>
     <string name="modules_info">Infos</string>
     <string name="modules_insufficient_space">Cette fonctionnalité nécessite environ 70 Mo d\'espace libre.</string>
