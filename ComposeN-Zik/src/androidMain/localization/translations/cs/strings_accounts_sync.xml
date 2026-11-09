@@ -258,7 +258,7 @@
     <string name="sync_youtube_playlist_songs_added_suffix">Skladby jsou přidány do YouTube Playlistu. Pokud existují nějaké chybějící skladby, opakujte proces</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">skladby budou přidány do seznamu skladeb YTM</string>
     <string name="sync_youtube_playlists_title">YTM playlist</string>
-    <string name="sync_youtube_songs_remaining">%1$s Zbývající skladby</string>
+    <string name="sync_youtube_songs_remaining">Zbývá skladeb: %1$s</string>
     <string name="sync_youtube_unlike_failed">Nepodařilo se odpojit od skladby na YouTube</string>
     <string name="sync_youtube_unlike_success">Skladba se nelíbí na YouTube</string>
     <string name="sync_starting_notification">Spouštění synchronizace...</string>
