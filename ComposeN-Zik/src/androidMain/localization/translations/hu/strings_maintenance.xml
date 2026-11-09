@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">Last crash</string>
     <string name="maintenance_lastfm_active">Session active</string>
     <string name="maintenance_library">Könyvtár</string>
-    <string name="maintenance_library_albums">%d albums</string>
-    <string name="maintenance_library_artists">%d artists</string>
+    <string name="maintenance_library_albums">Albums: %d</string>
+    <string name="maintenance_library_artists">Artists: %d</string>
     <string name="maintenance_library_listened">%d listened</string>
-    <string name="maintenance_library_playlists">%d playlists</string>
-    <string name="maintenance_library_songs">%d songs</string>
+    <string name="maintenance_library_playlists">Playlists: %d</string>
+    <string name="maintenance_library_songs">Songs: %d</string>
     <string name="maintenance_live_subsystems">Live subsystems</string>
     <string name="maintenance_log_view">View</string>
     <string name="maintenance_lt_connected">Connected</string>
