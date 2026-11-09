@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">حساب Last.fm</string>
     <string name="profile_identity_source_not_connected">لم يتم تسجيل الدخول</string>
     <string name="profile_last_used">آخر استخدام</string>
-    <string name="profile_last_used_days">%d days ago</string>
-    <string name="profile_last_used_hours">%d h ago</string>
-    <string name="profile_last_used_minutes">%d min ago</string>
-    <string name="profile_last_used_months">%d months ago</string>
     <string name="profile_last_used_now">للتو الآن</string>
-    <string name="profile_last_used_weeks">%d weeks ago</string>
     <string name="profile_local_name">اسم الملف الشخصي</string>
     <string name="profile_local_name_description">إعادة تسمية الملف المحلي الحالي.</string>
     <string name="profile_name_input_hint">أدخل اسم الملف الشخصي</string>
@@ -255,10 +250,11 @@
     <string name="sync_youtube_playlist_add_failed">فشل في إضافة الأغنية في قائمة تشغيل اليوتيوب</string>
     <string name="sync_youtube_playlist_add_success">تمت إضافة الأغنية في قائمة تشغيل اليوتيوب</string>
     <string name="sync_youtube_playlist_batch_failed">حدث خطأ في ال 50 أغنية التالية. إضافة الأغاني إلى قائمة التشغيل واحدة تلو الأخرى</string>
+    <string name="sync_youtube_playlist_no_songs_added">لم يتم إضافة أغاني إلى قائمة تشغيل اليوتيوب</string>
     <string name="sync_youtube_playlist_songs_added_suffix">يتم إضافة الأغاني في قائمة تشغيل اليوتيوب. كرر العملية إذا كان هناك أي أغاني مفقودة</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">سيتم إضافة الأغاني في قائمة تشغيل YTM</string>
     <string name="sync_youtube_playlists_title">قوائم تشغيل YTM</string>
-    <string name="sync_youtube_songs_remaining">الأغاني المتبقية: %1$s</string>
+    <string name="sync_youtube_songs_remaining">%1$s Songs Remaining</string>
     <string name="sync_youtube_unlike_failed">فشل في عكس الأغنية في يوتيوب</string>
     <string name="sync_youtube_unlike_success">الأغنية غير معجبة في اليوتيوب</string>
     <string name="sync_starting_notification">بدء المزامنة...</string>
