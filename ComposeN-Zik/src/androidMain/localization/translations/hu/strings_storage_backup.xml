@@ -3,7 +3,7 @@
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Storage</string>
     <string name="storage_breakdown_info_title">About storage</string>
-    <string name="storage_breakdown_nzik_total">Total used by NZik</string>
+    <string name="storage_breakdown_nzik_total">Total used by N-Zik</string>
     <string name="storage_breakdown_subtitle">Storage breakdown</string>
     <string name="storage_breakdown_waiting">Measuring storage…</string>
     <string name="storage_breakdown_cached_images">Cached images</string>
@@ -11,20 +11,20 @@
     <string name="storage_breakdown_downloaded_audio">Downloaded audio</string>
     <string name="storage_breakdown_custom_covers">Custom covers</string>
     <string name="storage_breakdown_waveforms">Waveforms</string>
-    <string name="storage_breakdown_other_nzik_data">Other NZik data</string>
+    <string name="storage_breakdown_other_nzik_data">Other N-Zik data</string>
     <string name="storage_breakdown_other_used_space">System, apps &amp; files</string>
     <string name="storage_breakdown_free_space">Free space</string>
     <string name="storage_info_images">Artwork and other images cached for faster display.</string>
     <string name="storage_info_streaming">Audio kept temporarily after streaming, so it can be played again without fetching the same data.</string>
-    <string name="storage_info_downloads">Audio saved in NZik for offline listening.</string>
+    <string name="storage_info_downloads">Audio saved in N-Zik for offline listening.</string>
     <string name="storage_info_waveforms">Generated files used to draw the audio waveform in the player.</string>
     <string name="storage_info_covers">Artwork you chose or imported as custom covers.</string>
-    <string name="storage_info_other_nzik">The rest of NZik’s private data, including its databases, settings, indexes, extensions and logs.</string>
+    <string name="storage_info_other_nzik">The rest of N-Zik’s private data, including its databases, settings, indexes, extensions and logs.</string>
     <string name="storage_info_other_used">The remaining used space on the internal volume, including Android, installed apps and personal files.</string>
     <string name="storage_info_free">Space available for apps and files on the internal volume.</string>
     <string name="storage_cleanup_title">Cleanup</string>
     <string name="storage_cleanup_failed">Could not finish storage cleanup.</string>
-    <string name="storage_cleanup_images_description">Clear artwork cached by NZik.</string>
+    <string name="storage_cleanup_images_description">Clear artwork cached by N-Zik.</string>
     <string name="storage_cleanup_streaming_description">Clear audio cached while streaming.</string>
     <string name="storage_cleanup_downloads_description">Delete offline audio and cancel pending downloads for the active profile’s download storage.</string>
     <string name="storage_cleanup_waveforms_description">Clear generated waveform files.</string>
@@ -139,7 +139,7 @@
     <string name="downloads_delete_all_count_confirmation">Delete all %d downloads?</string>
     <string name="downloads_delete_dialog_title">Delete downloads</string>
     <string name="downloads_download_all_confirmation">Biztosan le akarod tölteni az összeset?</string>
-    <string name="downloads_download_all_count_confirmation">Download all %d songs?</string>
+    <string name="downloads_download_all_count_confirmation">Download everything? (Songs: %d)</string>
     <string name="downloads_download_dialog_title">Download songs</string>
     <string name="downloads_empty_message">Nothing to download</string>
     <string name="downloads_error_network">Hálózati hiba történt</string>
@@ -166,16 +166,16 @@
     <string name="export_running_status">Exporting…</string>
     <string name="export_song_unavailable_message">Song must be cached or downloaded to export</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Do you want to delete all downloads (%d songs)?</string>
+    <string name="library_cleanup_all_downloads_confirmation">Delete all downloads? (Songs: %d)</string>
     <string name="library_cleanup_all_favorites_confirmation">Do you want to remove all %d favorites?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Do you want to reset listening history for %d songs?</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ WARNING: This will PERMANENTLY DELETE all %d songs AND remove them from ALL playlists. This action cannot be undone!</string>
-    <string name="library_cleanup_entire_cache_confirmation">Do you want to clear the entire cache (%d songs)?</string>
-    <string name="library_cleanup_selected_cache_confirmation">Do you want to remove these %d songs from cache?</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Reset listening history? (Songs: %d)</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ WARNING: This will PERMANENTLY DELETE your songs AND remove them from ALL playlists. (Songs: %d) This action cannot be undone!</string>
+    <string name="library_cleanup_entire_cache_confirmation">Clear the entire cache? (Songs: %d)</string>
+    <string name="library_cleanup_selected_cache_confirmation">Remove the selection from cache? (Songs: %d)</string>
     <string name="library_cleanup_selected_downloads_confirmation">Do you want to delete these %d downloads?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Do you want to remove these %d songs from favorites?</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Do you want to reset listening history for these %d songs?</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ WARNING: This will PERMANENTLY DELETE these %d songs AND remove them from ALL playlists. This action cannot be undone!</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Remove the selection from favorites? (Songs: %d)</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Reset listening history for the selection? (Songs: %d)</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ WARNING: This will PERMANENTLY DELETE the selection AND remove it from ALL playlists. (Songs: %d) This action cannot be undone!</string>
     <string name="library_cleanup_title">Smart trash</string>
     <string name="library_favorites_remove_dialog_title">Remove from favorites</string>
     <string name="library_listening_history_reset_dialog_title">Reset listening history</string>
