@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">Sidor</string>
     <string name="glass_effect_destination_playback">Uppspelning</string>
     <string name="glass_effect_destination_shared">Delade element</string>
+    <string name="glass_effect_loading_indicators">Laddar indikatorer</string>
+    <string name="glass_effect_loading_indicators_description">Styla in animationer på sidor och i kort och dialogrutor.</string>
+    <string name="glass_effect_pull_to_refresh">Dra för att uppdatera</string>
+    <string name="glass_effect_pull_to_refresh_description">Styla indikatorn som visas när du drar ner för att uppdatera.</string>
     <string name="glass_effect_destination_windows">Windows och meddelanden</string>
     <string name="glass_effect_dialog_dimming">Dialog bakgrundsdimning</string>
     <string name="glass_effect_dispersion">Färg delning</string>
@@ -121,6 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">Korten som grupperar inställningar och visar dina profiler.</string>
     <string name="glass_effect_role_visualizer">Visualizer · kontroller</string>
     <string name="glass_effect_role_visualizer_description">Knappen pilar och inställningar som används med visualiseraren.</string>
+    <string name="glass_effect_shared_components_summary">Välj hur Glas ser ut på komponenter som används i appen, inklusive laddningsindikatorer och dra för att uppdatera.</string>
     <string name="glass_effect_summary">Anpassa glasets effektytor, färger, konturer och kvalitet.</string>
     <string name="glass_effect_switches_description">Använd flytande glasväxlar med det delade materialet och interaktionseffekter när Glas är aktiverat.</string>
     <string name="glass_effect_switches_title">Kopplingar till glas</string>
@@ -225,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Mellan (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Mycket hög (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Redigera bild</string>
+    <string name="image_editor_failed">Kunde inte redigera bilden. Din nuvarande bild sparades.</string>
     <string name="thumbnail_action_edit">Edit Thumbnail</string>
     <string name="thumbnail_action_pick_from_gallery">Välj från galleri</string>
     <string name="thumbnail_action_reset">Reset Thumbnail</string>
@@ -234,4 +241,6 @@
     <string name="thumbnail_remove_failed">Kunde inte ta bort miniatyrbild</string>
     <string name="thumbnail_remove_success">Tog bort miniatyrbild</string>
     <string name="glass_effect_rendering_quality">Renderar kvalitet</string>
+    <string name="image_editor_original">Ursprungligt förhållande</string>
+    <string name="image_editor_apply">Använd bild</string>
 </resources>
