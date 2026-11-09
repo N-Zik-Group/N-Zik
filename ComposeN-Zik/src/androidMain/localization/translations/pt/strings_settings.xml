@@ -17,7 +17,7 @@
     <string name="language_name_azerbaijani">Azerbaijano (Azərbaycanca)</string>
     <string name="language_name_bashkir">Basquir</string>
     <string name="language_name_bengali">Bengalês</string>
-    <string name="language_name_catalan">Catalão</string>
+    <string name="language_name_catalan">Catalão (Catala├)</string>
     <string name="language_name_chinese_simplified">Chines Simplificado</string>
     <string name="language_name_chinese_traditional">Chinês Tradicional</string>
     <string name="language_name_czech">Tcheco (Čeština)</string>
@@ -27,7 +27,7 @@
     <string name="language_name_esperanto">Esperanto</string>
     <string name="language_name_estonian">Estoniano</string>
     <string name="language_name_filipino">Filipino</string>
-    <string name="language_name_finnish">Finlandês</string>
+    <string name="language_name_finnish">Finnish (Suomi)</string>
     <string name="language_name_french">Francês (Français)</string>
     <string name="language_name_galician">Galego</string>
     <string name="language_name_german">Alemão (Deutsch)</string>
@@ -35,13 +35,13 @@
     <string name="language_name_hebrew">Hebraico</string>
     <string name="language_name_hindi">Hindu</string>
     <string name="language_name_hungarian">Húngaro</string>
-    <string name="language_name_indonesian">Indonésia</string>
+    <string name="language_name_indonesian">Indonésio (Bahasa Indonésia)</string>
     <string name="language_name_interlingua">Interlíngua</string>
     <string name="language_name_irish">Irlandês</string>
     <string name="language_name_italian">Italiano (Italiano)</string>
     <string name="language_name_japanese">Japonês</string>
-    <string name="language_name_korean">Coreano</string>
-    <string name="language_name_malayalam">Malaiala</string>
+    <string name="language_name_korean">Coreano (├├├├├├├├)</string>
+    <string name="language_name_malayalam">Malayalam (മലയാളം)</string>
     <string name="language_name_norwegian">Norueguês</string>
     <string name="language_name_odia">Odia</string>
     <string name="language_name_persian">Persa</string>
@@ -50,8 +50,8 @@
     <string name="language_name_portuguese_brazilian">Português brasileiro</string>
     <string name="language_name_romanian">Romeno (Română)</string>
     <string name="language_name_russian">Russo (Русский)</string>
-    <string name="language_name_serbian_cyrillic">Sérvio (Cirílico)</string>
-    <string name="language_name_serbian_latin">Latin sérvio</string>
+    <string name="language_name_serbian_cyrillic">Serbian Cyrillic (Српски)</string>
+    <string name="language_name_serbian_latin">Serbian Latin (Srpski)</string>
     <string name="language_name_sinhala">Cingalês</string>
     <string name="language_name_spanish">Espanhol (Español)</string>
     <string name="language_name_swedish">Suíço</string>
@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Primeiro conecte ao YouTube para ativar esta opção</string>
     <string name="settings_youtube_library_sync_content_description">Playlists, álbuns, artistas, histórico, etc.</string>
     <string name="settings_youtube_login_enabled_label">Habilitar \"login\" no YouTube Music</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Ordenar</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Barra</string>
 </resources>
