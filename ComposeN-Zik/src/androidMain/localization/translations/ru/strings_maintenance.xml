@@ -137,6 +137,9 @@
     <string name="modules_download_needed">Модуль требует загрузки (~25 MB). Проверьте соединение.</string>
     <string name="modules_downloading">Загрузка модуля</string>
     <string name="modules_edit_unavailable">Редактирование метаданных недоступно: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Подготовка FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">Загрузка FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Нужно экспортировать кэшированные песни и редактировать метаданные песен. Сначала загружено на сайт.</string>
     <string name="modules_info">Инфо</string>
     <string name="modules_insufficient_space">Эта функция требует около 70 МБ свободного места</string>
