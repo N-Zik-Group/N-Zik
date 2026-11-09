@@ -78,8 +78,8 @@
         <item quantity="other">%1$d morceaux téléchargés ne disposent plus de leurs fichiers et ont été supprimés. Veuillez les télécharger à nouveau.</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
-        <item quantity="one">%1$d recommended song</item>
-        <item quantity="other">%1$d recommended songs</item>
+        <item quantity="one">%1$d Titre recommandé</item>
+        <item quantity="other">%1$d Titres recommandés</item>
     </plurals>
     <plurals name="listen_together_blocked_user_count">
         <item quantity="one">Utilisateur %1$d bloqué</item>
@@ -102,12 +102,12 @@
         <item quantity="other">Synchronisation des artistes... (%1$d/%2$d)</item>
     </plurals>
     <plurals name="library_sync_artist_refresh_count">
-        <item quantity="one">Refreshing %1$d artist</item>
+        <item quantity="one">Actualisation de %1$d artiste</item>
         <item quantity="other">Actualisation des artistes %1$d</item>
     </plurals>
     <plurals name="library_sync_artist_retry_count">
-        <item quantity="one">Impossible de trouver l\'artiste %1$d , nouvelle tentative</item>
-        <item quantity="other">Failed to find %1$d artists, retrying</item>
+        <item quantity="one">Impossible de trouver %1$d artiste, nouvelle tentative</item>
+        <item quantity="other">Impossible de trouver %1$d artistes, nouvelle tentative</item>
     </plurals>
     <plurals name="sync_progress_album_count">
         <item quantity="one">Syncing album... (%1$d/%2$d)</item>
@@ -134,24 +134,24 @@
         <item quantity="other">Impossible de trouver les listes de lecture %1$d , nouvelle tentative</item>
     </plurals>
     <plurals name="maintenance_pass_cleaned_count">
-        <item quantity="one">%1$d item cleaned</item>
-        <item quantity="other">%1$d items cleaned</item>
+        <item quantity="one">%1$d Élément nettoyé</item>
+        <item quantity="other">%1$d Éléments nettoyés</item>
     </plurals>
     <plurals name="maintenance_pass_deferred_count">
-        <item quantity="one">%1$d élément reporté</item>
-        <item quantity="other">%1$d items deferred</item>
+        <item quantity="one">%1$d Élément reporté</item>
+        <item quantity="other">%1$d Éléments reportés</item>
     </plurals>
     <plurals name="maintenance_pass_skipped_count">
-        <item quantity="one">%1$d item skipped</item>
-        <item quantity="other">%1$d items skipped</item>
+        <item quantity="one">%1$d Élément ignoré</item>
+        <item quantity="other">%1$d Éléments ignorés</item>
     </plurals>
     <plurals name="maintenance_dedup_flagged_count">
-        <item quantity="one">Flagged %1$d row</item>
-        <item quantity="other">Lignes marquées %1$d</item>
+        <item quantity="one">%1$d Ligne signalée</item>
+        <item quantity="other">%1$d Lignes signalées</item>
     </plurals>
     <plurals name="maintenance_dedup_merged_count">
-        <item quantity="one">Merged %1$d row</item>
-        <item quantity="other">Merged %1$d rows</item>
+        <item quantity="one">%1$d Ligne fusionnée</item>
+        <item quantity="other">%1$d Lignes fusionnées</item>
     </plurals>
     <plurals name="recovery_profile_deleted_count">
         <item quantity="one">Profil %1$d supprimé</item>
@@ -198,20 +198,20 @@
         <item quantity="other">Êtes-vous sûr de vouloir supprimer ces listes de lecture %1$d?</item>
     </plurals>
     <plurals name="playlist_positions_shuffled_count">
-        <item quantity="one">%1$d position shuffled</item>
-        <item quantity="other">%1$d positions mélangées</item>
+        <item quantity="one">%1$d Position mélangée</item>
+        <item quantity="other">%1$d Positions mélangées</item>
     </plurals>
     <plurals name="song_metadata_updated_song_count">
-        <item quantity="one">Updated %1$d song</item>
-        <item quantity="other">Mis à jour %1$d chansons</item>
+        <item quantity="one">Mise à jour de %1$d chanson</item>
+        <item quantity="other">Mise à jour de %1$d chansons</item>
     </plurals>
     <plurals name="rewind_home_year_play_count">
-        <item quantity="one">%1$s · %2$s play</item>
-        <item quantity="other">%1$s · %2$s plays</item>
+        <item quantity="one">%1$s · %2$s lu</item>
+        <item quantity="other">%1$s · %2$s lus</item>
     </plurals>
     <plurals name="rewind_listening_day_count_without">
-        <item quantity="one">%1$s jour sans écouter.</item>
-        <item quantity="other">%1$s days without listening.</item>
+        <item quantity="one">%1$s Jour sans écouter.</item>
+        <item quantity="other">%1$s Jours sans écouter.</item>
     </plurals>
     <plurals name="rewind_loader_status_day_count">
         <item quantity="one">%1$s JOUR DE LA LISTE</item>
@@ -234,15 +234,15 @@
         <item quantity="other">Chansons %1$s</item>
     </plurals>
     <plurals name="rewind_play_count_label">
-        <item quantity="one">%1$s play</item>
-        <item quantity="other">%1$s plays</item>
+        <item quantity="one">%1$s Lecture</item>
+        <item quantity="other">%1$s Lectures</item>
     </plurals>
     <plurals name="rewind_top_song_teaser_count">
         <item quantity="one">%1$d SONG.\nUN GAGNANT.</item>
         <item quantity="other">%1$d SONGS.\nUN GAGNAN.</item>
     </plurals>
     <plurals name="maintenance_abnormal_job_count">
-        <item quantity="one">%1$d job not finished</item>
-        <item quantity="other">Tâches %1$d non terminées</item>
+        <item quantity="one">%1$d Tâche non terminée</item>
+        <item quantity="other">%1$d Tâches non terminées</item>
     </plurals>
 </resources>
