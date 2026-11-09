@@ -11,6 +11,7 @@ import androidx.media3.exoplayer.offline.DownloadManager
 import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.download.utils.encodeDownloadDisplayName
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
 import io.mockk.every
 import io.mockk.justRun
@@ -61,7 +62,7 @@ class DownloadDisplayNamesTest {
     fun `terminal notification cleans old labels and keeps ordinary title punctuation`() {
         mockkObject(WaveformExtractor)
         justRun { WaveformExtractor.deleteWaveform(any(), any()) }
-        val raw = "modified:Artist - modified:Title - modified: phrase"
+        val raw = "modified:Artist - Topic - modified:e:Title - modified: phrase"
         val completed = download(raw, Download.STATE_COMPLETED)
         val manager = mockk<DownloadManager> {
             every { currentDownloads } returns listOf(completed)
@@ -74,7 +75,24 @@ class DownloadDisplayNamesTest {
 
         val notifications = context.getSystemService(NotificationManager::class.java)
         val notification = shadowOf(notifications).getNotification(8990)
-        assertEquals("Artist - Title - modified: phrase", notification.extras.getString(Notification.EXTRA_SUB_TEXT))
+        assertEquals("Artist - Topic - Title - modified: phrase", notification.extras.getString(Notification.EXTRA_SUB_TEXT))
         assertEquals(raw, completed.request.data.decodeToString())
+    }
+
+    @Test
+    fun `progress preserves literal marker text with a space after the colon`() {
+        val raw = "Artist - modified: project - Title"
+        val notification = DownloadProgressNotification(context).build(listOf(download(raw)), false, 1, 0)
+
+        assertEquals(raw, notification.extras.getString(Notification.EXTRA_TEXT))
+    }
+
+    @Test
+    fun `progress leaves display-ready request labels untouched`() {
+        val label = "Artist - modified:Project - Title"
+        val encoded = encodeDownloadDisplayName(label).decodeToString()
+        val notification = DownloadProgressNotification(context).build(listOf(download(encoded)), false, 1, 0)
+
+        assertEquals(label, notification.extras.getString(Notification.EXTRA_TEXT))
     }
 }

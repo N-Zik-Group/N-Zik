@@ -588,7 +588,7 @@ object MyDownloadHelper {
                         ?: Uri.parse(ExternalUris.youtubeMusic(mediaItem.mediaId))
                 )
                 .setCustomCacheKey(mediaItem.mediaId)
-                .setData(notificationTitle.encodeToByteArray()) // Title in notification
+                .setData(encodeDownloadDisplayName(notificationTitle))
                 .build()
 
             val imageUrl = mediaItem.mediaMetadata.artworkUri.thumbnail(1000)

@@ -115,3 +115,7 @@ Other:
 Fixed:
 - fix(metadata): preserve artist fields when saving covers (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
   - Update only the cover column and verify a concurrent metadata refresh survives.
+
+Fixed:
+- fix(downloads): clean legacy labels with artist separators (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Recognize stored title markers in old notifications and preserve display-ready labels for new requests.
