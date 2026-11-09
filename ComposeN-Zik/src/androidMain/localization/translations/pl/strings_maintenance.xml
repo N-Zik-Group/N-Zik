@@ -137,6 +137,9 @@
     <string name="modules_download_needed">Moduł wymaga pobrania (~25 MB). Sprawdź połączenie.</string>
     <string name="modules_downloading">Pobieranie modułu</string>
     <string name="modules_edit_unavailable">Edytuj metadane niedostępne: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Przygotowywanie FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">Pobieranie FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Potrzebne do eksportowania utworów w pamięci podręcznej i edycji metadanych utworu. Pobrano przy pierwszym użyciu.</string>
     <string name="modules_info">Informacje</string>
     <string name="modules_insufficient_space">Ta funkcja potrzebuje około 70 MB wolnego miejsca</string>
