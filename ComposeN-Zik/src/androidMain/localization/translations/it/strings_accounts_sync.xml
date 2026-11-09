@@ -258,7 +258,7 @@
     <string name="sync_youtube_playlist_songs_added_suffix">le canzoni vengono aggiunte alla playlist di YouTube. Ripeti il ​​processo se ci sono delle canzoni mancanti</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">i brani verranno aggiunti alla playlist YTM</string>
     <string name="sync_youtube_playlists_title">Playlist di YTM</string>
-    <string name="sync_youtube_songs_remaining">Canzoni Rimanenti %1$s</string>
+    <string name="sync_youtube_songs_remaining">Songs remaining: %1$s</string>
     <string name="sync_youtube_unlike_failed">Impossibile togliere mi piace alla canzone su YouTube</string>
     <string name="sync_youtube_unlike_success">Canzone non apprezzata su YouTube</string>
     <string name="sync_starting_notification">Avvio sincronizzazione...</string>
