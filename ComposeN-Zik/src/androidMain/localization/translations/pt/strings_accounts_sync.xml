@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Conta do Last.fm</string>
     <string name="profile_identity_source_not_connected">Sem sessão iniciada</string>
     <string name="profile_last_used">Última utilização</string>
-    <string name="profile_last_used_days">%d days ago</string>
-    <string name="profile_last_used_hours">%d h ago</string>
-    <string name="profile_last_used_minutes">%d min ago</string>
-    <string name="profile_last_used_months">%d months ago</string>
     <string name="profile_last_used_now">Agora há pouco</string>
-    <string name="profile_last_used_weeks">%d weeks ago</string>
     <string name="profile_local_name">Nome Perfil</string>
     <string name="profile_local_name_description">Renomeie o perfil local atual.</string>
     <string name="profile_name_input_hint">Inserir nome do perfil</string>
@@ -255,10 +250,11 @@
     <string name="sync_youtube_playlist_add_failed">Falha ao adicionar uma música à lista de reprodução do YouTube</string>
     <string name="sync_youtube_playlist_add_success">Adicionada a música na lista de reprodução do YouTube</string>
     <string name="sync_youtube_playlist_batch_failed">Ocorreu um erro para as próximas 50 músicas. Adicionando músicas à playlist uma por uma</string>
+    <string name="sync_youtube_playlist_no_songs_added">Nenhuma música foi adicionada à lista de reprodução do YouTube</string>
     <string name="sync_youtube_playlist_songs_added_suffix">as músicas são adicionadas na playlist do YouTube. Repita o processo se houver alguma música faltando</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">músicas serão adicionadas na playlist YTM</string>
     <string name="sync_youtube_playlists_title">Playlists do YTM</string>
-    <string name="sync_youtube_songs_remaining">Músicas restantes: %1$s</string>
+    <string name="sync_youtube_songs_remaining">%1$s músicas restantes</string>
     <string name="sync_youtube_unlike_failed">Falha ao descurtir a música no YouTube</string>
     <string name="sync_youtube_unlike_success">Música não está curtida no YouTube</string>
     <string name="sync_starting_notification">Iniciando sincronização...</string>
