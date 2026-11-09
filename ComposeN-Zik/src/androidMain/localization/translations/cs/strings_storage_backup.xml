@@ -3,7 +3,7 @@
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Úložiště</string>
     <string name="storage_breakdown_info_title">O úložišti</string>
-    <string name="storage_breakdown_nzik_total">Celkem používáno NZik</string>
+    <string name="storage_breakdown_nzik_total">Celkem používáno N-Zik</string>
     <string name="storage_breakdown_subtitle">Členění podle skladovacích prostor</string>
     <string name="storage_breakdown_waiting">Měření úložiště…</string>
     <string name="storage_breakdown_cached_images">Obrázky v mezipaměti</string>
@@ -11,20 +11,20 @@
     <string name="storage_breakdown_downloaded_audio">Stažený zvuk</string>
     <string name="storage_breakdown_custom_covers">Vlastní obaly</string>
     <string name="storage_breakdown_waveforms">Waveovy formy</string>
-    <string name="storage_breakdown_other_nzik_data">Jiná NZik data</string>
+    <string name="storage_breakdown_other_nzik_data">Ostatní data N-Zik</string>
     <string name="storage_breakdown_other_used_space">Systém, aplikace &amp; soubory</string>
     <string name="storage_breakdown_free_space">Volné místo</string>
     <string name="storage_info_images">Obrazy a další obrázky uloženy do mezipaměti pro rychlejší zobrazení.</string>
     <string name="storage_info_streaming">Zvuk uložený dočasně po streamování, takže může být přehrán znovu bez načítání stejných dat.</string>
-    <string name="storage_info_downloads">Zvuk uložen v NZik pro offline poslech.</string>
+    <string name="storage_info_downloads">Zvuk uložen v N-Zik pro offline poslech.</string>
     <string name="storage_info_waveforms">Vygenerované soubory používané k nakreslení zvukového vlnového tvaru v přehrávači.</string>
     <string name="storage_info_covers">Umělecká díla, kterou jste zvolili nebo importovali jako vlastní obálky.</string>
-    <string name="storage_info_other_nzik">Zbývající soukromá data NZiku, včetně databází, nastavení, indexů, rozšíření a logů.</string>
+    <string name="storage_info_other_nzik">Zbytek soukromých dat N-Zika včetně databází, nastavení, indexů, rozšíření a logů.</string>
     <string name="storage_info_other_used">Zbývající využívaný prostor na vnitřní hlasitosti, včetně Androidu, nainstalovaných aplikací a osobních souborů.</string>
     <string name="storage_info_free">Prostor pro aplikace a soubory s vnitřní hlasitostí.</string>
     <string name="storage_cleanup_title">Vyčistit</string>
     <string name="storage_cleanup_failed">Nelze dokončit čištění úložiště.</string>
-    <string name="storage_cleanup_images_description">Vymazat uklízené obrázky NZik.</string>
+    <string name="storage_cleanup_images_description">Vymazat uklízené obrázkem N-Zik.</string>
     <string name="storage_cleanup_streaming_description">Vymazat audio v mezipaměti během vysílání.</string>
     <string name="storage_cleanup_downloads_description">Odstranit offline zvuk a zrušit čekající stahování do aktivního profilu úložiště.</string>
     <string name="storage_cleanup_waveforms_description">Vymazat generované soubory tvaru vln.</string>
@@ -139,7 +139,7 @@
     <string name="downloads_delete_all_count_confirmation">Smazat všechna stažená %d?</string>
     <string name="downloads_delete_dialog_title">Odstranit stahování</string>
     <string name="downloads_download_all_confirmation">Opravdu chcete stahovat vše?</string>
-    <string name="downloads_download_all_count_confirmation">Download all %d songs?</string>
+    <string name="downloads_download_all_count_confirmation">Stáhnout vše? (Songs: %d)</string>
     <string name="downloads_download_dialog_title">Stáhnout skladby</string>
     <string name="downloads_empty_message">Nic ke stažení</string>
     <string name="downloads_error_network">Došlo k chybě sítě</string>
@@ -166,16 +166,16 @@
     <string name="export_running_status">Exportuji…</string>
     <string name="export_song_unavailable_message">Pro export musí být skladba uložena do mezipaměti nebo stažena</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Chcete odstranit všechna stahování (%d skladby)?</string>
+    <string name="library_cleanup_all_downloads_confirmation">Smazat všechna stahování? (Skladby: %d)</string>
     <string name="library_cleanup_all_favorites_confirmation">Chcete odstranit všechny %d oblíbené položky?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Chcete obnovit historii poslechu %d skladeb?</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ VAROVÁNÍ: Toto bude POVOLIT všechny %d skladeb A odebrat je ze VŠECH playlistů. Tuto akci nelze vrátit zpět!</string>
-    <string name="library_cleanup_entire_cache_confirmation">Chcete vymazat celou keš (%d skladby)?</string>
-    <string name="library_cleanup_selected_cache_confirmation">Chcete odstranit tyto %d skladby z mezipaměti?</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Obnovit historii poslechu? (Sklady: %d)</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ VAROVÁNÍ: Toto POVINNÉ VYMAZÍ své skladby a odstraní je ze VŠECH playlistů. (Skladby: %d) Tuto akci nelze vrátit zpět!</string>
+    <string name="library_cleanup_entire_cache_confirmation">Vymazat celou mezipaměť? (Sklady: %d)</string>
+    <string name="library_cleanup_selected_cache_confirmation">Odstranit výběr z mezipaměti? (Sklady: %d)</string>
     <string name="library_cleanup_selected_downloads_confirmation">Do you want to delete these %d downloads?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Chcete odstranit tyto %d skladby z oblíbených?</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Chcete obnovit historii poslechu těchto %d skladeb?</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ VAROVÁNÍ: Toto bude POVOLIT tyto %d skladeb A odebrat je ze VŠECH playlistů. Tuto akci nelze vrátit zpět!</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Odstranit výběr z oblíbených? (Sklady: %d)</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Obnovit historii poslechu pro výběr? (Skladby: %d)</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ VAROVÁNÍ: Toto POVOLIT výběr A odebrat ze VŠECH playlistů. (Skladby: %d) Tuto akci nelze vrátit zpět!</string>
     <string name="library_cleanup_title">Chytrý koš</string>
     <string name="library_favorites_remove_dialog_title">Odebrat z oblíbených</string>
     <string name="library_listening_history_reset_dialog_title">Resetovat historii poslech</string>
