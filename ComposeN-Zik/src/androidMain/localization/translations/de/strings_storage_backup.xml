@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Speicher</string>
+    <string name="storage_breakdown_info_title">Über Speicher</string>
+    <string name="storage_breakdown_nzik_total">Gesamt verwendet von N-Zik</string>
+    <string name="storage_breakdown_subtitle">Speicheraufteilung</string>
+    <string name="storage_breakdown_waiting">Messung des Speichers…</string>
+    <string name="storage_breakdown_cached_images">Cache-Bilder</string>
+    <string name="storage_breakdown_streamed_audio">Gestrahlter Ton</string>
+    <string name="storage_breakdown_downloaded_audio">Heruntergeladene Audio</string>
+    <string name="storage_breakdown_custom_covers">Eigene Cover</string>
+    <string name="storage_breakdown_waveforms">Wellenformen</string>
+    <string name="storage_breakdown_other_nzik_data">Andere N-Zik Daten</string>
+    <string name="storage_breakdown_other_used_space">System, Apps &amp; Dateien</string>
+    <string name="storage_breakdown_free_space">Freier Speicherplatz</string>
+    <string name="storage_info_images">Artwork und andere Bilder zwischengespeichert für eine schnellere Anzeige.</string>
+    <string name="storage_info_streaming">Audio wird vorübergehend nach dem Streaming gespeichert, so dass es wiedergegeben werden kann, ohne die gleichen Daten abzurufen.</string>
+    <string name="storage_info_downloads">Audio gespeichert in N-Zik für Offline-Hören.</string>
+    <string name="storage_info_waveforms">Generierte Dateien zum Zeichnen der Audiosignalform im Player.</string>
+    <string name="storage_info_covers">Artwork, das Sie als benutzerdefinierte Cover ausgewählt oder importiert haben.</string>
+    <string name="storage_info_other_nzik">Der Rest der privaten Daten von N-Zik, einschließlich der Datenbanken, Einstellungen, Indizes, Erweiterungen und Protokolle.</string>
+    <string name="storage_info_other_used">Der verbleibende Speicherplatz auf dem internen Volumen, einschließlich Android, installierte Apps und persönliche Dateien.</string>
+    <string name="storage_info_free">Platz für Apps und Dateien auf dem internen Volumen.</string>
+    <string name="storage_cleanup_title">Bereinigen</string>
+    <string name="storage_cleanup_failed">Konnte Speicherbereinigung nicht beenden.</string>
+    <string name="storage_cleanup_images_description">Leere Kunstwerke im Cache von N-Zik.</string>
+    <string name="storage_cleanup_streaming_description">Audiozwischenspeicher während des Streamens löschen.</string>
+    <string name="storage_cleanup_downloads_description">Löschen Sie Offline-Audio und kündigen Sie ausstehende Downloads für den Downloadspeicher des aktiven Profils.</string>
+    <string name="storage_cleanup_waveforms_description">Generierte Waveform-Dateien löschen.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Wellenformen löschen</string>
+    <string name="storage_cleanup_diagnostic_logs">Lösche Diagnoseprotokolle</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Löschen Sie die Debugg- und Absturzprotokolldateien. Ihre Protokolleinstellung bleibt unverändert.</string>
+    <string name="storage_cleanup_temporary_files">Verlassene temporäre Dateien entfernen</string>
+    <string name="storage_cleanup_temporary_files_description">Entfernen Sie verlassene Bildbearbeitungsentwürfe und Rewind Freigaben ist älter als 24 Stunden.</string>
+    <string name="storage_cleanup_all">Alles löschen</string>
+    <string name="storage_cleanup_all_description">Lösche Bild- und Streaming-Caches und generierte Wellenformen für das aktive Profil, einschließlich Speicher, die es mit anderen Profilen teilt. Löschen Sie Offline-Audio und kündigen Sie ausstehende Downloads für den Downloadspeicher des aktiven Profils. Lösche Diagnoseprotokolle, verlassene Bildbearbeitungsprogramme und abgelaufene Rewind-Sharing-Captures. Deine Bibliothek, benutzerdefinierte Cover und Einstellungen werden beibehalten.</string>
     <!-- Backup -->
     <string name="backup_action_export">Backup exportieren</string>
     <string name="backup_action_import">Backup importieren</string>
@@ -15,11 +50,14 @@
     <string name="backup_auto_schedule_day_of_month_description">Wählen Sie den Tag des Monats für monatliche automatische Sicherungen.</string>
     <string name="backup_auto_schedule_day_of_week_description">Wählen Sie den Wochentag für wöchentliche automatische Backups.</string>
     <string name="backup_auto_schedule_time_description">Wählen Sie die Uhrzeit, zu der geplante automatische Sicherungen ausgeführt werden sollen.</string>
+    <string name="backup_auto_content_format_description">Wählen Sie, was automatisch gesichert werden soll. Datenbank-Backups verwenden ZIP, wenn sie benutzerdefinierte Cover enthalten.</string>
     <string name="backup_before_update_description">Daten vor der Installation eines Updates automatisch sichern</string>
     <string name="backup_before_update_failed">Backup fehlgeschlagen</string>
     <string name="backup_before_update_running_message">Daten vor der Installation sichern…</string>
     <string name="backup_before_update_running_title">Sicherung läuft</string>
     <string name="backup_excluded_preferences_and_cache_description">Persönliche Einstellungen (z.B. das Farbschema) und der Cache sind ausgeschlossen.</string>
+    <string name="backup_export_library_options_description">Exportieren Sie die Datenbank mit ihren individuellen Covers, Einstellungen oder Profilen</string>
+    <string name="backup_import_library_options_description">SQLite- oder ZIP-Datenbank-Backup, Einstellungen oder Profile wiederherstellen</string>
     <string name="backup_include_discord_credentials">Discord-Zugangsdaten einbeziehen</string>
     <string name="backup_include_lastfm_credentials">Last.fm Identitätsnachweis einbeziehen</string>
     <string name="backup_include_proxy_password">Das Proxy-Passwort einfügen</string>
@@ -56,12 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Exportieren Sie die Profilliste und die Gesichtsfotos in einer einzigen .txt-Datei</string>
     <string name="backup_export_all">Alle exportieren</string>
+    <string name="backup_export_all_with_covers_description">Exportieren Sie die Datenbank, die Einstellungen und das Profil separat. Die Datenbank verwendet ZIP, wenn sie benutzerdefinierte Cover enthält.</string>
+    <string name="backup_export_database_with_covers_and_settings_description">Exportieren Sie die Datenbank und die Einstellungen separat. Die Datenbank verwendet ZIP, wenn sie benutzerdefinierte Cover enthält.</string>
+    <string name="backup_export_database_with_covers_description">Speichere Songs, Wiedergabelisten und Verlauf als SQLite. Wenn du eigene Cover hast, ist der Export ein ZIP mit der Datenbank und Covers.</string>
     <string name="backup_export_profile_state_failed">Export des Profilstatus fehlgeschlagen</string>
     <string name="backup_export_settings_description">Einstellungen und Einstellungen der App exportieren</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importiere die Profilliste und die Gesichtsfotos aus einer .txt-Datei</string>
     <string name="backup_import_all">Alle importieren</string>
+    <string name="backup_import_all_with_covers_description">Wiederherstellen eines SQLite- oder ZIP-Datenbank-Backups, Einstellungen und Profilstatus aus separaten Dateien.</string>
+    <string name="backup_import_database_with_covers_and_settings_description">Eine SQLite oder ZIP Datenbanksicherung und eine separate Einstellungsdatei wiederherstellen.</string>
     <string name="backup_import_completed_profile">Importiert in %1$s</string>
+    <string name="backup_import_database_with_covers_description">Wiederherstellen von Songs, Wiedergabelisten und Chronik von SQLite oder ZIP. ZIP-Sicherungen stellen auch die enthaltenen benutzerdefinierten Cover wieder her.</string>
     <string name="backup_import_profile_state_complete">Profilstatus importiert: %1$d Profile</string>
     <string name="backup_import_profile_state_complete_base">Profilstatus importiert: Basisprofil</string>
     <string name="backup_import_profile_state_failed">Import des Profilstatus fehlgeschlagen</string>
@@ -72,11 +116,14 @@
     <string name="cache_action_reset">Cache zurücksetzen</string>
     <string name="cache_clear_song_dialog_title">Song-Cache leeren</string>
     <string name="cache_downloads_max_size_description">Legen Sie fest, wie viel Speicherplatz für heruntergeladene Songs zur Verfügung steht. Der Papierkorb entfernt das heruntergeladene Audio.</string>
+    <string name="cache_downloads_limit_description">Legen Sie fest, wie viel Speicherplatz für heruntergeladene Songs zur Verfügung steht. Der Papierkorb entfernt das heruntergeladene Audio.</string>
     <string name="cache_image_max_size_description">Beschränken Sie den Speicherplatz, der von zwischengespeicherten Kunstwerken genutzt wird. Der Papierkorb löscht heruntergeladene Bilder aus diesem Cache.</string>
+    <string name="cache_image_limit_description">Beschränken Sie den Speicherplatz, der von zwischengespeicherten Kunstwerken genutzt wird. Der Papierkorb löscht heruntergeladene Bilder aus diesem Cache.</string>
     <string name="cache_location_description">Wählen Sie, wo die App ihren Song-Wiedergabe-Cache speichert.</string>
     <string name="cache_location_private">Privat</string>
     <string name="cache_location_system">System</string>
     <string name="cache_streaming_max_size_description">Speicherplatz für gestreamte Songs einschränken. Der Papierkorb löscht diesen Wiedergabe-Cache.</string>
+    <string name="cache_streaming_limit_description">Speicherplatz für gestreamte Songs einschränken. Der Papierkorb löscht diesen Wiedergabe-Cache.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Alle Titel herunterladen</string>
     <string name="downloads_action_refresh_quality">Downloads aktualisieren</string>
@@ -136,7 +183,10 @@
     <string name="storage_samsung_advice_message">Die automatische Speicherverwaltung von Samsung kann die Downloads und Cache-Dateien von N-Zik löschen, auch wenn Sie nicht danach gefragt haben. Um Ihre Downloads sicher zu halten, verwenden Sie den privaten (App-)Speicherort anstelle des Systemspeichers.</string>
     <string name="storage_samsung_advice_title">Samsung Speicherberatung</string>
     <string name="storage_samsung_system_usage_message">Sie haben derzeit %1$s der Downloads und des Caches auf dem Systemspeicher.</string>
+    <string name="backup_export_database_failed">Datenbank-Export fehlgeschlagen</string>
     <string name="backup_import_failed">Import fehlgeschlagen</string>
     <string name="export_no_songs">Keine Titel exportiert</string>
     <string name="export_cached_songs_generic_error">Export fehlgeschlagen</string>
+    <string name="backup_startup_preparing_library">Bibliothek wird vorbereitet…</string>
+    <string name="backup_startup_recovery_failed">Wiederherstellung Ihrer Bibliothek konnte nicht abgeschlossen werden.</string>
 </resources>

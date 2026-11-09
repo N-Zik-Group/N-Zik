@@ -42,6 +42,7 @@
     <string name="home_greeting_evening">Buenas noches</string>
     <string name="home_greeting_morning">Buenos días</string>
     <string name="home_greeting_night">Buenas noches</string>
+    <string name="home_greeting_with_profile_format">%1$s, %2$s</string>
     <string name="home_playlists_settings">Jugadores de casa</string>
     <string name="home_songs_settings">Portada</string>
     <string name="home_sort_last_played_song_label">Por la última canción reproducida</string>
@@ -248,6 +249,7 @@
     <string name="playlist_refresh_on_open_enable">Activar actualización al abrir</string>
     <string name="playlist_remove_selected_confirmation">¿Eliminar las canciones seleccionadas de esta lista?</string>
     <string name="playlist_remove_songs_confirmation">¿Eliminar la selección de la lista? Pistas seleccionadas: %d</string>
+    <string name="playlist_remove_songs_success_format">%1$s %2$d</string>
     <string name="playlist_rename_dialog_title">Renombrar lista de reproducción</string>
     <string name="playlist_reorder_ascending_sort_required_message">Solo es posible reordenar en orden ascendente</string>
     <string name="playlist_reorder_lock_toggle_label">Bloquear/desbloquear reordenar canciones</string>
@@ -377,6 +379,27 @@
     <string name="song_metadata_update_action_open">Abrir diálogo de actualización</string>
     <string name="song_metadata_updated_count">Actualizadas canciones %1$d</string>
     <string name="song_play_time_action_reset">Restablecer tiempo de reproducción total</string>
+    <string name="song_like_status_action_reset">Restablecer estado de me gusta/no me gusta</string>
+    <string name="song_update_action_clear_playback_cache">Borrar caché de reproducción</string>
+    <string name="song_update_action_remove_offline_download">Eliminar descarga sin conexión</string>
+    <string name="song_update_result_partial">Actualizado parcialmente. %1$s</string>
+    <string name="song_update_result_failed">No actualizado. %1$s</string>
+    <string name="song_update_error_metadata_unavailable">Información de YouTube no disponible.</string>
+    <string name="song_update_error_network">No se pudo acceder a YouTube. Compruebe su conexión.</string>
+    <string name="song_update_error_missing_title">YouTube no devolvió un título.</string>
+    <string name="song_update_error_missing_artists">YouTube no volvió artistas.</string>
+    <string name="song_update_error_incomplete_artists">La información del artista de YouTube está incompleta.</string>
+    <string name="song_update_error_missing_cover">YouTube no devolvió una portada.</string>
+    <string name="song_update_error_wrong_song">YouTube devolvió una canción diferente. Su información fue ignorada.</string>
+    <string name="song_update_error_cache_unavailable">Caché de reproducción no disponible. Vuelva a abrir el reproductor y vuelva a intentarlo.</string>
+    <string name="song_update_error_profile_changed">Se paró la actualización porque el perfil activo cambió.</string>
+    <string name="song_update_error_storage">No se pudieron guardar los cambios en este dispositivo.</string>
+    <string name="song_update_error_cache_clear">No se pudo terminar de borrar la caché de reproducción.</string>
+    <string name="song_update_error_download_remove">No se pudo eliminar la descarga sin conexión.</string>
+    <string name="song_update_error_cover_reset">No se pudo terminar de reiniciar la portada.</string>
+    <string name="song_update_error_playback_refresh">Cambios guardados, pero el jugador no pudo actualizarse.</string>
+    <string name="song_update_batch_result">Actualizado: %1$d · Actualizado parcialmente: %2$d · No actualizado: %3$d</string>
+    <string name="song_update_batch_reason_count">%1$s (%2$d)</string>
     <!-- Song Matching -->
     <string name="song_matching_action_open">Coincidir versión de álbum/audio</string>
     <string name="song_matching_all_confirmation">¿Quieres emparejar con %d canciones sin coincidencia?</string>
@@ -386,6 +409,7 @@
     <string name="song_matching_unmatched_label">Canción inigualable</string>
     <string name="metadata_musicbrainz_rating">Valoración</string>
     <string name="metadata_cover_art">Portada</string>
+    <string name="metadata_cover_url_hint">Pegar un enlace de imagen</string>
     <string name="metadata_file_path_unavailable">No se puede resolver la ruta del archivo</string>
     <string name="metadata_save_failed">Error al guardar los metadatos</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
@@ -393,4 +417,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Me gusta todas las canciones tomará %1$s. Cierra la aplicación para cancelar. ¿Quieres continuar?</string>
     <string name="library_on_device_permission_request_failed">No se pudo solicitar acceso a música en este dispositivo.</string>
     <string name="library_on_device_permission_settings_failed">No se pudo abrir la configuración de permisos.</string>
+    <string name="artist_more_from_format">Más de %1$s</string>
+    <string name="playlist_top_show_title_format">Mostrar %1$s</string>
 </resources>

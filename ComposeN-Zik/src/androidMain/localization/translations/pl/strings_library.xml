@@ -42,6 +42,7 @@
     <string name="home_greeting_evening">Dobry wieczór</string>
     <string name="home_greeting_morning">Dzień dobry</string>
     <string name="home_greeting_night">Dobra noc</string>
+    <string name="home_greeting_with_profile_format">%1$s, %2$s</string>
     <string name="home_playlists_settings">Gracze domowi</string>
     <string name="home_songs_settings">Utwory domowe</string>
     <string name="home_sort_last_played_song_label">Według Ostatnio odtwarzanego utworu</string>
@@ -248,6 +249,7 @@
     <string name="playlist_refresh_on_open_enable">Włącz odświeżanie przy otwarciu</string>
     <string name="playlist_remove_selected_confirmation">Usunąć wybrane utwory z tej playlisty?</string>
     <string name="playlist_remove_songs_confirmation">Usunąć wybór z playlisty? Wybrane utwory: %d</string>
+    <string name="playlist_remove_songs_success_format">%1$s %2$d</string>
     <string name="playlist_rename_dialog_title">Zmień nazwę playlisty</string>
     <string name="playlist_reorder_ascending_sort_required_message">Zmiana kolejności jest możliwa tylko w sortowaniu rosnącym</string>
     <string name="playlist_reorder_lock_toggle_label">Zablokuj/Odblokuj zmianę kolei utworów</string>
@@ -377,6 +379,27 @@
     <string name="song_metadata_update_action_open">Otwórz okno dialogowe aktualizacji</string>
     <string name="song_metadata_updated_count">Zaktualizowano %1$d utworów</string>
     <string name="song_play_time_action_reset">Zresetuj całkowity czas odtwarzania</string>
+    <string name="song_like_status_action_reset">Zresetuj status polubiony/nielubiony</string>
+    <string name="song_update_action_clear_playback_cache">Usuń pamięć podręczną odtwarzania</string>
+    <string name="song_update_action_remove_offline_download">Usuń pobieranie offline</string>
+    <string name="song_update_result_partial">Częściowo zaktualizowane. %1$s</string>
+    <string name="song_update_result_failed">Nie zaktualizowano. %1$s</string>
+    <string name="song_update_error_metadata_unavailable">Informacje o YouTube są niedostępne.</string>
+    <string name="song_update_error_network">Nie można połączyć się z YouTube. Sprawdź swoje połączenie.</string>
+    <string name="song_update_error_missing_title">YouTube nie zwrócił tytułu.</string>
+    <string name="song_update_error_missing_artists">YouTube nie zwrócił artystów.</string>
+    <string name="song_update_error_incomplete_artists">Informacje o artyście z YouTube są niekompletne.</string>
+    <string name="song_update_error_missing_cover">YouTube nie zwrócił okładki.</string>
+    <string name="song_update_error_wrong_song">YouTube zwrócił inną piosenkę. Informacje zostały zignorowane.</string>
+    <string name="song_update_error_cache_unavailable">Odtwarzanie pamięci podręcznej niedostępne. Otwórz ponownie odtwarzacz i spróbuj ponownie.</string>
+    <string name="song_update_error_profile_changed">Aktualizacja zatrzymana, ponieważ aktywny profil uległ zmianie.</string>
+    <string name="song_update_error_storage">Nie można zapisać zmian na tym urządzeniu.</string>
+    <string name="song_update_error_cache_clear">Nie można zakończyć czyszczenia pamięci podręcznej odtwarzania.</string>
+    <string name="song_update_error_download_remove">Nie można usunąć pobrania offline.</string>
+    <string name="song_update_error_cover_reset">Nie można zakończyć resetowania okładki.</string>
+    <string name="song_update_error_playback_refresh">Zapisano zmiany, ale gracz nie mógł odświeżyć.</string>
+    <string name="song_update_batch_result">Zaktualizowano: %1$d · Częściowo zaktualizowane: %2$d · Niezaktualizowane: %3$d</string>
+    <string name="song_update_batch_reason_count">%1$s (%2$d)</string>
     <!-- Song Matching -->
     <string name="song_matching_action_open">Dopasuj wersję Album/Audio</string>
     <string name="song_matching_all_confirmation">Czy chcesz dopasować %d niedopasowanych utworów?</string>
@@ -386,6 +409,7 @@
     <string name="song_matching_unmatched_label">Niedopasowana piosenka</string>
     <string name="metadata_musicbrainz_rating">Ocena</string>
     <string name="metadata_cover_art">Okładka</string>
+    <string name="metadata_cover_url_hint">Wklej link do obrazu</string>
     <string name="metadata_file_path_unavailable">Nie można rozwiązać ścieżki pliku</string>
     <string name="metadata_save_failed">Nie udało się zapisać metadanych</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
@@ -393,4 +417,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Polubienie wszystkich piosenek zajmie %1$s. Zamknij aplikację, aby anulować. Czy chcesz kontynuować?</string>
     <string name="library_on_device_permission_request_failed">Nie można poprosić o dostęp do muzyki na tym urządzeniu.</string>
     <string name="library_on_device_permission_settings_failed">Nie można otworzyć ustawień uprawnień.</string>
+    <string name="artist_more_from_format">Więcej od %1$s</string>
+    <string name="playlist_top_show_title_format">Pokaż %1$s</string>
 </resources>

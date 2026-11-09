@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
     <string name="logs_action_export">Günlükleri dışa aktar</string>
     <string name="logs_action_export_both">Her iki günlüğü de dışa aktar</string>
@@ -40,6 +41,7 @@
     <string name="maintenance_dedup_flagged">%d satır işaretlendi</string>
     <string name="maintenance_dedup_merged">%d satır birleştirildi</string>
     <string name="maintenance_dedup_merged_flagged">%1$d satır birleştirildi · %2$d satır işaretlendi</string>
+    <string name="maintenance_dedup_counts_format">%1$s · %2$s</string>
     <string name="maintenance_discord_invalid_token">Geçersiz token</string>
     <string name="maintenance_discord_ok">Tamam</string>
     <string name="maintenance_discord_reconnect_failed">Yeniden bağlanma başarısız oldu</string>
@@ -63,11 +65,11 @@
     <string name="maintenance_last_crash">Son çökme</string>
     <string name="maintenance_lastfm_active">Oturum aktif</string>
     <string name="maintenance_library">Kütüphane</string>
-    <string name="maintenance_library_albums">%d albüm</string>
-    <string name="maintenance_library_artists">%d sanatçı</string>
+    <string name="maintenance_library_albums">Albümler: %d</string>
+    <string name="maintenance_library_artists">Sanatçılar: %d</string>
     <string name="maintenance_library_listened">%d dinlendi</string>
-    <string name="maintenance_library_playlists">%d çalma listesi</string>
-    <string name="maintenance_library_songs">%d şarkı</string>
+    <string name="maintenance_library_playlists">Çalma listeleri: %d</string>
+    <string name="maintenance_library_songs">Şarkılar: %d</string>
     <string name="maintenance_live_subsystems">Canlı alt sistemler</string>
     <string name="maintenance_log_view">Görüntüle</string>
     <string name="maintenance_lt_connected">Bağlanıldı</string>
@@ -135,6 +137,9 @@
     <string name="modules_download_needed">Modülün indirilmesi gerekiyor (~25 MB). Bağlantıyı kontrol edin.</string>
     <string name="modules_downloading">Modül indiriliyor</string>
     <string name="modules_edit_unavailable">Meta verileri düzenlenemiyor: %1$s</string>
+    <string name="modules_ffmpeg_preparation">FFmpeg’i hazırlama</string>
+    <string name="modules_ffmpeg_downloading">FFmpeg indiriliyor</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Önbelleğe alınmış şarkıları dışa aktarmak ve şarkı meta verilerini düzenlemek için gerekliydi. İlk kullanımda indirildi.</string>
     <string name="modules_info">Bilgi</string>
     <string name="modules_insufficient_space">Bu özellik için yaklaşık 70 MB boş alan gereklidir</string>
@@ -160,7 +165,7 @@
     <!-- Recovery -->
     <string name="recovery_accounts_exported">Profil durumu dışa aktarıldı</string>
     <string name="recovery_accounts_imported_base">İçe aktarılan profil durumu: temel profil</string>
-    <string name="recovery_accounts_imported_count">Profile state import complete. Profile count: %1$d</string>
+    <string name="recovery_accounts_imported_count">Profil durumu içe aktarımı tamamlandı. Profil sayısı: %1$d</string>
     <string name="recovery_category_all">Tümü</string>
     <string name="recovery_category_profile">Profil başına</string>
     <string name="recovery_center">Kurtarma Merkezi</string>
@@ -197,6 +202,7 @@
     <string name="recovery_error">Bir hata oluştu: %s</string>
     <string name="recovery_error_database_busy">Veritabanı şu anda kullanımda olduğundan güvenli bir şekilde dışa aktarılamaz. Öncelikle uygulamanın durdurulması gerekir: Tehlikeli Bölge bölümündeki  “Uygulamayı kapat” seçeneğine dokunun, ardından durumun uygulamanın durdurulduğunu göstermesini bekleyin.</string>
     <string name="recovery_export_database">Veritabanını dışa aktar</string>
+    <string name="recovery_export_database_with_covers_description">Müzik kitaplığınızı, çalma listelerinizi ve geçmişinizi SQLite olarak kaydedin. Özel kapak resimleriniz varsa, dışa aktarım işlemi veritabanı ve kapak resimlerini içeren bir ZIP dosyası olarak gerçekleştirilir.</string>
     <string name="recovery_export_logs">Günlükleri dışa aktar</string>
     <string name="recovery_export_logs_description">Hata raporu için çökme ve hata ayıklama günlüklerini kaydedin</string>
     <string name="recovery_export_profiles_description">Profil listesi ve yüz fotoğrafları tek bir .txt dosyasında</string>
@@ -209,6 +215,7 @@
     <string name="recovery_group_settings">Ayarlar</string>
     <string name="recovery_group_storage">Depolama</string>
     <string name="recovery_import_database">Veritabanını içe aktar</string>
+    <string name="recovery_import_database_with_covers_description">ZIP dosyasındaki özel kapaklar da dahil olmak üzere bir SQLite veya ZIP veritabanı yedeğini geri yükleyin.</string>
     <string name="recovery_import_profiles_description">Profil listesini ve yüz fotoğraflarını bir .txt dosyasından geri yükle</string>
     <string name="recovery_import_settings">Ayarları içe aktar</string>
     <string name="recovery_import_settings_description">Tercihleri bir CSV dosyasından geri yükle</string>
@@ -309,4 +316,5 @@
     <string name="updates_warning_acknowledge">Anlıyorum</string>
     <string name="updates_check_failed">Güncellemeler kontrol edilemedi.</string>
     <string name="updates_install_generic_error">Güncelleme yüklenemedi.</string>
+    <string name="updates_channel_available_format">%1$s güncelleme mevcut</string>
 </resources>

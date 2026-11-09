@@ -15,6 +15,7 @@
     <string name="common_delete_success">Usunięte</string>
     <string name="common_description_unavailable">Brak dostępnego opisu</string>
     <string name="common_duration_milliseconds_format">%1$s ms</string>
+    <string name="common_duration_milliseconds_unit">ms</string>
     <string name="common_empty_items">Brak elementów</string>
     <string name="common_external_link_loading_suffix">ładuje się...</string>
     <string name="common_load_failed">Nie można załadować</string>
@@ -39,8 +40,11 @@
     <string name="common_validation_empty_value">Wartość nie może być pusta</string>
     <string name="common_validation_invalid_input">Invalid input!</string>
     <string name="common_validation_minimum_value">"Wartość musi być większa niż "</string>
+    <string name="common_validation_minimum_value_format">Wartość musi być co najmniej %1$d</string>
     <string name="common_validation_name_in_use">Nazwa jest już w użyciu</string>
     <string name="common_value_input_hint">Wprowadź wartość</string>
     <string name="common_unknown">Nieznana</string>
     <string name="common_duration_minutes_short">%1$d min</string>
+    <string name="common_external_link_loading_format">%1$s ładuje…</string>
+    <string name="common_loading_message">Ładowanie…</string>
 </resources>

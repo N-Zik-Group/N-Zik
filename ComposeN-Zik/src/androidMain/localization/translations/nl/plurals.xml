@@ -41,4 +41,208 @@
         <item quantity="one">%1$d nummer gehoord</item>
         <item quantity="other">%1$d nummers gehoord</item>
     </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Verwijder %1$d zoekopdracht</item>
+        <item quantity="other">Verwijder %1$d zoekopdrachten</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Verwijder %1$d afspeelgebeurtenis</item>
+        <item quantity="other">Verwijder %1$d afspeelgebeurtenissen</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d aflevering · %2$s</item>
+        <item quantity="other">%1$d afleveringen · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">%1$d nummer toevoegen aan de YouTube afspeellijst</item>
+        <item quantity="other">%1$d nummers toevoegen aan de afspeellijst op YouTube</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">%1$d nummer toegevoegd aan de YouTube afspeellijst</item>
+        <item quantity="other">%1$d nummers toegevoegd aan de afspeellijst op YouTube</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Profiel status geïmporteerd: %1$d profiel</item>
+        <item quantity="other">Profiel status geïmporteerd: %1$d profielen</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Synchroniseren van %1$d album mislukt. Ga terug naar het Albums tabblad om het opnieuw te proberen.</item>
+        <item quantity="other">Synchroniseren van %1$d albums mislukt. Ga terug naar het Albums tabblad om het opnieuw te proberen.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">%1$d gecachet/gedownloade nummer exporteren?</item>
+        <item quantity="other">%1$d gecachet/gedownloade nummers exporteren?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">%1$d gedownload nummer mist het bestand en is verwijderd. Download het opnieuw.</item>
+        <item quantity="other">%1$d gedownloade nummers ontbreken en zijn verwijderd. Download ze opnieuw.</item>
+    </plurals>
+    <plurals name="recommendations_quick_picks_song_count">
+        <item quantity="one">%1$d aanbevolen nummer</item>
+        <item quantity="other">%1$d aanbevolen nummers</item>
+    </plurals>
+    <plurals name="listen_together_blocked_user_count">
+        <item quantity="one">%1$d gebruiker geblokkeerd</item>
+        <item quantity="other">%1$d gebruikers geblokkeerd</item>
+    </plurals>
+    <plurals name="sync_failed_notification_artist_count">
+        <item quantity="one">Fout bij het synchroniseren van %1$d artiest. Ga terug naar het tabblad artiesten om het opnieuw te proberen.</item>
+        <item quantity="other">Fout bij het synchroniseren van %1$d artiesten. Ga terug naar het tabblad artiesten om het opnieuw te proberen.</item>
+    </plurals>
+    <plurals name="sync_failed_notification_playlist_count">
+        <item quantity="one">Synchroniseren van %1$d afspeellijst mislukt. Ga terug naar het tabblad Afspeellijsten om het opnieuw te proberen.</item>
+        <item quantity="other">Synchroniseren van %1$d afspeellijsten mislukt. Ga terug naar het tabblad Afspeellijsten om het opnieuw te proberen.</item>
+    </plurals>
+    <plurals name="sync_retry_failed_item_confirmation">
+        <item quantity="one">Wilt u opnieuw proberen het mislukte %1$d item te synchroniseren?</item>
+        <item quantity="other">Wilt u opnieuw proberen de %1$d mislukte items te synchroniseren?</item>
+    </plurals>
+    <plurals name="sync_progress_artist_count">
+        <item quantity="one">Artiest synchroniseren... (%1$d/%2$d)</item>
+        <item quantity="other">Artiesten synchroniseren... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_artist_refresh_count">
+        <item quantity="one">Vernieuwen %1$d artiest</item>
+        <item quantity="other">Vernieuwen %1$d artiesten</item>
+    </plurals>
+    <plurals name="library_sync_artist_retry_count">
+        <item quantity="one">Fout bij het vinden van %1$d artiest, opnieuw proberen</item>
+        <item quantity="other">Kan %1$d artiesten niet vinden, opnieuw proberen</item>
+    </plurals>
+    <plurals name="sync_progress_album_count">
+        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
+        <item quantity="other">Albums synchroniseren... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_album_refresh_count">
+        <item quantity="one">Album vernieuwen %1$d</item>
+        <item quantity="other">Vernieuwen %1$d albums</item>
+    </plurals>
+    <plurals name="library_sync_album_retry_count">
+        <item quantity="one">Fout bij het vinden van %1$d album, opnieuw proberen</item>
+        <item quantity="other">Fout bij het vinden van %1$d albums, opnieuw proberen</item>
+    </plurals>
+    <plurals name="sync_progress_playlist_count">
+        <item quantity="one">Afspeellijst synchroniseren... (%1$d/%2$d)</item>
+        <item quantity="other">Afspeellijsten synchroniseren... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_playlist_refresh_count">
+        <item quantity="one">Vernieuwen %1$d afspeellijst</item>
+        <item quantity="other">Vernieuwen %1$d afspeellijsten</item>
+    </plurals>
+    <plurals name="library_sync_playlist_retry_count">
+        <item quantity="one">Fout bij het vinden van %1$d afspeellijst, opnieuw proberen</item>
+        <item quantity="other">Fout bij het vinden van %1$d afspeellijsten, opnieuw proberen</item>
+    </plurals>
+    <plurals name="maintenance_pass_cleaned_count">
+        <item quantity="one">%1$d item schoongemaakt</item>
+        <item quantity="other">%1$d items schoongemaakt</item>
+    </plurals>
+    <plurals name="maintenance_pass_deferred_count">
+        <item quantity="one">%1$d item uitstellen</item>
+        <item quantity="other">%1$d items uitstellen</item>
+    </plurals>
+    <plurals name="maintenance_pass_skipped_count">
+        <item quantity="one">%1$d item overgeslagen</item>
+        <item quantity="other">%1$d items overgeslagen</item>
+    </plurals>
+    <plurals name="maintenance_dedup_flagged_count">
+        <item quantity="one">Gemarkeerd %1$d rij</item>
+        <item quantity="other">Gemelde %1$d rijen</item>
+    </plurals>
+    <plurals name="maintenance_dedup_merged_count">
+        <item quantity="one">Samengevoegd %1$d rij</item>
+        <item quantity="other">Samengevoegd %1$d rijen</item>
+    </plurals>
+    <plurals name="recovery_profile_deleted_count">
+        <item quantity="one">%1$d profiel verwijderd</item>
+        <item quantity="other">%1$d profielen verwijderd</item>
+    </plurals>
+    <plurals name="recovery_profile_reset_count">
+        <item quantity="one">Reset %1$d profiel. Herstart de app</item>
+        <item quantity="other">Reset %1$d profielen. Herstart de app</item>
+    </plurals>
+    <plurals name="recovery_profile_restored_count">
+        <item quantity="one">Hersteld %1$d profiel: herstart de app</item>
+        <item quantity="other">Hersteld %1$d profielen: herstart de app</item>
+    </plurals>
+    <plurals name="album_loading_song_count">
+        <item quantity="one">Laden van %1$d nummer…</item>
+        <item quantity="other">Laden van %1$d nummers…</item>
+    </plurals>
+    <plurals name="artist_deduplication_result_count">
+        <item quantity="one">Samengevoegd %1$d dubbele artiest met de rechter artiest</item>
+        <item quantity="other">Samengevoegd %1$d dubbele artiesten met de juiste artiest</item>
+    </plurals>
+    <plurals name="artist_link_cleanup_result_count">
+        <item quantity="one">Verwijderde %1$d onjuiste artiest link</item>
+        <item quantity="other">Verwijderde %1$d onjuiste artiest links</item>
+    </plurals>
+    <plurals name="library_song_count_with_duration">
+        <item quantity="one">%1$d nummer • %2$s</item>
+        <item quantity="other">%1$d nummers • %2$s</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count">
+        <item quantity="one">(%1$d stemmen)</item>
+        <item quantity="other">(%1$d stemmen)</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count_attribution">
+        <item quantity="one">%1$d stem op MusicBrainz</item>
+        <item quantity="other">%1$d stemmen op MusicBrainz</item>
+    </plurals>
+    <plurals name="playlist_delete_all_confirmation_count">
+        <item quantity="one">Weet je zeker dat je de enige afspeellijst (%1$d ) wilt verwijderen?</item>
+        <item quantity="other">Weet je zeker dat je ALLE %1$d afspeellijsten wilt verwijderen?</item>
+    </plurals>
+    <plurals name="playlist_delete_selected_confirmation_count">
+        <item quantity="one">Weet je zeker dat je deze afspeellijst (%1$d ) wilt verwijderen?</item>
+        <item quantity="other">Weet je zeker dat je deze %1$d afspeellijsten wilt verwijderen?</item>
+    </plurals>
+    <plurals name="playlist_positions_shuffled_count">
+        <item quantity="one">%1$d positie verschoven</item>
+        <item quantity="other">%1$d posities verschoven</item>
+    </plurals>
+    <plurals name="song_metadata_updated_song_count">
+        <item quantity="one">%1$d nummer bijgewerkt</item>
+        <item quantity="other">Bijgewerkt %1$d nummers</item>
+    </plurals>
+    <plurals name="rewind_home_year_play_count">
+        <item quantity="one">%1$s · %2$s spelen</item>
+        <item quantity="other">%1$s · %2$s speelt</item>
+    </plurals>
+    <plurals name="rewind_listening_day_count_without">
+        <item quantity="one">%1$s dag zonder te luisteren.</item>
+        <item quantity="other">%1$s days without listening.</item>
+    </plurals>
+    <plurals name="rewind_loader_status_day_count">
+        <item quantity="one">%1$s LISTENDE DAG</item>
+        <item quantity="other">%1$s LISTENDE DAGEN</item>
+    </plurals>
+    <plurals name="rewind_loader_status_minute_count">
+        <item quantity="one">%1$s MINUT</item>
+        <item quantity="other">%1$s MINUTEN</item>
+    </plurals>
+    <plurals name="rewind_loader_status_play_count">
+        <item quantity="one">%1$s SPELEN</item>
+        <item quantity="other">%1$s SPELEN</item>
+    </plurals>
+    <plurals name="rewind_loader_status_song_count">
+        <item quantity="one">%1$s UNIEKE SONG</item>
+        <item quantity="other">%1$s UNIEKE NUMMERS</item>
+    </plurals>
+    <plurals name="rewind_meta_song_count">
+        <item quantity="one">%1$s nummer</item>
+        <item quantity="other">%1$s nummers</item>
+    </plurals>
+    <plurals name="rewind_play_count_label">
+        <item quantity="one">%1$s afspelen</item>
+        <item quantity="other">%1$s speelt</item>
+    </plurals>
+    <plurals name="rewind_top_song_teaser_count">
+        <item quantity="one">%1$d NUB.\nEEN WINNER.</item>
+        <item quantity="other">%1$d SONGS.\nEEN WINNER.</item>
+    </plurals>
+    <plurals name="maintenance_abnormal_job_count">
+        <item quantity="one">%1$d taak niet voltooid</item>
+        <item quantity="other">%1$d taken niet voltooid</item>
+    </plurals>
 </resources>

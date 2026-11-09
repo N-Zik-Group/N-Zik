@@ -246,10 +246,11 @@
     <string name="sync_youtube_history_title">YTM History</string>
     <string name="sync_youtube_like_failed">无法在 YouTube 中喜欢歌曲</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">YouTube喜欢歌曲(s)</string>
+    <string name="sync_youtube_like_success">添加到 YouTube 赞</string>
     <string name="sync_youtube_playlist_add_failed">在 YouTube 播放列表中添加歌曲失败</string>
     <string name="sync_youtube_playlist_add_success">在 YouTube 播放列表中添加歌曲</string>
     <string name="sync_youtube_playlist_batch_failed">接下来的50首歌曲发生错误。逐个添加歌曲到播放列表</string>
+    <string name="sync_youtube_playlist_no_songs_added">没有歌曲被添加到YouTube播放列表</string>
     <string name="sync_youtube_playlist_songs_added_suffix">在YouTube播放列表中添加歌曲。如果有缺失歌曲，请重复此操作</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">歌曲将添加到 YTM 播放列表</string>
     <string name="sync_youtube_playlists_title">YTM 播放列表</string>

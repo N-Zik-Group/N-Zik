@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">Pagini</string>
     <string name="glass_effect_destination_playback">Redare</string>
     <string name="glass_effect_destination_shared">Elemente partajate</string>
+    <string name="glass_effect_loading_indicators">Indicatori de încărcare</string>
+    <string name="glass_effect_loading_indicators_description">Animații pentru încărcarea stilului pe pagini, în cărți și dialoguri.</string>
+    <string name="glass_effect_pull_to_refresh">Trage pentru a reîmprospăta</string>
+    <string name="glass_effect_pull_to_refresh_description">Stilul indicatorului care apare când trageți în jos pentru a reîmprospăta.</string>
     <string name="glass_effect_destination_windows">Windows și mesaje</string>
     <string name="glass_effect_dialog_dimming">Diminuarea catalogului de fundal</string>
     <string name="glass_effect_dispersion">Divizarea culorilor</string>
@@ -121,6 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">Cardurile care grupează setările și afișează profilurile tale.</string>
     <string name="glass_effect_role_visualizer">Vizualizator · controale</string>
     <string name="glass_effect_role_visualizer_description">Butonul Săgeți și Setări folosit împreună cu vizualizatorul.</string>
+    <string name="glass_effect_shared_components_summary">Alegeți cum arată sticla pe componentele folosite în aplicație, inclusiv indicatorii de încărcare și trageți pentru a reîmprospăta.</string>
     <string name="glass_effect_summary">Personalizați suprafețele cu efect de sticlă, culorile, schițele și calitatea.</string>
     <string name="glass_effect_switches_description">Utilizaţi comutatoare de sticlă lichide cu material comun şi efecte de interacţiune atunci când sticla este activată.</string>
     <string name="glass_effect_switches_title">Comutatoare din sticlă</string>
@@ -225,6 +230,10 @@
     <string name="theme_shake_sensitivity_medium">Medie (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Foarte mare (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">Descărcare</string>
+    <string name="cover_download_failed">Nu s-a putut descărca coperta.</string>
+    <string name="image_editor_title">Editare imagine</string>
+    <string name="image_editor_failed">Nu s-a putut edita imaginea. Imaginea ta curentă a fost păstrată.</string>
     <string name="thumbnail_action_edit">Editează miniatura</string>
     <string name="thumbnail_action_pick_from_gallery">Alege din galerie</string>
     <string name="thumbnail_action_reset">Resetează miniatura</string>
@@ -234,4 +243,6 @@
     <string name="thumbnail_remove_failed">Eliminarea miniaturii a eșuat</string>
     <string name="thumbnail_remove_success">Miniatura a fost eliminată</string>
     <string name="glass_effect_rendering_quality">Calitate randare</string>
+    <string name="image_editor_original">Raportul original</string>
+    <string name="image_editor_apply">Utilizare imagine</string>
 </resources>

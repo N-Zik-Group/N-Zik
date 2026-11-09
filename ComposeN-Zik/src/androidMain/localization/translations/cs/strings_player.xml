@@ -82,6 +82,7 @@
     <string name="lyrics_editor_title">Zadejte písňový text</string>
     <string name="lyrics_empty">Žádné texty</string>
     <string name="lyrics_fetch_error_message">Při načítání písňového textu došlo k chybě</string>
+    <string name="lyrics_provider_fetch_error_message">Nelze načíst texty z %1$s</string>
     <string name="lyrics_font_size_animation_label">Animovat velikost písňových textů</string>
     <string name="lyrics_font_size_extra_large_label">Velké</string>
     <string name="lyrics_font_size_large_label">Silný</string>
@@ -296,10 +297,14 @@
     <string name="player_statistics_codec_label">Kodek</string>
     <string name="player_statistics_container_label">Kontejner</string>
     <string name="player_statistics_itag_label">Itag</string>
+    <string name="player_playback_speed_value">%1$.1fx</string>
+    <string name="player_decibels_value">%1$.2f dB</string>
     <string name="player_statistics_loudness_label">Hlasitost</string>
     <string name="player_statistics_media_id_label">Id</string>
     <string name="player_statistics_perceptual_loudness_label">Perceptuální hlasitost</string>
     <string name="player_statistics_sample_rate_label">Vzorkovací frekvence</string>
+    <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
+    <string name="player_statistics_cache_status">%1$s: %2$s</string>
     <string name="player_statistics_volume_label">Objem</string>
     <string name="player_swap_controls_with_timeline">Prohodit ovládání s časovou osou</string>
     <string name="player_swipe_sensitivity">Citlivost posunutí přehrávače</string>

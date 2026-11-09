@@ -82,6 +82,7 @@
     <string name="lyrics_editor_title">Введіть текст пісні</string>
     <string name="lyrics_empty">Немає текстів пісень</string>
     <string name="lyrics_fetch_error_message">Виникла помилка при завантаженні текстів пісень</string>
+    <string name="lyrics_provider_fetch_error_message">Не вдалося отримати тексти пісень з %1$s</string>
     <string name="lyrics_font_size_animation_label">Розмір анімації тексту пісні</string>
     <string name="lyrics_font_size_extra_large_label">Величезний</string>
     <string name="lyrics_font_size_large_label">Великий</string>
@@ -296,10 +297,14 @@
     <string name="player_statistics_codec_label">Кодек</string>
     <string name="player_statistics_container_label">Контейнер</string>
     <string name="player_statistics_itag_label">Ітаг</string>
+    <string name="player_playback_speed_value">%1$.1fx</string>
+    <string name="player_decibels_value">%1$.2f дБ</string>
     <string name="player_statistics_loudness_label">Гучність</string>
     <string name="player_statistics_media_id_label">Id</string>
     <string name="player_statistics_perceptual_loudness_label">Необхідна гучність</string>
     <string name="player_statistics_sample_rate_label">Частота дискретизації</string>
+    <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
+    <string name="player_statistics_cache_status">%1$s: %2$s</string>
     <string name="player_statistics_volume_label">Об\'єм</string>
     <string name="player_swap_controls_with_timeline">Поміняти елементи керування на часову шкалу</string>
     <string name="player_swipe_sensitivity">Чутливість проведення пальцем</string>

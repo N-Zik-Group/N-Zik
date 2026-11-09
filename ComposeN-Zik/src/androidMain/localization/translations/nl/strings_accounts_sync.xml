@@ -246,10 +246,11 @@
     <string name="sync_youtube_history_title">YTM History</string>
     <string name="sync_youtube_like_failed">Kon het nummer niet leuk vinden in YouTube</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Nummers zijn leuk op YouTube</string>
+    <string name="sync_youtube_like_success">Toegevoegd aan YouTube likes</string>
     <string name="sync_youtube_playlist_add_failed">Kon het nummer niet toevoegen aan de YouTube afspeellijst</string>
     <string name="sync_youtube_playlist_add_success">Het nummer is toegevoegd in de YouTube afspeellijst</string>
     <string name="sync_youtube_playlist_batch_failed">Er is een fout opgetreden voor de volgende 50 nummers. nummers toevoegen aan de afspeellijst één voor één</string>
+    <string name="sync_youtube_playlist_no_songs_added">Er zijn geen nummers toegevoegd aan de afspeellijst op YouTube</string>
     <string name="sync_youtube_playlist_songs_added_suffix">nummers worden toegevoegd aan de YouTube afspeellijst. Herhaal het proces als er ontbrekende nummers zijn</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">nummers zullen worden toegevoegd aan de YTM afspeellijst</string>
     <string name="sync_youtube_playlists_title">YTM Afspeellijsten</string>

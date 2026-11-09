@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">Pagina\'s</string>
     <string name="glass_effect_destination_playback">Afspelen</string>
     <string name="glass_effect_destination_shared">Gedeelde elementen</string>
+    <string name="glass_effect_loading_indicators">indicatoren laden</string>
+    <string name="glass_effect_loading_indicators_description">Animaties laden op pagina\'s en in kaarten en dialoogvensters.</string>
+    <string name="glass_effect_pull_to_refresh">Trek om te verversen</string>
+    <string name="glass_effect_pull_to_refresh_description">Stijl de indicator die verschijnt wanneer u naar beneden trekt om te vernieuwen.</string>
     <string name="glass_effect_destination_windows">Windows en berichten</string>
     <string name="glass_effect_dialog_dimming">Dialoogvenster achtergrond dimmen</string>
     <string name="glass_effect_dispersion">Kleuren splitsen</string>
@@ -121,6 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">De kaarten die groepsinstellingen en je profielen weergeven.</string>
     <string name="glass_effect_role_visualizer">Visualizer · controles</string>
     <string name="glass_effect_role_visualizer_description">De pijlen en instellingen knop gebruikt met de visualisator.</string>
+    <string name="glass_effect_shared_components_summary">Kies hoe Glass eruitziet op componenten die worden gebruikt in de app, inclusief laad indicatoren en pull to refresh.</string>
     <string name="glass_effect_summary">Glazen effect oppervlakken, kleuren, omlijningen en kwaliteit aanpassen.</string>
     <string name="glass_effect_switches_description">Gebruik vloeibare glasschakelaars met gedeeld materiaal en interactieeffecten als glas is ingeschakeld.</string>
     <string name="glass_effect_switches_title">Glazen schakelaars</string>
@@ -225,6 +230,10 @@
     <string name="theme_shake_sensitivity_medium">Gemiddeld (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Zeer Hoog (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">downloaden</string>
+    <string name="cover_download_failed">Kon de omslag niet downloaden.</string>
+    <string name="image_editor_title">Afbeelding bewerken</string>
+    <string name="image_editor_failed">De afbeelding kon niet bewerkt worden. Je huidige afbeelding is bewaard.</string>
     <string name="thumbnail_action_edit">Edit Thumbnail</string>
     <string name="thumbnail_action_pick_from_gallery">Kies uit galerij</string>
     <string name="thumbnail_action_reset">Reset Thumbnail</string>
@@ -234,4 +243,6 @@
     <string name="thumbnail_remove_failed">Verwijderen van miniatuur mislukt</string>
     <string name="thumbnail_remove_success">Thumbnail verwijderd</string>
     <string name="glass_effect_rendering_quality">Rendering kwaliteit</string>
+    <string name="image_editor_original">Oorspronkelijke verhouding</string>
+    <string name="image_editor_apply">Afbeelding gebruiken</string>
 </resources>

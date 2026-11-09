@@ -41,4 +41,208 @@
         <item quantity="one">%1$d kappaletta kuultu</item>
         <item quantity="other">%1$d songs heard</item>
     </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Poista %1$d hakuhaku</item>
+        <item quantity="other">Poista %1$d hakuhaku</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Poista %1$d toistotapahtuma</item>
+        <item quantity="other">Poista %1$d toistotapahtumaa</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d jakso · %2$s</item>
+        <item quantity="other">%1$d jaksoa · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">%1$d kappaleen lisääminen YouTube-soittolistaan</item>
+        <item quantity="other">%1$d kappaleen lisääminen YouTube-soittolistaan</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">Lisätty %1$d kappale YouTube-soittolistaan</item>
+        <item quantity="other">Lisätty %1$d kappaletta YouTube-soittolistaan</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Profiilin tila tuotu: %1$d profiili</item>
+        <item quantity="other">Profiilin tila tuotu: %1$d profiilia</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">%1$d albumia ei voitu synkronoida. Yritä uudelleen palataksesi albumivälilehteen.</item>
+        <item quantity="other">%1$d albumia ei voitu synkronoida. Yritä uudelleen Palaa Albumit -välilehdelle.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Vie %1$d välimuisti/ladattu kappale?</item>
+        <item quantity="other">Vie %1$d välimuisti/ladatut kappaleet?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">%1$d ladattu kappale puuttuu sen tiedostosta ja se poistettiin. Ole hyvä ja lataa se uudelleen.</item>
+        <item quantity="other">%1$d ladatuista kappaleista puuttuu heidän tiedostojaan ja ne poistettiin. Ole hyvä ja lataa ne uudelleen.</item>
+    </plurals>
+    <plurals name="recommendations_quick_picks_song_count">
+        <item quantity="one">%1$d suositeltu kappale</item>
+        <item quantity="other">%1$d suositellut kappaleet</item>
+    </plurals>
+    <plurals name="listen_together_blocked_user_count">
+        <item quantity="one">%1$d käyttäjä estetty</item>
+        <item quantity="other">%1$d käyttäjää estetty</item>
+    </plurals>
+    <plurals name="sync_failed_notification_artist_count">
+        <item quantity="one">%1$d esittäjän synkronointi epäonnistui. Palaa takaisin Esittäjien välilehdelle yrittääksesi uudelleen.</item>
+        <item quantity="other">%1$d artistia ei voitu synkronoida. Yritä uudelleen palataksesi Esittäjien välilehteen.</item>
+    </plurals>
+    <plurals name="sync_failed_notification_playlist_count">
+        <item quantity="one">%1$d soittolistan synkronointi epäonnistui. Palaa soittolistojen välilehteen yrittääksesi uudelleen.</item>
+        <item quantity="other">%1$d soittolistaa ei voitu synkronoida. Yritä uudelleen palataksesi soittolistojen välilehteen.</item>
+    </plurals>
+    <plurals name="sync_retry_failed_item_confirmation">
+        <item quantity="one">Haluatko yrittää synkronoida uudelleen %1$d epäonnistunut kohde?</item>
+        <item quantity="other">Haluatko yrittää synkronoida uudelleen %1$d epäonnistuneita kohteita?</item>
+    </plurals>
+    <plurals name="sync_progress_artist_count">
+        <item quantity="one">Synkronoidaan artistia... (%1$d/%2$d)</item>
+        <item quantity="other">Synkronoidaan artisteja... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_artist_refresh_count">
+        <item quantity="one">Päivitetään %1$d esittäjää</item>
+        <item quantity="other">Päivitetään %1$d esittäjää</item>
+    </plurals>
+    <plurals name="library_sync_artist_retry_count">
+        <item quantity="one">%1$d artistia ei löytynyt, yritetään uudelleen</item>
+        <item quantity="other">%1$d artistia ei löytynyt, yritetään uudelleen</item>
+    </plurals>
+    <plurals name="sync_progress_album_count">
+        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
+        <item quantity="other">Synkronoidaan albumia... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_album_refresh_count">
+        <item quantity="one">Päivitetään %1$d levyä</item>
+        <item quantity="other">Päivitetään %1$d albumia</item>
+    </plurals>
+    <plurals name="library_sync_album_retry_count">
+        <item quantity="one">%1$d albumia ei löydy, yritetään uudelleen</item>
+        <item quantity="other">%1$d albumia ei löydy, yritetään uudelleen</item>
+    </plurals>
+    <plurals name="sync_progress_playlist_count">
+        <item quantity="one">Synkronoidaan soittolistaa... (%1$d/%2$d)</item>
+        <item quantity="other">Synkronoidaan soittolistoja... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_playlist_refresh_count">
+        <item quantity="one">Päivitetään %1$d soittolistaa</item>
+        <item quantity="other">Päivitetään %1$d soittolistaa</item>
+    </plurals>
+    <plurals name="library_sync_playlist_retry_count">
+        <item quantity="one">%1$d soittolistaa ei löydy, yritetään uudelleen</item>
+        <item quantity="other">%1$d soittolistaa ei löydy, yritetään uudelleen</item>
+    </plurals>
+    <plurals name="maintenance_pass_cleaned_count">
+        <item quantity="one">%1$d kohde puhdistettu</item>
+        <item quantity="other">%1$d kohdetta puhdistettu</item>
+    </plurals>
+    <plurals name="maintenance_pass_deferred_count">
+        <item quantity="one">%1$d kohde lykätty</item>
+        <item quantity="other">%1$d kohdetta lykätty</item>
+    </plurals>
+    <plurals name="maintenance_pass_skipped_count">
+        <item quantity="one">%1$d kohde ohitettu</item>
+        <item quantity="other">%1$d kohdetta ohitettu</item>
+    </plurals>
+    <plurals name="maintenance_dedup_flagged_count">
+        <item quantity="one">Flagged %1$d row</item>
+        <item quantity="other">Flagged %1$d rows</item>
+    </plurals>
+    <plurals name="maintenance_dedup_merged_count">
+        <item quantity="one">Merged %1$d row</item>
+        <item quantity="other">Merged %1$d rows</item>
+    </plurals>
+    <plurals name="recovery_profile_deleted_count">
+        <item quantity="one">Poistettu %1$d profiili</item>
+        <item quantity="other">Poistetut %1$d profiilit</item>
+    </plurals>
+    <plurals name="recovery_profile_reset_count">
+        <item quantity="one">Nollaa %1$d profiili. Käynnistä sovellus uudelleen</item>
+        <item quantity="other">Nollaa %1$d profiili. Käynnistä sovellus uudelleen</item>
+    </plurals>
+    <plurals name="recovery_profile_restored_count">
+        <item quantity="one">Palautettu %1$d profiili: käynnistä sovellus uudelleen</item>
+        <item quantity="other">Palautetut %1$d profiilit: käynnistä sovellus uudelleen</item>
+    </plurals>
+    <plurals name="album_loading_song_count">
+        <item quantity="one">Ladataan %1$d kappaletta…</item>
+        <item quantity="other">Ladataan %1$d kappaletta…</item>
+    </plurals>
+    <plurals name="artist_deduplication_result_count">
+        <item quantity="one">Yhdistettiin %1$d artistia kaksoiskappaleeksi oikean artistin kanssa</item>
+        <item quantity="other">Yhdistettiin %1$d artistia kaksoiskappaleeksi oikean artistin kanssa</item>
+    </plurals>
+    <plurals name="artist_link_cleanup_result_count">
+        <item quantity="one">Poistettu %1$d virheellinen artistilinkki</item>
+        <item quantity="other">Poistettu %1$d virheellistä artistilinkkiä</item>
+    </plurals>
+    <plurals name="library_song_count_with_duration">
+        <item quantity="one">%1$d kappale • %2$s</item>
+        <item quantity="other">%1$d kappaletta • %2$s</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count">
+        <item quantity="one">(%1$d ääni)</item>
+        <item quantity="other">(%1$d ääntä)</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count_attribution">
+        <item quantity="one">%1$d ääntä MusicBrainzissa</item>
+        <item quantity="other">%1$d ääntä MusicBrainzissa</item>
+    </plurals>
+    <plurals name="playlist_delete_all_confirmation_count">
+        <item quantity="one">Oletko varma, että haluat poistaa ainoan soittolistan (%1$d)?</item>
+        <item quantity="other">Oletko varma, että haluat poistaa KAIKKI %1$d soittolistat?</item>
+    </plurals>
+    <plurals name="playlist_delete_selected_confirmation_count">
+        <item quantity="one">Oletko varma, että haluat poistaa tämän soittolistan (%1$d)?</item>
+        <item quantity="other">Oletko varma, että haluat poistaa nämä %1$d soittolistat?</item>
+    </plurals>
+    <plurals name="playlist_positions_shuffled_count">
+        <item quantity="one">%1$d sijainti sekoitettu</item>
+        <item quantity="other">%1$d sijaintia sekoitettu</item>
+    </plurals>
+    <plurals name="song_metadata_updated_song_count">
+        <item quantity="one">%1$d kappale päivitetty</item>
+        <item quantity="other">%1$d kappaletta päivitetty</item>
+    </plurals>
+    <plurals name="rewind_home_year_play_count">
+        <item quantity="one">%1$s · %2$s toistoa</item>
+        <item quantity="other">%1$s · %2$s soittoa</item>
+    </plurals>
+    <plurals name="rewind_listening_day_count_without">
+        <item quantity="one">%1$s day without listening.</item>
+        <item quantity="other">%1$s päivää kuuntelematta.</item>
+    </plurals>
+    <plurals name="rewind_loader_status_day_count">
+        <item quantity="one">%1$s LISTENING PÄIVÄ</item>
+        <item quantity="other">%1$s LISÄÄ PÄIVÄÄ</item>
+    </plurals>
+    <plurals name="rewind_loader_status_minute_count">
+        <item quantity="one">%1$s MINUTE</item>
+        <item quantity="other">%1$s MINUUTTIA</item>
+    </plurals>
+    <plurals name="rewind_loader_status_play_count">
+        <item quantity="one">%1$s PELAA</item>
+        <item quantity="other">%1$s PELAA</item>
+    </plurals>
+    <plurals name="rewind_loader_status_song_count">
+        <item quantity="one">%1$s YKSITYISKOHTAINEN</item>
+        <item quantity="other">%1$s YKSITYISKOHTAINEN KAPPALE</item>
+    </plurals>
+    <plurals name="rewind_meta_song_count">
+        <item quantity="one">%1$s kappale</item>
+        <item quantity="other">%1$s kappaletta</item>
+    </plurals>
+    <plurals name="rewind_play_count_label">
+        <item quantity="one">%1$s toistetaan</item>
+        <item quantity="other">%1$s soittoa</item>
+    </plurals>
+    <plurals name="rewind_top_song_teaser_count">
+        <item quantity="one">%1$d SONG.\nYKSI VIINER.</item>
+        <item quantity="other">%1$d KUNINGASKUNTA.\nYHDEN.</item>
+    </plurals>
+    <plurals name="maintenance_abnormal_job_count">
+        <item quantity="one">%1$d työtä ei ole suoritettu</item>
+        <item quantity="other">%1$d työpaikkaa ei ole valmis</item>
+    </plurals>
 </resources>

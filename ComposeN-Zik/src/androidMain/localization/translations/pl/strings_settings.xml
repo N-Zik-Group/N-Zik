@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Najpierw połącz z YouTube aby włączyć tę opcję</string>
     <string name="settings_youtube_library_sync_content_description">Listy odtwarzania, albumy, artyści, historia, podobieństwo itp.</string>
     <string name="settings_youtube_login_enabled_label">Włącz logowanie do YouTube Music</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Sortuj</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Pasek narzędzi</string>
 </resources>

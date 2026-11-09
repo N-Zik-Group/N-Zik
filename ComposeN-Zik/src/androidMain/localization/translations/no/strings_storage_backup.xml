@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Lagring</string>
+    <string name="storage_breakdown_info_title">Om lagring</string>
+    <string name="storage_breakdown_nzik_total">Total brukt av N-Zik</string>
+    <string name="storage_breakdown_subtitle">Lagringsdetaljer for lagring</string>
+    <string name="storage_breakdown_waiting">Måler lagring…</string>
+    <string name="storage_breakdown_cached_images">Bufrede bilder</string>
+    <string name="storage_breakdown_streamed_audio">Strøm lyd</string>
+    <string name="storage_breakdown_downloaded_audio">Lyden er lastet ned</string>
+    <string name="storage_breakdown_custom_covers">Egendefinerte dekker</string>
+    <string name="storage_breakdown_waveforms">Bølgeformer</string>
+    <string name="storage_breakdown_other_nzik_data">Andre N-Zik data</string>
+    <string name="storage_breakdown_other_used_space">System, apper &amp; filer</string>
+    <string name="storage_breakdown_free_space">Ledig plass</string>
+    <string name="storage_info_images">Artarbeid og andre bilder bufret for raskere visning.</string>
+    <string name="storage_info_streaming">Lyd oppbevart midlertidig etter strømming, så det kan spilles av igjen uten å hente samme data.</string>
+    <string name="storage_info_downloads">Lyd lagret i N-Zik for frakoblet oppføring.</string>
+    <string name="storage_info_waveforms">Genererte filer som brukes til å tegne lydbølgen i spilleren.</string>
+    <string name="storage_info_covers">Artarbeide du har valgt eller importert som egendefinerte omslag.</string>
+    <string name="storage_info_other_nzik">Resten av N-ziks private data, inkludert databaser, innstillinger, indekser, utvidelser og logger.</string>
+    <string name="storage_info_other_used">Den gjenstående plassen på det interne volumet, inkludert Android, installerte apper og personlige filer.</string>
+    <string name="storage_info_free">Mellomrom tilgjengelig for apper og filer på det interne volumet.</string>
+    <string name="storage_cleanup_title">Opprydding</string>
+    <string name="storage_cleanup_failed">Klarte ikke fullføre opprydding ved lagring.</string>
+    <string name="storage_cleanup_images_description">Tøm kunstverk bufret av N-zik.</string>
+    <string name="storage_cleanup_streaming_description">Tøm lyden fra hurtiglager mens du strømmer.</string>
+    <string name="storage_cleanup_downloads_description">Slett frakoblet lyd og avbryt ventende nedlastinger for den aktive profilens nedlastingslagring.</string>
+    <string name="storage_cleanup_waveforms_description">Tøm genererte bølgeformfiler.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Tydelige bølger</string>
+    <string name="storage_cleanup_diagnostic_logs">Fjern diagnoselogger</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Slett feilsøking og krasjloggfiler. Loggingsinnstillingene forblir det samme</string>
+    <string name="storage_cleanup_temporary_files">Fjern forlatte midlertidige filer</string>
+    <string name="storage_cleanup_temporary_files_description">Fjern forlatte bilderedigeringsprogramtillegg og Rewind deling bilder som er eldre enn 24 timer.</string>
+    <string name="storage_cleanup_all">Fjern alle</string>
+    <string name="storage_cleanup_all_description">Klart bilde- og strømmecacher og genererte bølgeformer for den aktive profilen, inkludert lagring av den deler den med andre profiler. Slett frakoblet lyd og avbryt ventende nedlastinger for den aktive profilens nedlastingslagring. Slett diagnostisk logger, forlatte bilderedigeringsutkast, og utløpte reflektiviteter delingsbilder. Biblioteket ditt, egendefinerte dekker og innstillinger er beholdt.</string>
     <!-- Backup -->
     <string name="backup_action_export">Overfør sikkerhetskopi</string>
     <string name="backup_action_import">Innfør sikkerhetskopi</string>
@@ -15,11 +50,14 @@
     <string name="backup_auto_schedule_day_of_month_description">Velg dagen i måneden for månedlige automatiske sikkerhetskopier.</string>
     <string name="backup_auto_schedule_day_of_week_description">Velg ukedag for ukentlige automatiske sikkerhetskopier.</string>
     <string name="backup_auto_schedule_time_description">Velg tiden på hvilke planlagte automatiske sikkerhetskopier som skal kjøres.</string>
+    <string name="backup_auto_content_format_description">Velg hva som skal sikkerhetskopieres automatisk. Databasesikkerhetskopier bruker ZIP når de inkluderer egendefinerte forside.</string>
     <string name="backup_before_update_description">Automatisk sikkerhetskopier data før du installerer en oppdatering</string>
     <string name="backup_before_update_failed">Forhåndsinstallasjon av sikkerhetskopi mislyktes</string>
     <string name="backup_before_update_running_message">Sikkerhetskopierer data før installasjon…</string>
     <string name="backup_before_update_running_title">Sikkerhetskopiering pågår</string>
     <string name="backup_excluded_preferences_and_cache_description">Personlige innstillinger (f.eks. temamodus) og mellomlager er ekskludert.</string>
+    <string name="backup_export_library_options_description">Eksporter databasen med egendefinerte omslag, innstillinger eller profiler</string>
+    <string name="backup_import_library_options_description">Gjenopprett en SQLite eller ZIP database sikkerhetskopiering, innstillinger eller profiler</string>
     <string name="backup_include_discord_credentials">Inkluder Discord identitetsopplysninger</string>
     <string name="backup_include_lastfm_credentials">Inkluder Last.fm identitet påloggingsinformasjon</string>
     <string name="backup_include_proxy_password">Oppgi proxypassordet</string>
@@ -56,12 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Eksporter profillisten og ansiktsbilder i en enkel .txt fil</string>
     <string name="backup_export_all">Eksporter alt</string>
+    <string name="backup_export_all_with_covers_description">Eksporter databasen, innstillinger og profilstatus separat. Databasen bruker ZIP hvis den inkluderer egendefinerte omslag.</string>
+    <string name="backup_export_database_with_covers_and_settings_description">Eksporter database og innstillinger separat. Databasen bruker ZIP dersom den inkluderer egendefinerte forslag.</string>
+    <string name="backup_export_database_with_covers_description">Lagre sanger, spillelister og historie som SQLite. Dersom du har tilpasset forslag, er eksporten en ZIP med databasen og omslagene.</string>
     <string name="backup_export_profile_state_failed">Eksport av profilstatus feilet</string>
     <string name="backup_export_settings_description">Eksporter appinnstillinger og -innstillinger</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importer profillisten og ansiktsbilder fra en .txt-fil</string>
     <string name="backup_import_all">Importer alle</string>
+    <string name="backup_import_all_with_covers_description">Gjenopprett en SQLite eller ZIP database sikkerhetskopiering, innstillinger og profilstatus fra separate filer.</string>
+    <string name="backup_import_database_with_covers_and_settings_description">Gjenopprett en SQLite eller ZIP database sikkerhetskopi og en separat innstillingsfil.</string>
     <string name="backup_import_completed_profile">Importerte til %1$s</string>
+    <string name="backup_import_database_with_covers_description">Gjenopprett sanger, spillelister og historie fra SQLite eller ZIP. ZIP-sikkerhetskopier gjenoppretter også de medfølgende egendefinerte omslagene.</string>
     <string name="backup_import_profile_state_complete">Profiltilstand importert: %1$d profiler</string>
     <string name="backup_import_profile_state_complete_base">Status importert: basisprofil</string>
     <string name="backup_import_profile_state_failed">Import av profilstatus feilet</string>
@@ -72,11 +116,14 @@
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Tøm sangbuffer</string>
     <string name="cache_downloads_max_size_description">Velg hvor mye diskplass som er tilgjengelig for nedlastede sanger. Papirkursknappen fjerner nedlastet lyd.</string>
+    <string name="cache_downloads_limit_description">Velg hvor mye diskplass som er tilgjengelig for nedlastede sanger. Papirkursknappen fjerner nedlastet lyd.</string>
     <string name="cache_image_max_size_description">Begrens diskplass brukt etter hurtiglager kunstverk. Papirkursknappen tømmer nedlastede bilder fra dette hurtiglageret.</string>
+    <string name="cache_image_limit_description">Begrens diskplass brukt etter hurtiglager kunstverk. Papirkursknappen tømmer nedlastede bilder fra dette hurtiglageret.</string>
     <string name="cache_location_description">Velg hvor appen lagrer sin sangavspillingscache.</string>
     <string name="cache_location_private">Privat</string>
     <string name="cache_location_system">Systemadministrasjon</string>
     <string name="cache_streaming_max_size_description">Begrens diskplass som brukes til hurtigbufferet på sanger. Papirkursknappen tømmer denne avspillingsbufferen.</string>
+    <string name="cache_streaming_limit_description">Begrens diskplass som brukes til hurtigbufferet på sanger. Papirkursknappen tømmer denne avspillingsbufferen.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Last ned alle sanger</string>
     <string name="downloads_action_refresh_quality">Oppdater nedlastinger</string>
@@ -136,7 +183,10 @@
     <string name="storage_samsung_advice_message">Samsungs automatiske minnestyring kan slette N-ziks nedlastinger og mellomlagerfiler, selv når du ikke spurte om det. Bruk privat (app) lagringsplass i stedet for systemlagring for å holde nedlastingene dine trygt.</string>
     <string name="storage_samsung_advice_title">Samsung råd om oppbevaring</string>
     <string name="storage_samsung_system_usage_message">Du har for tiden %1$s nedlastinger og hurtigbuffer på systemlagring.</string>
+    <string name="backup_export_database_failed">Databaseeksporten mislyktes</string>
     <string name="backup_import_failed">Import feilet</string>
     <string name="export_no_songs">Ingen sanger eksportert</string>
     <string name="export_cached_songs_generic_error">Eksportering feilet</string>
+    <string name="backup_startup_preparing_library">Forbereder ditt bibliotek…</string>
+    <string name="backup_startup_recovery_failed">Kunne ikke fullføre gjenopprettingen av biblioteket ditt.</string>
 </resources>

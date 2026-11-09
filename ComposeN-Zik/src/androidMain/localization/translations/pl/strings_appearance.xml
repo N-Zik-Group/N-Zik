@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">Strony</string>
     <string name="glass_effect_destination_playback">Odtwarzanie</string>
     <string name="glass_effect_destination_shared">Współdzielone elementy</string>
+    <string name="glass_effect_loading_indicators">Wskaźniki obciążenia</string>
+    <string name="glass_effect_loading_indicators_description">Styl animacji ładowania na stronach oraz kartach i oknach dialogowych.</string>
+    <string name="glass_effect_pull_to_refresh">Pociągnij, aby odświeżyć</string>
+    <string name="glass_effect_pull_to_refresh_description">Styl wskaźnika, który pojawia się po przeciągnięciu w dół, aby odświeżyć.</string>
     <string name="glass_effect_destination_windows">Windows i wiadomości</string>
     <string name="glass_effect_dialog_dimming">Przyciemnianie tła okna dialogowego</string>
     <string name="glass_effect_dispersion">Podział kolorów</string>
@@ -121,6 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">Karty grupujące ustawienia i wyświetlające profil.</string>
     <string name="glass_effect_role_visualizer">Wizualizator · sterowanie</string>
     <string name="glass_effect_role_visualizer_description">Strzałki i przycisk Ustawienia używany z wizualizatorem.</string>
+    <string name="glass_effect_shared_components_summary">Wybierz, jak szkło wygląda na komponenty używane w całej aplikacji, w tym wskaźniki ładowania i naciśnij aby odświeżyć.</string>
     <string name="glass_effect_summary">Dostosuj powierzchnie efektów szkła, kolory, obrysy i jakość.</string>
     <string name="glass_effect_switches_description">Używaj przełączników ciekłego szkła ze współdzielonym materiałem i efektów interakcji, gdy szkło jest włączone.</string>
     <string name="glass_effect_switches_title">Przełączniki szklane</string>
@@ -225,6 +230,10 @@
     <string name="theme_shake_sensitivity_medium">Średni (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Bardzo wysoki (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">Pobierz</string>
+    <string name="cover_download_failed">Nie można pobrać okładki.</string>
+    <string name="image_editor_title">Edytuj obraz</string>
+    <string name="image_editor_failed">Nie można edytować obrazu. Twój aktualny obraz został zachowany.</string>
     <string name="thumbnail_action_edit">Edytuj miniaturkę</string>
     <string name="thumbnail_action_pick_from_gallery">Wybierz z galerii</string>
     <string name="thumbnail_action_reset">Zresetuj miniaturkę</string>
@@ -234,4 +243,6 @@
     <string name="thumbnail_remove_failed">Nie udało się usunąć miniatury</string>
     <string name="thumbnail_remove_success">Usunięta miniaturka</string>
     <string name="glass_effect_rendering_quality">Jakość renderowania</string>
+    <string name="image_editor_original">Pierwotny stosunek</string>
+    <string name="image_editor_apply">Użyj obrazu</string>
 </resources>

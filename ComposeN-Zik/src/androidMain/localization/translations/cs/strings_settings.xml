@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Pro povolení této volby se nejprve připojte k YouTube</string>
     <string name="settings_youtube_library_sync_content_description">Playlisty, alba, umělci, historie, atd.</string>
     <string name="settings_youtube_login_enabled_label">Povolení přihlášení k službě YouTube Music</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Řadit</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Panel nástrojů</string>
 </resources>

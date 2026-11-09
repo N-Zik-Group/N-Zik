@@ -41,4 +41,208 @@
         <item quantity="one">%1$d song heard</item>
         <item quantity="other">%1$d τραγούδια που ακούστηκαν</item>
     </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Διαγραφή ερωτήματος %1$d αναζήτησης</item>
+        <item quantity="other">Διαγραφή ερωτημάτων %1$d αναζήτησης</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Διαγραφή συμβάντος %1$d αναπαραγωγής</item>
+        <item quantity="other">Διαγραφή συμβάντων %1$d αναπαραγωγής</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d επεισόδιο · %2$s</item>
+        <item quantity="other">%1$d επεισόδια · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">Προσθήκη τραγουδιού %1$d στη λίστα αναπαραγωγής YouTube</item>
+        <item quantity="other">Προσθήκη %1$d τραγουδιών στη λίστα αναπαραγωγής YouTube</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">Προστέθηκε το τραγούδι %1$d στο YouTube playlist</item>
+        <item quantity="other">Προστέθηκε το %1$d τραγούδια στη λίστα αναπαραγωγής του YouTube</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Κατάσταση προφίλ εισήχθη: %1$d προφίλ</item>
+        <item quantity="other">Κατάσταση προφίλ εισήχθη: %1$d προφίλ</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Αποτυχία συγχρονισμού του άλμπουμ %1$d Επιστρέψτε στην καρτέλα Άλμπουμ για να ξαναδοκιμάσετε.</item>
+        <item quantity="other">Αποτυχία συγχρονισμού του άλμπουμ %1$d και επιστροφή στην καρτέλα Άλμπουμ για να ξαναδοκιμάσετε.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Εξαγωγή %1$d cached/downloaded song?</item>
+        <item quantity="other">Εξαγωγή %1$d cached/downloaded songs?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">Το %1$d ληφθέν τραγούδι λείπει το αρχείο του και αφαιρέθηκε. Παρακαλώ κατεβάστε το ξανά.</item>
+        <item quantity="other">%1$d τα κατεβασμένα τραγούδια λείπουν από τα αρχεία τους και αφαιρέθηκαν. Παρακαλώ κατεβάστε τα ξανά.</item>
+    </plurals>
+    <plurals name="recommendations_quick_picks_song_count">
+        <item quantity="one">Προτεινόμενο τραγούδι %1$d</item>
+        <item quantity="other">%1$d recommended songs</item>
+    </plurals>
+    <plurals name="listen_together_blocked_user_count">
+        <item quantity="one">%1$d user blocked</item>
+        <item quantity="other">%1$d users blocked</item>
+    </plurals>
+    <plurals name="sync_failed_notification_artist_count">
+        <item quantity="one">Απέτυχε ο συγχρονισμός του %1$d καλλιτέχνη. Επιστρέψτε στην καρτέλα Καλλιτέχνες για να ξαναδοκιμάσετε.</item>
+        <item quantity="other">Απέτυχε ο συγχρονισμός %1$d καλλιτεχνών. Επιστρέψτε στην καρτέλα Καλλιτέχνες για να ξαναδοκιμάσετε.</item>
+    </plurals>
+    <plurals name="sync_failed_notification_playlist_count">
+        <item quantity="one">Απέτυχε ο συγχρονισμός της λίστας αναπαραγωγής %1$d Επιστρέψτε στην καρτέλα Λίστες για επανάληψη.</item>
+        <item quantity="other">Απέτυχε ο συγχρονισμός των λιστών αναπαραγωγής %1$d Πήγαινε πίσω στην καρτέλα Λίστες για επανάληψη.</item>
+    </plurals>
+    <plurals name="sync_retry_failed_item_confirmation">
+        <item quantity="one">Θέλετε να ξαναπροσπαθήσετε να συγχρονίσετε το στοιχείο %1$d απέτυχε?</item>
+        <item quantity="other">Θέλετε να ξαναπροσπαθήσετε να συγχρονίσετε τα στοιχεία %1$d απέτυχε?</item>
+    </plurals>
+    <plurals name="sync_progress_artist_count">
+        <item quantity="one">Συγχρονισμός καλλιτέχνη... (%1$d/%2$d)</item>
+        <item quantity="other">Συγχρονισμός καλλιτεχνών... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_artist_refresh_count">
+        <item quantity="one">Ανανέωση καλλιτέχνη %1$d</item>
+        <item quantity="other">Ανανέωση %1$d καλλιτεχνών</item>
+    </plurals>
+    <plurals name="library_sync_artist_retry_count">
+        <item quantity="one">Αποτυχία εύρεσης %1$d καλλιτέχνη, επανάληψη</item>
+        <item quantity="other">Αποτυχία εύρεσης %1$d καλλιτεχνών, επανάληψη</item>
+    </plurals>
+    <plurals name="sync_progress_album_count">
+        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
+        <item quantity="other">Συγχρονισμός άλμπουμ... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_album_refresh_count">
+        <item quantity="one">Ανανέωση άλμπουμ %1$d</item>
+        <item quantity="other">Ανανέωση άλμπουμ %1$d</item>
+    </plurals>
+    <plurals name="library_sync_album_retry_count">
+        <item quantity="one">Αποτυχία εύρεσης άλμπουμ %1$d επανάληψης,</item>
+        <item quantity="other">Αποτυχία εύρεσης άλμπουμ %1$d επανάληψης,</item>
+    </plurals>
+    <plurals name="sync_progress_playlist_count">
+        <item quantity="one">Συγχρονισμός λίστας αναπαραγωγής... (%1$d/%2$d)</item>
+        <item quantity="other">Συγχρονισμός λιστών αναπαραγωγής... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_playlist_refresh_count">
+        <item quantity="one">Ανανέωση λίστας αναπαραγωγής %1$d</item>
+        <item quantity="other">Ανανέωση λίστας αναπαραγωγής %1$d</item>
+    </plurals>
+    <plurals name="library_sync_playlist_retry_count">
+        <item quantity="one">Απέτυχε η εύρεση της λίστας αναπαραγωγής %1$d</item>
+        <item quantity="other">Αποτυχία εύρεσης %1$d λιστών αναπαραγωγής, επανάληψης</item>
+    </plurals>
+    <plurals name="maintenance_pass_cleaned_count">
+        <item quantity="one">Καθαρίστηκε το στοιχείο %1$d</item>
+        <item quantity="other">%1$d καθαρίστηκαν αντικείμενα</item>
+    </plurals>
+    <plurals name="maintenance_pass_deferred_count">
+        <item quantity="one">Αναβαλλόμενο στοιχείο %1$d</item>
+        <item quantity="other">%1$d items deferred</item>
+    </plurals>
+    <plurals name="maintenance_pass_skipped_count">
+        <item quantity="one">%1$d το στοιχείο παραλείφθηκε</item>
+        <item quantity="other">%1$d τα στοιχεία παραλείφθηκαν</item>
+    </plurals>
+    <plurals name="maintenance_dedup_flagged_count">
+        <item quantity="one">Σημασμένο %1$d σειρά</item>
+        <item quantity="other">Σημασμένο %1$d σειρές</item>
+    </plurals>
+    <plurals name="maintenance_dedup_merged_count">
+        <item quantity="one">Συγχωνευμένο %1$d σειρά</item>
+        <item quantity="other">Merged %1$d rows</item>
+    </plurals>
+    <plurals name="recovery_profile_deleted_count">
+        <item quantity="one">Διαγραφή προφίλ %1$d</item>
+        <item quantity="other">Διαγραμμένα προφίλ %1$d</item>
+    </plurals>
+    <plurals name="recovery_profile_reset_count">
+        <item quantity="one">Επαναφορά προφίλ %1$d Επανεκκίνηση της εφαρμογής</item>
+        <item quantity="other">Επαναφορά προφίλ %1$d . Επαναπροώθηση της εφαρμογής</item>
+    </plurals>
+    <plurals name="recovery_profile_restored_count">
+        <item quantity="one">Επαναφορά προφίλ %1$d : επανεκκίνηση της εφαρμογής</item>
+        <item quantity="other">Επαναφορά προφίλ %1$d : επανεκκίνηση της εφαρμογής</item>
+    </plurals>
+    <plurals name="album_loading_song_count">
+        <item quantity="one">Φόρτωση τραγουδιού %1$d…</item>
+        <item quantity="other">Φόρτωση %1$d τραγουδιών…</item>
+    </plurals>
+    <plurals name="artist_deduplication_result_count">
+        <item quantity="one">Συγχωνευμένος %1$d διπλός καλλιτέχνης με τον σωστό καλλιτέχνη</item>
+        <item quantity="other">Συγχωνευμένος %1$d διπλός καλλιτέχνης με τον σωστό καλλιτέχνη</item>
+    </plurals>
+    <plurals name="artist_link_cleanup_result_count">
+        <item quantity="one">Αφαιρέθηκε %1$d εσφαλμένος σύνδεσμος καλλιτέχνη</item>
+        <item quantity="other">Αφαιρέθηκε %1$d εσφαλμένοι σύνδεσμοι καλλιτέχνη</item>
+    </plurals>
+    <plurals name="library_song_count_with_duration">
+        <item quantity="one">%1$d τραγούδι • %2$s</item>
+        <item quantity="other">%1$d τραγούδια • %2$s</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count">
+        <item quantity="one">(%1$d vote)</item>
+        <item quantity="other">(%1$d ψήφος)</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count_attribution">
+        <item quantity="one">%1$d ψηφοφορία για το MusicBrainz</item>
+        <item quantity="other">%1$d ψήφοι για MusicBrainz</item>
+    </plurals>
+    <plurals name="playlist_delete_all_confirmation_count">
+        <item quantity="one">Είστε βέβαιοι ότι θέλετε να διαγράψετε τη μόνη λίστα αναπαραγωγής (%1$d)?</item>
+        <item quantity="other">Είστε βέβαιοι ότι θέλετε να διαγράψετε ΟΛΕΣ τις λίστες αναπαραγωγής %1$d?</item>
+    </plurals>
+    <plurals name="playlist_delete_selected_confirmation_count">
+        <item quantity="one">Είστε βέβαιοι ότι θέλετε να διαγράψετε αυτή τη λίστα αναπαραγωγής (%1$d)?</item>
+        <item quantity="other">Are you sure you want to delete these %1$d playlists? (Automatic Copy)</item>
+    </plurals>
+    <plurals name="playlist_positions_shuffled_count">
+        <item quantity="one">Ανακατέψτε τη θέση %1$d</item>
+        <item quantity="other">%1$d θέσεις ανακατεύονται</item>
+    </plurals>
+    <plurals name="song_metadata_updated_song_count">
+        <item quantity="one">Ενημέρωση τραγουδιού %1$d</item>
+        <item quantity="other">Ενημερωμένα τραγούδια %1$d</item>
+    </plurals>
+    <plurals name="rewind_home_year_play_count">
+        <item quantity="one">%1$s · Παίξτε %2$s</item>
+        <item quantity="other">%1$s · %2$s plays</item>
+    </plurals>
+    <plurals name="rewind_listening_day_count_without">
+        <item quantity="one">%1$s ημέρα χωρίς να ακούτε.</item>
+        <item quantity="other">%1$s days without listening.</item>
+    </plurals>
+    <plurals name="rewind_loader_status_day_count">
+        <item quantity="one">%1$s LISTENING DAY</item>
+        <item quantity="other">%1$s LISTENING DAYS</item>
+    </plurals>
+    <plurals name="rewind_loader_status_minute_count">
+        <item quantity="one">%1$s ΕΛΑΧΙΣΤΟ</item>
+        <item quantity="other">%1$s MINUTES</item>
+    </plurals>
+    <plurals name="rewind_loader_status_play_count">
+        <item quantity="one">%1$s PLAY</item>
+        <item quantity="other">%1$s PLAYS</item>
+    </plurals>
+    <plurals name="rewind_loader_status_song_count">
+        <item quantity="one">%1$s UNIQUE SONG</item>
+        <item quantity="other">%1$s UNIQUE SONGS</item>
+    </plurals>
+    <plurals name="rewind_meta_song_count">
+        <item quantity="one">%1$s song</item>
+        <item quantity="other">Τραγούδια %1$s</item>
+    </plurals>
+    <plurals name="rewind_play_count_label">
+        <item quantity="one">%1$s play</item>
+        <item quantity="other">%1$s plays</item>
+    </plurals>
+    <plurals name="rewind_top_song_teaser_count">
+        <item quantity="one">%1$d SONG.\nONE WINNER.</item>
+        <item quantity="other">%1$d SONGS.\nONE WINNER.</item>
+    </plurals>
+    <plurals name="maintenance_abnormal_job_count">
+        <item quantity="one">Η εργασία %1$d δεν ολοκληρώθηκε</item>
+        <item quantity="other">Οι εργασίες %1$d δεν τελείωσαν</item>
+    </plurals>
 </resources>

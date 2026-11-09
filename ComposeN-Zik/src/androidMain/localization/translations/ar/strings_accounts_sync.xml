@@ -246,10 +246,11 @@
     <string name="sync_youtube_history_title">YTM History</string>
     <string name="sync_youtube_like_failed">فشل في إعجاب الأغنية في يوتيوب</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">الأغاني معجب بها في اليوتيوب</string>
+    <string name="sync_youtube_like_success">أضيف إلى يوتيوب الإعجاب</string>
     <string name="sync_youtube_playlist_add_failed">فشل في إضافة الأغنية في قائمة تشغيل اليوتيوب</string>
     <string name="sync_youtube_playlist_add_success">تمت إضافة الأغنية في قائمة تشغيل اليوتيوب</string>
     <string name="sync_youtube_playlist_batch_failed">حدث خطأ في ال 50 أغنية التالية. إضافة الأغاني إلى قائمة التشغيل واحدة تلو الأخرى</string>
+    <string name="sync_youtube_playlist_no_songs_added">لم يتم إضافة أغاني إلى قائمة تشغيل اليوتيوب</string>
     <string name="sync_youtube_playlist_songs_added_suffix">يتم إضافة الأغاني في قائمة تشغيل اليوتيوب. كرر العملية إذا كان هناك أي أغاني مفقودة</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">سيتم إضافة الأغاني في قائمة تشغيل YTM</string>
     <string name="sync_youtube_playlists_title">قوائم تشغيل YTM</string>

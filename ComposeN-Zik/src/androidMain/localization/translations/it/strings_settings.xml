@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Connettiti prima a YouTube per abilitare questa opzione</string>
     <string name="settings_youtube_library_sync_content_description">Playlist, album, artisti, storia, come, ecc.</string>
     <string name="settings_youtube_login_enabled_label">Abilita l\'accesso a YouTube Music</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Ordina</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Barra Degli Strumenti</string>
 </resources>

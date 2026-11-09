@@ -82,6 +82,7 @@
     <string name="lyrics_editor_title">Введите текст песни</string>
     <string name="lyrics_empty">Нет текста песни</string>
     <string name="lyrics_fetch_error_message">При получении текста песни произошла ошибка</string>
+    <string name="lyrics_provider_fetch_error_message">Не удалось получить текст песни от %1$s</string>
     <string name="lyrics_font_size_animation_label">Размер анимации текста песни</string>
     <string name="lyrics_font_size_extra_large_label">Очень большой</string>
     <string name="lyrics_font_size_large_label">Большой</string>
@@ -296,10 +297,14 @@
     <string name="player_statistics_codec_label">Кодек</string>
     <string name="player_statistics_container_label">Контейнер</string>
     <string name="player_statistics_itag_label">Итег</string>
+    <string name="player_playback_speed_value">%1$.1fx</string>
+    <string name="player_decibels_value">%1$.2f дБ</string>
     <string name="player_statistics_loudness_label">Громкость</string>
     <string name="player_statistics_media_id_label">Id</string>
     <string name="player_statistics_perceptual_loudness_label">Видимая погрешность</string>
     <string name="player_statistics_sample_rate_label">Частота выборки</string>
+    <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
+    <string name="player_statistics_cache_status">%1$s: %2$s</string>
     <string name="player_statistics_volume_label">Объем</string>
     <string name="player_swap_controls_with_timeline">Поменять местами элементы управления на временной шкале</string>
     <string name="player_swipe_sensitivity">Чувствительность прокрутки игрока</string>

@@ -27,7 +27,7 @@
     <string name="language_name_esperanto">Espéranto (Esperanto)</string>
     <string name="language_name_estonian">Estonien (eesti keel)</string>
     <string name="language_name_filipino">Philippin (Filipino)</string>
-    <string name="language_name_finnish">Finnois (Suomalainen)</string>
+    <string name="language_name_finnish">Finnois (Suomi)</string>
     <string name="language_name_french">Français (Français)</string>
     <string name="language_name_galician">Galicien</string>
     <string name="language_name_german">Allemand (Deutsch)</string>
@@ -35,12 +35,12 @@
     <string name="language_name_hebrew">Hébreu (עִברִית)</string>
     <string name="language_name_hindi">Hindi (हिंदी)</string>
     <string name="language_name_hungarian">Hongrois (Magyar)</string>
-    <string name="language_name_indonesian">Indonésien (Indonesian)</string>
+    <string name="language_name_indonesian">Indonésien (Bahasa Indonesia)</string>
     <string name="language_name_interlingua">Interlangue</string>
     <string name="language_name_irish">Irlandais (Gaeilge)</string>
     <string name="language_name_italian">Italien (Italiano)</string>
     <string name="language_name_japanese">Japonais (日本語)</string>
-    <string name="language_name_korean">Coréen (한국인)</string>
+    <string name="language_name_korean">Coréen (한국어)</string>
     <string name="language_name_malayalam">Malayalam (മലയാളം)</string>
     <string name="language_name_norwegian">Norvégien</string>
     <string name="language_name_odia">Odia (ଓଡିଆ)</string>
@@ -50,8 +50,8 @@
     <string name="language_name_portuguese_brazilian">Portugais, Brésilien (Portuguese, Brazilian)</string>
     <string name="language_name_romanian">Roumain (Română)</string>
     <string name="language_name_russian">Russe (Русский)</string>
-    <string name="language_name_serbian_cyrillic">Cyrillique Serbe (српска ћирилица)</string>
-    <string name="language_name_serbian_latin">Latin Serbe (Српски)</string>
+    <string name="language_name_serbian_cyrillic">Serbe Cyrillique (Српски)</string>
+    <string name="language_name_serbian_latin">Serbe Latin (Srpski)</string>
     <string name="language_name_sinhala">Cingalais (සිංහල)</string>
     <string name="language_name_spanish">Espagnol (Español)</string>
     <string name="language_name_swedish">Suédois (Swedish)</string>
@@ -489,4 +489,6 @@ Volume BAS : titre précédent</string>
     <string name="settings_youtube_connection_required_description">Connectez-vous d\'abord à YouTube pour activer cette option</string>
     <string name="settings_youtube_library_sync_content_description">Playlists, albums, artistes, histoire, etc.</string>
     <string name="settings_youtube_login_enabled_label">Activer la connexion à YouTube Music</string>
+    <string name="settings_dialog_sort_title_format">%1$s : Trier</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s : Barre d\'outils</string>
 </resources>

@@ -42,6 +42,7 @@
     <string name="home_greeting_evening">Buona sera</string>
     <string name="home_greeting_morning">Buongiorno</string>
     <string name="home_greeting_night">Buona notte</string>
+    <string name="home_greeting_with_profile_format">%1$s, %2$s</string>
     <string name="home_playlists_settings">Giocatori Casa</string>
     <string name="home_songs_settings">Brani Home</string>
     <string name="home_sort_last_played_song_label">In base all\'ultimo brano ascoltato</string>
@@ -248,6 +249,7 @@
     <string name="playlist_refresh_on_open_enable">Abilita l\'aggiornamento all\'apertura</string>
     <string name="playlist_remove_selected_confirmation">Rimuovere i brani selezionati da questa playlist?</string>
     <string name="playlist_remove_songs_confirmation">Rimuovere la selezione dalla scaletta? Tracce selezionate: %d</string>
+    <string name="playlist_remove_songs_success_format">%1$s %2$d</string>
     <string name="playlist_rename_dialog_title">Rinomina playlist</string>
     <string name="playlist_reorder_ascending_sort_required_message">Il riordino è possibile solo nell\'ordinamento crescente</string>
     <string name="playlist_reorder_lock_toggle_label">Blocca/Sblocca riordina i brani</string>
@@ -377,6 +379,27 @@
     <string name="song_metadata_update_action_open">Apri finestra di aggiornamento</string>
     <string name="song_metadata_updated_count">Canzoni %1$d aggiornate</string>
     <string name="song_play_time_action_reset">Reimposta il tempo totale di riproduzione</string>
+    <string name="song_like_status_action_reset">Resetta lo stato piaciuto/non piaciuto</string>
+    <string name="song_update_action_clear_playback_cache">Cancella cache di riproduzione</string>
+    <string name="song_update_action_remove_offline_download">Rimuovi download offline</string>
+    <string name="song_update_result_partial">Aggiornato parzialmente. %1$s</string>
+    <string name="song_update_result_failed">Non aggiornato. %1$s</string>
+    <string name="song_update_error_metadata_unavailable">Informazioni su YouTube non disponibili.</string>
+    <string name="song_update_error_network">Impossibile raggiungere YouTube. Controlla la tua connessione.</string>
+    <string name="song_update_error_missing_title">YouTube non ha restituito un titolo.</string>
+    <string name="song_update_error_missing_artists">YouTube non ha restituito artisti.</string>
+    <string name="song_update_error_incomplete_artists">Le informazioni sull\'artista da YouTube sono incomplete.</string>
+    <string name="song_update_error_missing_cover">YouTube non ha restituito una copertina.</string>
+    <string name="song_update_error_wrong_song">YouTube ha restituito una canzone diversa. Le sue informazioni sono state ignorate.</string>
+    <string name="song_update_error_cache_unavailable">Cache di riproduzione non disponibile. Riapri il giocatore e riprova.</string>
+    <string name="song_update_error_profile_changed">Aggiornamento interrotto perché il profilo attivo è cambiato.</string>
+    <string name="song_update_error_storage">Impossibile salvare le modifiche su questo dispositivo.</string>
+    <string name="song_update_error_cache_clear">Impossibile terminare la cancellazione della cache di riproduzione.</string>
+    <string name="song_update_error_download_remove">Impossibile rimuovere lo scaricamento fuori rete.</string>
+    <string name="song_update_error_cover_reset">Impossibile terminare il ripristino della copertina.</string>
+    <string name="song_update_error_playback_refresh">Modifiche salvate, ma il giocatore non può aggiornare.</string>
+    <string name="song_update_batch_result">Aggiornato: %1$d · Parzialmente aggiornato: %2$d · Non aggiornato: %3$d</string>
+    <string name="song_update_batch_reason_count">%1$s (%2$d)</string>
     <!-- Song Matching -->
     <string name="song_matching_action_open">Corrispondenza versione Album/Audio</string>
     <string name="song_matching_all_confirmation">Vuoi abbinare le canzoni di %d senza eguali?</string>
@@ -386,6 +409,7 @@
     <string name="song_matching_unmatched_label">Brano ineguagliato</string>
     <string name="metadata_musicbrainz_rating">Valutazione</string>
     <string name="metadata_cover_art">Copertina</string>
+    <string name="metadata_cover_url_hint">Incolla un collegamento immagine</string>
     <string name="metadata_file_path_unavailable">Impossibile risolvere il percorso del file</string>
     <string name="metadata_save_failed">Salvataggio dei metadati non riuscito</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
@@ -393,4 +417,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Come tutti i brani prenderanno circa %1$s. Chiudere l\'app per annullare. Vuoi continuare?</string>
     <string name="library_on_device_permission_request_failed">Impossibile richiedere l\'accesso alla musica su questo dispositivo.</string>
     <string name="library_on_device_permission_settings_failed">Impossibile aprire le impostazioni dei permessi.</string>
+    <string name="artist_more_from_format">Altro da %1$s</string>
+    <string name="playlist_top_show_title_format">Mostra %1$s</string>
 </resources>

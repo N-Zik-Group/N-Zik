@@ -246,10 +246,11 @@
     <string name="sync_youtube_history_title">YTM History</string>
     <string name="sync_youtube_like_failed">Απέτυχε να αρέσει το τραγούδι στο YouTube</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Τα τραγούδια αρέσουν στο YouTube</string>
+    <string name="sync_youtube_like_success">Προστέθηκε στο YouTube αρέσει</string>
     <string name="sync_youtube_playlist_add_failed">Αποτυχία προσθήκης του τραγουδιού στη λίστα αναπαραγωγής του YouTube</string>
     <string name="sync_youtube_playlist_add_success">Προστέθηκε το τραγούδι στη λίστα αναπαραγωγής YouTube</string>
     <string name="sync_youtube_playlist_batch_failed">Παρουσιάστηκε σφάλμα για τα επόμενα 50 τραγούδια. Προσθέτοντας τραγούδια στη λίστα αναπαραγωγής ένα προς ένα</string>
+    <string name="sync_youtube_playlist_no_songs_added">Δεν προστέθηκαν τραγούδια στη λίστα αναπαραγωγής του YouTube</string>
     <string name="sync_youtube_playlist_songs_added_suffix">Τα τραγούδια προστίθενται στη λίστα αναπαραγωγής του YouTube. Επαναλάβετε τη διαδικασία αν υπάρχουν κάποια λείπουν τραγούδια</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">τραγούδια θα προστεθούν στη λίστα αναπαραγωγής YTM</string>
     <string name="sync_youtube_playlists_title">Λίστες Αναπαραγωγής YTM</string>

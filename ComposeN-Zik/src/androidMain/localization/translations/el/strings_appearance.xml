@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">Σελίδες</string>
     <string name="glass_effect_destination_playback">Αναπαραγωγή</string>
     <string name="glass_effect_destination_shared">Κοινά στοιχεία</string>
+    <string name="glass_effect_loading_indicators">Δείκτες φόρτωσης</string>
+    <string name="glass_effect_loading_indicators_description">Φόρτωση κινούμενων σχεδίων σε σελίδες και σε κάρτες και διαλόγους.</string>
+    <string name="glass_effect_pull_to_refresh">Τραβήξτε για ανανέωση</string>
+    <string name="glass_effect_pull_to_refresh_description">Στυλ το δείκτη που εμφανίζεται όταν τραβήξετε προς τα κάτω για να ανανεώσετε.</string>
     <string name="glass_effect_destination_windows">Παράθυρα και μηνύματα</string>
     <string name="glass_effect_dialog_dimming">Διάλογος φόντου dimming</string>
     <string name="glass_effect_dispersion">Χρωματικός διαχωρισμός</string>
@@ -121,6 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">Οι κάρτες που ομαδοποιούν τις ρυθμίσεις και εμφανίζουν τα προφίλ σας.</string>
     <string name="glass_effect_role_visualizer">Visualizer · χειριστήρια</string>
     <string name="glass_effect_role_visualizer_description">Τα βέλη και οι ρυθμίσεις κουμπί που χρησιμοποιείται με το οπτικοποίηση.</string>
+    <string name="glass_effect_shared_components_summary">Επιλέξτε πώς φαίνεται το Γυαλί στα εξαρτήματα που χρησιμοποιούνται σε όλη την εφαρμογή, συμπεριλαμβανομένων των δεικτών φόρτωσης και τραβήξτε για ανανέωση.</string>
     <string name="glass_effect_summary">Προσαρμόστε τις επιφάνειες επίδρασης γυαλιού, χρώματα, περιγράμματα και ποιότητα.</string>
     <string name="glass_effect_switches_description">Χρησιμοποιήστε υγρούς διακόπτες γυαλιού με το κοινόχρηστο υλικό και τα εφέ αλληλεπίδρασης όταν είναι ενεργοποιημένο το γυαλί.</string>
     <string name="glass_effect_switches_title">Γυάλινοι διακόπτες</string>
@@ -225,6 +230,10 @@
     <string name="theme_shake_sensitivity_medium">Μεσαία (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Πολύ Υψηλή (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">Λήψη</string>
+    <string name="cover_download_failed">Δεν ήταν δυνατή η λήψη του εξώφυλλου</string>
+    <string name="image_editor_title">Επεξεργασία εικόνας</string>
+    <string name="image_editor_failed">Δεν ήταν δυνατή η επεξεργασία της εικόνας. Η τρέχουσα εικόνα σας διατηρήθηκε.</string>
     <string name="thumbnail_action_edit">Edit Thumbnail</string>
     <string name="thumbnail_action_pick_from_gallery">Επιλέξτε από τη γκαλερί</string>
     <string name="thumbnail_action_reset">Reset Thumbnail</string>
@@ -234,4 +243,6 @@
     <string name="thumbnail_remove_failed">Αποτυχία κατάργησης της μικρογραφίας</string>
     <string name="thumbnail_remove_success">Μικρογραφία Που Αφαιρέθηκε</string>
     <string name="glass_effect_rendering_quality">Ποιότητα απόδοσης</string>
+    <string name="image_editor_original">Αρχικός λόγος</string>
+    <string name="image_editor_apply">Χρήση εικόνας</string>
 </resources>

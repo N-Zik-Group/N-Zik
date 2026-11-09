@@ -246,10 +246,11 @@
     <string name="sync_youtube_history_title">YTM Verlauf</string>
     <string name="sync_youtube_like_failed">Der Titel konnte auf YouTube nicht mit \"Gefällt mir\" markiert werden</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Titel die auf YouTube mit \"Gefällt mir\" markiert sind</string>
+    <string name="sync_youtube_like_success">Zu YouTube Likes hinzugefügt</string>
     <string name="sync_youtube_playlist_add_failed">Hinzufügen des Titels in die YouTube Wiedergabeliste fehlgeschlagen</string>
     <string name="sync_youtube_playlist_add_success">Der Titel wurde der YouTube Wiedergabeliste hinzugefügt</string>
     <string name="sync_youtube_playlist_batch_failed">Bei den nächsten 50 Titeln ist ein Fehler aufgetreten. Der Wiedergabeliste einen Titel nach dem anderen hinzufügen</string>
+    <string name="sync_youtube_playlist_no_songs_added">Es wurden keine Titel zur YouTube-Wiedergabeliste hinzugefügt</string>
     <string name="sync_youtube_playlist_songs_added_suffix">Titel werden der YouTube Wiedergabeliste hinzugefügt. Wiederhole den Vorgang falls noch Titel fehlen</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">Titel werden der YTM Wiedergabeliste hinzugefügt</string>
     <string name="sync_youtube_playlists_title">YTM-Wiedergabelisten</string>

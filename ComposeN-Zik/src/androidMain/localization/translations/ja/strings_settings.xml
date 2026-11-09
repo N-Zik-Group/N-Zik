@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">このオプションを有効にするにはまずYouTubeに接続してください</string>
     <string name="settings_youtube_library_sync_content_description">プレイリスト、アルバム、アーティスト、歴史、などなど</string>
     <string name="settings_youtube_login_enabled_label">YouTube音楽ログインを有効にする</string>
+    <string name="settings_dialog_sort_title_format">%1$s: 並べ替え</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: ツールバー</string>
 </resources>

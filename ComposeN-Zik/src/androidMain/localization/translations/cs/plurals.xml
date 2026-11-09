@@ -61,4 +61,310 @@
         <item quantity="many">%1$d vyslyšených skladeb</item>
         <item quantity="other">%1$d vyslyšených skladeb</item>
     </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Delete %1$d search query</item>
+        <item quantity="few">Delete %1$d search queries</item>
+        <item quantity="many">Delete %1$d search queries</item>
+        <item quantity="other">Delete %1$d search queries</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Smazat %1$d událost přehrávání</item>
+        <item quantity="few">Smazat události přehrávání %1$d</item>
+        <item quantity="many">Smazat události přehrávání %1$d</item>
+        <item quantity="other">Smazat události přehrávání %1$d</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d epizoda · %2$s</item>
+        <item quantity="few">%1$d epizod · %2$s</item>
+        <item quantity="many">%1$d epizod · %2$s</item>
+        <item quantity="other">%1$d epizod · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">Přidávám %1$d skladbu do YouTube playlistu</item>
+        <item quantity="few">Přidávání %1$d skladeb do YouTube playlistu</item>
+        <item quantity="many">Přidávání %1$d skladeb do YouTube playlistu</item>
+        <item quantity="other">Přidávání %1$d skladeb do YouTube playlistu</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">Přidána %1$d skladba do YouTube playlistu</item>
+        <item quantity="few">Přidáno %1$d skladeb do YouTube playlistu</item>
+        <item quantity="many">Přidáno %1$d skladeb do YouTube playlistu</item>
+        <item quantity="other">Přidáno %1$d skladeb do YouTube playlistu</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Stav profilu importován: %1$d profil</item>
+        <item quantity="few">Stav profilu importován: %1$d profily</item>
+        <item quantity="many">Stav profilu importován: %1$d profily</item>
+        <item quantity="other">Stav profilu importován: %1$d profily</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Nepodařilo se synchronizovat %1$d alba. Vraťte se zpět na kartu Album a zkuste to znovu.</item>
+        <item quantity="few">Synchronizace %1$d alb se nezdařila. Vraťte se zpět na kartu Album a zkuste to znovu.</item>
+        <item quantity="many">Synchronizace %1$d alb se nezdařila. Vraťte se zpět na kartu Album a zkuste to znovu.</item>
+        <item quantity="other">Synchronizace %1$d alb se nezdařila. Vraťte se zpět na kartu Album a zkuste to znovu.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Export %1$d cached/downloaded song?</item>
+        <item quantity="few">Export %1$d cached/downloaded songs?</item>
+        <item quantity="many">Export %1$d cached/downloaded songs?</item>
+        <item quantity="other">Export %1$d cached/downloaded songs?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">%1$d stažená skladba chybí její soubor a byla odstraněna. Stáhněte si jej znovu.</item>
+        <item quantity="few">%1$d stažené skladby chybí jejich soubory a byly odstraněny. Stáhněte je prosím znovu.</item>
+        <item quantity="many">%1$d stažené skladby chybí jejich soubory a byly odstraněny. Stáhněte je prosím znovu.</item>
+        <item quantity="other">%1$d stažené skladby chybí jejich soubory a byly odstraněny. Stáhněte je prosím znovu.</item>
+    </plurals>
+    <plurals name="recommendations_quick_picks_song_count">
+        <item quantity="one">%1$d doporučená skladba</item>
+        <item quantity="few">%1$d doporučené skladby</item>
+        <item quantity="many">%1$d doporučené skladby</item>
+        <item quantity="other">%1$d doporučené skladby</item>
+    </plurals>
+    <plurals name="listen_together_blocked_user_count">
+        <item quantity="one">%1$d uživatel zablokován</item>
+        <item quantity="few">%1$d uživatelů zablokováno</item>
+        <item quantity="many">%1$d uživatelů zablokováno</item>
+        <item quantity="other">%1$d uživatelů zablokováno</item>
+    </plurals>
+    <plurals name="sync_failed_notification_artist_count">
+        <item quantity="one">Synchronizace %1$d umělce se nezdařila. Zkuste to znovu.</item>
+        <item quantity="few">Synchronizace %1$d umělců se nezdařila. Zkuste to znovu.</item>
+        <item quantity="many">Synchronizace %1$d umělců se nezdařila. Zkuste to znovu.</item>
+        <item quantity="other">Synchronizace %1$d umělců se nezdařila. Zkuste to znovu.</item>
+    </plurals>
+    <plurals name="sync_failed_notification_playlist_count">
+        <item quantity="one">Synchronizace %1$d seznamu skladeb se nezdařila. Zkuste to znovu.</item>
+        <item quantity="few">Synchronizace %1$d seznamů skladeb se nezdařila. Zkuste to znovu.</item>
+        <item quantity="many">Synchronizace %1$d seznamů skladeb se nezdařila. Zkuste to znovu.</item>
+        <item quantity="other">Synchronizace %1$d seznamů skladeb se nezdařila. Zkuste to znovu.</item>
+    </plurals>
+    <plurals name="sync_retry_failed_item_confirmation">
+        <item quantity="one">Chcete znovu zkusit synchronizaci %1$d selhalo?</item>
+        <item quantity="few">Chcete znovu zkusit synchronizaci %1$d neúspěšných položek?</item>
+        <item quantity="many">Chcete znovu zkusit synchronizaci %1$d neúspěšných položek?</item>
+        <item quantity="other">Chcete znovu zkusit synchronizaci %1$d neúspěšných položek?</item>
+    </plurals>
+    <plurals name="sync_progress_artist_count">
+        <item quantity="one">Synchronizace umělce... (%1$d/%2$d)</item>
+        <item quantity="few">Synchronizace umělců... (%1$d/%2$d)</item>
+        <item quantity="many">Synchronizace umělců... (%1$d/%2$d)</item>
+        <item quantity="other">Synchronizace umělců... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_artist_refresh_count">
+        <item quantity="one">Obnovuji %1$d umělce</item>
+        <item quantity="few">Obnovuji %1$d umělců</item>
+        <item quantity="many">Obnovuji %1$d umělců</item>
+        <item quantity="other">Obnovuji %1$d umělců</item>
+    </plurals>
+    <plurals name="library_sync_artist_retry_count">
+        <item quantity="one">Nepodařilo se najít %1$d umělce, zkuste to znovu</item>
+        <item quantity="few">Nepodařilo se najít %1$d umělce, pokusím se znovu</item>
+        <item quantity="many">Nepodařilo se najít %1$d umělce, pokusím se znovu</item>
+        <item quantity="other">Nepodařilo se najít %1$d umělce, pokusím se znovu</item>
+    </plurals>
+    <plurals name="sync_progress_album_count">
+        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
+        <item quantity="few">Synchronizace alba... (%1$d/%2$d)</item>
+        <item quantity="many">Synchronizace alba... (%1$d/%2$d)</item>
+        <item quantity="other">Synchronizace alba... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_album_refresh_count">
+        <item quantity="one">Obnovuji %1$d alba</item>
+        <item quantity="few">Obnovuji %1$d alba</item>
+        <item quantity="many">Obnovuji %1$d alba</item>
+        <item quantity="other">Obnovuji %1$d alba</item>
+    </plurals>
+    <plurals name="library_sync_album_retry_count">
+        <item quantity="one">Nepodařilo se najít %1$d album, opakuji</item>
+        <item quantity="few">Nepodařilo se najít %1$d alba a pokusit se znovu</item>
+        <item quantity="many">Nepodařilo se najít %1$d alba a pokusit se znovu</item>
+        <item quantity="other">Nepodařilo se najít %1$d alba a pokusit se znovu</item>
+    </plurals>
+    <plurals name="sync_progress_playlist_count">
+        <item quantity="one">Synchronizace playlistu... (%1$d/%2$d)</item>
+        <item quantity="few">Synchronizace playlistů... (%1$d/%2$d)</item>
+        <item quantity="many">Synchronizace playlistů... (%1$d/%2$d)</item>
+        <item quantity="other">Synchronizace playlistů... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_playlist_refresh_count">
+        <item quantity="one">Refreshing %1$d playlist</item>
+        <item quantity="few">Obnovuji %1$d playlistů</item>
+        <item quantity="many">Obnovuji %1$d playlistů</item>
+        <item quantity="other">Obnovuji %1$d playlistů</item>
+    </plurals>
+    <plurals name="library_sync_playlist_retry_count">
+        <item quantity="one">Failed to find %1$d playlist, retrying</item>
+        <item quantity="few">Failed to find %1$d playlists, retrying</item>
+        <item quantity="many">Failed to find %1$d playlists, retrying</item>
+        <item quantity="other">Failed to find %1$d playlists, retrying</item>
+    </plurals>
+    <plurals name="maintenance_pass_cleaned_count">
+        <item quantity="one">%1$d vyčištěn předmět</item>
+        <item quantity="few">%1$d položek očištěno</item>
+        <item quantity="many">%1$d položek očištěno</item>
+        <item quantity="other">%1$d položek očištěno</item>
+    </plurals>
+    <plurals name="maintenance_pass_deferred_count">
+        <item quantity="one">%1$d položka odložena</item>
+        <item quantity="few">%1$d položek odloženo</item>
+        <item quantity="many">%1$d položek odloženo</item>
+        <item quantity="other">%1$d položek odloženo</item>
+    </plurals>
+    <plurals name="maintenance_pass_skipped_count">
+        <item quantity="one">%1$d položka přeskočena</item>
+        <item quantity="few">%1$d položek přeskočeno</item>
+        <item quantity="many">%1$d položek přeskočeno</item>
+        <item quantity="other">%1$d položek přeskočeno</item>
+    </plurals>
+    <plurals name="maintenance_dedup_flagged_count">
+        <item quantity="one">Označený %1$d řádek</item>
+        <item quantity="few">Označeno %1$d řádky</item>
+        <item quantity="many">Označeno %1$d řádky</item>
+        <item quantity="other">Označeno %1$d řádky</item>
+    </plurals>
+    <plurals name="maintenance_dedup_merged_count">
+        <item quantity="one">Merged %1$d row</item>
+        <item quantity="few">Sloučený %1$d řádků</item>
+        <item quantity="many">Sloučený %1$d řádků</item>
+        <item quantity="other">Sloučený %1$d řádků</item>
+    </plurals>
+    <plurals name="recovery_profile_deleted_count">
+        <item quantity="one">Odstraněno %1$d profil</item>
+        <item quantity="few">Smazané %1$d profily</item>
+        <item quantity="many">Smazané %1$d profily</item>
+        <item quantity="other">Smazané %1$d profily</item>
+    </plurals>
+    <plurals name="recovery_profile_reset_count">
+        <item quantity="one">Obnovit %1$d profil. Znovu spustit aplikaci</item>
+        <item quantity="few">Obnovit %1$d profily. Znovu spustit aplikaci</item>
+        <item quantity="many">Obnovit %1$d profily. Znovu spustit aplikaci</item>
+        <item quantity="other">Obnovit %1$d profily. Znovu spustit aplikaci</item>
+    </plurals>
+    <plurals name="recovery_profile_restored_count">
+        <item quantity="one">Obnoven %1$d profil: restartujte aplikaci</item>
+        <item quantity="few">Obnoveno %1$d profilů: restartujte aplikaci</item>
+        <item quantity="many">Obnoveno %1$d profilů: restartujte aplikaci</item>
+        <item quantity="other">Obnoveno %1$d profilů: restartujte aplikaci</item>
+    </plurals>
+    <plurals name="album_loading_song_count">
+        <item quantity="one">Loading %1$d song…</item>
+        <item quantity="few">Načítání %1$d skladeb…</item>
+        <item quantity="many">Načítání %1$d skladeb…</item>
+        <item quantity="other">Načítání %1$d skladeb…</item>
+    </plurals>
+    <plurals name="artist_deduplication_result_count">
+        <item quantity="one">Sloučený %1$d duplikát umělce s pravým umělcem</item>
+        <item quantity="few">Sloučený %1$d duplicitní umělci s pravým umělcem</item>
+        <item quantity="many">Sloučený %1$d duplicitní umělci s pravým umělcem</item>
+        <item quantity="other">Sloučený %1$d duplicitní umělci s pravým umělcem</item>
+    </plurals>
+    <plurals name="artist_link_cleanup_result_count">
+        <item quantity="one">Removed %1$d incorrect artist link</item>
+        <item quantity="few">Removed %1$d incorrect artist links</item>
+        <item quantity="many">Removed %1$d incorrect artist links</item>
+        <item quantity="other">Removed %1$d incorrect artist links</item>
+    </plurals>
+    <plurals name="library_song_count_with_duration">
+        <item quantity="one">%1$d píseň • %2$s</item>
+        <item quantity="few">%1$d skladeb • %2$s</item>
+        <item quantity="many">%1$d skladeb • %2$s</item>
+        <item quantity="other">%1$d skladeb • %2$s</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count">
+        <item quantity="one">(%1$d hlasování)</item>
+        <item quantity="few">(%1$d hlasů)</item>
+        <item quantity="many">(%1$d hlasů)</item>
+        <item quantity="other">(%1$d hlasů)</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count_attribution">
+        <item quantity="one">%1$d hlasování o MusicBrainz</item>
+        <item quantity="few">%1$d hlasů o MusicBrainz</item>
+        <item quantity="many">%1$d hlasů o MusicBrainz</item>
+        <item quantity="other">%1$d hlasů o MusicBrainz</item>
+    </plurals>
+    <plurals name="playlist_delete_all_confirmation_count">
+        <item quantity="one">Jste si jisti, že chcete odstranit jediný playlist (%1$d?</item>
+        <item quantity="few">Opravdu chcete odstranit VŠECHNY %1$d seznamů skladeb?</item>
+        <item quantity="many">Opravdu chcete odstranit VŠECHNY %1$d seznamů skladeb?</item>
+        <item quantity="other">Opravdu chcete odstranit VŠECHNY %1$d seznamů skladeb?</item>
+    </plurals>
+    <plurals name="playlist_delete_selected_confirmation_count">
+        <item quantity="one">Jste si jisti, že chcete odstranit tento playlist (%1$d?</item>
+        <item quantity="few">Opravdu chcete odstranit tyto %1$d playlistů?</item>
+        <item quantity="many">Opravdu chcete odstranit tyto %1$d playlistů?</item>
+        <item quantity="other">Opravdu chcete odstranit tyto %1$d playlistů?</item>
+    </plurals>
+    <plurals name="playlist_positions_shuffled_count">
+        <item quantity="one">%1$d pozice zamíchána</item>
+        <item quantity="few">%1$d pozic zamícháno</item>
+        <item quantity="many">%1$d pozic zamícháno</item>
+        <item quantity="other">%1$d pozic zamícháno</item>
+    </plurals>
+    <plurals name="song_metadata_updated_song_count">
+        <item quantity="one">Aktualizována %1$d skladba</item>
+        <item quantity="few">Aktualizováno %1$d skladeb</item>
+        <item quantity="many">Aktualizováno %1$d skladeb</item>
+        <item quantity="other">Aktualizováno %1$d skladeb</item>
+    </plurals>
+    <plurals name="rewind_home_year_play_count">
+        <item quantity="one">%1$s · %2$s hra</item>
+        <item quantity="few">%1$s · %2$s hraje</item>
+        <item quantity="many">%1$s · %2$s hraje</item>
+        <item quantity="other">%1$s · %2$s hraje</item>
+    </plurals>
+    <plurals name="rewind_listening_day_count_without">
+        <item quantity="one">%1$s den bez naslouchání.</item>
+        <item quantity="few">%1$s dní bez poslouchání.</item>
+        <item quantity="many">%1$s dní bez poslouchání.</item>
+        <item quantity="other">%1$s dní bez poslouchání.</item>
+    </plurals>
+    <plurals name="rewind_loader_status_day_count">
+        <item quantity="one">DEN %1$s ODESLÁVÁNÍ</item>
+        <item quantity="few">ZÍSKÁVACÍ DENY %1$s</item>
+        <item quantity="many">ZÍSKÁVACÍ DENY %1$s</item>
+        <item quantity="other">ZÍSKÁVACÍ DENY %1$s</item>
+    </plurals>
+    <plurals name="rewind_loader_status_minute_count">
+        <item quantity="one">%1$s MINUTE</item>
+        <item quantity="few">%1$s MINUTY</item>
+        <item quantity="many">%1$s MINUTY</item>
+        <item quantity="other">%1$s MINUTY</item>
+    </plurals>
+    <plurals name="rewind_loader_status_play_count">
+        <item quantity="one">%1$s HRÁT</item>
+        <item quantity="few">J%1$s HRÁT</item>
+        <item quantity="many">J%1$s HRÁT</item>
+        <item quantity="other">J%1$s HRÁT</item>
+    </plurals>
+    <plurals name="rewind_loader_status_song_count">
+        <item quantity="one">%1$s JEDNOTNÝ SONG</item>
+        <item quantity="few">%1$s JEDNOTNÉ SONGS</item>
+        <item quantity="many">%1$s JEDNOTNÉ SONGS</item>
+        <item quantity="other">%1$s JEDNOTNÉ SONGS</item>
+    </plurals>
+    <plurals name="rewind_meta_song_count">
+        <item quantity="one">%1$s skladba</item>
+        <item quantity="few">%1$s skladeb</item>
+        <item quantity="many">%1$s skladeb</item>
+        <item quantity="other">%1$s skladeb</item>
+    </plurals>
+    <plurals name="rewind_play_count_label">
+        <item quantity="one">%1$s hra</item>
+        <item quantity="few">%1$s hraje</item>
+        <item quantity="many">%1$s hraje</item>
+        <item quantity="other">%1$s hraje</item>
+    </plurals>
+    <plurals name="rewind_top_song_teaser_count">
+        <item quantity="one">%1$d SONG.\nONE WINNER.</item>
+        <item quantity="few">%1$d SONGS.\nONE WINNER.</item>
+        <item quantity="many">%1$d SONGS.\nONE WINNER.</item>
+        <item quantity="other">%1$d SONGS.\nONE WINNER.</item>
+    </plurals>
+    <plurals name="maintenance_abnormal_job_count">
+        <item quantity="one">%1$d úloha nebyla dokončena</item>
+        <item quantity="few">%1$d úlohy nebyly dokončeny</item>
+        <item quantity="many">%1$d úlohy nebyly dokončeny</item>
+        <item quantity="other">%1$d úlohy nebyly dokončeny</item>
+    </plurals>
 </resources>

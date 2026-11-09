@@ -15,6 +15,7 @@
     <string name="common_delete_success">Silindi</string>
     <string name="common_description_unavailable">Açıklama mevcut değil</string>
     <string name="common_duration_milliseconds_format">%1$s ms</string>
+    <string name="common_duration_milliseconds_unit">ms</string>
     <string name="common_empty_items">Öğe yok</string>
     <string name="common_external_link_loading_suffix">yükleniyor...</string>
     <string name="common_load_failed">Yüklenemiyor</string>
@@ -39,8 +40,11 @@
     <string name="common_validation_empty_value">Değer boş olamaz</string>
     <string name="common_validation_invalid_input">Geçersiz giriş!</string>
     <string name="common_validation_minimum_value">"Değer şundan büyük olmalıdır "</string>
+    <string name="common_validation_minimum_value_format">Değer en az %1$d olmalıdır</string>
     <string name="common_validation_name_in_use">Ad zaten kullanılıyor</string>
     <string name="common_value_input_hint">Değeri girin</string>
     <string name="common_unknown">Bilinmeyen</string>
     <string name="common_duration_minutes_short">%1$d dakika</string>
+    <string name="common_external_link_loading_format">%1$s yükleniyor…</string>
+    <string name="common_loading_message">Yükleniyor…</string>
 </resources>

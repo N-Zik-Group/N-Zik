@@ -82,6 +82,7 @@
     <string name="lyrics_editor_title">Ange låttexten</string>
     <string name="lyrics_empty">Ingen låttext</string>
     <string name="lyrics_fetch_error_message">Ett fel uppstod när låttexten hämtades</string>
+    <string name="lyrics_provider_fetch_error_message">Kunde inte hämta låttexter från %1$s</string>
     <string name="lyrics_font_size_animation_label">Animera låttexter storlek</string>
     <string name="lyrics_font_size_extra_large_label">Extra stor</string>
     <string name="lyrics_font_size_large_label">Stor</string>
@@ -296,10 +297,14 @@
     <string name="player_statistics_codec_label">Kodek</string>
     <string name="player_statistics_container_label">Behållare</string>
     <string name="player_statistics_itag_label">Itag</string>
+    <string name="player_playback_speed_value">%1$.1fx</string>
+    <string name="player_decibels_value">%1$.2f dB</string>
     <string name="player_statistics_loudness_label">Ljudstyrka</string>
     <string name="player_statistics_media_id_label">Id</string>
     <string name="player_statistics_perceptual_loudness_label">Perceptual Loudness</string>
     <string name="player_statistics_sample_rate_label">Prov hastighet</string>
+    <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
+    <string name="player_statistics_cache_status">%1$s: %2$s</string>
     <string name="player_statistics_volume_label">Volym</string>
     <string name="player_swap_controls_with_timeline">Byt kontrollerna med tidslinjen</string>
     <string name="player_swipe_sensitivity">Svep känslighet för spelare</string>

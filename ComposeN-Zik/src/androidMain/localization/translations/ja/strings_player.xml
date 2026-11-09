@@ -82,6 +82,7 @@
     <string name="lyrics_editor_title">歌詞を入力</string>
     <string name="lyrics_empty">歌詞がありません</string>
     <string name="lyrics_fetch_error_message">歌詞の取得中にエラーが発生しました</string>
+    <string name="lyrics_provider_fetch_error_message">%1$sから歌詞を取得できませんでした</string>
     <string name="lyrics_font_size_animation_label">歌詞のサイズをアニメーションする</string>
     <string name="lyrics_font_size_extra_large_label">特大</string>
     <string name="lyrics_font_size_large_label">大</string>
@@ -296,10 +297,14 @@
     <string name="player_statistics_codec_label">コーデック：</string>
     <string name="player_statistics_container_label">コンテナ</string>
     <string name="player_statistics_itag_label">iタグ</string>
+    <string name="player_playback_speed_value">%1$.1fx</string>
+    <string name="player_decibels_value">%1$.2f dB</string>
     <string name="player_statistics_loudness_label">音の大きさ</string>
     <string name="player_statistics_media_id_label">ID</string>
     <string name="player_statistics_perceptual_loudness_label">知覚ラウドネス</string>
     <string name="player_statistics_sample_rate_label">サンプルレート</string>
+    <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
+    <string name="player_statistics_cache_status">%1$s: %2$s</string>
     <string name="player_statistics_volume_label">音量</string>
     <string name="player_swap_controls_with_timeline">タイムラインにコントロールを入れ替えます</string>
     <string name="player_swipe_sensitivity">プレイヤーのスワイプ感度</string>

@@ -42,6 +42,7 @@
     <string name="home_greeting_evening">Guten Abend</string>
     <string name="home_greeting_morning">Guten Morgen</string>
     <string name="home_greeting_night">Gute Nacht</string>
+    <string name="home_greeting_with_profile_format">%1$s, %2$s</string>
     <string name="home_playlists_settings">Playlisten</string>
     <string name="home_songs_settings">Songs</string>
     <string name="home_sort_last_played_song_label">Nach zuletzt gespieltem Lied</string>
@@ -248,6 +249,7 @@
     <string name="playlist_refresh_on_open_enable">Aktualisieren beim Öffnen aktivieren</string>
     <string name="playlist_remove_selected_confirmation">Ausgewählte Lieder von dieser Wiedergabeliste entfernen?</string>
     <string name="playlist_remove_songs_confirmation">Auswahl aus der Wiedergabeliste entfernen? Ausgewählte Stücke: %d</string>
+    <string name="playlist_remove_songs_success_format">%1$s %2$d</string>
     <string name="playlist_rename_dialog_title">Wiedergabeliste umbenennen</string>
     <string name="playlist_reorder_ascending_sort_required_message">Neuordnung ist nur in aufsteigender Sortierung möglich</string>
     <string name="playlist_reorder_lock_toggle_label">Umsortieren der Titel sperren/entsperren</string>
@@ -377,6 +379,27 @@
     <string name="song_metadata_update_action_open">Update-Dialog öffnen</string>
     <string name="song_metadata_updated_count">Aktualisierte %1$d Lieder</string>
     <string name="song_play_time_action_reset">Gesamtspielzeit zurücksetzen</string>
+    <string name="song_like_status_action_reset">Status zurücksetzen/Ungemocht</string>
+    <string name="song_update_action_clear_playback_cache">Wiedergabe-Cache leeren</string>
+    <string name="song_update_action_remove_offline_download">Offline-Download entfernen</string>
+    <string name="song_update_result_partial">Teilweise aktualisiert. %1$s</string>
+    <string name="song_update_result_failed">Nicht aktualisiert. %1$s</string>
+    <string name="song_update_error_metadata_unavailable">YouTube-Informationen nicht verfügbar.</string>
+    <string name="song_update_error_network">YouTube konnte nicht erreicht werden. Überprüfen Sie Ihre Verbindung.</string>
+    <string name="song_update_error_missing_title">YouTube hat keinen Titel zurückgegeben.</string>
+    <string name="song_update_error_missing_artists">YouTube hat keine Künstler zurückgegeben.</string>
+    <string name="song_update_error_incomplete_artists">Künstlerinformationen von YouTube sind unvollständig.</string>
+    <string name="song_update_error_missing_cover">YouTube hat kein Cover zurückgegeben.</string>
+    <string name="song_update_error_wrong_song">YouTube hat ein anderes Lied zurückgegeben, dessen Informationen ignoriert wurden.</string>
+    <string name="song_update_error_cache_unavailable">Wiedergabe-Cache nicht verfügbar. Öffne den Spieler erneut und versuche es erneut.</string>
+    <string name="song_update_error_profile_changed">Update gestoppt, weil sich das aktive Profil geändert hat.</string>
+    <string name="song_update_error_storage">Änderungen auf diesem Gerät konnten nicht gespeichert werden.</string>
+    <string name="song_update_error_cache_clear">Konnte das Leeren des Wiedergabe-Caches nicht beenden.</string>
+    <string name="song_update_error_download_remove">Der offline Download konnte nicht entfernt werden.</string>
+    <string name="song_update_error_cover_reset">Das Zurücksetzen des Covers konnte nicht abgeschlossen werden.</string>
+    <string name="song_update_error_playback_refresh">Änderungen gespeichert, aber der Spieler konnte nicht aktualisieren.</string>
+    <string name="song_update_batch_result">Aktualisiert: %1$d · Teilweise aktualisiert: %2$d · Nicht aktualisiert: %3$d</string>
+    <string name="song_update_batch_reason_count">%1$s (%2$d)</string>
     <!-- Song Matching -->
     <string name="song_matching_action_open">Album/Audio-Version anpassen</string>
     <string name="song_matching_all_confirmation">Möchten Sie %d unvergleichliche Lieder treffen?</string>
@@ -386,6 +409,7 @@
     <string name="song_matching_unmatched_label">Unübertroffener Titel</string>
     <string name="metadata_musicbrainz_rating">Bewertung</string>
     <string name="metadata_cover_art">Cover</string>
+    <string name="metadata_cover_url_hint">Bildlink einfügen</string>
     <string name="metadata_file_path_unavailable">Dateipfad kann nicht aufgelöst werden</string>
     <string name="metadata_save_failed">Fehler beim Speichern der Metadaten</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
@@ -393,4 +417,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Gefällt Ihnen alle Lieder werden etwa %1$sdauern. Schließen Sie die App um abzubrechen. Möchten Sie fortfahren?</string>
     <string name="library_on_device_permission_request_failed">Zugriff auf Musik auf diesem Gerät konnte nicht angefordert werden.</string>
     <string name="library_on_device_permission_settings_failed">Konnte die Berechtigungseinstellungen nicht öffnen.</string>
+    <string name="artist_more_from_format">Mehr von %1$s</string>
+    <string name="playlist_top_show_title_format">Zeige %1$s</string>
 </resources>

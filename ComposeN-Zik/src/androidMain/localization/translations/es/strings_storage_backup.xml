@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Almacenamiento</string>
+    <string name="storage_breakdown_info_title">Acerca del almacenamiento</string>
+    <string name="storage_breakdown_nzik_total">Total usado por N-Zik</string>
+    <string name="storage_breakdown_subtitle">Desglose de almacenamiento</string>
+    <string name="storage_breakdown_waiting">Mediendo el almacenamiento…</string>
+    <string name="storage_breakdown_cached_images">Imágenes en caché</string>
+    <string name="storage_breakdown_streamed_audio">Audio transmitido</string>
+    <string name="storage_breakdown_downloaded_audio">Audio descargado</string>
+    <string name="storage_breakdown_custom_covers">Portadas personalizadas</string>
+    <string name="storage_breakdown_waveforms">Formas de onda</string>
+    <string name="storage_breakdown_other_nzik_data">Otros datos de N-Zik</string>
+    <string name="storage_breakdown_other_used_space">Sistema, aplicaciones &amp; archivos</string>
+    <string name="storage_breakdown_free_space">Espacio libre</string>
+    <string name="storage_info_images">Artwork y otras imágenes almacenadas en caché para una visualización más rápida.</string>
+    <string name="storage_info_streaming">Audio guardado temporalmente después del streaming, por lo que se puede reproducir de nuevo sin obtener los mismos datos.</string>
+    <string name="storage_info_downloads">Audio guardado en N-Zik para escuchar sin conexión.</string>
+    <string name="storage_info_waveforms">Archivos generados para dibujar la forma de onda de audio en el reproductor.</string>
+    <string name="storage_info_covers">Artesanía que seleccionaste o importaste como portadas personalizadas.</string>
+    <string name="storage_info_other_nzik">El resto de los datos privados de N-Zik, incluyendo sus bases de datos, configuraciones, índices, extensiones y registros.</string>
+    <string name="storage_info_other_used">El espacio restante utilizado en el volumen interno, incluyendo Android, aplicaciones instaladas y archivos personales.</string>
+    <string name="storage_info_free">Espacio disponible para aplicaciones y archivos en el volumen interno.</string>
+    <string name="storage_cleanup_title">Limpieza</string>
+    <string name="storage_cleanup_failed">No se pudo finalizar la limpieza de almacenamiento.</string>
+    <string name="storage_cleanup_images_description">Limpiar caché de artwork por N-Zik.</string>
+    <string name="storage_cleanup_streaming_description">Limpiar caché de audio mientras se transmite.</string>
+    <string name="storage_cleanup_downloads_description">Elimina el audio sin conexión y cancela las descargas pendientes para el almacenamiento de descargas del perfil activo.</string>
+    <string name="storage_cleanup_waveforms_description">Limpiar archivos waveform generados.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Limpiar formas de onda</string>
+    <string name="storage_cleanup_diagnostic_logs">Borrar registros de diagnóstico</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Elimine los archivos de registro de depuración y bloqueo. Su configuración de registro sigue siendo la misma.</string>
+    <string name="storage_cleanup_temporary_files">Eliminar archivos temporales abandonados</string>
+    <string name="storage_cleanup_temporary_files_description">Eliminar borradores de editor de imágenes abandonados y rewind compartir captura más de 24 horas.</string>
+    <string name="storage_cleanup_all">Limpiar todo</string>
+    <string name="storage_cleanup_all_description">Elimina la imagen y el streaming de cachés y genera formas de onda para el perfil activo, incluyendo el almacenamiento que comparte con otros perfiles. Elimina el audio sin conexión y cancela las descargas pendientes para el almacenamiento de descargas del perfil activo. Eliminar registros de diagnóstico, borradores de editor de imágenes abandonados y capturas de compartir de Rewind caducadas. Su biblioteca, portadas personalizadas y ajustes están asegurados.</string>
     <!-- Backup -->
     <string name="backup_action_export">Exportar respaldo</string>
     <string name="backup_action_import">Importar respaldo</string>
@@ -15,11 +50,14 @@
     <string name="backup_auto_schedule_day_of_month_description">Elija el día del mes para las copias de seguridad automáticas mensuales.</string>
     <string name="backup_auto_schedule_day_of_week_description">Elija el día de la semana para las copias de seguridad automáticas semanales.</string>
     <string name="backup_auto_schedule_time_description">Elija la hora en la que deben ejecutarse las copias de seguridad automáticas programadas.</string>
+    <string name="backup_auto_content_format_description">Elija qué hacer una copia de seguridad automática. Las copias de seguridad de la base de datos utilizan ZIP cuando incluyen portadas personalizadas.</string>
     <string name="backup_before_update_description">Copia de seguridad de datos automáticamente antes de instalar una actualización</string>
     <string name="backup_before_update_failed">Copia de seguridad preinstalada fallida</string>
     <string name="backup_before_update_running_message">Respaldando los datos antes de la instalación…</string>
     <string name="backup_before_update_running_title">Copia de seguridad en progreso</string>
     <string name="backup_excluded_preferences_and_cache_description">Se excluyen las preferencias personales (por ejemplo el modo de tema) y la caché.</string>
+    <string name="backup_export_library_options_description">Exportar la base de datos con sus portadas personalizadas, ajustes o perfiles</string>
+    <string name="backup_import_library_options_description">Restaurar una copia de seguridad de base de datos SQLite o ZIP, ajustes o perfiles</string>
     <string name="backup_include_discord_credentials">Incluye credenciales de identidad de Discord</string>
     <string name="backup_include_lastfm_credentials">Incluye credenciales de identidad de Last.fm</string>
     <string name="backup_include_proxy_password">Incluye la contraseña del proxy</string>
@@ -56,12 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Exportar la lista de perfiles y las fotos faciales en un solo archivo .txt</string>
     <string name="backup_export_all">Exportar todo</string>
+    <string name="backup_export_all_with_covers_description">Exportar la base de datos, configuración y estado del perfil por separado. La base de datos utiliza ZIP si incluye portadas personalizadas.</string>
+    <string name="backup_export_database_with_covers_and_settings_description">Exportar la base de datos y ajustes por separado. La base de datos utiliza ZIP si incluye portadas personalizadas.</string>
+    <string name="backup_export_database_with_covers_description">Guarde canciones, listas de reproducción e historial como SQLite. Si tiene portadas personalizadas, la exportación es un ZIP con la base de datos y portadas.</string>
     <string name="backup_export_profile_state_failed">Error al exportar el estado del perfil</string>
     <string name="backup_export_settings_description">Exportar ajustes y preferencias de la aplicación</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importar la lista de perfiles y las fotos faciales desde un archivo .txt</string>
     <string name="backup_import_all">Importar todo</string>
+    <string name="backup_import_all_with_covers_description">Restaurar una copia de seguridad de base de datos SQLite o ZIP, ajustes y estado del perfil desde archivos separados.</string>
+    <string name="backup_import_database_with_covers_and_settings_description">Restaurar una copia de seguridad de base de datos SQLite o ZIP y un archivo de configuración independiente.</string>
     <string name="backup_import_completed_profile">Importado a %1$s</string>
+    <string name="backup_import_database_with_covers_description">Restaurar canciones, listas de reproducción e historial de SQLite o ZIP. Las copias de seguridad ZIP también restauran las portadas personalizadas incluidas.</string>
     <string name="backup_import_profile_state_complete">Estado del perfil importado: perfiles %1$d</string>
     <string name="backup_import_profile_state_complete_base">Estado del perfil importado: perfil base</string>
     <string name="backup_import_profile_state_failed">Error al importar el estado del perfil</string>
@@ -72,11 +116,14 @@
     <string name="cache_action_reset">Restablecer caché</string>
     <string name="cache_clear_song_dialog_title">Borrar caché de canciones</string>
     <string name="cache_downloads_max_size_description">Elija cuánto espacio de disco está disponible para las canciones descargadas. El botón de la papelera elimina el audio descargado.</string>
+    <string name="cache_downloads_limit_description">Elija cuánto espacio de disco está disponible para las canciones descargadas. El botón de la papelera elimina el audio descargado.</string>
     <string name="cache_image_max_size_description">Limita el espacio de disco usado por el artwork en caché. El botón de basura borra las imágenes descargadas de esta caché.</string>
+    <string name="cache_image_limit_description">Limita el espacio de disco usado por el artwork en caché. El botón de basura borra las imágenes descargadas de esta caché.</string>
     <string name="cache_location_description">Elija dónde la aplicación almacena su caché de reproducción de canciones.</string>
     <string name="cache_location_private">Privado</string>
     <string name="cache_location_system">Sistema</string>
     <string name="cache_streaming_max_size_description">Limita el espacio de disco usado para cachear canciones streamed. El botón de basura borra esta caché de reproducción.</string>
+    <string name="cache_streaming_limit_description">Limita el espacio de disco usado para cachear canciones streamed. El botón de basura borra esta caché de reproducción.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Descargar todas las canciones</string>
     <string name="downloads_action_refresh_quality">Actualizar descargas</string>
@@ -136,7 +183,10 @@
     <string name="storage_samsung_advice_message">El manejo automático de memoria de Samsung puede eliminar descargas y cachés de N-Zik, incluso cuando no lo pidieron. Para mantener sus descargas a salvo, utilice la ubicación de almacenamiento privada (app) en lugar del almacenamiento del sistema.</string>
     <string name="storage_samsung_advice_title">Aviso de almacenamiento de Samsung</string>
     <string name="storage_samsung_system_usage_message">Actualmente tiene %1$s de descargas y caché en el almacenamiento del sistema.</string>
+    <string name="backup_export_database_failed">Exportación de base de datos fallida</string>
     <string name="backup_import_failed">Error al importar</string>
     <string name="export_no_songs">No hay canciones exportadas</string>
     <string name="export_cached_songs_generic_error">Exportación fallida</string>
+    <string name="backup_startup_preparing_library">Preparando tu biblioteca…</string>
+    <string name="backup_startup_recovery_failed">No se pudo terminar de restaurar tu biblioteca.</string>
 </resources>

@@ -246,10 +246,11 @@
     <string name="sync_youtube_history_title">YTM History</string>
     <string name="sync_youtube_like_failed">YouTubeでの曲のお気に入りに失敗しました</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">曲はYouTubeでいいね！</string>
+    <string name="sync_youtube_like_success">YouTubeの「いいね!」に追加しました</string>
     <string name="sync_youtube_playlist_add_failed">YouTubeプレイリストに曲を追加できませんでした</string>
     <string name="sync_youtube_playlist_add_success">YouTubeプレイリストに曲を追加しました</string>
     <string name="sync_youtube_playlist_batch_failed">次の50曲に対してエラーが発生しました。1曲ずつプレイリストに曲を追加しています</string>
+    <string name="sync_youtube_playlist_no_songs_added">YouTubeプレイリストに曲が追加されていません</string>
     <string name="sync_youtube_playlist_songs_added_suffix">曲はYouTubeプレイリストに追加されます。不明な曲がある場合はプロセスを繰り返します。</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">YTMプレイリストに曲が追加されます</string>
     <string name="sync_youtube_playlists_title">YTM プレイリスト</string>

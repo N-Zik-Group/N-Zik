@@ -246,10 +246,11 @@
     <string name="sync_youtube_history_title">Istoricul YTM</string>
     <string name="sync_youtube_like_failed">Nu s-a reușit aprecierea melodiei pe YouTube</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Piesa(ele) sunt Apreciate pe YouTube</string>
+    <string name="sync_youtube_like_success">Adăugat la like-urile YouTube</string>
     <string name="sync_youtube_playlist_add_failed">Adăugarea melodiei în Playlist YouTube a eșuat</string>
     <string name="sync_youtube_playlist_add_success">A adăugat melodia în Playlist YouTube</string>
     <string name="sync_youtube_playlist_batch_failed">A apărut o eroare pentru următoarele 50 de melodii. Adăugarea melodiilor la lista de redare una câte una</string>
+    <string name="sync_youtube_playlist_no_songs_added">Nu au fost adăugate melodii la lista de redare YouTube</string>
     <string name="sync_youtube_playlist_songs_added_suffix">melodiile sunt adăugate în lista de redare YouTube. Repetă procesul dacă există melodii lipsă</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">melodiile vor fi adăugate în lista de redare YTM</string>
     <string name="sync_youtube_playlists_title">Playlist-uri YTM</string>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
     <string name="logs_action_export">Exportovat protokoly</string>
     <string name="logs_action_export_both">Exportovat oba logy</string>
@@ -40,6 +41,7 @@
     <string name="maintenance_dedup_flagged">Označeno %d řádky</string>
     <string name="maintenance_dedup_merged">Sloučený %d řádků</string>
     <string name="maintenance_dedup_merged_flagged">Sloučený %1$d řádek · Označeno %2$d řádky</string>
+    <string name="maintenance_dedup_counts_format">%1$s · %2$s</string>
     <string name="maintenance_discord_invalid_token">Neplatný token</string>
     <string name="maintenance_discord_ok">OK</string>
     <string name="maintenance_discord_reconnect_failed">Obnovení připojení se nezdařilo</string>
@@ -135,6 +137,9 @@
     <string name="modules_download_needed">Modul vyžaduje stažení (~25 MB). Zkontrolujte připojení.</string>
     <string name="modules_downloading">Stahování modulu</string>
     <string name="modules_edit_unavailable">Upravit metadata nedostupná: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Příprava FFmpg</string>
+    <string name="modules_ffmpeg_downloading">Stahování FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Je třeba exportovat skladby v mezipaměti a upravit metadata skladby. Staženo při prvním použití.</string>
     <string name="modules_info">Info</string>
     <string name="modules_insufficient_space">Tato funkce potřebuje asi 70 MB volného místa</string>
@@ -197,6 +202,7 @@
     <string name="recovery_error">Došlo k chybě: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Exportovat databázi</string>
+    <string name="recovery_export_database_with_covers_description">Uložte svou knihovnu, seznamy skladeb a historii jako SQLite. Pokud máte vlastní obálky, export je ZIP s databází a obálkami.</string>
     <string name="recovery_export_logs">Exportovat protokoly</string>
     <string name="recovery_export_logs_description">Uložit záznamy o pádu a ladění pro hlášení chyb</string>
     <string name="recovery_export_profiles_description">Seznam profilů a fotky obličeje v jednom souboru .txt</string>
@@ -209,6 +215,7 @@
     <string name="recovery_group_settings">Nastavení</string>
     <string name="recovery_group_storage">Úložiště</string>
     <string name="recovery_import_database">Importovat databázi</string>
+    <string name="recovery_import_database_with_covers_description">Obnovit zálohu SQLite nebo ZIP databáze, včetně případných vlastních obálek v ZIP.</string>
     <string name="recovery_import_profiles_description">Obnovit seznam profilů a fotky obličeje ze souboru .txt</string>
     <string name="recovery_import_settings">Importovat nastavení</string>
     <string name="recovery_import_settings_description">Obnovit předvolby ze souboru CSV</string>
@@ -309,4 +316,5 @@
     <string name="updates_warning_acknowledge">Chápu</string>
     <string name="updates_check_failed">Nelze zkontrolovat aktualizace.</string>
     <string name="updates_install_generic_error">Aktualizace se nepodařilo nainstalovat.</string>
+    <string name="updates_channel_available_format">Aktualizace %1$s je k dispozici</string>
 </resources>

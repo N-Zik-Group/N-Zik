@@ -246,10 +246,11 @@
     <string name="sync_youtube_history_title">Cronologia YTM</string>
     <string name="sync_youtube_like_failed">Impossibile mettere mi piace alla canzone su YouTube</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Canzone apprezzata su YouTube</string>
+    <string name="sync_youtube_like_success">Aggiunto a YouTube mi piace</string>
     <string name="sync_youtube_playlist_add_failed">Impossibile aggiungere il brano alla playlist di YouTube</string>
     <string name="sync_youtube_playlist_add_success">Aggiunta il brano alla playlist di YouTube</string>
     <string name="sync_youtube_playlist_batch_failed">Si è verificato un errore per i prossimi 50 brani. Aggiunta di brani alla playlist uno alla volta</string>
+    <string name="sync_youtube_playlist_no_songs_added">Nessun brano aggiunto alla playlist di YouTube</string>
     <string name="sync_youtube_playlist_songs_added_suffix">le canzoni vengono aggiunte alla playlist di YouTube. Ripeti il ​​processo se ci sono delle canzoni mancanti</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">i brani verranno aggiunti alla playlist YTM</string>
     <string name="sync_youtube_playlists_title">Playlist di YTM</string>

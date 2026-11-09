@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
     <string name="logs_action_export">Eksporter logger</string>
     <string name="logs_action_export_both">Eksportere begge logger</string>
@@ -40,6 +41,7 @@
     <string name="maintenance_dedup_flagged">Flagged %d row(s)</string>
     <string name="maintenance_dedup_merged">Merged %d row(s)</string>
     <string name="maintenance_dedup_merged_flagged">Flettet %1$d rad(er) · Flagget %2$d rad(er)</string>
+    <string name="maintenance_dedup_counts_format">%1$s · %2$s</string>
     <string name="maintenance_discord_invalid_token">Ugyldig token</string>
     <string name="maintenance_discord_ok">Ok</string>
     <string name="maintenance_discord_reconnect_failed">Tilbakekobling mislyktes</string>
@@ -135,6 +137,9 @@
     <string name="modules_download_needed">Modul trenger nedlasting (~25 MB). Sjekk tilkoblingen.</string>
     <string name="modules_downloading">Laster ned modul</string>
     <string name="modules_edit_unavailable">Rediger manglende metadata: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Forbereder FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">Laster ned FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Trengs for å eksportere bufrede sanger og for å redigere sangmetadata. Lastet ned ved første bruk.</string>
     <string name="modules_info">Informasjon</string>
     <string name="modules_insufficient_space">Denne funksjonen trenger ca. 70 MB ledig plass</string>
@@ -197,6 +202,7 @@
     <string name="recovery_error">En feil oppstod: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Eksporter database</string>
+    <string name="recovery_export_database_with_covers_description">Lagre biblioteket, spillelistene og historikken som SQLite. Dersom du har tilpasset covers, er eksporten en ZIP med databasen og omslagene.</string>
     <string name="recovery_export_logs">Eksporter logger</string>
     <string name="recovery_export_logs_description">Lagre programfeil og feilsøkingslogger i en feilrapport</string>
     <string name="recovery_export_profiles_description">Profillisten og ansiktsbildene i en enkelt .txt-fil</string>
@@ -209,6 +215,7 @@
     <string name="recovery_group_settings">Innstillinger</string>
     <string name="recovery_group_storage">Lagring</string>
     <string name="recovery_import_database">Importer database</string>
+    <string name="recovery_import_database_with_covers_description">Gjenopprett en SQLite eller ZIP database sikkerhetskopi, inkludert eventuelle egendefinerte dekke i ZIP.</string>
     <string name="recovery_import_profiles_description">Gjenopprett profillisten og ansiktsbildene fra en .txt-fil</string>
     <string name="recovery_import_settings">Importer innstillinger</string>
     <string name="recovery_import_settings_description">Gjenopprett innstillingene fra en CSV-fil</string>
@@ -309,4 +316,5 @@
     <string name="updates_warning_acknowledge">Jeg skjønner</string>
     <string name="updates_check_failed">Kan ikke se etter oppdateringer.</string>
     <string name="updates_install_generic_error">Kunne ikke installere oppdateringen.</string>
+    <string name="updates_channel_available_format">%1$s oppdatering tilgjengelig</string>
 </resources>

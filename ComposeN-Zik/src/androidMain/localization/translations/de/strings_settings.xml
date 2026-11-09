@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Zuerst mit YouTube verbinden, um diese Option zu aktivieren</string>
     <string name="settings_youtube_library_sync_content_description">Wiedergabelisten, Alben, Künstler, Geschichte, etc.</string>
     <string name="settings_youtube_login_enabled_label">YouTube Music Login aktivieren</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Sortieren</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Werkzeugleiste</string>
 </resources>

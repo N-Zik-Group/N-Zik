@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Verbind eerst met YouTube om deze optie in te schakelen</string>
     <string name="settings_youtube_library_sync_content_description">Afspeellijsten, albums, artiesten, geschiedenis, enz.</string>
     <string name="settings_youtube_login_enabled_label">YouTube-muziek-login inschakelen</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Sorteren</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Werkbalk</string>
 </resources>

@@ -82,6 +82,7 @@
     <string name="lyrics_editor_title">Introdu versurile</string>
     <string name="lyrics_empty">Fără versuri</string>
     <string name="lyrics_fetch_error_message">A apărut o eroare la preluarea versurilor</string>
+    <string name="lyrics_provider_fetch_error_message">Nu s-au putut lua versurile de la %1$s</string>
     <string name="lyrics_font_size_animation_label">Animare dimensiunea versurilor</string>
     <string name="lyrics_font_size_extra_large_label">Extra mare</string>
     <string name="lyrics_font_size_large_label">Greu</string>
@@ -296,10 +297,14 @@
     <string name="player_statistics_codec_label">Codecul</string>
     <string name="player_statistics_container_label">Recipient</string>
     <string name="player_statistics_itag_label">Itag</string>
+    <string name="player_playback_speed_value">%1$.1fx</string>
+    <string name="player_decibels_value">%1$.2f dB</string>
     <string name="player_statistics_loudness_label">Intensitate</string>
     <string name="player_statistics_media_id_label">Id</string>
     <string name="player_statistics_perceptual_loudness_label">Luziune perceptuală</string>
     <string name="player_statistics_sample_rate_label">Rata de eșantionare</string>
+    <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
+    <string name="player_statistics_cache_status">%1$s: %2$s</string>
     <string name="player_statistics_volume_label">Volum</string>
     <string name="player_swap_controls_with_timeline">Comutați comenzile cu cronologia</string>
     <string name="player_swipe_sensitivity">Sensibilitate glisare jucător</string>
@@ -372,7 +377,7 @@
     <string name="widget_not_playing_status">Nu se joacă</string>
     <string name="widget_playlists_description">N-Zik Playlisturi</string>
     <string name="widget_turntable_description">N-Zik Turntable</string>
-    <string name="audio_device_battery_format">Baterie: %1$d%%</string>
+    <string name="audio_device_battery_format">Baterie: %1$d%</string>
     <string name="audio_output_bluetooth_device_label">Dispozitiv Bluetooth</string>
     <string name="audio_output_usb_audio_label">Audio USB</string>
     <string name="audio_output_external_speaker_label">Difuzor extern</string>

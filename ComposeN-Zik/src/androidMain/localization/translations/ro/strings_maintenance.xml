@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
     <string name="logs_action_export">Exportă jurnalele</string>
     <string name="logs_action_export_both">Exportă ambele jurnale</string>
@@ -40,6 +41,7 @@
     <string name="maintenance_dedup_flagged">Rânduri marcate %d</string>
     <string name="maintenance_dedup_merged">Rânduri unite %d</string>
     <string name="maintenance_dedup_merged_flagged">Îmbinat %1$d rânduri · Marcat %2$d rânduri</string>
+    <string name="maintenance_dedup_counts_format">%1$s · %2$s</string>
     <string name="maintenance_discord_invalid_token">Token nevalid</string>
     <string name="maintenance_discord_ok">Ok</string>
     <string name="maintenance_discord_reconnect_failed">Reconectare eșuată</string>
@@ -135,6 +137,9 @@
     <string name="modules_download_needed">Modulul necesită descărcare (~25 MB). Verificați conexiunea.</string>
     <string name="modules_downloading">Se descarca modulul</string>
     <string name="modules_edit_unavailable">Editare metadate indisponibile: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Se pregătește FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">Descărcare FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%</string>
     <string name="modules_ffmpeg_description">Necesar pentru a exporta melodii cache și pentru a edita metadatele melodiei. Descărcat la prima utilizare.</string>
     <string name="modules_info">Info</string>
     <string name="modules_insufficient_space">Această caracteristică are nevoie de aproximativ 70 MB de spațiu liber</string>
@@ -197,6 +202,7 @@
     <string name="recovery_error">A apărut o eroare: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Exportă baza de date</string>
+    <string name="recovery_export_database_with_covers_description">Salvează-ți biblioteca, listele de redare și istoricul ca SQLite. Dacă ai coperți personalizate, exportul este un ZIP cu baza de date și coperte.</string>
     <string name="recovery_export_logs">Exportă jurnalele</string>
     <string name="recovery_export_logs_description">Salvați jurnalele de eroare și erorile pentru un raport</string>
     <string name="recovery_export_profiles_description">Lista de profil și fotografiile feței într-un singur fișier .txt</string>
@@ -209,6 +215,7 @@
     <string name="recovery_group_settings">Setări</string>
     <string name="recovery_group_storage">Depozitare</string>
     <string name="recovery_import_database">Importă baza de date</string>
+    <string name="recovery_import_database_with_covers_description">Restaurează o copie de rezervă a bazei de date SQLite sau ZIP, incluzând orice copertă personalizată în ZIP.</string>
     <string name="recovery_import_profiles_description">Restaurați lista de profil și fotografiile feței dintr-un fișier .txt</string>
     <string name="recovery_import_settings">Importă setări</string>
     <string name="recovery_import_settings_description">Restaurați preferințele dintr-un fișier CSV</string>
@@ -309,4 +316,5 @@
     <string name="updates_warning_acknowledge">Am înțeles</string>
     <string name="updates_check_failed">Nu s-au putut verifica actualizările.</string>
     <string name="updates_install_generic_error">Actualizarea nu a putut fi instalată.</string>
+    <string name="updates_channel_available_format">Actualizare %1$s disponibilă</string>
 </resources>

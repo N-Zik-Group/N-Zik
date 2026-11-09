@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">页 次</string>
     <string name="glass_effect_destination_playback">回放</string>
     <string name="glass_effect_destination_shared">共享元素</string>
+    <string name="glass_effect_loading_indicators">正在加载指标</string>
+    <string name="glass_effect_loading_indicators_description">在页面、卡片和对话框中装入动画样式。</string>
+    <string name="glass_effect_pull_to_refresh">下拉刷新</string>
+    <string name="glass_effect_pull_to_refresh_description">当您下拉刷新时显示的指示器样式。</string>
     <string name="glass_effect_destination_windows">Windows 和消息</string>
     <string name="glass_effect_dialog_dimming">对话框背景变暗中</string>
     <string name="glass_effect_dispersion">彩色拆分</string>
@@ -121,6 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">组设置和显示您个人资料的卡片。</string>
     <string name="glass_effect_role_visualizer">可视化器 · 控制</string>
     <string name="glass_effect_role_visualizer_description">可视化器使用的箭头和设置按钮。</string>
+    <string name="glass_effect_shared_components_summary">选择Glas如何看待应用程序使用的组件，包括加载指示器和拉动以刷新。</string>
     <string name="glass_effect_summary">自定义玻璃效果表面、颜色、轮廓和质量。</string>
     <string name="glass_effect_switches_description">当启用玻璃时使用液态玻璃开关，具有共享材料和交互作用。</string>
     <string name="glass_effect_switches_title">玻璃开关</string>
@@ -225,6 +230,10 @@
     <string name="theme_shake_sensitivity_medium">中(3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">非常高 (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">下载</string>
+    <string name="cover_download_failed">无法下载封面。</string>
+    <string name="image_editor_title">编辑图像</string>
+    <string name="image_editor_failed">无法编辑图像。您当前的图像被保存。</string>
     <string name="thumbnail_action_edit">编辑缩略图</string>
     <string name="thumbnail_action_pick_from_gallery">从图库中选择</string>
     <string name="thumbnail_action_reset">重置缩略图</string>
@@ -234,4 +243,6 @@
     <string name="thumbnail_remove_failed">删除缩略图失败</string>
     <string name="thumbnail_remove_success">删除缩略图</string>
     <string name="glass_effect_rendering_quality">渲染质量</string>
+    <string name="image_editor_original">原始比率</string>
+    <string name="image_editor_apply">使用图像</string>
 </resources>

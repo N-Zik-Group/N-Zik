@@ -82,6 +82,7 @@
     <string name="lyrics_editor_title">输入歌词</string>
     <string name="lyrics_empty">没有歌词</string>
     <string name="lyrics_fetch_error_message">获取歌词时出错</string>
+    <string name="lyrics_provider_fetch_error_message">无法从 %1$s 获取歌词</string>
     <string name="lyrics_font_size_animation_label">动态歌词大小</string>
     <string name="lyrics_font_size_extra_large_label">大</string>
     <string name="lyrics_font_size_large_label">加粗体</string>
@@ -296,10 +297,14 @@
     <string name="player_statistics_codec_label">编解码器</string>
     <string name="player_statistics_container_label">容器</string>
     <string name="player_statistics_itag_label">iTag</string>
+    <string name="player_playback_speed_value">%1$.1fx</string>
+    <string name="player_decibels_value">%1$.2f 分贝</string>
     <string name="player_statistics_loudness_label">音量</string>
     <string name="player_statistics_media_id_label">ID</string>
     <string name="player_statistics_perceptual_loudness_label">感知光度</string>
     <string name="player_statistics_sample_rate_label">采样率</string>
+    <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
+    <string name="player_statistics_cache_status">%1$s: %2$s</string>
     <string name="player_statistics_volume_label">音量</string>
     <string name="player_swap_controls_with_timeline">交换播放控制和时间线</string>
     <string name="player_swipe_sensitivity">播放器滑动灵敏度</string>

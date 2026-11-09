@@ -82,6 +82,7 @@
     <string name="lyrics_editor_title">Εισάγετε τους στίχους</string>
     <string name="lyrics_empty">Δεν υπάρχουν στίχοι</string>
     <string name="lyrics_fetch_error_message">Παρουσιάστηκε σφάλμα κατά την λήψη των στίχων</string>
+    <string name="lyrics_provider_fetch_error_message">Δεν ήταν δυνατή η λήψη στίχων από %1$s</string>
     <string name="lyrics_font_size_animation_label">Μέγεθος Εφέ Στίχων</string>
     <string name="lyrics_font_size_extra_large_label">Large</string>
     <string name="lyrics_font_size_large_label">Βαρύ</string>
@@ -296,10 +297,14 @@
     <string name="player_statistics_codec_label">Κωδικοποιητής</string>
     <string name="player_statistics_container_label">Περιέκτης</string>
     <string name="player_statistics_itag_label">Itag</string>
+    <string name="player_playback_speed_value">%1$.1fx</string>
+    <string name="player_decibels_value">%1$.2f dB</string>
     <string name="player_statistics_loudness_label">Ένταση</string>
     <string name="player_statistics_media_id_label">Αναγνωριστικό</string>
     <string name="player_statistics_perceptual_loudness_label">Αντιληπτική Ζωτικότητα</string>
     <string name="player_statistics_sample_rate_label">Ρυθμός Δειγμάτων</string>
+    <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
+    <string name="player_statistics_cache_status">%1$s: %2$s</string>
     <string name="player_statistics_volume_label">Όγκος</string>
     <string name="player_swap_controls_with_timeline">Swap controls with timeline</string>
     <string name="player_swipe_sensitivity">Ευαισθησία Του Παίκτη</string>

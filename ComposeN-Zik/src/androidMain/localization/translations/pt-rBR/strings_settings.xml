@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Primeiro conecte ao YouTube para ativar esta opção</string>
     <string name="settings_youtube_library_sync_content_description">Playlists, álbuns, artistas, histórico, etc.</string>
     <string name="settings_youtube_login_enabled_label">Habilitar \"login\" no YouTube Music</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Ordenar</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Barra</string>
 </resources>

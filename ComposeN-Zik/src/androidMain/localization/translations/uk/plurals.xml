@@ -61,4 +61,310 @@
         <item quantity="many">%1$d songs heard</item>
         <item quantity="other">%1$d songs heard</item>
     </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Видалити пошуковий запит %1$d</item>
+        <item quantity="few">Видалити пошукові запити %1$d</item>
+        <item quantity="many">Видалити пошукові запити %1$d</item>
+        <item quantity="other">Видалити пошукові запити %1$d</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Видалити %1$d події відтворення</item>
+        <item quantity="few">Delete %1$d playback events</item>
+        <item quantity="many">Delete %1$d playback events</item>
+        <item quantity="other">Delete %1$d playback events</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d епізод, · %2$s</item>
+        <item quantity="few">%1$d епізодів · %2$s</item>
+        <item quantity="many">%1$d епізодів · %2$s</item>
+        <item quantity="other">%1$d епізодів · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">Додавання пісні %1$d у плейлист YouTube</item>
+        <item quantity="few">Додавання %1$d пісень в плейлист YouTube</item>
+        <item quantity="many">Додавання %1$d пісень в плейлист YouTube</item>
+        <item quantity="other">Додавання %1$d пісень в плейлист YouTube</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">Додана пісня %1$d у плейлист YouTube</item>
+        <item quantity="few">Додано пісень %1$d до плейлиста YouTube</item>
+        <item quantity="many">Додано пісень %1$d до плейлиста YouTube</item>
+        <item quantity="other">Додано пісень %1$d до плейлиста YouTube</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Стан профілю імпортовано: профіль %1$d</item>
+        <item quantity="few">Стан профілю імпортовано: профілі %1$d</item>
+        <item quantity="many">Стан профілю імпортовано: профілі %1$d</item>
+        <item quantity="other">Стан профілю імпортовано: профілі %1$d</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Failed to sync %1$d album. Go back to the Albums tab to retry.</item>
+        <item quantity="few">Failed to sync %1$d albums. Go back to the Albums tab to retry.</item>
+        <item quantity="many">Failed to sync %1$d albums. Go back to the Albums tab to retry.</item>
+        <item quantity="other">Failed to sync %1$d albums. Go back to the Albums tab to retry.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Експорт камери %1$d кешований/завантаженої пісні?</item>
+        <item quantity="few">Експорт пісень %1$d кешовано/завантажених пісень?</item>
+        <item quantity="many">Експорт пісень %1$d кешовано/завантажених пісень?</item>
+        <item quantity="other">Експорт пісень %1$d кешовано/завантажених пісень?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">Запитана пісня %1$d відсутня і була видалена. Будь ласка, завантажте її знову.</item>
+        <item quantity="few">%1$d завантажені пісні відсутні їх файли і видалені. Будь ласка, завантажте їх знову.</item>
+        <item quantity="many">%1$d завантажені пісні відсутні їх файли і видалені. Будь ласка, завантажте їх знову.</item>
+        <item quantity="other">%1$d завантажені пісні відсутні їх файли і видалені. Будь ласка, завантажте їх знову.</item>
+    </plurals>
+    <plurals name="recommendations_quick_picks_song_count">
+        <item quantity="one">Рекомендована пісня %1$d</item>
+        <item quantity="few">%1$d recommended songs</item>
+        <item quantity="many">%1$d recommended songs</item>
+        <item quantity="other">%1$d recommended songs</item>
+    </plurals>
+    <plurals name="listen_together_blocked_user_count">
+        <item quantity="one">Користувач %1$d заблоковано</item>
+        <item quantity="few">Користувачів %1$d заблоковано</item>
+        <item quantity="many">Користувачів %1$d заблоковано</item>
+        <item quantity="other">Користувачів %1$d заблоковано</item>
+    </plurals>
+    <plurals name="sync_failed_notification_artist_count">
+        <item quantity="one">Не вдалося синхронізувати виконавця %1$d . Перейдіть назад до вкладки Artists щоб повторити спробу.</item>
+        <item quantity="few">Failed to sync %1$d artists. Go back to the Artists tab to retry.</item>
+        <item quantity="many">Failed to sync %1$d artists. Go back to the Artists tab to retry.</item>
+        <item quantity="other">Failed to sync %1$d artists. Go back to the Artists tab to retry.</item>
+    </plurals>
+    <plurals name="sync_failed_notification_playlist_count">
+        <item quantity="one">Не вдалося синхронізувати плейлист %1$d зі списку відтворення. Поверніться до вкладки плейлістів, щоб повторити спробу.</item>
+        <item quantity="few">Failed to sync %1$d playlists. Go back to the Playlists tab to retry.</item>
+        <item quantity="many">Failed to sync %1$d playlists. Go back to the Playlists tab to retry.</item>
+        <item quantity="other">Failed to sync %1$d playlists. Go back to the Playlists tab to retry.</item>
+    </plurals>
+    <plurals name="sync_retry_failed_item_confirmation">
+        <item quantity="one">Ви бажаєте повторити синхронізацію %1$d невдалий?</item>
+        <item quantity="few">Ви бажаєте повторити спробу синхронізації %1$d невдалих елементів?</item>
+        <item quantity="many">Ви бажаєте повторити спробу синхронізації %1$d невдалих елементів?</item>
+        <item quantity="other">Ви бажаєте повторити спробу синхронізації %1$d невдалих елементів?</item>
+    </plurals>
+    <plurals name="sync_progress_artist_count">
+        <item quantity="one">Синхронізація художника... (%1$d/%2$d)</item>
+        <item quantity="few">Синхронізація художників... (%1$d/%2$d)</item>
+        <item quantity="many">Синхронізація художників... (%1$d/%2$d)</item>
+        <item quantity="other">Синхронізація художників... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_artist_refresh_count">
+        <item quantity="one">Refreshing %1$d artist</item>
+        <item quantity="few">Оновлення %1$d виконавців</item>
+        <item quantity="many">Оновлення %1$d виконавців</item>
+        <item quantity="other">Оновлення %1$d виконавців</item>
+    </plurals>
+    <plurals name="library_sync_artist_retry_count">
+        <item quantity="one">Не вдалося знайти виконавця %1$d , повторна спроба</item>
+        <item quantity="few">Не вдалося знайти виконавців %1$d повторна спроба</item>
+        <item quantity="many">Не вдалося знайти виконавців %1$d повторна спроба</item>
+        <item quantity="other">Не вдалося знайти виконавців %1$d повторна спроба</item>
+    </plurals>
+    <plurals name="sync_progress_album_count">
+        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
+        <item quantity="few">Синхронізація альбомів... (%1$d/%2$d)</item>
+        <item quantity="many">Синхронізація альбомів... (%1$d/%2$d)</item>
+        <item quantity="other">Синхронізація альбомів... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_album_refresh_count">
+        <item quantity="one">Refreshing %1$d album</item>
+        <item quantity="few">Refreshing %1$d albums</item>
+        <item quantity="many">Refreshing %1$d albums</item>
+        <item quantity="other">Refreshing %1$d albums</item>
+    </plurals>
+    <plurals name="library_sync_album_retry_count">
+        <item quantity="one">Не вдалося знайти %1$d альбом, знову спроба</item>
+        <item quantity="few">Failed to find %1$d albums, retrying</item>
+        <item quantity="many">Failed to find %1$d albums, retrying</item>
+        <item quantity="other">Failed to find %1$d albums, retrying</item>
+    </plurals>
+    <plurals name="sync_progress_playlist_count">
+        <item quantity="one">Синхронізація списку відтворення... (%1$d/%2$d)</item>
+        <item quantity="few">Синхронізація списків відтворення... (%1$d/%2$d)</item>
+        <item quantity="many">Синхронізація списків відтворення... (%1$d/%2$d)</item>
+        <item quantity="other">Синхронізація списків відтворення... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_playlist_refresh_count">
+        <item quantity="one">Refreshing %1$d playlist</item>
+        <item quantity="few">Refreshing %1$d playlists</item>
+        <item quantity="many">Refreshing %1$d playlists</item>
+        <item quantity="other">Refreshing %1$d playlists</item>
+    </plurals>
+    <plurals name="library_sync_playlist_retry_count">
+        <item quantity="one">Не вдалося знайти список відтворення %1$d повторна спроба</item>
+        <item quantity="few">Не вдалося знайти плейлисти %1$d , повторна спроба</item>
+        <item quantity="many">Не вдалося знайти плейлисти %1$d , повторна спроба</item>
+        <item quantity="other">Не вдалося знайти плейлисти %1$d , повторна спроба</item>
+    </plurals>
+    <plurals name="maintenance_pass_cleaned_count">
+        <item quantity="one">Предмет %1$d очищено</item>
+        <item quantity="few">%1$d елементів очищено</item>
+        <item quantity="many">%1$d елементів очищено</item>
+        <item quantity="other">%1$d елементів очищено</item>
+    </plurals>
+    <plurals name="maintenance_pass_deferred_count">
+        <item quantity="one">%1$d item deferred</item>
+        <item quantity="few">%1$d items deferred</item>
+        <item quantity="many">%1$d items deferred</item>
+        <item quantity="other">%1$d items deferred</item>
+    </plurals>
+    <plurals name="maintenance_pass_skipped_count">
+        <item quantity="one">Пропущено елемент %1$d</item>
+        <item quantity="few">Пропущено елементів %1$d</item>
+        <item quantity="many">Пропущено елементів %1$d</item>
+        <item quantity="other">Пропущено елементів %1$d</item>
+    </plurals>
+    <plurals name="maintenance_dedup_flagged_count">
+        <item quantity="one">Flagged %1$d row</item>
+        <item quantity="few">Flagged %1$d rows</item>
+        <item quantity="many">Flagged %1$d rows</item>
+        <item quantity="other">Flagged %1$d rows</item>
+    </plurals>
+    <plurals name="maintenance_dedup_merged_count">
+        <item quantity="one">Merged %1$d row</item>
+        <item quantity="few">Merged %1$d rows</item>
+        <item quantity="many">Merged %1$d rows</item>
+        <item quantity="other">Merged %1$d rows</item>
+    </plurals>
+    <plurals name="recovery_profile_deleted_count">
+        <item quantity="one">Видалено профіль %1$d</item>
+        <item quantity="few">Видалено профілі %1$d</item>
+        <item quantity="many">Видалено профілі %1$d</item>
+        <item quantity="other">Видалено профілі %1$d</item>
+    </plurals>
+    <plurals name="recovery_profile_reset_count">
+        <item quantity="one">Скинути профіль %1$d Перезапустіть програму</item>
+        <item quantity="few">Скидання профілів %1$d . Перезапустіть програму</item>
+        <item quantity="many">Скидання профілів %1$d . Перезапустіть програму</item>
+        <item quantity="other">Скидання профілів %1$d . Перезапустіть програму</item>
+    </plurals>
+    <plurals name="recovery_profile_restored_count">
+        <item quantity="one">Відновлено профіль %1$d : перезапустіть програму</item>
+        <item quantity="few">Відновлено профілів %1$d : перезапуск програми</item>
+        <item quantity="many">Відновлено профілів %1$d : перезапуск програми</item>
+        <item quantity="other">Відновлено профілів %1$d : перезапуск програми</item>
+    </plurals>
+    <plurals name="album_loading_song_count">
+        <item quantity="one">Завантаження пісні %1$d…</item>
+        <item quantity="few">Завантаження %1$d пісень…</item>
+        <item quantity="many">Завантаження %1$d пісень…</item>
+        <item quantity="other">Завантаження %1$d пісень…</item>
+    </plurals>
+    <plurals name="artist_deduplication_result_count">
+        <item quantity="one">Об’єднано %1$d дублікатора виконавця правого виконавця</item>
+        <item quantity="few">Об\'єднано %1$d дублікатори виконавців з правом виконавцем</item>
+        <item quantity="many">Об\'єднано %1$d дублікатори виконавців з правом виконавцем</item>
+        <item quantity="other">Об\'єднано %1$d дублікатори виконавців з правом виконавцем</item>
+    </plurals>
+    <plurals name="artist_link_cleanup_result_count">
+        <item quantity="one">Вилучено некоректне посилання %1$d</item>
+        <item quantity="few">Видалено неправильні посилання виконавця %1$d</item>
+        <item quantity="many">Видалено неправильні посилання виконавця %1$d</item>
+        <item quantity="other">Видалено неправильні посилання виконавця %1$d</item>
+    </plurals>
+    <plurals name="library_song_count_with_duration">
+        <item quantity="one">%1$d song • %2$s</item>
+        <item quantity="few">%1$d songs • %2$s</item>
+        <item quantity="many">%1$d songs • %2$s</item>
+        <item quantity="other">%1$d songs • %2$s</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count">
+        <item quantity="one">(%1$d vote)</item>
+        <item quantity="few">(%1$d votes)</item>
+        <item quantity="many">(%1$d votes)</item>
+        <item quantity="other">(%1$d votes)</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count_attribution">
+        <item quantity="one">%1$d vote on MusicBrainz</item>
+        <item quantity="few">%1$d votes on MusicBrainz</item>
+        <item quantity="many">%1$d votes on MusicBrainz</item>
+        <item quantity="other">%1$d votes on MusicBrainz</item>
+    </plurals>
+    <plurals name="playlist_delete_all_confirmation_count">
+        <item quantity="one">Ви впевнені, що хочете видалити єдиний список відтворення (%1$d?</item>
+        <item quantity="few">Are you sure you want to delete ALL %1$d playlists?</item>
+        <item quantity="many">Are you sure you want to delete ALL %1$d playlists?</item>
+        <item quantity="other">Are you sure you want to delete ALL %1$d playlists?</item>
+    </plurals>
+    <plurals name="playlist_delete_selected_confirmation_count">
+        <item quantity="one">Ви впевнені, що хочете видалити цей список відтворення (%1$d)?</item>
+        <item quantity="few">Ви впевнені, що хочете видалити ці плейлісти %1$d</item>
+        <item quantity="many">Ви впевнені, що хочете видалити ці плейлісти %1$d</item>
+        <item quantity="other">Ви впевнені, що хочете видалити ці плейлісти %1$d</item>
+    </plurals>
+    <plurals name="playlist_positions_shuffled_count">
+        <item quantity="one">%1$d позиція зміщена</item>
+        <item quantity="few">%1$d позиції зміщені</item>
+        <item quantity="many">%1$d позиції зміщені</item>
+        <item quantity="other">%1$d позиції зміщені</item>
+    </plurals>
+    <plurals name="song_metadata_updated_song_count">
+        <item quantity="one">Оновлено пісню %1$d</item>
+        <item quantity="few">Оновлено пісні %1$d</item>
+        <item quantity="many">Оновлено пісні %1$d</item>
+        <item quantity="other">Оновлено пісні %1$d</item>
+    </plurals>
+    <plurals name="rewind_home_year_play_count">
+        <item quantity="one">%1$s · %2$s гра</item>
+        <item quantity="few">%1$s · %2$s plays</item>
+        <item quantity="many">%1$s · %2$s plays</item>
+        <item quantity="other">%1$s · %2$s plays</item>
+    </plurals>
+    <plurals name="rewind_listening_day_count_without">
+        <item quantity="one">%1$s день, не слухаючи.</item>
+        <item quantity="few">%1$s днів не слухають.</item>
+        <item quantity="many">%1$s днів не слухають.</item>
+        <item quantity="other">%1$s днів не слухають.</item>
+    </plurals>
+    <plurals name="rewind_loader_status_day_count">
+        <item quantity="one">%1$s LISTENING DAY</item>
+        <item quantity="few">%1$s LISTENING DAYS</item>
+        <item quantity="many">%1$s LISTENING DAYS</item>
+        <item quantity="other">%1$s LISTENING DAYS</item>
+    </plurals>
+    <plurals name="rewind_loader_status_minute_count">
+        <item quantity="one">%1$s MINUTE</item>
+        <item quantity="few">%1$s MINUTES</item>
+        <item quantity="many">%1$s MINUTES</item>
+        <item quantity="other">%1$s MINUTES</item>
+    </plurals>
+    <plurals name="rewind_loader_status_play_count">
+        <item quantity="one">%1$s PLAY</item>
+        <item quantity="few">%1$s PLAYS</item>
+        <item quantity="many">%1$s PLAYS</item>
+        <item quantity="other">%1$s PLAYS</item>
+    </plurals>
+    <plurals name="rewind_loader_status_song_count">
+        <item quantity="one">%1$s UNIQUE SONG</item>
+        <item quantity="few">%1$s UNIQUE SONGS</item>
+        <item quantity="many">%1$s UNIQUE SONGS</item>
+        <item quantity="other">%1$s UNIQUE SONGS</item>
+    </plurals>
+    <plurals name="rewind_meta_song_count">
+        <item quantity="one">%1$s пісня</item>
+        <item quantity="few">%1$s пісень</item>
+        <item quantity="many">%1$s пісень</item>
+        <item quantity="other">%1$s пісень</item>
+    </plurals>
+    <plurals name="rewind_play_count_label">
+        <item quantity="one">%1$s відтворити</item>
+        <item quantity="few">Гра %1$s</item>
+        <item quantity="many">Гра %1$s</item>
+        <item quantity="other">Гра %1$s</item>
+    </plurals>
+    <plurals name="rewind_top_song_teaser_count">
+        <item quantity="one">%1$d СОНГ.\nОНЛАЙН РЕЖИМ.</item>
+        <item quantity="few">%1$d SonGS.\nОНЛАЙН РЕЖИМ.</item>
+        <item quantity="many">%1$d SonGS.\nОНЛАЙН РЕЖИМ.</item>
+        <item quantity="other">%1$d SonGS.\nОНЛАЙН РЕЖИМ.</item>
+    </plurals>
+    <plurals name="maintenance_abnormal_job_count">
+        <item quantity="one">Завдання %1$d не завершене</item>
+        <item quantity="few">%1$d завдання не завершені</item>
+        <item quantity="many">%1$d завдання не завершені</item>
+        <item quantity="other">%1$d завдання не завершені</item>
+    </plurals>
 </resources>

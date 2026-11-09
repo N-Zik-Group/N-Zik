@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Opslagruimte</string>
+    <string name="storage_breakdown_info_title">Over opslag</string>
+    <string name="storage_breakdown_nzik_total">Totaal gebruikt door N-Zik</string>
+    <string name="storage_breakdown_subtitle">Uitsplitsing van opslag</string>
+    <string name="storage_breakdown_waiting">Measuring storage…</string>
+    <string name="storage_breakdown_cached_images">Gebufferde afbeeldingen</string>
+    <string name="storage_breakdown_streamed_audio">Gestroomde audio</string>
+    <string name="storage_breakdown_downloaded_audio">Gedownloade audio</string>
+    <string name="storage_breakdown_custom_covers">Aangepaste covers</string>
+    <string name="storage_breakdown_waveforms">Golfvormen</string>
+    <string name="storage_breakdown_other_nzik_data">Andere N-Zik gegevens</string>
+    <string name="storage_breakdown_other_used_space">Systeem, apps &amp; bestanden</string>
+    <string name="storage_breakdown_free_space">Vrije ruimte</string>
+    <string name="storage_info_images">Artwork en andere afbeeldingen gecached voor snellere weergave.</string>
+    <string name="storage_info_streaming">Audio tijdelijk bewaard na streamen, zodat het opnieuw kan worden afgespeeld zonder dezelfde gegevens op te halen.</string>
+    <string name="storage_info_downloads">Audio opgeslagen in N-Zik voor offline luisteren.</string>
+    <string name="storage_info_waveforms">Gegenereerde bestanden worden gebruikt om de audio waveform in de speler te tekenen.</string>
+    <string name="storage_info_covers">Artwork die je hebt gekozen of geïmporteerd als aangepaste covers.</string>
+    <string name="storage_info_other_nzik">De rest van de persoonlijke gegevens van N-Zik, inclusief de databases, instellingen, indexen, extensies en logbestanden.</string>
+    <string name="storage_info_other_used">De resterende gebruikte ruimte op het interne volume, inclusief Android, geïnstalleerde apps en persoonlijke bestanden.</string>
+    <string name="storage_info_free">Ruimte beschikbaar voor apps en bestanden op het interne volume.</string>
+    <string name="storage_cleanup_title">Opschonen</string>
+    <string name="storage_cleanup_failed">Opschonen kan niet worden voltooid.</string>
+    <string name="storage_cleanup_images_description">Maak bestanden leeg die gecached zijn door N-Zik.</string>
+    <string name="storage_cleanup_streaming_description">Audiocache wissen tijdens het streamen.</string>
+    <string name="storage_cleanup_downloads_description">Verwijder offline audio en annuleer de openstaande downloads voor de downloadopslag van het actieve profiel.</string>
+    <string name="storage_cleanup_waveforms_description">Wis gegenereerde waveforme bestanden.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Wis waveformen</string>
+    <string name="storage_cleanup_diagnostic_logs">Wis diagnostische logs</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Verwijder de debug en crash logbestanden. Uw log instelling blijft hetzelfde.</string>
+    <string name="storage_cleanup_temporary_files">Verwijder verlaten tijdelijke bestanden</string>
+    <string name="storage_cleanup_temporary_files_description">Verwijder achtergelaten afbeeldingenbewerkers concepten en keer delen opnames ouder dan 24 uur terug.</string>
+    <string name="storage_cleanup_all">Alles wissen</string>
+    <string name="storage_cleanup_all_description">Verwijder afbeeldingen en streaming caches en gegenereerde golfformulieren voor het actieve profiel, inclusief opslag gedeeld met andere profielen. Verwijder offline audio en annuleer de openstaande downloads voor de downloadopslag van het actieve profiel. Verwijder diagnostische logboeken, verlaten beeldbewerkers concepten en verlopen Rewind share opties. Uw bibliotheek, aangepaste covers en instellingen worden bewaard.</string>
     <!-- Backup -->
     <string name="backup_action_export">Back-up exporteren</string>
     <string name="backup_action_import">Back-up importeren</string>
@@ -15,11 +50,14 @@
     <string name="backup_auto_schedule_day_of_month_description">Kies de dag van de maand voor automatische maandelijkse back-ups.</string>
     <string name="backup_auto_schedule_day_of_week_description">Kies de weekdag voor automatische back-ups.</string>
     <string name="backup_auto_schedule_time_description">Kies het uur waarop geplande automatische back-ups moeten worden uitgevoerd.</string>
+    <string name="backup_auto_content_format_description">Kies wat u automatisch een back-up wilt maken. Database back-ups gebruiken ZIP wanneer ze aangepaste cover bevatten.</string>
     <string name="backup_before_update_description">Automatisch back-up maken van gegevens voor het installeren van een update</string>
     <string name="backup_before_update_failed">Back-up vooraf installeren mislukt</string>
     <string name="backup_before_update_running_message">Gegevens back-uppen voor installatie…</string>
     <string name="backup_before_update_running_title">Bezig met back-up</string>
     <string name="backup_excluded_preferences_and_cache_description">Persoonlijke voorkeuren (b.v.b. de themamodus) en de cache zijn uitgesloten.</string>
+    <string name="backup_export_library_options_description">Exporteer de database met aangepaste covers, instellingen of profielen</string>
+    <string name="backup_import_library_options_description">Herstel een SQLite of ZIP database back-up, instellingen of profielen</string>
     <string name="backup_include_discord_credentials">Voeg Discord identiteitsgegevens toe</string>
     <string name="backup_include_lastfm_credentials">Inclusief Last.fm identiteitsgegevens</string>
     <string name="backup_include_proxy_password">Voeg het proxywachtwoord toe</string>
@@ -56,12 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Exporteer de profiellijst en de foto\'s in een enkel .txt bestand</string>
     <string name="backup_export_all">Alles exporteren</string>
+    <string name="backup_export_all_with_covers_description">Exporteer de database, instellingen en profielstatus apart. De database gebruikt ZIP als het aangepaste covers bevat.</string>
+    <string name="backup_export_database_with_covers_and_settings_description">Exporteer de database en instellingen apart. De database gebruikt ZIP als het aangepaste covers bevat.</string>
+    <string name="backup_export_database_with_covers_description">Sla nummers, afspeellijsten en geschiedenis op als SQLite. Als je aangepaste covers hebt, is de export een ZIP met de database en dekkingen.</string>
     <string name="backup_export_profile_state_failed">Profielstatus exporteren mislukt</string>
     <string name="backup_export_settings_description">Exporteer app instellingen en voorkeuren</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importeer de profiellijst en foto\'s van een .txt bestand</string>
     <string name="backup_import_all">Alles importeren</string>
+    <string name="backup_import_all_with_covers_description">Herstel een SQLite of ZIP database back-up, instellingen en profielstatus uit afzonderlijke bestanden.</string>
+    <string name="backup_import_database_with_covers_and_settings_description">Herstel een SQLite of ZIP databaseback-up en een apart instellingenbestand.</string>
     <string name="backup_import_completed_profile">Geïmporteerd in %1$s</string>
+    <string name="backup_import_database_with_covers_description">Herstel nummers, afspeellijsten en geschiedenis van SQLite of ZIP. ZIP back-ups herstellen ook de bijgevoegde aangepaste covers.</string>
     <string name="backup_import_profile_state_complete">Profiel status geïmporteerd: %1$d profielen</string>
     <string name="backup_import_profile_state_complete_base">Profiel status geïmporteerd: basisprofiel</string>
     <string name="backup_import_profile_state_failed">Profiel status importeren mislukt</string>
@@ -72,11 +116,14 @@
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Nummercache legen</string>
     <string name="cache_downloads_max_size_description">Kies hoeveel schijfruimte er beschikbaar is voor gedownloade nummers. De prullenbak verwijdert de gedownloade audio.</string>
+    <string name="cache_downloads_limit_description">Kies hoeveel schijfruimte er beschikbaar is voor gedownloade nummers. De prullenbak verwijdert de gedownloade audio.</string>
     <string name="cache_image_max_size_description">Limiteer schijfruimte gebruikt door gecached artwork. De prullenbak verwijdert gedownloade afbeeldingen uit deze cache.</string>
+    <string name="cache_image_limit_description">Limiteer schijfruimte gebruikt door gecached artwork. De prullenbak verwijdert gedownloade afbeeldingen uit deze cache.</string>
     <string name="cache_location_description">Kies waar de app zijn afspeelcache opslaat.</string>
     <string name="cache_location_private">Privé</string>
     <string name="cache_location_system">Systeem</string>
     <string name="cache_streaming_max_size_description">Beperk schijfruimte die gebruikt wordt voor het cachen van gestreamde nummers. De prullenbak wist deze afspeelcache.</string>
+    <string name="cache_streaming_limit_description">Beperk schijfruimte die gebruikt wordt voor het cachen van gestreamde nummers. De prullenbak wist deze afspeelcache.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Alle nummers downloaden</string>
     <string name="downloads_action_refresh_quality">Downloads bijwerken</string>
@@ -136,7 +183,10 @@
     <string name="storage_samsung_advice_message">Samsung\'s automatisch geheugenbeheer kan N-Zik\'s downloads en cache-bestanden verwijderen, zelfs wanneer je er niet om gevraagd hebt. Om uw downloads veilig te houden, gebruik de privé (app) opslaglocatie in plaats van de systeem opslag.</string>
     <string name="storage_samsung_advice_title">Samsung opslagadvies</string>
     <string name="storage_samsung_system_usage_message">Je hebt momenteel %1$s downloads en cache op systeemopslag.</string>
+    <string name="backup_export_database_failed">Database export mislukt</string>
     <string name="backup_import_failed">Importeren mislukt</string>
     <string name="export_no_songs">Geen nummers geëxporteerd</string>
     <string name="export_cached_songs_generic_error">Exporteren mislukt</string>
+    <string name="backup_startup_preparing_library">Je bibliotheek voorbereiden…</string>
+    <string name="backup_startup_recovery_failed">Kan het herstellen van je bibliotheek niet voltooien.</string>
 </resources>

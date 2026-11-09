@@ -82,6 +82,7 @@
     <string name="lyrics_editor_title">Ingresar la letra</string>
     <string name="lyrics_empty">Sin letras</string>
     <string name="lyrics_fetch_error_message">Ha ocurrido un error al cargar la letra</string>
+    <string name="lyrics_provider_fetch_error_message">No se pudo obtener la letra de %1$s</string>
     <string name="lyrics_font_size_animation_label">Animar tamaño de letra</string>
     <string name="lyrics_font_size_extra_large_label">Grande</string>
     <string name="lyrics_font_size_large_label">Pesado</string>
@@ -296,10 +297,14 @@
     <string name="player_statistics_codec_label">Codec</string>
     <string name="player_statistics_container_label">Contenedor</string>
     <string name="player_statistics_itag_label">IEtiqueta</string>
+    <string name="player_playback_speed_value">%1$.1fx</string>
+    <string name="player_decibels_value">%1$.2f dB</string>
     <string name="player_statistics_loudness_label">Volumen</string>
     <string name="player_statistics_media_id_label">ID</string>
     <string name="player_statistics_perceptual_loudness_label">Loudness conceptual</string>
     <string name="player_statistics_sample_rate_label">Tasa de ejemplo</string>
+    <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
+    <string name="player_statistics_cache_status">%1$s: %2$s</string>
     <string name="player_statistics_volume_label">Volumen</string>
     <string name="player_swap_controls_with_timeline">Intercambiar controles con la línea de tiempo</string>
     <string name="player_swipe_sensitivity">Sensibilidad de deslizar al jugador</string>

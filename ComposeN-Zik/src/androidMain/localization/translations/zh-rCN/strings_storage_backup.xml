@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">存储</string>
+    <string name="storage_breakdown_info_title">关于存储</string>
+    <string name="storage_breakdown_nzik_total">N-Zik使用总数</string>
+    <string name="storage_breakdown_subtitle">存储分解</string>
+    <string name="storage_breakdown_waiting">测量存储…</string>
+    <string name="storage_breakdown_cached_images">缓存图像</string>
+    <string name="storage_breakdown_streamed_audio">串流音频</string>
+    <string name="storage_breakdown_downloaded_audio">下载的音频</string>
+    <string name="storage_breakdown_custom_covers">自定义封面</string>
+    <string name="storage_breakdown_waveforms">波形</string>
+    <string name="storage_breakdown_other_nzik_data">其他 N-Zik 数据</string>
+    <string name="storage_breakdown_other_used_space">系统、应用 &amp; 文件</string>
+    <string name="storage_breakdown_free_space">空闲空间</string>
+    <string name="storage_info_images">美工和其他图像缓存以便更快显示。</string>
+    <string name="storage_info_streaming">串流后暂时保持音频，因此可以在不获取相同数据的情况下重新播放音频。</string>
+    <string name="storage_info_downloads">音频保存在N-Zik，用于脱机监听。</string>
+    <string name="storage_info_waveforms">生成用于在播放器中绘制音频波形的文件。</string>
+    <string name="storage_info_covers">您选择或导入的艺术作品作为自定义封面。</string>
+    <string name="storage_info_other_nzik">N-Zik的其余私有数据，包括其数据库、设置、索引、扩展和日志。</string>
+    <string name="storage_info_other_used">内部卷上剩余的空间已使用，包括Android、已安装的应用程序和个人文件。</string>
+    <string name="storage_info_free">内部卷上的应用和文件可用的空间。</string>
+    <string name="storage_cleanup_title">清理</string>
+    <string name="storage_cleanup_failed">无法完成存储清理。</string>
+    <string name="storage_cleanup_images_description">清除N-Zik缓存的艺术作品。</string>
+    <string name="storage_cleanup_streaming_description">在串流时清除音频缓存。</string>
+    <string name="storage_cleanup_downloads_description">删除离线音频并取消活动配置文件下载存储的等待下载。</string>
+    <string name="storage_cleanup_waveforms_description">清除生成的波形文件。</string>
+    <string name="storage_cleanup_waveforms_dialog_title">清除波形</string>
+    <string name="storage_cleanup_diagnostic_logs">清除诊断日志</string>
+    <string name="storage_cleanup_diagnostic_logs_description">删除调试和崩溃日志文件。您的日志设置保持不变。</string>
+    <string name="storage_cleanup_temporary_files">移除丢弃的临时文件</string>
+    <string name="storage_cleanup_temporary_files_description">删除废弃的图像编辑器草稿和超过24小时的退缩共享捕获。</string>
+    <string name="storage_cleanup_all">全部清除</string>
+    <string name="storage_cleanup_all_description">清除图像和流缓存并生成动态配置文件，包括它与其他配置文件共享的存储。 删除离线音频并取消活动配置文件下载存储的等待下载。 删除诊断日志、被遗弃的图像编辑器草稿和过期的退货分享抓取。您的库、自定义封面和设置被保存。</string>
     <!-- Backup -->
     <string name="backup_action_export">导出备份</string>
     <string name="backup_action_import">导入备份</string>
@@ -15,11 +50,14 @@
     <string name="backup_auto_schedule_day_of_month_description">选择月份的自动备份日期。</string>
     <string name="backup_auto_schedule_day_of_week_description">选择每周自动备份的工作日.</string>
     <string name="backup_auto_schedule_time_description">选择预定的自动备份运行时间。</string>
+    <string name="backup_auto_content_format_description">选择自动备份的内容。当数据库备份包含自定义封面时，数据库备份使用邮件。</string>
     <string name="backup_before_update_description">安装更新前自动备份数据</string>
     <string name="backup_before_update_failed">预安装备份失败</string>
     <string name="backup_before_update_running_message">安装前备份数据…</string>
     <string name="backup_before_update_running_title">正在备份</string>
     <string name="backup_excluded_preferences_and_cache_description">个人偏好（例如主题模式）和缓存被排除在外。</string>
+    <string name="backup_export_library_options_description">用自定义封面、设置或配置文件导出数据库</string>
+    <string name="backup_import_library_options_description">还原SQLite 或 ZIP 数据库备份、设置或配置文件</string>
     <string name="backup_include_discord_credentials">包含Discord身份凭据</string>
     <string name="backup_include_lastfm_credentials">包含 Last.fm 身份认证</string>
     <string name="backup_include_proxy_password">包含代理密码</string>
@@ -56,12 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">将配置文件列表和脸照片导出到单个.txt文件</string>
     <string name="backup_export_all">全部导出</string>
+    <string name="backup_export_all_with_covers_description">单独导出数据库、设置和配置文件状态。如果包含自定义封面，数据库使用ZIP。</string>
+    <string name="backup_export_database_with_covers_and_settings_description">单独导出数据库和设置。如果包含自定义封面，数据库使用ZIP。</string>
+    <string name="backup_export_database_with_covers_description">将歌曲、播放列表和历史记录另存为 SQLite。如果您有自定义封面，导出是一个带有数据库和封面的 ZIP 。</string>
     <string name="backup_export_profile_state_failed">配置文件状态导出失败</string>
     <string name="backup_export_settings_description">导出应用设置和首选项</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">从 .txt 文件导入配置文件列表和面部照片</string>
     <string name="backup_import_all">全部导入</string>
+    <string name="backup_import_all_with_covers_description">从独立文件中还原SQLite 或 ZIP 数据库备份、设置和配置文件状态。</string>
+    <string name="backup_import_database_with_covers_and_settings_description">还原SQLite 或 ZIP 数据库备份和单独的设置文件。</string>
     <string name="backup_import_completed_profile">导入到 %1$s</string>
+    <string name="backup_import_database_with_covers_description">从 SQLite 或 ZIP 恢复歌曲、播放列表和历史记录。ZIP 备份也恢复包含的自定义封面。</string>
     <string name="backup_import_profile_state_complete">配置文件状态已导入： %1$d 配置文件</string>
     <string name="backup_import_profile_state_complete_base">配置文件状态：基础配置文件</string>
     <string name="backup_import_profile_state_failed">配置文件状态导入失败</string>
@@ -72,11 +116,14 @@
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">清除歌曲缓存</string>
     <string name="cache_downloads_max_size_description">选择下载的歌曲有多少磁盘空间。回收站按钮可以删除下载的音频。</string>
+    <string name="cache_downloads_limit_description">选择下载的歌曲有多少磁盘空间。回收站按钮可以删除下载的音频。</string>
     <string name="cache_image_max_size_description">限制缓存艺术品使用的磁盘空间。回收站按钮清除从缓存中下载的图像。</string>
+    <string name="cache_image_limit_description">限制缓存艺术品使用的磁盘空间。回收站按钮清除从缓存中下载的图像。</string>
     <string name="cache_location_description">选择应用存储播放缓存的位置。</string>
     <string name="cache_location_private">本地</string>
     <string name="cache_location_system">系统</string>
     <string name="cache_streaming_max_size_description">限制用于缓存流歌曲的磁盘空间。回收站按钮将清除此回放缓存。</string>
+    <string name="cache_streaming_limit_description">限制用于缓存流歌曲的磁盘空间。回收站按钮将清除此回放缓存。</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">下载所有歌曲</string>
     <string name="downloads_action_refresh_quality">更新下载</string>
@@ -136,7 +183,10 @@
     <string name="storage_samsung_advice_message">三星的自动内存管理可以删除 N-Zik的下载和缓存文件，即使您没有询问它。 为了保持下载安全，请使用私有(应用)存储位置而不是系统存储。</string>
     <string name="storage_samsung_advice_title">三星存储提示</string>
     <string name="storage_samsung_system_usage_message">您目前有系统存储的 %1$s 下载和缓存。</string>
+    <string name="backup_export_database_failed">数据库导出失败</string>
     <string name="backup_import_failed">导入失败</string>
     <string name="export_no_songs">未导出歌曲</string>
     <string name="export_cached_songs_generic_error">导出失败</string>
+    <string name="backup_startup_preparing_library">正在准备您的库…</string>
+    <string name="backup_startup_recovery_failed">无法完成还原您的库。</string>
 </resources>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
     <string name="logs_action_export">Экспорт журналов</string>
     <string name="logs_action_export_both">Экспорт обоих журналов</string>
@@ -40,6 +41,7 @@
     <string name="maintenance_dedup_flagged">Отмечено %d строк(ов)</string>
     <string name="maintenance_dedup_merged">Объединено %d строк(ов)</string>
     <string name="maintenance_dedup_merged_flagged">Объединено %1$d строк(ов) · Отмечено %2$d строк(ов)</string>
+    <string name="maintenance_dedup_counts_format">%1$s · %2$s</string>
     <string name="maintenance_discord_invalid_token">Неверный токен</string>
     <string name="maintenance_discord_ok">ОК</string>
     <string name="maintenance_discord_reconnect_failed">Переподключение не удалось</string>
@@ -135,6 +137,9 @@
     <string name="modules_download_needed">Модуль требует загрузки (~25 MB). Проверьте соединение.</string>
     <string name="modules_downloading">Загрузка модуля</string>
     <string name="modules_edit_unavailable">Редактирование метаданных недоступно: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Подготовка FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">Загрузка FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Нужно экспортировать кэшированные песни и редактировать метаданные песен. Сначала загружено на сайт.</string>
     <string name="modules_info">Инфо</string>
     <string name="modules_insufficient_space">Эта функция требует около 70 МБ свободного места</string>
@@ -197,6 +202,7 @@
     <string name="recovery_error">Произошла ошибка: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Экспорт базы данных</string>
+    <string name="recovery_export_database_with_covers_description">Сохраните вашу библиотеку, плейлисты и историю как SQLite. Если у вас есть свои обложки, экспорт является ZIP с базой данных и обложек.</string>
     <string name="recovery_export_logs">Экспорт журналов</string>
     <string name="recovery_export_logs_description">Сохранить журналы ошибок и отладки для отчета об ошибке</string>
     <string name="recovery_export_profiles_description">Список профилей и фото лица в одном .txt файле</string>
@@ -209,6 +215,7 @@
     <string name="recovery_group_settings">Настройки</string>
     <string name="recovery_group_storage">Хранилище</string>
     <string name="recovery_import_database">Импорт базы данных</string>
+    <string name="recovery_import_database_with_covers_description">Восстановить резервную копию базы данных SQLite или ZIP, включая любые пользовательские обложки в ZIP.</string>
     <string name="recovery_import_profiles_description">Восстановить список профилей и фото лица из файла .txt</string>
     <string name="recovery_import_settings">Импорт настроек</string>
     <string name="recovery_import_settings_description">Восстановить настройки из CSV файла</string>
@@ -309,4 +316,5 @@
     <string name="updates_warning_acknowledge">Я понимаю</string>
     <string name="updates_check_failed">Не удалось проверить обновления.</string>
     <string name="updates_install_generic_error">Не удалось установить обновление.</string>
+    <string name="updates_channel_available_format">Доступно обновление %1$s</string>
 </resources>

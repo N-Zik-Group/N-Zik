@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">Страницы</string>
     <string name="glass_effect_destination_playback">Воспроизведение</string>
     <string name="glass_effect_destination_shared">Общие элементы</string>
+    <string name="glass_effect_loading_indicators">Индикаторы загрузки</string>
+    <string name="glass_effect_loading_indicators_description">Стиль загрузки анимации на страницах и в карточках и диалогах.</string>
+    <string name="glass_effect_pull_to_refresh">Потяните для обновления</string>
+    <string name="glass_effect_pull_to_refresh_description">Стиль индикатора, отображаемого при открытии вниз для обновления.</string>
     <string name="glass_effect_destination_windows">Окна и сообщения</string>
     <string name="glass_effect_dialog_dimming">Фон диалогового окна затемнения</string>
     <string name="glass_effect_dispersion">Разделение цвета</string>
@@ -121,6 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">Карты, которые группируют и показывают ваши профили.</string>
     <string name="glass_effect_role_visualizer">Визуализатор · Управление</string>
     <string name="glass_effect_role_visualizer_description">Кнопка стрелок и настроек используется в визуализаторе.</string>
+    <string name="glass_effect_shared_components_summary">Выберите, как стекло смотрит на компоненты, используемые в приложении, включая индикаторы загрузки и тянуть для обновления.</string>
     <string name="glass_effect_summary">Настройка поверхностей Стеклянного эффекта, цветов, контуров и качества.</string>
     <string name="glass_effect_switches_description">Использовать жидкие стеклянные переключатели с общим материалом и эффектами взаимодействия при включённом стекле.</string>
     <string name="glass_effect_switches_title">Стеклянные переключатели</string>
@@ -225,6 +230,10 @@
     <string name="theme_shake_sensitivity_medium">Средний (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Очень высокий (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">Скачать</string>
+    <string name="cover_download_failed">Не удалось загрузить обложку.</string>
+    <string name="image_editor_title">Изменить изображение</string>
+    <string name="image_editor_failed">Не удалось изменить изображение. Ваше текущее изображение сохранено.</string>
     <string name="thumbnail_action_edit">Редактировать миниатюру</string>
     <string name="thumbnail_action_pick_from_gallery">Выбрать из галереи</string>
     <string name="thumbnail_action_reset">Сброс миниатюры</string>
@@ -234,4 +243,6 @@
     <string name="thumbnail_remove_failed">Не удалось удалить миниатюру</string>
     <string name="thumbnail_remove_success">Миниатюра удалена</string>
     <string name="glass_effect_rendering_quality">Качество рендеринга</string>
+    <string name="image_editor_original">Исходное соотношение</string>
+    <string name="image_editor_apply">Использовать изображение</string>
 </resources>

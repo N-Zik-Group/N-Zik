@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Хранилище</string>
+    <string name="storage_breakdown_info_title">О хранилище</string>
+    <string name="storage_breakdown_nzik_total">Всего использовано N-Zik</string>
+    <string name="storage_breakdown_subtitle">Деление хранилища</string>
+    <string name="storage_breakdown_waiting">Измерение хранилища…</string>
+    <string name="storage_breakdown_cached_images">Кэшированные изображения</string>
+    <string name="storage_breakdown_streamed_audio">Трансляция аудио</string>
+    <string name="storage_breakdown_downloaded_audio">Загружено аудио</string>
+    <string name="storage_breakdown_custom_covers">Пользовательские обложки</string>
+    <string name="storage_breakdown_waveforms">Формы волны</string>
+    <string name="storage_breakdown_other_nzik_data">Другие данные N-Zik</string>
+    <string name="storage_breakdown_other_used_space">Система, приложения &amp; файлы</string>
+    <string name="storage_breakdown_free_space">Свободное место</string>
+    <string name="storage_info_images">Образы и другие изображения кэшируются для более быстрого отображения.</string>
+    <string name="storage_info_streaming">Аудио хранится после потока, так что он может быть воспроизведен снова без получения тех же данных.</string>
+    <string name="storage_info_downloads">Аудио сохранено в N-Zik для оффлайн прослушивания.</string>
+    <string name="storage_info_waveforms">Сгенерированные файлы, используемые для отображения формы звука в плеере.</string>
+    <string name="storage_info_covers">Обложки, которые вы выбрали или импортировали в качестве обложки.</string>
+    <string name="storage_info_other_nzik">Остальные личные данные N-Zik, включая ее базы данных, настройки, индексы, расширения и журналы.</string>
+    <string name="storage_info_other_used">Осталось места на внутреннем томе, включая Android, установленные приложения и персональные файлы.</string>
+    <string name="storage_info_free">Пространство доступно для приложений и файлов на внутреннем томе.</string>
+    <string name="storage_cleanup_title">Очистить</string>
+    <string name="storage_cleanup_failed">Не удалось завершить очистку хранилища.</string>
+    <string name="storage_cleanup_images_description">Очистить кэш картинок N-Zik.</string>
+    <string name="storage_cleanup_streaming_description">Очистить кэш аудио во время потока.</string>
+    <string name="storage_cleanup_downloads_description">Удалите оффлайн аудио и отмените ожидание загрузки для загрузочного хранилища активного профиля.</string>
+    <string name="storage_cleanup_waveforms_description">Очистить созданный waveform файл.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Очистить формы</string>
+    <string name="storage_cleanup_diagnostic_logs">Очистить журналы диагностики</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Удалите отладку и файлы журнала сбоев. Ваши настройки в журнале остаются прежними.</string>
+    <string name="storage_cleanup_temporary_files">Удалить заброшенные временные файлы</string>
+    <string name="storage_cleanup_temporary_files_description">Удалите заброшенные черновики редактора изображений и перемотка общего доступа старше 24 часов.</string>
+    <string name="storage_cleanup_all">Очистить все</string>
+    <string name="storage_cleanup_all_description">Очистить изображение и потоковое кэш и сгенерированные формы для активного профиля, включая хранилище с другими профилями. Удалите оффлайн аудио и отмените ожидание загрузки для загрузочного хранилища активного профиля. Удаление диагностических журналов, брошенных черновиков графического редактора и просроченных снимков общего доступа Rewind . Ваша библиотека, пользовательские обложки и настройки сохраняются.</string>
     <!-- Backup -->
     <string name="backup_action_export">Экспорт резервной копии</string>
     <string name="backup_action_import">Импорт резервной копии</string>
@@ -15,11 +50,14 @@
     <string name="backup_auto_schedule_day_of_month_description">Выберите день месяца для ежемесячных автоматических резервных копий.</string>
     <string name="backup_auto_schedule_day_of_week_description">Выберите будние для еженедельных автоматических резервных копий.</string>
     <string name="backup_auto_schedule_time_description">Выберите час, в течение которого должны выполняться запланированные автоматические резервные копии.</string>
+    <string name="backup_auto_content_format_description">Выберите, что делать для резервного копирования автоматически. Резервные копии баз данных используют ZIP, когда они включают пользовательские обложки.</string>
     <string name="backup_before_update_description">Автоматическое резервное копирование данных перед установкой обновления</string>
     <string name="backup_before_update_failed">Ошибка предварительной установки резервной копии</string>
     <string name="backup_before_update_running_message">Резервное копирование данных перед установкой…</string>
     <string name="backup_before_update_running_title">Идёт резервное копирование</string>
     <string name="backup_excluded_preferences_and_cache_description">Личные настройки (например, режим темы) и кэш исключены.</string>
+    <string name="backup_export_library_options_description">Экспортировать базу данных с ее обложками, настройками или профилями</string>
+    <string name="backup_import_library_options_description">Восстановить резервную копию базы данных SQLite или ZIP, настройки или профили</string>
     <string name="backup_include_discord_credentials">Включить учетные данные Discord</string>
     <string name="backup_include_lastfm_credentials">Включить учетные данные Last.fm</string>
     <string name="backup_include_proxy_password">Включить пароль прокси-сервера</string>
@@ -56,12 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Экспортировать список профилей и фото лица в один .txt файл</string>
     <string name="backup_export_all">Экспортировать все</string>
+    <string name="backup_export_all_with_covers_description">Экспорт базы данных, настроек и состояния профиля отдельно. База данных использует ZIP, если она включает пользовательские обложки.</string>
+    <string name="backup_export_database_with_covers_and_settings_description">Экспортировать базу данных и настройки отдельно. База данных использует ZIP, если она включает пользовательские обложки.</string>
+    <string name="backup_export_database_with_covers_description">Сохраняйте песни, плейлисты и историю как SQLite. Если у вас есть пользовательские обложки, экспорт является ZIP с базой данных и обложек.</string>
     <string name="backup_export_profile_state_failed">Не удалось экспортировать состояние профиля</string>
     <string name="backup_export_settings_description">Экспорт настроек и настроек приложения</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Импортировать список профилей и фото лица из файла .txt</string>
     <string name="backup_import_all">Импортировать все</string>
+    <string name="backup_import_all_with_covers_description">Восстановить резервную копию базы данных SQLite или ZIP, настройки и состояние профиля из отдельных файлов.</string>
+    <string name="backup_import_database_with_covers_and_settings_description">Восстановить резервную копию базы данных SQLite или ZIP и отдельный файл настроек.</string>
     <string name="backup_import_completed_profile">Импортировано в %1$s</string>
+    <string name="backup_import_database_with_covers_description">Восстановление композиций, плейлистов и истории из SQLite или ZIP.</string>
     <string name="backup_import_profile_state_complete">Импорт состояния профиля: %1$d профилей</string>
     <string name="backup_import_profile_state_complete_base">Состояние профиля импортировано: базовый профиль</string>
     <string name="backup_import_profile_state_failed">Не удалось импортировать состояние профиля</string>
@@ -72,11 +116,14 @@
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Очистить кэш песен</string>
     <string name="cache_downloads_max_size_description">Выберите, сколько дискового пространства доступно для скачанных песен. Кнопка \"Мусор\" удаляет загруженное аудио.</string>
+    <string name="cache_downloads_limit_description">Выберите, сколько дискового пространства доступно для скачанных песен. Кнопка \"Мусор\" удаляет загруженное аудио.</string>
     <string name="cache_image_max_size_description">Ограничить дисковое пространство, используемое кэшированным изображением. Кнопка \"Мусор\" очищает загруженные изображения из кэша.</string>
+    <string name="cache_image_limit_description">Ограничить дисковое пространство, используемое кэшированным изображением. Кнопка \"Мусор\" очищает загруженные изображения из кэша.</string>
     <string name="cache_location_description">Выберите, где приложение сохраняет кэш воспроизведения песен.</string>
     <string name="cache_location_private">Внутри файлов приложения</string>
     <string name="cache_location_system">Стандартное (внутри системы)</string>
     <string name="cache_streaming_max_size_description">Ограничить дисковое пространство, используемое для кэширования потоковых песен. Кнопка \"Мусор\" очищает кэш воспроизведения.</string>
+    <string name="cache_streaming_limit_description">Ограничить дисковое пространство, используемое для кэширования потоковых песен. Кнопка \"Мусор\" очищает кэш воспроизведения.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Скачать все песни</string>
     <string name="downloads_action_refresh_quality">Обновить загрузки</string>
@@ -136,7 +183,10 @@
     <string name="storage_samsung_advice_message">Samsung автоматическое управление памятью может удалить загрузки и файлы кэша N-Zik, даже если вы не просили об этом. Для обеспечения безопасности загрузки используйте место хранения личных данных (приложения) вместо системного хранилища.</string>
     <string name="storage_samsung_advice_title">Советы Samsung</string>
     <string name="storage_samsung_system_usage_message">В настоящее время у вас есть %1$s загрузок и кэш на системном хранилище.</string>
+    <string name="backup_export_database_failed">Не удалось экспортировать базу данных</string>
     <string name="backup_import_failed">Не удалось импортировать</string>
     <string name="export_no_songs">Нет экспортированных песен</string>
     <string name="export_cached_songs_generic_error">Не удалось экспортировать</string>
+    <string name="backup_startup_preparing_library">Подготовка вашей библиотеки…</string>
+    <string name="backup_startup_recovery_failed">Не удалось завершить восстановление вашей библиотеки.</string>
 </resources>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
     <string name="logs_action_export">تصدير السجلات</string>
     <string name="logs_action_export_both">تصدير كلا السجلات</string>
@@ -40,6 +41,7 @@
     <string name="maintenance_dedup_flagged">العلامة %d صفوف</string>
     <string name="maintenance_dedup_merged">تم دمج صفوف %d</string>
     <string name="maintenance_dedup_merged_flagged">اندمجت صفوف %1$d · صفوف %2$d المعلمة</string>
+    <string name="maintenance_dedup_counts_format">%1$s · %2$s</string>
     <string name="maintenance_discord_invalid_token">الرمز المميز غير صالح</string>
     <string name="maintenance_discord_ok">حسناً</string>
     <string name="maintenance_discord_reconnect_failed">فشلت إعادة الاتصال</string>
@@ -135,6 +137,9 @@
     <string name="modules_download_needed">تحتاج الوحدة النمطية للتنزيل (~25 ميغابايت). تحقق من الاتصال.</string>
     <string name="modules_downloading">تنزيل الوحدة</string>
     <string name="modules_edit_unavailable">تعديل بيانات التعريف غير متوفرة: %1$s</string>
+    <string name="modules_ffmpeg_preparation">إعداد FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">تحميل FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">تحتاج لتصدير الأغاني المخزنة مؤقتاً ولتعديل بيانات التعريف للأغنية. تم تنزيلها عند الاستخدام الأول.</string>
     <string name="modules_info">معلومات</string>
     <string name="modules_insufficient_space">هذه الميزة تحتاج حوالي 70 ميغابايت من المساحة الحرة</string>
@@ -197,6 +202,7 @@
     <string name="recovery_error">حدث خطأ: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">تصدير قاعدة البيانات</string>
+    <string name="recovery_export_database_with_covers_description">حفظ مكتبتك وقوائم التشغيل والسجل كـ SQLite. إذا كان لديك أغلفة مخصصة، التصدير هو ZIP مع قاعدة البيانات والغلاف.</string>
     <string name="recovery_export_logs">تصدير السجلات</string>
     <string name="recovery_export_logs_description">حفظ سجلات الأعطال وتصحيح الأخطاء لتقرير الأخطاء</string>
     <string name="recovery_export_profiles_description">قائمة الملف الشخصي وصور الوجه في ملف واحد .txt</string>
@@ -209,6 +215,7 @@
     <string name="recovery_group_settings">الإعدادات</string>
     <string name="recovery_group_storage">التخزين</string>
     <string name="recovery_import_database">استيراد قاعدة البيانات</string>
+    <string name="recovery_import_database_with_covers_description">استعادة نسخة احتياطية لقاعدة بيانات SQLite أو ZIP، بما في ذلك أي أغلفة مخصصة في ZIP.</string>
     <string name="recovery_import_profiles_description">استعادة قائمة الملف الشخصي وصور الوجه من ملف .txt</string>
     <string name="recovery_import_settings">استيراد الإعدادات</string>
     <string name="recovery_import_settings_description">استعادة تفضيلات من ملف CSV</string>
@@ -309,4 +316,5 @@
     <string name="updates_warning_acknowledge">أنا أفهم</string>
     <string name="updates_check_failed">تعذر التحقق من وجود تحديثات.</string>
     <string name="updates_install_generic_error">تعذر تثبيت التحديث.</string>
+    <string name="updates_channel_available_format">يتوفر تحديث %1$s</string>
 </resources>

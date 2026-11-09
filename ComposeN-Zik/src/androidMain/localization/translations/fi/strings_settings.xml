@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Yhdistä ensin YouTubeen, jotta voit ottaa tämän vaihtoehdon käyttöön</string>
     <string name="settings_youtube_library_sync_content_description">Soittolistat, albumit, artistit, historia, tykkää jne.</string>
     <string name="settings_youtube_login_enabled_label">Ota YouTube-musiikin kirjautuminen käyttöön</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Lajittele</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Työkalurivi</string>
 </resources>

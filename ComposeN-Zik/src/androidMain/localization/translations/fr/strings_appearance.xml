@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">Pages</string>
     <string name="glass_effect_destination_playback">Lecture</string>
     <string name="glass_effect_destination_shared">Éléments partagés</string>
+    <string name="glass_effect_loading_indicators">Indicateurs de chargement</string>
+    <string name="glass_effect_loading_indicators_description">Personnalisez les animations de chargement sur les pages, dans les fiches et dans les boîtes de dialogue.</string>
+    <string name="glass_effect_pull_to_refresh">Glisser vers le bas pour actualiser</string>
+    <string name="glass_effect_pull_to_refresh_description">Personnalisez l\'indicateur qui s\'affiche lorsque vous faites glisser vers le bas pour actualiser la page.</string>
     <string name="glass_effect_destination_windows">Windows et messages</string>
     <string name="glass_effect_dialog_dimming">Luminosité de l\'arrière-plan de la boîte de dialogue</string>
     <string name="glass_effect_dispersion">Séparation des couleurs</string>
@@ -121,6 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">Les cartes qui regroupent les paramètres et affichent vos profils.</string>
     <string name="glass_effect_role_visualizer">Visualiseur · contrôles</string>
     <string name="glass_effect_role_visualizer_description">Les flèches et les paramètres utilisés avec le visualiseur.</string>
+    <string name="glass_effect_shared_components_summary">Choisissez l\'apparence de Glass sur les éléments utilisés dans l\'application, notamment les indicateurs de chargement et la fonction « Glisser vers le bas pour actualiser ».</string>
     <string name="glass_effect_summary">Personnaliser les surfaces, les couleurs, les contours et la qualité de l\'effet de verre.</string>
     <string name="glass_effect_switches_description">Utilisez des interrupteurs de verre liquides avec le matériau partagé et les effets d\'interaction lorsque le Verre est activé.</string>
     <string name="glass_effect_switches_title">Interrupteurs de verre</string>
@@ -225,6 +230,10 @@
     <string name="theme_shake_sensitivity_medium">Moyenne (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Très élevée (1,0 G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">Télécharger</string>
+    <string name="cover_download_failed">Impossible de télécharger la couverture.</string>
+    <string name="image_editor_title">Modifier l\'image</string>
+    <string name="image_editor_failed">Impossible d\'éditer l\'image. Votre image actuelle a été conservée.</string>
     <string name="thumbnail_action_edit">Éditer la miniature</string>
     <string name="thumbnail_action_pick_from_gallery">Choisissez une photo dans la galerie</string>
     <string name="thumbnail_action_reset">Réinitialiser la miniature</string>
@@ -234,4 +243,6 @@
     <string name="thumbnail_remove_failed">Échec de la suppression de la miniature</string>
     <string name="thumbnail_remove_success">Supprimer la miniature</string>
     <string name="glass_effect_rendering_quality">Qualité de rendu</string>
+    <string name="image_editor_original">Ratio d\'origine</string>
+    <string name="image_editor_apply">Utiliser l\'image</string>
 </resources>

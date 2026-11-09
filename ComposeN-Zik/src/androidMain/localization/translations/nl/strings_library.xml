@@ -42,6 +42,7 @@
     <string name="home_greeting_evening">Goede avond</string>
     <string name="home_greeting_morning">Goedemorgen</string>
     <string name="home_greeting_night">Goede nacht</string>
+    <string name="home_greeting_with_profile_format">%1$s, %2$s</string>
     <string name="home_playlists_settings">Thuis afspeellijsten</string>
     <string name="home_songs_settings">Thuis nummers</string>
     <string name="home_sort_last_played_song_label">Door laatst gespeeld nummer</string>
@@ -248,6 +249,7 @@
     <string name="playlist_refresh_on_open_enable">Vernieuwen bij openen inschakelen</string>
     <string name="playlist_remove_selected_confirmation">De geselecteerde nummers uit deze afspeellijst verwijderen?</string>
     <string name="playlist_remove_songs_confirmation">Selectie uit de afspeellijst verwijderen? Geselecteerde nummers: %d</string>
+    <string name="playlist_remove_songs_success_format">%1$s %2$d</string>
     <string name="playlist_rename_dialog_title">Hernoem afspeellijst</string>
     <string name="playlist_reorder_ascending_sort_required_message">Opnieuw bestellen is alleen mogelijk bij oplopende sortering</string>
     <string name="playlist_reorder_lock_toggle_label">Vergrendel/Ontgrendelen van herschikken van nummers</string>
@@ -377,6 +379,27 @@
     <string name="song_metadata_update_action_open">Open update dialoogvenster</string>
     <string name="song_metadata_updated_count">Bijgewerkt %1$d nummers</string>
     <string name="song_play_time_action_reset">Reset totale speeltijd</string>
+    <string name="song_like_status_action_reset">Reset status likte/niet meer leuk</string>
+    <string name="song_update_action_clear_playback_cache">Afspeelcache legen</string>
+    <string name="song_update_action_remove_offline_download">Offline download verwijderen</string>
+    <string name="song_update_result_partial">Gedeeltelijk bijgewerkt. %1$s</string>
+    <string name="song_update_result_failed">Niet bijgewerkt. %1$s</string>
+    <string name="song_update_error_metadata_unavailable">YouTube informatie niet beschikbaar.</string>
+    <string name="song_update_error_network">Kan YouTube niet bereiken. Controleer uw verbinding.</string>
+    <string name="song_update_error_missing_title">YouTube gaf geen titel terug.</string>
+    <string name="song_update_error_missing_artists">YouTube geeft geen artiesten terug.</string>
+    <string name="song_update_error_incomplete_artists">Artiest informatie van YouTube is onvolledig.</string>
+    <string name="song_update_error_missing_cover">YouTube gaf geen omslag terug.</string>
+    <string name="song_update_error_wrong_song">YouTube stuurde een ander nummer terug. Zijn informatie werd genegeerd.</string>
+    <string name="song_update_error_cache_unavailable">Afspeelcache niet beschikbaar. Heropen de speler en probeer het opnieuw.</string>
+    <string name="song_update_error_profile_changed">Update gestopt omdat het actieve profiel is veranderd.</string>
+    <string name="song_update_error_storage">Wijzigingen konden niet worden opgeslagen op dit apparaat.</string>
+    <string name="song_update_error_cache_clear">Opschonen van de afspeelcache is niet gelukt.</string>
+    <string name="song_update_error_download_remove">Kon de offline download niet verwijderen.</string>
+    <string name="song_update_error_cover_reset">Kon het resetten van de omslag niet voltooien.</string>
+    <string name="song_update_error_playback_refresh">Verandert opgeslagen maar de speler kon niet vernieuwen.</string>
+    <string name="song_update_batch_result">Bijgewerkt: %1$d · deels bijgewerkt: %2$d · Niet bijgewerkt: %3$d</string>
+    <string name="song_update_batch_reason_count">%1$s (%2$d)</string>
     <!-- Song Matching -->
     <string name="song_matching_action_open">Album/Audio versie vergelijken</string>
     <string name="song_matching_all_confirmation">Wil je ongeëvenaarde nummers met %d koppelen?</string>
@@ -386,6 +409,7 @@
     <string name="song_matching_unmatched_label">Ongeëvenaard nummer</string>
     <string name="metadata_musicbrainz_rating">Beoordeling</string>
     <string name="metadata_cover_art">Omslag kunst</string>
+    <string name="metadata_cover_url_hint">Plak een afbeeldingslink</string>
     <string name="metadata_file_path_unavailable">Kan bestandspad niet oplossen</string>
     <string name="metadata_save_failed">Opslaan van metagegevens mislukt</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
@@ -393,4 +417,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Het verzamelen van alle liedjes zal %1$sduren. Sluit de app om te annuleren. Wilt u doorgaan?</string>
     <string name="library_on_device_permission_request_failed">Kon geen toegang vragen tot muziek op dit apparaat.</string>
     <string name="library_on_device_permission_settings_failed">Kan machtigingsinstellingen niet openen.</string>
+    <string name="artist_more_from_format">Meer van %1$s</string>
+    <string name="playlist_top_show_title_format">Toon %1$s</string>
 </resources>
