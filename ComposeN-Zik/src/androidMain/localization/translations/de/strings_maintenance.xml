@@ -137,6 +137,9 @@
     <string name="modules_download_needed">Modul benötigt Download (~25 MB). Überprüfen Sie die Verbindung.</string>
     <string name="modules_downloading">Modul herunterladen</string>
     <string name="modules_edit_unavailable">Bearbeiten von Metadaten nicht verfügbar: %1$s</string>
+    <string name="modules_ffmpeg_preparation">FFmpeg vorbereiten</string>
+    <string name="modules_ffmpeg_downloading">FFmpeg herunterladen</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Benötigt um zwischengespeicherte Lieder zu exportieren und Song-Metadaten zu bearbeiten. Wird bei der ersten Verwendung heruntergeladen.</string>
     <string name="modules_info">Info</string>
     <string name="modules_insufficient_space">Diese Funktion benötigt etwa 70 MB freien Speicherplatz</string>
