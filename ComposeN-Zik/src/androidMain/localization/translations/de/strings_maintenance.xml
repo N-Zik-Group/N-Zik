@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">Letzter Absturz</string>
     <string name="maintenance_lastfm_active">Sitzung aktiv</string>
     <string name="maintenance_library">Bibliothek</string>
-    <string name="maintenance_library_albums">Alben: %d</string>
-    <string name="maintenance_library_artists">Interpreten: %d</string>
+    <string name="maintenance_library_albums">%d Alben</string>
+    <string name="maintenance_library_artists">%d Künstler</string>
     <string name="maintenance_library_listened">%d gehört</string>
-    <string name="maintenance_library_playlists">Wiedergabelisten: %d</string>
-    <string name="maintenance_library_songs">Songs: %d</string>
+    <string name="maintenance_library_playlists">%d Wiedergabelisten</string>
+    <string name="maintenance_library_songs">%d Lieder</string>
     <string name="maintenance_live_subsystems">Live-Subsysteme</string>
     <string name="maintenance_log_view">Ansicht</string>
     <string name="maintenance_lt_connected">Verbunden</string>
@@ -197,7 +197,7 @@
     <string name="recovery_error">Ein Fehler ist aufgetreten: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Datenbank exportieren</string>
-    <string name="recovery_export_database_description">Speichere deine Bibliothek, Wiedergabelisten und Verlauf</string>
+    <string name="recovery_export_database_with_covers_description">Speichern Sie Ihre Bibliothek, Wiedergabelisten und den Verlauf als SQLite. Wenn Sie eigene Cover haben, ist der Export ein ZIP mit der Datenbank und Cover.</string>
     <string name="recovery_export_logs">Logs exportieren</string>
     <string name="recovery_export_logs_description">Absturz- und Debug-Logs für einen Fehlerbericht speichern</string>
     <string name="recovery_export_profiles_description">Die Profilliste und die Gesichtsfotos in einer einzigen .txt-Datei</string>
@@ -210,7 +210,7 @@
     <string name="recovery_group_settings">Einstellungen</string>
     <string name="recovery_group_storage">Speicher</string>
     <string name="recovery_import_database">Datenbank importieren</string>
-    <string name="recovery_import_database_description">Eine zuvor exportierte Datenbank wiederherstellen</string>
+    <string name="recovery_import_database_with_covers_description">Ein SQLite oder ZIP Datenbank-Backup wiederherstellen, einschließlich aller benutzerdefinierten Cover im ZIP.</string>
     <string name="recovery_import_profiles_description">Wiederherstellen der Profilliste und der Gesichtsfotos aus einer .txt-Datei</string>
     <string name="recovery_import_settings">Einstellungen importieren</string>
     <string name="recovery_import_settings_description">Einstellungen aus einer CSV-Datei wiederherstellen</string>
@@ -311,4 +311,5 @@
     <string name="updates_warning_acknowledge">Ich verstehe</string>
     <string name="updates_check_failed">Konnte nicht nach Updates suchen.</string>
     <string name="updates_install_generic_error">Konnte das Update nicht installieren.</string>
+    <string name="updates_channel_available_format">%1$s Update verfügbar</string>
 </resources>
