@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">Vastaamaton kappale</string>
     <string name="metadata_musicbrainz_rating">Arvostelu</string>
     <string name="metadata_cover_art">Kansitaide</string>
+    <string name="metadata_cover_url_hint">Liitä kuvan linkki</string>
     <string name="metadata_file_path_unavailable">Tiedostopolkua ei voida ratkaista</string>
     <string name="metadata_save_failed">Metatietojen tallennus epäonnistui</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
