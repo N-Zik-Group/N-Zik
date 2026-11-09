@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">Sivut</string>
     <string name="glass_effect_destination_playback">Toisto</string>
     <string name="glass_effect_destination_shared">Jaetut elementit</string>
+    <string name="glass_effect_loading_indicators">Kuormitus indikaattorit</string>
+    <string name="glass_effect_loading_indicators_description">Style animaatioiden lataaminen sivuille ja korteille ja ikkunoille.</string>
+    <string name="glass_effect_pull_to_refresh">Vedä päivittääksesi</string>
+    <string name="glass_effect_pull_to_refresh_description">Tyyli osoitin, joka näkyy, kun vedät alas päivittää.</string>
     <string name="glass_effect_destination_windows">Ikkunat ja viestit</string>
     <string name="glass_effect_dialog_dimming">Dialogin taustan himmennys</string>
     <string name="glass_effect_dispersion">Värien jakaminen</string>
@@ -121,6 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">Kortit, jotka ryhmittelevät asetukset ja näyttävät profiilisi.</string>
     <string name="glass_effect_role_visualizer">Visualisoija · kontrollit</string>
     <string name="glass_effect_role_visualizer_description">Nuolet ja asetukset painike käytetään visualisoija.</string>
+    <string name="glass_effect_shared_components_summary">Valitse, miltä lasi näyttää sovelluksessa käytetyille komponenteille, mukaan lukien kuormitusmittarit ja vedä virkistämään.</string>
     <string name="glass_effect_summary">Mukauta lasiefektin pintoja, värejä, ääriviivoja ja laatua.</string>
     <string name="glass_effect_switches_description">Käytä nestettä Lasi kytkimiä yhteinen materiaali ja vuorovaikutus vaikutuksia, kun Lasi on käytössä.</string>
     <string name="glass_effect_switches_title">Lasiset kytkimet</string>
@@ -225,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Keskikokoinen (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Erittäin Korkea (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Muokkaa kuvaa</string>
+    <string name="image_editor_failed">Kuvaa ei voitu muokata. Nykyinen kuvasi säilytettiin.</string>
     <string name="thumbnail_action_edit">Muokkaa pienoiskuvaa</string>
     <string name="thumbnail_action_pick_from_gallery">Valitse galleriasta</string>
     <string name="thumbnail_action_reset">Palauta pienoiskuva</string>
@@ -234,4 +241,6 @@
     <string name="thumbnail_remove_failed">Pienoiskuvan poisto epäonnistui</string>
     <string name="thumbnail_remove_success">Pienoiskuva poistettu</string>
     <string name="glass_effect_rendering_quality">Laadun tekeminen</string>
+    <string name="image_editor_original">Alkuperäinen suhde</string>
+    <string name="image_editor_apply">Käytä kuvaa</string>
 </resources>
