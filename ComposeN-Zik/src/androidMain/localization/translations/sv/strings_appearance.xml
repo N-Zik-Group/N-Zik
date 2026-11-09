@@ -242,6 +242,5 @@
     <string name="thumbnail_remove_success">Tog bort miniatyrbild</string>
     <string name="glass_effect_rendering_quality">Renderar kvalitet</string>
     <string name="image_editor_original">Ursprungligt förhållande</string>
-    <string name="image_editor_cancel">Avbryt</string>
     <string name="image_editor_apply">Använd bild</string>
 </resources>
