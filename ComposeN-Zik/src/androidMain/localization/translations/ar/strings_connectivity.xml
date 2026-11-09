@@ -198,4 +198,5 @@
     <string name="listen_together_server_request_failed">لم يتمكن خادم \"الاستماع معاً\" من إكمال الطلب.</string>
     <string name="network_stream_retrying_playback">جارٍ إعادة محاولة التشغيل…</string>
     <string name="listen_together_invite_link">الاستماع معا لرابط الدعوة</string>
+    <string name="listen_together_server_location_poland">بولندا</string>
 </resources>
