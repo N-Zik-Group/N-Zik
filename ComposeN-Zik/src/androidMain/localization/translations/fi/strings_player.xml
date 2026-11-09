@@ -82,6 +82,7 @@
     <string name="lyrics_editor_title">Syötä sanoitukset</string>
     <string name="lyrics_empty">Ei sanoituksia</string>
     <string name="lyrics_fetch_error_message">Tapahtui virhe noudettaessa sanoituksia</string>
+    <string name="lyrics_provider_fetch_error_message">Sanoituksia ei voitu hakea %1$s</string>
     <string name="lyrics_font_size_animation_label">Animoitujen sanoitusten koko</string>
     <string name="lyrics_font_size_extra_large_label">Erittäin Suuri</string>
     <string name="lyrics_font_size_large_label">Suuri</string>
@@ -296,10 +297,14 @@
     <string name="player_statistics_codec_label">Koodi</string>
     <string name="player_statistics_container_label">Säiliö</string>
     <string name="player_statistics_itag_label">Kursiivi</string>
+    <string name="player_playback_speed_value">%1$.1fx</string>
+    <string name="player_decibels_value">%1$.2f dB</string>
     <string name="player_statistics_loudness_label">Äänekkyys</string>
     <string name="player_statistics_media_id_label">Tunnus</string>
     <string name="player_statistics_perceptual_loudness_label">Perceptual Loudness</string>
     <string name="player_statistics_sample_rate_label">Näytteen Määrä</string>
+    <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
+    <string name="player_statistics_cache_status">%1$s: %2$s</string>
     <string name="player_statistics_volume_label">Tilavuus</string>
     <string name="player_swap_controls_with_timeline">Vaihda hallintalaitteet aikajanalla</string>
     <string name="player_swipe_sensitivity">Pelaajan Pyyhkäisyn Herkkyys</string>
