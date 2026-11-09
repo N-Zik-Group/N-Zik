@@ -25,8 +25,6 @@ import coil3.toBitmap
 import app.n_zik.android.core.coil.ImageCacheFactory
 import androidx.compose.ui.graphics.toArgb
 import app.n_zik.android.MainActivity
-import app.n_zik.android.core.database.Database
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -46,23 +44,38 @@ object PlaylistWidgetManager {
         val targetIntent: PendingIntent
     )
 
-    private var cachedQuickPicks: List<QuickPick>? = null
-    private var lastQuickPicksUpdateTime: Long = 0L
+    private data class QuickPickCache(val selection: List<PlaylistQuickPickSource.Entry>, val picks: List<QuickPick>)
+    @Volatile private var quickPickCache: QuickPickCache? = null
 
-
-    private suspend fun getQuickPicks(context: Context, accentArgb: Int): List<QuickPick> {
-        val now = System.currentTimeMillis()
-        if (cachedQuickPicks != null && now - lastQuickPicksUpdateTime < 60_000) {
-            val picks = cachedQuickPicks?.toMutableList() ?: return emptyList()
-            if (picks.isNotEmpty() && picks[0].title == context.getString(R.string.library_favorites_title)) {
-                picks[0] = picks[0].copy(artworkBitmap = getLikedBitmap(context, accentArgb))
+    internal suspend fun getQuickPicks(context: Context, accentArgb: Int): List<QuickPick> = withContext(NzikDispatchers.DATA) {
+        val selection = PlaylistQuickPickSource.shared.load(context)
+        val cached = quickPickCache
+        if (cached != null && cached.selection === selection) {
+            return@withContext cached.picks.mapIndexed { index, pick ->
+                if (selection[index].target == PlaylistQuickPickSource.Target.Favorites)
+                    pick.copy(artworkBitmap = getLikedBitmap(context, accentArgb)) else pick
             }
-            return picks
         }
-        val picks = buildQuickPicks(context, accentArgb)
-        cachedQuickPicks = picks
-        lastQuickPicksUpdateTime = now
-        return picks
+        val picks = selection.map { entry ->
+            val (destination, requestCode) = when (val target = entry.target) {
+                PlaylistQuickPickSource.Target.Favorites -> "nzik://app/playFavorites" to "Favorites".hashCode()
+                is PlaylistQuickPickSource.Target.Playlist -> "nzik://app/localPlaylist/${target.id}" to target.id.hashCode()
+                is PlaylistQuickPickSource.Target.Artist -> "nzik://app/channel/${target.id}" to target.id.hashCode()
+                is PlaylistQuickPickSource.Target.Album -> "nzik://app/album/${target.id}" to target.id.hashCode()
+                is PlaylistQuickPickSource.Target.Track -> "nzik://app/watch?v=${target.song.id}" to target.song.id.hashCode()
+            }
+            val intent = Intent(context, MainActivity::class.java).apply {
+                action = Intent.ACTION_VIEW
+                data = Uri.parse(destination)
+            }
+            val pending = PendingIntent.getActivity(context, requestCode, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            val artwork = if (entry.target == PlaylistQuickPickSource.Target.Favorites)
+                getLikedBitmap(context, accentArgb) else loadBitmap(context, entry.artworkSource)
+            QuickPick(entry.title, artwork, pending)
+        }
+        quickPickCache = QuickPickCache(selection, picks)
+        picks
     }
 
     private suspend fun loadBitmap(context: Context, url: String?): Bitmap? {
@@ -98,70 +111,6 @@ object PlaylistWidgetManager {
             drawable.draw(canvas)
         }
         return bitmap
-    }
-
-    private suspend fun buildQuickPicks(context: Context, accentArgb: Int): List<QuickPick> = withContext(NzikDispatchers.DATA) {
-        val items = mutableListOf<QuickPick>()
-
-        val likedIntent = Intent(context, MainActivity::class.java).apply {
-            action = Intent.ACTION_VIEW
-            data = Uri.parse("nzik://app/playFavorites")
-        }
-        val likedPendingIntent = PendingIntent.getActivity(context, "Favorites".hashCode(), likedIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        items.add(QuickPick(context.getString(R.string.library_favorites_title), getLikedBitmap(context, accentArgb), likedPendingIntent))
-
-        val playlists = Database.playlistTable.sortPreviewsByPlayCount(8).firstOrNull() ?: emptyList()
-        playlists.forEach { p ->
-            val firstSong = Database.songPlaylistMapTable.sortSongsByPosition(p.playlist.id, 1).firstOrNull()?.firstOrNull()
-            val artworkUri = firstSong?.thumbnailUrl
-            val intent = Intent(context, MainActivity::class.java).apply {
-                action = Intent.ACTION_VIEW
-                data = Uri.parse("nzik://app/localPlaylist/${p.playlist.id}")
-            }
-            val pendingIntent = PendingIntent.getActivity(context, p.playlist.id.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            items.add(QuickPick(p.playlist.name, loadBitmap(context, artworkUri), pendingIntent))
-        }
-
-        val followingArtists = Database.artistTable.sortFollowingByPlayCount(8).firstOrNull() ?: emptyList()
-        val libraryArtists = Database.artistTable.sortInLibraryByPlayCount(8).firstOrNull() ?: emptyList()
-        (followingArtists + libraryArtists).distinctBy { it.id }.forEach { a ->
-            val intent = Intent(context, MainActivity::class.java).apply {
-                action = Intent.ACTION_VIEW
-                data = Uri.parse("nzik://app/channel/${a.id}")
-            }
-            val pendingIntent = PendingIntent.getActivity(context, a.id.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            items.add(QuickPick(a.name ?: context.getString(R.string.common_unknown), loadBitmap(context, a.thumbnailUrl), pendingIntent))
-        }
-
-        val bookmarkedAlbums = Database.albumTable.sortBookmarkedByPlayCount(8).firstOrNull() ?: emptyList()
-        val libraryAlbums = Database.albumTable.sortInLibraryByPlayCount(8).firstOrNull() ?: emptyList()
-        (bookmarkedAlbums + libraryAlbums).distinctBy { it.id }.forEach { a ->
-            val intent = Intent(context, MainActivity::class.java).apply {
-                action = Intent.ACTION_VIEW
-                data = Uri.parse("nzik://app/album/${a.id}")
-            }
-            val pendingIntent = PendingIntent.getActivity(context, a.id.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            items.add(QuickPick(a.title ?: context.getString(R.string.common_unknown), loadBitmap(context, a.thumbnailUrl), pendingIntent))
-        }
-        
-        val randomSongs = Database.songTable.all().firstOrNull()?.shuffled()?.take(8) ?: emptyList()
-        randomSongs.forEach { s ->
-            val intent = Intent(context, MainActivity::class.java).apply {
-                action = Intent.ACTION_VIEW
-                data = Uri.parse("nzik://app/watch?v=${s.id}")
-            }
-            val pendingIntent = PendingIntent.getActivity(context, s.id.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            items.add(QuickPick(s.title, loadBitmap(context, s.thumbnailUrl), pendingIntent))
-        }
-
-        val firstItem = items.first()
-        val restItems = items.drop(1).shuffled()
-        val picks = listOf(firstItem) + restItems.take(7)
-
-        val now = SystemClock.elapsedRealtime()
-        cachedQuickPicks = picks
-        lastQuickPicksUpdateTime = now
-        picks
     }
 
     private fun getImageLoader(context: Context): ImageLoader = ImageCacheFactory.LOADER

@@ -84,7 +84,26 @@ class AutoBrowseTree(
             if (page == null) cache.clear()
             cache.get(key)
         }
-        val list = if (cached != null) cached else {
+        val list = if (cached != null) cached else if (actualParentId == AutoSuggestedQueueLoader.ROOT_ID) {
+            val suggestions = AutoSuggestedQueueLoader.load(context, database, downloadHelper, binder)
+            synchronized(publicationLock) {
+                if (!ownsPublication(requestProfile, generation)) return emptyList()
+                val captured = suggestions.mapNotNull { suggestion ->
+                    val browsable = suggestion.items.isEmpty()
+                    val id = if (browsable) suggestion.browseId ?: return@mapNotNull null
+                        else AutoMediaIdContract.playlistPlayAll("suggested")
+                    val action = withRemoteArtwork(MediaItem.Builder()
+                        .setMediaId(id)
+                        .setMediaMetadata(MediaMetadata.Builder().setTitle(suggestion.title)
+                            .setArtworkUri(suggestion.artworkUri).setMediaType(suggestion.mediaType)
+                            .setIsPlayable(!browsable).setIsBrowsable(browsable).build()).build(), requestProfile)
+                    if (browsable) action else selectionStore.capture(suggestion.parentId, listOf(action) + suggestion.items,
+                        expectedProfile = requestProfile).firstOrNull()
+                }.filter { it.mediaMetadata.isBrowsable == true || selectionStore.resolveAction(it.mediaId) != null }
+                if (!publishCached(requestProfile, generation, actualParentId, captured)) return emptyList()
+                captured
+            }
+        } else {
             val handler = handlers.firstOrNull { it.handles(actualParentId) }
             val loadedRows = handler?.getChildren(actualParentId, context, database, downloadHelper, binder).orEmpty().map { item ->
                 withRemoteArtwork(item, requestProfile)
@@ -107,7 +126,8 @@ class AutoBrowseTree(
         }
         return synchronized(publicationLock) {
             if (!ownsPublication(requestProfile, generation)) return emptyList()
-            val visible = PaginationHelper.paginate(context, list, actualParentId, page?.index ?: pageIndex)
+            val visible = if (actualParentId == AutoSuggestedQueueLoader.ROOT_ID) list
+                else PaginationHelper.paginate(context, list, actualParentId, page?.index ?: pageIndex)
             visible.also {
                 visibleLists[BrowseKey(browser, parentId)] = visible
                 while (visibleLists.size > 32) visibleLists.remove(visibleLists.keys.first())
@@ -155,6 +175,7 @@ class AutoBrowseTree(
             if (cacheProfile == getActiveProfile(context)) emittedFolders[mediaId]?.let { return it }
         }
         if (mediaId == PlayerServiceModern.ROOT) return rootItem()
+        if (mediaId == AutoSuggestedQueueLoader.ROOT_ID) return rootItem(suggested = true)
         RootBrowseHandler().getChildren(PlayerServiceModern.ROOT, context, database, downloadHelper, binder)
             .firstOrNull { it.mediaId == mediaId }?.let { return it }
         val parent = STATIC_PARENTS[mediaId] ?: return null
@@ -163,7 +184,8 @@ class AutoBrowseTree(
             ?.firstOrNull { it.mediaId == mediaId && it.mediaMetadata.isBrowsable == true }
     }
 
-    fun rootItem(): MediaItem = MediaItem.Builder().setMediaId(PlayerServiceModern.ROOT)
+    fun rootItem(suggested: Boolean = false): MediaItem = MediaItem.Builder()
+        .setMediaId(if (suggested) AutoSuggestedQueueLoader.ROOT_ID else PlayerServiceModern.ROOT)
         .setMediaMetadata(MediaMetadata.Builder().setIsPlayable(false)
             .setIsBrowsable(true).setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_MIXED).build())
         .build()

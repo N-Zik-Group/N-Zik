@@ -32,3 +32,9 @@ Other:
   - Upgrade Media3 to 1.11.1 and centralize primary/secondary engine construction with the existing audio-focus and load-control policy.
   - Adapt automotive playback requests, paging and captured selections while retaining offline, parental and controller ownership guards.
   - Cover engine configuration, queue commands and automotive request compatibility.
+
+Fixed:
+- fix(android-auto): publish personalized suggested playback (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Share playlist-widget selection and empty-library fallbacks with the Android Auto suggested root.
+  - Publish personalized queues for the host dashboard without replacing the in-app Quick Picks browser.
+  - Retain suggestion title, artwork, profile ownership and playable queue identity.

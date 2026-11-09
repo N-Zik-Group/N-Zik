@@ -5,6 +5,7 @@ import android.net.Uri
 import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.playback.services.ArtworkContentProvider
 import android.os.Bundle
+import android.service.media.MediaBrowserService.BrowserRoot
 import androidx.annotation.OptIn
 import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastMap
@@ -77,6 +78,7 @@ import app.n_zik.android.playback.services.diagnostics.seekCommandName
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.R
+import app.n_zik.android.BuildConfig
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 @UnstableApi
@@ -208,6 +210,18 @@ class AutoSessionCallback(
         session: MediaSession,
         controller: MediaSession.ControllerInfo
     ): ListenableFuture<MediaSession.ConnectionResult> {
+        if (BuildConfig.DEBUG && Timber.treeCount > 0) {
+            runCatching {
+                val hints = controller.connectionHints
+                val keys = hints.keySet().sorted().take(32)
+                Timber.tag("AutoConnection").d(
+                    "client=%s uid=%d version=%d interface=%d trusted=%s verified=%s maxItemCommands=%d hintKeys=%s standardHints=%s",
+                    controller.packageName, controller.uid, controller.controllerVersion, controller.interfaceVersion,
+                    controller.isTrusted, controller.isPackageNameVerified, controller.maxCommandsForMediaItems,
+                    keys, standardBrowseHints(hints),
+                )
+            }.onFailure { Timber.tag("AutoConnection").d("Connection diagnostics unavailable") }
+        }
         // Preserve the previous controller policy; the guarded player still limits commands.
         val defaultSessionCommands = if (session is MediaLibrarySession) {
             MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
@@ -238,6 +252,20 @@ class AutoSessionCallback(
         return Futures.immediateFuture(MediaSession.ConnectionResult.accept(
             commandsForAccess(result.availableSessionCommands), result.availablePlayerCommands
         ))
+    }
+
+    private fun standardBrowseHints(hints: Bundle?): List<String> = listOf(
+        BrowserRoot.EXTRA_SUGGESTED, BrowserRoot.EXTRA_RECENT, BrowserRoot.EXTRA_OFFLINE,
+        MediaConstants.EXTRAS_KEY_CONTENT_STYLE_BROWSABLE,
+        MediaConstants.EXTRAS_KEY_CONTENT_STYLE_PLAYABLE,
+        MediaConstants.EXTRAS_KEY_ROOT_CHILDREN_LIMIT,
+        MediaConstants.EXTRA_KEY_ROOT_CHILDREN_BROWSABLE_ONLY,
+        "androidx.media.MediaBrowserCompat.Extras.KEY_ROOT_CHILDREN_SUPPORTED_FLAGS",
+        "android.media.browse.CONTENT_STYLE_SUPPORTED",
+    ).mapNotNull { key ->
+        @Suppress("DEPRECATION")
+        val value = hints?.get(key)
+        if (value is Boolean || value is Int) "$key=$value" else null
     }
 
     override fun onPostConnect(
@@ -345,9 +373,36 @@ class AutoSessionCallback(
         session: MediaLibrarySession,
         browser: MediaSession.ControllerInfo,
         params: MediaLibraryService.LibraryParams?,
-    ): ListenableFuture<LibraryResult<MediaItem>> = Futures.immediateFuture(
-        LibraryResult.ofItem(autoBrowseTree.rootItem(), params)
-    )
+    ): ListenableFuture<LibraryResult<MediaItem>> {
+        val suggested = AutoLibraryRootPolicy.useSuggestedRoot(
+            packageName = browser.packageName,
+            isSuggested = params?.isSuggested == true,
+            isRecent = params?.isRecent == true,
+            isOffline = params?.isOffline == true,
+        )
+        // Media3 publishes these response flags as legacy BrowserRoot extras.
+        val resultParams = if (suggested && params?.isSuggested != true) {
+            MediaLibraryService.LibraryParams.Builder()
+                .setSuggested(true)
+                .setRecent(params?.isRecent == true)
+                .setOffline(params?.isOffline == true)
+                .setExtras(Bundle(params?.extras ?: Bundle.EMPTY))
+                .build()
+        } else params
+        if (BuildConfig.DEBUG && Timber.treeCount > 0) {
+            runCatching {
+                Timber.tag("AutoLibraryRoot").d(
+                    "client=%s suggested=%s recent=%s offline=%s selectedSuggested=%s responseSuggested=%s extraKeys=%s standardHints=%s",
+                    browser.packageName, params?.isSuggested, params?.isRecent, params?.isOffline,
+                    suggested, resultParams?.isSuggested,
+                    params?.extras?.keySet()?.sorted()?.take(32), standardBrowseHints(params?.extras),
+                )
+            }.onFailure { Timber.tag("AutoLibraryRoot").d("Root diagnostics unavailable") }
+        }
+        return Futures.immediateFuture(
+            LibraryResult.ofItem(autoBrowseTree.rootItem(suggested = suggested), resultParams)
+        )
+    }
 
     @OptIn(UnstableApi::class)
     override fun onGetChildren(
@@ -358,6 +413,17 @@ class AutoSessionCallback(
         pageSize: Int,
         params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
+        if (BuildConfig.DEBUG && Timber.treeCount > 0) {
+            runCatching {
+                val hints = browser.connectionHints
+                Timber.tag("AutoLibraryChildren").d(
+                    "client=%s uid=%d version=%d interface=%d parent=%s page=%d pageSize=%d suggested=%s recent=%s offline=%s hintKeys=%s standardHints=%s requestHints=%s",
+                    browser.packageName, browser.uid, browser.controllerVersion, browser.interfaceVersion,
+                    parentId, page, pageSize, params?.isSuggested, params?.isRecent, params?.isOffline,
+                    hints.keySet().sorted().take(32), standardBrowseHints(hints), standardBrowseHints(params?.extras),
+                )
+            }.onFailure { Timber.tag("AutoLibraryChildren").d("Children diagnostics unavailable") }
+        }
         if (page < 0 || pageSize <= 0) return Futures.immediateFuture(LibraryResult.ofError(SessionError.ERROR_BAD_VALUE))
         val requestProfile = getActiveProfile(context)
         val epoch = synchronized(selectionRequestLock) {
