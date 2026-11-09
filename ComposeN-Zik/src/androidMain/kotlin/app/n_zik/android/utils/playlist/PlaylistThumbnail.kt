@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.n_zik.android.components.image.PickedImageEditor
+import app.n_zik.android.components.image.ownedCoverMutationMutex
 import app.n_zik.android.components.image.saveOwnedImage
 import app.n_zik.android.components.image.restoreOwnedCover
 import app.n_zik.android.core.coil.ImageCacheFactory
@@ -13,7 +14,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -31,7 +31,7 @@ internal suspend fun savePlaylistThumbnail(
     val profile = getActiveProfile(context)
     val edited = PickedImageEditor.edit(context, uri) ?: return null
     return edited.use {
-        thumbnailCommitMutex.withLock {
+        ownedCoverMutationMutex.withLock {
             var replacedFile: File? = null
             var previousBytes: ByteArray? = null
             var committed = false
@@ -71,5 +71,3 @@ internal suspend fun savePlaylistThumbnail(
         }
     }
 }
-
-private val thumbnailCommitMutex = Mutex()

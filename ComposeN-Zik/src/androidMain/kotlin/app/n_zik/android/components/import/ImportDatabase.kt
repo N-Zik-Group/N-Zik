@@ -13,9 +13,11 @@ import app.n_zik.android.core.backup.DatabaseBackup
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.ImportFromFile
 import app.n_zik.android.components.dialog.common.RestartAppDialog
+import app.n_zik.android.components.image.ownedCoverMutationMutex
 import app.n_zik.android.core.rewind.RewindPostImportRegenerationWorker
 import app.kreate.android.me.knighthat.utils.Toaster
 import timber.log.Timber
@@ -31,17 +33,18 @@ class ImportDatabase private constructor(
          *
          * For the active profile the live singleton is checkpointed and closed before
          * the replacement, and the post-import side effects (rewind regeneration)
-         * run. For any other profile only the file is replaced — the running app keeps
-         * its own database, so nothing else is touched. Throws when the source stream
-         * cannot be opened (the caller surfaces the failure).
+         * run. Importing into another profile leaves the live database open. A ZIP can
+         * still replace shared artwork, including globally stored playlist thumbnails.
          */
         suspend fun importTo(context: Context, uri: Uri, profile: String) {
             val isActive = profile == getActiveProfile(context)
             Timber.tag("ImportDatabase").d("Importing database into profile '$profile' (active: $isActive)")
-            DatabaseBackup.restore(context, uri, profile) {
-                if (isActive) {
-                    Database.checkpoint()
-                    Database.close()
+            ownedCoverMutationMutex.withLock {
+                DatabaseBackup.restore(context, uri, profile) {
+                    if (isActive) {
+                        Database.checkpoint()
+                        Database.close()
+                    }
                 }
             }
 

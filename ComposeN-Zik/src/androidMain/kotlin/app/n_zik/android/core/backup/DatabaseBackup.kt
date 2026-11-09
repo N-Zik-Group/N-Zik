@@ -53,7 +53,15 @@ internal object DatabaseBackup {
     }
 
     /** An immutable payload. Closing it removes the staged export. */
-    internal class Export internal constructor(val file: File, val format: Format) : Closeable {
+    internal class Export internal constructor(
+        val file: File,
+        val format: Format,
+        private val lease: DatabaseExportStaging.Lease? = null,
+    ) : Closeable {
+        fun handOffToPicker() {
+            lease?.handOffToPicker()
+        }
+
         fun writeTo(context: Context, uri: Uri) {
             val resolver = context.contentResolver
             try {
@@ -68,7 +76,7 @@ internal object DatabaseBackup {
         }
 
         override fun close() {
-            file.parentFile?.deleteRecursively()
+            if (lease == null) file.parentFile?.deleteRecursively() else lease.close()
         }
     }
 
@@ -76,7 +84,8 @@ internal object DatabaseBackup {
     @Synchronized
     fun prepareExport(context: Context, profile: String): Export {
         val source = context.getDatabasePath(Database.fileNameForProfile(profile))
-        val stage = createStage(context)
+        val lease = DatabaseExportStaging.create(context)
+        val stage = lease.directory
         try {
             val snapshot = stage.resolve(DATABASE_ENTRY)
             snapshotDatabase(source, snapshot)
@@ -110,7 +119,7 @@ internal object DatabaseBackup {
                     if (owned.isFile && owned.length() > 0L) images["$THUMBNAILS/$name"] = owned
                 }
             }
-            if (images.isEmpty()) return Export(snapshot, Format.SQLITE)
+            if (images.isEmpty()) return Export(snapshot, Format.SQLITE, lease)
 
             val archive = stage.resolve("backup.zip")
             val stagedImage = stage.resolve("image")
@@ -137,9 +146,9 @@ internal object DatabaseBackup {
             }
             stagedImage.delete()
             check(archive.length() <= MAX_TOTAL) { "Backup exceeds its size limit" }
-            return Export(archive, Format.ZIP)
+            return Export(archive, Format.ZIP, lease)
         } catch (error: Throwable) {
-            stage.deleteRecursively()
+            lease.close()
             throw error
         }
     }
@@ -201,26 +210,19 @@ internal object DatabaseBackup {
         }
     }
 
-    private fun createStage(context: Context): File {
-        val stage = File.createTempFile("database-backup-", ".stage", context.cacheDir)
-        check(stage.delete() && stage.mkdir()) { "Could not create backup staging directory" }
-        return stage
-    }
-
     /** Reopens the prepared file after activity recreation while the document picker is open. */
     fun resumeExport(context: Context, path: String): Export {
         val file = File(path)
-        val stage = checkNotNull(file.parentFile)
-        require(stage.parentFile?.canonicalFile == context.cacheDir.canonicalFile &&
-            stage.name.startsWith("database-backup-") && stage.name.endsWith(".stage")
-        ) { "Invalid staged database export" }
         val format = when (file.name) {
             DATABASE_ENTRY -> Format.SQLITE
             "backup.zip" -> Format.ZIP
             else -> error("Invalid staged database filename")
         }
-        return Export(file, format)
+        return Export(file, format, DatabaseExportStaging.resume(context, file))
     }
+
+    /** Removes abandoned exports while retaining recent picker handoffs. */
+    fun cleanAbandonedExports(context: Context) = DatabaseExportStaging.cleanAbandoned(context)
 
     private fun open(file: File, flags: Int): SQLiteDatabase =
         SQLiteDatabase.openDatabase(file.absolutePath, null, flags, keepCorruptDatabase)

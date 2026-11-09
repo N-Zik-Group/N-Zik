@@ -2,6 +2,7 @@ package app.n_zik.android.components.dialog.export
 
 import android.content.Context
 import android.content.Intent
+import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -44,8 +45,14 @@ internal fun rememberDatabaseExport(
         // The selected document and staged file belong to this write even if the UI leaves.
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
             val written = runCatching {
-                DatabaseBackup.resumeExport(context, path).use { export ->
-                    if (uri != null) export.writeTo(context, uri)
+                val export = try {
+                    DatabaseBackup.resumeExport(context, path)
+                } catch (error: Exception) {
+                    if (uri != null) runCatching { DocumentsContract.deleteDocument(context.contentResolver, uri) }
+                    throw error
+                }
+                export.use {
+                    if (uri != null) it.writeTo(context, uri)
                     Unit
                 }
             }
@@ -64,7 +71,11 @@ internal fun rememberDatabaseExport(
                 try {
                     // Assign before returning to the UI so cancellation during dispatch still
                     // leaves the finally block with the staging file to clean up.
-                    withContext(NzikDispatchers.DATA) { prepared = prepare() }
+                    withContext(NzikDispatchers.DATA) {
+                        val export = prepare()
+                        prepared = export
+                        export.handOffToPicker()
+                    }
                     val export = checkNotNull(prepared)
                     pendingPath = export.file.absolutePath
                     val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)

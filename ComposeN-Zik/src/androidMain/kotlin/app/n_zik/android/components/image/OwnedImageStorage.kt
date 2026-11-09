@@ -10,7 +10,11 @@ import java.io.File
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.OutputStream
+import kotlinx.coroutines.sync.Mutex
 import timber.log.Timber
+
+/** Serializes in-process cover edits, including rollback, with database backup imports. */
+internal val ownedCoverMutationMutex = Mutex()
 
 /** Decodes before replacing an app-owned image, preserving the previous file on failure. */
 internal fun saveOwnedImage(

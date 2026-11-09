@@ -37,6 +37,7 @@ import app.n_zik.android.components.glass.glassDialogButtonBackground
 import app.n_zik.android.components.glass.glassDialogButtonBorder
 import app.n_zik.android.components.image.PickedImageEditor
 import app.n_zik.android.components.image.PreparedImage
+import app.n_zik.android.components.image.ownedCoverMutationMutex
 import app.n_zik.android.components.image.restoreOwnedCover
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
@@ -51,7 +52,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
 
@@ -130,7 +130,7 @@ abstract class StagedCoverDialog internal constructor(
         }
         saving = true
         scope.launch {
-            coverCommitMutex.withLock {
+            ownedCoverMutationMutex.withLock {
                 var replacedFile: File? = null
                 var previousBytes: ByteArray? = null
                 var committed = false
@@ -236,8 +236,6 @@ abstract class StagedCoverDialog internal constructor(
         }
     }
 }
-
-private val coverCommitMutex = Mutex()
 
 internal fun isTemporaryImageUri(context: Context, value: String): Boolean {
     val uri = Uri.parse(value)

@@ -1470,7 +1470,10 @@ object RescueFiles {
 
     /** Deletes all backups (database, settings and the profile reset backups) from the rescue_backups directory. */
     fun deleteBackups(context: Context): Result<Unit> = runRescueMutation(context) {
-        deleteBackupDir(File(context.filesDir, RESCUE_BACKUPS_DIR))
+        val backupDir = File(context.filesDir, RESCUE_BACKUPS_DIR)
+        backupDir.takeIf(File::exists)?.let(DatabaseRestoreJournal::retireRescueBackups)
+    }.mapCatching { retired ->
+        if (retired != null) deleteBackupDir(retired)
     }
 
     /** Deletes [backupDir] entirely and throws if anything is left, so the UI never reports a false success. */

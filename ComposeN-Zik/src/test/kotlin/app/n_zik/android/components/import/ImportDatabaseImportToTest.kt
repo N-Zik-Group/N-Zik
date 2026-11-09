@@ -4,7 +4,10 @@ import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Color
 import android.net.Uri
+import app.n_zik.android.components.image.ownedCoverMutationMutex
+import app.n_zik.android.core.backup.backupJpeg
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.backup.openBackupFixture
 import app.n_zik.android.core.rewind.RewindPostImportRegenerationWorker
@@ -15,11 +18,15 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.launch
 // runBlocking (not a test dispatcher): importTo is a plain suspend flow and the tests
 // only assert on files and the stubbed Database / worker entry points.
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.withLock
 import org.junit.After
 import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -30,9 +37,13 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.File
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 /**
  * Tests the per-profile database replacement behind every database import
@@ -64,6 +75,7 @@ class ImportDatabaseImportToTest {
         val application = RuntimeEnvironment.getApplication()
         openBackupFixture(application, backup).use { db ->
             db.execSQL("INSERT INTO Song (id, title, totalPlayTimeMs) VALUES ('song', 'Song', 0)")
+            db.execSQL("INSERT INTO Playlist (id, name, isEditable) VALUES (7, 'Playlist', 1)")
         }
         importedBytes = backup.readBytes()
         context = mockk()
@@ -79,6 +91,7 @@ class ImportDatabaseImportToTest {
         // The base profile is the active one.
         profilePrefs = mockk()
         every { profilePrefs.getString(any(), any()) } answers { secondArg<String?>() }
+        every { profilePrefs.getBoolean(any(), any()) } answers { secondArg<Boolean>() }
         every { context.getSharedPreferences("profile_preferences", Context.MODE_PRIVATE) } returns profilePrefs
 
         mockkObject(Database)
@@ -146,6 +159,41 @@ class ImportDatabaseImportToTest {
         verify(exactly = 1) { Database.checkpoint() }
         verify(exactly = 1) { Database.close() }
         verify(exactly = 1) { RewindPostImportRegenerationWorker.schedule(context) }
+    }
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `ZIP restore waits for cover edit rollback before replacing the image`() = runBlocking {
+        val baseDb = dbPath("data.db").apply { writeText("current") }
+        val thumbnail = context.filesDir.resolve("thumbnail/playlist_7").apply {
+            parentFile?.mkdirs()
+            writeText("pending edit")
+        }
+        val restored = backupJpeg(Color.BLUE)
+        val archive = ByteArrayOutputStream().apply {
+            ZipOutputStream(this).use { zip ->
+                for ((name, bytes) in listOf("database.db" to importedBytes, "thumbnail/playlist_7" to restored)) {
+                    zip.putNextEntry(ZipEntry(name))
+                    zip.write(bytes)
+                    zip.closeEntry()
+                }
+            }
+        }.toByteArray()
+        every { resolver.openInputStream(uri) } answers { ByteArrayInputStream(archive) }
+
+        val import = ownedCoverMutationMutex.withLock {
+            val pending = launch(start = CoroutineStart.UNDISPATCHED) {
+                ImportDatabase.importTo(context, uri, "default")
+            }
+            verify(exactly = 0) { Database.close() }
+            assertEquals("current", baseDb.readText())
+            thumbnail.writeText("before the edit")
+            pending
+        }
+        import.join()
+
+        verify(exactly = 1) { Database.close() }
+        assertArrayEquals(restored, thumbnail.readBytes())
     }
 
     @Test

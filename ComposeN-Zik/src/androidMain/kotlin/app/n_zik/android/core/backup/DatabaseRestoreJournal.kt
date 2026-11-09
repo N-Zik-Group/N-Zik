@@ -13,6 +13,7 @@ import java.nio.channels.FileLock
 import java.nio.channels.OverlappingFileLockException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.util.UUID
 import timber.log.Timber
 
 /** Serializes database replacement with startup and rolls back an interrupted installation. */
@@ -24,6 +25,8 @@ internal object DatabaseRestoreJournal {
     private const val STAGE_SUFFIX = ".stage"
     private const val TRASH_SUFFIX = ".trash"
     private const val OWNER = ".owner"
+    private const val RETIRED_JOURNAL_PREFIX = ".database-restore-retired-"
+    private const val RETIRED_BACKUPS_PREFIX = ".rescue-backups-retired-"
     private var mainProcessLease: FileLock? = null
     private val activeImports = mutableSetOf<File>()
 
@@ -59,10 +62,16 @@ internal object DatabaseRestoreJournal {
     }
 
     /** Serializes rescue changes with archive installs and main process startup. */
-    fun <T> withRescueMutation(context: Context, action: () -> T): T = withLock(context.filesDir) {
-        requireMainProcessStopped(context)
-        Transaction(context.filesDir, checkNotNull(context.getDatabasePath("data.db").parentFile)).recover()
-        action()
+    fun <T> withRescueMutation(context: Context, action: () -> T): T {
+        try {
+            return withLock(context.filesDir) {
+                requireMainProcessStopped(context)
+                Transaction(context.filesDir, checkNotNull(context.getDatabasePath("data.db").parentFile)).recover()
+                action()
+            }
+        } finally {
+            cleanRetiredFiles(context.filesDir)
+        }
     }
 
     /** Keeps import staging alive while its owning process validates and installs the archive. */
@@ -144,12 +153,41 @@ internal object DatabaseRestoreJournal {
         files: Map<File, File?>,
         beforeReplace: () -> Unit = {},
     ) {
-        withLock(filesDir) {
-            val transaction = Transaction(filesDir, checkNotNull(database.parentFile))
-            transaction.recover()
-            beforeReplace()
-            transaction.install(database, files)
+        try {
+            withLock(filesDir) {
+                val transaction = Transaction(filesDir, checkNotNull(database.parentFile))
+                transaction.recover()
+                beforeReplace()
+                transaction.install(database, files)
+            }
+        } finally {
+            cleanRetiredFiles(filesDir)
         }
+    }
+
+    /** Detaches a rescue backup while the restore lock is held. */
+    fun retireRescueBackups(directory: File): File = retireForDeletion(directory, RETIRED_BACKUPS_PREFIX)
+
+    private fun retireForDeletion(directory: File, prefix: String): File {
+        val retired = directory.resolveSibling(prefix + UUID.randomUUID())
+        check(directory.renameTo(retired)) { "Could not detach ${directory.name} for deletion" }
+        return retired
+    }
+
+    /** Deletes detached files outside the lock that gates startup. Rescue deletes its own backups. */
+    fun cleanRetiredFiles(filesDir: File, includeRescueBackups: Boolean = false) {
+        runCatching {
+            val root = filesDir.canonicalFile
+            for (directory in root.listFiles().orEmpty()) {
+                val retired = directory.name.startsWith(RETIRED_JOURNAL_PREFIX) ||
+                    (includeRescueBackups && directory.name.startsWith(RETIRED_BACKUPS_PREFIX))
+                if (retired && directory.isDirectory && directory.canonicalFile == directory &&
+                    !directory.deleteRecursively() && directory.exists()
+                ) {
+                    Timber.tag(TAG).w("Could not remove retired database restore files")
+                }
+            }
+        }.onFailure { Timber.tag(TAG).w(it, "Could not clean retired database restore files") }
     }
 
     @Synchronized
@@ -191,7 +229,7 @@ internal object DatabaseRestoreJournal {
                 // Backups become disposable only after all live targets are restored.
                 check(pending.delete()) { "Could not finish database restore recovery" }
             }
-            cleanUp()
+            retire()
         }
 
         fun install(database: File, files: Map<File, File?>) {
@@ -225,7 +263,7 @@ internal object DatabaseRestoreJournal {
                 runCatching { recover() }.onFailure(error::addSuppressed)
                 throw error
             }
-            cleanUp()
+            retire()
         }
 
         private fun writePending(entries: List<Entry>) {
@@ -273,8 +311,11 @@ internal object DatabaseRestoreJournal {
 
         private fun previous(index: Int): File = journal.resolve("previous-$index")
 
-        private fun cleanUp() {
-            if (!journal.deleteRecursively()) Timber.tag(TAG).w("Could not remove database restore journal")
+        private fun retire() {
+            // A retired journal has no pending work. Publish that by renaming it, so startup
+            // does not have to wait for a recursive delete or discover half-deleted backups.
+            runCatching { retireForDeletion(journal, RETIRED_JOURNAL_PREFIX) }
+                .onFailure { Timber.tag(TAG).w(it, "Could not retire database restore journal") }
         }
     }
 

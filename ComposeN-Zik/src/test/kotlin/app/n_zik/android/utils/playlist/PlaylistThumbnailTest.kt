@@ -21,6 +21,7 @@ import android.net.Uri
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.n_zik.android.components.image.PickedImageEditor
 import app.n_zik.android.components.image.PreparedImage
+import app.n_zik.android.components.image.ownedCoverMutationMutex
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -28,7 +29,10 @@ import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.withLock
 import org.junit.After
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -75,6 +79,32 @@ class PlaylistThumbnailTest {
         }
         assertSame(permanent, result)
         verify(exactly = 1) { edited.close() }
+    }
+
+    @Test
+    fun `playlist edit waits for a database import to finish replacing shared covers`() = runBlocking {
+        val target = File(context.filesDir, "thumbnail/playlist_42").apply {
+            parentFile?.mkdirs()
+            writeText("old")
+        }
+        val edit = ownedCoverMutationMutex.withLock {
+            val pending = async(start = CoroutineStart.UNDISPATCHED) {
+                savePlaylistThumbnail(context, picked, "playlist_42") { _, _, _, _ ->
+                    assertEquals("restored", target.readText())
+                    val acquired = ownedCoverMutationMutex.tryLock()
+                    if (acquired) ownedCoverMutationMutex.unlock()
+                    assertFalse(acquired)
+                    target.writeText("edited")
+                    Uri.fromFile(target)
+                }
+            }
+            assertFalse(pending.isCompleted)
+            target.writeText("restored")
+            pending
+        }
+
+        assertEquals(Uri.fromFile(target), edit.await())
+        assertEquals("edited", target.readText())
     }
 
     @Test

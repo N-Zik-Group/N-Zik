@@ -9,6 +9,7 @@ import java.io.RandomAccessFile
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -50,6 +51,9 @@ class DatabaseRestoreJournalTest {
             .invoke(application, context)
         DatabaseRestoreJournal.onProcessStart(context, mainProcess = false)
 
+        assertThrows(IllegalStateException::class.java) {
+            DatabaseRestoreJournal.withRescueMutation(context) { error("Rescue mutation reached the live database") }
+        }.also { assertEquals("The main process is using the database", it.message) }
         assertEquals("old database", db.readText())
         assertEquals("old WAL", wal.readText())
         assertEquals("old image", replaced.readText())
@@ -72,6 +76,23 @@ class DatabaseRestoreJournalTest {
 
         assertEquals("new database", db.readText())
         assertFalse(journal.exists())
+        assertEquals("old database", files.listFiles().orEmpty().single().resolve("previous-0").readText())
+        DatabaseRestoreJournal.cleanRetiredFiles(files)
+        assertTrue(files.listFiles().orEmpty().isEmpty())
+    }
+
+    @Test
+    fun `rescue backup deletion detaches the backup before removing its contents`() {
+        val files = tmp.newFolder("files")
+        val backup = files.resolve("rescue_backups").apply { mkdir() }
+        backup.resolve("previous-library.db").writeText("old database")
+
+        val retired = DatabaseRestoreJournal.retireRescueBackups(backup)
+
+        assertFalse(backup.exists())
+        assertEquals("old database", retired.resolve("previous-library.db").readText())
+        DatabaseRestoreJournal.cleanRetiredFiles(files, includeRescueBackups = true)
+        assertFalse(retired.exists())
     }
 
     @Test
@@ -158,6 +179,26 @@ class DatabaseRestoreJournalTest {
             assertEquals(setOf(active.directory.name, export.name), cache.list().orEmpty().toSet())
         }
         assertEquals(listOf(export.name), cache.list().orEmpty().toList())
+    }
+
+    @Test
+    fun `cleanup preserves staging with an owner outside its active imports`() {
+        val files = tmp.newFolder("files")
+        val cache = tmp.newFolder("cache")
+        val context = object : ContextWrapper(RuntimeEnvironment.getApplication()) {
+            override fun getFilesDir() = files
+            override fun getCacheDir() = cache
+        }
+        val foreign = cache.resolve("database-import-foreign.stage").apply { mkdir() }
+
+        RandomAccessFile(foreign.resolve(".owner"), "rw").use { handle ->
+            handle.channel.lock().use {
+                DatabaseRestoreJournal.cleanAbandonedImports(context)
+                assertTrue(foreign.isDirectory)
+            }
+        }
+        DatabaseRestoreJournal.cleanAbandonedImports(context)
+        assertFalse(foreign.exists())
     }
 
     private fun pending(journal: File, vararg files: Pair<File, Boolean>) {

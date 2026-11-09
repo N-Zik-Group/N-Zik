@@ -65,6 +65,7 @@ import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.network.client.NetworkGate
 import app.n_zik.android.core.network.client.Store
 import app.n_zik.android.core.notifications.ensureProfileChannels
+import app.n_zik.android.core.backup.DatabaseBackup
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.core.rescue.RescueProcess
 import app.n_zik.android.components.settings.applyUseLoginForSearch
@@ -132,8 +133,11 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         super.onCreate()
 
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+            DatabaseRestoreJournal.cleanRetiredFiles(filesDir, includeRescueBackups = true)
             runCatching { DatabaseRestoreJournal.cleanAbandonedImports(this@MainApplication) }
                 .onFailure { Timber.tag("MainApplication").w(it, "Could not clean abandoned database imports") }
+            runCatching { DatabaseBackup.cleanAbandonedExports(this@MainApplication) }
+                .onFailure { Timber.tag("MainApplication").w(it, "Could not clean abandoned database exports") }
         }
 
         // RescueActivity runs in the :rescue process. Starting the full app there can make
