@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">Páginas</string>
     <string name="glass_effect_destination_playback">Reproducir</string>
     <string name="glass_effect_destination_shared">Elementos compartidos</string>
+    <string name="glass_effect_loading_indicators">Cargando indicadores</string>
+    <string name="glass_effect_loading_indicators_description">Animaciones de carga de estilo en páginas y tarjetas y diálogos.</string>
+    <string name="glass_effect_pull_to_refresh">Tira para actualizar</string>
+    <string name="glass_effect_pull_to_refresh_description">Estilo el indicador que aparece al deslizar hacia abajo para actualizar.</string>
     <string name="glass_effect_destination_windows">Windows y mensajes</string>
     <string name="glass_effect_dialog_dimming">Atenuación de fondo del diálogo</string>
     <string name="glass_effect_dispersion">Dividir color</string>
@@ -121,6 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">Las tarjetas que configuran el grupo y muestran sus perfiles.</string>
     <string name="glass_effect_role_visualizer">Visualizador · controles</string>
     <string name="glass_effect_role_visualizer_description">El botón de flechas y ajustes usado con el visualizador.</string>
+    <string name="glass_effect_shared_components_summary">Elija cómo se ve Glass en los componentes utilizados a través de la aplicación, incluyendo indicadores de carga y tirar para actualizar.</string>
     <string name="glass_effect_summary">Personalizar superficies de efecto vidrio, colores, contornos y calidad.</string>
     <string name="glass_effect_switches_description">Utilice los interruptores de vidrio líquido con el material compartido y efectos de interacción cuando el vidrio está habilitado.</string>
     <string name="glass_effect_switches_title">Interruptores de vidrio</string>
@@ -225,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Medio (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Muy alto (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Editar imagen</string>
+    <string name="image_editor_failed">No se ha podido editar la imagen. Su imagen actual ha sido asumida.</string>
     <string name="thumbnail_action_edit">Editar miniatura</string>
     <string name="thumbnail_action_pick_from_gallery">Elegir de la galería</string>
     <string name="thumbnail_action_reset">Restablecer miniatura</string>
@@ -234,4 +241,6 @@
     <string name="thumbnail_remove_failed">Error al eliminar miniatura</string>
     <string name="thumbnail_remove_success">Miniatura eliminada</string>
     <string name="glass_effect_rendering_quality">Calidad de renderizado</string>
+    <string name="image_editor_original">Relación original</string>
+    <string name="image_editor_apply">Usar imagen</string>
 </resources>
