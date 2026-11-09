@@ -137,6 +137,9 @@
     <string name="modules_download_needed">Модуль потребує завантаження (~25 МБ). Перевірте підключення.</string>
     <string name="modules_downloading">Завантаження модуля</string>
     <string name="modules_edit_unavailable">Редагувати метадані недоступні: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Підготовка FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">Завантаження FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Необхідно експортувати кешовані пісні і редагувати метадані пісень. Завантажено при першому використанні.</string>
     <string name="modules_info">Інформація</string>
     <string name="modules_insufficient_space">Ця функція потребує близько 70 Мб вільного місця</string>
