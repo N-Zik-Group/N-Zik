@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">Sider</string>
     <string name="glass_effect_destination_playback">Afspilning</string>
     <string name="glass_effect_destination_shared">Delte elementer</string>
+    <string name="glass_effect_loading_indicators">Indlæser indikatorer</string>
+    <string name="glass_effect_loading_indicators_description">Stil indlæsning animationer på sider og i kort og dialoger.</string>
+    <string name="glass_effect_pull_to_refresh">Træk for at opdatere</string>
+    <string name="glass_effect_pull_to_refresh_description">Stil indikatoren der vises, når du trækker ned for at opdatere.</string>
     <string name="glass_effect_destination_windows">Vinduer og beskeder</string>
     <string name="glass_effect_dialog_dimming">Dialog baggrundsdæmpning</string>
     <string name="glass_effect_dispersion">Farveopdeling</string>
@@ -121,6 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">Kortene der grupperer og viser dine profiler.</string>
     <string name="glass_effect_role_visualizer">Visualizer · kontrol</string>
     <string name="glass_effect_role_visualizer_description">Pil og Indstillinger knappen bruges med visualiserer.</string>
+    <string name="glass_effect_shared_components_summary">Vælg hvordan Glas ser ud på komponenter, der bruges på tværs af appen, herunder indlæsningsindikatorer og træk for at opdatere.</string>
     <string name="glass_effect_summary">Tilpas Glas effekt overflader, farver, konturer og kvalitet.</string>
     <string name="glass_effect_switches_description">Brug flydende glas kontakter med det fælles materiale og interaktion effekter, når Glas er aktiveret.</string>
     <string name="glass_effect_switches_title">Afbryderne af glas</string>
@@ -225,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Mellem (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Meget Høj (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Rediger billede</string>
+    <string name="image_editor_failed">Kunne ikke redigere billedet. Dit nuværende billede blev bibeholdt.</string>
     <string name="thumbnail_action_edit">Rediger miniaturebillede</string>
     <string name="thumbnail_action_pick_from_gallery">Vælg fra galleri</string>
     <string name="thumbnail_action_reset">Nulstil miniaturebillede</string>
@@ -234,4 +241,6 @@
     <string name="thumbnail_remove_failed">Kunne ikke fjerne miniaturebillede</string>
     <string name="thumbnail_remove_success">Miniaturebillede fjernet</string>
     <string name="glass_effect_rendering_quality">Rendering kvalitet</string>
+    <string name="image_editor_original">Oprindeligt forhold</string>
+    <string name="image_editor_apply">Brug billede</string>
 </resources>
