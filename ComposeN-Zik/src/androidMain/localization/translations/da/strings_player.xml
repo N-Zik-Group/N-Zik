@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Vælg, hvordan spor fra ukendte kunstnere er udelukket.</string>
     <string name="player_exclude_disliked_songs_description">Vælg hvordan disliked spor er udelukket fra afspilning forslag.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Udeluk spor som overskrider den valgte tidsgrænse.</string>
-    <string name="player_excluded_song_count_format">Ekskluderede %s sange</string>
+    <string name="player_excluded_song_count_format">Sange udelukket: %s</string>
     <string name="player_keep_minimized">Hold minimeret</string>
     <string name="player_layout_artwork_style_description">Vælg hvordan afspilleren viser sporillustrationer.</string>
     <string name="player_layout_controls_style_description">Vælg layout af afspillerens kontroller.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Inkludér albumillustrationer ved siden af kommende spor i afspillerens forhåndsvisning.</string>
     <string name="player_queue_preview_song_count_description">Vælg hvor mange kommende spor der vises i afspillerens forhåndsvisning.</string>
     <string name="player_queue_remove_selected_confirmation_format">Fjern markeringen fra køen? Valgte spor: %d</string>
-    <string name="player_queue_shuffled_count_format">Kø blandet (%d sange)</string>
+    <string name="player_queue_shuffled_count_format">Kø blandet (spor: %d)</string>
     <string name="player_remaining_time_visible_description">Vis den resterende tid i det aktuelle spor.</string>
     <string name="player_restart_required_message">Afspilleren skal genstartes for at ændringerne træder i kraft!</string>
     <string name="player_rotating_buttons">Roterende knapper</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Vis en forhåndsvisning af kommende spor i afspilleren.</string>
     <string name="player_show_player_top_actions_bar_description">Vis rækken af spillerhandlinger over hovedindholdet.</string>
     <string name="player_shuffle_empty_message">Ingen sang at blande</string>
-    <string name="player_shuffled_song_count_format">%d sange blandet</string>
+    <string name="player_shuffled_song_count_format">Spor blandet: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Søvntimer forsinket ved sangens slutning</string>
     <string name="player_sleep_timer_finished_message">Søvntimer afsluttet</string>
     <string name="player_song_playback_error_format">Mediet %1$s gik galt</string>
