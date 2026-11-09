@@ -246,14 +246,15 @@
     <string name="sync_youtube_history_title">Historique de YouTube Music</string>
     <string name="sync_youtube_like_failed">Impossible d\'aimer le titre sur YouTube</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Les titres sont appréciés sur YouTube</string>
+    <string name="sync_youtube_like_success">Ajouté aux J\'aime YouTube</string>
     <string name="sync_youtube_playlist_add_failed">Impossible d\'ajouter le titre à la playlist YouTube</string>
     <string name="sync_youtube_playlist_add_success">Ajout du titre à la playlist YouTube</string>
     <string name="sync_youtube_playlist_batch_failed">Une erreur s\'est produite pour les 50 titres suivants. Ajout des titres à la playlist un par un.</string>
+    <string name="sync_youtube_playlist_no_songs_added">Aucun morceau n\'a été ajouté à la playlist YouTube</string>
     <string name="sync_youtube_playlist_songs_added_suffix">Les titres sont ajoutés à la playlist YouTube. Répétez le processus s\'il manque des titres. </string>
     <string name="sync_youtube_playlist_songs_adding_suffix">Les titres seront ajoutés à la playlist YouTube Music</string>
     <string name="sync_youtube_playlists_title">Playlists YouTube Music</string>
-    <string name="sync_youtube_songs_remaining">%1$s Chansons restantes</string>
+    <string name="sync_youtube_songs_remaining">Nombre de titres restants : %1$s</string>
     <string name="sync_youtube_unlike_failed">Impossible de ne pas aimer le titre sur YouTube</string>
     <string name="sync_youtube_unlike_success">Le titre n\'est pas apprécié sur YouTube</string>
     <string name="sync_starting_notification">Démarrage de la synchronisation...</string>
