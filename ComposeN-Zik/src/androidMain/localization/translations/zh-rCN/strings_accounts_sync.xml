@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm 帐户</string>
     <string name="profile_identity_source_not_connected">未登录</string>
     <string name="profile_last_used">上次使用</string>
-    <string name="profile_last_used_days">%d 天前</string>
-    <string name="profile_last_used_hours">%d 小时前</string>
-    <string name="profile_last_used_minutes">%d 分钟前</string>
-    <string name="profile_last_used_months">%d 个月前</string>
     <string name="profile_last_used_now">马上开始</string>
-    <string name="profile_last_used_weeks">%d 周前</string>
     <string name="profile_local_name">配置文件名称</string>
     <string name="profile_local_name_description">重命名当前本地配置文件。</string>
     <string name="profile_name_input_hint">输入配置文件名称</string>
@@ -255,10 +250,11 @@
     <string name="sync_youtube_playlist_add_failed">在 YouTube 播放列表中添加歌曲失败</string>
     <string name="sync_youtube_playlist_add_success">在 YouTube 播放列表中添加歌曲</string>
     <string name="sync_youtube_playlist_batch_failed">接下来的50首歌曲发生错误。逐个添加歌曲到播放列表</string>
+    <string name="sync_youtube_playlist_no_songs_added">没有歌曲被添加到YouTube播放列表</string>
     <string name="sync_youtube_playlist_songs_added_suffix">在YouTube播放列表中添加歌曲。如果有缺失歌曲，请重复此操作</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">歌曲将添加到 YTM 播放列表</string>
     <string name="sync_youtube_playlists_title">YTM 播放列表</string>
-    <string name="sync_youtube_songs_remaining">剩余歌曲: %1$s</string>
+    <string name="sync_youtube_songs_remaining">剩余%1$s 歌曲</string>
     <string name="sync_youtube_unlike_failed">与 YouTube 中的歌曲不同失败</string>
     <string name="sync_youtube_unlike_success">YouTube不喜欢歌曲</string>
     <string name="sync_starting_notification">正在开始同步...</string>
