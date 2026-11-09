@@ -230,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Средний (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Очень высокий (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">Скачать</string>
+    <string name="cover_download_failed">Не удалось загрузить обложку.</string>
     <string name="image_editor_title">Изменить изображение</string>
     <string name="image_editor_failed">Не удалось изменить изображение. Ваше текущее изображение сохранено.</string>
     <string name="thumbnail_action_edit">Редактировать миниатюру</string>
