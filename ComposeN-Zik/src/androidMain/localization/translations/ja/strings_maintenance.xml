@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
     <string name="logs_action_export">ログをエクスポート</string>
     <string name="logs_action_export_both">両方のログをエクスポート</string>
@@ -40,6 +41,7 @@
     <string name="maintenance_dedup_flagged">フラグを立てた %d 行</string>
     <string name="maintenance_dedup_merged">マージされた %d 行</string>
     <string name="maintenance_dedup_merged_flagged">マージされた %1$d 行 · フラグされた %2$d 行</string>
+    <string name="maintenance_dedup_counts_format">%1$s · %2$s</string>
     <string name="maintenance_discord_invalid_token">無効なトークン</string>
     <string name="maintenance_discord_ok">OK</string>
     <string name="maintenance_discord_reconnect_failed">再接続に失敗しました</string>
@@ -197,6 +199,7 @@
     <string name="recovery_error">エラーが発生しました: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">データベースをエクスポート</string>
+    <string name="recovery_export_database_with_covers_description">ライブラリ、プレイリスト、履歴をSQLiteとして保存します。カスタムカバーがある場合は、エクスポートはデータベースとカバーを備えたZIPです。</string>
     <string name="recovery_export_logs">ログをエクスポート</string>
     <string name="recovery_export_logs_description">クラッシュとデバッグログをバグレポートに保存する</string>
     <string name="recovery_export_profiles_description">単一の.txtファイル内のプロフィールリストと顔の写真</string>
@@ -209,6 +212,7 @@
     <string name="recovery_group_settings">設定</string>
     <string name="recovery_group_storage">ストレージ</string>
     <string name="recovery_import_database">データベースをインポート</string>
+    <string name="recovery_import_database_with_covers_description">ZIPのカスタムカバーを含むSQLiteまたはZIPデータベースのバックアップを復元します。</string>
     <string name="recovery_import_profiles_description">.txtファイルからプロフィールリストと顔写真を復元します</string>
     <string name="recovery_import_settings">設定をインポート</string>
     <string name="recovery_import_settings_description">CSVファイルから設定を復元</string>
@@ -309,4 +313,5 @@
     <string name="updates_warning_acknowledge">了解しました</string>
     <string name="updates_check_failed">更新を確認できませんでした。</string>
     <string name="updates_install_generic_error">アップデートをインストールできませんでした。</string>
+    <string name="updates_channel_available_format">%1$s のアップデートがあります</string>
 </resources>
