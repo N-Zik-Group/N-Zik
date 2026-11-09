@@ -82,6 +82,7 @@
     <string name="lyrics_editor_title">Angi sangtekst</string>
     <string name="lyrics_empty">Ingen tekster</string>
     <string name="lyrics_fetch_error_message">Det oppstod en feil under henting av sangteksten</string>
+    <string name="lyrics_provider_fetch_error_message">Kunne ikke hente sangtekster fra %1$s</string>
     <string name="lyrics_font_size_animation_label">Animer størrelse på sangtekster</string>
     <string name="lyrics_font_size_extra_large_label">Ekstra stor</string>
     <string name="lyrics_font_size_large_label">Stor</string>
@@ -296,10 +297,14 @@
     <string name="player_statistics_codec_label">Kodek</string>
     <string name="player_statistics_container_label">Beholder</string>
     <string name="player_statistics_itag_label">Itager</string>
+    <string name="player_playback_speed_value">%1$.1fx</string>
+    <string name="player_decibels_value">%1$.2f dB</string>
     <string name="player_statistics_loudness_label">Lydnivå</string>
     <string name="player_statistics_media_id_label">Id</string>
     <string name="player_statistics_perceptual_loudness_label">Skadelig lydstyrke</string>
     <string name="player_statistics_sample_rate_label">Eksempel rate</string>
+    <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
+    <string name="player_statistics_cache_status">%1$s: %2$s</string>
     <string name="player_statistics_volume_label">Volum</string>
     <string name="player_swap_controls_with_timeline">Bytt kontroller med tidslinjen</string>
     <string name="player_swipe_sensitivity">Spillerens Sveip følsomhet</string>
