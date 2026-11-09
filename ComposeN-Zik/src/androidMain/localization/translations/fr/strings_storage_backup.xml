@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Stockage</string>
+    <string name="storage_breakdown_info_title">À propos du stockage</string>
+    <string name="storage_breakdown_nzik_total">Total utilisé par NZik</string>
+    <string name="storage_breakdown_subtitle">Répartition du stockage</string>
+    <string name="storage_breakdown_waiting">Mesurer le stockage…</string>
+    <string name="storage_breakdown_cached_images">Images mises en cache</string>
+    <string name="storage_breakdown_streamed_audio">Audio diffusé</string>
+    <string name="storage_breakdown_downloaded_audio">Audio téléchargé</string>
+    <string name="storage_breakdown_custom_covers">Couvertures personnalisées</string>
+    <string name="storage_breakdown_waveforms">Formes d\'onde</string>
+    <string name="storage_breakdown_other_nzik_data">Autres données NZik</string>
+    <string name="storage_breakdown_other_used_space">Système, applications &amp; fichiers</string>
+    <string name="storage_breakdown_free_space">Espace libre</string>
+    <string name="storage_info_images">Artwork et autres images mises en cache pour un affichage plus rapide.</string>
+    <string name="storage_info_streaming">L\'audio a été conservé temporairement après le streaming, de sorte qu\'il peut être rejoué sans récupérer les mêmes données.</string>
+    <string name="storage_info_downloads">Audio enregistré en NZik pour l\'écoute hors ligne.</string>
+    <string name="storage_info_waveforms">Fichiers générés utilisés pour dessiner la forme d\'onde audio dans le lecteur.</string>
+    <string name="storage_info_covers">Œuvre que vous avez choisie ou importée en tant que couverture personnalisée.</string>
+    <string name="storage_info_other_nzik">Le reste des données privées de NZik, y compris ses bases de données, ses paramètres, ses index, ses extensions et ses logs.</string>
+    <string name="storage_info_other_used">Le reste de l\'espace utilisé sur le volume interne, y compris Android, les applications installées et les fichiers personnels.</string>
+    <string name="storage_info_free">Espace disponible pour les applications et les fichiers sur le volume interne.</string>
+    <string name="storage_cleanup_title">Nettoyage</string>
+    <string name="storage_cleanup_failed">Impossible de terminer le nettoyage de la mémoire.</string>
+    <string name="storage_cleanup_images_description">Vider le cache des images par NZik.</string>
+    <string name="storage_cleanup_streaming_description">Vider le cache audio pendant le streaming.</string>
+    <string name="storage_cleanup_downloads_description">Supprimez l\'audio hors ligne et annulez les téléchargements en attente pour le stockage de téléchargement du profil actif.</string>
+    <string name="storage_cleanup_waveforms_description">Effacer les fichiers de forme d\'onde générés.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Effacer les formes d\'ondes</string>
+    <string name="storage_cleanup_diagnostic_logs">Effacer les journaux de diagnostic</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Supprimez les fichiers de débogage et de plantage. Votre paramètre de journalisation reste le même.</string>
+    <string name="storage_cleanup_temporary_files">Supprimer les fichiers temporaires abandonnés</string>
+    <string name="storage_cleanup_temporary_files_description">Supprimez les brouillons abandonnés de l\'éditeur d\'images et les captures de partage Rewind datant de plus de 24 heures.</string>
+    <string name="storage_cleanup_all">Effacer tout</string>
+    <string name="storage_cleanup_all_description">Vider les caches image et streaming et les formes d\'ondes générées pour le profil actif, y compris le stockage qu\'il partage avec d\'autres profils. Supprimez l\'audio hors ligne et annulez les téléchargements en attente pour le stockage de téléchargement du profil actif. Supprimer les journaux de diagnostic, les brouillons abandonnés de l\'éditeur d\'images et les captures de partage Rewind expirées. Votre bibliothèque, les couvertures personnalisées et les paramètres sont conservés.</string>
     <!-- Backup -->
     <string name="backup_action_export">Exporter la sauvegarde</string>
     <string name="backup_action_import">Importer une sauvegarde</string>
@@ -82,12 +117,15 @@
     <!-- Cache -->
     <string name="cache_action_reset">Réinitialiser le cache</string>
     <string name="cache_clear_song_dialog_title">Vider le cache des morceaux</string>
-    <string name="cache_downloads_max_size_description">Choisissez l\'espace disque à allouer aux morceaux téléchargés. Le bouton « Corbeille » permet de supprimer les fichiers audio téléchargés.</string>
-    <string name="cache_image_max_size_description">Limitez l\'espace disque utilisé par les illustrations mises en cache. Le bouton « Corbeille » permet de supprimer les images téléchargées de ce cache.</string>
+    <string name="cache_downloads_max_size_description">Choisissez l\'espace disque disponible pour les chansons téléchargées.</string>
+    <string name="cache_downloads_limit_description">Choisissez l\'espace disque disponible pour les chansons téléchargées.</string>
+    <string name="cache_image_max_size_description">Limiter l\'espace disque utilisé par les œuvres en cache.</string>
+    <string name="cache_image_limit_description">Limiter l\'espace disque utilisé par les œuvres en cache.</string>
     <string name="cache_location_description">Choisissez l\'emplacement où l\'application stocke son cache de lecture des morceaux.</string>
     <string name="cache_location_private">Privé</string>
     <string name="cache_location_system">Système</string>
-    <string name="cache_streaming_max_size_description">Limitez l\'espace disque utilisé pour mettre en cache les morceaux diffusés en streaming. Le bouton « Corbeille » permet de vider ce cache de lecture.</string>
+    <string name="cache_streaming_max_size_description">Limite l\'espace disque utilisé pour mettre en cache les chansons en flux.</string>
+    <string name="cache_streaming_limit_description">Limite l\'espace disque utilisé pour mettre en cache les chansons en flux.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Télécharger tous les titres</string>
     <string name="downloads_action_refresh_quality">Téléchargements de mises à jour</string>
