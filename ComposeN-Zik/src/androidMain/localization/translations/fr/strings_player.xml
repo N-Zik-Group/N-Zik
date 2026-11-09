@@ -82,6 +82,7 @@
     <string name="lyrics_editor_title">Entrer les paroles</string>
     <string name="lyrics_empty">Pas de paroles</string>
     <string name="lyrics_fetch_error_message">Une erreur est apparue lors de la récupération des paroles</string>
+    <string name="lyrics_provider_fetch_error_message">Impossible de récupérer les paroles de %1$s</string>
     <string name="lyrics_font_size_animation_label">Taille des paroles animées</string>
     <string name="lyrics_font_size_extra_large_label">Large</string>
     <string name="lyrics_font_size_large_label">Énorme</string>
@@ -237,7 +238,7 @@
     <string name="player_exclude_disliked_artists_description">Choisir comment les pistes des artistes peu aimés sont exclues.</string>
     <string name="player_exclude_disliked_songs_description">Choisissez comment les pistes non aimées sont exclues des suggestions de lecture.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Exclure les pistes qui dépassent la limite de durée sélectionnée.</string>
-    <string name="player_excluded_song_count_format">Titres %s exclus</string>
+    <string name="player_excluded_song_count_format">Titres exclus : %s</string>
     <string name="player_keep_minimized">Garder minimisé</string>
     <string name="player_layout_artwork_style_description">Choisissez la façon dont le lecteur affiche les illustrations de piste.</string>
     <string name="player_layout_controls_style_description">Choisissez la mise en page des commandes du joueur.</string>
@@ -296,10 +297,14 @@
     <string name="player_statistics_codec_label">Codec</string>
     <string name="player_statistics_container_label">Conteneur</string>
     <string name="player_statistics_itag_label">Tag</string>
+    <string name="player_playback_speed_value">%1$.1fx</string>
+    <string name="player_decibels_value">%1$.2f dB</string>
     <string name="player_statistics_loudness_label">Volume</string>
     <string name="player_statistics_media_id_label">Identifiant</string>
     <string name="player_statistics_perceptual_loudness_label">Intensité sonore perçue</string>
     <string name="player_statistics_sample_rate_label">Fréquence d\'échantillonnage</string>
+    <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
+    <string name="player_statistics_cache_status">%1$s: %2$s</string>
     <string name="player_statistics_volume_label">Volume</string>
     <string name="player_swap_controls_with_timeline">Échanger les contrôles avec la barre de lecture</string>
     <string name="player_swipe_sensitivity">Sensibilité du balayage du lecteur</string>
