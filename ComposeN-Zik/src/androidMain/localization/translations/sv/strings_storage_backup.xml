@@ -3,7 +3,7 @@
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Lagring</string>
     <string name="storage_breakdown_info_title">Om lagring</string>
-    <string name="storage_breakdown_nzik_total">Totalt använt av NZik</string>
+    <string name="storage_breakdown_nzik_total">Totalt använt av N-Zik</string>
     <string name="storage_breakdown_subtitle">Förvaring av lagring</string>
     <string name="storage_breakdown_waiting">Mäter lagring…</string>
     <string name="storage_breakdown_cached_images">Cachade bilder</string>
@@ -11,20 +11,20 @@
     <string name="storage_breakdown_downloaded_audio">Nedladdat ljud</string>
     <string name="storage_breakdown_custom_covers">Anpassade omslag</string>
     <string name="storage_breakdown_waveforms">Vågform</string>
-    <string name="storage_breakdown_other_nzik_data">Andra NZik-data</string>
+    <string name="storage_breakdown_other_nzik_data">Övriga N-Zik-data</string>
     <string name="storage_breakdown_other_used_space">System, appar &amp; filer</string>
     <string name="storage_breakdown_free_space">Ledigt utrymme</string>
     <string name="storage_info_images">Konstverk och andra bilder cachelagrade för snabbare visning.</string>
     <string name="storage_info_streaming">Ljudet hålls tillfälligt efter strömning, så det kan spelas upp igen utan att hämta samma data.</string>
-    <string name="storage_info_downloads">Ljud sparad i NZik för att lyssna offline.</string>
+    <string name="storage_info_downloads">Ljud sparad i N-Zik för att lyssna offline.</string>
     <string name="storage_info_waveforms">Genererade filer som används för att rita ljudvågformen i spelaren.</string>
     <string name="storage_info_covers">Konstverk som du valde eller importerade som anpassade omslag.</string>
-    <string name="storage_info_other_nzik">Resten av NZiks privata data, inklusive dess databaser, inställningar, index, tillägg och loggar.</string>
+    <string name="storage_info_other_nzik">Resten av N-Ziks privata data, inklusive dess databaser, inställningar, index, tillägg och loggar.</string>
     <string name="storage_info_other_used">Det återstående använda utrymmet på den interna volymen, inklusive Android, installerade appar och personliga filer.</string>
     <string name="storage_info_free">Plats för appar och filer på den interna volymen.</string>
     <string name="storage_cleanup_title">Rensa</string>
     <string name="storage_cleanup_failed">Det gick inte att slutföra rensningen av lagringsutrymmet.</string>
-    <string name="storage_cleanup_images_description">Rensa cachade bilder av NZik.</string>
+    <string name="storage_cleanup_images_description">Rensa cachade bilder av N-Zik.</string>
     <string name="storage_cleanup_streaming_description">Rensa ljudcachelagrad under strömning.</string>
     <string name="storage_cleanup_downloads_description">Ta bort ljudet offline och avbryt väntande nedladdningar för den aktiva profilens nedladdningslagring.</string>
     <string name="storage_cleanup_waveforms_description">Rensa genererade vågformsfiler.</string>
@@ -139,7 +139,7 @@
     <string name="downloads_delete_all_count_confirmation">Ta bort alla %d nedladdningar?</string>
     <string name="downloads_delete_dialog_title">Ta bort nedladdningar</string>
     <string name="downloads_download_all_confirmation">Vill du verkligen ladda ner alla?</string>
-    <string name="downloads_download_all_count_confirmation">Ladda ner alla %d låtar?</string>
+    <string name="downloads_download_all_count_confirmation">Ladda ner allt? (Sång: %d)</string>
     <string name="downloads_download_dialog_title">Ladda ner låtar</string>
     <string name="downloads_empty_message">Inget att ladda ner</string>
     <string name="downloads_error_network">Ett nätverksfel har uppstått</string>
@@ -166,16 +166,16 @@
     <string name="export_running_status">Exporterar…</string>
     <string name="export_song_unavailable_message">Låten måste cachelagras eller laddas ner för att exporteras</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Vill du ta bort alla nedladdningar (%d låtar)?</string>
+    <string name="library_cleanup_all_downloads_confirmation">Ta bort alla nedladdningar? (Sång: %d)</string>
     <string name="library_cleanup_all_favorites_confirmation">Vill du ta bort alla %d favoriter?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Vill du återställa lyssningshistoriken för %d låtar?</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ VARNING: Detta kommer PERMANENTLY RADERA alla %d låtar och ta bort dem från ALLA spellistor. Denna åtgärd kan inte ångras!</string>
-    <string name="library_cleanup_entire_cache_confirmation">Vill du rensa hela cachen (%d låtar)?</string>
-    <string name="library_cleanup_selected_cache_confirmation">Vill du ta bort dessa %d låtar från cache?</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Återställ lyssningshistorik? (Sång: %d)</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ VARNING: Detta kommer PERMANENTLY RADERA dina låtar och ta bort dem från ALLA spellistor. (Sång: %d) Denna åtgärd kan inte ångras!</string>
+    <string name="library_cleanup_entire_cache_confirmation">Rensa hela cache? (Sång: %d)</string>
+    <string name="library_cleanup_selected_cache_confirmation">Ta bort valet från cache? (Sång: %d)</string>
     <string name="library_cleanup_selected_downloads_confirmation">Vill du ta bort dessa %d nedladdningar?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Vill du ta bort dessa %d låtar från favoriter?</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Vill du återställa lyssningshistoriken för dessa %d låtar?</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ VARNING: Detta kommer PERMANENTLY RADERA dessa %d låtar och ta bort dem från ALLA spellistor. Denna åtgärd kan inte ångras!</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Ta bort urvalet från favoriter? (Sång: %d)</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Återställ lyssningshistorik för urvalet? (Sång: %d)</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ VARNING: Detta kommer PERMANENTLY RADERA urvalet och ta bort det från ALLA spellistor. (Sång: %d) Denna åtgärd kan inte ångras!</string>
     <string name="library_cleanup_title">Smart papperskorgen</string>
     <string name="library_favorites_remove_dialog_title">Ta bort från favoriter</string>
     <string name="library_listening_history_reset_dialog_title">Återställ lyssningshistorik</string>
