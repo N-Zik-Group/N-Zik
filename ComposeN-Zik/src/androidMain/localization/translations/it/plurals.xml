@@ -7,18 +7,18 @@
     </plurals>
     <plurals name="sync_detail_songs_liked">
         <item quantity="one">Brano %1$d liked</item>
-        <item quantity="other">%1$d songs liked</item>
+        <item quantity="other">%1$d brani piaciuti</item>
     </plurals>
     <plurals name="sync_detail_playlists_synced">
         <item quantity="one">Scaletta %1$d sincronizzata</item>
-        <item quantity="other">%1$d playlists synced</item>
+        <item quantity="other">%1$d playlist sincronizzate</item>
     </plurals>
     <plurals name="sync_detail_songs_imported">
         <item quantity="one">%1$d canzone importata</item>
         <item quantity="other">Canzoni importate %1$d</item>
     </plurals>
     <plurals name="sync_detail_albums_imported">
-        <item quantity="one">%1$d album imported</item>
+        <item quantity="one">%1$d album importato</item>
         <item quantity="other">Album importati da %1$d</item>
     </plurals>
     <plurals name="sync_detail_episodes">
@@ -26,19 +26,19 @@
         <item quantity="other">%1$d episodi</item>
     </plurals>
     <plurals name="library_song_count">
-        <item quantity="one">%1$d song</item>
-        <item quantity="other">Canzoni %1$d</item>
+        <item quantity="one">%1$d brano</item>
+        <item quantity="other">%1$d brani</item>
     </plurals>
     <plurals name="about_translator_count">
-        <item quantity="one">Traduttore %1$d</item>
-        <item quantity="other">Traduttori di %1$d</item>
+        <item quantity="one">%1$d traduttore</item>
+        <item quantity="other">%1$d traduttori</item>
     </plurals>
     <plurals name="about_developer_designer_count">
         <item quantity="one">%1$d sviluppatore / designer</item>
-        <item quantity="other">Sviluppatori / designer di %1$d</item>
+        <item quantity="other">%1$d sviluppatori / designers</item>
     </plurals>
     <plurals name="statistics_songs_heard_count">
-        <item quantity="one">%1$d song heard</item>
+        <item quantity="one">%1$d brano ascoltato</item>
         <item quantity="other">%1$d canzoni ascoltate</item>
     </plurals>
     <plurals name="history_delete_search_query_count">
@@ -54,12 +54,12 @@
         <item quantity="other">%1$d episodi · %2$s</item>
     </plurals>
     <plurals name="sync_youtube_playlist_songs_adding">
-        <item quantity="one">Aggiungere la canzone %1$d alla playlist di YouTube</item>
-        <item quantity="other">Aggiungere brani %1$d alla scaletta di YouTube</item>
+        <item quantity="one">Aggiunta di %1$d brano alla playlist di YouTube</item>
+        <item quantity="other">Aggiunta di %1$d brani alla playlist di YouTube</item>
     </plurals>
     <plurals name="sync_youtube_playlist_songs_added">
-        <item quantity="one">Aggiunta canzone %1$d alla playlist di YouTube</item>
-        <item quantity="other">Aggiunti brani di %1$d alla playlist di YouTube</item>
+        <item quantity="one">Aggiunto %1$d brano alla playlist di YouTube</item>
+        <item quantity="other">Aggiunti %1$d brani alla playlist di YouTube</item>
     </plurals>
     <plurals name="backup_import_profile_state_complete_count">
         <item quantity="one">Stato profilo importato: profilo %1$d</item>
