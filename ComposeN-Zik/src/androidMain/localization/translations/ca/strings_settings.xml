@@ -17,7 +17,7 @@
     <string name="language_name_azerbaijani">Azerbaijaní</string>
     <string name="language_name_bashkir">Baixkir</string>
     <string name="language_name_bengali">Bengalí</string>
-    <string name="language_name_catalan">Català</string>
+    <string name="language_name_catalan">Catalan (Català)</string>
     <string name="language_name_chinese_simplified">Xinès simplificat</string>
     <string name="language_name_chinese_traditional">Xinès tradicional</string>
     <string name="language_name_czech">Txec (Čeština)</string>
@@ -27,7 +27,7 @@
     <string name="language_name_esperanto">Esperanto</string>
     <string name="language_name_estonian">Estonià</string>
     <string name="language_name_filipino">Filipí</string>
-    <string name="language_name_finnish">Finlandès</string>
+    <string name="language_name_finnish">Finnish (Suomi)</string>
     <string name="language_name_french">Francès (Français)</string>
     <string name="language_name_galician">Gallec</string>
     <string name="language_name_german">Alemany (Deutsch)</string>
@@ -35,13 +35,13 @@
     <string name="language_name_hebrew">Hebreu</string>
     <string name="language_name_hindi">Hindi</string>
     <string name="language_name_hungarian">Hongarès</string>
-    <string name="language_name_indonesian">Indonesi</string>
+    <string name="language_name_indonesian">Indonesian (Bahasa Indonesia)</string>
     <string name="language_name_interlingua">Interlingua</string>
     <string name="language_name_irish">Irlandès</string>
     <string name="language_name_italian">Italià (Italiano)</string>
     <string name="language_name_japanese">Japonès</string>
-    <string name="language_name_korean">Coreà</string>
-    <string name="language_name_malayalam">Malaiàlam</string>
+    <string name="language_name_korean">Korean (한국어)</string>
+    <string name="language_name_malayalam">Malayalam (മലയാളം)</string>
     <string name="language_name_norwegian">Noruec</string>
     <string name="language_name_odia">Odia</string>
     <string name="language_name_persian">Persa</string>
@@ -50,8 +50,8 @@
     <string name="language_name_portuguese_brazilian">Portuguès, Brasiler</string>
     <string name="language_name_romanian">Romanès (Română)</string>
     <string name="language_name_russian">Rus (Русский)</string>
-    <string name="language_name_serbian_cyrillic">Serbi Ciríl·lic</string>
-    <string name="language_name_serbian_latin">Serbi Llatí</string>
+    <string name="language_name_serbian_cyrillic">Serbian Cyrillic (Српски)</string>
+    <string name="language_name_serbian_latin">Serbian Latin (Srpski)</string>
     <string name="language_name_sinhala">Singalès</string>
     <string name="language_name_spanish">Espanyol (Español)</string>
     <string name="language_name_swedish">Suec</string>
@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Connect to YouTube first to enable this option</string>
     <string name="settings_youtube_library_sync_content_description">Playlists, albums, artists, history, like, etc.</string>
     <string name="settings_youtube_login_enabled_label">Activa l\'inici de sessió de YouTube Music</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Sort</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Toolbar</string>
 </resources>
