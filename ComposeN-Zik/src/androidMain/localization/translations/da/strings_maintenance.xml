@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">Sidste nedbrud</string>
     <string name="maintenance_lastfm_active">Session aktiv</string>
     <string name="maintenance_library">Bibliotek</string>
-    <string name="maintenance_library_albums">%d albummer</string>
-    <string name="maintenance_library_artists">%d kunstnere</string>
+    <string name="maintenance_library_albums">Albums: %d</string>
+    <string name="maintenance_library_artists">Kunstnere: %d</string>
     <string name="maintenance_library_listened">%d lyttede</string>
-    <string name="maintenance_library_playlists">%d afspilningslister</string>
-    <string name="maintenance_library_songs">%d sange</string>
+    <string name="maintenance_library_playlists">Spillelister: %d</string>
+    <string name="maintenance_library_songs">Sange: %d</string>
     <string name="maintenance_live_subsystems">Delsystemer med levende</string>
     <string name="maintenance_log_view">Vis</string>
     <string name="maintenance_lt_connected">Forbundet</string>
