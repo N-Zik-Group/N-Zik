@@ -246,10 +246,11 @@
     <string name="sync_youtube_history_title">YTM-historik</string>
     <string name="sync_youtube_like_failed">Kunne ikke like sangen i YouTube</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Sangen(e) er liket på YouTube</string>
+    <string name="sync_youtube_like_success">Tilføjet til YouTube kan lide</string>
     <string name="sync_youtube_playlist_add_failed">Kunne ikke tilføje sangen i YouTube-playlisten</string>
     <string name="sync_youtube_playlist_add_success">Tilføjet sangen i YouTube-playlisten</string>
     <string name="sync_youtube_playlist_batch_failed">Der opstod en fejl for de næste 50 sange. Sange føjes til playlisten én ad gangen</string>
+    <string name="sync_youtube_playlist_no_songs_added">Ingen sange blev tilføjet til YouTube-afspilningslisten</string>
     <string name="sync_youtube_playlist_songs_added_suffix">sange tilføjes i YouTube-playlisten. Gentag processen, hvis der mangler sange</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">sange tilføjes i YTM-playlisten</string>
     <string name="sync_youtube_playlists_title">YTM-playlister</string>
