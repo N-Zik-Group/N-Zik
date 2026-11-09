@@ -258,7 +258,7 @@
     <string name="sync_youtube_playlist_songs_added_suffix">kappaleet on lisätty YouTube-soittolistalle. Toista prosessi, jos kappaletta puuttuu</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">kappaleet lisätään YTM soittolistaan</string>
     <string name="sync_youtube_playlists_title">YTM-soittolistat</string>
-    <string name="sync_youtube_songs_remaining">%1$s Kappaletta Jäljellä</string>
+    <string name="sync_youtube_songs_remaining">Songs remaining: %1$s</string>
     <string name="sync_youtube_unlike_failed">Kappaleen poisto YouTubessa epäonnistui</string>
     <string name="sync_youtube_unlike_success">Kappale on tykkää YouTubessa</string>
     <string name="sync_starting_notification">Käynnistetään synkronointia...</string>
