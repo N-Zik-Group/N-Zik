@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">比類のない曲</string>
     <string name="metadata_musicbrainz_rating">評価</string>
     <string name="metadata_cover_art">カバーアート</string>
+    <string name="metadata_cover_url_hint">画像のリンクを貼り付け</string>
     <string name="metadata_file_path_unavailable">ファイルパスを解決できません</string>
     <string name="metadata_save_failed">メタデータの保存に失敗しました</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
