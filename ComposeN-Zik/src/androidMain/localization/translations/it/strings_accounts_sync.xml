@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Account di Last.fm</string>
     <string name="profile_identity_source_not_connected">Accesso non effettuato</string>
     <string name="profile_last_used">Ultimo utilizzo</string>
-    <string name="profile_last_used_days">%d giorni fa</string>
-    <string name="profile_last_used_hours">%d h fa</string>
-    <string name="profile_last_used_minutes">%d min fa</string>
-    <string name="profile_last_used_months">%d mesi fa</string>
     <string name="profile_last_used_now">Proprio ora</string>
-    <string name="profile_last_used_weeks">%d settimane fa</string>
     <string name="profile_local_name">Nome del profilo</string>
     <string name="profile_local_name_description">Rinomina il profilo locale corrente.</string>
     <string name="profile_name_input_hint">Inserisci il nome del profilo</string>
@@ -255,10 +250,11 @@
     <string name="sync_youtube_playlist_add_failed">Impossibile aggiungere il brano alla playlist di YouTube</string>
     <string name="sync_youtube_playlist_add_success">Aggiunta il brano alla playlist di YouTube</string>
     <string name="sync_youtube_playlist_batch_failed">Si è verificato un errore per i prossimi 50 brani. Aggiunta di brani alla playlist uno alla volta</string>
+    <string name="sync_youtube_playlist_no_songs_added">Nessun brano aggiunto alla playlist di YouTube</string>
     <string name="sync_youtube_playlist_songs_added_suffix">le canzoni vengono aggiunte alla playlist di YouTube. Ripeti il ​​processo se ci sono delle canzoni mancanti</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">i brani verranno aggiunti alla playlist YTM</string>
     <string name="sync_youtube_playlists_title">Playlist di YTM</string>
-    <string name="sync_youtube_songs_remaining">Songs remaining: %1$s</string>
+    <string name="sync_youtube_songs_remaining">Canzoni Rimanenti %1$s</string>
     <string name="sync_youtube_unlike_failed">Impossibile togliere mi piace alla canzone su YouTube</string>
     <string name="sync_youtube_unlike_success">Canzone non apprezzata su YouTube</string>
     <string name="sync_starting_notification">Avvio sincronizzazione...</string>
