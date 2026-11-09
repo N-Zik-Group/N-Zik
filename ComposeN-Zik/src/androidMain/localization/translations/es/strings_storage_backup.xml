@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Almacenamiento</string>
+    <string name="storage_breakdown_info_title">Acerca del almacenamiento</string>
+    <string name="storage_breakdown_nzik_total">Total usado por NZik</string>
+    <string name="storage_breakdown_subtitle">Desglose de almacenamiento</string>
+    <string name="storage_breakdown_waiting">Mediendo el almacenamiento…</string>
+    <string name="storage_breakdown_cached_images">Imágenes en caché</string>
+    <string name="storage_breakdown_streamed_audio">Audio transmitido</string>
+    <string name="storage_breakdown_downloaded_audio">Audio descargado</string>
+    <string name="storage_breakdown_custom_covers">Portadas personalizadas</string>
+    <string name="storage_breakdown_waveforms">Formas de onda</string>
+    <string name="storage_breakdown_other_nzik_data">Otros datos NZik</string>
+    <string name="storage_breakdown_other_used_space">Sistema, aplicaciones &amp; archivos</string>
+    <string name="storage_breakdown_free_space">Espacio libre</string>
+    <string name="storage_info_images">Artwork y otras imágenes almacenadas en caché para una visualización más rápida.</string>
+    <string name="storage_info_streaming">Audio guardado temporalmente después del streaming, por lo que se puede reproducir de nuevo sin obtener los mismos datos.</string>
+    <string name="storage_info_downloads">Audio guardado en NZik para escuchar sin conexión.</string>
+    <string name="storage_info_waveforms">Archivos generados para dibujar la forma de onda de audio en el reproductor.</string>
+    <string name="storage_info_covers">Artesanía que seleccionaste o importaste como portadas personalizadas.</string>
+    <string name="storage_info_other_nzik">El resto de los datos privados de NZik, incluyendo sus bases de datos, configuraciones, índices, extensiones y registros.</string>
+    <string name="storage_info_other_used">El espacio restante utilizado en el volumen interno, incluyendo Android, aplicaciones instaladas y archivos personales.</string>
+    <string name="storage_info_free">Espacio disponible para aplicaciones y archivos en el volumen interno.</string>
+    <string name="storage_cleanup_title">Limpieza</string>
+    <string name="storage_cleanup_failed">No se pudo finalizar la limpieza de almacenamiento.</string>
+    <string name="storage_cleanup_images_description">Borrar caché de artwork por NZik.</string>
+    <string name="storage_cleanup_streaming_description">Limpiar caché de audio mientras se transmite.</string>
+    <string name="storage_cleanup_downloads_description">Elimina el audio sin conexión y cancela las descargas pendientes para el almacenamiento de descargas del perfil activo.</string>
+    <string name="storage_cleanup_waveforms_description">Limpiar archivos waveform generados.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Limpiar formas de onda</string>
+    <string name="storage_cleanup_diagnostic_logs">Borrar registros de diagnóstico</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Elimine los archivos de registro de depuración y bloqueo. Su configuración de registro sigue siendo la misma.</string>
+    <string name="storage_cleanup_temporary_files">Eliminar archivos temporales abandonados</string>
+    <string name="storage_cleanup_temporary_files_description">Eliminar borradores de editor de imágenes abandonados y rewind compartir captura más de 24 horas.</string>
+    <string name="storage_cleanup_all">Limpiar todo</string>
+    <string name="storage_cleanup_all_description">Elimina la imagen y el streaming de cachés y genera formas de onda para el perfil activo, incluyendo el almacenamiento que comparte con otros perfiles. Elimina el audio sin conexión y cancela las descargas pendientes para el almacenamiento de descargas del perfil activo. Eliminar registros de diagnóstico, borradores de editor de imágenes abandonados y capturas de compartir de Rewind caducadas. Su biblioteca, portadas personalizadas y ajustes están asegurados.</string>
     <!-- Backup -->
     <string name="backup_action_export">Exportar respaldo</string>
     <string name="backup_action_import">Importar respaldo</string>
@@ -82,12 +117,15 @@
     <!-- Cache -->
     <string name="cache_action_reset">Restablecer caché</string>
     <string name="cache_clear_song_dialog_title">Borrar caché de canciones</string>
-    <string name="cache_downloads_max_size_description">Elija cuánto espacio de disco está disponible para las canciones descargadas. El botón de la papelera elimina el audio descargado.</string>
-    <string name="cache_image_max_size_description">Limita el espacio de disco usado por el artwork en caché. El botón de basura borra las imágenes descargadas de esta caché.</string>
+    <string name="cache_downloads_max_size_description">Elija cuánto espacio de disco está disponible para las canciones descargadas.</string>
+    <string name="cache_downloads_limit_description">Elija cuánto espacio de disco está disponible para las canciones descargadas.</string>
+    <string name="cache_image_max_size_description">Limita el espacio de disco usado por el trabajo de almacenamiento en caché.</string>
+    <string name="cache_image_limit_description">Limita el espacio de disco usado por el trabajo de almacenamiento en caché.</string>
     <string name="cache_location_description">Elija dónde la aplicación almacena su caché de reproducción de canciones.</string>
     <string name="cache_location_private">Privado</string>
     <string name="cache_location_system">Sistema</string>
-    <string name="cache_streaming_max_size_description">Limita el espacio de disco usado para cachear canciones streamed. El botón de basura borra esta caché de reproducción.</string>
+    <string name="cache_streaming_max_size_description">Limita el espacio de disco usado para cachear canciones streamed.</string>
+    <string name="cache_streaming_limit_description">Limita el espacio de disco usado para cachear canciones streamed.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Descargar todas las canciones</string>
     <string name="downloads_action_refresh_quality">Actualizar descargas</string>
