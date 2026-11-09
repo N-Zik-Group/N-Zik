@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">Eşleşmeyen şarkılar</string>
     <string name="metadata_musicbrainz_rating">Derecelendirme</string>
     <string name="metadata_cover_art">Kapak resmi</string>
+    <string name="metadata_cover_url_hint">Bir resim bağlantısı yapıştırın</string>
     <string name="metadata_file_path_unavailable">Dosya yolu çözümlenemiyor</string>
     <string name="metadata_save_failed">Meta veri kaydedilemedi</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
@@ -417,5 +418,5 @@
     <string name="library_on_device_permission_request_failed">Bu cihazdaki müziklere erişim talebi gönderilemedi.</string>
     <string name="library_on_device_permission_settings_failed">İzin ayarları açılamadı.</string>
     <string name="artist_more_from_format">Daha fazla %1$s</string>
-    <string name="playlist_top_show_title_format">Show %1$s</string>
+    <string name="playlist_top_show_title_format">%1$s göster</string>
 </resources>
