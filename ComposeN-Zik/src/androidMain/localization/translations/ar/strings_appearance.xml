@@ -18,6 +18,10 @@
     <string name="glass_effect_destination_pages">الصفحات</string>
     <string name="glass_effect_destination_playback">تشغيل</string>
     <string name="glass_effect_destination_shared">العناصر المشتركة</string>
+    <string name="glass_effect_loading_indicators">تحميل المؤشرات</string>
+    <string name="glass_effect_loading_indicators_description">نمط تحميل الرسوم المتحركة على الصفحات وفي البطاقات و الحوار.</string>
+    <string name="glass_effect_pull_to_refresh">اسحب للتحديث</string>
+    <string name="glass_effect_pull_to_refresh_description">نمط المؤشر الذي يظهر عند السحب للأسفل للتحديث.</string>
     <string name="glass_effect_destination_windows">ويندوز ورسائل</string>
     <string name="glass_effect_dialog_dimming">خداع خلفية مربع الحوار</string>
     <string name="glass_effect_dispersion">تقسيم الألوان</string>
@@ -121,7 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">البطاقات التي تضعها إعدادات المجموعة وتظهر ملفك الشخصي.</string>
     <string name="glass_effect_role_visualizer">عوامل التصور · الضوابط</string>
     <string name="glass_effect_role_visualizer_description">زر الأسهم و الإعدادات المستخدمة مع المرئيات</string>
-    <string name="glass_effect_shared_summary">اختر البحث المعتاد عن التطبيق. المجموعات الأخرى تسمح لك بتغيير أجزاء معينة.</string>
+    <string name="glass_effect_shared_components_summary">اختر كيف يبدو الزجاج على المكونات المستخدمة عبر التطبيق، بما في ذلك تحميل المؤشرات وسحب للتحديث.</string>
     <string name="glass_effect_summary">تخصيص سطوح تأثير الزجاج والألوان والخطوط العريضة والجودة.</string>
     <string name="glass_effect_switches_description">استخدام مفاتيح التبديل الزجاجية السائلة مع تأثيرات المواد المشتركة والتفاعل عند تمكين الزجاج.</string>
     <string name="glass_effect_switches_title">مفاتيح التبديل الزجاجية</string>
