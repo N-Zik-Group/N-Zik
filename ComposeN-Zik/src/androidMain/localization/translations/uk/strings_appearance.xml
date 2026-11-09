@@ -121,7 +121,6 @@
     <string name="glass_effect_role_settings_cards_description">Карти, що змінюють налаштування груп і показують ваші профілі.</string>
     <string name="glass_effect_role_visualizer">Візуалізатор · Управління</string>
     <string name="glass_effect_role_visualizer_description">Стрілки та кнопка Налаштування, що використовується в візуалізаторі.</string>
-    <string name="glass_effect_shared_summary">Виберіть звичайний вигляд додатку. Інші групи дозволяють вам змінювати різні частини.</string>
     <string name="glass_effect_summary">Налаштування ефектів скла поверхонь, кольори, обриси та якість.</string>
     <string name="glass_effect_switches_description">Використовуйте рідке скло з спільним матеріалом та інтерактивним ефектом, коли скло включено.</string>
     <string name="glass_effect_switches_title">Перемикачі скла</string>

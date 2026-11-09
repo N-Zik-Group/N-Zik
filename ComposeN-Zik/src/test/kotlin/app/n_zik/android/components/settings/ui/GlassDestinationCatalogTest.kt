@@ -51,13 +51,13 @@ class GlassDestinationCatalogTest {
     }
 
     @Test fun `indicator selectors resolve independently in search and reset to their defaults`() {
-        val rows = glassDestinationRows(GlassDestinationGroup.Indicators)
+        val rows = glassDestinationRows(GlassDestinationGroup.Shared).filter { it.area in listOf(GlassArea.LoadingIndicators, GlassArea.PullToRefresh) }
         val loading = GlassArea.LoadingIndicators
         val refresh = GlassArea.PullToRefresh
         assertEquals(listOf(loading, refresh), rows.map { it.area })
         assertFalse(loading.preferenceKey == refresh.preferenceKey)
         rows.forEach { row ->
-            assertEquals("destination.Indicators", glassSearchOption(row.searchId)?.section)
+            assertEquals("destination.Shared", glassSearchOption(row.searchId)?.section)
             assertTrue(searchSettingsEntries(context, context.getString(row.title)).any { it.id == row.searchId })
         }
 

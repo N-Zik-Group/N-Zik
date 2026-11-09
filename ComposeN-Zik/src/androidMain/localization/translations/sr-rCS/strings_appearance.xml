@@ -121,7 +121,6 @@
     <string name="glass_effect_role_settings_cards_description">The cards that group settings and show your profiles.</string>
     <string name="glass_effect_role_visualizer">Visualizer · controls</string>
     <string name="glass_effect_role_visualizer_description">The arrows and Settings button used with the visualizer.</string>
-    <string name="glass_effect_shared_summary">Choose the usual look for the app. The other groups let you change specific parts.</string>
     <string name="glass_effect_summary">Customize Glass effect surfaces, colors, outlines and quality.</string>
     <string name="glass_effect_switches_description">Use liquid Glass switches with the shared material and interaction effects when Glass is enabled.</string>
     <string name="glass_effect_switches_title">Glass switches</string>

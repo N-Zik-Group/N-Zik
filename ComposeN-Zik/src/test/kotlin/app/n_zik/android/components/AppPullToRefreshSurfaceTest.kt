@@ -113,6 +113,7 @@ class AppPullToRefreshSurfaceTest {
     fun `refresh reveals the full Glass container and expressive glyph`() {
         val palette = DefaultLightColorPalette
         val mode = mutableStateOf(GlassAreaMode.ContourOnly)
+        val film = mutableStateOf(.5f)
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
             val shape = CircleShape
@@ -120,6 +121,7 @@ class AppPullToRefreshSurfaceTest {
                 LocalAppearance provides Appearance(palette, Typography.fallback, shape, shape, shape),
                 LocalGlassPreviewSettings provides GlassSettings(
                     quality = GlassQuality.Performance,
+                    film = film.value,
                     areaModes = mapOf(GlassArea.PullToRefresh to mode.value),
                 ),
             ) {
@@ -160,8 +162,18 @@ class AppPullToRefreshSurfaceTest {
                 kotlin.math.abs(color.green - glassFill.green) < .01f &&
                 kotlin.math.abs(color.blue - glassFill.blue) < .01f
         } > 100)
+        val glyphFill = Color.Black.copy(alpha = .5f).compositeOver(glassFill)
+        assertTrue("The inner Glass glyph contrasts with the capsule", pixelCount("refresh") {
+            val color = Color(it)
+            kotlin.math.abs(color.red - glyphFill.red) < .03f &&
+                kotlin.math.abs(color.green - glyphFill.green) < .03f &&
+                kotlin.math.abs(color.blue - glyphFill.blue) < .03f
+        } > 10)
         val glassPixels = pixelCount("refresh") { it != Color.Magenta.toArgb() }
         assertTrue("Glass retains the full container ($glassPixels of $nativePixels pixels)",
             glassPixels in (nativePixels * .9f).toInt()..(nativePixels * 1.1f).toInt())
+        composeRule.runOnIdle { film.value = 0f }
+        composeRule.mainClock.advanceTimeBy(1_000)
+        assertTrue("Tint with no film retains the native glyph", pixelCount("refresh") { it == Color.Black.toArgb() } > 10)
     }
 }

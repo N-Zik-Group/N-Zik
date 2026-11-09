@@ -22,7 +22,7 @@ import app.n_zik.android.components.image.PickedImageEditor
 import app.n_zik.android.components.settings.common.CardCategoryLabel
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.ui.screens.rewind.cleanupExpiredRewindCaptures
-import app.n_zik.android.core.coil.clearImageCacheOffMain
+import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.profiles.waveformsDir
 import app.n_zik.android.download.services.MyDownloadService
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
@@ -135,7 +135,7 @@ internal fun DataStorageCleanup(onCleanupComplete: () -> Unit) {
 
     suspend fun clean(action: CleanupAction) {
         when (action) {
-            CleanupAction.IMAGES -> clearImageCacheOffMain()
+            CleanupAction.IMAGES -> ImageCacheFactory.clearImageCacheOrThrow()
             CleanupAction.STREAMING -> clearStreamingCache()
             CleanupAction.DOWNLOADS -> DownloadService.sendRemoveAllDownloads(
                 context, MyDownloadService::class.java, false,

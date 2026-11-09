@@ -121,7 +121,6 @@
     <string name="glass_effect_role_settings_cards_description">Kortene som gruppen instillinger og vis profilene dine.</string>
     <string name="glass_effect_role_visualizer">Visualizer · kontroller</string>
     <string name="glass_effect_role_visualizer_description">Knappen piler og innstillinger brukes med visualiseren.</string>
-    <string name="glass_effect_shared_summary">Velg det vanlige utseendet til appen. De andre gruppene lar deg endre bestemte deler.</string>
     <string name="glass_effect_summary">Tilpass glasseffekt-overflater, farger, linjer og kvalitet.</string>
     <string name="glass_effect_switches_description">Bruk flytende glass brytere med delt material- og interaksjonseffekt når Glass er aktivert.</string>
     <string name="glass_effect_switches_title">Glass brytere</string>

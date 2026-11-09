@@ -26,7 +26,9 @@ internal fun GlassIndicatorSilhouette(
     modifier: Modifier = Modifier,
     indicator: @Composable (Modifier) -> Unit,
 ) {
-    val material = settings.usesGlassMaterial(area)
+    // The tint renderer has no backdrop optics to keep a film-free glyph visible.
+    val material = settings.usesGlassMaterial(area) &&
+        (settings.film > 0f || glassRenderer(settings) != GlassRenderer.Tint)
     val contour = settings.usesGlassContour(area)
     if (!material && !contour) {
         indicator(modifier)

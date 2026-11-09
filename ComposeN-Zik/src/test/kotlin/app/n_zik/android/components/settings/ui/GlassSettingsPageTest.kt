@@ -219,12 +219,12 @@ class GlassSettingsPageTest {
     }
 
     @Test fun `search opens the exact loading indicator selector`() {
-        val row = glassDestinationRows(GlassDestinationGroup.Indicators).single { it.area == GlassArea.LoadingIndicators }
+        val row = glassDestinationRows(GlassDestinationGroup.Shared).single { it.area == GlassArea.LoadingIndicators }
         assertSearchRevealsMode(row.searchId, row.area.name)
     }
 
     @Test fun `search opens the exact pull to refresh selector`() {
-        val row = glassDestinationRows(GlassDestinationGroup.Indicators).single { it.area == GlassArea.PullToRefresh }
+        val row = glassDestinationRows(GlassDestinationGroup.Shared).single { it.area == GlassArea.PullToRefresh }
         assertSearchRevealsMode(row.searchId, row.area.name)
     }
 

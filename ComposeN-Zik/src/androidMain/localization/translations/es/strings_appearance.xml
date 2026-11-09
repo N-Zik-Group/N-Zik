@@ -121,7 +121,6 @@
     <string name="glass_effect_role_settings_cards_description">Las tarjetas que configuran el grupo y muestran sus perfiles.</string>
     <string name="glass_effect_role_visualizer">Visualizador · controles</string>
     <string name="glass_effect_role_visualizer_description">El botón de flechas y ajustes usado con el visualizador.</string>
-    <string name="glass_effect_shared_summary">Elige la búsqueda habitual de la aplicación. Los otros grupos te permiten cambiar partes específicas.</string>
     <string name="glass_effect_summary">Personalizar superficies de efecto vidrio, colores, contornos y calidad.</string>
     <string name="glass_effect_switches_description">Utilice los interruptores de vidrio líquido con el material compartido y efectos de interacción cuando el vidrio está habilitado.</string>
     <string name="glass_effect_switches_title">Interruptores de vidrio</string>

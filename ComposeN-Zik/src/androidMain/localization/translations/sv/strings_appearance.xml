@@ -121,7 +121,6 @@
     <string name="glass_effect_role_settings_cards_description">Korten som grupperar inställningar och visar dina profiler.</string>
     <string name="glass_effect_role_visualizer">Visualizer · kontroller</string>
     <string name="glass_effect_role_visualizer_description">Knappen pilar och inställningar som används med visualiseraren.</string>
-    <string name="glass_effect_shared_summary">Välj det vanliga utseendet på appen. De andra grupperna låter dig ändra specifika delar.</string>
     <string name="glass_effect_summary">Anpassa glasets effektytor, färger, konturer och kvalitet.</string>
     <string name="glass_effect_switches_description">Använd flytande glasväxlar med det delade materialet och interaktionseffekter när Glas är aktiverat.</string>
     <string name="glass_effect_switches_title">Kopplingar till glas</string>

@@ -121,7 +121,6 @@
     <string name="glass_effect_role_settings_cards_description">Le carte che raggruppano le impostazioni e mostrano i tuoi profili.</string>
     <string name="glass_effect_role_visualizer">Visualizzatore · controlli</string>
     <string name="glass_effect_role_visualizer_description">Il pulsante frecce e impostazioni usato con il visualizzatore.</string>
-    <string name="glass_effect_shared_summary">Scegli il solito look per l\'app. Gli altri gruppi ti permettono di cambiare parti specifiche.</string>
     <string name="glass_effect_summary">Personalizza superfici effetto vetro, colori, contorni e qualità.</string>
     <string name="glass_effect_switches_description">Utilizzare gli interruttori di vetro liquido con il materiale condiviso e gli effetti di interazione quando Glass è abilitato.</string>
     <string name="glass_effect_switches_title">Interruttori in vetro</string>

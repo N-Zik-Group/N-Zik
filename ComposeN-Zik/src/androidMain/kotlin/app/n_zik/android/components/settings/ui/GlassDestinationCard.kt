@@ -28,8 +28,7 @@ internal enum class GlassDestinationGroup(@StringRes val title: Int, val icon: I
     Playback(R.string.glass_effect_destination_playback, R.drawable.musical_notes, R.string.glass_effect_playback_summary),
     Pages(R.string.glass_effect_destination_pages, R.drawable.search, R.string.glass_effect_pages_summary),
     Windows(R.string.glass_effect_destination_windows, R.drawable.sort_grid, R.string.glass_effect_windows_summary),
-    Indicators(R.string.glass_effect_destination_indicators, R.drawable.refresh, R.string.glass_effect_indicators_summary),
-    Shared(R.string.glass_effect_destination_shared, R.drawable.color_palette, R.string.glass_effect_shared_summary),
+    Shared(R.string.glass_effect_destination_shared, R.drawable.color_palette, R.string.glass_effect_shared_components_summary),
 }
 
 internal data class GlassPolicyRow(
@@ -75,10 +74,9 @@ internal fun glassDestinationRows(group: GlassDestinationGroup): List<GlassPolic
         GlassPolicyRow(R.string.glass_effect_where_dialogs, GlassArea.Dialogs, description = R.string.glass_effect_where_dialogs_description),
         GlassPolicyRow(R.string.glass_effect_where_dialog_buttons, GlassArea.DialogButtons, description = R.string.glass_effect_where_dialog_buttons_description),
         GlassPolicyRow(R.string.glass_effect_role_messages, GlassArea.Menus, GlassScope.Toast, description = R.string.glass_effect_role_messages_description))
-    GlassDestinationGroup.Indicators -> listOf(
-        GlassPolicyRow(R.string.glass_effect_loading_indicators, GlassArea.LoadingIndicators, description = R.string.glass_effect_loading_indicators_description),
-        GlassPolicyRow(R.string.glass_effect_pull_to_refresh, GlassArea.PullToRefresh, description = R.string.glass_effect_pull_to_refresh_description))
     GlassDestinationGroup.Shared -> listOf(
+        GlassPolicyRow(R.string.glass_effect_loading_indicators, GlassArea.LoadingIndicators, description = R.string.glass_effect_loading_indicators_description),
+        GlassPolicyRow(R.string.glass_effect_pull_to_refresh, GlassArea.PullToRefresh, description = R.string.glass_effect_pull_to_refresh_description),
         GlassPolicyRow(R.string.glass_effect_switches_title, GlassArea.Switches, description = R.string.glass_effect_switches_description),
         GlassPolicyRow(R.string.glass_effect_where_action_buttons, GlassArea.ActionButtons, description = R.string.glass_effect_where_action_buttons_description),
         GlassPolicyRow(R.string.glass_effect_common_cards, GlassArea.SettingsCards, description = R.string.glass_effect_common_cards_description),

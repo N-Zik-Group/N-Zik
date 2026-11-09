@@ -40,11 +40,16 @@ class SettingsDetailedSearchTest {
         }
     }
 
-    @Test fun storageSectionsAreSearchableGloballyAndInData() {
+    @Test fun storageSectionsAndCleanupActionsAreSearchableGloballyAndInData() {
+        val labels = listOf(
+            R.string.storage_breakdown_subtitle, R.string.storage_cleanup_title,
+            R.string.storage_cleanup_diagnostic_logs, R.string.storage_cleanup_temporary_files,
+            R.string.storage_cleanup_all,
+        )
         for (locale in listOf(Locale.ENGLISH, Locale.FRENCH)) {
             val localized = localized(locale)
-            for (section in listOf(R.string.storage_breakdown_subtitle, R.string.storage_cleanup_title)) {
-                val query = localized.getString(section)
+            for (label in labels) {
+                val query = localized.getString(label)
                 assertTrue(searchSettingsCardResults(localized, query).any { it.titleRes == R.string.storage_breakdown_title })
                 assertTrue(R.string.storage_breakdown_title in visibleCardTitleRes(localized, 4, query))
             }

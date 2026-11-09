@@ -936,26 +936,23 @@ object ImageCacheFactory {
 
     fun clearImageCache() {
         try {
-            // 1. First, clear the RAM cache
-            LOADER.memoryCache?.clear()
-
-            // 2. Clear the disk cache (Storage)
-            DISK_CACHE.clear()
-
-            // 3. Clear the learned signature registries (Playlists)
-            PlaylistThumbnailStore.clearAll()
-
-            // 4. Clear quality metadata
-            CacheMetadataStore.clearAll()
-
-            // 5. Reset temporary registers
-            cacheKeyMap.clear()
-            cooldownMap.clear()
-
+            clearImageCacheOrThrow()
         } catch (e: Exception) {
         }
-        // Signal observers after all pixel and URL-metadata caches have been cleared.
-        app.n_zik.android.components.player.SharedArtworkColors.invalidate()
+    }
+
+    internal fun clearImageCacheOrThrow() {
+        try {
+            LOADER.memoryCache?.clear()
+            DISK_CACHE.clear()
+            PlaylistThumbnailStore.clearAll()
+            CacheMetadataStore.clearAll()
+            cacheKeyMap.clear()
+            cooldownMap.clear()
+        } finally {
+            // Refresh observers even when only part of the cache could be cleared.
+            app.n_zik.android.components.player.SharedArtworkColors.invalidate()
+        }
     }
 
     fun getCacheSize(): Long = try { DISK_CACHE.size } catch (e: Exception) { 0L }

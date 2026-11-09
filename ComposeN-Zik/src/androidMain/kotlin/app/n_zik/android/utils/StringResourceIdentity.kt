@@ -499,7 +499,6 @@ internal object StringResourceIdentity {
         "glass_effect_role_settings_cards_description" to "glass_role_settings_cards_description",
         "glass_effect_role_visualizer" to "glass_role_visualizer",
         "glass_effect_role_visualizer_description" to "glass_role_visualizer_description",
-        "glass_effect_shared_summary" to "glass_shared_summary",
         "glass_effect_summary" to "page_glass_summary",
         "glass_effect_tint" to "glass_tint",
         "glass_effect_tint_none" to "glass_tint_none",

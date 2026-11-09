@@ -121,7 +121,6 @@
     <string name="glass_effect_role_settings_cards_description">Os cartões que agrupam as configurações e mostram seus perfis.</string>
     <string name="glass_effect_role_visualizer">Visualizador · controles</string>
     <string name="glass_effect_role_visualizer_description">O botão de setas e configurações é usado com o visualizador.</string>
-    <string name="glass_effect_shared_summary">Escolha a aparência habitual para o app. Os outros grupos permitem que você altere partes específicas.</string>
     <string name="glass_effect_summary">Personalize as superfícies de efeito de Vidro, cores, contornos e qualidade.</string>
     <string name="glass_effect_switches_description">Usar interruptores de vidro líquido com os efeitos materiais e interação compartilhados quando o Vidro estiver ativado.</string>
     <string name="glass_effect_switches_title">Interruptores de vidro</string>

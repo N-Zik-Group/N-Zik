@@ -121,7 +121,6 @@
     <string name="glass_effect_role_settings_cards_description">البطاقات التي تضعها إعدادات المجموعة وتظهر ملفك الشخصي.</string>
     <string name="glass_effect_role_visualizer">عوامل التصور · الضوابط</string>
     <string name="glass_effect_role_visualizer_description">زر الأسهم و الإعدادات المستخدمة مع المرئيات</string>
-    <string name="glass_effect_shared_summary">اختر البحث المعتاد عن التطبيق. المجموعات الأخرى تسمح لك بتغيير أجزاء معينة.</string>
     <string name="glass_effect_summary">تخصيص سطوح تأثير الزجاج والألوان والخطوط العريضة والجودة.</string>
     <string name="glass_effect_switches_description">استخدام مفاتيح التبديل الزجاجية السائلة مع تأثيرات المواد المشتركة والتفاعل عند تمكين الزجاج.</string>
     <string name="glass_effect_switches_title">مفاتيح التبديل الزجاجية</string>

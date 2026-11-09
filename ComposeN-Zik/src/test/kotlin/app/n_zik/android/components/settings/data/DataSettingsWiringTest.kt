@@ -233,7 +233,7 @@ class DataSettingsWiringTest {
         val cache = mockk<Cache>(relaxed = true)
         every { binder.cache } returns cache
         every { cache.keys } returns setOf("first", "second")
-        every { ImageCacheFactory.clearImageCache() } answers { }
+        every { ImageCacheFactory.clearImageCacheOrThrow() } answers { }
         mockkStatic(DownloadService::class)
         every { DownloadService.sendRemoveAllDownloads(any(), MyDownloadService::class.java, false) } answers { }
 
@@ -288,7 +288,7 @@ class DataSettingsWiringTest {
             }
 
             confirm("images", R.string.common_action_clear, 1)
-            verify(exactly = 1) { ImageCacheFactory.clearImageCache() }
+            verify(exactly = 1) { ImageCacheFactory.clearImageCacheOrThrow() }
             verify(exactly = 0) { cache.removeResource(any()) }
             assertTrue(generated.exists())
 
@@ -336,7 +336,7 @@ class DataSettingsWiringTest {
             assertTrue(expired.setLastModified(expiredAt))
 
             confirm("all", R.string.common_action_clear, 7)
-            verify(exactly = 2) { ImageCacheFactory.clearImageCache() }
+            verify(exactly = 2) { ImageCacheFactory.clearImageCacheOrThrow() }
             verify(exactly = 2) { cache.removeResource("first") }
             verify(exactly = 2) { cache.removeResource("second") }
             verify(exactly = 2) { DownloadService.sendRemoveAllDownloads(any(), MyDownloadService::class.java, false) }

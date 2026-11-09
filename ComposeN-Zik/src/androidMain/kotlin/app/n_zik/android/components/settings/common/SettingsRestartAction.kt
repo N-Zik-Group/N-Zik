@@ -29,7 +29,8 @@ import app.n_zik.android.typography
 internal fun RestartPlayerService(restartService: Boolean, onRestart: () -> Unit) {
     val binder = LocalPlayerServiceBinder.current
     SettingsRestartAction(restartService) {
-        binder?.restartForegroundOrStop()
+        val connectedBinder = binder ?: return@SettingsRestartAction
+        connectedBinder.restartForegroundOrStop()
         onRestart()
         Toaster.done()
     }

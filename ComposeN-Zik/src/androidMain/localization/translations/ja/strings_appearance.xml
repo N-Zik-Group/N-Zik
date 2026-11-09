@@ -121,7 +121,6 @@
     <string name="glass_effect_role_settings_cards_description">設定をグループ化し、プロファイルを表示するカード。</string>
     <string name="glass_effect_role_visualizer">ビジュアライザー・コントロール</string>
     <string name="glass_effect_role_visualizer_description">ビジュアライザーで使用される矢印と設定ボタン。</string>
-    <string name="glass_effect_shared_summary">アプリの通常のルックを選択します。他のグループでは、特定のパーツを変更できます。</string>
     <string name="glass_effect_summary">ガラスエフェクトの表面、色、輪郭、品質をカスタマイズします。</string>
     <string name="glass_effect_switches_description">format@@0が有効になっている場合は、液体のガラススイッチと共有材料の相互作用効果を使用します。</string>
     <string name="glass_effect_switches_title">ガラススイッチ</string>

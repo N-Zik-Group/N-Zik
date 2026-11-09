@@ -121,7 +121,6 @@
     <string name="glass_effect_role_settings_cards_description">Karty grupujące ustawienia i wyświetlające profil.</string>
     <string name="glass_effect_role_visualizer">Wizualizator · sterowanie</string>
     <string name="glass_effect_role_visualizer_description">Strzałki i przycisk Ustawienia używany z wizualizatorem.</string>
-    <string name="glass_effect_shared_summary">Wybierz typowy wygląd aplikacji. Inne grupy pozwalają na zmianę określonych części.</string>
     <string name="glass_effect_summary">Dostosuj powierzchnie efektów szkła, kolory, obrysy i jakość.</string>
     <string name="glass_effect_switches_description">Używaj przełączników ciekłego szkła ze współdzielonym materiałem i efektów interakcji, gdy szkło jest włączone.</string>
     <string name="glass_effect_switches_title">Przełączniki szklane</string>

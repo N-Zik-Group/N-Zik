@@ -121,7 +121,6 @@
     <string name="glass_effect_role_settings_cards_description">Ayarları gruplandıran ve profillerinizi gösteren kartlar.</string>
     <string name="glass_effect_role_visualizer">Görselleştirici · kontroller</string>
     <string name="glass_effect_role_visualizer_description">Görselleştiriciyle birlikte kullanılan oklar ve Ayarlar düğmesi.</string>
-    <string name="glass_effect_shared_summary">Uygulama için standart görünümü seçin. Diğer gruplar, belirli kısımları değiştirmenize olanak tanır.</string>
     <string name="glass_effect_summary">Cam efekti yüzeylerini, renklerini, kenarlarını ve kalitesini özelleştirin.</string>
     <string name="glass_effect_switches_description">Cam özelliği etkinleştirildiğinde, ortak materyal ve etkileşim efektlerine sahip sıvı Cam anahtarlarını kullanın.</string>
     <string name="glass_effect_switches_title">Cam anahtarlar</string>

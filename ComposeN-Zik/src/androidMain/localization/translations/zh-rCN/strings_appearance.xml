@@ -121,7 +121,6 @@
     <string name="glass_effect_role_settings_cards_description">组设置和显示您个人资料的卡片。</string>
     <string name="glass_effect_role_visualizer">可视化器 · 控制</string>
     <string name="glass_effect_role_visualizer_description">可视化器使用的箭头和设置按钮。</string>
-    <string name="glass_effect_shared_summary">选择通常的应用程序。其他组让您更改特定的部分。</string>
     <string name="glass_effect_summary">自定义玻璃效果表面、颜色、轮廓和质量。</string>
     <string name="glass_effect_switches_description">当启用玻璃时使用液态玻璃开关，具有共享材料和交互作用。</string>
     <string name="glass_effect_switches_title">玻璃开关</string>

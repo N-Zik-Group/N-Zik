@@ -121,7 +121,6 @@
     <string name="glass_effect_role_settings_cards_description">Kortit, jotka ryhmittelevät asetukset ja näyttävät profiilisi.</string>
     <string name="glass_effect_role_visualizer">Visualisoija · kontrollit</string>
     <string name="glass_effect_role_visualizer_description">Nuolet ja asetukset painike käytetään visualisoija.</string>
-    <string name="glass_effect_shared_summary">Valitse tavanomainen sovelluksen haku. Muiden ryhmien avulla voit vaihtaa tiettyjä osia.</string>
     <string name="glass_effect_summary">Mukauta lasiefektin pintoja, värejä, ääriviivoja ja laatua.</string>
     <string name="glass_effect_switches_description">Käytä nestettä Lasi kytkimiä yhteinen materiaali ja vuorovaikutus vaikutuksia, kun Lasi on käytössä.</string>
     <string name="glass_effect_switches_title">Lasiset kytkimet</string>

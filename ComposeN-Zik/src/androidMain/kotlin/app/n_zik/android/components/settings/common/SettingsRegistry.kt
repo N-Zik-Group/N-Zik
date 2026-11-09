@@ -300,6 +300,8 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.storage_breakdown_subtitle, R.string.storage_cleanup_title,
             R.string.storage_breakdown_cached_images, R.string.storage_breakdown_streamed_audio,
             R.string.storage_breakdown_downloaded_audio, R.string.storage_breakdown_waveforms,
+            R.string.storage_cleanup_diagnostic_logs, R.string.storage_cleanup_temporary_files,
+            R.string.storage_cleanup_all,
         )),
     SettingsCardRegistryEntry(4, R.string.settings_cache_title, R.drawable.server,
         keywordRes = listOf(
