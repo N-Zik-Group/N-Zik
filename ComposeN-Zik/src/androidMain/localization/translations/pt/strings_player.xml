@@ -82,6 +82,7 @@
     <string name="lyrics_editor_title">Insira a letra</string>
     <string name="lyrics_empty">Nenhuma letra</string>
     <string name="lyrics_fetch_error_message">Ocorreu um erro ao buscar a letra</string>
+    <string name="lyrics_provider_fetch_error_message">Não foi possível obter as letras do %1$s</string>
     <string name="lyrics_font_size_animation_label">Animar Tamanho das Letras</string>
     <string name="lyrics_font_size_extra_large_label">Grande</string>
     <string name="lyrics_font_size_large_label">Forte</string>
@@ -296,10 +297,14 @@
     <string name="player_statistics_codec_label">Codec</string>
     <string name="player_statistics_container_label">Contêiner</string>
     <string name="player_statistics_itag_label">Etiqueta</string>
+    <string name="player_playback_speed_value">%1$.1fx</string>
+    <string name="player_decibels_value">%1$.2f dB</string>
     <string name="player_statistics_loudness_label">intensidade do som</string>
     <string name="player_statistics_media_id_label">Identidade</string>
     <string name="player_statistics_perceptual_loudness_label">Loucura Perceptual</string>
     <string name="player_statistics_sample_rate_label">Taxa de amostragem</string>
+    <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
+    <string name="player_statistics_cache_status">%1$s: %2$s</string>
     <string name="player_statistics_volume_label">Volume</string>
     <string name="player_swap_controls_with_timeline">Trocar controles pela linha do tempo</string>
     <string name="player_swipe_sensitivity">Sensibilidade do Deslizador</string>
