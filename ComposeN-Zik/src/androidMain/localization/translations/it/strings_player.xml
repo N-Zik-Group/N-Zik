@@ -377,7 +377,7 @@
     <string name="widget_not_playing_status">Non in riproduzione</string>
     <string name="widget_playlists_description">Scalette N-Zik</string>
     <string name="widget_turntable_description">Giradischi N-Zik</string>
-    <string name="audio_device_battery_format">Battery: %1$d%%</string>
+    <string name="audio_device_battery_format">Batteria: %1$d%%</string>
     <string name="audio_output_bluetooth_device_label">Dispositivo Bluetooth</string>
     <string name="audio_output_usb_audio_label">Audio USB</string>
     <string name="audio_output_external_speaker_label">Altoparlante esterno</string>
