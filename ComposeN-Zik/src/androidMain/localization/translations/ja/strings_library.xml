@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">すべての曲をいいねするには %1$sがかかります。キャンセルするにはアプリを閉じてください。続行しますか？</string>
     <string name="library_on_device_permission_request_failed">このデバイスで音楽へのアクセスをリクエストできませんでした。</string>
     <string name="library_on_device_permission_settings_failed">権限設定を開けませんでした。</string>
+    <string name="artist_more_from_format">%1$s の詳細</string>
+    <string name="playlist_top_show_title_format">%1$s を表示</string>
 </resources>
