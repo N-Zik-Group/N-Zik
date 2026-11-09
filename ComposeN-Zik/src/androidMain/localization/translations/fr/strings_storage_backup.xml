@@ -123,7 +123,7 @@
     <string name="cache_location_private">Privé</string>
     <string name="cache_location_system">Système</string>
     <string name="cache_streaming_max_size_description">Limite l\'espace disque utilisé pour la mise en cache des morceaux diffusés en streaming.</string>
-    <string name="cache_streaming_limit_description">Limite l\'espace disque utilisé pour la mise en cache des morceaux diffusés en streaming.</string>
+    <string name="cache_streaming_limit_description">Limiter l\'espace disque utilisé pour la mise en cache des morceaux diffusés en streaming.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Télécharger tous les titres</string>
     <string name="downloads_action_refresh_quality">Téléchargements de mises à jour</string>
