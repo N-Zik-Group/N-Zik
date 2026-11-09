@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Storage</string>
+    <string name="storage_breakdown_info_title">About storage</string>
+    <string name="storage_breakdown_nzik_total">Total used by NZik</string>
+    <string name="storage_breakdown_subtitle">Storage breakdown</string>
+    <string name="storage_breakdown_waiting">Measuring storage…</string>
+    <string name="storage_breakdown_cached_images">Cached images</string>
+    <string name="storage_breakdown_streamed_audio">Streamed audio</string>
+    <string name="storage_breakdown_downloaded_audio">Downloaded audio</string>
+    <string name="storage_breakdown_custom_covers">Custom covers</string>
+    <string name="storage_breakdown_waveforms">Waveforms</string>
+    <string name="storage_breakdown_other_nzik_data">Other NZik data</string>
+    <string name="storage_breakdown_other_used_space">System, apps &amp; files</string>
+    <string name="storage_breakdown_free_space">Free space</string>
+    <string name="storage_info_images">Artwork and other images cached for faster display.</string>
+    <string name="storage_info_streaming">Audio kept temporarily after streaming, so it can be played again without fetching the same data.</string>
+    <string name="storage_info_downloads">Audio saved in NZik for offline listening.</string>
+    <string name="storage_info_waveforms">Generated files used to draw the audio waveform in the player.</string>
+    <string name="storage_info_covers">Artwork you chose or imported as custom covers.</string>
+    <string name="storage_info_other_nzik">The rest of NZik’s private data, including its databases, settings, indexes, extensions and logs.</string>
+    <string name="storage_info_other_used">The remaining used space on the internal volume, including Android, installed apps and personal files.</string>
+    <string name="storage_info_free">Space available for apps and files on the internal volume.</string>
+    <string name="storage_cleanup_title">Cleanup</string>
+    <string name="storage_cleanup_failed">Could not finish storage cleanup.</string>
+    <string name="storage_cleanup_images_description">Clear artwork cached by NZik.</string>
+    <string name="storage_cleanup_streaming_description">Clear audio cached while streaming.</string>
+    <string name="storage_cleanup_downloads_description">Delete offline audio and cancel pending downloads for the active profile’s download storage.</string>
+    <string name="storage_cleanup_waveforms_description">Clear generated waveform files.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Clear waveforms</string>
+    <string name="storage_cleanup_diagnostic_logs">Clear diagnostic logs</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Delete the debug and crash log files. Your logging setting stays the same.</string>
+    <string name="storage_cleanup_temporary_files">Remove abandoned temporary files</string>
+    <string name="storage_cleanup_temporary_files_description">Remove abandoned image editor drafts and Rewind share captures older than 24 hours.</string>
+    <string name="storage_cleanup_all">Clear all</string>
+    <string name="storage_cleanup_all_description">Clear image and streaming caches and generated waveforms for the active profile, including storage it shares with other profiles. Delete offline audio and cancel pending downloads for the active profile’s download storage. Delete diagnostic logs, abandoned image editor drafts and expired Rewind share captures. Your library, custom covers and settings are kept.</string>
     <!-- Backup -->
     <string name="backup_action_export">Export backup</string>
     <string name="backup_action_import">Import backup</string>
@@ -82,12 +117,15 @@
     <!-- Cache -->
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Clear song cache</string>
-    <string name="cache_downloads_max_size_description">Choose how much disk space is available for downloaded songs. The trash button removes downloaded audio.</string>
-    <string name="cache_image_max_size_description">Limit disk space used by cached artwork. The trash button clears downloaded images from this cache.</string>
+    <string name="cache_downloads_max_size_description">Choose how much disk space is available for downloaded songs.</string>
+    <string name="cache_downloads_limit_description">Choose how much disk space is available for downloaded songs.</string>
+    <string name="cache_image_max_size_description">Limit disk space used by cached artwork.</string>
+    <string name="cache_image_limit_description">Limit disk space used by cached artwork.</string>
     <string name="cache_location_description">Choose where the app stores its song playback cache.</string>
     <string name="cache_location_private">ব্যক্তিগত</string>
     <string name="cache_location_system">সিস্টেম</string>
-    <string name="cache_streaming_max_size_description">Limit disk space used to cache streamed songs. The trash button clears this playback cache.</string>
+    <string name="cache_streaming_max_size_description">Limit disk space used to cache streamed songs.</string>
+    <string name="cache_streaming_limit_description">Limit disk space used to cache streamed songs.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">সব গান ডাউনলোড করুন</string>
     <string name="downloads_action_refresh_quality">Update downloads</string>
