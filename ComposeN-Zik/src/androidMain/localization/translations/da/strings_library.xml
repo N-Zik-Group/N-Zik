@@ -42,6 +42,7 @@
     <string name="home_greeting_evening">Godaften</string>
     <string name="home_greeting_morning">Godmorgen</string>
     <string name="home_greeting_night">Godnat</string>
+    <string name="home_greeting_with_profile_format">%1$s, %2$s</string>
     <string name="home_playlists_settings">Hjem Playists</string>
     <string name="home_songs_settings">Hjem Sange</string>
     <string name="home_sort_last_played_song_label">Efter Sidst afspillet sang</string>
@@ -248,6 +249,7 @@
     <string name="playlist_refresh_on_open_enable">Aktiver opfrisk ved åbning</string>
     <string name="playlist_remove_selected_confirmation">Fjern de valgte sange fra denne afspilningsliste?</string>
     <string name="playlist_remove_songs_confirmation">Fjern markeringen fra spillelisten? Valgte spor: %d</string>
+    <string name="playlist_remove_songs_success_format">%1$s %2$d</string>
     <string name="playlist_rename_dialog_title">Omdøb playliste</string>
     <string name="playlist_reorder_ascending_sort_required_message">Omarrangering er kun muligt i stigende sortering</string>
     <string name="playlist_reorder_lock_toggle_label">Lås/oplås omarrangering af sange</string>
@@ -377,6 +379,27 @@
     <string name="song_metadata_update_action_open">Åbn opdateringsdialog</string>
     <string name="song_metadata_updated_count">Opdateret %1$d sange</string>
     <string name="song_play_time_action_reset">Nulstil samlet afspilningstid</string>
+    <string name="song_like_status_action_reset">Nulstil liked/disliked status</string>
+    <string name="song_update_action_clear_playback_cache">Ryd afspilning cache</string>
+    <string name="song_update_action_remove_offline_download">Fjern offline download</string>
+    <string name="song_update_result_partial">Delvist opdateret. %1$s</string>
+    <string name="song_update_result_failed">Ikke opdateret. %1$s</string>
+    <string name="song_update_error_metadata_unavailable">YouTube-oplysninger er ikke tilgængelige.</string>
+    <string name="song_update_error_network">Kunne ikke nå YouTube. Tjek din forbindelse.</string>
+    <string name="song_update_error_missing_title">YouTube returnerede ikke en titel.</string>
+    <string name="song_update_error_missing_artists">YouTube returnerede ikke kunstnere.</string>
+    <string name="song_update_error_incomplete_artists">Kunstnerinformation fra YouTube er ufuldstændig.</string>
+    <string name="song_update_error_missing_cover">YouTube returnerede ikke et omslag.</string>
+    <string name="song_update_error_wrong_song">YouTube returnerede en anden sang. Dens oplysninger blev ignoreret.</string>
+    <string name="song_update_error_cache_unavailable">Afspilnings cache ikke tilgængelig. Genåbn spilleren og prøv igen.</string>
+    <string name="song_update_error_profile_changed">Opdateringen stoppede fordi den aktive profil blev ændret.</string>
+    <string name="song_update_error_storage">Kunne ikke gemme ændringer på denne enhed.</string>
+    <string name="song_update_error_cache_clear">Kunne ikke afslutte rydning af afspilningscachen.</string>
+    <string name="song_update_error_download_remove">Kunne ikke fjerne offline download.</string>
+    <string name="song_update_error_cover_reset">Kunne ikke afslutte nulstilling af coveret.</string>
+    <string name="song_update_error_playback_refresh">Ændringer gemt, men spilleren kunne ikke opdateres.</string>
+    <string name="song_update_batch_result">Opdateret: %1$d · Delvist opdateret: %2$d · Ikke opdateret: %3$d</string>
+    <string name="song_update_batch_reason_count">%1$s (%2$d)</string>
     <!-- Song Matching -->
     <string name="song_matching_action_open">Match album/lyd version</string>
     <string name="song_matching_all_confirmation">Vil du matche %d sange, der ikke er matchet?</string>
@@ -393,4 +416,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Hvis du lytter til alle sangene, vil det tage omkring %1$s. Luk app\'en for at annullere. Vil du fortsætte?</string>
     <string name="library_on_device_permission_request_failed">Kunne ikke anmode om adgang til musik på denne enhed.</string>
     <string name="library_on_device_permission_settings_failed">Kunne ikke åbne tilladelsesindstillinger.</string>
+    <string name="artist_more_from_format">Mere fra %1$s</string>
+    <string name="playlist_top_show_title_format">Vis %1$s</string>
 </resources>
