@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">Brano ineguagliato</string>
     <string name="metadata_musicbrainz_rating">Valutazione</string>
     <string name="metadata_cover_art">Copertina</string>
+    <string name="metadata_cover_url_hint">Incolla un collegamento immagine</string>
     <string name="metadata_file_path_unavailable">Impossibile risolvere il percorso del file</string>
     <string name="metadata_save_failed">Salvataggio dei metadati non riuscito</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
