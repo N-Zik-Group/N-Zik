@@ -31,4 +31,157 @@
     <plurals name="statistics_songs_heard_count">
         <item quantity="other">%1$d 首歌曲</item>
     </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="other">删除 %1$d 搜索查询</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="other">删除 %1$d 回放事件</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="other">%1$d 剧集 · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="other">将 %1$d 首歌曲添加到 YouTube 播放列表</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="other">%1$d 歌曲添加到YouTube播放列表</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="other">配置文件状态已导入： %1$d 配置文件</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="other">无法同步 %1$d 相册。请返回相册选项卡重试。</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="other">导出 %1$d 缓存/下载歌曲？</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="other">%1$d 下载的歌曲丢失并被删除。请再次下载。</item>
+    </plurals>
+    <plurals name="recommendations_quick_picks_song_count">
+        <item quantity="other">%1$d 推荐歌曲</item>
+    </plurals>
+    <plurals name="listen_together_blocked_user_count">
+        <item quantity="other">%1$d 用户被阻止</item>
+    </plurals>
+    <plurals name="sync_failed_notification_artist_count">
+        <item quantity="other">无法同步 %1$d 艺术家。请返回艺人标签页重试。</item>
+    </plurals>
+    <plurals name="sync_failed_notification_playlist_count">
+        <item quantity="other">无法同步 %1$d 播放列表。请返回播放列表选项卡重试。</item>
+    </plurals>
+    <plurals name="sync_retry_failed_item_confirmation">
+        <item quantity="other">您想要重新尝试同步 %1$d 失败项目吗？</item>
+    </plurals>
+    <plurals name="sync_progress_artist_count">
+        <item quantity="other">正在同步艺人... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_artist_refresh_count">
+        <item quantity="other">正在刷新 %1$d 艺人</item>
+    </plurals>
+    <plurals name="library_sync_artist_retry_count">
+        <item quantity="other">无法找到 %1$d 艺术家，重试</item>
+    </plurals>
+    <plurals name="sync_progress_album_count">
+        <item quantity="other">正在同步相册... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_album_refresh_count">
+        <item quantity="other">正在刷新 %1$d 相册</item>
+    </plurals>
+    <plurals name="library_sync_album_retry_count">
+        <item quantity="other">找到 %1$d 相册失败，重试</item>
+    </plurals>
+    <plurals name="sync_progress_playlist_count">
+        <item quantity="other">Syncing playlists... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_playlist_refresh_count">
+        <item quantity="other">Refreshing %1$d playlists</item>
+    </plurals>
+    <plurals name="library_sync_playlist_retry_count">
+        <item quantity="other">Failed to find %1$d playlists, retrying</item>
+    </plurals>
+    <plurals name="maintenance_pass_cleaned_count">
+        <item quantity="other">%1$d 项目已清理</item>
+    </plurals>
+    <plurals name="maintenance_pass_deferred_count">
+        <item quantity="other">推迟了 %1$d 项</item>
+    </plurals>
+    <plurals name="maintenance_pass_skipped_count">
+        <item quantity="other">已跳过%1$d 项目</item>
+    </plurals>
+    <plurals name="maintenance_dedup_flagged_count">
+        <item quantity="other">标记的 %1$d 行</item>
+    </plurals>
+    <plurals name="maintenance_dedup_merged_count">
+        <item quantity="other">已合并的 %1$d 行</item>
+    </plurals>
+    <plurals name="recovery_profile_deleted_count">
+        <item quantity="other">删除 %1$d 配置文件</item>
+    </plurals>
+    <plurals name="recovery_profile_reset_count">
+        <item quantity="other">重置 %1$d 配置文件。重新启动应用程序</item>
+    </plurals>
+    <plurals name="recovery_profile_restored_count">
+        <item quantity="other">还原的 %1$d 配置文件：重新启动应用程序</item>
+    </plurals>
+    <plurals name="album_loading_song_count">
+        <item quantity="other">Loading %1$d songs…</item>
+    </plurals>
+    <plurals name="artist_deduplication_result_count">
+        <item quantity="other">将 %1$d 重复的艺人与右边的艺人合并</item>
+    </plurals>
+    <plurals name="artist_link_cleanup_result_count">
+        <item quantity="other">已删除 %1$d 不正确的艺人链接</item>
+    </plurals>
+    <plurals name="library_song_count_with_duration">
+        <item quantity="other">%1$d 首歌曲 • %2$s</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count">
+        <item quantity="other">(%1$d 票)</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count_attribution">
+        <item quantity="other">%1$d votes on MusicBrainz</item>
+    </plurals>
+    <plurals name="playlist_delete_all_confirmation_count">
+        <item quantity="other">您确定要删除所有 %1$d 播放列表吗？</item>
+    </plurals>
+    <plurals name="playlist_delete_selected_confirmation_count">
+        <item quantity="other">您确定要删除这些 %1$d 播放列表吗？</item>
+    </plurals>
+    <plurals name="playlist_positions_shuffled_count">
+        <item quantity="other">%1$d 位置已排序</item>
+    </plurals>
+    <plurals name="song_metadata_updated_song_count">
+        <item quantity="other">更新 %1$d 首歌曲</item>
+    </plurals>
+    <plurals name="rewind_home_year_play_count">
+        <item quantity="other">%1$s · %2$s 播放</item>
+    </plurals>
+    <plurals name="rewind_listening_day_count_without">
+        <item quantity="other">无需监听的 %1$s 天。</item>
+    </plurals>
+    <plurals name="rewind_loader_status_day_count">
+        <item quantity="other">%1$s LISTENING DAYS</item>
+    </plurals>
+    <plurals name="rewind_loader_status_minute_count">
+        <item quantity="other">%1$s MINUTES</item>
+    </plurals>
+    <plurals name="rewind_loader_status_play_count">
+        <item quantity="other">%1$s 游戏</item>
+    </plurals>
+    <plurals name="rewind_loader_status_song_count">
+        <item quantity="other">%1$s UNIQUE SONGS</item>
+    </plurals>
+    <plurals name="rewind_meta_song_count">
+        <item quantity="other">%1$s 歌曲</item>
+    </plurals>
+    <plurals name="rewind_play_count_label">
+        <item quantity="other">%1$s 播放</item>
+    </plurals>
+    <plurals name="rewind_top_song_teaser_count">
+        <item quantity="other">%1$d SONGS.\nONE WINNER.</item>
+    </plurals>
+    <plurals name="maintenance_abnormal_job_count">
+        <item quantity="other">%1$d 任务未完成</item>
+    </plurals>
 </resources>
