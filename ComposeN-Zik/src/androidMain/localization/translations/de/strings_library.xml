@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">Unübertroffener Titel</string>
     <string name="metadata_musicbrainz_rating">Bewertung</string>
     <string name="metadata_cover_art">Cover</string>
+    <string name="metadata_cover_url_hint">Bildlink einfügen</string>
     <string name="metadata_file_path_unavailable">Dateipfad kann nicht aufgelöst werden</string>
     <string name="metadata_save_failed">Fehler beim Speichern der Metadaten</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
