@@ -17,7 +17,7 @@
     <string name="language_name_azerbaijani">阿塞拜疆语</string>
     <string name="language_name_bashkir">巴什基尔语</string>
     <string name="language_name_bengali">孟加拉语</string>
-    <string name="language_name_catalan">加泰罗尼亚语</string>
+    <string name="language_name_catalan">加泰罗尼亚语(加塔拉尼特)</string>
     <string name="language_name_chinese_simplified">简体中文</string>
     <string name="language_name_chinese_traditional">繁體中文</string>
     <string name="language_name_czech">捷克语 (Čeština)</string>
@@ -27,7 +27,7 @@
     <string name="language_name_esperanto">世界语</string>
     <string name="language_name_estonian">爱沙尼亚语</string>
     <string name="language_name_filipino">菲律宾语</string>
-    <string name="language_name_finnish">芬兰语</string>
+    <string name="language_name_finnish">Finnish (Suomi)</string>
     <string name="language_name_french">法语 (Français)</string>
     <string name="language_name_galician">加利西亚语</string>
     <string name="language_name_german">德语 (Deutsch)</string>
@@ -35,13 +35,13 @@
     <string name="language_name_hebrew">希伯来语</string>
     <string name="language_name_hindi">印地语</string>
     <string name="language_name_hungarian">匈牙利语</string>
-    <string name="language_name_indonesian">印度尼西亚语</string>
+    <string name="language_name_indonesian">印度尼西亚语(印度尼西亚)</string>
     <string name="language_name_interlingua">拉丁国际语</string>
     <string name="language_name_irish">爱尔兰语</string>
     <string name="language_name_italian">意大利语 (Italiano)</string>
     <string name="language_name_japanese">日语</string>
-    <string name="language_name_korean">韩语</string>
-    <string name="language_name_malayalam">马拉雅拉姆语</string>
+    <string name="language_name_korean">韩语(从每秒到每秒)</string>
+    <string name="language_name_malayalam">Malayalam (മലയാളം)</string>
     <string name="language_name_norwegian">挪威语</string>
     <string name="language_name_odia">奥里亚语</string>
     <string name="language_name_persian">波斯语</string>
@@ -50,8 +50,8 @@
     <string name="language_name_portuguese_brazilian">葡萄牙语（巴西）</string>
     <string name="language_name_romanian">罗马尼亚语 (Română)</string>
     <string name="language_name_russian">俄语 (Русский)</string>
-    <string name="language_name_serbian_cyrillic">塞尔维亚西里尔文</string>
-    <string name="language_name_serbian_latin">塞尔维亚语 (拉丁字母)</string>
+    <string name="language_name_serbian_cyrillic">Serbian Cyrillic (Српски)</string>
+    <string name="language_name_serbian_latin">Serbian Latin (Srpski)</string>
     <string name="language_name_sinhala">僧伽罗语</string>
     <string name="language_name_spanish">西班牙语 (Español)</string>
     <string name="language_name_swedish">瑞典语</string>
@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">首先连接到 YouTube 以启用此选项</string>
     <string name="settings_youtube_library_sync_content_description">播放列表、 专辑、 艺术家、历史记录等</string>
     <string name="settings_youtube_login_enabled_label">启用YouTube音乐登录</string>
+    <string name="settings_dialog_sort_title_format">%1$s：排序</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s：工具栏</string>
 </resources>
