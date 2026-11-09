@@ -1,12 +1,12 @@
-En flerspråklig YouTube Music frontend for Android, fokusert på ytelse, UI/UX-raffinasjoner, utvidelse, langsiktig støtte.
+En flerspråklig YouTube Music-klient for Android med fokus på ytelse, brukervennlighet, funksjoner og langsiktig støtte.
 
-<b>N-Zik</b> er en åpen kilde fork av <a href="https://github.com/knighthat/Kreate">Kreat</a>.
+<b>N-Zik</b> er en åpen kilde fork av <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Viktig:</b> N-Zik startet som et sideprosjekt. For mer modne alternativer, sjekk <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, eller <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+N-Zik er et sideprosjekt. Alternativer: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, eller <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>AI Bruk:</b> Jeg bruker generativ AI for kode (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMOD-metode</a>), vurdert og testet før frakt.
+KI-assistert kode gjennomgås og testes. Metode: <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>.
 
-✨ <b>VED N-ZIK?</b> ingen annonser, bakgrunnsavspilling, offline caching, tilpasselig brukergrensesnitt - gratis, alltid.
+✨ <b>HVORFOR N-ZIK?</b> ingen annonser, bakgrunnsavspilling, offline caching, tilpasselig brukergrensesnitt - gratis, alltid.
 
 🎨 <b>Tilpassbart brukergrensesnitt</b>
 - Jetpack Compose interface
@@ -14,8 +14,8 @@ En flerspråklig YouTube Music frontend for Android, fokusert på ytelse, UI/UX-
 - 3D Karousel Spiller, Hjem-moduler, enhetlig spiller og mini spiller
 – Artistens profiler, Oppdagelse og humør, sammenleggbare husoverskrifter
 
-🫧 <b>Glass Effect (BETA, optional)</b>
-Deaktivert på friske installasjoner. Aktiver i Innstillinger: native, kontekst-bare eller Glass etter kategori, med justerbar kvalitet. Kan øke kjøring av rendering av arbeid og batteribruk, redusere kvaliteten eller deaktivere hvis nødvendig.
+🫧 <b>Glass-effekt (BETA, valgfri)</b>
+Av ved ny installasjon. Velg standard, bare kontur eller Glass per kategori i innstillingene. Senk kvaliteten eller slå av effekten for bedre ytelse og batteritid.
 Glasskreditter: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Lydopplevelse</b>

@@ -1,10 +1,10 @@
-Ett flerspråkigt YouTube Music-skal för Android, fokuserat på prestanda, UI/UX-förbättringar, funktionsexpansion och långsiktigt stöd.
+En flerspråkig YouTube Music-klient för Android, byggd för prestanda och långsiktigt stöd.
 
 <b>N-Zik</b> är en öppen källkodsgaffel för <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Obs:</b> N-Zik startade som ett sidoprojekt. För mer mogna alternativ, se <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, eller <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+N-Zik är ett sidoprojekt. Alternativ: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, eller <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>AI-användning:</b> Jag använder generativ AI för kod (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD metod</a>), granskas och testas innan frakt.
+AI-assisterad kod granskas och testas. Metod: <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD metod</a>.
 
 ✨ <b>VARFÖR N-ZIK?</b> Inga annonser, bakgrundsuppspelning, offline caching, anpassningsbart gränssnitt - gratis, alltid.
 
@@ -14,8 +14,8 @@ Ett flerspråkigt YouTube Music-skal för Android, fokuserat på prestanda, UI/U
 - 3D Carousel Player, hemwidgets, enhetlig spelare och minispelare
 - Konstnärsprofiler, Upptäckt och stämningar, kollapsbara hem rubriker
 
-:bubblor: <b>Glaseffekt (BETA, valfritt)</b>
-Inaktiverad vid nya installationer. Aktivera i Inställningar: inföding, endast kontur eller glas per kategori, med justerbar kvalitet. Kan öka rendering arbete och batterianvändning; minska kvaliteten eller inaktivera om det behövs.
+🫧 <b>Glass-effekt (BETA, valfri)</b>
+Av från start. Välj standard, kontur eller Glass per kategori. Sänk kvaliteten eller stäng av effekten för bättre batteritid.
 Glaskrediter: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2,0).
 
 🎵 <b>Audio Experience</b>

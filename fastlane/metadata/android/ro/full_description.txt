@@ -1,69 +1,69 @@
-Un sistem multilingv de muzică YouTube YouTube frontend pentru Android, axat pe performanță, rafinări UI/UX, expansiunea caracteristicilor și suport pe termen lung.
+Aplicație multilingvă YouTube Music pentru Android, axată pe performanță, interfață, funcții noi și suport pe termen lung.
 
-<b>N-Zik</b> este o furcă open-source de <a href="https://github.com/knighthat/Kreate">Kreate</a>.
+<b>N-Zik</b> este un fork open-source al <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Notă:</b> N-Zik a început ca un proiect lateral. Pentru alternative mai mature, vedeți <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>, sau <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+<b>Notă:</b> N-Zik a pornit ca proiect secundar. Alternative mai mature: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> și <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Utilizare AI:</b> Folosesc AI generativ pentru cod (prin <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), verificat și testat înainte de livrare.
+<b>AI:</b> Folosesc AI generativ pentru cod cu <a href="https://github.com/bmad-code-org/BMAD-METHOD">metoda BMAD</a>. Verific și testez codul înainte de lansare.
 
-✨ <b>WHY N-ZIK?</b> Fără reclame, redare de fundal, caching offline, UI personalizabil - gratuit, întotdeauna.
+✨ <b>DE CE N-ZIK?</b> Fără reclame, cu redare în fundal, cache offline și interfață personalizabilă. Mereu gratuit.
 
 🎨 <b>Customizabil UI</b>
 - Interfaţă compozit Jetpack
 - Teme: AMOLED, Deep Dark, Crisp Light + accente nuanţate
-- 3D Carousel Player, widget-uri casă, jucător unificat și mini-player
-- Profiluri de artist, descoperiri și dispoziții, antete casnice prăbușite
+- Carusel 3D, widgeturi, player unificat și mini-player
+- Profiluri de artiști, descoperiri, dispoziții și antete pliabile
 
-🫧 <b>Efect de Sticlă (BETA, opțional)</b>
-Dezactivat pe instalare nouă. Activat în Setări: nativ, doar-restrictiv sau sticlă pe categorii, cu calitate ajustată. Poate crește randarea muncii și utilizarea bateriei; reduce calitatea sau dezactivează dacă este necesar.
-Credite de sticlă: Proiect pătrat / Convx (GPL-3.0); Kyant0 AndroidLiquidGass / Fundal (Apache-2.0).
+🫧 <b>Glass (BETA, opțional)</b>
+Dezactivat la instalare. În Setări alegeți pentru fiecare categorie stilul nativ, conturul sau Glass și reglați calitatea. Reduceți calitatea sau opriți efectul dacă solicită dispozitivul ori bateria.
+Glass: Square / Convx Project (GPL-3.0), Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Experiență audio</b>
 - Calitate premium prin YouTube Music Premium, aplicată automat
 - Versuri sincronizate cu editare și traducere în timp real
-- Recunoașterea melodiilor (periculos), căutarea vocală, vizualizator audio
-- Comenzi Pro: viteză, pitch, normalizare, traversare, impuls de volum, impuls de bas, reverb
-- Audio Bar waveform seekbar pentru navigare precisă
+- Recunoașterea pieselor (ca Shazam), căutare vocală și vizualizator audio
+- Comenzi Pro: viteză, tonalitate, normalizare, crossfade, volum, bas și reverberație
+- Formă de undă pentru navigare precisă
 
 💾 <b>Offline, Metadate & Privacy</b>
-- Caching și descărcări inteligente pentru piese și liste de redare, cu o calitate selectabilă a descărcării
-- Exportul alimentat de FFmpou cu metadate complete (FFmpeg este o extensie descărcabilă, instalată la prima utilizare)
+- Cache inteligent și descărcare de piese și liste, cu alegerea calității
+- Export FFmpeg cu metadate complete (indisponibil pe x86 pe 32 de biți)
 - Editor de metadate în aplicație (AAC/Opus, copertă artă)
 - Statistici și istoric ascultări locale
 - Copie de rezervă automată cu intervale și retenție personalizate
 
 🔗 <b>Integrări</b>
-- Autentificare YouTube pentru recomandări și redare video, plus un motor experimental de sincronizare în două direcții
-- Scrobbling Last.fm cu Acum Redă și iubește/dezvăluie
-- Ştiri despre MusicBrainz şi album
-- Discord Rich Presence, inclusiv modul avansat cu previzualizare în direct
--Integrare invidioasă pentru streaming YouTube alternativ
+- Autentificare YouTube pentru recomandări, clipuri și sincronizare bidirecțională experimentală
+- Last.fm: scrobbling, piesa redată și favorite
+- MusicBrainz: informații despre artiști și albume
+- Discord Rich Presence cu mod avansat și previzualizare live
+- Invidious pentru redare alternativă de pe YouTube
 - Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Ascultă Împreună</b>
-- Alătură-te sau găzduiește sesiuni de ascultare în direct cu alți utilizatori prin cod sau link de invitație
+- Alătură-te unei sesiuni live de ascultare sau găzduiește una prin cod ori link
 
 🗓️ <b>Rewind</b>
--Ascultările anuale și lunare cu listele de redare Rewind generate automat
+- Rezumate anuale și lunare cu liste Rewind generate automat
 
 📱 <b>Joacă oriunde:</b> Android Auto, Automotive, TV și Tablete
 
 🛠️ <b>Funcționalități utilizator power</b>
 -Multiprofil: baza de date izolată şi setările per profil
 - Continuare automată la conectarea prin Bluetooth, coadă persistentă, auto-umplere în așteptare
-- Calzi inteligente, melodii ascunse, spre deosebire de sistem, control parental
+- Coș inteligent, piese ascunse, aprecieri negative și control parental
 - Suport proxy, calitate reţea adaptare, jurnal export
 - Centrul de salvare, ecranul de întreţinere, înregistrare, comenzi rapide ale aplicaţiei
 - Actualizări OTA de la GitHub, temporizator de somn, redare în fundal
 
 📦 <b>Construcții disponibile</b>
-- Release64/Beta64 (`com.nevar.nzik`): Doar dispozitive complete, 64 biți
-- Release32/Beta32 (`com.nevar.nzik`): Doar dispozitive complete, dispozitive de 32 biți
+- Release64/Beta64 (`com.nevar.nzik`): Versiune completă pe 64 de biți
+- Release32/Beta32 (`com.nevar.nzik`): Versiune completă pe 32 de biți
 - Minified64 (`com.nevar.nzik`): Ușor R8 construit, pentru dispozitive low-end (64-bit)
 - Minified32 (`com.nevar.nzik`): Versiune uşoară R8 (32-bit)
 - FOSS (`com.nevar.nzik.foss`): fără auto-actualizare, pentru F-Droid (toate arhitecturile)
-- Dev64/Dev32 (`com.nevar.nzik.dev`): Construcții de dezvoltare, doar testând
+- Dev64/Dev32 (`com.nevar.nzik.dev`): Versiuni de dezvoltare pentru teste
 
-Nici un pachet de pachete FFmpeg: este o extensie descărcabilă (instalată pe prima utilizare, gestionată în Setări → Extensii). Doar FOSS este pe F-Droid.
+FFmpeg nu este inclus. Extensia se descarcă la prima utilizare și se gestionează din Setări → Extensii. Pe F-Droid este disponibilă doar versiunea FOSS.
 
-Creditele proiectelor istorice includ ViMusic.
+Printre proiectele anterioare se numără ViMusic.

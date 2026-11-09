@@ -1,10 +1,10 @@
-Mnohojazyčné YouTube hudební rozhraní pro Android, zaměřené na výkon, UI/UX vylepšení, rozšíření funkcí a dlouhodobou podporu.
+Vícejazyčná aplikace YouTube Music pro Android se zaměřením na výkon, použitelnost, nové funkce a dlouhodobou podporu.
 
 <b>N-Zik</b> je open-source fork <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Poznámka:</b> N-Zik začal jako postranní projekt. Pro dospělé alternativy se podívejte na <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>nebo <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+N-Zik je vedlejší projekt. Alternativy: <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a>nebo <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Využití AI:</b> Používám generativní AI pro kód (prostřednictvím <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD metoda</a>) zkontrolováno a testováno před odesláním.
+Kód vytvořený s pomocí AI kontroluji a testuji. Metoda: <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD metoda</a>.
 
 ✨ <b>CO N-ZIK?</b> Žádné reklamy, přehrávání pozadí, offline ukládání do mezipaměti, přizpůsobitelné uživatelské rozhraní - vždy, zdarma.
 
@@ -14,8 +14,8 @@ Mnohojazyčné YouTube hudební rozhraní pro Android, zaměřené na výkon, UI
 - 3D kolotočový přehrávač, domácí widgety, sjednocené hráče a mini-přehrávač
 - Profily umělce, objevování a nálady, sbalitelné hlavičky domů
 
-:bubliny: <b>skleněný efekt (BETA, volitelné)</b>
-Zakázáno při čerstvých instalacích. Povolit v nastavení: nativní, pouze pro vzhled nebo sklo podle kategorií, s nastavitelnou kvalitou. Může zvýšit vykreslování a využití baterie; snížit kvalitu nebo v případě potřeby vypnout.
+🫧 <b>Efekt Glass (BETA, volitelný)</b>
+Po instalaci je Glass vypnutý. V nastavení zvolte nativní vzhled, obrys nebo Glass pro jednotlivé kategorie. Kvalitu lze snížit kvůli výkonu a výdrži baterie.
 Skleněné kredity: Square / Convx projekt (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Audio Experience</b>

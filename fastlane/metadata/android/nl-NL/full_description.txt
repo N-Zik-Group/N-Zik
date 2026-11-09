@@ -1,4 +1,4 @@
-Een meertalige YouTube Music frontend voor Android, gericht op prestaties, UI/UX raffinaderijen, feature expansie en langdurige ondersteuning.
+Meertalige YouTube Music-app voor Android: snel, aanpasbaar en langdurig ondersteund.
 
 <b>N-Zik</b> is een open-source vork van <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
@@ -15,7 +15,7 @@ Een meertalige YouTube Music frontend voor Android, gericht op prestaties, UI/UX
 - Kunstenaar profielen, ontdekking en spoelen, inklapbare huiskoppen
 
 🫧 <b>Glazen Effect (BETA, optioneel)</b>
-Uitgeschakeld met verse installaties. Inschakelen in Instellingen: natieve, enkel contouren of glas per categorie, met verstelbare kwaliteit. Kan het rendering en accugebruik vergroten; kwaliteit verminderen of uitschakelen indien nodig.
+Standaard uit. Kies per categorie natief, alleen contour of Glass en stel de kwaliteit in. Verlaag die of zet het effect uit bij hoger accu- of grafisch verbruik.
 Glazen credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Achtergrond (Apache-2.0).
 
 🎵 <b>Audio-ervaring</b>
@@ -27,21 +27,21 @@ Glazen credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Ac
 
 💾 <b>Offline, Metadata & Privacy</b>
 - Slimme caching en downloads voor tracks en afspeellijsten, met selecteerbare downloadkwaliteit
-- Exporteer op FFmpeg-powered met volledige metadata (FFmpeg is een downloadbare extensie, geïnstalleerd op eerste gebruik)
+- FFmpeg-export met volledige metadata, behalve op 32-bit x86
 - In-app metadata editor (AAC/Opus, cover kunst)
 - Lokale luisterstatistieken en geschiedenis
 -Automatische back-up met aangepaste intervallen en retentie
 
 🔗 <b>Integraties</b>
-- YouTube-login voor aanbevelingen en het afspelen van video's, plus een experimentele tweewegse sync engine
+- YouTube-login voor aanbevelingen en video, met experimentele tweerichtingssynchronisatie
 - Last.fm scrobblen met nu spelen en liefde/los
 - MusicBrainz artiest en album inzichten
 - Discord Rich Presence, inclusief geavanceerde modus met live voorbeeld
-- Onbenauwde integratie voor alternatieve YouTube streaming
+- Invidious voor alternatieve YouTube-streaming
 - Afspeellijst import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Luister samen</b>
-- Deelnemen aan of hosten van live luistersessies met andere gebruikers via code of uitnodigingslink
+- Start of volg een live luistersessie via code of uitnodigingslink
 
 🗓️ <b>Terugspoelen</b>
 - Jaarlijkse en maandelijkse luisterherhalingen met automatisch gegenereerde Rewind afspeellijsten
@@ -64,6 +64,6 @@ Glazen credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Ac
 - FOSS (`com.nevar.nzik.fos`): Zonder automatische updater, voor F-Droid (alle architectures)
 - Dev64/Dev32 (`com.nevar.nzik.dev`): Ontwikkeling builds, alleen testen
 
-Geen build bundles FFmpeg: het is een downloadbare extensie (geïnstalleerd op het eerste gebruik, beheerd in Instellingen → Extensies). Alleen FOSS is op F-Droid.
+Geen build bevat FFmpeg. Download bij eerste gebruik, beheer via Instellingen → Extensies. Alleen FOSS staat op F-Droid.
 
-Onder andere ViMusic historische projectobligaties.
+Historische credits: ViMusic.

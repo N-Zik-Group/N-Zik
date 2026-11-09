@@ -1,10 +1,10 @@
-Un frontend multilingue YouTube Music pour Android, axé sur les performances, les raffinements UI/UX, l'expansion des fonctionnalités et le support à long terme.
+Un client YouTube Music multilingue pour Android, axé sur les performances, l’ergonomie et le suivi à long terme.
 
 <b>N-Zik</b> est un fork open source de <a href="https://github.com/knighthat/Kreate">Kreate</a>.
 
-<b>Note :</b> N-Zik est né comme un projet personnel. Pour des alternatives plus matures, voir <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ou <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
+N-Zik est un projet personnel. Alternatives : <a href="https://github.com/MetrolistGroup/Metrolist">Metrolist</a>, <a href="https://github.com/vivizzz007/vivi-music">VIVI Music</a> ou <a href="https://github.com/fast4x/RiPlay">RiPlay</a>.
 
-<b>Utilisation de l'IA :</b> J'utilise l'IA générative pour le code (via <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>), révisé et testé avant publication.
+Le code assisté par IA est relu et testé. Méthode : <a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a>.
 
 ✨ <b>POURQUOI N-ZIK ?</b> Sans publicité, lecture en arrière-plan, cache hors ligne, UI personnalisable - gratuit, toujours.
 
@@ -15,7 +15,7 @@ Un frontend multilingue YouTube Music pour Android, axé sur les performances, l
 - Profils d'artistes, Discovery et ambiances, en-têtes pliables
 
 🫧 <b>Effet Glass (BETA, facultatif)</b>
-Désactivé à l’installation. Activez dans Paramètres : natif, contour seul ou Glass par catégorie, qualité réglable. Peut alourdir le rendu et consommer plus de batterie ; réduisez la qualité ou désactivez si besoin.
+Désactivé à l’installation. Dans les paramètres, choisissez le rendu natif, le contour seul ou Glass par catégorie. Réduisez la qualité ou désactivez l’effet pour économiser la batterie.
 Crédits Glass : Square / Convx Project (GPL-3.0) ; Kyant0 AndroidLiquidGlass / Backdrop (Apache-2.0).
 
 🎵 <b>Expérience audio</b>
