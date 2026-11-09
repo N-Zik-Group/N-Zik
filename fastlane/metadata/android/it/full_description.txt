@@ -27,7 +27,7 @@ Crediti: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop 
 
 💾 <b>Offline, Metadati e Privacy</b>
 - Caching intelligente e download di brani/playlist, qualità selezionabile
-- Esportazione FFmpeg con metadati completi (solo build standard)
+- Esportazione FFmpeg-powered con metadati completi (scaricabile al primo utilizzo; non disponibile su dispositivi a 32-bit x86)
 - Editor metadati in-app (AAC/Opus, copertina)
 - Statistiche d'ascolto e cronologia locali
 - Backup automatico con intervalli e conservazione personalizzati
