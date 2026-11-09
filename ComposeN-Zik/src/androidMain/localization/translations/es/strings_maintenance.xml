@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">Último fallo</string>
     <string name="maintenance_lastfm_active">Sesión activa</string>
     <string name="maintenance_library">Biblioteca</string>
-    <string name="maintenance_library_albums">Álbumes: %d</string>
-    <string name="maintenance_library_artists">Artistas: %d</string>
+    <string name="maintenance_library_albums">Álbumes %d</string>
+    <string name="maintenance_library_artists">%d artistas</string>
     <string name="maintenance_library_listened">%d escuchado</string>
-    <string name="maintenance_library_playlists">Listas de reproducción: %d</string>
-    <string name="maintenance_library_songs">Canciones: %d</string>
+    <string name="maintenance_library_playlists">%d listas de reproducción</string>
+    <string name="maintenance_library_songs">%d canciones</string>
     <string name="maintenance_live_subsystems">Subsistemas en vivo</string>
     <string name="maintenance_log_view">Ver</string>
     <string name="maintenance_lt_connected">Conectado</string>
@@ -197,7 +197,7 @@
     <string name="recovery_error">Se ha producido un error: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Exportar base de datos</string>
-    <string name="recovery_export_database_description">Guarda tu biblioteca, listas de reproducción e historial</string>
+    <string name="recovery_export_database_with_covers_description">Guarda tu biblioteca, listas de reproducción e historial como SQLite. Si tienes portadas personalizadas, la exportación es un ZIP con la base de datos y carátulas.</string>
     <string name="recovery_export_logs">Exportar registros</string>
     <string name="recovery_export_logs_description">Guardar registros de errores y depuración para un informe de error</string>
     <string name="recovery_export_profiles_description">La lista de perfiles y las fotos faciales en un solo archivo .txt</string>
@@ -210,7 +210,7 @@
     <string name="recovery_group_settings">Ajustes</string>
     <string name="recovery_group_storage">Almacenamiento</string>
     <string name="recovery_import_database">Importar base de datos</string>
-    <string name="recovery_import_database_description">Restaurar una base de datos previamente exportada</string>
+    <string name="recovery_import_database_with_covers_description">Restaurar una copia de seguridad de base de datos SQLite o ZIP, incluyendo cualquier portada personalizada en el ZIP.</string>
     <string name="recovery_import_profiles_description">Restaurar la lista de perfiles y las fotos faciales de un archivo .txt</string>
     <string name="recovery_import_settings">Importar ajustes</string>
     <string name="recovery_import_settings_description">Restaurar preferencias desde un archivo CSV</string>
@@ -311,4 +311,5 @@
     <string name="updates_warning_acknowledge">Entiendo</string>
     <string name="updates_check_failed">No se pudo comprobar si hay actualizaciones.</string>
     <string name="updates_install_generic_error">No se pudo instalar la actualización.</string>
+    <string name="updates_channel_available_format">Actualización %1$s disponible</string>
 </resources>
