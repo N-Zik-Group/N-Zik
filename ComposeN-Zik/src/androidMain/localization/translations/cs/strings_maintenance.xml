@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">Poslední pád</string>
     <string name="maintenance_lastfm_active">Relace aktivní</string>
     <string name="maintenance_library">Knihovna</string>
-    <string name="maintenance_library_albums">%d alb</string>
-    <string name="maintenance_library_artists">%d umělců</string>
+    <string name="maintenance_library_albums">Alba: %d</string>
+    <string name="maintenance_library_artists">Umělec: %d</string>
     <string name="maintenance_library_listened">%d posloucháno</string>
-    <string name="maintenance_library_playlists">%d seznamů skladeb</string>
-    <string name="maintenance_library_songs">%d skladeb</string>
+    <string name="maintenance_library_playlists">Seznamy skladeb: %d</string>
+    <string name="maintenance_library_songs">Skladby: %d</string>
     <string name="maintenance_live_subsystems">Živé subsystémy</string>
     <string name="maintenance_log_view">Zobrazit</string>
     <string name="maintenance_lt_connected">Připojeno</string>
