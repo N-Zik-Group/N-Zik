@@ -226,6 +226,8 @@
     <string name="theme_shake_sensitivity_medium">中 (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">非常に高い (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">画像を編集</string>
+    <string name="image_editor_failed">画像を編集できませんでした。現在の画像は保持されています。</string>
     <string name="thumbnail_action_edit">サムネイルを編集</string>
     <string name="thumbnail_action_pick_from_gallery">ギャラリーから選択</string>
     <string name="thumbnail_action_reset">サムネイルをリセット</string>
@@ -235,4 +237,7 @@
     <string name="thumbnail_remove_failed">サムネイルの削除に失敗しました</string>
     <string name="thumbnail_remove_success">サムネイルを削除しました</string>
     <string name="glass_effect_rendering_quality">レンダリング品質</string>
+    <string name="image_editor_original">元の比</string>
+    <string name="image_editor_cancel">キャンセル</string>
+    <string name="image_editor_apply">画像を使用</string>
 </resources>
