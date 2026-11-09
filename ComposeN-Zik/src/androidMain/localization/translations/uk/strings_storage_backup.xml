@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Сховище</string>
+    <string name="storage_breakdown_info_title">Про сховище</string>
+    <string name="storage_breakdown_nzik_total">Всього використано NZik</string>
+    <string name="storage_breakdown_subtitle">Робочий простір</string>
+    <string name="storage_breakdown_waiting">Measuring storage…</string>
+    <string name="storage_breakdown_cached_images">Кешовані зображення</string>
+    <string name="storage_breakdown_streamed_audio">Потокове аудіо</string>
+    <string name="storage_breakdown_downloaded_audio">Завантажене аудіо</string>
+    <string name="storage_breakdown_custom_covers">Користувацькі обкладинки</string>
+    <string name="storage_breakdown_waveforms">Хвильові форми</string>
+    <string name="storage_breakdown_other_nzik_data">Інші дані NZik</string>
+    <string name="storage_breakdown_other_used_space">Система, додатки &amp; файли</string>
+    <string name="storage_breakdown_free_space">Вільний простір</string>
+    <string name="storage_info_images">Ілюстрація обкладинки та інші зображення, кешовані для швидшого показу.</string>
+    <string name="storage_info_streaming">Аудіо збереження тимчасово після потоку, тому воно може бути відтворене знову без завантаження тих самих даних.</string>
+    <string name="storage_info_downloads">Аудіо збережено в NZik для автономного прослуховування.</string>
+    <string name="storage_info_waveforms">Створені файли, які використовуються для малювання аудіо довжини хвиль у плеєрі.</string>
+    <string name="storage_info_covers">Ілюстрація, яку ви обрали або імпортувала як користувацькі обкладинки.</string>
+    <string name="storage_info_other_nzik">Решта приватних даних NZik, включаючи його бази даних, налаштування, індексування, розширення та журнали.</string>
+    <string name="storage_info_other_used">Залишилося використаного простору у внутрішньому гучності, включаючи встановленні програми та особисті файли.</string>
+    <string name="storage_info_free">Простір, доступний для додатків та файлів у внутрішньому томі.</string>
+    <string name="storage_cleanup_title">Очищення</string>
+    <string name="storage_cleanup_failed">Не вдалося завершити очищення пам’яті.</string>
+    <string name="storage_cleanup_images_description">Очистити файли кешовано від NZZk.</string>
+    <string name="storage_cleanup_streaming_description">Очищення кешованого аудіо під час потоку.</string>
+    <string name="storage_cleanup_downloads_description">Видаліть оффлайн аудіо і скасуйте завантаження, для збереження активних профілів.</string>
+    <string name="storage_cleanup_waveforms_description">Очистити створені файли хвиль.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Очистити хвилі</string>
+    <string name="storage_cleanup_diagnostic_logs">Очистити журнали діагностики</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Видаліть файли журналу налагодження та збої. Налаштування журналювання залишається однаковим.</string>
+    <string name="storage_cleanup_temporary_files">Видалити покинуті тимчасові файли</string>
+    <string name="storage_cleanup_temporary_files_description">Видаляйте покинуті чернетки редакторів зображень та перемотування повідомлень старішими за 24 години.</string>
+    <string name="storage_cleanup_all">Очистити все</string>
+    <string name="storage_cleanup_all_description">Очистити зображення і кеш потокового передавання і згенерованих схем хвиль для активного профілю, включаючи зберігання, яке має спільні файли з іншими профілями. Видаліть оффлайн аудіо і скасуйте завантаження, для збереження активних профілів. Видалити діагностичні журнали, покинуті чернетки редактора зображень і прострочені захоплення. Ваші бібліотеки, обкладинки та налаштування збережені.</string>
     <!-- Backup -->
     <string name="backup_action_export">Експортувати резервну копію</string>
     <string name="backup_action_import">Імпорт резервної копії</string>
@@ -82,12 +117,15 @@
     <!-- Cache -->
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Очистити кеш пісень</string>
-    <string name="cache_downloads_max_size_description">Виберіть, скільки дискового простору доступно для завантажених пісень. Кнопка смітника видаляє завантажене аудіо.</string>
-    <string name="cache_image_max_size_description">Обмеження дискового простору, що використовується в кешованих файлах. Кнопка смітника очищує завантажені зображення з цього кешу.</string>
+    <string name="cache_downloads_max_size_description">Оберіть, скільки дискового простору доступне для завантажених пісень.</string>
+    <string name="cache_downloads_limit_description">Оберіть, скільки дискового простору доступне для завантажених пісень.</string>
+    <string name="cache_image_max_size_description">Обмежити дисковий простір, який використовується в кешованих файлах.</string>
+    <string name="cache_image_limit_description">Обмежити дисковий простір, який використовується в кешованих файлах.</string>
     <string name="cache_location_description">Виберіть, де додаток зберігає свій кеш відтворення пісень.</string>
     <string name="cache_location_private">Приватний</string>
     <string name="cache_location_system">Система</string>
-    <string name="cache_streaming_max_size_description">Обмежити дисковий простір, який використовується для кешування серій. Ця кнопка очистить кеш відтворення.</string>
+    <string name="cache_streaming_max_size_description">Обмежити дисковий простір, який використовується для обміну піснями з кешу.</string>
+    <string name="cache_streaming_limit_description">Обмежити дисковий простір, який використовується для обміну піснями з кешу.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Завантажити всі пісні</string>
     <string name="downloads_action_refresh_quality">Оновлення завантажень</string>
