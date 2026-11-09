@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Tallennustila</string>
+    <string name="storage_breakdown_info_title">Tietoja tallennustilasta</string>
+    <string name="storage_breakdown_nzik_total">NZikin käyttämä kokonaismäärä</string>
+    <string name="storage_breakdown_subtitle">Varastoinnin erittely</string>
+    <string name="storage_breakdown_waiting">Measuring storage…</string>
+    <string name="storage_breakdown_cached_images">Välimuistissa olevat kuvat</string>
+    <string name="storage_breakdown_streamed_audio">Suoratoistettu ääni</string>
+    <string name="storage_breakdown_downloaded_audio">Ladattu ääni</string>
+    <string name="storage_breakdown_custom_covers">Mukautetut kannet</string>
+    <string name="storage_breakdown_waveforms">Aaltomuodot</string>
+    <string name="storage_breakdown_other_nzik_data">Muut NZik tiedot</string>
+    <string name="storage_breakdown_other_used_space">System, apps &amp; files</string>
+    <string name="storage_breakdown_free_space">Vapaa tila</string>
+    <string name="storage_info_images">Taide ja muut kuvat välimuistissa nopeampaa näyttöä.</string>
+    <string name="storage_info_streaming">Ääni pidetään väliaikaisesti suoratoiston jälkeen, joten sitä voidaan toistaa uudelleen hakematta samoja tietoja.</string>
+    <string name="storage_info_downloads">Ääni tallennettu NZik offline kuunteluun.</string>
+    <string name="storage_info_waveforms">Luotu tiedostoja, joita käytetään soittimen ääniaaltomuodon piirtämiseen.</string>
+    <string name="storage_info_covers">Valitset tai tuodut taideteokset mukautetuiksi kansiksi.</string>
+    <string name="storage_info_other_nzik">Loppuosa NZikin yksityisistä tiedoista, mukaan lukien sen tietokannat, asetukset, indeksit, laajennukset ja lokit.</string>
+    <string name="storage_info_other_used">Jäljellä olevat käytetyt tilat sisäisessä taltiossa, mukaan lukien Android, asennetut sovellukset ja henkilökohtaiset tiedostot.</string>
+    <string name="storage_info_free">Sisäisessä taltiossa olevien sovellusten ja tiedostojen käytettävissä oleva tila.</string>
+    <string name="storage_cleanup_title">Siivoaminen</string>
+    <string name="storage_cleanup_failed">Tallennustilan puhdistus ei onnistunut.</string>
+    <string name="storage_cleanup_images_description">Tyhjennä taideteos välimuistissa NZik.</string>
+    <string name="storage_cleanup_streaming_description">Tyhjennä välimuisti lähetyksen aikana.</string>
+    <string name="storage_cleanup_downloads_description">Poista offline ääni ja peruuta odottavat lataukset aktiivisen profiilin lataustallennustilaan.</string>
+    <string name="storage_cleanup_waveforms_description">Tyhjennä luodut aaltomuodon tiedostot.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Tyhjennä aaltomuodot</string>
+    <string name="storage_cleanup_diagnostic_logs">Tyhjennä diagnostiset lokit</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Poista vianetsintä- ja kaatumislokitiedostot. Lokiasetuksesi pysyy samana.</string>
+    <string name="storage_cleanup_temporary_files">Poista hylätyt väliaikaiset tiedostot</string>
+    <string name="storage_cleanup_temporary_files_description">Poista hylätyt kuvaeditoriluonnokset ja Rewind-jako kaappaa yli 24 tuntia.</string>
+    <string name="storage_cleanup_all">Tyhjennä kaikki</string>
+    <string name="storage_cleanup_all_description">Tyhjennä kuvan ja suoratoistokätköt ja aktiivisen profiilin luodut aaltomuodot, mukaan lukien sen jakaminen muiden profiilien kanssa. Poista offline ääni ja peruuta odottavat lataukset aktiivisen profiilin lataustallennustilaan. Poista diagnostiset lokit, hylätyt kuvaeditorin luonnokset ja vanhentuneet Rewind-jaetut kaappaukset. Kirjastosi, mukautetut kannet ja asetukset säilytetään.</string>
     <!-- Backup -->
     <string name="backup_action_export">Vie varmuuskopio</string>
     <string name="backup_action_import">Tuo varmuuskopio</string>
@@ -82,12 +117,15 @@
     <!-- Cache -->
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Tyhjennä kappaleiden välimuisti</string>
-    <string name="cache_downloads_max_size_description">Valitse kuinka paljon levytilaa ladatuille kappaleille. Roskakorin painike poistaa ladatun äänen.</string>
-    <string name="cache_image_max_size_description">Rajoita välimuistissa olevan taiteen käyttämää levytilaa. Roskakorin painike tyhjentää ladatut kuvat tästä välimuistista.</string>
+    <string name="cache_downloads_max_size_description">Valitse kuinka paljon levytilaa ladatuille kappaleille on saatavilla.</string>
+    <string name="cache_downloads_limit_description">Valitse kuinka paljon levytilaa ladatuille kappaleille on saatavilla.</string>
+    <string name="cache_image_max_size_description">Rajoita välimuistissa olevan taiteen käyttämää levytilaa.</string>
+    <string name="cache_image_limit_description">Rajoita välimuistissa olevan taiteen käyttämää levytilaa.</string>
     <string name="cache_location_description">Valitse missä sovellus tallentaa kappaleen toiston välimuisti.</string>
     <string name="cache_location_private">Yksityinen</string>
     <string name="cache_location_system">Järjestelmä</string>
-    <string name="cache_streaming_max_size_description">Rajoita levytilaa, jota käytetään välimuistin suoratoisissa kappaleissa. Roskakori tyhjentää tämän toiston välimuistin.</string>
+    <string name="cache_streaming_max_size_description">Rajoita levytilaa, jota käytetään välimuistin suoratoisissa kappaleissa.</string>
+    <string name="cache_streaming_limit_description">Rajoita levytilaa, jota käytetään välimuistin suoratoisissa kappaleissa.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Lataa kaikki kappaleet</string>
     <string name="downloads_action_refresh_quality">Päivitä lataukset</string>
