@@ -24,6 +24,7 @@ import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
+import app.n_zik.android.R
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
@@ -36,19 +37,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-/**
- * Compose UI tests for [CollapsingAppTitle], the header title row that collapses its
- * sliding extras ("N-ZIK" text + badges) behind the app logo when the header runs out
- * of horizontal space.
- *
- * JUnit 4 + [RobolectricTestRunner], executed through the project's junit-vintage-engine
- * on the JUnit 5 platform (the `createComposeRule()` rule only works with JUnit 4), with
- * the plain [TestApplication] so the app's heavy init is skipped — the logo bitmap only
- * needs an application context, wired through [Dependencies] as in MediaItemUtilsTest.
- *
- * The frame clock is driven manually (autoAdvance off) so the collapse animation is
- * advanced deterministically to its end state before assertions.
- */
+/** Verifies title visibility with the animation clock advanced to its end state. */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = TestApplication::class)
 class CollapsingAppTitleTest {
@@ -65,10 +54,12 @@ class CollapsingAppTitleTest {
     )
 
     private val navController = mockk<NavController>(relaxed = true)
+    private lateinit var brandText: String
 
     @Before
     fun initDependencies() {
         val app = ApplicationProvider.getApplicationContext<TestApplication>()
+        brandText = app.getString(R.string.discord_presence_name)
         val mainApplication = mockk<MainApplication>()
         every { mainApplication.applicationContext } returns app
         Dependencies.init(mainApplication)
@@ -127,7 +118,7 @@ class CollapsingAppTitleTest {
         composeRule.waitForIdle()
 
         // The sliding extras keep their full natural width when the header fits them
-        composeRule.onNodeWithText("N-ZIK").assertIsDisplayed()
+        composeRule.onNodeWithText(brandText).assertIsDisplayed()
         composeRule.onNodeWithText("DEBUG").assertDoesNotExist()
         val extrasWidth = composeRule.onNodeWithTag("appTitleExtras").fetchSemanticsNode().size.width
         assertTrue(
@@ -170,8 +161,7 @@ class CollapsingAppTitleTest {
             "the sliding extras must fully retract so the action bar keeps its space",
             extrasWidth == 0
         )
-        composeRule.onNodeWithText("N-ZIK").assertIsNotDisplayed()
-        // The logo keeps its full size — it is never compressed
+        composeRule.onNodeWithText(brandText).assertExists().assertIsNotDisplayed()
         val logoWidth = composeRule.onNodeWithTag("appTitleLogo").fetchSemanticsNode().size.width
         val expectedLogoPx = with(composeRule.density) { 36.dp.toPx().toInt() }
         assertTrue(
@@ -182,5 +172,5 @@ class CollapsingAppTitleTest {
     }
 }
 
-/** Test-only application: MainApplication.onCreate() migrates credentials through AndroidKeyStore (MasterKey), which is not available on the Robolectric JVM. */
+/** Skips application startup because Robolectric does not provide AndroidKeyStore. */
 class TestApplication : Application()

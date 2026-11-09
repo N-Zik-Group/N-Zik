@@ -105,3 +105,9 @@ Fixed:
   - Read optics composition locals consistently before visibility decisions to keep animation groups stable.
   - Use the measured card surface bounds when clipping control decoration in fixed-height cards.
   - Update focused optical, overlay and information-card rendering regressions.
+
+Other:
+- test(android): refresh UI and localization fixtures (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Refresh window-inset, localized-title, settings semantics and import/profile fixtures for current application behavior.
+  - Synchronize Compose and Robolectric event delivery where tests observe asynchronous UI updates.
+  - Keep these test-only changes separate from playback and UI product changes.

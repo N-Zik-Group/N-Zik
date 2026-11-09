@@ -22,6 +22,7 @@ import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
+import app.n_zik.android.R
 import app.n_zik.android.components.ui.header.TestApplication
 import app.n_zik.android.components.ui.header.VerticalAppBrand
 import io.mockk.every
@@ -64,6 +65,7 @@ class SideAppHeaderBrandTest {
     val composeRule = createComposeRule()
 
     private val navController = mockk<NavController>(relaxed = true)
+    private lateinit var brandText: String
     private val appearance = Appearance(
         colorPalette = DefaultDarkColorPalette,
         typography = typographyOf(Color.White, true, false, FontType.Rubik),
@@ -75,6 +77,7 @@ class SideAppHeaderBrandTest {
     @Before
     fun initDependencies() {
         val app = ApplicationProvider.getApplicationContext<TestApplication>()
+        brandText = app.getString(R.string.discord_presence_name)
         val mainApplication = mockk<MainApplication>()
         every { mainApplication.applicationContext } returns app
         Dependencies.init(mainApplication)
@@ -91,17 +94,17 @@ class SideAppHeaderBrandTest {
         }
 
         composeRule.onNodeWithTag("sideAppBrandLogo").assertIsDisplayed()
-        composeRule.onNodeWithText("N-ZIK").assertIsDisplayed()
+        composeRule.onNodeWithText(brandText).assertIsDisplayed()
         val logo = composeRule.onNodeWithTag("sideAppBrandLogo").fetchSemanticsNode().boundsInRoot
         val text = composeRule.onNodeWithTag("sideAppBrandText").fetchSemanticsNode().boundsInRoot
         assertTrue(text.top >= logo.bottom, "The title belongs below the logo")
         assertTrue(
             text.height > text.width,
             "The title occupies the vertical axis of the narrow rail: title=$text, logo=$logo, " +
-                "glyphs=${composeRule.onNodeWithText("N-ZIK").fetchSemanticsNode().boundsInRoot}",
+                "glyphs=${composeRule.onNodeWithText(brandText).fetchSemanticsNode().boundsInRoot}",
         )
 
-        composeRule.onNodeWithText("N-ZIK").performClick()
+        composeRule.onNodeWithText(brandText).performClick()
         verify { navController.navigate("home") }
     }
 }

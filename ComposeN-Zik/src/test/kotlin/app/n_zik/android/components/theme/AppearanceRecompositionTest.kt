@@ -196,7 +196,9 @@ class AppearanceRecompositionTest {
         advanceFrames(240)
         assertRenderedColor("video-content", blue.colorPalette.background0)
         val fallbackPixels = composeRule.onNodeWithTag("video-content").captureToImage().toPixelMap()
-        assertNotEquals(Color.Blue.toArgb(), fallbackPixels[1, fallbackPixels.height - 2].toArgb())
+        assertNotEquals(Color.Blue.toArgb(), fallbackPixels[1, 1].toArgb())
+        // All corner-based sheets meet the bottom edge, including cut-corner themes.
+        assertEquals(Color.Blue.toArgb(), fallbackPixels[1, fallbackPixels.height - 2].toArgb())
         composeRule.runOnIdle {
             assertEquals(Color.Blue, videoColors.last())
             showVideo.value = false

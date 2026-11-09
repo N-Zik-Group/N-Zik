@@ -11,6 +11,14 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.DefaultDarkColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
@@ -20,20 +28,13 @@ import app.n_zik.android.R
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.settings.common.GlobalPageItemRow
 import app.n_zik.android.components.settings.common.SettingsGlassItem
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [32], application = Application::class)
 class GlassSettingsEntryTest {
     @get:Rule val compose = createComposeRule()
 
-    @Test fun `global Glass effect entry uses the shared beta badge before its name without a description`() {
+    @Test fun `global Glass entry uses the shared beta badge before its name without a description`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         context.preferences.edit().putBoolean(glassEnabledKey, false).commit()
         var clicks = 0
@@ -47,7 +48,7 @@ class GlassSettingsEntryTest {
         }
         val title = compose.onNodeWithText(context.getString(R.string.glass_effect_title), useUnmergedTree = true)
         val beta = compose.onNodeWithText(context.getString(R.string.updates_build_beta_label), useUnmergedTree = true)
-        assertEquals("Glass effect", context.getString(R.string.glass_effect_title))
+        assertEquals("Glass", context.getString(R.string.glass_effect_title))
         title.assertIsDisplayed()
         beta.assertIsDisplayed()
         assertTrue(beta.fetchSemanticsNode().boundsInRoot.right <= title.fetchSemanticsNode().boundsInRoot.left)

@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
-import app.it.fast4x.rimusic.utils.saveImageToInternalStorage
 import app.n_zik.android.components.dialog.song.ChangeCoverDialog
 import java.io.RandomAccessFile
 import app.it.fast4x.rimusic.models.Song
@@ -45,12 +44,13 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import app.n_zik.android.components.image.PosixAtomicFileShadow
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.io.File
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [33], application = Application::class)
+@Config(sdk = [33], application = Application::class, shadows = [PosixAtomicFileShadow::class])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ArtworkBoundedPipelineTest {
     @After fun cleanup() = unmockkAll()
@@ -207,7 +207,7 @@ class ArtworkBoundedPipelineTest {
     @Test fun `real cover save hook refreshes cached artwork with unchanged size and timestamp`() {
         context()
         val app = RuntimeEnvironment.getApplication()
-        val file = File.createTempFile("cover-save-hook", ".png")
+        val file = File.createTempFile("cover-save-hook", ".png", app.filesDir)
         val savedUri = Uri.parse(file.toURI().toASCIIString())
         try {
             write(file, Color.RED)
@@ -216,15 +216,13 @@ class ArtworkBoundedPipelineTest {
             val song = Song("local:127", "Title", "Artist", "1:20", savedUri.toString())
             val before = requireNotNull(SessionMediaItemMapper.mapSongToMediaItem(song, loadArtwork = true).mediaMetadata.artworkData)
             val count = ArtworkBitmapDecoder.decodeCount.get()
-            mockkStatic("app.it.fast4x.rimusic.utils.FileUtilsKt")
-            every { saveImageToInternalStorage(app, savedUri, file.parent.orEmpty(), file.name) } answers {
-                assertFalse(file.exists())
-                write(file, Color.BLUE)
+            val picked = File.createTempFile("cover-save-picked", ".png")
+            try {
+                write(picked, Color.BLUE)
+                assertEquals(Uri.fromFile(file), ChangeCoverDialog.saveCoverArt(app, Uri.fromFile(picked), file, "", file.name))
                 RandomAccessFile(file, "rw").use { it.setLength(65536) }
                 assertTrue(file.setLastModified(stamp))
-                savedUri
-            }
-            assertEquals(savedUri, ChangeCoverDialog.saveCoverArt(app, savedUri, file, file.parent.orEmpty(), file.name))
+            } finally { picked.delete() }
             assertEquals(65536L, file.length())
             assertEquals(stamp, file.lastModified())
             val after = requireNotNull(SessionMediaItemMapper.mapSongToMediaItem(song, loadArtwork = true).mediaMetadata.artworkData)

@@ -40,6 +40,7 @@ import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.typographyOf
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
+import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.R
 import app.n_zik.android.components.musicbrainz.insights.AlbumInsightsScreen
 import app.n_zik.android.components.musicbrainz.insights.AlbumInsightsViewModel
@@ -581,7 +582,10 @@ class OfflineContentTest {
 
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(
+                LocalAppearance provides appearance,
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+            ) {
                 ArtistInsightsScreen(
                     navController = mockk<NavController>(relaxed = true),
                     artistId = "artist-offline",
@@ -616,7 +620,10 @@ class OfflineContentTest {
 
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(
+                LocalAppearance provides appearance,
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+            ) {
                 AlbumInsightsScreen(
                     navController = mockk<NavController>(relaxed = true),
                     albumId = "album-offline",

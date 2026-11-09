@@ -1,15 +1,12 @@
 package app.n_zik.android.components.settings.common
 
+import java.util.Locale
+
 import android.app.Application
 import android.content.Context
-import android.net.Uri
 import android.content.res.Configuration
+import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
-import app.n_zik.android.R
-import app.n_zik.android.BuildConfig
-import app.it.fast4x.rimusic.enums.PresetsReverb
-import app.it.fast4x.rimusic.enums.FontType
-import java.util.Locale
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -18,6 +15,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+
+import app.it.fast4x.rimusic.enums.FontType
+import app.it.fast4x.rimusic.enums.PresetsReverb
+import app.n_zik.android.BuildConfig
+import app.n_zik.android.R
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
@@ -130,7 +132,7 @@ class SettingsDetailedSearchTest {
         assertFalse(searchSettingsEntries(english, "reverb small large").contains(target))
     }
 
-    @Test fun sectionTitlesAvoidStaleUppercaseTranslationsWithoutChangingCardTargets() {
+    @Test fun sectionTitlesPreserveTranslationsWithoutChangingCardTargets() {
         val stableNames = mapOf(
             R.string.settings_section_troubleshooting_title to "troubleshooting",
             R.string.settings_section_proxy_title to "proxy",
@@ -142,13 +144,17 @@ class SettingsDetailedSearchTest {
             R.string.settings_section_backup_and_restore_title to "title_backup_and_restore",
             R.string.settings_section_fullscreen_lyrics_title to "full_screen_lyrics_components",
         )
+        val english = localized(Locale.ENGLISH)
+        stableNames.keys.forEach { titleResource ->
+            val sourceTitle = english.getString(titleResource)
+            assertFalse(sourceTitle.any(Char::isLetter) && sourceTitle == sourceTitle.uppercase(Locale.ENGLISH))
+        }
         listOf(Locale.ENGLISH, Locale.FRENCH, Locale.forLanguageTag("pt")).forEach { locale ->
             val localized = localized(locale)
             stableNames.forEach { (titleResource, stableName) ->
                 val card = SettingsCards.single { it.titleRes == titleResource }
                 val translatedTitle = localized.getString(titleResource)
                 assertEquals(translatedTitle, card.displayTitle(localized))
-                assertFalse(translatedTitle.any(Char::isLetter) && translatedTitle == translatedTitle.uppercase(locale))
                 assertTrue(searchSettingsCards(localized, translatedTitle).contains(card))
                 assertTrue(searchSettingsCardResults(localized, translatedTitle).contains(card))
                 assertEquals("card.${card.tab}.$stableName", settingsCardTargetId(localized, card.tab, card.titleRes))

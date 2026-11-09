@@ -49,7 +49,14 @@ class NativeDialogDimmingTest {
         val settings = mutableStateOf(GlassSettings(enabled = true, dialogDimming = .27f))
         var observedWindow: Window? = null
         compose.setContent {
-            CompositionLocalProvider(LocalGlassPreviewSettings provides settings.value) {
+            CompositionLocalProvider(
+                LocalGlassPreviewSettings provides settings.value,
+                LocalAppearance provides Appearance(
+                    colorPalette = ColorPalette.fallback, typography = Typography.fallback,
+                    thumbnailShape = RoundedCornerShape(16.dp), uiRoundnessShape = RoundedCornerShape(16.dp),
+                    artistThumbnailShape = RoundedCornerShape(16.dp),
+                ),
+            ) {
                 GlassDialogWindow(false, {}, DialogProperties()) {
                     val window = (LocalView.current.parent as DialogWindowProvider).window
                     SideEffect { observedWindow = window }
