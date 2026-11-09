@@ -81,6 +81,8 @@ import it.fast4x.innertube.requests.playlistPage
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
+import app.n_zik.android.components.dialog.common.FfmpegPreparation
+import app.n_zik.android.modules.ModuleState
 import app.n_zik.android.components.dialog.common.InProgressDialog
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
@@ -190,6 +192,10 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     var showExportCacheConfirmDialog by remember { mutableStateOf(false) }
     var showExportCacheLyricsDialog by remember { mutableStateOf(false) }
     var exportCacheLyricsType by remember { mutableStateOf<String?>(null) }
+    val ffmpegPreparation = remember { FfmpegPreparation() }
+    DisposableEffect(ffmpegPreparation) {
+        onDispose { ffmpegPreparation.dispose() }
+    }
     var isExportingCache by remember { mutableStateOf(false) }
     var exportCacheProgress by remember { mutableIntStateOf(0) }
     var exportCacheTotal by remember { mutableIntStateOf(0) }
@@ -210,7 +216,6 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
             Timber.tag("HomeSongsScreen").w(e, "Failed to take persistable URI permission")
         }
 
-        isExportingCache = true
         exportCacheTotal = songs.size
         exportCacheProgress = 0
 
@@ -219,6 +224,13 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
             songs = songs,
             binder = currentBinder,
             lyricsType = exportCacheLyricsType,
+            prepareFfmpeg = {
+                withContext(NzikDispatchers.UI) {
+                    ffmpegPreparation.awaitReady().also { state ->
+                        if (state == ModuleState.READY) isExportingCache = true
+                    }
+                }
+            },
             onProgress = { current, _, _ ->
                 exportCacheProgress = current
             },
@@ -669,6 +681,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                             valueText = { type -> lyricsOptions.find { it.first == type }?.second ?: "" }
                         )
                     }
+                    ffmpegPreparation.Render()
                     DialogPresence(visible = isExportingCache) {
                         InProgressDialog(
                             total = exportCacheTotal,

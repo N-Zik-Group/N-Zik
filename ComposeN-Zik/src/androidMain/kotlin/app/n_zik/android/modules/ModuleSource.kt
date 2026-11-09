@@ -1,14 +1,16 @@
 package app.n_zik.android.modules
 
 import app.n_zik.android.core.network.client.NetworkClientFactory
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import timber.log.Timber
 
 /**
  * Downloads module archives. Implemented with OkHttp via [NetworkClientFactory] so
@@ -18,28 +20,27 @@ interface ModuleSource {
     /**
      * Downloads [def]'s archive into [destination], reporting 0f..1f through
      * [onProgress]. Throws [IOException] on failure; the caller's coroutine
-     * cancellation unblocks the transfer (see [cancelActiveDownload]).
+     * cancellation unblocks the transfer.
      */
     suspend fun download(def: ModuleDefinition, destination: File, onProgress: (Float) -> Unit)
-
-    /** Cancels the in-flight download, if any (no-op when idle). */
-    fun cancelActiveDownload()
 }
 
 /** OkHttp-based [ModuleSource]; the production implementation. */
 object OkHttpModuleSource : ModuleSource {
-
-    private const val TAG = "ModuleSource"
-
-    @Volatile
-    private var activeCall: okhttp3.Call? = null
 
     override suspend fun download(def: ModuleDefinition, destination: File, onProgress: (Float) -> Unit) {
         withContext(NzikDispatchers.DATA) {
             destination.parentFile?.mkdirs()
             val request = Request.Builder().url(def.downloadUrl).build()
             val call = NetworkClientFactory.getClient().newCall(request)
-            activeCall = call
+            // Wake a blocking OkHttp read when its owning coroutine is cancelled.
+            val cancelCall = launch(start = CoroutineStart.UNDISPATCHED) {
+                try {
+                    awaitCancellation()
+                } finally {
+                    call.cancel()
+                }
+            }
             try {
                 call.execute().use { response ->
                     if (!response.isSuccessful) {
@@ -63,15 +64,12 @@ object OkHttpModuleSource : ModuleSource {
                         }
                     }
                 }
+            } catch (error: IOException) {
+                ensureActive()
+                throw error
             } finally {
-                if (activeCall === call) activeCall = null
+                cancelCall.cancel()
             }
         }
-    }
-
-    override fun cancelActiveDownload() {
-        runCatching { activeCall?.cancel() }
-            .onFailure { Timber.tag(TAG).w(it, "Failed to cancel module download") }
-        activeCall = null
     }
 }

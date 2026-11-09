@@ -83,7 +83,6 @@ import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.dialog.album.ChangeAlbumBrowseIdDialog
 import app.n_zik.android.components.dialog.artist.ChangeArtistBrowseIdDialog
 import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.components.dialog.common.InProgressDialog
 import app.n_zik.android.components.dialog.common.ListenOnDialog
 import app.n_zik.android.components.dialog.export.ExportCacheDialog
 import app.n_zik.android.components.dialog.song.ChangeAuthorDialog
@@ -786,14 +785,7 @@ class PlayerItemMenu private constructor(
             editMetadata.Render()
             exportCacheDialog.Render()
 
-            DialogPresence(visible = exportCacheDialog.isExporting.value) {
-                InProgressDialog(
-                    total = 0,
-                    done = 0,
-                    text = stringResource(R.string.export_running_status),
-                    onDismiss = null
-                )
-            }
+            exportCacheDialog.RenderProgress()
         } else {
             renameSong.Render()
             changeAuthor.Render()

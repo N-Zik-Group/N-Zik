@@ -58,7 +58,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.n_zik.android.modules.FfmpegModule
+import app.n_zik.android.components.dialog.common.FfmpegPreparation
 import app.n_zik.android.modules.ModuleState
 import app.it.fast4x.rimusic.MODIFIED_PREFIX
 import app.it.fast4x.rimusic.cleanPrefix
@@ -111,11 +111,13 @@ class EditMetadataDialog internal constructor(
 
     private var fields = mutableStateListOf<EditableField>()
     private var isLoading by mutableStateOf(false)
+    private var opening by mutableStateOf(false)
+    private val ffmpegPreparation = FfmpegPreparation()
     private var filePath: String? = null
     private var coverArtBytes by mutableStateOf<ByteArray?>(null)
     private var dialogSong: Song? = null
     private var dialogProfile: String? = null
-    private var generation = 0
+    private var generation by mutableStateOf(0)
     private var saveJob: Job? = null
     internal val coverDialog: StagedCoverDialog = object : StagedCoverDialog(
         mutableStateOf(false), mutableStateOf(TextFieldValue()), context, coroutineScope,
@@ -277,11 +279,14 @@ class EditMetadataDialog internal constructor(
         dialogSong = getSong() ?: return
         dialogProfile = getActiveProfile(context)
         filePath = null
+        opening = true
+        isLoading = true
         super<InteractiveDialog>.showDialog()
     }
 
     override fun hideDialog() {
         isActive = false
+        ffmpegPreparation.cancel()
         generation++
         coverDialog.hideDialog()
         saveJob?.cancel()
@@ -301,10 +306,49 @@ class EditMetadataDialog internal constructor(
     )
 
     @Composable
+    override fun Render() {
+        val song = dialogSong
+        LaunchedEffect(isActive, generation) {
+            if (!isActive || song == null) return@LaunchedEffect
+            // The FFmpeg module (spec-ffmpeg-extension-module) must be ready before
+            // ANY FFprobeKit/FFmpegKit touch
+            val token = generation
+            val moduleState = ffmpegPreparation.awaitReady()
+            if (!currentTarget(token)) {
+                if (isActive && token == generation) hideDialog()
+                return@LaunchedEffect
+            }
+            if (moduleState !is ModuleState.READY) {
+                if (moduleState is ModuleState.FAILED) {
+                    Toaster.e(appTextResources().getString(R.string.modules_edit_unavailable, moduleState.message))
+                }
+                hideDialog()
+                return@LaunchedEffect
+            }
+            opening = false
+            fields.clear()
+            coverArtBytes = null
+
+            val result = withContext(NzikDispatchers.DATA) { readTagsFromFile(context, song) }
+            if (!currentTarget(token)) {
+                if (isActive && token == generation) hideDialog()
+                return@LaunchedEffect
+            }
+
+            filePath = result.path
+            coverArtBytes = result.coverBytes
+            fields.clear()
+            fields.addAll(result.fields)
+            isLoading = false
+        }
+
+        if (!opening) super<InteractiveDialog>.Render()
+        if (isActive) ffmpegPreparation.Render()
+    }
+
+    @Composable
     override fun DialogBody() {
         val context = LocalContext.current
-        val song = dialogSong
-
         coverDialog.Render()
 
         val writePermLauncher = rememberLauncherForActivityResult(
@@ -317,33 +361,6 @@ class EditMetadataDialog internal constructor(
             }
         }
         writePermissionLauncher = writePermLauncher
-
-        LaunchedEffect(isActive) {
-            if (!isActive || song == null) return@LaunchedEffect
-            // The FFmpeg module (spec-ffmpeg-extension-module) must be ready before
-            // ANY FFprobeKit/FFmpegKit touch
-            val moduleState = FfmpegModule.ensureReady()
-            if (moduleState !is ModuleState.READY) {
-                if (moduleState is ModuleState.FAILED) {
-                    Toaster.e(appTextResources().getString(R.string.modules_edit_unavailable, moduleState.message))
-                }
-                hideDialog()
-                return@LaunchedEffect
-            }
-            isLoading = true
-            fields.clear()
-            coverArtBytes = null
-
-            val token = generation
-            val result = withContext(NzikDispatchers.DATA) { readTagsFromFile(context, song) }
-            if (!currentTarget(token)) return@LaunchedEffect
-
-            filePath = result.path
-            coverArtBytes = result.coverBytes
-            fields.clear()
-            fields.addAll(result.fields)
-            isLoading = false
-        }
 
         val scrollState = rememberScrollState()
 
@@ -496,7 +513,7 @@ class EditMetadataDialog internal constructor(
         saveJob = coroutineScope.launch(NzikDispatchers.DATA) {
             // The FFmpeg module (spec-ffmpeg-extension-module) must be ready before
             // ANY FFprobeKit/FFmpegKit touch
-            val moduleState = FfmpegModule.ensureReady()
+            val moduleState = ffmpegPreparation.awaitReady() ?: return@launch
             if (moduleState !is ModuleState.READY) {
                 withContext(NzikDispatchers.UI) {
                     val reason = (moduleState as? ModuleState.FAILED)?.message

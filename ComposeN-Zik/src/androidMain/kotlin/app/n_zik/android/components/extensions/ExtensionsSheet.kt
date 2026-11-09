@@ -392,9 +392,9 @@ private fun MarketplaceModuleCard(
                     onCancel = { manager.cancelDownload(def.id) },
                 )
 
-                ModuleState.UPDATING -> DownloadingSettingsEntry(
+                is ModuleState.UPDATING -> DownloadingSettingsEntry(
                     title = stringResource(R.string.modules_updating),
-                    progress = null,
+                    progress = state.progress,
                     onCancel = { manager.cancelDownload(def.id) },
                 )
             }
@@ -419,11 +419,12 @@ fun rememberModuleUi(def: ModuleDefinition): ModuleUi {
 
     val states by manager.states.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
 
-    // Disk checks off Main (re-evaluated when the module state changes)
-    val update by produceState<ModuleUpdateStatus>(ModuleUpdateStatus.NotInstalled, states) {
+    // Byte progress does not change the installed files.
+    val phase = states[def.id]?.javaClass
+    val update by produceState<ModuleUpdateStatus>(ModuleUpdateStatus.NotInstalled, def, phase) {
         value = withContext(NzikDispatchers.DATA) { manager.checkForUpdate(def) }
     }
-    val installedSize by produceState<Long?>(null, states) {
+    val installedSize by produceState<Long?>(null, def, phase) {
         value = withContext(NzikDispatchers.DATA) { manager.installedSize(def) }
     }
 

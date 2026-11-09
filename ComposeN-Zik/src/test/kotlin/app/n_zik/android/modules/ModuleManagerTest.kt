@@ -1,9 +1,19 @@
 package app.n_zik.android.modules
 
+import com.sun.net.httpserver.HttpServer
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
+import okhttp3.OkHttpClient
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -13,9 +23,14 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
+import java.net.InetSocketAddress
+import java.net.Proxy
 import java.security.MessageDigest
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import app.n_zik.android.core.network.client.NetworkClientFactory
 
 /**
  * JVM tests for [ModuleManager] - the download → SHA-256 → extract → READY
@@ -34,8 +49,6 @@ class ModuleManagerTest {
             destination.writeBytes(fakeArchive(def.abis.first(), def.soFiles.getValue(def.abis.first()).first()))
             onProgress(1f)
         }
-
-        override fun cancelActiveDownload() {}
     }
 
     private val failureMessages = object : ModuleFailureMessages {
@@ -253,8 +266,6 @@ class ModuleManagerTest {
                 // Stay suspended until the coroutine is cancelled
                 suspendCancellableCoroutine<Unit> { }
             }
-
-            override fun cancelActiveDownload() {}
         }
         val manager = manager(source = source, listener = listener)
         val def = def()
@@ -268,6 +279,78 @@ class ModuleManagerTest {
         assertTrue(cancelled)
         val root = File(filesDir, "modules/testmod")
         assertTrue(root.listFiles().orEmpty().none { it.name.startsWith(".tmp-") })
+    }
+
+    @Test
+    fun `cancelDownload interrupts an HTTP body stalled mid-transfer`() = runBlocking {
+        val releaseServer = CountDownLatch(1)
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
+            createContext("/") { exchange ->
+                try {
+                    exchange.sendResponseHeaders(200, 16_384)
+                    exchange.responseBody.write(ByteArray(8192))
+                    exchange.responseBody.flush()
+                    releaseServer.await(15, TimeUnit.SECONDS)
+                } finally {
+                    exchange.close()
+                }
+            }
+            start()
+        }
+        val client = OkHttpClient.Builder().proxy(Proxy.NO_PROXY).readTimeout(30, TimeUnit.SECONDS).build()
+        mockkObject(NetworkClientFactory)
+        every { NetworkClientFactory.getClient() } returns client
+        try {
+            val manager = manager(source = OkHttpModuleSource)
+            val def = def().copy(downloadUrl = "http://127.0.0.1:${server.address.port}/")
+            val job = launch { manager.ensureReady(def) }
+            withTimeout(5_000) {
+                manager.states.first { states ->
+                    (states[def.id] as? ModuleState.DOWNLOADING)?.progress?.let { it > 0f } == true
+                }
+                manager.cancelDownload(def.id)
+                job.join()
+            }
+            assertTrue(job.isCancelled)
+            assertEquals(ModuleState.NOT_DOWNLOADED, manager.stateOf(def))
+            assertTrue(File(filesDir, "modules/testmod").listFiles().orEmpty().none { it.name.startsWith(".tmp-") })
+        } finally {
+            releaseServer.countDown()
+            server.stop(0)
+            unmockkObject(NetworkClientFactory)
+        }
+    }
+
+    @Test
+    fun `cancelling an update after progress keeps the previous version`() = runBlocking {
+        val progressReported = CompletableDeferred<Unit>()
+        val old = def()
+        val updated = def(version = "1.1.0")
+        val source = object : ModuleSource {
+            override suspend fun download(def: ModuleDefinition, destination: File, onProgress: (Float) -> Unit) {
+                if (def == old) {
+                    fakeSource.download(def, destination, onProgress)
+                    return
+                }
+                destination.writeBytes(byteArrayOf(1))
+                onProgress(0.42f)
+                progressReported.complete(Unit)
+                awaitCancellation()
+            }
+        }
+        val manager = manager(source = source)
+        assertEquals(ModuleState.READY, manager.ensureReady(old))
+
+        val update = launch { manager.ensureReady(updated) }
+        withTimeout(5_000) { progressReported.await() }
+        assertEquals(ModuleState.UPDATING(0.42f), manager.states.value[updated.id])
+
+        update.cancelAndJoin()
+        val root = File(filesDir, "modules/testmod")
+        assertEquals(ModuleState.READY, manager.states.value[updated.id])
+        assertTrue(File(root, "1.0.0-x86_64").exists())
+        assertFalse(File(root, "1.1.0-x86_64").exists())
+        assertTrue(root.listFiles().orEmpty().none { it.name.startsWith(".") })
     }
 
     @Test
@@ -294,8 +377,6 @@ class ModuleManagerTest {
             override suspend fun download(def: ModuleDefinition, destination: File, onProgress: (Float) -> Unit) {
                 throw IOException("network down")
             }
-
-            override fun cancelActiveDownload() {}
         }
         val def = def()
 

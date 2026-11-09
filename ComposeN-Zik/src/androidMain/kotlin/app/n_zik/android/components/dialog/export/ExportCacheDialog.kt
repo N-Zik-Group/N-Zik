@@ -2,7 +2,8 @@ package app.n_zik.android.components.dialog.export
 
 import app.n_zik.android.appTextResources
 import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.core.database.*
+import app.n_zik.android.components.dialog.common.FfmpegPreparation
+import app.n_zik.android.components.dialog.common.InProgressDialog
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.models.Lyrics
@@ -24,6 +25,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
@@ -58,13 +61,14 @@ import java.nio.ByteBuffer
 import android.graphics.BitmapFactory
 import android.util.Base64
 
-class ExportCacheDialog(
+class ExportCacheDialog private constructor(
     activeState: MutableState<Boolean>,
     private val folderLauncher: ManagedActivityResultLauncher<Uri?, Uri?>,
     private val getSong: () -> Song,
     val isExporting: MutableState<Boolean> = mutableStateOf(false),
     val extension: String = "m4a",
-    val lyricsType: MutableState<String?> = mutableStateOf(null)
+    val lyricsType: MutableState<String?> = mutableStateOf(null),
+    private val ffmpegPreparation: FfmpegPreparation,
 ) : app.n_zik.android.components.dialog.common.Dialog, MenuIcon, Descriptive {
 
     private val _isActiveState = activeState
@@ -91,20 +95,6 @@ class ExportCacheDialog(
             showResultToast: Boolean = true
         ) = scope.launch {
             kotlinx.coroutines.withContext(NzikDispatchers.UI) { isExporting.value = true }
-            // The FFmpeg module (spec-ffmpeg-extension-module) must be ready before
-            // ANY FFmpegKit/FFprobeKit touch
-            val moduleState = FfmpegModule.ensureReady()
-            if (moduleState !is ModuleState.READY) {
-                withContext(NzikDispatchers.UI) {
-                    isExporting.value = false
-                    if (moduleState is ModuleState.FAILED) {
-                        Timber.tag("ExportCache").w("FFmpeg module unavailable: %s", moduleState.message)
-                        Toaster.e(R.string.export_cached_songs_generic_error)
-                    }
-                }
-                try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (_: Exception) {}
-                return@launch
-            }
             try {
                 Timber.tag("ExportCache").i("onExport triggered for song: ${song.title}")
                 val format = Database.formatTable.findBySongId( song.id ).first()
@@ -324,6 +314,7 @@ class ExportCacheDialog(
             getSong: () -> Song
         ): ExportCacheDialog {
             val isExporting = remember { mutableStateOf(false) }
+            val ffmpegPreparation = remember { FfmpegPreparation() }
             val song = getSong()
             val coroutineScope = rememberCoroutineScope()
             val lyricsTypeState = remember { mutableStateOf<String?>(null) }
@@ -372,6 +363,14 @@ class ExportCacheDialog(
                             return@launch
                         }
 
+                        val moduleState = ffmpegPreparation.awaitReady() ?: return@launch
+                        if (moduleState !is ModuleState.READY) {
+                            withContext(NzikDispatchers.UI) {
+                                Toaster.e(R.string.export_cached_songs_generic_error)
+                            }
+                            return@launch
+                        }
+
                         val ext = if (isOpus) "ogg" else "m4a"
                         val mimeType = if (isOpus) "audio/ogg" else "audio/mp4"
                         val baseName = "${currentSong.cleanTitle()} - ${currentSong.cleanArtistsText()}"
@@ -404,12 +403,16 @@ class ExportCacheDialog(
                             isExporting.value = false
                             Toaster.done()
                         }
+                    } catch (e: CancellationException) {
+                        throw e
                     } catch (e: Exception) {
                         Timber.tag("ExportCache").e(e, "Single export failed")
                         kotlinx.coroutines.withContext(NzikDispatchers.UI) {
                             isExporting.value = false
                             Toaster.e(R.string.export_cached_songs_generic_error)
                         }
+                    } finally {
+                        withContext(NonCancellable + NzikDispatchers.UI) { isExporting.value = false }
                     }
                 }
             }
@@ -420,7 +423,8 @@ class ExportCacheDialog(
                 getSong,
                 isExporting,
                 fileExtension,
-                lyricsTypeState
+                lyricsTypeState,
+                ffmpegPreparation,
             )
         }
 
@@ -430,13 +434,22 @@ class ExportCacheDialog(
             songs: List<Song>,
             binder: PlayerServiceModern.Binder,
             lyricsType: String? = null,
+            prepareFfmpeg: suspend () -> ModuleState? = FfmpegModule::ensureReady,
             onProgress: (current: Int, total: Int, songTitle: String) -> Unit,
             onComplete: (successCount: Int, failCount: Int) -> Unit
         ) = scope.launch {
             // The FFmpeg module (spec-ffmpeg-extension-module) must be ready before
             // ANY FFmpegKit/FFprobeKit touch; onComplete() still runs so the caller's
             // UI state resets
-            val moduleState = FfmpegModule.ensureReady()
+            val moduleState = try {
+                prepareFfmpeg()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.tag("ExportCache").e(e, "Failed to prepare FFmpeg for batch export")
+                withContext(NzikDispatchers.UI) { onComplete(0, songs.size) }
+                return@launch
+            } ?: return@launch
             if (moduleState !is ModuleState.READY) {
                 withContext(NzikDispatchers.UI) {
                     if (moduleState is ModuleState.FAILED) {
@@ -720,6 +733,21 @@ class ExportCacheDialog(
         get() = stringResource( R.string.export_cached_songs_action )
 
     override fun onShortClick() = showDialog()
+
+    @Composable
+    internal fun RenderProgress() {
+        if (ffmpegPreparation.isPreparing) {
+            ffmpegPreparation.Render()
+        } else {
+            DialogPresence(visible = isExporting.value) {
+                InProgressDialog(
+                    total = 0,
+                    done = 0,
+                    text = stringResource(R.string.export_running_status),
+                )
+            }
+        }
+    }
 
     @Composable
     override fun Render() {

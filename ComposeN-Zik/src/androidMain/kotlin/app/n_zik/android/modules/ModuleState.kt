@@ -22,7 +22,7 @@ sealed class ModuleState {
     data class FAILED(val message: String) : ModuleState()
 
     /** A new module version is being downloaded; the old module dir stays intact. */
-    data object UPDATING : ModuleState()
+    data class UPDATING(val progress: Float? = null) : ModuleState()
 }
 
 /** Result of a launch-time module update check (detection only - no download). */

@@ -4,6 +4,7 @@ import app.n_zik.android.appTextResources
 import app.n_zik.android.R
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -66,12 +67,8 @@ class ModuleManager(
 
     /** Live state per module (keyed by [ModuleDefinition.id]). */
     val states: StateFlow<Map<String, ModuleState>> = _states.asStateFlow()
-    // Thread-safe map: written on DATA by ensureReady, removed on Main by
-    // cancelDownload (a plain LinkedHashMap would race across the two)
+    // The download owns the entry and its cleanup; cancelDownload can run on Main.
     private val jobs = ConcurrentHashMap<String, Job>()
-    // id -> definition: lets cancelDownload tell whether a previous version is
-    // still installed (an interrupted update must keep reporting READY)
-    private val modules = ConcurrentHashMap<String, ModuleDefinition>()
     private val mutexes = mutableMapOf<String, Mutex>()
 
     fun stateOf(def: ModuleDefinition): ModuleState =
@@ -125,7 +122,6 @@ class ModuleManager(
      * [cancelDownload].
      */
     suspend fun ensureReady(def: ModuleDefinition): ModuleState = withContext(NzikDispatchers.DATA) {
-        modules[def.id] = def
         val abi = deviceAbiProvider(def)
         if (abi == null) {
             return@withContext updateState(def.id, ModuleState.FAILED(failureMessages.unavailable()))
@@ -148,7 +144,6 @@ class ModuleManager(
             }
 
             val isUpdate = installedVersion(def) != null
-            if (isUpdate) updateState(def.id, ModuleState.UPDATING)
 
             // Register this download so cancelDownload() can stop it: the Job of this
             // withContext block is the cancellation unit for the whole download.
@@ -161,6 +156,8 @@ class ModuleManager(
             tmp.parentFile?.mkdirs()
             var staging: File? = null
             try {
+                updateState(def.id, if (isUpdate) ModuleState.UPDATING() else ModuleState.DOWNLOADING(0f))
+                coroutineContext.ensureActive()
                 listener.onDownloadStarted(def, isUpdate)
                 // Throttle: one emission per ~1% step, a full download would
                 // otherwise emit per 8 KB chunk (thousands of StateFlow updates)
@@ -168,17 +165,19 @@ class ModuleManager(
                 source.download(def, tmp) { progress ->
                     if (progress - lastEmitted >= 0.01f || progress >= 1f) {
                         lastEmitted = progress
-                        // An update keeps the flat UPDATING state (the old module keeps working)
-                        if (!isUpdate) updateState(def.id, ModuleState.DOWNLOADING(progress))
+                        val downloading = if (isUpdate) ModuleState.UPDATING(progress) else ModuleState.DOWNLOADING(progress)
+                        updateState(def.id, downloading)
                         listener.onDownloadProgress(def, progress)
                     }
                 }
+                coroutineContext.ensureActive()
                 if (sha256Hex(tmp) != def.sha256) {
                     throw IOException("SHA-256 mismatch for module ${def.id}")
                 }
                 staging = File(moduleRoot(def), ".staging-${def.version}-${abi}")
                 extractSoFiles(def, abi, tmp, staging)
                 writeManifest(staging, def.soFiles.getValue(abi))
+                coroutineContext.ensureActive()
                 // Staged swap: the old module dir disappears only once the new one is
                 // fully extracted and manifest-verified
                 pinnedDir.deleteRecursively()
@@ -193,6 +192,7 @@ class ModuleManager(
                 updateState(def.id, ModuleState.READY)
                 return@withLock ModuleState.READY
             } catch (e: CancellationException) {
+                updateState(def.id, if (isUpdate) ModuleState.READY else ModuleState.NOT_DOWNLOADED)
                 listener.onDownloadCancelled(def)
                 throw e
             } catch (e: Exception) {
@@ -211,21 +211,17 @@ class ModuleManager(
 
     /** Cancels the in-flight download of module [id] (no-op when none is running). */
     fun cancelDownload(id: String) {
-        val job = jobs.remove(id) ?: return
-        job.cancel()
-        source.cancelActiveDownload()
-        // An interrupted update keeps the previous version on disk and the module
-        // keeps working: report what is installed, not a blind NOT_DOWNLOADED
-        val stillInstalled = modules[id]?.let { installedVersion(it) } != null
-        updateState(id, if (stillInstalled) ModuleState.READY else ModuleState.NOT_DOWNLOADED)
+        jobs[id]?.cancel()
     }
 
     /** Deletes the whole module (all versions) and frees its space. */
     suspend fun uninstall(def: ModuleDefinition) = withContext(NzikDispatchers.DATA) {
         cancelDownload(def.id)
-        moduleRoot(def).deleteRecursively()
-        updateState(def.id, ModuleState.NOT_DOWNLOADED)
-        listener.onUninstalled(def)
+        mutexFor(def.id).withLock {
+            moduleRoot(def).deleteRecursively()
+            updateState(def.id, ModuleState.NOT_DOWNLOADED)
+            listener.onUninstalled(def)
+        }
     }
 
     // region internals

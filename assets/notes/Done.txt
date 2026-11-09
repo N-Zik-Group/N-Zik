@@ -191,3 +191,10 @@ Fixed:
   - Protect active export staging across processes and retain picker handoffs for seven days before cleanup.
   - Detach completed restore journals and deleted Rescue backups under the restore lock, then remove their contents outside it.
   - Cover startup lease acquisition, staging ownership, and import ordering with regression tests.
+
+Added:
+- feat(ffmpeg): show cancellable setup progress in metadata editing and audio exports
+  - Reuse the circular export progress dialog for first-time FFmpeg installation and updates, with a centered percentage.
+  - Wait for FFmpeg before opening the metadata editor or creating export files, including batch exports.
+  - Cancel the owning transfer, remove partial files, and preserve the installed version when an update is cancelled.
+  - Cover cancellation during a stalled HTTP response, screen disposal, and retry in focused regression tests.

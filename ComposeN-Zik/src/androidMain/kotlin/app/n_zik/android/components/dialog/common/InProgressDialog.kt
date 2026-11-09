@@ -26,6 +26,7 @@ fun InProgressDialog(
     text: String,
     onDismiss: (() -> Unit)? = null,
     message: String? = null,
+    progressLabel: String? = null,
 ) {
     val palette = colorPalette()
     DefaultDialog(
@@ -65,7 +66,8 @@ fun InProgressDialog(
         }
         if (total > 0) {
             BasicText(
-                text = "$done / $total",
+                text = progressLabel ?: "$done / $total",
+                modifier = Modifier.align(Alignment.CenterHorizontally),
                 style = TextStyle(
                     textAlign = TextAlign.Center,
                     fontStyle = typography().xs.semiBold.fontStyle,
