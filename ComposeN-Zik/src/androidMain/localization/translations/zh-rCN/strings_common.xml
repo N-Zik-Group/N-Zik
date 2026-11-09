@@ -15,6 +15,7 @@
     <string name="common_delete_success">已删除</string>
     <string name="common_description_unavailable">无可用描述</string>
     <string name="common_duration_milliseconds_format">%1$s 毫秒</string>
+    <string name="common_duration_milliseconds_unit">毫秒</string>
     <string name="common_empty_items">没有项目</string>
     <string name="common_external_link_loading_suffix">正在加载……</string>
     <string name="common_load_failed">无法加载</string>
@@ -39,8 +40,11 @@
     <string name="common_validation_empty_value">值不能为空</string>
     <string name="common_validation_invalid_input">Invalid input!</string>
     <string name="common_validation_minimum_value">"值必须于 "</string>
+    <string name="common_validation_minimum_value_format">值必须至少为 %1$d</string>
     <string name="common_validation_name_in_use">名称已被使用</string>
     <string name="common_value_input_hint">输入自定值</string>
     <string name="common_unknown">未知的</string>
     <string name="common_duration_minutes_short">%1$d 分钟</string>
+    <string name="common_external_link_loading_format">%1$s is loading…</string>
+    <string name="common_loading_message">正在加载…</string>
 </resources>
