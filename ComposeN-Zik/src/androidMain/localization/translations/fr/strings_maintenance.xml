@@ -66,8 +66,8 @@
     <string name="maintenance_library_albums">Albums : %d</string>
     <string name="maintenance_library_artists">Artistes : %d</string>
     <string name="maintenance_library_listened">%d ont écouté</string>
-    <string name="maintenance_library_playlists">Listes de lecture : %d</string>
-    <string name="maintenance_library_songs">Chansons : %d</string>
+    <string name="maintenance_library_playlists">Playlists: %d</string>
+    <string name="maintenance_library_songs">Titres : %d</string>
     <string name="maintenance_live_subsystems">Sous-systèmes en temps réel</string>
     <string name="maintenance_log_view">Afficher</string>
     <string name="maintenance_lt_connected">Connecté</string>
@@ -197,7 +197,7 @@
     <string name="recovery_error">Une erreur s\'est produite : %s</string>
     <string name="recovery_error_database_busy">La base de données est en cours d\'utilisation ; il n\'est donc pas possible de l\'exporter en toute sécurité. Il faut d\'abord arrêter l\'application : appuyez sur « Fermer l\'application » dans la « Zone de danger », puis attendez que le statut indique que l\'application est arrêtée.</string>
     <string name="recovery_export_database">Exporter la base de données</string>
-    <string name="recovery_export_database_description">Enregistrez votre bibliothèque, vos playlists et votre historique</string>
+    <string name="recovery_export_database_with_covers_description">Enregistrez votre bibliothèque, vos playlists et votre historique au format SQLite. Si vous disposez de pochettes personnalisées, l\'exportation se fait sous forme d\'un fichier ZIP contenant la base de données et les pochettes.</string>
     <string name="recovery_export_logs">Exporter les journaux</string>
     <string name="recovery_export_logs_description">Enregistrer les journaux d\'erreurs et de débogage pour un rapport de bogue</string>
     <string name="recovery_export_profiles_description">La liste des profils et les photos de visage dans un seul fichier .txt</string>
@@ -210,7 +210,7 @@
     <string name="recovery_group_settings">Paramètres</string>
     <string name="recovery_group_storage">Stockage</string>
     <string name="recovery_import_database">Importer une base de données</string>
-    <string name="recovery_import_database_description">Restaurer une base de données précédemment exportée</string>
+    <string name="recovery_import_database_with_covers_description">Restaurez une sauvegarde de base de données SQLite ou ZIP, y compris les couvertures personnalisées contenues dans le fichier ZIP.</string>
     <string name="recovery_import_profiles_description">Restaurer la liste des profils et les photos de visage à partir d\'un fichier .txt</string>
     <string name="recovery_import_settings">Paramètres d\'importation</string>
     <string name="recovery_import_settings_description">Restaurer les préférences à partir d\'un fichier CSV</string>
@@ -311,4 +311,5 @@
     <string name="updates_warning_acknowledge">Je comprends</string>
     <string name="updates_check_failed">Impossible de vérifier les mises à jour.</string>
     <string name="updates_install_generic_error">Impossible d\'installer la mise à jour.</string>
+    <string name="updates_channel_available_format">Mise à jour %1$s disponible</string>
 </resources>
