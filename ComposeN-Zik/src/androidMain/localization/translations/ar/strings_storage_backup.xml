@@ -3,7 +3,7 @@
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">التخزين</string>
     <string name="storage_breakdown_info_title">حول التخزين</string>
-    <string name="storage_breakdown_nzik_total">المجموع المستخدم من قبل NZik</string>
+    <string name="storage_breakdown_nzik_total">المجموع المستخدم من قبل N-Zik</string>
     <string name="storage_breakdown_subtitle">تفكيك التخزين</string>
     <string name="storage_breakdown_waiting">قياس التخزين…</string>
     <string name="storage_breakdown_cached_images">الصور المخزنة مؤقتاً</string>
@@ -11,20 +11,20 @@
     <string name="storage_breakdown_downloaded_audio">تم تنزيل الصوت</string>
     <string name="storage_breakdown_custom_covers">أغلفة مخصصة</string>
     <string name="storage_breakdown_waveforms">موجات</string>
-    <string name="storage_breakdown_other_nzik_data">بيانات NZik الأخرى</string>
+    <string name="storage_breakdown_other_nzik_data">بيانات N-Zik الأخرى</string>
     <string name="storage_breakdown_other_used_space">النظام والتطبيقات &amp; الملفات</string>
     <string name="storage_breakdown_free_space">مساحة مجانية</string>
     <string name="storage_info_images">الأعمال الفنية وغيرها من الصور المخبأة للعرض الأسرع.</string>
     <string name="storage_info_streaming">الصوت المحتفظ به مؤقتا بعد البث، بحيث يمكن تشغيله مرة أخرى دون جلب نفس البيانات.</string>
-    <string name="storage_info_downloads">تم حفظ الصوت في NZik للاستماع بدون اتصال.</string>
+    <string name="storage_info_downloads">تم حفظ الصوت في N-Zik للاستماع دون اتصال.</string>
     <string name="storage_info_waveforms">الملفات التي تم إنشاؤها تستخدم لرسم شكل الموجة الصوتية في المشغل.</string>
     <string name="storage_info_covers">الأعمال الفنية التي اخترتها أو استيرادها كأغلفة مخصصة.</string>
-    <string name="storage_info_other_nzik">بقية البيانات الخاصة لنيزيك، بما في ذلك قواعد بياناتها وإعداداتها وفهرسها وملحقاتها وسجلاتها.</string>
+    <string name="storage_info_other_nzik">بقية البيانات الخاصة لـ N-Zik، بما في ذلك قواعد بياناته وإعداداداته وفهرسه وإضافاته وسجلاته.</string>
     <string name="storage_info_other_used">المساحة المستخدمة المتبقية على المجلد الداخلي، بما في ذلك أندرويد، التطبيقات المثبتة والملفات الشخصية.</string>
     <string name="storage_info_free">المساحة المتاحة للتطبيقات والملفات على المجلد الداخلي.</string>
     <string name="storage_cleanup_title">تنظيف</string>
     <string name="storage_cleanup_failed">لا يمكن إنهاء تنظيف التخزين.</string>
-    <string name="storage_cleanup_images_description">مسح الأعمال الفنية المخبأة من قبل NZik.</string>
+    <string name="storage_cleanup_images_description">مسح الأعمال الفنية المخبأة من قبل N-Zik.</string>
     <string name="storage_cleanup_streaming_description">مسح التخزين المؤقت للصوت أثناء البث.</string>
     <string name="storage_cleanup_downloads_description">حذف الصوت دون اتصال وإلغاء التنزيلات المعلقة لتخزين تحميل الملف الشخصي النشط.</string>
     <string name="storage_cleanup_waveforms_description">مسح ملفات نموذج الموجة التي تم إنشاؤها.</string>
@@ -139,7 +139,7 @@
     <string name="downloads_delete_all_count_confirmation">حذف جميع التنزيلات %d؟</string>
     <string name="downloads_delete_dialog_title">حذف التحميلات</string>
     <string name="downloads_download_all_confirmation">هل تريد حقاً تنزيل الكل؟</string>
-    <string name="downloads_download_all_count_confirmation">تحميل جميع الأغاني %d؟</string>
+    <string name="downloads_download_all_count_confirmation">تحميل كل شيء؟ (الأغاني: %d)</string>
     <string name="downloads_download_dialog_title">تحميل الأغاني</string>
     <string name="downloads_empty_message">لا يوجد شيء للتحميل</string>
     <string name="downloads_error_network">حدث خطأ في الشبكة</string>
@@ -166,16 +166,16 @@
     <string name="export_running_status">تصدير…</string>
     <string name="export_song_unavailable_message">يجب أن يتم تخزين الأغنية مؤقتا أو تحميلها للتصدير</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">هل تريد حذف جميع التنزيلات (%d أغانية)؟</string>
+    <string name="library_cleanup_all_downloads_confirmation">حذف جميع التنزيلات؟ (الأغنية: %d)</string>
     <string name="library_cleanup_all_favorites_confirmation">هل تريد إزالة كل %d المفضلة؟</string>
-    <string name="library_cleanup_all_listening_history_confirmation">هل تريد إعادة تعيين سجل الاستماع لأغاني %d؟</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ تحذير: سيؤدي هذا إلى حذف جميع الأغاني %d وإزالتها من جميع قوائم التشغيل. لا يمكن التراجع عن هذا الإجراء!</string>
-    <string name="library_cleanup_entire_cache_confirmation">هل تريد مسح ذاكرة التخزين المؤقت بالكامل (أغاني%d)؟</string>
-    <string name="library_cleanup_selected_cache_confirmation">هل تريد إزالة هذه الأغاني %d من ذاكرة التخزين المؤقت؟</string>
+    <string name="library_cleanup_all_listening_history_confirmation">إعادة تعيين سجل الاستماع؟ (الأغنية: %d)</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ تحذير: سيؤدي هذا إلى حذف أغانيك وإزالتها من جميع قوائم التشغيل. (الأغنية: %d) لا يمكن التراجع عن هذا الإجراء!</string>
+    <string name="library_cleanup_entire_cache_confirmation">مسح ذاكرة التخزين المؤقت بأكمله؟ (الأغنية: %d)</string>
+    <string name="library_cleanup_selected_cache_confirmation">إزالة التحديد من ذاكرة التخزين المؤقت؟ (الأغنية: %d)</string>
     <string name="library_cleanup_selected_downloads_confirmation">هل تريد حذف هذه التحميلات %d؟</string>
-    <string name="library_cleanup_selected_favorites_confirmation">هل تريد إزالة هذه الأغاني %d من المفضلة؟</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">هل تريد إعادة تعيين سجل الاستماع لهذه الأغاني %d؟</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ تحذير: سيؤدي هذا إلى حذف هذه الأغنية %d وإزالتها من جميع قوائم التشغيل. لا يمكن التراجع عن هذا الإجراء!</string>
+    <string name="library_cleanup_selected_favorites_confirmation">إزالة التحديد من المفضلة؟ (الأغنية: %d)</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">إعادة تعيين سجل الاستماع للاختيار؟ (الأغنية: %d)</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ تحذير: سيؤدي هذا إلى إلغاء التحديد وإزالته من جميع قوائم التشغيل. (الأغنية: %d) لا يمكن التراجع عن هذا الإجراء!</string>
     <string name="library_cleanup_title">سلة المهملات الذكية</string>
     <string name="library_favorites_remove_dialog_title">إزالة من المفضلة</string>
     <string name="library_listening_history_reset_dialog_title">إعادة تعيين سجل الاستماع</string>
