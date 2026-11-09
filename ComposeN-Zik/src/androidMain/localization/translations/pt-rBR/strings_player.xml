@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Escolha como as faixas dos artistas não gostados são excluídas.</string>
     <string name="player_exclude_disliked_songs_description">Escolha como as faixas não apreciadas são excluídas das sugestões de reprodução.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Excluir faixas que excedam o limite de duração selecionado.</string>
-    <string name="player_excluded_song_count_format">%s Músicas excluídas</string>
+    <string name="player_excluded_song_count_format">Músicas excluídas: %s</string>
     <string name="player_keep_minimized">Manter minimizado</string>
     <string name="player_layout_artwork_style_description">Escolha como o reprodutor exibe a arte da faixa.</string>
     <string name="player_layout_controls_style_description">Escolha o layout dos controles do jogador.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Incluir arte do álbum ao lado de próximas faixas na visualização do jogador.</string>
     <string name="player_queue_preview_song_count_description">Escolha quantas faixas irão aparecer na visualização do jogador.</string>
     <string name="player_queue_remove_selected_confirmation_format">Remover a seleção da fila? As faixas selecionadas: %d</string>
-    <string name="player_queue_shuffled_count_format">Fila misturada (%d músicas)</string>
+    <string name="player_queue_shuffled_count_format">Fila misturada (faixas: %d)</string>
     <string name="player_remaining_time_visible_description">Mostrar o tempo restante na faixa atual.</string>
     <string name="player_restart_required_message">O reprodutor precisa ser reiniciado para as mudanças serem efetivas!</string>
     <string name="player_rotating_buttons">Botões rotativos</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Exibir uma visualização das próximas faixas dentro do jogador.</string>
     <string name="player_show_player_top_actions_bar_description">Exibe a linha de ações do jogador acima do conteúdo principal.</string>
     <string name="player_shuffle_empty_message">Nenhuma música para misturar</string>
-    <string name="player_shuffled_song_count_format">%d songs shuffled</string>
+    <string name="player_shuffled_song_count_format">Trilhos misturados: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Temporizador de sono adiado no final da música</string>
     <string name="player_sleep_timer_finished_message">O temporizador de suspensão terminou</string>
     <string name="player_song_playback_error_format">Erro na mídia %1$s</string>
