@@ -82,6 +82,7 @@
     <string name="lyrics_editor_title">Inserisci lyrics</string>
     <string name="lyrics_empty">Nessun testo</string>
     <string name="lyrics_fetch_error_message">C\'è stato un errore nel recupero delle lyrics</string>
+    <string name="lyrics_provider_fetch_error_message">Impossibile recuperare il testo da %1$s</string>
     <string name="lyrics_font_size_animation_label">Dimensione delle lyrics animate</string>
     <string name="lyrics_font_size_extra_large_label">Molto Grande</string>
     <string name="lyrics_font_size_large_label">Grande</string>
@@ -296,10 +297,14 @@
     <string name="player_statistics_codec_label">Codec</string>
     <string name="player_statistics_container_label">Contenitore</string>
     <string name="player_statistics_itag_label">Itag</string>
+    <string name="player_playback_speed_value">%1$.1fx</string>
+    <string name="player_decibels_value">%1$.2f dB</string>
     <string name="player_statistics_loudness_label">Volume</string>
     <string name="player_statistics_media_id_label">ID</string>
     <string name="player_statistics_perceptual_loudness_label">Lucentezza Concettuale</string>
     <string name="player_statistics_sample_rate_label">Frequenza Di Campionamento</string>
+    <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
+    <string name="player_statistics_cache_status">%1$s: %2$s</string>
     <string name="player_statistics_volume_label">Volume</string>
     <string name="player_swap_controls_with_timeline">Scambia i controlli con la timeline</string>
     <string name="player_swipe_sensitivity">Sensibilità Scorrimento Giocatore</string>
