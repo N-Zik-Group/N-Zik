@@ -15,6 +15,7 @@
     <string name="common_delete_success">Eliminado</string>
     <string name="common_description_unavailable">No hay descripción disponible</string>
     <string name="common_duration_milliseconds_format">%1$s ms</string>
+    <string name="common_duration_milliseconds_unit">m</string>
     <string name="common_empty_items">No hay elementos</string>
     <string name="common_external_link_loading_suffix">está cargando…</string>
     <string name="common_load_failed">No se puede cargar</string>
@@ -43,4 +44,6 @@
     <string name="common_value_input_hint">Ingresar el valor</string>
     <string name="common_unknown">Desconocida</string>
     <string name="common_duration_minutes_short">%1$d min</string>
+    <string name="common_external_link_loading_format">%1$s está cargando…</string>
+    <string name="common_loading_message">Cargando…</string>
 </resources>
