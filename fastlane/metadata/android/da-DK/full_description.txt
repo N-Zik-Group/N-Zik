@@ -27,7 +27,7 @@ Glas credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Back
 
 💾 <b>Offline, Metadata & Privacy</b>
 - Smart caching og downloads til spor og afspilningslister, med valgbar downloadkvalitet
-- FFmpeg-drevet eksport med fuld metadata (FFmpeg er en downloadbar udvidelse, installeret ved første brug)
+- FFmpeg-powered export with full metadata (downloadable on first use; unavailable on 32-bit x86 devices)
 - In-app metadata editor (AAC/Opus, cover art)
 - Lokal lyttestatistik og -historie
 - Auto-backup med brugerdefinerede intervaller og retention
