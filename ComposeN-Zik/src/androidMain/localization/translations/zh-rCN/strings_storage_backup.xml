@@ -38,7 +38,6 @@
     <!-- Backup -->
     <string name="backup_action_export">导出备份</string>
     <string name="backup_action_import">导入备份</string>
-    <string name="backup_action_import_legacy_migration">导入迁移文件。</string>
     <string name="backup_auto_custom_interval_unit_description">选择自定义备份间隔的时间单位。</string>
     <string name="backup_auto_custom_interval_value_description">设置自动备份之间的时间单位数。</string>
     <string name="backup_auto_include_discord_credentials_description">在自动设置备份中包含已保存的 Discord 帐户凭据。</string>
@@ -51,19 +50,18 @@
     <string name="backup_auto_schedule_day_of_month_description">选择月份的自动备份日期。</string>
     <string name="backup_auto_schedule_day_of_week_description">选择每周自动备份的工作日.</string>
     <string name="backup_auto_schedule_time_description">选择预定的自动备份运行时间。</string>
-    <string name="backup_auto_target_description">选择自动备份是否包括数据库、设置或两者兼有。</string>
+    <string name="backup_auto_content_format_description">选择自动备份的内容。当数据库备份包含自定义封面时，数据库备份使用邮件。</string>
     <string name="backup_before_update_description">安装更新前自动备份数据</string>
     <string name="backup_before_update_failed">预安装备份失败</string>
     <string name="backup_before_update_running_message">安装前备份数据…</string>
     <string name="backup_before_update_running_title">正在备份</string>
     <string name="backup_excluded_preferences_and_cache_description">个人偏好（例如主题模式）和缓存被排除在外。</string>
-    <string name="backup_export_description">导出数据库或设置到文件</string>
-    <string name="backup_import_description">从文件导入数据库或设置</string>
+    <string name="backup_export_library_options_description">用自定义封面、设置或配置文件导出数据库</string>
+    <string name="backup_import_library_options_description">还原SQLite 或 ZIP 数据库备份、设置或配置文件</string>
     <string name="backup_include_discord_credentials">包含Discord身份凭据</string>
     <string name="backup_include_lastfm_credentials">包含 Last.fm 身份认证</string>
     <string name="backup_include_proxy_password">包含代理密码</string>
     <string name="backup_include_youtube_credentials">包含 YouTube 身份认证</string>
-    <string name="backup_legacy_migration_description">For old users before conversion.\nUse old app to make a backup for migration.</string>
     <string name="backup_restore_overwrite_and_restart_warning">现有数据将被覆盖。\n%1$s 恢复数据库后将自动关闭。</string>
     <string name="backup_target_database_and_settings_label">数据库 + 设置</string>
     <string name="backup_target_database_label">数据库</string>
@@ -96,18 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">将配置文件列表和脸照片导出到单个.txt文件</string>
     <string name="backup_export_all">全部导出</string>
-    <string name="backup_export_all_description">导出数据库、设置和配置文件状态</string>
-    <string name="backup_export_both_description">将数据库和设置导出为单独的文件</string>
-    <string name="backup_export_database_description">用歌曲、播放列表和历史记录导出数据库</string>
+    <string name="backup_export_all_with_covers_description">单独导出数据库、设置和配置文件状态。如果包含自定义封面，数据库使用ZIP。</string>
+    <string name="backup_export_database_with_covers_and_settings_description">单独导出数据库和设置。如果包含自定义封面，数据库使用ZIP。</string>
+    <string name="backup_export_database_with_covers_description">将歌曲、播放列表和历史记录另存为 SQLite。如果您有自定义封面，导出是一个带有数据库和封面的 ZIP 。</string>
     <string name="backup_export_profile_state_failed">配置文件状态导出失败</string>
     <string name="backup_export_settings_description">导出应用设置和首选项</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">从 .txt 文件导入配置文件列表和面部照片</string>
     <string name="backup_import_all">全部导入</string>
-    <string name="backup_import_all_description">导入数据库、设置和配置文件状态</string>
-    <string name="backup_import_both_description">从单独文件导入数据库和设置</string>
+    <string name="backup_import_all_with_covers_description">从独立文件中还原SQLite 或 ZIP 数据库备份、设置和配置文件状态。</string>
+    <string name="backup_import_database_with_covers_and_settings_description">还原SQLite 或 ZIP 数据库备份和单独的设置文件。</string>
     <string name="backup_import_completed_profile">导入到 %1$s</string>
-    <string name="backup_import_database_description">用歌曲、播放列表和历史记录导入数据库</string>
+    <string name="backup_import_database_with_covers_description">从 SQLite 或 ZIP 恢复歌曲、播放列表和历史记录。ZIP 备份也恢复包含的自定义封面。</string>
     <string name="backup_import_profile_state_complete">配置文件状态已导入： %1$d 配置文件</string>
     <string name="backup_import_profile_state_complete_base">配置文件状态：基础配置文件</string>
     <string name="backup_import_profile_state_failed">配置文件状态导入失败</string>
@@ -117,15 +115,15 @@
     <!-- Cache -->
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">清除歌曲缓存</string>
-    <string name="cache_downloads_max_size_description">选择下载的歌曲有多少磁盘空间。</string>
-    <string name="cache_downloads_limit_description">选择下载的歌曲有多少磁盘空间。</string>
-    <string name="cache_image_max_size_description">限制缓存艺术品使用的磁盘空间。</string>
-    <string name="cache_image_limit_description">限制缓存艺术品使用的磁盘空间。</string>
+    <string name="cache_downloads_max_size_description">选择下载的歌曲有多少磁盘空间。回收站按钮可以删除下载的音频。</string>
+    <string name="cache_downloads_limit_description">选择下载的歌曲有多少磁盘空间。回收站按钮可以删除下载的音频。</string>
+    <string name="cache_image_max_size_description">限制缓存艺术品使用的磁盘空间。回收站按钮清除从缓存中下载的图像。</string>
+    <string name="cache_image_limit_description">限制缓存艺术品使用的磁盘空间。回收站按钮清除从缓存中下载的图像。</string>
     <string name="cache_location_description">选择应用存储播放缓存的位置。</string>
     <string name="cache_location_private">本地</string>
     <string name="cache_location_system">系统</string>
-    <string name="cache_streaming_max_size_description">限制用于缓存流歌曲的磁盘空间。</string>
-    <string name="cache_streaming_limit_description">限制用于缓存流歌曲的磁盘空间。</string>
+    <string name="cache_streaming_max_size_description">限制用于缓存流歌曲的磁盘空间。回收站按钮将清除此回放缓存。</string>
+    <string name="cache_streaming_limit_description">限制用于缓存流歌曲的磁盘空间。回收站按钮将清除此回放缓存。</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">下载所有歌曲</string>
     <string name="downloads_action_refresh_quality">更新下载</string>
@@ -139,7 +137,7 @@
     <string name="downloads_delete_all_count_confirmation">删除所有 %d 下载？</string>
     <string name="downloads_delete_dialog_title">删除下载</string>
     <string name="downloads_download_all_confirmation">您真的要全部下载吗？</string>
-    <string name="downloads_download_all_count_confirmation">下载所有东西吗？(简体： %d)</string>
+    <string name="downloads_download_all_count_confirmation">下载所有 %d 歌曲吗？</string>
     <string name="downloads_download_dialog_title">下载歌曲</string>
     <string name="downloads_empty_message">无需下载</string>
     <string name="downloads_error_network">发生网络错误</string>
@@ -166,16 +164,16 @@
     <string name="export_running_status">正在导出…</string>
     <string name="export_song_unavailable_message">歌曲必须缓存或下载以导出</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">删除所有下载? (长: %d)</string>
+    <string name="library_cleanup_all_downloads_confirmation">您想要删除所有下载 (%d 歌曲)吗？</string>
     <string name="library_cleanup_all_favorites_confirmation">您想要删除所有 %d 收藏夹吗？</string>
-    <string name="library_cleanup_all_listening_history_confirmation">重置收听历史？(长: %d)</string>
-    <string name="library_cleanup_all_songs_confirmation">:警告: 警告: 这将永久删除您的歌曲并从所有播放列表中删除它们(简体: %d) 此操作不能撤销!</string>
-    <string name="library_cleanup_entire_cache_confirmation">清除整个缓存吗？(简体： %d)</string>
-    <string name="library_cleanup_selected_cache_confirmation">从缓存中移除选区? (简体: %d)</string>
+    <string name="library_cleanup_all_listening_history_confirmation">您想要重置 %d 歌曲的侦听历史吗？</string>
+    <string name="library_cleanup_all_songs_confirmation">:警告：这将永久删除所有 %d 歌曲并从所有播放列表中删除它们。此操作不能撤消！</string>
+    <string name="library_cleanup_entire_cache_confirmation">您想要清理整个缓存 (%d 歌曲)吗？</string>
+    <string name="library_cleanup_selected_cache_confirmation">您想要从缓存中删除这些 %d 歌曲吗？</string>
     <string name="library_cleanup_selected_downloads_confirmation">您想要删除这些 %d 下载吗？</string>
-    <string name="library_cleanup_selected_favorites_confirmation">从收藏夹中移除选区吗？(简体： %d)</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">重置选择的监听历史？ (简体： %d)</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ 警告：这将永久删除所选内容并从所有播放列表中删除它。(简体: %d) 此操作不能撤消！</string>
+    <string name="library_cleanup_selected_favorites_confirmation">您想要从收藏夹中删除这些 %d 歌曲吗？</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">您想要重置 %d 歌曲的侦听历史吗？</string>
+    <string name="library_cleanup_selected_songs_confirmation">:警告：这将永久删除这些 %d 歌曲并从所有播放列表中删除它们。此操作不能撤消！</string>
     <string name="library_cleanup_title">智能回收站</string>
     <string name="library_favorites_remove_dialog_title">从收藏夹中删除</string>
     <string name="library_listening_history_reset_dialog_title">重置监听历史</string>
@@ -185,7 +183,10 @@
     <string name="storage_samsung_advice_message">三星的自动内存管理可以删除 N-Zik的下载和缓存文件，即使您没有询问它。 为了保持下载安全，请使用私有(应用)存储位置而不是系统存储。</string>
     <string name="storage_samsung_advice_title">三星存储提示</string>
     <string name="storage_samsung_system_usage_message">您目前有系统存储的 %1$s 下载和缓存。</string>
+    <string name="backup_export_database_failed">数据库导出失败</string>
     <string name="backup_import_failed">导入失败</string>
     <string name="export_no_songs">未导出歌曲</string>
     <string name="export_cached_songs_generic_error">导出失败</string>
+    <string name="backup_startup_preparing_library">正在准备您的库…</string>
+    <string name="backup_startup_recovery_failed">无法完成还原您的库。</string>
 </resources>
