@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
     <string name="logs_action_export">Esporta log</string>
     <string name="logs_action_export_both">Esporta entrambi i log</string>
@@ -40,6 +41,7 @@
     <string name="maintenance_dedup_flagged">Righe segnalate %d</string>
     <string name="maintenance_dedup_merged">Merged %d row(s)</string>
     <string name="maintenance_dedup_merged_flagged">Merged %1$d row(s) · Flagged %2$d row(s)</string>
+    <string name="maintenance_dedup_counts_format">%1$s · %2$s</string>
     <string name="maintenance_discord_invalid_token">Token non valido</string>
     <string name="maintenance_discord_ok">OK</string>
     <string name="maintenance_discord_reconnect_failed">Riconnessione fallita</string>
@@ -197,6 +199,7 @@
     <string name="recovery_error">Si è verificato un errore: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Esporta database</string>
+    <string name="recovery_export_database_with_covers_description">Salva la tua libreria, le playlist e la cronologia come SQLite. Se hai copertine personalizzate, l\'esportazione è un ZIP con il database e le copertine.</string>
     <string name="recovery_export_logs">Esporta log</string>
     <string name="recovery_export_logs_description">Salva i log di crash e debug per una segnalazione di bug</string>
     <string name="recovery_export_profiles_description">L\'elenco dei profili e le foto delle facce in un singolo file .txt</string>
@@ -209,6 +212,7 @@
     <string name="recovery_group_settings">Impostazioni</string>
     <string name="recovery_group_storage">Archiviazione</string>
     <string name="recovery_import_database">Importa database</string>
+    <string name="recovery_import_database_with_covers_description">Ripristina un backup del database SQLite o ZIP, incluse eventuali copertine personalizzate nello ZIP.</string>
     <string name="recovery_import_profiles_description">Ripristina l\'elenco dei profili e le foto della faccia da un file .txt</string>
     <string name="recovery_import_settings">Impostazioni di importazione</string>
     <string name="recovery_import_settings_description">Ripristina le preferenze da un file CSV</string>
@@ -309,4 +313,5 @@
     <string name="updates_warning_acknowledge">Io capisco</string>
     <string name="updates_check_failed">Impossibile controllare gli aggiornamenti.</string>
     <string name="updates_install_generic_error">Impossibile installare l\'aggiornamento.</string>
+    <string name="updates_channel_available_format">Aggiornamento %1$s disponibile</string>
 </resources>
