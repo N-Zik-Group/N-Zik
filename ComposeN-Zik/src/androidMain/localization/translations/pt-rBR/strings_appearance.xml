@@ -230,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Médio (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Muito Alto (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">BAIXAR</string>
+    <string name="cover_download_failed">Não foi possível baixar a capa.</string>
     <string name="image_editor_title">Editar imagem</string>
     <string name="image_editor_failed">Não foi possível editar a imagem. A sua imagem atual foi mantida.</string>
     <string name="thumbnail_action_edit">Editar Miniatura</string>
