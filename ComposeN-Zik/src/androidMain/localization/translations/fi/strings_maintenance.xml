@@ -137,6 +137,9 @@
     <string name="modules_download_needed">Moduuli tarvitsee latausta (~25 MB). Tarkista yhteys.</string>
     <string name="modules_downloading">Ladataan moduulia</string>
     <string name="modules_edit_unavailable">Muokkaa metatietoja ei käytettävissä: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Valmistellaan FFmpegiä</string>
+    <string name="modules_ffmpeg_downloading">Ladataan FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Välimuistissa olevien kappaleiden vienti ja kappaleen metadatan muokkaaminen on ladattu ensimmäisen käytön yhteydessä.</string>
     <string name="modules_info">Tiedot</string>
     <string name="modules_insufficient_space">Tämä ominaisuus tarvitsee noin 70 Mt vapaata tilaa</string>
