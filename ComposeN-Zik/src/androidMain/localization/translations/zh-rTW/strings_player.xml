@@ -82,6 +82,7 @@
     <string name="lyrics_editor_title">輸入歌詞</string>
     <string name="lyrics_empty">No lyrics</string>
     <string name="lyrics_fetch_error_message">整理歌詞時發生錯誤</string>
+    <string name="lyrics_provider_fetch_error_message">Could not fetch lyrics from %1$s</string>
     <string name="lyrics_font_size_animation_label">Animate Lyrics Size</string>
     <string name="lyrics_font_size_extra_large_label">大</string>
     <string name="lyrics_font_size_large_label">重</string>
@@ -296,10 +297,14 @@
     <string name="player_statistics_codec_label">Codec</string>
     <string name="player_statistics_container_label">Container</string>
     <string name="player_statistics_itag_label">iTag</string>
+    <string name="player_playback_speed_value">%1$.1fx</string>
+    <string name="player_decibels_value">%1$.2f dB</string>
     <string name="player_statistics_loudness_label">音量</string>
     <string name="player_statistics_media_id_label">ID</string>
     <string name="player_statistics_perceptual_loudness_label">Perceptual Loudness</string>
     <string name="player_statistics_sample_rate_label">Sample Rate</string>
+    <string name="player_statistics_cache_size_progress">%1$s (%2$s)</string>
+    <string name="player_statistics_cache_status">%1$s: %2$s</string>
     <string name="player_statistics_volume_label">Volume</string>
     <string name="player_swap_controls_with_timeline">Swap controls with timeline</string>
     <string name="player_swipe_sensitivity">Player Swipe Sensitivity</string>
