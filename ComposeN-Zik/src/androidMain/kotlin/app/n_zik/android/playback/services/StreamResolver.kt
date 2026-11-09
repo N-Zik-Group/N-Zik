@@ -829,6 +829,7 @@ private suspend fun resolveStreamUriViaInnerTubeX(
                         streamClient = playbackData.streamClient,
                         clientPlaybackNonce = playbackData.clientPlaybackNonce,
                     )
+                    ResolvedSessionDuration.notifyResolved()
                     PlaybackDataStore.saveStreamClient(appContext(), videoId, playbackData.streamClient)
 
                     // Upsert song format in background — skipped for Listen Together

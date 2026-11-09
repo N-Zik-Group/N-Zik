@@ -4,6 +4,7 @@ import java.util.IdentityHashMap
 
 import android.media.MediaMetadata.METADATA_KEY_DURATION
 import android.os.Bundle
+import androidx.media3.common.C
 import androidx.media3.common.FlagSet
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaMetadata
@@ -14,6 +15,8 @@ import app.it.fast4x.rimusic.utils.cropVideoThumbnailsKey
 import app.it.fast4x.rimusic.utils.getActiveProfile
 import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.R
+import app.n_zik.android.BuildConfig
+import timber.log.Timber
 import app.n_zik.android.appContext
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
@@ -26,6 +29,20 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
     private var square = appContext().preferences.getBoolean(cropVideoThumbnailsKey, true)
     private var revision = ArtworkRevisions.current()
     private var expires = now() + 24 * 60 * 60 * 1000L
+    private var durationMediaId: String? = null
+    private var knownDurationMs: Long? = null
+    private var lastDurationDiagnostic: String? = null
+
+    override fun getBufferedPosition(): Long = when (val buffered = super.getBufferedPosition()) {
+        // Media3's legacy bridge copies these values into platform playback state unchanged.
+        C.TIME_UNSET, C.TIME_END_OF_SOURCE -> currentPosition.coerceAtLeast(0L)
+        else -> buffered
+    }
+
+    override fun getContentBufferedPosition(): Long = when (val buffered = super.getContentBufferedPosition()) {
+        C.TIME_UNSET, C.TIME_END_OF_SOURCE -> contentPosition.coerceAtLeast(0L)
+        else -> buffered
+    }
 
     override fun addListener(listener: Player.Listener) {
         if (listener in listeners) return
@@ -47,6 +64,16 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
         square = appContext().preferences.getBoolean(cropVideoThumbnailsKey, true)
         revision = ArtworkRevisions.current()
         expires = now() + 24 * 60 * 60 * 1000L
+        publishMetadata()
+    }
+
+    /** Called on the player thread when stream resolution learns a finite track length. */
+    internal fun refreshDuration() {
+        if (currentMediaItem == null || isCurrentMediaItemLive) return
+        publishMetadata()
+    }
+
+    private fun publishMetadata() {
         val metadata = mediaMetadata
         val events = Player.Events(FlagSet.Builder().add(Player.EVENT_MEDIA_METADATA_CHANGED).build())
         listeners.keys.toList().forEach {
@@ -71,13 +98,32 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
         }?.let { ArtworkContentProvider.uriFor(LocalArtworkRules.songIdOf(it)) }
         val needsTitleFallback = hasLoadedTrack && SessionMetadataFallbacks.needsFallback(metadata.title)
         val needsArtistFallback = hasLoadedTrack && SessionMetadataFallbacks.needsFallback(metadata.artist)
+        if (durationMediaId != mediaId || isCurrentMediaItemLive) {
+            durationMediaId = mediaId
+            knownDurationMs = null
+        }
+        if (mediaId != null && !isCurrentMediaItemLive) {
+            duration.takeIf { it > 0 }?.let { knownDurationMs = it }
+        }
         // Media3 prefers the real player duration over this declared-duration fallback.
         val declaredDuration = currentItem?.let {
-            metadata.durationMs?.takeIf { it > 0 }
+            knownDurationMs
+                ?: metadata.durationMs?.takeIf { it > 0 }
                 ?: it.mediaMetadata.durationMs?.takeIf { duration -> duration > 0 }
                 ?: SessionDurationMetadata.fromDurationText(metadata.extras?.getString("durationText"))
                 ?: SessionDurationMetadata.fromDurationText(it.mediaMetadata.extras?.getString("durationText"))
+                ?: ResolvedSessionDuration.forMediaId(it.mediaId)
         }?.takeUnless { isCurrentMediaItemLive }
+        if (declaredDuration != null) knownDurationMs = declaredDuration
+        if (BuildConfig.DEBUG && currentItem != null) {
+            val diagnostic = "id=$mediaId state=$playbackState engineMs=$duration declaredMs=$declaredDuration " +
+                "itemMs=${currentItem?.mediaMetadata?.durationMs} " +
+                "cachedMs=${mediaId?.let(ResolvedSessionDuration::forMediaId)} live=$isCurrentMediaItemLive"
+            if (diagnostic != lastDurationDiagnostic) {
+                lastDurationDiagnostic = diagnostic
+                Timber.tag("SessionDuration").d(diagnostic)
+            }
+        }
         val hasReservedDuration = metadata.extras?.containsKey(METADATA_KEY_DURATION) == true
         if (providerArtworkUri == null && !needsTitleFallback && !needsArtistFallback &&
             declaredDuration == metadata.durationMs && !hasReservedDuration

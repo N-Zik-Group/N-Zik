@@ -802,6 +802,8 @@ class PlayerServiceModern : MediaLibraryService(),
                 .build()
         
         mediaLibrarySessionCallback.observeRepository(mediaSession)
+        ResolvedSessionDuration.bind(coroutineScope, playerUpdateTrigger) { mediaSession.player }
+        bindStoredDurationSelections(coroutineScope, playerUpdateTrigger) { guestGuardPlayer }
         sessionPolicyJob = coroutineScope.launch(NzikDispatchers.UI) {
             NetworkQualityHelper.observeConnection(this@PlayerServiceModern).collect { refreshSessionAccess() }
         }
@@ -3607,7 +3609,9 @@ class PlayerServiceModern : MediaLibraryService(),
         val rebound = runCatching {
             currentSeekCoalescer?.detach()
             guestGuardPlayer = createGuestGuardPlayer(target)
+            notifyStoredDurationPlayerChanged()
             mediaSession.player = SessionArtworkPlayer(mediaLibrarySessionCallback.wrapPlayer(guestGuardPlayer))
+            ResolvedSessionDuration.notifyResolved()
         }.onFailure {
             Timber.tag("PlayerServiceModern").e(it, "Failed to rebind MediaSession player")
         }.isSuccess

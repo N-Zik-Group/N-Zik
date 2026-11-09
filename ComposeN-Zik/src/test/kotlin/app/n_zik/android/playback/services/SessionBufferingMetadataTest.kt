@@ -15,6 +15,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.media3.common.C
+import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
@@ -23,11 +24,18 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaController as Media3Controller
 import app.n_zik.android.appContext
+import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.SongTable
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.it.fast4x.rimusic.models.Song
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
+import kotlinx.coroutines.cancel
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -92,6 +100,61 @@ class SessionBufferingMetadataTest {
     }
 
     @Test
+    fun `native session replaces unknown buffer sentinels without changing duration state or seek policy`() {
+        var engineBufferedMs = C.TIME_UNSET
+        val engineView = object : ForwardingPlayer(upstream) {
+            override fun getBufferedPosition(): Long = engineBufferedMs
+            override fun getContentBufferedPosition(): Long = engineBufferedMs
+        }
+        facade = SessionArtworkPlayer(engineView)
+        val native = connect()
+        val cases = listOf(
+            Triple(C.TIME_UNSET, 0L, 0L),
+            Triple(C.TIME_UNSET, 45_000L, 45_000L),
+            Triple(C.TIME_END_OF_SOURCE, 45_000L, 45_000L),
+            Triple(0L, 45_000L, 0L),
+            Triple(52_000L, 45_000L, 52_000L),
+        )
+        cases.forEachIndexed { index, (buffered, position, expected) ->
+            engineBufferedMs = buffered
+            val track = item("buffer-$index", "3:00")
+            upstream.publish(track, positionMs = position, seekable = false)
+            pumpUntil("native buffer $index") {
+                native.metadata?.getString(METADATA_KEY_TITLE) == track.mediaId &&
+                    native.playbackState?.position == position &&
+                    native.playbackState?.bufferedPosition == expected
+            }
+            assertEquals(buffered, engineView.bufferedPosition)
+            assertEquals(buffered, engineView.contentBufferedPosition)
+            assertEquals(expected, facade.bufferedPosition)
+            assertEquals(expected, facade.contentBufferedPosition)
+            assertEquals(C.TIME_UNSET, facade.duration)
+            assertEquals(180_000L, requireNotNull(native.metadata).getLong(METADATA_KEY_DURATION))
+            assertEquals(PlaybackState.STATE_BUFFERING, requireNotNull(native.playbackState).state)
+            assertFalse(requireNotNull(native.playbackState).actions and PlaybackState.ACTION_SEEK_TO != 0L)
+        }
+    }
+
+    @Test
+    fun `buffer sentinels use their own position domain and tolerate an unknown position`() {
+        var enginePositionMs = 1_250L
+        var engineContentPositionMs = 45_000L
+        val engineView = object : ForwardingPlayer(upstream) {
+            override fun getBufferedPosition(): Long = C.TIME_UNSET
+            override fun getContentBufferedPosition(): Long = C.TIME_END_OF_SOURCE
+            override fun getCurrentPosition(): Long = enginePositionMs
+            override fun getContentPosition(): Long = engineContentPositionMs
+        }
+        facade = SessionArtworkPlayer(engineView)
+        assertEquals(1_250L, facade.bufferedPosition)
+        assertEquals(45_000L, facade.contentBufferedPosition)
+        enginePositionMs = C.TIME_UNSET
+        engineContentPositionMs = C.TIME_UNSET
+        assertEquals(0L, facade.bufferedPosition)
+        assertEquals(0L, facade.contentBufferedPosition)
+    }
+
+    @Test
     fun `platform session retains duration during loading source resolution and rebuffering`() {
         val native = connect()
         val track = item("finite", "3:00")
@@ -132,6 +195,98 @@ class SessionBufferingMetadataTest {
         assertTrue(upstream.commands.contains("seek:60000"))
         assertFalse(upstream.playWhenReady)
         assertEquals(Player.STATE_BUFFERING, facade.playbackState)
+    }
+
+    @Test
+    fun `stored song duration reaches native controls before cached audio source timestamps`() {
+        val native = connect()
+        val id = "stored-duration"
+        mockkObject(Database)
+        val songs = mockk<SongTable>()
+        every { Database.songTable } returns songs
+        var databaseReadOnMain: Boolean? = null
+        every { songs.findByIdDirect(id) } answers {
+            databaseReadOnMain = Looper.myLooper() === Looper.getMainLooper()
+            Song(id, "Stored title", durationText = "2:37", thumbnailUrl = null)
+        }
+        val observerScope = NzikDispatchers.fireAndForget(NzikDispatchers.UI)
+        val binding = ResolvedSessionDuration.bind(observerScope) { facade }
+        try {
+            upstream.publish(item(id, null))
+            pumpUntil("stored duration while cached source is buffering") {
+                native.metadata?.getLong(METADATA_KEY_DURATION) == 157_000L
+            }
+            assertEquals(false, databaseReadOnMain)
+            assertEquals(C.TIME_UNSET, facade.duration)
+            assertEquals(PlaybackState.STATE_BUFFERING, requireNotNull(native.playbackState).state)
+            assertTrue(requireNotNull(native.playbackState).actions and PlaybackState.ACTION_SEEK_TO != 0L)
+            assertNull(playbackDataCache[id])
+            assertTrue(upstream.commands.isEmpty())
+        } finally {
+            observerScope.cancel()
+            pumpUntil("stored binding released") { binding.isCompleted }
+        }
+        assertNull(ResolvedSessionDuration.forMediaId(id))
+    }
+
+    @Test
+    fun `resolved stream duration reaches native controls before audio timestamps and survives rebuffering`() {
+        val native = connect()
+        val track = item("resolved-duration", null)
+        val observerScope = NzikDispatchers.fireAndForget(NzikDispatchers.UI)
+        ResolvedSessionDuration.bind(observerScope) { facade }
+        try {
+            upstream.publish(track)
+            pumpUntil("unknown initial duration") {
+                native.metadata?.getString(METADATA_KEY_TITLE) == track.mediaId &&
+                    native.metadata?.getLong(METADATA_KEY_DURATION) == -1L
+            }
+            playbackDataCache[track.mediaId] = resolvedDurationData(track.mediaId, "238")
+            ResolvedSessionDuration.notifyResolved()
+            pumpUntil("resolved duration while still buffering") {
+                native.metadata?.getLong(METADATA_KEY_DURATION) == 238_000L
+            }
+            assertEquals(C.TIME_UNSET, facade.duration)
+            assertEquals(PlaybackState.STATE_BUFFERING, requireNotNull(native.playbackState).state)
+
+            upstream.publish(track, durationMs = 237_632L, playbackState = Player.STATE_READY)
+            pumpUntil("precise audio duration") {
+                native.metadata?.getLong(METADATA_KEY_DURATION) == 237_632L
+            }
+            upstream.publish(track, positionMs = 30_000L)
+            pumpUntil("known duration retained during timestamp gap") {
+                native.playbackState?.state == PlaybackState.STATE_BUFFERING
+            }
+            assertEquals(237_632L, requireNotNull(native.metadata).getLong(METADATA_KEY_DURATION))
+            assertEquals(C.TIME_UNSET, facade.duration)
+
+            upstream.publish(item("different-unknown-track", null))
+            pumpUntil("new track must not inherit previous length") {
+                native.metadata?.getString(METADATA_KEY_TITLE) == "different-unknown-track" &&
+                    native.metadata?.getLong(METADATA_KEY_DURATION) == -1L
+            }
+        } finally {
+            observerScope.cancel()
+            playbackDataCache.remove(track.mediaId)
+        }
+    }
+
+    @Test
+    fun `cached finite length never turns a live stream into a finite track`() {
+        val native = connect()
+        val track = item("resolved-live", null)
+        try {
+            playbackDataCache[track.mediaId] = resolvedDurationData(track.mediaId, "238")
+            upstream.publish(track, live = true, seekable = false)
+            facade.refreshDuration()
+            pumpUntil("live duration remains unknown") {
+                native.metadata?.getString(METADATA_KEY_TITLE) == track.mediaId
+            }
+            assertEquals(-1L, requireNotNull(native.metadata).getLong(METADATA_KEY_DURATION))
+            assertFalse(requireNotNull(native.playbackState).actions and PlaybackState.ACTION_SEEK_TO != 0L)
+        } finally {
+            playbackDataCache.remove(track.mediaId)
+        }
     }
 
     @Test

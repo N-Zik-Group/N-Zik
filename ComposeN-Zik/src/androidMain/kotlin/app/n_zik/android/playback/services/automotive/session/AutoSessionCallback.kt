@@ -559,6 +559,20 @@ class AutoSessionCallback(
             val result = if (retainedIndex < 0) {
                 MediaSession.MediaItemsWithStartPosition(emptyList(), 0, startPositionMs)
             } else MediaSession.MediaItemsWithStartPosition(eligible.map { it.value }, retainedIndex, resolved.startPositionMs)
+            val maxSongs = context.preferences.getEnum(maxSongsInQueueAndroidAutoKey, MaxSongs.Unlimited).toInt()
+            val limited = if (result.mediaItems.size <= maxSongs) result else {
+                val start = maxOf(0, result.startIndex - maxSongs / 2)
+                val end = minOf(result.mediaItems.size, start + maxSongs)
+                val adjustedStart = maxOf(0, end - maxSongs)
+                MediaSession.MediaItemsWithStartPosition(
+                    result.mediaItems.subList(adjustedStart, end),
+                    result.startIndex - adjustedStart,
+                    result.startPositionMs,
+                )
+            }
+            val enriched = enrichAutoQueueDurations(limited.mediaItems) { ids ->
+                database.songTable.findByIdsDirect(ids)
+            }
             val currentCapture = selectedId?.let {
                 if (scopedAction) autoBrowseTree.selectionStore.resolveAction(it)
                 else autoBrowseTree.selectionStore.resolve(it)
@@ -568,18 +582,10 @@ class AutoSessionCallback(
                 Timber.tag("AutoSessionCallback").w("Access or capture changed before automotive queue publication")
                 throw CancellationException("Automotive queue publication invalidated")
             }
-            val maxSongs = context.preferences.getEnum(maxSongsInQueueAndroidAutoKey, MaxSongs.Unlimited).toInt()
-
-            if (result.mediaItems.size <= maxSongs) return@future result
-
-            val start = maxOf(0, result.startIndex - maxSongs / 2)
-            val end = minOf(result.mediaItems.size, start + maxSongs)
-            val adjustedStart = maxOf(0, end - maxSongs)
-
             MediaSession.MediaItemsWithStartPosition(
-                result.mediaItems.subList(adjustedStart, end),
-                result.startIndex - adjustedStart,
-                result.startPositionMs
+                enriched,
+                limited.startIndex,
+                limited.startPositionMs,
             )
         }.let { queueApplicationOwner.future(it, request, queueApplicationOwner.applicationLooper) }
             .also { pendingSelection = it }

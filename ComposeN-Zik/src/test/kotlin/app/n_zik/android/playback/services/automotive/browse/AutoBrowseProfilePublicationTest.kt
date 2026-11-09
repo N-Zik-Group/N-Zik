@@ -22,6 +22,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -37,6 +38,7 @@ import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.browse.handlers.BrowseHandler
+import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.playback.services.automotive.session.AutoMediaIdContract
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import it.fast4x.innertube.Innertube
@@ -235,6 +237,49 @@ class AutoBrowseProfilePublicationTest {
                 assertEquals(sources[index], ArtworkContentProvider.remoteSource(uri, "A")?.first)
             }
         }
+    }
+
+    // JUnit is synchronous; bridge the actual tree publication and lookup methods.
+    @Test fun `emitted continuation and page folders retain navigation history but not profile or access ownership`() = runBlocking {
+        val continuation = MediaItem.Builder().setMediaId(AutoMediaIdContract.searchContinuation("token"))
+            .setMediaMetadata(MediaMetadata.Builder().setTitle("Next").setIsBrowsable(true).setIsPlayable(false).build()).build()
+        coEvery { handler.getChildren(parent, context, Database, any(), null) } returns rows("A") + continuation
+        val shown = tree.getChildren(parent, -1, null)
+        tree.retainFolders(shown, "A")
+        val page = shown.first()
+        assertNotNull(tree.folder(page.mediaId, null))
+        assertEquals("Next", tree.folder(continuation.mediaId, null)?.mediaMetadata?.title)
+        tree.clearCache()
+        assertNotNull(tree.folder(page.mediaId, null))
+        assertNull(tree.folder(continuation.mediaId, null))
+        tree.invalidateAccess()
+        assertNull(tree.folder(page.mediaId, null))
+        tree.retainFolders(tree.getChildren(parent, -1, null), "A")
+        switchProfile("B")
+        assertNull(tree.folder(continuation.mediaId, null))
+        assertNull(tree.retainedChildren(parent))
+        assertNull(tree.folder("album/unseen", null))
+    }
+
+    // JUnit is synchronous; exercise artwork invalidation through the actual tree methods.
+    @Test fun `artwork refresh updates retained folders and pages without replacing their rows`() = runBlocking {
+        val folder = MediaItem.Builder().setMediaId("album/artwork-folder").setMediaMetadata(
+            MediaMetadata.Builder().setIsBrowsable(true).setIsPlayable(false)
+                .setArtworkUri(Uri.parse("https://images.example.test/cover.jpg")).build()
+        ).build()
+        coEvery { handler.getChildren(parent, context, Database, any(), null) } returns listOf(folder)
+        val shown = tree.getChildren(parent, -1, null)
+        tree.retainFolders(shown, "A")
+        val previous = requireNotNull(tree.folder(folder.mediaId, null)).mediaMetadata.artworkUri
+        ArtworkRevisions.invalidate()
+        tree.refreshArtwork()
+        val updated = requireNotNull(tree.folder(folder.mediaId, null))
+        assertNotEquals(previous, updated.mediaMetadata.artworkUri)
+        assertEquals("https://images.example.test/cover.jpg",
+            ArtworkContentProvider.remoteSource(requireNotNull(updated.mediaMetadata.artworkUri), "A")?.first)
+        assertEquals(listOf(updated), tree.retainedChildren(parent))
+        tree.releaseBrowser(Unit)
+        assertNull(tree.retainedChildren(parent))
     }
 
     private fun switchProfile(profile: String) {

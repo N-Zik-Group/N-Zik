@@ -27,6 +27,7 @@ import app.n_zik.android.playback.utils.Shuffler
 import kotlinx.coroutines.withContext
 import app.it.fast4x.rimusic.cleanPrefix
 import app.n_zik.android.playback.services.upsertSongInfo
+import app.n_zik.android.playback.services.launchStoredDurationSelection
 import android.os.Bundle
 
 var GlobalVolume: Float = 0.5f
@@ -124,8 +125,10 @@ fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
     if ( mediaItems.isEmpty() ) return
 
     // This will prevent UI from freezing up during conversion
-    NzikDispatchers.fireAndForget(NzikDispatchers.MEDIA).launch {
-        val cleanedMediaItems = mediaItems.fastMap( MediaItem::cleaned ).fastDistinctBy( MediaItem::mediaId ).toMutableList()
+    launchStoredDurationSelection(this) { selection ->
+        val cleanedMediaItems = selection.enrich(
+            mediaItems.fastMap( MediaItem::cleaned ).fastDistinctBy( MediaItem::mediaId )
+        )
         // Use the cleaned mediaId for lookup to ensure consistent comparison
         val targetMediaId = mediaItems.getOrNull(mediaItemIndex)?.cleaned?.mediaId
         val foundIndex = if (targetMediaId != null) {
@@ -140,8 +143,8 @@ fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
             0
         }
 
-        // Start playback immediately before pre-fetching metadata to avoid UI delays
-        withContext( NzikDispatchers.UI ) {
+        // Publish known local lengths before optional network metadata prefetch.
+        selection.publish {
             setMediaItems( cleanedMediaItems, newIndex, C.TIME_UNSET )
             prepare()
             restoreGlobalVolume()
@@ -188,6 +191,7 @@ fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
             if (enrichedItem != null) {
                 Timber.tag("PlayerPrefetch").d("Prefetch success! Enriched metadata for: $videoId")
                 withContext(NzikDispatchers.UI) {
+                    selection.ensureCurrent()
                     for (i in 0 until mediaItemCount) {
                         if (getMediaItemAt(i).mediaId == targetItem.mediaId) {
                             Timber.tag("PlayerPrefetch").d("Replaced mediaItem in queue at index: $i")

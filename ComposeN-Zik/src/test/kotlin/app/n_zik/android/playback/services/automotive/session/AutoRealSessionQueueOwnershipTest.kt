@@ -3,14 +3,22 @@ package app.n_zik.android.playback.services.automotive.session
 import android.app.Application
 import android.content.Context
 import android.os.Looper
+import android.net.Uri
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.SimpleBasePlayer
 import androidx.media3.common.Timeline
+import androidx.media3.session.MediaBrowser
+import androidx.media3.session.LibraryResult
+import androidx.media3.session.MediaLibraryService.LibraryParams
+import androidx.media3.session.MediaLibraryService.MediaLibrarySession
+import androidx.media3.session.SessionCommand
+import androidx.media3.session.SessionError
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaSession
+import app.it.fast4x.rimusic.models.Song
 import app.it.fast4x.rimusic.models.QueuedMediaItem
 import app.it.fast4x.rimusic.utils.persistentQueueKey
 import app.it.fast4x.rimusic.utils.fadeInEffect
@@ -18,13 +26,19 @@ import app.it.fast4x.rimusic.utils.preferences
 import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
 import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.appContext
+import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.QueuedMediaItemTable
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.playback.services.automotive.browse.handlers.BrowseHandler
 import app.n_zik.android.playback.services.automotive.browse.AutoBrowseTree
+import app.n_zik.android.playback.services.automotive.browse.AutoSuggestedQueueLoader
+import app.n_zik.android.playback.services.automotive.models.AutoSelectionStore
 import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
+import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.pauseWithFade
+import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import io.mockk.coEvery
@@ -35,6 +49,7 @@ import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -53,6 +68,9 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.LooperMode
 import java.io.File
+import java.io.IOException
+import it.fast4x.innertube.Innertube
+import it.fast4x.innertube.requests.searchPage
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
@@ -64,9 +82,9 @@ import java.util.concurrent.TimeUnit
 class AutoRealSessionQueueOwnershipTest {
     private lateinit var context: Context
     private lateinit var callback: AutoSessionCallback
-    private lateinit var session: MediaSession
+    private lateinit var session: MediaLibrarySession
     private lateinit var player: RecordingPlayer
-    private lateinit var first: MediaController
+    private lateinit var first: MediaBrowser
     private lateinit var second: MediaController
     private lateinit var transport: MediaController
     private lateinit var sharedGuard: ListenTogetherGuestGuardPlayer
@@ -77,6 +95,8 @@ class AutoRealSessionQueueOwnershipTest {
     private val sourceFinished = CountDownLatch(1)
     private var gatedId = "explicit"
     private var failGatedSelection = false
+    private val searchCounts = mutableListOf<Int>()
+    private val childCounts = mutableListOf<Pair<String, Int>>()
 
     @Before
     fun setUp() {
@@ -104,8 +124,15 @@ class AutoRealSessionQueueOwnershipTest {
         callback = AutoSessionCallback(context, Database, mockk<MyDownloadHelper>(relaxed = true))
         observed = ObservedCallback(callback)
         player = RecordingPlayer()
-        session = MediaSession.Builder(context, guardedSessionPlayer()).setCallback(observed).build()
-        val firstFuture = MediaController.Builder(context, session.token).buildAsync()
+        session = MediaLibrarySession.Builder(context, guardedSessionPlayer(), observed).build()
+        val firstFuture = MediaBrowser.Builder(context, session.token).setListener(object : MediaBrowser.Listener {
+            override fun onSearchResultChanged(browser: MediaBrowser, query: String, itemCount: Int, params: LibraryParams?) {
+                searchCounts += itemCount
+            }
+            override fun onChildrenChanged(browser: MediaBrowser, parentId: String, itemCount: Int, params: LibraryParams?) {
+                childCounts += parentId to itemCount
+            }
+        }).buildAsync()
         val secondFuture = MediaController.Builder(context, session.token).buildAsync()
         val transportFuture = MediaController.Builder(context, session.token).buildAsync()
         pumpUntil { firstFuture.isDone && secondFuture.isDone && transportFuture.isDone }
@@ -129,6 +156,348 @@ class AutoRealSessionQueueOwnershipTest {
         shadowOf(Looper.getMainLooper()).idle()
         if (::context.isInitialized) context.preferences.edit().clear().commit()
         unmockkAll()
+    }
+
+    @Test
+    fun `real browser retains library and transport commands while access changes`() {
+        val browseCommands = listOf(
+            SessionCommand.COMMAND_CODE_LIBRARY_GET_LIBRARY_ROOT,
+            SessionCommand.COMMAND_CODE_LIBRARY_GET_CHILDREN,
+            SessionCommand.COMMAND_CODE_LIBRARY_GET_ITEM,
+            SessionCommand.COMMAND_CODE_LIBRARY_SUBSCRIBE,
+            SessionCommand.COMMAND_CODE_LIBRARY_UNSUBSCRIBE,
+        )
+        browseCommands.forEach { assertTrue(first.availableSessionCommands.contains(it)) }
+        assertTrue(first.availableSessionCommands.contains(SessionCommand.COMMAND_CODE_LIBRARY_SEARCH))
+        assertTrue(first.availableSessionCommands.contains(SessionCommand.COMMAND_CODE_LIBRARY_GET_SEARCH_RESULT))
+        assertTrue(first.availableSessionCommands.contains(AutoSessionConstants.CommandToggleLike))
+        assertTrue(first.isCommandAvailable(Player.COMMAND_CHANGE_MEDIA_ITEMS))
+        assertTrue(first.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM))
+        val root = first.getLibraryRoot(null)
+        pumpUntil { root.isDone }
+        assertEquals(PlayerServiceModern.ROOT, root.get(1, TimeUnit.SECONDS).value?.mediaId)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns false
+        callback.invalidateAccess(session)
+        pumpUntil { !first.availableSessionCommands.contains(AutoSessionConstants.CommandSearch) }
+        browseCommands.forEach { assertTrue(first.availableSessionCommands.contains(it)) }
+        assertFalse(first.availableSessionCommands.contains(SessionCommand.COMMAND_CODE_LIBRARY_SEARCH))
+        assertFalse(first.availableSessionCommands.contains(SessionCommand.COMMAND_CODE_LIBRARY_GET_SEARCH_RESULT))
+        assertFalse(first.availableSessionCommands.contains(AutoSessionConstants.CommandStartRadio))
+        assertFalse(first.availableSessionCommands.contains(AutoSessionConstants.CommandToggleDownload))
+        assertTrue(first.availableSessionCommands.contains(AutoSessionConstants.CommandToggleLike))
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
+        callback.invalidateAccess(session)
+        pumpUntil { first.availableSessionCommands.contains(AutoSessionConstants.CommandSearch) }
+        assertTrue(first.availableSessionCommands.contains(SessionCommand.COMMAND_CODE_LIBRARY_SEARCH))
+        listenTogetherGuestLock.value = true
+        sharedGuard.announceAvailableCommandsChanged()
+        pumpUntil { !first.isCommandAvailable(Player.COMMAND_CHANGE_MEDIA_ITEMS) }
+        assertFalse(first.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM))
+        assertTrue(first.isCommandAvailable(Player.COMMAND_PLAY_PAUSE))
+    }
+
+    @Test fun `real browser subscribes root and emitted folders receives refresh and rejects unknown or playable parents`() {
+        val songs = mockk<SongTable>()
+        every { Database.songTable } returns songs
+        every { songs.findByIdDirect(any()) } returns null
+        val root = await(first.getLibraryRoot(null)).value
+        assertEquals(true, root?.mediaMetadata?.isBrowsable)
+        assertEquals(0, await(first.subscribe(PlayerServiceModern.ROOT, null)).resultCode)
+        assertEquals(0, await(first.subscribe(PlayerServiceModern.ARTIST, null)).resultCode)
+        callback.refreshArtwork(session)
+        pumpUntil { childCounts.any { it.first == PlayerServiceModern.ARTIST } }
+        val tree = browseTree()
+        val handler = mockk<BrowseHandler>()
+        every { handler.handles(any()) } returns true
+        coEvery { handler.getChildren(any(), any(), any(), any(), any()) } returns
+            (0 until 205).map { item("track-$it").buildUpon().setMediaMetadata(
+                item("track-$it").mediaMetadata.buildUpon().setIsBrowsable(false).build()).build() }
+        AutoBrowseTree::class.java.getDeclaredField("handlers").apply { isAccessible = true }.set(tree, listOf(handler))
+        val rows = await(first.getChildren("album/generated", 0, 1, null)).value.orEmpty()
+        val folder = rows.first()
+        assertTrue(folder.mediaId.startsWith("AA_PAGE"))
+        val unseenPageId = AutoMediaIdContract.page("album/generated", 1)
+        assertTrue(await(first.getItem(unseenPageId)).resultCode != 0)
+        assertEquals(unseenPageId, await(first.getChildren("album/generated", 1, 1, null)).value?.single()?.mediaId)
+        assertEquals(0, await(first.subscribe(unseenPageId, null)).resultCode)
+        assertEquals(0, await(first.subscribe(folder.mediaId, null)).resultCode)
+        assertEquals(folder.mediaMetadata.title, await(first.getItem(folder.mediaId)).value?.mediaMetadata?.title)
+        await(first.getChildren(PlayerServiceModern.ROOT, 0, 20, null))
+        assertEquals(0, await(first.subscribe(folder.mediaId, null)).resultCode)
+        assertTrue(await(first.subscribe("album/unseen", null)).resultCode != 0)
+        val playable = capturedExplicit()
+        gate.complete(Unit)
+        assertTrue(await(first.subscribe(playable.mediaId, null)).resultCode != 0)
+        callback.refreshArtwork(session)
+        pumpUntil { childCounts.any { it.first == PlayerServiceModern.ROOT } }
+        callback.invalidateAccess(session)
+        assertTrue(await(first.getItem(folder.mediaId)).resultCode != 0)
+    }
+
+    @Test fun `suggested root publishes named queues with independent playback and preserves normal browsing`() {
+        mockkObject(AutoSuggestedQueueLoader)
+        coEvery { AutoSuggestedQueueLoader.load(any(), any(), any(), any()) } returns listOf(
+            AutoSuggestedQueueLoader.SuggestedQueue(AutoSessionConstants.ID_SONGS_FAVORITES, "Favorites", null,
+                MediaMetadata.MEDIA_TYPE_PLAYLIST, listOf(item("favorite-one"), item("favorite-two"))),
+            AutoSuggestedQueueLoader.SuggestedQueue("${AutoSessionConstants.ID_ALBUMS_LIBRARY}/album", "Named album",
+                Uri.parse("https://images.example.test/album.jpg"), MediaMetadata.MEDIA_TYPE_ALBUM,
+                listOf(item("album-one"), item("album-two")))
+        )
+        val params = LibraryParams.Builder().setSuggested(true).build()
+        val root = requireNotNull(await(first.getLibraryRoot(params)).value)
+        assertEquals(AutoSuggestedQueueLoader.ROOT_ID, root.mediaId)
+        assertEquals(true, root.mediaMetadata.isBrowsable)
+        assertEquals(PlayerServiceModern.ROOT, await(first.getLibraryRoot(null)).value?.mediaId)
+        val normalRoots = await(first.getChildren(PlayerServiceModern.ROOT, 0, 20, null)).value.orEmpty()
+        assertEquals(listOf(AutoSessionConstants.ID_QUICK_PICKS, PlayerServiceModern.SONG,
+            PlayerServiceModern.ARTIST, PlayerServiceModern.ALBUM, PlayerServiceModern.PLAYLIST), normalRoots.map { it.mediaId })
+        assertEquals(0, await(first.subscribe(AutoSessionConstants.ID_QUICK_PICKS, null)).resultCode)
+        assertEquals(AutoSessionConstants.ID_QUICK_PICKS,
+            await(first.getItem(AutoSessionConstants.ID_QUICK_PICKS)).value?.mediaId)
+        assertEquals(root.mediaId, await(first.getItem(root.mediaId)).value?.mediaId)
+        assertEquals(0, await(first.subscribe(root.mediaId, null)).resultCode)
+        val cards = await(first.getChildren(root.mediaId, 0, 10, null)).value.orEmpty()
+        assertEquals(listOf("Favorites", "Named album"), cards.map { it.mediaMetadata.title.toString() })
+        assertTrue(cards.all { it.mediaMetadata.isPlayable == true && it.mediaMetadata.isBrowsable == false })
+        assertTrue(cards.all { AutoMediaIdContract.isScopedAction(it.mediaId) })
+        assertEquals("content", cards.last().mediaMetadata.artworkUri?.scheme)
+        assertEquals("Named album", await(first.getItem(cards.last().mediaId)).value?.mediaMetadata?.title)
+        first.setMediaItem(cards.first())
+        pumpUntil { player.setCalls.size == 1 }
+        assertEquals(listOf("favorite-one", "favorite-two"), (0 until player.mediaItemCount).map { player.getMediaItemAt(it).mediaId })
+        first.setMediaItem(cards.last())
+        pumpUntil { player.setCalls.size == 2 }
+        assertEquals(listOf("album-one", "album-two"), (0 until player.mediaItemCount).map { player.getMediaItemAt(it).mediaId })
+    }
+
+    @Test fun `suggested root omits actions evicted while capturing other suggestions`() {
+        val tree = browseTree()
+        AutoBrowseTree::class.java.getDeclaredField("selectionStore").apply { isAccessible = true }
+            .set(tree, AutoSelectionStore(maxEntries = 1))
+        mockkObject(AutoSuggestedQueueLoader)
+        coEvery { AutoSuggestedQueueLoader.load(any(), any(), any(), any()) } returns listOf("first", "second").map {
+            AutoSuggestedQueueLoader.SuggestedQueue(AutoSessionConstants.ID_SONGS_FAVORITES, it, null,
+                MediaMetadata.MEDIA_TYPE_PLAYLIST, listOf(item(it)))
+        }
+        val result = await(first.getChildren(AutoSuggestedQueueLoader.ROOT_ID, 0, 10, null))
+        assertEquals(0, result.resultCode)
+        val card = requireNotNull(result.value).single()
+        assertEquals("second", card.mediaMetadata.title)
+        first.setMediaItem(card)
+        pumpUntil { player.setCalls.size == 1 }
+        assertEquals("second", player.currentMediaItem?.mediaId)
+    }
+
+    @Test fun `real browser search announces seven folders and pages through all categories`() {
+        assertEquals(0, await(first.search("query/with slash", null)).resultCode)
+        pumpUntil { searchCounts.isNotEmpty() }
+        assertEquals(listOf(7), searchCounts)
+        val pages = (0..3).flatMap { await(first.getSearchResult("query/with slash", it, 2, null)).value.orEmpty() }
+        assertEquals(7, pages.size)
+        assertEquals(7, pages.map { it.mediaId }.distinct().size)
+        assertEquals(0, await(first.subscribe(pages.last().mediaId, null)).resultCode)
+        assertTrue(await(first.getSearchResult("query/with slash", Int.MAX_VALUE, Int.MAX_VALUE, null)).value.orEmpty().isEmpty())
+    }
+
+    @Test fun `real browser standard pages reuse scoped rows and report full visible count`() {
+        val tree = browseTree()
+        val handler = mockk<BrowseHandler>()
+        every { handler.handles(any()) } returns true
+        var rows = (0 until 10).map { item("track-$it") }
+        coEvery { handler.getChildren(any(), any(), any(), any(), any()) } answers { rows }
+        AutoBrowseTree::class.java.getDeclaredField("handlers").apply { isAccessible = true }.set(tree, listOf(handler))
+        val firstPage = await(first.getChildren("album/paging", 0, 3, null)).value.orEmpty()
+        val captured = requireNotNull(tree.selectionStore.resolve(firstPage.first().mediaId)).items
+        rows = rows.reversed()
+        await(first.getChildren("other-navigation", 0, 3, null))
+        val secondPage = await(first.getChildren("album/paging", 1, 3, null)).value.orEmpty()
+        assertEquals(captured.take(3).map { it.mediaId }, firstPage.map { AutoMediaIdContract.parseSelection(it.mediaId)?.songId })
+        assertEquals(captured.drop(3).take(3).map { it.mediaId }, secondPage.map { AutoMediaIdContract.parseSelection(it.mediaId)?.songId })
+        assertEquals(AutoMediaIdContract.parseSelection(firstPage.first().mediaId)?.token,
+            AutoMediaIdContract.parseSelection(secondPage.first().mediaId)?.token)
+        assertEquals(3, tree.selectionStore.resolve(secondPage.first().mediaId)?.startIndex)
+        assertTrue(await(first.getChildren("album/paging", Int.MAX_VALUE, Int.MAX_VALUE, null)).value.orEmpty().isEmpty())
+        val counts = AutoSessionCallback::class.java.getDeclaredField("browsedParents").apply { isAccessible = true }
+        assertEquals(10, (counts.get(callback) as Map<*, *>)["album/paging"])
+    }
+
+    @Test fun `search and another browser cannot replace an existing standard page capture`() {
+        val tree = browseTree()
+        val handler = mockk<BrowseHandler>()
+        every { handler.handles(any()) } returns true
+        var rows = (0 until 10).map { item("track-$it") }
+        coEvery { handler.getChildren(any(), any(), any(), any(), any()) } answers { rows }
+        AutoBrowseTree::class.java.getDeclaredField("handlers").apply { isAccessible = true }.set(tree, listOf(handler))
+        val firstPage = await(first.getChildren("album/paging", 0, 3, null)).value.orEmpty()
+        val other = await(MediaBrowser.Builder(context, session.token).buildAsync())
+        try {
+            rows = rows.reversed()
+            await(other.getChildren("album/paging", 0, 3, null))
+            assertEquals(0, await(first.search("new search", null)).resultCode)
+            val laterPage = await(first.getChildren("album/paging", 1, 3, null)).value.orEmpty()
+            assertEquals(listOf("track-3", "track-4", "track-5"),
+                laterPage.map { AutoMediaIdContract.parseSelection(it.mediaId)?.songId })
+            assertEquals(AutoMediaIdContract.parseSelection(firstPage.first().mediaId)?.token,
+                AutoMediaIdContract.parseSelection(laterPage.first().mediaId)?.token)
+            val otherPage = await(other.getChildren("album/paging", 1, 3, null)).value.orEmpty()
+            assertEquals(listOf("track-6", "track-5", "track-4"),
+                otherPage.map { AutoMediaIdContract.parseSelection(it.mediaId)?.songId })
+        } finally {
+            other.release()
+        }
+    }
+
+    @Test fun `later standard page rejects expired selections until the browser reloads`() {
+        val tree = browseTree()
+        val handler = mockk<BrowseHandler>()
+        every { handler.handles(any()) } returns true
+        coEvery { handler.getChildren(any(), any(), any(), any(), any()) } returns
+            (0 until 10).map { item("track-$it") }
+        AutoBrowseTree::class.java.getDeclaredField("handlers").apply { isAccessible = true }.set(tree, listOf(handler))
+        await(first.getChildren("album/paging", 0, 3, null))
+        repeat(32) { await(first.getChildren("album/refreshed", 0, 3, null)) }
+        assertEquals(SessionError.ERROR_BAD_VALUE, await(first.getChildren("album/paging", 1, 3, null)).resultCode)
+        assertEquals(0, await(first.getChildren("album/paging", 0, 3, null)).resultCode)
+        val next = await(first.getChildren("album/paging", 1, 3, null))
+        assertEquals(0, next.resultCode)
+        assertEquals(3, tree.selectionStore.resolve(requireNotNull(next.value).first().mediaId)?.startIndex)
+    }
+
+    @Test fun `failed voice provider leaves the existing real session queue intact`() {
+        val current = browseTree().selectionStore.capture("album/current", listOf(item("playing"))).single()
+        first.setMediaItem(current)
+        pumpUntil { player.setCalls.size == 1 }
+        val songs = mockk<SongTable>()
+        every { Database.songTable } returns songs
+        every { songs.findAllTitleArtistContains("failed voice") } returns flowOf(emptyList())
+        mockkStatic("it.fast4x.innertube.requests.SearchPageKt")
+        coEvery { Innertube.searchPage<Innertube.SongItem>("failed voice", Innertube.SearchFilter.Song.value, any()) } throws IOException("provider unavailable")
+        observed.selection = null
+        first.setMediaItem(MediaItem.Builder().setRequestMetadata(MediaItem.RequestMetadata.Builder()
+            .setSearchQuery("failed voice").build()).build())
+        pumpUntil { observed.selection?.isDone == true }
+        assertThrows(ExecutionException::class.java) { requireNotNull(observed.selection).get() }
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals("playing", player.currentMediaItem?.mediaId)
+        assertEquals(1, player.setCalls.size)
+    }
+
+    @Test fun `real browser resolves selected voice and youtube request metadata to canonical queue`() {
+        val songs = mockk<SongTable>()
+        every { Database.songTable } returns songs
+        every { songs.findAllTitleArtistContains("voice query") } returns flowOf(listOf(Song(id = "abcdefghijk", title = "Matched song", durationText = "3:00", thumbnailUrl = null)))
+        every { songs.findById("abcdefghijk") } returns flowOf(Song(id = "abcdefghijk", title = "Matched song", durationText = "3:00", thumbnailUrl = null))
+        val voice = MediaItem.Builder().setRequestMetadata(MediaItem.RequestMetadata.Builder().setSearchQuery("voice query").build()).build()
+        first.setMediaItems(listOf(item("ignored"), voice), 1, 123L)
+        pumpUntil { player.setCalls.size == 1 }
+        assertEquals("abcdefghijk", player.currentMediaItem?.mediaId)
+        assertEquals("Matched song", player.currentMediaItem?.mediaMetadata?.title)
+        val link = MediaItem.Builder().setRequestMetadata(MediaItem.RequestMetadata.Builder()
+            .setMediaUri(Uri.parse("https://youtu.be/abcdefghijk")).build()).build()
+        first.setMediaItem(link)
+        pumpUntil { player.setCalls.size == 2 }
+        assertEquals("abcdefghijk", player.currentMediaItem?.localConfiguration?.customCacheKey)
+        assertEquals("abcdefghijk", player.currentMediaItem?.localConfiguration?.uri.toString())
+    }
+
+    @Test fun `superseded metadata source cannot replace newer real browser queue`() {
+        val songs = mockk<SongTable>()
+        every { Database.songTable } returns songs
+        every { songs.findAllTitleArtistContains("slow voice") } returns flow {
+            entered.countDown()
+            withContext(NonCancellable) { gate.await() }
+            sourceFinished.countDown()
+            emit(listOf(Song.makePlaceholder("old-result")))
+        }
+        val voice = MediaItem.Builder().setRequestMetadata(MediaItem.RequestMetadata.Builder().setSearchQuery("slow voice").build()).build()
+        first.setMediaItem(voice)
+        pumpUntil { entered.count == 0L }
+        val oldSelection = requireNotNull(observed.selection)
+        val replacement = browseTree().selectionStore.capture("album/new", listOf(item("replacement"))).single()
+        second.setMediaItem(replacement)
+        pumpUntil { player.setCalls.size == 1 }
+        assertTrue(oldSelection.isCancelled)
+        gate.complete(Unit)
+        assertTrue(sourceFinished.await(15, TimeUnit.SECONDS))
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals("replacement", player.currentMediaItem?.mediaId)
+        assertEquals(1, player.setCalls.size)
+    }
+
+    @Test fun `access invalidation during stored duration lookup cannot publish its queue`() =
+        assertDurationLookupOwnership(invalidateAccess = true)
+
+    @Test fun `newer selection supersedes an in flight stored duration lookup`() =
+        assertDurationLookupOwnership(invalidateAccess = false)
+
+    private fun assertDurationLookupOwnership(invalidateAccess: Boolean) {
+        val songs = mockk<SongTable>()
+        every { Database.songTable } returns songs
+        val lookupEntered = CountDownLatch(1)
+        val lookupRelease = CountDownLatch(1)
+        val lookupFinished = CountDownLatch(1)
+        every { songs.findByIdsDirect(listOf("duration-pending")) } answers {
+            lookupEntered.countDown()
+            try {
+                assertTrue(lookupRelease.await(15, TimeUnit.SECONDS))
+                listOf(Song("duration-pending", "Pending", durationText = "3:35", thumbnailUrl = null))
+            } finally {
+                lookupFinished.countDown()
+            }
+        }
+        val stale = browseTree().selectionStore.capture("album/duration", listOf(item("duration-pending"))).single()
+        try {
+            first.setMediaItem(stale)
+            pumpUntil { lookupEntered.count == 0L }
+            val oldSelection = requireNotNull(observed.selection)
+            if (invalidateAccess) callback.invalidateAccess(session) else {
+                val known = item("replacement-duration").buildUpon().setMediaMetadata(
+                    item("replacement-duration").mediaMetadata.buildUpon().setDurationMs(180_000L).build()).build()
+                second.setMediaItem(browseTree().selectionStore.capture("album/new", listOf(known)).single())
+                pumpUntil { player.setCalls.size == 1 }
+            }
+            assertTrue(oldSelection.isCancelled)
+            lookupRelease.countDown()
+            assertTrue(lookupFinished.await(15, TimeUnit.SECONDS))
+            shadowOf(Looper.getMainLooper()).idle()
+            if (invalidateAccess) assertTrue(player.setCalls.isEmpty()) else {
+                assertEquals("replacement-duration", player.currentMediaItem?.mediaId)
+                assertEquals(1, player.setCalls.size)
+            }
+        } finally {
+            lookupRelease.countDown()
+        }
+    }
+
+    @Test fun `access invalidation cancels pending request metadata before real queue publication`() {
+        val songs = mockk<SongTable>()
+        every { Database.songTable } returns songs
+        every { songs.findAllTitleArtistContains("slow voice") } returns flow {
+            entered.countDown()
+            withContext(NonCancellable) { gate.await() }
+            sourceFinished.countDown()
+            emit(listOf(Song.makePlaceholder("old-result")))
+        }
+        val voice = MediaItem.Builder().setRequestMetadata(MediaItem.RequestMetadata.Builder().setSearchQuery("slow voice").build()).build()
+        first.setMediaItem(voice)
+        pumpUntil { entered.count == 0L }
+        val oldSelection = requireNotNull(observed.selection)
+        callback.invalidatePublication()
+        gate.complete(Unit)
+        assertTrue(sourceFinished.await(15, TimeUnit.SECONDS))
+        shadowOf(Looper.getMainLooper()).idle()
+        assertTrue(oldSelection.isCancelled)
+        assertTrue(player.setCalls.isEmpty())
+    }
+
+    private fun browseTree(): AutoBrowseTree = AutoSessionCallback::class.java.getDeclaredField("autoBrowseTree").run {
+        isAccessible = true
+        get(callback) as AutoBrowseTree
+    }
+
+    private fun <T> await(future: ListenableFuture<T>): T {
+        pumpUntil { future.isDone }
+        return future.get(1, TimeUnit.SECONDS)
     }
 
     @Test
@@ -452,7 +821,7 @@ class AutoRealSessionQueueOwnershipTest {
     }
 
     private fun item(id: String) = MediaItem.Builder().setMediaId(id).setUri("https://example.invalid/$id")
-        .setCustomCacheKey(id).setMediaMetadata(MediaMetadata.Builder().setTitle(id).setIsPlayable(true).build()).build()
+        .setCustomCacheKey(id).setMediaMetadata(MediaMetadata.Builder().setTitle(id).setIsPlayable(true).setIsBrowsable(false).build()).build()
 
     private fun pumpUntil(condition: () -> Boolean) {
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15)
@@ -479,7 +848,36 @@ class AutoRealSessionQueueOwnershipTest {
         })
     }
 
-    private class ObservedCallback(private val delegate: AutoSessionCallback) : MediaSession.Callback by delegate {
+    private class ObservedCallback(private val delegate: AutoSessionCallback) : MediaLibrarySession.Callback by delegate {
+        override fun onConnectAsync(session: MediaSession, controller: MediaSession.ControllerInfo): ListenableFuture<MediaSession.ConnectionResult> =
+            delegate.onConnectAsync(session, controller)
+
+        override fun onGetLibraryRoot(session: MediaLibrarySession, browser: MediaSession.ControllerInfo,
+            params: LibraryParams?
+        ): ListenableFuture<LibraryResult<MediaItem>> = delegate.onGetLibraryRoot(session, browser, params)
+
+        override fun onGetItem(session: MediaLibrarySession, browser: MediaSession.ControllerInfo,
+            mediaId: String
+        ): ListenableFuture<LibraryResult<MediaItem>> = delegate.onGetItem(session, browser, mediaId)
+
+        override fun onGetChildren(session: MediaLibrarySession, browser: MediaSession.ControllerInfo,
+            parentId: String, page: Int, pageSize: Int, params: LibraryParams?
+        ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> =
+            delegate.onGetChildren(session, browser, parentId, page, pageSize, params)
+
+        override fun onSearch(session: MediaLibrarySession, browser: MediaSession.ControllerInfo,
+            query: String, params: LibraryParams?
+        ): ListenableFuture<LibraryResult<Void>> = delegate.onSearch(session, browser, query, params)
+
+        override fun onGetSearchResult(session: MediaLibrarySession, browser: MediaSession.ControllerInfo,
+            query: String, page: Int, pageSize: Int, params: LibraryParams?
+        ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> =
+            delegate.onGetSearchResult(session, browser, query, page, pageSize, params)
+
+        override fun onSubscribe(session: MediaLibrarySession, browser: MediaSession.ControllerInfo,
+            parentId: String, params: LibraryParams?
+        ): ListenableFuture<LibraryResult<Void>> = delegate.onSubscribe(session, browser, parentId, params)
+
         var selection: ListenableFuture<MediaSession.MediaItemsWithStartPosition>? = null
         val resumptions = mutableListOf<ListenableFuture<MediaSession.MediaItemsWithStartPosition>>()
         override fun onSetMediaItems(session: MediaSession, controller: MediaSession.ControllerInfo,
@@ -499,7 +897,7 @@ class AutoRealSessionQueueOwnershipTest {
         private var queueIds = emptyList<String>()
         private var state = State.Builder().setAvailableCommands(Player.Commands.Builder().addAll(
             Player.COMMAND_GET_CURRENT_MEDIA_ITEM, Player.COMMAND_GET_TIMELINE,
-            Player.COMMAND_GET_METADATA, Player.COMMAND_SET_MEDIA_ITEM, Player.COMMAND_CHANGE_MEDIA_ITEMS,
+            Player.COMMAND_GET_METADATA, Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM, Player.COMMAND_SET_MEDIA_ITEM, Player.COMMAND_CHANGE_MEDIA_ITEMS,
             Player.COMMAND_PLAY_PAUSE, Player.COMMAND_PREPARE, Player.COMMAND_STOP, Player.COMMAND_RELEASE
         ).build()).build()
 

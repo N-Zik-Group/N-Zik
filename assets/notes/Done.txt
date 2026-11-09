@@ -38,3 +38,9 @@ Fixed:
   - Share playlist-widget selection and empty-library fallbacks with the Android Auto suggested root.
   - Publish personalized queues for the host dashboard without replacing the in-app Quick Picks browser.
   - Retain suggestion title, artwork, profile ownership and playable queue identity.
+
+Fixed:
+- fix(player): preserve duration across queue and buffering changes (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Enrich phone and automotive selections with known database durations before publishing the queue.
+  - Keep resolved duration and seekable timeline metadata synchronized across buffering and player replacement for Auto and notifications.
+  - Guard rapid selections, profile changes and stale duration results; cover actual session state transitions.
