@@ -31,4 +31,157 @@
     <plurals name="statistics_songs_heard_count">
         <item quantity="other">%1$d songs heard</item>
     </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="other">Delete %1$d search queries</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="other">Delete %1$d playback events</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="other">%1$d episodes · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="other">Adding %1$d songs to the YouTube playlist</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="other">Added %1$d songs to the YouTube playlist</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="other">Profile state imported: %1$d profiles</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="other">Failed to sync %1$d albums. Go back to the Albums tab to retry.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="other">Export %1$d cached/downloaded songs?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="other">%1$d downloaded songs are missing their files and were removed. Please download them again.</item>
+    </plurals>
+    <plurals name="recommendations_quick_picks_song_count">
+        <item quantity="other">%1$d recommended songs</item>
+    </plurals>
+    <plurals name="listen_together_blocked_user_count">
+        <item quantity="other">%1$d users blocked</item>
+    </plurals>
+    <plurals name="sync_failed_notification_artist_count">
+        <item quantity="other">Failed to sync %1$d artists. Go back to the Artists tab to retry.</item>
+    </plurals>
+    <plurals name="sync_failed_notification_playlist_count">
+        <item quantity="other">Failed to sync %1$d playlists. Go back to the Playlists tab to retry.</item>
+    </plurals>
+    <plurals name="sync_retry_failed_item_confirmation">
+        <item quantity="other">Do you want to retry syncing the %1$d failed items?</item>
+    </plurals>
+    <plurals name="sync_progress_artist_count">
+        <item quantity="other">Syncing artists... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_artist_refresh_count">
+        <item quantity="other">Refreshing %1$d artists</item>
+    </plurals>
+    <plurals name="library_sync_artist_retry_count">
+        <item quantity="other">Failed to find %1$d artists, retrying</item>
+    </plurals>
+    <plurals name="sync_progress_album_count">
+        <item quantity="other">Syncing albums... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_album_refresh_count">
+        <item quantity="other">Refreshing %1$d albums</item>
+    </plurals>
+    <plurals name="library_sync_album_retry_count">
+        <item quantity="other">Failed to find %1$d albums, retrying</item>
+    </plurals>
+    <plurals name="sync_progress_playlist_count">
+        <item quantity="other">Syncing playlists... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_playlist_refresh_count">
+        <item quantity="other">Refreshing %1$d playlists</item>
+    </plurals>
+    <plurals name="library_sync_playlist_retry_count">
+        <item quantity="other">Failed to find %1$d playlists, retrying</item>
+    </plurals>
+    <plurals name="maintenance_pass_cleaned_count">
+        <item quantity="other">%1$d items cleaned</item>
+    </plurals>
+    <plurals name="maintenance_pass_deferred_count">
+        <item quantity="other">%1$d items deferred</item>
+    </plurals>
+    <plurals name="maintenance_pass_skipped_count">
+        <item quantity="other">%1$d items skipped</item>
+    </plurals>
+    <plurals name="maintenance_dedup_flagged_count">
+        <item quantity="other">Flagged %1$d rows</item>
+    </plurals>
+    <plurals name="maintenance_dedup_merged_count">
+        <item quantity="other">Merged %1$d rows</item>
+    </plurals>
+    <plurals name="recovery_profile_deleted_count">
+        <item quantity="other">Deleted %1$d profiles</item>
+    </plurals>
+    <plurals name="recovery_profile_reset_count">
+        <item quantity="other">Reset %1$d profiles. Relaunch the app</item>
+    </plurals>
+    <plurals name="recovery_profile_restored_count">
+        <item quantity="other">Restored %1$d profiles: relaunch the app</item>
+    </plurals>
+    <plurals name="album_loading_song_count">
+        <item quantity="other">Loading %1$d songs…</item>
+    </plurals>
+    <plurals name="artist_deduplication_result_count">
+        <item quantity="other">Merged %1$d duplicate artists with the right artist</item>
+    </plurals>
+    <plurals name="artist_link_cleanup_result_count">
+        <item quantity="other">Removed %1$d incorrect artist links</item>
+    </plurals>
+    <plurals name="library_song_count_with_duration">
+        <item quantity="other">%1$d songs • %2$s</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count">
+        <item quantity="other">(%1$d votes)</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count_attribution">
+        <item quantity="other">%1$d votes on MusicBrainz</item>
+    </plurals>
+    <plurals name="playlist_delete_all_confirmation_count">
+        <item quantity="other">Are you sure you want to delete ALL %1$d playlists?</item>
+    </plurals>
+    <plurals name="playlist_delete_selected_confirmation_count">
+        <item quantity="other">Are you sure you want to delete these %1$d playlists?</item>
+    </plurals>
+    <plurals name="playlist_positions_shuffled_count">
+        <item quantity="other">%1$d positions shuffled</item>
+    </plurals>
+    <plurals name="song_metadata_updated_song_count">
+        <item quantity="other">Updated %1$d songs</item>
+    </plurals>
+    <plurals name="rewind_home_year_play_count">
+        <item quantity="other">%1$s · %2$s plays</item>
+    </plurals>
+    <plurals name="rewind_listening_day_count_without">
+        <item quantity="other">%1$s days without listening.</item>
+    </plurals>
+    <plurals name="rewind_loader_status_day_count">
+        <item quantity="other">%1$s LISTENING DAYS</item>
+    </plurals>
+    <plurals name="rewind_loader_status_minute_count">
+        <item quantity="other">%1$s MINUTES</item>
+    </plurals>
+    <plurals name="rewind_loader_status_play_count">
+        <item quantity="other">%1$s PLAYS</item>
+    </plurals>
+    <plurals name="rewind_loader_status_song_count">
+        <item quantity="other">%1$s UNIQUE SONGS</item>
+    </plurals>
+    <plurals name="rewind_meta_song_count">
+        <item quantity="other">%1$s songs</item>
+    </plurals>
+    <plurals name="rewind_play_count_label">
+        <item quantity="other">%1$s plays</item>
+    </plurals>
+    <plurals name="rewind_top_song_teaser_count">
+        <item quantity="other">%1$d SONGS.\nONE WINNER.</item>
+    </plurals>
+    <plurals name="maintenance_abnormal_job_count">
+        <item quantity="other">%1$d jobs not finished</item>
+    </plurals>
 </resources>
