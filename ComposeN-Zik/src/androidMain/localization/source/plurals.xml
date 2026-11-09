@@ -70,4 +70,16 @@
         <item quantity="one">Delete %1$d playback event</item>
         <item quantity="other">Delete %1$d playback events</item>
     </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d episode · %2$s</item>
+        <item quantity="other">%1$d episodes · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">Adding %1$d song to the YouTube playlist</item>
+        <item quantity="other">Adding %1$d songs to the YouTube playlist</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">Added %1$d song to the YouTube playlist</item>
+        <item quantity="other">Added %1$d songs to the YouTube playlist</item>
+    </plurals>
 </resources>

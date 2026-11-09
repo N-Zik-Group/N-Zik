@@ -629,7 +629,13 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
     val resources = appContext().resources
     val progressInterval = 50
     if (mediaItems.size > progressInterval) {
-        Toaster.i("${mediaItems.size} " + resources.getString(R.string.sync_youtube_playlist_songs_adding_suffix))
+        Toaster.i(
+            resources.getQuantityString(
+                R.plurals.sync_youtube_playlist_songs_adding,
+                mediaItems.size,
+                mediaItems.size,
+            )
+        )
     }
 
     // The multi-item API sends individual requests and can fail after a partial write.
@@ -661,7 +667,11 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
         }
     }
 
-    Toaster.n("$addedCount " + resources.getString(R.string.sync_youtube_playlist_songs_added_suffix))
+    if (addedCount == 0) {
+        Toaster.w(R.string.sync_youtube_playlist_no_songs_added)
+    } else {
+        Toaster.n(resources.getQuantityString(R.plurals.sync_youtube_playlist_songs_added, addedCount, addedCount))
+    }
 }
 
 suspend fun addSongToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: String, mediaItem: MediaItem){

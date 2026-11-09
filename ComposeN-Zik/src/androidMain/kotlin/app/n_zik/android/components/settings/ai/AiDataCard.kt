@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
@@ -59,7 +60,11 @@ internal fun AiDataCard(search: Search) {
                     title = stringResource(R.string.recommendations_action_reset_quick_picks),
                     text = stringResource(R.string.recommendations_reset_description),
                     selectedValueText = if (eventsCount > 0) {
-                        stringResource(R.string.statistics_action_delete_playback_events_count, eventsCount)
+                        pluralStringResource(
+                            R.plurals.history_delete_playback_event_count,
+                            eventsCount.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(),
+                            eventsCount,
+                        )
                     } else {
                         stringResource(R.string.recommendations_reset_complete)
                     },

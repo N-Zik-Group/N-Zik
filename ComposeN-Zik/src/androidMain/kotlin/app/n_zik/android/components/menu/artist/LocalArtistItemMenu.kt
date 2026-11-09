@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -372,7 +373,7 @@ class LocalArtistItemMenu private constructor(
             ArtistItemDisplay(
                 title = artist.name,
                 thumbnailUrl = artist.thumbnailUrl,
-                subscribersCount = "${songs.size} ${stringResource(R.string.library_songs_title)}"
+                subscribersCount = pluralStringResource(R.plurals.library_song_count, songs.size, songs.size)
             )
 
             if (menuStyle == MenuStyle.List)

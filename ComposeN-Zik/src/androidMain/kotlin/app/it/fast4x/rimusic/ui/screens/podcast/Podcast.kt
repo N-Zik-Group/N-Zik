@@ -57,6 +57,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.input.TextFieldValue
@@ -319,10 +320,14 @@ fun Podcast(
                                     .padding(bottom = 20.dp)
                             )
 
+                            val episodeCount = podcastPage?.listEpisode.orEmpty().size
                             BasicText(
-                                text = podcastPage?.listEpisode.orEmpty().size.toString() + " "
-                                        + stringResource(R.string.library_songs_title)
-                                        + " - " + formatAsTime(totalPlayTimes),
+                                text = pluralStringResource(
+                                    R.plurals.podcast_episode_count_with_duration,
+                                    episodeCount,
+                                    episodeCount,
+                                    formatAsTime(totalPlayTimes),
+                                ),
                                 style = typography().xs.medium,
                                 maxLines = 1,
                                 modifier = Modifier
