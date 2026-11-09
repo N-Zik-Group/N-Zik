@@ -198,4 +198,5 @@
     <string name="listen_together_server_request_failed">Serwer Listen Together nie mógł ukończyć żądania.</string>
     <string name="network_stream_retrying_playback">Próba wznowienia odtwarzania…</string>
     <string name="listen_together_invite_link">Słuchaj łącze zaproszenia</string>
+    <string name="listen_together_server_location_poland">W załączniku I do rozporządzenia (WE) nr 1235/2008 wprowadza się zmiany zgodnie z załącznikiem do niniejszego rozporządzenia.</string>
 </resources>
