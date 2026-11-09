@@ -18,27 +18,43 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
+import app.it.fast4x.rimusic.enums.MenuStyle
+import app.it.fast4x.rimusic.ui.components.LocalMenuState
+import app.it.fast4x.rimusic.ui.components.MenuState
 import app.it.fast4x.rimusic.ui.styling.Appearance
 import app.it.fast4x.rimusic.ui.styling.ColorPalette
 import app.it.fast4x.rimusic.ui.styling.LocalAppearance
 import app.it.fast4x.rimusic.ui.styling.Typography
 import app.it.fast4x.rimusic.utils.activeProfileKey
+import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.preferences
+import app.it.fast4x.rimusic.utils.putEnum
 import app.it.fast4x.rimusic.utils.profilePreferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.R
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassAreaMode
 import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.glass.glassFilmKey
 import app.n_zik.android.components.glass.glassTintStrengthKey
+import app.n_zik.android.components.menu.player.AudioDeviceStatusMenu
 import app.n_zik.android.components.menu.song.SongMenuSurface
+import app.n_zik.android.components.tab.ImportPlaylistsMenu
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -169,5 +185,94 @@ class MenuSheetSurfaceTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun `import title and options start at the same glass surface in list and grid`() {
+        val style = mutableStateOf(MenuStyle.List)
+        val backdrop = Color(0xFF00C853)
+        val headerColor = Color(0xFF693875)
+        val shape = RoundedCornerShape(32.dp)
+        val appearance = Appearance(
+            colorPalette = ColorPalette.fallback.copy(background1 = headerColor),
+            typography = Typography.fallback,
+            thumbnailShape = shape,
+            uiRoundnessShape = shape,
+            artistThumbnailShape = shape,
+        )
+        val menuState = MenuState()
+        val menu = ImportPlaylistsMenu({}, {}, {}, {})
+        context.preferences.edit().putBoolean(glassEnabledKey, true)
+            .putEnum(menuStyleKey, MenuStyle.List).commit()
+        // Isolate the sheet from the icon badges' runtime shader.
+        GlassStore(context).setAreaMode(GlassArea.ActionButtons, GlassAreaMode.Disabled)
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalMenuState provides menuState) {
+                menu.Render()
+                Box(Modifier.size(300.dp).background(backdrop).testTag("import-sheet")) {
+                    key(style.value) {
+                        if (menuState.isDisplayed) menuState.contentState.second()
+                    }
+                }
+            }
+        }
+        composeRule.runOnIdle { menu.onShortClick() }
+        for (layout in listOf(MenuStyle.List, MenuStyle.Grid)) {
+            composeRule.runOnIdle {
+                context.preferences.edit().putEnum(menuStyleKey, layout).commit()
+                style.value = layout
+            }
+            composeRule.onNodeWithText(context.getString(R.string.playlist_action_import)).assertIsDisplayed()
+            val localImport = composeRule.onNodeWithText(context.getString(R.string.playlist_import_format_nzik_csv))
+            val spotifyImport = composeRule.onNodeWithText(context.getString(R.string.playlist_import_format_exportify_csv))
+            val localBounds = localImport.assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+            val spotifyBounds = spotifyImport.assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+            if (layout == MenuStyle.List) {
+                assertTrue(spotifyBounds.top >= localBounds.bottom)
+            } else {
+                assertTrue(spotifyBounds.left >= localBounds.right)
+            }
+            val pixels = composeRule.onNodeWithTag("import-sheet").captureToImage().toPixelMap()
+            assertEquals("$layout: the glass outline starts above the title", backdrop.toArgb(), pixels[1, 1].toArgb())
+            assertNotEquals("$layout: the header has no opaque background",
+                headerColor.toArgb(), pixels[pixels.width / 4, 6].toArgb())
+        }
+    }
+
+    @Test
+    fun `audio device loading and error keep the shared glass menu and retry`() {
+        val error = mutableStateOf<String?>(null)
+        val backdrop = Color(0xFF00C853)
+        val shape = RoundedCornerShape(32.dp)
+        val appearance = Appearance(
+            colorPalette = ColorPalette.fallback,
+            typography = Typography.fallback,
+            thumbnailShape = shape,
+            uiRoundnessShape = shape,
+            artistThumbnailShape = shape,
+        )
+        context.preferences.edit().putBoolean(glassEnabledKey, true).commit()
+        GlassStore(context).setAreaMode(GlassArea.ActionButtons, GlassAreaMode.Disabled)
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Box(Modifier.size(300.dp, 390.dp).background(backdrop).testTag("audio-device-sheet")) {
+                    AudioDeviceStatusMenu(error.value, onRetry = { error.value = null })
+                }
+            }
+        }
+        val title = composeRule.onNodeWithText(context.getString(R.string.audio_devices))
+        val spinner = composeRule.onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo))
+        spinner.assertIsDisplayed()
+        for (message in listOf(null, "Bluetooth permission denied")) {
+            composeRule.runOnIdle { error.value = message }
+            title.assertIsDisplayed()
+            val pixels = composeRule.onNodeWithTag("audio-device-sheet").captureToImage().toPixelMap()
+            assertEquals(backdrop.toArgb(), pixels[1, 1].toArgb())
+            assertNotEquals(backdrop.toArgb(), pixels[pixels.width / 4, 20].toArgb())
+        }
+        composeRule.onNodeWithText("Bluetooth permission denied").assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_retry)).performClick()
+        spinner.assertIsDisplayed()
+        title.assertIsDisplayed()
     }
 }

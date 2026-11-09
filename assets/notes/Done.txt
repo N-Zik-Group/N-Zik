@@ -1,4 +1,10 @@
 Fixed:
+- fix(glass): keep playlist import and audio device headers inside shared menus
+  - Use the shared list and grid headers for playlist import so the title, drag handle and options share one Glass surface.
+  - Show audio device loading and retry states inside the shared menu, including initial load failures.
+  - Avoid overlapping Glass surfaces during audio device state changes and cover both menus with Compose rendering tests.
+
+Fixed:
 - fix(startup): keep the app responsive during library restore
   - Run restore journal recovery and acquire the library lease in LibraryStartup before opening Room or starting library-dependent services.
   - Show a responsive waiting screen in MainActivity and RescueActivity, with a retry action if recovery fails.

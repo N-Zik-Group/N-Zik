@@ -1,24 +1,14 @@
 package app.n_zik.android.components.tab
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 
 import app.it.fast4x.rimusic.enums.MenuStyle
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
@@ -31,11 +21,8 @@ import app.it.fast4x.rimusic.ui.components.tab.toolbar.MenuIcon
 import app.it.fast4x.rimusic.utils.menuStyleKey
 import app.it.fast4x.rimusic.utils.rememberPreference
 import app.n_zik.android.R
-import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
-import app.n_zik.android.components.menu.MenuSheetDragHandle
-import app.n_zik.android.typography
 
 class ImportPlaylistsMenu(
     private val onImportNzik: () -> Unit,
@@ -131,14 +118,14 @@ class ImportPlaylistsMenu(
                 }
 
                 @Composable
-                override fun ListMenu() = ListMenu.Menu(title = null, showDragHandle = false) {
+                override fun ListMenu() = ListMenu.Menu(title = stringResource(messageId)) {
                     buttons.forEach { 
                         if (it is MenuIcon) it.ListMenuItem() 
                     }
                 }
 
                 @Composable
-                override fun GridMenu() = GridMenu.Menu(title = null, showDragHandle = false) {
+                override fun GridMenu() = GridMenu.Menu(title = stringResource(messageId)) {
                     items(buttons, key = Button::hashCode) {
                         if (it is MenuIcon) it.GridMenuItem()
                     }
@@ -146,30 +133,10 @@ class ImportPlaylistsMenu(
 
                 @Composable
                 override fun MenuComponent() {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(colorPalette().background0)
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.background( colorPalette().background1 )
-                        ) {
-                            MenuSheetDragHandle()
-
-                            BasicText(
-                                text = stringResource(R.string.playlist_action_import),
-                                style = typography().m.copy(color = colorPalette().text),
-                                modifier = Modifier.padding(top = 5.dp, bottom = 10.dp)
-                            )
-
-                            HorizontalDivider( Modifier.height(1.dp) )
-                        }
-
-                        if( menuStyle == MenuStyle.List )
-                            ListMenu()
-                        else
-                            GridMenu()
+                    if (menuStyle == MenuStyle.List) {
+                        ListMenu()
+                    } else {
+                        GridMenu()
                     }
                 }
             }

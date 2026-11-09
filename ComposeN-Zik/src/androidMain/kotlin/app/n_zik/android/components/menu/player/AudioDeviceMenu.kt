@@ -15,7 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
 import app.n_zik.android.components.ui.iconBadgeBackground
@@ -27,7 +26,6 @@ import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.ui.sliders.SliderControl
 import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.utils.getBottomSheetDeviceIcon
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 import androidx.compose.foundation.lazy.grid.items
@@ -49,7 +47,6 @@ import android.media.AudioManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import app.n_zik.android.components.glass.glassAwareContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -57,7 +54,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.graphics.graphicsLayer
@@ -107,7 +103,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import app.n_zik.android.components.glass.glassAwareContentSize
 import android.media.AudioDeviceCallback
 import androidx.car.app.connection.CarConnection
@@ -171,7 +166,6 @@ internal fun withBridgePcEntry(
 @Composable
 fun AudioDeviceMenu(onDismiss: () -> Unit) {
     val context = LocalContext.current
-    val configuration = LocalConfiguration.current
     var audioDevices by remember { mutableStateOf<List<AudioDevice>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -237,7 +231,8 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                 currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()
                 maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
                 isLoading = false
-            }, onError = {
+            }, onError = { error ->
+                if (isLoading) errorMessage = error
                 isLoading = false
             })
         }
@@ -347,389 +342,385 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
 
     val menuStyle by rememberPreference(menuStyleKey, MenuStyle.List)
 
-    val menuContent: @Composable (MenuStyle) -> Unit = { style ->
-        Column(modifier = Modifier.glassAwareContentSize()) {
-            Crossfade(targetState = isLoading to errorMessage, label = "MenuStateTransition") { (loading, error) ->
-                if (loading) {
-                    val configuration = LocalConfiguration.current
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = (configuration.screenHeightDp * 0.5f).dp)
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        // The app's theming does not remap the M3 colorScheme tokens (spec-achromatic-ramp-luminance-cap):
-                        // key on the effective palette instead, so the spinner stays readable in both tones
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(48.dp),
-                            strokeWidth = 3.dp,
-                            color = colorPalette().text
-                        )
-                    }
-                } else if (error != null) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        // Readable red keyed on the effective tone: M3 error tokens are not remapped by the
-                        // app's theming (spec-achromatic-ramp-luminance-cap)
-                        Icon(
-                            imageVector = Icons.Outlined.Error,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = Color.hsl(0f, 0.8f, if (colorPalette().isDark) 0.65f else 0.35f)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        // Keyed on the effective tone, not the un-remapped M3 onSurface token
-                        Text(
-                            text = error ?: "",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = colorPalette().text,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = {
-                                errorMessage = null
-                                isLoading = true
-                                refreshDevices()
-                            }
-                        ) {
-                            Text(text = stringResource(R.string.common_action_retry))
-                        }
-                    }
-                } else {
-                    var audioQualityFormat by rememberPreference(audioQualityFormatKey, AudioQualityFormat.Auto)
-                    val qualityOptions = listOf(
-                        AudioQualityFormat.Auto to stringResource(R.string.audio_quality_automatic),
-                        AudioQualityFormat.High to stringResource(R.string.audio_quality_format_high),
-                        AudioQualityFormat.Low to stringResource(R.string.audio_quality_format_low)
-                    )
-
-                    if (style == MenuStyle.List) {
-                        ListMenu.Menu(title = stringResource(R.string.audio_devices), showDragHandle = true) {
-                            SectionTitle(stringResource(R.string.audio_output_title))
-                            shownDevices.forEach { dev ->
-                                    ListMenu.Entry(
-                                        text = dev.name,
-                                        enabled = !isCarProjectionActive || dev.isActive,
-                                        icon = {
-                                            val iconColor = if (dev.isActive) colorPalette().accent else colorPalette().text
-                                            val isActuallyCar = dev.isCar || (dev.type != AudioDeviceType.PC && dev.isActive && isCarProjectionActive)
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(32.dp)
-                                                    .iconBadgeBackground(
-                                                        color = if (dev.isActive) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
-                                                        shape = uiRoundnessShape()
-                                                    ),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                val iconRes = getBottomSheetDeviceIcon(dev.type, dev.name, isActuallyCar)
-                                                if (iconRes is ImageVector) {
-                                                    Icon(
-                                                        imageVector = iconRes,
-                                                        contentDescription = null,
-                                                        tint = iconColor,
-                                                        modifier = Modifier.size(18.dp)
-                                                    )
-                                                } else if (iconRes is Int) {
-                                                    Icon(
-                                                        painter = painterResource(id = iconRes),
-                                                        contentDescription = null,
-                                                        tint = iconColor,
-                                                        modifier = Modifier.size(18.dp)
-                                                    )
-                                                }
-                                            }
-                                        },
-                                        modifier = if (dev.isActive) Modifier.background(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape()) else Modifier,
-                                        subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { stringResource(R.string.audio_device_battery_format, it) },
-                                        trailingContent = {
-                                            AnimatedVisibility(
-                                                visible = dev.isActive,
-                                                enter = fadeIn() + scaleIn(),
-                                                exit = fadeOut() + scaleOut()
-                                            ) {
-                                                RadioButton(
-                                                    selected = true,
-                                                    onClick = null,
-                                                    colors = RadioButtonDefaults.colors(
-                                                        selectedColor = colorPalette().accent,
-                                                        unselectedColor = colorPalette().textSecondary
-                                                    )
-                                                )
-                                            }
-                                        },
-                                        onClick = {
-                                        if (dev.type == AudioDeviceType.PC) {
-                                            selectBridgeOutput(AudioOutput.PC)
-                                            return@Entry
+    Column(modifier = Modifier.glassAwareContentSize()) {
+        val error = errorMessage
+        if (isLoading || error != null) {
+            AudioDeviceStatusMenu(error = if (isLoading) null else error) {
+                errorMessage = null
+                isLoading = true
+                refreshDevices()
+            }
+        } else {
+            var audioQualityFormat by rememberPreference(audioQualityFormatKey, AudioQualityFormat.Auto)
+            val qualityOptions = listOf(
+                AudioQualityFormat.Auto to stringResource(R.string.audio_quality_automatic),
+                AudioQualityFormat.High to stringResource(R.string.audio_quality_format_high),
+                AudioQualityFormat.Low to stringResource(R.string.audio_quality_format_low)
+            )
+            if (menuStyle == MenuStyle.List) {
+                ListMenu.Menu(title = stringResource(R.string.audio_devices), showDragHandle = true) {
+                    SectionTitle(stringResource(R.string.audio_output_title))
+                    shownDevices.forEach { dev ->
+                            ListMenu.Entry(
+                                text = dev.name,
+                                enabled = !isCarProjectionActive || dev.isActive,
+                                icon = {
+                                    val iconColor = if (dev.isActive) colorPalette().accent else colorPalette().text
+                                    val isActuallyCar = dev.isCar || (dev.type != AudioDeviceType.PC && dev.isActive && isCarProjectionActive)
+                                    Box(
+                                        modifier = Modifier
+                                            .size(32.dp)
+                                            .iconBadgeBackground(
+                                                color = if (dev.isActive) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
+                                                shape = uiRoundnessShape()
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        val iconRes = getBottomSheetDeviceIcon(dev.type, dev.name, isActuallyCar)
+                                        if (iconRes is ImageVector) {
+                                            Icon(
+                                                imageVector = iconRes,
+                                                contentDescription = null,
+                                                tint = iconColor,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        } else if (iconRes is Int) {
+                                            Icon(
+                                                painter = painterResource(id = iconRes),
+                                                contentDescription = null,
+                                                tint = iconColor,
+                                                modifier = Modifier.size(18.dp)
+                                            )
                                         }
-                                        // A phone output while on the PC brings the sound back to the phone
-                                        if (bridgeOutput == AudioOutput.PC) selectBridgeOutput(AudioOutput.PHONE)
-                                        val wasPlaying = binder?.player?.isPlaying == true
-                                        binder?.player?.pause()
-                                        binder?.setPreferredAudioDevice(dev.deviceId)
-                                        refreshDevices()
-                                        coroutineScope.launch {
-                                            // Poll every 250ms for 3 seconds to catch the volume after hardware route switch
-                                            for (i in 1..12) {
-                                                kotlinx.coroutines.delay(250)
-                                                if (!isUserDragging) {
-                                                    val newVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()
-                                                    val newMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                                                    if (newVol != currentVolume || newMax != maxVolume) {
-                                                        currentVolume = newVol
-                                                        maxVolume = newMax
-                                                    }
-                                                }
-                                                if (i == 4 && wasPlaying) {
-                                                    binder?.player?.play()
-                                                }
-                                            }
-                                        }
-                                        }
-                                    )
-                            }
-
-                            SectionTitle(stringResource(R.string.player_statistics_volume_label))
-                            VolumeRow(
-                                currentVolume = currentVolume,
-                                maxVolume = maxVolume.toFloat(),
-                                enabled = !isCarProjectionActive,
-                                onVolumeChange = { newVolume ->
-                                    isUserDragging = true
-                                    currentVolume = newVolume
-                                    audioManager.setStreamVolume(
-                                        AudioManager.STREAM_MUSIC,
-                                        newVolume.toInt(),
-                                        0
-                                    )
+                                    }
                                 },
-                                onVolumeChangeComplete = {
-                                    isUserDragging = false
+                                modifier = if (dev.isActive) Modifier.background(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape()) else Modifier,
+                                subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { stringResource(R.string.audio_device_battery_format, it) },
+                                trailingContent = {
+                                    AnimatedVisibility(
+                                        visible = dev.isActive,
+                                        enter = fadeIn() + scaleIn(),
+                                        exit = fadeOut() + scaleOut()
+                                    ) {
+                                        RadioButton(
+                                            selected = true,
+                                            onClick = null,
+                                            colors = RadioButtonDefaults.colors(
+                                                selectedColor = colorPalette().accent,
+                                                unselectedColor = colorPalette().textSecondary
+                                            )
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                if (dev.type == AudioDeviceType.PC) {
+                                    selectBridgeOutput(AudioOutput.PC)
+                                    return@Entry
+                                }
+                                // A phone output while on the PC brings the sound back to the phone
+                                if (bridgeOutput == AudioOutput.PC) selectBridgeOutput(AudioOutput.PHONE)
+                                val wasPlaying = binder?.player?.isPlaying == true
+                                binder?.player?.pause()
+                                binder?.setPreferredAudioDevice(dev.deviceId)
+                                refreshDevices()
+                                coroutineScope.launch {
+                                    // Poll every 250ms for 3 seconds to catch the volume after hardware route switch
+                                    for (i in 1..12) {
+                                        kotlinx.coroutines.delay(250)
+                                        if (!isUserDragging) {
+                                            val newVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()
+                                            val newMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                                            if (newVol != currentVolume || newMax != maxVolume) {
+                                                currentVolume = newVol
+                                                maxVolume = newMax
+                                            }
+                                        }
+                                        if (i == 4 && wasPlaying) {
+                                            binder?.player?.play()
+                                        }
+                                    }
+                                }
                                 }
                             )
-
-                            SectionTitle(stringResource(R.string.audio_quality_format))
-                            qualityOptions.forEach { (format, label) ->
-                                val isSelected = audioQualityFormat == format
-                                ListMenu.Entry(
-                                    text = label,
-                                    icon = {
-                                        val iconColor = if (isSelected) colorPalette().accent else colorPalette().text
-                                        Box(
-                                            modifier = Modifier
-                                                .size(32.dp)
-                                                .iconBadgeBackground(
-                                                    color = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
-                                                    shape = uiRoundnessShape()
-                                                ),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(R.drawable.audio_quality),
-                                                contentDescription = null,
-                                                tint = iconColor,
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                        }
-                                    },
-                                    modifier = if (isSelected) Modifier.background(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape()) else Modifier,
-                                    trailingContent = {
-                                        if (isSelected) {
-                                            RadioButton(
-                                                selected = isSelected,
-                                                onClick = null,
-                                                colors = RadioButtonDefaults.colors(
-                                                    selectedColor = colorPalette().accent,
-                                                    unselectedColor = colorPalette().textSecondary
-                                                )
-                                            )
-                                        }
-                                    },
-                                    onClick = { audioQualityFormat = format }
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(32.dp))
-                        }
-                    } else {
-                        GridMenu.Menu(title = stringResource(R.string.audio_devices), showDragHandle = true) {
-                            item(span = { GridItemSpan(maxLineSpan) }) {
-                                SectionTitle(stringResource(R.string.audio_output_title))
-                            }
-                            items(
-                                count = shownDevices.size,
-                                key = { index -> "${shownDevices[index].deviceId}_${shownDevices[index].isCar}_${index}" }
-                            ) { index ->
-                                val dev = shownDevices[index]
-                                val isActuallyCar = dev.isCar || (dev.type != AudioDeviceType.PC && dev.isActive && isCarProjectionActive)
-
-                                GridMenu.Entry(
-                                    text = dev.name,
-                                    enabled = !isCarProjectionActive || dev.isActive,
-                                    icon = {
-                                        val iconColor = if (dev.isActive) colorPalette().accent else colorPalette().text
-                                        Box(
-                                            modifier = Modifier
-                                                .size(32.dp)
-                                                .iconBadgeBackground(
-                                                    color = if (dev.isActive) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
-                                                    shape = uiRoundnessShape()
-                                                ),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            val iconRes = getBottomSheetDeviceIcon(dev.type, dev.name, isActuallyCar)
-                                            if (iconRes is ImageVector) {
-                                                Icon(
-                                                    imageVector = iconRes,
-                                                    contentDescription = null,
-                                                    tint = iconColor,
-                                                    modifier = Modifier.size(18.dp)
-                                                )
-                                            } else if (iconRes is Int) {
-                                                Icon(
-                                                    painter = painterResource(id = iconRes),
-                                                    contentDescription = null,
-                                                    tint = iconColor,
-                                                    modifier = Modifier.size(18.dp)
-                                                )
-                                            }
-                                        }
-                                    },
-                                    subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { stringResource(R.string.audio_device_battery_format, it) },
-                                    trailingContent = {
-                                        AnimatedVisibility(
-                                            visible = dev.isActive,
-                                            enter = fadeIn() + scaleIn(),
-                                            exit = fadeOut() + scaleOut()
-                                        ) {
-                                            RadioButton(
-                                                selected = true,
-                                                onClick = null,
-                                                colors = RadioButtonDefaults.colors(
-                                                    selectedColor = colorPalette().accent,
-                                                    unselectedColor = colorPalette().textSecondary
-                                                )
-                                            )
-                                        }
-                                    },
-                                    onClick = {
-                                        if (dev.type == AudioDeviceType.PC) {
-                                            selectBridgeOutput(AudioOutput.PC)
-                                            return@Entry
-                                        }
-                                        // A phone output while on the PC brings the sound back to the phone
-                                        if (bridgeOutput == AudioOutput.PC) selectBridgeOutput(AudioOutput.PHONE)
-                                        val wasPlaying = binder?.player?.isPlaying == true
-                                        binder?.player?.pause()
-                                        binder?.setPreferredAudioDevice(dev.deviceId)
-                                        refreshDevices()
-                                        coroutineScope.launch {
-                                            // Poll every 250ms for 3 seconds to catch the volume after hardware route switch
-                                            for (i in 1..12) {
-                                                kotlinx.coroutines.delay(250)
-                                                if (!isUserDragging) {
-                                                    val newVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()
-                                                    val newMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                                                    if (newVol != currentVolume || newMax != maxVolume) {
-                                                        currentVolume = newVol
-                                                        maxVolume = newMax
-                                                    }
-                                                }
-                                                if (i == 4 && wasPlaying) {
-                                                    binder?.player?.play()
-                                                }
-                                            }
-                                        }
-                                    }
-                                )
-                            }
-
-                            item(span = { GridItemSpan(maxLineSpan) }) {
-                                SectionTitle(stringResource(R.string.player_statistics_volume_label))
-                            }
-                            item {
-                                VolumeGridEntry(
-                                    currentVolume = currentVolume,
-                                    maxVolume = maxVolume.toFloat(),
-                                    enabled = !isCarProjectionActive,
-                                    onVolumeChange = { newVolume ->
-                                        isUserDragging = true
-                                        currentVolume = newVolume
-                                        audioManager.setStreamVolume(
-                                            AudioManager.STREAM_MUSIC,
-                                            newVolume.toInt(),
-                                            0
-                                        )
-                                    },
-                                    onVolumeChangeComplete = {
-                                        isUserDragging = false
-                                    }
-                                )
-                            }
-
-                            item(span = { GridItemSpan(maxLineSpan) }) {
-                                SectionTitle(stringResource(R.string.audio_quality_format))
-                            }
-                            items(
-                                count = qualityOptions.size,
-                                key = { index -> qualityOptions[index].first.name }
-                            ) { index ->
-                                val (format, label) = qualityOptions[index]
-                                val isSelected = audioQualityFormat == format
-                                GridMenu.Entry(
-                                    text = label,
-                                    icon = {
-                                        val iconColor = if (isSelected) colorPalette().accent else colorPalette().text
-                                        Box(
-                                            modifier = Modifier
-                                                .size(32.dp)
-                                                .iconBadgeBackground(
-                                                    color = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
-                                                    shape = uiRoundnessShape()
-                                                ),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(R.drawable.audio_quality),
-                                                contentDescription = null,
-                                                tint = iconColor,
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                        }
-                                    },
-                                    trailingContent = {
-                                        AnimatedVisibility(
-                                            visible = isSelected,
-                                            enter = fadeIn() + scaleIn(),
-                                            exit = fadeOut() + scaleOut()
-                                        ) {
-                                            RadioButton(
-                                                selected = true,
-                                                onClick = null,
-                                                colors = RadioButtonDefaults.colors(
-                                                    selectedColor = colorPalette().accent,
-                                                    unselectedColor = colorPalette().textSecondary
-                                                )
-                                            )
-                                        }
-                                    },
-                                    onClick = { audioQualityFormat = format }
-                                )
-                            }
-                            item(span = { GridItemSpan(maxLineSpan) }) { Spacer(modifier = Modifier.height(32.dp)) }
-                        }
                     }
+                    SectionTitle(stringResource(R.string.player_statistics_volume_label))
+                    VolumeRow(
+                        currentVolume = currentVolume,
+                        maxVolume = maxVolume.toFloat(),
+                        enabled = !isCarProjectionActive,
+                        onVolumeChange = { newVolume ->
+                            isUserDragging = true
+                            currentVolume = newVolume
+                            audioManager.setStreamVolume(
+                                AudioManager.STREAM_MUSIC,
+                                newVolume.toInt(),
+                                0
+                            )
+                        },
+                        onVolumeChangeComplete = {
+                            isUserDragging = false
+                        }
+                    )
+                    SectionTitle(stringResource(R.string.audio_quality_format))
+                    qualityOptions.forEach { (format, label) ->
+                        val isSelected = audioQualityFormat == format
+                        ListMenu.Entry(
+                            text = label,
+                            icon = {
+                                val iconColor = if (isSelected) colorPalette().accent else colorPalette().text
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .iconBadgeBackground(
+                                            color = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
+                                            shape = uiRoundnessShape()
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.audio_quality),
+                                        contentDescription = null,
+                                        tint = iconColor,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            },
+                            modifier = if (isSelected) Modifier.background(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape()) else Modifier,
+                            trailingContent = {
+                                if (isSelected) {
+                                    RadioButton(
+                                        selected = isSelected,
+                                        onClick = null,
+                                        colors = RadioButtonDefaults.colors(
+                                            selectedColor = colorPalette().accent,
+                                            unselectedColor = colorPalette().textSecondary
+                                        )
+                                    )
+                                }
+                            },
+                            onClick = { audioQualityFormat = format }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
+            } else {
+                GridMenu.Menu(title = stringResource(R.string.audio_devices), showDragHandle = true) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        SectionTitle(stringResource(R.string.audio_output_title))
+                    }
+                    items(
+                        count = shownDevices.size,
+                        key = { index -> "${shownDevices[index].deviceId}_${shownDevices[index].isCar}_${index}" }
+                    ) { index ->
+                        val dev = shownDevices[index]
+                        val isActuallyCar = dev.isCar || (dev.type != AudioDeviceType.PC && dev.isActive && isCarProjectionActive)
+                        GridMenu.Entry(
+                            text = dev.name,
+                            enabled = !isCarProjectionActive || dev.isActive,
+                            icon = {
+                                val iconColor = if (dev.isActive) colorPalette().accent else colorPalette().text
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .iconBadgeBackground(
+                                            color = if (dev.isActive) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
+                                            shape = uiRoundnessShape()
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    val iconRes = getBottomSheetDeviceIcon(dev.type, dev.name, isActuallyCar)
+                                    if (iconRes is ImageVector) {
+                                        Icon(
+                                            imageVector = iconRes,
+                                            contentDescription = null,
+                                            tint = iconColor,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    } else if (iconRes is Int) {
+                                        Icon(
+                                            painter = painterResource(id = iconRes),
+                                            contentDescription = null,
+                                            tint = iconColor,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
+                            },
+                            subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { stringResource(R.string.audio_device_battery_format, it) },
+                            trailingContent = {
+                                AnimatedVisibility(
+                                    visible = dev.isActive,
+                                    enter = fadeIn() + scaleIn(),
+                                    exit = fadeOut() + scaleOut()
+                                ) {
+                                    RadioButton(
+                                        selected = true,
+                                        onClick = null,
+                                        colors = RadioButtonDefaults.colors(
+                                            selectedColor = colorPalette().accent,
+                                            unselectedColor = colorPalette().textSecondary
+                                        )
+                                    )
+                                }
+                            },
+                            onClick = {
+                                if (dev.type == AudioDeviceType.PC) {
+                                    selectBridgeOutput(AudioOutput.PC)
+                                    return@Entry
+                                }
+                                // A phone output while on the PC brings the sound back to the phone
+                                if (bridgeOutput == AudioOutput.PC) selectBridgeOutput(AudioOutput.PHONE)
+                                val wasPlaying = binder?.player?.isPlaying == true
+                                binder?.player?.pause()
+                                binder?.setPreferredAudioDevice(dev.deviceId)
+                                refreshDevices()
+                                coroutineScope.launch {
+                                    // Poll every 250ms for 3 seconds to catch the volume after hardware route switch
+                                    for (i in 1..12) {
+                                        kotlinx.coroutines.delay(250)
+                                        if (!isUserDragging) {
+                                            val newVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()
+                                            val newMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                                            if (newVol != currentVolume || newMax != maxVolume) {
+                                                currentVolume = newVol
+                                                maxVolume = newMax
+                                            }
+                                        }
+                                        if (i == 4 && wasPlaying) {
+                                            binder?.player?.play()
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    }
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        SectionTitle(stringResource(R.string.player_statistics_volume_label))
+                    }
+                    item {
+                        VolumeGridEntry(
+                            currentVolume = currentVolume,
+                            maxVolume = maxVolume.toFloat(),
+                            enabled = !isCarProjectionActive,
+                            onVolumeChange = { newVolume ->
+                                isUserDragging = true
+                                currentVolume = newVolume
+                                audioManager.setStreamVolume(
+                                    AudioManager.STREAM_MUSIC,
+                                    newVolume.toInt(),
+                                    0
+                                )
+                            },
+                            onVolumeChangeComplete = {
+                                isUserDragging = false
+                            }
+                        )
+                    }
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        SectionTitle(stringResource(R.string.audio_quality_format))
+                    }
+                    items(
+                        count = qualityOptions.size,
+                        key = { index -> qualityOptions[index].first.name }
+                    ) { index ->
+                        val (format, label) = qualityOptions[index]
+                        val isSelected = audioQualityFormat == format
+                        GridMenu.Entry(
+                            text = label,
+                            icon = {
+                                val iconColor = if (isSelected) colorPalette().accent else colorPalette().text
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .iconBadgeBackground(
+                                            color = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
+                                            shape = uiRoundnessShape()
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.audio_quality),
+                                        contentDescription = null,
+                                        tint = iconColor,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            },
+                            trailingContent = {
+                                AnimatedVisibility(
+                                    visible = isSelected,
+                                    enter = fadeIn() + scaleIn(),
+                                    exit = fadeOut() + scaleOut()
+                                ) {
+                                    RadioButton(
+                                        selected = true,
+                                        onClick = null,
+                                        colors = RadioButtonDefaults.colors(
+                                            selectedColor = colorPalette().accent,
+                                            unselectedColor = colorPalette().textSecondary
+                                        )
+                                    )
+                                }
+                            },
+                            onClick = { audioQualityFormat = format }
+                        )
+                    }
+                    item(span = { GridItemSpan(maxLineSpan) }) { Spacer(modifier = Modifier.height(32.dp)) }
                 }
             }
         }
     }
-    menuContent(menuStyle)
+}
+
+/** Uses the same menu surface for the progress and retry content. */
+@Composable
+internal fun AudioDeviceStatusMenu(error: String?, onRetry: () -> Unit) {
+    ListMenu.Menu(title = stringResource(R.string.audio_devices)) {
+        if (error == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                // The app's theming does not remap the M3 colorScheme tokens (spec-achromatic-ramp-luminance-cap):
+                // key on the effective palette instead, so the spinner stays readable in both tones
+                CircularProgressIndicator(
+                    modifier = Modifier.size(48.dp),
+                    strokeWidth = 3.dp,
+                    color = colorPalette().text
+                )
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Readable red keyed on the effective tone: M3 error tokens are not remapped by the
+                // app's theming (spec-achromatic-ramp-luminance-cap)
+                Icon(
+                    imageVector = Icons.Outlined.Error,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = Color.hsl(0f, 0.8f, if (colorPalette().isDark) 0.65f else 0.35f)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                // Keyed on the effective tone, not the un-remapped M3 onSurface token
+                Text(
+                    text = error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colorPalette().text,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = onRetry) {
+                    Text(text = stringResource(R.string.common_action_retry))
+                }
+            }
+        }
+    }
 }
 
 @Composable
