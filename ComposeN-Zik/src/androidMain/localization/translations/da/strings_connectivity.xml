@@ -198,4 +198,5 @@
     <string name="listen_together_server_request_failed">Lyt Together serveren kunne ikke fuldføre forespørgslen.</string>
     <string name="network_stream_retrying_playback">Forsøger at genoptage afspilningen…</string>
     <string name="listen_together_invite_link">Lyt sammen invitationslink</string>
+    <string name="listen_together_server_location_poland">Polen</string>
 </resources>
