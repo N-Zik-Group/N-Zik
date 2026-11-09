@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Last.fm Konto</string>
     <string name="profile_identity_source_not_connected">Nicht angemeldet</string>
     <string name="profile_last_used">Zuletzt verwendet</string>
-    <string name="profile_last_used_days">vor %d Tagen</string>
-    <string name="profile_last_used_hours">%d h ago</string>
-    <string name="profile_last_used_minutes">%d min ago</string>
-    <string name="profile_last_used_months">%d Monate</string>
     <string name="profile_last_used_now">Gerade jetzt</string>
-    <string name="profile_last_used_weeks">%d Wochen</string>
     <string name="profile_local_name">Profilname</string>
     <string name="profile_local_name_description">Das aktuelle lokale Profil umbenennen.</string>
     <string name="profile_name_input_hint">Profilnamen eingeben</string>
@@ -255,10 +250,11 @@
     <string name="sync_youtube_playlist_add_failed">Hinzufügen des Titels in die YouTube Wiedergabeliste fehlgeschlagen</string>
     <string name="sync_youtube_playlist_add_success">Der Titel wurde der YouTube Wiedergabeliste hinzugefügt</string>
     <string name="sync_youtube_playlist_batch_failed">Bei den nächsten 50 Titeln ist ein Fehler aufgetreten. Der Wiedergabeliste einen Titel nach dem anderen hinzufügen</string>
+    <string name="sync_youtube_playlist_no_songs_added">Es wurden keine Titel zur YouTube-Wiedergabeliste hinzugefügt</string>
     <string name="sync_youtube_playlist_songs_added_suffix">Titel werden der YouTube Wiedergabeliste hinzugefügt. Wiederhole den Vorgang falls noch Titel fehlen</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">Titel werden der YTM Wiedergabeliste hinzugefügt</string>
     <string name="sync_youtube_playlists_title">YTM-Wiedergabelisten</string>
-    <string name="sync_youtube_songs_remaining">Verbleibende Songs: %1$s</string>
+    <string name="sync_youtube_songs_remaining">%1$s Lieder verbleibend</string>
     <string name="sync_youtube_unlike_failed">\"Gefällt mir\" des Titels konnte auf YouTube nicht entfernt werden</string>
     <string name="sync_youtube_unlike_success">Der Titel ist auf YouTube nicht mit \"Gefällt mir\" markiert</string>
     <string name="sync_starting_notification">Synchronisierung starten...</string>
