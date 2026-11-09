@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">الاتصال باليوتيوب أولاً لتفعيل هذا الخيار</string>
     <string name="settings_youtube_library_sync_content_description">المشغلين، الألبومات، الفنانين، التاريخ، مثل، إلخ.</string>
     <string name="settings_youtube_login_enabled_label">Enable YouTube Music Login</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Sort</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: شريط الأدوات</string>
 </resources>
