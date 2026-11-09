@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">Ultima prăbușire</string>
     <string name="maintenance_lastfm_active">Sesiune activă</string>
     <string name="maintenance_library">Bibliotecă</string>
-    <string name="maintenance_library_albums">Albume: %d</string>
-    <string name="maintenance_library_artists">Artişti: %d</string>
+    <string name="maintenance_library_albums">Albume %d</string>
+    <string name="maintenance_library_artists">%d artiști</string>
     <string name="maintenance_library_listened">%d ascultat</string>
-    <string name="maintenance_library_playlists">Liste de redare: %d</string>
-    <string name="maintenance_library_songs">Melodii: %d</string>
+    <string name="maintenance_library_playlists">Playlisturi %d</string>
+    <string name="maintenance_library_songs">%d melodii</string>
     <string name="maintenance_live_subsystems">Subsisteme live</string>
     <string name="maintenance_log_view">Vizualizare</string>
     <string name="maintenance_lt_connected">Conectat</string>
@@ -197,7 +197,7 @@
     <string name="recovery_error">A apărut o eroare: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Exportă baza de date</string>
-    <string name="recovery_export_database_description">Salvează biblioteca, listele de redare și istoricul</string>
+    <string name="recovery_export_database_with_covers_description">Salvează-ți biblioteca, listele de redare și istoricul ca SQLite. Dacă ai coperți personalizate, exportul este un ZIP cu baza de date și coperte.</string>
     <string name="recovery_export_logs">Exportă jurnalele</string>
     <string name="recovery_export_logs_description">Salvați jurnalele de eroare și erorile pentru un raport</string>
     <string name="recovery_export_profiles_description">Lista de profil și fotografiile feței într-un singur fișier .txt</string>
@@ -210,7 +210,7 @@
     <string name="recovery_group_settings">Setări</string>
     <string name="recovery_group_storage">Depozitare</string>
     <string name="recovery_import_database">Importă baza de date</string>
-    <string name="recovery_import_database_description">Restaurați o bază de date exportată anterior</string>
+    <string name="recovery_import_database_with_covers_description">Restaurează o copie de rezervă a bazei de date SQLite sau ZIP, incluzând orice copertă personalizată în ZIP.</string>
     <string name="recovery_import_profiles_description">Restaurați lista de profil și fotografiile feței dintr-un fișier .txt</string>
     <string name="recovery_import_settings">Importă setări</string>
     <string name="recovery_import_settings_description">Restaurați preferințele dintr-un fișier CSV</string>
@@ -311,4 +311,5 @@
     <string name="updates_warning_acknowledge">Am înțeles</string>
     <string name="updates_check_failed">Nu s-au putut verifica actualizările.</string>
     <string name="updates_install_generic_error">Actualizarea nu a putut fi instalată.</string>
+    <string name="updates_channel_available_format">Actualizare %1$s disponibilă</string>
 </resources>
