@@ -42,6 +42,7 @@
     <string name="home_greeting_evening">おやすみなさい</string>
     <string name="home_greeting_morning">おはようございます</string>
     <string name="home_greeting_night">おやすみなさい</string>
+    <string name="home_greeting_with_profile_format">%1$s, %2$s</string>
     <string name="home_playlists_settings">ホームプレイ</string>
     <string name="home_songs_settings">ホーム曲</string>
     <string name="home_sort_last_played_song_label">最後に再生した曲</string>
@@ -248,6 +249,7 @@
     <string name="playlist_refresh_on_open_enable">開いた時に更新を有効にする</string>
     <string name="playlist_remove_selected_confirmation">このプレイリストから選択した曲を削除しますか？</string>
     <string name="playlist_remove_songs_confirmation">選択したトラックをプレイリストから削除しますか？選択したトラック: %d</string>
+    <string name="playlist_remove_songs_success_format">%1$s %2$d</string>
     <string name="playlist_rename_dialog_title">プレイリストの名前を変更</string>
     <string name="playlist_reorder_ascending_sort_required_message">並べ替えは昇順のソートでのみ可能です</string>
     <string name="playlist_reorder_lock_toggle_label">曲の並び順をロック/ロック解除</string>
@@ -377,6 +379,27 @@
     <string name="song_metadata_update_action_open">更新ダイアログを開く</string>
     <string name="song_metadata_updated_count">%1$d 曲を更新しました</string>
     <string name="song_play_time_action_reset">合計再生時間をリセット</string>
+    <string name="song_like_status_action_reset">お気に入り/嫌いの状態をリセット</string>
+    <string name="song_update_action_clear_playback_cache">再生キャッシュをクリア</string>
+    <string name="song_update_action_remove_offline_download">オフラインのダウンロードを削除</string>
+    <string name="song_update_result_partial">部分的に更新されました。 %1$s</string>
+    <string name="song_update_result_failed">更新されていません。 %1$s</string>
+    <string name="song_update_error_metadata_unavailable">YouTube情報が利用できません。</string>
+    <string name="song_update_error_network">YouTubeにアクセスできませんでした。接続を確認してください。</string>
+    <string name="song_update_error_missing_title">YouTubeはタイトルを返しませんでした。</string>
+    <string name="song_update_error_missing_artists">YouTubeはアーティストを返却しませんでした。</string>
+    <string name="song_update_error_incomplete_artists">YouTubeからのアーティスト情報が不完全です。</string>
+    <string name="song_update_error_missing_cover">YouTubeはカバーを返しませんでした。</string>
+    <string name="song_update_error_wrong_song">YouTubeは別の曲を返しました。情報は無視されました。</string>
+    <string name="song_update_error_cache_unavailable">Playback cacheは利用できません。プレーヤーを再度開いて、もう一度お試しください。</string>
+    <string name="song_update_error_profile_changed">アクティブなプロファイルが変更されたため、更新が停止しました。</string>
+    <string name="song_update_error_storage">このデバイスに変更を保存できませんでした。</string>
+    <string name="song_update_error_cache_clear">再生キャッシュのクリアを完了できませんでした。</string>
+    <string name="song_update_error_download_remove">オフラインダウンロードを削除できませんでした。</string>
+    <string name="song_update_error_cover_reset">カバーのリセットを完了できませんでした。</string>
+    <string name="song_update_error_playback_refresh">変更は保存されましたが、プレイヤーは更新できませんでした。</string>
+    <string name="song_update_batch_result">更新されました: %1$d · 一部更新: %2$d · 更新されません: %3$d</string>
+    <string name="song_update_batch_reason_count">%1$s (%2$d)</string>
     <!-- Song Matching -->
     <string name="song_matching_action_open">アルバム/オーディオバージョンに一致</string>
     <string name="song_matching_all_confirmation">%d 不一致の曲をマッチさせますか？</string>
@@ -393,4 +416,6 @@
     <string name="playlist_like_all_duration_confirmation_format">すべての曲をいいねするには %1$sがかかります。キャンセルするにはアプリを閉じてください。続行しますか？</string>
     <string name="library_on_device_permission_request_failed">このデバイスで音楽へのアクセスをリクエストできませんでした。</string>
     <string name="library_on_device_permission_settings_failed">権限設定を開けませんでした。</string>
+    <string name="artist_more_from_format">%1$s の詳細</string>
+    <string name="playlist_top_show_title_format">%1$s を表示</string>
 </resources>
