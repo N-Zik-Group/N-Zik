@@ -198,4 +198,5 @@
     <string name="listen_together_server_request_failed">Birlikte Dinle sunucusu isteği tamamlayamadı.</string>
     <string name="network_stream_retrying_playback">Oynatmayı yeniden deniyorum…</string>
     <string name="listen_together_invite_link">Birlikte Dinle davet bağlantısı</string>
+    <string name="listen_together_server_location_poland">Poland</string>
 </resources>
