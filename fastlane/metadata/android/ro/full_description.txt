@@ -27,7 +27,7 @@ Credite de sticlă: Proiect pătrat / Convx (GPL-3.0); Kyant0 AndroidLiquidGass 
 
 💾 <b>Offline, Metadate & Privacy</b>
 - Caching și descărcări inteligente pentru piese și liste de redare, cu o calitate selectabilă a descărcării
-- Exportul alimentat de FFmpou cu metadate complete (FFmpeg este o extensie descărcabilă, instalată la prima utilizare)
+- Exportul alimentat de FFmpeg-pe metadate complete (poate fi descărcat la prima utilizare; indisponibil pe dispozitive x86 de biți)
 - Editor de metadate în aplicație (AAC/Opus, copertă artă)
 - Statistici și istoric ascultări locale
 - Copie de rezervă automată cu intervale și retenție personalizate
