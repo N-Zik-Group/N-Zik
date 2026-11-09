@@ -230,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Middels (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Svært høy (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">Nedlasting</string>
+    <string name="cover_download_failed">Kunne ikke laste ned forsiden.</string>
     <string name="image_editor_title">Rediger bilde</string>
     <string name="image_editor_failed">Kunne ikke redigere bildet. Ditt gjeldende bilde ble sprettet.</string>
     <string name="thumbnail_action_edit">Rediger miniatyrbilde</string>
