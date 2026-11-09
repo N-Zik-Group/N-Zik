@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">前回のクラッシュ</string>
     <string name="maintenance_lastfm_active">セッションが有効です</string>
     <string name="maintenance_library">ライブラリ</string>
-    <string name="maintenance_library_albums">%d アルバム</string>
-    <string name="maintenance_library_artists">%d アーティスト</string>
+    <string name="maintenance_library_albums">Albums: %d</string>
+    <string name="maintenance_library_artists">Artists: %d</string>
     <string name="maintenance_library_listened">%d が聴いています</string>
-    <string name="maintenance_library_playlists">%d プレイリスト</string>
-    <string name="maintenance_library_songs">%d 曲</string>
+    <string name="maintenance_library_playlists">Playlists: %d</string>
+    <string name="maintenance_library_songs">Songs: %d</string>
     <string name="maintenance_live_subsystems">ライブ・サブシステム</string>
     <string name="maintenance_log_view">表示</string>
     <string name="maintenance_lt_connected">接続しました</string>
