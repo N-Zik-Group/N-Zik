@@ -15,6 +15,7 @@
     <string name="common_delete_success">削除済み</string>
     <string name="common_description_unavailable">説明はありません</string>
     <string name="common_duration_milliseconds_format">%1$s ミリ秒</string>
+    <string name="common_duration_milliseconds_unit">ms</string>
     <string name="common_empty_items">アイテムがありません</string>
     <string name="common_external_link_loading_suffix">読み込み中...</string>
     <string name="common_load_failed">読み込めません</string>
@@ -43,4 +44,6 @@
     <string name="common_value_input_hint">値を入力してください</string>
     <string name="common_unknown">不明</string>
     <string name="common_duration_minutes_short">%1$d 分</string>
+    <string name="common_external_link_loading_format">%1$s is loading…</string>
+    <string name="common_loading_message">Loading…</string>
 </resources>
