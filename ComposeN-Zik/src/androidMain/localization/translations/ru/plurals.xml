@@ -61,4 +61,88 @@
         <item quantity="many">%1$d songs heard</item>
         <item quantity="other">%1$d songs heard</item>
     </plurals>
+    <plurals name="profile_last_used_minute_count">
+        <item quantity="one">%1$d minute ago</item>
+        <item quantity="few">%1$d minutes ago</item>
+        <item quantity="many">%1$d minutes ago</item>
+        <item quantity="other">%1$d minutes ago</item>
+    </plurals>
+    <plurals name="profile_last_used_hour_count">
+        <item quantity="one">%1$d hour ago</item>
+        <item quantity="few">%1$d hours ago</item>
+        <item quantity="many">%1$d hours ago</item>
+        <item quantity="other">%1$d hours ago</item>
+    </plurals>
+    <plurals name="profile_last_used_day_count">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="few">%1$d days ago</item>
+        <item quantity="many">%1$d days ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+    <plurals name="profile_last_used_week_count">
+        <item quantity="one">%1$d week ago</item>
+        <item quantity="few">%1$d weeks ago</item>
+        <item quantity="many">%1$d weeks ago</item>
+        <item quantity="other">%1$d weeks ago</item>
+    </plurals>
+    <plurals name="profile_last_used_month_count">
+        <item quantity="one">%1$d month ago</item>
+        <item quantity="few">%1$d months ago</item>
+        <item quantity="many">%1$d months ago</item>
+        <item quantity="other">%1$d months ago</item>
+    </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Удалить поисковый запрос %1$d</item>
+        <item quantity="few">Удалить %1$d поисковых запросов</item>
+        <item quantity="many">Удалить %1$d поисковых запросов</item>
+        <item quantity="other">Удалить %1$d поисковых запросов</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Удалить воспроизведение %1$d</item>
+        <item quantity="few">Удалить события воспроизведения %1$d</item>
+        <item quantity="many">Удалить события воспроизведения %1$d</item>
+        <item quantity="other">Удалить события воспроизведения %1$d</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d episode · %2$s</item>
+        <item quantity="few">%1$d episodes · %2$s</item>
+        <item quantity="many">%1$d episodes · %2$s</item>
+        <item quantity="other">%1$d episodes · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">Добавление %1$d песни в плейлист YouTube</item>
+        <item quantity="few">Добавление %1$d песен в плейлист YouTube</item>
+        <item quantity="many">Добавление %1$d песен в плейлист YouTube</item>
+        <item quantity="other">Добавление %1$d песен в плейлист YouTube</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">Добавлена песня %1$d в плейлист YouTube</item>
+        <item quantity="few">Добавлен %1$d треков в плейлист YouTube</item>
+        <item quantity="many">Добавлен %1$d треков в плейлист YouTube</item>
+        <item quantity="other">Добавлен %1$d треков в плейлист YouTube</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Импортировано состояние профиля: %1$d профиль</item>
+        <item quantity="few">Импорт состояния профиля: %1$d профилей</item>
+        <item quantity="many">Импорт состояния профиля: %1$d профилей</item>
+        <item quantity="other">Импорт состояния профиля: %1$d профилей</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Не удалось синхронизировать альбом %1$d . Вернитесь на вкладку Альбомы для повтора.</item>
+        <item quantity="few">Не удалось синхронизировать альбомы %1$d . Вернитесь на вкладку Альбомы для повтора.</item>
+        <item quantity="many">Не удалось синхронизировать альбомы %1$d . Вернитесь на вкладку Альбомы для повтора.</item>
+        <item quantity="other">Не удалось синхронизировать альбомы %1$d . Вернитесь на вкладку Альбомы для повтора.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Экспортировать %1$d кэшированные/скачанные песни?</item>
+        <item quantity="few">Экспортировать %1$d кэшированные/загруженные песни?</item>
+        <item quantity="many">Экспортировать %1$d кэшированные/загруженные песни?</item>
+        <item quantity="other">Экспортировать %1$d кэшированные/загруженные песни?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">%1$d downloaded song is missing its file and was removed. Please download it again.</item>
+        <item quantity="few">%1$d downloaded songs are missing their files and were removed. Please download them again.</item>
+        <item quantity="many">%1$d downloaded songs are missing their files and were removed. Please download them again.</item>
+        <item quantity="other">%1$d downloaded songs are missing their files and were removed. Please download them again.</item>
+    </plurals>
 </resources>
