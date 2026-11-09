@@ -15,6 +15,7 @@
     <string name="common_delete_success">محذوف</string>
     <string name="common_description_unavailable">لا يوجد وصف متاح</string>
     <string name="common_duration_milliseconds_format">%1$s مللي ثانية</string>
+    <string name="common_duration_milliseconds_unit">م.ث</string>
     <string name="common_empty_items">لا توجد عناصر</string>
     <string name="common_external_link_loading_suffix">جارٍ التحميل...</string>
     <string name="common_load_failed">تعذر التحميل</string>
@@ -43,4 +44,6 @@
     <string name="common_value_input_hint">Enter The Value</string>
     <string name="common_unknown">غير معروف</string>
     <string name="common_duration_minutes_short">%1$d min</string>
+    <string name="common_external_link_loading_format">%1$s يقوم بتحميل…</string>
+    <string name="common_loading_message">جاري التحميل…</string>
 </resources>
