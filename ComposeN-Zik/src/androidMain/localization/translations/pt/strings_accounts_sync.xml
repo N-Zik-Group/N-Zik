@@ -246,10 +246,11 @@
     <string name="sync_youtube_history_title">Histórico do YTM</string>
     <string name="sync_youtube_like_failed">Falha ao curtir a música no YouTube</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Músicas são curtidas no YouTube</string>
+    <string name="sync_youtube_like_success">Adicionado às curtidas do YouTube</string>
     <string name="sync_youtube_playlist_add_failed">Falha ao adicionar uma música à lista de reprodução do YouTube</string>
     <string name="sync_youtube_playlist_add_success">Adicionada a música na lista de reprodução do YouTube</string>
     <string name="sync_youtube_playlist_batch_failed">Ocorreu um erro para as próximas 50 músicas. Adicionando músicas à playlist uma por uma</string>
+    <string name="sync_youtube_playlist_no_songs_added">Nenhuma música foi adicionada à lista de reprodução do YouTube</string>
     <string name="sync_youtube_playlist_songs_added_suffix">as músicas são adicionadas na playlist do YouTube. Repita o processo se houver alguma música faltando</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">músicas serão adicionadas na playlist YTM</string>
     <string name="sync_youtube_playlists_title">Playlists do YTM</string>
