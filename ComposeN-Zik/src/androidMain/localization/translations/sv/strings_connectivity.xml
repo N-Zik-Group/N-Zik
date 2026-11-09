@@ -198,4 +198,5 @@
     <string name="listen_together_server_request_failed">Servern Lyssna Tillsammans kunde inte slutföra begäran.</string>
     <string name="network_stream_retrying_playback">Återställer uppspelning…</string>
     <string name="listen_together_invite_link">Lyssna tillsammans inbjudningslänk</string>
+    <string name="listen_together_server_location_poland">Polen</string>
 </resources>
