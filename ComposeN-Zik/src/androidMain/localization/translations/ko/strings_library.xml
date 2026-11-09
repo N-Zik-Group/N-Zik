@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Liking all the songs will take about %1$s. Close the app to cancel. Do you want to continue?</string>
     <string name="library_on_device_permission_request_failed">Could not request access to music on this device.</string>
     <string name="library_on_device_permission_settings_failed">Could not open permission settings.</string>
+    <string name="artist_more_from_format">More from %1$s</string>
+    <string name="playlist_top_show_title_format">Show %1$s</string>
 </resources>
