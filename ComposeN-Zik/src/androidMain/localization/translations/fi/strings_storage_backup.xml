@@ -3,7 +3,7 @@
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Tallennustila</string>
     <string name="storage_breakdown_info_title">Tietoja tallennustilasta</string>
-    <string name="storage_breakdown_nzik_total">NZikin käyttämä kokonaismäärä</string>
+    <string name="storage_breakdown_nzik_total">Yhteensä käytetty N-Zik</string>
     <string name="storage_breakdown_subtitle">Varastoinnin erittely</string>
     <string name="storage_breakdown_waiting">Measuring storage…</string>
     <string name="storage_breakdown_cached_images">Välimuistissa olevat kuvat</string>
@@ -11,20 +11,20 @@
     <string name="storage_breakdown_downloaded_audio">Ladattu ääni</string>
     <string name="storage_breakdown_custom_covers">Mukautetut kannet</string>
     <string name="storage_breakdown_waveforms">Aaltomuodot</string>
-    <string name="storage_breakdown_other_nzik_data">Muut NZik tiedot</string>
+    <string name="storage_breakdown_other_nzik_data">Muut N-Zik-tiedot</string>
     <string name="storage_breakdown_other_used_space">System, apps &amp; files</string>
     <string name="storage_breakdown_free_space">Vapaa tila</string>
     <string name="storage_info_images">Taide ja muut kuvat välimuistissa nopeampaa näyttöä.</string>
     <string name="storage_info_streaming">Ääni pidetään väliaikaisesti suoratoiston jälkeen, joten sitä voidaan toistaa uudelleen hakematta samoja tietoja.</string>
-    <string name="storage_info_downloads">Ääni tallennettu NZik offline kuunteluun.</string>
+    <string name="storage_info_downloads">Ääni tallennettu N-Zik offline-kuunteluun.</string>
     <string name="storage_info_waveforms">Luotu tiedostoja, joita käytetään soittimen ääniaaltomuodon piirtämiseen.</string>
     <string name="storage_info_covers">Valitset tai tuodut taideteokset mukautetuiksi kansiksi.</string>
-    <string name="storage_info_other_nzik">Loppuosa NZikin yksityisistä tiedoista, mukaan lukien sen tietokannat, asetukset, indeksit, laajennukset ja lokit.</string>
+    <string name="storage_info_other_nzik">Loput N-Zikin yksityisistä tiedoista, mukaan lukien sen tietokannat, asetukset, indeksit, laajennukset ja lokit.</string>
     <string name="storage_info_other_used">Jäljellä olevat käytetyt tilat sisäisessä taltiossa, mukaan lukien Android, asennetut sovellukset ja henkilökohtaiset tiedostot.</string>
     <string name="storage_info_free">Sisäisessä taltiossa olevien sovellusten ja tiedostojen käytettävissä oleva tila.</string>
     <string name="storage_cleanup_title">Siivoaminen</string>
     <string name="storage_cleanup_failed">Tallennustilan puhdistus ei onnistunut.</string>
-    <string name="storage_cleanup_images_description">Tyhjennä taideteos välimuistissa NZik.</string>
+    <string name="storage_cleanup_images_description">Tyhjennä taideteos välimuistissa N-Zik.</string>
     <string name="storage_cleanup_streaming_description">Tyhjennä välimuisti lähetyksen aikana.</string>
     <string name="storage_cleanup_downloads_description">Poista offline ääni ja peruuta odottavat lataukset aktiivisen profiilin lataustallennustilaan.</string>
     <string name="storage_cleanup_waveforms_description">Tyhjennä luodut aaltomuodon tiedostot.</string>
@@ -139,7 +139,7 @@
     <string name="downloads_delete_all_count_confirmation">Poista kaikki %d lataukset?</string>
     <string name="downloads_delete_dialog_title">Poista lataukset</string>
     <string name="downloads_download_all_confirmation">Haluatko varmasti ladata kaikki?</string>
-    <string name="downloads_download_all_count_confirmation">Lataa kaikki %d kappaletta?</string>
+    <string name="downloads_download_all_count_confirmation">Lataa kaikki? (Songit: %d)</string>
     <string name="downloads_download_dialog_title">Lataa kappaleet</string>
     <string name="downloads_empty_message">Ei ladattavaa</string>
     <string name="downloads_error_network">Tapahtui verkkovirhe</string>
@@ -166,16 +166,16 @@
     <string name="export_running_status">Viedään…</string>
     <string name="export_song_unavailable_message">Kappale täytyy välimuistia tai ladata vietäväksi</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Haluatko poistaa kaikki lataukset (%d kappaletta)?</string>
+    <string name="library_cleanup_all_downloads_confirmation">Poista kaikki lataukset? (Songit: %d)</string>
     <string name="library_cleanup_all_favorites_confirmation">Haluatko poistaa kaikki %d suosikkeja?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Haluatko nollata kuunteluhistorian %d kappaleen osalta?</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ VAROITUS: Tämä poistaa kaikki %d kappaleet ja poistaa ne kaikista soittolistoista. Tätä toimintoa ei voi peruuttaa!</string>
-    <string name="library_cleanup_entire_cache_confirmation">Haluatko tyhjentää koko kätkön (%d kappaletta)?</string>
-    <string name="library_cleanup_selected_cache_confirmation">Haluatko poistaa nämä %d kappaleet välimuistista?</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Nollaa kuunteluhistoria? (Songit: %d)</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ VAROITUS: Tämä poistaa kappaleet ja poistaa ne kaikista soittolistoista. (Songs: %d) Tätä toimintoa ei voi peruuttaa!</string>
+    <string name="library_cleanup_entire_cache_confirmation">Tyhjennä koko välimuisti? (Songit: %d)</string>
+    <string name="library_cleanup_selected_cache_confirmation">Poista valinta välimuistista? (Songit: %d)</string>
     <string name="library_cleanup_selected_downloads_confirmation">Haluatko poistaa nämä %d lataukset?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Haluatko poistaa nämä %d kappaleet suosikeista?</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Haluatko nollata kuunteluhistorian näille %d kappaleille?</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ VAROITUS: Tämä poistaa nämä %d kappaleet ja poistaa ne kaikista soittolistoista. Tätä toimintoa ei voi peruuttaa!</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Poista valinta suosikeista? (Songit: %d)</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Nollaa valinnan kuunteluhistoria? (Songit: %d)</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ VAROITUS: Tämä poistaa valinnan ja poistaa sen KAIKKI soittolistoista. (Songs: %d) Tätä toimintoa ei voi peruuttaa!</string>
     <string name="library_cleanup_title">Älykäs roskakori</string>
     <string name="library_favorites_remove_dialog_title">Poista suosikeista</string>
     <string name="library_listening_history_reset_dialog_title">Nollaa kuunteluhistoria</string>
