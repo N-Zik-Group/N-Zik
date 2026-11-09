@@ -41,4 +41,208 @@
         <item quantity="one">%1$d Lied gehört</item>
         <item quantity="other">%1$d Lieder gefunden</item>
     </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">%1$d Suchabfrage löschen</item>
+        <item quantity="other">%1$d Suchabfragen löschen</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">%1$d Wiedergabe-Ereignis löschen</item>
+        <item quantity="other">%1$d Wiedergabe-Ereignisse löschen</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d Episode · %2$s</item>
+        <item quantity="other">%1$d Episoden · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">%1$d Lied zur YouTube-Wiedergabeliste hinzufügen</item>
+        <item quantity="other">%1$d Songs zur YouTube-Wiedergabeliste hinzufügen</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">%1$d Lied zur YouTube-Playlist hinzugefügt</item>
+        <item quantity="other">%1$d Songs zur YouTube-Wiedergabeliste hinzugefügt</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Profilstatus importiert: %1$d Profil</item>
+        <item quantity="other">Profilstatus importiert: %1$d Profile</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Fehler beim Synchronisieren von %1$d Album. Gehen Sie zurück zum Album-Tab um es erneut zu versuchen.</item>
+        <item quantity="other">Fehler beim Synchronisieren von %1$d Alben. Gehen Sie zurück zum Album-Tab um es erneut zu versuchen.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">%1$d Cache/heruntergeladenes Lied exportieren?</item>
+        <item quantity="other">Exportiere %1$d zwischengespeicherte/heruntergeladene Songs?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">%1$d heruntergeladenes Lied fehlt seine Datei und wurde entfernt. Bitte laden Sie es erneut herunter.</item>
+        <item quantity="other">%1$d heruntergeladene Lieder fehlen ihre Dateien und wurden entfernt. Bitte laden Sie sie erneut herunter.</item>
+    </plurals>
+    <plurals name="recommendations_quick_picks_song_count">
+        <item quantity="one">%1$d empfohlenes Lied</item>
+        <item quantity="other">%1$d empfohlene Lieder</item>
+    </plurals>
+    <plurals name="listen_together_blocked_user_count">
+        <item quantity="one">%1$d Benutzer gesperrt</item>
+        <item quantity="other">%1$d Benutzer gesperrt</item>
+    </plurals>
+    <plurals name="sync_failed_notification_artist_count">
+        <item quantity="one">Fehler beim Synchronisieren von %1$d Artist. Gehe zurück zur Registerkarte Interpreten, um es erneut zu versuchen.</item>
+        <item quantity="other">Fehler beim Synchronisieren von %1$d Künstlern. Gehe zurück zur Registerkarte Interpreten, um es erneut zu versuchen.</item>
+    </plurals>
+    <plurals name="sync_failed_notification_playlist_count">
+        <item quantity="one">Fehler beim Synchronisieren der %1$d Wiedergabeliste. Zurück zum Reiter Wiedergabelisten, um es erneut zu versuchen.</item>
+        <item quantity="other">Fehler beim Synchronisieren der %1$d Wiedergabelisten. Gehe zurück zum Reiter Wiedergabelisten, um es erneut zu versuchen.</item>
+    </plurals>
+    <plurals name="sync_retry_failed_item_confirmation">
+        <item quantity="one">Möchten Sie erneut versuchen, das fehlgeschlagene %1$d zu synchronisieren?</item>
+        <item quantity="other">Möchten Sie erneut versuchen, die fehlgeschlagenen %1$d Dateien zu synchronisieren?</item>
+    </plurals>
+    <plurals name="sync_progress_artist_count">
+        <item quantity="one">Künstler synchronisieren... (%1$d/%2$d)</item>
+        <item quantity="other">Künstler synchronisieren... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_artist_refresh_count">
+        <item quantity="one">Aktualisiere %1$d Künstler</item>
+        <item quantity="other">Aktualisiere %1$d Künstler</item>
+    </plurals>
+    <plurals name="library_sync_artist_retry_count">
+        <item quantity="one">Fehler beim Finden von %1$d Interpret, erneut versuchen</item>
+        <item quantity="other">Fehler beim Finden von %1$d Künstlern, erneut versuchen</item>
+    </plurals>
+    <plurals name="sync_progress_album_count">
+        <item quantity="one">Syncing album... (%1$d/%2$d)</item>
+        <item quantity="other">Alben synchronisieren... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_album_refresh_count">
+        <item quantity="one">Aktualisiere %1$d Album</item>
+        <item quantity="other">Aktualisiere %1$d Alben</item>
+    </plurals>
+    <plurals name="library_sync_album_retry_count">
+        <item quantity="one">Fehler beim Finden von %1$d Album, erneut versuchen</item>
+        <item quantity="other">Fehler beim Finden von %1$d Alben, erneut versuchen</item>
+    </plurals>
+    <plurals name="sync_progress_playlist_count">
+        <item quantity="one">Synchronisiere Wiedergabeliste... (%1$d/%2$d)</item>
+        <item quantity="other">Wiedergabelisten synchronisieren... (%1$d/%2$d)</item>
+    </plurals>
+    <plurals name="library_sync_playlist_refresh_count">
+        <item quantity="one">Aktualisiere %1$d Playlist</item>
+        <item quantity="other">Aktualisiere %1$d Playlists</item>
+    </plurals>
+    <plurals name="library_sync_playlist_retry_count">
+        <item quantity="one">Fehler beim Finden der %1$d Wiedergabeliste, erneut versuchen</item>
+        <item quantity="other">Fehler beim Finden von %1$d Wiedergabelisten, wiederholen</item>
+    </plurals>
+    <plurals name="maintenance_pass_cleaned_count">
+        <item quantity="one">%1$d Element bereinigt</item>
+        <item quantity="other">%1$d Elemente bereinigt</item>
+    </plurals>
+    <plurals name="maintenance_pass_deferred_count">
+        <item quantity="one">%1$d Element verschoben</item>
+        <item quantity="other">%1$d Elemente verschoben</item>
+    </plurals>
+    <plurals name="maintenance_pass_skipped_count">
+        <item quantity="one">%1$d Element übersprungen</item>
+        <item quantity="other">%1$d Elemente übersprungen</item>
+    </plurals>
+    <plurals name="maintenance_dedup_flagged_count">
+        <item quantity="one">Markierte %1$d Zeile</item>
+        <item quantity="other">Markierte %1$d Zeilen</item>
+    </plurals>
+    <plurals name="maintenance_dedup_merged_count">
+        <item quantity="one">%1$d Zeile zusammengeführt</item>
+        <item quantity="other">%1$d Zeilen zusammengeführt</item>
+    </plurals>
+    <plurals name="recovery_profile_deleted_count">
+        <item quantity="one">%1$d Profil gelöscht</item>
+        <item quantity="other">%1$d Profile gelöscht</item>
+    </plurals>
+    <plurals name="recovery_profile_reset_count">
+        <item quantity="one">%1$d Profil zurücksetzen. App neu starten</item>
+        <item quantity="other">%1$d Profile zurücksetzen. App neu starten</item>
+    </plurals>
+    <plurals name="recovery_profile_restored_count">
+        <item quantity="one">%1$d Profil wiederhergestellt: App neu starten</item>
+        <item quantity="other">%1$d Profile wiederhergestellt: App neu starten</item>
+    </plurals>
+    <plurals name="album_loading_song_count">
+        <item quantity="one">Lade %1$d Lied…</item>
+        <item quantity="other">Lade %1$d Lieder…</item>
+    </plurals>
+    <plurals name="artist_deduplication_result_count">
+        <item quantity="one">%1$d Duplikat Künstler mit dem richtigen Künstler zusammengeführt</item>
+        <item quantity="other">%1$d Duplikate mit dem richtigen Künstler zusammengeführt</item>
+    </plurals>
+    <plurals name="artist_link_cleanup_result_count">
+        <item quantity="one">Falscher Interpretenlink entfernt %1$d</item>
+        <item quantity="other">%1$d fehlerhafte Interpretenlinks entfernt</item>
+    </plurals>
+    <plurals name="library_song_count_with_duration">
+        <item quantity="one">%1$d Song • %2$s</item>
+        <item quantity="other">%1$d Songs • %2$s</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count">
+        <item quantity="one">(%1$d vote)</item>
+        <item quantity="other">(%1$d votes)</item>
+    </plurals>
+    <plurals name="metadata_musicbrainz_rating_vote_count_attribution">
+        <item quantity="one">%1$d Abstimmung über MusicBrainz</item>
+        <item quantity="other">%1$d Stimmen über MusicBrainz</item>
+    </plurals>
+    <plurals name="playlist_delete_all_confirmation_count">
+        <item quantity="one">Bist du sicher, dass du die einzige Wiedergabeliste löschen möchtest (%1$d)?</item>
+        <item quantity="other">Bist du sicher, dass du ALLE %1$d Wiedergabelisten löschen möchtest?</item>
+    </plurals>
+    <plurals name="playlist_delete_selected_confirmation_count">
+        <item quantity="one">Bist du sicher, dass du diese Wiedergabeliste löschen möchtest (%1$d)?</item>
+        <item quantity="other">Sind Sie sicher, dass Sie diese %1$d Wiedergabelisten löschen möchten?</item>
+    </plurals>
+    <plurals name="playlist_positions_shuffled_count">
+        <item quantity="one">%1$d Position gemischt</item>
+        <item quantity="other">%1$d Positionen gemischt</item>
+    </plurals>
+    <plurals name="song_metadata_updated_song_count">
+        <item quantity="one">Aktualisierte %1$d Song</item>
+        <item quantity="other">Aktualisierte %1$d Lieder</item>
+    </plurals>
+    <plurals name="rewind_home_year_play_count">
+        <item quantity="one">%1$s · %2$s spielen</item>
+        <item quantity="other">%1$s · %2$s spielt</item>
+    </plurals>
+    <plurals name="rewind_listening_day_count_without">
+        <item quantity="one">%1$s Tag ohne zuzuhören.</item>
+        <item quantity="other">%1$s Tage ohne zuzuhören.</item>
+    </plurals>
+    <plurals name="rewind_loader_status_day_count">
+        <item quantity="one">%1$s LISTENTAG</item>
+        <item quantity="other">%1$s LISTENTAGE</item>
+    </plurals>
+    <plurals name="rewind_loader_status_minute_count">
+        <item quantity="one">%1$s MINUTE</item>
+        <item quantity="other">%1$s MINUTE</item>
+    </plurals>
+    <plurals name="rewind_loader_status_play_count">
+        <item quantity="one">%1$s SPIELE</item>
+        <item quantity="other">%1$s SPIELEN</item>
+    </plurals>
+    <plurals name="rewind_loader_status_song_count">
+        <item quantity="one">%1$s EINIGE SONG</item>
+        <item quantity="other">%1$s EINZIGE SONGS</item>
+    </plurals>
+    <plurals name="rewind_meta_song_count">
+        <item quantity="one">%1$s Lied</item>
+        <item quantity="other">%1$s Lieder</item>
+    </plurals>
+    <plurals name="rewind_play_count_label">
+        <item quantity="one">%1$s spielen</item>
+        <item quantity="other">%1$s spielt</item>
+    </plurals>
+    <plurals name="rewind_top_song_teaser_count">
+        <item quantity="one">%1$d SONG.\nEINEN GEWINNER.</item>
+        <item quantity="other">%1$d SONGS.\nEINEN GEWINNER.</item>
+    </plurals>
+    <plurals name="maintenance_abnormal_job_count">
+        <item quantity="one">%1$d Job nicht beendet</item>
+        <item quantity="other">%1$d Jobs nicht abgeschlossen</item>
+    </plurals>
 </resources>
