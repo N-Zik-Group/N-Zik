@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Kiezen hoe nummers van niet-gelichte artiesten worden uitgesloten.</string>
     <string name="player_exclude_disliked_songs_description">Kies hoe niet leuk tracks zijn uitgesloten van afspeelsuggesties.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Tracks uitsluiten die de geselecteerde tijdslimiet overschrijden.</string>
-    <string name="player_excluded_song_count_format">Uitgesloten %s nummers</string>
+    <string name="player_excluded_song_count_format">Nummers uitgesloten: %s</string>
     <string name="player_keep_minimized">Geminimaliseerd houden</string>
     <string name="player_layout_artwork_style_description">Kies hoe de speler de track artwork toont.</string>
     <string name="player_layout_controls_style_description">Kies de lay-out van de spelerbesturingselementen</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Inclusief album artwork naast aankomende nummers in het spelervoorbeeld.</string>
     <string name="player_queue_preview_song_count_description">Kies hoeveel aankomende tracks worden weergegeven in de spelerpreview.</string>
     <string name="player_queue_remove_selected_confirmation_format">Selectie uit wachtrij verwijderen? Geselecteerde nummers: %d</string>
-    <string name="player_queue_shuffled_count_format">Wachtrij verschoven (%d nummers)</string>
+    <string name="player_queue_shuffled_count_format">Wachtrij verschoven (nummers: %d)</string>
     <string name="player_remaining_time_visible_description">Toon de resterende tijd in het huidige nummer.</string>
     <string name="player_restart_required_message">Speler moet opnieuw worden opgestart om de veranderingen door te voeren!</string>
     <string name="player_rotating_buttons">Draaiknoppen</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Een voorbeeld van toekomstige nummers in de speler weergeven.</string>
     <string name="player_show_player_top_actions_bar_description">Toon de rij van spelers acties boven de hoofdinhoud.</string>
     <string name="player_shuffle_empty_message">Geen nummer om te shufflen</string>
-    <string name="player_shuffled_song_count_format">%d nummers verschoven</string>
+    <string name="player_shuffled_song_count_format">Nummers verschoven: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Slaaptimer ingesteld op het einde van dit nummer</string>
     <string name="player_sleep_timer_finished_message">Slaaptimer beëindigd</string>
     <string name="player_song_playback_error_format">Er is een fout opgetreden tijdens het afspelen van het nummer %1$s</string>
