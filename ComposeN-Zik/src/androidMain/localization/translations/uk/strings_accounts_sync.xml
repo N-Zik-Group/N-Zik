@@ -246,10 +246,11 @@
     <string name="sync_youtube_history_title">Історія YTM</string>
     <string name="sync_youtube_like_failed">Не вдалося поставити відмітку «Подобається» під піснею на YouTube</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Пісня(і) подобається у YouTube</string>
+    <string name="sync_youtube_like_success">Додано на YouTube лайків</string>
     <string name="sync_youtube_playlist_add_failed">Не вдалося додати пісню до плейлисту YouTube</string>
     <string name="sync_youtube_playlist_add_success">Додано пісню до плейлисту YouTube</string>
     <string name="sync_youtube_playlist_batch_failed">Виникла помилка для наступних 50 пісень. Додавання пісень до плейлисту по одній. Додайте пісні в плейлист по одній</string>
+    <string name="sync_youtube_playlist_no_songs_added">У плейлист YouTube не було додано жодного пісні</string>
     <string name="sync_youtube_playlist_songs_added_suffix">пісні додані в плейлист YouTube. Повторіть процес, якщо є відсутні пісні</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">пісні будуть додані в плейлист YTM</string>
     <string name="sync_youtube_playlists_title">Плейлисти YTM</string>
