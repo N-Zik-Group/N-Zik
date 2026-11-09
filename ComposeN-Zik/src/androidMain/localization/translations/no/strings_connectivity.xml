@@ -198,4 +198,5 @@
     <string name="listen_together_server_request_failed">Lytten sammen server kunne ikke fullføre forespørselen.</string>
     <string name="network_stream_retrying_playback">Prøver å gjenoppta avspillingen…</string>
     <string name="listen_together_invite_link">Lytt lenke for invitasjon</string>
+    <string name="listen_together_server_location_poland">Polen</string>
 </resources>
