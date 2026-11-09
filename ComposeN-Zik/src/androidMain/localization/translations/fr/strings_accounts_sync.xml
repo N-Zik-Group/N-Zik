@@ -139,12 +139,7 @@
     <string name="profile_identity_source_lastfm">Compte Last.fm</string>
     <string name="profile_identity_source_not_connected">Vous n\'êtes pas connecté</string>
     <string name="profile_last_used">Dernière utilisation</string>
-    <string name="profile_last_used_days">Il y a %d jours</string>
-    <string name="profile_last_used_hours">Il y a %d heures</string>
-    <string name="profile_last_used_minutes">Il y a %d minutes</string>
-    <string name="profile_last_used_months">Il y a %d mois</string>
     <string name="profile_last_used_now">À l\'instant</string>
-    <string name="profile_last_used_weeks">Il y a %d semaines</string>
     <string name="profile_local_name">Nom du profil</string>
     <string name="profile_local_name_description">Renommer le profil local actuel.</string>
     <string name="profile_name_input_hint">Saisissez le nom du profil</string>
@@ -255,10 +250,11 @@
     <string name="sync_youtube_playlist_add_failed">Impossible d\'ajouter le titre à la playlist YouTube</string>
     <string name="sync_youtube_playlist_add_success">Ajout du titre à la playlist YouTube</string>
     <string name="sync_youtube_playlist_batch_failed">Une erreur s\'est produite pour les 50 titres suivants. Ajout des titres à la playlist un par un.</string>
+    <string name="sync_youtube_playlist_no_songs_added">Aucun morceau n\'a été ajouté à la playlist YouTube</string>
     <string name="sync_youtube_playlist_songs_added_suffix">Les titres sont ajoutés à la playlist YouTube. Répétez le processus s\'il manque des titres. </string>
     <string name="sync_youtube_playlist_songs_adding_suffix">Les titres seront ajoutés à la playlist YouTube Music</string>
     <string name="sync_youtube_playlists_title">Playlists YouTube Music</string>
-    <string name="sync_youtube_songs_remaining">Chansons restantes : %1$s</string>
+    <string name="sync_youtube_songs_remaining">Nombre de titres restants : %1$s</string>
     <string name="sync_youtube_unlike_failed">Impossible de ne pas aimer le titre sur YouTube</string>
     <string name="sync_youtube_unlike_success">Le titre n\'est pas apprécié sur YouTube</string>
     <string name="sync_starting_notification">Démarrage de la synchronisation...</string>
