@@ -18,10 +18,10 @@
     <string name="glass_effect_destination_pages">Pages</string>
     <string name="glass_effect_destination_playback">Lecture</string>
     <string name="glass_effect_destination_shared">Éléments partagés</string>
-    <string name="glass_effect_loading_indicators">Chargement des indicateurs</string>
-    <string name="glass_effect_loading_indicators_description">Animations de chargement des styles sur les pages et dans les cartes et les dialogues.</string>
-    <string name="glass_effect_pull_to_refresh">Tirez pour actualiser</string>
-    <string name="glass_effect_pull_to_refresh_description">Style l\'indicateur qui apparaît lorsque vous tirez vers le bas pour rafraîchir.</string>
+    <string name="glass_effect_loading_indicators">Indicateurs de chargement</string>
+    <string name="glass_effect_loading_indicators_description">Personnalisez les animations de chargement sur les pages, dans les fiches et dans les boîtes de dialogue.</string>
+    <string name="glass_effect_pull_to_refresh">Glisser vers le bas pour actualiser</string>
+    <string name="glass_effect_pull_to_refresh_description">Personnalisez l\'indicateur qui s\'affiche lorsque vous faites glisser vers le bas pour actualiser la page.</string>
     <string name="glass_effect_destination_windows">Windows et messages</string>
     <string name="glass_effect_dialog_dimming">Luminosité de l\'arrière-plan de la boîte de dialogue</string>
     <string name="glass_effect_dispersion">Séparation des couleurs</string>
@@ -125,7 +125,7 @@
     <string name="glass_effect_role_settings_cards_description">Les cartes qui regroupent les paramètres et affichent vos profils.</string>
     <string name="glass_effect_role_visualizer">Visualiseur · contrôles</string>
     <string name="glass_effect_role_visualizer_description">Les flèches et les paramètres utilisés avec le visualiseur.</string>
-    <string name="glass_effect_shared_components_summary">Choisissez l\'apparence du verre sur les composants utilisés dans l\'application, y compris les indicateurs de chargement et tirez pour rafraîchir.</string>
+    <string name="glass_effect_shared_components_summary">Choisissez l\'apparence de Glass sur les éléments utilisés dans l\'application, notamment les indicateurs de chargement et la fonction « Glisser vers le bas pour actualiser ».</string>
     <string name="glass_effect_summary">Personnaliser les surfaces, les couleurs, les contours et la qualité de l\'effet de verre.</string>
     <string name="glass_effect_switches_description">Utilisez des interrupteurs de verre liquides avec le matériau partagé et les effets d\'interaction lorsque le Verre est activé.</string>
     <string name="glass_effect_switches_title">Interrupteurs de verre</string>
@@ -242,6 +242,5 @@
     <string name="thumbnail_remove_success">Supprimer la miniature</string>
     <string name="glass_effect_rendering_quality">Qualité de rendu</string>
     <string name="image_editor_original">Ratio d\'origine</string>
-    <string name="image_editor_cancel">Annuler</string>
     <string name="image_editor_apply">Utiliser l\'image</string>
 </resources>
