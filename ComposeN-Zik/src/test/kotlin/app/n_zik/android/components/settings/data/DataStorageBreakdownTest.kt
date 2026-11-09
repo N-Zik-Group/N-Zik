@@ -14,6 +14,41 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class DataStorageBreakdownTest {
     @Test
+    fun usesTheSameProportionalEdgesForDrawingAndSelection() {
+        val segments = requireNotNull(partitionStorage(
+            totalBytes = 100L,
+            freeBytes = 50L,
+            appBytes = mapOf(StorageCategory.IMAGES to 10L, StorageCategory.DOWNLOADS to 15L),
+        )).chartSegments()
+
+        assertEquals(
+            listOf(StorageCategory.IMAGES, StorageCategory.DOWNLOADS, StorageCategory.OTHER_USED, StorageCategory.FREE),
+            segments.map { it.category },
+        )
+        assertEquals(listOf(0f, 20f, 50f, 100f), segments.map { it.startX(200f) })
+        assertEquals(listOf(20f, 50f, 100f, 200f), segments.map { it.endX(200f) })
+        assertEquals(StorageCategory.IMAGES, segments.categoryAt(0f, 200f))
+        assertEquals(StorageCategory.IMAGES, segments.categoryAt(19.99f, 200f))
+        assertEquals(StorageCategory.DOWNLOADS, segments.categoryAt(20f, 200f))
+        assertEquals(StorageCategory.OTHER_USED, segments.categoryAt(50f, 200f))
+        assertEquals(StorageCategory.FREE, segments.categoryAt(100f, 200f))
+        assertEquals(StorageCategory.FREE, segments.categoryAt(200f, 200f))
+        assertNull(segments.categoryAt(-0.01f, 200f))
+        assertNull(segments.categoryAt(200.01f, 200f))
+        assertNull(segments.categoryAt(0f, 0f))
+    }
+
+    @Test
+    fun selectsOnlyTheNonzeroCategoryWhenItFillsTheBar() {
+        val snapshot = requireNotNull(partitionStorage(100L, 0L, mapOf(StorageCategory.IMAGES to 100L)))
+        val segments = snapshot.chartSegments()
+
+        assertEquals(0L, snapshot.bytes.getValue(StorageCategory.FREE))
+        assertEquals(listOf(StorageCategory.IMAGES), segments.map { it.category })
+        assertEquals(StorageCategory.IMAGES, segments.categoryAt(73f, 73f))
+    }
+
+    @Test
     fun countsEmptyCacheInfrastructureAsOtherNzikData() {
         assertEquals(StorageCategory.OTHER_NZIK, storageAllocationCategory(StorageCategory.IMAGES, "journal", false))
         assertEquals(StorageCategory.OTHER_NZIK, storageAllocationCategory(StorageCategory.STREAMING, "ab12.uid", false))

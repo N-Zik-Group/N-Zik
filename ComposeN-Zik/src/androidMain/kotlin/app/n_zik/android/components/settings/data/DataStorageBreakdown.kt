@@ -14,19 +14,17 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -38,12 +36,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -55,11 +53,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.common.util.UnstableApi
 import app.it.fast4x.rimusic.utils.DEFAULT_PROFILE_ID
 import app.it.fast4x.rimusic.utils.PROFILE_NAMES_FILE_NAME
-import app.it.fast4x.rimusic.utils.color
 import app.it.fast4x.rimusic.utils.isProfileIdSafe
 import app.it.fast4x.rimusic.utils.parseProfileIds
 import app.it.fast4x.rimusic.utils.semiBold
-import app.it.fast4x.rimusic.ui.components.themed.HeaderIconButton
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.DialogPresence
@@ -67,9 +63,11 @@ import app.n_zik.android.components.settings.common.CardCategoryLabel
 import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.ui.InlineLoader
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.core.profiles.ProfileDataDirNames
 import app.n_zik.android.core.profiles.resolveProfileDataDirNames
 import app.n_zik.android.typography
+import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import java.io.File
 import java.io.IOException
@@ -308,12 +306,22 @@ internal fun DataStorageCard() {
             val label = stringResource(R.string.storage_breakdown_info_title)
             // Center on the row chevrons: 12 dp inset plus half of a 16 dp icon.
             Box(Modifier.width(40.dp), contentAlignment = Alignment.Center) {
-                HeaderIconButton(
-                    onClick = { showStorageInfo = true },
-                    icon = R.drawable.information,
-                    color = colorPalette().accent,
-                    modifier = Modifier.semantics { contentDescription = label },
-                )
+                val accent = colorPalette().accent
+                val shape = uiRoundnessShape()
+                Box(
+                    modifier = Modifier.size(32.dp)
+                        .iconBadgeBackground(accent.copy(alpha = 0.1f), shape)
+                        .clip(shape)
+                        .clickable(role = Role.Button, onClick = { showStorageInfo = true }),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.information),
+                        contentDescription = label,
+                        tint = accent,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
             }
         },
         content = {
@@ -332,45 +340,7 @@ internal fun DataStorageCard() {
                     }
                 } else {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Canvas(Modifier.fillMaxWidth().height(8.dp).clip(CircleShape)) {
-                            var cumulativeBytes = 0L
-                            var start = 0f
-                            for ((category, bytes) in snapshot.bytes) {
-                                cumulativeBytes += bytes
-                                val end = (size.width * (cumulativeBytes.toDouble() / snapshot.totalBytes)).toFloat()
-                                if (end > start) {
-                                    drawRect(category.color, Offset(start, 0f), Size(end - start, size.height))
-                                }
-                                start = end
-                            }
-                        }
-                        Column(
-                            modifier = Modifier.padding(top = 6.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            for ((category, bytes) in snapshot.bytes) {
-                                val startsVolumeGroup = category == StorageCategory.OTHER_USED || category == StorageCategory.FREE
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.fillMaxWidth()
-                                        .padding(top = if (startsVolumeGroup) 6.dp else 0.dp)
-                                        .semantics(mergeDescendants = true) {},
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Box(Modifier.size(10.dp).background(category.color, CircleShape))
-                                    BasicText(
-                                        text = stringResource(category.label),
-                                        modifier = Modifier.weight(1.2f),
-                                        style = typography().xxs.color(colorPalette().text),
-                                    )
-                                    BasicText(
-                                        text = Formatter.formatShortFileSize(context, bytes),
-                                        modifier = Modifier.weight(1f),
-                                        style = typography().xxs.color(colorPalette().text).copy(textAlign = TextAlign.End),
-                                    )
-                                }
-                            }
-                        }
+                        StorageChart(snapshot)
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
                                 .semantics(mergeDescendants = true) {},

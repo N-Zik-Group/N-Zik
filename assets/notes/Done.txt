@@ -1,4 +1,9 @@
 Added:
+- feat(settings): add interactive storage chart
+  - Inspect segments and legend rows with a long press and drag, with animated leaders and dimming.
+  - Apply the Settings Cards Glass mode to the storage bar and give the aligned info action its matching badge.
+
+Added:
 - feat(settings): add a live storage breakdown and cleanup actions
   - Show internal storage use by category, the total used by NZik, and an explanation of each segment.
   - Move confirmed cleanup actions to Storage and keep quota and location controls in Cache.

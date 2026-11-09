@@ -12,8 +12,11 @@ import java.time.Duration
 import android.app.Application
 import android.content.Context
 import android.os.Looper
+import android.text.format.Formatter
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -25,6 +28,8 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.isEditable
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.isSelected
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -32,6 +37,7 @@ import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.test.performTouchInput
 import androidx.test.core.app.ApplicationProvider
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.datasource.cache.Cache
@@ -155,6 +161,66 @@ class DataSettingsWiringTest {
         composeRule.waitForIdle()
         assertEquals(listOf(query), SearchHistoryStore.all(preferences, SearchHistoryStore.PAGE_SETTINGS_DATA))
         assertTrue(SearchHistoryStore.all(preferences, SearchHistoryStore.PAGE_SETTINGS_GENERAL).isEmpty())
+    }
+
+    @Test fun `storage inspection follows bar and legend drags and clears on release or cancellation`() {
+        val reading = mutableStateOf(requireNotNull(partitionStorage(
+            100L, 80L, mapOf(StorageCategory.IMAGES to 20L),
+        )))
+        val completed = AtomicInteger()
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalPlayerServiceBinder provides null) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    StorageChart(reading.value)
+                    DataStorageCleanup(onCleanupComplete = { completed.incrementAndGet() })
+                }
+            }
+        }
+
+        val bar = composeRule.onNodeWithTag("data.storage.chart.bar").fetchSemanticsNode().boundsInRoot
+        val imagePoint = Offset(bar.left + bar.width * 0.1f, bar.center.y)
+        val freePoint = Offset(bar.left + bar.width * 0.5f, bar.center.y)
+        val zeroRow = composeRule.onNode(
+            hasText(context.getString(StorageCategory.STREAMING.label)) and
+                hasText(Formatter.formatShortFileSize(context, 0L)),
+        )
+        val zeroPoint = zeroRow.fetchSemanticsNode().boundsInRoot.center
+        val root = composeRule.onRoot()
+
+        fun assertInspected(category: StorageCategory) {
+            composeRule.onNode(isSelected() and hasText(context.getString(category.label))).assertExists()
+            composeRule.onAllNodes(isSelected()).assertCountEquals(1)
+        }
+
+        root.performTouchInput {
+            down(imagePoint)
+            advanceEventTime(1_000)
+            moveTo(imagePoint)
+        }
+        assertInspected(StorageCategory.IMAGES)
+
+        composeRule.runOnIdle {
+            reading.value = requireNotNull(partitionStorage(100L, 60L, mapOf(StorageCategory.IMAGES to 40L)))
+        }
+        assertInspected(StorageCategory.IMAGES)
+
+        root.performTouchInput { moveTo(freePoint) }
+        assertInspected(StorageCategory.FREE)
+        root.performTouchInput { moveTo(zeroPoint) }
+        assertInspected(StorageCategory.STREAMING)
+        root.performTouchInput { up() }
+        composeRule.onAllNodes(isSelected()).assertCountEquals(0)
+
+        root.performTouchInput {
+            down(zeroPoint)
+            advanceEventTime(1_000)
+            moveTo(zeroPoint)
+        }
+        assertInspected(StorageCategory.STREAMING)
+        root.performTouchInput { cancel() }
+        composeRule.onAllNodes(isSelected()).assertCountEquals(0)
+        composeRule.onAllNodes(isDialog()).assertCountEquals(0)
+        assertEquals(0, completed.get())
     }
 
     @Test fun `confirmed storage actions use their own cleanup target`() {
