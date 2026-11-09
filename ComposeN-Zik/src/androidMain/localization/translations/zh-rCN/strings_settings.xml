@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">首先连接到 YouTube 以启用此选项</string>
     <string name="settings_youtube_library_sync_content_description">播放列表、 专辑、 艺术家、历史记录等</string>
     <string name="settings_youtube_login_enabled_label">启用YouTube音乐登录</string>
+    <string name="settings_dialog_sort_title_format">%1$s：排序</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s：工具栏</string>
 </resources>
