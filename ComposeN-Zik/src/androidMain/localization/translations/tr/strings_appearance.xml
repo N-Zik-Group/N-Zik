@@ -226,6 +226,8 @@
     <string name="theme_shake_sensitivity_medium">Orta (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Çok Yüksek (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Edit image</string>
+    <string name="image_editor_failed">Could not edit the image. Your current image was kept.</string>
     <string name="thumbnail_action_edit">Küçük Resmi Düzenle</string>
     <string name="thumbnail_action_pick_from_gallery">Galeriden seçin</string>
     <string name="thumbnail_action_reset">Küçük Resmi Sıfırla</string>
@@ -235,4 +237,7 @@
     <string name="thumbnail_remove_failed">Küçük Resmi Kaldırma Başarısız</string>
     <string name="thumbnail_remove_success">Küçük Resim Kaldırıldı</string>
     <string name="glass_effect_rendering_quality">İşleme kalitesi</string>
+    <string name="image_editor_original">Original ratio</string>
+    <string name="image_editor_cancel">İptal</string>
+    <string name="image_editor_apply">Use image</string>
 </resources>
