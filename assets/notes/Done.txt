@@ -87,3 +87,9 @@ Fixed:
   - Anchor the existing turntable controls and time display to a centered square inside tall or wide widget cells.
   - Preserve the circular record artwork and original control arrangement.
   - Verify square, portrait and landscape launcher dimensions.
+
+Fixed:
+- fix(downloads): draw download badges above rounded feedback (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Render download glyphs above a separately clipped press-feedback canvas so the completed check badge stays visible.
+  - Route only download controls through the shared helper and preserve click, long press, cancellation, disabled state and reserved geometry.
+  - Compare actual legacy controls against unclipped vectors across Material, Glass and roundness settings.

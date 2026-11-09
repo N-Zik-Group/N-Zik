@@ -21,10 +21,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Computer
 import androidx.compose.material3.ripple
 import androidx.compose.foundation.Image
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
-import app.n_zik.android.uiRoundnessShape
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.RippleConfiguration
 import androidx.compose.runtime.CompositionLocalProvider
@@ -266,15 +264,15 @@ class ReservedIconActionCanvasTest {
         assertEquals("No ripple outside the original reserved action seat", before[1, before.height / 2], held[1, held.height / 2])
     }
 
-    @Test fun `song download keeps its exact twenty dp glyph raster after the canvas correction`() {
+    @Test fun `song download keeps its complete twenty dp vector above the rounded canvas`() {
         compose.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance,
                 LocalGlassPreviewSettings provides GlassSettings(enabled = false)) {
                 Row {
                     Box(Modifier.size(40.dp).background(Color.Black).testTag("before"), contentAlignment = Alignment.Center) {
-                        // The original SongItem reserves20dp for this glyph; its legacy clip stays unchanged.
+                        // The glyph reference must stay independent of the feedback canvas clipping.
                         Image(painterResource(R.drawable.download), null, colorFilter = ColorFilter.tint(Color.Blue),
-                            modifier = Modifier.size(20.dp).clip(uiRoundnessShape()))
+                            modifier = Modifier.size(20.dp))
                     }
                     Box(Modifier.size(40.dp).background(Color.Black).testTag("after"), contentAlignment = Alignment.Center) {
                         IconButton({}, R.drawable.download, Color.Blue, Modifier.size(20.dp))
@@ -287,7 +285,7 @@ class ReservedIconActionCanvasTest {
         assertEquals(before.width, after.width)
         assertEquals(before.height, after.height)
         for (y in 0 until before.height) for (x in 0 until before.width) {
-            assertEquals("Download glyph must retain each original raster pixel at $x,$y", before[x,y], after[x,y])
+            assertEquals("Download glyph must retain each bare vector pixel at $x,$y", before[x,y], after[x,y])
         }
     }
 
