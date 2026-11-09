@@ -230,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Gemiddeld (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Zeer Hoog (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">downloaden</string>
+    <string name="cover_download_failed">Kon de omslag niet downloaden.</string>
     <string name="image_editor_title">Afbeelding bewerken</string>
     <string name="image_editor_failed">De afbeelding kon niet bewerkt worden. Je huidige afbeelding is bewaard.</string>
     <string name="thumbnail_action_edit">Edit Thumbnail</string>
