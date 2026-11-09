@@ -3,7 +3,7 @@
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Lagerplads</string>
     <string name="storage_breakdown_info_title">Om lagerplads</string>
-    <string name="storage_breakdown_nzik_total">I alt brugt af NZik</string>
+    <string name="storage_breakdown_nzik_total">I alt brugt af N-Zik</string>
     <string name="storage_breakdown_subtitle">Opdeling efter oplagring</string>
     <string name="storage_breakdown_waiting">Måling af lagerplads…</string>
     <string name="storage_breakdown_cached_images">Cachelagrede billeder</string>
@@ -11,20 +11,20 @@
     <string name="storage_breakdown_downloaded_audio">Downloadet lyd</string>
     <string name="storage_breakdown_custom_covers">Brugerdefinerede omslag</string>
     <string name="storage_breakdown_waveforms">Bølgeformer</string>
-    <string name="storage_breakdown_other_nzik_data">Andre NZik data</string>
+    <string name="storage_breakdown_other_nzik_data">Andre N-Zik-data</string>
     <string name="storage_breakdown_other_used_space">System, apps &amp; filer</string>
     <string name="storage_breakdown_free_space">Ledig plads</string>
     <string name="storage_info_images">Artwork og andre billeder cachet for hurtigere visning.</string>
     <string name="storage_info_streaming">Lyd holdes midlertidigt efter streaming, så den kan afspilles igen uden at hente de samme data.</string>
-    <string name="storage_info_downloads">Lyd gemt i NZik til offline lytning.</string>
+    <string name="storage_info_downloads">Lyd gemt i N-Zik til offline lytning.</string>
     <string name="storage_info_waveforms">Genererede filer, der bruges til at tegne lydbølgeformen i afspilleren.</string>
     <string name="storage_info_covers">Artwork du valgte eller importerede som brugerdefinerede omslag.</string>
-    <string name="storage_info_other_nzik">Resten af NZik\'s private data, herunder dens databaser, indstillinger, indekser, udvidelser og logs.</string>
+    <string name="storage_info_other_nzik">Resten af N-ziks private data, herunder dens databaser, indstillinger, indekser, udvidelser og logs.</string>
     <string name="storage_info_other_used">Den resterende brugte plads på den interne volumen, herunder Android, installerede apps og personlige filer.</string>
     <string name="storage_info_free">Plads til apps og filer på den interne lydstyrke.</string>
     <string name="storage_cleanup_title">Oprydning</string>
     <string name="storage_cleanup_failed">Kunne ikke afslutte lagringsoprydning.</string>
-    <string name="storage_cleanup_images_description">Ryd trykfil cachet af NZik.</string>
+    <string name="storage_cleanup_images_description">Ryd trykfil cachet af N-Zik.</string>
     <string name="storage_cleanup_streaming_description">Ryd lyd cachet under streaming.</string>
     <string name="storage_cleanup_downloads_description">Slet offline lyd og annullere afventende downloads for den aktive profil download lagring.</string>
     <string name="storage_cleanup_waveforms_description">Ryd genererede bølgeformfiler.</string>
@@ -139,7 +139,7 @@
     <string name="downloads_delete_all_count_confirmation">Slet alle %d downloads?</string>
     <string name="downloads_delete_dialog_title">Slet downloads</string>
     <string name="downloads_download_all_confirmation">Vil du virkelig hente alle?</string>
-    <string name="downloads_download_all_count_confirmation">Download alle %d sange?</string>
+    <string name="downloads_download_all_count_confirmation">Download alt? (sange: %d)</string>
     <string name="downloads_download_dialog_title">Download sange</string>
     <string name="downloads_empty_message">Intet at downloade</string>
     <string name="downloads_error_network">Der opstod en netværksfejl</string>
@@ -166,16 +166,16 @@
     <string name="export_running_status">Eksporterer…</string>
     <string name="export_song_unavailable_message">Sangen skal cachelagres eller hentes for at eksportere</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Vil du slette alle downloads (%d sange)?</string>
+    <string name="library_cleanup_all_downloads_confirmation">Slet alle downloads? (sange: %d)</string>
     <string name="library_cleanup_all_favorites_confirmation">Vil du fjerne alle %d favoritter?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Vil du nulstille lyttehistorikken for %d sange?</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ ADVARSEL: Dette vil PERMANENTLIG SLET alle %d sange og fjerne dem fra ALLE spillelister. Denne handling kan ikke fortrydes!</string>
-    <string name="library_cleanup_entire_cache_confirmation">Vil du rydde hele cachen (%d sange)?</string>
-    <string name="library_cleanup_selected_cache_confirmation">Vil du fjerne disse %d sange fra cache?</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Nulstil lyttehistorik? (Sanger: %d)</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ ADVARSEL: Dette vil PERMANENTLIG SLET dine sange og fjerne dem fra ALLE afspilningslister. (Sange %d) Denne handling kan ikke fortrydes!</string>
+    <string name="library_cleanup_entire_cache_confirmation">Ryd hele cache? (Songs: %d)</string>
+    <string name="library_cleanup_selected_cache_confirmation">Fjern markeringen fra cache? (Songs: %d)</string>
     <string name="library_cleanup_selected_downloads_confirmation">Vil du slette disse %d downloads?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Vil du fjerne disse %d sange fra favoritter?</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Vil du nulstille lyttehistorikken for disse %d sange?</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ ADVARSEL: Dette vil PERMANENTLIG SLET disse %d sange og fjerne dem fra ALLE spillelister. Denne handling kan ikke fortrydes!</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Fjern markeringen fra favoritter? (Songs: %d)</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Nulstil lyttehistorik for valget? (Sanger: %d)</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ ADVARSEL: Dette vil SLET markeringen og fjerne den fra ALLE spillelister. (Sanger: %d) Denne handling kan ikke fortrydes!</string>
     <string name="library_cleanup_title">Smart affald</string>
     <string name="library_favorites_remove_dialog_title">Fjern fra favoritter</string>
     <string name="library_listening_history_reset_dialog_title">Nulstil lyttehistorik</string>
