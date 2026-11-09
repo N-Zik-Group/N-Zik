@@ -246,10 +246,11 @@
     <string name="sync_youtube_history_title">YouTube Musicin historia</string>
     <string name="sync_youtube_like_failed">Kappaleen tykkääminen YouTubessa epäonnistui</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Kappaleet pidetään YouTubessa</string>
+    <string name="sync_youtube_like_success">Lisätty YouTube-tytöihin</string>
     <string name="sync_youtube_playlist_add_failed">Kappaleen lisääminen YouTube-soittolistaan ei onnistunut</string>
     <string name="sync_youtube_playlist_add_success">Lisätty kappale YouTube-soittolistaan</string>
     <string name="sync_youtube_playlist_batch_failed">Seuraavien 50 kappaleen kohdalla tapahtui virhe. Kappaleiden lisääminen soittolistaan yksi kerrallaan</string>
+    <string name="sync_youtube_playlist_no_songs_added">YouTube-soittolistalle ei ole lisätty yhtään kappaletta</string>
     <string name="sync_youtube_playlist_songs_added_suffix">kappaleet on lisätty YouTube-soittolistalle. Toista prosessi, jos kappaletta puuttuu</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">kappaleet lisätään YTM soittolistaan</string>
     <string name="sync_youtube_playlists_title">YTM-soittolistat</string>
