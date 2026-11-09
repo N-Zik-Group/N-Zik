@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">أغنية غير متطابقة</string>
     <string name="metadata_musicbrainz_rating">التقييم</string>
     <string name="metadata_cover_art">غطاء الفن</string>
+    <string name="metadata_cover_url_hint">لصق رابط صورة</string>
     <string name="metadata_file_path_unavailable">لا يمكن حل مسار الملف</string>
     <string name="metadata_save_failed">فشل في حفظ البيانات الوصفية</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
