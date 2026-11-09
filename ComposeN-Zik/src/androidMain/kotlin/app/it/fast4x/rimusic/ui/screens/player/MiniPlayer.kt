@@ -735,7 +735,7 @@ private fun MiniPlayerContent(
                             icon = if (likeState == true) getLikedIcon() else getDislikedIcon(),
                             color = if (likeState == false) colorPalette().red else colorPalette().favoritesIcon,
                             iconSize = 10.dp,
-                            modifier = Modifier.align( Alignment.BottomStart )
+                            placementModifier = Modifier.align( Alignment.BottomStart )
                                                .absoluteOffset( x = (-5).dp )
                         )
                 }

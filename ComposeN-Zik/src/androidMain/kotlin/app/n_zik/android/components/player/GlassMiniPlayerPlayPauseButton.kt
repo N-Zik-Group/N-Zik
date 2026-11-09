@@ -22,9 +22,8 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassRenderer
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LiquidButton
-import app.n_zik.android.components.glass.LocalGlassBackdrop
-import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.backdrop.Backdrop
+import app.n_zik.android.components.glass.defaultMiniPlayerControlBackdrop
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.glassFilmOpacity
@@ -42,7 +41,7 @@ fun GlassMiniPlayerPlayPauseButton(
     backgroundColor: Color,
     contentDescription: String,
     settings: GlassSettings = rememberGlassSettings(),
-    backdrop: Backdrop? = LocalGlassBackdrop.current ?: LocalGlassMenuHost.current?.backdrop,
+    backdrop: Backdrop? = defaultMiniPlayerControlBackdrop(settings),
     content: @Composable BoxScope.() -> Unit,
 ) {
     val fold = LocalCompactMiniPlayerProgress.current

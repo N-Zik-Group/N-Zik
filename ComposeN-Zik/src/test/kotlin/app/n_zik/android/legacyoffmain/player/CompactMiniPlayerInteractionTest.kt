@@ -187,14 +187,18 @@ class CompactMiniPlayerInteractionTest {
             tintStrength = 0f, depth = 0f, amount = 0f, rim = 0f)
         renderMini(glassHost = host, glassSettings = settings, sourceColor = { sourceColor })
         fun assertSingleFilm() {
-            val pixels = compose.onNodeWithContentDescription(context.getString(R.string.player_action_play))
-                .captureToImage().toPixelMap()
-            // Stay inside the rounded pane and outside the central play glyph.
-            val actual = pixels[(pixels.width * .2f).toInt(), (pixels.height * .2f).toInt()]
-            val expected = DefaultDarkColorPalette.background2.copy(alpha = settings.film).compositeOver(sourceColor)
-            assertEquals("red from a single film", expected.red, actual.red, .03f)
-            assertEquals("green from a single film", expected.green, actual.green, .03f)
-            assertEquals("blue from a single film", expected.blue, actual.blue, .03f)
+            val controls = listOf(R.string.player_action_play, MiniPlayerButton.SkipBack.labelRes,
+                MiniPlayerButton.SkipForward.labelRes)
+            for (description in controls) {
+                val pixels = compose.onNodeWithContentDescription(context.getString(description))
+                    .captureToImage().toPixelMap()
+                // Stay inside the rounded pane and outside the central control glyph.
+                val actual = pixels[(pixels.width * .2f).toInt(), (pixels.height * .2f).toInt()]
+                val expected = DefaultDarkColorPalette.background2.copy(alpha = settings.film).compositeOver(sourceColor)
+                assertEquals("red from a single film for $description", expected.red, actual.red, .03f)
+                assertEquals("green from a single film for $description", expected.green, actual.green, .03f)
+                assertEquals("blue from a single film for $description", expected.blue, actual.blue, .03f)
+            }
         }
         assertSingleFilm()
         compose.runOnIdle { sourceColor = Color.Red }

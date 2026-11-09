@@ -30,9 +30,8 @@ import app.n_zik.android.components.glass.glassArtworkForeground
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LiquidButton
-import app.n_zik.android.components.glass.LocalGlassBackdrop
-import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.backdrop.Backdrop
+import app.n_zik.android.components.glass.defaultMiniPlayerControlBackdrop
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.glassGlobalIndication
@@ -55,7 +54,7 @@ fun GlassMiniPlayerIconButton(
     rotationAngle: Float = 0f,
     alpha: Float = 1f,
     settings: GlassSettings = rememberGlassSettings(),
-    backdrop: Backdrop? = LocalGlassBackdrop.current ?: LocalGlassMenuHost.current?.backdrop,
+    backdrop: Backdrop? = defaultMiniPlayerControlBackdrop(settings),
     onLongClick: (() -> Unit)? = null,
     // Glass seats stay uniform; this option preserves the native glyph size.
     preserveNativeGeometry: Boolean = false,
@@ -84,7 +83,7 @@ fun GlassMiniPlayerIconButton(
     rotationAngle: Float = 0f,
     alpha: Float = 1f,
     settings: GlassSettings = rememberGlassSettings(),
-    backdrop: Backdrop? = LocalGlassBackdrop.current ?: LocalGlassMenuHost.current?.backdrop,
+    backdrop: Backdrop? = defaultMiniPlayerControlBackdrop(settings),
     onLongClick: (() -> Unit)? = null,
     // Glass seats stay uniform; this option preserves the native glyph size.
     preserveNativeGeometry: Boolean = false,

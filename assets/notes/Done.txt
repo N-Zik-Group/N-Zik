@@ -93,3 +93,9 @@ Fixed:
   - Render download glyphs above a separately clipped press-feedback canvas so the completed check badge stays visible.
   - Route only download controls through the shared helper and preserve click, long press, cancellation, disabled state and reserved geometry.
   - Compare actual legacy controls against unclipped vectors across Material, Glass and roundness settings.
+
+Fixed:
+- fix(player): correct mini-player badge and Glass controls (PR https://github.com/N-Zik-Group/N-Zik/pull/800)
+  - Move the mini-player heart with its entire action canvas so it remains visible above the cover edge.
+  - Choose the proper Glass backdrop for mini-player control film without sampling it twice.
+  - Cover badge rendering and mini-player interaction behavior.

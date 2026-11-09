@@ -40,6 +40,16 @@ internal fun Modifier.glassMiniPlayerBodyVisibility(settings: GlassSettings, pro
         alpha = miniPlayerGlassBodyAlpha(progress())
     } else this
 
+/** Clear controls inherit the body film; controls with their own film sample its raw input once. */
+@Composable
+internal fun defaultMiniPlayerControlBackdrop(settings: GlassSettings): Backdrop? {
+    val local = LocalGlassBackdrop.current
+    val material = LocalGlassMaterialSource.current
+    val host = LocalGlassMenuHost.current
+    return if (local is RenderedMaterialBackdrop && settings.film <= 0f) local
+        else material ?: local ?: host?.backdrop
+}
+
 /** Mixes material-only exports; foreground artwork and controls never enter this source. */
 @Composable
 internal fun rememberMiniPlayerControlBackdrop(
