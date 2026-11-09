@@ -414,4 +414,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Gillar du alla låtar kommer att ta ungefär %1$s. Stäng appen för att avbryta. Vill du fortsätta?</string>
     <string name="library_on_device_permission_request_failed">Kunde inte begära åtkomst till musik på den här enheten.</string>
     <string name="library_on_device_permission_settings_failed">Kunde inte öppna behörighetsinställningar.</string>
+    <string name="artist_more_from_format">Mer från %1$s</string>
+    <string name="playlist_top_show_title_format">Visa %1$s</string>
 </resources>
