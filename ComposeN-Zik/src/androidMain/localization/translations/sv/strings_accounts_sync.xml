@@ -246,10 +246,11 @@
     <string name="sync_youtube_history_title">YTM History</string>
     <string name="sync_youtube_like_failed">Det gick inte att gilla låten på YouTube</string>
     <string name="sync_youtube_like_failed_with_index">%1$s %2$s</string>
-    <string name="sync_youtube_like_success">Låt(ar) är gillade på YouTube</string>
+    <string name="sync_youtube_like_success">Lades till YouTube-gillningar</string>
     <string name="sync_youtube_playlist_add_failed">Det gick inte att lägga till låten i YouTube Spellista</string>
     <string name="sync_youtube_playlist_add_success">Lade till låten på YouTube Spellista</string>
     <string name="sync_youtube_playlist_batch_failed">Fel uppstod för de kommande 50 låtarna. Lägga till låtar till spellistan en efter en</string>
+    <string name="sync_youtube_playlist_no_songs_added">Inga låtar lades till på YouTube spellista</string>
     <string name="sync_youtube_playlist_songs_added_suffix">låtar läggs till i YouTube-spellistan. Upprepa processen om det finns några saknade låtar</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">låtar kommer att läggas till i YTM-spellistan</string>
     <string name="sync_youtube_playlists_title">YTM spellistor</string>
