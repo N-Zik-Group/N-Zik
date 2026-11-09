@@ -17,7 +17,7 @@
     <string name="language_name_azerbaijani">Azerbaycanca</string>
     <string name="language_name_bashkir">Başkurtlar (Bashkir)</string>
     <string name="language_name_bengali">Bengalce (বাংলা)</string>
-    <string name="language_name_catalan">Katalanca (Catalan)</string>
+    <string name="language_name_catalan">Katalanca (Català)</string>
     <string name="language_name_chinese_simplified">Basitleştirilmiş Çince (汉语)</string>
     <string name="language_name_chinese_traditional">Geleneksel Çince (漢語)</string>
     <string name="language_name_czech">Çekçe (Čeština)</string>
@@ -27,7 +27,7 @@
     <string name="language_name_esperanto">Esperanto</string>
     <string name="language_name_estonian">Estonca (eesti keel)</string>
     <string name="language_name_filipino">Filipince (Tagalog)</string>
-    <string name="language_name_finnish">Fince (Suomalainen)</string>
+    <string name="language_name_finnish">Fince (Suomi)</string>
     <string name="language_name_french">Fransızca (Français)</string>
     <string name="language_name_galician">Galiçyaca (galego)</string>
     <string name="language_name_german">Almanca (Deutsch)</string>
@@ -35,12 +35,12 @@
     <string name="language_name_hebrew">İbranice (עִברִית)</string>
     <string name="language_name_hindi">Hintçe (हिन्दी)</string>
     <string name="language_name_hungarian">Macarca (Hungarian)</string>
-    <string name="language_name_indonesian">Endonezya (Indonesia)</string>
+    <string name="language_name_indonesian">Endonezyaca (Bahasa Indonesia)</string>
     <string name="language_name_interlingua">Interlingua</string>
     <string name="language_name_irish">İrlandaca (Gaeilge)</string>
     <string name="language_name_italian">İtalyanca (Italiano)</string>
     <string name="language_name_japanese">Japonca (日本語)</string>
-    <string name="language_name_korean">Korece (한국인)</string>
+    <string name="language_name_korean">Korece (한국어)</string>
     <string name="language_name_malayalam">Malayamca (മലയാളം)</string>
     <string name="language_name_norwegian">Norveççe (norsk)</string>
     <string name="language_name_odia">Oriya (Odia)</string>
@@ -50,8 +50,8 @@
     <string name="language_name_portuguese_brazilian">Portekizce, Brezilya (Português, Brasileiro)</string>
     <string name="language_name_romanian">Romence (Română)</string>
     <string name="language_name_russian">Rusça (Русский)</string>
-    <string name="language_name_serbian_cyrillic">Sırp Kiril alfabesi (Српска)</string>
-    <string name="language_name_serbian_latin">Sırpça Latin (Gajeva latinica)</string>
+    <string name="language_name_serbian_cyrillic">Sırp Kiril Alfabesi (Српски)</string>
+    <string name="language_name_serbian_latin">Sırp Latin Alfabesi (Srpski)</string>
     <string name="language_name_sinhala">Sinhala (සිංහල)</string>
     <string name="language_name_spanish">İspanyolca (Español)</string>
     <string name="language_name_swedish">İsveççe (Swedish)</string>
@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Bu seçeneği etkinleştirmek için önce YouTube\'a bağlanın</string>
     <string name="settings_youtube_library_sync_content_description">Çalma listeleri, albümler, sanatçılar, geçmiş, beğeniler vb.</string>
     <string name="settings_youtube_login_enabled_label">YouTube Music girişini etkinleştir</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Sırala</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Araç çubuğu</string>
 </resources>
