@@ -226,6 +226,8 @@
     <string name="theme_shake_sensitivity_medium">Middels (3,5G)</string>
     <string name="theme_shake_sensitivity_very_high">Svært høy (1,0G)</string>
     <!-- Thumbnail -->
+    <string name="image_editor_title">Rediger bilde</string>
+    <string name="image_editor_failed">Kunne ikke redigere bildet. Ditt gjeldende bilde ble sprettet.</string>
     <string name="thumbnail_action_edit">Rediger miniatyrbilde</string>
     <string name="thumbnail_action_pick_from_gallery">Velg fra galleri</string>
     <string name="thumbnail_action_reset">Nullstill miniatyrbilde</string>
@@ -235,4 +237,7 @@
     <string name="thumbnail_remove_failed">Kunne ikke fjerne miniatyrbilde</string>
     <string name="thumbnail_remove_success">Fjernet miniatyrbilde</string>
     <string name="glass_effect_rendering_quality">Render kvalitet</string>
+    <string name="image_editor_original">Opprinnelig forhold</string>
+    <string name="image_editor_cancel">Avbryt</string>
+    <string name="image_editor_apply">Bruk bilde</string>
 </resources>
