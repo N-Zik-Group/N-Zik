@@ -198,4 +198,5 @@
     <string name="listen_together_server_request_failed">Сервер Listen Together не зміг виконати запит.</string>
     <string name="network_stream_retrying_playback">Retrying playback…</string>
     <string name="listen_together_invite_link">Слухати разом з запрошенням</string>
+    <string name="listen_together_server_location_poland">Польща</string>
 </resources>
