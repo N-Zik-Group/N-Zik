@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Koble til YouTube først for å aktivere dette alternativet</string>
     <string name="settings_youtube_library_sync_content_description">Spillelister, album, artister, historie, like, osv.</string>
     <string name="settings_youtube_login_enabled_label">Aktiver YouTube musikkinnlogging</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Sorter</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Verktøylinje</string>
 </resources>
