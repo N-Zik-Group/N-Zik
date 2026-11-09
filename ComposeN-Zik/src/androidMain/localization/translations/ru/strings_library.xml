@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">Несовпадающая песня</string>
     <string name="metadata_musicbrainz_rating">Рейтинг</string>
     <string name="metadata_cover_art">Обложка</string>
+    <string name="metadata_cover_url_hint">Вставить ссылку на изображение</string>
     <string name="metadata_file_path_unavailable">Не удается разрешить путь к файлу</string>
     <string name="metadata_save_failed">Не удалось сохранить метаданные</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
