@@ -3,7 +3,7 @@
     <!-- Storage breakdown -->
     <string name="storage_breakdown_title">Pamięć</string>
     <string name="storage_breakdown_info_title">O magazynie</string>
-    <string name="storage_breakdown_nzik_total">Łącznie używane przez NZik</string>
+    <string name="storage_breakdown_nzik_total">Łącznie użyte przez N-Zik</string>
     <string name="storage_breakdown_subtitle">Podział pamięci</string>
     <string name="storage_breakdown_waiting">Pomiar pamięci zapasowej…</string>
     <string name="storage_breakdown_cached_images">Obrazy w pamięci podręcznej</string>
@@ -11,20 +11,20 @@
     <string name="storage_breakdown_downloaded_audio">Pobrany dźwięk</string>
     <string name="storage_breakdown_custom_covers">Niestandardowe okładki</string>
     <string name="storage_breakdown_waveforms">Formy fal</string>
-    <string name="storage_breakdown_other_nzik_data">Inne dane NZik</string>
+    <string name="storage_breakdown_other_nzik_data">Inne dane N-Zik</string>
     <string name="storage_breakdown_other_used_space">System, aplikacje &amp; pliki</string>
     <string name="storage_breakdown_free_space">Wolne miejsce</string>
     <string name="storage_info_images">Grafika i inne obrazy w pamięci podręcznej, aby wyświetlić je szybciej.</string>
     <string name="storage_info_streaming">Dźwięk przechowywany tymczasowo po strumieniu, więc może być odtwarzany ponownie bez pobierania tych samych danych.</string>
-    <string name="storage_info_downloads">Dźwięk zapisany w NZik do słuchania offline.</string>
+    <string name="storage_info_downloads">Dźwięk zapisany w N-Zik do słuchania offline.</string>
     <string name="storage_info_waveforms">Wygenerowane pliki używane do rysowania formularza dźwięku w odtwarzaczu.</string>
     <string name="storage_info_covers">Praca wybrana lub zaimportowana jako niestandardowe okładki.</string>
-    <string name="storage_info_other_nzik">Pozostałe prywatne dane NZik, w tym bazy danych, ustawienia, indeksy, rozszerzenia i rejestry.</string>
+    <string name="storage_info_other_nzik">Pozostałe prywatne dane N-Zik, w tym jego bazy danych, ustawienia, indeksy, rozszerzenia i logi.</string>
     <string name="storage_info_other_used">Pozostała używana przestrzeń na wewnętrznej objętości, w tym Android, zainstalowane aplikacje i osobiste pliki.</string>
     <string name="storage_info_free">Dostępna przestrzeń dla aplikacji i plików na wewnętrznej objętości.</string>
     <string name="storage_cleanup_title">Czyszczenie</string>
     <string name="storage_cleanup_failed">Nie można zakończyć czyszczenia pamięci.</string>
-    <string name="storage_cleanup_images_description">Wyczyść dzieło z pamięci podręcznej przez NZik.</string>
+    <string name="storage_cleanup_images_description">Wyczyść dzieło z pamięci podręcznej przez N-Zik.</string>
     <string name="storage_cleanup_streaming_description">Wyczyść buforowane dźwięki podczas przesyłania strumieniowego.</string>
     <string name="storage_cleanup_downloads_description">Usuń dźwięk offline i anuluj oczekujące pobrania dla magazynu pobierania aktywnego profilu.</string>
     <string name="storage_cleanup_waveforms_description">Wyczyść wygenerowane pliki falowe.</string>
@@ -139,7 +139,7 @@
     <string name="downloads_delete_all_count_confirmation">Usunąć wszystkie pobrań %d?</string>
     <string name="downloads_delete_dialog_title">Usuń pobrane</string>
     <string name="downloads_download_all_confirmation">Czy na pewno chcesz pobrać wszystkie?</string>
-    <string name="downloads_download_all_count_confirmation">Pobrać wszystkie utwory %d?</string>
+    <string name="downloads_download_all_count_confirmation">Pobrać wszystko? (utwory: %d)</string>
     <string name="downloads_download_dialog_title">Pobierz utwory</string>
     <string name="downloads_empty_message">Nic do pobrania</string>
     <string name="downloads_error_network">Wystąpił błąd sieci</string>
@@ -166,16 +166,16 @@
     <string name="export_running_status">Eksportowanie…</string>
     <string name="export_song_unavailable_message">Utwór musi być pamięci podręcznej lub pobrany do eksportu</string>
     <!-- Smart Trash -->
-    <string name="library_cleanup_all_downloads_confirmation">Czy chcesz usunąć wszystkie pobrane pliki (%d utwory)?</string>
+    <string name="library_cleanup_all_downloads_confirmation">Usunąć wszystkie pobierania? (utwory: %d)</string>
     <string name="library_cleanup_all_favorites_confirmation">Czy chcesz usunąć wszystkie ulubione %d?</string>
-    <string name="library_cleanup_all_listening_history_confirmation">Czy chcesz zresetować historię słuchania dla %d utworów?</string>
-    <string name="library_cleanup_all_songs_confirmation">⚠️ OSTRZEŻENIE: OSTRZEŻENIEJ wszystkie utwory %d ORAZ usuń je z WSZYSTKICH list odtwarzania. Tej akcji nie można cofnąć!</string>
-    <string name="library_cleanup_entire_cache_confirmation">Czy chcesz wyczyścić całą pamięć podręczną (%d utwory)?</string>
-    <string name="library_cleanup_selected_cache_confirmation">Czy chcesz usunąć te utwory %d z pamięci podręcznej?</string>
+    <string name="library_cleanup_all_listening_history_confirmation">Zresetować historię słuchania? (utwory: %d)</string>
+    <string name="library_cleanup_all_songs_confirmation">⚠️ OSTRZEŻENIE: OSTRZEŻENIEJ Twoją piosenkę I usuń je z WSZYSTKICH list odtwarzania. (utwory: %d) Tej akcji nie można cofnąć!</string>
+    <string name="library_cleanup_entire_cache_confirmation">Wyczyścić całą pamięć podręczną? (utwory: %d)</string>
+    <string name="library_cleanup_selected_cache_confirmation">Usunąć zaznaczenie z pamięci podręcznej? (utwory: %d)</string>
     <string name="library_cleanup_selected_downloads_confirmation">Czy chcesz usunąć te pobrań %d?</string>
-    <string name="library_cleanup_selected_favorites_confirmation">Czy chcesz usunąć te utwory %d z ulubionych?</string>
-    <string name="library_cleanup_selected_listening_history_confirmation">Czy chcesz zresetować historię słuchania tych piosenek %d?</string>
-    <string name="library_cleanup_selected_songs_confirmation">⚠️ OSTRZEŻENIE: OSTRZEŻENIEJ te utwory %d ORAZ usuń je z WSZYSTKICH list odtwarzania. Tej akcji nie można cofnąć!</string>
+    <string name="library_cleanup_selected_favorites_confirmation">Usunąć zaznaczenie z ulubionych? (utwory: %d)</string>
+    <string name="library_cleanup_selected_listening_history_confirmation">Zresetować historię słuchania dla wyboru? (utwory: %d)</string>
+    <string name="library_cleanup_selected_songs_confirmation">⚠️ OSTRZEŻENIE: OSTRZEŻENIE WYŁĄCZA wybór I usuń go z WSZYSTKICH playlist. (utwory: %d) Tej akcji nie można cofnąć!</string>
     <string name="library_cleanup_title">Inteligentny kosz</string>
     <string name="library_favorites_remove_dialog_title">Usuń z ulubionych</string>
     <string name="library_listening_history_reset_dialog_title">Resetuj historię słuchania</string>
