@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Beğenmediğiniz sanatçıların şarkılarının nasıl hariç tutulacağını seçin.</string>
     <string name="player_exclude_disliked_songs_description">Beğenmediğiniz parçaların çalma önerilerinden nasıl hariç tutulacağını seçin.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Seçilen süre sınırını aşan parçaları hariç tutun.</string>
-    <string name="player_excluded_song_count_format">Songs excluded: %s</string>
+    <string name="player_excluded_song_count_format">Hariç tutulan şarkılar: %s</string>
     <string name="player_keep_minimized">Küçültülmüş tut</string>
     <string name="player_layout_artwork_style_description">Oynatıcının parça kapak resimlerini nasıl göstereceğini seçin.</string>
     <string name="player_layout_controls_style_description">Oynatıcı kontrollerinin düzenini seçin.</string>
