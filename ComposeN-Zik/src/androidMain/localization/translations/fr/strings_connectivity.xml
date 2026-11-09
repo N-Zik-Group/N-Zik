@@ -198,4 +198,5 @@
     <string name="listen_together_server_request_failed">Le serveur « Écouter Ensemble » n\'a pas pu compléter la requête.</string>
     <string name="network_stream_retrying_playback">Tentative de reprise de la lecture…</string>
     <string name="listen_together_invite_link">Écouter le lien d\'invitation ensemble</string>
+    <string name="listen_together_server_location_poland">Pologne</string>
 </resources>
