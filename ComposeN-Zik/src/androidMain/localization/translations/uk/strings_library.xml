@@ -42,6 +42,7 @@
     <string name="home_greeting_evening">Доброго вечора</string>
     <string name="home_greeting_morning">Доброго ранку</string>
     <string name="home_greeting_night">Надобраніч</string>
+    <string name="home_greeting_with_profile_format">%1$s, %2$s</string>
     <string name="home_playlists_settings">Домашні плейлісти</string>
     <string name="home_songs_settings">Домашні пісні</string>
     <string name="home_sort_last_played_song_label">За останньою відтвореною піснею</string>
@@ -248,6 +249,7 @@
     <string name="playlist_refresh_on_open_enable">Увімкнути оновлення під час відкриття</string>
     <string name="playlist_remove_selected_confirmation">Видалити вибрані пісні з цього списку відтворення?</string>
     <string name="playlist_remove_songs_confirmation">Видалити вибір з списку відтворення? Вибрані треки: %d</string>
+    <string name="playlist_remove_songs_success_format">%1$s %2$d</string>
     <string name="playlist_rename_dialog_title">Перейменувати список відтворення</string>
     <string name="playlist_reorder_ascending_sort_required_message">Впорядкувати можливо лише при упорядкуванні</string>
     <string name="playlist_reorder_lock_toggle_label">Заблокувати/розблокувати Зміну порядку пісень</string>
@@ -377,6 +379,27 @@
     <string name="song_metadata_update_action_open">Відкрити діалог оновлення</string>
     <string name="song_metadata_updated_count">Оновлено пісні %1$d</string>
     <string name="song_play_time_action_reset">Скинути час загального відтворення</string>
+    <string name="song_like_status_action_reset">Скинути бажаний/нелайковий статус</string>
+    <string name="song_update_action_clear_playback_cache">Очистити кеш відтворення</string>
+    <string name="song_update_action_remove_offline_download">Видалити завантаження в автономний режим</string>
+    <string name="song_update_result_partial">Частково оновлено. %1$s</string>
+    <string name="song_update_result_failed">Не оновлено. %1$s</string>
+    <string name="song_update_error_metadata_unavailable">Інформація про YouTube недоступна.</string>
+    <string name="song_update_error_network">Не вдалося зв\'язатися з YouTube. Перевірте своє підключення.</string>
+    <string name="song_update_error_missing_title">YouTube не повернув заголовок.</string>
+    <string name="song_update_error_missing_artists">YouTube не повернув художників.</string>
+    <string name="song_update_error_incomplete_artists">Інформація виконавця з YouTube неповна.</string>
+    <string name="song_update_error_missing_cover">YouTube не повернув обкладинку.</string>
+    <string name="song_update_error_wrong_song">YouTube повернув іншу пісню. Її інформація була проігнорована.</string>
+    <string name="song_update_error_cache_unavailable">Кеш відтворення недоступний. Відкрийте плеєр і спробуйте знову.</string>
+    <string name="song_update_error_profile_changed">Оновлення зупинено, оскільки активний профіль змінено.</string>
+    <string name="song_update_error_storage">Не вдалося зберегти зміни на цьому пристрої.</string>
+    <string name="song_update_error_cache_clear">Не вдалося закінчити очищення кешу відтворення.</string>
+    <string name="song_update_error_download_remove">Не вдалося вилучити оффлайн завантаження.</string>
+    <string name="song_update_error_cover_reset">Не можна закінчити скидання.</string>
+    <string name="song_update_error_playback_refresh">Зміни збережені, але гравець не міг оновити.</string>
+    <string name="song_update_batch_result">Updated: %1$d · Partly updated: %2$d · Not updated: %3$d</string>
+    <string name="song_update_batch_reason_count">%1$s (%2$d)</string>
     <!-- Song Matching -->
     <string name="song_matching_action_open">Версія камери та звуку в альбомі</string>
     <string name="song_matching_all_confirmation">Чи бажаєте ви співпадати %d невідповідні пісні?</string>
@@ -393,4 +416,6 @@
     <string name="playlist_like_all_duration_confirmation_format">Вподобання всіх пісень пройде про %1$s. Закрийте програму, щоб відмінити. Бажаєте продовжити?</string>
     <string name="library_on_device_permission_request_failed">Не вдалося надіслати запит на доступ до музики на цьому пристрої.</string>
     <string name="library_on_device_permission_settings_failed">Не вдалося відкрити налаштування дозволів.</string>
+    <string name="artist_more_from_format">Більше з %1$s</string>
+    <string name="playlist_top_show_title_format">Показати %1$s</string>
 </resources>
