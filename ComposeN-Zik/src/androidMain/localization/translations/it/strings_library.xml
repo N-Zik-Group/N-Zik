@@ -63,9 +63,9 @@
     <string name="library_albums_title">Album</string>
     <string name="library_artists_title">Artisti</string>
     <string name="library_cached_title">In cache</string>
-    <string name="library_disliked_title">Dispiaciuto</string>
+    <string name="library_disliked_title">Non piaciuti</string>
     <string name="library_downloaded_title">Scaricati</string>
-    <string name="library_export_cached_songs_confirmation_format">Export %d cached/downloaded songs?</string>
+    <string name="library_export_cached_songs_confirmation_format">Esportare %d brani in cache/scaricati?</string>
     <string name="library_favorites_title">Preferiti</string>
     <string name="library_filter_by_title">Filtrato per</string>
     <string name="library_filter_online_songs_label">Brani online</string>
