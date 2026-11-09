@@ -27,7 +27,7 @@ Danksagung: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdr
 
 💾 <b>Offline, Metadaten & Privatsphäre</b>
 - Intelligentes Caching und Downloads für Titel und Playlists, mit wählbarer Download-Qualität
-- FFmpeg-gestützter Export mit vollständigen Metadaten (nur Standard-Builds)
+- FFmpeg-basierter Export mit vollständigen Metadaten (bei der ersten Verwendung herunterladbar; nicht verfügbar auf 32-Bit x86-Geräten)
 - In-App-Metadaten-Editor (AAC/Opus, Cover)
 - Lokale Hörstatistiken und Verlauf
 - Automatische Backups mit eigenen Intervallen und Aufbewahrung
