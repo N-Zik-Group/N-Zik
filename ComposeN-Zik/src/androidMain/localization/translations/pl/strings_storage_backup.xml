@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Pamięć</string>
+    <string name="storage_breakdown_info_title">O magazynie</string>
+    <string name="storage_breakdown_nzik_total">Łącznie użyte przez N-Zik</string>
+    <string name="storage_breakdown_subtitle">Podział pamięci</string>
+    <string name="storage_breakdown_waiting">Pomiar pamięci zapasowej…</string>
+    <string name="storage_breakdown_cached_images">Obrazy w pamięci podręcznej</string>
+    <string name="storage_breakdown_streamed_audio">Streamowany dźwięk</string>
+    <string name="storage_breakdown_downloaded_audio">Pobrany dźwięk</string>
+    <string name="storage_breakdown_custom_covers">Niestandardowe okładki</string>
+    <string name="storage_breakdown_waveforms">Formy fal</string>
+    <string name="storage_breakdown_other_nzik_data">Inne dane N-Zik</string>
+    <string name="storage_breakdown_other_used_space">System, aplikacje &amp; pliki</string>
+    <string name="storage_breakdown_free_space">Wolne miejsce</string>
+    <string name="storage_info_images">Grafika i inne obrazy w pamięci podręcznej, aby wyświetlić je szybciej.</string>
+    <string name="storage_info_streaming">Dźwięk przechowywany tymczasowo po strumieniu, więc może być odtwarzany ponownie bez pobierania tych samych danych.</string>
+    <string name="storage_info_downloads">Dźwięk zapisany w N-Zik do słuchania offline.</string>
+    <string name="storage_info_waveforms">Wygenerowane pliki używane do rysowania formularza dźwięku w odtwarzaczu.</string>
+    <string name="storage_info_covers">Praca wybrana lub zaimportowana jako niestandardowe okładki.</string>
+    <string name="storage_info_other_nzik">Pozostałe prywatne dane N-Zik, w tym jego bazy danych, ustawienia, indeksy, rozszerzenia i logi.</string>
+    <string name="storage_info_other_used">Pozostała używana przestrzeń na wewnętrznej objętości, w tym Android, zainstalowane aplikacje i osobiste pliki.</string>
+    <string name="storage_info_free">Dostępna przestrzeń dla aplikacji i plików na wewnętrznej objętości.</string>
+    <string name="storage_cleanup_title">Czyszczenie</string>
+    <string name="storage_cleanup_failed">Nie można zakończyć czyszczenia pamięci.</string>
+    <string name="storage_cleanup_images_description">Wyczyść dzieło z pamięci podręcznej przez N-Zik.</string>
+    <string name="storage_cleanup_streaming_description">Wyczyść buforowane dźwięki podczas przesyłania strumieniowego.</string>
+    <string name="storage_cleanup_downloads_description">Usuń dźwięk offline i anuluj oczekujące pobrania dla magazynu pobierania aktywnego profilu.</string>
+    <string name="storage_cleanup_waveforms_description">Wyczyść wygenerowane pliki falowe.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Wyczyść formularze</string>
+    <string name="storage_cleanup_diagnostic_logs">Wyczyść dzienniki diagnostyczne</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Usuń pliki debugowania i błędów. Twoje ustawienia logowania pozostają takie same.</string>
+    <string name="storage_cleanup_temporary_files">Usuń porzucone pliki tymczasowe</string>
+    <string name="storage_cleanup_temporary_files_description">Usuń porzucone szkice edytora obrazów i udostępnianie Rewind przechwytuje starsze niż 24 godziny.</string>
+    <string name="storage_cleanup_all">Wyczyść wszystko</string>
+    <string name="storage_cleanup_all_description">Wyczyść pamięć podręczną obrazu i strumieniową skrytki oraz wygenerowane formularze fal dla aktywnego profilu, w tym przechowuj je wspólnie z innymi profilami. Usuń dźwięk offline i anuluj oczekujące pobrania dla magazynu pobierania aktywnego profilu. Usuń dzienniki diagnostyczne, porzucone szkice edytora obrazów i wygasłe przechwytywanie Rewind (Rewind share). Twoja biblioteka, niestandardowe okładki i ustawienia są przechowywane.</string>
     <!-- Backup -->
     <string name="backup_action_export">Eksportuj kopię zapasową</string>
     <string name="backup_action_import">Importuj kopię zapasową</string>
@@ -15,11 +50,14 @@
     <string name="backup_auto_schedule_day_of_month_description">Wybierz dzień miesiąca dla automatycznych kopii zapasowych miesięcznych.</string>
     <string name="backup_auto_schedule_day_of_week_description">Wybierz dzień tygodnia dla cotygodniowych automatycznych kopii zapasowych.</string>
     <string name="backup_auto_schedule_time_description">Wybierz godzinę, w której zaplanowane automatyczne kopie zapasowe mają być uruchomione.</string>
+    <string name="backup_auto_content_format_description">Wybierz, co zrobić automatycznie. Kopie zapasowe bazy danych używają ZIP, gdy zawierają niestandardowe okładki.</string>
     <string name="backup_before_update_description">Automatycznie wykonaj kopię zapasową danych przed zainstalowaniem aktualizacji</string>
     <string name="backup_before_update_failed">Tworzenie kopii zapasowej przed instalacją nie powiodło się</string>
     <string name="backup_before_update_running_message">Tworzenie kopii zapasowej danych przed instalacją…</string>
     <string name="backup_before_update_running_title">Kopia zapasowa w toku</string>
     <string name="backup_excluded_preferences_and_cache_description">Preferencje osobiste (np. wariant motywu) i pamięć podręczna zostaną pominięte.</string>
+    <string name="backup_export_library_options_description">Eksportuj bazę danych za pomocą własnych okładek, ustawień lub profili</string>
+    <string name="backup_import_library_options_description">Przywróć kopię zapasową bazy danych SQLite lub ZIP lub ustawienia lub profile</string>
     <string name="backup_include_discord_credentials">Dołącz dane logowania Discorda</string>
     <string name="backup_include_lastfm_credentials">Dołącz dane logowania Last.fm</string>
     <string name="backup_include_proxy_password">Dołącz hasło proxy</string>
@@ -56,12 +94,18 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Eksportuj listę profili i zdjęcia twarzy do pojedynczego pliku .txt</string>
     <string name="backup_export_all">Eksportuj wszystko</string>
+    <string name="backup_export_all_with_covers_description">Eksportuj bazę danych, ustawienia i stan profilu oddzielnie. Baza danych używa ZIP, jeśli zawiera niestandardowe okładki.</string>
+    <string name="backup_export_database_with_covers_and_settings_description">Eksportuj bazę danych i ustawienia oddzielnie. Baza danych używa ZIP, jeśli zawiera niestandardowe okładki.</string>
+    <string name="backup_export_database_with_covers_description">Zapisz utwory, listy odtwarzania i historię jako SQLite. Jeśli posiadasz niestandardowe okładki, eksport jest ZIP z bazą danych i okładkami.</string>
     <string name="backup_export_profile_state_failed">Eksport stanu profilu nie powiódł się</string>
     <string name="backup_export_settings_description">Eksportuj ustawienia i ustawienia aplikacji</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importuj listę profili i zdjęcia twarzy z pliku .txt</string>
     <string name="backup_import_all">Importuj wszystko</string>
+    <string name="backup_import_all_with_covers_description">Przywróć kopię zapasową bazy danych SQLite lub ZIP oraz ustawienia i stan profilu z oddzielnych plików.</string>
+    <string name="backup_import_database_with_covers_and_settings_description">Przywróć kopię zapasową bazy danych SQLite lub ZIP i oddzielny plik ustawień.</string>
     <string name="backup_import_completed_profile">Imported into %1$s</string>
+    <string name="backup_import_database_with_covers_description">Przywróć utwory, listy odtwarzania i historię z SQLite lub ZIP. Kopie zapasowe ZIP również przywracają dołączone okładki niestandardowe.</string>
     <string name="backup_import_profile_state_complete">Zaimportowano stan profilu: %1$d profili</string>
     <string name="backup_import_profile_state_complete_base">Stan profilu zaimportowany: profil bazowy</string>
     <string name="backup_import_profile_state_failed">Importowanie stanu profilu nie powiodło się</string>
@@ -72,11 +116,14 @@
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Wyczyść pamięć podręczną utworów</string>
     <string name="cache_downloads_max_size_description">Wybierz ile miejsca na dysku jest dostępne dla pobranych piosenek. Przycisk kosza usuwa pobrany dźwięk.</string>
+    <string name="cache_downloads_limit_description">Wybierz ile miejsca na dysku jest dostępne dla pobranych piosenek. Przycisk kosza usuwa pobrany dźwięk.</string>
     <string name="cache_image_max_size_description">Ogranicz ilość miejsca na dysku używanego w pamięci podręcznej. Przycisk kosza usuwa pobrane obrazy z tej pamięci podręcznej.</string>
+    <string name="cache_image_limit_description">Ogranicz ilość miejsca na dysku używanego w pamięci podręcznej. Przycisk kosza usuwa pobrane obrazy z tej pamięci podręcznej.</string>
     <string name="cache_location_description">Wybierz, gdzie aplikacja przechowuje pamięć podręczną odtwarzania.</string>
     <string name="cache_location_private">Prywatne</string>
     <string name="cache_location_system">Systemu</string>
     <string name="cache_streaming_max_size_description">Ogranicz ilość miejsca na dysku używanego do buforowania utworów strumieniowych. Przycisk kosza usuwa pamięć podręczną odtwarzania.</string>
+    <string name="cache_streaming_limit_description">Ogranicz ilość miejsca na dysku używanego do buforowania utworów strumieniowych. Przycisk kosza usuwa pamięć podręczną odtwarzania.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Pobierz wszystkie utwory</string>
     <string name="downloads_action_refresh_quality">Aktualizuj pobieranie</string>
@@ -136,7 +183,10 @@
     <string name="storage_samsung_advice_message">Automatyczne zarządzanie pamięcią Samsung może usuwać pobrane pliki pamięci podręcznej N-Zik, nawet jeśli nie poprosiłeś o to. Aby pliki pobrane były bezpieczne, użyj lokalizacji prywatnego (aplikacji) pamięci masowej zamiast pamięci systemowej.</string>
     <string name="storage_samsung_advice_title">Instrukcja dotycząca przechowywania leku Samsung</string>
     <string name="storage_samsung_system_usage_message">Aktualnie masz %1$s pobrań i pamięci podręcznej w pamięci systemowej.</string>
+    <string name="backup_export_database_failed">Eksport bazy danych nie powiódł się</string>
     <string name="backup_import_failed">Importowanie nie powiodło się</string>
     <string name="export_no_songs">Brak wyeksportowanych utworów</string>
     <string name="export_cached_songs_generic_error">Eksport nieudany</string>
+    <string name="backup_startup_preparing_library">Przygotowywanie biblioteki…</string>
+    <string name="backup_startup_recovery_failed">Nie można zakończyć przywracania twojej biblioteki.</string>
 </resources>
