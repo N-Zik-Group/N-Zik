@@ -27,7 +27,7 @@
     <string name="language_name_esperanto">Esperanto (Esperanto)</string>
     <string name="language_name_estonian">Estonian (eesti keel)</string>
     <string name="language_name_filipino">Filipino (Tagalog)</string>
-    <string name="language_name_finnish">Finnish (Suomalainen)</string>
+    <string name="language_name_finnish">Finnish (Suomi)</string>
     <string name="language_name_french">Fransk (Français)</string>
     <string name="language_name_galician">Galician (galego)</string>
     <string name="language_name_german">Tysk (Deutsch)</string>
@@ -35,13 +35,13 @@
     <string name="language_name_hebrew">Hebrew (עִברִית)</string>
     <string name="language_name_hindi">Hindi (εεεεεε″)</string>
     <string name="language_name_hungarian">Ungarsk (Magyar)</string>
-    <string name="language_name_indonesian">Indonesisk (Indonesia)</string>
+    <string name="language_name_indonesian">Indonesisk (Bahasa Indonesia)</string>
     <string name="language_name_interlingua">Mellomspråkelig</string>
     <string name="language_name_irish">Irish (Gaeilge)</string>
     <string name="language_name_italian">Italiensk (Italiano)</string>
     <string name="language_name_japanese">Japansk (odar″″)</string>
-    <string name="language_name_korean">Koreansk (″″εεεε########################)-</string>
-    <string name="language_name_malayalam">Malayam (മലയാളം)</string>
+    <string name="language_name_korean">Koreansk (GlenGlenεεεεεε″)-</string>
+    <string name="language_name_malayalam">Malayalam (മലയാളം)</string>
     <string name="language_name_norwegian">Norwegian (norsk)</string>
     <string name="language_name_odia">Odia (ଓଡ଼ିଆ)</string>
     <string name="language_name_persian">Persian</string>
@@ -50,8 +50,8 @@
     <string name="language_name_portuguese_brazilian">Portugisisk, brasiliansk (Portugisisisk, Brasileiro)</string>
     <string name="language_name_romanian">Rumensk (Română)</string>
     <string name="language_name_russian">Russisk (Русский)</string>
-    <string name="language_name_serbian_cyrillic">Serbian Cyrillic (Српска)</string>
-    <string name="language_name_serbian_latin">Serbian Latin (Gajeva latinica)</string>
+    <string name="language_name_serbian_cyrillic">Serbian Cyrillic (Српски)</string>
+    <string name="language_name_serbian_latin">Serbian Latin (Srpski)</string>
     <string name="language_name_sinhala">Sinhala (සිංහල)</string>
     <string name="language_name_spanish">Spansk (Español)</string>
     <string name="language_name_swedish">Svensk (Svenska)</string>
@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Koble til YouTube først for å aktivere dette alternativet</string>
     <string name="settings_youtube_library_sync_content_description">Spillelister, album, artister, historie, like, osv.</string>
     <string name="settings_youtube_login_enabled_label">Aktiver YouTube musikkinnlogging</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Sorter</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Verktøylinje</string>
 </resources>
