@@ -230,6 +230,8 @@
     <string name="theme_shake_sensitivity_medium">Medio (3.5G)</string>
     <string name="theme_shake_sensitivity_very_high">Muy alto (1.0G)</string>
     <!-- Thumbnail -->
+    <string name="cover_action_download">Descargar</string>
+    <string name="cover_download_failed">No se pudo descargar la portada.</string>
     <string name="image_editor_title">Editar imagen</string>
     <string name="image_editor_failed">No se ha podido editar la imagen. Su imagen actual ha sido asumida.</string>
     <string name="thumbnail_action_edit">Editar miniatura</string>
