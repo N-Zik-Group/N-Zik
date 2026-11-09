@@ -409,6 +409,7 @@
     <string name="song_matching_unmatched_label">Neporovnaná skladba</string>
     <string name="metadata_musicbrainz_rating">Hodnocení</string>
     <string name="metadata_cover_art">Obal obalu</string>
+    <string name="metadata_cover_url_hint">Vložit odkaz na obrázek</string>
     <string name="metadata_file_path_unavailable">Cestu k souboru nelze vyřešit</string>
     <string name="metadata_save_failed">Nepodařilo se uložit metadata</string>
     <string name="recommendations_charts_country_format">%1$s (%2$s)</string>
