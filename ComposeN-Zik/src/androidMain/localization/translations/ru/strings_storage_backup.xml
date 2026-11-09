@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Storage breakdown -->
+    <string name="storage_breakdown_title">Хранилище</string>
+    <string name="storage_breakdown_info_title">О хранилище</string>
+    <string name="storage_breakdown_nzik_total">Всего использовано NZik</string>
+    <string name="storage_breakdown_subtitle">Деление хранилища</string>
+    <string name="storage_breakdown_waiting">Измерение хранилища…</string>
+    <string name="storage_breakdown_cached_images">Кэшированные изображения</string>
+    <string name="storage_breakdown_streamed_audio">Трансляция аудио</string>
+    <string name="storage_breakdown_downloaded_audio">Загружено аудио</string>
+    <string name="storage_breakdown_custom_covers">Пользовательские обложки</string>
+    <string name="storage_breakdown_waveforms">Формы волны</string>
+    <string name="storage_breakdown_other_nzik_data">Другие данные NZik</string>
+    <string name="storage_breakdown_other_used_space">Система, приложения &amp; файлы</string>
+    <string name="storage_breakdown_free_space">Свободное место</string>
+    <string name="storage_info_images">Образы и другие изображения кэшируются для более быстрого отображения.</string>
+    <string name="storage_info_streaming">Аудио хранится после потока, так что он может быть воспроизведен снова без получения тех же данных.</string>
+    <string name="storage_info_downloads">Аудио сохранено в NZik для оффлайн прослушивания.</string>
+    <string name="storage_info_waveforms">Сгенерированные файлы, используемые для отображения формы звука в плеере.</string>
+    <string name="storage_info_covers">Обложки, которые вы выбрали или импортировали в качестве обложки.</string>
+    <string name="storage_info_other_nzik">Остальные личные данные NZik, включая ее базы данных, настройки, индексы, расширения и журналы.</string>
+    <string name="storage_info_other_used">Осталось места на внутреннем томе, включая Android, установленные приложения и персональные файлы.</string>
+    <string name="storage_info_free">Пространство доступно для приложений и файлов на внутреннем томе.</string>
+    <string name="storage_cleanup_title">Очистить</string>
+    <string name="storage_cleanup_failed">Не удалось завершить очистку хранилища.</string>
+    <string name="storage_cleanup_images_description">Очистить кэш картинок NZik.</string>
+    <string name="storage_cleanup_streaming_description">Очистить кэш аудио во время потока.</string>
+    <string name="storage_cleanup_downloads_description">Удалите оффлайн аудио и отмените ожидание загрузки для загрузочного хранилища активного профиля.</string>
+    <string name="storage_cleanup_waveforms_description">Очистить созданный waveform файл.</string>
+    <string name="storage_cleanup_waveforms_dialog_title">Очистить формы</string>
+    <string name="storage_cleanup_diagnostic_logs">Очистить журналы диагностики</string>
+    <string name="storage_cleanup_diagnostic_logs_description">Удалите отладку и файлы журнала сбоев. Ваши настройки в журнале остаются прежними.</string>
+    <string name="storage_cleanup_temporary_files">Удалить заброшенные временные файлы</string>
+    <string name="storage_cleanup_temporary_files_description">Удалите заброшенные черновики редактора изображений и перемотка общего доступа старше 24 часов.</string>
+    <string name="storage_cleanup_all">Очистить все</string>
+    <string name="storage_cleanup_all_description">Очистить изображение и потоковое кэш и сгенерированные формы для активного профиля, включая хранилище с другими профилями. Удалите оффлайн аудио и отмените ожидание загрузки для загрузочного хранилища активного профиля. Удаление диагностических журналов, брошенных черновиков графического редактора и просроченных снимков общего доступа Rewind . Ваша библиотека, пользовательские обложки и настройки сохраняются.</string>
     <!-- Backup -->
     <string name="backup_action_export">Экспорт резервной копии</string>
     <string name="backup_action_import">Импорт резервной копии</string>
@@ -82,12 +117,15 @@
     <!-- Cache -->
     <string name="cache_action_reset">Reset cache</string>
     <string name="cache_clear_song_dialog_title">Очистить кэш песен</string>
-    <string name="cache_downloads_max_size_description">Выберите, сколько дискового пространства доступно для скачанных песен. Кнопка \"Мусор\" удаляет загруженное аудио.</string>
-    <string name="cache_image_max_size_description">Ограничить дисковое пространство, используемое кэшированным изображением. Кнопка \"Мусор\" очищает загруженные изображения из кэша.</string>
+    <string name="cache_downloads_max_size_description">Выберите, сколько дискового пространства доступно для скачанных песен.</string>
+    <string name="cache_downloads_limit_description">Выберите, сколько дискового пространства доступно для скачанных песен.</string>
+    <string name="cache_image_max_size_description">Ограничить дисковое пространство, используемое кэшированным файлом.</string>
+    <string name="cache_image_limit_description">Ограничить дисковое пространство, используемое кэшированным файлом.</string>
     <string name="cache_location_description">Выберите, где приложение сохраняет кэш воспроизведения песен.</string>
     <string name="cache_location_private">Внутри файлов приложения</string>
     <string name="cache_location_system">Стандартное (внутри системы)</string>
-    <string name="cache_streaming_max_size_description">Ограничить дисковое пространство, используемое для кэширования потоковых песен. Кнопка \"Мусор\" очищает кэш воспроизведения.</string>
+    <string name="cache_streaming_max_size_description">Ограничить дисковое пространство, используемое для кэширования потоковых песен.</string>
+    <string name="cache_streaming_limit_description">Ограничить дисковое пространство, используемое для кэширования потоковых песен.</string>
     <!-- Downloads -->
     <string name="downloads_action_download_all">Скачать все песни</string>
     <string name="downloads_action_refresh_quality">Обновить загрузки</string>
