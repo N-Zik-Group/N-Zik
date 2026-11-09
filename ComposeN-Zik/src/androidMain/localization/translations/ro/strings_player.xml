@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Alegeți cum sunt excluse piesele de la artiștii neplăcuți.</string>
     <string name="player_exclude_disliked_songs_description">Alege cum sunt excluse piesele neadaptate din sugestiile de redare.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Exclude piesele care depășesc limita de durată selectată.</string>
-    <string name="player_excluded_song_count_format">Melodii excluse: %s</string>
+    <string name="player_excluded_song_count_format">%s melodii excluse</string>
     <string name="player_keep_minimized">Păstrează minimizat</string>
     <string name="player_layout_artwork_style_description">Alege modul în care jucătorul afișează operele piesei.</string>
     <string name="player_layout_controls_style_description">Alege aspectul comenzilor jucătorului.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Includeți coperta de album alături de piesele viitoare în previzualizarea playerului.</string>
     <string name="player_queue_preview_song_count_description">Alegeți câte piese viitoare vor apărea în previzualizarea jucătorului.</string>
     <string name="player_queue_remove_selected_confirmation_format">Eliminați selecția din coada de așteptare? Piesele selectate: %d</string>
-    <string name="player_queue_shuffled_count_format">Coada de amestecare (piese: %d)</string>
+    <string name="player_queue_shuffled_count_format">Coada de amestecare (%d melodii)</string>
     <string name="player_remaining_time_visible_description">Arată timpul rămas în piesa curentă.</string>
     <string name="player_restart_required_message">Playerul trebuie repornit pentru ca modificările să aibă efect!</string>
     <string name="player_rotating_buttons">Butoane rotative</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Afișează o previzualizare a pieselor viitoare în interiorul jucătorului.</string>
     <string name="player_show_player_top_actions_bar_description">Afișează rândul acțiunilor jucătorului deasupra conținutului principal.</string>
     <string name="player_shuffle_empty_message">Nicio melodie de amestecat</string>
-    <string name="player_shuffled_song_count_format">Șenile amestecate: %d</string>
+    <string name="player_shuffled_song_count_format">%d melodii amestecate</string>
     <string name="player_sleep_timer_end_of_song_message">Temporizatorul de somn setat la sfârșitul acestei melodii</string>
     <string name="player_sleep_timer_finished_message">Temporizatorul de somn s-a încheiat</string>
     <string name="player_song_playback_error_format">A apărut o eroare la redarea melodiei %1$s</string>
