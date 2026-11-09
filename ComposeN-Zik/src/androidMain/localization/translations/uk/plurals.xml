@@ -61,4 +61,88 @@
         <item quantity="many">%1$d songs heard</item>
         <item quantity="other">%1$d songs heard</item>
     </plurals>
+    <plurals name="profile_last_used_minute_count">
+        <item quantity="one">%1$d minute ago</item>
+        <item quantity="few">%1$d minutes ago</item>
+        <item quantity="many">%1$d minutes ago</item>
+        <item quantity="other">%1$d minutes ago</item>
+    </plurals>
+    <plurals name="profile_last_used_hour_count">
+        <item quantity="one">%1$d hour ago</item>
+        <item quantity="few">%1$d годин тому</item>
+        <item quantity="many">%1$d годин тому</item>
+        <item quantity="other">%1$d годин тому</item>
+    </plurals>
+    <plurals name="profile_last_used_day_count">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="few">%1$d days ago</item>
+        <item quantity="many">%1$d days ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+    <plurals name="profile_last_used_week_count">
+        <item quantity="one">%1$d week ago</item>
+        <item quantity="few">%1$d тижнів тому</item>
+        <item quantity="many">%1$d тижнів тому</item>
+        <item quantity="other">%1$d тижнів тому</item>
+    </plurals>
+    <plurals name="profile_last_used_month_count">
+        <item quantity="one">%1$d місяць тому</item>
+        <item quantity="few">%1$d months ago</item>
+        <item quantity="many">%1$d months ago</item>
+        <item quantity="other">%1$d months ago</item>
+    </plurals>
+    <plurals name="history_delete_search_query_count">
+        <item quantity="one">Видалити пошуковий запит %1$d</item>
+        <item quantity="few">Видалити пошукові запити %1$d</item>
+        <item quantity="many">Видалити пошукові запити %1$d</item>
+        <item quantity="other">Видалити пошукові запити %1$d</item>
+    </plurals>
+    <plurals name="history_delete_playback_event_count">
+        <item quantity="one">Видалити %1$d події відтворення</item>
+        <item quantity="few">Delete %1$d playback events</item>
+        <item quantity="many">Delete %1$d playback events</item>
+        <item quantity="other">Delete %1$d playback events</item>
+    </plurals>
+    <plurals name="podcast_episode_count_with_duration">
+        <item quantity="one">%1$d епізод, · %2$s</item>
+        <item quantity="few">%1$d епізодів · %2$s</item>
+        <item quantity="many">%1$d епізодів · %2$s</item>
+        <item quantity="other">%1$d епізодів · %2$s</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_adding">
+        <item quantity="one">Додавання пісні %1$d у плейлист YouTube</item>
+        <item quantity="few">Додавання %1$d пісень в плейлист YouTube</item>
+        <item quantity="many">Додавання %1$d пісень в плейлист YouTube</item>
+        <item quantity="other">Додавання %1$d пісень в плейлист YouTube</item>
+    </plurals>
+    <plurals name="sync_youtube_playlist_songs_added">
+        <item quantity="one">Додана пісня %1$d у плейлист YouTube</item>
+        <item quantity="few">Додано пісень %1$d до плейлиста YouTube</item>
+        <item quantity="many">Додано пісень %1$d до плейлиста YouTube</item>
+        <item quantity="other">Додано пісень %1$d до плейлиста YouTube</item>
+    </plurals>
+    <plurals name="backup_import_profile_state_complete_count">
+        <item quantity="one">Стан профілю імпортовано: профіль %1$d</item>
+        <item quantity="few">Стан профілю імпортовано: профілі %1$d</item>
+        <item quantity="many">Стан профілю імпортовано: профілі %1$d</item>
+        <item quantity="other">Стан профілю імпортовано: профілі %1$d</item>
+    </plurals>
+    <plurals name="sync_failed_notification_album_count">
+        <item quantity="one">Failed to sync %1$d album. Go back to the Albums tab to retry.</item>
+        <item quantity="few">Failed to sync %1$d albums. Go back to the Albums tab to retry.</item>
+        <item quantity="many">Failed to sync %1$d albums. Go back to the Albums tab to retry.</item>
+        <item quantity="other">Failed to sync %1$d albums. Go back to the Albums tab to retry.</item>
+    </plurals>
+    <plurals name="library_export_cached_song_confirmation_count">
+        <item quantity="one">Експорт камери %1$d кешований/завантаженої пісні?</item>
+        <item quantity="few">Експорт пісень %1$d кешовано/завантажених пісень?</item>
+        <item quantity="many">Експорт пісень %1$d кешовано/завантажених пісень?</item>
+        <item quantity="other">Експорт пісень %1$d кешовано/завантажених пісень?</item>
+    </plurals>
+    <plurals name="downloads_stale_startup_removed_count">
+        <item quantity="one">Запитана пісня %1$d відсутня і була видалена. Будь ласка, завантажте її знову.</item>
+        <item quantity="few">%1$d завантажені пісні відсутні їх файли і видалені. Будь ласка, завантажте їх знову.</item>
+        <item quantity="many">%1$d завантажені пісні відсутні їх файли і видалені. Будь ласка, завантажте їх знову.</item>
+        <item quantity="other">%1$d завантажені пісні відсутні їх файли і видалені. Будь ласка, завантажте їх знову.</item>
+    </plurals>
 </resources>
