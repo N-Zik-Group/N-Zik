@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
@@ -76,21 +77,25 @@ class ExportSettingsDialog private constructor(
         }
 
         @Composable
-        operator fun invoke( context: Context ): ExportSettingsDialog {
-            val includeYtbState = remember { mutableStateOf(false) }
-            val includeDiscordState = remember { mutableStateOf(false) }
-            val includeLastfmState = remember { mutableStateOf(false) }
-            val includeProxyState = remember { mutableStateOf(false) }
+        operator fun invoke(context: Context, onPickerFinished: () -> Unit = {}): ExportSettingsDialog {
+            val includeYtbState = rememberSaveable { mutableStateOf(false) }
+            val includeDiscordState = rememberSaveable { mutableStateOf(false) }
+            val includeLastfmState = rememberSaveable { mutableStateOf(false) }
+            val includeProxyState = rememberSaveable { mutableStateOf(false) }
             val launcher = rememberLauncherForActivityResult(
                 ActivityResultContracts.CreateDocument( "text/csv" )
             ) { uri ->
                 Timber.tag("ExportSettingsDialog").d("File picker callback received, uri: $uri")
-                uri ?: return@rememberLauncherForActivityResult
+                if (uri == null) {
+                    onPickerFinished()
+                    return@rememberLauncherForActivityResult
+                }
                 val ytb = includeYtbState.value
                 val discord = includeDiscordState.value
                 val lastfm = includeLastfmState.value
                 val proxy = includeProxyState.value
-                onExport( uri, context, ytb, discord, lastfm, proxy )
+                onExport(uri, context, ytb, discord, lastfm, proxy)
+                onPickerFinished()
             }
             return remember(launcher, context) {
                 ExportSettingsDialog(launcher, context, includeYtbState, includeDiscordState, includeLastfmState, includeProxyState)

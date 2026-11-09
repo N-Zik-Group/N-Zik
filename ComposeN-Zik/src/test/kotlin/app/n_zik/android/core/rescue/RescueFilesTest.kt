@@ -1,5 +1,6 @@
 package app.n_zik.android.core.rescue
 
+
 import android.content.Context
 import android.content.SharedPreferences
 import app.n_zik.android.extensions.discord.discordAdvancedShowStateKey
@@ -594,19 +595,6 @@ class RescueFilesTest {
 
         assertEquals("B-main", live.readText())
         assertFalse(backup.exists())
-    }
-
-    @Test
-    fun `replacing the database removes the stale side files of the old one`(@TempDir tmp: File) {
-        val live = writeDb(File(tmp, "databases"), main = "old", wal = "old-wal", shm = "old-shm")
-        val imported = File(tmp, "databases/data.db.import").apply { writeText("new") }
-
-        RescueFiles.replaceDatabaseFile(imported, live)
-
-        assertEquals("new", live.readText())
-        assertFalse(File(tmp, "databases/data.db-wal").exists(), "a stale wal must never be replayed onto the new database")
-        assertFalse(File(tmp, "databases/data.db-shm").exists())
-        assertFalse(imported.exists())
     }
 
     // Settings backups / reset / restore

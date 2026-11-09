@@ -3,7 +3,6 @@
     <!-- Backup -->
     <string name="backup_action_export">Vie varmuuskopio</string>
     <string name="backup_action_import">Tuo varmuuskopio</string>
-    <string name="backup_action_import_legacy_migration">Tuo siirtotiedosto.</string>
     <string name="backup_auto_custom_interval_unit_description">Valitse aikayksikkö mukautettua varmuuskopiointiväliä varten. @ info: whatsthis</string>
     <string name="backup_auto_custom_interval_value_description">Aseta aikayksiköiden määrä automaattisen varmuuskopioinnin välillä.</string>
     <string name="backup_auto_include_discord_credentials_description">Sisällytä tallennetut Discord-tilin käyttäjätiedot automaattisten asetusten varmuuskopiointiin.</string>
@@ -16,19 +15,15 @@
     <string name="backup_auto_schedule_day_of_month_description">Valitse kuukauden päivä automaattisille varmuuskopioille kuukausittain.</string>
     <string name="backup_auto_schedule_day_of_week_description">Valitse viikonpäivä viikottaisille automaattisille varmuuskopioille.</string>
     <string name="backup_auto_schedule_time_description">Valitse hetki, jolloin ajoitettu automaattinen varmuuskopiointi suoritetaan.</string>
-    <string name="backup_auto_target_description">Valitse onko automaattiset varmuuskopiot sisältävät tietokannan, asetukset tai molemmat.</string>
     <string name="backup_before_update_description">Varmuuskopioi tiedot automaattisesti ennen päivityksen asentamista</string>
     <string name="backup_before_update_failed">Varmuuskopion ennakkoasennus epäonnistui</string>
     <string name="backup_before_update_running_message">Varmuuskopioidaan tietoja ennen asennusta…</string>
     <string name="backup_before_update_running_title">Varmuuskopiointi käynnissä</string>
     <string name="backup_excluded_preferences_and_cache_description">Henkilökohtaiset asetukset (esim. teematila) ja välimuisti eivät sisälly.</string>
-    <string name="backup_export_description">Vie tietokanta tai asetukset tiedostoon</string>
-    <string name="backup_import_description">Tuo tietokanta tai asetukset tiedostosta</string>
     <string name="backup_include_discord_credentials">Sisällytä Discordin henkilöllisyystiedot</string>
     <string name="backup_include_lastfm_credentials">Sisällytä Last.fm henkilöllisyystiedot</string>
     <string name="backup_include_proxy_password">Sisällytä välityspalvelimen salasana</string>
     <string name="backup_include_youtube_credentials">Sisällytä YouTube-tunnukset</string>
-    <string name="backup_legacy_migration_description">Vanhoille käyttäjille ennen muuntamista.\nKäytä vanhaa sovellusta varmuuskopion tekemiseen muuttoa varten.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Olemassa olevat tiedot ylikirjoitetaan. %1$s sulkeutuu automaattisesti kun tietokanta on palautettu.</string>
     <string name="backup_target_database_and_settings_label">Tietokanta + Asetukset</string>
     <string name="backup_target_database_label">Tietokanta</string>
@@ -61,18 +56,12 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Vie profiililuettelo ja kasvokuvat yhteen .txt-tiedostoon</string>
     <string name="backup_export_all">Vie kaikki</string>
-    <string name="backup_export_all_description">Vie tietokanta, asetukset ja profiilin tila</string>
-    <string name="backup_export_both_description">Vie tietokanta ja asetukset erillisinä tiedostoina</string>
-    <string name="backup_export_database_description">Vie tietokanta kappaleiden, soittolistojen ja historian kanssa</string>
     <string name="backup_export_profile_state_failed">Profiilin tilan vienti epäonnistui</string>
     <string name="backup_export_settings_description">Vie sovellusasetukset ja asetukset</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Tuo profiililuettelo ja kasvokuvat .txt tiedostosta</string>
     <string name="backup_import_all">Tuo kaikki</string>
-    <string name="backup_import_all_description">Tuo tietokanta, asetukset ja profiilin tila</string>
-    <string name="backup_import_both_description">Tuo tietokanta ja asetukset erillisistä tiedostoista</string>
     <string name="backup_import_completed_profile">Tuotu kohteeseen %1$s</string>
-    <string name="backup_import_database_description">Tuo tietokanta kappaleista, soittolistoista ja historiasta</string>
     <string name="backup_import_profile_state_complete">Profiilin tila tuotu: %1$d profiilia</string>
     <string name="backup_import_profile_state_complete_base">Profiilin tila tuotu: perusprofiili</string>
     <string name="backup_import_profile_state_failed">Profiilin tilan tuonti epäonnistui</string>

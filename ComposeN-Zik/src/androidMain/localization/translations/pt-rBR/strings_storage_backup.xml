@@ -3,7 +3,6 @@
     <!-- Backup -->
     <string name="backup_action_export">Exportar backup</string>
     <string name="backup_action_import">Importar backup</string>
-    <string name="backup_action_import_legacy_migration">Importar arquivo de migração.</string>
     <string name="backup_auto_custom_interval_unit_description">Escolha a unidade de tempo para o intervalo de backup personalizado.</string>
     <string name="backup_auto_custom_interval_value_description">Defina o número de unidades de tempo entre backups automáticos.</string>
     <string name="backup_auto_include_discord_credentials_description">Incluir credenciais salvas da conta do Discord em backups de configurações automáticas.</string>
@@ -16,19 +15,15 @@
     <string name="backup_auto_schedule_day_of_month_description">Escolha o dia do mês para backups automáticos mensais.</string>
     <string name="backup_auto_schedule_day_of_week_description">Escolha o dia da semana para backups automáticos semanais.</string>
     <string name="backup_auto_schedule_time_description">Escolha a hora em que os backups automáticos agendados devem ser executados.</string>
-    <string name="backup_auto_target_description">Escolha se os backups automáticos incluem o banco de dados, as configurações ou ambos.</string>
     <string name="backup_before_update_description">Fazer backup dos dados automaticamente antes de instalar uma atualização</string>
     <string name="backup_before_update_failed">Falha no backup de pré-instalação</string>
     <string name="backup_before_update_running_message">Fazendo backup dos dados antes da instalação…</string>
     <string name="backup_before_update_running_title">Backup em andamento</string>
     <string name="backup_excluded_preferences_and_cache_description">Preferências pessoais (ou seja, o modo de tema) e o cache são excluídos.</string>
-    <string name="backup_export_description">Exportar banco de dados ou configurações para um arquivo</string>
-    <string name="backup_import_description">Importar banco de dados ou configurações de um arquivo</string>
     <string name="backup_include_discord_credentials">Incluir credenciais de identidade do Discord</string>
     <string name="backup_include_lastfm_credentials">Incluir credenciais de identidade Last.fm</string>
     <string name="backup_include_proxy_password">Incluir a senha do proxy</string>
     <string name="backup_include_youtube_credentials">Incluir credenciais de identidade do YouTube</string>
-    <string name="backup_legacy_migration_description">For old users before conversion.\nUse old app to make a backup for migration.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Os dados existentes serão substituídos. %1$s Será automaticamente fechado após a restauração do banco de dados.</string>
     <string name="backup_target_database_and_settings_label">Banco de dados + configurações</string>
     <string name="backup_target_database_label">Base de dados</string>
@@ -61,18 +56,12 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Exportar a lista de perfil e as fotos de rosto em um único arquivo .txt</string>
     <string name="backup_export_all">Exportar tudo</string>
-    <string name="backup_export_all_description">Exportar banco de dados, configurações e estado do perfil</string>
-    <string name="backup_export_both_description">Exportar banco de dados e configurações em arquivos separados</string>
-    <string name="backup_export_database_description">Exportar banco de dados com músicas, listas de reprodução e histórico</string>
     <string name="backup_export_profile_state_failed">Falha ao exportar estado do perfil</string>
     <string name="backup_export_settings_description">Exportar configurações e preferências do aplicativo</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importar a lista de perfil e as fotos de rosto de um arquivo .txt</string>
     <string name="backup_import_all">Importar tudo</string>
-    <string name="backup_import_all_description">Importar banco de dados, configurações e estado do perfil</string>
-    <string name="backup_import_both_description">Importar banco de dados e configurações de arquivos separados</string>
     <string name="backup_import_completed_profile">Importado para %1$s</string>
-    <string name="backup_import_database_description">Importar banco de dados com músicas, listas de reprodução e histórico</string>
     <string name="backup_import_profile_state_complete">Estado do perfil importado: perfis %1$d</string>
     <string name="backup_import_profile_state_complete_base">Estado do perfil importado: perfil base</string>
     <string name="backup_import_profile_state_failed">Falha ao importar estado do perfil</string>

@@ -197,7 +197,6 @@
     <string name="recovery_error">Se ha producido un error: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Exportar base de datos</string>
-    <string name="recovery_export_database_description">Guarda tu biblioteca, listas de reproducción e historial</string>
     <string name="recovery_export_logs">Exportar registros</string>
     <string name="recovery_export_logs_description">Guardar registros de errores y depuración para un informe de error</string>
     <string name="recovery_export_profiles_description">La lista de perfiles y las fotos faciales en un solo archivo .txt</string>
@@ -210,7 +209,6 @@
     <string name="recovery_group_settings">Ajustes</string>
     <string name="recovery_group_storage">Almacenamiento</string>
     <string name="recovery_import_database">Importar base de datos</string>
-    <string name="recovery_import_database_description">Restaurar una base de datos previamente exportada</string>
     <string name="recovery_import_profiles_description">Restaurar la lista de perfiles y las fotos faciales de un archivo .txt</string>
     <string name="recovery_import_settings">Importar ajustes</string>
     <string name="recovery_import_settings_description">Restaurar preferencias desde un archivo CSV</string>

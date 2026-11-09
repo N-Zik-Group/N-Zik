@@ -1,10 +1,12 @@
 package app.n_zik.android.components.import
 
+import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.backup.openBackupFixture
 import app.n_zik.android.core.rewind.RewindPostImportRegenerationWorker
 import io.mockk.Runs
 import io.mockk.every
@@ -16,17 +18,21 @@ import io.mockk.verify
 // runBlocking (not a test dispatcher): importTo is a plain suspend flow and the tests
 // only assert on files and the stubbed Database / worker entry points.
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertArrayEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.junit.After
+import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.File
-import java.nio.file.Files
 
 /**
  * Tests the per-profile database replacement behind every database import
@@ -37,7 +43,11 @@ import java.nio.file.Files
  * active profile; an import into any other profile must not touch the running
  * database at all.
  */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [33], application = Application::class)
 class ImportDatabaseImportToTest {
+    @get:Rule
+    val tmp = TemporaryFolder()
 
     private lateinit var files: File
     private lateinit var context: Context
@@ -45,13 +55,21 @@ class ImportDatabaseImportToTest {
     private lateinit var profilePrefs: SharedPreferences
     private lateinit var uri: Uri
 
-    private val importedBytes = byteArrayOf(1, 2, 3, 4)
+    private lateinit var importedBytes: ByteArray
 
-    @BeforeEach
+    @Before
     fun setup() {
-        files = Files.createTempDirectory("nzik-import-db").toFile()
+        files = tmp.newFolder()
+        val backup = tmp.newFile()
+        val application = RuntimeEnvironment.getApplication()
+        openBackupFixture(application, backup).use { db ->
+            db.execSQL("INSERT INTO Song (id, title, totalPlayTimeMs) VALUES ('song', 'Song', 0)")
+        }
+        importedBytes = backup.readBytes()
         context = mockk()
-        every { context.applicationContext } returns context
+        every { context.assets } returns application.assets
+        every { context.cacheDir } returns tmp.newFolder()
+        every { context.filesDir } returns tmp.newFolder()
         resolver = mockk()
         every { context.contentResolver } returns resolver
         uri = mockk()
@@ -70,7 +88,7 @@ class ImportDatabaseImportToTest {
         every { RewindPostImportRegenerationWorker.schedule(any()) } just Runs
     }
 
-    @AfterEach
+    @After
     fun teardown() {
         unmockkAll()
     }
@@ -134,20 +152,29 @@ class ImportDatabaseImportToTest {
     fun aFailedCopyLeavesTheExistingDatabaseIntact() = runBlocking {
         val baseDb = dbPath("data.db")
         baseDb.writeBytes(byteArrayOf(9))
-        // The source stream fails mid-copy (I/O error on the source).
-        val failing = object : ByteArrayInputStream(byteArrayOf(1, 2)) {
-            override fun read(b: ByteArray, off: Int, len: Int): Int = throw IOException("source revoked")
+        val wal = sideFile("data.db-wal")
+        val shm = sideFile("data.db-shm")
+        var firstRead = true
+        val failing = object : ByteArrayInputStream(importedBytes) {
+            override fun read(b: ByteArray, off: Int, len: Int): Int {
+                if (!firstRead) {
+                    val staged = context.cacheDir.listFiles().orEmpty().single().resolve("input")
+                    assertTrue("The failure happens after the staged write starts", staged.length() > 0)
+                    throw IOException("source revoked")
+                }
+                firstRead = false
+                return super.read(b, off, len)
+            }
         }
         every { resolver.openInputStream(uri) } returns failing
 
         val error = runCatching { ImportDatabase.importTo(context, uri, "default") }.exceptionOrNull()
 
-        assertNotNull(error, "the failure must surface to the caller")
-        assertArrayEquals(
-            byteArrayOf(9),
-            baseDb.readBytes(),
-            "a mid-copy failure must leave the existing database intact, not truncated"
-        )
-        assertFalse(File(files, "data.db.tmp").exists(), "the partial temp file is cleaned up")
+        assertTrue("The source read failure must surface to the caller", error is IOException)
+        assertArrayEquals(byteArrayOf(9), baseDb.readBytes())
+        assertArrayEquals(byteArrayOf(9), wal.readBytes())
+        assertArrayEquals(byteArrayOf(9), shm.readBytes())
+        assertTrue("The partial temp file is cleaned up", context.cacheDir.listFiles().orEmpty().isEmpty())
+        verify(exactly = 0) { Database.close() }
     }
 }

@@ -312,7 +312,6 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(4, R.string.settings_section_backup_and_restore_title, R.drawable.server,
         keywordRes = listOf(
             R.string.settings_section_backup_and_restore_title, R.string.backup_action_export, R.string.backup_action_import,
-            R.string.backup_action_import_legacy_migration,
         )),
     SettingsCardRegistryEntry(4, R.string.backup_auto_title, R.drawable.history,
         keywordRes = listOf(

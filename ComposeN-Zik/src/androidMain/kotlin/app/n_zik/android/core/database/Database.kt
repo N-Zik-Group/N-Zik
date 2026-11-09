@@ -977,7 +977,7 @@ object Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 43,
+    version = LIBRARY_SCHEMA_VERSION,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),

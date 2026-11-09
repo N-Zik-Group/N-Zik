@@ -3,7 +3,6 @@
     <!-- Backup -->
     <string name="backup_action_export">Back-up exporteren</string>
     <string name="backup_action_import">Back-up importeren</string>
-    <string name="backup_action_import_legacy_migration">Migratiebestand importeren.</string>
     <string name="backup_auto_custom_interval_unit_description">Kies de tijdseenheid voor het aangepaste back-up interval.</string>
     <string name="backup_auto_custom_interval_value_description">Stel het aantal tijdeenheden in tussen automatische back-ups.</string>
     <string name="backup_auto_include_discord_credentials_description">Inclusief opgeslagen Discord-accountgegevens in automatische instellingen back-ups.</string>
@@ -16,19 +15,15 @@
     <string name="backup_auto_schedule_day_of_month_description">Kies de dag van de maand voor automatische maandelijkse back-ups.</string>
     <string name="backup_auto_schedule_day_of_week_description">Kies de weekdag voor automatische back-ups.</string>
     <string name="backup_auto_schedule_time_description">Kies het uur waarop geplande automatische back-ups moeten worden uitgevoerd.</string>
-    <string name="backup_auto_target_description">Kies of automatische back-ups de database, instellingen of beide bevatten.</string>
     <string name="backup_before_update_description">Automatisch back-up maken van gegevens voor het installeren van een update</string>
     <string name="backup_before_update_failed">Back-up vooraf installeren mislukt</string>
     <string name="backup_before_update_running_message">Gegevens back-uppen voor installatie…</string>
     <string name="backup_before_update_running_title">Bezig met back-up</string>
     <string name="backup_excluded_preferences_and_cache_description">Persoonlijke voorkeuren (b.v.b. de themamodus) en de cache zijn uitgesloten.</string>
-    <string name="backup_export_description">Exporteer database of instellingen naar een bestand</string>
-    <string name="backup_import_description">Importeer database of instellingen uit een bestand</string>
     <string name="backup_include_discord_credentials">Voeg Discord identiteitsgegevens toe</string>
     <string name="backup_include_lastfm_credentials">Inclusief Last.fm identiteitsgegevens</string>
     <string name="backup_include_proxy_password">Voeg het proxywachtwoord toe</string>
     <string name="backup_include_youtube_credentials">Inclusief YouTube-identiteitsgegevens</string>
-    <string name="backup_legacy_migration_description">Voor oude gebruikers vóór conversie.\nGebruik oude app om een back-up te maken voor migratie.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Bestaande gegevens worden overschreven. %1$s zal zichzelf automatisch sluiten na het herstellen van de database.</string>
     <string name="backup_target_database_and_settings_label">Database + instellingen</string>
     <string name="backup_target_database_label">Database</string>
@@ -61,18 +56,12 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Exporteer de profiellijst en de foto\'s in een enkel .txt bestand</string>
     <string name="backup_export_all">Alles exporteren</string>
-    <string name="backup_export_all_description">Exporteer database, instellingen en profielstatus</string>
-    <string name="backup_export_both_description">Exporteer database en instellingen als afzonderlijke bestanden</string>
-    <string name="backup_export_database_description">Database exporteren met nummers, afspeellijsten en geschiedenis</string>
     <string name="backup_export_profile_state_failed">Profielstatus exporteren mislukt</string>
     <string name="backup_export_settings_description">Exporteer app instellingen en voorkeuren</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importeer de profiellijst en foto\'s van een .txt bestand</string>
     <string name="backup_import_all">Alles importeren</string>
-    <string name="backup_import_all_description">Importeer database, instellingen en profielstatus</string>
-    <string name="backup_import_both_description">Importeer database en instellingen uit afzonderlijke bestanden</string>
     <string name="backup_import_completed_profile">Geïmporteerd in %1$s</string>
-    <string name="backup_import_database_description">Database importeren met nummers, afspeellijsten en geschiedenis</string>
     <string name="backup_import_profile_state_complete">Profiel status geïmporteerd: %1$d profielen</string>
     <string name="backup_import_profile_state_complete_base">Profiel status geïmporteerd: basisprofiel</string>
     <string name="backup_import_profile_state_failed">Profiel status importeren mislukt</string>

@@ -3,7 +3,6 @@
     <!-- Backup -->
     <string name="backup_action_export">Yedeklemeyi dışa aktar</string>
     <string name="backup_action_import">Yedeklemeyi içe aktar</string>
-    <string name="backup_action_import_legacy_migration">Taşıma dosyasını içe aktar.</string>
     <string name="backup_auto_custom_interval_unit_description">Özel yedekleme aralığı için zaman birimini seçin.</string>
     <string name="backup_auto_custom_interval_value_description">Otomatik yedeklemeler arasındaki zaman birimlerinin sayısını ayarlayın.</string>
     <string name="backup_auto_include_discord_credentials_description">Kaydedilmiş Discord hesap kimlik bilgilerini otomatik ayar yedeklemelerine dahil et.</string>
@@ -16,19 +15,15 @@
     <string name="backup_auto_schedule_day_of_month_description">Aylık otomatik yedeklemeler için ayın gününü seçin.</string>
     <string name="backup_auto_schedule_day_of_week_description">Haftalık otomatik yedeklemeler için hafta içi gününü seçin.</string>
     <string name="backup_auto_schedule_time_description">Zamanlanmış otomatik yedeklemelerin gerçekleştirileceği saati seçin.</string>
-    <string name="backup_auto_target_description">Otomatik yedeklemelerin veritabanını, ayarları veya her ikisini de içerip içermeyeceğini seçin.</string>
     <string name="backup_before_update_description">Bir güncellemeyi yüklemeden önce verileri otomatik olarak yedekle</string>
     <string name="backup_before_update_failed">Kurulum öncesi yedekleme başarısız oldu</string>
     <string name="backup_before_update_running_message">Kurulumdan önce verileri yedekleme…</string>
     <string name="backup_before_update_running_title">Yedekleme devam ediyor</string>
     <string name="backup_excluded_preferences_and_cache_description">Kişisel tercihler (örneğin tema modu) ve önbellek hariç tutulur.</string>
-    <string name="backup_export_description">Veritabanını veya ayarları bir dosyaya aktarın</string>
-    <string name="backup_import_description">Veritabanını veya ayarları bir dosyadan içe aktar</string>
     <string name="backup_include_discord_credentials">Discord kimlik bilgilerini ekleyin</string>
     <string name="backup_include_lastfm_credentials">Last.fm kimlik bilgilerini ekleyin</string>
     <string name="backup_include_proxy_password">Proxy şifresini ekleyin</string>
     <string name="backup_include_youtube_credentials">YouTube kimlik bilgilerini ekleyin</string>
-    <string name="backup_legacy_migration_description">Dönüşümden önceki eski kullanıcılar için.\nTaşıma için yedekleme yapmak üzere eski uygulamayı kullanın.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Mevcut verilerin üzerine yazılacaktır. Veritabanı geri yüklendikten sonra %1$s otomatik olarak kapanacaktır.</string>
     <string name="backup_target_database_and_settings_label">Veritabanı + Ayarlar</string>
     <string name="backup_target_database_label">Veritabanı</string>
@@ -61,18 +56,12 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Profil listesini ve yüz fotoğraflarını tek bir .txt dosyasına aktarın</string>
     <string name="backup_export_all">Tümünü dışa aktar</string>
-    <string name="backup_export_all_description">Veritabanı, ayarlar ve profil durumunu dışa aktar</string>
-    <string name="backup_export_both_description">Veritabanını ve ayarları ayrı dosyalar olarak dışa aktar</string>
-    <string name="backup_export_database_description">Şarkıları, çalma listelerini ve geçmişi içeren veritabanını dışa aktar</string>
     <string name="backup_export_profile_state_failed">Profil durumunun dışa aktarılması başarısız oldu</string>
     <string name="backup_export_settings_description">Uygulama ayarlarını ve tercihlerini dışa aktar</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Profil listesini ve yüz fotoğraflarını bir .txt dosyasından içe aktar</string>
     <string name="backup_import_all">Tümünü içe aktar</string>
-    <string name="backup_import_all_description">Veritabanı, ayarlar ve profil durumunu içe aktar</string>
-    <string name="backup_import_both_description">Veritabanını ve ayarları ayrı dosyalardan içe aktar</string>
     <string name="backup_import_completed_profile">%1$s içe aktarıldı</string>
-    <string name="backup_import_database_description">Şarkıları, çalma listelerini ve geçmişi içeren veritabanını içe aktar</string>
     <string name="backup_import_profile_state_complete">Profil durumu içe aktarıldı: %1$d profil</string>
     <string name="backup_import_profile_state_complete_base">İçe aktarılan profil durumu: temel profil</string>
     <string name="backup_import_profile_state_failed">Profil durumunun içe aktarılması başarısız oldu</string>

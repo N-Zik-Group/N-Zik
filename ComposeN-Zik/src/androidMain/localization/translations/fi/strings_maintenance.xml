@@ -197,7 +197,6 @@
     <string name="recovery_error">Tapahtui virhe: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Vie tietokanta</string>
-    <string name="recovery_export_database_description">Tallenna kirjastosi, soittolistat ja historia</string>
     <string name="recovery_export_logs">Vie lokit</string>
     <string name="recovery_export_logs_description">Tallenna kaatuminen ja virheenjäljityslokit vikailmoitusta varten</string>
     <string name="recovery_export_profiles_description">Profiililuettelo ja kasvokuvat yhdessä .txt tiedostossa</string>
@@ -210,7 +209,6 @@
     <string name="recovery_group_settings">Asetukset</string>
     <string name="recovery_group_storage">Tallennustila</string>
     <string name="recovery_import_database">Tuo tietokanta</string>
-    <string name="recovery_import_database_description">Palauta aiemmin viety tietokanta</string>
     <string name="recovery_import_profiles_description">Palauta profiililuettelo ja kasvokuvat .txt-tiedostosta</string>
     <string name="recovery_import_settings">Tuo asetukset</string>
     <string name="recovery_import_settings_description">Palauta asetukset CSV-tiedostosta</string>

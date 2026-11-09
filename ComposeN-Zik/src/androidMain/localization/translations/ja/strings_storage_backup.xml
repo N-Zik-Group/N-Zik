@@ -3,7 +3,6 @@
     <!-- Backup -->
     <string name="backup_action_export">バックアップをエクスポート</string>
     <string name="backup_action_import">バックアップをインポート</string>
-    <string name="backup_action_import_legacy_migration">移行ファイルをインポート</string>
     <string name="backup_auto_custom_interval_unit_description">カスタムバックアップ間隔の時間単位を選択します。</string>
     <string name="backup_auto_custom_interval_value_description">自動バックアップ間の時間単位の数を設定します。</string>
     <string name="backup_auto_include_discord_credentials_description">自動設定バックアップに保存されたDiscordアカウント認証情報を含めます。</string>
@@ -16,19 +15,15 @@
     <string name="backup_auto_schedule_day_of_month_description">毎月の自動バックアップの月の日を選択します。</string>
     <string name="backup_auto_schedule_day_of_week_description">ウィークリー自動バックアップの平日を選択します。</string>
     <string name="backup_auto_schedule_time_description">スケジュールされた自動バックアップを実行する時間を選択します。</string>
-    <string name="backup_auto_target_description">自動バックアップにデータベース、設定、またはその両方が含まれるかどうかを選択します。</string>
     <string name="backup_before_update_description">アップデートをインストールする前にデータを自動的にバックアップする</string>
     <string name="backup_before_update_failed">インストール前のバックアップに失敗しました</string>
     <string name="backup_before_update_running_message">Backing up data before installation…</string>
     <string name="backup_before_update_running_title">バックアップ中</string>
     <string name="backup_excluded_preferences_and_cache_description">個人設定 (テーマの種類など) とキャッシュは含まれません。</string>
-    <string name="backup_export_description">データベースまたは設定をファイルにエクスポート</string>
-    <string name="backup_import_description">ファイルからデータベースまたは設定をインポート</string>
     <string name="backup_include_discord_credentials">DiscordのID認証情報を含める</string>
     <string name="backup_include_lastfm_credentials">Last.fm ID 資格情報を含める</string>
     <string name="backup_include_proxy_password">プロキシパスワードを含める</string>
     <string name="backup_include_youtube_credentials">YouTube の ID 資格情報を含める</string>
-    <string name="backup_legacy_migration_description">変換前の古いユーザーの場合。\n古いアプリを使用して移行用のバックアップを作成します。</string>
     <string name="backup_restore_overwrite_and_restart_warning">既存のデータは上書きされます。 %1$s はデータベースを復元すると自動的に閉じられます。</string>
     <string name="backup_target_database_and_settings_label">データベース + 設定</string>
     <string name="backup_target_database_label">データベース</string>
@@ -61,18 +56,12 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">プロフィール一覧と顔写真を単一の.txtファイルにエクスポートします</string>
     <string name="backup_export_all">すべてエクスポート</string>
-    <string name="backup_export_all_description">データベース、設定、およびプロファイルの状態をエクスポート</string>
-    <string name="backup_export_both_description">データベースと設定を個別のファイルとしてエクスポート</string>
-    <string name="backup_export_database_description">曲、プレイリスト、履歴付きのデータベースをエクスポート</string>
     <string name="backup_export_profile_state_failed">プロファイル状態のエクスポートに失敗しました</string>
     <string name="backup_export_settings_description">アプリの設定と設定をエクスポート</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">.txt ファイルからプロフィール一覧と顔写真をインポート</string>
     <string name="backup_import_all">すべてインポート</string>
-    <string name="backup_import_all_description">データベース、設定、プロファイルの状態をインポート</string>
-    <string name="backup_import_both_description">データベースと設定を別々のファイルからインポート</string>
     <string name="backup_import_completed_profile">%1$s にインポートしました</string>
-    <string name="backup_import_database_description">曲、プレイリスト、履歴のあるデータベースをインポート</string>
     <string name="backup_import_profile_state_complete">プロファイルの状態がインポートされました: %1$d プロファイル</string>
     <string name="backup_import_profile_state_complete_base">インポートされたプロファイルの状態: ベースプロファイル</string>
     <string name="backup_import_profile_state_failed">プロファイル状態のインポートに失敗しました</string>

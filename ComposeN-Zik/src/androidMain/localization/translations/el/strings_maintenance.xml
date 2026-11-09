@@ -197,7 +197,6 @@
     <string name="recovery_error">Παρουσιάστηκε σφάλμα: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Εξαγωγή βάσης δεδομένων</string>
-    <string name="recovery_export_database_description">Αποθηκεύστε τη βιβλιοθήκη, τις λίστες αναπαραγωγής και το ιστορικό σας</string>
     <string name="recovery_export_logs">Εξαγωγή αρχείων καταγραφής</string>
     <string name="recovery_export_logs_description">Αποθήκευση αρχείων καταγραφής σφαλμάτων και αποσφαλμάτωσης για μια αναφορά σφαλμάτων</string>
     <string name="recovery_export_profiles_description">Η λίστα προφίλ και οι φωτογραφίες προσώπου σε ένα αρχείο .txt</string>
@@ -210,7 +209,6 @@
     <string name="recovery_group_settings">Ρυθμίσεις</string>
     <string name="recovery_group_storage">Αποθήκευση</string>
     <string name="recovery_import_database">Εισαγωγή βάσης δεδομένων</string>
-    <string name="recovery_import_database_description">Επαναφορά μιας προηγουμένως εξαγόμενης βάσης δεδομένων</string>
     <string name="recovery_import_profiles_description">Επαναφορά της λίστας προφίλ και των όψεων φωτογραφιών από ένα αρχείο .txt</string>
     <string name="recovery_import_settings">Εισαγωγή ρυθμίσεων</string>
     <string name="recovery_import_settings_description">Επαναφορά προτιμήσεων από ένα αρχείο CSV</string>

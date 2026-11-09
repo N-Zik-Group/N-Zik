@@ -7,13 +7,11 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import app.n_zik.android.BuildConfig
-import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
-import java.io.FileInputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -196,25 +194,23 @@ object BackupManager {
 
                 if (parts.database) {
                     Timber.tag("AutoBackup").d("Starting database backup...")
-                    Database.checkpoint()
-                    val fileName = autoBackupFileName(BuildConfig.APP_NAME, profile, date, AutoBackupKind.DATABASE)
-                    val docUri = DocumentsContract.buildDocumentUriUsingTree(
-                        treeUri, DocumentsContract.getTreeDocumentId(treeUri)
-                    )
-                    val newDocUri = DocumentsContract.createDocument(
-                        context.contentResolver, docUri, "application/vnd.sqlite3", fileName
-                    )
-                    if (newDocUri != null) {
-                        context.contentResolver.openOutputStream(newDocUri)?.use { outStream ->
-                            val dbFile = context.getDatabasePath(Database.FILE_NAME)
-                            FileInputStream(dbFile).use { inStream ->
-                                inStream.copyTo(outStream)
-                            }
+                    DatabaseBackup.prepareExport(context, profile).use { export ->
+                        val fileName = autoBackupFileName(
+                            BuildConfig.APP_NAME, profile, date, AutoBackupKind.DATABASE, export.format.extension
+                        )
+                        val docUri = DocumentsContract.buildDocumentUriUsingTree(
+                            treeUri, DocumentsContract.getTreeDocumentId(treeUri)
+                        )
+                        val newDocUri = DocumentsContract.createDocument(
+                            context.contentResolver, docUri, export.format.mime, fileName
+                        )
+                        if (newDocUri == null) {
+                            Timber.tag("AutoBackup").e("Failed to create document for database backup")
+                            success = false
+                        } else {
+                            export.writeTo(context, newDocUri)
                             Timber.tag("AutoBackup").i("Database backup successful to $fileName")
                         }
-                    } else {
-                        Timber.tag("AutoBackup").e("Failed to create document for database backup")
-                        success = false
                     }
                 }
 
@@ -414,24 +410,35 @@ internal enum class AutoBackupKind(val infix: String, val extension: String) {
  * part of every name so a backup taken under one profile stays recognizable when it is imported
  * later.
  */
-internal fun autoBackupFileName(appName: String, profile: String, date: String, kind: AutoBackupKind): String =
-    "${appName}_${profile}_${date}${kind.infix}_AutoBackup.${kind.extension}"
+internal fun autoBackupFileName(
+    appName: String,
+    profile: String,
+    date: String,
+    kind: AutoBackupKind,
+    extension: String = kind.extension,
+): String =
+    "${appName}_${profile}_${date}${kind.infix}_AutoBackup.$extension"
 
-/**
- * The kind of an existing auto-backup file name, `null` when it is not one. The legacy
- * (unprofiled) database and settings names are still recognized, so pre-profile backups keep
- * being counted by the retention policy; the pre-combined face auto-backup (.jpg) is counted
- * as the profile state it belongs to.
- */
+private val databaseAutoBackupName = Regex(
+    """${Regex.escape(BuildConfig.APP_NAME)}_(?:(.+)_)?\d{4}-\d{2}-\d{2}_\d{6}_AutoBackup(?: \(\d+\))?\.((?i:sqlite|db|zip))""",
+)
+
+/** Classifies generated backups, including legacy database, settings and profile-face names. */
 internal fun autoBackupKindOf(displayName: String): AutoBackupKind? {
     if (!displayName.contains("AutoBackup")) return null
     return when {
-        displayName.endsWith(".sqlite") -> AutoBackupKind.DATABASE
+        isDatabaseAutoBackup(displayName) -> AutoBackupKind.DATABASE
         displayName.endsWith("Settings_AutoBackup.csv") -> AutoBackupKind.SETTINGS
         displayName.endsWith("Profiles_AutoBackup.txt") -> AutoBackupKind.PROFILE_STATE
         displayName.endsWith("Face_AutoBackup.jpg") -> AutoBackupKind.PROFILE_STATE
         else -> null
     }
+}
+
+private fun isDatabaseAutoBackup(displayName: String): Boolean {
+    val match = databaseAutoBackupName.matchEntire(displayName) ?: return false
+    val profile = match.groupValues[1]
+    return if (profile.isEmpty()) match.groupValues[2].equals("sqlite", ignoreCase = true) else isProfileIdSafe(profile)
 }
 
 /** The backup parts a target covers: the database, the settings CSV, the profile state. */

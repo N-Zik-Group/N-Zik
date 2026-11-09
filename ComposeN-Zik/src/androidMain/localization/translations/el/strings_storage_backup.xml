@@ -3,7 +3,6 @@
     <!-- Backup -->
     <string name="backup_action_export">Εξαγωγή αντιγράφου ασφαλείας</string>
     <string name="backup_action_import">Εισαγωγή αντιγράφου ασφαλείας</string>
-    <string name="backup_action_import_legacy_migration">Αρχείο μεταφοράς εισαγωγών.</string>
     <string name="backup_auto_custom_interval_unit_description">Επιλέξτε τη μονάδα χρόνου για το προσαρμοσμένο διάστημα αντιγράφων ασφαλείας.</string>
     <string name="backup_auto_custom_interval_value_description">Ορίστε τον αριθμό των μονάδων χρόνου μεταξύ των αυτόματων αντιγράφων ασφαλείας.</string>
     <string name="backup_auto_include_discord_credentials_description">Συμπερίληψη αποθηκευμένων διαπιστευτηρίων λογαριασμού Discord στα αντίγραφα ασφαλείας αυτόματων ρυθμίσεων.</string>
@@ -16,19 +15,15 @@
     <string name="backup_auto_schedule_day_of_month_description">Επιλέξτε την ημέρα του μήνα για μηνιαία αυτόματα αντίγραφα ασφαλείας.</string>
     <string name="backup_auto_schedule_day_of_week_description">Επιλέξτε την ημέρα της εβδομάδας για εβδομαδιαία αυτόματα αντίγραφα ασφαλείας.</string>
     <string name="backup_auto_schedule_time_description">Επιλέξτε την ώρα κατά την οποία θα εκτελούνται αυτόματα αντίγραφα ασφαλείας.</string>
-    <string name="backup_auto_target_description">Επιλέξτε αν τα αυτόματα αντίγραφα ασφαλείας περιλαμβάνουν τη βάση δεδομένων, τις ρυθμίσεις ή και τα δύο.</string>
     <string name="backup_before_update_description">Αυτόματη δημιουργία αντιγράφων ασφαλείας δεδομένων πριν από την εγκατάσταση μιας ενημέρωσης</string>
     <string name="backup_before_update_failed">Αποτυχία προεγκατάστασης αντιγράφου ασφαλείας</string>
     <string name="backup_before_update_running_message">Δημιουργία αντιγράφων ασφαλείας δεδομένων πριν από την εγκατάσταση…</string>
     <string name="backup_before_update_running_title">Αντίγραφο ασφαλείας σε εξέλιξη</string>
     <string name="backup_excluded_preferences_and_cache_description">Εξαιρούνται οι προτιμήσεις (π.χ. η λειτουργία θέματος) και η κρυφή μνήμη.</string>
-    <string name="backup_export_description">Εξαγωγή βάσης δεδομένων ή ρυθμίσεων σε αρχείο</string>
-    <string name="backup_import_description">Εισαγωγή βάσης δεδομένων ή ρυθμίσεων από ένα αρχείο</string>
     <string name="backup_include_discord_credentials">Συμπερίληψη διαπιστευτηρίων ταυτότητας Discord</string>
     <string name="backup_include_lastfm_credentials">Συμπερίληψη διαπιστευτηρίων ταυτότητας Last.fm</string>
     <string name="backup_include_proxy_password">Συμπερίληψη του κωδικού πρόσβασης διαμεσολαβητή</string>
     <string name="backup_include_youtube_credentials">Συμπερίληψη διαπιστευτηρίων ταυτότητας YouTube</string>
-    <string name="backup_legacy_migration_description">Για παλιούς χρήστες πριν από τη μετατροπή.\nΧρησιμοποιήστε την παλιά εφαρμογή για να δημιουργήσετε ένα αντίγραφο ασφαλείας για τη μετεγκατάσταση.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Τα υπάρχοντα δεδομένα θα αντικατασταθούν.\nΤο %1$s θα κλείσει αυτόματα μετά την επαναφορά της βάσης δεδομένων.</string>
     <string name="backup_target_database_and_settings_label">Βάση Δεδομένων + Ρυθμίσεις</string>
     <string name="backup_target_database_label">Δεδομένα</string>
@@ -61,18 +56,12 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Εξαγωγή της λίστας προφίλ και των φωτογραφιών προσώπου σε ένα αρχείο .txt</string>
     <string name="backup_export_all">Εξαγωγή όλων</string>
-    <string name="backup_export_all_description">Εξαγωγή βάσης δεδομένων, ρυθμίσεων και κατάστασης προφίλ</string>
-    <string name="backup_export_both_description">Εξαγωγή βάσης δεδομένων και ρυθμίσεων ως ξεχωριστά αρχεία</string>
-    <string name="backup_export_database_description">Εξαγωγή βάσης δεδομένων με τραγούδια, λίστες αναπαραγωγής και ιστορικό</string>
     <string name="backup_export_profile_state_failed">Η εξαγωγή κατάστασης προφίλ απέτυχε</string>
     <string name="backup_export_settings_description">Εξαγωγή ρυθμίσεων και προτιμήσεων εφαρμογής</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Εισαγωγή της λίστας προφίλ και των φωτογραφιών προσώπου από ένα αρχείο .txt</string>
     <string name="backup_import_all">Εισαγωγή όλων</string>
-    <string name="backup_import_all_description">Εισαγωγή βάσης δεδομένων, ρυθμίσεων και κατάστασης προφίλ</string>
-    <string name="backup_import_both_description">Εισαγωγή βάσης δεδομένων και ρυθμίσεων από ξεχωριστά αρχεία</string>
     <string name="backup_import_completed_profile">Εισήχθη σε %1$s</string>
-    <string name="backup_import_database_description">Εισαγωγή βάσης δεδομένων με τραγούδια, λίστες αναπαραγωγής και ιστορικό</string>
     <string name="backup_import_profile_state_complete">Κατάσταση προφίλ εισήχθη: %1$d προφίλ</string>
     <string name="backup_import_profile_state_complete_base">Η κατάσταση προφίλ εισήχθη: βασικό προφίλ</string>
     <string name="backup_import_profile_state_failed">Η εισαγωγή προφίλ απέτυχε</string>

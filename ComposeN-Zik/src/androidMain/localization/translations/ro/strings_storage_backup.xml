@@ -3,7 +3,6 @@
     <!-- Backup -->
     <string name="backup_action_export">Exportă backup</string>
     <string name="backup_action_import">Importă copia de rezervă</string>
-    <string name="backup_action_import_legacy_migration">Fișier migrare importat.</string>
     <string name="backup_auto_custom_interval_unit_description">Alegeți unitatea de timp pentru intervalul de backup personalizat.</string>
     <string name="backup_auto_custom_interval_value_description">Setaţi numărul de unităţi de timp între backup-urile automate. (Automatic Translation)</string>
     <string name="backup_auto_include_discord_credentials_description">Include acreditările contului Discord salvate în copiile de rezervă automate.</string>
@@ -16,19 +15,15 @@
     <string name="backup_auto_schedule_day_of_month_description">Alege ziua lunii pentru copii de rezervă automate lunare.</string>
     <string name="backup_auto_schedule_day_of_week_description">Alege ziua săptămânii pentru backup-uri automate săptămânale.</string>
     <string name="backup_auto_schedule_time_description">Alege ora la care trebuie să ruleze copiile de rezervă automate programate.</string>
-    <string name="backup_auto_target_description">Alegeți dacă copiile de rezervă automate includ baza de date, setările sau ambele.</string>
     <string name="backup_before_update_description">Copie de rezervă automată înainte de instalarea unei actualizări</string>
     <string name="backup_before_update_failed">Backup pre-instalare eșuat</string>
     <string name="backup_before_update_running_message">Se salvează datele înainte de instalarea…</string>
     <string name="backup_before_update_running_title">Backup în curs</string>
     <string name="backup_excluded_preferences_and_cache_description">Preferințele personale (de exemplu, modul tematic) și memoria cache sunt excluse.</string>
-    <string name="backup_export_description">Exportă baza de date sau setările într-un fişier</string>
-    <string name="backup_import_description">Importă baza de date sau setări dintr-un fişier</string>
     <string name="backup_include_discord_credentials">Include acreditările de identitate Discord</string>
     <string name="backup_include_lastfm_credentials">Include acreditările de identitate Last.fm</string>
     <string name="backup_include_proxy_password">Include parola proxy</string>
     <string name="backup_include_youtube_credentials">Include acreditările de identitate YouTube</string>
-    <string name="backup_legacy_migration_description">Pentru utilizatorii în vârstă înainte de conversie.\nUtilizează o aplicație veche pentru a face o copie de rezervă pentru migrare.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Datele existente vor fi suprascrise. %1$s se va închide automat după restaurarea bazei de date.</string>
     <string name="backup_target_database_and_settings_label">Baza de date + Setări</string>
     <string name="backup_target_database_label">Bază de date</string>
@@ -61,18 +56,12 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Exportă lista de profil și fotografiile feței într-un singur fișier .txt</string>
     <string name="backup_export_all">Exportă tot</string>
-    <string name="backup_export_all_description">Exportă baza de date, setări și starea profilului</string>
-    <string name="backup_export_both_description">Exportă baza de date şi setările ca fişiere separate</string>
-    <string name="backup_export_database_description">Exportă baza de date cu melodii, liste de redare și istoric</string>
     <string name="backup_export_profile_state_failed">Export stare profil eșuat</string>
     <string name="backup_export_settings_description">Exportă setările și preferințele aplicației</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importă lista de profil și fotografiile feței dintr-un fișier .txt</string>
     <string name="backup_import_all">Importați toate</string>
-    <string name="backup_import_all_description">Importă baza de date, setări, starea profilului</string>
-    <string name="backup_import_both_description">Importă baza de date şi setările din fişiere separate</string>
     <string name="backup_import_completed_profile">Importat în %1$s</string>
-    <string name="backup_import_database_description">Importă baza de date cu melodii, liste de redare și istoric</string>
     <string name="backup_import_profile_state_complete">Starea profilului importat: %1$d profiluri</string>
     <string name="backup_import_profile_state_complete_base">Stare profil importat: profil de bază</string>
     <string name="backup_import_profile_state_failed">Importarea stării profilului a eșuat</string>

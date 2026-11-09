@@ -1,65 +1,89 @@
 package app.n_zik.android.components.dialog.export
 
-import app.n_zik.android.core.database.*
-
 import android.content.Context
-import android.net.Uri
-import androidx.activity.compose.ManagedActivityResultLauncher
+import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import app.n_zik.android.BuildConfig
-import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.backup.DatabaseBackup
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.io.FileInputStream
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class ExportDatabaseDialog private constructor(
-    private val launcher: ManagedActivityResultLauncher<String, Uri?>
-) {
-    companion object {
-        @Composable
-        operator fun invoke(context: Context): ExportDatabaseDialog {
-            val coroutineScope = rememberCoroutineScope()
-            return ExportDatabaseDialog(
-                rememberLauncherForActivityResult(
-                    ActivityResultContracts.CreateDocument("application/vnd.sqlite3")
-                ) { uri ->
-                    Timber.tag("ExportDatabaseDialog").d("File picker callback received, uri: $uri")
-                    uri ?: return@rememberLauncherForActivityResult
-                    coroutineScope.launch(NzikDispatchers.DATA) {
-                        try {
-                            Timber.tag("ExportDatabaseDialog").d("Starting database export...")
-                            Database.checkpoint()
-                            Timber.tag("ExportDatabaseDialog").d("Database checkpoint done")
-                            context.applicationContext
-                                .contentResolver
-                                .openOutputStream(uri)
-                                ?.use { outStream ->
-                                    val dbFile = context.getDatabasePath(Database.FILE_NAME)
-                                    Timber.tag("ExportDatabaseDialog").d("Copying database from: ${dbFile.absolutePath}")
-                                    FileInputStream(dbFile).use { inStream ->
-                                        val bytes = inStream.copyTo(outStream)
-                                        Timber.tag("ExportDatabaseDialog").d("Export complete, bytes written: $bytes")
-                                    }
-                                } ?: Timber.tag("ExportDatabaseDialog").w("Failed to open output stream")
-                        } catch (e: Exception) {
-                            Timber.tag("ExportDatabaseDialog").e(e, "Export failed")
-                        }
-                    }
+internal class DatabaseExportAction(val inProgress: Boolean, val launch: () -> Unit)
+
+/** Prepares a single export whose MIME type, name and bytes stay paired across the SAF flow. */
+@Composable
+internal fun rememberDatabaseExport(
+    prepare: () -> DatabaseBackup.Export,
+    context: Context,
+    onResult: (Result<Unit>) -> Unit,
+    onPickerFinished: () -> Unit = {},
+): DatabaseExportAction {
+    val scope = rememberCoroutineScope()
+    val resultCallback by rememberUpdatedState(onResult)
+    val finishCallback by rememberUpdatedState(onPickerFinished)
+    var pendingPath by rememberSaveable { mutableStateOf<String?>(null) }
+    var preparing by remember { mutableStateOf(false) }
+
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val path = pendingPath ?: return@rememberLauncherForActivityResult
+        pendingPath = null
+        val uri = result.data?.data?.takeIf { result.resultCode == android.app.Activity.RESULT_OK }
+        // The selected document and staged file belong to this write even if the UI leaves.
+        NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+            val written = runCatching {
+                DatabaseBackup.resumeExport(context, path).use { export ->
+                    if (uri != null) export.writeTo(context, uri)
+                    Unit
                 }
-            )
+            }
+            if (uri != null || written.isFailure) {
+                withContext(NzikDispatchers.UI) { resultCallback(written) }
+            }
         }
+        finishCallback()
     }
 
-    fun export() {
-        val date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-        val fileName = "${BuildConfig.APP_NAME} $date Database"
-        Timber.tag("ExportDatabaseDialog").d("Launching file picker with name: $fileName.sqlite")
-        launcher.launch("$fileName.sqlite")
+    return DatabaseExportAction(inProgress = preparing || pendingPath != null) {
+        if (!preparing && pendingPath == null) {
+            preparing = true
+            scope.launch {
+                var prepared: DatabaseBackup.Export? = null
+                try {
+                    // Assign before returning to the UI so cancellation during dispatch still
+                    // leaves the finally block with the staging file to clean up.
+                    withContext(NzikDispatchers.DATA) { prepared = prepare() }
+                    val export = checkNotNull(prepared)
+                    pendingPath = export.file.absolutePath
+                    val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+                        .addCategory(Intent.CATEGORY_OPENABLE)
+                        .setType(export.format.mime)
+                        .putExtra(Intent.EXTRA_TITLE, "${BuildConfig.APP_NAME} ${LocalDate.now()} Database.${export.format.extension}")
+                    launcher.launch(intent)
+                    prepared = null
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    pendingPath = null
+                    resultCallback(Result.failure(error))
+                    finishCallback()
+                } finally {
+                    preparing = false
+                    withContext(NonCancellable + NzikDispatchers.DATA) { prepared?.close() }
+                }
+            }
+        }
     }
 }

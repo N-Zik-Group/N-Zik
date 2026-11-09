@@ -43,6 +43,8 @@ import app.it.fast4x.rimusic.utils.ytCookieKey
 import app.it.fast4x.rimusic.utils.ytDataSyncIdKey
 import app.it.fast4x.rimusic.utils.ytVisitorDataKey
 import app.n_zik.android.appContext
+import app.n_zik.android.core.backup.DatabaseBackup
+import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.core.backup.ProfileStateArchive
 import app.n_zik.android.core.notifications.deleteProfileChannels
 import app.n_zik.android.core.profiles.ProfileDataItem
@@ -67,8 +69,6 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import timber.log.Timber
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -266,28 +266,9 @@ object RescueFiles {
      */
     class DatabaseBusyException(message: String) : IllegalStateException(message)
 
-    /**
-     * Exports the database to the given SAF URI.
-     *
-     * Opens it as raw SQLite (no Room, no migration) to fold the WAL into `data.db`, then copies
-     * the file. The WAL must be merged first: after a crash a `-wal` file is left next to
-     * `data.db`, and a bare copy of `data.db` would lack every transaction still in it.
-     */
-    fun exportDatabase(context: Context, uri: Uri): Result<Unit> = runCatching {
-        val dbFile = context.getDatabasePath(DB_FILE_NAME)
-        if (!dbFile.exists()) {
-            error("Database file does not exist: ${dbFile.absolutePath}")
-        }
-
-        checkpointWal(dbFile)
-
-        context.contentResolver.openOutputStream(uri)?.use { outStream ->
-            FileInputStream(dbFile).use { inStream ->
-                val bytes = inStream.copyTo(outStream)
-                Timber.tag(TAG).i("Database exported: %d bytes", bytes)
-            }
-        } ?: error("Failed to open output stream for database export")
-    }
+    /** Captures a rescue export through raw SQLite without starting Room. */
+    internal fun prepareDatabaseExport(context: Context): DatabaseBackup.Export =
+        DatabaseBackup.prepareExport(context, rescueTargetProfile())
 
     /**
      * Folds the WAL into [dbFile] through a raw SQLite connection, and throws when it cannot.
@@ -322,79 +303,15 @@ object RescueFiles {
         return headerBytes.copyOfRange(0, magic.size).contentEquals(magic)
     }
 
-    /**
-     * Imports a database from the given SAF URI after validation.
-     *
-     * The file is copied next to `data.db` (same filesystem), validated there (SQLite header +
-     * quick_check), then renamed over the live database: a failure while copying can never leave
-     * a truncated `data.db`.
-     */
+    /** Restores a SQLite or ZIP database backup into the profile selected for rescue. */
     fun importDatabase(context: Context, uri: Uri): Result<Unit> = runCatching {
-        val dbFile = context.getDatabasePath(DB_FILE_NAME)
-        dbFile.parentFile?.mkdirs()
-        val tempFile = File(dbFile.parentFile, "$DB_FILE_NAME.import")
-        // A killed earlier import may have left the temporary copy, or its -wal/-shm, behind.
-        deleteWithSideFiles(tempFile)
-
-        try {
-            // Copy to temp file first
-            context.contentResolver.openInputStream(uri)?.use { inStream ->
-                FileOutputStream(tempFile).use { outStream ->
-                    inStream.copyTo(outStream)
-                }
-            } ?: error("Failed to open input stream for database import")
-
-            // Validate SQLite header
-            val header = ByteArray(16)
-            FileInputStream(tempFile).use { fis ->
-                val read = fis.read(header)
-                if (read < 16 || !isValidSqliteHeader(header)) {
-                    error("Invalid SQLite file: header check failed")
-                }
+        DatabaseBackup.restore(context, uri, rescueTargetProfile()) {
+            if (RescueProcess.isMainProcessLikelyAlive(context)) {
+                throw DatabaseBusyException("Main process started during database import")
             }
-
-            // Validate with PRAGMA quick_check
-            SQLiteDatabase.openDatabase(
-                tempFile.absolutePath,
-                null,
-                SQLiteDatabase.OPEN_READONLY,
-                keepCorruptDatabase
-            ).use { db ->
-                db.rawQuery("PRAGMA quick_check", null).use { cursor ->
-                    if (cursor.moveToFirst()) {
-                        val result = cursor.getString(0)
-                        if (result != "ok") {
-                            error("Database integrity check failed: $result")
-                        }
-                        Timber.tag(TAG).d("Database quick_check passed")
-                    }
-                }
-            }
-
-            replaceDatabaseFile(tempFile, dbFile)
-            Timber.tag(TAG).i("Database imported successfully")
-        } finally {
-            // Validation opens the copy: a WAL-mode file makes SQLite create -wal/-shm next to it.
-            deleteWithSideFiles(tempFile)
+            DatabaseRestoreJournal.requireMainProcessStopped(context)
         }
-    }
-
-    /** Deletes [dbFile] and its `-wal`, `-shm` and `-journal` files, whichever exist. */
-    internal fun deleteWithSideFiles(dbFile: File) {
-        DB_FILE_SUFFIXES.forEach { suffix -> File(dbFile.path + suffix).delete() }
-    }
-
-    /**
-     * Puts [newDb] in place of [dbFile]. The side files of the old database are removed first:
-     * a stale `-wal` must never be replayed onto a different database. The rename itself is atomic,
-     * but a failure between removing the side files and renaming loses the old `-wal`.
-     */
-    internal fun replaceDatabaseFile(newDb: File, dbFile: File) {
-        DB_FILE_SUFFIXES.drop(1).forEach { suffix ->
-            val sideFile = File(dbFile.path + suffix)
-            if (sideFile.exists()) check(sideFile.delete()) { "Cannot remove ${sideFile.name}" }
-        }
-        moveReplacing(newDb, dbFile)
+        Timber.tag(TAG).i("Database imported successfully")
     }
 
     // Export settings (CSV)
@@ -639,7 +556,7 @@ object RescueFiles {
      * Returns the number of profiles actually deleted.
      */
     internal fun deleteProfiles(context: Context, ids: List<String>): Result<Int> =
-        runCatching {
+        runRescueMutation(context) {
             val toDelete = ids.distinct().filterNot { it == DEFAULT_PROFILE_ID }
             if (toDelete.isNotEmpty()) {
                 // A deleted active profile must not be the one the next launch starts
@@ -709,7 +626,7 @@ object RescueFiles {
      * Returns the number of profiles actually reset.
      */
     internal fun resetProfiles(context: Context, ids: List<String>): Result<Int> =
-        runCatching {
+        runRescueMutation(context) {
             val toReset = ids.distinct()
             if (toReset.isNotEmpty()) {
                 toReset.forEach { id ->
@@ -936,7 +853,7 @@ object RescueFiles {
      * Returns the number of profiles actually restored.
      */
     internal fun restoreProfiles(context: Context, ids: List<String>): Result<Int> =
-        runCatching {
+        runRescueMutation(context) {
             val toRestore = ids.distinct()
                 .filter { hasProfileBackup(context, it) }
             toRestore.forEach { id -> restoreProfileData(context, id) }
@@ -1105,9 +1022,9 @@ object RescueFiles {
         return tag.takeIf { it.isNotEmpty() && isProfileIdSafe(it) }
     }
 
-    /** The timestamped backup/export suffix: the auto-backup names (`…_<date>_AutoBackup.sqlite` / `…_<date>_Settings|Profiles|Face_AutoBackup.csv|txt|jpg`) and the manual profile-state export names (`…_<date>_Profiles_Export.txt` / `…_<date>_Face_Export.jpg`). */
+    /** The timestamped backup/export suffix: the auto-backup names (`…_<date>_AutoBackup.sqlite|zip` / `…_<date>_Settings|Profiles|Face_AutoBackup.csv|txt|jpg`) and the manual profile-state export names (`…_<date>_Profiles_Export.txt` / `…_<date>_Face_Export.jpg`). */
     private val BACKUP_TAG_SUFFIX = Regex(
-        """_(\d{4}-\d{2}-\d{2}_\d{6})(?:_(?:Settings|Profiles|Face))?(?:_AutoBackup\.(?:sqlite|csv|txt|jpg)|_(?:Profiles|Face)_Export\.(?:txt|jpg))$"""
+        """_(\d{4}-\d{2}-\d{2}_\d{6})(?:_(?:Settings|Profiles|Face))?(?:_AutoBackup(?: \(\d+\))?\.(?i:sqlite|db|zip|csv|txt|jpg)|_(?:Profiles|Face)_Export\.(?:txt|jpg))$"""
     )
 
     // Export crash logs
@@ -1315,7 +1232,7 @@ object RescueFiles {
      * can be lost by a failed checkpoint and a corrupt database is never seen by the default
      * error handler. Room replays the WAL when the backup is restored.
      */
-    fun resetDatabase(context: Context): Result<Unit> = runCatching {
+    fun resetDatabase(context: Context): Result<Unit> = runRescueMutation(context) {
         val dbFile = context.getDatabasePath(DB_FILE_NAME)
         if (!dbFile.exists()) {
             error("No database to reset")
@@ -1404,7 +1321,7 @@ object RescueFiles {
      * Swaps the current database with the backup from [resetDatabase].
      * The current database becomes the new backup.
      */
-    fun restoreDatabase(context: Context): Result<Unit> = runCatching {
+    fun restoreDatabase(context: Context): Result<Unit> = runRescueMutation(context) {
         val backupFile = File(File(context.filesDir, RESCUE_BACKUPS_DIR), DB_FILE_NAME)
         if (!backupFile.exists()) {
             error("No backup to restore")
@@ -1547,8 +1464,12 @@ object RescueFiles {
         return SETTINGS_FILE_NAMES.any { File(backupDir, it).exists() }
     }
 
+    /** Serializes rescue file changes with imports and main-process startup. */
+    private fun <T> runRescueMutation(context: Context, action: () -> T): Result<T> =
+        runCatching { DatabaseRestoreJournal.withRescueMutation(context, action) }
+
     /** Deletes all backups (database, settings and the profile reset backups) from the rescue_backups directory. */
-    fun deleteBackups(context: Context): Result<Unit> = runCatching {
+    fun deleteBackups(context: Context): Result<Unit> = runRescueMutation(context) {
         deleteBackupDir(File(context.filesDir, RESCUE_BACKUPS_DIR))
     }
 

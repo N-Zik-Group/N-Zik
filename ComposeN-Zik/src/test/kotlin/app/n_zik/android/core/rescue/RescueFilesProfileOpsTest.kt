@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.io.RandomAccessFile
 
 /**
  * Tests the profile operations of the Rescue Center (spec-profiles-page-face, danger zone):
@@ -145,6 +146,36 @@ class RescueFilesProfileOpsTest {
             parentFile?.mkdirs()
             writeBytes(byteArrayOf(1))
         }
+    }
+
+    @Test
+    fun `rescue database and profile mutations are rejected while main holds the lease`() {
+        seedBaseFiles()
+        seedProfileFiles("work", "data_work.db")
+        val backup = File(filesDir, "rescue_backups/data.db").apply {
+            parentFile?.mkdirs()
+            writeText("backup")
+        }
+        val mutations: List<() -> Result<*>> = listOf(
+            { RescueFiles.resetDatabase(context) },
+            { RescueFiles.restoreDatabase(context) },
+            { RescueFiles.deleteProfiles(context, listOf("work")) },
+            { RescueFiles.resetProfiles(context, listOf("work")) },
+            { RescueFiles.restoreProfiles(context, listOf("work")) },
+            { RescueFiles.deleteBackups(context) },
+        )
+
+        RandomAccessFile(filesDir.resolve("database-main.lock"), "rw").use { handle ->
+            handle.channel.lock().use {
+                for (mutation in mutations) {
+                    assertEquals("The main process is using the database", mutation().exceptionOrNull()?.message)
+                }
+            }
+        }
+
+        assertEquals("db", File(databasesDir, "data.db").readText())
+        assertEquals("db", File(databasesDir, "data_work.db").readText())
+        assertEquals("backup", backup.readText())
     }
 
     // The per-profile DATA dirs (spec-profile-data-separation): the location default

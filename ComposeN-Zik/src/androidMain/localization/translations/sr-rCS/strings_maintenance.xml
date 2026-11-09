@@ -197,7 +197,6 @@
     <string name="recovery_error">An error occurred: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. The app must be stopped first: tap \"Kill the app\" in the Danger Zone, then wait for the status to show that the app is stopped.</string>
     <string name="recovery_export_database">Export database</string>
-    <string name="recovery_export_database_description">Save your library, playlists and history</string>
     <string name="recovery_export_logs">Export logs</string>
     <string name="recovery_export_logs_description">Save crash and debug logs for a bug report</string>
     <string name="recovery_export_profiles_description">The profile list and the face photos in a single .txt file</string>
@@ -210,7 +209,6 @@
     <string name="recovery_group_settings">Settings</string>
     <string name="recovery_group_storage">Storage</string>
     <string name="recovery_import_database">Import database</string>
-    <string name="recovery_import_database_description">Restore a previously exported database</string>
     <string name="recovery_import_profiles_description">Restore the profile list and the face photos from a .txt file</string>
     <string name="recovery_import_settings">Import settings</string>
     <string name="recovery_import_settings_description">Restore preferences from a CSV file</string>

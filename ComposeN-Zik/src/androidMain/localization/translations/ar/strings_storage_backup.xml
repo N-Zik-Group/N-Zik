@@ -3,7 +3,6 @@
     <!-- Backup -->
     <string name="backup_action_export">تصدير النسخ الاحتياطي</string>
     <string name="backup_action_import">استيراد النسخ الاحتياطي</string>
-    <string name="backup_action_import_legacy_migration">استيراد ملف الترحيل.</string>
     <string name="backup_auto_custom_interval_unit_description">اختر وحدة الوقت لفصل النسخ الاحتياطي المخصص.</string>
     <string name="backup_auto_custom_interval_value_description">تعيين عدد الوحدات الزمنية بين النسخ الاحتياطي التلقائي.</string>
     <string name="backup_auto_include_discord_credentials_description">تضمين بيانات اعتماد حساب ديسكورد المحفوظة في إعدادات النسخ الاحتياطي التلقائي.</string>
@@ -16,19 +15,15 @@
     <string name="backup_auto_schedule_day_of_month_description">اختر يوم الشهر للنسخ الاحتياطية التلقائية الشهرية.</string>
     <string name="backup_auto_schedule_day_of_week_description">اختر يوم الأسبوع للنسخ الاحتياطية التلقائية الأسبوعية.</string>
     <string name="backup_auto_schedule_time_description">اختر الساعة التي يجب أن تعمل فيها النسخ الاحتياطية التلقائية المجدولة.</string>
-    <string name="backup_auto_target_description">اختر ما إذا كانت النسخ الاحتياطي التلقائي تشمل قاعدة البيانات أو الإعدادات أو كليهما.</string>
     <string name="backup_before_update_description">النسخ الاحتياطي التلقائي للبيانات قبل تثبيت التحديث</string>
     <string name="backup_before_update_failed">فشل النسخ الاحتياطي للتثبيت</string>
     <string name="backup_before_update_running_message">جارٍ النسخ الاحتياطي للبيانات قبل التثبيت…</string>
     <string name="backup_before_update_running_title">جارٍ النسخ الاحتياطي</string>
     <string name="backup_excluded_preferences_and_cache_description">يتم استبعاد التفضيلات الشخصية (أي وضع الثيم) وذاكرة التخزين المؤقت.</string>
-    <string name="backup_export_description">تصدير قاعدة البيانات أو الإعدادات إلى ملف</string>
-    <string name="backup_import_description">استيراد قاعدة البيانات أو الإعدادات من ملف</string>
     <string name="backup_include_discord_credentials">تضمين بيانات اعتماد هوية ديسكورد</string>
     <string name="backup_include_lastfm_credentials">قم بتضمين بيانات اعتماد هوية Last.fm</string>
     <string name="backup_include_proxy_password">تضمين كلمة مرور الوكيل</string>
     <string name="backup_include_youtube_credentials">تضمين بيانات اعتماد هوية اليوتيوب</string>
-    <string name="backup_legacy_migration_description">For old users before conversion.\nUse old app to make a backup for migration.</string>
     <string name="backup_restore_overwrite_and_restart_warning">سيتم الكتابة فوق البيانات الموجودة. سيتم إغلاق %1$s تلقائياً بعد استعادة قاعدة البيانات.</string>
     <string name="backup_target_database_and_settings_label">قاعدة البيانات + الإعدادات</string>
     <string name="backup_target_database_label">قاعدة البيانات</string>
@@ -61,18 +56,12 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">تصدير قائمة الملف الشخصي وصور الوجه في ملف واحد .txt</string>
     <string name="backup_export_all">تصدير الكل</string>
-    <string name="backup_export_all_description">تصدير قاعدة البيانات والإعدادات وحالة الملف الشخصي</string>
-    <string name="backup_export_both_description">تصدير قاعدة البيانات والإعدادات كملفات منفصلة</string>
-    <string name="backup_export_database_description">تصدير قاعدة البيانات مع الأغاني وقوائم التشغيل والسجل</string>
     <string name="backup_export_profile_state_failed">فشل تصدير حالة الملف الشخصي</string>
     <string name="backup_export_settings_description">تصدير إعدادات التطبيق والتفضيلات</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">استيراد قائمة الملف الشخصي وصور الوجه من ملف .txt</string>
     <string name="backup_import_all">استيراد الكل</string>
-    <string name="backup_import_all_description">استيراد قاعدة البيانات والإعدادات وحالة الملف الشخصي</string>
-    <string name="backup_import_both_description">استيراد قاعدة البيانات والإعدادات من ملفات منفصلة</string>
     <string name="backup_import_completed_profile">تم الاستيراد إلى %1$s</string>
-    <string name="backup_import_database_description">استيراد قاعدة البيانات مع الأغاني وقوائم التشغيل والسجل</string>
     <string name="backup_import_profile_state_complete">حالة الملف الشخصي المستورد: %1$d ملفات شخصية</string>
     <string name="backup_import_profile_state_complete_base">حالة الملف الشخصي المستورد: الملف الشخصي الأساسي</string>
     <string name="backup_import_profile_state_failed">فشل استيراد الحالة الشخصية</string>

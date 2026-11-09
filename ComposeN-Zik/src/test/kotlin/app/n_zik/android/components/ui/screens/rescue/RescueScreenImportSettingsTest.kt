@@ -58,6 +58,28 @@ class RescueScreenImportSettingsTest {
     }
 
     @Test
+    fun `import database picker accepts SQLite and ZIP documents`() {
+        val importTitle = context.getString(R.string.recovery_import_database)
+        composeRule.onNodeWithText(context.getString(R.string.recovery_category_profile)).performClick()
+        composeRule.mainClock.advanceTimeBy(500)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText(importTitle).performScrollTo()
+        composeRule.onNodeWithText(importTitle).performClick()
+        composeRule.onNode(
+            hasText(importTitle) and hasClickAction() and hasAnyAncestor(isDialog())
+        ).performClick()
+        composeRule.waitForIdle()
+
+        val intent = checkNotNull(
+            Shadows.shadowOf(composeRule.activity).peekNextStartedActivityForResult()?.intent
+        )
+        assertEquals(Intent.ACTION_OPEN_DOCUMENT, intent.action)
+        val mimeTypes = intent.getStringArrayExtra(Intent.EXTRA_MIME_TYPES).orEmpty().toSet()
+        assertEquals(true, "application/vnd.sqlite3" in mimeTypes)
+        assertEquals(true, "application/zip" in mimeTypes)
+    }
+
+    @Test
     fun `import settings launches the document picker with the app's mime filter`() {
         val importTitle = context.getString(R.string.recovery_import_settings)
         val confirmText = context.getString(R.string.recovery_confirm_import_settings)

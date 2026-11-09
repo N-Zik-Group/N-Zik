@@ -3,7 +3,6 @@
     <!-- Backup -->
     <string name="backup_action_export">Exportovat zálohu</string>
     <string name="backup_action_import">Importovat zálohu</string>
-    <string name="backup_action_import_legacy_migration">Importovat migrační soubor.</string>
     <string name="backup_auto_custom_interval_unit_description">Vyberte časovou jednotku pro vlastní interval zálohy.</string>
     <string name="backup_auto_custom_interval_value_description">Nastavte počet časových jednotek mezi automatickými zálohami.</string>
     <string name="backup_auto_include_discord_credentials_description">Zahrnout uložené přihlašovací údaje k Discord účtu do automatických záloh nastavení.</string>
@@ -16,19 +15,15 @@
     <string name="backup_auto_schedule_day_of_month_description">Vyberte den měsíce pro automatické měsíční zálohy.</string>
     <string name="backup_auto_schedule_day_of_week_description">Vyberte den v týdnu pro týdenní automatické zálohy.</string>
     <string name="backup_auto_schedule_time_description">Vyberte hodinu, ve které budou automaticky spuštěny zálohy.</string>
-    <string name="backup_auto_target_description">Zvolte, zda automatické zálohy zahrnují databázi, nastavení, nebo obojí.</string>
     <string name="backup_before_update_description">Automaticky zálohovat data před instalací aktualizace</string>
     <string name="backup_before_update_failed">Předinstalování zálohy se nezdařilo</string>
     <string name="backup_before_update_running_message">Zálohování dat před instalací…</string>
     <string name="backup_before_update_running_title">Probíhá zálohování</string>
     <string name="backup_excluded_preferences_and_cache_description">Osobní předvolby (tj. režim tématu) a mezipaměť jsou vynechány.</string>
-    <string name="backup_export_description">Exportovat databázi nebo nastavení do souboru</string>
-    <string name="backup_import_description">Importovat databázi nebo nastavení ze souboru</string>
     <string name="backup_include_discord_credentials">Zahrnout Discord identitu</string>
     <string name="backup_include_lastfm_credentials">Zahrnout údaje o identitě Last.fm</string>
     <string name="backup_include_proxy_password">Zahrnout heslo proxy serveru</string>
     <string name="backup_include_youtube_credentials">Zahrnout YouTube identitu</string>
-    <string name="backup_legacy_migration_description">Pro staré uživatele před převodem.\nPoužijte starou aplikaci k zálohování pro migraci.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Stávající data budou přepsána. %1$s se po obnovení databáze automaticky uzavře.</string>
     <string name="backup_target_database_and_settings_label">Databáze + Nastavení</string>
     <string name="backup_target_database_label">Databáze</string>
@@ -61,18 +56,12 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Exportovat seznam profilů a fotky obličeje do jednoho .txt souboru</string>
     <string name="backup_export_all">Exportovat vše</string>
-    <string name="backup_export_all_description">Exportovat databázi, nastavení a stav profilu</string>
-    <string name="backup_export_both_description">Exportovat databázi a nastavení jako samostatné soubory</string>
-    <string name="backup_export_database_description">Exportovat databázi s skladbami, seznamy skladeb a historií</string>
     <string name="backup_export_profile_state_failed">Export stavu profilu se nezdařil</string>
     <string name="backup_export_settings_description">Exportovat nastavení a předvolby aplikace</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importovat seznam profilů a fotky obličeje ze souboru .txt</string>
     <string name="backup_import_all">Importovat vše</string>
-    <string name="backup_import_all_description">Importovat databázi, nastavení a stav profilu</string>
-    <string name="backup_import_both_description">Importovat databázi a nastavení z oddělených souborů</string>
     <string name="backup_import_completed_profile">Importováno do %1$s</string>
-    <string name="backup_import_database_description">Importovat databázi s skladbami, seznamy skladeb a historií</string>
     <string name="backup_import_profile_state_complete">Stav profilu importován: %1$d profily</string>
     <string name="backup_import_profile_state_complete_base">Stav profilu importován: základní profil</string>
     <string name="backup_import_profile_state_failed">Import stavu profilu se nezdařil</string>

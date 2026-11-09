@@ -32,6 +32,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.it.fast4x.rimusic.utils.semiBold
+import app.it.fast4x.rimusic.utils.getActiveProfile
+import app.kreate.android.me.knighthat.utils.Toaster
+import app.n_zik.android.core.backup.DatabaseBackup
+import timber.log.Timber
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.ButtonRow
@@ -53,8 +57,6 @@ object ExportBackupDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val context = LocalContext.current
-        val exportDbDialog = ExportDatabaseDialog(context)
-        val exportSettingsDialog = ExportSettingsDialog(context)
         val exportProfileStateDialog = ExportProfileStateDialog(context)
 
         // The flow state survives a rotation mid-dialog (same as the import
@@ -65,17 +67,17 @@ object ExportBackupDialog : ContentFramedDialog {
         var selectedOption by rememberSaveable { mutableIntStateOf(0) }
 
         val databaseLabel = stringResource(R.string.backup_target_database_label)
-        val databaseDescription = stringResource(R.string.backup_export_database_description)
+        val databaseDescription = stringResource(R.string.backup_export_database_with_covers_description)
         val settingsLabel = stringResource(R.string.settings_title)
         val settingsDescription = stringResource(R.string.backup_export_settings_description)
         val bothLabel = stringResource(R.string.backup_target_database_and_settings_label)
-        val bothDescription = stringResource(R.string.backup_export_both_description)
+        val bothDescription = stringResource(R.string.backup_export_database_with_covers_and_settings_description)
         // The option is the profile state (the list + every face), not the login
         // accounts: labeled "Profiles" like everywhere else in the app.
         val profilesLabel = stringResource(R.string.profile_title)
         val profilesDescription = stringResource(R.string.backup_export_accounts_description)
         val allLabel = stringResource(R.string.backup_export_all)
-        val allDescription = stringResource(R.string.backup_export_all_description)
+        val allDescription = stringResource(R.string.backup_export_all_with_covers_description)
 
         val options = listOf(
             Triple(R.drawable.server, databaseLabel, databaseDescription),
@@ -90,6 +92,36 @@ object ExportBackupDialog : ContentFramedDialog {
         var includeLastfmCredentials by rememberSaveable { mutableStateOf(false) }
         var includeProxyCredentials by rememberSaveable { mutableStateOf(false) }
 
+        var pendingSettings by rememberSaveable { mutableStateOf(false) }
+        var pendingProfiles by rememberSaveable { mutableStateOf(false) }
+        val exportSettingsDialog = ExportSettingsDialog(context, onPickerFinished = {
+            if (pendingProfiles) {
+                pendingProfiles = false
+                exportProfileStateDialog.export()
+            }
+        })
+        val exportSettings = {
+            exportSettingsDialog.export(
+                includeYtbCredentials, includeDiscordCredentials, includeLastfmCredentials, includeProxyCredentials
+            )
+        }
+        val exportDatabase = rememberDatabaseExport(
+            prepare = { DatabaseBackup.prepareExport(context, getActiveProfile(context)) },
+            context = context,
+            onResult = { result ->
+                result.onFailure { error ->
+                    Timber.tag("ExportDatabaseDialog").e(error, "Database export failed")
+                    Toaster.e(R.string.backup_export_database_failed)
+                }
+            },
+            onPickerFinished = {
+                if (pendingSettings) {
+                    pendingSettings = false
+                    exportSettings()
+                }
+            }
+        )
+
         DialogFrame(
             onDismiss = ::hideDialog,
             title = dialogTitle,
@@ -100,22 +132,20 @@ object ExportBackupDialog : ContentFramedDialog {
                         DialogButton(
                             text = stringResource(R.string.common_action_export),
                             primary = true,
+                            enabled = !exportDatabase.inProgress,
                             textColor = colorPalette().textSecondary,
                             onClick = {
+                                pendingSettings = false
+                                pendingProfiles = false
                                 when (selectedOption) {
-                                    0 -> exportDbDialog.export()
-                                    1 -> exportSettingsDialog.export(includeYtbCredentials, includeDiscordCredentials, includeLastfmCredentials, includeProxyCredentials)
-                                    2 -> {
-                                        exportDbDialog.export()
-                                        exportSettingsDialog.export(includeYtbCredentials, includeDiscordCredentials, includeLastfmCredentials, includeProxyCredentials)
+                                    0 -> exportDatabase.launch()
+                                    1 -> exportSettings()
+                                    2, 4 -> {
+                                        pendingSettings = true
+                                        pendingProfiles = selectedOption == 4
+                                        exportDatabase.launch()
                                     }
                                     3 -> exportProfileStateDialog.export()
-                                    4 -> {
-                                        // All: the three separate export sequences, like "both" plus the profile state.
-                                        exportDbDialog.export()
-                                        exportSettingsDialog.export(includeYtbCredentials, includeDiscordCredentials, includeLastfmCredentials, includeProxyCredentials)
-                                        exportProfileStateDialog.export()
-                                    }
                                 }
                             },
                         )

@@ -86,7 +86,7 @@ fun AutoBackupSettingsBlock() {
     OtherSettingsEntry(
         modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_target"),
         title = stringResource(R.string.backup_auto_target),
-        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.backup_auto_target_description), when (autoBackupTarget) {
+        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.backup_auto_content_format_description), when (autoBackupTarget) {
             BackupManager.TARGET_DATABASE -> stringResource(R.string.backup_target_database_label)
             BackupManager.TARGET_SETTINGS -> stringResource(R.string.settings_title)
             BackupManager.TARGET_BOTH -> stringResource(R.string.backup_target_database_and_settings_label)

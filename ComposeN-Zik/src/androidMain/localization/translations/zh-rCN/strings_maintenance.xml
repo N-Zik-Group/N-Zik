@@ -197,7 +197,6 @@
     <string name="recovery_error">发生错误: %s</string>
     <string name="recovery_error_database_busy">数据库正在使用，因此无法安全出口。 必须先停止应用程序：点击危险区中的“击杀应用程序”。 然后等待状态显示应用程序已停止。</string>
     <string name="recovery_export_database">导出数据库</string>
-    <string name="recovery_export_database_description">保存您的库、播放列表和历史记录</string>
     <string name="recovery_export_logs">导出日志</string>
     <string name="recovery_export_logs_description">为错误报告保存崩溃和调试日志</string>
     <string name="recovery_export_profiles_description">在单个.txt文件中的个人资料列表和面部照片</string>
@@ -210,7 +209,6 @@
     <string name="recovery_group_settings">设置</string>
     <string name="recovery_group_storage">存储</string>
     <string name="recovery_import_database">导入数据库</string>
-    <string name="recovery_import_database_description">还原先导出的数据库</string>
     <string name="recovery_import_profiles_description">从 .txt 文件恢复个人资料列表和脸部照片</string>
     <string name="recovery_import_settings">导入设置</string>
     <string name="recovery_import_settings_description">从 CSV 文件还原首选项</string>

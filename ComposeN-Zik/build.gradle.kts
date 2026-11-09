@@ -109,6 +109,7 @@ kotlin {
 }
 
 android {
+    sourceSets.getByName("main").assets.srcDir("schemas")
     dependenciesInfo {
         // Disables dependency metadata when building APKs.
         includeInApk = false

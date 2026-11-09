@@ -72,6 +72,8 @@ import app.it.fast4x.rimusic.utils.readProfileIds
 import app.it.fast4x.rimusic.utils.resolveProfileDisplayName
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
+import app.n_zik.android.components.dialog.export.rememberDatabaseExport
+import app.n_zik.android.core.backup.DatabaseBackup
 import app.n_zik.android.core.backup.ProfileStateArchive
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.core.rescue.RescueProcess
@@ -121,18 +123,6 @@ private val IMPORT_SETTINGS_MIMES: Array<String> = arrayOf(
     "text/comma-separated-values",
     "application/vnd.ms-excel",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
-
-/**
- * MIME types accepted by the Rescue "Import database" picker.
- *
- * A rescue-local copy of the app's `ImportDatabase.supportedMimes` (same independence rationale
- * as [IMPORT_SETTINGS_MIMES]).
- */
-private val IMPORT_DATABASE_MIMES: Array<String> = arrayOf(
-    "application/vnd.sqlite3",
-    "application/x-sqlite3",
-    "application/octet-stream"
 )
 
 /** MIME types accepted by the Rescue "Import accounts" (profile state) picker. */
@@ -387,15 +377,11 @@ fun RescueScreen() {
     }
 
     // SAF launchers
-    val exportDbLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.CreateDocument("application/vnd.sqlite3")
-    ) { uri: Uri? ->
-        uri ?: return@rememberLauncherForActivityResult
-        scope.launch {
-            val result = withContext(NzikDispatchers.DATA) { RescueFiles.exportDatabase(context, uri) }
-            showResult(result)
-        }
-    }
+    val exportDatabase = rememberDatabaseExport(
+        prepare = { RescueFiles.prepareDatabaseExport(context) },
+        context = context,
+        onResult = { showResult(it) },
+    )
 
     val importDbLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
@@ -1050,21 +1036,20 @@ fun RescueScreen() {
                     RescueActionCard(
                         iconRes = R.drawable.server,
                         title = stringResource(R.string.recovery_export_database),
-                        description = stringResource(R.string.recovery_export_database_description),
-                        onClick = {
-                            exportDbLauncher.launch("${BuildConfig.APP_NAME} $date Database.sqlite")
-                        }
+                        description = stringResource(R.string.recovery_export_database_with_covers_description),
+                        enabled = !exportDatabase.inProgress,
+                        onClick = exportDatabase.launch,
                     )
 
                     // Import database
                     RescueActionCard(
                         iconRes = R.drawable.server,
                         title = stringResource(R.string.recovery_import_database),
-                        description = stringResource(R.string.recovery_import_database_description),
+                        description = stringResource(R.string.recovery_import_database_with_covers_description),
                         onClick = {
                             guardWrite {
                                 confirmAction = ConfirmAction(R.string.recovery_confirm_import_database) {
-                                    importDbLauncher.launch(IMPORT_DATABASE_MIMES)
+                                    importDbLauncher.launch(DatabaseBackup.importMimes)
                                 }
                             }
                         }

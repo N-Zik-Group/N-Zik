@@ -3,7 +3,6 @@
     <!-- Backup -->
     <string name="backup_action_export">Overfør sikkerhetskopi</string>
     <string name="backup_action_import">Innfør sikkerhetskopi</string>
-    <string name="backup_action_import_legacy_migration">Importer overføringsfil.</string>
     <string name="backup_auto_custom_interval_unit_description">Velg tidsrom for egendefinerte sikkerhetskopier.</string>
     <string name="backup_auto_custom_interval_value_description">Angi antall tidsenheter mellom automatisk sikkerhetskopiering.</string>
     <string name="backup_auto_include_discord_credentials_description">Inkluder lagrede Discord konto legitimasjon i automatiske innstillinger sikkerhetskopier.</string>
@@ -16,19 +15,15 @@
     <string name="backup_auto_schedule_day_of_month_description">Velg dagen i måneden for månedlige automatiske sikkerhetskopier.</string>
     <string name="backup_auto_schedule_day_of_week_description">Velg ukedag for ukentlige automatiske sikkerhetskopier.</string>
     <string name="backup_auto_schedule_time_description">Velg tiden på hvilke planlagte automatiske sikkerhetskopier som skal kjøres.</string>
-    <string name="backup_auto_target_description">Velg om automatiske sikkerhetskopier inkluderer databasen, innstillinger eller begge deler.</string>
     <string name="backup_before_update_description">Automatisk sikkerhetskopier data før du installerer en oppdatering</string>
     <string name="backup_before_update_failed">Forhåndsinstallasjon av sikkerhetskopi mislyktes</string>
     <string name="backup_before_update_running_message">Sikkerhetskopierer data før installasjon…</string>
     <string name="backup_before_update_running_title">Sikkerhetskopiering pågår</string>
     <string name="backup_excluded_preferences_and_cache_description">Personlige innstillinger (f.eks. temamodus) og mellomlager er ekskludert.</string>
-    <string name="backup_export_description">Eksporter database eller innstillinger til en fil</string>
-    <string name="backup_import_description">Importer database eller innstillinger fra en fil</string>
     <string name="backup_include_discord_credentials">Inkluder Discord identitetsopplysninger</string>
     <string name="backup_include_lastfm_credentials">Inkluder Last.fm identitet påloggingsinformasjon</string>
     <string name="backup_include_proxy_password">Oppgi proxypassordet</string>
     <string name="backup_include_youtube_credentials">Inkluder YouTube-identitet påloggingsinformasjon</string>
-    <string name="backup_legacy_migration_description">For old users before conversion.\nUse old app to make a backup for migration.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Eksisterende data vil bli overskrevet. %1$s vil automatisk bli stengt selv ved gjenoppretting av databasen.</string>
     <string name="backup_target_database_and_settings_label">Database + Innstillinger</string>
     <string name="backup_target_database_label">Databasen</string>
@@ -61,18 +56,12 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Eksporter profillisten og ansiktsbilder i en enkel .txt fil</string>
     <string name="backup_export_all">Eksporter alt</string>
-    <string name="backup_export_all_description">Eksporter database, innstillinger og profilstatus</string>
-    <string name="backup_export_both_description">Eksporter databasen og innstillinger som separate filer</string>
-    <string name="backup_export_database_description">Eksporter databasen med sanger, spillelister og historie</string>
     <string name="backup_export_profile_state_failed">Eksport av profilstatus feilet</string>
     <string name="backup_export_settings_description">Eksporter appinnstillinger og -innstillinger</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importer profillisten og ansiktsbilder fra en .txt-fil</string>
     <string name="backup_import_all">Importer alle</string>
-    <string name="backup_import_all_description">Importer database, innstillinger og profilstatus</string>
-    <string name="backup_import_both_description">Importer database og innstillinger fra separate filer</string>
     <string name="backup_import_completed_profile">Importerte til %1$s</string>
-    <string name="backup_import_database_description">Importer database med sanger, spillelister og historie</string>
     <string name="backup_import_profile_state_complete">Profiltilstand importert: %1$d profiler</string>
     <string name="backup_import_profile_state_complete_base">Status importert: basisprofil</string>
     <string name="backup_import_profile_state_failed">Import av profilstatus feilet</string>

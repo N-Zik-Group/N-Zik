@@ -235,17 +235,17 @@ object ImportBackupDialog : ContentFramedDialog {
         })
 
         val databaseLabel = stringResource(R.string.backup_target_database_label)
-        val databaseDescription = stringResource(R.string.backup_import_database_description)
+        val databaseDescription = stringResource(R.string.backup_import_database_with_covers_description)
         val settingsLabel = stringResource(R.string.settings_title)
         val settingsDescription = stringResource(R.string.backup_import_settings_description)
         val bothLabel = stringResource(R.string.backup_target_database_and_settings_label)
-        val bothDescription = stringResource(R.string.backup_import_both_description)
+        val bothDescription = stringResource(R.string.backup_import_database_with_covers_and_settings_description)
         // The option is the profile state (the list + every face), not the login
         // accounts: labeled "Profiles" like everywhere else in the app.
         val profilesLabel = stringResource(R.string.profile_title)
         val profilesDescription = stringResource(R.string.backup_import_accounts_description)
         val allLabel = stringResource(R.string.backup_import_all)
-        val allDescription = stringResource(R.string.backup_import_all_description)
+        val allDescription = stringResource(R.string.backup_import_all_with_covers_description)
 
         val options = listOf(
             Triple(R.drawable.server, databaseLabel, databaseDescription),

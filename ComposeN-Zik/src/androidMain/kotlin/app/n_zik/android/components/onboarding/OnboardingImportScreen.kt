@@ -258,12 +258,12 @@ fun OnboardingImportScreen(
     })
 
     val options = listOf(
-        Triple(0, stringResource(R.string.backup_target_database_label), stringResource(R.string.backup_import_database_description)),
+        Triple(0, stringResource(R.string.backup_target_database_label), stringResource(R.string.backup_import_database_with_covers_description)),
         Triple(1, stringResource(R.string.settings_title), stringResource(R.string.backup_import_settings_description)),
-        Triple(2, stringResource(R.string.backup_target_database_and_settings_label), stringResource(R.string.backup_import_both_description)),
+        Triple(2, stringResource(R.string.backup_target_database_and_settings_label), stringResource(R.string.backup_import_database_with_covers_and_settings_description)),
         // The profile state option (the list + every face) — "Profiles", not the login accounts
         Triple(3, stringResource(R.string.profile_title), stringResource(R.string.backup_import_accounts_description)),
-        Triple(4, stringResource(R.string.backup_import_all), stringResource(R.string.backup_import_all_description))
+        Triple(4, stringResource(R.string.backup_import_all), stringResource(R.string.backup_import_all_with_covers_description))
     )
 
     Column(
@@ -313,7 +313,7 @@ fun OnboardingImportScreen(
         OnboardingActionCard(
             icon = R.drawable.server,
             title = stringResource(R.string.backup_action_import),
-            description = stringResource(R.string.backup_import_description),
+            description = stringResource(R.string.backup_import_library_options_description),
             extraContent = {
                 Spacer(modifier = Modifier.height(12.dp))
 

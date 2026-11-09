@@ -124,7 +124,7 @@ internal val SettingsEntryDescriptions = mapOf(
     "embedded.auto_backup.auto_backup_schedule_day_of_month" to R.string.backup_auto_schedule_day_of_month_description,
     "embedded.auto_backup.auto_backup_schedule_day_of_week" to R.string.backup_auto_schedule_day_of_week_description,
     "embedded.auto_backup.auto_backup_schedule_time" to R.string.backup_auto_schedule_time_description,
-    "embedded.auto_backup.auto_backup_target" to R.string.backup_auto_target_description,
+    "embedded.auto_backup.auto_backup_target" to R.string.backup_auto_content_format_description,
     "embedded.auto_backup.include_discord_credentials" to R.string.backup_auto_include_discord_credentials_description,
     "embedded.auto_backup.include_lastfm_credentials" to R.string.backup_auto_include_lastfm_credentials_description,
     "embedded.auto_backup.include_proxy_credentials" to R.string.backup_auto_include_proxy_credentials_description,

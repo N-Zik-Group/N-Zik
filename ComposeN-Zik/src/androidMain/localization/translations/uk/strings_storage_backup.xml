@@ -3,7 +3,6 @@
     <!-- Backup -->
     <string name="backup_action_export">Експортувати резервну копію</string>
     <string name="backup_action_import">Імпорт резервної копії</string>
-    <string name="backup_action_import_legacy_migration">Імпорт файлу міграції.</string>
     <string name="backup_auto_custom_interval_unit_description">Оберіть час активації інтервалу для резервної копії.</string>
     <string name="backup_auto_custom_interval_value_description">Налаштування кількості одиниць часу між автоматичними резервними копіями.</string>
     <string name="backup_auto_include_discord_credentials_description">Включіть збережені облікові дані Discord у автоматичну резервну копію налаштувань.</string>
@@ -16,19 +15,15 @@
     <string name="backup_auto_schedule_day_of_month_description">Виберіть день місяця для місячних автоматичних резервних копій.</string>
     <string name="backup_auto_schedule_day_of_week_description">Вибрати тиждень на тижневу автоматичну резервну копію.</string>
     <string name="backup_auto_schedule_time_description">Оберіть годину, в яку мають працювати заплановані автоматичні резервні копії.</string>
-    <string name="backup_auto_target_description">Виберіть, чи включено автоматичне резервне копіювання до бази даних, налаштувань або обидва.</string>
     <string name="backup_before_update_description">Автоматично створювати резервні копії даних перед встановленням оновлення</string>
     <string name="backup_before_update_failed">Передінсталяція резервної копії зазнала невдачі</string>
     <string name="backup_before_update_running_message">Backing up data before installation…</string>
     <string name="backup_before_update_running_title">Виконується резервне копіювання</string>
     <string name="backup_excluded_preferences_and_cache_description">Особисті налаштування (тобто режим теми) і кеш не враховуються.</string>
-    <string name="backup_export_description">Експортувати базу даних або налаштування у файл</string>
-    <string name="backup_import_description">Імпорт бази даних або налаштування з файлу</string>
     <string name="backup_include_discord_credentials">Включіть облікові дані особи Discord</string>
     <string name="backup_include_lastfm_credentials">Включати облікові дані ідентифікації Last.fm</string>
     <string name="backup_include_proxy_password">Включати пароль проксі-сервера</string>
     <string name="backup_include_youtube_credentials">Включіть облікові дані ідентифікації YouTube</string>
-    <string name="backup_legacy_migration_description">Для старих користувачів до перетворення.\nВикористовувати стару програму, щоб зробити резервну копію міграції.</string>
     <string name="backup_restore_overwrite_and_restart_warning">Існуючі дані будуть перезаписані. %1$s автоматично закриється після відновлення бази даних.</string>
     <string name="backup_target_database_and_settings_label">База даних + Налаштування</string>
     <string name="backup_target_database_label">База даних</string>
@@ -61,18 +56,12 @@
     <!-- Backup Export -->
     <string name="backup_export_accounts_description">Експортувати список профілів і фотографії обличчя в одному з .txt файлу</string>
     <string name="backup_export_all">Експортувати все</string>
-    <string name="backup_export_all_description">Експорт бази даних, налаштувань і стану профілю</string>
-    <string name="backup_export_both_description">Експортувати базу даних і налаштування як окремі файли</string>
-    <string name="backup_export_database_description">Експортувати базу даних з піснями, списками та історією</string>
     <string name="backup_export_profile_state_failed">Не вдалося експортувати стан профілю</string>
     <string name="backup_export_settings_description">Налаштування та параметри додатку</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Імпорт списку профілів і фотографій обличчя з файлу .txt</string>
     <string name="backup_import_all">Імпортувати всі</string>
-    <string name="backup_import_all_description">Імпорт бази даних, налаштувань і стану профілю</string>
-    <string name="backup_import_both_description">Імпортувати базу даних і налаштування з окремих файлів</string>
     <string name="backup_import_completed_profile">Імпортовано в %1$s</string>
-    <string name="backup_import_database_description">Імпортувати базу даних з піснями, списками та історією</string>
     <string name="backup_import_profile_state_complete">Стан профілю імпортовано: профілі %1$d</string>
     <string name="backup_import_profile_state_complete_base">Стан профілю імпортовано: базовий профіль</string>
     <string name="backup_import_profile_state_failed">Помилка імпорту стану профілю</string>

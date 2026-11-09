@@ -65,6 +65,7 @@ import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.network.client.NetworkGate
 import app.n_zik.android.core.network.client.Store
 import app.n_zik.android.core.notifications.ensureProfileChannels
+import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.core.rescue.RescueProcess
 import app.n_zik.android.components.settings.applyUseLoginForSearch
 import app.n_zik.android.core.settings.ensurePlayerBehaviorDefaults
@@ -121,8 +122,19 @@ import kotlinx.coroutines.withTimeout
 
 class MainApplication : Application(), SingletonImageLoader.Factory {
 
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(base)
+        // Content providers can run before onCreate, so finish recovery before they open SQLite.
+        DatabaseRestoreJournal.onProcessStart(this, mainProcess = isMainProcess())
+    }
+
     override fun onCreate() {
         super.onCreate()
+
+        NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+            runCatching { DatabaseRestoreJournal.cleanAbandonedImports(this@MainApplication) }
+                .onFailure { Timber.tag("MainApplication").w(it, "Could not clean abandoned database imports") }
+        }
 
         // RescueActivity runs in the :rescue process. Starting the full app there can make
         // that process claim WebView's data directory and crash the next main-process WebView.
