@@ -137,6 +137,9 @@
     <string name="modules_download_needed">Modul behøver download (~25 MB). Tjek forbindelsen.</string>
     <string name="modules_downloading">Downloader modul</string>
     <string name="modules_edit_unavailable">Rediger metadata utilgængelig: %1$s</string>
+    <string name="modules_ffmpeg_preparation">Forbereder FFmpeg</string>
+    <string name="modules_ffmpeg_downloading">Downloader FFmpeg</string>
+    <string name="modules_ffmpeg_progress_percent">%1$d%%</string>
     <string name="modules_ffmpeg_description">Behøver at eksportere cachelagrede sange og at redigere sangmetadata. Downloadet ved første brug.</string>
     <string name="modules_info">Info</string>
     <string name="modules_insufficient_space">Denne funktion har brug for omkring 70 MB ledig plads</string>
