@@ -237,7 +237,7 @@
     <string name="player_exclude_disliked_artists_description">Välj hur låtar från ogillade artister är uteslutna.</string>
     <string name="player_exclude_disliked_songs_description">Välj hur ogillade låtar är uteslutna från uppspelningsförslag.</string>
     <string name="player_exclude_songs_with_duration_limit_description">Uteslut spår som överskrider den valda varaktighetsgränsen.</string>
-    <string name="player_excluded_song_count_format">Exkluderade %s låtar</string>
+    <string name="player_excluded_song_count_format">Låtar exkluderade: %s</string>
     <string name="player_keep_minimized">Behåll minimerad</string>
     <string name="player_layout_artwork_style_description">Välj hur spelaren visar spårtryck.</string>
     <string name="player_layout_controls_style_description">Välj layouten för spelarens kontroller.</string>
@@ -278,7 +278,7 @@
     <string name="player_queue_preview_artwork_description">Inkludera album konstverk bredvid kommande spår i förhandsgranskningen.</string>
     <string name="player_queue_preview_song_count_description">Välj hur många kommande låtar som visas i förhandsgranskningen.</string>
     <string name="player_queue_remove_selected_confirmation_format">Ta bort valet från kön? Valda låtar: %d</string>
-    <string name="player_queue_shuffled_count_format">Kön blandas (%d låtar)</string>
+    <string name="player_queue_shuffled_count_format">Kön blandas (spår: %d)</string>
     <string name="player_remaining_time_visible_description">Visa den tid som återstår i det aktuella spåret.</string>
     <string name="player_restart_required_message">Spelaren måste startas om för effektiva förändringar!</string>
     <string name="player_rotating_buttons">Roterande knappar</string>
@@ -288,7 +288,7 @@
     <string name="player_show_next_songs_in_player_description">Visa en förhandsvisning av kommande låtar inuti spelaren.</string>
     <string name="player_show_player_top_actions_bar_description">Visa raden med spelaråtgärder ovanför det huvudsakliga innehållet.</string>
     <string name="player_shuffle_empty_message">Ingen låt att blanda</string>
-    <string name="player_shuffled_song_count_format">%d låtar blandas</string>
+    <string name="player_shuffled_song_count_format">Spår blandade: %d</string>
     <string name="player_sleep_timer_end_of_song_message">Sov timer inställd till slutet av den här låten</string>
     <string name="player_sleep_timer_finished_message">Sov timer avslutad</string>
     <string name="player_song_playback_error_format">Ett fel inträffade när låten %1$s spelades</string>
