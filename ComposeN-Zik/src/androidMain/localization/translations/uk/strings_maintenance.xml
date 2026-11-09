@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
     <string name="logs_action_export">Експортувати журнали</string>
     <string name="logs_action_export_both">Експортувати обидва логи</string>
@@ -40,6 +41,7 @@
     <string name="maintenance_dedup_flagged">Позначено %d рядок(ів)</string>
     <string name="maintenance_dedup_merged">Merged %d row(s)</string>
     <string name="maintenance_dedup_merged_flagged">Merged %1$d row(s) · Flagged %2$d row(s)</string>
+    <string name="maintenance_dedup_counts_format">%1$s · %2$s</string>
     <string name="maintenance_discord_invalid_token">Хибне значення</string>
     <string name="maintenance_discord_ok">Гаразд</string>
     <string name="maintenance_discord_reconnect_failed">Помилка повторного з\'єднання</string>
@@ -197,6 +199,7 @@
     <string name="recovery_error">Сталася помилка: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Експорт бази даних</string>
+    <string name="recovery_export_database_with_covers_description">Збережіть вашу бібліотеку, списки відтворення та історію як SQLite. Якщо у вас є користувацькі обкладинки, експорт це ZIP з базою даних і обкладинками.</string>
     <string name="recovery_export_logs">Експортувати журнали</string>
     <string name="recovery_export_logs_description">Зберігати помилки та журналами для звіту про помилку</string>
     <string name="recovery_export_profiles_description">Список профілів і фотографії обличчя в одному .txt файлі</string>
@@ -209,6 +212,7 @@
     <string name="recovery_group_settings">Налаштування</string>
     <string name="recovery_group_storage">Сховище</string>
     <string name="recovery_import_database">Імпорт бази даних</string>
+    <string name="recovery_import_database_with_covers_description">Відновлення резервної копії бази даних SQLite або ZIP, включаючи будь-які користувацькі обкладинки в ZIP.</string>
     <string name="recovery_import_profiles_description">Відновлення списку профілів і фотографій обличчя з .txt файлу</string>
     <string name="recovery_import_settings">Імпортувати налаштування</string>
     <string name="recovery_import_settings_description">Відновити налаштування з CSV-файлу</string>
@@ -309,4 +313,5 @@
     <string name="updates_warning_acknowledge">Я розумію</string>
     <string name="updates_check_failed">Не вдається перевірити наявність оновлень.</string>
     <string name="updates_install_generic_error">Не вдалося встановити оновлення.</string>
+    <string name="updates_channel_available_format">Доступне оновлення %1$s</string>
 </resources>
