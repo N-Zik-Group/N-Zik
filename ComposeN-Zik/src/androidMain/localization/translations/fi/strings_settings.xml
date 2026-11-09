@@ -17,7 +17,7 @@
     <string name="language_name_azerbaijani">azeri</string>
     <string name="language_name_bashkir">Bashkir (Башҡурт)</string>
     <string name="language_name_bengali">Bengali (Entä- Pannaan)</string>
-    <string name="language_name_catalan">Katalaani (Katalaatti)</string>
+    <string name="language_name_catalan">Katalaani (Katalaani)</string>
     <string name="language_name_chinese_simplified">Kiinalainen Yksinkertaistettu (Päivä )</string>
     <string name="language_name_chinese_traditional">Kiinalainen Perinteinen (¼ )</string>
     <string name="language_name_czech">tšekki</string>
@@ -27,7 +27,7 @@
     <string name="language_name_esperanto">Esperanto (Esperanto)</string>
     <string name="language_name_estonian">Estonian (eesti keel)</string>
     <string name="language_name_filipino">Filipino (Tagalog)</string>
-    <string name="language_name_finnish">Finnish (Suomalainen)</string>
+    <string name="language_name_finnish">Finnish (Suomi)</string>
     <string name="language_name_french">ranska</string>
     <string name="language_name_galician">Galician (galego)</string>
     <string name="language_name_german">saksa</string>
@@ -35,13 +35,13 @@
     <string name="language_name_hebrew">Hebrew (עִברִית)</string>
     <string name="language_name_hindi">Hindi (Päivä PÄIVÄNYTTÄVÄ)</string>
     <string name="language_name_hungarian">Unkari (Magyar)</string>
-    <string name="language_name_indonesian">Indonesialainen (Indonesia)</string>
+    <string name="language_name_indonesian">Indonesialainen (Bahasa Indonesia)</string>
     <string name="language_name_interlingua">interlingua</string>
     <string name="language_name_irish">Irish (Gaeilge)</string>
     <string name="language_name_italian">italia</string>
     <string name="language_name_japanese">Japanilainen (Kantaja):</string>
-    <string name="language_name_korean">Korealainen (kk.vvvvvvvvv)</string>
-    <string name="language_name_malayalam">Malayam (മലയാളം)</string>
+    <string name="language_name_korean">Korealainen (kk.vvvvvvvv)</string>
+    <string name="language_name_malayalam">Malayalam (മലയാളം)</string>
     <string name="language_name_norwegian">Norwegian (norsk)</string>
     <string name="language_name_odia">Odia (ଓଡ଼ିଆ)</string>
     <string name="language_name_persian">Persia (kk.v)</string>
@@ -50,8 +50,8 @@
     <string name="language_name_portuguese_brazilian">Portugali, Brasilia (Portugali, Brasileiro)</string>
     <string name="language_name_romanian">romania</string>
     <string name="language_name_russian">venäjä</string>
-    <string name="language_name_serbian_cyrillic">Serbian Cyrillic (Српска)</string>
-    <string name="language_name_serbian_latin">Serbian Latin (Gajeva latinica)</string>
+    <string name="language_name_serbian_cyrillic">Serbian Cyrillic (Српски)</string>
+    <string name="language_name_serbian_latin">Serbian Latin (Srpski)</string>
     <string name="language_name_sinhala">Sinhala (සිංහල)</string>
     <string name="language_name_spanish">espanja</string>
     <string name="language_name_swedish">Ruotsi (Svenska)</string>
@@ -488,4 +488,6 @@
     <string name="settings_youtube_connection_required_description">Yhdistä ensin YouTubeen, jotta voit ottaa tämän vaihtoehdon käyttöön</string>
     <string name="settings_youtube_library_sync_content_description">Soittolistat, albumit, artistit, historia, tykkää jne.</string>
     <string name="settings_youtube_login_enabled_label">Ota YouTube-musiikin kirjautuminen käyttöön</string>
+    <string name="settings_dialog_sort_title_format">%1$s: Lajittele</string>
+    <string name="settings_dialog_toolbar_title_format">%1$s: Työkalurivi</string>
 </resources>
