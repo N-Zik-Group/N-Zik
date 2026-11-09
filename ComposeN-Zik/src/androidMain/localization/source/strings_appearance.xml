@@ -19,6 +19,12 @@
     <string name="glass_effect_destination_pages">Pages</string>
     <string name="glass_effect_destination_playback">Playback</string>
     <string name="glass_effect_destination_shared">Shared elements</string>
+    <string name="glass_effect_destination_indicators">Indicators</string>
+    <string name="glass_effect_indicators_summary">Loading animations and pull to refresh</string>
+    <string name="glass_effect_loading_indicators">Loading indicators</string>
+    <string name="glass_effect_loading_indicators_description">Style loading animations on pages and in cards and dialogs.</string>
+    <string name="glass_effect_pull_to_refresh">Pull to refresh</string>
+    <string name="glass_effect_pull_to_refresh_description">Style the indicator that appears when you pull down to refresh.</string>
     <string name="glass_effect_destination_windows">Windows and messages</string>
     <string name="glass_effect_dialog_dimming">Dialog background dimming</string>
     <string name="glass_effect_dispersion">Colour splitting</string>

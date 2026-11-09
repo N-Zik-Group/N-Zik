@@ -1,16 +1,40 @@
 package app.n_zik.android.components.ui
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.it.fast4x.rimusic.enums.NavigationBarPosition
+import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassIndicatorSilhouette
+import app.n_zik.android.components.glass.rememberGlassSettings
 
 /** App loader for cards and dialogs without the full-page navigation spacer. */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-internal fun InlineLoader(modifier: Modifier = Modifier) {
-    LoadingIndicator(color = colorPalette().accent, modifier = modifier.size(100.dp))
+internal fun InlineLoader(modifier: Modifier = Modifier, size: Dp = 100.dp) {
+    val accent = colorPalette().accent
+    GlassIndicatorSilhouette(
+        rememberGlassSettings(), GlassArea.LoadingIndicators, accent, modifier.size(size),
+    ) { glyph ->
+        LoadingIndicator(color = accent, modifier = glyph.size(size))
+    }
+}
+
+/** Centers the shared loading indicator and accounts for floating bottom navigation. */
+@Composable
+internal fun FullPageLoader(size: Dp = 100.dp, modifier: Modifier = Modifier.fillMaxWidth()) {
+    val bottomPadding = if (NavigationBarPosition.BottomFloating.isCurrent()) Dimensions.bottomSpacer else 0.dp
+    Box(modifier.padding(bottom = bottomPadding), contentAlignment = Alignment.Center) {
+        InlineLoader(size = size)
+    }
 }

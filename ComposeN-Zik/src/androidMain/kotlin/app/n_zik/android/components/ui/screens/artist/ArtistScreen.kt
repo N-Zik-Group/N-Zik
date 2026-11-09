@@ -87,7 +87,7 @@ import app.it.fast4x.rimusic.ui.components.themed.FontSizeRange
 import app.n_zik.android.components.ui.HeaderIconAction
 import app.n_zik.android.components.ui.CollectionButtonToolbar
 import app.n_zik.android.components.glass.GlassToolbarRow
-import app.it.fast4x.rimusic.ui.components.themed.Loader
+import app.n_zik.android.components.ui.FullPageLoader
 import app.it.fast4x.rimusic.ui.components.themed.PlayNext
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
@@ -369,7 +369,7 @@ fun ArtistScreen(
             }
             1 -> {
                 if (localArtist == null) {
-                    CollectionPageStatus(contentPadding) { Loader() }
+                    CollectionPageStatus(contentPadding) { FullPageLoader() }
                 } else {
                     ArtistLocalSongs(navController, localArtist, artistPage, thumbnailPainter, contentPadding)
                 }

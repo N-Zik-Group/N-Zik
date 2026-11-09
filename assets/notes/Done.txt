@@ -1,4 +1,10 @@
 Added:
+- feat(glass): style loading and refresh indicators
+  - Add separate Glass modes for loaders and pull to refresh in the Indicators section.
+  - Apply shared Glass to the animated loader silhouette and to the complete refresh capsule and its glyph, preserving their native colors.
+  - Use a backdrop that excludes the indicators to prevent recursive rendering.
+
+Added:
 - feat(settings): expand storage cleanup actions
   - Add confirmed diagnostic log and abandoned temporary file cleanup.
   - Put Clear all last and run every listed cleanup while preserving library data, covers and settings.

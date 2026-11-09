@@ -3,12 +3,14 @@ package app.n_zik.android.components
 import android.app.Application
 import android.content.Context
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
@@ -30,6 +32,11 @@ import app.it.fast4x.rimusic.utils.colorPaletteModeKey
 import app.it.fast4x.rimusic.utils.preferences
 import app.it.fast4x.rimusic.utils.profilePreferences
 import app.it.fast4x.rimusic.utils.setActiveProfile
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassAreaMode
+import app.n_zik.android.components.glass.GlassQuality
+import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.LocalGlassPreviewSettings
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -100,5 +107,61 @@ class AppPullToRefreshSurfaceTest {
             val spinnerColor = if (pitchBlack || !palette.isDark) Color.Black else Color.White
             assertTrue("visible $mode refresh spinner", (counts[spinnerColor.toArgb()] ?: 0) > 10)
         }
+    }
+
+    @Test
+    fun `refresh reveals the full Glass container and expressive glyph`() {
+        val palette = DefaultLightColorPalette
+        val mode = mutableStateOf(GlassAreaMode.ContourOnly)
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            val shape = CircleShape
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(palette, Typography.fallback, shape, shape, shape),
+                LocalGlassPreviewSettings provides GlassSettings(
+                    quality = GlassQuality.Performance,
+                    areaModes = mapOf(GlassArea.PullToRefresh to mode.value),
+                ),
+            ) {
+                Column {
+                    AppPullToRefreshBox(
+                        isRefreshing = false,
+                        onRefresh = {},
+                        modifier = Modifier.size(200.dp).background(Color.Magenta).testTag("idle"),
+                    ) {}
+                    AppPullToRefreshBox(
+                        isRefreshing = true,
+                        onRefresh = {},
+                        modifier = Modifier.size(200.dp).background(Color.Magenta).testTag("refresh"),
+                    ) {}
+                }
+            }
+        }
+
+        fun pixelCount(tag: String, matches: (Int) -> Boolean): Int {
+            val pixels = composeRule.onNodeWithTag(tag).captureToImage().toPixelMap()
+            return (0 until pixels.height).sumOf { y ->
+                (0 until pixels.width).count { x -> matches(pixels[x, y].toArgb()) }
+            }
+        }
+
+        composeRule.mainClock.advanceTimeBy(1_000)
+        assertTrue("hidden indicator draws no pixels", pixelCount("idle") { it != Color.Magenta.toArgb() } == 0)
+        val visibleAccent = pixelCount("refresh") { it == palette.accent.toArgb() }
+        val nativePixels = pixelCount("refresh") { it != Color.Magenta.toArgb() }
+        assertTrue("contour preserves the visible native fill ($visibleAccent pixels)", visibleAccent > 100)
+        composeRule.runOnIdle { mode.value = GlassAreaMode.GlassOnly }
+        composeRule.mainClock.advanceTimeBy(1_000)
+        assertTrue("Glass replaces the native fill", pixelCount("refresh") { it == palette.accent.toArgb() } == 0)
+        val glassFill = palette.accent.copy(alpha = .5f).compositeOver(Color.Magenta)
+        assertTrue("Glass keeps the accent role", pixelCount("refresh") {
+            val color = Color(it)
+            kotlin.math.abs(color.red - glassFill.red) < .01f &&
+                kotlin.math.abs(color.green - glassFill.green) < .01f &&
+                kotlin.math.abs(color.blue - glassFill.blue) < .01f
+        } > 100)
+        val glassPixels = pixelCount("refresh") { it != Color.Magenta.toArgb() }
+        assertTrue("Glass retains the full container ($glassPixels of $nativePixels pixels)",
+            glassPixels in (nativePixels * .9f).toInt()..(nativePixels * 1.1f).toInt())
     }
 }

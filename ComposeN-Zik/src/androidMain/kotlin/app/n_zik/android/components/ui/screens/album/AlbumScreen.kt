@@ -106,7 +106,7 @@ import app.n_zik.android.components.ui.HeaderIconAction
 import app.n_zik.android.components.ui.CollectionButtonToolbar
 import app.n_zik.android.components.glass.GlassToolbarRow
 import app.it.fast4x.rimusic.ui.components.themed.ItemsList
-import app.it.fast4x.rimusic.ui.components.themed.Loader
+import app.n_zik.android.components.ui.FullPageLoader
 import app.it.fast4x.rimusic.ui.components.themed.MultiFloatingActionsContainer
 import app.it.fast4x.rimusic.ui.components.themed.PlayNext
 import app.it.fast4x.rimusic.ui.components.themed.PlaylistsMenu
@@ -585,7 +585,7 @@ fun AlbumDetails(
             if (items.isEmpty()) {
                 CollectionPageStatus {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Loader()
+                        FullPageLoader()
                         if (loadedSongsCount > 0) {
                             Spacer(modifier = Modifier.height(8.dp))
                             BasicText(

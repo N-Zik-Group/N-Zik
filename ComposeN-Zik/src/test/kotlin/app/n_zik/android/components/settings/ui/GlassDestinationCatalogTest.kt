@@ -9,6 +9,9 @@ import app.n_zik.android.components.glass.GlassContextArea
 import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.contextMode
+import app.n_zik.android.components.glass.mode
+import app.n_zik.android.components.glass.usesGlassContour
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.settings.common.searchSettingsEntries
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -45,6 +48,36 @@ class GlassDestinationCatalogTest {
         assertEquals("destination.Playback", glassSearchOption(row.searchId)?.section)
         assertTrue(searchSettingsEntries(context, context.getString(row.title)).any { it.id == row.searchId })
         assertTrue(glassDestinationKeywordResources().contains(row.description))
+    }
+
+    @Test fun `indicator selectors resolve independently in search and reset to their defaults`() {
+        val rows = glassDestinationRows(GlassDestinationGroup.Indicators)
+        val loading = GlassArea.LoadingIndicators
+        val refresh = GlassArea.PullToRefresh
+        assertEquals(listOf(loading, refresh), rows.map { it.area })
+        assertFalse(loading.preferenceKey == refresh.preferenceKey)
+        rows.forEach { row ->
+            assertEquals("destination.Indicators", glassSearchOption(row.searchId)?.section)
+            assertTrue(searchSettingsEntries(context, context.getString(row.title)).any { it.id == row.searchId })
+        }
+
+        val store = GlassStore(context)
+        store.setAreaMode(loading, GlassAreaMode.ContourOnly)
+        store.setAreaMode(refresh, GlassAreaMode.GlassOnly)
+        val saved = GlassStore(context).read()
+        assertTrue(saved.usesGlassContour(loading))
+        assertFalse(saved.usesGlassMaterial(loading))
+        assertFalse(saved.usesGlassContour(refresh))
+        assertTrue(saved.usesGlassMaterial(refresh))
+        assertFalse(saved.copy(enabled = false).usesGlassContour(loading))
+        assertFalse(saved.copy(enabled = false).usesGlassMaterial(refresh))
+
+        store.reset()
+        val reset = GlassStore(context).read()
+        assertEquals(GlassAreaMode.GlassAndContour, reset.mode(loading))
+        assertEquals(GlassAreaMode.GlassAndContour, reset.mode(refresh))
+        assertFalse(preferences.contains(loading.preferenceKey))
+        assertFalse(preferences.contains(refresh.preferenceKey))
     }
 
     @Test fun `title favorite override persists independently and reset restores inherited actions`() {

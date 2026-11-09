@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import app.it.fast4x.rimusic.ui.components.themed.Loader
+import app.n_zik.android.components.ui.FullPageLoader
 import app.it.fast4x.rimusic.utils.center
 import app.it.fast4x.rimusic.utils.secondary
 import app.n_zik.android.R
@@ -65,7 +65,7 @@ fun OfflineAwareLoader(
             modifier = modifier,
             contentAlignment = Alignment.Center
         ) {
-            Loader()
+            FullPageLoader()
         }
     } else {
         OfflineContent(modifier = modifier)

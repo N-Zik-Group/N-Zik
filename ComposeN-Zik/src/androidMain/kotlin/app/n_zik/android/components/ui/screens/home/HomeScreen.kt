@@ -46,7 +46,7 @@ import timber.log.Timber
 import app.kreate.android.me.knighthat.utils.Toaster
 import kotlin.system.exitProcess
 import app.n_zik.android.LocalPlayerServiceBinder
-import app.it.fast4x.rimusic.ui.components.themed.Loader
+import app.n_zik.android.components.ui.FullPageLoader
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import app.n_zik.android.components.ui.screens.home.quickpicks.HomeQuickPicks
@@ -321,7 +321,7 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Loader()
+            FullPageLoader()
         }
         return
     }

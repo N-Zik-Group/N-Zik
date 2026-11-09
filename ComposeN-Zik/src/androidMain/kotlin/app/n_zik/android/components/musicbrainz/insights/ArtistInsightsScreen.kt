@@ -46,7 +46,7 @@ import app.it.fast4x.rimusic.cleanPrefix
 import app.it.fast4x.rimusic.models.Artist
 import app.it.fast4x.rimusic.ui.components.LocalMenuState
 import app.it.fast4x.rimusic.ui.components.tab.ItemSize
-import app.it.fast4x.rimusic.ui.components.themed.Loader
+import app.n_zik.android.components.ui.FullPageLoader
 import app.it.fast4x.rimusic.ui.items.AlbumItem
 import app.it.fast4x.rimusic.ui.styling.Dimensions
 import app.it.fast4x.rimusic.ui.styling.onOverlay
@@ -109,7 +109,7 @@ fun ArtistInsightsScreen(
                 .background(colorPalette().background0),
             contentAlignment = Alignment.Center
         ) {
-            Loader()
+            FullPageLoader()
         }
     } else {
         val artist = state.artist

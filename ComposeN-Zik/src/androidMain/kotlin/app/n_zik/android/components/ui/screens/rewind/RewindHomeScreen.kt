@@ -61,7 +61,7 @@ import androidx.compose.ui.unit.times
 import androidx.navigation.NavController
 import app.it.fast4x.rimusic.enums.NavRoutes
 import app.it.fast4x.rimusic.enums.SortOrder
-import app.it.fast4x.rimusic.ui.components.themed.Loader
+import app.n_zik.android.components.ui.FullPageLoader
 import app.it.fast4x.rimusic.ui.components.navigation.header.TabToolBar
 import app.it.fast4x.rimusic.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.components.settings.common.SettingsDescription
@@ -164,7 +164,7 @@ fun RewindHomeScreen(
                 modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding()),
                 contentAlignment = Alignment.Center,
             ) {
-                Loader()
+                FullPageLoader()
             }
         } else if (uiState.years.isEmpty()) {
             Box(

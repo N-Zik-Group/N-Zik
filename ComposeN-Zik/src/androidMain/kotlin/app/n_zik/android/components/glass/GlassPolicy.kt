@@ -94,7 +94,8 @@ enum class GlassArea(val legacyKey: String) {
     Nav(glassNavKey), MiniPlayer(glassMiniPlayerKey), Header(glassHeaderKey), Menus(glassMenusKey),
     Dropdowns(glassDropdownsKey), Dialogs(glassDialogsKey), DialogButtons(glassDialogButtonsKey),
     NowPlaying(glassNowPlayingKey), Images(glassImageRimsKey), SettingsCards(glassSettingsCardsKey),
-    SearchBars(glassSearchBarsKey), ActionButtons(glassActionButtonsKey), Switches("switches"), MoodCards("mood_cards");
+    SearchBars(glassSearchBarsKey), ActionButtons(glassActionButtonsKey), Switches("switches"), MoodCards("mood_cards"),
+    LoadingIndicators("loading_indicators"), PullToRefresh("pull_to_refresh");
 
     val preferenceKey: String get() = "${legacyKey}_mode"
 }
@@ -159,7 +160,7 @@ fun GlassSettings.mode(area: GlassArea): GlassAreaMode {
         GlassArea.SettingsCards -> settingsCards
         GlassArea.SearchBars -> searchBars
         GlassArea.ActionButtons -> actionButtons
-        GlassArea.MoodCards, GlassArea.Switches -> true
+        GlassArea.MoodCards, GlassArea.Switches, GlassArea.LoadingIndicators, GlassArea.PullToRefresh -> true
         GlassArea.Images -> false
     }
     val contour = when (area) {

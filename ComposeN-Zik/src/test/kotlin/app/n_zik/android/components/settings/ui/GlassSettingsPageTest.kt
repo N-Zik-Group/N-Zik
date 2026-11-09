@@ -215,7 +215,20 @@ class GlassSettingsPageTest {
     }
 
     @Test fun `search opens a collapsed scoped destination and highlights the exact row without writes`() {
-        val target = "glass.destination.Onboarding.SettingsCards"
+        assertSearchRevealsMode("glass.destination.Onboarding.SettingsCards", "Onboarding.SettingsCards")
+    }
+
+    @Test fun `search opens the exact loading indicator selector`() {
+        val row = glassDestinationRows(GlassDestinationGroup.Indicators).single { it.area == GlassArea.LoadingIndicators }
+        assertSearchRevealsMode(row.searchId, row.area.name)
+    }
+
+    @Test fun `search opens the exact pull to refresh selector`() {
+        val row = glassDestinationRows(GlassDestinationGroup.Indicators).single { it.area == GlassArea.PullToRefresh }
+        assertSearchRevealsMode(row.searchId, row.area.name)
+    }
+
+    private fun assertSearchRevealsMode(target: String, tag: String) {
         val before = context.preferences.all.toMap()
         composeRule.mainClock.autoAdvance = false
         showPage(target = target)
@@ -226,7 +239,7 @@ class GlassSettingsPageTest {
             }.isSuccess
         }
         composeRule.onNode(SemanticsMatcher.expectValue(SettingsTargetId, target), useUnmergedTree = true).assertIsDisplayed()
-        composeRule.onNodeWithTag("settings.glass.mode.Onboarding.SettingsCards").assertIsDisplayed()
+        composeRule.onNodeWithTag("settings.glass.mode.$tag").assertIsDisplayed()
         assertEquals(before, context.preferences.all)
     }
 
@@ -258,12 +271,9 @@ class GlassSettingsPageTest {
     }
 
     private fun scrollToArea(area: GlassArea) {
-        val group = when (area) {
-            GlassArea.Nav, GlassArea.Header -> "Navigation"
-            GlassArea.MiniPlayer -> "Playback"
-            GlassArea.Menus, GlassArea.Dropdowns, GlassArea.Dialogs, GlassArea.DialogButtons -> "Windows"
-            else -> "Shared"
-        }
+        val group = GlassDestinationGroup.entries.single { destination ->
+            glassDestinationRows(destination).any { it.area == area && it.scope == GlassScope.Shared }
+        }.name
         composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("destination.$group")
         if (composeRule.onAllNodesWithTag("settings.glass.mode.${area.name}").fetchSemanticsNodes().isEmpty())
             composeRule.onNodeWithTag("settings.glass.group.$group.toggle").performClick()
@@ -882,7 +892,7 @@ class GlassSettingsPageTest {
         composeRule.onNodeWithTag("settings.glass.preview").assertIsDisplayed()
     }
 
-    @Test fun `shared area choices remain independently editable inside five destination groups`() {
+    @Test fun `shared area choices remain independently editable across destination groups`() {
         val before = store.read()
         showPage()
         GlassArea.entries.forEach { area ->
