@@ -63,11 +63,11 @@
     <string name="maintenance_last_crash">Laatste crash</string>
     <string name="maintenance_lastfm_active">Sessie actief</string>
     <string name="maintenance_library">Bibliotheek</string>
-    <string name="maintenance_library_albums">Albums: %d</string>
-    <string name="maintenance_library_artists">Artists: %d</string>
+    <string name="maintenance_library_albums">%d albums</string>
+    <string name="maintenance_library_artists">%d artiesten</string>
     <string name="maintenance_library_listened">%d geluisterd</string>
-    <string name="maintenance_library_playlists">Playlists: %d</string>
-    <string name="maintenance_library_songs">Songs: %d</string>
+    <string name="maintenance_library_playlists">%d afspeellijsten</string>
+    <string name="maintenance_library_songs">%d nummers</string>
     <string name="maintenance_live_subsystems">Live subsystemen</string>
     <string name="maintenance_log_view">Bekijken</string>
     <string name="maintenance_lt_connected">Verbonden</string>
@@ -197,7 +197,7 @@
     <string name="recovery_error">Er is een fout opgetreden: %s</string>
     <string name="recovery_error_database_busy">The database is in use, so it cannot be exported safely. Close the app completely first: open Android Settings &gt; Apps &gt; this app, then tap Force stop.</string>
     <string name="recovery_export_database">Exporteer database</string>
-    <string name="recovery_export_database_description">Sla je bibliotheek, afspeellijsten en geschiedenis op</string>
+    <string name="recovery_export_database_with_covers_description">Sla je bibliotheek, afspeellijsten en geschiedenis op als SQLite. Als je aangepaste covers hebt, is de export een ZIP met de database en dekkingen.</string>
     <string name="recovery_export_logs">Logs exporteren</string>
     <string name="recovery_export_logs_description">Crash- en debug logs opslaan voor een bug rapport</string>
     <string name="recovery_export_profiles_description">De profiellijst en de foto\'s van het gezicht in een enkel .txt bestand</string>
@@ -210,7 +210,7 @@
     <string name="recovery_group_settings">Instellingen</string>
     <string name="recovery_group_storage">Opslagruimte</string>
     <string name="recovery_import_database">Importeer database</string>
-    <string name="recovery_import_database_description">Een eerder geëxporteerde database herstellen</string>
+    <string name="recovery_import_database_with_covers_description">Herstel een SQLite of ZIP database back-up, inclusief aangepaste covers in de ZIP.</string>
     <string name="recovery_import_profiles_description">Herstel de profiellijst en de foto\'s van een .txt bestand</string>
     <string name="recovery_import_settings">Instellingen importeren</string>
     <string name="recovery_import_settings_description">Voorkeuren van een CSV-bestand terugzetten</string>
@@ -311,4 +311,5 @@
     <string name="updates_warning_acknowledge">Ik begrijp het</string>
     <string name="updates_check_failed">Kon niet controleren op updates.</string>
     <string name="updates_install_generic_error">Update kan niet worden geïnstalleerd.</string>
+    <string name="updates_channel_available_format">%1$s update beschikbaar</string>
 </resources>
