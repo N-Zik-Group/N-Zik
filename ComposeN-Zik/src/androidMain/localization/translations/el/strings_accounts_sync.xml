@@ -258,7 +258,7 @@
     <string name="sync_youtube_playlist_songs_added_suffix">Τα τραγούδια προστίθενται στη λίστα αναπαραγωγής του YouTube. Επαναλάβετε τη διαδικασία αν υπάρχουν κάποια λείπουν τραγούδια</string>
     <string name="sync_youtube_playlist_songs_adding_suffix">τραγούδια θα προστεθούν στη λίστα αναπαραγωγής YTM</string>
     <string name="sync_youtube_playlists_title">Λίστες Αναπαραγωγής YTM</string>
-    <string name="sync_youtube_songs_remaining">%1$s Songs Remaining</string>
+    <string name="sync_youtube_songs_remaining">Songs remaining: %1$s</string>
     <string name="sync_youtube_unlike_failed">Απέτυχε η αντίθεση με το τραγούδι στο YouTube</string>
     <string name="sync_youtube_unlike_success">Το τραγούδι δεν άρεσε στο YouTube</string>
     <string name="sync_starting_notification">Έναρξη συγχρονισμού...</string>
